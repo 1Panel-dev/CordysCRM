@@ -35,7 +35,7 @@
         <skipAntRunForJenkins>false</skipAntRunForJenkins>
         <jacoco.version>0.8.12</jacoco.version>
         <!--   sonar     -->
-        <sonar.organization>cordys</sonar.organization>
+        <sonar.organization>cordys-dev</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-io.version>2.15.1</commons-io.version>

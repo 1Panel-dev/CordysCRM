@@ -100,8 +100,8 @@
                             <target>
                                 <copy todir="src/main/resources/static">
                                     <fileset dir="../../frontend/src/assets"/>
-                                    <fileset dir="../../frontend/public"/>
-                                    <fileset dir="../../frontend/dist"/>
+                                    <fileset dir="../../frontend/packages/mobile/dist"/>
+                                    <fileset dir="../../frontend/packages/web/dist"/>
                                 </copy>
                             </target>
                         </configuration>
