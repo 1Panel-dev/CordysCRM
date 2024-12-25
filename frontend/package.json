@@ -2,20 +2,95 @@
   "name": "vue-login-cordys",
   "version": "1.0.0",
   "description": "A simple Vue 3 login page cordys",
-  "main": "src/main.js",
+  "main": "index.js",
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint-staged": "npx lint-staged",
+    "prepare": "cd .. && husky install frontend/.husky",
+    "type:check": "vue-tsc --noEmit --skipLibCheck",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "lint:styles": "stylelint '/packages/**/src/**/*.{vue,html,css,scss,less}' --fix"
   },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
   "dependencies": {
-    "vue": "^3.2.47"
+    "@lib/shared": "workspace:^",
+    "@types/node": "^22.10.2",
+    "@vitejs/plugin-legacy": "^6.0.0",
+    "@vueuse/core": "^10.11.0",
+    "axios": "^1.7.2",
+    "dayjs": "^1.11.11",
+    "dotenv": "^16.4.5",
+    "echarts": "^5.5.1",
+    "jsencrypt": "^3.3.2",
+    "localforage": "^1.10.0",
+    "lodash-es": "^4.17.21",
+    "pinia": "^2.3.0",
+    "pinia-plugin-persistedstate": "^3.2.1",
+    "query-string": "^8.2.0",
+    "vue": "^3.5.13",
+    "vue-echarts": "^6.7.3",
+    "vue-i18n": "^9.13.1",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@vue/cli-service": "^5.0.8",
-    "vue-loader": "^17.1.2",
-    "webpack": "^5.77.0"
+    "@commitlint/cli": "^17.8.1",
+    "@commitlint/config-conventional": "^17.8.1",
+    "@types/lodash": "^4.17.6",
+    "@types/lodash-es": "^4.17.12",
+    "@types/nprogress": "^0.2.3",
+    "@types/pretty": "^2.0.3",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "eslint-plugin-vue": "^9.27.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.3.0",
+    "postcss": "^8.4.45",
+    "postcss-html": "^1.7.0",
+    "postcss-import": "^16.1.0",
+    "postcss-less": "^6.0.0",
+    "prettier": "^2.8.8",
+    "prettier-plugin-tailwindcss": "^0.3.0",
+    "stylelint": "^14.16.1",
+    "stylelint-config-html": "^1.1.0",
+    "stylelint-config-prettier": "^9.0.5",
+    "stylelint-config-rational-order": "^0.1.2",
+    "stylelint-config-recommended": "^7.0.0",
+    "stylelint-config-recommended-less": "^1.0.4",
+    "stylelint-config-recommended-scss": "^7.0.0",
+    "stylelint-config-recommended-vue": "^1.5.0",
+    "stylelint-config-standard": "^25.0.0",
+    "stylelint-config-standard-scss": "^4.0.0",
+    "stylelint-less": "^1.0.8",
+    "stylelint-order": "^5.0.0",
+    "tailwindcss": "^3.4.4",
+    "typescript": "5.4.5",
+    "vue-tsc": "^2.2.0"
   },
-  "author": "",
-  "license": "ISC"
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.vue": [
+      "stylelint --fix",
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{less,css,scss,sass}": [
+      "stylelint --fix --custom-syntax postcss-less",
+      "prettier --write"
+    ]
+  }
 }

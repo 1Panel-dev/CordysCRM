@@ -1,0 +1,31 @@
+{
+  "exclude": [
+    // 排除掉哪些类库
+    "packages/**/node_modules",
+    "packages/**/dist/**"
+  ],
+  "compilerOptions": {
+    "allowJs": true, // 允许编译器编译JS，JSX文件
+    "noEmit": true,
+    "target": "esnext", // 使用es最新语法
+    "useDefineForClassFields": true,
+    "allowSyntheticDefaultImports": true, // 允许异步导入模块，配合自动导入插件使用
+    "module": "esnext", // 使用ES模块语法
+    "moduleResolution": "node",
+    "strict": true, // 严格模式
+    "jsx": "preserve",
+    "sourceMap": true, // 代码映射
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    "skipLibCheck": true, // 跳过node依赖包语法检查
+    "types": [
+      "node",
+      // "vite-plugin-svg-icons/client"
+    ], // 手动导入TS类型声明文件
+  },
+}

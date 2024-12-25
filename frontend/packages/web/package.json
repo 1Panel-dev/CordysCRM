@@ -1,0 +1,60 @@
+{
+  "name": "web",
+  "description": "PC web",
+  "version": "1.0.0",
+  "private": true,
+  "author": "MeterSphere Team",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config ./config/vite.config.dev.ts",
+    "build": "vue-tsc --noEmit && vite build --config ./config/vite.config.prod.ts",
+    "build:local": "vue-tsc --noEmit &&  vite build --config ./config/vite.config.prod.ts --mode development",
+    "build:localProd": "vue-tsc --noEmit &&  vite build --config ./config/vite.config.prod.ts --mode prod",
+    "report": "cross-env REPORT=true npm run build",
+    "preview": "npm run build && vite preview --host"
+  },
+  "dependencies": {
+    "naive-ui": "^2.40.4",
+    "vfonts": "^0.0.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-legacy": "^6.0.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitejs/plugin-vue-jsx": "^4.1.1",
+    "@vue/babel-plugin-jsx": "^1.2.2",
+    "@vue/test-utils": "^2.4.6",
+    "color": "^4.2.3",
+    "consola": "^2.15.3",
+    "fast-glob": "^3.3.2",
+    "jsdom": "^22.1.0",
+    "less": "^4.2.0",
+    "less-loader": "^11.1.4",
+    "rollup": "^4.18.0",
+    "rollup-plugin-visualizer": "^5.12.0",
+    "sass": "^1.77.6",
+    "typescript": "5.4.5",
+    "unplugin-auto-import": "^0.16.7",
+    "unplugin-vue-components": "^0.24.1",
+    "vite": "^6.0.5",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-svg-icons": "^2.0.1",
+    "vite-plugin-vue-setup-extend": "^0.4.0",
+    "vite-svg-loader": "^3.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "browserslist": [
+    "> 0.5%",
+    "last 2 versions",
+    "not dead",
+    "not IE 11"
+  ],
+  "resolutions": {
+    "bin-wrapper": "npm:bin-wrapper-china",
+    "rollup": "^4.18.0",
+    "gifsicle": "5.2.0"
+  }
+}
