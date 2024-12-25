@@ -1,0 +1,21 @@
+{
+  "name": "vue-login-cordys",
+  "version": "1.0.0",
+  "description": "A simple Vue 3 login page cordys",
+  "main": "src/main.js",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "vue": "^3.2.47"
+  },
+  "devDependencies": {
+    "@vue/cli-service": "^5.0.8",
+    "vue-loader": "^17.1.2",
+    "webpack": "^5.77.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
