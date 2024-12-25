@@ -7,8 +7,12 @@
   "type": "module",
   "scripts": {
     "dev": "rsbuild dev --open",
-    "build": "rsbuild build",
-    "preview": "rsbuild preview"
+    "build": "vue-tsc --noEmit && rsbuild build",
+    "preview": "rsbuild preview",
+    "type:check": "vue-tsc --noEmit --skipLibCheck -p tsconfig.json",
+    "lint-staged": "npx lint-staged",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "lint:styles": "stylelint 'src/**/*.{vue,html,css,scss,less}' --fix"
   },
   "dependencies": {
     "vant": "^4.8.2",
@@ -21,5 +25,20 @@
     "@vant/auto-import-resolver": "^1.1.0",
     "unplugin-auto-import": "^0.17.5",
     "unplugin-vue-components": "^0.26.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.vue": [
+      "stylelint --fix",
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{less,css,scss,sass}": [
+      "stylelint --fix --custom-syntax postcss-less",
+      "prettier --write"
+    ]
   }
 }

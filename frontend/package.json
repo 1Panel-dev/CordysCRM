@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "A simple Vue 3 login page cordys",
   "main": "index.js",
+  "workspaces": [
+    "packages/mobile",
+    "packages/web"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint-staged": "npx lint-staged",
-    "prepare": "cd .. && husky install frontend/.husky",
-    "type:check": "vue-tsc --noEmit --skipLibCheck",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
-    "lint:styles": "stylelint '/packages/**/src/**/*.{vue,html,css,scss,less}' --fix"
+    "build": "npm run build --workspaces",
+    "prepare": "cd .. && husky install frontend/.husky"
   },
   "keywords": [],
   "author": "",
@@ -77,20 +77,5 @@
     "tailwindcss": "^3.4.4",
     "typescript": "5.4.5",
     "vue-tsc": "^2.2.0"
-  },
-  "lint-staged": {
-    "*.{js,ts,jsx,tsx}": [
-      "prettier --write",
-      "eslint --fix"
-    ],
-    "*.vue": [
-      "stylelint --fix",
-      "prettier --write",
-      "eslint --fix"
-    ],
-    "*.{less,css,scss,sass}": [
-      "stylelint --fix --custom-syntax postcss-less",
-      "prettier --write"
-    ]
   }
 }

@@ -27,5 +27,13 @@
       "node",
       // "vite-plugin-svg-icons/client"
     ], // 手动导入TS类型声明文件
+    "paths": {
+      "#/*": [
+        "/types/*"
+      ],
+    }
   },
+  "include": [
+    "packages/**/*"
+  ],
 }

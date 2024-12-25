@@ -12,7 +12,11 @@
     "build:local": "vue-tsc --noEmit &&  vite build --config ./config/vite.config.prod.ts --mode development",
     "build:localProd": "vue-tsc --noEmit &&  vite build --config ./config/vite.config.prod.ts --mode prod",
     "report": "cross-env REPORT=true npm run build",
-    "preview": "npm run build && vite preview --host"
+    "preview": "npm run build && vite preview --host",
+    "type:check": "vue-tsc --noEmit --skipLibCheck -p tsconfig.json",
+    "lint-staged": "npx lint-staged",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "lint:styles": "stylelint 'src/**/*.{vue,html,css,scss,less}' --fix"
   },
   "dependencies": {
     "naive-ui": "^2.40.4",
@@ -42,6 +46,21 @@
     "vite-plugin-svg-icons": "^2.0.1",
     "vite-plugin-vue-setup-extend": "^0.4.0",
     "vite-svg-loader": "^3.6.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.vue": [
+      "stylelint --fix",
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{less,css,scss,sass}": [
+      "stylelint --fix --custom-syntax postcss-less",
+      "prettier --write"
+    ]
   },
   "engines": {
     "node": ">=18.0.0"

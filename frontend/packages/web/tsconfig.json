@@ -1,7 +1,12 @@
 {
   "extends": "../../tsconfig.json",
+  "include": [
+    "src/**/*",
+    "types/**/*",
+    "*.d.ts",
+  ],
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       // 路径映射
       "@/*": [
@@ -9,7 +14,7 @@
       ],
       "#/*": [
         "types/*"
-      ]
+      ],
     },
   },
 }

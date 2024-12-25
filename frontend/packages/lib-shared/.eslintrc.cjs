@@ -57,6 +57,12 @@ module.exports = {
     'consistent-return': 'off',
     'vue/return-in-computed-property': ['off'],
     'vue/no-side-effects-in-computed-properties': 'off',
+    'import/no-unresolved': [
+      'error',
+      {
+        ignore: ['^@lib/shared'],
+      },
+    ],
     'import/extensions': [
       2,
       'ignorePackages',

@@ -1,4 +1,6 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-cd frontend && npm run type:check && npm run lint-staged
+cd frontend/packages/lib-shared && npm run type:check && npm run lint-staged
+cd ../mobile && npm run type:check && npm run lint-staged
+cd ../web && npm run type:check && npm run lint-staged
