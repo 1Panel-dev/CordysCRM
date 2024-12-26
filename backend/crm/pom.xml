@@ -43,19 +43,6 @@
         </resources>
 
         <plugins>
-            <!-- Maven Jar 插件，生成测试 JAR -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- Spring Boot 插件，支持 Spring Boot 应用的构建 -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -112,18 +99,7 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- Maven Surefire 插件，配置测试执行顺序 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <runOrder>alphabetical</runOrder>
-                    <argLine>${argLine} -Dfile.encoding=UTF-8</argLine>
-                </configuration>
-            </plugin>
         </plugins>
-
     </build>
 
 </project>
