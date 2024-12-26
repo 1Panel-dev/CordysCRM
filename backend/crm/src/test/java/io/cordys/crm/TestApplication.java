@@ -1,4 +1,4 @@
-package io.cordys.crm.system;
+package io.cordys.crm;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

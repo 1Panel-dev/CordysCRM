@@ -1,7 +1,7 @@
 package io.cordys.crm.system.controller;
 
-import io.cordys.mybatis.BaseMapper;
 import io.cordys.crm.system.domain.User;
+import io.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
