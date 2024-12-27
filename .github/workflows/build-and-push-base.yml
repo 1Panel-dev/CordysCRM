@@ -5,10 +5,6 @@ run-name: 构建镜像并推送仓库 ${{ github.event.inputs.dockerImageTag }} 
 on:
   workflow_dispatch:
     inputs:
-      dockerImageTag:
-        description: 'Docker Image Tag'
-        default: 'v1.0.0-dev'
-        required: true
       architecture:
         description: 'Architecture'
         required: true
@@ -18,15 +14,6 @@ on:
           - linux/amd64
           - linux/arm64
           - linux/amd64,linux/arm64
-      registry:
-        description: 'Push To Registry'
-        required: true
-        default: 'fit2cloud-registry'
-        type: choice
-        options:
-          - fit2cloud-registry
-          - dockerhub
-          - dockerhub, fit2cloud-registry
 
 jobs:
   build-and-push-base-to-ghcr:
