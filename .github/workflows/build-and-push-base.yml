@@ -44,7 +44,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: fit2-zhao
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUBTOKEN }}
       - name: Docker Buildx (build-and-push)
         run: |
