@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.neo4j.Neo4jAutoConfiguration;
 import org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 
 @SpringBootApplication(exclude = {
         QuartzAutoConfiguration.class,
@@ -14,7 +15,9 @@ import org.springframework.context.annotation.ComponentScan;
         Neo4jAutoConfiguration.class
 })
 @ServletComponentScan
-@ComponentScan(basePackages = {"io.cordys"})
+@ComponentScan(
+        basePackages = {"io.cordys"}
+)
 public class TestApplication {
 
     public static void main(String[] args) {
