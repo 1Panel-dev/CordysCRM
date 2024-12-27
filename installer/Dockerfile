@@ -20,7 +20,7 @@ RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
 
 
 
-FROM registry.fit2cloud.com/metersphere/alpine-openjdk21-jre
+FROM registry.fit2cloud.com/cordys/cordys-base
 
 LABEL maintainer="FIT2CLOUD <support@fit2cloud.com>"
 
@@ -32,6 +32,8 @@ COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
 COPY --from=build /build/backend/${MODULE}/src/main/resources/packages /app/static
+COPY installer/conf /opt/cordys/conf
+COPY installer/start-all.sh /
 
 ENV JAVA_CLASSPATH=/app:/app/lib/*
 ENV JAVA_MAIN_CLASS=io.cordys.Application
@@ -41,4 +43,6 @@ ENV JAVA_OPTIONS="-Dfile.encoding=utf-8 -Djava.awt.headless=true --add-opens jav
 
 RUN echo -n "${CRM_VERSION}" > /tmp/CRM_VERSION
 
-CMD ["/deployments/run-java.sh"]
+VOLUME [ "/opt/cordys/data", "/opt/cordys/logs", "/opt/cordys/conf" ]
+
+ENTRYPOINT ["sh", "/start-all.sh"]
