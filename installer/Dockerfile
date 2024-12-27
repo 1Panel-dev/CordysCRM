@@ -20,7 +20,7 @@ RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
 
 
 
-FROM registry.fit2cloud.com/cordys/cordys-base
+FROM ghcr.io/cordys/cordys-base
 
 LABEL maintainer="FIT2CLOUD <support@fit2cloud.com>"
 
