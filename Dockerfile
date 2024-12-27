@@ -1,17 +1,35 @@
+FROM node:22-slim AS frontend
+
+WORKDIR /frontend
+COPY frontend /frontend
+RUN npm install -g pnpm && \
+    pnpm install && \
+    pnpm run build
+
+
+
+FROM eclipse-temurin:21-jdk AS build
+WORKDIR /build
+COPY . /build
+COPY --from=frontend /frontend/packages/web/dist /build/frontend/packages/web/dist
+COPY --from=frontend /frontend/packages/mobile/dist /build/frontend/packages/mobile/dist
+RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
+    cd backend/crm/target/dependency && jar -xf ../*.jar
+
+
+
 FROM registry.fit2cloud.com/metersphere/alpine-openjdk21-jre
 
 LABEL maintainer="FIT2CLOUD <support@fit2cloud.com>"
 
 ARG CRM_VERSION=main
 ARG MODULE=crm
-ARG DEPENDENCY=backend/${MODULE}/target/dependency
+ARG DEPENDENCY=/build/backend/${MODULE}/target/dependency
 
-COPY ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY ${DEPENDENCY}/META-INF /app/META-INF
-COPY ${DEPENDENCY}/BOOT-INF/classes /app
-
-# web
-COPY backend/${MODULE}/src/main/resources/packages /app/static
+COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
+COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
+COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
+COPY --from=build /build/backend/${MODULE}/src/main/resources/packages /app/static
 
 ENV JAVA_CLASSPATH=/app:/app/lib/*
 ENV JAVA_MAIN_CLASS=io.cordys.Application
