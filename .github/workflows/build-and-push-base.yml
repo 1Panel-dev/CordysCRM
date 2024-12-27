@@ -25,7 +25,7 @@ jobs:
       - name: Prepare
         id: prepare
         run: |
-          DOCKER_IMAGE=ghcr.io/cordys/cordys-base
+          DOCKER_IMAGE=ghcr.io/cordys-dev/cordys-base
           DOCKER_PLATFORMS=${{ github.event.inputs.architecture }}
           TAG_NAME=latest
           DOCKER_IMAGE_TAGS="--tag ${DOCKER_IMAGE}:${TAG_NAME} --tag ${DOCKER_IMAGE}:latest"
