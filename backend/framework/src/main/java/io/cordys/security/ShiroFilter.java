@@ -18,6 +18,10 @@ public class ShiroFilter {
     public static Map<String, String> loadBaseFilterChain() {
         Map<String, String> filterChainDefinitionMap = new HashMap<>();
 
+        filterChainDefinitionMap.put("/web/**", "anon");
+        filterChainDefinitionMap.put("/mobile/**", "anon");
+        filterChainDefinitionMap.put("/static/**", "anon");
+
         // 公共可访问的 URL
         filterChainDefinitionMap.put("/login", "anon");
         filterChainDefinitionMap.put("/signout", "anon");

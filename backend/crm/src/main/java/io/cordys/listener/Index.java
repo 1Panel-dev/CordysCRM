@@ -16,9 +16,9 @@ public class Index {
      *
      * @return 返回首页的视图名称
      */
-    @GetMapping("/")
+    @GetMapping("/web")
     public String index() {
-        return "/index.html";
+        return "index.html";
     }
 
     /**
@@ -28,7 +28,7 @@ public class Index {
      */
     @GetMapping("/mobile")
     public String mobileIndex() {
-        return "/mobile/index.html";
+        return "mobile/index.html";
     }
 
 

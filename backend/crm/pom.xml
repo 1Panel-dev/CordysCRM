@@ -86,7 +86,10 @@
                             <skip>${skipAntRunForJenkins}</skip>
                             <target>
                                 <copy todir="src/main/resources/static/mobile">
-                                    <fileset dir="../../frontend/packages/mobile/dist"/>
+                                    <file file="../../frontend/packages/mobile/dist/index.html"/>
+                                </copy>
+                                <copy todir="src/main/resources/static/static">
+                                    <fileset dir="../../frontend/packages/mobile/dist/static"/>
                                 </copy>
                                 <copy todir="src/main/resources/static">
                                     <fileset dir="../../frontend/packages/web/dist"/>
