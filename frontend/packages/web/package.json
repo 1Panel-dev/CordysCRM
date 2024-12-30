@@ -19,6 +19,7 @@
     "lint:styles": "stylelint 'src/**/*.{vue,html,css,scss,less}' --fix"
   },
   "dependencies": {
+    "@types/color": "^4.2.0",
     "naive-ui": "^2.40.4",
     "vfonts": "^0.0.3"
   },
