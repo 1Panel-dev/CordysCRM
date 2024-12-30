@@ -32,7 +32,7 @@ public class LoginControllerTests {
         // 1. 正常登录
         String login = "/login";
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(login)
-                        .content(String.format("{\"username\":\"%s\",\"password\":\"%s\"}", "admin", "admin"))
+                        .content(String.format("{\"username\":\"%s\",\"password\":\"%s\"}", "admin", "CordsCRM"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
