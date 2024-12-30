@@ -5,6 +5,7 @@ import { createPinia } from 'pinia';
 // import localforage from 'localforage';
 import './assets/main.css';
 
+import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 import App from './App.vue';
 
 import { setupI18n } from './locale';
@@ -17,6 +18,8 @@ async function setupApp() {
   app.use(createPinia());
   // 注册国际化，需要异步阻塞，确保语言包加载完毕
   await setupI18n(app);
+
+  app.component('CrmIcon', CrmIcon);
 
   // 获取默认语言
   const localLocale = localStorage.getItem('CRM-locale');

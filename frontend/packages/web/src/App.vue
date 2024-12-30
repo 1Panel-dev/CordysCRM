@@ -4,6 +4,7 @@
 
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
+      <CrmIcon type="icon-icon_collection_outlined" :size="30" />
 
       <nav>
         <RouterLink to="/">Home</RouterLink>
