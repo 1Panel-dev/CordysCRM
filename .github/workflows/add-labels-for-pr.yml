@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 检查代码仓库
+      # Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 从评论中提取并格式化标签为 "用户名: 标签"
+      # Extract and format the labels from the comment as "username: label"
       - name: Extract reviewer and labels
         if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/') }}
         id: extract_labels
@@ -26,10 +26,22 @@ jobs:
           echo "Formatted labels: $formatted_labels"
           echo "::set-output name=labels::$formatted_labels"
 
-      # 将提取的标签添加到 PR
+      # Add the extracted labels to the PR
       - name: Add labels via PR comment
         if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/') }}
         uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUBTOKEN }}
           labels: ${{ steps.extract_labels.outputs.labels }}
+
+      # Auto-merge the PR if the comment contains /lgtm label
+      - name: Auto-merge PR if /lgtm label is added
+        if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(steps.extract_labels.outputs.labels, '/lgtm') }}
+        run: |
+          PR_URL="${{ github.event.issue.pull_request.url }}"
+          echo "PR URL: $PR_URL"
+          curl -X PUT \
+            -H "Authorization: token ${{ secrets.GITHUBTOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -d '{"merge_method": "rebase"}' \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/$(basename $PR_URL)/merge"
