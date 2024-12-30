@@ -142,6 +142,90 @@ CREATE TABLE IF NOT EXISTS `user_key`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='用户api key';
 
+
+CREATE TABLE IF NOT EXISTS `notification`(
+                             `id` BIGINT NOT NULL AUTO_INCREMENT  COMMENT 'ID' ,
+                             `type` VARCHAR(64) NOT NULL   COMMENT '通知类型' ,
+                             `receiver` VARCHAR(50) NOT NULL   COMMENT '接收人' ,
+                             `subject` VARCHAR(255) NOT NULL   COMMENT '标题' ,
+                             `status` VARCHAR(64) NOT NULL   COMMENT '状态' ,
+                             `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+                             `operator` VARCHAR(50) NOT NULL   COMMENT '操作人' ,
+                             `operation` VARCHAR(50) NOT NULL   COMMENT '操作' ,
+                             `resource_type` VARCHAR(64) NOT NULL   COMMENT '资源类型' ,
+                             `resource_name` VARCHAR(255) NOT NULL   COMMENT '资源名称' ,
+                             `content` BLOB NOT NULL   COMMENT '通知内容' ,
+                             PRIMARY KEY (id)
+)  COMMENT = '消息通知'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+
+CREATE INDEX idx_receiver ON notification(receiver ASC);
+CREATE INDEX idx_create_time ON notification(create_time DESC);
+CREATE INDEX idx_type ON notification(type ASC);
+CREATE INDEX idx_subject ON notification(subject ASC);
+CREATE INDEX idx_resource_type ON notification(resource_type ASC);
+CREATE INDEX idx_operator ON notification(operator ASC);
+
+CREATE TABLE IF NOT EXISTS `message_task`(
+                             `id` VARCHAR(32) NOT NULL   COMMENT '' ,
+                             `event` VARCHAR(255) NOT NULL   COMMENT '通知事件类型' ,
+                             `receivers` VARCHAR(1000) NOT NULL   COMMENT '接收人id集合' ,
+                             `project_robot_id` VARCHAR(50)  DEFAULT 'NONE' COMMENT '机器人id' ,
+                             `task_type` VARCHAR(64) NOT NULL   COMMENT '任务类型' ,
+                             `enable` BIT NOT NULL  DEFAULT 0 COMMENT '是否启用' ,
+                             `create_user` VARCHAR(50) NOT NULL   COMMENT '创建人' ,
+                             `create_time` BIGINT NOT NULL  DEFAULT 0 COMMENT '创建时间' ,
+                             `update_user` VARCHAR(50) NOT NULL   COMMENT '修改人' ,
+                             `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+                             `use_default_template` BIT NOT NULL  DEFAULT 1 COMMENT '是否使用默认模版' ,
+                             `use_default_subject` BIT NOT NULL  DEFAULT 1 COMMENT '是否使用默认标题（仅邮件）' ,
+                             `subject` VARCHAR(1000)    COMMENT '邮件标题' ,
+                             PRIMARY KEY (id)
+)  COMMENT = '消息通知任务'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_create_time ON message_task(create_time DESC);
+CREATE INDEX idx_task_type ON message_task(task_type ASC);
+CREATE INDEX idx_event ON message_task(event ASC);
+CREATE INDEX idx_enable ON message_task(enable ASC);
+CREATE INDEX idx_use_default_subject ON message_task(use_default_subject ASC);
+CREATE INDEX idx_use_default_template ON message_task(use_default_template ASC);
+
+CREATE TABLE IF NOT EXISTS `message_task_blob`(
+                                  `id` VARCHAR(32) NOT NULL   COMMENT '' ,
+                                  `template` BLOB    COMMENT '消息模版' ,
+                                  PRIMARY KEY (id)
+)  COMMENT = '消息通知任务大字段'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `announcement`(
+                             `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+                             `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+                             `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+                             `create_user` VARCHAR(50) NOT NULL   COMMENT '创建人' ,
+                             `update_user` VARCHAR(50) NOT NULL   COMMENT '更新人' ,
+                             `subject` VARCHAR(255) NOT NULL   COMMENT '公告标题' ,
+                             `content` TEXT NOT NULL   COMMENT '公告内容' ,
+                             `start_time` BIGINT NOT NULL   COMMENT '开始时间' ,
+                             `end_time` BIGINT NOT NULL   COMMENT '结束时间' ,
+                             `url` VARCHAR(255)    COMMENT '链接' ,
+                             `organization_id` VARCHAR(50) NOT NULL   COMMENT '接收人（组织架构）' ,
+                             PRIMARY KEY (id)
+)  COMMENT = '公告'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_create_time ON announcement(create_time DESC);
+
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
