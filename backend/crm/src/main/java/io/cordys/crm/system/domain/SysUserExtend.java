@@ -12,8 +12,7 @@ import lombok.Data;
 import javax.persistence.Table;
 
 @Data
-@Table(name = "sys_user_extend")
-public class UserExtend implements Serializable {
+public class SysUserExtend implements Serializable {
     @Schema(description = "用户ID", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "{user_extend.id.not_blank}", groups = {Updated.class})
     @Size(min = 1, max = 50, message = "{user_extend.id.length_range}", groups = {Created.class, Updated.class})
