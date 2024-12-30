@@ -23,7 +23,7 @@ function setI18nLanguage(locale: LocaleType) {
   } else {
     (i18n.global.locale as any).value = locale;
   }
-  localStorage.setItem('MS-locale', locale);
+  localStorage.setItem('CRM-locale', locale);
 }
 
 /**
