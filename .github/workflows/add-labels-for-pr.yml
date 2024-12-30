@@ -36,7 +36,7 @@ jobs:
 
       # Auto-merge the PR if the comment contains /lgtm label
       - name: Auto-merge PR if /lgtm label is added
-        if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(steps.extract_labels.outputs.labels, '/lgtm') }}
+        if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(steps.extract_labels.outputs.labels, 'lgtm') }}
         run: |
           PR_URL="${{ github.event.issue.pull_request.url }}"
           echo "PR URL: $PR_URL"

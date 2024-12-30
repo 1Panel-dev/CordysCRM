@@ -1,4 +1,4 @@
-package io.cordys.crm.system.controller;
+package io.cordys.listener;
 
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * </p>
  */
 @Controller
-public class CustomErrorController implements ErrorController {
+public class CustomError implements ErrorController {
 
     /**
      * 错误处理方法，当发生错误时，会将请求重定向到根页面。
