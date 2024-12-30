@@ -40,21 +40,19 @@ public class LoginController {
     /**
      * 检查用户是否已登录。
      *
-     * @param response HTTP 响应对象。
      * @return 返回用户会话信息，未登录则返回 401 错误。
      */
     @GetMapping(value = "/is-login")
     @Operation(summary = "是否登录")
-    public ResultHolder isLogin(HttpServletResponse response) {
+    public SessionUser isLogin() {
         SessionUser user = SessionUtils.getUser();
         if (user != null) {
             UserDTO userDTO = userLoginService.getUserDTO(user.getId());
             SessionUser sessionUser = SessionUser.fromUser(userDTO, SessionUtils.getSessionId());
             SessionUtils.putUser(sessionUser);
-            return ResultHolder.success(sessionUser);
+            return sessionUser;
         }
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        return ResultHolder.error(MsHttpResultCode.UNAUTHORIZED.getCode(), null);
+        throw new GenericException(MsHttpResultCode.UNAUTHORIZED);
     }
 
     /**
@@ -65,9 +63,9 @@ public class LoginController {
      */
     @GetMapping(value = "/get-key")
     @Operation(summary = "获取公钥")
-    public ResultHolder getKey() throws Exception {
+    public String getKey() throws Exception {
         RsaKey rsaKey = RsaUtils.getRsaKey();
-        return ResultHolder.success(rsaKey.getPublicKey());
+        return rsaKey.getPublicKey();
     }
 
     /**
@@ -79,7 +77,7 @@ public class LoginController {
      */
     @PostMapping(value = "/login")
     @Operation(summary = "登录")
-    public ResultHolder login(@Validated @RequestBody LoginRequest request) {
+    public SessionUser login(@Validated @RequestBody LoginRequest request) {
         SessionUser sessionUser = SessionUtils.getUser();
         if (sessionUser != null) {
             // 如果当前用户已登录且用户名与请求用户名不匹配，抛出异常
@@ -97,13 +95,14 @@ public class LoginController {
      *
      * @return 返回退出成功信息。
      */
+    @GetMapping(value = "/signout")
     @Operation(summary = "退出登录")
-    public ResultHolder logout() {
+    public String logout() {
         if (SessionUtils.getUser() == null) {
-            return ResultHolder.success("logout success");
+            return "logout success";
         }
         // 退出当前会话
         SecurityUtils.getSubject().logout();
-        return ResultHolder.success("logout success");
+        return "logout success";
     }
 }

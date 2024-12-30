@@ -56,7 +56,7 @@ public class UserLoginService {
     }
 
 
-    public ResultHolder login(LoginRequest request) {
+    public SessionUser login(LoginRequest request) {
         String login = (String) SecurityUtils.getSubject().getSession().getAttribute("authenticate");
         String username = StringUtils.trim(request.getUsername());
         String password = StringUtils.EMPTY;
@@ -71,7 +71,7 @@ public class UserLoginService {
                 SessionUser sessionUser = SessionUtils.getUser();
                 // 放入session中
                 SessionUtils.putUser(sessionUser);
-                return ResultHolder.success(sessionUser);
+                return sessionUser;
             } else {
                 throw new GenericException(Translator.get("login_fail"));
             }
