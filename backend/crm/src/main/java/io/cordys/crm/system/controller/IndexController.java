@@ -1,6 +1,6 @@
 package io.cordys.crm.system.controller;
 
-import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.domain.SysUser;
 import io.cordys.crm.system.service.DemoService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Controller;
@@ -40,14 +40,14 @@ public class IndexController {
     // todo: 以下部分 DEMO 日志记录功能示例，后续删除
 
     @GetMapping(value = "/cordys/add")
-    public User add() {
-        User user = new User();
-        user.setId("1");
-        user.setName("test");
+    public SysUser add() {
+        SysUser sysUser = new SysUser();
+        sysUser.setId("1");
+        sysUser.setName("test");
 
-        cordysService.addUser(user);
+        cordysService.addUser(sysUser);
 
-        return user;
+        return sysUser;
     }
 
     @GetMapping(value = "/cordys/delete")
@@ -56,12 +56,12 @@ public class IndexController {
     }
 
     @GetMapping(value = "/cordys/update")
-    public User update() {
-        User user = new User();
-        user.setId("1");
-        user.setName("test");
-        cordysService.updateUser(user);
-        return user;
+    public SysUser update() {
+        SysUser sysUser = new SysUser();
+        sysUser.setId("1");
+        sysUser.setName("test");
+        cordysService.updateUser(sysUser);
+        return sysUser;
     }
 
 }

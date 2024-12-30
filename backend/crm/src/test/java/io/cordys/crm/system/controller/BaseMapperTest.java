@@ -1,6 +1,6 @@
 package io.cordys.crm.system.controller;
 
-import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.domain.SysUser;
 import io.cordys.mybatis.BaseMapper;
 import org.junit.jupiter.api.*;
 import org.mockito.Mock;
@@ -22,14 +22,14 @@ import static org.mockito.Mockito.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BaseMapperTest {
     @Mock
-    private BaseMapper<User> baseMapper;
+    private BaseMapper<SysUser> baseMapper;
 
-    private User user;
+    private SysUser user;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        user = new User();
+        user = new SysUser();
         user.setId("admin");
         user.setEmail("test@a.com");
         user.setPassword("password123");
@@ -47,7 +47,7 @@ public class BaseMapperTest {
     @Test
     @Order(2)
     public void testBatchInsert() {
-        List<User> users = Collections.singletonList(user);
+        List<SysUser> users = Collections.singletonList(user);
         when(baseMapper.batchInsert(users)).thenReturn(1);
         Integer result = baseMapper.batchInsert(users);
         assertEquals(1, result);
@@ -94,7 +94,7 @@ public class BaseMapperTest {
     @Order(7)
     public void testSelectByPrimaryKey() {
         when(baseMapper.selectByPrimaryKey(1L)).thenReturn(user);
-        User result = baseMapper.selectByPrimaryKey(1L);
+        SysUser result = baseMapper.selectByPrimaryKey(1L);
         assertNotNull(result);
         assertEquals(user.getEmail(), result.getEmail());
         verify(baseMapper, times(1)).selectByPrimaryKey(1L);
@@ -104,7 +104,7 @@ public class BaseMapperTest {
     @Order(8)
     public void testSelectAll() {
         when(baseMapper.selectAll("username")).thenReturn(Arrays.asList(user));
-        List<User> result = baseMapper.selectAll("username");
+        List<SysUser> result = baseMapper.selectAll("username");
         assertNotNull(result);
         assertEquals(1, result.size());
         verify(baseMapper, times(1)).selectAll("username");
@@ -114,7 +114,7 @@ public class BaseMapperTest {
     @Order(9)
     public void testSelect() {
         when(baseMapper.select(user)).thenReturn(Arrays.asList(user));
-        List<User> result = baseMapper.select(user);
+        List<SysUser> result = baseMapper.select(user);
         assertNotNull(result);
         assertEquals(1, result.size());
         verify(baseMapper, times(1)).select(user);
@@ -124,7 +124,7 @@ public class BaseMapperTest {
     @Order(10)
     public void testSelectOne() {
         when(baseMapper.selectOne(user)).thenReturn(user);
-        User result = baseMapper.selectOne(user);
+        SysUser result = baseMapper.selectOne(user);
         assertNotNull(result);
         assertEquals(user.getEmail(), result.getEmail());
         verify(baseMapper, times(1)).selectOne(user);
@@ -135,7 +135,7 @@ public class BaseMapperTest {
     public void testSelectByColumn() {
         Serializable[] ids = {1L};
         when(baseMapper.selectByColumn("id", ids)).thenReturn(Arrays.asList(user));
-        List<User> result = baseMapper.selectByColumn("id", ids);
+        List<SysUser> result = baseMapper.selectByColumn("id", ids);
         assertNotNull(result);
         assertEquals(1, result.size());
         verify(baseMapper, times(1)).selectByColumn("id", ids);
@@ -155,7 +155,7 @@ public class BaseMapperTest {
     public void testQuery() {
         Function<BaseMapper.SQL, BaseMapper.SQL> sqlBuild = sql -> sql;
         when(baseMapper.query(sqlBuild, user)).thenReturn(Arrays.asList(user));
-        List<User> result = baseMapper.query(sqlBuild, user);
+        List<SysUser> result = baseMapper.query(sqlBuild, user);
         assertNotNull(result);
         assertEquals(1, result.size());
         verify(baseMapper, times(1)).query(sqlBuild, user);

@@ -102,7 +102,6 @@ public class LoginController {
         if (SessionUtils.getUser() == null) {
             return ResultHolder.success("logout success");
         }
-        OperationLogContext.putVariable("username", SessionUtils.getUser().getId());
         // 退出当前会话
         SecurityUtils.getSubject().logout();
         return ResultHolder.success("logout success");

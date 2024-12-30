@@ -5,8 +5,8 @@ import io.cordys.aspectj.handler.OperationLogHandler;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
-import io.cordys.crm.system.domain.OperationLog;
-import io.cordys.crm.system.domain.OperationLogBlob;
+import io.cordys.crm.system.domain.SysOperationLog;
+import io.cordys.crm.system.domain.SysOperationLogBlob;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -28,10 +28,10 @@ import java.util.List;
 public class LogService implements OperationLogHandler {
 
     @Resource
-    private BaseMapper<OperationLog> operationLogMapper;
+    private BaseMapper<SysOperationLog> operationLogMapper;
 
     @Resource
-    private BaseMapper<OperationLogBlob> operationLogBlobMapper;
+    private BaseMapper<SysOperationLogBlob> operationLogBlobMapper;
 
     /**
      * 根据 LogDTO 创建一个 OperationLogBlob 实体对象。
@@ -39,8 +39,8 @@ public class LogService implements OperationLogHandler {
      * @param log 日志数据传输对象
      * @return OperationLogBlob
      */
-    private OperationLogBlob getBlob(LogDTO log) {
-        OperationLogBlob blob = new OperationLogBlob();
+    private SysOperationLogBlob getBlob(LogDTO log) {
+        SysOperationLogBlob blob = new SysOperationLogBlob();
         blob.setId(log.getId());
 
         if (log.getExtra() != null && ObjectUtils.isNotEmpty(log.getExtra().getOriginalValue())) {
@@ -84,7 +84,7 @@ public class LogService implements OperationLogHandler {
 
         // 插入操作日志和日志Blob数据
         log.setId(IDGenerator.nextStr());
-        operationLogMapper.insert(BeanUtils.copyBean(new OperationLog(), log));
+        operationLogMapper.insert(BeanUtils.copyBean(new SysOperationLog(), log));
         operationLogBlobMapper.insert(getBlob(log));
     }
 
@@ -101,14 +101,14 @@ public class LogService implements OperationLogHandler {
         }
 
         var currentTimeMillis = System.currentTimeMillis();
-        List<OperationLog> items = new ArrayList<>();
+        List<SysOperationLog> items = new ArrayList<>();
         // 使用流处理，构建操作日志和Blob列表
         var blobs = logs.stream()
                 .peek(log -> {
                     log.setId(IDGenerator.nextStr());
                     log.setContent(subStrContent(log.getContent()));
                     log.setCreateTime(currentTimeMillis);
-                    OperationLog item = new OperationLog();
+                    SysOperationLog item = new SysOperationLog();
                     BeanUtils.copyBean(item, log);
                     items.add(item);
                 })

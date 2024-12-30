@@ -5,7 +5,7 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogExtraDTO;
-import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.domain.SysUser;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class DemoService {
 
     @Resource
-    private BaseMapper<User> userMapper;
+    private BaseMapper<SysUser> userMapper;
 
     @OperationLog(
             module = LogModule.SYSTEM,
@@ -24,7 +24,7 @@ public class DemoService {
             success = "添加用户成功",
             extra = "{{#newUser}}"
     )
-    public void addUser(User user) {
+    public void addUser(SysUser user) {
         // 添加用户
 
         // 添加日志上下文
@@ -44,7 +44,7 @@ public class DemoService {
     )
     public void deleteUser(String userId) {
         // 删除用户
-        User user = userMapper.selectByPrimaryKey(userId);
+        SysUser user = userMapper.selectByPrimaryKey(userId);
 
         // 添加日志上下文
         OperationLogContext.putVariable("delUser", LogExtraDTO.builder()
@@ -69,9 +69,9 @@ public class DemoService {
             success = "更新用户成功",
             extra = "{{#upUser}}"
     )
-    public void updateUser(User user) {
+    public void updateUser(SysUser user) {
         // 更新用户
-        User preUser = userMapper.selectByPrimaryKey(user.getId());
+        SysUser preUser = userMapper.selectByPrimaryKey(user.getId());
 
         // 添加日志上下文
         OperationLogContext.putVariable("upUser", LogExtraDTO.builder()

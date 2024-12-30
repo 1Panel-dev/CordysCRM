@@ -6,7 +6,7 @@ import io.cordys.common.request.LoginRequest;
 import io.cordys.common.response.handler.ResultHolder;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.domain.SysUser;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.security.SessionUser;
@@ -29,7 +29,7 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class UserLoginService {
     @Resource
-    private BaseMapper<User> userMapper;
+    private BaseMapper<SysUser> sysUserMapper;
     @Resource
     private ExtUserMapper extUserMapper;
 
@@ -45,9 +45,9 @@ public class UserLoginService {
     }
 
     public UserDTO getUserDTOByEmail(String email, String... source) {
-        User example = new User();
+        SysUser example = new SysUser();
         example.setEmail(email);
-        List<User> users = userMapper.select(example);
+        List<SysUser> users = sysUserMapper.select(example);
         if (users == null || users.isEmpty()) {
             return null;
         }
@@ -97,9 +97,10 @@ public class UserLoginService {
         if (StringUtils.isBlank(password)) {
             throw new GenericException(Translator.get("password_is_null"));
         }
-        User example = new User();
+        SysUser example = new SysUser();
         example.setId(userId);
         example.setPassword(CodingUtils.md5(password));
-        return userMapper.exist(example);
+        example.setEnable(1);
+        return sysUserMapper.exist(example);
     }
 }

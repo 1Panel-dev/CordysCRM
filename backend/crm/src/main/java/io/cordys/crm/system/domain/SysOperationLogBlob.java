@@ -7,8 +7,10 @@ import java.io.Serial;
 import java.io.Serializable;
 import lombok.Data;
 
+import javax.persistence.Table;
+
 @Data
-public class OperationLogBlob implements Serializable {
+public class SysOperationLogBlob implements Serializable {
     @Schema(description = "主键,与operation_log表id一致", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "{operation_log_blob.id.not_blank}", groups = {Updated.class})
     @Size(min = 1, max = 50, message = "{operation_log_blob.id.length_range}", groups = {Created.class, Updated.class})

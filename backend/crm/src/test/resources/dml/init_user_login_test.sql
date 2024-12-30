@@ -1,3 +1,22 @@
 -- 初始化一个系统管理员
-insert into user(id, name, email, password, create_time, update_time, language, last_organization_id, phone, source, create_user, update_user, deleted)
-VALUES ('test.login', 'test.login', 'test.login@163.com', MD5('test.login@163.com'), UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, NULL, NUll, '', 'LOCAL', 'admin', 'admin', false);
+
+INSERT INTO `sys_user` (`id`,
+                        `name`,
+                        `email`,
+                        `password`,
+                        `enable`,
+                        `phone`,
+                        `create_time`,
+                        `update_time`,
+                        `create_user`,
+                        `update_user`)
+VALUES ('test.login',
+        'test.loginistrator',
+        'test.login@cordys.io',
+        MD5('test.login'),
+        1,
+        '13651666666',
+        1716175907000,
+        1729752373360,
+        '717345437786112',
+        'test.login');
