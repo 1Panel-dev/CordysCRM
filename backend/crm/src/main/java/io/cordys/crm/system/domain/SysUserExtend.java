@@ -9,7 +9,6 @@ import java.io.Serializable;
 
 import lombok.Data;
 
-import javax.persistence.Table;
 
 @Data
 public class SysUserExtend implements Serializable {

@@ -7,7 +7,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import lombok.Data;
 
-import javax.persistence.Table;
 
 @Data
 public class SysOperationLogBlob implements Serializable {
