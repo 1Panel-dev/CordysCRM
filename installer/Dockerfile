@@ -31,7 +31,7 @@ ARG DEPENDENCY=/build/backend/${MODULE}/target/dependency
 COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
-COPY --from=build /build/backend/${MODULE}/src/main/resources/packages /app/static
+COPY --from=build /build/backend/${MODULE}/src/main/resources/static /app/static
 COPY installer/conf /opt/cordys/conf
 COPY installer/shells /shells
 
