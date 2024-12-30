@@ -34,7 +34,7 @@ public class IndexController {
      */
     @GetMapping(value = "/login")
     public String login() {
-        return "index.html";
+        return "/web/index.html";
     }
 
     // todo: 以下部分 DEMO 日志记录功能示例，后续删除
