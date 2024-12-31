@@ -9,6 +9,9 @@ import java.util.zip.*;
 
 public class CompressUtils {
 
+    private CompressUtils() {
+    }
+
     /***
      * Zip压缩
      *
@@ -20,31 +23,28 @@ public class CompressUtils {
             return data;
         }
 
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ZipOutputStream zip = new ZipOutputStream(bos);
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+             ZipOutputStream zip = new ZipOutputStream(bos)) {
             ZipEntry entry = new ZipEntry("zip");
-            entry.setSize(temp.length);
             zip.putNextEntry(entry);
             zip.write(temp);
             zip.closeEntry();
-            zip.close();
-            temp = bos.toByteArray();
-            bos.close();
-        } catch (Exception ignore) {
+            return bos.toByteArray();
+        } catch (Exception e) {
+            return data;
         }
-
-        return temp;
     }
 
 
     private static File getFile(String filePath) throws IOException {
         // 创建文件对象
-        File file;
-        file = new File(filePath);
+        File file = new File(filePath);
+
+        // 如果文件不存在，则尝试创建
         if (!file.exists() && !file.createNewFile()) {
-            file.createNewFile();
+            throw new IOException("Failed to create the file: " + filePath);
         }
+
         // 返回文件
         return file;
     }
@@ -54,48 +54,33 @@ public class CompressUtils {
     }
 
     private static void zipFile(File file, ZipOutputStream zipOutputStream) throws IOException {
-        if (file.exists()) {
-            if (file.isFile()) {
-                try (FileInputStream fis = new FileInputStream(file);
-                     BufferedInputStream bis = new BufferedInputStream(fis)) {
-                    ZipEntry entry = new ZipEntry(file.getName());
-                    zipOutputStream.putNextEntry(entry);
+        if (file.exists() && file.isFile()) {
+            try (FileInputStream fis = new FileInputStream(file);
+                 BufferedInputStream bis = new BufferedInputStream(fis)) {
+                ZipEntry entry = new ZipEntry(file.getName());
+                zipOutputStream.putNextEntry(entry);
 
-                    final int MAX_BYTE = 10 * 1024 * 1024; // 最大流为10MB
-                    int streamTotal = 0; // 接收流的容量
-                    int streamNum = 0; // 需要分开的流数目
-                    int leaveByte = 0; // 文件剩下的字符数
-                    byte[] buffer; // byte数据接受文件的数据
+                // 使用固定大小的缓冲区
+                final int BUFFER_SIZE = 10 * 1024 * 1024; // 10MB
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int bytesRead;
 
-                    streamTotal = bis.available(); // 获取流的最大字符数
-                    streamNum = (int) Math.floor((double) streamTotal / MAX_BYTE);
-                    leaveByte = (streamTotal % MAX_BYTE);
-
-                    if (streamNum > 0) {
-                        for (int i = 0; i < streamNum; i++) {
-                            buffer = new byte[MAX_BYTE];
-                            bis.read(buffer, 0, MAX_BYTE);
-                            zipOutputStream.write(buffer, 0, MAX_BYTE);
-                        }
-                    }
-
-                    // 写入剩下的流数据
-                    buffer = new byte[leaveByte];
-                    bis.read(buffer, 0, leaveByte); // 读入流
-                    zipOutputStream.write(buffer, 0, leaveByte); // 写入流
-                    zipOutputStream.closeEntry(); // 关闭当前的zip entry
+                // 循环读取数据并写入压缩流
+                while ((bytesRead = bis.read(buffer)) != -1) {
+                    zipOutputStream.write(buffer, 0, bytesRead);
                 }
+
+                zipOutputStream.closeEntry(); // 关闭当前 ZipEntry
             }
         }
     }
+
 
     /**
      * 将多个文件压缩
      *
      * @param zipFilePath 压缩文件所在路径
      * @param fileList    要压缩的文件
-     * @return
-     * @throws IOException
      */
     public static File zipFiles(String zipFilePath, List<File> fileList) throws IOException {
         File zipFile = getFile(zipFilePath);
@@ -120,24 +105,25 @@ public class CompressUtils {
      * @param fileList    待压缩的文件列表
      * @param zipFilePath 压缩文件路径
      * @return 返回压缩好的文件
-     * @throws IOException
      */
     public static File zipFilesToPath(String zipFilePath, List<File> fileList) throws IOException {
         File zipFile = new File(zipFilePath);
-        try( // 文件输出流
-             FileOutputStream outputStream = getFileStream(zipFile);
-             // 压缩流
-             ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)
-        ){
-            int size = fileList.size();
-            // 压缩列表中的文件
-            for (int i = 0; i < size; i++) {
-                File file = fileList.get(i);
-                zipFile(file, zipOutputStream);
+
+        // 创建输出流和压缩流
+        try (FileOutputStream outputStream = new FileOutputStream(zipFile);
+             ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+
+            // 遍历文件列表进行压缩
+            for (File file : fileList) {
+                if (file != null && file.exists() && file.isFile()) {
+                    zipFile(file, zipOutputStream);
+                }
             }
         }
+
         return zipFile;
     }
+
 
     /***
      * Zip解压
@@ -149,26 +135,29 @@ public class CompressUtils {
         if (!(data instanceof byte[] temp)) {
             return data;
         }
-        try {
-            ByteArrayInputStream bis = new ByteArrayInputStream(temp);
-            ZipInputStream zip = new ZipInputStream(bis);
+
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(temp);
+             ZipInputStream zip = new ZipInputStream(bis)) {
+
+            ByteArrayOutputStream bas = new ByteArrayOutputStream();
+
+            // 处理压缩包中的每个条目
             while (zip.getNextEntry() != null) {
                 byte[] buf = new byte[1024];
                 int num;
-                ByteArrayOutputStream bas = new ByteArrayOutputStream();
-                while ((num = zip.read(buf, 0, buf.length)) != -1) {
+
+                // 读取数据到缓冲区并写入输出流
+                while ((num = zip.read(buf)) != -1) {
                     bas.write(buf, 0, num);
                 }
-                temp = bas.toByteArray();
-                bas.flush();
-                bas.close();
             }
-            zip.close();
-            bis.close();
-        } catch (Exception ignore) {
+
+            return bas.toByteArray();
+        } catch (Exception e) {
+            return data;
         }
-        return temp;
     }
+
 
     public static Object zipString(Object data) {
         if (!(data instanceof String)) {

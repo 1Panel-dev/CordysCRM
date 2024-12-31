@@ -110,10 +110,14 @@
                 <version>${jacoco.version}</version>
                 <configuration>
                     <excludes>
-                        <exclude>io/cordys/crm/services*/mapper/**</exclude>
-                        <exclude>io/cordys/crm/services*/domain/**</exclude>
-                        <exclude>io/cordys/crm/common/**</exclude>
-                        <exclude>io/cordys/crm/**/config/**</exclude>
+                        <exclude>io/cordys/crm/*/mapper/**</exclude>
+                        <exclude>io/cordys/crm/*/domain/**</exclude>
+                        <exclude>io/cordys/common/**</exclude>
+                        <exclude>io/cordys/config/**</exclude>
+
+                        <exclude>io/cordys/aspectj/**</exclude>
+                        <exclude>io/cordys/mybatis/**</exclude>
+                        <exclude>io/cordys/security/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
