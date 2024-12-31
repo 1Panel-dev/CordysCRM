@@ -26,6 +26,7 @@
     "jsencrypt": "^3.3.2",
     "localforage": "^1.10.0",
     "lodash-es": "^4.17.21",
+    "mitt": "^3.0.1",
     "pinia": "^2.3.0",
     "pinia-plugin-persistedstate": "^3.2.1",
     "query-string": "^8.2.0",

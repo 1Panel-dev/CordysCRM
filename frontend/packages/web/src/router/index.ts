@@ -2,6 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import HomeView from '../views/HomeView.vue';
 
+import createRouteGuard from './guard/index';
+import NProgress from 'nprogress';
+
+NProgress.configure({ showSpinner: false });
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -20,5 +25,7 @@ const router = createRouter({
     },
   ],
 });
+
+createRouteGuard(router);
 
 export default router;
