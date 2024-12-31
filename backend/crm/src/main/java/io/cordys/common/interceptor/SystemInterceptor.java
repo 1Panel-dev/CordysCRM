@@ -1,6 +1,8 @@
 package io.cordys.common.interceptor;
 
+import io.cordys.common.util.CompressUtils;
 import io.cordys.config.MybatisInterceptorConfig;
+import io.cordys.crm.system.domain.MessageTaskBlob;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,6 +28,8 @@ public class SystemInterceptor {
         List<MybatisInterceptorConfig> configList = new ArrayList<>();
 
         // TODO：实现 blob 字段压缩功能
+        configList.add(new MybatisInterceptorConfig(MessageTaskBlob.class, "template", CompressUtils.class, "zip", "unzip"));
+
         // 添加自定义拦截器配置，例如压缩和解压缩功能
         // configList.add(new MybatisInterceptorConfig(TestResourcePoolBlob.class, "configuration", CompressUtils.class, "zip", "unzip"));
         return configList;
