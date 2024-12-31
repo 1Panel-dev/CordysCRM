@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS worker_node
 
 CREATE TABLE sys_operation_log
 (
-    `id`              BIGINT(32)   NOT NULL COMMENT '主键',
+    `id`              VARCHAR(32)   NOT NULL COMMENT '主键',
     `organization_id` VARCHAR(32)  NOT NULL DEFAULT 'NONE' COMMENT '组织id',
     `type`            VARCHAR(32)  NOT NULL COMMENT '操作类型/add/update/delete',
     `module`          VARCHAR(32)  NOT NULL COMMENT '操作模块',
@@ -82,7 +82,7 @@ CREATE INDEX idx_type ON sys_operation_log (type ASC);
 
 CREATE TABLE sys_operation_log_blob
 (
-    `id`             BIGINT(32) NOT NULL COMMENT '主键',
+    `id`             VARCHAR(32) NOT NULL COMMENT '主键',
     `original_value` LONGBLOB COMMENT '变更前内容',
     `modified_value` LONGBLOB COMMENT '变更后内容',
     PRIMARY KEY (id)
@@ -93,18 +93,18 @@ CREATE TABLE sys_operation_log_blob
 
 CREATE TABLE IF NOT EXISTS `schedule`
 (
-    `id`              varchar(50) COLLATE utf8mb4_general_ci  NOT NULL,
+    `id`              varchar(32) COLLATE utf8mb4_general_ci  NOT NULL,
     `key`             varchar(50) COLLATE utf8mb4_general_ci           DEFAULT NULL COMMENT 'qrtz UUID',
     `type`            varchar(50) COLLATE utf8mb4_general_ci  NOT NULL COMMENT '执行类型 cron',
     `value`           varchar(255) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'cron 表达式',
     `job`             varchar(64) COLLATE utf8mb4_general_ci  NOT NULL COMMENT 'Schedule Job Class Name',
     `resource_type`   varchar(50) COLLATE utf8mb4_general_ci  NOT NULL DEFAULT 'NONE' COMMENT '资源类型 API_IMPORT,API_SCENARIO,UI_SCENARIO,LOAD_TEST,TEST_PLAN,CLEAN_REPORT,BUG_SYNC',
     `enable`          bit(1)                                           DEFAULT NULL COMMENT '是否开启',
-    `resource_id`     varchar(50) COLLATE utf8mb4_general_ci           DEFAULT NULL COMMENT '资源ID，api_scenario ui_scenario load_test',
-    `create_user`     varchar(50) COLLATE utf8mb4_general_ci  NOT NULL COMMENT '创建人',
+    `resource_id`     varchar(32) COLLATE utf8mb4_general_ci           DEFAULT NULL COMMENT '资源ID，api_scenario ui_scenario load_test',
+    `create_user`     varchar(32) COLLATE utf8mb4_general_ci  NOT NULL COMMENT '创建人',
     `create_time`     bigint                                  NOT NULL COMMENT '创建时间',
     `update_time`     bigint                                  NOT NULL COMMENT '更新时间',
-    `organization_id` varchar(50) COLLATE utf8mb4_general_ci           DEFAULT NULL COMMENT '组织ID',
+    `organization_id` varchar(32) COLLATE utf8mb4_general_ci           DEFAULT NULL COMMENT '组织ID',
     `name`            varchar(255) COLLATE utf8mb4_general_ci          DEFAULT NULL COMMENT '名称',
     `config`          varchar(1000) COLLATE utf8mb4_general_ci         DEFAULT NULL COMMENT '配置',
     `num`             bigint                                  NOT NULL COMMENT '业务ID',
@@ -126,8 +126,8 @@ CREATE TABLE IF NOT EXISTS `schedule`
 
 CREATE TABLE IF NOT EXISTS `user_key`
 (
-    `id`          varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'user_key ID',
-    `create_user` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户ID',
+    `id`          varchar(32) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'user_key ID',
+    `create_user` varchar(32) COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户ID',
     `access_key`  varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'access_key',
     `secret_key`  varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'secret key',
     `create_time` bigint                                 NOT NULL COMMENT '创建时间',
