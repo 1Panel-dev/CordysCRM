@@ -11,7 +11,7 @@ import lombok.Data;
 public class UserKey implements Serializable {
     @Schema(description = "user_key ID", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "{user_key.id.not_blank}", groups = {Updated.class})
-    @Size(min = 1, max = 50, message = "{user_key.id.length_range}", groups = {Created.class, Updated.class})
+    @Size(min = 1, max = 32, message = "{user_key.id.length_range}", groups = {Created.class, Updated.class})
     private String id;
 
     @Schema(description = "用户ID")

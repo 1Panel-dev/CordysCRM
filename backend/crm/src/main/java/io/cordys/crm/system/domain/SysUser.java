@@ -9,27 +9,24 @@ import lombok.Data;
 
 @Data
 public class SysUser extends BaseModel {
-    @Size(min = 1, max = 255, message = "{operation_log.method.length_range}", groups = {Created.class, Updated.class})
+    @Size(min = 1, max = 255, message = "{sys_user.name.length_range}", groups = {Created.class, Updated.class})
     @NotBlank(message = "{sys_user.name.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
-    @Size(min = 1, max = 11, message = "{operation_log.method.length_range}", groups = {Created.class, Updated.class})
+    @Size(min = 1, max = 11, message = "{sys_user.phone.length_range}", groups = {Created.class, Updated.class})
     @NotBlank(message = "{sys_user.phone.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "手机号", requiredMode = Schema.RequiredMode.REQUIRED)
     private String phone;
 
-    @Size(min = 1, max = 255, message = "{operation_log.method.length_range}", groups = {Created.class, Updated.class})
+    @Size(min = 1, max = 255, message = "{sys_user.email.length_range}", groups = {Created.class, Updated.class})
     @NotBlank(message = "{sys_user.email.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "邮箱", requiredMode = Schema.RequiredMode.REQUIRED)
     private String email;
 
-    @Size(min = 1, max = 255, message = "{operation_log.method.length_range}", groups = {Created.class, Updated.class})
+    @Size(min = 1, max = 255, message = "{sys_user.password.length_range}", groups = {Created.class, Updated.class})
     @NotBlank(message = "{sys_user.password.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "密码", requiredMode = Schema.RequiredMode.REQUIRED)
     private String password;
 
-    @Schema(description = "是否启用")
+    @NotBlank(message = "{sys_user.enable.not_blank}", groups = {Created.class, Updated.class})
+    @Schema(description = "是否启用", requiredMode = Schema.RequiredMode.REQUIRED)
     private int enable;
 
     @Schema(description = "工号")
