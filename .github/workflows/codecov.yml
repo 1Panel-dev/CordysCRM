@@ -31,12 +31,14 @@ jobs:
           distribution: 'zulu'
           java-version: 21
           cache: 'maven'
-          cache-dependency-path: '**/pom.xml' # optional
+          cache-dependency-path: '**/pom.xml'
           check-latest: true
 
       - name: Build with Maven - other
         run: mvn -B package -DskipAntRunForJenkins --file pom.xml -pl '!frontend'
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false #Private project not enabled temporarily
