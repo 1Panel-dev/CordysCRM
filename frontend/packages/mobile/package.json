@@ -22,7 +22,9 @@
     "@rsbuild/core": "^1.0.4",
     "@rsbuild/plugin-less": "^1.0.1",
     "@rsbuild/plugin-vue": "^1.0.1",
+    "@types/postcss-pxtorem": "^6.1.0",
     "@vant/auto-import-resolver": "^1.1.0",
+    "postcss-pxtorem": "^6.1.0",
     "unplugin-auto-import": "^0.17.5",
     "unplugin-vue-components": "^0.26.0"
   },
