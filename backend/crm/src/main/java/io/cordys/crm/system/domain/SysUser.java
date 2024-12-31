@@ -32,9 +32,6 @@ public class SysUser extends BaseModel {
     @Schema(description = "工号")
     private String employeeId;
 
-    @Schema(description = "部门")
-    private String department;
-
     @Schema(description = "性别")
     private String gender;
 
