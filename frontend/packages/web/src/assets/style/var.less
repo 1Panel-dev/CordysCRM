@@ -1,0 +1,383 @@
+/** 圆角 **/
+@border-radius-mini: 2px;
+@border-radius-small: 4px;
+@border-radius-medium: 8px;
+@border-radius-large: 12px;
+
+@color-white: #fff;
+@color-text-5: #aeaeb2;
+
+/** 按钮状态类 **/
+
+// 主要 outline 按钮
+.btn-outline-primary-hover() {
+  &:not(:disabled):hover {
+    border-color: var(--primary-1) !important;
+    color: var(--primary-1) !important;
+    background-color: var(--primary-6) !important;
+  }
+}
+
+.btn-outline-primary-active() {
+  &:not(:disabled):active {
+    border-color: var(--primary-0) !important;
+    color: var(--primary-0) !important;
+    background-color: var(--primary-6) !important;
+  }
+}
+
+.btn-outline-primary-disabled() {
+  &:disabled {
+    border-color: var(--primary-4) !important;
+    color: var(--primary-4) !important;
+  }
+}
+
+// outline error状态按钮
+.btn-outline-error-hover() {
+  &:not(:disabled):hover {
+    border-color: var(--error-1) !important;
+    color: var(--error-1) !important;
+    background-color: var(--error-5) !important;
+  }
+}
+
+.btn-outline-error-active() {
+  &:not(:disabled):active {
+    border-color: var(--error-0) !important;
+    color: var(--error-0) !important;
+    background-color: var(--error-4) !important;
+  }
+}
+
+.btn-outline-error-disabled() {
+  &:disabled {
+    border-color: var(--error-3) !important;
+    color: var(--error-3) !important;
+    background-color: var(--text-n9) !important;
+  }
+}
+
+// outline warning 状态按钮
+.btn-outline-warning-hover() {
+  &:not(:disabled):hover {
+    border-color: var(--warning-1) !important;
+    color: var(--warning-1) !important;
+    background-color: var(--warning-5) !important;
+  }
+}
+
+.btn-outline-warning-active() {
+  &:not(:disabled):active {
+    border-color: var(--warning-0) !important;
+    color: var(--warning-0) !important;
+    background-color: var(--warning-4) !important;
+  }
+}
+
+.btn-outline-warning-disabled() {
+  &:disabled {
+    border-color: var(--warning-3) !important;
+    color: var(--warning-3) !important;
+    background-color: var(--text-n9) !important;
+  }
+}
+
+// outline success 状态按钮
+.btn-outline-success-hover() {
+  &:not(:disabled):hover {
+    border-color: var(--success-1) !important;
+    color: var(--success-1) !important;
+    background-color: var(--success-5) !important;
+  }
+}
+
+.btn-outline-success-active() {
+  &:not(:disabled):active {
+    border-color: var(--success-0) !important;
+    color: var(--success-0) !important;
+    background-color: var(--success-4) !important;
+  }
+}
+
+.btn-outline-success-disabled() {
+  &:disabled {
+    border-color: var(--success-3) !important;
+    color: var(--success-3) !important;
+    background-color: var(--text-n9) !important;
+  }
+}
+
+// outline info 状态按钮
+.btn-outline-info-hover() {
+  &:not(:disabled):hover {
+    border-color: var(--info-1) !important;
+    color: var(--info-1) !important;
+    background-color: var(--info-5) !important;
+  }
+}
+
+.btn-outline-info-active() {
+  &:not(:disabled):active {
+    border-color: var(--info-0) !important;
+    color: var(--info-0) !important;
+    background-color: var(--info-4) !important;
+  }
+}
+
+.btn-outline-info-disabled() {
+  &:disabled {
+    border-color: var(--info-3) !important;
+    color: var(--info-3) !important;
+    background-color: var(--text-n9) !important;
+  }
+}
+
+// 次要outline按钮
+.btn-outline-sec-default() {
+  border: 1px solid var(--text-n7) !important;
+  color: var(--text-n1) !important;
+  background-color: var(--text-n9) !important;
+}
+
+.btn-outline-sec-hover() {
+  &:not(:disabled):hover {
+    border-color: var(--text-n7) !important;
+    color: var(--text-n1) !important;
+    background-color: var(--text-n9) !important;
+  }
+}
+
+.btn-outline-sec-active() {
+  &:not(:disabled):active {
+    border-color: var(--text-n7) !important;
+    color: var(--text-n1) !important;
+    background-color: var(--text-n8) !important;
+  }
+}
+
+.btn-outline-sec-disabled() {
+  &:disabled {
+    border-color: var(--text-n7) !important;
+    color: var(--text-n6) !important;
+    background-color: var(--text-n9) !important;
+  }
+}
+
+// 次要按钮
+.btn-second-default() {
+  border-color: var(--text-n8) !important;
+  color: var(--color-text-1) !important;
+  background-color: var(--text-n8) !important;
+}
+
+.btn-second-hover() {
+  &:not(:disabled):hover {
+    border: 1px solid var(--text-n9) !important;
+    color: var(--text-n1) !important;
+    background-color: var(--text-n9) !important;
+  }
+}
+
+.btn-second-active() {
+  &:not(:disabled):active {
+    border-color: var(--text-n7) !important;
+    color: var(--text-n1) !important;
+    background-color: var(--text-n7) !important;
+  }
+}
+
+.btn-second-disabled() {
+  &:disabled {
+    border: 1px solid var(--text-n9) !important;
+    color: var(--text-n6) !important;
+    background-color: var(--text-n9) !important;
+  }
+}
+
+// danger状态的outline按钮
+.btn-outline-danger-default() {
+  border-color: var(--error-red) !important;
+  color: var(--error-red) !important;
+}
+
+.btn-outline-danger-hover() {
+  &:not(:disabled):hover {
+    border-color: var(--error-1) !important;
+    color: var(--error-1) !important;
+    background-color: var(--error-5) !important;
+  }
+}
+
+.btn-outline-danger-active() {
+  &:not(:disabled):active {
+    border-color: var(--error-0) !important;
+    color: var(--error-0) !important;
+    background-color: var(--error-4) !important;
+  }
+}
+
+.btn-outline-danger-disabled() {
+  &:disabled {
+    border-color: var(--error-3) !important;
+    color: var(--error-3) !important;
+    background-color: var(--text-n10) !important;
+  }
+}
+
+// danger状态主要按钮
+.btn-base-danger-hover() {
+  &:not(:disabled):hover {
+    background-color: var(--error-1) !important;
+  }
+}
+
+.btn-base-danger-active() {
+  &:not(:disabled):active {
+    background-color: var(--error-0) !important;
+  }
+}
+
+.btn-base-danger-disabled() {
+  &:disabled {
+    background-color: var(--error-3) !important;
+  }
+}
+
+// danger状态主要按钮
+.btn-base-primary-hover() {
+  &:not(:disabled):hover {
+    color: var(--text-n9);
+    background-color: var(--primary-1) !important;
+  }
+}
+
+.btn-base-primary-active() {
+  &:not(:disabled):active {
+    color: var(--text-n9);
+    background-color: var(--primary-0) !important;
+  }
+}
+.btn-base-primary-focus() {
+  &:not(:disabled):active {
+    color: var(--text-n9);
+    background-color: var(--primary-0) !important;
+  }
+}
+
+.btn-base-primary-disabled() {
+  &:disabled {
+    background-color: var(--primary-4) !important;
+  }
+}
+
+/** 文本按钮 **/
+// 主要文本按钮
+.btn-text-default {
+  background-color: var(--text-n10) !important;
+}
+.btn-text-primary-hover() {
+  &:not(:disabled):hover {
+    color: var(--primary-8) !important;
+    background-color: var(--primary-7) !important;
+  }
+}
+
+.btn-text-primary-active() {
+  &:not(:disabled):active {
+    color: var(--primary-8) !important;
+    background-color: var(--primary-6) !important;
+  }
+}
+
+.btn-text-primary-disabled() {
+  &:disabled {
+    color: var(--primary-4) !important;
+    background-color: var(--text-n10) !important;
+  }
+}
+// 次要文本按钮
+.btn-text-sec-hover() {
+  &:not(:disabled):hover {
+    background-color: var(--text-n9) !important;
+  }
+}
+.btn-text-sec-active() {
+  &:not(:disabled):active {
+    background-color: var(--text-n8) !important;
+  }
+}
+.btn-text-sec-disabled() {
+  &:disabled {
+    color: var(--text-n6) !important;
+    background-color: var(--text-n10) !important;
+  }
+}
+
+// error状态的文本按钮
+.btn-text-error-hover() {
+  &:not(:disabled):hover {
+    background-color: var(--error-5) !important;
+  }
+}
+.btn-text-error-active() {
+  &:not(:disabled):active {
+    background-color: var(--error-4) !important;
+  }
+}
+.btn-text-error-disabled() {
+  &:disabled {
+    color: var(--error-3) !important;
+  }
+}
+
+// warning状态的文本按钮
+.btn-text-warning-hover() {
+  &:not(:disabled):hover {
+    background-color: var(--warning-5) !important;
+  }
+}
+.btn-text-warning-active() {
+  &:not(:disabled):active {
+    background-color: var(--warning-4) !important;
+  }
+}
+.btn-text-warning-disabled() {
+  &:disabled {
+    color: var(--warning-3) !important;
+  }
+}
+
+// success状态的文本按钮
+.btn-text-success-hover() {
+  &:not(:disabled):hover {
+    background-color: var(--success-5) !important;
+  }
+}
+.btn-text-success-active() {
+  &:not(:disabled):active {
+    background-color: var(--success-4) !important;
+  }
+}
+.btn-text-success-disabled() {
+  &:disabled {
+    color: var(--success-3) !important;
+  }
+}
+
+// info状态的文本按钮
+.btn-text-info-hover() {
+  &:not(:disabled):hover {
+    background-color: var(--info-5) !important;
+  }
+}
+.btn-text-info-active() {
+  &:not(:disabled):active {
+    background-color: var(--info-4) !important;
+  }
+}
+.btn-text-info-disabled() {
+  &:disabled {
+    color: var(--info-3) !important;
+  }
+}

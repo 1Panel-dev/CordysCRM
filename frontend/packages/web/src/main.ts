@@ -4,6 +4,7 @@ import { createPinia } from 'pinia';
 // TODO 国际化接口对接
 // import localforage from 'localforage';
 import './assets/main.css';
+import '@/assets/style/index.less';
 
 import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 import App from './App.vue';
