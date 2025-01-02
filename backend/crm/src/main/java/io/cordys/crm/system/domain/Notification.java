@@ -1,60 +1,40 @@
 package io.cordys.crm.system.domain;
 
 import io.cordys.common.domain.BaseModel;
-import io.cordys.common.groups.Created;
-import io.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
+@Table(name = "sys_notification")
 public class Notification extends BaseModel {
-    @Size(min = 1, max = 64, message = "{notification.type.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{notification.type.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "通知类型", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "通知类型")
     private String type;
 
-    @Size(min = 1, max = 50, message = "{notification.receiver.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{notification.receiver.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "接收人", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "接收人")
     private String receiver;
 
-    @Size(min = 1, max = 255, message = "{notification.subject.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{notification.subject.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "标题", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "标题")
     private String subject;
 
-    @Size(min = 1, max = 64, message = "{notification.status.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{notification.status.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "状态", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "状态")
     private String status;
 
-    @Size(min = 1, max = 50, message = "{notification.operator.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{notification.operator.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "操作人", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "操作人")
     private String operator;
 
-    @Size(min = 1, max = 50, message = "{notification.operation.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{notification.operation.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "操作", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "操作")
     private String operation;
 
-    @Size(min = 1, max = 50, message = "{notification.organization_id.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{notification.organization_id.not_blank}", groups = {Created.class, Updated.class})
+    @Schema(description = "组织ID")
     private String organizationId;
 
-    @Size(min = 1, max = 64, message = "{notification.resource_type.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{notification.resource_type.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "资源类型", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "资源类型")
     private String resourceType;
 
-    @Size(min = 1, max = 255, message = "{notification.resource_name.length_range}", groups = {Created.class, Updated.class})
-    @NotBlank(message = "{notification.resource_name.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "资源名称", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "资源名称")
     private String resourceName;
-
-    @NotBlank(message = "{notification.content.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "通知内容", requiredMode = Schema.RequiredMode.REQUIRED)
+    
+    @Schema(description = "通知内容")
     private byte[] content;
 }

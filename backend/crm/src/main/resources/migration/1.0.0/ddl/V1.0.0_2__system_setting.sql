@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `user_key`
   COLLATE = utf8mb4_general_ci COMMENT ='用户api key';
 
 
-CREATE TABLE notification(
+CREATE TABLE IF NOT EXISTS sys_notification(
                              `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'ID',
                              `type` VARCHAR(64) NOT NULL   COMMENT '通知类型' ,
                              `receiver` VARCHAR(50) NOT NULL   COMMENT '接收人' ,
@@ -166,16 +166,16 @@ COLLATE = utf8mb4_general_ci;
 
 
 
-CREATE INDEX idx_receiver ON notification(receiver ASC);
-CREATE INDEX idx_create_time ON notification(create_time DESC);
-CREATE INDEX idx_type ON notification(type ASC);
-CREATE INDEX idx_subject ON notification(subject ASC);
-CREATE INDEX idx_resource_type ON notification(resource_type ASC);
-CREATE INDEX idx_operator ON notification(operator ASC);
-CREATE INDEX idx_organization_id ON notification(organization_id ASC);
+CREATE INDEX idx_receiver ON sys_notification(receiver ASC);
+CREATE INDEX idx_create_time ON sys_notification(create_time DESC);
+CREATE INDEX idx_type ON sys_notification(type ASC);
+CREATE INDEX idx_subject ON sys_notification(subject ASC);
+CREATE INDEX idx_resource_type ON sys_notification(resource_type ASC);
+CREATE INDEX idx_operator ON sys_notification(operator ASC);
+CREATE INDEX idx_organization_id ON sys_notification(organization_id ASC);
 
-CREATE TABLE message_task(
-                             `id` VARCHAR(50) NOT NULL   COMMENT '' ,
+CREATE TABLE IF NOT EXISTS sys_message_task(
+                             `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
                              `event` VARCHAR(255) NOT NULL   COMMENT '通知事件类型' ,
                              `receivers` VARCHAR(1000) NOT NULL   COMMENT '接收人id集合' ,
                              `project_robot_id` VARCHAR(50)   DEFAULT 'NONE' COMMENT '机器人id' ,
@@ -194,16 +194,16 @@ ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_create_time ON message_task(create_time DESC);
-CREATE INDEX idx_task_type ON message_task(task_type ASC);
-CREATE INDEX idx_event ON message_task(event ASC);
-CREATE INDEX idx_enable ON message_task(enable ASC);
-CREATE INDEX idx_use_default_subject ON message_task(use_default_subject ASC);
-CREATE INDEX idx_use_default_template ON message_task(use_default_template ASC);
+CREATE INDEX idx_create_time ON sys_message_task(create_time DESC);
+CREATE INDEX idx_task_type ON sys_message_task(task_type ASC);
+CREATE INDEX idx_event ON sys_message_task(event ASC);
+CREATE INDEX idx_enable ON sys_message_task(enable ASC);
+CREATE INDEX idx_use_default_subject ON sys_message_task(use_default_subject ASC);
+CREATE INDEX idx_use_default_template ON sys_message_task(use_default_template ASC);
 
-CREATE TABLE IF NOT EXISTS `message_task_blob`
+CREATE TABLE IF NOT EXISTS `sys_message_task_blob`
 (
-    `id`       VARCHAR(32) NOT NULL COMMENT '',
+    `id`       VARCHAR(32) NOT NULL COMMENT 'id',
     `template` BLOB COMMENT '消息模版',
     PRIMARY KEY (id)
 ) COMMENT = '消息通知任务大字段'
@@ -211,28 +211,27 @@ CREATE TABLE IF NOT EXISTS `message_task_blob`
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE announcement(
+CREATE TABLE IF NOT EXISTS sys_announcement(
                              `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
                              `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
                              `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
                              `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
                              `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
                              `subject` VARCHAR(255) NOT NULL   COMMENT '公告标题' ,
-                             `content` BLOB NOT NULL   COMMENT '公告内容' ,
-                             `startTime` BIGINT NOT NULL   COMMENT '开始时间' ,
-                             `endTime` BIGINT NOT NULL   COMMENT '结束时间' ,
+                             `content` VARCHAR(1000) NOT NULL   COMMENT '公告内容' ,
+                             `start_time` BIGINT NOT NULL   COMMENT '开始时间' ,
+                             `end_time` BIGINT NOT NULL   COMMENT '结束时间' ,
                              `url` VARCHAR(255)    COMMENT '链接' ,
                              `receiver` VARCHAR(1000) NOT NULL   COMMENT '接收人id(销售ids/角色ids/部门ids)' ,
-                             `organizationId` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
-                             `receiver_type` VARCHAR(64) NOT NULL   COMMENT '接口人类型（销售/角色/部门）' ,
+                             `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
                              PRIMARY KEY (id)
 )  COMMENT = '公告'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_organizationId ON announcement(organizationId ASC);
-CREATE INDEX idx_create_time ON announcement(create_time DESC);
+CREATE INDEX idx_organizationId ON sys_announcement(organization_id ASC);
+CREATE INDEX idx_create_time ON sys_announcement(create_time DESC);
 
 
 -- set innodb lock wait timeout to default

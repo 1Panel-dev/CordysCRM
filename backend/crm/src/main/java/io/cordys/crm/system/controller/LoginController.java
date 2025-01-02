@@ -1,10 +1,8 @@
 package io.cordys.crm.system.controller;
 
-import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.common.constants.UserSource;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.request.LoginRequest;
-import io.cordys.common.response.handler.ResultHolder;
 import io.cordys.common.response.result.MsHttpResultCode;
 import io.cordys.common.util.Translator;
 import io.cordys.common.util.rsa.RsaKey;
@@ -16,10 +14,8 @@ import io.cordys.security.UserDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
