@@ -8,7 +8,7 @@ import com.github.pagehelper.Page;
  * 该类用于将 PageHelper 分页对象转换为自定义的分页对象 {@link Pager}。
  * </p>
  */
-public class PageHelper {
+public class PageUtils {
 
     /**
      * 设置分页信息并返回自定义的分页对象。
