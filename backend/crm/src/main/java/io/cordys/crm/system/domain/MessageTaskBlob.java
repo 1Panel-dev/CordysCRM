@@ -14,5 +14,5 @@ public class MessageTaskBlob{
     @Size(min = 1, max = 32, message = "{message_task_blob.id.length_range}", groups = {Created.class, Updated.class})
     private String id;
     @Schema(description = "消息模版")
-    private String template;
+    private byte[] template;
 }
