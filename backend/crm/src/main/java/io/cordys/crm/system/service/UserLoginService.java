@@ -3,10 +3,9 @@ package io.cordys.crm.system.service;
 import io.cordys.common.constants.UserSource;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.request.LoginRequest;
-import io.cordys.common.response.handler.ResultHolder;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.domain.SysUser;
+import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.security.SessionUser;
@@ -29,7 +28,7 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class UserLoginService {
     @Resource
-    private BaseMapper<SysUser> sysUserMapper;
+    private BaseMapper<User> sysUserMapper;
     @Resource
     private ExtUserMapper extUserMapper;
 
@@ -45,9 +44,9 @@ public class UserLoginService {
     }
 
     public UserDTO getUserDTOByEmail(String email, String... source) {
-        SysUser example = new SysUser();
+        User example = new User();
         example.setEmail(email);
-        List<SysUser> users = sysUserMapper.select(example);
+        List<User> users = sysUserMapper.select(example);
         if (users == null || users.isEmpty()) {
             return null;
         }
@@ -97,7 +96,7 @@ public class UserLoginService {
         if (StringUtils.isBlank(password)) {
             throw new GenericException(Translator.get("password_is_null"));
         }
-        SysUser example = new SysUser();
+        User example = new User();
         example.setId(userId);
         example.setPassword(CodingUtils.md5(password));
         example.setEnable(1);

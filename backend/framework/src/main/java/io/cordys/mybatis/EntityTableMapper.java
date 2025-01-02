@@ -2,10 +2,13 @@ package io.cordys.mybatis;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.beans.Transient;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -64,7 +67,7 @@ public class EntityTableMapper {
     /**
      * 确定主键字段对应的数据库列名。
      *
-     * @param fields           实体类的字段数组
+     * @param fields            实体类的字段数组
      * @param defaultPrimaryKey 默认主键名
      * @return 主键的列名
      */
@@ -83,7 +86,11 @@ public class EntityTableMapper {
      * @return 表名
      */
     public static String generateTableName(Class<?> entityType) {
-        return camelToUnderscore(entityType.getSimpleName());
+        // 尝试获取 @Table 注解
+        return Optional.ofNullable(entityType.getAnnotation(Table.class))
+                .map(Table::name) // 如果有注解，获取 name 属性值
+                .filter(name -> !name.isEmpty()) // 确保 name 属性非空
+                .orElseGet(() -> camelToUnderscore(entityType.getSimpleName())); // 否则使用默认策略
     }
 
     /**

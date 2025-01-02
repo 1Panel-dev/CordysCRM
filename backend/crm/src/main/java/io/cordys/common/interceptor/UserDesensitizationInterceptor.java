@@ -1,6 +1,6 @@
 package io.cordys.common.interceptor;
 
-import io.cordys.crm.system.domain.SysUser;
+import io.cordys.crm.system.domain.User;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
@@ -41,10 +41,10 @@ public class UserDesensitizationInterceptor implements Interceptor {
             boolean isDecrypted = false;
 
             for (Object val : (List<?>) returnValue) {
-                if (val instanceof SysUser) {
+                if (val instanceof User) {
                     isDecrypted = true;
                     // 将密码字段置为 null，进行脱敏处理
-                    ((SysUser) val).setPassword(null);
+                    ((User) val).setPassword(null);
                 }
                 list.add(val);
             }
@@ -54,8 +54,8 @@ public class UserDesensitizationInterceptor implements Interceptor {
         }
 
         // 如果返回值是单个 User 对象，脱敏其密码字段
-        if (returnValue instanceof SysUser) {
-            ((SysUser) returnValue).setPassword(null);
+        if (returnValue instanceof User) {
+            ((User) returnValue).setPassword(null);
         }
 
         return returnValue;
