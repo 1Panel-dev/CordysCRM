@@ -16,7 +16,7 @@ import org.springframework.context.annotation.PropertySource;
 })
 @PropertySource(value = {
         "classpath:commons.properties",
-        "file:/opt/cordys/conf/cordys.properties",
+        "file:/opt/cordys/conf/cordys-crm.properties",
 }, encoding = "UTF-8", ignoreResourceNotFound = true)
 @ServletComponentScan
 public class Application {

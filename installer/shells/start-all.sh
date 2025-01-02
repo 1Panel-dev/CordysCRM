@@ -1,6 +1,6 @@
 #!/bin/sh
 
-dburl=$(cat /opt/cordys/conf/cordys.properties | grep 'spring.datasource.url')
+dburl=$(cat /opt/cordys/conf/cordys-crm.properties | grep 'spring.datasource.url')
 if [[ "${dburl}" == *"127.0.0.1"* ]]; then
     cp -rf /opt/cordys/conf/mysql/my.cnf /etc/my.cnf.d/mariadb-server.cnf
     /shells/run-mysql.sh &
