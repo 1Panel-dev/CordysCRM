@@ -1,7 +1,7 @@
 package io.cordys.mybatis;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import java.beans.Transient;
 import java.lang.reflect.Field;
 import java.util.ArrayList;

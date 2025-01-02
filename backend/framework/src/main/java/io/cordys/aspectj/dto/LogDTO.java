@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 
 /**
  * 日志数据传输对象（DTO），继承自操作日志（OperationLog）。

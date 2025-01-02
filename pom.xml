@@ -41,6 +41,7 @@
         <commons-io.version>2.15.1</commons-io.version>
         <testcontainers.version>1.20.4</testcontainers.version>
         <kotlin.version>2.0.21</kotlin.version>
+        <persistence-api.version>3.2.0</persistence-api.version>
 
     </properties>
 
