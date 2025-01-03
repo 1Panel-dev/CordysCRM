@@ -21,10 +21,15 @@ jobs:
         run: |
           comment_body="${{ github.event.comment.body }}"
           reviewer="${{ github.event.comment.user.login }}"
+          # Clean up comment and extract labels
           raw_labels=$(echo "$comment_body" | sed 's|^/||')
           formatted_labels=$(echo "$raw_labels" | awk -v reviewer="$reviewer" '{split($0, arr, ","); for (i in arr) {gsub(/^ +| +$/, "", arr[i]); print reviewer ": " arr[i]}}')
+          
+          # Set the formatted labels as an environment variable (new way, not using set-output)
+          echo "labels=$formatted_labels" >> $GITHUB_ENV
+          
+          # Output labels for debugging
           echo "Formatted labels: $formatted_labels"
-          echo "::set-output name=labels::$formatted_labels"
 
       # Add the extracted labels to the PR
       - name: Add labels via PR comment
@@ -32,16 +37,4 @@ jobs:
         uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUBTOKEN }}
-          labels: ${{ steps.extract_labels.outputs.labels }}
-
-      # Auto-merge the PR if the comment contains /lgtm label
-#      - name: Auto-merge PR if /lgtm label is added
-#        if: ${{ github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(steps.extract_labels.outputs.labels, 'lgtm') }}
-#        run: |
-#          PR_URL="${{ github.event.issue.pull_request.url }}"
-#          echo "PR URL: $PR_URL"
-#          curl -X PUT \
-#            -H "Authorization: token ${{ secrets.GITHUBTOKEN }}" \
-#            -H "Accept: application/vnd.github.v3+json" \
-#            -d '{"merge_method": "rebase"}' \
-#            "https://api.github.com/repos/${{ github.repository }}/pulls/$(basename $PR_URL)/merge"
+          labels: ${{ env.labels }}
