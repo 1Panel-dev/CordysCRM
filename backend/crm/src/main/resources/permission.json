@@ -1,3 +1,26 @@
 [
-
+  {
+    "id": "SYSTEM",
+    "name": "permission.system.name",
+    "children": [
+      {
+        "id": "SYSTEM_ROLE",
+        "name": "permission.system.role.name",
+        "permissions": [
+          {
+            "id": "SYSTEM_ROLE:READ"
+          },
+          {
+            "id": "SYSTEM_ROLE:READ+ADD"
+          },
+          {
+            "id": "SYSTEM_ROLE:READ+UPDATE"
+          },
+          {
+            "id": "SYSTEM_ROLE:READ+DELETE"
+          }
+        ]
+      }
+    ]
+  }
 ]

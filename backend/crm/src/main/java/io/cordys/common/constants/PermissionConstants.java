@@ -1,0 +1,16 @@
+package io.cordys.common.constants;
+
+/**
+ *
+ * @author jianxing
+ * @date 2025-01-03 11:31:40
+ */
+public class PermissionConstants {
+
+    /*------ start: SYSTEM_ROLE_ROLE ------*/
+    public static final String SYSTEM_ROLE_READ = "SYSTEM_ROLE:READ";
+    public static final String SYSTEM_ROLE_ADD = "SYSTEM_ROLE:ADD";
+    public static final String SYSTEM_ROLE_UPDATE = "SYSTEM_ROLE:UPDATE";
+    public static final String SYSTEM_ROLE_DELETE = "SYSTEM_ROLE:DELETE";
+    /*------ end: SYSTEM_ROLE_ROLE ------*/
+}
