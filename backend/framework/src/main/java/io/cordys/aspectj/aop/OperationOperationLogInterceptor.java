@@ -10,6 +10,7 @@ import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.handler.OperationLogService;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
+import io.cordys.security.SessionUtils;
 import lombok.Setter;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -194,6 +195,8 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
                 .action(expressionValues.get(action))
                 .fail(isFailure)
                 .createTime(new Date())
+                .loginAddress(expressionValues.get(operation.getLoginAddress()))
+                .platform(expressionValues.get(operation.getPlatform()))
                 .build();
 
         operationLogService.record(operationLog);
@@ -208,7 +211,7 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
 
     private String resolveOperatorId(OperationLogBuilder operation, List<String> templates) {
         if (StringUtils.isEmpty(operation.getOperatorId())) {
-            throw new IllegalArgumentException("[LogRecord] 操作人 ID 不能为空");
+            operation.setOperatorId(SessionUtils.getUserId());
         }
         templates.add(operation.getOperatorId());
         return operation.getOperatorId();
@@ -224,6 +227,8 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
         spElTemplates.add(operation.getResourceId());
         spElTemplates.add(operation.getSubType());
         spElTemplates.add(operation.getExtra());
+        spElTemplates.add(operation.getLoginAddress());
+        spElTemplates.add(operation.getPlatform());
         spElTemplates.addAll(Arrays.asList(actions));
         return spElTemplates;
     }

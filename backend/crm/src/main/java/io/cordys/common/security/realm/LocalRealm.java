@@ -17,6 +17,7 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.springframework.context.annotation.Lazy;
 
 
 /**
@@ -30,6 +31,7 @@ import org.apache.shiro.subject.PrincipalCollection;
  */
 public class LocalRealm extends AuthorizingRealm {
     @Resource
+    @Lazy
     private UserLoginService userLoginService;
 
     @Override

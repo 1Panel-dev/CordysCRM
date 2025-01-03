@@ -1,8 +1,8 @@
 package io.cordys.aspectj.aop;
 
-import io.cordys.aspectj.builder.OperationLogBuilder;
 import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.annotation.OperationLogs;
+import io.cordys.aspectj.builder.OperationLogBuilder;
 import org.springframework.core.BridgeMethodResolver;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.ClassUtils;
@@ -107,7 +107,7 @@ public class OperationLogSource {
     /**
      * 将 {@code LogRecord} 注解转换为日志记录构建器。
      *
-     * @param ae              被注解的元素
+     * @param ae               被注解的元素
      * @param recordAnnotation {@code LogRecord} 注解
      * @return 日志记录构建器
      */
@@ -120,6 +120,8 @@ public class OperationLogSource {
                 .operatorId(recordAnnotation.operator())
                 .subType(recordAnnotation.module())
                 .extra(recordAnnotation.extra())
+                .loginAddress(recordAnnotation.loginAddress())
+                .platform(recordAnnotation.platform())
                 .build();
         validateLogRecordOperation(ae, recordOps);
         return recordOps;

@@ -35,6 +35,17 @@ public class LoginRequest {
     private String authenticate;
 
     /**
+     * 登录地，可选字段。
+     */
+    private String loginAddress;
+
+    /**
+     * 平台
+     */
+    @NotBlank(message = "{platform_is_null}")
+    private String platform;
+
+    /**
      * 获取解密后的用户名。
      * <p>如果解密失败，将返回原始的用户名。</p>
      *

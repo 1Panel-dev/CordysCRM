@@ -1,5 +1,8 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
 import io.cordys.common.constants.UserSource;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.request.LoginRequest;
@@ -55,6 +58,15 @@ public class UserLoginService {
     }
 
 
+    @OperationLog(
+            module = LogModule.SYSTEM,
+            type = LogType.LOGIN,
+            operator = "",
+            resourceId = "",
+            success = "登录成功",
+            loginAddress = "{{#request.loginAddress}}",
+            platform = "{{#request.platform}}"
+    )
     public SessionUser login(LoginRequest request) {
         String login = (String) SecurityUtils.getSubject().getSession().getAttribute("authenticate");
         String username = StringUtils.trim(request.getUsername());

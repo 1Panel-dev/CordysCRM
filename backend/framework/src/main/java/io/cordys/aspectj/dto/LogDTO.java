@@ -3,12 +3,11 @@ package io.cordys.aspectj.dto;
 import io.cordys.common.groups.Created;
 import io.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import jakarta.persistence.Table;
 
 /**
  * 日志数据传输对象（DTO），继承自操作日志（OperationLog）。
@@ -55,6 +54,13 @@ public class LogDTO {
 
     @Schema(description = "操作路径")
     private String path;
+
+    @Schema(description = "登录地")
+    private String loginAddress;
+
+    @Schema(description = "平台")
+    private String platform;
+
     /**
      * 变更内容，原始值，变更后的值
      */

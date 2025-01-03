@@ -56,6 +56,7 @@ public abstract class BaseTest {
     private BaseMapper<User> userMapper;
 
     protected static final String DEFAULT_USER_PASSWORD = "CordysCRM";
+    protected static final String DEFAULT_PLATFORM = "mobile";
 
 
     /**
@@ -68,7 +69,7 @@ public abstract class BaseTest {
     @BeforeEach
     public void login() throws Exception {
         if (this.adminAuthInfo == null) {
-            this.adminAuthInfo = initAuthInfo("admin", DEFAULT_USER_PASSWORD);
+            this.adminAuthInfo = initAuthInfo("admin", DEFAULT_USER_PASSWORD, DEFAULT_PLATFORM);
             this.sessionId = this.adminAuthInfo.getSessionId();
             this.csrfToken = this.adminAuthInfo.getCsrfToken();
         }
@@ -83,21 +84,21 @@ public abstract class BaseTest {
                 User permissionUser = userMapper.selectByPrimaryKey(permissionUserName);
                 // 有对应用户才初始化认证信息
                 if (permissionUser != null) {
-                    permissionAuthInfoMap.put(permissionUserName, initAuthInfo(permissionUserName, DEFAULT_USER_PASSWORD));
+                    permissionAuthInfoMap.put(permissionUserName, initAuthInfo(permissionUserName, DEFAULT_USER_PASSWORD, DEFAULT_PLATFORM));
                 }
             }
         }
     }
 
     public void login(String user, String password) throws Exception {
-        this.adminAuthInfo = initAuthInfo(user, password);
+        this.adminAuthInfo = initAuthInfo(user, password, DEFAULT_PLATFORM);
         this.sessionId = this.adminAuthInfo.getSessionId();
         this.csrfToken = this.adminAuthInfo.getCsrfToken();
     }
 
-    private AuthInfo initAuthInfo(String username, String password) throws Exception {
+    private AuthInfo initAuthInfo(String username, String password, String platform) throws Exception {
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/login")
-                        .content(String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password))
+                        .content(String.format("{\"username\":\"%s\",\"password\":\"%s\",\"platform\":\"%s\"}", username, password, platform))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))

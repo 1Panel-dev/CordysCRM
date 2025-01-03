@@ -13,4 +13,6 @@ public class OperationLogBuilder {
     private String resourceId;
     private String subType;
     private String extra;
+    private String loginAddress;
+    private String platform;
 }

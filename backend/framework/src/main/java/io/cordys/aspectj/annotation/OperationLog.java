@@ -42,4 +42,14 @@ public @interface OperationLog {
      * @return 日志的额外信息
      */
     String extra() default "";
+
+    /**
+     * @return 登录地址
+     */
+    String loginAddress() default "";
+
+    /**
+     * @return 平台
+     */
+    String platform() default "";
 }

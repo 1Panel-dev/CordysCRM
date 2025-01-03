@@ -69,6 +69,8 @@ CREATE TABLE sys_operation_log
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '操作人',
     `path`            VARCHAR(255) COMMENT '操作路径',
     `method`          VARCHAR(255) NOT NULL COMMENT '操作方法',
+    `login_address`   VARCHAR(255)  COMMENT '登录地',
+    `platform`        VARCHAR(32)  COMMENT '平台',
     PRIMARY KEY (id)
 ) COMMENT = '操作日志'
     ENGINE = InnoDB

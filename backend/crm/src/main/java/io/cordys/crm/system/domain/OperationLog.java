@@ -1,12 +1,7 @@
 package io.cordys.crm.system.domain;
 
-import io.cordys.common.domain.BaseModel;
-import io.cordys.common.groups.Created;
-import io.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.io.Serial;
@@ -14,7 +9,10 @@ import java.io.Serial;
 @Data
 @Schema(description = "操作日志")
 @Table(name = "sys_operation_log")
-public class OperationLog extends BaseModel {
+public class OperationLog {
+
+    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String id;
 
     @Schema(description = "组织id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String organizationId;
@@ -36,6 +34,18 @@ public class OperationLog extends BaseModel {
 
     @Schema(description = "操作方法", requiredMode = Schema.RequiredMode.REQUIRED)
     private String method;
+
+    @Schema(description = "登录地")
+    private String loginAddress;
+
+    @Schema(description = "平台", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String platform;
+
+    @Schema(description = "创建人")
+    private String createUser;
+
+    @Schema(description = "创建时间")
+    private Long createTime;
 
     @Serial
     private static final long serialVersionUID = 1L;

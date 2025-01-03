@@ -74,4 +74,14 @@ public class OperationLog {
      * CodeVariableType 日志记录的ClassName、MethodName
      */
     private Map<CodeVariableType, Object> codeVariable;
+
+    /**
+     * 登录地
+     */
+    private String loginAddress;
+
+    /**
+     * 平台
+     */
+    private String platform;
 }
