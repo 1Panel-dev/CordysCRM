@@ -13,4 +13,9 @@ public class PermissionConstants {
     public static final String SYSTEM_ROLE_UPDATE = "SYSTEM_ROLE:UPDATE";
     public static final String SYSTEM_ROLE_DELETE = "SYSTEM_ROLE:DELETE";
     /*------ end: SYSTEM_ROLE_ROLE ------*/
+
+
+    /*------ start: OPERATION_LOG ------*/
+    public static final String OPERATION_LOG_READ = "OPERATION_LOG:READ";
+    /*------ end: OPERATION_LOG ------*/
 }

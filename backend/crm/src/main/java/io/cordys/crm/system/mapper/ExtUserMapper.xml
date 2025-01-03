@@ -8,4 +8,14 @@
                  LEFT JOIN sys_user_extend ON sys_user.id = sys_user_extend.id
         WHERE sys_user.id = #{id}
     </select>
+
+    <select id="selectUserOptionByIds" resultType="io.cordys.aspectj.dto.OptionDTO">
+        SELECT id, name
+        FROM sys_user
+        WHERE id IN
+        <foreach collection="list" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>
