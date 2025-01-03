@@ -1,0 +1,21 @@
+@import url('./var.less');
+
+// 小投影
+.base-box-shadow {
+  box-shadow: @box-base-shadow;
+}
+
+// 中层投影
+.middle-box-shadow {
+  box-shadow: @box-middle-shadow;
+}
+
+// 大投影
+.large-box-shadow {
+  box-shadow: @box-large-shadow;
+}
+
+/* 单行文本缩略 */
+.one-line-text {
+  @apply overflow-hidden overflow-ellipsis whitespace-nowrap;
+}

@@ -39,10 +39,11 @@
 </template>
 
 <script setup lang="ts">
-  import { themeOverrides } from '@/utils/themeOverrides';
+  import { getThemeOverrides } from '@/utils/themeOverrides';
 
+  import type { GlobalThemeOverrides } from 'naive-ui';
   // TODO 待完善
-  const themeOverridesConfig = computed(() => themeOverrides);
+  const themeOverridesConfig = ref<GlobalThemeOverrides>(getThemeOverrides());
 </script>
 
 <style>

@@ -32,15 +32,15 @@ export function setCustomTheme(primaryColor: string) {
   const P7 = getRGBinnerVal(primary.mix(white, 0.95));
   styleTag.innerHTML = `
     :root {
-      --primary-0: ${P0};
-      --primary-1: ${P1};
-      --primary-2: ${P2};
-      --primary-3: ${P3};
-      --primary-4: ${P4};
-      --primary-5: ${P5};
-      --primary-6: ${P6};
-      --primary-7: ${P7};
-      --primary-8: ${P};
+      --primary-0: rgb(${P0});
+      --primary-1: rgb(${P1});
+      --primary-2: rgb(${P2});
+      --primary-3: rgb(${P3});
+      --primary-4: rgb(${P4});
+      --primary-5: rgb(${P5});
+      --primary-6: rgb(${P6});
+      --primary-7: rgb(${P7});
+      --primary-8: rgb(${P});
     }
   `;
   // 移除之前的 style 标签（如果有）
