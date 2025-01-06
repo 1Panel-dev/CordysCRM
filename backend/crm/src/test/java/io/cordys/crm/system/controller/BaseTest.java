@@ -20,7 +20,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -116,6 +119,20 @@ public abstract class BaseTest {
 
     protected MvcResult requestGetWithOkAndReturn(String url, Object... uriVariables) throws Exception {
         return this.requestGetWithOk(url, uriVariables).andReturn();
+    }
+
+    protected static Map<?, ?> parseResponse(MvcResult mvcResult) throws UnsupportedEncodingException {
+        return JSON.parseMap(mvcResult.getResponse().getContentAsString(Charset.defaultCharset()));
+    }
+
+    protected <T> List<T> getResultDataArray(MvcResult mvcResult, Class<T> clazz) throws Exception {
+        Object data = parseResponse(mvcResult).get("data");
+        return JSON.parseArray(JSON.toJSONString(data), clazz);
+    }
+
+    protected ResultActions requestGet(String url, Object... uriVariables) throws Exception {
+        return mockMvc.perform(getRequestBuilder(url, uriVariables))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Data
