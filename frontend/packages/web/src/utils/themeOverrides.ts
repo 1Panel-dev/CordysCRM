@@ -37,6 +37,7 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       errorColorPressed: getLessVariableValue('--error-0'),
       errorColorSuppl: getLessVariableValue('--error-red'),
       // 文本的颜色
+      textColor1: getLessVariableValue('--text-n1'),
       textColorBase: getLessVariableValue('--text-n1'),
       textColorDisabled: getLessVariableValue('--text-n6'),
       placeholderColor: getLessVariableValue('--text-n4'),
