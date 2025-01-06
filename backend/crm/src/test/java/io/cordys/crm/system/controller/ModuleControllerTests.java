@@ -1,9 +1,11 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.dto.request.ModuleRequest;
 import io.cordys.crm.system.dto.response.ModuleDTO;
 import io.cordys.crm.system.service.ModuleService;
+import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -24,16 +26,20 @@ public class ModuleControllerTests extends BaseTest{
 
 	@Resource
 	private ModuleService moduleService;
+	@Resource
+	private BaseMapper<Module> moduleMapper;
 
 	@Test
 	@Order(1)
-	public void testInitModuleList() {
+	void testInitModuleList() {
 		moduleService.initModule("default");
+		List<Module> modules = moduleMapper.selectAll("pos");
+		assert !modules.isEmpty();
 	}
 
 	@Test
 	@Order(2)
-	public void testGetModuleListAndSwitch() throws Exception {
+	void testGetModuleListAndSwitch() throws Exception {
 		ModuleRequest request = new ModuleRequest();
 		request.setOrganizationId("default");
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/module/list", request);

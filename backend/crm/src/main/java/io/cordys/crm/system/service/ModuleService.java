@@ -41,7 +41,7 @@ public class ModuleService {
 			BeanUtils.copyBean(moduleDTO, module);
 			moduleDTO.setTranslateName(Translator.get(module.getName()));
 			return moduleDTO;
-		}).sorted(Comparator.comparing(ModuleDTO::getPos)).collect(Collectors.toList());
+		}).sorted(Comparator.comparing(ModuleDTO::getPos)).toList();
 	}
 
 	/**
