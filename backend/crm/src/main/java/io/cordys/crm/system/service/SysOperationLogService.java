@@ -39,9 +39,6 @@ public class SysOperationLogService {
 
     /**
      * 操作日志列表查询
-     *
-     * @param request
-     * @return
      */
     public List<OperationLogResponse> list(OperationLogRequest request) {
         checkTime(request.getStartTime(), request.getEndTime());
