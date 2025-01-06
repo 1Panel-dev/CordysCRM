@@ -235,6 +235,23 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_organizationId ON sys_announcement(organization_id ASC);
 CREATE INDEX idx_create_time ON sys_announcement(create_time DESC);
 
+CREATE TABLE sys_module(
+                           `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+                           `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
+                           `name` VARCHAR(255) NOT NULL   COMMENT '模块名称(国际化KEY)' ,
+                           `enable` BIT(1) NOT NULL  DEFAULT 1 COMMENT '启用/禁用' ,
+                           `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+                           `create_time` BIGINT(255) NOT NULL   COMMENT '创建时间' ,
+                           `update_user` VARCHAR(32) NOT NULL   COMMENT '修改人' ,
+                           `update_time` BIGINT(255) NOT NULL   COMMENT '修改时间' ,
+                           PRIMARY KEY (id)
+)  COMMENT = '模块设置'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_organization_id ON sys_module(organization_id ASC);
+
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
