@@ -9,7 +9,7 @@
         WHERE sys_user.id = #{id}
     </select>
 
-    <select id="selectUserOptionByIds" resultType="io.cordys.aspectj.dto.OptionDTO">
+    <select id="selectUserOptionByIds" resultType="io.cordys.common.dto.OptionDTO">
         SELECT id, name
         FROM sys_user
         WHERE id IN

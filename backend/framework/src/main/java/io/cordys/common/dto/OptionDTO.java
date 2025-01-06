@@ -1,4 +1,4 @@
-package io.cordys.aspectj.dto;
+package io.cordys.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

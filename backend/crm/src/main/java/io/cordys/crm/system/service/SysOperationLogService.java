@@ -1,21 +1,28 @@
 package io.cordys.crm.system.service;
 
 
-import io.cordys.aspectj.dto.OptionDTO;
+import io.cordys.common.dto.JsonDifferenceDTO;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.util.JsonDifferenceUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.domain.OperationLogBlob;
 import io.cordys.crm.system.dto.request.OperationLogRequest;
 import io.cordys.crm.system.dto.response.OperationLogResponse;
 import io.cordys.crm.system.mapper.ExtOperationLogMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
+import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +33,8 @@ public class SysOperationLogService {
     private ExtOperationLogMapper extOperationLogMapper;
     @Resource
     private ExtUserMapper extUserMapper;
+    @Resource
+    private BaseMapper<OperationLogBlob> operationLogBlobMapper;
 
 
     /**
@@ -82,5 +91,20 @@ public class SysOperationLogService {
         List<OperationLogResponse> list = extOperationLogMapper.loginList(request);
         handleData(list);
         return list;
+    }
+
+    public List<JsonDifferenceDTO> getLogDetail(String id) {
+        List<JsonDifferenceDTO> differenceDTOS = new ArrayList<>();
+        OperationLogBlob operationLogBlob = operationLogBlobMapper.selectByPrimaryKey(id);
+        Optional.ofNullable(operationLogBlob).ifPresent(operationLog -> {
+            String oldString = new String(operationLog.getOriginalValue() == null ? new byte[0] : operationLog.getOriginalValue(), StandardCharsets.UTF_8);
+            String newString = new String(operationLog.getModifiedValue() == null ? new byte[0] : operationLog.getModifiedValue(), StandardCharsets.UTF_8);
+            try {
+                JsonDifferenceUtils.compareJson(oldString, newString, differenceDTOS);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return differenceDTOS;
     }
 }
