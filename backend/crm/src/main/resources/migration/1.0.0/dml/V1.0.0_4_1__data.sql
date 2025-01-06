@@ -22,5 +22,12 @@ VALUES ('admin',
         1729752373360,
         '717345437786112',
         'admin');
+
+
+
+INSERT INTO `sys_organization`(`id`, `name`, `create_time`, `update_time`, `create_user`, `update_user`)
+VALUES ('100001', 'default', 1736152274610, 1736152274610, 'admin', 'admin');
+
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

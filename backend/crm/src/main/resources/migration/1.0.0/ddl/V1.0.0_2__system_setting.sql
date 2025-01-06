@@ -271,6 +271,20 @@ CREATE TABLE sys_module_section(
 CREATE INDEX idx_module_id ON sys_module_section(module_id ASC);
 
 
+CREATE TABLE sys_organization(
+                            `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+                            `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
+                            `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+                            `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+                            `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+                            `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+                            PRIMARY KEY (id)
+)  COMMENT = '组织架构'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
