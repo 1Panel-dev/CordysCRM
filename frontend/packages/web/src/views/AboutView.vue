@@ -1,8 +1,7 @@
 <template>
   <div class="p-[24px]">
-    <CrmCard title="按钮类型demo" sub-title="subTitle" content-max-height="100px" no-content-padding>
-      <!-- themeOverridesConfig 主题vars配置 -->
-      <n-config-provider :theme-overrides="themeOverridesConfig">
+    <CrmCard title="按钮类型demo" sub-title="subTitle" no-content-padding>
+      <div class="flex flex-col gap-4 p-4">
         <!-- TODO 按钮类型demo 暂时提供参考 you can delete it  ^_^  -->
         <div class="flex gap-[16px]">
           <NButton type="primary">主要按钮</NButton>
@@ -23,19 +22,19 @@
         </div>
         <div class="mt-[24px] flex gap-[16px]">
           <n-button type="primary" ghost> Primary </n-button>
-          <n-button type="info" ghost class="n-btn-outline-info"> Info </n-button>
-          <n-button type="success" ghost class="n-btn-outline-success"> Success </n-button>
-          <n-button type="warning" ghost class="n-btn-outline-warning"> Warning </n-button>
-          <n-button type="error" ghost class="n-btn-outline-error"> Error </n-button>
+          <n-button type="info" ghost class="n-btn-outline-info" @click="info"> Info </n-button>
+          <n-button type="success" ghost class="n-btn-outline-success" @click="success"> Success </n-button>
+          <n-button type="warning" ghost class="n-btn-outline-warning" @click="warning"> Warning </n-button>
+          <n-button type="error" ghost class="n-btn-outline-error" @click="error"> Error </n-button>
         </div>
         <div class="mt-[24px] flex gap-[16px]">
-          <n-button type="primary" ghost> Primary </n-button>
-          <n-button type="info" ghost> Info </n-button>
-          <n-button type="success" ghost> Success </n-button>
+          <n-button type="primary" ghost @click="loading"> Primary </n-button>
+          <n-button type="info" ghost @click="notify"> Info </n-button>
+          <n-button type="success" ghost @click="dialogHandler"> Success </n-button>
           <n-button type="warning" ghost> Warning </n-button>
           <n-button type="error" ghost> Error </n-button>
         </div>
-      </n-config-provider>
+      </div>
     </CrmCard>
   </div>
 </template>
@@ -43,12 +42,63 @@
 <script setup lang="ts">
   import CrmCard from '@/components/pure/crm-card/index.vue';
 
-  import { getThemeOverrides } from '@/utils/themeOverrides';
+  import useDiscreteApi from '@/hooks/useDiscreteApi';
 
-  import type { GlobalThemeOverrides } from 'naive-ui';
-  import { NButton, NConfigProvider } from 'naive-ui';
-  // TODO 待完善
-  const themeOverridesConfig = ref<GlobalThemeOverrides>(getThemeOverrides());
+  import { NAlert, NButton } from 'naive-ui';
+  // 暂时提供参考 you can delete it  ^_^
+  const { message, notification, dialog } = useDiscreteApi();
+
+  function info() {
+    message.info("I don't know why nobody told you how to unfold your love", {
+      keepAliveOnHover: true,
+    });
+  }
+  function error() {
+    message.error('Once upon a time you dressed so fine', {
+      duration: 100000,
+    });
+  }
+  function warning() {
+    message.warning('How many roads must a man walk down');
+  }
+  function success() {
+    message.success("'Cause you walked hand in hand With another man in my place");
+  }
+  function loading() {
+    message.loading('If I were you, I will realize that I love you more than any other guy');
+  }
+
+  function notify() {
+    notification.info({
+      title: 'hahahahha',
+      content: `（一般是）从浏览器顶部降下来的神谕。`,
+      duration: 103000,
+    });
+  }
+
+  function dialogHandler() {
+    const d = dialog.success({
+      title: '想说点啥',
+      content: '但是好像也没有说的,怎么样都是要离开的',
+      positiveText: '离开',
+      negativeText: '算了',
+      onPositiveClick: async () => {
+        d.loading = true;
+        try {
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
+          message.success('删除成功');
+          d.loading = false;
+        } catch (e) {
+          message.error('删除失败，请重试');
+        }
+      },
+      onNegativeClick: () => {
+        message.error('不确定');
+      },
+    });
+  }
 </script>
 
 <style>

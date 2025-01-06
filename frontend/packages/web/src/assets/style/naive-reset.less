@@ -1,3 +1,4 @@
+@import url('./var.less');
 // 主要 outline 按钮
 .n-button--tertiary-type {
   border: 1px solid var(--primary-8) !important;
@@ -116,4 +117,10 @@
 // medium 32px 按钮尺寸
 .n-button--medium-type {
   height: 32px !important;
+}
+// 消息框
+.n-message,
+.n-notification {
+  border: 1px solid var(--text-n7) !important;
+  box-shadow: @box-middle-shadow;
 }

@@ -49,8 +49,8 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       dividerColor: getLessVariableValue('--text-n8'),
       closeIconColor: getLessVariableValue('--text-n2'),
       closeIconColorHover: getLessVariableValue('--text-n2'),
-      closeColorHover: getLessVariableValue('--text-n2'),
-      closeColorPressed: getLessVariableValue('--text-n2'),
+      closeColorHover: getLessVariableValue('--text-n9'),
+      closeColorPressed: getLessVariableValue('--text-n6'),
       scrollbarColor: 'rgba(0, 0, 0, 0.25)',
       scrollbarColorHover: 'rgba(0, 0, 0, 0.4)',
       popoverColor: getLessVariableValue('--text-n10'),
@@ -120,6 +120,45 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       fontSizeSmall: '12px',
       fontSizeMedium: '14px',
       fontSizeLarge: '16px',
+    },
+    Alert: {
+      borderRadius: '6px',
+      border: `1px solid ${getLessVariableValue('--primary-8')}`,
+      color: getLessVariableValue('--primary-7'),
+      // error Alert边框和背景颜色
+      borderError: `1px solid ${getLessVariableValue('--error-red')}`,
+      colorError: getLessVariableValue('--error-5'),
+      // warning Alert边框和背景颜色
+      borderWarning: `1px solid ${getLessVariableValue('--warning-yellow')}`,
+      colorWarning: getLessVariableValue('--warning-5'),
+      // Success Alert边框和背景颜色
+      borderSuccess: `1px solid ${getLessVariableValue('--success-green')}`,
+      colorSuccess: getLessVariableValue('--success-5'),
+      // Info Alert边框和背景颜色
+      borderInfo: `1px solid ${getLessVariableValue('--info-blue')}`,
+      colorInfo: getLessVariableValue('--info-5'),
+    },
+    Message: {
+      borderRadius: '6px',
+      iconColorInfo: getLessVariableValue('--info-blue'),
+      iconColorSuccess: getLessVariableValue('--success-green'),
+      iconColorWarning: getLessVariableValue('--warning-yellow'),
+      iconColorError: getLessVariableValue('--error-red'),
+    },
+    Notification: {
+      borderRadius: '6px',
+      iconColorInfo: getLessVariableValue('--info-blue'),
+      iconColorSuccess: getLessVariableValue('--success-green'),
+      iconColorWarning: getLessVariableValue('--warning-yellow'),
+      iconColorError: getLessVariableValue('--error-red'),
+    },
+    Dialog: {
+      borderRadius: '9px',
+      titleFontSize: '16px',
+      iconSize: '24px',
+      lineHeight: '24px',
+      padding: '32px',
+      contentMargin: '16px 0 20px',
     },
   };
 }

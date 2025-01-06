@@ -1,8 +1,26 @@
 <template>
-  <RouterView />
+  <n-config-provider :theme-overrides="themeOverridesConfig">
+    <RouterView />
+  </n-config-provider>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+  import initDiscreteApi from '@/hooks/useDiscreteApi';
+  import { getThemeOverrides } from '@/utils/themeOverrides';
+
+  import type { ConfigProviderProps, GlobalThemeOverrides } from 'naive-ui';
+  import { NConfigProvider } from 'naive-ui';
+
+  const themeOverridesConfig = ref<GlobalThemeOverrides>(getThemeOverrides());
+
+  const getConfigProviderProps = computed(() => {
+    return {
+      themeOverrides: themeOverridesConfig.value,
+    };
+  });
+
+  initDiscreteApi(getConfigProviderProps.value as ConfigProviderProps);
+</script>
 
 <style scoped>
   header {

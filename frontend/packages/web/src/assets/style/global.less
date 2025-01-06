@@ -1,4 +1,18 @@
 @import url('./var.less');
+* {
+  @apply box-border;
+}
+html,
+body {
+  @apply m-0 h-full w-full p-0;
+
+  font-size: 14px;
+  font-family: 'Helvetica Neue', Arial, 'PingFang SC', 'Source Han Serif' !important;
+  color: var(--text-n1);
+  line-height: 22px;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+}
 
 // 小投影
 .base-box-shadow {
@@ -18,4 +32,76 @@
 /* 单行文本缩略 */
 .one-line-text {
   @apply overflow-hidden overflow-ellipsis whitespace-nowrap;
+}
+
+/* 修改进度条的背景颜色 */
+#nprogress {
+  .bar {
+    background: rgb(var(--primary-6));
+  }
+}
+
+/* 白色背景的tooltip */
+.crm-tooltip-white {
+  &.n-tooltip {
+    color: var(--text-n1);
+    background-color: var(--text-n10);
+    box-shadow: @box-middle-shadow;
+  }
+  .n-popover-arrow {
+    z-index: 1;
+    background-color: var(--text-n10) !important;
+  }
+}
+
+/* error 背景tooltip */
+.crm-tooltip-error {
+  &.n-tooltip {
+    color: var(--error-red);
+    background-color: var(--error-5);
+    box-shadow: @box-middle-shadow;
+  }
+  .n-popover-arrow {
+    z-index: 1;
+    background-color: var(--error-5) !important;
+  }
+}
+
+/* warning 背景tooltip */
+.crm-tooltip-warning {
+  &.n-tooltip {
+    color: var(--warning-red);
+    background-color: var(--warning-5);
+    box-shadow: @box-middle-shadow;
+  }
+  .n-popover-arrow {
+    z-index: 1;
+    background-color: var(--warning-5) !important;
+  }
+}
+
+/* success 背景tooltip */
+.crm-tooltip-success {
+  &.n-tooltip {
+    color: var(--success-red);
+    background-color: var(--success-5);
+    box-shadow: @box-middle-shadow;
+  }
+  .n-popover-arrow {
+    z-index: 1;
+    background-color: var(--success-5) !important;
+  }
+}
+
+/* primary 背景tooltip */
+.crm-tooltip-primary {
+  &.n-tooltip {
+    color: var(--primary-8);
+    background-color: var(--primary-7);
+    box-shadow: @box-middle-shadow;
+  }
+  .n-popover-arrow {
+    z-index: 1;
+    background-color: var(--primary-7) !important;
+  }
 }
