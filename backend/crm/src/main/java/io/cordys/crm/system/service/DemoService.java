@@ -29,7 +29,23 @@ public class DemoService {
     )
     public void addUser(User user) {
         // 添加用户
+        user.setUpdateUser("admin");
+        user.setCreateTime(System.currentTimeMillis());
+        user.setUpdateTime(System.currentTimeMillis());
+        user.setCreateUser("admin");
+        user.setName("John Doe");
+        user.setPhone("1234567890");
+        user.setEmail("john.doe@example.com");
+        user.setPassword("secure password");
+        user.setEnable(1);
+        user.setEmployeeId("E12345");
+        user.setGender("Male");
+        user.setPosition("Developer");
+        user.setEmployeeType("Full-time");
+        user.setSupervisorId("S12345");
+        user.setWorkCity("New York");
 
+        userMapper.insert(user);
         // 添加日志上下文
         OperationLogContext.putVariable("newUser", LogExtraDTO.builder()
                 .originalValue(null)
@@ -75,7 +91,7 @@ public class DemoService {
             extra = "{{#upUser}}"
     )
 
-    @CachePut(value = "user", key = "#user.id")
+    @CachePut(value = "users", key = "#user.id", unless = "#result == null")
     public User updateUser(User user) {
         // 更新用户
         User preUser = userMapper.selectByPrimaryKey(user.getId());
@@ -89,7 +105,7 @@ public class DemoService {
         return user;
     }
 
-    @Cacheable(value = "users", key = "#userId")
+    @Cacheable(value = "users", key = "#userId", unless = "#result == null")
     public User getUser(String userId) {
         // 获取用户
         return userMapper.selectByPrimaryKey(userId);
