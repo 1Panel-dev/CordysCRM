@@ -99,7 +99,7 @@ public class SysOperationLogService {
             try {
                 JsonDifferenceUtils.compareJson(oldString, newString, differenceDTOS);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new GenericException(Translator.get("data_parsing_exception"));
             }
         });
         return differenceDTOS;
