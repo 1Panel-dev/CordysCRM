@@ -1,14 +1,21 @@
 package io.cordys.crm.system.domain;
 
-import io.cordys.common.domain.BaseModel;
+import io.cordys.common.groups.Created;
+import io.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 @Table(name = "sys_notification")
-public class Notification extends BaseModel {
-    @Schema(description = "通知类型")
+public class Notification{
+    
+    @Schema(description = "ID")
+    private Long id;
+
+    @Size(min = 1, max = 64, message = "{notification.type.length_range}", groups = {Created.class, Updated.class})
+    @Schema(description = "通知类型", requiredMode = Schema.RequiredMode.REQUIRED)
     private String type;
 
     @Schema(description = "接收人")
@@ -37,4 +44,16 @@ public class Notification extends BaseModel {
     
     @Schema(description = "通知内容")
     private byte[] content;
+
+    @Schema(description = "创建人")
+    private String createUser;
+
+    @Schema(description = "修改人")
+    private String updateUser;
+
+    @Schema(description = "创建时间")
+    private Long createTime;
+
+    @Schema(description = "更新时间")
+    private Long updateTime;
 }

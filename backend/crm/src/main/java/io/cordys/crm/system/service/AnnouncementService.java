@@ -3,8 +3,12 @@ package io.cordys.crm.system.service;
 import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
-import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogExtraDTO;
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Announcement;
 import io.cordys.crm.system.dto.request.AnnouncementPageRequest;
 import io.cordys.crm.system.dto.request.AnnouncementRequest;
@@ -15,6 +19,7 @@ import jakarta.annotation.Resource;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,15 +49,21 @@ public class AnnouncementService{
         announcement.setCreateUser(userId);
         announcement.setUpdateUser(userId);
         announcementMapper.insert(announcement);
+          // 添加日志上下文
+        OperationLogContext.putVariable("announcement", LogExtraDTO.builder()
+                .originalValue(null)
+                .modifiedValue(announcement)
+                .build());
     }
 
     @Transactional(rollbackFor = Exception.class)
     @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{{#announcement.id}}", operator = "{{#announcement.subject}}", success = "修改公告成功", extra = "{{#announcement}}")
     public void update(AnnouncementRequest request, String userId) {
-        Announcement announcement = announcementMapper.selectByPrimaryKey(request.getId());
-        if (announcement == null) {
-            throw new RuntimeException("公告不存在");
+        Announcement originalAnnouncement = announcementMapper.selectByPrimaryKey(request.getId());
+        if (originalAnnouncement == null) {
+            throw new GenericException(Translator.get("announcement.blank"));
         }
+        Announcement announcement = BeanUtils.copyBean(new Announcement(), request);
         announcement.setSubject(request.getSubject());
         announcement.setContent(request.getContent().getBytes());
         announcement.setStartTime(request.getStartTime());
@@ -63,6 +74,12 @@ public class AnnouncementService{
         announcement.setUpdateTime(System.currentTimeMillis());
         announcement.setUpdateUser(userId);
         announcementMapper.updateById(announcement);
+
+        // 添加日志上下文
+        OperationLogContext.putVariable("announcement", LogExtraDTO.builder()
+                .originalValue(originalAnnouncement)
+                .modifiedValue(announcement)
+                .build());
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -70,9 +87,15 @@ public class AnnouncementService{
     public void delete(String id, String userId) {
         Announcement announcement = announcementMapper.selectByPrimaryKey(id);
         if (announcement == null) {
-            throw new RuntimeException("公告不存在");
+            throw new RuntimeException(Translator.get("announcement.blank"));
         }
         announcementMapper.deleteByPrimaryKey(id);
+
+        // 添加日志上下文
+        OperationLogContext.putVariable("announcement", LogExtraDTO.builder()
+                .originalValue(announcement)
+                .modifiedValue(null)
+                .build());
     }
 
     /**
@@ -82,6 +105,11 @@ public class AnnouncementService{
      */
     public List<AnnouncementDTO> page(AnnouncementPageRequest request) {
         List<AnnouncementDTO> announcementDTOS = extAnnouncementMapper.selectByBaseRequest(request);
+        if (CollectionUtils.isNotEmpty(announcementDTOS)) {
+            for (AnnouncementDTO announcementDTO : announcementDTOS) {
+                announcementDTO.setContentText(new String(announcementDTO.getContent()));
+            }
+        }
         return announcementDTOS;
     }
 
@@ -91,7 +119,12 @@ public class AnnouncementService{
      * @return
      */
     public AnnouncementDTO detail(String id) {
-        return extAnnouncementMapper.selectById(id);
+        AnnouncementDTO announcementDTO = extAnnouncementMapper.selectById(id);
+        if (announcementDTO == null) {
+            throw new RuntimeException(Translator.get("announcement.blank"));
+        }
+        announcementDTO.setContentText(new String(announcementDTO.getContent()));
+        return announcementDTO;
     }
 }
 

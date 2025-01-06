@@ -3,9 +3,9 @@ package io.cordys.crm.system.controller;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
-import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.crm.system.dto.request.AnnouncementPageRequest;
 import io.cordys.crm.system.dto.request.AnnouncementRequest;
 import io.cordys.crm.system.dto.response.AnnouncementDTO;
@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,7 @@ public class AnnouncementController {
 
     @PostMapping("/announcement/page")
     @Operation(summary = "公告列表分页查询")
+    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public Pager<List<AnnouncementDTO>> getAnnouncementPage(@Validated @RequestBody AnnouncementPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
                 StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
@@ -61,6 +63,7 @@ public class AnnouncementController {
      * @param announcementRequest 公告对象。
      */
     @PostMapping(value = "/announcement/add")
+    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_ADD)
     @Operation(summary = "新增公告")
     public void addAnnouncement(@Validated @RequestBody AnnouncementRequest announcementRequest) {
         announcementService.add(announcementRequest, SessionUtils.getUserId());
@@ -72,6 +75,7 @@ public class AnnouncementController {
      */
     @PostMapping(value = "/announcement/edit")
     @Operation(summary = "编辑公告")
+    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
     public void updateAnnouncement(@Validated @RequestBody AnnouncementRequest announcementRequest) {
         announcementService.update(announcementRequest, SessionUtils.getUserId());
     }
@@ -82,6 +86,7 @@ public class AnnouncementController {
      */
     @GetMapping(value = "/announcement/delete/{announcementId}")
     @Operation(summary = "删除公告")
+    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_DELETE)
     public void deleteAnnouncement(@PathVariable String announcementId) {
         announcementService.delete(announcementId, SessionUtils.getUserId());
     }

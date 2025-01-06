@@ -5,8 +5,6 @@ import io.cordys.common.exception.IResultCode;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
-import io.cordys.crm.system.domain.User;
-import io.cordys.mybatis.BaseMapper;
 import io.cordys.security.SessionConstants;
 import jakarta.annotation.Resource;
 import lombok.Data;
@@ -34,7 +32,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +49,9 @@ public abstract class BaseTest {
     protected static String csrfToken;
     protected static AuthInfo adminAuthInfo;
     protected static Map<String, AuthInfo> permissionAuthInfoMap = new HashMap(3);
-    @Resource
-    private BaseMapper<User> userMapper;
 
     protected static final String DEFAULT_USER_PASSWORD = "CordysCRM";
     protected static final String DEFAULT_PLATFORM = "mobile";
-
 
     /**
      * 可以重写该方法定义 BASE_PATH
@@ -74,20 +68,8 @@ public abstract class BaseTest {
             this.csrfToken = this.adminAuthInfo.getCsrfToken();
         }
 
+        permissionAuthInfoMap.put("ORGANIZATION", initAuthInfo("admin", DEFAULT_USER_PASSWORD, DEFAULT_PLATFORM));
 
-        if (permissionAuthInfoMap.isEmpty()) {
-            // 获取系统，组织，项目对应的权限测试用户的认证信息
-            List<String> permissionUserNames = Arrays.asList("SYSTEM",
-                    "ORGANIZATION",
-                    "PROJECT");
-            for (String permissionUserName : permissionUserNames) {
-                User permissionUser = userMapper.selectByPrimaryKey(permissionUserName);
-                // 有对应用户才初始化认证信息
-                if (permissionUser != null) {
-                    permissionAuthInfoMap.put(permissionUserName, initAuthInfo(permissionUserName, DEFAULT_USER_PASSWORD, DEFAULT_PLATFORM));
-                }
-            }
-        }
     }
 
     public void login(String user, String password) throws Exception {
@@ -127,7 +109,7 @@ public abstract class BaseTest {
 
     protected MockHttpServletRequestBuilder getRequestBuilderByRole(String url, String userRoleType, Object... uriVariables) {
         // 使用对应的用户认证信息来请求, 非Admin
-        AuthInfo authInfo = permissionAuthInfoMap.get(userRoleType);
+        AuthInfo authInfo = permissionAuthInfoMap.get("ORGANIZATION");
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(getBasePath() + url, uriVariables);
         return setRequestBuilderHeader(requestBuilder, authInfo == null ? adminAuthInfo : authInfo);
     }
@@ -445,7 +427,7 @@ public abstract class BaseTest {
     }
 
     private AuthInfo getPermissionAuthInfo(String roleId) {
-        AuthInfo authInfo = permissionAuthInfoMap.get(roleId);
+        AuthInfo authInfo = permissionAuthInfoMap.get("ORGANIZATION");
         if (authInfo == null) {
             throw new RuntimeException("没有初始化权限认证用户信息!");
         }

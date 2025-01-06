@@ -18,4 +18,11 @@ public class PermissionConstants {
     /*------ start: OPERATION_LOG ------*/
     public static final String OPERATION_LOG_READ = "OPERATION_LOG:READ";
     /*------ end: OPERATION_LOG ------*/
+
+     /*------ start: SYSTEM_NOTICE_ROLE ------*/
+     public static final String SYSTEM_NOTICE_READ = "SYSTEM_NOTICE:READ";
+     public static final String SYSTEM_NOTICE_ADD = "SYSTEM_NOTICE:ADD";
+     public static final String SYSTEM_NOTICE_UPDATE = "SYSTEM_NOTICE:UPDATE";
+     public static final String SYSTEM_NOTICE_DELETE = "SYSTEM_NOTICE:DELETE";
+     /*------ end: SYSTEM_NOTICE_ROLE ------*/
 }

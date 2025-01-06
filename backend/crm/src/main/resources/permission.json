@@ -20,6 +20,24 @@
             "id": "SYSTEM_ROLE:READ+DELETE"
           }
         ]
+      },
+      {
+        "id": "SYSTEM_NOTICE",
+        "name": "permission.system.notice.name",
+        "permissions": [
+          {
+            "id": "SYSTEM_NOTICE:READ"
+          },
+          {
+            "id": "SYSTEM_NOTICE:READ+ADD"
+          },
+          {
+            "id": "SYSTEM_NOTICE:READ+UPDATE"
+          },
+          {
+            "id": "SYSTEM_NOTICE:READ+DELETE"
+          }
+        ]
       }
     ]
   }
