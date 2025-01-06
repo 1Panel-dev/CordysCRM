@@ -23,6 +23,7 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+.vscode
 
 *.tsbuildinfo
 .node/

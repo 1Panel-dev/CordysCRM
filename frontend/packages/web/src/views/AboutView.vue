@@ -42,6 +42,7 @@
   import { getThemeOverrides } from '@/utils/themeOverrides';
 
   import type { GlobalThemeOverrides } from 'naive-ui';
+  import { NButton, NConfigProvider } from 'naive-ui';
   // TODO 待完善
   const themeOverridesConfig = ref<GlobalThemeOverrides>(getThemeOverrides());
 </script>

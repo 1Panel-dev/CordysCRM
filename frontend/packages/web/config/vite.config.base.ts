@@ -2,8 +2,6 @@ import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import { resolve } from 'path';
 import AutoImport from 'unplugin-auto-import/vite';
-import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';
-import Components from 'unplugin-vue-components/vite';
 import { defineConfig } from 'vite';
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons';
 import vueSetupExtend from 'vite-plugin-vue-setup-extend';
@@ -33,9 +31,6 @@ export default defineConfig({
       eslintrc: {
         enabled: true, // <-- this
       },
-    }),
-    Components({
-      resolvers: [NaiveUiResolver()],
     }),
   ],
   resolve: {
