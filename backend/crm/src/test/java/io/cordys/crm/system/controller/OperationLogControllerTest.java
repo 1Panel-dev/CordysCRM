@@ -57,7 +57,7 @@ public class OperationLogControllerTest extends BaseTest {
         request.setStartTime(1735890402193l);
         request.setEndTime(1735808851000l);
         Map<String, String> sort = new HashMap<>();
-        sort.put("id", "desc");
+        sort.put("sys_user.id", "desc");
         request.setSort(sort);
         this.requestPost(OPERATION_LOG_LOGIN_LIST, request);
     }
