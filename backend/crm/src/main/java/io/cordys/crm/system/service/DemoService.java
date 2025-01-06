@@ -8,6 +8,9 @@ import io.cordys.aspectj.dto.LogExtraDTO;
 import io.cordys.crm.system.domain.User;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -42,6 +45,8 @@ public class DemoService {
             success = "删除用户成功",
             extra = "{{#delUser}}"
     )
+
+    @CacheEvict(value = "users", key = "#userId")
     public void deleteUser(String userId) {
         // 删除用户
         User user = userMapper.selectByPrimaryKey(userId);
@@ -69,7 +74,9 @@ public class DemoService {
             success = "更新用户成功",
             extra = "{{#upUser}}"
     )
-    public void updateUser(User user) {
+
+    @CachePut(value = "user", key = "#user.id")
+    public User updateUser(User user) {
         // 更新用户
         User preUser = userMapper.selectByPrimaryKey(user.getId());
 
@@ -78,9 +85,14 @@ public class DemoService {
                 .originalValue(preUser)
                 .modifiedValue(user)
                 .build());
+
+        return user;
     }
 
-    public void getUser() {
+    @Cacheable(value = "users", key = "#userId")
+    public User getUser(String userId) {
         // 获取用户
+        return userMapper.selectByPrimaryKey(userId);
     }
+
 }

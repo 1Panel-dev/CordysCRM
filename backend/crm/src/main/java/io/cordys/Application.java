@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration;
 import org.springframework.boot.autoconfigure.neo4j.Neo4jAutoConfiguration;
 import org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.PropertySource;
 
 @SpringBootApplication(exclude = {
@@ -19,6 +19,7 @@ import org.springframework.context.annotation.PropertySource;
         "file:/opt/cordys/conf/cordys-crm.properties",
 }, encoding = "UTF-8", ignoreResourceNotFound = true)
 @ServletComponentScan
+@EnableCaching
 public class Application {
 
     public static void main(String[] args) {
