@@ -24,7 +24,7 @@ import java.util.List;
 
 @Tag(name = "消息中心")
 @RestController
-@RequestMapping(value = "notification")
+@RequestMapping(value = "/notification")
 public class NotificationController {
 
     @Resource
