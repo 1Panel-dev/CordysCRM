@@ -240,6 +240,7 @@ CREATE TABLE sys_module(
                            `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
                            `name` VARCHAR(255) NOT NULL   COMMENT '模块名称(国际化KEY)' ,
                            `enable` BIT(1) NOT NULL  DEFAULT 1 COMMENT '启用/禁用' ,
+                           `pos` BIGINT(255) NOT NULL   COMMENT '自定义排序' ,
                            `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
                            `create_time` BIGINT(255) NOT NULL   COMMENT '创建时间' ,
                            `update_user` VARCHAR(32) NOT NULL   COMMENT '修改人' ,
