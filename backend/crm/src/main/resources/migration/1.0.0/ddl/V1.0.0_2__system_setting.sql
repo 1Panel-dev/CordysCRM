@@ -69,8 +69,8 @@ CREATE TABLE sys_operation_log
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '操作人',
     `path`            VARCHAR(255) COMMENT '操作路径',
     `method`          VARCHAR(255) NOT NULL COMMENT '操作方法',
-    `login_address`   VARCHAR(255)  COMMENT '登录地',
-    `platform`        VARCHAR(32)  COMMENT '平台',
+    `login_address`   VARCHAR(255) COMMENT '登录地',
+    `platform`        VARCHAR(32) COMMENT '平台',
     PRIMARY KEY (id)
 ) COMMENT = '操作日志'
     ENGINE = InnoDB
@@ -144,64 +144,66 @@ CREATE TABLE IF NOT EXISTS `user_key`
   COLLATE = utf8mb4_general_ci COMMENT ='用户api key';
 
 
-CREATE TABLE IF NOT EXISTS sys_notification(
-                             `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'ID',
-                             `type` VARCHAR(64) NOT NULL   COMMENT '通知类型' ,
-                             `receiver` VARCHAR(50) NOT NULL   COMMENT '接收人' ,
-                             `subject` VARCHAR(255) NOT NULL   COMMENT '标题' ,
-                             `status` VARCHAR(64) NOT NULL   COMMENT '状态' ,
-                             `operator` VARCHAR(50) NOT NULL   COMMENT '操作人' ,
-                             `operation` VARCHAR(50) NOT NULL   COMMENT '操作' ,
-                             `organization_id` VARCHAR(50) NOT NULL   COMMENT '组织id' ,
-                             `resource_type` VARCHAR(64) NOT NULL   COMMENT '资源类型' ,
-                             `resource_name` VARCHAR(255) NOT NULL   COMMENT '资源名称' ,
-                             `content` BLOB NOT NULL   COMMENT '通知内容' ,
-                             `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-                             `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-                             `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-                             `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-                             PRIMARY KEY (id)
-)  COMMENT = '消息通知'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+CREATE TABLE IF NOT EXISTS sys_notification
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `type`            VARCHAR(64)  NOT NULL COMMENT '通知类型',
+    `receiver`        VARCHAR(32)  NOT NULL COMMENT '接收人',
+    `subject`         VARCHAR(255) NOT NULL COMMENT '标题',
+    `status`          VARCHAR(64)  NOT NULL COMMENT '状态',
+    `operator`        VARCHAR(32)  NOT NULL COMMENT '操作人',
+    `operation`       VARCHAR(50)  NOT NULL COMMENT '操作',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `resource_type`   VARCHAR(64)  NOT NULL COMMENT '资源类型',
+    `resource_name`   VARCHAR(255) NOT NULL COMMENT '资源名称',
+    `content`         BLOB         NOT NULL COMMENT '通知内容',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '消息通知'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
 
 
-CREATE INDEX idx_receiver ON sys_notification(receiver ASC);
-CREATE INDEX idx_create_time ON sys_notification(create_time DESC);
-CREATE INDEX idx_type ON sys_notification(type ASC);
-CREATE INDEX idx_subject ON sys_notification(subject ASC);
-CREATE INDEX idx_resource_type ON sys_notification(resource_type ASC);
-CREATE INDEX idx_operator ON sys_notification(operator ASC);
-CREATE INDEX idx_organization_id ON sys_notification(organization_id ASC);
+CREATE INDEX idx_receiver ON sys_notification (receiver ASC);
+CREATE INDEX idx_create_time ON sys_notification (create_time DESC);
+CREATE INDEX idx_type ON sys_notification (type ASC);
+CREATE INDEX idx_subject ON sys_notification (subject ASC);
+CREATE INDEX idx_resource_type ON sys_notification (resource_type ASC);
+CREATE INDEX idx_operator ON sys_notification (operator ASC);
+CREATE INDEX idx_organization_id ON sys_notification (organization_id ASC);
 
-CREATE TABLE IF NOT EXISTS sys_message_task(
-                             `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-                             `event` VARCHAR(255) NOT NULL   COMMENT '通知事件类型' ,
-                             `receivers` VARCHAR(1000) NOT NULL   COMMENT '接收人id集合' ,
-                             `project_robot_id` VARCHAR(50)   DEFAULT 'NONE' COMMENT '机器人id' ,
-                             `task_type` VARCHAR(64) NOT NULL   COMMENT '任务类型' ,
-                             `enable` BIT NOT NULL  DEFAULT 0 COMMENT '是否启用' ,
-                             `create_user` VARCHAR(50) NOT NULL   COMMENT '创建人' ,
-                             `create_time` BIGINT NOT NULL  DEFAULT 0 COMMENT '创建时间' ,
-                             `update_user` VARCHAR(50) NOT NULL   COMMENT '修改人' ,
-                             `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-                             `use_default_template` BIT NOT NULL  DEFAULT 1 COMMENT '是否使用默认模版' ,
-                             `use_default_subject` BIT NOT NULL  DEFAULT 1 COMMENT '是否使用默认标题（仅邮件）' ,
-                             `subject` VARCHAR(1000)    COMMENT '邮件标题' ,
-                             PRIMARY KEY (id)
-)  COMMENT = '消息通知任务'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+CREATE TABLE IF NOT EXISTS sys_message_task
+(
+    `id`                   VARCHAR(32)   NOT NULL COMMENT 'id',
+    `event`                VARCHAR(255)  NOT NULL COMMENT '通知事件类型',
+    `receivers`            VARCHAR(1000) NOT NULL COMMENT '接收人id集合',
+    `project_robot_id`     VARCHAR(32)            DEFAULT 'NONE' COMMENT '机器人id',
+    `task_type`            VARCHAR(64)   NOT NULL COMMENT '任务类型',
+    `enable`               BIT           NOT NULL DEFAULT 0 COMMENT '是否启用',
+    `create_user`          VARCHAR(32)   NOT NULL COMMENT '创建人',
+    `create_time`          BIGINT        NOT NULL DEFAULT 0 COMMENT '创建时间',
+    `update_user`          VARCHAR(32)   NOT NULL COMMENT '修改人',
+    `update_time`          BIGINT        NOT NULL COMMENT '更新时间',
+    `use_default_template` BIT           NOT NULL DEFAULT 1 COMMENT '是否使用默认模版',
+    `use_default_subject`  BIT           NOT NULL DEFAULT 1 COMMENT '是否使用默认标题（仅邮件）',
+    `subject`              VARCHAR(1000) COMMENT '邮件标题',
+    PRIMARY KEY (id)
+) COMMENT = '消息通知任务'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_create_time ON sys_message_task(create_time DESC);
-CREATE INDEX idx_task_type ON sys_message_task(task_type ASC);
-CREATE INDEX idx_event ON sys_message_task(event ASC);
-CREATE INDEX idx_enable ON sys_message_task(enable ASC);
-CREATE INDEX idx_use_default_subject ON sys_message_task(use_default_subject ASC);
-CREATE INDEX idx_use_default_template ON sys_message_task(use_default_template ASC);
+CREATE INDEX idx_create_time ON sys_message_task (create_time DESC);
+CREATE INDEX idx_task_type ON sys_message_task (task_type ASC);
+CREATE INDEX idx_event ON sys_message_task (event ASC);
+CREATE INDEX idx_enable ON sys_message_task (enable ASC);
+CREATE INDEX idx_use_default_subject ON sys_message_task (use_default_subject ASC);
+CREATE INDEX idx_use_default_template ON sys_message_task (use_default_template ASC);
 
 CREATE TABLE IF NOT EXISTS `sys_message_task_blob`
 (
@@ -213,103 +215,108 @@ CREATE TABLE IF NOT EXISTS `sys_message_task_blob`
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS sys_announcement(
-                             `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-                             `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-                             `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-                             `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-                             `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-                             `subject` VARCHAR(255) NOT NULL   COMMENT '公告标题' ,
-                             `content` VARCHAR(1000) NOT NULL   COMMENT '公告内容' ,
-                             `start_time` BIGINT NOT NULL   COMMENT '开始时间' ,
-                             `end_time` BIGINT NOT NULL   COMMENT '结束时间' ,
-                             `url` VARCHAR(255)    COMMENT '链接' ,
-                             `receiver` VARCHAR(1000) NOT NULL   COMMENT '接收人id(销售ids/角色ids/部门ids)' ,
-                             `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
-                             PRIMARY KEY (id)
-)  COMMENT = '公告'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+CREATE TABLE IF NOT EXISTS sys_announcement
+(
+    `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
+    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
+    `subject`         VARCHAR(255)  NOT NULL COMMENT '公告标题',
+    `content`         VARCHAR(1000) NOT NULL COMMENT '公告内容',
+    `start_time`      BIGINT        NOT NULL COMMENT '开始时间',
+    `end_time`        BIGINT        NOT NULL COMMENT '结束时间',
+    `url`             VARCHAR(255) COMMENT '链接',
+    `receiver`        VARCHAR(1000) NOT NULL COMMENT '接收人id(销售ids/角色ids/部门ids)',
+    `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
+    PRIMARY KEY (id)
+) COMMENT = '公告'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_organizationId ON sys_announcement(organization_id ASC);
-CREATE INDEX idx_create_time ON sys_announcement(create_time DESC);
+CREATE INDEX idx_organizationId ON sys_announcement (organization_id ASC);
+CREATE INDEX idx_create_time ON sys_announcement (create_time DESC);
 
-CREATE TABLE sys_module(
-                           `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-                           `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
-                           `name` VARCHAR(255) NOT NULL   COMMENT '模块名称(国际化KEY)' ,
-                           `enable` BIT(1) NOT NULL  DEFAULT 1 COMMENT '启用/禁用' ,
-                           `pos` BIGINT(255) NOT NULL   COMMENT '自定义排序' ,
-                           `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-                           `create_time` BIGINT(255) NOT NULL   COMMENT '创建时间' ,
-                           `update_user` VARCHAR(32) NOT NULL   COMMENT '修改人' ,
-                           `update_time` BIGINT(255) NOT NULL   COMMENT '修改时间' ,
-                           PRIMARY KEY (id)
-)  COMMENT = '模块设置'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+CREATE TABLE sys_module
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '模块名称(国际化KEY)',
+    `enable`          BIT(1)       NOT NULL DEFAULT 1 COMMENT '启用/禁用',
+    `pos`             BIGINT(255)  NOT NULL COMMENT '自定义排序',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `create_time`     BIGINT(255)  NOT NULL COMMENT '创建时间',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '修改人',
+    `update_time`     BIGINT(255)  NOT NULL COMMENT '修改时间',
+    PRIMARY KEY (id)
+) COMMENT = '模块设置'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_organization_id ON sys_module(organization_id ASC);
+CREATE INDEX idx_organization_id ON sys_module (organization_id ASC);
 
-CREATE TABLE sys_organization(
-                            `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-                            `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
-                            `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-                            `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-                            `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-                            `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-                            PRIMARY KEY (id)
-)  COMMENT = '组织架构'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+CREATE TABLE sys_organization
+(
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`        VARCHAR(255) NOT NULL COMMENT '名称',
+    `create_time` BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time` BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user` VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user` VARCHAR(32)  NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '组织架构'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE sys_module_field(
-                                 `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-                                 `module_id` VARCHAR(32) NOT NULL   COMMENT '所属模块' ,
-                                 `name` VARCHAR(255) NOT NULL   COMMENT '字段名称' ,
-                                 `type` VARCHAR(10) NOT NULL   COMMENT '字段类型(input/select 等)' ,
-                                 `pos` BIGINT NOT NULL   COMMENT '排序' ,
-                                 `enable` BIT(1) NOT NULL  DEFAULT 1 COMMENT '启用/禁用' ,
-                                 `tooltip` VARCHAR(500)    COMMENT '自定提示内容' ,
-                                 `required` BIT(1) NOT NULL  DEFAULT 1 COMMENT '必填' ,
-                                 `unique` BIT(1) NOT NULL  DEFAULT 0 COMMENT '唯一/不唯一(默认不唯一)' ,
-                                 `field_width` VARCHAR(10) NOT NULL   COMMENT '自定义宽度(常量值待定)' ,
-                                 `default_value` VARCHAR(255)    COMMENT '默认值 (支持多个值)' ,
-                                 `is_default` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否系统默认属性' ,
-                                 `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-                                 `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-                                 `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-                                 `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-                                 PRIMARY KEY (id)
-)  COMMENT = '模块字段配置'
+CREATE TABLE sys_module_field
+(
+    `id`            VARCHAR(32)  NOT NULL COMMENT 'ID',
+    `module_id`     VARCHAR(32)  NOT NULL COMMENT '所属模块',
+    `name`          VARCHAR(255) NOT NULL COMMENT '字段名称',
+    `type`          VARCHAR(10)  NOT NULL COMMENT '字段类型(input/select 等)',
+    `pos`           BIGINT       NOT NULL COMMENT '排序',
+    `enable`        BIT(1)       NOT NULL DEFAULT 1 COMMENT '启用/禁用',
+    `tooltip`       VARCHAR(500) COMMENT '自定提示内容',
+    `required`      BIT(1)       NOT NULL DEFAULT 1 COMMENT '必填',
+    `unique`        BIT(1)       NOT NULL DEFAULT 0 COMMENT '唯一/不唯一(默认不唯一)',
+    `field_width`   VARCHAR(10)  NOT NULL COMMENT '自定义宽度(常量值待定)',
+    `default_value` VARCHAR(255) COMMENT '默认值 (支持多个值)',
+    `is_default`    BIT(1)       NOT NULL DEFAULT 1 COMMENT '是否系统默认属性',
+    `create_user`   VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `create_time`   BIGINT       NOT NULL COMMENT '创建时间',
+    `update_user`   VARCHAR(32)  NOT NULL COMMENT '更新人',
+    `update_time`   BIGINT       NOT NULL COMMENT '更新时间',
+    PRIMARY KEY (id)
+) COMMENT = '模块字段配置'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
 
-CREATE INDEX idx_module_id ON sys_module_field(module_id ASC);
+CREATE INDEX idx_module_id ON sys_module_field (module_id ASC);
 
-CREATE TABLE sys_module_field_option(
-                                        `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-                                        `field_id` VARCHAR(32) NOT NULL   COMMENT '字段id' ,
-                                        `field_key` VARCHAR(255) NOT NULL   COMMENT '字段key' ,
-                                        `filed_label` VARCHAR(255) NOT NULL   COMMENT '显示名称' ,
-                                        `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-                                        `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-                                        `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-                                        `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-                                        PRIMARY KEY (id)
-)  COMMENT = '模块字段选项值配置(部分选项字段)'
+CREATE TABLE sys_module_field_option
+(
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `field_id`    VARCHAR(32)  NOT NULL COMMENT '字段id',
+    `field_key`   VARCHAR(255) NOT NULL COMMENT '字段key',
+    `filed_label` VARCHAR(255) NOT NULL COMMENT '显示名称',
+    `create_user` VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `create_time` BIGINT       NOT NULL COMMENT '创建时间',
+    `update_user` VARCHAR(32)  NOT NULL COMMENT '更新人',
+    `update_time` BIGINT       NOT NULL COMMENT '更新时间',
+    PRIMARY KEY (id)
+) COMMENT = '模块字段选项值配置(部分选项字段)'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
 
-CREATE INDEX idx_field_id ON sys_module_field_option(field_id ASC);
-CREATE INDEX idx_field_key ON sys_module_field_option(field_key ASC);
+CREATE INDEX idx_field_id ON sys_module_field_option (field_id ASC);
+CREATE INDEX idx_field_key ON sys_module_field_option (field_key ASC);
 
 
 -- set innodb lock wait timeout to default

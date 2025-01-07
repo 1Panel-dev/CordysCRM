@@ -36,7 +36,7 @@ public class NotificationService {
         return notifications;
     }
 
-    public int read(long id, String userId) {
+    public int read(String id, String userId) {
         Notification record = new Notification();
         record.setId(id);
         record.setStatus(NotificationConstants.Status.READ.name());

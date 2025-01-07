@@ -2,6 +2,7 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.pager.Pager;
 import io.cordys.common.response.handler.ResultHolder;
+import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Notification;
@@ -38,6 +39,7 @@ public class NotificationControllerTests extends BaseTest {
 
     void saveNotice() {
         Notification notification = new Notification();
+        notification.setId(IDGenerator.nextStr());
         notification.setSubject("功能用例更新通知");
         notification.setOperator("admin");
         notification.setOperation("UPDATE");

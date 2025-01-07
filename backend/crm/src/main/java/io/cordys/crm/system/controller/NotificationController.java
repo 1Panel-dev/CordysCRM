@@ -41,7 +41,7 @@ public class NotificationController {
     @GetMapping(value = "/read/{id}")
     @Operation(summary = "消息中心-将消息设置为已读")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
-    public Integer read(@PathVariable long id) {
+    public Integer read(@PathVariable String id) {
         return notificationService.read(id, SessionUtils.getUserId());
     }
 

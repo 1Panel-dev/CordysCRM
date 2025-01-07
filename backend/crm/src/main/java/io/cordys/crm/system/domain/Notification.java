@@ -12,7 +12,7 @@ import lombok.Data;
 public class Notification{
     
     @Schema(description = "ID")
-    private Long id;
+    private String id;
 
     @Size(min = 1, max = 64, message = "{notification.type.length_range}", groups = {Created.class, Updated.class})
     @Schema(description = "通知类型", requiredMode = Schema.RequiredMode.REQUIRED)
