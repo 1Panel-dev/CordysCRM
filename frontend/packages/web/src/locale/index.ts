@@ -14,7 +14,7 @@ export const LOCALE_OPTIONS = [
 export let i18n: ReturnType<typeof createI18n>;
 
 async function createI18nOptions(): Promise<I18nOptions> {
-  const locale = (localStorage.getItem('MS-locale') || 'zh-CN') as LocaleType;
+  const locale = (localStorage.getItem('CRM-locale') || 'zh-CN') as LocaleType;
   const defaultLocal = await import(`./${locale}/index.ts`);
   const message = defaultLocal.default?.message ?? {};
 

@@ -5,11 +5,12 @@
 </template>
 
 <script setup lang="ts">
+  import { NConfigProvider } from 'naive-ui';
+
   import initDiscreteApi from '@/hooks/useDiscreteApi';
   import { getThemeOverrides } from '@/utils/themeOverrides';
 
   import type { ConfigProviderProps, GlobalThemeOverrides } from 'naive-ui';
-  import { NConfigProvider } from 'naive-ui';
 
   const themeOverridesConfig = ref<GlobalThemeOverrides>(getThemeOverrides());
 

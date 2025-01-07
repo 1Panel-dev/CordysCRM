@@ -11,6 +11,7 @@ function getLessVariableValue(variableName: string): string {
 export function getThemeOverrides(): GlobalThemeOverrides {
   return {
     common: {
+      fontSize: '14px',
       borderRadiusSmall: '4px',
       primaryColor: getLessVariableValue('--primary-8'), // 主题品牌色
       primaryColorHover: getLessVariableValue('--primary-1'), // 主题hover颜色

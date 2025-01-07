@@ -1,11 +1,11 @@
 import { ref, unref } from 'vue';
 import dayjs from 'dayjs';
 
+import useDiscreteApi from '@/hooks/useDiscreteApi';
 import { i18n } from '@/locale';
 import { loadLocalePool } from '@/locale/helper';
 
 import type { LocaleType, Recordable } from '@lib/shared/types/global';
-import { useMessage } from 'naive-ui';
 
 interface LangModule {
   message: Recordable;
@@ -38,7 +38,7 @@ async function changeLocale(locale: LocaleType) {
     setI18nLanguage(locale); // 初始化的时候需要设置一次本地语言
     return locale;
   }
-  const Message = useMessage();
+  const { message: Message } = useDiscreteApi();
   Message.loading(currentLocale === 'zh-CN' ? '语言切换中...' : 'Language switching...');
 
   if (loadLocalePool.includes(locale)) {

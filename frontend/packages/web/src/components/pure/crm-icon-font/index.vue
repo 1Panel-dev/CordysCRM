@@ -7,6 +7,8 @@
 </template>
 
 <script lang="ts" setup>
+  import { NIcon } from 'naive-ui';
+
   import '@/assets/icon-font/iconfont';
 
   const props = defineProps<{

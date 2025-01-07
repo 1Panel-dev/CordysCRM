@@ -1,10 +1,23 @@
 import { defineStore } from 'pinia';
 
-const useAppStore = defineStore('app', {
-  state: (): any => ({}),
+export interface AppState {
+  menuCollapsed: boolean;
+}
 
-  getters: {},
-  actions: {},
+const useAppStore = defineStore('app', {
+  state: (): AppState => ({
+    menuCollapsed: false,
+  }),
+  getters: {
+    getMenuCollapsed(state: AppState) {
+      return state.menuCollapsed;
+    },
+  },
+  actions: {
+    setMenuCollapsed(collapsed: boolean) {
+      this.menuCollapsed = collapsed;
+    },
+  },
 });
 
 export default useAppStore;

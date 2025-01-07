@@ -1,3 +1,5 @@
+import { createDiscreteApi } from 'naive-ui';
+
 import { useI18n } from '@/hooks/useI18n';
 
 import type {
@@ -9,7 +11,6 @@ import type {
   NotificationApi,
   NotificationOptions,
 } from 'naive-ui';
-import { createDiscreteApi } from 'naive-ui';
 
 interface MessageOpt {
   loadingBar: LoadingBarApi;
@@ -94,7 +95,7 @@ export default function useDiscreteApi(props?: ConfigProviderProps) {
         loadingBar, // 加载条 API
         message, // 消息 API
         notification: createNotification(notification, { duration: 3000 }), // 通知 API，设置通知持续时间
-        // TOTO 取消按钮禁用还未补充
+        // TODO: 取消按钮禁用还未补充
         dialog: createDialog(dialog, {
           positiveText: t('common.confirm'),
           maskClosable: false,

@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@types/color": "^4.2.0",
+    "@vicons/ionicons5": "^0.13.0",
     "naive-ui": "^2.40.4",
     "nprogress": "^0.2.0",
     "vfonts": "^0.0.3"
