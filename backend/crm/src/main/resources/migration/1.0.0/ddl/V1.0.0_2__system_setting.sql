@@ -368,6 +368,32 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_role_id ON sys_user_role(role_id ASC);
 CREATE INDEX idx_user_id ON sys_user_role(user_id ASC);
 
+CREATE TABLE sys_sync_organization_config
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `enable`          BIT(1)       NOT NULL DEFAULT 1 COMMENT '是否启用',
+    `agent_id`        VARCHAR(255) COMMENT '应用ID',
+    `corp_id`         VARCHAR(255) NOT NULL COMMENT '企业ID',
+    `secret`          VARCHAR(255) NOT NULL COMMENT '应用密钥',
+    `resource`        VARCHAR(255) NOT NULL COMMENT '平台',
+    `url`             VARCHAR(255) COMMENT '回调url',
+    `sync`            BIT(1)       NOT NULL DEFAULT 0 COMMENT '是否同步',
+    `sync_resource`   VARCHAR(255) COMMENT '同步来源',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '同步组织架构配置表'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_organizationId ON sys_sync_organization_config(organization_id ASC);
+CREATE INDEX idx_sync ON sys_sync_organization_config(sync ASC);
+
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
