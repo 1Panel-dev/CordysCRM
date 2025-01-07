@@ -12,6 +12,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +60,7 @@ public class ModuleService {
 	/**
 	 * 初始化系统(组织或公司)模块数据
 	 */
+	@Transactional(rollbackFor = Exception.class)
 	public void initModule(String organizationId) {
 		// init module data
 		List<Module> modules = new ArrayList<>();

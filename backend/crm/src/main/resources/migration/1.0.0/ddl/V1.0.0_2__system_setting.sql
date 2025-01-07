@@ -303,7 +303,7 @@ CREATE TABLE sys_module_field_option
     `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
     `field_id`    VARCHAR(32)  NOT NULL COMMENT '字段id',
     `field_key`   VARCHAR(255) NOT NULL COMMENT '字段key',
-    `filed_label` VARCHAR(255) NOT NULL COMMENT '显示名称',
+    `field_label` VARCHAR(255) NOT NULL COMMENT '显示名称',
     `create_user` VARCHAR(32)  NOT NULL COMMENT '创建人',
     `create_time` BIGINT       NOT NULL COMMENT '创建时间',
     `update_user` VARCHAR(32)  NOT NULL COMMENT '更新人',
