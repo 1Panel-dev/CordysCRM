@@ -1,5 +1,4 @@
 import { createApp } from 'vue';
-import { createPinia } from 'pinia';
 
 // TODO 国际化接口对接
 // import localforage from 'localforage';
@@ -11,11 +10,12 @@ import App from './App.vue';
 import { setupI18n } from './locale';
 import useLocale from './locale/useLocale';
 import router from './router';
+import store from './store';
 
 async function setupApp() {
   const app = createApp(App);
 
-  app.use(createPinia());
+  app.use(store);
   // 注册国际化，需要异步阻塞，确保语言包加载完毕
   await setupI18n(app);
 

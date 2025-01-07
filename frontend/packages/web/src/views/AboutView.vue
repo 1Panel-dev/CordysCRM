@@ -36,15 +36,18 @@
         </div>
       </div>
     </CrmCard>
+
+    <TableDemo class="my-[16px]" />
   </div>
 </template>
 
 <script setup lang="ts">
+  import { NAlert, NButton } from 'naive-ui';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import TableDemo from './TableDemo.vue';
 
   import useDiscreteApi from '@/hooks/useDiscreteApi';
-
-  import { NAlert, NButton } from 'naive-ui';
   // 暂时提供参考 you can delete it  ^_^
   const { message, notification, dialog } = useDiscreteApi();
 
