@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 
 @Service
@@ -34,6 +35,8 @@ public class UserLoginService {
     private BaseMapper<User> sysUserMapper;
     @Resource
     private ExtUserMapper extUserMapper;
+    @Resource
+    private RoleService roleService;
 
     public UserDTO getUserDTO(String userId) {
         UserDTO userDTO = extUserMapper.selectById(userId);
@@ -43,6 +46,8 @@ public class UserLoginService {
         if (BooleanUtils.isFalse(userDTO.getEnable())) {
             throw new DisabledAccountException();
         }
+        Set<String> permissionIds = roleService.getPermissionIdsByUserId(userId);
+        userDTO.setPermissionIds(permissionIds);
         return userDTO;
     }
 

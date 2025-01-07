@@ -4,6 +4,7 @@ import io.cordys.common.pager.Pager;
 import io.cordys.common.response.handler.ResultHolder;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
+import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.request.NotificationRequest;

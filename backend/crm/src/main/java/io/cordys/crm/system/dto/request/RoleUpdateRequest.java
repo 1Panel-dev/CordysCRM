@@ -14,19 +14,19 @@ import lombok.Data;
 public class RoleUpdateRequest {
 
     @NotBlank
-    @Max(value = 32)
+    @Size(max = 32)
     @Schema(description = "id")
     private String id;
 
-    @Max(value = 255)
+    @Size(max = 255)
     @Schema(description = "角色名称")
     private String name;
 
-    @Max(value = 30)
+    @Size(max = 30)
     @Schema(description = "数据范围（全部数据权限/指定部门权限/本部门数据权限/本部门及以下数据权限/仅本人数据）")
     private String dataScope;
 
-    @Max(value = 1000)
+    @Size(max = 1000)
     @Schema(description = "描述")
     private String description;
 }

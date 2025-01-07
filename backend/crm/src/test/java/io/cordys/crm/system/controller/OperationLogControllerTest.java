@@ -1,5 +1,6 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.dto.request.OperationLogRequest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;

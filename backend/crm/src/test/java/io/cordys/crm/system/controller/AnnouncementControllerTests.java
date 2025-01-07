@@ -4,35 +4,27 @@ import io.cordys.common.pager.Pager;
 import io.cordys.common.response.handler.ResultHolder;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
+import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.domain.Announcement;
 import io.cordys.crm.system.dto.request.AnnouncementPageRequest;
 import io.cordys.crm.system.dto.request.AnnouncementRequest;
 import io.cordys.crm.system.dto.response.AnnouncementDTO;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.security.SessionConstants;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AnnouncementControllerTests extends BaseTest{
-
-    @Resource
-    private MockMvc mockMvc;
-
+public class AnnouncementControllerTests extends BaseTest {
     @Resource
     private BaseMapper<Announcement> announcementMapper;
 
@@ -97,12 +89,6 @@ public class AnnouncementControllerTests extends BaseTest{
     @Order(5)
     public void testDeleteAnnouncement() throws Exception {
         Announcement announcement = getAnnouncement();
-        mockMvc.perform(MockMvcRequestBuilders.get("/announcement/delete/" + announcement.getId()).header(SessionConstants.HEADER_TOKEN, sessionId)
-                        .header(SessionConstants.CSRF_TOKEN, csrfToken)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON)).andReturn();
+        requestGetWithOk("/announcement/delete/" + announcement.getId());
     }
-
-
 } 

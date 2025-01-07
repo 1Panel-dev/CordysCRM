@@ -1,41 +1,40 @@
 package io.cordys.crm.system.controller;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
+import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.permission.PermissionDefinitionItem;
+import io.cordys.crm.system.domain.Role;
+import io.cordys.crm.system.dto.request.RoleAddRequest;
+import io.cordys.crm.system.dto.request.RoleUpdateRequest;
+import io.cordys.crm.system.dto.response.RoleGetResponse;
+import io.cordys.crm.system.dto.response.RoleListResponse;
+import io.cordys.crm.system.service.RoleService;
+import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import jakarta.annotation.Resource;
-import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.pager.Pager;
-import io.cordys.security.SessionUtils;
-import io.cordys.crm.system.domain.Role;
-import io.cordys.crm.system.dto.request.*;
-import io.cordys.crm.system.dto.response.*;
 
-import io.cordys.crm.system.service.RoleService;
-import io.cordys.common.pager.PageUtils;
 import java.util.List;
 
 /**
- * 角色
  *
  * @author jianxing
- * @date 2025-01-03 14:13:46
+ * @date 2025-01-03 16:52:34
  */
+@Tag(name = "角色")
 @RestController
 @RequestMapping("/role")
 public class RoleController {
     @Resource
     private RoleService roleService;
 
-    @PostMapping("/page")
+    @GetMapping("/list/{organizationId}")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_READ)
     @Operation(summary = "角色列表")
-    public Pager<List<RoleListResponse>> list(@Validated @RequestBody RolePageRequest request){
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, roleService.list(request));
+    public List<RoleListResponse> list(@PathVariable String organizationId){
+        return roleService.list(organizationId);
     }
 
     @GetMapping("/get/{id}")
@@ -63,5 +62,12 @@ public class RoleController {
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_DELETE)
     public void delete(@PathVariable String id){
         roleService.delete(id);
+    }
+
+    @GetMapping("/permission/setting/{id}")
+    @Operation(summary = "获取角色对应的权限配置")
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_READ)
+    public List<PermissionDefinitionItem> getPermissionSetting(@PathVariable String id) {
+        return roleService.getPermissionSetting(id);
     }
 }

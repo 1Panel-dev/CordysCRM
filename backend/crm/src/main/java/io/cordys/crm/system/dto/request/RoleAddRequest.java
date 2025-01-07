@@ -1,8 +1,8 @@
 package io.cordys.crm.system.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 
@@ -14,21 +14,21 @@ import lombok.Data;
  */
 @Data
 public class RoleAddRequest {
-    @Max(value = 255)
+    @Size(max = 255)
     @NotBlank
     @Schema(description = "角色名称")
     private String name;
 
-    @Max(value = 30)
+    @Size(max = 30)
     @NotBlank
     @Schema(description = "数据范围（全部数据权限/指定部门权限/本部门数据权限/本部门及以下数据权限/仅本人数据）")
     private String dataScope;
 
-    @Max(value = 1000)
+    @Size(max = 1000)
     @Schema(description = "描述")
     private String description;
 
-    @Max(value = 32)
+    @Size(max = 32)
     @NotBlank
     @Schema(description = "组织id")
     private String organizationId;

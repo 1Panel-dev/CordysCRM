@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.io.Serial;
+import java.util.Set;
 
 /**
  * <p>用户数据传输对象，用于传输用户信息，包含其他平台对接信息和头像。</p>
@@ -77,4 +78,7 @@ public class UserDTO implements java.io.Serializable {
 
     @Schema(description = "头像")
     private String avatar;
+
+    @Schema(description = "权限ID")
+    private Set<String> permissionIds;
 }

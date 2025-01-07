@@ -2,6 +2,7 @@ package io.cordys.common.security.realm;
 
 
 import io.cordys.common.constants.UserSource;
+import io.cordys.common.permission.PermissionUtils;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.service.UserLoginService;
@@ -73,11 +74,7 @@ public class LocalRealm extends AuthorizingRealm {
 
     @Override
     public boolean isPermitted(PrincipalCollection principals, String permission) {
-
-        // TODO：增加自己的权限验证
-
-       // return super.isPermitted(principals, permission);
-        return true;
+        return PermissionUtils.hasPermission(permission);
     }
 
     private UserDTO getUserWithOutAuthenticate(String userId) {

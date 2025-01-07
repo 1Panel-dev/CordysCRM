@@ -1,6 +1,7 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.common.util.Translator;
+import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.dto.request.ModuleRequest;
 import io.cordys.crm.system.dto.response.ModuleDTO;
@@ -22,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ModuleControllerTests extends BaseTest{
+public class ModuleControllerTests extends BaseTest {
 
 	@Resource
 	private ModuleService moduleService;
