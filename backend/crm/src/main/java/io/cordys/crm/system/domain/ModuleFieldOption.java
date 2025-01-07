@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "sys_module_field_option")
-public class SysModuleFieldOption extends BaseModel {
+public class ModuleFieldOption extends BaseModel {
 
 	@Schema(description = "所属模块字段ID")
 	private String fieldId;

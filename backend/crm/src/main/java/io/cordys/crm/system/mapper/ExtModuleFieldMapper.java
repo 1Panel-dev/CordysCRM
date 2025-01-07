@@ -1,6 +1,5 @@
 package io.cordys.crm.system.mapper;
 
-import io.cordys.crm.system.domain.SysModuleField;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

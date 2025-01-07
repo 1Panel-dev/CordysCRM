@@ -2,8 +2,8 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.system.domain.SysModuleField;
-import io.cordys.crm.system.domain.SysModuleFieldOption;
+import io.cordys.crm.system.domain.ModuleField;
+import io.cordys.crm.system.domain.ModuleFieldOption;
 import io.cordys.crm.system.dto.request.ModuleFieldRequest;
 import io.cordys.crm.system.dto.request.ModuleFieldSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
@@ -37,7 +37,7 @@ public class ModuleFieldControllerTests extends BaseTest{
 		assert fields.size() == 1;
 		ModuleFieldDTO saveField = fields.getFirst();
 		saveField.setName("default-name-update");
-		SysModuleFieldOption option = SysModuleFieldOption.builder().fieldKey("default-key").fieldLabel("default-value").build();
+		ModuleFieldOption option = ModuleFieldOption.builder().fieldKey("default-key").fieldLabel("default-value").build();
 		saveField.setOptions(List.of(option));
 		request.setFields(List.of(saveField));
 		this.requestPostWithOk("/module/field/save", request);
@@ -54,7 +54,7 @@ public class ModuleFieldControllerTests extends BaseTest{
 	}
 
 	private ModuleFieldDTO buildField() {
-		SysModuleField field = SysModuleField.builder()
+		ModuleField field = ModuleField.builder()
 				.moduleId("default-module").name("default-name").type("select").pos(1L)
 				.tooltip("default-tooltip").required(1).unique(1).fieldWidth("half")
 				.defaultValue("default-value").isDefault(1)

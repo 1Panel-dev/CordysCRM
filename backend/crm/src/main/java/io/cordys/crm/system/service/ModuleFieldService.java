@@ -2,8 +2,8 @@ package io.cordys.crm.system.service;
 
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.crm.system.domain.SysModuleField;
-import io.cordys.crm.system.domain.SysModuleFieldOption;
+import io.cordys.crm.system.domain.ModuleField;
+import io.cordys.crm.system.domain.ModuleFieldOption;
 import io.cordys.crm.system.dto.request.ModuleFieldRequest;
 import io.cordys.crm.system.dto.request.ModuleFieldSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
 public class ModuleFieldService {
 
 	@Resource
-	private BaseMapper<SysModuleField> moduleFieldMapper;
+	private BaseMapper<ModuleField> moduleFieldMapper;
 	@Resource
-	private BaseMapper<SysModuleFieldOption> moduleFieldOptionMapper;
+	private BaseMapper<ModuleFieldOption> moduleFieldOptionMapper;
 	@Resource
 	private ExtModuleFieldMapper extModuleFieldMapper;
 	@Resource
@@ -40,17 +40,17 @@ public class ModuleFieldService {
 	 */
 	public List<ModuleFieldDTO> getFieldList(ModuleFieldRequest request) {
 		List<ModuleFieldDTO> fieldDTOList = new ArrayList<>();
-		LambdaQueryWrapper<SysModuleField> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.eq(SysModuleField::getModuleId, request.getModuleId());
-		List<SysModuleField> fields = moduleFieldMapper.selectListByLambda(queryWrapper);
+		LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(ModuleField::getModuleId, request.getModuleId());
+		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(queryWrapper);
 		if (CollectionUtils.isEmpty(fields)) {
 			return fieldDTOList;
 		}
-		List<String> fieldIds = fields.stream().map(SysModuleField::getId).toList();
-		LambdaQueryWrapper<SysModuleFieldOption> optionQueryWrapper = new LambdaQueryWrapper<>();
-		optionQueryWrapper.in(SysModuleFieldOption::getFieldId, fieldIds);
-		List<SysModuleFieldOption> fieldOptions = moduleFieldOptionMapper.selectListByLambda(optionQueryWrapper);
-		Map<String, List<SysModuleFieldOption>> fieldOptionMap = fieldOptions.stream().collect(Collectors.groupingBy(SysModuleFieldOption::getFieldId));
+		List<String> fieldIds = fields.stream().map(ModuleField::getId).toList();
+		LambdaQueryWrapper<ModuleFieldOption> optionQueryWrapper = new LambdaQueryWrapper<>();
+		optionQueryWrapper.in(ModuleFieldOption::getFieldId, fieldIds);
+		List<ModuleFieldOption> fieldOptions = moduleFieldOptionMapper.selectListByLambda(optionQueryWrapper);
+		Map<String, List<ModuleFieldOption>> fieldOptionMap = fieldOptions.stream().collect(Collectors.groupingBy(ModuleFieldOption::getFieldId));
 		fields.forEach(field -> {
 			ModuleFieldDTO fieldDTO = new ModuleFieldDTO();
 			BeanUtils.copyBean(fieldDTO, field);
@@ -75,9 +75,9 @@ public class ModuleFieldService {
 		if (CollectionUtils.isEmpty(saveParam.getFields())) {
 			return List.of();
 		}
-		List<SysModuleField> addFields = new ArrayList<>();
-		List<SysModuleField> updateFields = new ArrayList<>();
-		List<SysModuleFieldOption> addFieldOptions = new ArrayList<>();
+		List<ModuleField> addFields = new ArrayList<>();
+		List<ModuleField> updateFields = new ArrayList<>();
+		List<ModuleFieldOption> addFieldOptions = new ArrayList<>();
 		saveParam.getFields().forEach(field -> {
 			if (field.getId() == null) {
 				// add new field
@@ -89,7 +89,7 @@ public class ModuleFieldService {
 			}
 			// handle field option
 			if (CollectionUtils.isNotEmpty(field.getOptions())) {
-				List<SysModuleFieldOption> fieldOptions = field.getOptions().stream().map(option -> {
+				List<ModuleFieldOption> fieldOptions = field.getOptions().stream().map(option -> {
 					option.setId(IDGenerator.nextStr());
 					option.setFieldId(field.getId());
 					return buildFieldOption(option, currentUserId);
@@ -102,7 +102,7 @@ public class ModuleFieldService {
 		}
 		if (CollectionUtils.isNotEmpty(updateFields)) {
 			updateFields.forEach(field -> moduleFieldMapper.update(field));
-			extModuleFieldOptionMapper.deleteByFieldIds(updateFields.stream().map(SysModuleField::getId).toList());
+			extModuleFieldOptionMapper.deleteByFieldIds(updateFields.stream().map(ModuleField::getId).toList());
 		}
 		if (CollectionUtils.isNotEmpty(addFieldOptions)) {
 			moduleFieldOptionMapper.batchInsert(addFieldOptions);
@@ -117,8 +117,8 @@ public class ModuleFieldService {
 	 * @param isNew 是否新增
 	 * @return 模块字段
 	 */
-	public SysModuleField buildField(ModuleFieldDTO field, String currentUserId, boolean isNew) {
-		SysModuleField moduleField = new SysModuleField();
+	public ModuleField buildField(ModuleFieldDTO field, String currentUserId, boolean isNew) {
+		ModuleField moduleField = new ModuleField();
 		if (isNew) {
 			field.setCreateTime(System.currentTimeMillis());
 			field.setCreateUser(currentUserId);
@@ -135,7 +135,7 @@ public class ModuleFieldService {
 	 * @param currentUserId 当前用户
 	 * @return 字段选项
 	 */
-	public SysModuleFieldOption buildFieldOption(SysModuleFieldOption fieldOption, String currentUserId) {
+	public ModuleFieldOption buildFieldOption(ModuleFieldOption fieldOption, String currentUserId) {
 		fieldOption.setCreateTime(System.currentTimeMillis());
 		fieldOption.setCreateUser(currentUserId);
 		fieldOption.setUpdateTime(System.currentTimeMillis());

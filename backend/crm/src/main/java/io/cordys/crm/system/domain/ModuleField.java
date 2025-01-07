@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "sys_module_field")
-public class SysModuleField extends BaseModel {
+public class ModuleField extends BaseModel {
 
 	@Schema(description = "所属模块ID")
 	private String moduleId;
