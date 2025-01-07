@@ -2,18 +2,16 @@ package io.cordys.listener;
 
 import io.cordys.common.uid.impl.DefaultUidGenerator;
 import io.cordys.common.util.HikariCPUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.rsa.RsaKey;
 import io.cordys.common.util.rsa.RsaUtils;
 import io.cordys.crm.system.service.ExtScheduleService;
-import io.cordys.file.engine.DefaultRepositoryDir;
-import io.cordys.file.engine.FileCenter;
-import io.cordys.file.engine.FileRepository;
-import io.cordys.file.engine.FileRequest;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,6 +21,9 @@ class AppListener implements ApplicationRunner {
 
     @Resource
     private ExtScheduleService extScheduleService;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 应用启动后执行的初始化方法。
@@ -58,31 +59,27 @@ class AppListener implements ApplicationRunner {
      * </p>
      */
     private void initializeRsaConfiguration() {
-        FileRequest fileRequest = new FileRequest();
-        fileRequest.setFileName("rsa.key");
-        fileRequest.setFolder(DefaultRepositoryDir.getSystemRootDir());
-        FileRepository fileRepository = FileCenter.getDefaultRepository();
-
+        String redisKey = "rsa:key";
         try {
-            byte[] rsaFile = fileRepository.getFile(fileRequest);
-            if (rsaFile != null) {
-                // 如果RSA密钥文件存在，反序列化并设置密钥
-                RsaKey rsaKey = SerializationUtils.deserialize(rsaFile);
+            // 从 Redis 获取 RSA 密钥
+            String rsaStr = stringRedisTemplate.opsForValue().get(redisKey);
+            if (StringUtils.isNotBlank(rsaStr)) {
+                // 如果 RSA 密钥存在，反序列化并设置密钥
+                RsaKey rsaKey = JSON.parseObject(rsaStr, RsaKey.class);
                 RsaUtils.setRsaKey(rsaKey);
                 return;
             }
         } catch (Exception e) {
-            LogUtils.error("获取RSA配置失败", e);
+            LogUtils.error("从 Redis 获取 RSA 配置失败", e);
         }
 
         try {
-            // 如果RSA密钥文件不存在，生成新的RSA密钥并保存
+            // 如果 Redis 中没有密钥，生成新的 RSA 密钥并保存到 Redis
             RsaKey rsaKey = RsaUtils.getRsaKey();
-            byte[] rsaKeyBytes = SerializationUtils.serialize(rsaKey);
-            fileRepository.saveFile(rsaKeyBytes, fileRequest);
+            stringRedisTemplate.opsForValue().set(redisKey, JSON.toJSONString(rsaKey));
             RsaUtils.setRsaKey(rsaKey);
         } catch (Exception e) {
-            LogUtils.error("初始化RSA配置失败", e);
+            LogUtils.error("初始化 RSA 配置失败", e);
         }
     }
 }
