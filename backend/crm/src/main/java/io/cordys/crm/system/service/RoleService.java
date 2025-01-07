@@ -1,6 +1,7 @@
 package io.cordys.crm.system.service;
 
 import io.cordys.common.constants.InternalRole;
+import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.permission.Permission;
 import io.cordys.common.permission.PermissionDefinitionItem;
@@ -68,6 +69,8 @@ public class RoleService {
         role.setUpdateUser(userId);
         role.setCreateUser(userId);
         role.setInternal(false);
+        // 创建默认仅可查看
+        role.setDataScope(RoleDataScope.SELF.name());
         roleMapper.insert(role);
         return role;
     }

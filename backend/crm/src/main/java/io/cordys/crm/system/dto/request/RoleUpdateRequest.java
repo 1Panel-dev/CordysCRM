@@ -1,5 +1,7 @@
 package io.cordys.crm.system.dto.request;
 
+import io.cordys.common.constants.EnumValue;
+import io.cordys.common.constants.RoleDataScope;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -24,6 +26,7 @@ public class RoleUpdateRequest {
 
     @Size(max = 30)
     @Schema(description = "数据范围（全部数据权限/指定部门权限/本部门数据权限/本部门及以下数据权限/仅本人数据）")
+    @EnumValue(enumClass = RoleDataScope.class)
     private String dataScope;
 
     @Size(max = 1000)

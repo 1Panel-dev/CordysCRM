@@ -19,11 +19,6 @@ public class RoleAddRequest {
     @Schema(description = "角色名称")
     private String name;
 
-    @Size(max = 30)
-    @NotBlank
-    @Schema(description = "数据范围（全部数据权限/指定部门权限/本部门数据权限/本部门及以下数据权限/仅本人数据）")
-    private String dataScope;
-
     @Size(max = 1000)
     @Schema(description = "描述")
     private String description;

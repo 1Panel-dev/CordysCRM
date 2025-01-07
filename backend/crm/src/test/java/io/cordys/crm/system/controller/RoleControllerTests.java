@@ -30,7 +30,7 @@ class RoleControllerTests extends BaseTest {
     /**
      * 记录创建的角色
      */
-    private static Role addUserRole;
+    private static Role addRole;
 
     @Resource
     private BaseMapper<Role> roleMapper;
@@ -61,14 +61,13 @@ class RoleControllerTests extends BaseTest {
         RoleAddRequest request = new RoleAddRequest();
         request.setName("test");
         request.setDescription("test desc");
-        request.setDataScope("ALL");
         request.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Role resultData = getResultData(mvcResult, Role.class);
         Role role = roleMapper.selectByPrimaryKey(resultData.getId());
 
         // 校验请求成功数据
-        this.addUserRole = role;
+        this.addRole = role;
         Assertions.assertEquals(request.getName(), role.getName());
         Assertions.assertEquals(request.getDescription(), role.getDescription());
 
@@ -81,7 +80,7 @@ class RoleControllerTests extends BaseTest {
     void testUpdate() throws Exception {
         // @@请求成功
         RoleUpdateRequest request = new RoleUpdateRequest();
-        request.setId(addUserRole.getId());
+        request.setId(addRole.getId());
         request.setName("test update");
         request.setDescription("test desc !!!!");
         this.requestPostWithOk(DEFAULT_UPDATE, request);
@@ -92,7 +91,7 @@ class RoleControllerTests extends BaseTest {
 
         // 不修改信息
         RoleUpdateRequest emptyRequest = new RoleUpdateRequest();
-        emptyRequest.setId(addUserRole.getId());
+        emptyRequest.setId(addRole.getId());
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
 
         // @@校验权限
@@ -116,20 +115,20 @@ class RoleControllerTests extends BaseTest {
     @Order(4)
     void getPermissionSetting() throws Exception {
         // @@请求成功
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(PERMISSION_SETTING, addUserRole.getId());
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(PERMISSION_SETTING, addRole.getId());
         List<PermissionDefinitionItem> permissionDefinition = getResultDataArray(mvcResult, PermissionDefinitionItem.class);
         // todo
         // @@校验权限
-        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, PERMISSION_SETTING, addUserRole.getId());
+        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, PERMISSION_SETTING, addRole.getId());
     }
 
     @Test
     @Order(5)
     void delete() throws Exception {
         // @@请求成功
-        this.requestGetWithOk(DEFAULT_DELETE, addUserRole.getId());
+        this.requestGetWithOk(DEFAULT_DELETE, addRole.getId());
         // todo
         // @@校验权限
-        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_DELETE, DEFAULT_DELETE, addUserRole.getId());
+        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_DELETE, DEFAULT_DELETE, addRole.getId());
     }
 }
