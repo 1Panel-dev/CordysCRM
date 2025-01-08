@@ -44,4 +44,31 @@ public class OpenApiConfig {
                 .build();
     }
 
+    @Bean
+    @ConditionalOnProperty(name = {"springdoc.swagger-ui.enabled", "springdoc.api-docs.enabled"}, havingValue = "true")
+    public GroupedOpenApi customerApi() {
+        return GroupedOpenApi.builder()
+                .group("customer")
+                .packagesToScan(prePackages + "customer")
+                .build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = {"springdoc.swagger-ui.enabled", "springdoc.api-docs.enabled"}, havingValue = "true")
+    public GroupedOpenApi leadApi() {
+        return GroupedOpenApi.builder()
+                .group("lead")
+                .packagesToScan(prePackages + "lead")
+                .build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = {"springdoc.swagger-ui.enabled", "springdoc.api-docs.enabled"}, havingValue = "true")
+    public GroupedOpenApi opportunityApi() {
+        return GroupedOpenApi.builder()
+                .group("opportunity")
+                .packagesToScan(prePackages + "opportunity")
+                .build();
+    }
+
 }
