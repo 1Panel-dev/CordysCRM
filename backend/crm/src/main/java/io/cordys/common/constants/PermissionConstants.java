@@ -37,5 +37,4 @@ public class PermissionConstants {
      */
     public static final String MODULE_SETTING_READ = "MODULE_SETTING:READ";
     public static final String MODULE_SETTING_UPDATE = "MODULE_SETTING:UPDATE";
-
 }

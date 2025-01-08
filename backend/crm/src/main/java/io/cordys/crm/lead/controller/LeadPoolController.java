@@ -2,6 +2,7 @@ package io.cordys.crm.lead.controller;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.crm.lead.dto.LeadPoolDTO;
@@ -13,6 +14,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +31,7 @@ public class LeadPoolController {
 
 	@PostMapping("/page")
 	@Operation(summary = "分页查询线索池")
+	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE}, logical = Logical.OR)
 	public Pager<List<LeadPoolDTO>> page(@Validated @RequestBody LeadPoolPageRequest request) {
 		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
 				StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
@@ -36,24 +40,28 @@ public class LeadPoolController {
 
 	@PostMapping("/add")
 	@Operation(summary = "新增线索池")
+	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE}, logical = Logical.OR)
 	public void add(@Validated @RequestBody LeadPoolSaveRequest request) {
 		leadPoolService.save(request, SessionUtils.getUserId());
 	}
 
 	@PostMapping("/update")
 	@Operation(summary = "编辑线索池")
+	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE}, logical = Logical.OR)
 	public void update(@Validated @RequestBody LeadPoolSaveRequest request) {
 		leadPoolService.save(request, SessionUtils.getUserId());
 	}
 
 	@GetMapping("/delete/{id}")
 	@Operation(summary = "删除线索池")
+	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE}, logical = Logical.OR)
 	public void delete(@PathVariable String id) {
 		leadPoolService.delete(id);
 	}
 
 	@GetMapping("/switch/{id}")
 	@Operation(summary = "启用/禁用线索池")
+	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE}, logical = Logical.OR)
 	public void switchStatus(@PathVariable String id) {
 		leadPoolService.switchStatus(id, SessionUtils.getUserId());
 	}
