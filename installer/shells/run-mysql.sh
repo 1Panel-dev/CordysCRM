@@ -12,7 +12,7 @@ else
   mysql_install_db --user=root > /dev/null
 
   if [ "$MYSQL_ROOT_PASSWORD" = "" ]; then
-    MYSQL_ROOT_PASSWORD=111111
+    MYSQL_ROOT_PASSWORD=CordysCRM@mysql
     echo "[i] MySQL root Password: $MYSQL_ROOT_PASSWORD"
   fi
 
@@ -35,7 +35,7 @@ EOF
 
   if [ "$MYSQL_DATABASE" != "" ]; then
     echo "[i] Creating database: $MYSQL_DATABASE"
-    echo "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\` CHARACTER SET utf8 COLLATE utf8_general_ci;" >> $tfile
+    echo "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;" >> $tfile
 
     if [ "$MYSQL_USER" != "" ]; then
       echo "[i] Creating user: $MYSQL_USER with password $MYSQL_PASSWORD"
