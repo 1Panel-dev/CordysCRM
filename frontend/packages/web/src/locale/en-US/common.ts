@@ -218,4 +218,5 @@ export default {
   'common.batchUpdate': 'Updated to',
   'common.checkDetail': 'View details',
   'common.operator': 'Operator',
+  'common.nameExists': 'Name already exists',
 };

@@ -161,6 +161,18 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       padding: '32px',
       contentMargin: '16px 0 20px',
     },
+    Tree: {
+      nodeColorHover: getLessVariableValue('--primary-7'),
+      nodeHeight: '34px',
+      nodeTextColorDisabled: getLessVariableValue('--text-n6'),
+      nodeColorActive: getLessVariableValue('--primary-7'),
+      nodeColorPressed: getLessVariableValue('--primary-7'),
+    },
+    Dropdown: {
+      optionColorHover: getLessVariableValue('--primary-7'),
+      padding: '6px',
+      borderRadius: '6px',
+    },
   };
 }
 
