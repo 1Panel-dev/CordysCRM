@@ -1,11 +1,13 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.crm.system.dto.request.ModuleRequest;
 import io.cordys.crm.system.dto.response.ModuleDTO;
 import io.cordys.crm.system.service.ModuleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,12 +23,14 @@ public class ModuleController {
 
 	@PostMapping("/list")
 	@Operation(summary = "获取模块设置列表")
+	@RequiresPermissions(PermissionConstants.MODULE_SETTING_READ)
 	public List<ModuleDTO> getModuleList(@Validated @RequestBody ModuleRequest request) {
 		return moduleService.getModuleList(request);
 	}
 
 	@GetMapping("/switch/{id}")
 	@Operation(summary = "单个模块开启或关闭")
+	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
 	public void switchModule(@PathVariable String id) {
 		moduleService.switchModule(id);
 	}

@@ -1,5 +1,6 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.crm.system.dto.request.ModuleFieldRequest;
 import io.cordys.crm.system.dto.request.ModuleFieldSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
@@ -8,6 +9,7 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,12 +28,14 @@ public class ModuleFieldController {
 
 	@PostMapping("/save")
 	@Operation(summary = "保存字段列表")
+	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
 	public List<ModuleFieldDTO> save(@Validated @RequestBody ModuleFieldSaveRequest request) {
 		return moduleFieldService.save(request, SessionUtils.getUserId());
 	}
 
 	@PostMapping("/list")
 	@Operation(summary = "获取模块字段列表")
+	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
 	public List<ModuleFieldDTO> getFieldList(@Validated @RequestBody ModuleFieldRequest request) {
 		return moduleFieldService.getFieldList(request);
 	}
