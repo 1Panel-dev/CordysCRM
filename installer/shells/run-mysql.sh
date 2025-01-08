@@ -16,7 +16,7 @@ else
     echo "[i] MySQL root Password: $MYSQL_ROOT_PASSWORD"
   fi
 
-  MYSQL_DATABASE=${MYSQL_DATABASE:-""}
+  MYSQL_DATABASE=${MYSQL_DATABASE:-"cordys-crm"}
   MYSQL_USER=${MYSQL_USER:-""}
   MYSQL_PASSWORD=${MYSQL_PASSWORD:-""}
 
