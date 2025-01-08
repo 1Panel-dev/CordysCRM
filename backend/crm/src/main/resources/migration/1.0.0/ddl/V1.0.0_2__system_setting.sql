@@ -394,6 +394,27 @@ CREATE INDEX idx_organizationId ON sys_sync_organization_config(organization_id 
 CREATE INDEX idx_sync ON sys_sync_organization_config(sync ASC);
 
 
+CREATE TABLE sys_department(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
+    `parent_id` VARCHAR(32) NOT NULL   COMMENT '父级' ,
+    `num` BIGINT NOT NULL   COMMENT '排序' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    `resource` VARCHAR(255) NOT NULL   COMMENT '来源' ,
+    `resource_id` VARCHAR(255)    COMMENT '来源id' ,
+    PRIMARY KEY (id)
+)  COMMENT = '部门表'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource ON sys_department(resource ASC);
+CREATE INDEX idx_organization_id ON sys_department(organization_id ASC);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 

@@ -25,4 +25,8 @@ public class PermissionConstants {
      public static final String SYSTEM_NOTICE_UPDATE = "SYSTEM_NOTICE:UPDATE";
      public static final String SYSTEM_NOTICE_DELETE = "SYSTEM_NOTICE:DELETE";
      /*------ end: SYSTEM_NOTICE_ROLE ------*/
+
+    /*------ start: SYS_DEPARTMENT ------*/
+    public static final String SYS_DEPARTMENT_READ = "SYS_DEPARTMENT:READ";
+    /*------ end: SYS_DEPARTMENT ------*/
 }
