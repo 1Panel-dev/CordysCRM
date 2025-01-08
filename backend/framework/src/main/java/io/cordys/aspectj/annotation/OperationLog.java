@@ -36,7 +36,7 @@ public @interface OperationLog {
     /**
      * @return 日志绑定的业务标识
      */
-    String resourceId();
+    String resourceId() default "";
 
     /**
      * @return 日志的额外信息

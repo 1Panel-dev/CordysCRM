@@ -25,6 +25,11 @@ public class LogExtraDTO implements java.io.Serializable {
      */
     private Object modifiedValue;
 
+    /**
+     * 资源的id
+     */
+    private String resourceId;
+
     @Override
     public String toString() {
         return JSON.toJSONString(this);

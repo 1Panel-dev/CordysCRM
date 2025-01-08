@@ -84,6 +84,12 @@ public class LogService implements OperationLogHandler {
 
         // 插入操作日志和日志Blob数据
         log.setId(IDGenerator.nextStr());
+
+        //设置resourceId
+        if(StringUtils.isBlank(log.getSourceId())&& log.getExtra() != null && ObjectUtils.isNotEmpty(log.getExtra().getResourceId())){
+            log.setSourceId(log.getExtra().getResourceId());
+        }
+
         operationLogMapper.insert(BeanUtils.copyBean(new OperationLog(), log));
         operationLogBlobMapper.insert(getBlob(log));
     }

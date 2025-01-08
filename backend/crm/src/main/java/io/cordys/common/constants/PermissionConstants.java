@@ -28,5 +28,7 @@ public class PermissionConstants {
 
     /*------ start: SYS_DEPARTMENT ------*/
     public static final String SYS_DEPARTMENT_READ = "SYS_DEPARTMENT:READ";
+    public static final String SYS_DEPARTMENT_ADD = "SYS_DEPARTMENT:ADD";
+    public static final String SYS_DEPARTMENT_UPDATE = "SYS_DEPARTMENT:UPDATE";
     /*------ end: SYS_DEPARTMENT ------*/
 }

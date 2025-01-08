@@ -1,6 +1,8 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.system.dto.request.DepartmentAddRequest;
+import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class DepartmentControllerTests extends BaseTest {
 
     public static final String DEPARTMENT_TREE = "/department/tree";
+    public static final String ADD_DEPARTMENT = "/department/add";
+    public static final String RENAME_DEPARTMENT = "/department/rename";
 
 
     @Sql(scripts = {"/dml/init_department_test.sql"},
@@ -30,4 +34,25 @@ public class DepartmentControllerTests extends BaseTest {
     }
 
 
+    @Test
+    @Order(2)
+    public void addDepartment() throws Exception {
+        DepartmentAddRequest request = new DepartmentAddRequest();
+        request.setName("测试部门");
+        request.setParentId("NONE");
+        this.requestPost(ADD_DEPARTMENT, request).andExpect(status().isOk());
+    }
+
+
+    @Test
+    @Order(3)
+    public void renameDepartment() throws Exception {
+        DepartmentRenameRequest request = new DepartmentRenameRequest();
+        request.setName("测试部门");
+        request.setId("1");
+        this.requestPost(RENAME_DEPARTMENT, request).andExpect(status().isOk());
+
+        request.setId("12363435234");
+        this.requestPost(RENAME_DEPARTMENT, request).andExpect(status().is5xxServerError());
+    }
 }

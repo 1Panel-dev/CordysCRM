@@ -101,6 +101,7 @@ public abstract class BaseTest {
         return requestBuilder
                 .header(SessionConstants.HEADER_TOKEN, authInfo.getSessionId())
                 .header(SessionConstants.CSRF_TOKEN, authInfo.getCsrfToken())
+                .header("ORGANIZATION", DEFAULT_ORGANIZATION_ID) //TODO 暂时加上默认的组织ID
                 .header(HttpHeaders.ACCEPT_LANGUAGE, "zh-CN");
     }
 
