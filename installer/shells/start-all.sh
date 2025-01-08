@@ -16,7 +16,7 @@ if [[ "${redishost}" == *"127.0.0.1"* ]]; then
 fi
 
 
-chmod -R 777 /opt/cordys/logs
+chmod -R 777 /opt/cordys
 
 
 export JAVA_CLASSPATH=/app:/app/lib/*
