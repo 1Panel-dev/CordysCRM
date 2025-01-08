@@ -14,8 +14,7 @@ public class Notification{
     @Schema(description = "ID")
     private String id;
 
-    @Size(min = 1, max = 64, message = "{notification.type.length_range}", groups = {Created.class, Updated.class})
-    @Schema(description = "通知类型", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "通知类型")
     private String type;
 
     @Schema(description = "接收人")

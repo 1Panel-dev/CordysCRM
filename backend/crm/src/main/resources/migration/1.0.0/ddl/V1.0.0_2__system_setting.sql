@@ -318,80 +318,97 @@ CREATE TABLE sys_module_field_option
 CREATE INDEX idx_field_id ON sys_module_field_option (field_id ASC);
 CREATE INDEX idx_field_key ON sys_module_field_option (field_key ASC);
 
-CREATE TABLE sys_role(
-     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-     `name` VARCHAR(255) NOT NULL   COMMENT '角色名称' ,
-     `internal` BIT NOT NULL  DEFAULT 0 COMMENT '是否是内置角色' ,
-     `data_scope` VARCHAR(30) NOT NULL   COMMENT '数据范围（全部数据权限/指定部门权限/本部门数据权限/本部门及以下数据权限/仅本人数据）' ,
-     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-     `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-     `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-     `description` VARCHAR(1000)    COMMENT '描述' ,
-     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
-     PRIMARY KEY (id)
-)  COMMENT = '角色'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+CREATE TABLE sys_role
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '角色名称',
+    `internal`        BIT          NOT NULL DEFAULT 0 COMMENT '是否是内置角色',
+    `data_scope`      VARCHAR(30)  NOT NULL COMMENT '数据范围（全部数据权限/指定部门权限/本部门数据权限/本部门及以下数据权限/仅本人数据）',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
+    `description`     VARCHAR(1000) COMMENT '描述',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    PRIMARY KEY (id)
+) COMMENT = '角色'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE sys_role_permission(
+CREATE TABLE sys_role_permission
+(
+    `id`            VARCHAR(32)  NOT NULL COMMENT 'id',
+    `role_id`       VARCHAR(32)  NOT NULL COMMENT '角色id',
+    `permission_id` VARCHAR(255) NOT NULL COMMENT '权限id',
+    `create_time`   BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`   BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`   VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`   VARCHAR(32)  NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '角色关联权限'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_role_id ON sys_role_permission (role_id ASC);
+
+CREATE TABLE sys_user_role
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `role_id`     VARCHAR(32) NOT NULL COMMENT '角色id',
+    `user_id`     VARCHAR(32) NOT NULL COMMENT '用户id',
+    `create_time` BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time` BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user` VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user` VARCHAR(32) NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '用户关联角色'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_role_id ON sys_user_role (role_id ASC);
+CREATE INDEX idx_user_id ON sys_user_role (user_id ASC);
+
+CREATE TABLE sys_organization_config_detail
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `config_id`   VARCHAR(32) NOT NULL COMMENT '配置id',
+    `content`     BLOB        NOT NULL COMMENT '配置内容',
+    `type`        VARCHAR(64) NOT NULL COMMENT '配置内容类型',
+    `create_time` BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time` BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user` VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user` VARCHAR(32) NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '企业设置详情表'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_config_id ON sys_organization_config_detail (config_id ASC);
+CREATE INDEX idx_type ON sys_organization_config_detail (type ASC);
+
+CREATE TABLE sys_organization_config
+(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `role_id` VARCHAR(32) NOT NULL   COMMENT '角色id' ,
-    `permission_id` VARCHAR(255) NOT NULL   COMMENT '权限id' ,
+    `type` VARCHAR(64) NOT NULL   COMMENT '配置类型' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '企业id' ,
+    `sync` BIT(1) NOT NULL  DEFAULT 0 COMMENT '是否同步（只对同步企业生效）' ,
+    `sync_resource` VARCHAR(255)    COMMENT '同步来源' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
     `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
     `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
     PRIMARY KEY (id)
-)  COMMENT = '角色关联权限'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
-
-CREATE INDEX idx_role_id ON sys_role_permission(role_id ASC);
-
-CREATE TABLE sys_user_role(
-  `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-  `role_id` VARCHAR(32) NOT NULL   COMMENT '角色id' ,
-  `user_id` VARCHAR(32) NOT NULL   COMMENT '用户id' ,
-  `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-  `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-  `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-  `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-  PRIMARY KEY (id)
-)  COMMENT = '用户关联角色'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
-
-CREATE INDEX idx_role_id ON sys_user_role(role_id ASC);
-CREATE INDEX idx_user_id ON sys_user_role(user_id ASC);
-
-CREATE TABLE sys_sync_organization_config
-(
-    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
-    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
-    `enable`          BIT(1)       NOT NULL DEFAULT 1 COMMENT '是否启用',
-    `agent_id`        VARCHAR(255) COMMENT '应用ID',
-    `corp_id`         VARCHAR(255) NOT NULL COMMENT '企业ID',
-    `secret`          VARCHAR(255) NOT NULL COMMENT '应用密钥',
-    `resource`        VARCHAR(255) NOT NULL COMMENT '平台',
-    `url`             VARCHAR(255) COMMENT '回调url',
-    `sync`            BIT(1)       NOT NULL DEFAULT 0 COMMENT '是否同步',
-    `sync_resource`   VARCHAR(255) COMMENT '同步来源',
-    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
-    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
-    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
-    PRIMARY KEY (id)
-) COMMENT = '同步组织架构配置表'
+) COMMENT = '企业设置'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_organizationId ON sys_sync_organization_config(organization_id ASC);
-CREATE INDEX idx_sync ON sys_sync_organization_config(sync ASC);
+CREATE INDEX idx_organizationId ON sys_organization_config (organization_id ASC);
+CREATE INDEX idx_type ON sys_organization_config (type ASC);
 
 
 CREATE TABLE sys_department(
