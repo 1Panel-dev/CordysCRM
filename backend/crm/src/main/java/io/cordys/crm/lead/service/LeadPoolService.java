@@ -99,6 +99,8 @@ public class LeadPoolService {
 			recycleRule.setCreateUser(currentUserId);
 			leadPoolRecycleRuleMapper.insert(recycleRule);
 		} else {
+			LeadPool oldPool = checkPoolExist(pool.getId());
+			checkPoolOwner(oldPool, currentUserId);
 			leadPoolMapper.update(pool);
 			leadPoolPickRuleMapper.update(pickRule);
 			leadPoolRecycleRuleMapper.update(recycleRule);
@@ -109,11 +111,9 @@ public class LeadPoolService {
 	 * 删除线索池
 	 * @param id 线索池ID
 	 */
-	public void delete(String id) {
-		LeadPool pool = leadPoolMapper.selectByPrimaryKey(id);
-		if (pool == null) {
-			throw new GenericException(Translator.get("lead_pool_not_exist"));
-		}
+	public void delete(String id,String currentUserId) {
+		LeadPool pool = checkPoolExist(id);
+		checkPoolOwner(pool, currentUserId);
 		LambdaQueryWrapper<LeadPoolRelation> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(LeadPoolRelation::getPoolId, id);
 		List<LeadPoolRelation> leadPoolRelations = leadPoolRelationMapper.selectListByLambda(wrapper);
@@ -134,13 +134,37 @@ public class LeadPoolService {
 	 * @param id 线索池ID
 	 */
 	public void switchStatus(String id, String currentUserId) {
-		LeadPool pool = leadPoolMapper.selectByPrimaryKey(id);
-		if (pool == null) {
-			throw new GenericException(Translator.get("lead_pool_not_exist"));
-		}
+		LeadPool pool = checkPoolExist(id);
+		checkPoolOwner(pool, currentUserId);
 		pool.setEnable(pool.getEnable() ^ 1);
 		pool.setUpdateTime(System.currentTimeMillis());
 		pool.setUpdateUser(currentUserId);
 		leadPoolMapper.updateById(pool);
+	}
+
+	/**
+	 * 校验线索池是否存在
+	 * @param id 线索池ID
+	 * @return 线索池
+	 */
+	private LeadPool checkPoolExist(String id) {
+		LeadPool pool = leadPoolMapper.selectByPrimaryKey(id);
+		if (pool == null) {
+			throw new GenericException(Translator.get("lead_pool_not_exist"));
+		}
+		return pool;
+	}
+
+	/**
+	 * 校验是否线索池的管理员
+	 * @param pool 线索池
+	 * @param accessUserId 访问用户ID
+	 */
+	private void checkPoolOwner(LeadPool pool, String accessUserId) {
+		// split multiple owner by comma
+		List<String> ownerIds = List.of(pool.getOwnerId().split(","));
+		if (!ownerIds.contains(accessUserId)) {
+			throw new GenericException(Translator.get("lead_pool_access_fail"));
+		}
 	}
 }

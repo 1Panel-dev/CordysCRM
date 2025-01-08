@@ -34,6 +34,8 @@ public class LeadPoolControllerTests extends BaseTest {
 	private static LeadPoolDTO testLeadPool;
 
 	@Resource
+	private BaseMapper<LeadPool> leadPoolMapper;
+	@Resource
 	private BaseMapper<LeadPoolRelation> leadPoolRelationMapper;
 
 	@Test
@@ -70,7 +72,7 @@ public class LeadPoolControllerTests extends BaseTest {
 	@Order(4)
 	void update() throws Exception {
 		LeadPool leadPool = createLeadPool();
-		leadPool.setId("default-pool");
+		leadPool.setId(testLeadPool.getId());
 		LeadPoolSaveRequest request = new LeadPoolSaveRequest();
 		BeanUtils.copyBean(request, leadPool);
 		LeadPoolPickRule pickRule = createPickRule();
@@ -79,6 +81,12 @@ public class LeadPoolControllerTests extends BaseTest {
 		LeadPoolRecycleRule recycleRule = createRecycleRule();
 		recycleRule.setId("default-recycle-rule");
 		request.setRecycleRule(recycleRule);
+		MvcResult mvcResult = this.requestPost("/lead-pool/update", request).andExpect(status().is5xxServerError()).andReturn();
+		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("lead_pool_access_fail"));
+		// update owner id by sql
+		leadPool.setOwnerId("admin");
+		leadPoolMapper.updateById(leadPool);
+		request.setOwnerId("admin");
 		this.requestPostWithOk("/lead-pool/update", request);
 	}
 

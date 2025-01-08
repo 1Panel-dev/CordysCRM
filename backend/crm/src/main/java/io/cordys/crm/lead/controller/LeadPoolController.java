@@ -56,7 +56,7 @@ public class LeadPoolController {
 	@Operation(summary = "删除线索池")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE}, logical = Logical.OR)
 	public void delete(@PathVariable String id) {
-		leadPoolService.delete(id);
+		leadPoolService.delete(id, SessionUtils.getUserId());
 	}
 
 	@GetMapping("/switch/{id}")
