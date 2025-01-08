@@ -455,7 +455,8 @@ CREATE INDEX idx_owner_id ON lead_pool(owner_id ASC);
 CREATE INDEX idx_scope_id ON lead_pool(scope_id ASC);
 
 CREATE TABLE lead_pool_pick_rule(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `pool_id` VARCHAR(32) NOT NULL   COMMENT '线索池ID' ,
     `limit_on_number` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否限制领取数量' ,
     `pick_number` INT    COMMENT '领取数量' ,
     `limit_pre_owner` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否限制前归属人领取' ,
@@ -470,8 +471,11 @@ CREATE TABLE lead_pool_pick_rule(
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
+CREATE INDEX idx_pool_id ON lead_pool_pick_rule(pool_id ASC);
+
 CREATE TABLE lead_pool_recycle_rule(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `pool_id` VARCHAR(32) NOT NULL   COMMENT '线索池ID' ,
     `expire_notice` BIT(1) NOT NULL  DEFAULT 1 COMMENT '到期提醒' ,
     `notice_days` INT(255)    COMMENT '提前提醒天数' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
@@ -483,6 +487,8 @@ CREATE TABLE lead_pool_recycle_rule(
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_pool_id ON lead_pool_recycle_rule(pool_id ASC);
 
 CREATE TABLE lead_pool_relation(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,

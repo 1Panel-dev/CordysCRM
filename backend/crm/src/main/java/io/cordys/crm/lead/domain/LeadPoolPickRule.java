@@ -9,6 +9,9 @@ import lombok.Data;
 @Table(name = "lead_pool_pick_rule")
 public class LeadPoolPickRule extends BaseModel {
 
+	@Schema(description = "线索池ID")
+	private String poolId;
+
 	@Schema(description = "是否限制领取数量")
 	private int limitOnNumber;
 
