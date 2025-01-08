@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import { DEFAULT_LAYOUT } from './base';
 import createRouteGuard from './guard/index';
 import NProgress from 'nprogress';
 
@@ -11,8 +10,20 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'index',
-      component: DEFAULT_LAYOUT,
+      redirect: 'login',
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/base/login/index.vue'),
+      meta: {
+        requiresAuth: false,
+      },
+    },
+    {
+      path: '/demo',
+      name: 'demo',
+      component: () => import('@/views/AboutView.vue'),
     },
   ],
 });

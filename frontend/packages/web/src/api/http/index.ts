@@ -1,3 +1,4 @@
+import useDiscreteApi from '@/hooks/useDiscreteApi';
 import { useI18n } from '@/hooks/useI18n';
 
 import checkStatus from './checkStatus';
@@ -12,9 +13,9 @@ import type CommonResponse from '@lib/shared/models/common';
 import type { RequestOptions, Result } from '@lib/shared/types/axios';
 import type { Recordable } from '@lib/shared/types/global';
 import type { AxiosResponse } from 'axios';
-import { useMessage } from 'naive-ui';
 
-const Message = useMessage();
+const { message: Message } = useDiscreteApi();
+
 /**
  * @description: 数据处理，方便区分多种处理方式
  */

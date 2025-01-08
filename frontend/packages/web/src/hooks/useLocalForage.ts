@@ -1,10 +1,6 @@
 import localforage from 'localforage';
 
-import useAppStore from '@/store/modules/app';
-
 export default function useLocalForage() {
-  const appStore = useAppStore();
-
   /**
    * 检测并序列化函数
    * @param val 要存储的值
@@ -68,7 +64,7 @@ export default function useLocalForage() {
    * @param notIsolatedByProject 存储数据时是否不按项目隔离数据
    */
   const getItem = async <T>(key: string, notIsolatedByProject = false): Promise<T | null> => {
-    const itemKey = notIsolatedByProject ? key : `${appStore.currentProjectId}-${key}`;
+    const itemKey = notIsolatedByProject ? key : `-${key}`;
     try {
       const res = await localforage.getItem<T>(itemKey);
       if (!res) {
@@ -94,7 +90,7 @@ export default function useLocalForage() {
     notIsolatedByProject = false
   ) => {
     try {
-      const itemKey = notIsolatedByProject ? key : `${appStore.currentProjectId}-${key}`;
+      const itemKey = notIsolatedByProject ? key : `-${key}`;
       await localforage.setItem(itemKey, serializeValue(val));
     } catch (e) {
       // eslint-disable-next-line no-console

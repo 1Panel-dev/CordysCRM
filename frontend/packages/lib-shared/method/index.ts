@@ -1,4 +1,5 @@
 import { isObject } from "./is";
+import JSEncrypt from 'jsencrypt';
 
 /**
  * 递归深度合并
@@ -27,4 +28,18 @@ export function setObjToUrlParams(baseUrl: string, obj: any): string {
   });
   parameters = parameters.replace(/&$/, '');
   return /\?$/.test(baseUrl) ? baseUrl + parameters : baseUrl.replace(/\/?$/, '?') + parameters;
+}
+
+/**
+ * 加密
+ * @param input 输入的字符串
+ * @param publicKey 公钥
+ * @returns
+ */
+export function encrypted(input: string) {
+  const publicKey = localStorage.getItem('salt') || '';
+  const encrypt = new JSEncrypt({ default_key_size: '1024' });
+  encrypt.setPublicKey(publicKey);
+
+  return encrypt.encrypt(input);
 }

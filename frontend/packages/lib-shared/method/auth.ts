@@ -2,6 +2,14 @@ const SESSION_ID = 'sessionId';
 const CSRF_TOKEN = 'csrfToken';
 const LOGIN_TYPE = 'loginType';
 
+const isLogin = async () => {
+  try {
+    return Promise.resolve(false); // TODO:
+  } catch (err) {
+    return false;
+  }
+};
+
 // 获取token
 const getToken = () => {
   return { [SESSION_ID]: localStorage.getItem(SESSION_ID), [CSRF_TOKEN]: localStorage.getItem(CSRF_TOKEN) || '' };
@@ -41,4 +49,4 @@ const isLoginExpires = () => {
   return diff > thirtyDay;
 };
 
-export { clearToken, getLongType, getToken, hasToken, isLoginExpires, setLoginExpires, setLongType, setToken };
+export { clearToken, getLongType, getToken, hasToken, isLogin, isLoginExpires, setLoginExpires, setLongType, setToken };

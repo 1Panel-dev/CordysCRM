@@ -1,11 +1,10 @@
+import useDiscreteApi from '@/hooks/useDiscreteApi';
 import { useI18n } from '@/hooks/useI18n';
 import useUser from '@/hooks/useUser';
 import router from '@/router';
 import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
 
-import { useMessage } from 'naive-ui';
-
-const Message = useMessage();
+const { message } = useDiscreteApi();
 
 export default function checkStatus(status: number, msg: string, code?: number): void {
   const { t } = useI18n();
@@ -60,6 +59,6 @@ export default function checkStatus(status: number, msg: string, code?: number):
   }
 
   if (errMessage) {
-    Message.error(errMessage);
+    message.error(errMessage);
   }
 }

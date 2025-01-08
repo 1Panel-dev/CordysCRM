@@ -3,5 +3,3 @@
 dist
 postcss.config.js
 *.md
-/src/assets/icon-font/iconfont.js
-/src/assets/fonts/AlibabaPuHuiTi-3-55-Regular-normal.js

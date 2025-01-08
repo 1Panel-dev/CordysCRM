@@ -21,6 +21,8 @@
   "dependencies": {
     "@types/color": "^4.2.0",
     "@vicons/ionicons5": "^0.13.0",
+    "@wecom/jssdk": "^2.2.5",
+    "jsencrypt": "^3.3.2",
     "naive-ui": "^2.40.4",
     "nprogress": "^0.2.0",
     "vfonts": "^0.0.3",

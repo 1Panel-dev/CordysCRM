@@ -1,28 +1,19 @@
 <template>
   <n-config-provider :theme-overrides="themeOverridesConfig">
-    <Suspense>
+    <n-message-provider>
       <RouterView />
-    </Suspense>
+    </n-message-provider>
   </n-config-provider>
 </template>
 
 <script setup lang="ts">
-  import { NConfigProvider } from 'naive-ui';
+  import { NConfigProvider, NMessageProvider } from 'naive-ui';
 
-  import initDiscreteApi from '@/hooks/useDiscreteApi';
   import { getThemeOverrides } from '@/utils/themeOverrides';
 
-  import type { ConfigProviderProps, GlobalThemeOverrides } from 'naive-ui';
+  import type { GlobalThemeOverrides } from 'naive-ui';
 
   const themeOverridesConfig = ref<GlobalThemeOverrides>(getThemeOverrides());
-
-  const getConfigProviderProps = computed(() => {
-    return {
-      themeOverrides: themeOverridesConfig.value,
-    };
-  });
-
-  initDiscreteApi(getConfigProviderProps.value as ConfigProviderProps);
 </script>
 
 <style scoped>

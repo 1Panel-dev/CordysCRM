@@ -97,6 +97,7 @@ module.exports = {
             '^vue-i18n$',
             '^pinia$',
             '^@vueuse/core$',
+            '^naive-ui$',
             '^lodash-es$',
             '^axios$',
             '^dayjs$',

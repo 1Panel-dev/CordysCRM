@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NAlert, NButton } from 'naive-ui';
+  import { NButton } from 'naive-ui';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import TableDemo from './TableDemo.vue';

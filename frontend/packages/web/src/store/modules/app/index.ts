@@ -3,36 +3,42 @@ import { defineStore } from 'pinia';
 import type { PaginationSizeOption } from 'naive-ui';
 
 export interface AppState {
-  currentProjectId: string;
-  menuCollapsed: boolean;
   pageSize: number;
   showSizePicker: boolean;
   showQuickJumper: boolean;
   pageSizes: Array<number | PaginationSizeOption>;
+  menuCollapsed: boolean; // 侧边菜单栏是否收缩
+  loginLoading: boolean; // 登录页面加载中
 }
 
 const useAppStore = defineStore('app', {
   state: (): AppState => ({
-    currentProjectId: '',
     menuCollapsed: false,
     // 分页
     pageSize: 10,
     showSizePicker: true,
     showQuickJumper: true,
     pageSizes: [10, 20, 30, 40, 50],
+    loginLoading: false,
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
       return state.menuCollapsed;
+    },
+    getLoginLoadingStatus(state: AppState): boolean {
+      return state.loginLoading;
     },
   },
   actions: {
     setMenuCollapsed(collapsed: boolean) {
       this.menuCollapsed = collapsed;
     },
+    setLoginLoading(value: boolean) {
+      this.loginLoading = value;
+    },
   },
   persist: {
-    paths: ['currentProjectId'],
+    paths: [''],
   },
 });
 
