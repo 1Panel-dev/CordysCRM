@@ -3,22 +3,16 @@ SET SESSION innodb_lock_wait_timeout = 7200;
 
 CREATE TABLE sys_user
 (
-    `id`            VARCHAR(32)  NOT NULL COMMENT 'id',
-    `name`          VARCHAR(255) NOT NULL COMMENT '名称',
-    `phone`         VARCHAR(11)  NOT NULL COMMENT '手机号',
-    `email`         VARCHAR(255) NOT NULL COMMENT '邮箱',
-    `password`      VARCHAR(255) NOT NULL COMMENT '密码',
-    `enable`        BIT(1)       NOT NULL DEFAULT 1 COMMENT '是否启用',
-    `employee_id`   VARCHAR(255)          DEFAULT '' COMMENT '工号',
-    `gender`        VARCHAR(255)          DEFAULT '' COMMENT '性别',
-    `position`      VARCHAR(255)          DEFAULT '' COMMENT '职位',
-    `employee_type` VARCHAR(255)          DEFAULT '' COMMENT '员工类型',
-    `supervisor_id` VARCHAR(32)           DEFAULT '' COMMENT '直属上级',
-    `work_city`     VARCHAR(255)          DEFAULT '' COMMENT '工作城市',
-    `create_time`   BIGINT       NOT NULL COMMENT '创建时间',
-    `update_time`   BIGINT       NOT NULL COMMENT '更新时间',
-    `create_user`   VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `update_user`   VARCHAR(32)  NOT NULL COMMENT '更新人',
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
+    `phone` VARCHAR(11) NOT NULL   COMMENT '手机号' ,
+    `email` VARCHAR(255) NOT NULL   COMMENT '邮箱' ,
+    `password` VARCHAR(255) NOT NULL   COMMENT '密码' ,
+    `gender` BIT(1) NOT NULL  DEFAULT 0 COMMENT '性别(0-男/1-女)' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
     PRIMARY KEY (id)
 ) COMMENT = '用户(员工)'
     ENGINE = InnoDB
@@ -272,20 +266,29 @@ CREATE TABLE sys_organization
     COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE sys_organization_user(
-  `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-  `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
-  `user_id` VARCHAR(32) NOT NULL   COMMENT '用户id' ,
-  `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-  `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-  `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-  `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
+    `department_id` VARCHAR(32)    COMMENT '部门id' ,
+    `user_id` VARCHAR(32) NOT NULL   COMMENT '用户id' ,
+    `enable` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否启用' ,
+    `employee_id` VARCHAR(255)   DEFAULT '' COMMENT '工号' ,
+    `position` VARCHAR(255)   DEFAULT '' COMMENT '职位' ,
+    `employee_type` VARCHAR(255)   DEFAULT '' COMMENT '员工类型' ,
+    `supervisor_id` VARCHAR(32)   DEFAULT '' COMMENT '直属上级' ,
+    `work_city` VARCHAR(255)   DEFAULT '' COMMENT '工作城市' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
   PRIMARY KEY (id)
 )  COMMENT = '组织成员'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_user_id_organization_id ON sys_organization_user(user_id ASC,organization_id ASC);
+CREATE INDEX idx_organization_id ON sys_organization_user(organization_id ASC);
+CREATE INDEX idx_department_id ON sys_organization_user(department_id ASC);
+CREATE INDEX idx_user_id ON sys_organization_user(user_id ASC);
 
 CREATE TABLE sys_module_field
 (
@@ -537,6 +540,24 @@ CREATE TABLE lead_capacity(
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_organization_id ON lead_capacity(organization_id ASC);
+
+
+CREATE TABLE sys_department_commander(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `user_id` VARCHAR(32) NOT NULL   COMMENT '用户id' ,
+    `department_id` VARCHAR(32) NOT NULL   COMMENT '部门id' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '部门责任人表'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_user_id ON sys_department_commander(user_id ASC);
+CREATE INDEX idx_department_id ON sys_department_commander(department_id ASC);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

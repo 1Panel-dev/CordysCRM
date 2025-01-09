@@ -14,7 +14,9 @@ import io.cordys.common.uid.NumGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Department;
+import io.cordys.crm.system.domain.DepartmentCommander;
 import io.cordys.crm.system.dto.request.DepartmentAddRequest;
+import io.cordys.crm.system.dto.request.DepartmentCommanderRequest;
 import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
 import io.cordys.crm.system.mapper.ExtDepartmentMapper;
 import io.cordys.mybatis.BaseMapper;
@@ -33,6 +35,8 @@ public class DepartmentService {
     private BaseMapper<Department> departmentMapper;
     @Resource
     private ExtDepartmentMapper extDepartmentMapper;
+    @Resource
+    private BaseMapper<DepartmentCommander> departmentCommanderMapper;
 
 
     /**
@@ -89,10 +93,7 @@ public class DepartmentService {
      */
     @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{{#request.id}}", operator = "{{#userId}}", success = "修改部门名称成功", extra = "{{#updateDepartment}}")
     public void rename(DepartmentRenameRequest request, String userId) {
-        Department originalDepartment = departmentMapper.selectByPrimaryKey(request.getId());
-        if (originalDepartment == null) {
-            throw new GenericException(Translator.get("department.blank"));
-        }
+        Department originalDepartment = checkDepartment(request.getId());
 
         Department department = BeanUtils.copyBean(new Department(), request);
         department.setUpdateTime(System.currentTimeMillis());
@@ -107,4 +108,37 @@ public class DepartmentService {
                 .build());
 
     }
+
+    private Department checkDepartment(String id) {
+        Department department = departmentMapper.selectByPrimaryKey(id);
+        if (department == null) {
+            throw new GenericException(Translator.get("department.blank"));
+        }
+        return department;
+    }
+
+
+    /**
+     * 设置部门负责人
+     *
+     * @param request
+     * @param userId
+     */
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, resourceId = "{{#request.departmentId}}", operator = "{{#userId}}", success = "设置部门负责人成功")
+    public void setCommander(DepartmentCommanderRequest request, String userId) {
+        Department department = departmentMapper.selectByPrimaryKey(request.getDepartmentId());
+        if (department == null) {
+            throw new GenericException(Translator.get("department.blank"));
+        }
+        DepartmentCommander commander = new DepartmentCommander();
+        commander.setId(IDGenerator.nextStr());
+        commander.setUserId(request.getCommanderId());
+        commander.setDepartmentId(request.getDepartmentId());
+        commander.setCreateTime(System.currentTimeMillis());
+        commander.setUpdateTime(System.currentTimeMillis());
+        commander.setCreateUser(userId);
+        commander.setUpdateUser(userId);
+        departmentCommanderMapper.insert(commander);
+    }
+
 }

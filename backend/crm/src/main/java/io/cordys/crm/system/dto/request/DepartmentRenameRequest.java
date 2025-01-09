@@ -11,7 +11,7 @@ import lombok.Data;
 public class DepartmentRenameRequest {
 
     @NotBlank(message = "{department.id.not_blank}", groups = {Created.class, Updated.class})
-    @Schema(description = "名称", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String id;
 
     @Size(min = 1, max = 255, message = "{department.name.length_range}", groups = {Created.class, Updated.class})

@@ -4,6 +4,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.crm.system.dto.request.DepartmentAddRequest;
+import io.cordys.crm.system.dto.request.DepartmentCommanderRequest;
 import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
 import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.security.SessionUtils;
@@ -46,4 +47,16 @@ public class DepartmentController {
     public void rename(@Validated @RequestBody DepartmentRenameRequest request) {
         departmentService.rename(request, SessionUtils.getUserId());
     }
+
+
+    @PostMapping("/set-commander")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    @Operation(summary = "组织架构-设置部门负责人")
+    public void setCommander(@Validated @RequestBody DepartmentCommanderRequest request) {
+        departmentService.setCommander(request, SessionUtils.getUserId());
+    }
+
+
+    //todo  排序 num值
+
 }

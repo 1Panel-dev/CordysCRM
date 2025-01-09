@@ -21,24 +21,6 @@ public class User extends BaseModel {
     @Schema(description = "密码")
     private String password;
 
-    @Schema(description = "是否启用")
-    private int enable;
-
-    @Schema(description = "工号")
-    private String employeeId;
-
-    @Schema(description = "性别")
-    private String gender;
-
-    @Schema(description = "职位")
-    private String position;
-
-    @Schema(description = "员工类型")
-    private String employeeType;
-
-    @Schema(description = "直属上级")
-    private String supervisorId;
-
-    @Schema(description = "工作城市")
-    private String workCity;
+    @Schema(description = "性别(0-男/1-女)")
+    private Boolean gender;
 }

@@ -60,6 +60,7 @@ public class UserLoginService {
     private Set<String> getOrgIdsByUserId(String userId) {
         OrganizationUser example = new OrganizationUser();
         example.setUserId(userId);
+        example.setEnable(true);
         return organizationUserMapper.select(example).stream()
                 .map(OrganizationUser::getOrganizationId).collect(Collectors.toSet());
     }
@@ -129,7 +130,6 @@ public class UserLoginService {
         User example = new User();
         example.setId(userId);
         example.setPassword(CodingUtils.md5(password));
-        example.setEnable(1);
         return sysUserMapper.exist(example);
     }
 }

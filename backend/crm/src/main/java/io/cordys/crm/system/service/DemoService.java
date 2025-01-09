@@ -37,13 +37,7 @@ public class DemoService {
         user.setPhone("1234567890");
         user.setEmail("john.doe@example.com");
         user.setPassword("secure password");
-        user.setEnable(1);
-        user.setEmployeeId("E12345");
-        user.setGender("Male");
-        user.setPosition("Developer");
-        user.setEmployeeType("Full-time");
-        user.setSupervisorId("S12345");
-        user.setWorkCity("New York");
+        user.setGender(false);
 
         userMapper.insert(user);
         // 添加日志上下文
