@@ -1,5 +1,10 @@
 <template>
-  <n-popover trigger="click" placement="bottom-end" class="column-setting-popover" @update:show="handleUpdateShow">
+  <n-popover
+    trigger="click"
+    placement="bottom-end"
+    class="crm-table-column-setting-popover"
+    @update:show="handleUpdateShow"
+  >
     <template #trigger>
       <CrmIcon type="iconicon_set_up" class="cursor-pointer" :size="16" />
     </template>
@@ -84,7 +89,7 @@
 </script>
 
 <style lang="less">
-  .column-setting-popover {
+  .crm-table-column-setting-popover {
     overflow-y: auto;
     padding: 8px !important;
     max-height: 416px;

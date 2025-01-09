@@ -5,7 +5,6 @@ import { createApp } from 'vue';
 import '@/assets/style/index.less';
 
 import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-import CrmSvgIcon from '@/components/pure/crm-svg-icon/index.vue';
 import App from './App.vue';
 
 // eslint-disable-next-line import/no-unresolved
@@ -23,7 +22,6 @@ async function setupApp() {
   await setupI18n(app);
 
   app.component('CrmIcon', CrmIcon);
-  app.component('CrmSvgIcon', CrmSvgIcon);
 
   // 获取默认语言
   const localLocale = localStorage.getItem('CRM-locale');
