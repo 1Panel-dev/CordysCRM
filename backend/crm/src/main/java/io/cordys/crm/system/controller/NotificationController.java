@@ -7,6 +7,7 @@ import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.request.NotificationRequest;
 import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.dto.response.OptionDTO;
@@ -35,7 +36,7 @@ public class NotificationController {
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public Pager<List<NotificationDTO>> listNotification(@Validated @RequestBody NotificationRequest notificationRequest) {
         Page<Object> page = PageHelper.startPage(notificationRequest.getCurrent(), notificationRequest.getPageSize(), true);
-        return PageUtils.setPageInfo(page, notificationService.listNotification(notificationRequest, SessionUtils.getUserId()));
+        return PageUtils.setPageInfo(page, notificationService.listNotification(notificationRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
     }
 
     @GetMapping(value = "/read/{id}")
@@ -52,17 +53,17 @@ public class NotificationController {
         return notificationService.readAll(organizationId, SessionUtils.getUserId());
     }
 
-    @GetMapping(value = "/un-read/{organizationId}")
+    @GetMapping(value = "/un-read")
     @Operation(summary = "消息中心-获取未读的消息")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
-    public Integer getUnRead(@PathVariable(value = "organizationId") String organizationId) {
-        return notificationService.getUnRead(organizationId, SessionUtils.getUserId());
+    public Integer getUnRead() {
+        return notificationService.getUnRead(OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping(value = "/count")
     @Operation(summary = "消息中心-获取消息中心消息具体类型具体状态的数量")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public List<OptionDTO> countNotification(@RequestBody NotificationRequest notificationRequest) {
-        return notificationService.countNotification(notificationRequest, SessionUtils.getUserId());
+        return notificationService.countNotification(notificationRequest, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface ExtNotificationMapper {
 
-    List<NotificationDTO> listNotification(@Param("request") NotificationRequest notificationRequest);
+    List<NotificationDTO> listNotification(@Param("request") NotificationRequest notificationRequest, String organizationId);
 
     void deleteByTime(@Param("timestamp") long timestamp);
 
