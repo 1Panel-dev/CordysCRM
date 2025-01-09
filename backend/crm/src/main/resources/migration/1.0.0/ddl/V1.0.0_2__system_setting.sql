@@ -559,6 +559,62 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_user_id ON sys_department_commander(user_id ASC);
 CREATE INDEX idx_department_id ON sys_department_commander(department_id ASC);
 
+CREATE TABLE customer_pool(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `scope_id` VARCHAR(1000) NOT NULL   COMMENT '范围ID' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
+    `name` VARCHAR(255) NOT NULL   COMMENT '公海池名称' ,
+    `owner_id` VARCHAR(1000) NOT NULL   COMMENT '管理员ID' ,
+    `enable` BIT(1) NOT NULL  DEFAULT 1 COMMENT '启用/禁用' ,
+    `recycled` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否自动回收' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '公海池'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_organization_id ON customer_pool(organization_id ASC);
+
+CREATE TABLE customer_pool_pick_rule(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `pool_id` VARCHAR(32) NOT NULL   COMMENT '公海池ID' ,
+    `limit_on_number` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否限制领取数量' ,
+    `pick_number` INT    COMMENT '领取数量' ,
+    `limit_pre_owner` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否限制前归属人领取' ,
+    `pick_interval_days` INT    COMMENT '领取间隔天数' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    PRIMARY KEY (id)
+)  COMMENT = '公海池领取规则'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_pool_id ON customer_pool_pick_rule(pool_id ASC);
+
+CREATE TABLE customer_pool_recycle_rule(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `pool_id` VARCHAR(32) NOT NULL   COMMENT '公海池ID' ,
+    `expire_notice` BIT(1) NOT NULL  DEFAULT 1 COMMENT '到期提醒' ,
+    `notice_days` INT(255)    COMMENT '提前提醒天数' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '公海池回收规则'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_pool_id ON customer_pool_recycle_rule(pool_id ASC);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
