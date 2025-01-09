@@ -38,6 +38,18 @@
             "id": "SYSTEM_NOTICE:READ+DELETE"
           }
         ]
+      },
+      {
+        "id": "SYSTEM_SETTING",
+        "name": "permission.system.setting.name",
+        "permissions": [
+          {
+            "id": "SYSTEM_SETTING:READ"
+          },
+          {
+            "id": "SYSTEM_SETTING:READ+UPDATE"
+          }
+        ]
       }
     ]
   }

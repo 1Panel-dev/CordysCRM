@@ -32,6 +32,11 @@ public class PermissionConstants {
     public static final String SYS_DEPARTMENT_UPDATE = "SYS_DEPARTMENT:UPDATE";
     /*------ end: SYS_DEPARTMENT ------*/
 
+    /*------ start: SYSTEM_SETTING ------*/
+    public static final String SYSTEM_SETTING_READ = "SYSTEM_SETTING:READ";
+    public static final String SYSTEM_SETTING_UPDATE = "SYSTEM_SETTING:UPDATE";
+    /*------ end: SYSTEM_SETTING ------*/
+
     /**
      * module setting permission
      */

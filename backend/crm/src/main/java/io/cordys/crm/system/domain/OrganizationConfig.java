@@ -23,4 +23,5 @@ public class OrganizationConfig extends BaseModel {
 
     @Schema(description = "同步来源")
     private String syncResource;
+
 }
