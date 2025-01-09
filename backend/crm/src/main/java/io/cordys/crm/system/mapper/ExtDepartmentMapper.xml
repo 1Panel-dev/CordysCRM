@@ -4,9 +4,10 @@
 <mapper namespace="io.cordys.crm.system.mapper.ExtDepartmentMapper">
 
 
-    <select id="selectTreeNodeByOrgId" resultType="io.cordys.common.dto.BaseTreeNode">
+    <select id="selectTreeNode" resultType="io.cordys.common.dto.BaseTreeNode">
         SELECT id, name, parent_id, organization_id
         FROM sys_department
+        where organization_id = ${@io.cordys.common.context.OrganizationContext@getOrganizationId()}
         ORDER BY num
     </select>
 

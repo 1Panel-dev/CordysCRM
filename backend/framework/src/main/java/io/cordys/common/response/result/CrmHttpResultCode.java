@@ -20,14 +20,14 @@ import io.cordys.common.exception.IResultCode;
  *
  * @author jianxing
  * @see IResultCode
- * @see MsHttpResultCode#SUCCESS
- * @see MsHttpResultCode#FAILED
- * @see MsHttpResultCode#VALIDATE_FAILED
- * @see MsHttpResultCode#UNAUTHORIZED
- * @see MsHttpResultCode#FORBIDDEN
- * @see MsHttpResultCode#NOT_FOUND
+ * @see CrmHttpResultCode#SUCCESS
+ * @see CrmHttpResultCode#FAILED
+ * @see CrmHttpResultCode#VALIDATE_FAILED
+ * @see CrmHttpResultCode#UNAUTHORIZED
+ * @see CrmHttpResultCode#FORBIDDEN
+ * @see CrmHttpResultCode#NOT_FOUND
  */
-public enum MsHttpResultCode implements IResultCode {
+public enum CrmHttpResultCode implements IResultCode {
 
     /**
      * 请求成功
@@ -68,7 +68,7 @@ public enum MsHttpResultCode implements IResultCode {
      * @param code    HTTP 状态码
      * @param message 状态码对应的消息键
      */
-    MsHttpResultCode(int code, String message) {
+    CrmHttpResultCode(int code, String message) {
         this.code = code;
         this.message = message;
     }

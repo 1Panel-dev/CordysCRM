@@ -1,6 +1,5 @@
 package io.cordys.config;
 
-import io.cordys.security.CrmPermissionAnnotationMethodInterceptor;
 import io.cordys.security.ShiroFilter;
 import io.cordys.common.security.ApiKeyFilter;
 import io.cordys.common.security.CsrfFilter;
@@ -173,7 +172,7 @@ public class ShiroConfig {
         interceptors.add(new AuthenticatedAnnotationMethodInterceptor(resolver));
         interceptors.add(new UserAnnotationMethodInterceptor(resolver));
         interceptors.add(new GuestAnnotationMethodInterceptor(resolver));
-        interceptors.add(new CrmPermissionAnnotationMethodInterceptor(resolver));
+        interceptors.add(new PermissionAnnotationMethodInterceptor(resolver));
 
         advice.setMethodInterceptors(interceptors);
         aasa.setAdvice(advice);

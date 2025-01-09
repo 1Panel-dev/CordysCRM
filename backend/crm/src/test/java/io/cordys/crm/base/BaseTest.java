@@ -7,6 +7,7 @@ import io.cordys.common.pager.Pager;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
+import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.RolePermission;
 import io.cordys.crm.system.domain.User;
 import io.cordys.mybatis.BaseMapper;
@@ -46,6 +47,7 @@ public abstract class BaseTest {
     protected static final String DEFAULT_USER_PASSWORD = "CordysCRM";
     protected static final String DEFAULT_PLATFORM = "mobile";
     protected static final String DEFAULT_PAGE = "page";
+    protected static final String DEFAULT_LIST = "list";
     protected static final String DEFAULT_GET = "get/{0}";
     protected static final String DEFAULT_ADD = "add";
     protected static final String DEFAULT_UPDATE = "update";
@@ -58,6 +60,8 @@ public abstract class BaseTest {
     protected MockMvc mockMvc;
     @Resource
     private BaseMapper<RolePermission> rolePermissionMapper;
+    @Resource
+    private BaseMapper<OrganizationUser> organizationUserMapper;
     @Resource
     private BaseMapper<User> userMapper;
 
@@ -101,7 +105,7 @@ public abstract class BaseTest {
         return requestBuilder
                 .header(SessionConstants.HEADER_TOKEN, authInfo.getSessionId())
                 .header(SessionConstants.CSRF_TOKEN, authInfo.getCsrfToken())
-                .header("ORGANIZATION", DEFAULT_ORGANIZATION_ID) //TODO 暂时加上默认的组织ID
+                .header("Organization-Id", DEFAULT_ORGANIZATION_ID) //TODO 暂时加上默认的组织ID
                 .header(HttpHeaders.ACCEPT_LANGUAGE, "zh-CN");
     }
 

@@ -23,8 +23,6 @@ import java.util.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RoleControllerTests extends BaseTest {
     private static final String BASE_PATH = "/role/";
-
-    protected static final String LIST = "list/{0}";
     private static final String PERMISSION_SETTING = "permission/setting/{0}";
 
     /**
@@ -44,14 +42,15 @@ class RoleControllerTests extends BaseTest {
     @Order(0)
     void testListEmpty() throws Exception {
         // @@请求成功
-        MvcResult mvcResult = this.requestGetWithOk(LIST, DEFAULT_ORGANIZATION_ID)
+        MvcResult mvcResult = this.requestGetWithOk(DEFAULT_LIST)
                 .andReturn();
         List<RoleListResponse> roleList = getResultDataArray(mvcResult, RoleListResponse.class);
 
-        Assertions.assertTrue(CollectionUtils.isEmpty(roleList));
+        // 默认初始化了一个用于权限校验的角色 permission_test
+        Assertions.assertEquals(roleList.size(), 1);
 
         // @@校验权限
-        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, LIST, DEFAULT_ORGANIZATION_ID);
+        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, DEFAULT_LIST);
     }
 
     @Test
@@ -61,7 +60,6 @@ class RoleControllerTests extends BaseTest {
         RoleAddRequest request = new RoleAddRequest();
         request.setName("test");
         request.setDescription("test desc");
-        request.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Role resultData = getResultData(mvcResult, Role.class);
         Role role = roleMapper.selectByPrimaryKey(resultData.getId());
@@ -102,13 +100,13 @@ class RoleControllerTests extends BaseTest {
     @Order(3)
     void testList() throws Exception {
         // @@请求成功
-        MvcResult mvcResult = this.requestGetWithOk(LIST, DEFAULT_ORGANIZATION_ID)
+        MvcResult mvcResult = this.requestGetWithOk(DEFAULT_LIST)
                 .andReturn();
         List<RoleListResponse> userRoles = getResultDataArray(mvcResult, RoleListResponse.class);
 
 
         // @@校验权限
-        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, LIST, DEFAULT_ORGANIZATION_ID);
+        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, DEFAULT_LIST);
     }
 
     @Test

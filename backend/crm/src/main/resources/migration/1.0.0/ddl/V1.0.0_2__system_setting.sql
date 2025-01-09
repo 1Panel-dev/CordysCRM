@@ -271,6 +271,22 @@ CREATE TABLE sys_organization
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
+CREATE TABLE sys_organization_user(
+  `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+  `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
+  `user_id` VARCHAR(32) NOT NULL   COMMENT '用户id' ,
+  `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+  `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+  `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+  `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+  PRIMARY KEY (id)
+)  COMMENT = '组织成员'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_user_id_organization_id ON sys_organization_user(user_id ASC,organization_id ASC);
+
 CREATE TABLE sys_module_field
 (
     `id`            VARCHAR(32)  NOT NULL COMMENT 'ID',

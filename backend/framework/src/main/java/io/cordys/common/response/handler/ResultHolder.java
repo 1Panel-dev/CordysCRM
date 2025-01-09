@@ -1,6 +1,6 @@
 package io.cordys.common.response.handler;
 
-import io.cordys.common.response.result.MsHttpResultCode;
+import io.cordys.common.response.result.CrmHttpResultCode;
 import lombok.Data;
 
 /**
@@ -12,7 +12,7 @@ public class ResultHolder {
     /**
      * 请求是否成功的状态码，默认值为 200（成功）。
      */
-    private int code = MsHttpResultCode.SUCCESS.getCode();
+    private int code = CrmHttpResultCode.SUCCESS.getCode();
 
     /**
      * 返回给前端的描述信息，一般是错误信息或成功信息。

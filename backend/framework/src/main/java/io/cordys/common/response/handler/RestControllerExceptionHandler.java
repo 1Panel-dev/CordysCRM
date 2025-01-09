@@ -2,8 +2,8 @@ package io.cordys.common.response.handler;
 
 import io.cordys.common.exception.IResultCode;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.response.result.CrmHttpResultCode;
 import io.cordys.common.util.Translator;
-import io.cordys.common.response.result.MsHttpResultCode;
 import io.cordys.common.util.ServiceUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -46,8 +46,8 @@ public class RestControllerExceptionHandler {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        return ResultHolder.error(MsHttpResultCode.VALIDATE_FAILED.getCode(),
-                MsHttpResultCode.VALIDATE_FAILED.getMessage(), errors);
+        return ResultHolder.error(CrmHttpResultCode.VALIDATE_FAILED.getCode(),
+                CrmHttpResultCode.VALIDATE_FAILED.getMessage(), errors);
     }
 
     /**
@@ -75,16 +75,16 @@ public class RestControllerExceptionHandler {
         if (errorCode == null) {
             // 未设置 errorCode，返回内部服务器错误
             return ResponseEntity.internalServerError()
-                    .body(ResultHolder.error(MsHttpResultCode.FAILED.getCode(), e.getMessage()));
+                    .body(ResultHolder.error(CrmHttpResultCode.FAILED.getCode(), e.getMessage()));
         }
 
         int code = errorCode.getCode();
         String message = errorCode.getMessage();
         message = Translator.get(message, message);
 
-        if (errorCode instanceof MsHttpResultCode) {
-            // 如果是 MsHttpResultCode 类型，使用其状态码的后三位作为 HTTP 状态码
-            if (errorCode.equals(MsHttpResultCode.NOT_FOUND)) {
+        if (errorCode instanceof CrmHttpResultCode) {
+            // 如果是 CrmHttpResultCode 类型，使用其状态码的后三位作为 HTTP 状态码
+            if (errorCode.equals(CrmHttpResultCode.NOT_FOUND)) {
                 message = getNotFoundMessage(message);
             }
             return ResponseEntity.status(code % 1000)
@@ -122,7 +122,7 @@ public class RestControllerExceptionHandler {
     @ExceptionHandler({Exception.class})
     public ResponseEntity<ResultHolder> handleException(Exception e) {
         return ResponseEntity.internalServerError()
-                .body(ResultHolder.error(MsHttpResultCode.FAILED.getCode(),
+                .body(ResultHolder.error(CrmHttpResultCode.FAILED.getCode(),
                         e.getMessage(), getStackTraceAsString(e)));
     }
 
@@ -143,7 +143,7 @@ public class RestControllerExceptionHandler {
             return ResponseEntity.internalServerError().body(null);
         }
         return ResponseEntity.internalServerError()
-                .body(ResultHolder.error(MsHttpResultCode.FAILED.getCode(),
+                .body(ResultHolder.error(CrmHttpResultCode.FAILED.getCode(),
                         e.getMessage(), getStackTraceAsString(e)));
     }
 

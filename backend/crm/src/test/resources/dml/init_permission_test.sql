@@ -14,6 +14,10 @@ VALUES('permission_test', 'permission_test', 0, 'ALL', UNIX_TIMESTAMP() * 1000, 
 INSERT INTO `sys_user_role` (id, role_id, user_id, create_time, update_time, create_user, update_user)
 VALUES('permission_test', 'permission_test', 'permission_test', UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin');
 
+-- 初始化组织和用户的关系
+INSERT INTO sys_organization_user
+(id, organization_id, user_id, create_time, update_time, create_user, update_user)
+VALUES('permission_test', '100001', 'permission_test', UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin');
 
 
 

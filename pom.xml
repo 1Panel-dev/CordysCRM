@@ -42,7 +42,7 @@
         <testcontainers.version>1.20.4</testcontainers.version>
         <kotlin.version>2.0.21</kotlin.version>
         <persistence-api.version>3.2.0</persistence-api.version>
-
+        <transmittable-thread-local.version>2.14.5</transmittable-thread-local.version>
     </properties>
 
     <dependencies>

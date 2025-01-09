@@ -22,9 +22,4 @@ public class RoleAddRequest {
     @Size(max = 1000)
     @Schema(description = "描述")
     private String description;
-
-    @Size(max = 32)
-    @NotBlank
-    @Schema(description = "组织id")
-    private String organizationId;
 }

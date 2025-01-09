@@ -2,19 +2,14 @@ package io.cordys.security;
 
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.data.redis.RedisIndexedSessionRepository;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Map;
-import java.util.Objects;
 
 import static io.cordys.security.SessionConstants.ATTR_USER;
 
@@ -26,8 +21,6 @@ import static io.cordys.security.SessionConstants.ATTR_USER;
  * </p>
  */
 public class SessionUtils {
-
-    private static final ThreadLocal<String> organizationId = new ThreadLocal<>();
 
     /**
      * 获取当前用户的 ID。
@@ -88,36 +81,6 @@ public class SessionUtils {
     }
 
     /**
-     * 权限验证时从 controller 参数列表中找到 organizationId 传入
-     */
-    public static void setCurrentOrganizationId(String organizationId) {
-        SessionUtils.organizationId.set(organizationId);
-    }
-
-    /**
-     * 权限验证时从 controller 参数列表中找到 ORGANIZATION
-     */
-    public static String getCurrentOrganizationId() {
-        try {
-            if (StringUtils.isNotEmpty(organizationId.get())) {
-                return organizationId.get();
-            }
-            HttpServletRequest request = ((ServletRequestAttributes) (RequestContextHolder.currentRequestAttributes())).getRequest();
-            LogUtils.debug("ORGANIZATION: {}", request.getHeader("ORGANIZATION"));
-            if (request.getHeader("ORGANIZATION") != null) {
-                return request.getHeader("ORGANIZATION");
-            }
-        } catch (Exception e) {
-            LogUtils.error(e.getMessage(), e);
-        }
-        return Objects.requireNonNull(getUser()).getLastOrganizationId();
-    }
-
-    public static void clearCurrentOrganizationId() {
-        organizationId.remove();
-    }
-
-    /**
      * 将当前用户信息保存到 Session 中。
      *
      * @param sessionUser 当前用户对象
@@ -127,23 +90,5 @@ public class SessionUtils {
         SecurityUtils.getSubject().getSession().setAttribute(ATTR_USER, sessionUser);
         // 保存用户 ID 到 Session
         SecurityUtils.getSubject().getSession().setAttribute(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, sessionUser.getId());
-    }
-
-    /**
-     * 获取 HTTP 请求头的指定字段。
-     *
-     * @param headerName 请求头字段名称
-     * @return 请求头字段的值，如果没有找到该字段或发生异常，则返回 null
-     */
-    public static String getHttpHeader(String headerName) {
-        if (StringUtils.isBlank(headerName)) {
-            return null;
-        }
-        try {
-            HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
-            return request.getHeader(headerName);
-        } catch (Exception e) {
-            return null;
-        }
     }
 }

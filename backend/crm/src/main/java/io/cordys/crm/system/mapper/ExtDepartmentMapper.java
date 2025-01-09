@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ExtDepartmentMapper {
 
-    List<BaseTreeNode> selectTreeNodeByOrgId();
+    List<BaseTreeNode> selectTreeNode();
 }

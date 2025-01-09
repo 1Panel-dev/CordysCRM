@@ -7,7 +7,7 @@ import io.cordys.common.util.Translator;
  *
  * @author jianxing
  * <p>
- * 1. 如果想返回具有 Http 含义的状态码，使用 MsHttpResultCode
+ * 1. 如果想返回具有 Http 含义的状态码，使用 CrmHttpResultCode
  * 2. 业务状态码，各模块定义自己的状态码枚举类，各自管理
  * 3. 业务错误码，定义规则为 6 位数字
  * 4. 业务错误码，前三位表示模块名称，最后三位表示错误码。例如：101001  101: 系统设置， 001: 资源池校验失败

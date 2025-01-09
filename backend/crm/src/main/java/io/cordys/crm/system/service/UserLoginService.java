@@ -8,6 +8,7 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.request.LoginRequest;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -33,6 +35,8 @@ import java.util.Set;
 public class UserLoginService {
     @Resource
     private BaseMapper<User> sysUserMapper;
+    @Resource
+    private BaseMapper<OrganizationUser> organizationUserMapper;
     @Resource
     private ExtUserMapper extUserMapper;
     @Resource
@@ -46,9 +50,18 @@ public class UserLoginService {
         if (BooleanUtils.isFalse(userDTO.getEnable())) {
             throw new DisabledAccountException();
         }
-        Set<String> permissionIds = roleService.getPermissionIdsByUserId(userId);
-        userDTO.setPermissionIds(permissionIds);
+        // 设置权限
+        userDTO.setPermissionIds(roleService.getPermissionIdsByUserId(userId));
+        // 设置组织ID
+        userDTO.setOrganizationIds(getOrgIdsByUserId(userId));
         return userDTO;
+    }
+
+    private Set<String> getOrgIdsByUserId(String userId) {
+        OrganizationUser example = new OrganizationUser();
+        example.setUserId(userId);
+        return organizationUserMapper.select(example).stream()
+                .map(OrganizationUser::getOrganizationId).collect(Collectors.toSet());
     }
 
     public UserDTO getUserDTOByEmail(String email, String... source) {

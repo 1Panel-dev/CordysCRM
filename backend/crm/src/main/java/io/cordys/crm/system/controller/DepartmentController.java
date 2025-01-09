@@ -1,6 +1,7 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.context.OrganizationContext;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.crm.system.dto.request.DepartmentAddRequest;
 import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
@@ -35,7 +36,7 @@ public class DepartmentController {
     @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_ADD)
     @Operation(summary = "组织架构-添加子部门")
     public void addDepartment(@Validated @RequestBody DepartmentAddRequest request) {
-        departmentService.addDepartment(request, SessionUtils.getCurrentOrganizationId(), SessionUtils.getUserId());
+        departmentService.addDepartment(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
 

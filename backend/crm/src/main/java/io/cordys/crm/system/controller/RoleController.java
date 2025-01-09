@@ -30,11 +30,11 @@ public class RoleController {
     @Resource
     private RoleService roleService;
 
-    @GetMapping("/list/{organizationId}")
+    @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_READ)
     @Operation(summary = "角色列表")
-    public List<RoleListResponse> list(@PathVariable String organizationId){
-        return roleService.list(organizationId);
+    public List<RoleListResponse> list(){
+        return roleService.list();
     }
 
     @GetMapping("/get/{id}")

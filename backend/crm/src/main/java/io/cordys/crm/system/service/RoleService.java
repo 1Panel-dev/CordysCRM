@@ -2,6 +2,7 @@ package io.cordys.crm.system.service;
 
 import io.cordys.common.constants.InternalRole;
 import io.cordys.common.constants.RoleDataScope;
+import io.cordys.common.context.OrganizationContext;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.permission.Permission;
 import io.cordys.common.permission.PermissionDefinitionItem;
@@ -45,11 +46,8 @@ public class RoleService {
     @Resource
     private BaseMapper<RolePermission> rolePermissionMapper;
 
-    public List<RoleListResponse> list(String orgId) {
-        Role example = new Role();
-        example.setOrganizationId(orgId);
-        roleMapper.select(example);
-        List<Role> roles = roleMapper.select(example);
+    public List<RoleListResponse> list() {
+        List<Role> roles = roleMapper.select(new Role());
         return JSON.parseArray(JSON.toJSONString(roles), RoleListResponse.class);
     }
 
@@ -69,6 +67,7 @@ public class RoleService {
         role.setUpdateUser(userId);
         role.setCreateUser(userId);
         role.setInternal(false);
+        role.setOrganizationId(OrganizationContext.getOrganizationId());
         // 创建默认仅可查看
         role.setDataScope(RoleDataScope.SELF.name());
         roleMapper.insert(role);

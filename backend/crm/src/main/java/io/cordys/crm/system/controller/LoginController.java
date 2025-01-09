@@ -3,7 +3,7 @@ package io.cordys.crm.system.controller;
 import io.cordys.common.constants.UserSource;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.request.LoginRequest;
-import io.cordys.common.response.result.MsHttpResultCode;
+import io.cordys.common.response.result.CrmHttpResultCode;
 import io.cordys.common.util.Translator;
 import io.cordys.common.util.rsa.RsaKey;
 import io.cordys.common.util.rsa.RsaUtils;
@@ -48,7 +48,7 @@ public class LoginController {
             SessionUtils.putUser(sessionUser);
             return sessionUser;
         }
-        throw new GenericException(MsHttpResultCode.UNAUTHORIZED);
+        throw new GenericException(CrmHttpResultCode.UNAUTHORIZED);
     }
 
     /**
