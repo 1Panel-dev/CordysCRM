@@ -523,6 +523,22 @@ CREATE TABLE lead_pool_relation(
 CREATE INDEX idx_lead_id ON lead_pool_relation(lead_id ASC);
 CREATE INDEX idx_pool_id ON lead_pool_relation(pool_id ASC);
 
+CREATE TABLE lead_capacity(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `scope_id` VARCHAR(32) NOT NULL   COMMENT '范围ID' ,
+    `capacity` INT(255) NOT NULL  DEFAULT 0 COMMENT '库容;0:不限制' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '线索池库容设置'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_scope_id ON lead_capacity(scope_id ASC);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
