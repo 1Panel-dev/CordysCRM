@@ -7,7 +7,7 @@
     <select id="selectTreeNode" resultType="io.cordys.common.dto.BaseTreeNode">
         SELECT id, name, parent_id, organization_id
         FROM sys_department
-        where organization_id = ${@io.cordys.common.context.OrganizationContext@getOrganizationId()}
+        where organization_id = ${@io.cordys.context.OrganizationContext@getOrganizationId()}
         ORDER BY num
     </select>
 

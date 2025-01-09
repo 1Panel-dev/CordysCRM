@@ -9,7 +9,6 @@ import io.cordys.crm.system.dto.request.RoleUpdateRequest;
 import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
 
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

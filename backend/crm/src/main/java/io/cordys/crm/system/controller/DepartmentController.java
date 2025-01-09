@@ -1,7 +1,7 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.context.OrganizationContext;
+import io.cordys.context.OrganizationContext;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.crm.system.dto.request.DepartmentAddRequest;
 import io.cordys.crm.system.dto.request.DepartmentRenameRequest;

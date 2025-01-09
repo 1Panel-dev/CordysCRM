@@ -1,5 +1,6 @@
 package io.cordys.common.context;
 
+import io.cordys.context.OrganizationContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
