@@ -13,6 +13,8 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,7 @@ public class ModuleFieldService {
 	 * @param request 请求参数
 	 * @return 字段集合
 	 */
+	@Cacheable(value = "fields", key = "#request.moduleId", unless = "#result == null")
 	public List<ModuleFieldDTO> getFieldList(ModuleFieldRequest request) {
 		List<ModuleFieldDTO> fieldDTOList = new ArrayList<>();
 		LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
@@ -66,6 +69,7 @@ public class ModuleFieldService {
 	 * @return 保存后的字段集合
 	 */
 	@Transactional(rollbackFor = Exception.class)
+	@CachePut(value = "fields", key = "#saveParam.moduleId", unless = "#result == null")
 	public List<ModuleFieldDTO> save(ModuleFieldSaveRequest saveParam, String currentUserId) {
 		// remove deleted fields
 		if (CollectionUtils.isNotEmpty(saveParam.getDeleteFieldIds())) {

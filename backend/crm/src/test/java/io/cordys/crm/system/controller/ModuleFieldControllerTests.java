@@ -27,6 +27,7 @@ public class ModuleFieldControllerTests extends BaseTest{
 	void testSaveFields() throws Exception {
 		// empty param
 		ModuleFieldSaveRequest request = new ModuleFieldSaveRequest();
+		request.setModuleId("default-module");
 		request.setFields(List.of());
 		request.setDeleteFieldIds(List.of());
 		this.requestPostWithOk("/module/field/save", request);
