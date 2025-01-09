@@ -29,7 +29,7 @@ public class DepartmentController {
     @Operation(summary = "组织架构-部门树查询")
     @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_READ)
     public List<BaseTreeNode> getTree() {
-        return departmentService.getTree();
+        return departmentService.getTree(OrganizationContext.getOrganizationId());
     }
 
 

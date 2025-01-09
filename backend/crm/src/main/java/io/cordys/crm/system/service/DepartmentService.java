@@ -44,8 +44,8 @@ public class DepartmentService {
      *
      * @return List<BaseTreeNode>
      */
-    public List<BaseTreeNode> getTree() {
-        List<BaseTreeNode> departmentList = extDepartmentMapper.selectTreeNode();
+    public List<BaseTreeNode> getTree(String orgId) {
+        List<BaseTreeNode> departmentList = extDepartmentMapper.selectTreeNode(orgId);
         List<BaseTreeNode> baseTreeNodes = BaseTreeNode.buildTree(departmentList);
         return baseTreeNodes;
     }
