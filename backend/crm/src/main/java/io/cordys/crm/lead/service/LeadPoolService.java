@@ -20,6 +20,7 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class LeadPoolService {
 
 	@Resource
@@ -45,7 +47,7 @@ public class LeadPoolService {
 	private ExtLeadPoolMapper extLeadPoolMapper;
 
 	/**
-	 * 分页查询线索池
+	 * 分页获取线索池
 	 * @param request 分页参数
 	 * @return 线索池列表
 	 */

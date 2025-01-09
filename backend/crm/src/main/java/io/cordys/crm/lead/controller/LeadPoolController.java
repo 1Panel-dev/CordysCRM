@@ -30,7 +30,7 @@ public class LeadPoolController {
 	private LeadPoolService leadPoolService;
 
 	@PostMapping("/page")
-	@Operation(summary = "分页查询线索池")
+	@Operation(summary = "分页获取线索池")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE}, logical = Logical.OR)
 	public Pager<List<LeadPoolDTO>> page(@Validated @RequestBody LeadPoolPageRequest request) {
 		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
