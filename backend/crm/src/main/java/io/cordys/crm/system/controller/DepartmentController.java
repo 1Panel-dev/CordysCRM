@@ -1,8 +1,8 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.context.OrganizationContext;
 import io.cordys.common.dto.BaseTreeNode;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.request.DepartmentAddRequest;
 import io.cordys.crm.system.dto.request.DepartmentCommanderRequest;
 import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
@@ -56,7 +56,22 @@ public class DepartmentController {
         departmentService.setCommander(request, SessionUtils.getUserId());
     }
 
+    @GetMapping("/delete/check/{id}")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    @Operation(summary = "组织架构-删除部门校验")
+    public boolean deleteCheck(@PathVariable String id) {
+        return departmentService.deleteCheck(id, OrganizationContext.getOrganizationId());
 
+    }
+
+
+    @GetMapping("/delete/{id}")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    @Operation(summary = "组织架构-删除部门")
+    public void deleteDepartment(@PathVariable String id) {
+        departmentService.delete(id, OrganizationContext.getOrganizationId());
+
+    }
     //todo  排序 num值
 
 }

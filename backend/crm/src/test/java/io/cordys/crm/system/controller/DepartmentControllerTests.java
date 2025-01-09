@@ -24,6 +24,8 @@ public class DepartmentControllerTests extends BaseTest {
     public static final String ADD_DEPARTMENT = "/department/add";
     public static final String RENAME_DEPARTMENT = "/department/rename";
     public static final String DEPARTMENT_SET_COMMANDER = "/department/set-commander";
+    public static final String DEPARTMENT_DELETE_CHECK = "/department/delete/check/";
+    public static final String DEPARTMENT_DELETE = "/department/delete/";
 
 
     @Sql(scripts = {"/dml/init_department_test.sql"},
@@ -68,4 +70,17 @@ public class DepartmentControllerTests extends BaseTest {
 
     }
 
+
+    @Test
+    @Order(5)
+    public void departmentDeleteCHeck() throws Exception {
+        this.requestGet(DEPARTMENT_DELETE_CHECK + "7");
+    }
+
+    @Test
+    @Order(6)
+    public void departmentDelete() throws Exception {
+        this.requestGet(DEPARTMENT_DELETE + "7");
+        this.requestGet(DEPARTMENT_DELETE + "8");
+    }
 }

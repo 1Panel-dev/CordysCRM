@@ -1,0 +1,17 @@
+package io.cordys.crm.system.mapper;
+
+import io.cordys.crm.system.dto.request.*;
+import io.cordys.crm.system.dto.response.*;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+
+/**
+ *
+ * @author jianxing
+ * @date 2025-01-09 16:11:37
+ */
+public interface ExtOrganizationUserMapper {
+
+    int countUserByDepartmentId(@Param("departmentId") String departmentId,@Param("orgId")String orgId);
+}

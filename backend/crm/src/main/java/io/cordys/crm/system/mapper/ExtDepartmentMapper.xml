@@ -10,4 +10,11 @@
         ORDER BY num
     </select>
 
+
+    <select id="getNextNumByOrgId" resultType="java.lang.Long">
+        SELECT max(num)
+        FROM sys_department
+        where organization_id = #{orgId}
+    </select>
+
 </mapper>

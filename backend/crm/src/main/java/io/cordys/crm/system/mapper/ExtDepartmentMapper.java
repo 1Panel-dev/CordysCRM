@@ -9,4 +9,6 @@ import java.util.List;
 public interface ExtDepartmentMapper {
 
     List<BaseTreeNode> selectTreeNode(@Param("orgId") String orgId);
+
+    Long getNextNumByOrgId(@Param("orgId") String orgId);
 }

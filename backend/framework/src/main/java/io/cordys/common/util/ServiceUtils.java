@@ -14,4 +14,7 @@ public class ServiceUtils {
         resourceName.remove();
     }
 
+    //用于排序的num
+    public static final int NUM_STEP = 4096;
+
 }

@@ -5,13 +5,12 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogExtraDTO;
-import io.cordys.common.constants.ApplicationNumScope;
 import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.uid.NumGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.ServiceUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.DepartmentCommander;
@@ -19,6 +18,7 @@ import io.cordys.crm.system.dto.request.DepartmentAddRequest;
 import io.cordys.crm.system.dto.request.DepartmentCommanderRequest;
 import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
 import io.cordys.crm.system.mapper.ExtDepartmentMapper;
+import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -37,6 +37,8 @@ public class DepartmentService {
     private ExtDepartmentMapper extDepartmentMapper;
     @Resource
     private BaseMapper<DepartmentCommander> departmentCommanderMapper;
+    @Resource
+    private ExtOrganizationUserMapper extOrganizationUserMapper;
 
 
     /**
@@ -80,8 +82,9 @@ public class DepartmentService {
                 .build());
     }
 
-    private Long getNextNum(String orgId) {
-        return NumGenerator.nextNum(orgId, ApplicationNumScope.DEPARTMENT);
+    public Long getNextNum(String orgId) {
+        Long num = extDepartmentMapper.getNextNumByOrgId(orgId);
+        return (num == null ? 0 : num) + ServiceUtils.NUM_STEP;
     }
 
 
@@ -141,4 +144,40 @@ public class DepartmentService {
         departmentCommanderMapper.insert(commander);
     }
 
+
+    /**
+     * 刪除部门
+     *
+     * @param id
+     */
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.DELETE, resourceId = "{{#id}}", success = "删除部门成功", extra = "{{#updateDepartment}}")
+    public void delete(String id, String orgId) {
+        Department department = checkDepartment(id);
+        if (deleteCheck(id, orgId)) {
+            //刪除部門
+            departmentMapper.deleteByPrimaryKey(id);
+            //todo 部门&责任人关系是否需要删除？ 部门&角色关系是否需要删除？
+        }
+        // 添加日志上下文
+        OperationLogContext.putVariable("updateDepartment", LogExtraDTO.builder()
+                .originalValue(department)
+                .modifiedValue(null)
+                .build());
+    }
+
+
+    /**
+     * 删除部门前校验
+     *
+     * @param id
+     * @param orgId
+     * @return
+     */
+    public boolean deleteCheck(String id, String orgId) {
+        checkDepartment(id);
+        if (extOrganizationUserMapper.countUserByDepartmentId(id, orgId) > 0) {
+            return false;
+        }
+        return true;
+    }
 }
