@@ -173,6 +173,15 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       padding: '6px',
       borderRadius: '6px',
     },
+    DataTable: {
+      borderColor: getLessVariableValue('--text-n8'),
+      thColor: getLessVariableValue('--text-n10'),
+      thTextColor: getLessVariableValue('--text-n4'),
+      thFontWeight: 500,
+      tdColorHover: getLessVariableValue('--text-n9'),
+      tdTextColor: getLessVariableValue('--text-n1'),
+      emptyPadding: '12px',
+    },
   };
 }
 

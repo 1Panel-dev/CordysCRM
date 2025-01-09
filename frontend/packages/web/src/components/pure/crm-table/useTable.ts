@@ -2,7 +2,8 @@ import { UnwrapRef } from 'vue';
 import { cloneDeep } from 'lodash-es';
 import dayjs from 'dayjs';
 
-import { useAppStore, useTableStore } from '@/store';
+import useTableStore from '@/hooks/useTableStore';
+import useAppStore from '@/store/modules/app';
 
 import type { CrmTableDataItem, CrmTableProps } from './type';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
@@ -59,7 +60,7 @@ export default function useTable<T>(
     const { page, pageSize } = propsRes.value.pagination as PaginationProps;
     if (propsRes.value.tableKey) {
       const cachedPageSize = await tableStore.getPageSize(propsRes.value.tableKey);
-      return { current: page, pageSize: cachedPageSize };
+      return { current: page, pageSize: cachedPageSize || pageSize };
     }
     return { current: page, pageSize };
   }

@@ -13,6 +13,9 @@ export type CrmDataTableColumn = DataTableColumn & {
   showInTable?: boolean; // 是否展示在表格上
   key?: DataTableColumnKey; // 这一列的 key，不可重复
   title?: string | (() => VNodeChild);
+  sorter?: boolean | 'default'; // true是只展示图标，'default'是使用内置排序
+  filter?: boolean | ((optionValue: string | number, rowData: object) => boolean) | 'default'; // true是只展示图标
+  sortOrder?: 'descend' | 'ascend' | false; // 受控状态下表格的排序方式
 };
 
 export interface CrmTableProps<T> extends DataTableProps {

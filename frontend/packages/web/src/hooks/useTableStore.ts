@@ -2,7 +2,7 @@ import { cloneDeep } from 'lodash-es';
 
 import type { CrmDataTableColumn, TableStorageConfigItem } from '@/components/pure/crm-table/type';
 
-import { useAppStore } from '@/store';
+import useAppStore from '@/store/modules/app';
 
 import useLocalForage from './useLocalForage';
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
@@ -13,14 +13,14 @@ export default function useTableStore() {
   const appStore = useAppStore();
 
   async function getTableColumnsMap(tableKey: TableKeyEnum): Promise<TableStorageConfigItem | null> {
-    const isSystemOrOrgKey = tableKey.startsWith('SYSTEM') || tableKey.startsWith('ORGANIZATION');
-    const tableColumnsMap = await getItem<TableStorageConfigItem>(tableKey, isSystemOrOrgKey);
+    // TODO 存储隔离
+    const tableColumnsMap = await getItem<TableStorageConfigItem>(tableKey);
     return tableColumnsMap;
   }
 
   async function setTableColumnsMap(tableKey: TableKeyEnum, tableColumnsMap: TableStorageConfigItem) {
-    const isSystemOrOrgKey = tableKey.startsWith('SYSTEM') || tableKey.startsWith('ORGANIZATION');
-    await setItem(tableKey, tableColumnsMap, isSystemOrOrgKey);
+    // TODO 存储隔离
+    await setItem(tableKey, tableColumnsMap);
   }
 
   function columnsTransform(columns: CrmDataTableColumn[]) {

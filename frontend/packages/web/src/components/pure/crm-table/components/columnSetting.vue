@@ -1,11 +1,11 @@
 <template>
-  <n-popover trigger="click" placement="bottom-end" @update:show="handleUpdateShow">
+  <n-popover trigger="click" placement="bottom-end" class="column-setting-popover" @update:show="handleUpdateShow">
     <template #trigger>
-      <CrmIcon type="icon-icon-setting" class="cursor-pointer" />
+      <CrmIcon type="iconicon_set_up" class="cursor-pointer" :size="16" />
     </template>
     <div class="flex w-[175px] items-center justify-between text-[12px]">
       <div class="font-medium text-[var(--text-n1)]">{{ t('crmTable.columnSetting.tableHeaderDisplaySettings') }}</div>
-      <n-button text size="tiny" :disabled="!hasChange" @click="handleReset">
+      <n-button text type="primary" size="tiny" :disabled="!hasChange" @click="handleReset">
         {{ t('crmTable.columnSetting.resetDefault') }}
       </n-button>
     </div>
@@ -13,10 +13,10 @@
       <div
         v-for="element in cachedColumns"
         :key="element.key"
-        class="flex w-[175px] items-center justify-between py-[6px]"
+        class="flex w-[175px] items-center justify-between py-[3px]"
       >
-        <div class="flex items-center">
-          <CrmIcon type="icon-icon_drag" class="sort-handle cursor-move text-[var(--text-n4)]" :size="12" />
+        <div class="flex flex-1 items-center overflow-hidden">
+          <CrmIcon type="iconicon_move" class="sort-handle cursor-move text-[var(--text-n4)]" :size="12" />
           <span class="one-line-text ml-[8px] text-[12px]">
             {{ t(element.title as string) }}
           </span>
@@ -33,7 +33,7 @@
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 
   import { useI18n } from '@/hooks/useI18n';
-  import { useTableStore } from '@/store';
+  import useTableStore from '@/hooks/useTableStore';
 
   import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { VueDraggable } from 'vue-draggable-plus';
@@ -82,3 +82,12 @@
     }
   }
 </script>
+
+<style lang="less">
+  .column-setting-popover {
+    overflow-y: auto;
+    padding: 8px !important;
+    max-height: 416px;
+    .crm-scroll-bar();
+  }
+</style>

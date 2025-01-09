@@ -125,3 +125,70 @@
   border: 1px solid var(--text-n8) !important;
   box-shadow: @box-middle-shadow;
 }
+
+// 表格
+.n-data-table {
+  .n-data-table-empty {
+    border-bottom: 1px solid var(--text-n8);
+  }
+  .n-data-table-thead {
+    .n-data-table-tr:not(.n-data-table-tr--summary):hover {
+      background-color: var(--text-n10);
+    }
+  }
+  .n-data-table-th {
+    border-top: 1px solid var(--text-n8);
+    .n-data-table-th__title-wrapper {
+      float: left; // 只有设置这个 排序和过滤才能拼一起
+      width: fit-content;
+      height: 22px;
+      .n-data-table-th__title {
+        flex: none !important;
+      }
+      .n-data-table-sorter {
+        margin-left: 8px;
+      }
+    }
+    // 过滤的样式
+    .n-data-table-filter {
+      position: relative;
+      width: 32px;
+      height: 22px;
+      &:hover {
+        background-color: transparent;
+      }
+      &.n-data-table-filter--show {
+        background-color: transparent;
+      }
+      &.n-data-table-filter--active {
+        border-radius: 0 2px 2px 0;
+        background-color: var(--primary-7);
+      }
+    }
+    // 过滤时标题的样式
+    &:has(> .n-data-table-filter--active) {
+      .n-data-table-th__title-wrapper {
+        border-radius: 2px 0 0 2px !important;
+        background-color: var(--primary-7);
+      }
+      .n-data-table-th__title {
+        color: var(--primary-8);
+      }
+    }
+    // 排序时标题的样式
+    &.n-data-table-th--sorting {
+      .n-data-table-th__title-wrapper {
+        border-radius: 2px;
+        background-color: var(--primary-7);
+      }
+      .n-data-table-th__title {
+        color: var(--primary-8);
+      }
+    }
+  }
+  .n-data-table-td {
+    padding-top: 0;
+    padding-bottom: 0;
+    height: 46px;
+  }
+}

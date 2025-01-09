@@ -13,12 +13,10 @@
   import { CrmDataTableColumn, CrmTableDataItem } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
 
-  import { useTableStore } from '@/store';
+  import { useI18n } from '@/hooks/useI18n';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import type { CommonList } from '@lib/shared/models/common';
-
-  const tableStore = useTableStore();
 
   interface RoleItem {
     id: string;
@@ -27,27 +25,29 @@
     title: string;
   }
 
+  const { t } = useI18n();
+
   const columns: CrmDataTableColumn[] = [
     {
       type: 'selection',
       // multiple: false, // 设置单选
     },
     {
-      title: 'common.creator',
+      title: t('common.creator'),
       key: 'num',
       width: 60,
       sortOrder: false,
-      sorter: 'default',
+      sorter: true,
     },
     {
-      title: 'common.execute',
+      title: t('common.execute'),
       key: 'title',
       width: 100,
       ellipsis: {
         tooltip: true,
       },
       sortOrder: false,
-      sorter: 'default',
+      sorter: true,
       filterOptions: [
         {
           label: '222',
@@ -58,12 +58,10 @@
           value: 'string',
         },
       ],
-      filter(value, row) {
-        return row.title === value;
-      },
+      filter: true,
     },
     {
-      title: 'common.text',
+      title: t('common.text'),
       key: 'status',
       width: 100,
       ellipsis: {
@@ -79,9 +77,7 @@
           value: 'New York',
         },
       ],
-      filter(value, row) {
-        return row.status === value;
-      },
+      filter: 'default',
     },
     { key: 'operation', width: 80 },
   ];
@@ -185,7 +181,7 @@
     return new Promise<CommonList<CrmTableDataItem<RoleItem>>>((resolve) => {
       setTimeout(() => {
         resolve(data);
-      }, 1000);
+      }, 200);
     });
   }
 
@@ -203,6 +199,4 @@
   onMounted(() => {
     searchData();
   });
-
-  await tableStore.initColumn(TableKeyEnum.SYSTEM_USER, columns);
 </script>
