@@ -11,13 +11,4 @@
 
     <artifactId>framework</artifactId>
     <version>${revision}</version>
-
-    <dependencies>
-        <!-- 支持在线程池情况下，多线程间传递 thread-local 的变量 -->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>transmittable-thread-local</artifactId>
-            <version>${transmittable-thread-local.version}</version>
-        </dependency>
-    </dependencies>
 </project>

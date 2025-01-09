@@ -59,7 +59,7 @@ public class RoleService {
         return roleGetResponse;
     }
 
-    public Role add(RoleAddRequest request, String userId) {
+    public Role add(RoleAddRequest request, String userId, String orgId) {
         Role role = BeanUtils.copyBean(new Role(), request);
         role.setId(IDGenerator.nextStr());
         role.setCreateTime(System.currentTimeMillis());
@@ -67,7 +67,7 @@ public class RoleService {
         role.setUpdateUser(userId);
         role.setCreateUser(userId);
         role.setInternal(false);
-        role.setOrganizationId(OrganizationContext.getOrganizationId());
+        role.setOrganizationId(orgId);
         // 创建默认仅可查看
         role.setDataScope(RoleDataScope.SELF.name());
         roleMapper.insert(role);

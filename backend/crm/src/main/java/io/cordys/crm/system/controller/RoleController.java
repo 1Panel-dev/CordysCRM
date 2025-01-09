@@ -2,6 +2,7 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.permission.PermissionDefinitionItem;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.dto.request.RoleAddRequest;
 import io.cordys.crm.system.dto.request.RoleUpdateRequest;
@@ -48,7 +49,7 @@ public class RoleController {
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD)
     @Operation(summary = "添加角色")
     public Role add(@Validated @RequestBody RoleAddRequest request){
-        return roleService.add(request, SessionUtils.getUserId());
+        return roleService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")

@@ -1,6 +1,5 @@
 package io.cordys.context;
 
-import com.alibaba.ttl.TransmittableThreadLocal;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.response.result.CrmHttpResultCode;
@@ -20,7 +19,7 @@ import java.util.Set;
 public class OrganizationContext {
 
     private static final String DEFAULT_ORGANIZATION_ID = "100001";
-    private static final ThreadLocal<String> ORGANIZATION_ID = new TransmittableThreadLocal<>();
+    private static final ThreadLocal<String> ORGANIZATION_ID = new InheritableThreadLocal<>();
 
     /**
      * 获取组织ID，并校验权限
