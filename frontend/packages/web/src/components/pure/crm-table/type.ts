@@ -1,7 +1,14 @@
 import { VNodeChild } from 'vue';
 
 import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-import type { DataTableColumn, DataTableColumnKey, DataTableProps, DataTableRowData, DataTableRowKey } from 'naive-ui';
+import type {
+  DataTableColumn,
+  DataTableColumnKey,
+  DataTableProps,
+  DataTableRowData,
+  DataTableRowKey,
+  PaginationProps,
+} from 'naive-ui';
 
 export type CrmTableDataItem<T> = T & {
   updateTime?: string | number | null;
@@ -25,6 +32,7 @@ export interface CrmTableProps<T> extends DataTableProps {
   'data': CrmTableDataItem<T>[];
   'showSetting'?: boolean; // 是否显示表格配置
   'showPagination'?: boolean; // 是否显示分页
+  'crmPagination'?: PaginationProps; // 分页配置
   'onUpdate:checkedRowKeys'?: (key: DataTableRowKey[]) => void; // 覆写类型防止报错
 }
 

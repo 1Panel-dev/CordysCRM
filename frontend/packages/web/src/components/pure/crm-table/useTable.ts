@@ -22,24 +22,24 @@ export default function useTable<T>(
     data: [], // 表格数据
     columns: [],
     tableRowKey: 'id', // 表格行的key
-    pagination: {
+    showPagination: true, // 是否显示分页
+    crmPagination: {
       page: 1,
       itemCount: 0,
       pageSize: appStore.pageSize,
-      pageSizes: appStore.pageSizes,
       showSizePicker: appStore.showSizePicker,
       showQuickJumper: appStore.showQuickJumper,
-    }, // false | PaginationProps; false表示不分页
+    },
     ...props,
   };
 
   const propsRes = ref<CrmTableProps<T>>(cloneDeep(defaultProps));
 
   // 如果表格设置了tableKey，设置缓存的分页大小
-  if (propsRes.value.pagination && typeof propsRes.value.pagination === 'object' && propsRes.value.tableKey) {
+  if (propsRes.value.showPagination && propsRes.value.tableKey) {
     tableStore.getPageSize(propsRes.value.tableKey).then((res) => {
-      if (propsRes.value.pagination && res) {
-        propsRes.value.pagination.pageSize = res;
+      if (propsRes.value.crmPagination && res) {
+        propsRes.value.crmPagination.pageSize = res;
       }
     });
   }
@@ -57,7 +57,7 @@ export default function useTable<T>(
 
   // 获取分页参数
   async function getPaginationParams() {
-    const { page, pageSize } = propsRes.value.pagination as PaginationProps;
+    const { page, pageSize } = propsRes.value.crmPagination as PaginationProps;
     if (propsRes.value.tableKey) {
       const cachedPageSize = await tableStore.getPageSize(propsRes.value.tableKey);
       return { current: page, pageSize: cachedPageSize || pageSize };
@@ -71,10 +71,10 @@ export default function useTable<T>(
    * @param total 总页数
    */
   function setPagination(page: number, total?: number) {
-    if (propsRes.value.pagination && typeof propsRes.value.pagination === 'object') {
-      propsRes.value.pagination.page = page;
+    if (propsRes.value.crmPagination) {
+      propsRes.value.crmPagination.page = page;
       if (total !== undefined) {
-        propsRes.value.pagination.itemCount = total;
+        propsRes.value.crmPagination.itemCount = total;
       }
     }
   }
@@ -100,14 +100,14 @@ export default function useTable<T>(
     setLoading(true);
     try {
       tableQueryParams.value = {
-        ...(!propsRes.value.pagination ? {} : await getPaginationParams()),
+        ...(!propsRes.value.showPagination ? {} : await getPaginationParams()),
         keyword: keyword.value,
         sort: sortItem.value,
         ...loadListParams.value,
         filter: filterItem.value,
       };
       const data = await loadListFunc(tableQueryParams.value);
-      if (!propsRes.value.pagination && Array.isArray(data)) {
+      if (!propsRes.value.showPagination && Array.isArray(data)) {
         propsRes.value.data = data.map((item: CrmTableDataItem<T>) => {
           return processRecordItem(item);
         }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
@@ -138,12 +138,9 @@ export default function useTable<T>(
     },
     // 修改每页显示条数触发
     pageSizeChange: async (pageSize: number) => {
-      if (propsRes.value.pagination && typeof propsRes.value.pagination === 'object') {
-        propsRes.value.pagination.pageSize = pageSize;
-        // 如果表格设置了tableKey，缓存分页大小
-        if (propsRes.value.tableKey) {
-          await tableStore.setPageSize(propsRes.value.tableKey, pageSize);
-        }
+      // 如果表格设置了tableKey，缓存分页大小
+      if (propsRes.value.tableKey) {
+        await tableStore.setPageSize(propsRes.value.tableKey, pageSize);
       }
       loadList();
     },

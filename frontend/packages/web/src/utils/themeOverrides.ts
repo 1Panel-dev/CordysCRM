@@ -189,6 +189,12 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       fontSizeMedium: '14px',
       fontSizeLarge: '16px',
     },
+    Pagination: {
+      itemSizeMedium: '32px',
+      itemSizeSmall: '24px',
+      itemTextColor: getLessVariableValue('--text-n1'),
+      jumperTextColor: getLessVariableValue('--text-n2'),
+    },
   };
 }
 

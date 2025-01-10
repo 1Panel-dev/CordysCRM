@@ -7,8 +7,6 @@
     @update:sorter="handleSorterChange"
     @update:filters="handleFiltersChange"
     @update:checked-row-keys="handleCheck"
-    @update:page="handlePageChange"
-    @update:page-size="handlePageSizeChange"
   >
     <template #empty>
       <div class="w-full">
@@ -20,6 +18,12 @@
       </div>
     </template>
   </n-data-table>
+  <CrmPagination
+    class="mt-[16px]"
+    v-bind="{ ...(attrs.crmPagination || {}) }"
+    @handle-page-change="handlePageChange"
+    @handle-page-size-change="handlePageSizeChange"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -27,6 +31,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmPagination from '@/components/pure/crm-pagination/index.vue';
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import ColumnSetting from './components/columnSetting.vue';
 
