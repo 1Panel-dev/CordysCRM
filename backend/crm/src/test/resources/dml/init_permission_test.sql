@@ -17,7 +17,7 @@ VALUES('permission_test', 'permission_test', 'permission_test', UNIX_TIMESTAMP()
 -- 初始化组织和用户的关系
 INSERT INTO sys_organization_user
 (`id`, `organization_id`, `department_id`, `user_id`, `enable`, `employee_id`, `position`, `employee_type`, `supervisor_id`, `work_city`, `create_user`, `update_user`, `create_time`, `update_time`)
-VALUES ('permission_test', '100001', '100001', 'permission_test', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000);
+VALUES ('permission_test', '100001', '100001', 'permission_test', true, '', '', '', '', '', 'admin', 'admin', UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000);
 
 
 

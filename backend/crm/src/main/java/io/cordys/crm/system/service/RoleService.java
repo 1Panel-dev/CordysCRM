@@ -2,7 +2,6 @@ package io.cordys.crm.system.service;
 
 import io.cordys.common.constants.InternalRole;
 import io.cordys.common.constants.RoleDataScope;
-import io.cordys.context.OrganizationContext;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.permission.Permission;
 import io.cordys.common.permission.PermissionDefinitionItem;
@@ -10,12 +9,18 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.RolePermission;
 import io.cordys.crm.system.domain.UserRole;
+import io.cordys.crm.system.dto.request.RoleAddRequest;
+import io.cordys.crm.system.dto.request.RoleUpdateRequest;
+import io.cordys.crm.system.dto.response.RoleGetResponse;
+import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,15 +28,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import io.cordys.crm.system.dto.request.*;
-import io.cordys.crm.system.dto.response.*;
-import io.cordys.crm.system.domain.Role;
-
 /**
- *
  * @author jianxing
  * @date 2025-01-03 12:01:54
  */
@@ -45,17 +48,48 @@ public class RoleService {
     private BaseMapper<UserRole> userRoleMapper;
     @Resource
     private BaseMapper<RolePermission> rolePermissionMapper;
+    @Resource
+    private BaseService baseService;
 
-    public List<RoleListResponse> list() {
-        List<Role> roles = roleMapper.select(new Role());
-        return JSON.parseArray(JSON.toJSONString(roles), RoleListResponse.class);
+    public List<RoleListResponse> list(String orgId) {
+        Role role = new Role();
+        role.setOrganizationId(orgId);
+        List<Role> roles = roleMapper.select(role);
+        List<RoleListResponse> roleListResponseList = JSON.parseArray(JSON.toJSONString(roles), RoleListResponse.class);
+        // 翻译内置角色名称
+        roleListResponseList.stream()
+                .filter(RoleListResponse::getInternal)
+                .forEach(this::translateInternalRole);
+        // 按创建时间排序
+        roleListResponseList.sort(Comparator.comparingLong(RoleListResponse::getCreateTime));
+        return baseService.setCreateAndUpdateUserName(roleListResponseList);
     }
 
+    /**
+     * 翻译内置角色名
+     * @param role
+     * @return
+     */
+    public Role translateInternalRole(Role role) {
+        if (BooleanUtils.isTrue(role.getInternal())) {
+            role.setName(translateInternalRole(role.getName()));
+        }
+        return role;
+    }
+
+    /**
+     * 翻译内置角色名
+     * @param roleKey
+     * @return
+     */
+    public String translateInternalRole(String roleKey) {
+        return Translator.get("role." + roleKey);
+    }
 
     public RoleGetResponse get(String id) {
         Role role = roleMapper.selectByPrimaryKey(id);
         RoleGetResponse roleGetResponse = BeanUtils.copyBean(new RoleGetResponse(), role);
-        // do something...
+        translateInternalRole(roleGetResponse);
         return roleGetResponse;
     }
 
@@ -79,7 +113,7 @@ public class RoleService {
         role.setUpdateTime(System.currentTimeMillis());
         role.setUpdateUser(userId);
         roleMapper.update(role);
-        return roleMapper.selectByPrimaryKey(role.getId());
+        return translateInternalRole(roleMapper.selectByPrimaryKey(role.getId()));
     }
 
     public void delete(String id) {
@@ -165,23 +199,19 @@ public class RoleService {
 
         String permissionName = switch (permissionKey) {
             case "READ":
-                yield Translator.get("permission.read");
+                yield "permission.read";
             case "READ+ADD":
-                yield Translator.get("permission.add");
+                yield "permission.add";
             case "READ+UPDATE":
-                yield Translator.get("permission.edit");
+                yield "permission.edit";
             case "READ+DELETE":
-                yield Translator.get("permission.delete");
+                yield "permission.delete";
             case "READ+IMPORT":
-                yield Translator.get("permission.import");
+                yield "permission.import";
             case "READ+RECOVER":
-                yield Translator.get("permission.recover");
+                yield "permission.recover";
             case "READ+EXPORT":
-                yield Translator.get("permission.export");
-            case "READ+EXECUTE":
-                yield Translator.get("permission.execute");
-            case "READ+DEBUG":
-                yield Translator.get("permission.debug");
+                yield "permission.export";
             default:
                 throw new GenericException("Unknown permission key: " + permissionKey);
         };

@@ -1,7 +1,9 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.common.constants.InternalRole;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.permission.PermissionDefinitionItem;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.dto.request.RoleAddRequest;
@@ -9,13 +11,15 @@ import io.cordys.crm.system.dto.request.RoleUpdateRequest;
 import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -40,22 +44,36 @@ class RoleControllerTests extends BaseTest {
     @Test
     @Order(0)
     void testListEmpty() throws Exception {
-        // @@请求成功
+        // 请求成功
         MvcResult mvcResult = this.requestGetWithOk(DEFAULT_LIST)
                 .andReturn();
         List<RoleListResponse> roleList = getResultDataArray(mvcResult, RoleListResponse.class);
 
-        // 默认初始化了一个用于权限校验的角色 permission_test
-        Assertions.assertEquals(roleList.size(), 1);
+        Map<String, RoleListResponse> roleMap = roleList.stream()
+                .collect(Collectors.toMap(RoleListResponse::getId, Function.identity()));
 
-        // @@校验权限
+        // 校验内置用户
+        assertInternalRole(roleMap.get(InternalRole.ORG_ADMIN.getValue()));
+        assertInternalRole(roleMap.get(InternalRole.SALES_STAFF.getValue()));
+        assertInternalRole(roleMap.get(InternalRole.SALES_MANAGER.getValue()));
+
+        // 校验组织ID
+        roleList.forEach(role -> Assertions.assertEquals(role.getOrganizationId(), DEFAULT_ORGANIZATION_ID));
+
+        // 校验权限
         requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, DEFAULT_LIST);
+    }
+
+    private static void assertInternalRole(RoleListResponse role) {
+        Assertions.assertEquals(role.getName(), Translator.get("role." + role.getId()));
+        Assertions.assertEquals(role.getCreateUserName(), "Administrator");
+        Assertions.assertEquals(role.getUpdateUserName(), "Administrator");
     }
 
     @Test
     @Order(1)
     void testAdd() throws Exception {
-        // @@请求成功
+        // 请求成功
         RoleAddRequest request = new RoleAddRequest();
         request.setName("test");
         request.setDescription("test desc");
@@ -67,8 +85,9 @@ class RoleControllerTests extends BaseTest {
         this.addRole = role;
         Assertions.assertEquals(request.getName(), role.getName());
         Assertions.assertEquals(request.getDescription(), role.getDescription());
+        Assertions.assertEquals(role.getOrganizationId(), DEFAULT_ORGANIZATION_ID);
 
-        // @@校验权限
+        // 校验权限
         requestPostPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD, DEFAULT_ADD, request);
     }
 
@@ -103,6 +122,8 @@ class RoleControllerTests extends BaseTest {
                 .andReturn();
         List<RoleListResponse> userRoles = getResultDataArray(mvcResult, RoleListResponse.class);
 
+        // 校验组织ID
+        userRoles.forEach(role -> Assertions.assertEquals(role.getOrganizationId(), DEFAULT_ORGANIZATION_ID));
 
         // @@校验权限
         requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, DEFAULT_LIST);
