@@ -66,7 +66,7 @@ public class DepartmentController {
 
 
     @GetMapping("/delete/{id}")
-    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_DELETE)
     @Operation(summary = "组织架构-删除部门")
     public void deleteDepartment(@PathVariable String id) {
         departmentService.delete(id, OrganizationContext.getOrganizationId());

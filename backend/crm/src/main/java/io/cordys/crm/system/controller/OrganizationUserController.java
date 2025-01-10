@@ -5,9 +5,12 @@ import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.context.OrganizationContext;
+import io.cordys.crm.system.dto.request.UserAddRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.service.OrganizationUserService;
+import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -33,11 +36,20 @@ public class OrganizationUserController {
 
     @PostMapping("/list")
     @Operation(summary = "用户(员工)-列表查询")
-    @RequiresPermissions(PermissionConstants.OPERATION_LOG_READ)
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_READ)
     public Pager<List<UserPageResponse>> list(@Validated @RequestBody UserPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
                 StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
         return PageUtils.setPageInfo(page, organizationUserService.list(request));
     }
+
+
+    @PostMapping("/add")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_ADD)
+    @Operation(summary = "用户(员工)-添加员工")
+    public void addUser(@Validated @RequestBody UserAddRequest request) {
+        organizationUserService.addUser(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
 
 }

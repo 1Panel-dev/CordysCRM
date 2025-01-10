@@ -1,6 +1,7 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.system.dto.request.UserAddRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -11,6 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 
+import java.util.List;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -19,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class OrganizationUserControllerTests extends BaseTest {
 
     public static final String USER_LIST = "/user/list";
+    public static final String USER_ADD = "/user/add";
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
             config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
@@ -32,4 +36,28 @@ public class OrganizationUserControllerTests extends BaseTest {
         request.setDepartmentId("8");
         this.requestPost(USER_LIST, request).andExpect(status().isOk());
     }
+
+    @Test
+    @Order(2)
+    public void userAdd() throws Exception {
+        UserAddRequest request = new UserAddRequest();
+        request.setName("test");
+        request.setPhone("12345678901");
+        request.setGender(true);
+        request.setEmail("1@Cordys.com");
+        request.setDepartmentId("1");
+        request.setRoleIds(List.of("1", "2"));
+        this.requestPost(USER_ADD, request).andExpect(status().isOk());
+
+        //格式错误
+        request.setEmail("1234");
+        this.requestPost(USER_ADD, request).andExpect(status().is4xxClientError());
+        //邮箱重复
+        request.setEmail("1@Cordys.com");
+        this.requestPost(USER_ADD, request).andExpect(status().is5xxServerError());
+        //电话重复
+        request.setEmail("2@Cordys.com");
+        this.requestPost(USER_ADD, request).andExpect(status().is5xxServerError());
+    }
+
 }
