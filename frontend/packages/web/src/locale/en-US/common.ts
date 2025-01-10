@@ -219,4 +219,5 @@ export default {
   'common.checkDetail': 'View details',
   'common.operator': 'Operator',
   'common.nameExists': 'Name already exists',
+  'common.pleaseInputToEnter': 'Please input and press enter',
 };

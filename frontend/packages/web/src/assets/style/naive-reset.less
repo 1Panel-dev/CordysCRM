@@ -125,6 +125,20 @@
   border: 1px solid var(--text-n8) !important;
   box-shadow: @box-middle-shadow;
 }
+// 标签
+.n-tag {
+  .n-tag__content {
+    overflow: hidden !important;
+    max-width: 144px !important;
+    text-overflow: ellipsis !important;
+  }
+}
+
+// tooltip 最大限制
+.n-tooltip {
+  max-width: 300px;
+  max-height: 400px;
+}
 
 // 表格
 .n-data-table {

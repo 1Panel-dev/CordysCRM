@@ -163,7 +163,6 @@ export function getThemeOverrides(): GlobalThemeOverrides {
     },
     Tree: {
       nodeColorHover: getLessVariableValue('--primary-7'),
-      nodeHeight: '34px',
       nodeTextColorDisabled: getLessVariableValue('--text-n6'),
       nodeColorActive: getLessVariableValue('--primary-7'),
       nodeColorPressed: getLessVariableValue('--primary-7'),
@@ -181,6 +180,14 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       tdColorHover: getLessVariableValue('--text-n9'),
       tdTextColor: getLessVariableValue('--text-n1'),
       emptyPadding: '12px',
+    },
+    Input: {
+      heightSmall: '24px',
+      heightMedium: '32px',
+      heightLarge: '40px',
+      fontSizeSmall: '12px',
+      fontSizeMedium: '14px',
+      fontSizeLarge: '16px',
     },
   };
 }

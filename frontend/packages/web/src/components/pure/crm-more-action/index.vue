@@ -1,17 +1,17 @@
 <template>
   <n-dropdown
-    v-if="props.options.length"
     trigger="click"
     :options="props.options"
-    :render-option="renderOptions"
+    :render-label="renderLabel"
     class="crm-dropdown"
+    :node-props="getNodeProps"
     :placement="props.placement"
     @select="handleSelect"
   >
-    <n-button type="primary" size="small" ghost class="h-[24px] w-[24px] !p-0">
+    <n-button type="primary" size="small" ghost class="h-[24px] w-[24px] !p-0" @click.stop="(e) => emit('click', e)">
       <template #icon>
         <n-icon>
-          <CrmIcon type="icon-icon_more_outlined" :size="16" class="mt-[1px] text-[var(--primary-8)]" />
+          <CrmIcon type="iconicon_ellipsis" :size="16" class="mt-[1px] text-[var(--primary-8)]" />
         </n-icon>
       </template>
     </n-button>
@@ -19,8 +19,16 @@
 </template>
 
 <script setup lang="ts">
-  import { VNodeChild } from 'vue';
-  import { DropdownGroupOption, NButton, NDropdown, NIcon, PopoverTrigger } from 'naive-ui';
+  import { HTMLAttributes, VNodeChild } from 'vue';
+  import {
+    DropdownGroupOption,
+    DropdownOption,
+    MenuNodeProps,
+    NButton,
+    NDropdown,
+    NIcon,
+    PopoverTrigger,
+  } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
@@ -30,6 +38,7 @@
     defineProps<{
       options: ActionsItem[];
       trigger?: PopoverTrigger;
+      nodeProps?: (option: DropdownOption | DropdownGroupOption) => HTMLAttributes;
       placement?:
         | 'top-start'
         | 'top'
@@ -51,6 +60,7 @@
 
   const emit = defineEmits<{
     (e: 'select', currentAction: ActionsItem): void;
+    (e: 'click', event: MouseEvent): void;
   }>();
 
   function handleSelect(key: string | number) {
@@ -60,16 +70,13 @@
     }
   }
 
-  function renderOptions(dprops: { node: VNode; option: ActionsItem | DropdownGroupOption }) {
-    const { option } = dprops;
-    const icon = option.icon as unknown as string;
+  function renderLabel(option: DropdownOption) {
+    const icon = option.iconType as string;
+
     return h(
       'div',
       {
-        class: `crm-dropdown-btn ${
-          option.danger ? 'hover:bg-[var(--error-5)] text-[var(--error-red)]' : 'hover:bg-[var(--primary-7)]'
-        }`,
-        onClick: () => handleSelect(option.key as string),
+        class: `crm-dropdown-btn w-full ${option.danger ? ' text-[var(--error-red)]' : ''}`,
       },
       {
         default: () => {
@@ -89,13 +96,31 @@
       }
     );
   }
+
+  function getNodeProps(option: DropdownOption | DropdownGroupOption) {
+    const baseClass = option?.danger
+      ? 'crm-dropdown-btn hover:bg-[var(--error-5)]'
+      : 'crm-dropdown-btn hover:bg-[var(--primary-7)]';
+
+    if (props.nodeProps) {
+      const nodeHtmlProps: HTMLAttributes =
+        typeof props.nodeProps === 'function' ? props.nodeProps(option) : props.nodeProps;
+
+      return {
+        ...(nodeHtmlProps as MenuNodeProps),
+        class: `${baseClass} ${nodeHtmlProps?.class || ''}`, // 合并 class 并避免空值
+      };
+    }
+
+    return { class: baseClass };
+  }
 </script>
 
 <style lang="less">
   .crm-dropdown-btn {
-    padding: 0 14px;
-    min-width: 80px;
-    height: 28px;
+    padding: 0 8px;
+    min-width: 60px;
+    height: 30px;
     @apply flex cursor-pointer items-center rounded;
   }
 </style>

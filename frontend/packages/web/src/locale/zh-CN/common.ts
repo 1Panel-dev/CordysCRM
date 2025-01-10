@@ -219,4 +219,5 @@ export default {
   'common.checkDetail': '查看详情',
   'common.operator': '操作人',
   'common.nameExists': '名称已重复',
+  'common.pleaseInputToEnter': '请输入后回车',
 };
