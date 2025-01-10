@@ -52,20 +52,15 @@
 
   const checkedRowKeys = defineModel<DataTableRowKey[]>('checkedRowKeys', { default: [] });
 
-  // 初始化存储列
-  async function initStoreColumn() {
-    if (attrs.showSetting && attrs.tableKey) {
-      await tableStore.initColumn(attrs.tableKey as TableKeyEnum, props.columns);
-    }
-  }
-  initStoreColumn();
-
   const currentColumns = ref<CrmDataTableColumn[]>([]);
 
   // TODO lmy 设置列
-  async function initColumn() {
+  async function initColumn(hasInitStore = false) {
     let columns = cloneDeep(props.columns);
     if (attrs.showSetting) {
+      if (!hasInitStore && attrs.showSetting && attrs.tableKey) {
+        await tableStore.initColumn(attrs.tableKey as TableKeyEnum, props.columns);
+      }
       columns = await tableStore.getShowInTableColumns(attrs.tableKey as TableKeyEnum);
     }
     currentColumns.value = columns.map((column) => {
@@ -88,7 +83,7 @@
                 h(ColumnSetting, {
                   tableKey: attrs.tableKey as TableKeyEnum,
                   onChangeColumnsSetting: () => {
-                    initColumn();
+                    initColumn(true);
                   },
                 })
               );
