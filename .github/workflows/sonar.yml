@@ -1,16 +1,7 @@
 name: SonarCloud
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "backend/**"
-      - "pom.xml"
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - "backend/**"
-      - "pom.xml"
+  workflow_dispatch:
+
 jobs:
   build:
     name: Build and analyze
