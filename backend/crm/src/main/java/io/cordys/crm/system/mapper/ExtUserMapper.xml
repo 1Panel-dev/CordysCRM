@@ -18,4 +18,16 @@
             #{id}
         </foreach>
     </select>
+
+    <select id="getUserRole" resultType="io.cordys.crm.system.dto.convert.UserRoleConvert">
+        SELECT sr.id, sr.name, sur.user_id
+        FROM sys_role sr
+        inner join sys_user_role sur on sr.id = sur.role_id
+        WHERE sur.user_id IN
+        <foreach collection="userIds" item="userId" index="index"
+                 open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+        and sr.organization_id = #{orgId}
+    </select>
 </mapper>

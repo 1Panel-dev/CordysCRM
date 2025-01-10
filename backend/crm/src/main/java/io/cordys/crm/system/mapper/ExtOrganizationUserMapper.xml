@@ -11,4 +11,36 @@
           and organization_id = #{orgId}
     </select>
 
+    <select id="list" resultType="io.cordys.crm.system.dto.response.UserPageResponse">
+        SELECT
+            sou.id,
+            sou.user_id,
+            sou.organization_id,
+            sou.department_id,
+            su.name userName,
+            sou.`enable`,
+            su.gender,
+            su.phone,
+            su.email,
+            sou.supervisor_id,
+            sou.employee_id,
+            sou.position,
+            sou.employee_type,
+            sou.work_city,
+            sou.create_time,
+            sou.update_time,
+            sou.create_user,
+            sou.update_user
+        FROM
+            sys_organization_user sou
+                INNER JOIN sys_user su ON sou.user_id = su.id
+        where sou.department_id = #{request.departmentId}
+        <if test="request.keyword != null and request.keyword != ''">
+            and (
+            su.name like concat('%', #{request.keyword},'%')
+            or su.phone like concat('%', #{request.keyword},'%')
+            )
+        </if>
+    </select>
+
 </mapper>
