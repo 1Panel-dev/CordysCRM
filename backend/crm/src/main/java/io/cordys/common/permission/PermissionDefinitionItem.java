@@ -13,8 +13,6 @@ import java.util.List;
 public class PermissionDefinitionItem {
     @Schema(description =  "菜单项ID")
     private String id;
-    @Schema(description =  "菜单所属类型 SYSTEM ORGANIZATION PROJECT")
-    private String type;
     @Schema(description =  "菜单项名称")
     private String name;
     @Schema(description =  "是否是企业版菜单")
@@ -25,6 +23,4 @@ public class PermissionDefinitionItem {
     private List<Permission> permissions;
     @Schema(description =  "子菜单")
     private List<PermissionDefinitionItem> children;
-    @Schema(description =  "排序")
-    private Integer order;
 }
