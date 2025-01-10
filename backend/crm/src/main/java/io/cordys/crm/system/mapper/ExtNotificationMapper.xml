@@ -4,7 +4,7 @@
 
     <select id="listNotification" parameterType="io.cordys.crm.system.dto.request.NotificationRequest" resultType="io.cordys.crm.system.dto.response.NotificationDTO">
         SELECT * FROM sys_notification
-        WHERE sys_notification.receiver = #{request.receiver} AND sys_notification.create_time &gt; (unix_timestamp()  - 90 * 24 * 3600) * 1000
+        WHERE sys_notification.receiver = #{request.receiver} AND sys_notification.create_time &gt; (unix_timestamp()  - 90 * 24 * 3600) * 1000 and sys_notification.organization_id = #{organizationId}
         <if test='request.subject != null and request.subject != ""'>
             AND ( sys_notification.subject LIKE #{request.subject} OR sys_notification.content LIKE #{request.subject} )
         </if>
@@ -32,6 +32,7 @@
         <if test='request.subject != null and request.subject != ""'>
             AND sys_notification.subject LIKE #{request.subject}
         </if>
+        AND sys_notification.organization_id = #{request.organizationId}
     </update>
 
     <select id="countByReceiver" parameterType="io.cordys.crm.system.domain.Notification" resultType="java.lang.Integer">

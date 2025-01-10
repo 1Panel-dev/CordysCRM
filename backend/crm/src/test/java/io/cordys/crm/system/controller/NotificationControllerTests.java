@@ -45,7 +45,7 @@ public class NotificationControllerTests extends BaseTest {
         notification.setOperator("admin");
         notification.setOperation("UPDATE");
         notification.setResourceType("FUNCTIONAL_CASE_TASK");
-        notification.setOrganizationId("10001");
+        notification.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         notification.setResourceName("功能用例导入测4");
         notification.setType("SYSTEM_NOTICE");
         notification.setStatus(NotificationConstants.Status.UNREAD.name());
@@ -82,7 +82,7 @@ public class NotificationControllerTests extends BaseTest {
     void setNotificationReadSuccess() throws Exception {
         Notification notification = new Notification();
         notification.setStatus(NotificationConstants.Status.UNREAD.name());
-        notification.setOrganizationId("10001");
+        notification.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         List<NotificationDTO> notifications = extNotificationMapper.selectByAnyOne(notification);
         this.requestGetWithOkAndReturn(NOTIFICATION_READ + notifications.getFirst().getId());
         notification.setStatus(NotificationConstants.Status.READ.name());
@@ -99,7 +99,7 @@ public class NotificationControllerTests extends BaseTest {
         this.requestGetWithOk(NOTIFICATION_READ_ALL);
         Notification notification = new Notification();
         notification.setStatus(NotificationConstants.Status.READ.name());
-        notification.setOrganizationId("10001");
+        notification.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         List<NotificationDTO> notifications = extNotificationMapper.selectByAnyOne(notification);
         Assertions.assertFalse(notifications.isEmpty());
 
@@ -123,7 +123,7 @@ public class NotificationControllerTests extends BaseTest {
     @Test
     @Order(5)
     void getUnReadNotificationCount() throws Exception {
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(NOTIFICATION_UN_READ+"/10000100001");
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(NOTIFICATION_UN_READ);
         String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
         Integer i = JSON.parseObject(JSON.toJSONString(resultHolder.getData()), Integer.class);

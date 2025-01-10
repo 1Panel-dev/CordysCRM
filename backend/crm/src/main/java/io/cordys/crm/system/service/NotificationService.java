@@ -27,9 +27,9 @@ public class NotificationService {
     @Resource
     private ExtNotificationMapper extNotificationMapper;
 
-    public List<NotificationDTO> listNotification(NotificationRequest notificationRequest, String userId) {
+    public List<NotificationDTO> listNotification(NotificationRequest notificationRequest, String userId, String organizationId) {
         buildParam(notificationRequest, userId);
-        List<NotificationDTO> notifications = extNotificationMapper.listNotification(notificationRequest);
+        List<NotificationDTO> notifications = extNotificationMapper.listNotification(notificationRequest, organizationId);
         notifications.forEach(notification -> {
             notification.setContentText(new String(notification.getContent()));
         });
@@ -52,12 +52,12 @@ public class NotificationService {
         return extNotificationMapper.updateByReceiver(record);
     }
 
-    public List<OptionDTO> countNotification(NotificationRequest notificationRequest, String userId) {
+    public List<OptionDTO> countNotification(NotificationRequest notificationRequest, String organizationId, String userId) {
         List<OptionDTO> optionDTOS = new ArrayList<>();
         buildParam(notificationRequest, userId);
         notificationRequest.setResourceType(StringUtils.EMPTY);
         notificationRequest.setStatus(NotificationConstants.Status.UNREAD.name());
-        List<NotificationDTO> notifications = extNotificationMapper.listNotification(notificationRequest);
+        List<NotificationDTO> notifications = extNotificationMapper.listNotification(notificationRequest, organizationId);
         OptionDTO totalOptionDTO = new OptionDTO();
         totalOptionDTO.setId("total");
         totalOptionDTO.setName(String.valueOf(notifications.size()));
