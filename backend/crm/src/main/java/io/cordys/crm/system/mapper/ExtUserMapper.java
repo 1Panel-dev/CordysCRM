@@ -3,6 +3,7 @@ package io.cordys.crm.system.mapper;
 
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
+import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.security.UserDTO;
 import org.springframework.data.repository.query.Param;
 
@@ -14,4 +15,6 @@ public interface ExtUserMapper {
     List<OptionDTO> selectUserOptionByIds(@Param("userIds") List<String> userIds);
 
     List<UserRoleConvert> getUserRole(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
+
+    UserResponse getUserDetail(@Param("id") String id);
 }

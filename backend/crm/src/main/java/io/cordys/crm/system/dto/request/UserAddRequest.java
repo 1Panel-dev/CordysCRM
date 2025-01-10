@@ -53,4 +53,7 @@ public class UserAddRequest {
     @Schema(description = "用户组")
     private List<String> userGroupIds;
 
+    @Schema(description = "是否启用")
+    private Boolean enable;
+
 }

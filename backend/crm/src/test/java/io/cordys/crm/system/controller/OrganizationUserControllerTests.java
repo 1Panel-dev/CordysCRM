@@ -23,6 +23,7 @@ public class OrganizationUserControllerTests extends BaseTest {
 
     public static final String USER_LIST = "/user/list";
     public static final String USER_ADD = "/user/add";
+    public static final String USER_DETAIL = "/user/detail/";
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
             config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
@@ -44,6 +45,7 @@ public class OrganizationUserControllerTests extends BaseTest {
         request.setName("test");
         request.setPhone("12345678901");
         request.setGender(true);
+        request.setEnable(true);
         request.setEmail("1@Cordys.com");
         request.setDepartmentId("1");
         request.setRoleIds(List.of("1", "2"));
@@ -60,4 +62,10 @@ public class OrganizationUserControllerTests extends BaseTest {
         this.requestPost(USER_ADD, request).andExpect(status().is5xxServerError());
     }
 
+
+    @Test
+    @Order(2)
+    public void userDetail() throws Exception {
+        this.requestGet(USER_DETAIL + "u_1").andExpect(status().isOk());
+    }
 }

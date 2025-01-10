@@ -9,6 +9,7 @@ import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.request.UserAddRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
 import io.cordys.crm.system.dto.response.UserPageResponse;
+import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.service.OrganizationUserService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,10 +18,7 @@ import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -51,5 +49,12 @@ public class OrganizationUserController {
         organizationUserService.addUser(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
+
+    @GetMapping("/detail/{id}")
+    @Operation(summary = "用户(员工)-员工详情")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_READ)
+    public UserResponse getFunctionalCaseDetail(@PathVariable String id) {
+        return organizationUserService.getUserDetail(id);
+    }
 
 }

@@ -30,4 +30,30 @@
         </foreach>
         and sr.organization_id = #{orgId}
     </select>
+
+
+    <select id="getUserDetail" resultType="io.cordys.crm.system.dto.response.UserResponse">
+        SELECT
+            sou.id,
+            sou.user_id,
+            sou.organization_id,
+            sou.department_id,
+            su.NAME userName,
+            sou.`enable`,
+            su.gender,
+            su.phone,
+            su.email,
+            sou.supervisor_id,
+            sou.employee_id,
+            sou.position,
+            sou.employee_type,
+            sou.work_city,
+            sd.`name` departmentName
+        FROM
+            sys_user su
+                INNER JOIN sys_organization_user sou ON su.id = sou.user_id
+                INNER JOIN sys_department sd on sd.id = sou.department_id
+        WHERE
+            sou.id = #{id}
+    </select>
 </mapper>

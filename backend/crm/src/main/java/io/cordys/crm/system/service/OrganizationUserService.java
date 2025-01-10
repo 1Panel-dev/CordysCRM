@@ -1,5 +1,10 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogExtraDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
@@ -12,6 +17,7 @@ import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.request.UserAddRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
 import io.cordys.crm.system.dto.response.UserPageResponse;
+import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
@@ -92,7 +98,7 @@ public class OrganizationUserService {
      * @param organizationId
      * @param operatorId
      */
-    //@OperationLog()
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, operator = "{{#operatorId}}", success = "添加用户成功", extra = "{{#newUser}}")
     public void addUser(UserAddRequest request, String organizationId, String operatorId) {
         //邮箱和手机号唯一性校验
         checkEmailAndPhone(request.getEmail(), request.getPhone());
@@ -103,6 +109,12 @@ public class OrganizationUserService {
         //add user role
         addUserRole(request.getRoleIds(), user.getId(), operatorId);
         //todo add user group
+        //添加日志上下文
+        OperationLogContext.putVariable("newUser", LogExtraDTO.builder()
+                .originalValue(null)
+                .modifiedValue(user)
+                .resourceId(user.getId())
+                .build());
     }
 
 
@@ -149,7 +161,6 @@ public class OrganizationUserService {
         orgUser.setCreateUser(operatorId);
         orgUser.setUpdateTime(System.currentTimeMillis());
         orgUser.setUpdateUser(operatorId);
-        orgUser.setEnable(true);
         organizationUserMapper.insert(orgUser);
     }
 
@@ -191,5 +202,20 @@ public class OrganizationUserService {
         user.setUpdateUser(operatorId);
         userMapper.insert(user);
         return user;
+    }
+
+
+    /**
+     * 获取用户详情
+     *
+     * @param id
+     * @return
+     */
+    public UserResponse getUserDetail(String id) {
+        UserResponse userDetail = extUserMapper.getUserDetail(id);
+        //获取用户角色
+        List<UserRoleConvert> userRoles = extUserMapper.getUserRole(List.of(userDetail.getUserId()), userDetail.getOrganizationId());
+        userDetail.setRoles(userRoles);
+        return userDetail;
     }
 }
