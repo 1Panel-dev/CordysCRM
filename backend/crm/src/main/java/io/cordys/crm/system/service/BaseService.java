@@ -26,6 +26,16 @@ public class BaseService {
 
     /**
      * 设置创建人和更新人名称
+     * @param object
+     * @return
+     * @param <T>
+     */
+    public <T> T setCreateAndUpdateUserName(T object) {
+        return setCreateAndUpdateUserName(List.of(object)).get(0);
+    }
+
+    /**
+     * 设置创建人和更新人名称
      * @param list
      * @return
      * @param <T>

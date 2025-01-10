@@ -12,6 +12,7 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.RolePermission;
 import io.cordys.crm.system.domain.UserRole;
+import io.cordys.crm.system.dto.request.PermissionSettingUpdateRequest;
 import io.cordys.crm.system.dto.request.RoleAddRequest;
 import io.cordys.crm.system.dto.request.RoleUpdateRequest;
 import io.cordys.crm.system.dto.response.RoleGetResponse;
@@ -90,7 +91,7 @@ public class RoleService {
         Role role = roleMapper.selectByPrimaryKey(id);
         RoleGetResponse roleGetResponse = BeanUtils.copyBean(new RoleGetResponse(), role);
         translateInternalRole(roleGetResponse);
-        return roleGetResponse;
+        return baseService.setCreateAndUpdateUserName(roleGetResponse);
     }
 
     public Role add(RoleAddRequest request, String userId, String orgId) {
@@ -117,7 +118,16 @@ public class RoleService {
     }
 
     public void delete(String id) {
+        // 删除角色
         roleMapper.deleteByPrimaryKey(id);
+        // 删除与权限的关联表
+        deletePermissionByRoleId(id);
+    }
+
+    private void deletePermissionByRoleId(String id) {
+        RolePermission example = new RolePermission();
+        example.setRoleId(id);
+        rolePermissionMapper.delete(example);
     }
 
     public List<PermissionDefinitionItem> getPermissionSetting(String id) {
@@ -261,4 +271,33 @@ public class RoleService {
         return userRoleMapper.select(example);
     }
 
+    /**
+     * 更新单个用户组的配置项
+     *
+     * @param request
+     */
+    public void updatePermissionSetting(PermissionSettingUpdateRequest request, String userId) {
+        List<PermissionSettingUpdateRequest.PermissionUpdateRequest> permissions = request.getPermissions();
+
+        String roleId = request.getRoleId();
+
+        // 先删除
+        deletePermissionByRoleId(roleId);
+
+        // 再新增
+        permissions.forEach(permission -> {
+            if (BooleanUtils.isTrue(permission.getEnable())) {
+                String permissionId = permission.getId();
+                RolePermission rolePermission = new RolePermission();
+                rolePermission.setId(IDGenerator.nextStr());
+                rolePermission.setRoleId(roleId);
+                rolePermission.setPermissionId(permissionId);
+                rolePermission.setCreateUser(userId);
+                rolePermission.setUpdateUser(userId);
+                rolePermission.setUpdateTime(System.currentTimeMillis());
+                rolePermission.setCreateTime(System.currentTimeMillis());
+                rolePermissionMapper.insert(rolePermission);
+            }
+        });
+    }
 }

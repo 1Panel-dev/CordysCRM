@@ -4,6 +4,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.permission.PermissionDefinitionItem;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Role;
+import io.cordys.crm.system.dto.request.PermissionSettingUpdateRequest;
 import io.cordys.crm.system.dto.request.RoleAddRequest;
 import io.cordys.crm.system.dto.request.RoleUpdateRequest;
 import io.cordys.crm.system.dto.response.RoleGetResponse;
@@ -71,4 +72,12 @@ public class RoleController {
     public List<PermissionDefinitionItem> getPermissionSetting(@PathVariable String id) {
         return roleService.getPermissionSetting(id);
     }
+
+    @PostMapping("/permission/update")
+    @Operation(summary = "编辑角色的权限配置")
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_UPDATE)
+    public void updatePermissionSetting(@Validated @RequestBody PermissionSettingUpdateRequest request) {
+        roleService.updatePermissionSetting(request, SessionUtils.getUserId());
+    }
+
 }

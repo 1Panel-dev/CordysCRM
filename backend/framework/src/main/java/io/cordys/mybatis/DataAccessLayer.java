@@ -196,7 +196,7 @@ public class DataAccessLayer implements ApplicationContextAware {
 
         @Override
         public Integer delete(E criteria) {
-            String sql = new BaseMapper.DeleteSqlProvider().buildSql(criteria, this.table);
+            String sql = new BaseMapper.DeleteByCriteriaSqlProvider().buildSql(criteria, this.table);
             String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
             return sqlSession.delete(msId, criteria);
         }
