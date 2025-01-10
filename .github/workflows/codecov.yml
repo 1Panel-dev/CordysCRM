@@ -1,16 +1,5 @@
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "backend/**"
-      - "pom.xml"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "backend/**"
-      - "pom.xml"
+  workflow_dispatch:
 
 name: Code Coverage
 
