@@ -237,31 +237,18 @@ public class RoleService {
         return permissionDefinitions;
     }
 
+    /**
+     * 翻译默认的权限名称
+     * @param p
+     * @return
+     */
     private String translateDefaultPermissionName(Permission p) {
         if (StringUtils.isNotBlank(p.getName())) {
             p.getName();
         }
         String[] idSplit = p.getId().split(":");
         String permissionKey = idSplit[idSplit.length - 1];
-
-        String permissionName = switch (permissionKey) {
-            case "READ":
-                yield "permission.read";
-            case "READ+ADD":
-                yield "permission.add";
-            case "READ+UPDATE":
-                yield "permission.edit";
-            case "READ+DELETE":
-                yield "permission.delete";
-            case "READ+IMPORT":
-                yield "permission.import";
-            case "READ+RECOVER":
-                yield "permission.recover";
-            case "READ+EXPORT":
-                yield "permission.export";
-            default:
-                throw new GenericException("Unknown permission key: " + permissionKey);
-        };
+        String permissionName = "permission." + permissionKey.toLowerCase();
         return Translator.get(permissionName);
     }
 

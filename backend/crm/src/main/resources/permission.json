@@ -11,13 +11,13 @@
             "id": "SYSTEM_ROLE:READ"
           },
           {
-            "id": "SYSTEM_ROLE:READ+ADD"
+            "id": "SYSTEM_ROLE:ADD"
           },
           {
-            "id": "SYSTEM_ROLE:READ+UPDATE"
+            "id": "SYSTEM_ROLE:UPDATE"
           },
           {
-            "id": "SYSTEM_ROLE:READ+DELETE"
+            "id": "SYSTEM_ROLE:DELETE"
           }
         ]
       },
@@ -29,13 +29,13 @@
             "id": "SYSTEM_NOTICE:READ"
           },
           {
-            "id": "SYSTEM_NOTICE:READ+ADD"
+            "id": "SYSTEM_NOTICE:ADD"
           },
           {
-            "id": "SYSTEM_NOTICE:READ+UPDATE"
+            "id": "SYSTEM_NOTICE:UPDATE"
           },
           {
-            "id": "SYSTEM_NOTICE:READ+DELETE"
+            "id": "SYSTEM_NOTICE:DELETE"
           }
         ]
       },
@@ -47,7 +47,7 @@
             "id": "SYSTEM_SETTING:READ"
           },
           {
-            "id": "SYSTEM_SETTING:READ+UPDATE"
+            "id": "SYSTEM_SETTING:UPDATE"
           }
         ]
       }
