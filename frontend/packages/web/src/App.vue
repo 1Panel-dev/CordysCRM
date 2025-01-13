@@ -1,13 +1,15 @@
 <template>
   <n-config-provider :theme-overrides="themeOverridesConfig">
     <n-message-provider>
-      <RouterView />
+      <n-dialog-provider>
+        <RouterView />
+      </n-dialog-provider>
     </n-message-provider>
   </n-config-provider>
 </template>
 
 <script setup lang="ts">
-  import { NConfigProvider, NMessageProvider } from 'naive-ui';
+  import { NConfigProvider, NDialogProvider, NMessageProvider } from 'naive-ui';
 
   import { getThemeOverrides } from '@/utils/themeOverrides';
 

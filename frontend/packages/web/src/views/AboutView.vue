@@ -23,17 +23,17 @@
           </div>
           <div class="mt-[24px] flex gap-[16px]">
             <n-button type="primary" ghost> Primary </n-button>
-            <n-button type="info" ghost class="n-btn-outline-info" @click="info"> Info </n-button>
-            <n-button type="success" ghost class="n-btn-outline-success" @click="success"> Success </n-button>
-            <n-button type="warning" ghost class="n-btn-outline-warning" @click="warning"> Warning </n-button>
-            <n-button type="error" ghost class="n-btn-outline-error" @click="error"> Error </n-button>
+            <n-button type="info" ghost class="n-btn-outline-info"> Info </n-button>
+            <n-button type="success" ghost class="n-btn-outline-success"> Success </n-button>
+            <n-button type="warning" ghost class="n-btn-outline-warning"> Warning </n-button>
+            <n-button type="error" ghost class="n-btn-outline-error"> Error </n-button>
           </div>
           <div class="mt-[24px] flex gap-[16px]">
-            <n-button type="primary" ghost @click="loading"> Primary </n-button>
-            <n-button type="info" ghost @click="notify"> Info </n-button>
-            <n-button type="success" ghost @click="dialogHandler"> Success </n-button>
-            <n-button type="warning" ghost> Warning </n-button>
-            <n-button type="error" ghost> Error </n-button>
+            <n-button type="primary" ghost> Primary </n-button>
+            <n-button type="info" ghost> Info </n-button>
+            <n-button type="success" ghost> Success </n-button>
+            <n-button type="warning" ghost @click="openModal"> Warning 打开弹窗 </n-button>
+            <n-button type="error" ghost @click="handleDialog"> Error </n-button>
           </div>
           <div class="flex flex-1 items-start">
             <CrmMoreAction :options="moreOptions" />
@@ -64,6 +64,26 @@
           </div>
         </div>
       </div>
+
+      <CrmModal
+        v-model:show="showModal"
+        :title="'我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题'"
+        :ok-loading="loading"
+      >
+        <div>
+          <n-form ref="formRef" :model="modelRef">
+            <n-form-item path="age" label="年龄">
+              <n-input v-model:value="modelRef.age" @keydown.enter.prevent />
+            </n-form-item>
+            <n-form-item path="password" label="密码">
+              <n-input v-model:value="modelRef.password" />
+            </n-form-item>
+            <n-form-item ref="rPasswordFormItemRef" first path="reenteredPassword" label="重复密码">
+              <n-input v-model:value="modelRef.reenteredPassword" type="password" @keydown.enter.prevent />
+            </n-form-item>
+          </n-form>
+        </div>
+      </CrmModal>
     </CrmCard>
 
     <TableDemo class="my-[16px]" />
@@ -71,70 +91,22 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NInput, NTag } from 'naive-ui';
+  import { NButton, NForm, NFormItem, NInput, NTag, useMessage } from 'naive-ui';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTree from '@/components/pure/crm-tree/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import TableDemo from './TableDemo.vue';
 
-  import useDiscreteApi from '@/hooks/useDiscreteApi';
+  import useModal from '@/hooks/useModal';
+
+  const message = useMessage();
+
+  const { openDialog } = useModal();
   // 暂时提供参考 you can delete it  ^_^
-  const { message, notification, dialog } = useDiscreteApi();
-
-  function info() {
-    message.info("I don't know why nobody told you how to unfold your love", {
-      keepAliveOnHover: true,
-    });
-  }
-  function error() {
-    message.error('Once upon a time you dressed so fine', {
-      duration: 100000,
-    });
-  }
-  function warning() {
-    message.warning('How many roads must a man walk down');
-  }
-  function success() {
-    message.success("'Cause you walked hand in hand With another man in my place");
-  }
-  function loading() {
-    message.loading('If I were you, I will realize that I love you more than any other guy');
-  }
-
-  function notify() {
-    notification.info({
-      title: 'hahahahha',
-      content: `（一般是）从浏览器顶部降下来的神谕。`,
-      duration: 103000,
-    });
-  }
-
-  function dialogHandler() {
-    const d = dialog.success({
-      title: '想说点啥',
-      content: '但是好像也没有说的,怎么样都是要离开的',
-      positiveText: '离开',
-      negativeText: '算了',
-      onPositiveClick: async () => {
-        d.loading = true;
-        try {
-          await new Promise((resolve) => {
-            setTimeout(resolve, 2000);
-          });
-          message.success('删除成功');
-          d.loading = false;
-        } catch (e) {
-          message.error('删除失败，请重试');
-        }
-      },
-      onNegativeClick: () => {
-        message.error('不确定');
-      },
-    });
-  }
 
   const moduleTree = ref<CrmTreeNodeData[]>([
     {
@@ -362,6 +334,39 @@
       // eslint-disable-next-line no-console
       console.log(e);
     }
+  }
+
+  const modelRef = ref({
+    age: null,
+    password: null,
+    reenteredPassword: null,
+  });
+
+  function handleDialog() {
+    openDialog({
+      type: 'default',
+      title: '想说点啥',
+      content: '但是好像也没有说的,怎么样都是要离开的',
+      positiveText: '离开',
+      negativeText: '算了',
+      onPositiveClick: async () => {
+        try {
+          await new Promise((resolve) => {
+            setTimeout(resolve, 3000);
+          });
+          Promise.resolve(false);
+          message.success('删除成功');
+        } catch (e) {
+          message.error('删除失败，请重试');
+        }
+      },
+    });
+  }
+
+  const showModal = ref(false);
+  const loading = ref(false);
+  function openModal() {
+    showModal.value = true;
   }
 </script>
 
