@@ -27,6 +27,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static io.cordys.crm.system.constants.SystemResultCode.INTERNAL_ROLE_PERMISSION;
+import static io.cordys.crm.system.constants.SystemResultCode.ROLE_EXIST;
+
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -39,6 +42,7 @@ class RoleControllerTests extends BaseTest {
      * 记录创建的角色
      */
     private static Role addRole;
+    private static Role anotherUserRole;
 
     @Resource
     private BaseMapper<Role> roleMapper;
@@ -96,6 +100,14 @@ class RoleControllerTests extends BaseTest {
         Assertions.assertEquals(request.getDescription(), role.getDescription());
         Assertions.assertEquals(role.getOrganizationId(), DEFAULT_ORGANIZATION_ID);
 
+        // 校验重名异常
+        assertErrorCode(this.requestPost(DEFAULT_ADD, request), ROLE_EXIST);
+
+        // 添加另一条数据
+        request.setName("other name");
+        mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
+        anotherUserRole = roleMapper.selectByPrimaryKey(getResultData(mvcResult, Role.class).getId());
+
         // 校验权限
         requestPostPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD, DEFAULT_ADD, request);
     }
@@ -103,12 +115,13 @@ class RoleControllerTests extends BaseTest {
     @Test
     @Order(2)
     void testUpdate() throws Exception {
-        // @@请求成功
+        // 请求成功
         RoleUpdateRequest request = new RoleUpdateRequest();
         request.setId(addRole.getId());
         request.setName("test update");
         request.setDescription("test desc !!!!");
         this.requestPostWithOk(DEFAULT_UPDATE, request);
+
         // 校验请求成功数据
         Role userRoleResult = roleMapper.selectByPrimaryKey(request.getId());
         Assertions.assertEquals(request.getName(), userRoleResult.getName());
@@ -118,6 +131,21 @@ class RoleControllerTests extends BaseTest {
         RoleUpdateRequest emptyRequest = new RoleUpdateRequest();
         emptyRequest.setId(addRole.getId());
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
+
+        // 校验重名异常
+        request.setId(addRole.getId());
+        request.setName(anotherUserRole.getName());
+        assertErrorCode(this.requestPost(DEFAULT_UPDATE, request), ROLE_EXIST);
+
+        // 校验内置管理员修改异常
+        request.setId(InternalRole.ORG_ADMIN.getValue());
+        request.setName("test");
+        assertErrorCode(this.requestPost(DEFAULT_UPDATE, request), INTERNAL_ROLE_PERMISSION);
+
+        // 其他内置角色可以修改
+        request.setId(InternalRole.SALES_MANAGER.getValue());
+        request.setName(InternalRole.SALES_MANAGER.getValue());
+        this.requestPostWithOk(DEFAULT_UPDATE, request);
 
         // @@校验权限
         requestPostPermissionTest(PermissionConstants.SYSTEM_ROLE_UPDATE, DEFAULT_UPDATE, request);
@@ -223,8 +251,12 @@ class RoleControllerTests extends BaseTest {
 
         // 校验请求成功数据
         Assertions.assertNull(roleMapper.selectByPrimaryKey(addRole.getId()));
+
         // 校验角色与权限的关联关系是否删除
         Assertions.assertTrue(CollectionUtils.isEmpty(getByRoleId(addRole.getId())));
+
+        // 操作内置角色异常
+        assertErrorCode(this.requestGet(DEFAULT_DELETE, InternalRole.SALES_MANAGER.getValue()), INTERNAL_ROLE_PERMISSION);
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_DELETE, DEFAULT_DELETE, addRole.getId());

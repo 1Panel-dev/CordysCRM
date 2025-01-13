@@ -17,6 +17,7 @@ import io.cordys.crm.system.dto.request.RoleAddRequest;
 import io.cordys.crm.system.dto.request.RoleUpdateRequest;
 import io.cordys.crm.system.dto.response.RoleGetResponse;
 import io.cordys.crm.system.dto.response.RoleListResponse;
+import io.cordys.crm.system.mapper.ExtRoleMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -35,6 +36,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.cordys.crm.system.constants.SystemResultCode.INTERNAL_ROLE_PERMISSION;
+import static io.cordys.crm.system.constants.SystemResultCode.ROLE_EXIST;
+
 /**
  * @author jianxing
  * @date 2025-01-03 12:01:54
@@ -45,6 +49,8 @@ public class RoleService {
 
     @Resource
     private BaseMapper<Role> roleMapper;
+    @Resource
+    private ExtRoleMapper extRoleMapper;
     @Resource
     private BaseMapper<UserRole> userRoleMapper;
     @Resource
@@ -84,7 +90,7 @@ public class RoleService {
      * @return
      */
     public String translateInternalRole(String roleKey) {
-        return Translator.get("role." + roleKey);
+        return Translator.get("role." + roleKey, roleKey);
     }
 
     public RoleGetResponse get(String id) {
@@ -105,19 +111,50 @@ public class RoleService {
         role.setOrganizationId(orgId);
         // 创建默认仅可查看
         role.setDataScope(RoleDataScope.SELF.name());
+        // 校验名称重复
+        checkAddExist(role);
         roleMapper.insert(role);
         return role;
     }
 
     public Role update(RoleUpdateRequest request, String userId) {
         Role role = BeanUtils.copyBean(new Role(), request);
+        // 校验名称重复
+        checkUpdateExist(role);
+        checkUpdateInternalRole(request.getId());
         role.setUpdateTime(System.currentTimeMillis());
         role.setUpdateUser(userId);
         roleMapper.update(role);
-        return translateInternalRole(roleMapper.selectByPrimaryKey(role.getId()));
+        return get(role.getId());
+    }
+
+    /**
+     * 校验是否是内置管理员
+     */
+    public void checkUpdateInternalRole(String roleId) {
+        Role role = roleMapper.selectByPrimaryKey(roleId);
+        if (BooleanUtils.isTrue(role.getInternal()) && StringUtils.equals(role.getName(), InternalRole.ORG_ADMIN.getValue())) {
+            throw new GenericException(INTERNAL_ROLE_PERMISSION);
+        }
+    }
+
+    private void checkAddExist(Role role) {
+        if (extRoleMapper.checkAddExist(role)) {
+            throw new GenericException(ROLE_EXIST);
+        }
+    }
+
+    private void checkUpdateExist(Role role) {
+        if (extRoleMapper.checkUpdateExist(role)) {
+            throw new GenericException(ROLE_EXIST);
+        }
     }
 
     public void delete(String id) {
+        Role role = roleMapper.selectByPrimaryKey(id);
+        if (BooleanUtils.isTrue(role.getInternal())) {
+            throw new GenericException(INTERNAL_ROLE_PERMISSION);
+        }
         // 删除角色
         roleMapper.deleteByPrimaryKey(id);
         // 删除与权限的关联表

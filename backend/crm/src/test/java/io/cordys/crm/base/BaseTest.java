@@ -3,11 +3,11 @@ package io.cordys.crm.base;
 import com.jayway.jsonpath.JsonPath;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.exception.IResultCode;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
-import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.RolePermission;
 import io.cordys.crm.system.domain.User;
 import io.cordys.mybatis.BaseMapper;
@@ -35,8 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -60,8 +59,6 @@ public abstract class BaseTest {
     protected MockMvc mockMvc;
     @Resource
     private BaseMapper<RolePermission> rolePermissionMapper;
-    @Resource
-    private BaseMapper<OrganizationUser> organizationUserMapper;
     @Resource
     private BaseMapper<User> userMapper;
 
@@ -291,6 +288,17 @@ public abstract class BaseTest {
         if (status != HttpStatus.FORBIDDEN.value()) {
             throw new GenericException(String.format("接口 %s 没有设置权限 %s", url, permissionId));
         }
+    }
+
+    /**
+     * 校验错误响应码
+     */
+    protected void assertErrorCode(ResultActions resultActions, IResultCode resultCode) throws Exception {
+        resultActions
+                .andExpect(
+                        jsonPath("$.code")
+                                .value(resultCode.getCode())
+                );
     }
 
     /**
