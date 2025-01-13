@@ -26,6 +26,7 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_ADD = "/user/add";
     public static final String USER_DETAIL = "/user/detail/";
     public static final String USER_UPDATE = "/user/update";
+    public static final String USER_RESET_PASSWORD = "/user/reset-password/";
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
             config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
@@ -84,5 +85,12 @@ public class OrganizationUserControllerTests extends BaseTest {
         request.setRoleIds(List.of("1", "2", "3"));
         request.setId("u_1");
         this.requestPost(USER_UPDATE, request).andExpect(status().isOk());
+    }
+
+
+    @Test
+    @Order(5)
+    public void resetPassword() throws Exception {
+        this.requestGet(USER_RESET_PASSWORD + "5").andExpect(status().isOk());
     }
 }

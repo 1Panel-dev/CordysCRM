@@ -9,6 +9,7 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
@@ -199,7 +200,7 @@ public class OrganizationUserService {
         User user = new User();
         BeanUtils.copyBean(user, request);
         user.setId(IDGenerator.nextStr());
-        user.setPassword(request.getPhone().substring(request.getPhone().length() - 6));
+        user.setPassword(CodingUtils.md5(request.getPhone().substring(request.getPhone().length() - 6)));
         user.setCreateTime(System.currentTimeMillis());
         user.setCreateUser(operatorId);
         user.setUpdateTime(System.currentTimeMillis());
@@ -298,5 +299,20 @@ public class OrganizationUserService {
         updateUser.setUpdateTime(System.currentTimeMillis());
         updateUser.setUpdateUser(operatorId);
         userMapper.updateById(updateUser);
+    }
+
+    /**
+     * 重置密码
+     *
+     * @param userId
+     * @param operatorId
+     */
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{{#userId}}", operator = "{{#operatorId}}", success = "重置用户密码成功", extra = "{{#newUser}}")
+    public void resetPassword(String userId, String operatorId) {
+        User user = userMapper.selectByPrimaryKey(userId);
+        user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
+        user.setUpdateTime(System.currentTimeMillis());
+        user.setUpdateUser(operatorId);
+        userMapper.updateById(user);
     }
 }

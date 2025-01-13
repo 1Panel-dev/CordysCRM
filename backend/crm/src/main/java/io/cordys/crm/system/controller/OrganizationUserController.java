@@ -65,4 +65,14 @@ public class OrganizationUserController {
         organizationUserService.updateUser(request, SessionUtils.getUserId());
     }
 
+
+    @GetMapping("/reset-password/{userId}")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    @Operation(summary = "用户(员工)-重置密码")
+    public void resetPassword(@PathVariable String userId) {
+        organizationUserService.resetPassword(userId, SessionUtils.getUserId());
+    }
+
+
+
 }
