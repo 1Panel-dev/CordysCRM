@@ -8,6 +8,7 @@ CREATE TABLE sys_user
     `phone` VARCHAR(11) NOT NULL   COMMENT '手机号' ,
     `email` VARCHAR(255) NOT NULL   COMMENT '邮箱' ,
     `password` VARCHAR(255) NOT NULL   COMMENT '密码' ,
+    `language` VARCHAR(32)    COMMENT '语言' ,
     `gender` BIT(1) NOT NULL  DEFAULT 0 COMMENT '性别(0-男/1-女)' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,

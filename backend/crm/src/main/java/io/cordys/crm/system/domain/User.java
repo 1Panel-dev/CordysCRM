@@ -23,4 +23,7 @@ public class User extends BaseModel {
 
     @Schema(description = "性别(0-男/1-女)")
     private Boolean gender;
+
+    @Schema(description = "语言")
+    private String language;
 }
