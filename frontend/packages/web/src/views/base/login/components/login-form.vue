@@ -61,7 +61,7 @@
             size="large"
           />
         </n-form-item>
-        <div class="mb-[60px] mt-[12px]">
+        <div class="mt-[12px]" :class="hasMoreLoginWay ? 'mb-[60px]' : 'mb-7'">
           <n-button type="primary" size="large" block :loading="loading" @click="handleSubmit">
             {{ t('login.form.login') }}
           </n-button>
@@ -80,38 +80,39 @@
       <div v-if="showQrCodeTab">
         <tab-qr-code :tab-name="activeName ? activeName : orgOptions[0].value"></tab-qr-code>
       </div>
-      <n-divider
-        v-if="isShowLDAP || isShowOIDC || isShowOAUTH || isShowCAS || (isShowQRCode && orgOptions.length > 0)"
-        orientation="center"
-        type="dashed"
-        class="!m-0 !mb-2"
-      >
-        <span class="text-[12px] font-normal text-[var(--text-n4)]">{{ t('login.form.modeLoginMethods') }}</span>
-      </n-divider>
-      <div class="mt-4 flex items-center justify-center">
-        <div
-          v-if="isShowQRCode && !showQrCodeTab && orgOptions.length > 0"
-          class="loginType"
-          @click="switchLoginType('QR_CODE')"
-        >
-          <CrmIcon type="icon-icon_scan_outlined" class="text-[var(--primary-8)]" />
+      <template v-if="hasMoreLoginWay">
+        <n-divider orientation="center" type="dashed" class="!m-0 !mb-2">
+          <span class="text-[12px] font-normal text-[var(--text-n4)]">{{ t('login.form.modeLoginMethods') }}</span>
+        </n-divider>
+        <div class="mt-4 flex items-center justify-center">
+          <div
+            v-if="isShowQRCode && !showQrCodeTab && orgOptions.length > 0"
+            class="loginType"
+            @click="switchLoginType('QR_CODE')"
+          >
+            <CrmIcon type="icon-icon_scan_outlined" class="text-[var(--primary-8)]" />
+          </div>
+          <div v-if="userInfo.authenticate !== 'LDAP' && isShowLDAP" class="loginType" @click="switchLoginType('LDAP')">
+            <span class="type-text text-[10px]">LDAP</span>
+          </div>
+          <div v-if="userInfo.authenticate !== 'LOCAL'" class="loginType" @click="switchLoginType('LOCAL')">
+            <CrmSvg width="18px" height="18px" name="userLogin"></CrmSvg>
+          </div>
+          <div v-if="isShowOIDC && userInfo.authenticate !== 'OIDC'" class="loginType" @click="redirectAuth('OIDC')">
+            <span class="type-text text-[10px]">OIDC</span>
+          </div>
+          <div
+            v-if="isShowOAUTH && userInfo.authenticate !== 'OAUTH2'"
+            class="loginType"
+            @click="redirectAuth('OAUTH2')"
+          >
+            <span class="type-text text-[10px]">OAuth</span>
+          </div>
+          <div v-if="isShowCAS && userInfo.authenticate !== 'CAS'" class="loginType" @click="redirectAuth('CAS')">
+            <span class="type-text text-[10px]">CAS</span>
+          </div>
         </div>
-        <div v-if="userInfo.authenticate !== 'LDAP' && isShowLDAP" class="loginType" @click="switchLoginType('LDAP')">
-          <span class="type-text text-[10px]">LDAP</span>
-        </div>
-        <div v-if="userInfo.authenticate !== 'LOCAL'" class="loginType" @click="switchLoginType('LOCAL')">
-          <CrmSvg width="18px" height="18px" name="userLogin"></CrmSvg>
-        </div>
-        <div v-if="isShowOIDC && userInfo.authenticate !== 'OIDC'" class="loginType" @click="redirectAuth('OIDC')">
-          <span class="type-text text-[10px]">OIDC</span>
-        </div>
-        <div v-if="isShowOAUTH && userInfo.authenticate !== 'OAUTH2'" class="loginType" @click="redirectAuth('OAUTH2')">
-          <span class="type-text text-[10px]">OAuth</span>
-        </div>
-        <div v-if="isShowCAS && userInfo.authenticate !== 'CAS'" class="loginType" @click="redirectAuth('CAS')">
-          <span class="type-text text-[10px]">CAS</span>
-        </div>
-      </div>
+      </template>
       <div v-if="props.isPreview" class="mask"></div>
     </div>
   </div>
@@ -254,6 +255,14 @@
   });
 
   const isShowQRCode = ref(true);
+  const hasMoreLoginWay = computed(
+    () =>
+      isShowLDAP.value ||
+      isShowOIDC.value ||
+      isShowOAUTH.value ||
+      isShowCAS.value ||
+      (isShowQRCode.value && orgOptions.value.length > 0)
+  );
 
   async function initPlatformInfo() {
     try {

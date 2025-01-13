@@ -33,10 +33,7 @@
         </div>
         <n-divider />
         <div class="ml-[8px] w-full cursor-pointer px-[8px]" @click="() => appStore.setMenuCollapsed(!collapsed)">
-          <CrmIconFont
-            :type="collapsed ? 'icon-icon_side-expand_outlined' : 'icon-icon_side-fold_outlined'"
-            :size="16"
-          />
+          <CrmIconFont :type="collapsed ? 'iconicon_menu_fold' : 'iconicon_menu_unfold'" :size="16" />
         </div>
       </div>
     </div>

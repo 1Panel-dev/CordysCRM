@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
+import { DEFAULT_LAYOUT } from './base';
 import createRouteGuard from './guard/index';
 import NProgress from 'nprogress';
 
@@ -23,7 +24,15 @@ const router = createRouter({
     {
       path: '/demo',
       name: 'demo',
-      component: () => import('@/views/TableDemo.vue'),
+      redirect: '/demo/demo',
+      component: DEFAULT_LAYOUT,
+      children: [
+        {
+          path: '/demo',
+          name: 'demodemo',
+          component: () => import('@/views/TableDemo.vue'),
+        },
+      ],
     },
   ],
 });

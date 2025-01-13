@@ -21,7 +21,7 @@ const useAppStore = defineStore('user', {
     async getAuthentication() {
       try {
         // const res = await getAuthenticationList();
-        this.loginType = ['LDAP', 'OIDC', 'OAUTH2', 'CAS'];
+        this.loginType = [];
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
