@@ -16,10 +16,12 @@ import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.request.UserAddRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
+import io.cordys.crm.system.dto.request.UserUpdateRequest;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
+import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -46,6 +48,8 @@ public class OrganizationUserService {
     private BaseMapper<OrganizationUser> organizationUserMapper;
     @Resource
     private BaseMapper<UserRole> userRoleMapper;
+    @Resource
+    private ExtUserRoleMapper extUserRoleMapper;
 
     /**
      * 员工列表查询
@@ -217,5 +221,82 @@ public class OrganizationUserService {
         List<UserRoleConvert> userRoles = extUserMapper.getUserRole(List.of(userDetail.getUserId()), userDetail.getOrganizationId());
         userDetail.setRoles(userRoles);
         return userDetail;
+    }
+
+    /**
+     * 更新用户
+     *
+     * @param request
+     * @param operatorId
+     */
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, operator = "{{#operatorId}}", success = "更新用户成功", extra = "{{#newUser}}")
+    public void updateUser(UserUpdateRequest request, String operatorId) {
+        //邮箱和手机号唯一性校验
+        checkEmailAndPhone(request.getEmail(), request.getPhone());
+        UserResponse oldUser = getUserDetail(request.getId());
+        //update user info
+        updateUserInfo(request, operatorId, oldUser);
+        //update user base
+        updateUserBaseData(request, operatorId, oldUser.getUserId());
+        //update user role
+        updateUserRole(request.getRoleIds(), oldUser, operatorId);
+        //todo update user group
+
+
+        //添加日志上下文
+        OperationLogContext.putVariable("newUser", LogExtraDTO.builder()
+                .originalValue(oldUser)
+                .modifiedValue(getUserDetail(request.getId()))
+                .resourceId(oldUser.getId())
+                .build());
+    }
+
+    /**
+     * 更新用户角色
+     *
+     * @param roleIds
+     * @param oldUser
+     * @param operatorId
+     */
+    private void updateUserRole(List<String> roleIds, UserResponse oldUser, String operatorId) {
+        List<String> ids = oldUser.getRoles().stream().map(UserRoleConvert::getId).toList();
+        if (CollectionUtils.isNotEmpty(ids)) {
+            extUserRoleMapper.deleteUserRole(ids);
+        }
+        if (CollectionUtils.isNotEmpty(roleIds)) {
+            addUserRole(roleIds, oldUser.getUserId(), operatorId);
+        }
+    }
+
+    /**
+     * 更新用户信息
+     *
+     * @param request
+     * @param operatorId
+     * @return
+     */
+    private OrganizationUser updateUserInfo(UserUpdateRequest request, String operatorId, UserResponse user) {
+        OrganizationUser organizationUser = BeanUtils.copyBean(new OrganizationUser(), user);
+        BeanUtils.copyBean(organizationUser, request);
+        organizationUser.setUpdateTime(System.currentTimeMillis());
+        organizationUser.setUpdateUser(operatorId);
+        organizationUserMapper.updateById(organizationUser);
+        return organizationUser;
+    }
+
+
+    /**
+     * 更新用户基本数据
+     *
+     * @param request
+     * @param operatorId
+     * @param userId
+     */
+    private void updateUserBaseData(UserUpdateRequest request, String operatorId, String userId) {
+        User user = userMapper.selectByPrimaryKey(userId);
+        User updateUser = BeanUtils.copyBean(user, request);
+        updateUser.setUpdateTime(System.currentTimeMillis());
+        updateUser.setUpdateUser(operatorId);
+        userMapper.updateById(updateUser);
     }
 }

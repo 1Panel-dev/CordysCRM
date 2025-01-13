@@ -8,6 +8,7 @@ import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.request.UserAddRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
+import io.cordys.crm.system.dto.request.UserUpdateRequest;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.service.OrganizationUserService;
@@ -55,6 +56,13 @@ public class OrganizationUserController {
     @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_READ)
     public UserResponse getFunctionalCaseDetail(@PathVariable String id) {
         return organizationUserService.getUserDetail(id);
+    }
+
+    @PostMapping("/update")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    @Operation(summary = "用户(员工)-更新")
+    public void updateUser(@Validated @RequestBody UserUpdateRequest request) {
+        organizationUserService.updateUser(request, SessionUtils.getUserId());
     }
 
 }

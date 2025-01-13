@@ -3,6 +3,7 @@ package io.cordys.crm.system.controller;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.dto.request.UserAddRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
+import io.cordys.crm.system.dto.request.UserUpdateRequest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_LIST = "/user/list";
     public static final String USER_ADD = "/user/add";
     public static final String USER_DETAIL = "/user/detail/";
+    public static final String USER_UPDATE = "/user/update";
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
             config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
@@ -64,8 +66,23 @@ public class OrganizationUserControllerTests extends BaseTest {
 
 
     @Test
-    @Order(2)
+    @Order(3)
     public void userDetail() throws Exception {
         this.requestGet(USER_DETAIL + "u_1").andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(4)
+    public void userUpdate() throws Exception {
+        UserUpdateRequest request = new UserUpdateRequest();
+        request.setName("test111");
+        request.setPhone("12345633342");
+        request.setGender(true);
+        request.setEnable(true);
+        request.setEmail("221@Cordys.com");
+        request.setDepartmentId("8");
+        request.setRoleIds(List.of("1", "2", "3"));
+        request.setId("u_1");
+        this.requestPost(USER_UPDATE, request).andExpect(status().isOk());
     }
 }
