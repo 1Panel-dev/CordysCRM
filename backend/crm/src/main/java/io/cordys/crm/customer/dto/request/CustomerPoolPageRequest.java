@@ -1,4 +1,4 @@
-package io.cordys.crm.lead.dto.request;
+package io.cordys.crm.customer.dto.request;
 
 import io.cordys.common.groups.Created;
 import io.cordys.common.groups.Updated;
@@ -9,6 +9,5 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class LeadPoolPageRequest extends BasePageRequest {
-
+public class CustomerPoolPageRequest extends BasePageRequest {
 }

@@ -118,7 +118,6 @@ public class LeadPoolControllerTests extends BaseTest {
 		LeadPoolPageRequest request = new LeadPoolPageRequest();
 		request.setCurrent(1);
 		request.setPageSize(10);
-		request.setOrganizationId("default-org");
 		return request;
 	}
 
@@ -126,7 +125,7 @@ public class LeadPoolControllerTests extends BaseTest {
 		LeadPool leadPool = new LeadPool();
 		leadPool.setName("default-lead-pool");
 		leadPool.setScopeId("default-dp");
-		leadPool.setOrganizationId("default-org");
+		leadPool.setOrganizationId(DEFAULT_ORGANIZATION_ID);
 		leadPool.setOwnerId("default-owner");
 		leadPool.setEnable(0);
 		leadPool.setRecycled(0);

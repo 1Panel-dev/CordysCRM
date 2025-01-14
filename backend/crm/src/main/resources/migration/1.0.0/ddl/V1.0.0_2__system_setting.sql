@@ -616,6 +616,23 @@ CREATE TABLE customer_pool_recycle_rule(
 
 CREATE INDEX idx_pool_id ON customer_pool_recycle_rule(pool_id ASC);
 
+CREATE TABLE customer_pool_relation(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `customer_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
+    `pool_id` VARCHAR(32) NOT NULL   COMMENT '公海id' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '公海客户'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_customer_id ON customer_pool_relation(customer_id ASC);
+CREATE INDEX idx_pool_id ON customer_pool_relation(pool_id ASC);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 

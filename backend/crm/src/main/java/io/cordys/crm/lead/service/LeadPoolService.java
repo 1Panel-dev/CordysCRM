@@ -4,6 +4,7 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.lead.domain.LeadPool;
 import io.cordys.crm.lead.domain.LeadPoolPickRule;
 import io.cordys.crm.lead.domain.LeadPoolRecycleRule;
@@ -52,7 +53,7 @@ public class LeadPoolService {
 	 * @return 线索池列表
 	 */
 	public List<LeadPoolDTO> page(LeadPoolPageRequest request) {
-		List<LeadPoolDTO> leadPools = extLeadPoolMapper.list(request);
+		List<LeadPoolDTO> leadPools = extLeadPoolMapper.list(request, OrganizationContext.getOrganizationId());
 		if (CollectionUtils.isEmpty(leadPools)) {
 			return new ArrayList<>();
 		}
@@ -113,7 +114,7 @@ public class LeadPoolService {
 	 * 删除线索池
 	 * @param id 线索池ID
 	 */
-	public void delete(String id,String currentUserId) {
+	public void delete(String id, String currentUserId) {
 		LeadPool pool = checkPoolExist(id);
 		checkPoolOwner(pool, currentUserId);
 		LambdaQueryWrapper<LeadPoolRelation> wrapper = new LambdaQueryWrapper<>();

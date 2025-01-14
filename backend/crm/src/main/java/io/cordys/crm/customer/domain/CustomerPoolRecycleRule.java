@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class CustomerRecycleRule extends BaseModel {
+public class CustomerPoolRecycleRule extends BaseModel {
 
 	@Schema(description = "公海池ID")
 	private String poolId;
