@@ -201,6 +201,23 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       itemTextColor: getLessVariableValue('--text-n1'),
       jumperTextColor: getLessVariableValue('--text-n2'),
     },
+    Tag: {
+      fontSizeSmall: '12px',
+      fontSizeMedium: '12px',
+      fontSizeLarge: '14px',
+      heightSmall: '20px',
+      heightMedium: '24px',
+      heightLarge: '32px',
+      borderPrimary: `1px solid ${getLessVariableValue('--primary-8')} `,
+      borderInfo: `1px solid ${getLessVariableValue('--info-blue')}`,
+      borderSuccess: `1px solid ${getLessVariableValue('--success-green')}`,
+      borderWarning: `1px solid ${getLessVariableValue('--warning-yellow')}`,
+      borderError: `1px solid ${getLessVariableValue('--error-red')}`,
+      closeSizeSmall: '14px',
+      closeSizeMedium: '14px',
+      closeSizeLarge: '16px',
+      padding: '0 8px',
+    },
   };
 }
 

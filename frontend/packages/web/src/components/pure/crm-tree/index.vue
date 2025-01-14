@@ -547,31 +547,6 @@
     emit('drop', data.value, dragNode, dropNode, dropPosition);
   }
 
-  // watch(
-  //   () => props.keyword,
-  //   (val) => {
-  //     if (val?.length) {
-  //       updateDebouncedSearch();
-  //     } else {
-  //       traverseTree(data.value, (node) => {
-  //         if (defaultExpandAllKeys.value) {
-  //           expandedKeys.value.push(node[props.fieldNames.keyField]);
-  //         }
-  //       });
-  //       filterTreeData.value = data.value;
-  //     }
-  //   }
-  // );
-
-  // onBeforeMount(() => {
-  //   traverseTree(data.value, (node) => {
-  //     if (defaultExpandAllKeys.value) {
-  //       expandedKeys.value.push(node[props.fieldNames.keyField]);
-  //     }
-  //   });
-  //   filterTreeData.value = data.value;
-  // });
-
   function expandAllNodes() {
     if (!defaultExpandAllKeys.value) return;
 

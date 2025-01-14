@@ -35,8 +35,42 @@
             <n-button type="warning" ghost @click="openModal"> Warning 打开弹窗 </n-button>
             <n-button type="error" ghost @click="handleDialog"> Error </n-button>
           </div>
-          <div class="flex flex-1 items-start">
-            <CrmMoreAction :options="moreOptions" />
+          <div class="flex flex-1 flex-col gap-[8px]">
+            <div class="flex items-center gap-2">
+              <CrmTag size="small"> 标签 </CrmTag>
+              <CrmTag size="small" type="primary"> 标签 </CrmTag>
+              <CrmTag size="small" type="success"> 标签 </CrmTag>
+              <CrmTag size="small" type="warning"> 标签 </CrmTag>
+              <CrmTag size="small" type="error"> 标签 </CrmTag>
+              <CrmTag size="small" type="info"> 标签 </CrmTag>
+            </div>
+            <div class="flex items-center gap-2">
+              <CrmTag theme="light"> 标签 </CrmTag>
+              <CrmTag theme="light" type="primary"> 标签 </CrmTag>
+              <CrmTag theme="light" type="success"> 标签 </CrmTag>
+              <CrmTag theme="light" type="warning"> 标签 </CrmTag>
+              <CrmTag theme="light" type="error"> 标签 </CrmTag>
+              <CrmTag theme="light" type="info"> 标签 </CrmTag>
+            </div>
+            <div class="flex items-center gap-2">
+              <CrmTag theme="outline"> 标签 </CrmTag>
+              <CrmTag theme="outline" type="primary"> 标签 </CrmTag>
+              <CrmTag theme="outline" type="success"> 标签 </CrmTag>
+              <CrmTag theme="outline" type="warning"> 标签 </CrmTag>
+              <CrmTag theme="outline" type="error"> 标签 </CrmTag>
+              <CrmTag theme="outline" type="info"> 标签 </CrmTag>
+            </div>
+            <div class="flex items-center gap-2">
+              <CrmTag size="large" theme="lightOutLine"> 标签 </CrmTag>
+              <CrmTag size="large" theme="lightOutLine" type="primary"> 标签 </CrmTag>
+              <CrmTag size="large" theme="lightOutLine" type="success"> 标签 </CrmTag>
+              <CrmTag size="large" theme="lightOutLine" type="warning"> 标签 </CrmTag>
+              <CrmTag size="large" theme="lightOutLine" type="error"> 标签 </CrmTag>
+              <CrmTag size="large" theme="lightOutLine" type="info">
+                标签
+                <template #tooltipContent>自定义</template>
+              </CrmTag>
+            </div>
           </div>
         </div>
         <div class="flex-1">
@@ -95,8 +129,8 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
-  import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTree from '@/components/pure/crm-tree/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import TableDemo from './TableDemo.vue';
