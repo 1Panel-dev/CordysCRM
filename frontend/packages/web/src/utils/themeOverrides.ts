@@ -196,6 +196,8 @@ export function getThemeOverrides(): GlobalThemeOverrides {
     Pagination: {
       itemSizeMedium: '32px',
       itemSizeSmall: '24px',
+      inputWidthMedium: '57px',
+      inputWidthSmall: '51px',
       itemTextColor: getLessVariableValue('--text-n1'),
       jumperTextColor: getLessVariableValue('--text-n2'),
     },

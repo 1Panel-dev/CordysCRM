@@ -1,14 +1,17 @@
 <template>
-  <CrmTable
-    v-bind="propsRes"
-    @page-change="propsEvent.pageChange"
-    @page-size-change="propsEvent.pageSizeChange"
-    @sorter-change="propsEvent.sorterChange"
-    @filter-change="propsEvent.filterChange"
-  />
+  <crm-card>
+    <crm-table
+      v-bind="propsRes"
+      @page-change="propsEvent.pageChange"
+      @page-size-change="propsEvent.pageSizeChange"
+      @sorter-change="propsEvent.sorterChange"
+      @filter-change="propsEvent.filterChange"
+    />
+  </crm-card>
 </template>
 
 <script setup lang="ts">
+  import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn, CrmTableDataItem } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';

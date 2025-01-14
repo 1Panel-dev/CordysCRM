@@ -1,6 +1,8 @@
 <template>
-  <div :class="`flex items-center ${props.showTotal ? 'justify-between' : 'justify-end'}`">
-    <div v-show="props.showTotal" class="text-[var(--text-n2)]">
+  <div
+    :class="`crm-pagination--${props.size} flex items-center ${props.showTotal ? 'justify-between' : 'justify-end'}`"
+  >
+    <div v-show="props.showTotal" class="total text-[var(--text-n2)]">
       {{ t('crmPagination.total', { count: props.itemCount }) }}
     </div>
     <n-pagination
@@ -8,7 +10,7 @@
       v-model:page-size="pageSize"
       :size="props.size"
       :item-count="props.itemCount"
-      :display-order="props.displayOrder"
+      :display-order="displayOrder"
       :show-size-picker="props.showSizePicker"
       :page-sizes="pageSizes"
       :show-quick-jumper="props.showQuickJumper"
@@ -21,7 +23,12 @@
       <template #next>
         <CrmIcon type="iconicon_chevron_right" :size="16" />
       </template>
-      <template #goto> {{ t('crmPagination.goto') }} </template>
+      <template #goto>
+        {{ t('crmPagination.goto') }}
+      </template>
+      <template v-if="props.showQuickJumper || isSimple" #suffix>
+        / {{ totalPages }} {{ t('crmPagination.page') }}
+      </template>
     </n-pagination>
   </div>
 </template>
@@ -34,18 +41,18 @@
   const props = withDefaults(
     defineProps<{
       itemCount?: number; // 总条数
-      size?: 'small' | 'medium' | 'large';
-      displayOrder?: Array<'pages' | 'size-picker' | 'quick-jumper'>; // 不同部分的展示顺序
+      size?: 'small' | 'medium';
       showSizePicker?: boolean; // 是否显示每页条数的选择器
       showQuickJumper?: boolean; // 是否显示快速跳转
       showTotal?: boolean; // 显示总量
+      isSimple?: boolean; // 新增简易模式控制
     }>(),
     {
       size: 'medium',
-      displayOrder: () => ['size-picker', 'pages', 'quick-jumper'],
       showSizePicker: true,
       showQuickJumper: true,
       showTotal: true,
+      isSimple: false,
     }
   );
   const emit = defineEmits<{
@@ -57,6 +64,25 @@
 
   const page = defineModel<number>('page');
   const pageSize = defineModel<number>('pageSize');
+
+  // 计算总页数
+  const totalPages = computed(() => {
+    return Math.ceil((props.itemCount || 0) / (pageSize.value || 10));
+  });
+
+  const displayOrder = computed<Array<'pages' | 'size-picker' | 'quick-jumper'>>(() => {
+    const order: Array<'pages' | 'size-picker' | 'quick-jumper'> = [];
+    if (props.showSizePicker) {
+      order.push('size-picker');
+    }
+    if (!props.isSimple) {
+      order.push('pages');
+    }
+    if (props.showQuickJumper || props.isSimple) {
+      order.push('quick-jumper');
+    }
+    return order;
+  });
 
   const pageSizes = ref<PaginationSizeOption[]>([
     {

@@ -211,8 +211,36 @@
 .n-pagination {
   .n-pagination-quick-jumper {
     padding: 2px 8px;
-    border-radius: 3px;
+    border-radius: 3px 0 0 3px;
     background-color: var(--text-n9);
+    .n-input__input {
+      text-align: center;
+    }
+  }
+  .n-pagination-suffix {
+    margin: 0;
+    padding-right: 8px;
+    border-radius: 0 3px 3px 0;
+    color: var(--text-n2);
+    background-color: var(--text-n9);
+  }
+}
+.crm-pagination--medium {
+  .n-base-selection-label {
+    height: 32px;
+  }
+}
+.crm-pagination--small {
+  .total {
+    font-size: 12px;
+  }
+  .n-base-selection-label,
+  .n-pagination-quick-jumper,
+  .n-pagination-suffix {
+    height: 24px;
+  }
+  .n-input-wrapper {
+    height: 20px;
   }
 }
 
