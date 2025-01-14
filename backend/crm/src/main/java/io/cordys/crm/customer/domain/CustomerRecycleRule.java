@@ -2,7 +2,9 @@ package io.cordys.crm.customer.domain;
 
 import io.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
+@Data
 public class CustomerRecycleRule extends BaseModel {
 
 	@Schema(description = "公海池ID")
