@@ -633,6 +633,23 @@ CREATE TABLE customer_pool_relation(
 CREATE INDEX idx_customer_id ON customer_pool_relation(customer_id ASC);
 CREATE INDEX idx_pool_id ON customer_pool_relation(pool_id ASC);
 
+CREATE TABLE customer_capacity(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织架构ID' ,
+    `scope_id` VARCHAR(1000) NOT NULL   COMMENT '范围ID' ,
+    `capacity` INT(255) NOT NULL  DEFAULT 0 COMMENT '库容;0:不限制' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '客户容量设置'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_organization_id ON customer_capacity(organization_id ASC);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
