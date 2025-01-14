@@ -9,7 +9,16 @@
     @update-collapsed="appStore.setMenuCollapsed"
   >
     <div class="flex h-full flex-col justify-between">
-      <n-menu :collapsed-width="56" :collapsed-icon-size="18" :options="menuOptions" />
+      <n-menu
+        v-model:value="menuValue"
+        :root-indent="24"
+        :indent="28"
+        :collapsed-width="56"
+        :icon-size="18"
+        :collapsed-icon-size="18"
+        :options="menuOptions"
+        @update-value="menuChange"
+      />
       <div class="flex flex-col items-start p-[8px]">
         <n-avatar v-if="collapsed" round :size="40" src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg" />
         <div
@@ -41,16 +50,23 @@
 </template>
 
 <script setup lang="ts">
+  import { useRouter } from 'vue-router';
   import { NAvatar, NDivider, NIcon, NLayoutSider, NMenu, NTag } from 'naive-ui';
 
   import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
 
+  import { useI18n } from '@/hooks/useI18n';
   import useAppStore from '@/store/modules/app';
+
+  import { SystemRouteEnum } from '@/enums/routeEnum';
 
   import { BookOutline as BookIcon } from '@vicons/ionicons5';
 
+  const { t } = useI18n();
   const appStore = useAppStore();
+  const router = useRouter();
   const collapsed = ref(appStore.getMenuCollapsed);
+  const menuValue = ref<string>('setting');
 
   watch(
     () => appStore.getMenuCollapsed,
@@ -65,51 +81,37 @@
 
   const menuOptions = [
     {
-      label: '收藏',
-      key: 'hear-the-wind-sing',
-      icon: renderIcon(BookIcon),
-    },
-    {
-      label: '首页',
-      key: 'pinball-1973',
-      icon: renderIcon(BookIcon),
-    },
-    {
-      label: '客户管理',
+      label: t('menu.settings'),
       key: 'a-wild-sheep-chase',
       icon: renderIcon(BookIcon),
       children: [
         {
-          label: '客户信息',
-          key: 'people',
+          label: t('menu.settings.org'),
+          key: SystemRouteEnum.SYSTEM_ORG,
         },
         {
-          label: '客户公海',
-          key: 'beverage',
+          label: t('menu.settings.permission'),
+          key: SystemRouteEnum.SYSTEM_ROLE,
+        },
+        {
+          label: t('menu.settings.moduleSetting'),
+          key: SystemRouteEnum.SYSTEM_MODULE,
+        },
+        {
+          label: t('menu.settings.businessSetting'),
+          key: SystemRouteEnum.SYSTEM_BUSINESS,
+        },
+        {
+          label: t('menu.settings.log'),
+          key: SystemRouteEnum.SYSTEM_LOG,
         },
       ],
     },
-    {
-      label: '线索管理',
-      key: 'dance-dance-dance',
-      icon: renderIcon(BookIcon),
-    },
-    {
-      label: '商机管理',
-      key: 'dance-dance-dance',
-      icon: renderIcon(BookIcon),
-    },
-    {
-      label: '数据',
-      key: 'dance-dance-dance',
-      icon: renderIcon(BookIcon),
-    },
-    {
-      label: '设置',
-      key: 'dance-dance-dance',
-      icon: renderIcon(BookIcon),
-    },
   ];
+
+  function menuChange(key: string) {
+    router.push({ name: key });
+  }
 </script>
 
 <style lang="less">

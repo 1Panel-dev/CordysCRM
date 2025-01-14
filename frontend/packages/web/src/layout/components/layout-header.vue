@@ -5,7 +5,7 @@
       <div class="flex items-center text-[20px] font-semibold leading-[32px]">Cordys</div>
     </div>
     <div class="flex flex-1 items-center justify-between px-[16px]">
-      <n-breadcrumb>
+      <!-- <n-breadcrumb>
         <n-breadcrumb-item>
           <div class="text-[14px] leading-[22px]">一级页面</div>
         </n-breadcrumb-item>
@@ -15,7 +15,7 @@
         <n-breadcrumb-item>
           <div class="text-[14px] leading-[22px]">三级页面</div>
         </n-breadcrumb-item>
-      </n-breadcrumb>
+      </n-breadcrumb> -->
       <div class="flex items-center gap-[8px]">
         <n-popselect
           v-model:value="currentLocale"
@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NBreadcrumb, NBreadcrumbItem, NButton, NLayoutHeader, NPopselect } from 'naive-ui';
+  import { NButton, NLayoutHeader, NPopselect } from 'naive-ui';
 
   import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
 

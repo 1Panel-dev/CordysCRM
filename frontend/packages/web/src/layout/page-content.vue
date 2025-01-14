@@ -4,11 +4,9 @@
       <!-- transition内必须有且只有一个根元素，不然会导致二级路由的组件无法渲染 -->
       <div class="page-content">
         <n-scrollbar style="min-height: 500px">
-          <Suspense>
-            <keep-alive :include="[]">
-              <component :is="Component" :key="route.name" />
-            </keep-alive>
-          </Suspense>
+          <keep-alive :include="[]">
+            <component :is="Component" :key="route.name" />
+          </keep-alive>
         </n-scrollbar>
       </div>
     </transition>

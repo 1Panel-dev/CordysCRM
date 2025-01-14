@@ -25,6 +25,7 @@
     "jsencrypt": "^3.3.2",
     "naive-ui": "^2.40.4",
     "nprogress": "^0.2.0",
+    "seemly": "^0.3.9",
     "vfonts": "^0.0.3",
     "vue-draggable-plus": "^0.6.0"
   },

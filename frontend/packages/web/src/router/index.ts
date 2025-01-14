@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import { DEFAULT_LAYOUT } from './base';
 import createRouteGuard from './guard/index';
+import appRoutes from './routes';
 import NProgress from 'nprogress';
 
 NProgress.configure({ showSpinner: false });
@@ -21,19 +21,7 @@ const router = createRouter({
         requiresAuth: false,
       },
     },
-    {
-      path: '/demo',
-      name: 'demo',
-      redirect: '/demo/demo',
-      component: DEFAULT_LAYOUT,
-      children: [
-        {
-          path: '/demo',
-          name: 'demodemo',
-          component: () => import('@/views/TableDemo.vue'),
-        },
-      ],
-    },
+    ...appRoutes,
   ],
 });
 

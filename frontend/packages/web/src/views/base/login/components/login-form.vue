@@ -136,6 +136,8 @@
   // import useModal from '@/hooks/useModal';
   import useUserStore from '@/store/modules/user';
 
+  import SystemRouteEnum from '@/enums/routeEnum';
+
   import { getLongType, isLogin, setLoginExpires, setLongType } from '@lib/shared/method/auth';
   import { encrypted } from '@lib/shared/method/index';
   import { Option } from 'naive-ui/es/legacy-transfer/src/interface';
@@ -224,7 +226,7 @@
           loginConfig.value.password = rememberPassword ? password : '';
           const { redirect, ...othersQuery } = router.currentRoute.value.query;
           router.push({
-            name: (redirect as string) || 'demo',
+            name: (redirect as string) || SystemRouteEnum.SYSTEM,
             query: {
               ...othersQuery,
             },
