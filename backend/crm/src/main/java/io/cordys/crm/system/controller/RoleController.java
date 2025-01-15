@@ -1,15 +1,23 @@
 package io.cordys.crm.system.controller;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.Pager;
 import io.cordys.common.permission.PermissionDefinitionItem;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.dto.request.PermissionSettingUpdateRequest;
 import io.cordys.crm.system.dto.request.RoleAddRequest;
 import io.cordys.crm.system.dto.request.RoleUpdateRequest;
+import io.cordys.crm.system.dto.request.RoleUserPageRequest;
 import io.cordys.crm.system.dto.response.RoleGetResponse;
 import io.cordys.crm.system.dto.response.RoleListResponse;
+import io.cordys.crm.system.dto.response.RoleUserListResponse;
 import io.cordys.crm.system.service.RoleService;
+import io.cordys.crm.system.service.UserRoleService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,6 +39,8 @@ import java.util.List;
 public class RoleController {
     @Resource
     private RoleService roleService;
+    @Resource
+    private UserRoleService userRoleService;
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_READ)
@@ -80,4 +90,18 @@ public class RoleController {
         roleService.updatePermissionSetting(request, SessionUtils.getUserId());
     }
 
+    @PostMapping("/user/page")
+    @Operation(summary = "查看拥有该权限的用户")
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
+    public Pager<List<RoleUserListResponse>> listUser(@Validated @RequestBody RoleUserPageRequest request) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        return PageUtils.setPageInfo(page, userRoleService.listUserByRoleId(request, OrganizationContext.getOrganizationId()));
+    }
+
+    @GetMapping("/user/dept/tree/{roleId}")
+    @Operation(summary = "获取部门用户树")
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
+    public List<DeptUserTreeNode> getDeptUserTree(@PathVariable String roleId) {
+        return userRoleService.getDeptUserTree(OrganizationContext.getOrganizationId(), roleId);
+    }
 }

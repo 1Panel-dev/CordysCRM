@@ -2,16 +2,22 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.InternalRole;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.pager.Pager;
 import io.cordys.common.permission.Permission;
 import io.cordys.common.permission.PermissionDefinitionItem;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.RolePermission;
+import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.dto.request.PermissionSettingUpdateRequest;
 import io.cordys.crm.system.dto.request.RoleAddRequest;
 import io.cordys.crm.system.dto.request.RoleUpdateRequest;
+import io.cordys.crm.system.dto.request.RoleUserPageRequest;
 import io.cordys.crm.system.dto.response.RoleListResponse;
+import io.cordys.crm.system.dto.response.RoleUserListResponse;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -19,6 +25,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +44,8 @@ class RoleControllerTests extends BaseTest {
     private static final String BASE_PATH = "/role/";
     private static final String PERMISSION_SETTING = "permission/setting/{0}";
     private static final String PERMISSION_UPDATE = "permission/update";
+    private static final String USER_PAGE = "user/page";
+    private static final String USER_DEPT_TREE = "user/dept/tree/{roleId}";
 
     /**
      * 记录创建的角色
@@ -48,6 +57,10 @@ class RoleControllerTests extends BaseTest {
     private BaseMapper<Role> roleMapper;
     @Resource
     private BaseMapper<RolePermission> rolePermissionMapper;
+    @Resource
+    private BaseMapper<UserRole> userRoleMapper;
+    @Resource
+    private BaseMapper<OrganizationUser> organizationUserMapper;
 
     @Override
     protected String getBasePath() {
@@ -168,7 +181,7 @@ class RoleControllerTests extends BaseTest {
 
     @Test
     @Order(4)
-    void getPermissionSetting() throws Exception {
+    void testGetPermissionSetting() throws Exception {
         // @@请求成功
         MvcResult mvcResult = this.requestGetWithOkAndReturn(PERMISSION_SETTING, addRole.getId());
         List<PermissionDefinitionItem> permissionDefinition = getResultDataArray(mvcResult, PermissionDefinitionItem.class);
@@ -212,7 +225,7 @@ class RoleControllerTests extends BaseTest {
 
     @Test
     @Order(5)
-    void updatePermissionSetting() throws Exception {
+    void testUpdatePermissionSetting() throws Exception {
         PermissionSettingUpdateRequest request = new PermissionSettingUpdateRequest();
         request.setPermissions(new ArrayList<>() {{
             PermissionSettingUpdateRequest.PermissionUpdateRequest permission1
@@ -244,8 +257,58 @@ class RoleControllerTests extends BaseTest {
     }
 
     @Test
+    @Order(6)
+    void testUserPage() throws Exception {
+        RoleUserPageRequest request = new RoleUserPageRequest();
+        request.setRoleId(addRole.getId());
+        request.setCurrent(1);
+        request.setPageSize(500);
+        // 请求成功
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(USER_PAGE, request);
+        List<RoleUserListResponse> pageResult = getPageResult(mvcResult, RoleUserListResponse.class).getList();
+
+        // 校验数据
+        UserRole example = new UserRole();
+        example.setRoleId(addRole.getId());
+        List<UserRole> userRoles = userRoleMapper.select(example);
+        Set<String> userIdSet = userRoles.stream().map(UserRole::getUserId).collect(Collectors.toSet());
+        Assertions.assertEquals(pageResult.size(), userRoles.size());
+        pageResult.forEach(user -> {
+            Assertions.assertTrue(userIdSet.contains(user.getUserId()));
+        });
+
+        // @@校验权限
+        requestPostPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD_USER, USER_PAGE, request);
+    }
+
+    @Test
+    @Order(7)
+    void testUserDeptTree() throws Exception {
+        // 请求成功
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(USER_DEPT_TREE, addRole.getId());
+        List<DeptUserTreeNode> deptUserTreeNodes = getResultDataArray(mvcResult, DeptUserTreeNode.class);
+
+        // 校验数据
+        deptUserTreeNodes.forEach(deptUserTreeNode -> {
+            if (StringUtils.equals(deptUserTreeNode.getNodeType(), "ORG")) {
+                OrganizationUser organizationUser = new OrganizationUser();
+                organizationUser.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+                organizationUser.setDepartmentId(deptUserTreeNode.getId());
+                List<OrganizationUser> organizationUsers = organizationUserMapper.select(organizationUser);
+                organizationUsers.forEach(user -> {
+                    Assertions.assertTrue(deptUserTreeNode.getChildren().stream()
+                            .anyMatch(child -> StringUtils.equals(child.getId(), user.getUserId())));
+                });
+            }
+        });
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD_USER, USER_DEPT_TREE, addRole.getId());
+    }
+
+    @Test
     @Order(10)
-    void delete() throws Exception {
+    void testDelete() throws Exception {
         // 请求成功
         this.requestGetWithOk(DEFAULT_DELETE, addRole.getId());
 

@@ -18,6 +18,14 @@
           },
           {
             "id": "SYSTEM_ROLE:DELETE"
+          },
+          {
+            "id": "SYSTEM_ROLE:ADD_USER",
+            "name": "permission.role.add_user"
+          },
+          {
+            "id": "SYSTEM_ROLE:REMOVE_USER",
+            "name": "permission.role.remove_user"
           }
         ]
       },

@@ -10,6 +10,12 @@
         ORDER BY num
     </select>
 
+    <select id="selectDeptUserTreeNode" resultType="io.cordys.common.dto.DeptUserTreeNode">
+        SELECT id, name, parent_id, 'ORG' as nodeType
+        FROM sys_department
+        where organization_id = #{orgId}
+        ORDER BY num
+    </select>
 
     <select id="getNextNumByOrgId" resultType="java.lang.Long">
         SELECT max(num)

@@ -3,7 +3,6 @@
 
 <mapper namespace="io.cordys.crm.system.mapper.ExtUserRoleMapper">
 
-
     <delete id="deleteUserRole">
         DELETE
         FROM sys_user_role
@@ -13,4 +12,25 @@
         </foreach>
     </delete>
 
+    <select id="list" resultType="io.cordys.crm.system.dto.response.RoleUserListResponse">
+        select sur.id, su.id as userId, su.name as userName, sou.enable, sou.position, sou.department_id, sur.create_time, sur.update_time
+        from sys_user_role sur
+        join sys_user su
+             on sur.user_id = su.id and sur.role_id = #{request.roleId}
+        join sys_organization_user sou
+             on su.id = sou.user_id and sou.organization_id = #{orgId}
+        where su.name like concat('%', #{request.keyword},'%')
+    </select>
+
+    <select id="selectUserForRelevance" resultType="io.cordys.common.dto.DeptUserTreeNode">
+        select temp.id, temp.name, temp.department_id as parentId, if(sur.id, 0, 1) as enable, 'USER' as nodeType
+        from
+        (
+            select su.id, su.name, sou.department_id from sys_organization_user sou
+            join sys_user su
+            on sou.organization_id = #{orgId} and sou.user_id = su.id
+        ) as temp
+        left join sys_user_role sur
+        on temp.id = sur.user_id and sur.role_id = #{roleId}
+    </select>
 </mapper>

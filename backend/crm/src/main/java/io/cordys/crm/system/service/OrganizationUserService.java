@@ -43,6 +43,8 @@ public class OrganizationUserService {
     @Resource
     private ExtUserMapper extUserMapper;
     @Resource
+    private RoleService roleService;
+    @Resource
     private BaseMapper<User> userMapper;
     @Resource
     private BaseMapper<OrganizationUser> organizationUserMapper;
@@ -72,6 +74,7 @@ public class OrganizationUserService {
             List<String> userIds = list.stream().map(UserPageResponse::getUserId).toList();
             //获取用户角色
             List<UserRoleConvert> userRoles = extUserMapper.getUserRole(userIds, orgId);
+            userRoles.forEach(role -> role.setName(roleService.translateInternalRole(role.getName())));
             Map<String, List<UserRoleConvert>> userRoleMap = userRoles.stream().collect(Collectors.groupingBy(UserRoleConvert::getUserId));
             //创建人 更新人
             List<String> ids = new ArrayList<>();

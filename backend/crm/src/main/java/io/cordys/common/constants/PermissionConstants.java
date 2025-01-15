@@ -12,6 +12,8 @@ public class PermissionConstants {
     public static final String SYSTEM_ROLE_ADD = "SYSTEM_ROLE:ADD";
     public static final String SYSTEM_ROLE_UPDATE = "SYSTEM_ROLE:UPDATE";
     public static final String SYSTEM_ROLE_DELETE = "SYSTEM_ROLE:DELETE";
+    public static final String SYSTEM_ROLE_ADD_USER = "SYSTEM_ROLE:ADD_USER";
+    public static final String SYSTEM_ROLE_REMOVE_USER = "SYSTEM_ROLE:REMOVE_USER";
     /*------ end: SYSTEM_ROLE_ROLE ------*/
 
 

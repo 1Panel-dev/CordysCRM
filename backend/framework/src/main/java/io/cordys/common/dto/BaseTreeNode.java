@@ -47,25 +47,25 @@ public class BaseTreeNode {
         children.add(node);
     }
 
-    public static List<BaseTreeNode> buildTree(List<BaseTreeNode> nodeList) {
+    public static <T extends BaseTreeNode> List<T> buildTree(List<T> nodeList) {
         // 用于存储节点的 Map，key 是节点 ID
-        Map<String, BaseTreeNode> nodeMap = new HashMap<>();
+        Map<String, T> nodeMap = new HashMap<>();
         // 用于存储最终的根节点列表
-        List<BaseTreeNode> rootNodes = new ArrayList<>();
+        List<T> rootNodes = new ArrayList<>();
 
         // 1. 将所有节点放入 Map 中
-        for (BaseTreeNode node : nodeList) {
+        for (T node : nodeList) {
             nodeMap.put(node.getId(), node);
         }
 
         // 2. 遍历节点列表，构建父子关系
-        for (BaseTreeNode node : nodeList) {
+        for (T node : nodeList) {
             if (StringUtils.equalsIgnoreCase(node.getParentId(), "NONE")) {
                 // 没有父节点，则为根节点
                 rootNodes.add(node);
             } else {
                 // 获取父节点
-                BaseTreeNode parentNode = nodeMap.get(node.getParentId());
+                T parentNode = nodeMap.get(node.getParentId());
                 if (parentNode != null) {
                     // 将当前节点添加到父节点的子节点列表中
                     parentNode.addChild(node);
