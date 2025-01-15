@@ -22,7 +22,7 @@ public class UserAddRequest {
     @NotBlank
     private String phone;
 
-    @Schema(description = "性别(false-男/ture-女)")
+    @Schema(description = "性别(false-男/true-女)")
     @NotNull
     private Boolean gender;
 
