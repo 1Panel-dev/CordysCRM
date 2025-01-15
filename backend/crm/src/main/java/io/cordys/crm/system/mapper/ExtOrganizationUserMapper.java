@@ -1,5 +1,6 @@
 package io.cordys.crm.system.mapper;
 
+import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.*;
 import org.apache.ibatis.annotations.Param;
@@ -16,4 +17,8 @@ public interface ExtOrganizationUserMapper {
     int countUserByDepartmentId(@Param("departmentId") String departmentId,@Param("orgId")String orgId);
 
     List<UserPageResponse> list(@Param("request") UserPageRequest request);
+
+    void enable(@Param("request") UserBatchEnableRequest request, @Param("operatorId") String operatorId, @Param("time") long time);
+
+    List<User> getUserList(@Param("request") UserBatchRequest request);
 }

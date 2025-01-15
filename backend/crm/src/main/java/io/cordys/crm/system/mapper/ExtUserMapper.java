@@ -2,6 +2,7 @@ package io.cordys.crm.system.mapper;
 
 
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.security.UserDTO;
@@ -17,4 +18,6 @@ public interface ExtUserMapper {
     List<UserRoleConvert> getUserRole(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 
     UserResponse getUserDetail(@Param("id") String id);
+
+    void batchUpdatePassword(@Param("userList") List<User> userList);
 }

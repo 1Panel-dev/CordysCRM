@@ -4,6 +4,7 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.aspectj.dto.LogExtraDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
@@ -15,9 +16,7 @@ import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
-import io.cordys.crm.system.dto.request.UserAddRequest;
-import io.cordys.crm.system.dto.request.UserPageRequest;
-import io.cordys.crm.system.dto.request.UserUpdateRequest;
+import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
@@ -51,6 +50,8 @@ public class OrganizationUserService {
     private BaseMapper<UserRole> userRoleMapper;
     @Resource
     private ExtUserRoleMapper extUserRoleMapper;
+    @Resource
+    private LogService logService;
 
     /**
      * 员工列表查询
@@ -307,12 +308,52 @@ public class OrganizationUserService {
      * @param userId
      * @param operatorId
      */
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{{#userId}}", operator = "{{#operatorId}}", success = "重置用户密码成功", extra = "{{#newUser}}")
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{{#userId}}", operator = "{{#operatorId}}", success = "重置用户密码成功")
     public void resetPassword(String userId, String operatorId) {
         User user = userMapper.selectByPrimaryKey(userId);
         user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
         user.setUpdateTime(System.currentTimeMillis());
         user.setUpdateUser(operatorId);
         userMapper.updateById(user);
+    }
+
+    /**
+     * 批量启用/禁用
+     *
+     * @param request
+     * @param operatorId
+     */
+    public void enable(UserBatchEnableRequest request, String operatorId, String orgId) {
+        extOrganizationUserMapper.enable(request, operatorId, System.currentTimeMillis());
+
+        List<LogDTO> logDTOS = new ArrayList<>();
+        request.getIds().forEach(id -> {
+            LogDTO logDTO = new LogDTO(orgId, id, operatorId, LogType.UPDATE, LogModule.SYSTEM, request.isEnable() ? "启用用户成功" : "禁用用户成功");
+            logDTOS.add(logDTO);
+        });
+        logService.batchAdd(logDTOS);
+    }
+
+
+    /**
+     * 批量重置密码
+     *
+     * @param request
+     * @param operatorId
+     * @param orgId
+     */
+    public void batchResetPassword(UserBatchRequest request, String operatorId, String orgId) {
+        List<User> userList = extOrganizationUserMapper.getUserList(request);
+        List<LogDTO> logDTOS = new ArrayList<>();
+        userList.forEach(user -> {
+            user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
+            user.setUpdateTime(System.currentTimeMillis());
+            user.setUpdateUser(operatorId);
+            LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM, "重置用户密码成功");
+            logDTOS.add(logDTO);
+        });
+        extUserMapper.batchUpdatePassword(userList);
+        logService.batchAdd(logDTOS);
+
     }
 }

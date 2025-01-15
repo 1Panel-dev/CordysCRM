@@ -1,9 +1,7 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.system.dto.request.UserAddRequest;
-import io.cordys.crm.system.dto.request.UserPageRequest;
-import io.cordys.crm.system.dto.request.UserUpdateRequest;
+import io.cordys.crm.system.dto.request.*;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -27,6 +25,8 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_DETAIL = "/user/detail/";
     public static final String USER_UPDATE = "/user/update";
     public static final String USER_RESET_PASSWORD = "/user/reset-password/";
+    public static final String USER_BATCH_ENABLE = "/user/batch-enable";
+    public static final String USER_BATCH_RESET_PASSWORD = "/user/batch/reset-password";
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
             config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
@@ -92,5 +92,23 @@ public class OrganizationUserControllerTests extends BaseTest {
     @Order(5)
     public void resetPassword() throws Exception {
         this.requestGet(USER_RESET_PASSWORD + "5").andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(6)
+    public void batchEnable() throws Exception {
+        UserBatchEnableRequest request = new UserBatchEnableRequest();
+        request.setEnable(true);
+        request.setIds(List.of("u_1", "u_2"));
+        this.requestPost(USER_BATCH_ENABLE, request).andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(7)
+    public void batchResetPassword() throws Exception {
+        UserBatchRequest request = new UserBatchRequest();
+        request.setIds(List.of("u_1", "u_2"));
+        this.requestPost(USER_BATCH_RESET_PASSWORD, request).andExpect(status().isOk());
+
     }
 }

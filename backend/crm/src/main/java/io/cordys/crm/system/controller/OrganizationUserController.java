@@ -6,9 +6,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.system.dto.request.UserAddRequest;
-import io.cordys.crm.system.dto.request.UserPageRequest;
-import io.cordys.crm.system.dto.request.UserUpdateRequest;
+import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.service.OrganizationUserService;
@@ -74,5 +72,17 @@ public class OrganizationUserController {
     }
 
 
+    @PostMapping("/batch-enable")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    @Operation(summary = "用户(员工)-批量启用/禁用")
+    public void enable(@Validated @RequestBody UserBatchEnableRequest request) {
+        organizationUserService.enable(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
+    @PostMapping("/batch/reset-password")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    @Operation(summary = "用户(员工)-批量重置密码")
+    public void batchResetPassword(@Validated @RequestBody UserBatchRequest request) {
+        organizationUserService.batchResetPassword(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 }

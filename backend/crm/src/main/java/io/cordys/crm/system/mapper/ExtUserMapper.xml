@@ -56,4 +56,17 @@
         WHERE
             sou.id = #{id}
     </select>
+
+    <update id="batchUpdatePassword">
+        UPDATE sys_user
+        SET password = CASE
+        <foreach collection="userList" item="user" separator=" ">
+            WHEN id = #{user.id} THEN #{user.password}
+        </foreach>
+        END
+        WHERE id IN
+        <foreach collection="userList" item="user" open="(" close=")" separator=",">
+            #{user.id}
+        </foreach>
+    </update>
 </mapper>
