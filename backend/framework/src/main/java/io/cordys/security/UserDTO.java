@@ -4,7 +4,6 @@ import io.cordys.common.groups.Created;
 import io.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -65,13 +64,6 @@ public class UserDTO implements java.io.Serializable {
 
     @Schema(description = "修改人")
     private String updateUser;
-
-    @Schema(description = "是否删除", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "{user.deleted.not_blank}", groups = {Created.class})
-    private Boolean deleted;
-
-    @Schema(description = "CFT Token")
-    private String cftToken;
 
     @Schema(description = "其他平台对接信息", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private byte[] platformInfo;
