@@ -22,7 +22,7 @@
         <shiro.version>2.0.2</shiro.version>
         <pagehelper.version>6.1.0</pagehelper.version>
         <quartz-starter.version>1.0.7</quartz-starter.version>
-        <redisson-starter.version>3.39.0</redisson-starter.version>
+        <redisson-starter.version>3.43.0</redisson-starter.version>
         <mybatis-starter.version>3.0.3</mybatis-starter.version>
         <springdoc-openapi-ui.version>2.7.0</springdoc-openapi-ui.version>
         <flatten.version>1.6.0</flatten.version>
