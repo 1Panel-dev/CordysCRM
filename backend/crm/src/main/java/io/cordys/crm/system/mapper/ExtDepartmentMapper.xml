@@ -23,4 +23,13 @@
         where organization_id = #{orgId}
     </select>
 
+    <select id="getUserIdsByDeptIds" resultType="java.lang.String">
+        select user_id
+        from sys_organization_user
+        where department_id in
+        <foreach collection="deptIds" item="deptId" open="(" close=")" separator=",">
+            #{deptId}
+        </foreach>
+    </select>
+
 </mapper>

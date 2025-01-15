@@ -14,4 +14,6 @@ public interface ExtDepartmentMapper {
     List<DeptUserTreeNode> selectDeptUserTreeNode(@Param("orgId") String orgId);
 
     Long getNextNumByOrgId(@Param("orgId") String orgId);
+
+    List<String> getUserIdsByDeptIds(@Param("deptIds") List<String> deptIds);
 }

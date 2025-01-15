@@ -2,23 +2,27 @@ package io.cordys.crm.system.service;
 
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.SubListUtils;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.request.RoleUserPageRequest;
+import io.cordys.crm.system.dto.request.RoleUserRelateRequest;
+import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.crm.system.dto.response.RoleUserListResponse;
 import io.cordys.crm.system.mapper.ExtDepartmentMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import jodd.util.StringUtil;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -87,8 +91,69 @@ public class UserRoleService {
      */
     public List<DeptUserTreeNode> getDeptUserTree(String orgId, String roleId) {
         List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
-        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserForRelevance(orgId, roleId);
+        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForRelevance(orgId, roleId);
         treeNodes.addAll(userNodes);
         return BaseTreeNode.buildTree(treeNodes);
+    }
+
+    public List<DeptUserTreeNode> getRoleUserTree(String orgId, String roleId) {
+        // 查询角色信息
+        List<RoleListResponse> list = roleService.list(orgId);
+        List<DeptUserTreeNode> treeNodes = list.stream().filter(role -> !StringUtil.equals(roleId, role.getId()))
+                .map((role) -> {
+                    DeptUserTreeNode roleNode = new DeptUserTreeNode();
+                    roleNode.setNodeType("ROLE");
+                    roleNode.setId(role.getId());
+                    roleNode.setName(role.getName());
+                    return roleNode;
+                }).collect(Collectors.toList());
+        // 查询用户信息
+        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserRoleForRelevance(orgId, roleId);
+
+        // 如果已经关联的用户，设置为 disable
+        Set<String> currentRoleUserIds = extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId))
+                .stream()
+                .collect(Collectors.toSet());
+
+        userNodes.forEach(userNode -> {
+            if (currentRoleUserIds.contains(userNode.getId())) {
+                userNode.setEnabled(false);
+            }
+        });
+        treeNodes.addAll(userNodes);
+        return BaseTreeNode.buildTree(treeNodes);
+    }
+
+    public void relateUser(RoleUserRelateRequest request, String operator) {
+        Set<String> userSet = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(request.getRoleIds())) {
+            userSet.addAll(extUserRoleMapper.getUserIdsByRoleIds(request.getRoleIds()));
+        }
+        if (CollectionUtils.isNotEmpty(request.getDeptIds())) {
+            userSet.addAll(extDepartmentMapper.getUserIdsByDeptIds(request.getDeptIds()));
+        }
+        if (CollectionUtils.isNotEmpty(request.getUserIds())) {
+            userSet.addAll(request.getUserIds());
+        }
+
+        List<String> userIds = userSet.stream().collect(Collectors.toList());
+        SubListUtils.dealForSubList(userIds, 50, (subUserIds) -> {
+            List<String> currentRoleUserIds = extUserRoleMapper.getUserIdsByRoleIds(List.of(request.getRoleId()));
+            // 去除已关联的用户，添加未关联的用户
+            List<UserRole> userRoles = ListUtils.subtract(subUserIds, currentRoleUserIds).stream()
+                    .map(userId -> {
+                        UserRole userRole = new UserRole();
+                        userRole.setUserId(userId);
+                        userRole.setRoleId(request.getRoleId());
+                        userRole.setId(IDGenerator.nextStr());
+                        userRole.setCreateUser(operator);
+                        userRole.setUpdateUser(operator);
+                        userRole.setCreateTime(System.currentTimeMillis());
+                        userRole.setUpdateTime(System.currentTimeMillis());
+                        return userRole;
+                    })
+                    .collect(Collectors.toList());
+            userRoleMapper.batchInsert(userRoles);
+        });
     }
 }

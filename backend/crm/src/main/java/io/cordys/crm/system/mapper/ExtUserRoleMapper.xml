@@ -22,7 +22,7 @@
         where su.name like concat('%', #{request.keyword},'%')
     </select>
 
-    <select id="selectUserForRelevance" resultType="io.cordys.common.dto.DeptUserTreeNode">
+    <select id="selectUserDeptForRelevance" resultType="io.cordys.common.dto.DeptUserTreeNode">
         select temp.id, temp.name, temp.department_id as parentId, if(sur.id, 0, 1) as enable, 'USER' as nodeType
         from
         (
@@ -32,5 +32,23 @@
         ) as temp
         left join sys_user_role sur
         on temp.id = sur.user_id and sur.role_id = #{roleId}
+    </select>
+
+    <select id="selectUserRoleForRelevance" resultType="io.cordys.common.dto.DeptUserTreeNode">
+        select su.id, su.name, sur.role_id as parentId, 1 as enable, 'USER' as nodeType
+        from sys_organization_user sou
+        join sys_user su
+            on sou.organization_id = #{orgId} and sou.user_id = su.id
+        join sys_user_role sur
+            on su.id = sur.user_id and sur.role_id != #{roleId}
+    </select>
+
+    <select id="getUserIdsByRoleIds" resultType="java.lang.String">
+        select user_id
+        from sys_user_role
+        where role_id in
+        <foreach collection="roleIds" item="roleId" open="(" close=")" separator=",">
+            #{roleId}
+        </foreach>
     </select>
 </mapper>

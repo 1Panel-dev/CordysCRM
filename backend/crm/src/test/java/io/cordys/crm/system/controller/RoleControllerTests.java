@@ -1,9 +1,9 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.InternalRole;
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptUserTreeNode;
-import io.cordys.common.pager.Pager;
 import io.cordys.common.permission.Permission;
 import io.cordys.common.permission.PermissionDefinitionItem;
 import io.cordys.common.util.Translator;
@@ -12,10 +12,7 @@ import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.RolePermission;
 import io.cordys.crm.system.domain.UserRole;
-import io.cordys.crm.system.dto.request.PermissionSettingUpdateRequest;
-import io.cordys.crm.system.dto.request.RoleAddRequest;
-import io.cordys.crm.system.dto.request.RoleUpdateRequest;
-import io.cordys.crm.system.dto.request.RoleUserPageRequest;
+import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.crm.system.dto.response.RoleUserListResponse;
 import io.cordys.mybatis.BaseMapper;
@@ -46,6 +43,8 @@ class RoleControllerTests extends BaseTest {
     private static final String PERMISSION_UPDATE = "permission/update";
     private static final String USER_PAGE = "user/page";
     private static final String USER_DEPT_TREE = "user/dept/tree/{roleId}";
+    private static final String USER_ROLE_TREE = "user/role/tree/{roleId}";
+    private static final String USER_RELATE = "user/relate";
 
     /**
      * 记录创建的角色
@@ -283,6 +282,25 @@ class RoleControllerTests extends BaseTest {
 
     @Test
     @Order(7)
+    void testUserRelate() throws Exception {
+        // 请求成功
+        RoleUserRelateRequest request = new RoleUserRelateRequest();
+        request.setRoleId(addRole.getId());
+        request.setUserIds(List.of(InternalUser.ADMIN.getValue()));
+        this.requestPostWithOk(USER_RELATE, request);
+
+        // 校验数据
+        UserRole userRole = new UserRole();
+        userRole.setRoleId(addRole.getId());
+        userRole.setUserId(InternalUser.ADMIN.getValue());
+        Assertions.assertFalse(CollectionUtils.isEmpty(userRoleMapper.select(userRole)));
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD_USER, USER_RELATE, request);
+    }
+
+    @Test
+    @Order(8)
     void testUserDeptTree() throws Exception {
         // 请求成功
         MvcResult mvcResult = this.requestGetWithOkAndReturn(USER_DEPT_TREE, addRole.getId());
@@ -307,7 +325,31 @@ class RoleControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(10)
+    @Order(9)
+    void testUserRoleTree() throws Exception {
+        // 请求成功
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(USER_ROLE_TREE, addRole.getId());
+        List<DeptUserTreeNode> deptUserTreeNodes = getResultDataArray(mvcResult, DeptUserTreeNode.class);
+
+        // 校验数据
+        deptUserTreeNodes.forEach(roleNode -> {
+            if (StringUtils.equals(roleNode.getNodeType(), "ROLE")) {
+                UserRole userRole = new UserRole();
+                userRole.setRoleId(roleNode.getId());
+                List<UserRole> userRoles = userRoleMapper.select(userRole);
+                userRoles.forEach(user -> {
+                    Assertions.assertTrue(roleNode.getChildren().stream()
+                            .anyMatch(child -> StringUtils.equals(child.getId(), user.getUserId())));
+                });
+            }
+        });
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD_USER, USER_ROLE_TREE, addRole.getId());
+    }
+
+    @Test
+    @Order(20)
     void testDelete() throws Exception {
         // 请求成功
         this.requestGetWithOk(DEFAULT_DELETE, addRole.getId());

@@ -1,6 +1,7 @@
 package io.cordys.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jodd.util.StringUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -60,7 +61,7 @@ public class BaseTreeNode {
 
         // 2. 遍历节点列表，构建父子关系
         for (T node : nodeList) {
-            if (StringUtils.equalsIgnoreCase(node.getParentId(), "NONE")) {
+            if (StringUtil.isBlank(node.getParentId()) || StringUtils.equalsIgnoreCase(node.getParentId(), "NONE")) {
                 // 没有父节点，则为根节点
                 rootNodes.add(node);
             } else {

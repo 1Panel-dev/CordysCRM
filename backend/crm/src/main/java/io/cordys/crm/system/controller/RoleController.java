@@ -9,10 +9,7 @@ import io.cordys.common.pager.Pager;
 import io.cordys.common.permission.PermissionDefinitionItem;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Role;
-import io.cordys.crm.system.dto.request.PermissionSettingUpdateRequest;
-import io.cordys.crm.system.dto.request.RoleAddRequest;
-import io.cordys.crm.system.dto.request.RoleUpdateRequest;
-import io.cordys.crm.system.dto.request.RoleUserPageRequest;
+import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.RoleGetResponse;
 import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.crm.system.dto.response.RoleUserListResponse;
@@ -103,5 +100,19 @@ public class RoleController {
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
     public List<DeptUserTreeNode> getDeptUserTree(@PathVariable String roleId) {
         return userRoleService.getDeptUserTree(OrganizationContext.getOrganizationId(), roleId);
+    }
+
+    @PostMapping("/user/relate")
+    @Operation(summary = "角色关联添加用户")
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
+    public void relateUser(@Validated @RequestBody RoleUserRelateRequest request) {
+        userRoleService.relateUser(request, SessionUtils.getUserId());
+    }
+
+    @GetMapping("/user/role/tree/{roleId}")
+    @Operation(summary = "获取部门用户树")
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
+    public List<DeptUserTreeNode> getRoleUserTree(@PathVariable String roleId) {
+        return userRoleService.getRoleUserTree(OrganizationContext.getOrganizationId(), roleId);
     }
 }

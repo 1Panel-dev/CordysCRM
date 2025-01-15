@@ -15,7 +15,11 @@ public interface ExtUserRoleMapper {
 
     List<RoleUserListResponse> list(@Param("request") RoleUserPageRequest request, @Param("orgId") String orgId);
 
-    List<DeptUserTreeNode> selectUserForRelevance(@Param("orgId") String orgId, @Param("roleId") String roleId);
+    List<DeptUserTreeNode> selectUserDeptForRelevance(@Param("orgId") String orgId, @Param("roleId") String roleId);
+
+    List<DeptUserTreeNode> selectUserRoleForRelevance(@Param("orgId") String orgId, @Param("roleId") String roleId);
 
     void deleteUserRole(@Param("ids") List<String> ids);
+
+    List<String> getUserIdsByRoleIds(@Param("roleIds") List<String> roleIds);
 }

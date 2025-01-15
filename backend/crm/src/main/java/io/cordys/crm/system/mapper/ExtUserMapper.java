@@ -17,6 +17,8 @@ public interface ExtUserMapper {
 
     List<UserRoleConvert> getUserRole(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 
+    List<OptionDTO> selectUserOption(@Param("orgId") String orgId);
+
     UserResponse getUserDetail(@Param("id") String id);
 
     void batchUpdatePassword(@Param("userList") List<User> userList);
