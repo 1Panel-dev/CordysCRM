@@ -18,12 +18,12 @@
       </n-input>
     </n-form-item>
   </n-form>
-  <NTooltip v-else :delay="300" flip :placement="props.titleTooltipPosition">
+  <n-tooltip v-else :delay="300" flip :placement="props.titleTooltipPosition">
     <template #trigger>
       <div class="one-line-text w-full" @dblclick.stop="() => emit('click')"> {{ form.name }}</div>
     </template>
     {{ props.fieldConfig?.name }}
-  </NTooltip>
+  </n-tooltip>
 </template>
 
 <script setup lang="ts">

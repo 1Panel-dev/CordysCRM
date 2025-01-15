@@ -1,5 +1,5 @@
 <template>
-  <NTag
+  <n-tag
     v-bind="$attrs"
     :size="props.size"
     :class="`${props.color ? '' : `crm-tag-${props.theme} crm-tag-${props.theme}--${props.type}`} customClass`"
@@ -33,7 +33,7 @@
         <slot></slot>
       </template>
     </n-tooltip>
-  </NTag>
+  </n-tag>
 </template>
 
 <script setup lang="ts">

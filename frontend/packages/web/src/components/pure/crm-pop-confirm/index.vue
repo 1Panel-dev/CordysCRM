@@ -27,12 +27,12 @@
     </template>
     <template #action>
       <div class="flex items-center justify-end">
-        <NButton :disabled="props.loading" v-bind="cancelButtonProps" @click="handleNegativeClick">
+        <n-button :disabled="props.loading" v-bind="cancelButtonProps" @click="handleNegativeClick">
           {{ t(props.negativeText) }}
-        </NButton>
-        <NButton :loading="props.loading" v-bind="okButtonProps" @click="handlePositiveClick">
+        </n-button>
+        <n-button :loading="props.loading" v-bind="okButtonProps" @click="handlePositiveClick">
           {{ t(props.positiveText) }}
-        </NButton>
+        </n-button>
       </div>
     </template>
   </n-popconfirm>
@@ -138,6 +138,7 @@
 
 <style lang="less">
   .crm-pop-confirm-wrapper {
+    padding: 16px !important;
     .crm-pop-confirm-content-wrapper {
       min-width: 128px;
       max-width: 368px;

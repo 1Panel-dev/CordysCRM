@@ -219,7 +219,6 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       padding: '0 8px',
     },
     Popover: {
-      padding: '16px',
       borderRadius: '6px',
     },
     Popconfirm: {

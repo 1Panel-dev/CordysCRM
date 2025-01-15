@@ -5,13 +5,13 @@
         <div class="flex flex-1 flex-col gap-4 p-4">
           <!-- TODO 按钮类型demo 暂时提供参考 you can delete it  ^_^  -->
           <div class="flex gap-[16px]">
-            <NButton type="primary">主要按钮</NButton>
-            <NButton type="tertiary">次要按钮</NButton>
-            <NButton type="default" class="outline--secondary">次要外框按钮</NButton>
-            <NButton strong secondary>次要背景按钮</NButton>
-            <NButton type="success"> 成功背景按钮 </NButton>
-            <NButton type="warning"> 警告背景按钮 </NButton>
-            <NButton type="error"> 错误背景按钮 </NButton>
+            <n-button type="primary">主要按钮</n-button>
+            <n-button type="tertiary">次要按钮</n-button>
+            <n-button type="default" class="outline--secondary">次要外框按钮</n-button>
+            <n-button strong secondary>次要背景按钮</n-button>
+            <n-button type="success"> 成功背景按钮 </n-button>
+            <n-button type="warning"> 警告背景按钮 </n-button>
+            <n-button type="error"> 错误背景按钮 </n-button>
           </div>
           <div class="mt-[24px] flex gap-[16px]">
             <n-button quaternary class="text-btn-secondary"> 文本次要按钮 </n-button>

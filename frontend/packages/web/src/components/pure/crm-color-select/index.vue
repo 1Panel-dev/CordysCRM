@@ -1,5 +1,11 @@
 <template>
-  <NColorPicker v-model:value="innerPureColor" v-bind="$attrs" default-show show-preview @update-value="handleUpdate" />
+  <n-color-picker
+    v-model:value="innerPureColor"
+    v-bind="$attrs"
+    default-show
+    show-preview
+    @update-value="handleUpdate"
+  />
 </template>
 
 <script setup lang="ts">

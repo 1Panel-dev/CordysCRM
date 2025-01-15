@@ -32,23 +32,23 @@
         <slot name="footerLeft"> </slot>
         <slot name="footerRight">
           <div class="flex items-center gap-[8px]">
-            <NButton
+            <n-button
               :disabled="props.okLoading"
               v-bind="{ secondary: true, ...props.cancelButtonProps }"
               @click="negativeClick"
             >
               {{ t(props.negativeText) }}
-            </NButton>
-            <NButton v-if="showContinue" :loading="props.okLoading" strong @click="handleContinue">
+            </n-button>
+            <n-button v-if="showContinue" :loading="props.okLoading" strong @click="handleContinue">
               {{ t(props.continueText || '') }}
-            </NButton>
-            <NButton
+            </n-button>
+            <n-button
               :loading="props.okLoading"
               v-bind="{ type: 'primary', ...props.okButtonProps }"
               @click="positiveClick"
             >
               {{ t(props.positiveText) }}
-            </NButton>
+            </n-button>
           </div>
         </slot>
       </div>
