@@ -218,6 +218,13 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       closeSizeLarge: '16px',
       padding: '0 8px',
     },
+    Popover: {
+      padding: '16px',
+      borderRadius: '6px',
+    },
+    Popconfirm: {
+      iconSize: '20px',
+    },
   };
 }
 

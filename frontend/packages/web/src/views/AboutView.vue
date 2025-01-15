@@ -70,6 +70,12 @@
                 标签
                 <template #tooltipContent>自定义</template>
               </CrmTag>
+              <CrmRemoveButton
+                :loading="deleteLoading"
+                title="确定移除 小城与不确定性的墙 吗？"
+                content="移除后，成员将不再拥有该角色权限"
+                @confirm="confirm"
+              />
             </div>
           </div>
         </div>
@@ -130,6 +136,7 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTree from '@/components/pure/crm-tree/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
@@ -401,6 +408,21 @@
   const loading = ref(false);
   function openModal() {
     showModal.value = true;
+  }
+
+  const deleteLoading = ref(false);
+  async function confirm(cancel: () => void) {
+    deleteLoading.value = true;
+    try {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 3000);
+      });
+      deleteLoading.value = false;
+      cancel();
+      message.success('删除成功');
+    } catch (e) {
+      message.error('删除失败，请重试');
+    }
   }
 </script>
 
