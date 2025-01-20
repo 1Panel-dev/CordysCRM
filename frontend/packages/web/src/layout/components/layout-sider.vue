@@ -13,7 +13,7 @@
         v-model:value="menuValue"
         :root-indent="24"
         :indent="28"
-        :collapsed-width="56"
+        :collapsed-width="appStore.collapsedWidth"
         :icon-size="18"
         :collapsed-icon-size="18"
         :options="menuOptions"
@@ -66,7 +66,7 @@
   const appStore = useAppStore();
   const router = useRouter();
   const collapsed = ref(appStore.getMenuCollapsed);
-  const menuValue = ref<string>('setting');
+  const menuValue = ref<string>(SystemRouteEnum.SYSTEM_ORG);
 
   watch(
     () => appStore.getMenuCollapsed,

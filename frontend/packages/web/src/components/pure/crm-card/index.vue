@@ -1,43 +1,93 @@
 <template>
-  <n-card :class="props.noContentPadding ? 'n-card--no-padding' : ''">
-    <template #header>
-      <slot name="header">
-        <div v-if="props.title" class="flex items-center gap-[16px]">
-          <div>
-            {{ props.title }}
+  <div class="relative overflow-hidden">
+    <n-card :class="props.noContentPadding ? 'n-card--no-padding' : ''" :bordered="props.bordered">
+      <template #header>
+        <slot name="header">
+          <div v-if="props.title" class="flex items-center gap-[16px]">
+            <div>
+              {{ props.title }}
+            </div>
+            <div v-if="props.subTitle" class="n-card-header-subtitle">{{ props.subTitle }}</div>
           </div>
-          <div v-if="props.subTitle" class="n-card-header-subtitle">{{ props.subTitle }}</div>
-        </div>
-        <div v-if="props.description" class="n-card-header-description">
-          {{ props.description }}
+          <div v-if="props.description" class="n-card-header-description">
+            {{ props.description }}
+          </div>
+        </slot>
+      </template>
+      <template #header-extra>
+        <slot name="header-extra"></slot>
+      </template>
+      <n-scrollbar :style="{ 'max-height': props.contentMaxHeight || 'auto' }">
+        <slot></slot>
+      </n-scrollbar>
+      <template #footer>
+        <slot name="footer"></slot>
+      </template>
+      <template #action>
+        <slot name="action"></slot>
+      </template>
+    </n-card>
+    <div v-if="!props.hideFooter" class="n-card-footer" :style="{ width: `calc(100% - ${menuWidth + 16}px)` }">
+      <div class="ml-0 mr-auto">
+        <slot name="footerLeft"></slot>
+      </div>
+      <slot name="footerRight">
+        <div class="flex justify-end gap-[16px]">
+          <n-button :disabled="props.loading" secondary @click="emit('cancel')">
+            {{ t('common.cancel') }}
+          </n-button>
+          <n-button
+            v-if="!props.hideContinue && !props.isEdit"
+            :loading="props.loading"
+            secondary
+            @click="emit('saveAndContinue')"
+          >
+            {{ props.saveAndContinueText || t('common.saveAndContinue') }}
+          </n-button>
+          <n-button :loading="props.loading" type="primary" @click="emit('save')">
+            {{ props.saveText || t(props.isEdit ? 'common.update' : 'common.save') }}
+          </n-button>
         </div>
       </slot>
-    </template>
-    <template #header-extra>
-      <slot name="header-extra"></slot>
-    </template>
-    <n-scrollbar :style="{ 'max-height': props.contentMaxHeight || 'auto' }">
-      <slot></slot>
-    </n-scrollbar>
-    <template #footer>
-      <slot name="footer"></slot>
-    </template>
-    <template #action>
-      <slot name="action"></slot>
-    </template>
-  </n-card>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-  import { NCard, NScrollbar } from 'naive-ui';
+  import { NButton, NCard, NScrollbar } from 'naive-ui';
 
-  const props = defineProps<{
-    title?: string;
-    subTitle?: string;
-    description?: string;
-    contentMaxHeight?: string;
-    noContentPadding?: boolean;
-  }>();
+  import { useI18n } from '@/hooks/useI18n';
+  import useAppStore from '@/store/modules/app';
+
+  const props = withDefaults(
+    defineProps<{
+      title?: string;
+      subTitle?: string;
+      description?: string;
+      contentMaxHeight?: string;
+      noContentPadding?: boolean;
+      loading?: boolean;
+      saveText?: string;
+      isEdit?: boolean;
+      saveAndContinueText?: string;
+      hideFooter?: boolean;
+      hideContinue?: boolean;
+      bordered?: boolean;
+    }>(),
+    {
+      noContentPadding: false,
+      hideFooter: false,
+      hideContinue: false,
+    }
+  );
+  const emit = defineEmits(['cancel', 'save', 'saveAndContinue']);
+
+  const appStore = useAppStore();
+  const { t } = useI18n();
+
+  const menuWidth = computed(() => {
+    return appStore.menuCollapsed ? appStore.collapsedWidth : 180;
+  });
 </script>
 
 <style lang="less">
@@ -67,7 +117,21 @@
   }
   .n-card--no-padding {
     .n-card__content {
-      padding: 0;
+      padding: 0 !important;
     }
+  }
+  .n-card-footer {
+    @apply fixed flex justify-between;
+
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    padding: 24px;
+    border-bottom: 0;
+    background-color: var(--color-text-fff);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #00000000), var(--tw-ring-shadow, 0 0 #00000000), var(--tw-shadow);
+
+    --tw-shadow: 0 -1px 4px rgb(2 2 2 / 10%);
+    --tw-shadow-colored: 0 -1px 4px var(--tw-shadow-color);
   }
 </style>

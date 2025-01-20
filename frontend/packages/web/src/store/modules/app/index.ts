@@ -5,12 +5,14 @@ export interface AppState {
   showSizePicker: boolean;
   showQuickJumper: boolean;
   menuCollapsed: boolean; // 侧边菜单栏是否收缩
+  collapsedWidth: number; // 侧边菜单栏收缩宽度
   loginLoading: boolean; // 登录页面加载中
 }
 
 const useAppStore = defineStore('app', {
   state: (): AppState => ({
     menuCollapsed: false,
+    collapsedWidth: 56,
     // 分页
     pageSize: 10,
     showSizePicker: true,

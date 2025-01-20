@@ -1,9 +1,14 @@
 <template>
-  <n-transfer v-model:value="value" :options="options" :render-source-list="renderSourceList" source-filterable />
+  <CrmCard no-content-padding>
+    <CrmSplitPanel :max="0.5" :min="0.25" :default-size="0.25"></CrmSplitPanel>
+  </CrmCard>
 </template>
 
 <script lang="ts" setup>
-  import { NTransfer, NTree } from 'naive-ui';
+  import { NTree } from 'naive-ui';
+
+  import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
 
   import type { TransferRenderSourceList, TreeOption } from 'naive-ui';
   import { repeat } from 'seemly';
