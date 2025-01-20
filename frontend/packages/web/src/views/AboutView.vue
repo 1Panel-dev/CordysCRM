@@ -77,6 +77,15 @@
                 @confirm="confirm"
               />
             </div>
+            <div>
+              <CrmUpload
+                v-model:file-list="fileList"
+                :is-all-screen="true"
+                :show-file-list="true"
+                accept="excel"
+                @change="changeHandler"
+              />
+            </div>
           </div>
         </div>
         <div class="flex-1">
@@ -131,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NForm, NFormItem, NInput, NTag, useMessage } from 'naive-ui';
+  import { NButton, NForm, NFormItem, NInput, NTag, UploadFileInfo, useMessage } from 'naive-ui';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -140,6 +149,8 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTree from '@/components/pure/crm-tree/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
+  import CrmUpload from '@/components/pure/crm-upload/index.vue';
+  import type { CrmFileItem } from '@/components/pure/crm-upload/types';
   import TableDemo from './TableDemo.vue';
 
   import useModal from '@/hooks/useModal';
@@ -424,6 +435,10 @@
       message.error('删除失败，请重试');
     }
   }
+
+  const fileList = ref<CrmFileItem[]>([]);
+
+  function changeHandler(file: CrmFileItem[], _fileList: CrmFileItem) {}
 </script>
 
 <style>
