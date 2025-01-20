@@ -224,6 +224,21 @@ export function getThemeOverrides(): GlobalThemeOverrides {
     Popconfirm: {
       iconSize: '20px',
     },
+    Tabs: {
+      tabTextColorLine: getLessVariableValue('--text-n2'),
+      tabTextColorHoverLine: getLessVariableValue('--text-n2'),
+      tabTextColorSegment: getLessVariableValue('--text-n2'),
+      tabTextColorHoverSegment: getLessVariableValue('--text-n1'),
+      tabTextColorActiveSegment: getLessVariableValue('--text-n1'),
+      colorSegment: getLessVariableValue('--text-n8'),
+      fontWeightStrong: 400,
+      tabPaddingSmallSegment: '0 8px',
+      tabPaddingMediumSegment: '3px 16px',
+      tabPaddingLargeSegment: '6px 24px',
+      tabFontSizeSmall: '12px',
+      tabFontSizeMedium: '14px',
+      tabFontSizeLarge: '16px',
+    },
   };
 }
 

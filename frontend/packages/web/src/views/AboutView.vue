@@ -136,16 +136,24 @@
     </CrmCard>
 
     <TableDemo class="my-[16px]" />
+
+    <CrmCard>
+      <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="line" />
+      <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="segment" size="small" />
+      <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="segment" />
+      <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="segment" size="large" />
+    </CrmCard>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { NButton, NForm, NFormItem, NInput, NTag, UploadFileInfo, useMessage } from 'naive-ui';
+  import { NButton, NForm, NFormItem, NInput, NTag, TabPaneProps, UploadFileInfo, useMessage } from 'naive-ui';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTree from '@/components/pure/crm-tree/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
@@ -159,6 +167,22 @@
 
   const { openDialog } = useModal();
   // 暂时提供参考 you can delete it  ^_^
+
+  const activeTab = ref('1');
+  const tabList = ref<TabPaneProps[]>([
+    {
+      name: '1',
+      tab: '界面设置',
+    },
+    {
+      name: '2',
+      tab: '扫码登录',
+    },
+    {
+      name: '3',
+      tab: '邮件设置',
+    },
+  ]);
 
   const moduleTree = ref<CrmTreeNodeData[]>([
     {
