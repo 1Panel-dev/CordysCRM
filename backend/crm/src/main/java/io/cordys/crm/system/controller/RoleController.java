@@ -102,6 +102,13 @@ public class RoleController {
         return userRoleService.getDeptUserTree(OrganizationContext.getOrganizationId(), roleId);
     }
 
+    @GetMapping("/user/role/tree/{roleId}")
+    @Operation(summary = "获取部门用户树")
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
+    public List<DeptUserTreeNode> getRoleUserTree(@PathVariable String roleId) {
+        return userRoleService.getRoleUserTree(OrganizationContext.getOrganizationId(), roleId);
+    }
+
     @PostMapping("/user/relate")
     @Operation(summary = "角色关联添加用户")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
@@ -109,10 +116,17 @@ public class RoleController {
         userRoleService.relateUser(request, SessionUtils.getUserId());
     }
 
-    @GetMapping("/user/role/tree/{roleId}")
-    @Operation(summary = "获取部门用户树")
-    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
-    public List<DeptUserTreeNode> getRoleUserTree(@PathVariable String roleId) {
-        return userRoleService.getRoleUserTree(OrganizationContext.getOrganizationId(), roleId);
+    @GetMapping("/user/delete/{id}")
+    @Operation(summary = "角色移除用户")
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_REMOVE_USER)
+    public void deleteRoleUser(@PathVariable String id) {
+        userRoleService.deleteRoleUser(id);
+    }
+
+    @PostMapping("/user/batch/delete")
+    @Operation(summary = "角色批量移除用户")
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_REMOVE_USER)
+    public void batchDeleteRoleUser(@RequestBody List<String> ids) {
+        userRoleService.batchDeleteRoleUser(ids);
     }
 }

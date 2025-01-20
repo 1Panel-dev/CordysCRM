@@ -156,4 +156,12 @@ public class UserRoleService {
             userRoleMapper.batchInsert(userRoles);
         });
     }
+
+    public void deleteRoleUser(String id) {
+        userRoleMapper.deleteByPrimaryKey(id);
+    }
+
+    public void batchDeleteRoleUser(List<String> ids) {
+        extUserRoleMapper.deleteByIds(ids);
+    }
 }

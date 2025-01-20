@@ -45,6 +45,8 @@ class RoleControllerTests extends BaseTest {
     private static final String USER_DEPT_TREE = "user/dept/tree/{roleId}";
     private static final String USER_ROLE_TREE = "user/role/tree/{roleId}";
     private static final String USER_RELATE = "user/relate";
+    private static final String USER_DELETE = "user/delete/{id}";
+    private static final String USER_BATCH_DELETE = "user/batch/delete";
 
     /**
      * 记录创建的角色
@@ -346,6 +348,49 @@ class RoleControllerTests extends BaseTest {
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD_USER, USER_ROLE_TREE, addRole.getId());
+    }
+
+    @Test
+    @Order(10)
+    void testRoleUserDelete() throws Exception {
+        UserRole example = new UserRole();
+        example.setRoleId(addRole.getId());
+        String id = userRoleMapper.select(example).getFirst().getId();
+
+        // 请求成功
+        this.requestGetWithOk(USER_DELETE, id);
+
+        // 校验请求成功数据
+        Assertions.assertNull(userRoleMapper.selectByPrimaryKey(id));
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_REMOVE_USER, USER_DELETE, id);
+    }
+
+    @Test
+    @Order(11)
+    void testRoleUserBatchDelete() throws Exception {
+        // 先关联，再删除
+        RoleUserRelateRequest request = new RoleUserRelateRequest();
+        request.setRoleId(addRole.getId());
+        request.setUserIds(List.of(InternalUser.ADMIN.getValue()));
+        this.requestPostWithOk(USER_RELATE, request);
+
+        UserRole example = new UserRole();
+        example.setRoleId(addRole.getId());
+        List<String> ids = userRoleMapper.select(example)
+                .stream()
+                .map(UserRole::getId)
+                .toList();
+
+        // 请求成功
+        this.requestPostWithOk(USER_BATCH_DELETE, ids);
+
+        // 校验请求成功数据
+        ids.forEach(id -> Assertions.assertNull(userRoleMapper.selectByPrimaryKey(id)));
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.SYSTEM_ROLE_REMOVE_USER, USER_BATCH_DELETE, ids);
     }
 
     @Test
