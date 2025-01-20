@@ -105,10 +105,13 @@
               :keyword="keyword"
               :render-prefix="renderPrefixDom"
               :node-more-actions="moreOptions"
+              :render-extra="renderExtraDom"
+              :render-label="renderLabel"
               :virtual-scroll-props="{ virtualScroll: false, virtualScrollHeight: '400px' }"
               @rename="renameHandler"
               @create="createHandler"
               @drop="handleDrag"
+              @more-action-select="handleFolderMoreSelect"
             />
           </div>
         </div>
@@ -147,9 +150,10 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NForm, NFormItem, NInput, NTag, TabPaneProps, UploadFileInfo, useMessage } from 'naive-ui';
+  import { NButton, NForm, NFormItem, NInput, NTag, TabPaneProps, useMessage } from 'naive-ui';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
@@ -220,7 +224,7 @@
               children: [
                 {
                   id: 'd4q2hgqzlc80',
-                  name: '模块88',
+                  name: '模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88',
                   type: 'module',
                   parentId: '172473746390800000',
                   projectId: null,
@@ -388,6 +392,58 @@
       }
     );
   }
+
+  function renderLabel(info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
+    return h(
+      'div',
+      {
+        class: 'inline-flex w-full gap-[8px]',
+      },
+      {
+        default: () => {
+          return [
+            h(
+              'div',
+              {
+                class: 'one-line-text w-full',
+              },
+              info.option.name
+            ),
+            h(
+              'div',
+              {
+                class: 'crm-tree-node-count ml-[4px]',
+              },
+              200
+            ),
+          ];
+        },
+      }
+    );
+  }
+
+  function handleClick() {}
+
+  function renderExtraDom(infoProps: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
+    // 额外的节点
+    return h(
+      NButton,
+      {
+        size: 'small',
+        class: `crm-suffix-btn h-[24px] h-[24px] !p-[4px] mr-[4px] rounded`,
+        onClick: () => handleClick(),
+      },
+      () => {
+        return h(CrmIcon, {
+          size: 18,
+          type: 'iconicon_add',
+          class: `text-[var(--primary-8)] hover:text-[var(--primary-8)]`,
+        });
+      }
+    );
+  }
+
+  function handleFolderMoreSelect(item: ActionsItem, option: CrmTreeNodeData) {}
 
   const keyword = ref('');
 

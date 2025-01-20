@@ -24,7 +24,6 @@ export interface CrmInfoNode {
   option: CrmTreeNodeData;
   checked: boolean;
   selected: boolean;
-  editing: boolean;
   [key: string]: any;
 }
 

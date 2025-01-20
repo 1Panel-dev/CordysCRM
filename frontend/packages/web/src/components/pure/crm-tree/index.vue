@@ -48,17 +48,16 @@
 
 <script setup lang="ts">
   import { ref, VNodeChild } from 'vue';
-  import { FormItemRule, NTree } from 'naive-ui';
+  import { FormItemRule, NTooltip, NTree } from 'naive-ui';
   import { debounce } from 'lodash-es';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import EditInput from './editInput.vue';
 
   import useContainerShadow from '@/hooks/useContainerShadow';
   import { useI18n } from '@/hooks/useI18n';
-  import { deleteNode, getAllParentNodeIds, getGenerateId, traverseTree } from '@/utils';
+  import { getAllParentNodeIds, traverseTree } from '@/utils';
 
   import type { CrmInfoNode, CrmTreeFieldNames, CrmTreeNodeData, VirtualScrollPropsType } from './type';
   import { DropPosition } from 'naive-ui/es/tree/src/interface';
@@ -88,6 +87,7 @@
       editRules?: FormItemRule | Array<FormItemRule>;
       renderPrefix?: (info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) => VNodeChild; // 节点前缀的渲染函数
       renderSuffix?: (info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) => VNodeChild; // 节点后缀的渲染函数
+      renderExtra?: (info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) => VNodeChild; // 节点后缀前的额外内容渲染
       renderSwitcherIcon?: (info: { option: CrmTreeNodeData; expanded: boolean; selected: boolean }) => VNodeChild; // 渲染icon
       nodeHighlightClass?: string; // 节点高亮背景色
       handleDrop?: boolean; // 节点高亮背景色
@@ -107,6 +107,7 @@
       allowDrop?: (info: { dropPosition: DropPosition; node: CrmTreeNodeData; phase: 'drag' | 'drop' }) => boolean; // 是否允许放置
       // TODO 按钮
       filterMoreActionFunc?: (items: any[], node: CrmTreeNodeData) => any[]; // 过滤更多操作按钮
+      titleClass?: string;
     }>(),
     {
       searchDebounce: 300,
@@ -145,8 +146,7 @@
       meta: { node: CrmTreeNodeData | null; action: 'expand' | 'collapse' | 'filter' }
     ): void;
     (e: 'moreActionSelect', item: ActionsItem, option: CrmTreeNodeData): void;
-    (e: 'rename', option: CrmTreeNodeData, newName: string, done: (success: boolean) => void): void;
-    (e: 'create', option: CrmTreeNodeData, newName: string, done: (success: boolean) => void): void;
+    (e: 'click', info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }): void;
     (
       e: 'drop',
       tree: CrmTreeNodeData[],
@@ -206,99 +206,44 @@
   }
 
   /**
-   * 切换编辑模式 管理节点的编辑状态
-   */
-
-  const editingKeys = ref(new Map<string | number, 'rename' | 'create'>());
-  const toggleEdit = (key: string | number, mode: 'rename' | 'create') => {
-    if (editingKeys.value.has(key)) {
-      editingKeys.value.delete(key);
-    } else {
-      editingKeys.value.set(key, mode);
-    }
-  };
-
-  const getEditingMode = (key: string | number) => editingKeys.value.get(key);
-
-  /**
-   * 处理 "create" 模式的逻辑
-   */
-  const loading = ref(false);
-  function handleCreateMode(node: CrmTreeNodeData, newLabel: string) {
-    const key = node[props.fieldNames.keyField];
-
-    if (newLabel.length) {
-      // 有内容，触发创建事件
-      emit('create', node, newLabel, (done: boolean) => {
-        loading.value = false;
-        if (done) {
-          toggleEdit(key, 'create');
-        }
-      });
-    } else {
-      // 没有内容，取消编辑并删除节点
-      toggleEdit(key, 'create');
-      deleteNode(data.value, key, props.fieldNames.keyField);
-      loading.value = false;
-    }
-  }
-
-  /**
-   * 处理 "rename" 模式的逻辑
-   */
-  function handleRenameMode(node: CrmTreeNodeData, newLabel: string) {
-    const key = node[props.fieldNames.keyField];
-
-    emit('rename', node, newLabel, (done: boolean) => {
-      loading.value = false;
-      if (done) {
-        toggleEdit(key, 'rename');
-      }
-    });
-  }
-
-  const saveLabel = (node: CrmTreeNodeData, newLabel: string) => {
-    loading.value = true;
-
-    const key = node[props.fieldNames.keyField];
-    const mode = getEditingMode(key);
-
-    // 更新节点的标签
-    node[props.fieldNames.labelField] = newLabel;
-
-    if (mode === 'create') {
-      handleCreateMode(node, newLabel);
-    } else if (mode === 'rename') {
-      handleRenameMode(node, newLabel);
-    }
-  };
-
-  /**
    * 渲染label
    */
   function renderLabelDom(info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     const { option, selected, checked } = info;
-    const key = option[props.fieldNames.keyField];
-    const label = option[props.fieldNames.labelField];
-    // 获取当前模式
-    const mode = getEditingMode(key) || 'view';
-    // 如果自定义renderLabel则显示自定义
-    if (props.renderLabel && typeof props.renderLabel === 'function') {
-      return props.renderLabel({ option, editing: mode !== 'view', selected, checked }); // 如果开发者提供了 renderLabel，则使用外部定义的渲染逻辑
-    }
 
-    // 编辑模式
-    return h(EditInput, {
-      mode,
-      fieldConfig: {
-        name: label,
-        rules: props.editRules,
+    const label = option[props.fieldNames.labelField];
+
+    return h(
+      NTooltip,
+      {
+        delay: 300,
+        flip: true,
+        placement: props.titleTooltipPosition,
       },
-      class: `${selected ? 'crm-select-label' : ''}`,
-      loading: loading.value,
-      titleTooltipPosition: props.titleTooltipPosition,
-      onSave: (newLabel: string) => saveLabel(option, newLabel),
-    });
+      {
+        trigger: () => {
+          if (props.renderLabel && typeof props.renderLabel === 'function') {
+            return h(
+              'div',
+              {
+                class: 'crm-tree-node-title',
+              },
+              [
+                props.renderLabel({ option, selected, checked }), // 如果开发者提供了 renderLabel，则使用外部定义的渲染逻辑
+              ]
+            );
+          }
+          return h(
+            'div',
+            {
+              class: `one-line-text w-full ${props.titleClass || 'crm-tree-node-title'}`,
+            },
+            label
+          );
+        },
+        default: () => label,
+      }
+    );
   }
 
   /**
@@ -312,38 +257,14 @@
   }
 
   function selectMoreAction(actionItem: ActionsItem, option: CrmTreeNodeData) {
-    const nodeKey = option[props.fieldNames.keyField];
-    if (actionItem.key === 'rename') {
-      toggleEdit(nodeKey, 'rename');
-    } else {
-      emit('moreActionSelect', actionItem, option);
-    }
+    emit('moreActionSelect', actionItem, option);
   }
 
-  /** *
-   * 添加操作
-   */
-
-  function addNode(event: MouseEvent, info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
-    const { option } = info;
-
-    const nodeKey = getGenerateId();
-    const newNode = {
-      [props.fieldNames.keyField]: nodeKey,
-      [props.fieldNames.labelField]: '',
-      [props.fieldNames.childrenField]: null,
-      hideMoreAction: true,
-      parentId: option[props.fieldNames.keyField],
-    };
-
-    if (option.children && option.children.length) {
-      option.children.unshift(newNode);
-    } else {
-      option.children = [newNode];
+  function renderExtraDom(info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
+    const { option, checked, selected } = info;
+    if (props.renderExtra && typeof props.renderExtra === 'function') {
+      return props.renderExtra({ option, selected, checked });
     }
-
-    expandedKeys.value.push(option[props.fieldNames.keyField]); // 展开父节点
-    toggleEdit(nodeKey, 'create');
   }
 
   /** *
@@ -362,32 +283,34 @@
       return props.renderSuffix({ option, selected, checked });
     }
 
-    return [
-      h(
-        'div',
-        {
-          class: `crm-suffix-btn h-[24px] h-[24px] !p-[4px] mr-[4px] rounded`,
-          onClick: (e) => addNode(e, info),
+    return h(
+      'div',
+      {
+        class: 'crm-tree-node-extra',
+      },
+      {
+        default: () => {
+          return [
+            h(
+              // 额外的节点
+              () => renderExtraDom(info)
+            ),
+            // 操作
+            h(CrmMoreAction, {
+              options: props.nodeMoreActions || [],
+              onClick: (event: MouseEvent) => {
+                event.stopPropagation(); // 阻止冒泡
+                focusNodeKeys.value.clear();
+                if (selected || checked) {
+                  focusNodeKeys.value.add(option[props.fieldNames.keyField]);
+                }
+              },
+              onSelect: (actionItem: ActionsItem) => selectMoreAction(actionItem, option),
+            }),
+          ];
         },
-        h(CrmIcon, {
-          size: 18,
-          type: 'iconicon_add',
-          class: `text-[var(--primary-8)] hover:text-[var(--primary-8)]`,
-        })
-      ),
-      // 操作
-      h(CrmMoreAction, {
-        options: props.nodeMoreActions || [],
-        onClick: (event: MouseEvent) => {
-          event.stopPropagation(); // 阻止冒泡
-          focusNodeKeys.value.clear();
-          if (selected || checked) {
-            focusNodeKeys.value.add(option[props.fieldNames.keyField]);
-          }
-        },
-        onSelect: (actionItem: ActionsItem) => selectMoreAction(actionItem, option),
-      }),
-    ];
+      }
+    );
   }
 
   /**
@@ -620,66 +543,89 @@
     @apply h-full overflow-auto;
     &.n-tree {
       @apply h-full w-full overflow-auto;
-    }
-    .n-tree-node {
-      height: 34px !important;
-      .n-tree-node-content {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        .n-tree-node-content__prefix {
-          max-width: 30%;
-          @apply mr-2 w-auto overflow-hidden;
-        }
-        .n-tree-node-content__suffix {
-          opacity: 0;
-          @apply w-auto;
-          .crm-suffix-btn {
-            width: 24px;
-            height: 24px;
-            background-color: var(--primary-7);
-            @apply flex items-center justify-center;
-            &:hover {
-              background-color: var(--primary-6);
+      .n-tree-node-wrapper {
+        .n-tree-node {
+          height: 34px !important;
+          .n-tree-node-content {
+            .n-tree-node-content__text {
+              gap: 4px;
+              @apply flex w-full items-center overflow-hidden;
+              .crm-tree-node-title {
+                @apply flex-1 overflow-hidden;
+                .crm-tree-node-count {
+                  margin-right: 4px;
+                  white-space: nowrap;
+                  color: var(--text-n4);
+                }
+              }
+            }
+            // 后缀
+            .n-tree-node-content__suffix {
+              .crm-tree-node-extra {
+                margin-left: -4px;
+                @apply invisible flex w-0 items-center;
+                .crm-suffix-btn {
+                  width: 24px;
+                  height: 24px;
+                  background-color: var(--primary-7);
+                  @apply flex items-center justify-center;
+                  &:hover {
+                    background-color: var(--primary-6);
+                  }
+                }
+                &:hover {
+                  @apply visible w-auto;
+                }
+              }
+            }
+          }
+          &.n-tree-node--selected {
+            .n-tree-node-content {
+              .n-tree-node-content__text {
+                width: 60%;
+                color: var(--primary-8);
+                .crm-tree-node-count {
+                  color: var(--primary-8);
+                }
+              }
+              .n-tree-node-content__suffix {
+                .crm-tree-node-extra {
+                  @apply visible w-auto;
+                }
+              }
+            }
+          }
+          .n-tree-node-switcher {
+            height: 100%;
+            .n-tree-node-switcher__icon {
+              width: 16px;
+              height: 16px;
+            }
+          }
+          .n-tree-node-checkbox {
+            height: 100%;
+          }
+          &.crm-tree-focus-node {
+            .n-tree-node-content__suffix {
+              .crm-tree-node-extra {
+                @apply visible w-auto;
+              }
+            }
+          }
+          // hover样式
+          &:hover {
+            .n-tree-node-content__text {
+              .crm-tree-node-count {
+                @apply hidden;
+              }
+            }
+            .n-tree-node-content__suffix {
+              .crm-tree-node-extra {
+                @apply visible w-auto;
+              }
             }
           }
         }
-        .n-tree-node-content__text {
-          display: flex;
-          flex-grow: 1;
-          max-width: 100%;
-          @apply mr-2 flex-1 overflow-hidden;
-        }
-      }
-      &:hover {
-        .n-tree-node-content {
-          .n-tree-node-content__suffix {
-            opacity: 1;
-          }
-        }
-      }
-      &.n-tree-node--selected {
-        .n-tree-node-content {
-          .n-tree-node-content__text {
-            width: 60%;
-            color: var(--primary-8);
-          }
-        }
-      }
-      &.crm-tree-focus-node {
-        .n-tree-node-content__suffix {
-          opacity: 1;
-        }
-      }
-      .n-tree-node-switcher {
-        height: 100%;
-        .n-tree-node-switcher__icon {
-          width: 16px;
-          height: 16px;
-        }
-      }
-      .n-tree-node-checkbox {
-        height: 100%;
       }
     }
   }
