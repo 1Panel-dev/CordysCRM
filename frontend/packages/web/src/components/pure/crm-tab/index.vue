@@ -1,5 +1,11 @@
 <template>
-  <n-tabs v-model:value="activeTab" :type="props.type" :size="props.size" @update:value="handleChange">
+  <n-tabs
+    v-model:value="activeTab"
+    :type="props.type"
+    :size="props.size"
+    :class="`${props.noContent ? 'no-content' : ''}`"
+    @update:value="handleChange"
+  >
     <n-tab-pane v-for="item of props.tabList" :key="item.name" :name="item.name as string" :tab="item.tab">
     </n-tab-pane>
   </n-tabs>
@@ -13,6 +19,7 @@
       tabList: TabPaneProps[];
       type?: 'bar' | 'line' | 'card' | 'segment';
       size?: 'small' | 'medium' | 'large';
+      noContent?: boolean;
     }>(),
     {
       size: 'medium',
@@ -31,3 +38,11 @@
     emit('change', value);
   }
 </script>
+
+<style lang="less" scoped>
+  .no-content {
+    :deep(.n-tab-pane) {
+      padding: 0;
+    }
+  }
+</style>

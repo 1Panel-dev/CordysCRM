@@ -192,6 +192,11 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       fontSizeSmall: '12px',
       fontSizeMedium: '14px',
       fontSizeLarge: '16px',
+      placeholderColor: getLessVariableValue('--text-n6'),
+      border: `1px solid ${getLessVariableValue('--text-n7')}`,
+      paddingSmall: '8px',
+      paddingMedium: '8px',
+      paddingLarge: '12px',
     },
     Pagination: {
       itemSizeMedium: '32px',
