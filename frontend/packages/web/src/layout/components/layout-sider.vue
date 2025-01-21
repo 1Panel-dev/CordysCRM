@@ -58,7 +58,7 @@
   import { useI18n } from '@/hooks/useI18n';
   import useAppStore from '@/store/modules/app';
 
-  import { SystemRouteEnum } from '@/enums/routeEnum';
+  import { AppRouteEnum } from '@/enums/routeEnum';
 
   import { BookOutline as BookIcon } from '@vicons/ionicons5';
 
@@ -66,7 +66,7 @@
   const appStore = useAppStore();
   const router = useRouter();
   const collapsed = ref(appStore.getMenuCollapsed);
-  const menuValue = ref<string>(SystemRouteEnum.SYSTEM_ORG);
+  const menuValue = ref<string>(AppRouteEnum.SYSTEM_ORG);
 
   watch(
     () => appStore.getMenuCollapsed,
@@ -87,23 +87,23 @@
       children: [
         {
           label: t('menu.settings.org'),
-          key: SystemRouteEnum.SYSTEM_ORG,
+          key: AppRouteEnum.SYSTEM_ORG,
         },
         {
           label: t('menu.settings.permission'),
-          key: SystemRouteEnum.SYSTEM_ROLE,
+          key: AppRouteEnum.SYSTEM_ROLE,
         },
         {
           label: t('menu.settings.moduleSetting'),
-          key: SystemRouteEnum.SYSTEM_MODULE,
+          key: AppRouteEnum.SYSTEM_MODULE,
         },
         {
           label: t('menu.settings.businessSetting'),
-          key: SystemRouteEnum.SYSTEM_BUSINESS,
+          key: AppRouteEnum.SYSTEM_BUSINESS,
         },
         {
           label: t('menu.settings.log'),
-          key: SystemRouteEnum.SYSTEM_LOG,
+          key: AppRouteEnum.SYSTEM_LOG,
         },
       ],
     },
@@ -112,6 +112,10 @@
   function menuChange(key: string) {
     router.push({ name: key });
   }
+
+  onBeforeMount(() => {
+    menuValue.value = router.currentRoute.value.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+  });
 </script>
 
 <style lang="less">

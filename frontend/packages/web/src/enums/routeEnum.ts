@@ -7,4 +7,6 @@ export enum SystemRouteEnum {
   SYSTEM_LOG = 'systemLog',
 }
 
-export default SystemRouteEnum;
+export const AppRouteEnum = {
+  ...SystemRouteEnum,
+};

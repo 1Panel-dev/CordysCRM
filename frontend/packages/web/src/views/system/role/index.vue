@@ -1,6 +1,6 @@
 <template>
   <CrmCard no-content-padding>
-    <CrmSplitPanel :max="0.5" :min="0.25" :default-size="0.25"></CrmSplitPanel>
+    <CrmSplitPanel class="h-[500px]" :max="0.5" :min="0.25" :default-size="0.25"></CrmSplitPanel>
   </CrmCard>
 </template>
 

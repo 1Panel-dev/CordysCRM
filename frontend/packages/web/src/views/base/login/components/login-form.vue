@@ -136,7 +136,7 @@
   // import useModal from '@/hooks/useModal';
   import useUserStore from '@/store/modules/user';
 
-  import SystemRouteEnum from '@/enums/routeEnum';
+  import { AppRouteEnum } from '@/enums/routeEnum';
 
   import { getLongType, isLogin, setLoginExpires, setLongType } from '@lib/shared/method/auth';
   import { encrypted } from '@lib/shared/method/index';
@@ -226,7 +226,7 @@
           loginConfig.value.password = rememberPassword ? password : '';
           const { redirect, ...othersQuery } = router.currentRoute.value.query;
           router.push({
-            name: (redirect as string) || SystemRouteEnum.SYSTEM,
+            name: (redirect as string) || AppRouteEnum.SYSTEM,
             query: {
               ...othersQuery,
             },
