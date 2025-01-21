@@ -307,14 +307,15 @@
               options: props.filterMoreActionFunc
                 ? props.filterMoreActionFunc(props.nodeMoreActions || [], option)
                 : props.nodeMoreActions || [],
-              onClick: (event: MouseEvent) => {
-                event.stopPropagation(); // 阻止冒泡
+              onSelect: (actionItem: ActionsItem) => selectMoreAction(actionItem, option),
+              onUpdateShow: (show: boolean) => {
                 focusNodeKeys.value.clear();
-                if (selected || checked) {
+                if (show) {
                   focusNodeKeys.value.add(option[props.fieldNames.keyField]);
+                } else {
+                  focusNodeKeys.value.clear();
                 }
               },
-              onSelect: (actionItem: ActionsItem) => selectMoreAction(actionItem, option),
             }),
           ];
         },
@@ -345,7 +346,7 @@
     const { option } = info;
     const key = option[props.fieldNames.keyField];
     return {
-      class: `${selectedKeys.value.includes(key) && focusNodeKeys.value.has(key) ? 'crm-tree-focus-node' : ''}`,
+      class: `${focusNodeKeys.value.has(key) ? 'crm-tree-focus-node' : ''}`,
     };
   }
 
@@ -501,6 +502,17 @@
     }
   );
 
+  watch(
+    () => data.value,
+    () => {
+      if (props.keyword) {
+        filterTreeData.value = searchData(props.keyword);
+      } else {
+        filterTreeData.value = data.value;
+      }
+    }
+  );
+
   onBeforeMount(() => {
     expandAllNodes(); // 初始化时调用复用的逻辑
     filterTreeData.value = data.value;
@@ -597,11 +609,6 @@
                 color: var(--primary-8);
                 .crm-tree-node-count {
                   color: var(--primary-8);
-                }
-              }
-              .n-tree-node-content__suffix {
-                .crm-tree-node-extra {
-                  @apply visible w-auto;
                 }
               }
             }

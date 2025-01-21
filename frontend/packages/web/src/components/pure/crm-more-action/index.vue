@@ -7,6 +7,7 @@
     :node-props="getNodeProps"
     :placement="props.placement"
     @select="handleSelect"
+    @update-show="handleUpdateShow"
   >
     <n-button type="primary" size="small" ghost class="h-[24px] w-[24px] !p-0" @click.stop="(e) => emit('click', e)">
       <template #icon>
@@ -61,6 +62,7 @@
   const emit = defineEmits<{
     (e: 'select', currentAction: ActionsItem): void;
     (e: 'click', event: MouseEvent): void;
+    (e: 'updateShow', show: boolean): void;
   }>();
 
   function handleSelect(key: string | number) {
@@ -68,6 +70,10 @@
     if (item) {
       emit('select', item);
     }
+  }
+
+  function handleUpdateShow(show: boolean) {
+    emit('updateShow', show);
   }
 
   function renderLabel(option: DropdownOption) {

@@ -11,18 +11,25 @@
                 </n-icon>
               </template>
             </n-input>
-            <n-button type="tertiary" class="px-[6px]">
-              <template #icon>
-                <n-icon><Add /></n-icon>
+            <n-tooltip trigger="hover" :delay="300">
+              <template #trigger>
+                <n-button type="tertiary" class="px-[6px]" @click="addRole">
+                  <template #icon>
+                    <n-icon><Add /></n-icon>
+                  </template>
+                </n-button>
               </template>
-            </n-button>
+              {{ t('role.addRole') }}
+            </n-tooltip>
           </div>
           <CrmTree
-            :data="roles"
+            v-model:selected-keys="selectedKeys"
+            v-model:data="roles"
             :render-prefix="renderPrefix"
             :node-more-actions="nodeMoreActions"
             title-tooltip-position="top-start"
             :filter-more-action-func="filterMoreActionFunc"
+            @more-action-select="handleMoreActionSelect"
           />
         </div>
       </template>
@@ -31,7 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { NButton, NIcon, NInput } from 'naive-ui';
+  import { NButton, NIcon, NInput, NTooltip } from 'naive-ui';
   import { Add, Search } from '@vicons/ionicons5';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -42,6 +49,7 @@
   import roleTreeNodePrefix from './components/roleTreeNodePrefix.vue';
 
   import { useI18n } from '@/hooks/useI18n';
+  import { getGenerateId } from '@/utils';
 
   const { t } = useI18n();
 
@@ -61,6 +69,7 @@
       name: '普通用户',
     },
   ]);
+  const selectedKeys = ref<string[]>([roles.value[0].key as string]);
 
   function renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     if (node.option.system) {
@@ -92,6 +101,36 @@
       return items.slice(0, 2);
     }
     return items;
+  }
+
+  function handleMoreActionSelect(item: ActionsItem, node: CrmTreeNodeData) {
+    switch (item.key) {
+      case 'rename':
+        break;
+      case 'copy':
+        const id = getGenerateId();
+        roles.value.push({
+          ...roles.value[roles.value.length - 1],
+          name: `${node.name}Copy`,
+          id,
+        });
+        selectedKeys.value = [id];
+        break;
+      case 'delete':
+        roles.value = roles.value.filter((role) => role.id !== node.id);
+        break;
+      default:
+        break;
+    }
+  }
+
+  function addRole() {
+    const id = getGenerateId();
+    roles.value.push({
+      id,
+      name: '新角色',
+    });
+    selectedKeys.value = [id];
   }
 </script>
 
