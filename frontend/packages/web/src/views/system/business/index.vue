@@ -3,6 +3,7 @@
     <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
   </CrmCard>
   <AuthenticationSettings v-if="activeTab === 'authenticationSettings'" />
+  <MailSettings v-if="activeTab === 'mailSettings'" />
 </template>
 
 <script setup lang="ts">
@@ -12,10 +13,10 @@
   import { useI18n } from '@/hooks/useI18n';
 
   const AuthenticationSettings = defineAsyncComponent(() => import('./components/authenticationSettings.vue'));
-
+  const MailSettings = defineAsyncComponent(() => import('./components/mailSettings.vue'));
   const { t } = useI18n();
 
-  const activeTab = ref('authenticationSettings');
+  const activeTab = ref('mailSettings');
   const tabList = ref([
     { name: 'interfaceSettings', tab: t('system.business.tab.interfaceSettings') },
     { name: 'scanLogin', tab: t('system.business.tab.scanLogin') },

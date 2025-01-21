@@ -1,0 +1,121 @@
+<template>
+  <div class="crm-description">
+    <div
+      v-for="(item, index) of props.descriptions"
+      :key="item.label"
+      class="crm-description-item"
+      :class="item.class"
+      :style="{ marginBottom: props.descriptions.length - index <= props.column ? '' : `${props.lineGap}px` }"
+    >
+      <div
+        class="crm-description-item-label"
+        :style="{ width: props.labelWidth || '120px', textAlign: props.labelAlign }"
+      >
+        <n-tooltip>
+          <template #trigger>
+            <div class="one-line-text">
+              {{ item.label }}
+            </div>
+          </template>
+          {{ item.label }}
+        </n-tooltip>
+      </div>
+      <div :class="getValueClass()">
+        <slot :name="item.slotName" :item="item">
+          <n-tooltip
+            :disabled="item.value === undefined || item.value === null || item.value?.toString() === ''"
+            :placement="item.tooltipPosition ?? 'top-start'"
+          >
+            <template #trigger>
+              <div class="w-[fit-content]">
+                {{
+                  item.value === undefined || item.value === null || item.value?.toString() === '' ? '-' : item.value
+                }}
+              </div>
+            </template>
+            {{ item.value }}
+          </n-tooltip>
+        </slot>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+  import { NTooltip } from 'naive-ui';
+
+  export interface Description {
+    label: string;
+    key?: string;
+    slotName?: string;
+    value: (string | number) | (string | number)[];
+    class?: string;
+    tooltipPosition?:
+      | 'top-start'
+      | 'top'
+      | 'top-end'
+      | 'right-start'
+      | 'right'
+      | 'right-end'
+      | 'bottom-start'
+      | 'bottom'
+      | 'bottom-end'
+      | 'left-start'
+      | 'left'
+      | 'left-end'
+      | undefined; // 提示位置防止窗口抖动
+  }
+
+  const props = withDefaults(
+    defineProps<{
+      column?: number;
+      descriptions: Description[];
+      labelWidth?: string;
+      lineGap?: number;
+      labelAlign?: 'center' | 'start' | 'end';
+      oneLineValue?: boolean;
+    }>(),
+    {
+      column: 1,
+      lineGap: 16,
+      labelAlign: 'start',
+    }
+  );
+
+  function getValueClass() {
+    if (props.oneLineValue) {
+      return 'crm-description-item-value crm-description-item-value--one-line';
+    }
+    return 'crm-description-item-value';
+  }
+</script>
+
+<style lang="less" scoped>
+  .crm-description {
+    @apply flex max-h-full flex-wrap overflow-auto;
+    .crm-scroll-bar();
+    .crm-description-item {
+      @apply flex;
+
+      width: calc(100% / v-bind(column));
+    }
+    .crm-description-item-label {
+      @apply font-normal;
+
+      padding-right: 16px;
+      color: var(--text-n2);
+      word-wrap: break-word;
+    }
+    .crm-description-item-value {
+      @apply relative flex-1 overflow-hidden break-all align-top;
+
+      display: box;
+      text-overflow: ellipsis;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+    .crm-description-item-value--one-line {
+      -webkit-line-clamp: 1;
+    }
+  }
+</style>
