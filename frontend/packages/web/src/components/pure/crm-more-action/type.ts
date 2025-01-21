@@ -8,6 +8,7 @@ export type ActionsItem = {
   disabled?: boolean; // 是否禁用
   iconType?: string; // 按钮图标
   permission?: string[]; // 权限标识
+  isDivider?: boolean; // 是否分割线
 } & DropdownOption;
 
 export type SelectedValue = string | number | Record<string, any> | undefined;

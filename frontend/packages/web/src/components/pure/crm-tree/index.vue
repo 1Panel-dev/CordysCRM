@@ -59,7 +59,14 @@
   import { useI18n } from '@/hooks/useI18n';
   import { getAllParentNodeIds, traverseTree } from '@/utils';
 
-  import type { CrmInfoNode, CrmTreeFieldNames, CrmTreeNodeData, VirtualScrollPropsType } from './type';
+  import type {
+    CrmInfoNode,
+    CrmTreeFieldNames,
+    CrmTreeNodeData,
+    CrmTreeRenderData,
+    CrmTreeRenderIconData,
+    VirtualScrollPropsType,
+  } from './type';
   import { DropPosition } from 'naive-ui/es/tree/src/interface';
 
   const { t } = useI18n();
@@ -85,10 +92,10 @@
       disabledTitleTooltip?: boolean; // 是否禁用标题 tooltip
       renderLabel?: (info: CrmInfoNode) => VNodeChild; // 自定义label
       editRules?: FormItemRule | Array<FormItemRule>;
-      renderPrefix?: (info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) => VNodeChild; // 节点前缀的渲染函数
-      renderSuffix?: (info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) => VNodeChild; // 节点后缀的渲染函数
-      renderExtra?: (info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) => VNodeChild; // 节点后缀前的额外内容渲染
-      renderSwitcherIcon?: (info: { option: CrmTreeNodeData; expanded: boolean; selected: boolean }) => VNodeChild; // 渲染icon
+      renderPrefix?: (info: CrmTreeRenderData) => VNodeChild; // 节点前缀的渲染函数
+      renderSuffix?: (info: CrmTreeRenderData) => VNodeChild; // 节点后缀的渲染函数
+      renderExtra?: (info: CrmTreeRenderData) => VNodeChild; // 节点后缀前的额外内容渲染
+      renderSwitcherIcon?: (info: CrmTreeRenderIconData) => VNodeChild; // 渲染icon
       nodeHighlightClass?: string; // 节点高亮背景色
       handleDrop?: boolean; // 节点高亮背景色
       titleTooltipPosition?:
@@ -106,7 +113,7 @@
         | 'left-end'; // 标题 tooltip 的位置
       allowDrop?: (info: { dropPosition: DropPosition; node: CrmTreeNodeData; phase: 'drag' | 'drop' }) => boolean; // 是否允许放置
       // TODO 按钮
-      filterMoreActionFunc?: (items: any[], node: CrmTreeNodeData) => any[]; // 过滤更多操作按钮
+      filterMoreActionFunc?: (items: ActionsItem[], node: CrmTreeNodeData) => any[]; // 过滤更多操作按钮
       titleClass?: string;
     }>(),
     {
@@ -161,7 +168,7 @@
   });
 
   const defaultExpandAllKeys = defineModel<boolean>('defaultExpandAll', {
-    required: true,
+    default: false,
   });
   const selectedKeys = defineModel<Array<string | number>>('selectedKeys', {
     default: [],
@@ -297,7 +304,9 @@
             ),
             // 操作
             h(CrmMoreAction, {
-              options: props.nodeMoreActions || [],
+              options: props.filterMoreActionFunc
+                ? props.filterMoreActionFunc(props.nodeMoreActions || [], option)
+                : props.nodeMoreActions || [],
               onClick: (event: MouseEvent) => {
                 event.stopPropagation(); // 阻止冒泡
                 focusNodeKeys.value.clear();
@@ -552,6 +561,8 @@
               @apply flex w-full items-center overflow-hidden;
               .crm-tree-node-title {
                 @apply flex-1 overflow-hidden;
+
+                line-height: 22px;
                 .crm-tree-node-count {
                   margin-right: 4px;
                   white-space: nowrap;

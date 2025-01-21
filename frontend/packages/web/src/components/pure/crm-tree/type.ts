@@ -35,3 +35,15 @@ export interface FieldConfig {
   isTextArea?: boolean;
   nameExistTipText?: string; // 添加重复提示文本
 }
+
+export interface CrmTreeRenderData {
+  option: CrmTreeNodeData;
+  checked: boolean;
+  selected: boolean;
+}
+
+export interface CrmTreeRenderIconData {
+  option: CrmTreeNodeData;
+  expanded: boolean;
+  selected: boolean;
+}

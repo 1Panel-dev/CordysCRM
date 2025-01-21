@@ -1,6 +1,11 @@
 <template>
-  <div class="relative overflow-hidden">
-    <n-card :class="props.noContentPadding ? 'n-card--no-padding' : ''" :bordered="props.bordered">
+  <div class="relative h-full">
+    <!-- 有卡片footer 时，高度为100%-64px，64px 为：footer 高度80px 减去底部内边距 16px -->
+    <n-card
+      class="h-full"
+      :class="[props.noContentPadding ? 'n-card--no-padding' : '', props.hideFooter ? '' : 'h-[calc(100%-64px)]']"
+      :bordered="props.bordered"
+    >
       <template #header>
         <slot name="header">
           <div v-if="props.title" class="flex items-center gap-[16px]">
@@ -17,7 +22,7 @@
       <template #header-extra>
         <slot name="header-extra"></slot>
       </template>
-      <n-scrollbar :style="{ 'max-height': props.contentMaxHeight || 'auto' }">
+      <n-scrollbar :style="{ 'max-height': props.contentMaxHeight || '100%' }">
         <slot></slot>
       </n-scrollbar>
       <template #footer>
@@ -128,7 +133,7 @@
     z-index: 100;
     padding: 24px;
     border-bottom: 0;
-    background-color: var(--color-text-fff);
+    background-color: var(--text-n10);
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #00000000), var(--tw-ring-shadow, 0 0 #00000000), var(--tw-shadow);
 
     --tw-shadow: 0 -1px 4px rgb(2 2 2 / 10%);

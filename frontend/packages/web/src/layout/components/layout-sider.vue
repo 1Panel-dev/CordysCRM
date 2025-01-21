@@ -52,6 +52,7 @@
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
   import { NAvatar, NDivider, NIcon, NLayoutSider, NMenu, NTag } from 'naive-ui';
+  import { BookOutline as BookIcon } from '@vicons/ionicons5';
 
   import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
 
@@ -59,8 +60,6 @@
   import useAppStore from '@/store/modules/app';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
-
-  import { BookOutline as BookIcon } from '@vicons/ionicons5';
 
   const { t } = useI18n();
   const appStore = useAppStore();

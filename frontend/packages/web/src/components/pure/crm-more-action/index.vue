@@ -1,6 +1,6 @@
 <template>
   <n-dropdown
-    trigger="click"
+    trigger="hover"
     :options="props.options"
     :render-label="renderLabel"
     class="crm-dropdown"

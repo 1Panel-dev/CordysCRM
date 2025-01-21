@@ -98,6 +98,7 @@ module.exports = {
             '^pinia$',
             '^@vueuse/core$',
             '^naive-ui$',
+            '^@vicons/ionicons5$',
             '^lodash-es$',
             '^axios$',
             '^dayjs$',

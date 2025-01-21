@@ -23,5 +23,8 @@
 
     padding: 16px;
     background-color: var(--text-n9);
+    .n-scrollbar-content {
+      @apply h-full;
+    }
   }
 </style>
