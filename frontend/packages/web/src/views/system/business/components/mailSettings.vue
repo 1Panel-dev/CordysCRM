@@ -1,5 +1,5 @@
 <template>
-  <CrmCard no-content-padding hide-footer>
+  <CrmCard auto-height no-content-padding hide-footer>
     <CrmDescription class="m-[24px]" :descriptions="descriptions" :column="2">
       <template #password="{ item }">
         <div class="flex items-center gap-[8px]">

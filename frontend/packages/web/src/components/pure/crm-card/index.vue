@@ -1,5 +1,5 @@
 <template>
-  <div class="relative h-full">
+  <div :class="`relative ${props.autoHeight ? '' : 'h-full'}`">
     <!-- 有卡片footer 时，高度为100%-64px，64px 为：footer 高度80px 减去底部内边距 16px -->
     <n-card
       class="h-full"
@@ -78,6 +78,7 @@
       hideFooter?: boolean;
       hideContinue?: boolean;
       bordered?: boolean;
+      autoHeight?: boolean;
     }>(),
     {
       noContentPadding: false,

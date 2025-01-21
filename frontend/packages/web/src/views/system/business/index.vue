@@ -1,5 +1,5 @@
 <template>
-  <CrmCard no-content-padding hide-footer class="mb-[16px]">
+  <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
     <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
   </CrmCard>
   <AuthenticationSettings v-if="activeTab === 'authenticationSettings'" />
