@@ -244,6 +244,16 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       tabFontSizeMedium: '14px',
       tabFontSizeLarge: '16px',
     },
+    Drawer: {
+      bodyPadding: '16px',
+      borderRadius: 0,
+      headerPadding: '16px',
+      footerPadding: '12px 16px',
+      titleFontSize: '16px',
+      titleFontWeight: 600,
+      closeIconColor: getLessVariableValue('--text-n2'),
+      closeIconSize: '16px',
+    },
   };
 }
 

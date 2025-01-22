@@ -35,9 +35,16 @@
     <n-divider class="!m-0" />
     <div class="my-[12px] mr-[24px] flex justify-end">
       <n-button type="primary" ghost> {{ t('system.business.mailSettings.testLink') }} </n-button>
-      <n-button type="primary" class="ml-[8px]">{{ t('common.edit') }}</n-button>
+      <n-button type="primary" class="ml-[8px]" @click="showDrawer = true">{{ t('common.edit') }}</n-button>
     </div>
   </CrmCard>
+  <CrmDrawer
+    v-model:show="showDrawer"
+    :width="680"
+    :title="t('system.business.mailSettings.updateEmailSettings')"
+    :ok-text="t('common.update')"
+  >
+  </CrmDrawer>
 </template>
 
 <script setup lang="ts">
@@ -45,6 +52,7 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
+  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';
   import { desensitize } from '@/utils';
@@ -69,4 +77,6 @@
     { label: t('system.business.mailSettings.ssl'), value: 'true', slotName: 'ssl' },
     { label: t('system.business.mailSettings.tsl'), value: 'false', slotName: 'ssl' },
   ]);
+
+  const showDrawer = ref(false);
 </script>
