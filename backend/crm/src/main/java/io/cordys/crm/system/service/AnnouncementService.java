@@ -9,6 +9,7 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Announcement;
 import io.cordys.crm.system.dto.request.AnnouncementPageRequest;
 import io.cordys.crm.system.dto.request.AnnouncementRequest;
@@ -33,7 +34,7 @@ public class AnnouncementService{
     private ExtAnnouncementMapper extAnnouncementMapper;
 
     @Transactional(rollbackFor = Exception.class)
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, resourceId = "{{#announcement.id}}", operator = "{{#announcement.subject}}", success = "新增公告成功", extra = "{{#announcement}}")
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, operator = "{{#userId}}", success = "新增公告成功", extra = "{{#announcement}}")
     public void add(AnnouncementRequest request, String userId) {
         Announcement announcement = new Announcement();
         announcement.setId(IDGenerator.nextStr());
@@ -48,6 +49,7 @@ public class AnnouncementService{
         announcement.setUpdateTime(System.currentTimeMillis());
         announcement.setCreateUser(userId);
         announcement.setUpdateUser(userId);
+        announcement.setStatus(NotificationConstants.Status.UNREAD.name());
         announcementMapper.insert(announcement);
           // 添加日志上下文
         OperationLogContext.putVariable("announcement", LogExtraDTO.builder()
@@ -73,6 +75,7 @@ public class AnnouncementService{
         announcement.setOrganizationId(request.getOrganizationId());
         announcement.setUpdateTime(System.currentTimeMillis());
         announcement.setUpdateUser(userId);
+        announcement.setStatus(NotificationConstants.Status.UNREAD.name());
         announcementMapper.updateById(announcement);
 
         // 添加日志上下文

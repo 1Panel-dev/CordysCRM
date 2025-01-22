@@ -15,6 +15,8 @@ public interface ExtUserMapper {
 
     List<OptionDTO> selectUserOptionByIds(@Param("userIds") List<String> userIds);
 
+    List<User> getOrgUserByUserIds(@Param("organizationId")String organizationId, @Param("userIds") List<String> userIds);
+
     List<UserRoleConvert> getUserRole(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 
     List<OptionDTO> selectUserOption(@Param("orgId") String orgId);

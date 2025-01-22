@@ -29,4 +29,7 @@ public class Announcement extends BaseModel {
     @Schema(description = "组织ID")
     private String organizationId;
 
+    @Schema(description = "状态")
+    private String status;
+
 }

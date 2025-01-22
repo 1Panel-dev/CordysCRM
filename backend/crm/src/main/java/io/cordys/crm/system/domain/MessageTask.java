@@ -14,21 +14,18 @@ public class MessageTask extends BaseModel {
     @Schema(description = "接收人id集合")
     private String receivers;
 
-    @Schema(description = "机器人id")
-    private String projectRobotId;
+    @Schema(description = "接收方式")
+    private String receiveType;
 
     @Schema(description = "任务类型")
     private String taskType;
 
     @Schema(description = "是否启用")
-    private int enable;
+    private Boolean enable;
+
+    @Schema(description = "组织id")
+    private String organizationId;
 
     @Schema(description = "是否使用默认模版")
-    private int useDefaultTemplate;
-
-    @Schema(description = "是否使用默认标题（仅邮件）")
-    private int useDefaultSubject;
-
-    @Schema(description = "邮件标题")
-    private String subject;
+    private Boolean useDefaultTemplate;
 }

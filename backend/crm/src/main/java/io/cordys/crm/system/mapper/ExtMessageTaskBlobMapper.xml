@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.cordys.crm.system.mapper.ExtMessageTaskBlobMapper">
+
+    <select id="getExtMessageTaskBlobByMessageTaskIds" resultType="io.cordys.crm.system.domain.MessageTaskBlob">
+        select * from sys_message_task_blob where id in
+        <foreach collection="messageTaskIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+</mapper>       

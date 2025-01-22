@@ -1,10 +1,7 @@
 package io.cordys.crm.system.domain;
 
-import io.cordys.common.groups.Created;
-import io.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -34,6 +31,9 @@ public class Notification{
 
     @Schema(description = "组织ID")
     private String organizationId;
+
+    @Schema(description = "资源ID")
+    private String resourceId;
 
     @Schema(description = "资源类型")
     private String resourceType;

@@ -19,9 +19,12 @@ public class OrganizationConfig extends BaseModel {
     private String organizationId;
 
     @Schema(description = "是否同步（只对同步企业生效）")
-    private int sync;
+    private boolean sync;
 
     @Schema(description = "同步来源")
     private String syncResource;
+
+    @Schema(description = "是否开启")
+    private boolean enable;
 
 }

@@ -3,17 +3,17 @@ SET SESSION innodb_lock_wait_timeout = 7200;
 
 CREATE TABLE sys_user
 (
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
-    `phone` VARCHAR(11) NOT NULL   COMMENT '手机号' ,
-    `email` VARCHAR(255) NOT NULL   COMMENT '邮箱' ,
-    `password` VARCHAR(255) NOT NULL   COMMENT '密码' ,
-    `language` VARCHAR(32)    COMMENT '语言' ,
-    `gender` BIT(1) NOT NULL  DEFAULT 0 COMMENT '性别(0-男/1-女)' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`        VARCHAR(255) NOT NULL COMMENT '名称',
+    `phone`       VARCHAR(11)  NOT NULL COMMENT '手机号',
+    `email`       VARCHAR(255) NOT NULL COMMENT '邮箱',
+    `password`    VARCHAR(255) NOT NULL COMMENT '密码',
+    `language`    VARCHAR(32) COMMENT '语言',
+    `gender`      BIT(1)       NOT NULL DEFAULT 0 COMMENT '性别(0-男/1-女)',
+    `create_time` BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time` BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user` VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user` VARCHAR(32)  NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
 ) COMMENT = '用户(员工)'
     ENGINE = InnoDB
@@ -149,6 +149,7 @@ CREATE TABLE IF NOT EXISTS sys_notification
     `operator`        VARCHAR(32)  NOT NULL COMMENT '操作人',
     `operation`       VARCHAR(50)  NOT NULL COMMENT '操作',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `resource_id`     VARCHAR(32)  NOT NULL COMMENT '资源ID',
     `resource_type`   VARCHAR(64)  NOT NULL COMMENT '资源类型',
     `resource_name`   VARCHAR(255) NOT NULL COMMENT '资源名称',
     `content`         BLOB         NOT NULL COMMENT '通知内容',
@@ -171,33 +172,35 @@ CREATE INDEX idx_subject ON sys_notification (subject ASC);
 CREATE INDEX idx_resource_type ON sys_notification (resource_type ASC);
 CREATE INDEX idx_operator ON sys_notification (operator ASC);
 CREATE INDEX idx_organization_id ON sys_notification (organization_id ASC);
+CREATE INDEX idx_resource_id ON sys_notification (resource_id ASC);
 
-CREATE TABLE IF NOT EXISTS sys_message_task
+
+CREATE TABLE sys_message_task
 (
-    `id`                   VARCHAR(32)   NOT NULL COMMENT 'id',
+    `id`                   VARCHAR(50)   NOT NULL COMMENT '',
     `event`                VARCHAR(255)  NOT NULL COMMENT '通知事件类型',
     `receivers`            VARCHAR(1000) NOT NULL COMMENT '接收人id集合',
-    `project_robot_id`     VARCHAR(32)            DEFAULT 'NONE' COMMENT '机器人id',
+    `receive_type`         VARCHAR(50) COMMENT '接收方式',
     `task_type`            VARCHAR(64)   NOT NULL COMMENT '任务类型',
     `enable`               BIT           NOT NULL DEFAULT 0 COMMENT '是否启用',
-    `create_user`          VARCHAR(32)   NOT NULL COMMENT '创建人',
-    `create_time`          BIGINT        NOT NULL DEFAULT 0 COMMENT '创建时间',
-    `update_user`          VARCHAR(32)   NOT NULL COMMENT '修改人',
-    `update_time`          BIGINT        NOT NULL COMMENT '更新时间',
+    `organization_id`      VARCHAR(32)   NOT NULL COMMENT '组织id',
     `use_default_template` BIT           NOT NULL DEFAULT 1 COMMENT '是否使用默认模版',
-    `use_default_subject`  BIT           NOT NULL DEFAULT 1 COMMENT '是否使用默认标题（仅邮件）',
-    `subject`              VARCHAR(1000) COMMENT '邮件标题',
+    `create_user`          VARCHAR(50)   NOT NULL COMMENT '创建人',
+    `create_time`          BIGINT        NOT NULL DEFAULT 0 COMMENT '创建时间',
+    `update_user`          VARCHAR(50)   NOT NULL COMMENT '修改人',
+    `update_time`          BIGINT        NOT NULL COMMENT '更新时间',
     PRIMARY KEY (id)
 ) COMMENT = '消息通知任务'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
+
 CREATE INDEX idx_create_time ON sys_message_task (create_time DESC);
 CREATE INDEX idx_task_type ON sys_message_task (task_type ASC);
 CREATE INDEX idx_event ON sys_message_task (event ASC);
+CREATE INDEX idx_organization_id ON sys_message_task (organization_id ASC);
 CREATE INDEX idx_enable ON sys_message_task (enable ASC);
-CREATE INDEX idx_use_default_subject ON sys_message_task (use_default_subject ASC);
 CREATE INDEX idx_use_default_template ON sys_message_task (use_default_template ASC);
 
 CREATE TABLE IF NOT EXISTS `sys_message_task_blob`
@@ -210,13 +213,9 @@ CREATE TABLE IF NOT EXISTS `sys_message_task_blob`
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS sys_announcement
+CREATE TABLE sys_announcement
 (
     `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
-    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
-    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
-    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
-    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
     `subject`         VARCHAR(255)  NOT NULL COMMENT '公告标题',
     `content`         VARCHAR(1000) NOT NULL COMMENT '公告内容',
     `start_time`      BIGINT        NOT NULL COMMENT '开始时间',
@@ -224,6 +223,11 @@ CREATE TABLE IF NOT EXISTS sys_announcement
     `url`             VARCHAR(255) COMMENT '链接',
     `receiver`        VARCHAR(1000) NOT NULL COMMENT '接收人id(销售ids/角色ids/部门ids)',
     `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
+    `status`          VARCHAR(64)   NOT NULL COMMENT '状态',
+    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
 ) COMMENT = '公告'
     ENGINE = InnoDB
@@ -239,11 +243,11 @@ CREATE TABLE sys_module
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
     `name`            VARCHAR(255) NOT NULL COMMENT '模块名称(国际化KEY)',
     `enable`          BIT(1)       NOT NULL DEFAULT 1 COMMENT '启用/禁用',
-    `pos`             BIGINT  NOT NULL COMMENT '自定义排序',
+    `pos`             BIGINT       NOT NULL COMMENT '自定义排序',
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `create_time`     BIGINT  NOT NULL COMMENT '创建时间',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
     `update_user`     VARCHAR(32)  NOT NULL COMMENT '修改人',
-    `update_time`     BIGINT  NOT NULL COMMENT '修改时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '修改时间',
     PRIMARY KEY (id)
 ) COMMENT = '模块设置'
     ENGINE = InnoDB
@@ -266,30 +270,31 @@ CREATE TABLE sys_organization
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE sys_organization_user(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
-    `department_id` VARCHAR(32)    COMMENT '部门id' ,
-    `user_id` VARCHAR(32) NOT NULL   COMMENT '用户id' ,
-    `enable` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否启用' ,
-    `employee_id` VARCHAR(255)   DEFAULT '' COMMENT '工号' ,
-    `position` VARCHAR(255)   DEFAULT '' COMMENT '职位' ,
-    `employee_type` VARCHAR(255)   DEFAULT '' COMMENT '员工类型' ,
-    `supervisor_id` VARCHAR(32)   DEFAULT '' COMMENT '直属上级' ,
-    `work_city` VARCHAR(255)   DEFAULT '' COMMENT '工作城市' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-  PRIMARY KEY (id)
-)  COMMENT = '组织成员'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+CREATE TABLE sys_organization_user
+(
+    `id`              VARCHAR(32) NOT NULL COMMENT 'id',
+    `organization_id` VARCHAR(32) NOT NULL COMMENT '组织id',
+    `department_id`   VARCHAR(32) COMMENT '部门id',
+    `user_id`         VARCHAR(32) NOT NULL COMMENT '用户id',
+    `enable`          BIT(1)      NOT NULL DEFAULT 1 COMMENT '是否启用',
+    `employee_id`     VARCHAR(255)         DEFAULT '' COMMENT '工号',
+    `position`        VARCHAR(255)         DEFAULT '' COMMENT '职位',
+    `employee_type`   VARCHAR(255)         DEFAULT '' COMMENT '员工类型',
+    `supervisor_id`   VARCHAR(32)          DEFAULT '' COMMENT '直属上级',
+    `work_city`       VARCHAR(255)         DEFAULT '' COMMENT '工作城市',
+    `create_time`     BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32) NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '组织成员'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_organization_id ON sys_organization_user(organization_id ASC);
-CREATE INDEX idx_department_id ON sys_organization_user(department_id ASC);
-CREATE INDEX idx_user_id ON sys_organization_user(user_id ASC);
+CREATE INDEX idx_organization_id ON sys_organization_user (organization_id ASC);
+CREATE INDEX idx_department_id ON sys_organization_user (department_id ASC);
+CREATE INDEX idx_user_id ON sys_organization_user (user_id ASC);
 
 CREATE TABLE sys_module_field
 (
@@ -412,15 +417,17 @@ CREATE INDEX idx_type ON sys_organization_config_detail (type ASC);
 
 CREATE TABLE sys_organization_config
 (
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `type` VARCHAR(64) NOT NULL   COMMENT '配置类型' ,
-    `organization_id` VARCHAR(32) NOT NULL   COMMENT '企业id' ,
-    `sync` BIT(1) NOT NULL  DEFAULT 0 COMMENT '是否同步（只对同步企业生效）' ,
-    `sync_resource` VARCHAR(255)    COMMENT '同步来源' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    `id`              VARCHAR(32) NOT NULL COMMENT 'id',
+    `type`            VARCHAR(64) NOT NULL COMMENT '配置类型',
+    `organization_id` VARCHAR(32) NOT NULL COMMENT '企业id',
+    `sync`            BIT(1)      NOT NULL DEFAULT 0 COMMENT '是否同步（只对同步企业生效）',
+    `sync_resource`   VARCHAR(255) COMMENT '同步来源',
+    `enable`          BIT(1)      NOT NULL DEFAULT 0 COMMENT '是否开启',
+    `create_time`     BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32) NOT NULL COMMENT '更新人',
+
     PRIMARY KEY (id)
 ) COMMENT = '企业设置'
     ENGINE = InnoDB
@@ -431,190 +438,200 @@ CREATE INDEX idx_organizationId ON sys_organization_config (organization_id ASC)
 CREATE INDEX idx_type ON sys_organization_config (type ASC);
 
 
-CREATE TABLE sys_department(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
-    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
-    `parent_id` VARCHAR(32) NOT NULL   COMMENT '父级' ,
-    `num` BIGINT NOT NULL   COMMENT '排序' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-    `resource` VARCHAR(255) NOT NULL   COMMENT '来源' ,
-    `resource_id` VARCHAR(255)    COMMENT '来源id' ,
+CREATE TABLE sys_department
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '名称',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `parent_id`       VARCHAR(32)  NOT NULL COMMENT '父级',
+    `num`             BIGINT       NOT NULL COMMENT '排序',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
+    `resource`        VARCHAR(255) NOT NULL COMMENT '来源',
+    `resource_id`     VARCHAR(255) COMMENT '来源id',
     PRIMARY KEY (id)
-)  COMMENT = '部门表'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
-
-CREATE INDEX idx_resource ON sys_department(resource ASC);
-CREATE INDEX idx_organization_id ON sys_department(organization_id ASC);
-
-CREATE TABLE lead_pool(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `name` VARCHAR(255) NOT NULL   COMMENT '线索池名称' ,
-    `scope_id` VARCHAR(1000) NOT NULL   COMMENT '成员id' ,
-    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织架构id' ,
-    `owner_id` VARCHAR(1000) NOT NULL   COMMENT '管理员id' ,
-    `enable` BIT(1) NOT NULL  DEFAULT 1 COMMENT '启用/禁用' ,
-    `recycled` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否自动回收' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-    PRIMARY KEY (id)
-)  COMMENT = '线索池'
+) COMMENT = '部门表'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_organization_id ON lead_pool(organization_id ASC);
+CREATE INDEX idx_resource ON sys_department (resource ASC);
+CREATE INDEX idx_organization_id ON sys_department (organization_id ASC);
 
-CREATE TABLE lead_pool_pick_rule(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-    `pool_id` VARCHAR(32) NOT NULL   COMMENT '线索池ID' ,
-    `limit_on_number` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否限制领取数量' ,
-    `pick_number` INT    COMMENT '领取数量' ,
-    `limit_pre_owner` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否限制前归属人领取' ,
-    `pick_interval_days` INT    COMMENT '领取间隔天数' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+CREATE TABLE lead_pool
+(
+    `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
+    `name`            VARCHAR(255)  NOT NULL COMMENT '线索池名称',
+    `scope_id`        VARCHAR(1000) NOT NULL COMMENT '成员id',
+    `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织架构id',
+    `owner_id`        VARCHAR(1000) NOT NULL COMMENT '管理员id',
+    `enable`          BIT(1)        NOT NULL DEFAULT 1 COMMENT '启用/禁用',
+    `recycled`        BIT(1)        NOT NULL DEFAULT 1 COMMENT '是否自动回收',
+    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '线索池领取规则'
+) COMMENT = '线索池'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_pool_id ON lead_pool_pick_rule(pool_id ASC);
+CREATE INDEX idx_organization_id ON lead_pool (organization_id ASC);
 
-CREATE TABLE lead_pool_recycle_rule(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-    `pool_id` VARCHAR(32) NOT NULL   COMMENT '线索池ID' ,
-    `expire_notice` BIT(1) NOT NULL  DEFAULT 1 COMMENT '到期提醒' ,
-    `notice_days` INT(255)    COMMENT '提前提醒天数' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+CREATE TABLE lead_pool_pick_rule
+(
+    `id`                 VARCHAR(32) NOT NULL COMMENT 'ID',
+    `pool_id`            VARCHAR(32) NOT NULL COMMENT '线索池ID',
+    `limit_on_number`    BIT(1)      NOT NULL DEFAULT 1 COMMENT '是否限制领取数量',
+    `pick_number`        INT COMMENT '领取数量',
+    `limit_pre_owner`    BIT(1)      NOT NULL DEFAULT 1 COMMENT '是否限制前归属人领取',
+    `pick_interval_days` INT COMMENT '领取间隔天数',
+    `create_user`        VARCHAR(32) NOT NULL COMMENT '创建人',
+    `create_time`        BIGINT      NOT NULL COMMENT '创建时间',
+    `update_user`        VARCHAR(32) NOT NULL COMMENT '更新人',
+    `update_time`        BIGINT      NOT NULL COMMENT '更新时间',
     PRIMARY KEY (id)
-)  COMMENT = '线索池回收规则'
+) COMMENT = '线索池领取规则'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_pool_id ON lead_pool_recycle_rule(pool_id ASC);
+CREATE INDEX idx_pool_id ON lead_pool_pick_rule (pool_id ASC);
 
-CREATE TABLE lead_pool_relation(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `pool_id` VARCHAR(32) NOT NULL   COMMENT '线索池id' ,
-    `lead_id` VARCHAR(32) NOT NULL   COMMENT '线索id' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+CREATE TABLE lead_pool_recycle_rule
+(
+    `id`            VARCHAR(32) NOT NULL COMMENT 'ID',
+    `pool_id`       VARCHAR(32) NOT NULL COMMENT '线索池ID',
+    `expire_notice` BIT(1)      NOT NULL DEFAULT 1 COMMENT '到期提醒',
+    `notice_days`   INT(255) COMMENT '提前提醒天数',
+    `create_time`   BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`   BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`   VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`   VARCHAR(32) NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '线索池中的线索'
+) COMMENT = '线索池回收规则'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_lead_id ON lead_pool_relation(lead_id ASC);
-CREATE INDEX idx_pool_id ON lead_pool_relation(pool_id ASC);
+CREATE INDEX idx_pool_id ON lead_pool_recycle_rule (pool_id ASC);
 
-CREATE TABLE lead_capacity(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织架构ID' ,
-    `scope_id` VARCHAR(1000) NOT NULL   COMMENT '范围ID' ,
-    `capacity` INT(255) NOT NULL  DEFAULT 0 COMMENT '库容;0:不限制' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+CREATE TABLE lead_pool_relation
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `pool_id`     VARCHAR(32) NOT NULL COMMENT '线索池id',
+    `lead_id`     VARCHAR(32) NOT NULL COMMENT '线索id',
+    `create_time` BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time` BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user` VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user` VARCHAR(32) NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '线索池库容设置'
+) COMMENT = '线索池中的线索'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_organization_id ON lead_capacity(organization_id ASC);
+CREATE INDEX idx_lead_id ON lead_pool_relation (lead_id ASC);
+CREATE INDEX idx_pool_id ON lead_pool_relation (pool_id ASC);
 
-
-CREATE TABLE sys_department_commander(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `user_id` VARCHAR(32) NOT NULL   COMMENT '用户id' ,
-    `department_id` VARCHAR(32) NOT NULL   COMMENT '部门id' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+CREATE TABLE lead_capacity
+(
+    `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
+    `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织架构ID',
+    `scope_id`        VARCHAR(1000) NOT NULL COMMENT '范围ID',
+    `capacity`        INT(255)      NOT NULL DEFAULT 0 COMMENT '库容;0:不限制',
+    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '部门责任人表'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
-
-CREATE INDEX idx_user_id ON sys_department_commander(user_id ASC);
-CREATE INDEX idx_department_id ON sys_department_commander(department_id ASC);
-
-CREATE TABLE customer_pool(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `scope_id` VARCHAR(1000) NOT NULL   COMMENT '范围ID' ,
-    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
-    `name` VARCHAR(255) NOT NULL   COMMENT '公海池名称' ,
-    `owner_id` VARCHAR(1000) NOT NULL   COMMENT '管理员ID' ,
-    `enable` BIT(1) NOT NULL  DEFAULT 1 COMMENT '启用/禁用' ,
-    `recycled` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否自动回收' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-    PRIMARY KEY (id)
-)  COMMENT = '公海池'
+) COMMENT = '线索池库容设置'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_organization_id ON customer_pool(organization_id ASC);
+CREATE INDEX idx_organization_id ON lead_capacity (organization_id ASC);
 
-CREATE TABLE customer_pool_pick_rule(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-    `pool_id` VARCHAR(32) NOT NULL   COMMENT '公海池ID' ,
-    `limit_on_number` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否限制领取数量' ,
-    `pick_number` INT    COMMENT '领取数量' ,
-    `limit_pre_owner` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否限制前归属人领取' ,
-    `pick_interval_days` INT    COMMENT '领取间隔天数' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+
+CREATE TABLE sys_department_commander
+(
+    `id`            VARCHAR(32) NOT NULL COMMENT 'id',
+    `user_id`       VARCHAR(32) NOT NULL COMMENT '用户id',
+    `department_id` VARCHAR(32) NOT NULL COMMENT '部门id',
+    `create_time`   BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`   BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`   VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`   VARCHAR(32) NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '公海池领取规则'
+) COMMENT = '部门责任人表'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_pool_id ON customer_pool_pick_rule(pool_id ASC);
+CREATE INDEX idx_user_id ON sys_department_commander (user_id ASC);
+CREATE INDEX idx_department_id ON sys_department_commander (department_id ASC);
 
-CREATE TABLE customer_pool_recycle_rule(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-    `pool_id` VARCHAR(32) NOT NULL   COMMENT '公海池ID' ,
-    `expire_notice` BIT(1) NOT NULL  DEFAULT 1 COMMENT '到期提醒' ,
-    `notice_days` INT(255)    COMMENT '提前提醒天数' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+CREATE TABLE customer_pool
+(
+    `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
+    `scope_id`        VARCHAR(1000) NOT NULL COMMENT '范围ID',
+    `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织ID',
+    `name`            VARCHAR(255)  NOT NULL COMMENT '公海池名称',
+    `owner_id`        VARCHAR(1000) NOT NULL COMMENT '管理员ID',
+    `enable`          BIT(1)        NOT NULL DEFAULT 1 COMMENT '启用/禁用',
+    `recycled`        BIT(1)        NOT NULL DEFAULT 1 COMMENT '是否自动回收',
+    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '公海池回收规则'
+) COMMENT = '公海池'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_pool_id ON customer_pool_recycle_rule(pool_id ASC);
+CREATE INDEX idx_organization_id ON customer_pool (organization_id ASC);
+
+CREATE TABLE customer_pool_pick_rule
+(
+    `id`                 VARCHAR(32) NOT NULL COMMENT 'ID',
+    `pool_id`            VARCHAR(32) NOT NULL COMMENT '公海池ID',
+    `limit_on_number`    BIT(1)      NOT NULL DEFAULT 1 COMMENT '是否限制领取数量',
+    `pick_number`        INT COMMENT '领取数量',
+    `limit_pre_owner`    BIT(1)      NOT NULL DEFAULT 1 COMMENT '是否限制前归属人领取',
+    `pick_interval_days` INT COMMENT '领取间隔天数',
+    `create_user`        VARCHAR(32) NOT NULL COMMENT '创建人',
+    `create_time`        BIGINT      NOT NULL COMMENT '创建时间',
+    `update_user`        VARCHAR(32) NOT NULL COMMENT '更新人',
+    `update_time`        BIGINT      NOT NULL COMMENT '更新时间',
+    PRIMARY KEY (id)
+) COMMENT = '公海池领取规则'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_pool_id ON customer_pool_pick_rule (pool_id ASC);
+
+CREATE TABLE customer_pool_recycle_rule
+(
+    `id`            VARCHAR(32) NOT NULL COMMENT 'ID',
+    `pool_id`       VARCHAR(32) NOT NULL COMMENT '公海池ID',
+    `expire_notice` BIT(1)      NOT NULL DEFAULT 1 COMMENT '到期提醒',
+    `notice_days`   INT(255) COMMENT '提前提醒天数',
+    `create_time`   BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`   BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`   VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`   VARCHAR(32) NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '公海池回收规则'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_pool_id ON customer_pool_recycle_rule (pool_id ASC);
 
 CREATE TABLE customer_pool_relation(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,

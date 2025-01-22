@@ -15,5 +15,7 @@ public class SyncOrganizationDTO {
     private String appSecret;
     @Schema(description = "id")
     private String id;
+    @Schema(description = "是否开启")
+    private Boolean enable;
 
 }

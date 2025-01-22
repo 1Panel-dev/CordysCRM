@@ -1,0 +1,233 @@
+[
+  {
+    "organizationId": "",
+    "type": "CUSTOMER",
+    "name": "",
+    "messageTaskDetailDTOList": [
+      {
+        "event": "CUSTOMER_TRANSFERRED_CUSTOMER",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CUSTOMER_MOVED_HIGH_SEAS",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CUSTOMER_DELETED",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "HIGH_SEAS_CUSTOMER_RECEIVE_SUCCESS",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "HIGH_SEAS_CUSTOMER_RECEIVE_ERROR",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CUSTOMER_FOLLOW_UP_PLAN_DUE",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "organizationId": "",
+    "type": "CLUE",
+    "name": "",
+    "messageTaskDetailDTOList": [
+      {
+        "event": "CLUE_AUTOMATIC_MOVE_POOL",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CLUE_MOVED_POOL",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CLUE_CONVERT_CUSTOMER",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "TRANSFER_CLUE",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CLUE_DELETED",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CLUE_DISTRIBUTED",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CLUE_RECEIVE_SUCCESS",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CLUE_RECEIVE_ERROR",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CLUE_IMPORT",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "CLUE_FOLLOW_UP_PLAN_DUE",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "organizationId": "",
+    "type": "BUSINESS",
+    "name": "",
+    "messageTaskDetailDTOList": [
+      {
+        "event": "BUSINESS_DELETED",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "BUSINESS_TRANSFER",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "BUSINESS_IMPORT",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      },
+      {
+        "event": "BUSINESS_FOLLOW_UP_PLAN_DUE",
+        "eventName": "",
+        "receivers": [
+          {
+            "id": "",
+            "name": ""
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -56,6 +56,17 @@
             sou.id = #{id}
     </select>
 
+    <select id="getOrgUserByUserIds" resultType="io.cordys.crm.system.domain.User">
+        SELECT sys_user.id, sys_user.name
+        FROM sys_user LEFT JOIN sys_organization_user on sys_organization_user.user_id = sys_user.id
+        WHERE  sys_organization_user.organization_id = #{organizationId}
+        AND sys_user.id IN
+        <foreach collection="userIds" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
     <select id="selectUserOption" resultType="io.cordys.common.dto.OptionDTO">
         SELECT id, name
         FROM sys_user

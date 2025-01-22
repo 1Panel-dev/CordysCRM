@@ -1,5 +1,6 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.response.handler.ResultHolder;
 import io.cordys.common.uid.IDGenerator;
@@ -9,7 +10,6 @@ import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.request.NotificationRequest;
 import io.cordys.crm.system.dto.response.NotificationDTO;
-import io.cordys.crm.system.dto.response.OptionDTO;
 import io.cordys.crm.system.mapper.ExtNotificationMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -55,6 +55,7 @@ public class NotificationControllerTests extends BaseTest {
         notification.setCreateUser("admin");
         notification.setUpdateUser("admin");
         notification.setUpdateTime(System.currentTimeMillis());
+        notification.setResourceId("dd");
         notificationMapper.insert(notification);
     }
 
