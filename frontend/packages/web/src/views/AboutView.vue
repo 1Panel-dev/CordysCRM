@@ -32,7 +32,7 @@
             <n-button type="primary" ghost> Primary </n-button>
             <n-button type="info" ghost> Info </n-button>
             <n-button type="success" ghost> Success </n-button>
-            <n-button type="warning" ghost @click="openModal"> Warning 打开弹窗 </n-button>
+            <n-button type="warning" ghost @click="openCrmModal"> Warning 打开弹窗 </n-button>
             <n-button type="error" ghost @click="handleDialog"> Error </n-button>
           </div>
           <div class="flex flex-1 flex-col gap-[8px]">
@@ -169,7 +169,7 @@
 
   const message = useMessage();
 
-  const { openDialog } = useModal();
+  const { openModal } = useModal();
   // 暂时提供参考 you can delete it  ^_^
 
   const activeTab = ref('1');
@@ -475,7 +475,7 @@
   });
 
   function handleDialog() {
-    openDialog({
+    openModal({
       type: 'default',
       title: '想说点啥',
       content: '但是好像也没有说的,怎么样都是要离开的',
@@ -497,7 +497,7 @@
 
   const showModal = ref(false);
   const loading = ref(false);
-  function openModal() {
+  function openCrmModal() {
     showModal.value = true;
   }
 

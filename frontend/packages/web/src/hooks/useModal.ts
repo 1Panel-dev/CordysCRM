@@ -24,7 +24,7 @@ export interface DeleteDialogOptions {
 export default function useModal() {
   const dialog = useDialog();
   return {
-    openDialog: (options: DialogOptionsConfig) => {
+    openModal: (options: DialogOptionsConfig) => {
       const defaultButtonProps = {
         positiveButtonProps: {
           size: 'medium',

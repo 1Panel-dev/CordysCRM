@@ -65,6 +65,9 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       boxShadow1: '0 4px 10px -1px rgba(100, 103, 103, .15)', // 基础投影
       boxShadow2: '0 4px 15px 2px rgba(100, 103, 103, .1)', // 中层投影
       boxShadow3: '0 6px 35px 6px rgba(100, 103, 103, .1)', // 上层投影
+      heightSmall: '24px',
+      heightMedium: '32px',
+      heightLarge: '40px',
     },
     Button: {
       // 因只能配置一种颜色，禁用默认border边框
@@ -186,9 +189,6 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       emptyPadding: '12px',
     },
     Input: {
-      heightSmall: '24px',
-      heightMedium: '32px',
-      heightLarge: '40px',
       fontSizeSmall: '12px',
       fontSizeMedium: '14px',
       fontSizeLarge: '16px',
@@ -207,12 +207,12 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       jumperTextColor: getLessVariableValue('--text-n2'),
     },
     Tag: {
-      fontSizeSmall: '12px',
-      fontSizeMedium: '12px',
-      fontSizeLarge: '14px',
       heightSmall: '20px',
       heightMedium: '24px',
       heightLarge: '32px',
+      fontSizeSmall: '12px',
+      fontSizeMedium: '12px',
+      fontSizeLarge: '14px',
       borderPrimary: `1px solid ${getLessVariableValue('--primary-8')} `,
       borderInfo: `1px solid ${getLessVariableValue('--info-blue')}`,
       borderSuccess: `1px solid ${getLessVariableValue('--success-green')}`,

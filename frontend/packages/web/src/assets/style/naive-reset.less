@@ -159,7 +159,6 @@
       height: 22px;
       .n-data-table-th__title {
         flex: none !important;
-        padding-left: 4px;
       }
       .n-data-table-sorter {
         margin-left: 8px;
@@ -206,6 +205,11 @@
     padding-top: 0;
     padding-bottom: 0;
     height: 46px;
+  }
+}
+.n-data-table--bordered {
+  .n-data-table-th {
+    border-top: none;
   }
 }
 
@@ -318,6 +322,26 @@
         .n-tabs-tab__label {
           background-color: var(--text-n9);
         }
+      }
+    }
+  }
+}
+
+// 级联选择器
+.n-cascader {
+  .n-base-selection-tags {
+    padding: 4px;
+  }
+  .n-base-selection-tag-wrapper {
+    padding-bottom: 0;
+    .n-tag {
+      background-color: var(--text-n8);
+      .n-base-close {
+        font-size: 12px;
+        color: var(--text-n4);
+      }
+      .n-tag__border {
+        border: none;
       }
     }
   }

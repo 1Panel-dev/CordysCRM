@@ -4,9 +4,11 @@
     :type="props.type"
     :size="props.size"
     :class="`${props.noContent ? 'no-content' : ''}`"
+    :bar-width="props.barWidth"
     @update:value="handleChange"
   >
     <n-tab-pane v-for="item of props.tabList" :key="item.name" :name="item.name as string" :tab="item.tab">
+      <slot :name="item.name" />
     </n-tab-pane>
   </n-tabs>
 </template>
@@ -20,6 +22,7 @@
       type?: 'bar' | 'line' | 'card' | 'segment';
       size?: 'small' | 'medium' | 'large';
       noContent?: boolean;
+      barWidth?: number;
     }>(),
     {
       size: 'medium',

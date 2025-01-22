@@ -33,25 +33,43 @@
           />
         </div>
       </template>
+      <template #2>
+        <div class="px-[24px] pt-[13px]">
+          <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="line">
+            <template #permission>
+              <permissionTab />
+            </template>
+            <template #member>
+              <memberTab />
+            </template>
+          </CrmTab>
+        </div>
+      </template>
     </CrmSplitPanel>
   </CrmCard>
 </template>
 
 <script lang="ts" setup>
-  import { NButton, NIcon, NInput, NTooltip } from 'naive-ui';
+  import { NButton, NIcon, NInput, NTooltip, TabPaneProps, useMessage } from 'naive-ui';
   import { Add, Search } from '@vicons/ionicons5';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTree from '@/components/pure/crm-tree/index.vue';
   import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
+  import memberTab from './components/memberTab.vue';
+  import permissionTab from './components/permissionTab.vue';
   import roleTreeNodePrefix from './components/roleTreeNodePrefix.vue';
 
   import { useI18n } from '@/hooks/useI18n';
+  import useModal from '@/hooks/useModal';
   import { getGenerateId } from '@/utils';
 
   const { t } = useI18n();
+  const { openModal } = useModal();
+  const message = useMessage();
 
   const keyword = ref('');
   const roles = ref<CrmTreeNodeData[]>([
@@ -112,12 +130,26 @@
         roles.value.push({
           ...roles.value[roles.value.length - 1],
           name: `${node.name}Copy`,
+          system: false,
           id,
         });
         selectedKeys.value = [id];
         break;
       case 'delete':
-        roles.value = roles.value.filter((role) => role.id !== node.id);
+        openModal({
+          type: 'error',
+          title: t('common.deleteConfirmTitle', { name: node.name }),
+          content: t('role.deleteConfirmContent'),
+          positiveText: t('common.confirmDelete'),
+          negativeText: t('common.cancel'),
+          onPositiveClick: async () => {
+            roles.value = roles.value.filter((role) => role.id !== node.id);
+            if (selectedKeys.value.includes(node.id)) {
+              selectedKeys.value = [roles.value[0].id];
+            }
+            message.success(t('common.deleteSuccess'));
+          },
+        });
         break;
       default:
         break;
@@ -132,6 +164,18 @@
     });
     selectedKeys.value = [id];
   }
+
+  const activeTab = ref('permission');
+  const tabList: TabPaneProps[] = [
+    {
+      name: 'permission',
+      tab: t('role.permission'),
+    },
+    {
+      name: 'member',
+      tab: t('role.member'),
+    },
+  ];
 </script>
 
 <style lang="less" scoped>
