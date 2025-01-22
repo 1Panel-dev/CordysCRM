@@ -56,7 +56,7 @@
             type="password"
             class="login-password-input"
             :placeholder="t('login.form.password.placeholder')"
-            allow-clear
+            clearable
             :max-length="64"
             size="large"
           />

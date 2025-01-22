@@ -254,6 +254,21 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       closeIconColor: getLessVariableValue('--text-n2'),
       closeIconSize: '16px',
     },
+    Switch: {
+      railColor: getLessVariableValue('--text-n7'),
+      railHeightSmall: '16px',
+      railHeightMedium: '20px',
+      railHeightLarge: '24px',
+      railWidthSmall: '26px',
+      railWidthMedium: '32px',
+      railWidthLarge: '39px',
+      buttonHeightSmall: '12px',
+      buttonHeightMedium: '15px',
+      buttonHeightLarge: '18px',
+      buttonWidthSmall: '12px',
+      buttonWidthMedium: '15px',
+      buttonWidthLarge: '18px',
+    },
   };
 }
 

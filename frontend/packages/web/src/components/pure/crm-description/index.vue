@@ -1,48 +1,50 @@
 <template>
-  <div class="crm-description">
-    <div
-      v-for="(item, index) of props.descriptions"
-      :key="item.label"
-      class="crm-description-item"
-      :class="item.class"
-      :style="{ marginBottom: props.descriptions.length - index <= props.column ? '' : `${props.lineGap}px` }"
-    >
+  <n-scrollbar>
+    <div class="crm-description">
       <div
-        class="crm-description-item-label"
-        :style="{ width: props.labelWidth || '120px', textAlign: props.labelAlign }"
+        v-for="(item, index) of props.descriptions"
+        :key="item.label"
+        class="crm-description-item"
+        :class="item.class"
+        :style="{ marginBottom: props.descriptions.length - index <= props.column ? '' : `${props.lineGap}px` }"
       >
-        <n-tooltip>
-          <template #trigger>
-            <div class="one-line-text">
-              {{ item.label }}
-            </div>
-          </template>
-          {{ item.label }}
-        </n-tooltip>
-      </div>
-      <div :class="getValueClass()">
-        <slot :name="item.slotName" :item="item">
-          <n-tooltip
-            :disabled="item.value === undefined || item.value === null || item.value?.toString() === ''"
-            :placement="item.tooltipPosition ?? 'top-start'"
-          >
+        <div
+          class="crm-description-item-label"
+          :style="{ width: props.labelWidth || '120px', textAlign: props.labelAlign }"
+        >
+          <n-tooltip>
             <template #trigger>
-              <div class="w-[fit-content]">
-                {{
-                  item.value === undefined || item.value === null || item.value?.toString() === '' ? '-' : item.value
-                }}
+              <div class="one-line-text">
+                {{ item.label }}
               </div>
             </template>
-            {{ item.value }}
+            {{ item.label }}
           </n-tooltip>
-        </slot>
+        </div>
+        <div :class="getValueClass()">
+          <slot :name="item.slotName" :item="item">
+            <n-tooltip
+              :disabled="item.value === undefined || item.value === null || item.value?.toString() === ''"
+              :placement="item.tooltipPosition ?? 'top-start'"
+            >
+              <template #trigger>
+                <div class="w-[fit-content]">
+                  {{
+                    item.value === undefined || item.value === null || item.value?.toString() === '' ? '-' : item.value
+                  }}
+                </div>
+              </template>
+              {{ item.value }}
+            </n-tooltip>
+          </slot>
+        </div>
       </div>
     </div>
-  </div>
+  </n-scrollbar>
 </template>
 
 <script setup lang="ts">
-  import { NTooltip } from 'naive-ui';
+  import { NScrollbar, NTooltip } from 'naive-ui';
 
   export interface Description {
     label: string;
@@ -92,8 +94,7 @@
 
 <style lang="less" scoped>
   .crm-description {
-    @apply flex max-h-full flex-wrap overflow-auto;
-    .crm-scroll-bar();
+    @apply flex flex-wrap;
     .crm-description-item {
       @apply flex;
 

@@ -2,7 +2,7 @@
   <CrmCard hide-footer>
     <div class="mb-[16px] flex items-center justify-between">
       <n-button type="primary">{{ t('system.business.authenticationSettings.add') }}</n-button>
-      <n-input v-model:value="keyword" :placeholder="t('common.searchByName')" allow-clear class="!w-[240px]" />
+      <n-input v-model:value="keyword" :placeholder="t('common.searchByName')" clearable class="!w-[240px]" />
     </div>
     <CrmTable
       v-bind="propsRes"

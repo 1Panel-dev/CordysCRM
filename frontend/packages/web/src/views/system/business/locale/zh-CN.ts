@@ -6,8 +6,11 @@ export default {
   'system.business.tab.syncOrganization': '同步组织架构',
   'system.business.authenticationSettings.add': '添加认证',
   'system.business.mailSettings.smtpHost': 'SMTP 主机',
+  'system.business.mailSettings.smtpHost.errMsg': 'SMTP 主机不能为空',
   'system.business.mailSettings.smtpPort': 'SMTP 端口',
+  'system.business.mailSettings.smtpPort.errMsg': 'SMTP 端口不能为空',
   'system.business.mailSettings.smtpAccount': 'SMTP 账户',
+  'system.business.mailSettings.smtpAccount.errMsg': 'SMTP 账户不能为空',
   'system.business.mailSettings.smtpPassword': 'SMTP 密码',
   'system.business.mailSettings.from': '指定发件人',
   'system.business.mailSettings.recipient': '测试收件人',
@@ -17,4 +20,6 @@ export default {
   'system.business.mailSettings.opened': '已开启',
   'system.business.mailSettings.closed': '已关闭',
   'system.business.mailSettings.updateEmailSettings': '更新邮件设置',
+  'system.business.mailSettings.sslTip': '若 SMTP 端口是 465，需要启用 SSL',
+  'system.business.mailSettings.tslTip': '若 SMTP 端口是 587，需要启用 TSL',
 };
