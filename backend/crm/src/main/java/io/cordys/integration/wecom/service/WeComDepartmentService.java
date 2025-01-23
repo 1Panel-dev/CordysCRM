@@ -28,7 +28,7 @@ import java.util.Map;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class WeComDepartMentService implements SyncUserService {
+public class WeComDepartmentService implements SyncUserService {
 
 
     /**
@@ -139,7 +139,7 @@ public class WeComDepartMentService implements SyncUserService {
             weComToken = JSON.parseObject(response, WeComToken.class);
 
         } catch (Exception e) {
-            throw new GenericException("嗲用接口获取access_token失败", e);
+            throw new GenericException("调用接口获取access_token失败", e);
         }
         if (weComToken.getErrCode() != 0) {
             throw new GenericException("获取access_token接口返回结果失败:" + weComToken.getErrMsg());
