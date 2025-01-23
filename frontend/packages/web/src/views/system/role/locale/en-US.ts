@@ -4,6 +4,7 @@ export default {
   'role.addRole': 'Add role',
   'role.permission': 'Permission',
   'role.member': 'Member',
+  'role.addMember': 'Add member',
   'deleteConfirmContent': 'After deletion, role members no longer have this permission',
   'role.dataPermission': 'Data permission',
   'role.dataPermissionAll': 'All',
@@ -13,4 +14,9 @@ export default {
   'role.pleaseSelectDepartment': 'Please select department',
   'role.feature': 'Feature',
   'role.operator': 'Operator',
+  'role.featurePermission': 'Feature permission',
+  'role.memberName': 'Name',
+  'role.department': 'Department',
+  'role.job': 'Job',
+  'role.role': 'Role',
 };

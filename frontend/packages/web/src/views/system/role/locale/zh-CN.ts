@@ -4,6 +4,7 @@ export default {
   'role.addRole': '添加角色',
   'role.permission': '权限',
   'role.member': '成员',
+  'role.addMember': '添加成员',
   'role.deleteConfirmContent': '删除后，角色成员不再拥有该权限',
   'role.dataPermission': '数据权限',
   'role.dataPermissionAll': '全部数据',
@@ -13,4 +14,9 @@ export default {
   'role.pleaseSelectDepartment': '请选择部门',
   'role.feature': '功能',
   'role.operator': '操作对象',
+  'role.featurePermission': '功能权限',
+  'role.memberName': '姓名',
+  'role.department': '部门',
+  'role.job': '职位',
+  'role.role': '角色',
 };

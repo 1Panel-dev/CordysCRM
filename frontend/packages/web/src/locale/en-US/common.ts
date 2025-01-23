@@ -223,4 +223,5 @@ export default {
   'common.pleaseInputToEnter': 'Please input and press enter',
   'common.emailErrTip': 'Email format error, please reenter',
   'common.userPhoneErrTip': 'Please enter the 11 phone number',
+  'common.addTime': 'Add time',
 };

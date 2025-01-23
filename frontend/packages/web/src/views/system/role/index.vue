@@ -1,5 +1,5 @@
 <template>
-  <CrmCard no-content-padding>
+  <CrmCard hide-footer no-content-padding>
     <CrmSplitPanel class="h-full" :max="0.5" :min="0.25" :default-size="0.25">
       <template #1>
         <div class="p-[24px]">
@@ -34,7 +34,7 @@
         </div>
       </template>
       <template #2>
-        <div class="px-[24px] pt-[13px]">
+        <div class="h-full px-[24px] pt-[13px]">
           <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="line">
             <template #permission>
               <permissionTab />
@@ -184,5 +184,9 @@
   }
   :deep(.n-tree-node-wrapper) {
     padding: 0;
+  }
+  .n-tabs,
+  :deep(.n-tab-pane) {
+    @apply h-full;
   }
 </style>

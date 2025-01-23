@@ -2,13 +2,13 @@
   <router-view v-slot="{ Component, route }">
     <transition name="fade" mode="out-in" appear>
       <!-- transition内必须有且只有一个根元素，不然会导致二级路由的组件无法渲染 -->
-      <div class="page-content">
-        <n-scrollbar style="min-height: 500px">
+      <n-scrollbar content-style="min-height: 500px;height: 100%;width: 100%">
+        <div class="page-content">
           <keep-alive :include="[]">
             <component :is="Component" :key="route.name" />
           </keep-alive>
-        </n-scrollbar>
-      </div>
+        </div>
+      </n-scrollbar>
     </transition>
   </router-view>
 </template>

@@ -1,34 +1,26 @@
 <template>
-  <div>
-    <div class="flex items-center justify-between pb-[16px] pt-[4px]">
-      <n-input-group class="flex-1">
-        <n-input-group-label class="text-[var(--text-n4)]">
-          {{ t('role.dataPermission') }}
-        </n-input-group-label>
-        <n-select
-          v-model:value="dataPermission"
-          class="permission-select"
-          :options="dataPermissionOptions"
-          @update-value="handleDataPermissionChange"
-        />
-      </n-input-group>
-      <n-cascader
+  <n-scrollbar x-scrollable :content-style="{ 'min-width': '600px', 'width': '100%' }">
+    <div class="group-title">{{ t('role.dataPermission') }}</div>
+    <div class="mb-[24px] flex h-[32px] items-center gap-[8px]">
+      <n-radio-group v-model:value="dataPermission" @update-value="handleDataPermissionChange">
+        <n-space>
+          <n-radio v-for="item in dataPermissionOptions" :key="item.value" :value="item.value">
+            {{ item.label }}
+          </n-radio>
+        </n-space>
+      </n-radio-group>
+      <n-tree-select
         v-if="dataPermission === 'specifiedDepartment'"
         v-model:value="departments"
-        :placeholder="t('role.pleaseSelectDepartment')"
-        expand-trigger="click"
         :options="departmentOptions"
-        :cascade="true"
-        :show-path="false"
-        :filterable="false"
-        check-strategy="parent"
+        :consistent-menu-width="false"
         max-tag-count="responsive"
-        class="department-cascader"
         multiple
-        clearable
-        @update-value="initPermissionTable"
+        class="w-[240px]"
+        :placeholder="t('role.pleaseSelectDepartment')"
       />
     </div>
+    <div class="group-title">{{ t('role.featurePermission') }}</div>
     <n-data-table
       :single-line="false"
       :columns="columns"
@@ -36,46 +28,67 @@
       :paging="false"
       :pagination="false"
       :loading="loading"
+      :scroll-x="800"
     />
-  </div>
+    <div class="tab-footer">
+      <n-button :disabled="loading" secondary @click="handleCancel">
+        {{ t('common.cancel') }}
+      </n-button>
+      <n-button :loading="loading" type="primary" @click="handleSave">
+        {{ t(isEdit ? 'common.update' : 'common.create') }}
+      </n-button>
+    </div>
+  </n-scrollbar>
 </template>
 
 <script setup lang="ts">
   import { VNodeChild } from 'vue';
-  import { DataTableColumn, NCascader, NCheckbox, NDataTable, NInputGroup, NInputGroupLabel, NSelect } from 'naive-ui';
+  import {
+    DataTableColumn,
+    NButton,
+    NCheckbox,
+    NDataTable,
+    NRadio,
+    NRadioGroup,
+    NScrollbar,
+    NSpace,
+    NTreeSelect,
+    useMessage,
+  } from 'naive-ui';
 
   import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
+  const message = useMessage();
 
   const dataPermission = ref('all');
   const dataPermissionOptions = [
     { label: t('role.dataPermissionAll'), value: 'all' },
-    { label: t('role.specifiedDepartmentData'), value: 'specifiedDepartment' },
     { label: t('role.departmentData'), value: 'department' },
     { label: t('role.personalData'), value: 'personal' },
+    { label: t('role.specifiedDepartmentData'), value: 'specifiedDepartment' },
   ];
   const departments = ref([]);
   const departmentOptions = ref([
     {
       label: '一级 1',
-      value: '1',
+      key: '1',
       children: [
         {
           label: '二级 1-1',
-          value: '1-1',
+          key: '1-1',
           children: [
             {
               label: '三级 1-1-1',
-              value: '1-1-1',
+              key: '1-1-1',
             },
             {
               label: '三级 1-1-2',
-              value: '1-1-2',
+              key: '1-1-2',
             },
             {
               label: '三级 1-1-3',
-              value: '1-1-3',
+              key: '1-1-3',
             },
           ],
         },
@@ -83,15 +96,15 @@
     },
     {
       label: '一级 2',
-      value: '2',
+      key: '2',
       children: [
         {
           label: '二级 2-1',
-          value: '2-1',
+          key: '2-1',
           children: [
             {
               label: '三级 2-1-1',
-              value: '2-1-1',
+              key: '2-1-1',
             },
           ],
         },
@@ -197,7 +210,6 @@
     if (value !== 'specifiedDepartment') {
       departments.value = [];
     }
-    initPermissionTable();
   }
 
   const permissionAllChecked = computed({
@@ -210,11 +222,13 @@
       key: 'feature',
       width: 150,
       className: 'feature-column',
+      fixed: 'left',
       rowSpan: (rowData, rowIndex) => (rowIndex === 0 ? (rowData.rowSpan as number) : 1),
     },
     {
       title: t('role.operator'),
       key: 'operator',
+      fixed: 'left',
       width: 150,
     },
     {
@@ -252,6 +266,7 @@
     {
       key: 'enable',
       width: 60,
+      fixed: 'right',
       title: () =>
         h(NCheckbox, {
           checked: permissionAllChecked.value,
@@ -288,12 +303,33 @@
     },
   ];
 
+  const isEdit = ref(false);
+
+  function handleCancel() {}
+
+  async function handleSave() {
+    try {
+      loading.value = true;
+      message.success(t('common.saveSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
   onBeforeMount(() => {
     initPermissionTable();
   });
 </script>
 
 <style lang="less" scoped>
+  .group-title {
+    margin-bottom: 16px;
+    font-weight: 600;
+    color: var(--text-n1);
+  }
   :deep(.permission-select) {
     width: 160px;
     height: 32px !important;
@@ -305,5 +341,17 @@
   :deep(.n-data-table-th) {
     color: var(--text-n2);
     background-color: var(--text-n9);
+  }
+  .tab-footer {
+    @apply absolute bottom-0 flex items-center justify-end;
+
+    left: -24px;
+    padding: 24px;
+    width: calc(100% + 48px);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #00000000), var(--tw-ring-shadow, 0 0 #00000000), var(--tw-shadow);
+    gap: 16px;
+
+    --tw-shadow: 0 -1px 4px rgb(2 2 2 / 10%);
+    --tw-shadow-colored: 0 -1px 4px var(--tw-shadow-color);
   }
 </style>

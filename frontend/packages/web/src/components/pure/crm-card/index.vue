@@ -22,7 +22,7 @@
       <template #header-extra>
         <slot name="header-extra"></slot>
       </template>
-      <n-scrollbar :style="{ 'max-height': props.contentMaxHeight || '100%' }">
+      <n-scrollbar :content-style="{ 'max-height': props.contentMaxHeight || '100%' }">
         <slot></slot>
       </n-scrollbar>
       <template #footer>

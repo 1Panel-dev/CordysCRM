@@ -22,7 +22,7 @@
 
     height: 100vh;
     .n-layout-scroll-container {
-      @apply flex w-full flex-col;
+      @apply flex w-full flex-col overflow-hidden;
     }
   }
 </style>
