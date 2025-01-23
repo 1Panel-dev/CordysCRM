@@ -1,8 +1,11 @@
 package io.cordys.crm.system.dto.response;
 
+import io.cordys.common.permission.PermissionDefinitionItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import io.cordys.crm.system.domain.Role;
+
+import java.util.List;
 
 /**
  *
@@ -16,4 +19,10 @@ public class RoleGetResponse extends Role {
 
     @Schema(description = "更新人名称")
     private String updateUserName;
+
+    @Schema(description = "指定部门权限时，部门的ID")
+    private List<String> deptIds;
+
+    @Schema(description = "权限配置")
+    private List<PermissionDefinitionItem> permissions;
 }

@@ -379,6 +379,16 @@ CREATE TABLE sys_role_permission
 
 CREATE INDEX idx_role_id ON sys_role_permission (role_id ASC);
 
+CREATE TABLE sys_role_scope_dept(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `role_id` VARCHAR(32) NOT NULL   COMMENT '角色ID' ,
+    `dept_id` VARCHAR(32) NOT NULL   COMMENT '部门ID' ,
+    PRIMARY KEY (id)
+)  COMMENT = '角色与部门的关联表，角色 data_scope 为指定部门时使用'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
 CREATE TABLE sys_user_role
 (
     `id`          VARCHAR(32) NOT NULL COMMENT 'id',

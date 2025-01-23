@@ -16,8 +16,9 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.RolePermission;
+import io.cordys.crm.system.domain.RoleScopeDept;
 import io.cordys.crm.system.domain.UserRole;
-import io.cordys.crm.system.dto.request.PermissionSettingUpdateRequest;
+import io.cordys.crm.system.dto.request.PermissionUpdateRequest;
 import io.cordys.crm.system.dto.request.RoleAddRequest;
 import io.cordys.crm.system.dto.request.RoleUpdateRequest;
 import io.cordys.crm.system.dto.response.RoleGetResponse;
@@ -35,10 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.cordys.crm.system.constants.SystemResultCode.INTERNAL_ROLE_PERMISSION;
@@ -58,6 +56,8 @@ public class RoleService {
     private ExtRoleMapper extRoleMapper;
     @Resource
     private BaseMapper<UserRole> userRoleMapper;
+    @Resource
+    private BaseMapper<RoleScopeDept> roleScopeDeptMapper;
     @Resource
     private BaseMapper<RolePermission> rolePermissionMapper;
     @Resource
@@ -104,7 +104,21 @@ public class RoleService {
         Role role = roleMapper.selectByPrimaryKey(id);
         RoleGetResponse roleGetResponse = BeanUtils.copyBean(new RoleGetResponse(), role);
         translateInternalRole(roleGetResponse);
+        roleGetResponse.setPermissions(getPermissionSetting(id));
+        if (StringUtils.equals(role.getDataScope(), RoleDataScope.DEPT_CUSTOM.name())) {
+            roleGetResponse.setDeptIds(getDeptIdsByRoleId(id));
+        }
         return baseService.setCreateAndUpdateUserName(roleGetResponse);
+    }
+
+    private List<String> getDeptIdsByRoleId(String roleId) {
+        RoleScopeDept example = new RoleScopeDept();
+        example.setRoleId(roleId);
+        List<String> deptIds = roleScopeDeptMapper.select(example)
+                .stream()
+                .map(RoleScopeDept::getDeptId)
+                .collect(Collectors.toList());
+        return deptIds;
     }
 
     @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.ADD, resourceName = "{#request.name}")
@@ -117,11 +131,19 @@ public class RoleService {
         role.setCreateUser(userId);
         role.setInternal(false);
         role.setOrganizationId(orgId);
-        // 创建默认仅可查看
-        role.setDataScope(RoleDataScope.SELF.name());
+        // 创建默认仅可查看本人数据
+        role.setDataScope(Optional.ofNullable(request.getDataScope()).orElse(RoleDataScope.SELF.name()));
         // 校验名称重复
         checkAddExist(role);
         roleMapper.insert(role);
+
+        // 配置指定部门权限
+        if (StringUtils.equals(request.getDataScope(), RoleDataScope.DEPT_CUSTOM.name()) && CollectionUtils.isEmpty(request.getDeptIds())) {
+            roleScopeDeptMapper.batchInsert(getRoleScopeDept(role.getId(), request.getDeptIds()));
+        }
+
+        // 配置权限
+        insertRolePermission(request.getPermissions(), role.getId(), userId);
 
         OperationLogContext.setContext(
                 LogContextInfo.builder()
@@ -131,6 +153,16 @@ public class RoleService {
         );
 
         return role;
+    }
+
+    private List<RoleScopeDept> getRoleScopeDept(String roleId, List<String> deptIds) {
+        return deptIds.stream().map(deptId -> {
+            RoleScopeDept roleScopeDept = new RoleScopeDept();
+            roleScopeDept.setId(IDGenerator.nextStr());
+            roleScopeDept.setRoleId(roleId);
+            roleScopeDept.setDeptId(deptId);
+            return roleScopeDept;
+        }).collect(Collectors.toList());
     }
 
     @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.UPDATE, resourceId = "{#request.id}")
@@ -146,6 +178,28 @@ public class RoleService {
 
         RoleGetResponse roleGetResponse = get(role.getId());
 
+        String dataScope = request.getDataScope();
+        if (StringUtils.isNotBlank(dataScope)
+                && StringUtils.equals(originRole.getDataScope(), RoleDataScope.DEPT_CUSTOM.name())
+                && !StringUtils.equals(dataScope, RoleDataScope.DEPT_CUSTOM.name())) {
+            // 如果从自定义部门改为其他数据权限，则删除部门关联关系
+            deleteRoleScopeDeptByRoleId(role.getId());
+        }
+
+        // 配置指定部门权限
+        if (StringUtils.equals(dataScope, RoleDataScope.DEPT_CUSTOM.name()) && request.getDeptIds() != null) {
+            // 先删除
+            deleteRoleScopeDeptByRoleId(role.getId());
+
+            // 再添加
+            if (CollectionUtils.isNotEmpty(request.getDeptIds())) {
+                roleScopeDeptMapper.batchInsert(getRoleScopeDept(role.getId(), request.getDeptIds()));
+            }
+        }
+
+        // 更新权限设置
+        updatePermissionSetting(request.getPermissions(), role.getId(), userId);
+
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceName(roleGetResponse.getName())
@@ -155,6 +209,12 @@ public class RoleService {
         );
 
         return roleGetResponse;
+    }
+
+    private void deleteRoleScopeDeptByRoleId(String roleId) {
+        RoleScopeDept example = new RoleScopeDept();
+        example.setRoleId(roleId);
+        roleScopeDeptMapper.delete(example);
     }
 
     /**
@@ -187,8 +247,10 @@ public class RoleService {
         }
         // 删除角色
         roleMapper.deleteByPrimaryKey(id);
-        // 删除与权限的关联表
+        // 删除与权限的关联关系
         deletePermissionByRoleId(id);
+        // 删除与部门的关联关系
+        deleteRoleScopeDeptByRoleId(id);
 
         // 设置操作对象
         OperationLogContext.setResourceName(role.getName());
@@ -205,6 +267,18 @@ public class RoleService {
         Role role = roleMapper.selectByPrimaryKey(id);
         // 获取该角色拥有的权限
         Set<String> permissionIds = getPermissionIdSetByRoleId(role.getId());
+        return getPermissionDefinitionItems(role, permissionIds);
+    }
+
+    /**
+     * 获取空的权限配置
+     * @return
+     */
+    public List<PermissionDefinitionItem> getPermissionSetting() {
+        return getPermissionDefinitionItems(null, Set.of());
+    }
+
+    private List<PermissionDefinitionItem> getPermissionDefinitionItems(Role role, Set<String> permissionIds) {
         // 获取所有的权限
         List<PermissionDefinitionItem> permissionDefinitions = getPermissionDefinitions();
         // 设置勾选项
@@ -227,7 +301,8 @@ public class RoleService {
                         p.setName(translateDefaultPermissionName(p));
                     }
                     // 管理员默认勾选全部二级权限位
-                    if (permissionIds.contains(p.getId()) || StringUtils.equals(role.getId(), InternalRole.ORG_ADMIN.getValue())) {
+                    if (permissionIds.contains(p.getId()) ||
+                            (role != null && StringUtils.equals(role.getId(), InternalRole.ORG_ADMIN.getValue()))) {
                         p.setEnable(true);
                     } else {
                         // 如果权限有未勾选，则二级菜单设置为未勾选
@@ -243,7 +318,6 @@ public class RoleService {
             }
             firstLevel.setEnable(allCheck);
         }
-
         return permissionDefinitions;
     }
 
@@ -332,17 +406,20 @@ public class RoleService {
     /**
      * 更新单个用户组的配置项
      *
-     * @param request
+     * @param permissions
      */
-    public void updatePermissionSetting(PermissionSettingUpdateRequest request, String userId) {
-        List<PermissionSettingUpdateRequest.PermissionUpdateRequest> permissions = request.getPermissions();
-
-        String roleId = request.getRoleId();
-
+    public void updatePermissionSetting(List<PermissionUpdateRequest> permissions, String roleId, String userId) {
         // 先删除
         deletePermissionByRoleId(roleId);
 
         // 再新增
+        insertRolePermission(permissions, roleId, userId);
+    }
+
+    private void insertRolePermission(List<PermissionUpdateRequest> permissions, String roleId, String userId) {
+        if (CollectionUtils.isEmpty(permissions)) {
+            return;
+        }
         permissions.forEach(permission -> {
             if (BooleanUtils.isTrue(permission.getEnable())) {
                 String permissionId = permission.getId();

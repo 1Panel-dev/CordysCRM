@@ -73,18 +73,11 @@ public class RoleController {
         roleService.delete(id);
     }
 
-    @GetMapping("/permission/setting/{id}")
-    @Operation(summary = "获取角色对应的权限配置")
+    @GetMapping("/permission/setting")
+    @Operation(summary = "获取权限配置")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_READ)
-    public List<PermissionDefinitionItem> getPermissionSetting(@PathVariable String id) {
-        return roleService.getPermissionSetting(id);
-    }
-
-    @PostMapping("/permission/update")
-    @Operation(summary = "编辑角色的权限配置")
-    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_UPDATE)
-    public void updatePermissionSetting(@Validated @RequestBody PermissionSettingUpdateRequest request) {
-        roleService.updatePermissionSetting(request, SessionUtils.getUserId());
+    public List<PermissionDefinitionItem> getPermissionSetting() {
+        return roleService.getPermissionSetting();
     }
 
     @PostMapping("/user/page")

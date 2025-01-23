@@ -3,16 +3,16 @@ package io.cordys.crm.system.controller;
 import io.cordys.common.constants.InternalRole;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.permission.Permission;
 import io.cordys.common.permission.PermissionDefinitionItem;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.system.domain.OrganizationUser;
-import io.cordys.crm.system.domain.Role;
-import io.cordys.crm.system.domain.RolePermission;
-import io.cordys.crm.system.domain.UserRole;
+import io.cordys.crm.system.domain.*;
 import io.cordys.crm.system.dto.request.*;
+import io.cordys.crm.system.dto.response.RoleGetResponse;
 import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.crm.system.dto.response.RoleUserListResponse;
 import io.cordys.mybatis.BaseMapper;
@@ -39,8 +39,7 @@ import static io.cordys.crm.system.constants.SystemResultCode.ROLE_EXIST;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RoleControllerTests extends BaseTest {
     private static final String BASE_PATH = "/role/";
-    private static final String PERMISSION_SETTING = "permission/setting/{0}";
-    private static final String PERMISSION_UPDATE = "permission/update";
+    private static final String PERMISSION_SETTING = "permission/setting";
     private static final String USER_PAGE = "user/page";
     private static final String USER_DEPT_TREE = "user/dept/tree/{roleId}";
     private static final String USER_ROLE_TREE = "user/role/tree/{roleId}";
@@ -60,6 +59,8 @@ class RoleControllerTests extends BaseTest {
     private BaseMapper<RolePermission> rolePermissionMapper;
     @Resource
     private BaseMapper<UserRole> userRoleMapper;
+    @Resource
+    private BaseMapper<RoleScopeDept> roleScopeDeptMapper;
     @Resource
     private BaseMapper<OrganizationUser> organizationUserMapper;
 
@@ -117,10 +118,32 @@ class RoleControllerTests extends BaseTest {
         // 校验重名异常
         assertErrorCode(this.requestPost(DEFAULT_ADD, request), ROLE_EXIST);
 
-        // 添加另一条数据
+        // 添加另一条数据，配置权限
         request.setName("other name");
+        request.setDataScope(RoleDataScope.DEPT_CUSTOM.name());
+        request.setDeptIds(List.of("deptId"));
+        request.setPermissions(new ArrayList<>() {{
+            PermissionUpdateRequest permission1
+                    = new PermissionUpdateRequest();
+            permission1.setEnable(true);
+            permission1.setId(PermissionConstants.SYSTEM_ROLE_READ);
+            add(permission1);
+            PermissionUpdateRequest permission2
+                    = new PermissionUpdateRequest();
+            permission2.setEnable(false);
+            permission2.setId(PermissionConstants.SYSTEM_ROLE_UPDATE);
+            add(permission2);
+        }});
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         anotherUserRole = roleMapper.selectByPrimaryKey(getResultData(mvcResult, Role.class).getId());
+        // 获取该用户组拥有的权限
+        Set<String> permissionIds = getPermissionIdSetByRoleId(anotherUserRole.getId());
+        Set<String> requestPermissionIds = request.getPermissions().stream()
+                .filter(PermissionUpdateRequest::getEnable)
+                .map(PermissionUpdateRequest::getId)
+                .collect(Collectors.toSet());
+        // 校验请求成功数据
+        Assertions.assertEquals(requestPermissionIds, permissionIds);
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD, DEFAULT_ADD, request);
@@ -140,6 +163,29 @@ class RoleControllerTests extends BaseTest {
         Role userRoleResult = roleMapper.selectByPrimaryKey(request.getId());
         Assertions.assertEquals(request.getName(), userRoleResult.getName());
         Assertions.assertEquals(request.getDescription(), userRoleResult.getDescription());
+
+        // 修改权限
+        request.setPermissions(new ArrayList<>() {{
+            PermissionUpdateRequest permission1
+                    = new PermissionUpdateRequest();
+            permission1.setEnable(true);
+            permission1.setId(PermissionConstants.SYSTEM_ROLE_READ);
+            add(permission1);
+            PermissionUpdateRequest permission2
+                    = new PermissionUpdateRequest();
+            permission2.setEnable(false);
+            permission2.setId(PermissionConstants.SYSTEM_ROLE_UPDATE);
+            add(permission2);
+        }});
+        this.requestPostWithOk(DEFAULT_UPDATE, request);
+        // 获取该用户组拥有的权限
+        Set<String> permissionIds = getPermissionIdSetByRoleId(request.getId());
+        Set<String> requestPermissionIds = request.getPermissions().stream()
+                .filter(PermissionUpdateRequest::getEnable)
+                .map(PermissionUpdateRequest::getId)
+                .collect(Collectors.toSet());
+        // 校验请求成功数据
+        Assertions.assertEquals(requestPermissionIds, permissionIds);
 
         // 不修改信息
         RoleUpdateRequest emptyRequest = new RoleUpdateRequest();
@@ -184,8 +230,24 @@ class RoleControllerTests extends BaseTest {
     @Order(4)
     void testGetPermissionSetting() throws Exception {
         // @@请求成功
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(PERMISSION_SETTING, addRole.getId());
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(PERMISSION_SETTING);
         List<PermissionDefinitionItem> permissionDefinition = getResultDataArray(mvcResult, PermissionDefinitionItem.class);
+        Assertions.assertTrue(CollectionUtils.isNotEmpty(permissionDefinition));
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, PERMISSION_SETTING);
+    }
+
+    @Test
+    @Order(4)
+    void testGet() throws Exception {
+        // @@请求成功
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(DEFAULT_GET, addRole.getId());
+        RoleGetResponse getResponse = getResultData(mvcResult, RoleGetResponse.class);
+        List<PermissionDefinitionItem> permissionDefinition = getResponse.getPermissions();
+
+        Role role = roleMapper.selectByPrimaryKey(addRole.getId());
+        Assertions.assertEquals(role, BeanUtils.copyBean(new Role(), getResponse));
 
         // 获取该用户组拥有的权限
         Set<String> permissionIds = getPermissionIdSetByRoleId(InternalRole.ORG_ADMIN.getValue());
@@ -221,40 +283,7 @@ class RoleControllerTests extends BaseTest {
         Assertions.assertTrue(CollectionUtils.isEmpty(permissionIds));
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, PERMISSION_SETTING, addRole.getId());
-    }
-
-    @Test
-    @Order(5)
-    void testUpdatePermissionSetting() throws Exception {
-        PermissionSettingUpdateRequest request = new PermissionSettingUpdateRequest();
-        request.setPermissions(new ArrayList<>() {{
-            PermissionSettingUpdateRequest.PermissionUpdateRequest permission1
-                    = new PermissionSettingUpdateRequest.PermissionUpdateRequest();
-            permission1.setEnable(true);
-            permission1.setId(PermissionConstants.SYSTEM_ROLE_READ);
-            add(permission1);
-            PermissionSettingUpdateRequest.PermissionUpdateRequest permission2
-                    = new PermissionSettingUpdateRequest.PermissionUpdateRequest();
-            permission2.setEnable(false);
-            permission2.setId(PermissionConstants.SYSTEM_ROLE_UPDATE);
-            add(permission2);
-        }});
-
-        // 请求成功
-        request.setRoleId(addRole.getId());
-        this.requestPostWithOk(PERMISSION_UPDATE, request);
-        // 获取该用户组拥有的权限
-        Set<String> permissionIds = getPermissionIdSetByRoleId(request.getRoleId());
-        Set<String> requestPermissionIds = request.getPermissions().stream()
-                .filter(PermissionSettingUpdateRequest.PermissionUpdateRequest::getEnable)
-                .map(PermissionSettingUpdateRequest.PermissionUpdateRequest::getId)
-                .collect(Collectors.toSet());
-        // 校验请求成功数据
-        Assertions.assertEquals(requestPermissionIds, permissionIds);
-
-        // 校验权限
-        requestPostPermissionTest(PermissionConstants.SYSTEM_ROLE_UPDATE, PERMISSION_UPDATE, request);
+        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, DEFAULT_GET, addRole.getId());
     }
 
     @Test
@@ -405,6 +434,9 @@ class RoleControllerTests extends BaseTest {
         // 校验角色与权限的关联关系是否删除
         Assertions.assertTrue(CollectionUtils.isEmpty(getByRoleId(addRole.getId())));
 
+        // 校验角色与部门的关联关系是否删除
+        Assertions.assertTrue(CollectionUtils.isEmpty(getRoleScopeDeptByRoleId(addRole.getId())));
+
         // 操作内置角色异常
         assertErrorCode(this.requestGet(DEFAULT_DELETE, InternalRole.SALES_MANAGER.getValue()), INTERNAL_ROLE_PERMISSION);
 
@@ -416,6 +448,12 @@ class RoleControllerTests extends BaseTest {
         RolePermission example = new RolePermission();
         example.setRoleId(roleId);
         return rolePermissionMapper.select(example);
+    }
+
+    public List<RoleScopeDept> getRoleScopeDeptByRoleId(String roleId) {
+        RoleScopeDept example = new RoleScopeDept();
+        example.setRoleId(roleId);
+        return roleScopeDeptMapper.select(example);
     }
 
     /**
