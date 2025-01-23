@@ -20,7 +20,7 @@ import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
 import io.cordys.crm.system.mapper.ExtDepartmentMapper;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.wecom.dto.WeComDepartment;
+import io.cordys.integration.wecom.dto.WeComDepartment;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

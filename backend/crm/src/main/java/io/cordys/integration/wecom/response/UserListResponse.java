@@ -1,7 +1,7 @@
-package io.cordys.wecom.response;
+package io.cordys.integration.wecom.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.cordys.wecom.dto.WeComUser;
+import io.cordys.integration.wecom.dto.WeComUser;
 import lombok.Data;
 
 import java.util.List;

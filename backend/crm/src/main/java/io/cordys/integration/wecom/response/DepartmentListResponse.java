@@ -1,6 +1,6 @@
-package io.cordys.wecom.response;
+package io.cordys.integration.wecom.response;
 
-import io.cordys.wecom.dto.WeComDepartment;
+import io.cordys.integration.wecom.dto.WeComDepartment;
 import lombok.Data;
 
 import java.util.List;

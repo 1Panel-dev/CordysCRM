@@ -1,4 +1,4 @@
-package io.cordys.wecom.utils;
+package io.cordys.integration.wecom.utils;
 
 import java.io.IOException;
 import java.net.URI;

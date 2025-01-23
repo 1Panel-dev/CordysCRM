@@ -1,4 +1,4 @@
-package io.cordys.wecom.response;
+package io.cordys.integration.wecom.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

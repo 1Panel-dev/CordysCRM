@@ -1,4 +1,4 @@
-package io.cordys.wecom.dto;
+package io.cordys.integration.wecom.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

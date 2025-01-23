@@ -1,4 +1,4 @@
-package io.cordys.wecom.constant;
+package io.cordys.integration.wecom.constant;
 
 public interface WeComApiPaths {
 

@@ -1,11 +1,11 @@
-package io.cordys.wecom.utils;
+package io.cordys.integration.wecom.utils;
 
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.crm.system.domain.*;
 import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.OrganizationUserService;
-import io.cordys.wecom.dto.WeComDepartment;
-import io.cordys.wecom.dto.WeComUser;
+import io.cordys.integration.wecom.dto.WeComDepartment;
+import io.cordys.integration.wecom.dto.WeComUser;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.ArrayList;

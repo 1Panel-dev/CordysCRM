@@ -1,9 +1,8 @@
-package io.cordys.wecom.dto;
+package io.cordys.integration.wecom.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.cordys.common.uid.IDGenerator;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

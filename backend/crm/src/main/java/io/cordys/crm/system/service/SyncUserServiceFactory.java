@@ -1,6 +1,6 @@
 package io.cordys.crm.system.service;
 
-import io.cordys.wecom.service.WeComDepartMentService;
+import io.cordys.integration.wecom.service.WeComDepartMentService;
 
 public class SyncUserServiceFactory {
 

@@ -1,4 +1,4 @@
-package io.cordys.wecom.service;
+package io.cordys.integration.wecom.service;
 
 import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.exception.GenericException;
@@ -7,14 +7,14 @@ import io.cordys.common.util.JSON;
 import io.cordys.crm.system.dto.response.SyncOrganizationDTO;
 import io.cordys.crm.system.service.OrganizationConfigService;
 import io.cordys.crm.system.service.SyncUserService;
-import io.cordys.wecom.constant.WeComApiPaths;
-import io.cordys.wecom.dto.WeComDepartment;
-import io.cordys.wecom.dto.WeComToken;
-import io.cordys.wecom.dto.WeComUser;
-import io.cordys.wecom.response.DepartmentListResponse;
-import io.cordys.wecom.response.UserListResponse;
-import io.cordys.wecom.utils.DepartmentDataHandle;
-import io.cordys.wecom.utils.HttpRequestUtil;
+import io.cordys.integration.wecom.constant.WeComApiPaths;
+import io.cordys.integration.wecom.dto.WeComToken;
+import io.cordys.integration.wecom.dto.WeComUser;
+import io.cordys.integration.wecom.response.DepartmentListResponse;
+import io.cordys.integration.wecom.response.UserListResponse;
+import io.cordys.integration.wecom.utils.DepartmentDataHandle;
+import io.cordys.integration.wecom.utils.HttpRequestUtil;
+import io.cordys.integration.wecom.dto.WeComDepartment;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.Redisson;
