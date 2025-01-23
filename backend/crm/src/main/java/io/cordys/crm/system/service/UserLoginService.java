@@ -25,7 +25,6 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,18 +63,6 @@ public class UserLoginService {
         return organizationUserMapper.select(example).stream()
                 .map(OrganizationUser::getOrganizationId).collect(Collectors.toSet());
     }
-
-    public UserDTO getUserDTOByEmail(String email, String... source) {
-        User example = new User();
-        example.setEmail(email);
-        List<User> users = sysUserMapper.select(example);
-        if (users == null || users.isEmpty()) {
-            return null;
-        }
-
-        return getUserDTO(users.getFirst().getId());
-    }
-
 
     @OperationLog(
             module = LogModule.SYSTEM,

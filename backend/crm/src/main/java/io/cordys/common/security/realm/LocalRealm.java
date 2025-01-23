@@ -79,32 +79,21 @@ public class LocalRealm extends AuthorizingRealm {
 
     private UserDTO getUserWithOutAuthenticate(String userId) {
         UserDTO user = userLoginService.getUserDTO(userId);
-        String msg;
         if (user == null) {
-            user = userLoginService.getUserDTOByEmail(userId);
-            if (user == null) {
-                msg = "The user does not exist: " + userId;
-                LogUtils.warn(msg);
-                throw new UnknownAccountException(Translator.get("password_is_incorrect"));
-            }
+            LogUtils.warn("The user does not exist: " + userId);
+            throw new UnknownAccountException(Translator.get("password_is_incorrect"));
         }
         return user;
     }
 
     private AuthenticationInfo loginLocalMode(String userId, String password) {
         UserDTO user = userLoginService.getUserDTO(userId);
-        String msg;
         if (user == null) {
-            user = userLoginService.getUserDTOByEmail(userId);
-            if (user == null) {
-                msg = "The user does not exist: " + userId;
-                LogUtils.warn(msg);
-                throw new UnknownAccountException(Translator.get("password_is_incorrect"));
-            }
-            userId = user.getId();
+            LogUtils.warn("The user does not exist: " + userId);
+            throw new UnknownAccountException(Translator.get("password_is_incorrect"));
         }
         // 密码验证
-        if (!userLoginService.checkUserPassword(userId, password)) {
+        if (!userLoginService.checkUserPassword(user.getId(), password)) {
             throw new IncorrectCredentialsException(Translator.get("password_is_incorrect"));
         }
         SessionUser sessionUser = SessionUser.fromUser(user, SessionUtils.getSessionId());
