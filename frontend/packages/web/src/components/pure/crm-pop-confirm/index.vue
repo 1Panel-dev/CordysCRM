@@ -14,15 +14,20 @@
     </template>
     <template #default>
       <div class="crm-pop-confirm-content-wrapper">
-        <div class="crm-pop-confirm-title">
-          <CrmIcon
-            :class="`crm-pop-confirm-icon-${props.iconType} mr-[8px]`"
-            type="iconicon_info_circle_filled"
-            :size="20"
-          />
-          <div class="one-line-text">{{ props.title }}</div>
-        </div>
-        <div class="crm-pop-confirm-content">{{ props.content }}</div>
+        <slot name="title">
+          <div class="crm-pop-confirm-title">
+            <CrmIcon
+              v-if="showIcon"
+              :class="`crm-pop-confirm-icon-${props.iconType} mr-[8px]`"
+              type="iconicon_info_circle_filled"
+              :size="20"
+            />
+            <div class="one-line-text">{{ props.title }}</div>
+          </div>
+        </slot>
+        <slot name="content">
+          <div class="crm-pop-confirm-content">{{ props.content }}</div>
+        </slot>
       </div>
     </template>
     <template #action>
@@ -49,12 +54,13 @@
     defineProps<{
       loading: boolean;
       title: string; // 标题
-      content: string; // 内容
+      content?: string; // 内容
       iconType?: 'error' | 'warning' | 'primary'; // 图标类型
       negativeButtonProps?: ButtonProps; // 取消按钮文字
       positiveButtonProps?: ButtonProps; // 确定按钮的属性
       positiveText?: string; // 确定按钮文本
       negativeText?: string; // 取消按钮文本
+      showIcon?: boolean; // 显示icon
       placement?:
         | 'top-start'
         | 'top'
@@ -73,6 +79,7 @@
       iconType: 'error',
       positiveText: 'common.remove',
       negativeText: 'common.cancel',
+      showIcon: true,
     }
   );
 

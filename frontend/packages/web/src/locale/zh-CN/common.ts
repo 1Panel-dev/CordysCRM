@@ -220,4 +220,6 @@ export default {
   'common.operator': '操作人',
   'common.nameExists': '名称已重复',
   'common.pleaseInputToEnter': '请输入后回车',
+  'common.emailErrTip': '邮箱格式错误，请重新输入',
+  'common.userPhoneErrTip': '请输入 11 位手机号',
 };

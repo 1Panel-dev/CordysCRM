@@ -77,14 +77,37 @@
                 @confirm="confirm"
               />
             </div>
-            <div>
-              <CrmUpload
-                v-model:file-list="fileList"
-                :is-all-screen="true"
-                :show-file-list="true"
-                accept="excel"
-                @change="changeHandler"
-              />
+            <div class="flex h-[800px] gap-4">
+              <div class="flex-1">
+                <CrmUpload
+                  v-model:file-list="fileList"
+                  :is-all-screen="true"
+                  :show-file-list="true"
+                  accept="excel"
+                  @change="changeHandler"
+                />
+              </div>
+              <div class="flex-1">
+                <CrmList
+                  v-model:data="crmList"
+                  v-model:focus-item-key="focusItemKey"
+                  v-model:active-item-key="activeItemKey"
+                  :item-more-actions="moreOptions"
+                  virtual-scroll-height="200px"
+                  @item-click="handleItemClick"
+                >
+                  <template #title="{ item }">
+                    <div :key="item.id" class="flex items-center">
+                      <div>
+                        {{ item.name }}
+                      </div>
+                    </div>
+                  </template>
+                  <template #item="{ item }">
+                    {{ item }}
+                  </template>
+                </CrmList>
+              </div>
             </div>
           </div>
         </div>
@@ -154,6 +177,7 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
@@ -519,6 +543,20 @@
   const fileList = ref<CrmFileItem[]>([]);
 
   function changeHandler(file: CrmFileItem[], _fileList: CrmFileItem) {}
+
+  const data = Array.from({ length: 20 }, (_, i) => ({
+    id: `${i}`,
+    name: i,
+    avatar: `crmList-${i}`,
+  }));
+
+  const crmList = ref(data);
+  const focusItemKey = ref('');
+  const activeItemKey = ref('');
+
+  function handleItemClick(item: Record<string, any>) {
+    activeItemKey.value = item.key;
+  }
 </script>
 
 <style>
@@ -527,6 +565,35 @@
       display: flex;
       align-items: center;
       min-height: 100vh;
+    }
+  }
+  .storage {
+    @apply flex cursor-pointer items-center justify-between;
+
+    border-radius: var(--border-radius-small);
+    &:hover {
+      background-color: rgb(var(--primary-1));
+    }
+    .storage-text {
+      @apply flex cursor-pointer items-center;
+      .storage-icon {
+        margin-right: 4px;
+        color: var(--color-text-4);
+      }
+      .storage-name {
+        color: var(--color-text-1);
+      }
+      .storage-count {
+        margin-left: 4px;
+        color: var(--color-text-4);
+      }
+    }
+    .storage-text--active {
+      .storage-icon,
+      .storage-name,
+      .storage-count {
+        color: rgb(var(--primary-5));
+      }
     }
   }
 </style>

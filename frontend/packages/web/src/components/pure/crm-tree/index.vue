@@ -47,6 +47,7 @@
 </template>
 
 <script setup lang="ts">
+  // TODO 没有action的时候也展示了 待完善
   import { ref, VNodeChild } from 'vue';
   import { FormItemRule, NTooltip, NTree } from 'naive-ui';
   import { debounce } from 'lodash-es';
@@ -122,8 +123,8 @@
       draggable: false,
       titleTooltipPosition: 'top',
       fieldNames: () => ({
-        keyField: 'id',
-        labelField: 'name',
+        keyField: 'key',
+        labelField: 'label',
         childrenField: 'children',
         disabledField: 'disabled',
         isLeaf: 'isLeaf',
@@ -603,6 +604,9 @@
             }
           }
           &.n-tree-node--selected {
+            .n-tree-node-content__prefix {
+              color: var(--primary-8);
+            }
             .n-tree-node-content {
               .n-tree-node-content__text {
                 width: 60%;

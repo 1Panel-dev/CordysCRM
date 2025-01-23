@@ -8,19 +8,22 @@
     :placement="props.placement"
     @select="handleSelect"
     @update-show="handleUpdateShow"
+    @clickoutside="clickOutSide"
   >
-    <n-button type="primary" size="small" ghost class="h-[24px] w-[24px] !p-0" @click.stop="(e) => emit('click', e)">
-      <template #icon>
-        <n-icon>
-          <CrmIcon type="iconicon_ellipsis" :size="16" class="mt-[1px] text-[var(--primary-8)]" />
-        </n-icon>
-      </template>
-    </n-button>
+    <slot>
+      <n-button type="primary" size="small" ghost class="h-[24px] w-[24px] !p-0" @click.stop="(e) => emit('click', e)">
+        <template #icon>
+          <n-icon>
+            <CrmIcon type="iconicon_ellipsis" :size="16" class="mt-[1px] text-[var(--primary-8)]" />
+          </n-icon>
+        </template>
+      </n-button>
+    </slot>
   </n-dropdown>
 </template>
 
 <script setup lang="ts">
-  import { HTMLAttributes, VNodeChild } from 'vue';
+  import { HTMLAttributes } from 'vue';
   import {
     DropdownGroupOption,
     DropdownOption,
@@ -63,6 +66,7 @@
     (e: 'select', currentAction: ActionsItem): void;
     (e: 'click', event: MouseEvent): void;
     (e: 'updateShow', show: boolean): void;
+    (e: 'close'): void;
   }>();
 
   function handleSelect(key: string | number) {
@@ -78,25 +82,32 @@
 
   function renderLabel(option: DropdownOption) {
     const icon = option.iconType as string;
-
     return h(
       'div',
       {
-        class: `crm-dropdown-btn w-full ${option.danger ? ' text-[var(--error-red)]' : ''}`,
+        class: `crm-dropdown-btn w-full ${option.danger ? ' text-[var(--error-red)]' : ''} ${
+          option.disabled ? 'cursor-not-allowed text-[var(--text-n6)]' : 'cursor-pointer'
+        }`,
       },
       {
         default: () => {
           const content = [];
-          if (icon) {
-            content.push(
-              h(CrmIcon, {
-                size: 16,
-                type: icon,
-                class: `mr-[4px] ${option.danger ? 'text-[var(--error-red)] ' : undefined}`,
-              })
-            );
+          if (option.render) {
+            // 选项里边自带render 可自定义从外边渲染
+            content.push(option.render);
+          } else {
+            if (icon) {
+              content.push(
+                h(CrmIcon, {
+                  size: 16,
+                  type: icon,
+                  class: `mr-[4px] ${option.danger ? 'text-[var(--error-red)]' : undefined}`,
+                })
+              );
+            }
+            content.push(h('div', { class: 'flex-1' }, option.label as string));
           }
-          content.push(option.label as VNodeChild);
+
           return content;
         },
       }
@@ -120,6 +131,10 @@
 
     return { class: baseClass };
   }
+
+  function clickOutSide() {
+    emit('close');
+  }
 </script>
 
 <style lang="less">
@@ -127,6 +142,9 @@
     padding: 0 8px;
     min-width: 60px;
     height: 30px;
-    @apply flex cursor-pointer items-center rounded;
+    @apply flex items-center rounded;
+    .n-dropdown-option-body {
+      @apply w-full;
+    }
   }
 </style>

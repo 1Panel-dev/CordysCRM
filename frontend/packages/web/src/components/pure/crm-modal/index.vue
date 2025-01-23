@@ -28,30 +28,32 @@
       <slot></slot>
     </div>
     <template #action>
-      <div class="flex items-center justify-between">
-        <slot name="footerLeft"> </slot>
-        <slot name="footerRight">
-          <div class="flex items-center gap-[8px]">
-            <n-button
-              :disabled="props.okLoading"
-              v-bind="{ secondary: true, ...props.cancelButtonProps }"
-              @click="negativeClick"
-            >
-              {{ t(props.negativeText) }}
-            </n-button>
-            <n-button v-if="showContinue" :loading="props.okLoading" strong @click="handleContinue">
-              {{ t(props.continueText || '') }}
-            </n-button>
-            <n-button
-              :loading="props.okLoading"
-              v-bind="{ type: 'primary', ...props.okButtonProps }"
-              @click="positiveClick"
-            >
-              {{ t(props.positiveText) }}
-            </n-button>
-          </div>
-        </slot>
-      </div>
+      <slot name="footer">
+        <div class="flex items-center justify-between">
+          <slot name="footerLeft"> </slot>
+          <slot name="footerRight">
+            <div class="flex items-center gap-[8px]">
+              <n-button
+                :disabled="props.okLoading"
+                v-bind="{ secondary: true, ...props.cancelButtonProps }"
+                @click="negativeClick"
+              >
+                {{ t(props.negativeText) }}
+              </n-button>
+              <n-button v-if="showContinue" :loading="props.okLoading" type="tertiary" @click="handleContinue">
+                {{ t(props.continueText || '') }}
+              </n-button>
+              <n-button
+                :loading="props.okLoading"
+                v-bind="{ type: 'primary', ...props.okButtonProps }"
+                @click="positiveClick"
+              >
+                {{ t(props.positiveText) }}
+              </n-button>
+            </div>
+          </slot>
+        </div>
+      </slot>
     </template>
   </n-modal>
 </template>
