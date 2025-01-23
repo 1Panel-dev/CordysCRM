@@ -160,6 +160,7 @@ export default {
   'common.batchDebug': '批量调试',
   'common.execute': '执行',
   'common.replace': '替换',
+  'common.notNull': '{value}不能为空',
   'common.value.notNull': '属性值不能为空',
   'common.nameNotNull': '名称不能为空',
   'common.namePlaceholder': '请输入名称，按回车键保存',

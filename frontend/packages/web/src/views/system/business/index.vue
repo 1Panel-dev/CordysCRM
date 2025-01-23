@@ -4,11 +4,13 @@
   </CrmCard>
   <AuthenticationSettings v-if="activeTab === 'authenticationSettings'" />
   <MailSettings v-if="activeTab === 'mailSettings'" />
+  <IntegrationList v-if="activeTab === 'scanLogin'" />
 </template>
 
 <script setup lang="ts">
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import IntegrationList from './components/integrationList.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 
@@ -16,7 +18,7 @@
   const MailSettings = defineAsyncComponent(() => import('./components/mailSettings.vue'));
   const { t } = useI18n();
 
-  const activeTab = ref('mailSettings');
+  const activeTab = ref('scanLogin');
   const tabList = ref([
     { name: 'interfaceSettings', tab: t('system.business.tab.interfaceSettings') },
     { name: 'scanLogin', tab: t('system.business.tab.scanLogin') },

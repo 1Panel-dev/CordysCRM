@@ -46,37 +46,19 @@
     :ok-text="t('common.update')"
     @confirm="confirm"
   >
-    <n-form ref="formRef" label-placement="left" :model="form" require-mark-placement="left" :label-width="100">
-      <n-form-item
-        :label="t('system.business.mailSettings.smtpHost')"
-        path="smtpHost"
-        :rule="[
-          {
-            required: true,
-            message: t('system.business.mailSettings.smtpHost.errMsg'),
-            trigger: ['blur'],
-          },
-        ]"
-      >
-        <n-input
-          v-model:value="form.smtpHost"
-          class="!w-[80%]"
-          :maxlength="255"
-          :placeholder="t('common.pleaseInput')"
-          clearable
-        />
+    <n-form
+      ref="formRef"
+      :rules="rules"
+      label-placement="left"
+      :model="form"
+      class="!w-[80%]"
+      require-mark-placement="left"
+      :label-width="100"
+    >
+      <n-form-item :label="t('system.business.mailSettings.smtpHost')" path="smtpHost">
+        <n-input v-model:value="form.smtpHost" :maxlength="255" :placeholder="t('common.pleaseInput')" clearable />
       </n-form-item>
-      <n-form-item
-        :label="t('system.business.mailSettings.smtpPort')"
-        path="smtpPort"
-        :rule="[
-          {
-            required: true,
-            message: t('system.business.mailSettings.smtpPort.errMsg'),
-            trigger: ['blur'],
-          },
-        ]"
-      >
+      <n-form-item :label="t('system.business.mailSettings.smtpPort')" path="smtpPort">
         <n-input
           v-model:value="form.smtpPort"
           class="!w-[240px]"
@@ -85,53 +67,25 @@
           clearable
         />
       </n-form-item>
-      <n-form-item
-        :label="t('system.business.mailSettings.smtpAccount')"
-        path="smtpAccount"
-        :rule="[
-          {
-            required: true,
-            message: t('system.business.mailSettings.smtpAccount.errMsg'),
-            trigger: ['blur'],
-          },
-        ]"
-      >
-        <n-input
-          v-model:value="form.smtpAccount"
-          class="!w-[80%]"
-          :maxlength="255"
-          :placeholder="t('common.pleaseInput')"
-          clearable
-        />
+      <n-form-item :label="t('system.business.mailSettings.smtpAccount')" path="smtpAccount">
+        <n-input v-model:value="form.smtpAccount" :maxlength="255" :placeholder="t('common.pleaseInput')" clearable />
       </n-form-item>
       <n-form-item :label="t('system.business.mailSettings.smtpPassword')" path="smtpPassword">
         <n-input
           v-model:value="form.smtpPassword"
-          class="!w-[80%]"
           type="password"
           show-password-on="click"
+          :input-props="{ autocomplete: 'new-password' }"
           :maxlength="255"
           :placeholder="t('common.pleaseInput')"
           clearable
         />
       </n-form-item>
       <n-form-item :label="t('system.business.mailSettings.from')" path="from">
-        <n-input
-          v-model:value="form.from"
-          class="!w-[80%]"
-          :maxlength="255"
-          :placeholder="t('common.pleaseInput')"
-          clearable
-        />
+        <n-input v-model:value="form.from" :maxlength="255" :placeholder="t('common.pleaseInput')" clearable />
       </n-form-item>
       <n-form-item :label="t('system.business.mailSettings.recipient')" path="recipient">
-        <n-input
-          v-model:value="form.recipient"
-          class="!w-[80%]"
-          :maxlength="255"
-          :placeholder="t('common.pleaseInput')"
-          clearable
-        />
+        <n-input v-model:value="form.recipient" :maxlength="255" :placeholder="t('common.pleaseInput')" clearable />
       </n-form-item>
       <n-form-item label=" " path="ssl">
         <div>
@@ -139,7 +93,7 @@
             <n-switch v-model:value="form.ssl" class="mr-[8px]" />
             {{ t('system.business.mailSettings.ssl') }}
           </div>
-          <div class="text-[12px]">{{ t('system.business.mailSettings.sslTip') }}</div>
+          <div class="text-[12px] text-[var(--text-n4)]">{{ t('system.business.mailSettings.sslTip') }}</div>
         </div>
       </n-form-item>
       <n-form-item label=" " path="tsl">
@@ -148,7 +102,7 @@
             <n-switch v-model:value="form.tsl" class="mr-[8px]" />
             {{ t('system.business.mailSettings.tsl') }}
           </div>
-          <div class="text-[12px]">{{ t('system.business.mailSettings.tslTip') }}</div>
+          <div class="text-[12px] text-[var(--text-n4)]">{{ t('system.business.mailSettings.tslTip') }}</div>
         </div>
       </n-form-item>
       <n-form-item label=" ">
@@ -159,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-  import { FormInst, NButton, NDivider, NForm, NFormItem, NInput, NSwitch, useMessage } from 'naive-ui';
+  import { FormInst, FormItemRule, NButton, NDivider, NForm, NFormItem, NInput, NSwitch, useMessage } from 'naive-ui';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
@@ -167,6 +121,7 @@
 
   import { useI18n } from '@/hooks/useI18n';
   import { desensitize } from '@/utils';
+  import { validateEmail } from '@/utils/validate';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -201,6 +156,42 @@
     recipient: '',
     ssl: 'true',
     tsl: 'false',
+  });
+
+  const emailRule = {
+    validator: (rule: FormItemRule, value: string) => {
+      if (value && !validateEmail(value)) {
+        return new Error(t('common.emailErrTip'));
+      }
+      return true;
+    },
+    trigger: ['blur', 'input'],
+  };
+
+  const rules = ref({
+    smtpHost: [
+      {
+        required: true,
+        message: t('common.notNull', { value: t('system.business.mailSettings.smtpHost') }),
+        trigger: ['blur'],
+      },
+    ],
+    smtpPort: [
+      {
+        required: true,
+        message: t('common.notNull', { value: t('system.business.mailSettings.smtpPort') }),
+        trigger: ['blur'],
+      },
+    ],
+    smtpAccount: [
+      {
+        required: true,
+        message: t('common.notNull', { value: t('system.business.mailSettings.smtpAccount') }),
+        trigger: ['blur'],
+      },
+    ],
+    from: [emailRule],
+    recipient: [emailRule],
   });
 
   function confirm() {

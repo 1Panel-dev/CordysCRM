@@ -67,7 +67,7 @@
 
   const props = withDefaults(
     defineProps<{
-      okLoading: boolean;
+      okLoading?: boolean;
       showIcon?: boolean; // 是否显示icon
       positiveText?: string; // 确定显示文字
       negativeText?: string; // 取消显示文字
