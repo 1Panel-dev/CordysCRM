@@ -4,6 +4,12 @@
 <mapper namespace="io.cordys.crm.system.mapper.ExtDepartmentCommanderMapper">
 
 
+    <delete id="deleteByDepartmentIds">
+        DELETE FROM sys_department_commander WHERE department_id  in
+        <foreach collection="departmentIds" item="departmentId" open="(" close=")" separator=",">
+            #{departmentId}
+        </foreach>
+    </delete>
 
 
 </mapper>

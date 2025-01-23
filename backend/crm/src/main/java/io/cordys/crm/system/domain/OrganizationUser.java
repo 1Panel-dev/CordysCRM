@@ -22,6 +22,9 @@ public class OrganizationUser extends BaseModel {
 	@Schema(description = "用户id")
 	private String userId;
 
+	@Schema(description = "三方唯一id")
+	private String resourceUserId;
+
 	@Schema(description = "部门id")
 	private String departmentId;
 

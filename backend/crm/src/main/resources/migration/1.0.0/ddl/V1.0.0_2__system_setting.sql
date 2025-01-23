@@ -5,8 +5,8 @@ CREATE TABLE sys_user
 (
     `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
     `name`        VARCHAR(255) NOT NULL COMMENT '名称',
-    `phone`       VARCHAR(11)  NOT NULL COMMENT '手机号',
-    `email`       VARCHAR(255) NOT NULL COMMENT '邮箱',
+    `phone`       VARCHAR(11) COMMENT '手机号',
+    `email`       VARCHAR(255) COMMENT '邮箱',
     `password`    VARCHAR(255) NOT NULL COMMENT '密码',
     `language`    VARCHAR(32) COMMENT '语言',
     `gender`      BIT(1)       NOT NULL DEFAULT 0 COMMENT '性别(0-男/1-女)',
@@ -275,6 +275,7 @@ CREATE TABLE sys_organization_user
     `id`              VARCHAR(32) NOT NULL COMMENT 'id',
     `organization_id` VARCHAR(32) NOT NULL COMMENT '组织id',
     `department_id`   VARCHAR(32) COMMENT '部门id',
+    `resource_user_id` VARCHAR(64)    COMMENT '三方唯一id' ,
     `user_id`         VARCHAR(32) NOT NULL COMMENT '用户id',
     `enable`          BIT(1)      NOT NULL DEFAULT 1 COMMENT '是否启用',
     `employee_id`     VARCHAR(255)         DEFAULT '' COMMENT '工号',

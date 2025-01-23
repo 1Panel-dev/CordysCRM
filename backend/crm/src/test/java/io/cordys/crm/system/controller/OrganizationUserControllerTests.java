@@ -27,6 +27,7 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_RESET_PASSWORD = "/user/reset-password/";
     public static final String USER_BATCH_ENABLE = "/user/batch-enable";
     public static final String USER_BATCH_RESET_PASSWORD = "/user/batch/reset-password";
+    public static final String USER_SYNC = "/user/sync/";
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
             config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
@@ -110,5 +111,11 @@ public class OrganizationUserControllerTests extends BaseTest {
         request.setIds(List.of("u_1", "u_2"));
         this.requestPost(USER_BATCH_RESET_PASSWORD, request).andExpect(status().isOk());
 
+    }
+
+    @Test
+    @Order(8)
+    public void syncUser() throws Exception {
+        this.requestGet(USER_SYNC + "WECOM");
     }
 }

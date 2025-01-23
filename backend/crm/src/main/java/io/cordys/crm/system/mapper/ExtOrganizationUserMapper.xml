@@ -67,4 +67,7 @@
         </foreach>
     </select>
 
+    <delete id="deleteUserByOrgId">
+        DELETE FROM sys_organization_user WHERE organization_id  = #{orgId} and user_id != 'admin'
+    </delete>
 </mapper>

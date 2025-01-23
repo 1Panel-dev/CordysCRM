@@ -21,4 +21,6 @@ public interface ExtOrganizationUserMapper {
     void enable(@Param("request") UserBatchEnableRequest request, @Param("operatorId") String operatorId, @Param("time") long time);
 
     List<User> getUserList(@Param("request") UserBatchRequest request);
+
+    void deleteUserByOrgId(@Param("orgId") String orgId);
 }

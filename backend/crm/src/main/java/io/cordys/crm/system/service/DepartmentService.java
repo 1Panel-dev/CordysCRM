@@ -20,6 +20,7 @@ import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
 import io.cordys.crm.system.mapper.ExtDepartmentMapper;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.wecom.dto.WeComDepartment;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -179,5 +180,49 @@ public class DepartmentService {
             return false;
         }
         return true;
+    }
+
+
+    /**
+     * 同步构建部门信息
+     *
+     * @param weComDepartment
+     * @param operatorId
+     * @param orgId
+     * @param departmentList
+     */
+    public void buildDepartment(WeComDepartment weComDepartment, String operatorId, String orgId, List<Department> departmentList) {
+        Department department = new Department();
+        department.setId(weComDepartment.getCrmId());
+        department.setName(weComDepartment.getName());
+        department.setOrganizationId(orgId);
+        department.setParentId(weComDepartment.getCrmParentId());
+        department.setNum(getNextNum(orgId));
+        department.setResource(DepartmentConstants.WECOM.name());
+        department.setResourceId(weComDepartment.getId().toString());
+        department.setCreateUser(operatorId);
+        department.setUpdateUser(operatorId);
+        department.setCreateTime(System.currentTimeMillis());
+        department.setUpdateTime(System.currentTimeMillis());
+        departmentList.add(department);
+    }
+
+
+    /**
+     * 保存部门信息
+     *
+     * @param departments
+     */
+    public void save(List<Department> departments) {
+        departmentMapper.batchInsert(departments);
+    }
+
+    /**
+     * 删除部门数据
+     *
+     * @param orgId
+     */
+    public void deleteByOrgId(String orgId) {
+        extDepartmentMapper.deleteByOrgId(orgId);
     }
 }

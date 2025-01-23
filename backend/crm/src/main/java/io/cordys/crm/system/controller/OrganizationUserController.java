@@ -85,4 +85,14 @@ public class OrganizationUserController {
     public void batchResetPassword(@Validated @RequestBody UserBatchRequest request) {
         organizationUserService.batchResetPassword(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
+
+
+    @GetMapping("/sync/{type}")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    @Operation(summary = "用户(员工)-同步组织架构")
+    public void syncUser(@PathVariable String type) {
+        organizationUserService.syncUser(type, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+
 }

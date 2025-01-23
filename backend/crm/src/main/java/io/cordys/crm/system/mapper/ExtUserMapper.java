@@ -6,7 +6,7 @@ import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.security.UserDTO;
-import org.springframework.data.repository.query.Param;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -24,4 +24,8 @@ public interface ExtUserMapper {
     UserResponse getUserDetail(@Param("id") String id);
 
     void batchUpdatePassword(@Param("userList") List<User> userList);
+
+    List<User> getAllUserIds(@Param("orgId") String orgId);
+
+    void deleteByIds(@Param("ids") List<String> ids);
 }

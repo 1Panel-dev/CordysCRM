@@ -13,7 +13,7 @@
         SELECT id, name
         FROM sys_user
         WHERE id IN
-        <foreach collection="list" item="id" index="index"
+        <foreach collection="userIds" item="id" index="index"
                  open="(" close=")" separator=",">
             #{id}
         </foreach>
@@ -85,4 +85,19 @@
             #{user.id}
         </foreach>
     </update>
+
+
+    <select id="getAllUserIds" resultType="io.cordys.crm.system.domain.User">
+        select sys_user.id from sys_user
+        LEFT JOIN sys_organization_user ON sys_user.id = sys_organization_user.user_id
+        WHERE sys_organization_user.organization_id = #{orgId} and sys_user.id != 'admin'
+    </select>
+
+
+    <delete id="deleteByIds">
+        DELETE FROM sys_user WHERE id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>

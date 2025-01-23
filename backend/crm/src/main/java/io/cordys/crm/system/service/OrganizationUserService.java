@@ -12,19 +12,18 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.domain.OrganizationUser;
-import io.cordys.crm.system.domain.User;
-import io.cordys.crm.system.domain.UserRole;
+import io.cordys.crm.system.domain.*;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
-import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
-import io.cordys.crm.system.mapper.ExtUserMapper;
-import io.cordys.crm.system.mapper.ExtUserRoleMapper;
+import io.cordys.crm.system.mapper.*;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.wecom.dto.WeComDepartment;
+import io.cordys.wecom.dto.WeComUser;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +53,16 @@ public class OrganizationUserService {
     private ExtUserRoleMapper extUserRoleMapper;
     @Resource
     private LogService logService;
+    @Resource
+    private ExtDepartmentCommanderMapper extDepartmentCommanderMapper;
+    @Resource
+    private ExtDepartmentMapper extDepartmentMapper;
+    @Resource
+    private BaseMapper<DepartmentCommander> departmentCommanderMapper;
+    @Resource
+    private BaseMapper<UserExtend> userExtendMapper;
+    @Resource
+    private ExtUserExtendMapper extUserExtendMapper;
 
     /**
      * 员工列表查询
@@ -358,5 +367,117 @@ public class OrganizationUserService {
         extUserMapper.batchUpdatePassword(userList);
         logService.batchAdd(logDTOS);
 
+    }
+
+    /**
+     * 同步组织架构
+     *
+     * @param type
+     * @param operatorId
+     * @param orgId
+     */
+    @Async
+    public void syncUser(String type, String operatorId, String orgId) {
+        SyncUserServiceFactory.getSyncUserService(type).syncUser(operatorId, orgId);
+    }
+
+    public void buildUser(WeComDepartment weComDepartment, List<WeComUser> weComUsers, String operatorId, String orgId,
+                          List<User> users, List<UserExtend> userExtends, List<OrganizationUser> organizationUsers, List<DepartmentCommander> departmentCommanders) {
+        if (CollectionUtils.isNotEmpty(weComUsers)) {
+            weComUsers.forEach(weComUser -> {
+                String id = IDGenerator.nextStr();
+                //基本信息
+                User user = new User();
+                user.setId(id);
+                user.setName(weComUser.getName());
+                user.setPhone(weComUser.getMobile());
+                user.setEmail(weComUser.getEmail());
+                user.setPassword(CodingUtils.md5("CordysCRM"));
+                if (weComUser.getGender() != null) {
+                    user.setGender(weComUser.getGender() == 1 ? false : true);
+                } else {
+                    user.setGender(false);
+                }
+                user.setLanguage("zh_CN");
+                user.setCreateTime(System.currentTimeMillis());
+                user.setCreateUser(operatorId);
+                user.setUpdateTime(System.currentTimeMillis());
+                user.setUpdateUser(operatorId);
+                users.add(user);
+
+                //拓展信息
+                UserExtend userExtend = new UserExtend();
+                userExtend.setId(id);
+                userExtend.setAvatar(weComUser.getAvatar());
+                userExtends.add(userExtend);
+                //其他信息
+                OrganizationUser organizationUser = new OrganizationUser();
+                organizationUser.setId(IDGenerator.nextStr());
+                organizationUser.setDepartmentId(weComDepartment.getCrmId());
+                organizationUser.setOrganizationId(orgId);
+                organizationUser.setUserId(id);
+                organizationUser.setResourceUserId(weComUser.getUserId());
+                organizationUser.setEnable(true);
+                organizationUser.setPosition(weComUser.getPosition());
+                organizationUser.setCreateTime(System.currentTimeMillis());
+                organizationUser.setCreateUser(operatorId);
+                organizationUser.setUpdateTime(System.currentTimeMillis());
+                organizationUser.setUpdateUser(operatorId);
+                organizationUsers.add(organizationUser);
+
+
+                int i = weComUser.getDepartment().indexOf(weComDepartment.getId());
+                if (weComUser.getIsLeaderInDept().get(i) == 1) {
+                    //构建部门责任人信息
+                    DepartmentCommander departmentCommander = new DepartmentCommander();
+                    departmentCommander.setId(IDGenerator.nextStr());
+                    departmentCommander.setUserId(id);
+                    departmentCommander.setDepartmentId(weComDepartment.getCrmId());
+                    departmentCommander.setCreateTime(System.currentTimeMillis());
+                    departmentCommander.setCreateUser(operatorId);
+                    departmentCommander.setUpdateTime(System.currentTimeMillis());
+                    departmentCommander.setUpdateUser(operatorId);
+                    departmentCommanders.add(departmentCommander);
+                }
+
+            });
+        }
+
+    }
+
+
+    /**
+     * 删除用户
+     *
+     * @param orgId
+     */
+    public void deleteUser(String orgId) {
+        List<Department> departmentList = extDepartmentMapper.selectAllDepartment(orgId);
+        if (CollectionUtils.isNotEmpty(departmentList)) {
+            extDepartmentCommanderMapper.deleteByDepartmentIds(departmentList.stream().map(Department::getId).toList());
+        }
+        List<User> userList = extUserMapper.getAllUserIds(orgId);
+        List<String> ids = userList.stream().map(User::getId).toList();
+        if (CollectionUtils.isNotEmpty(ids)) {
+            extUserMapper.deleteByIds(ids);
+            extUserExtendMapper.deleteUser(ids);
+        }
+        extOrganizationUserMapper.deleteUserByOrgId(orgId);
+
+    }
+
+    /**
+     * 保存同步信息
+     *
+     * @param users
+     * @param userExtends
+     * @param organizationUsers
+     * @param departmentCommanders
+     */
+    public void save(List<User> users, List<UserExtend> userExtends, List<OrganizationUser> organizationUsers, List<DepartmentCommander> departmentCommanders) {
+        userMapper.batchInsert(users);
+        userExtendMapper.batchInsert(userExtends);
+        organizationUserMapper.batchInsert(organizationUsers);
+        departmentCommanderMapper.batchInsert(departmentCommanders);
     }
 }

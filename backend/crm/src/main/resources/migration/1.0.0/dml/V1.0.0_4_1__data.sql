@@ -26,8 +26,8 @@ VALUES ('admin',
         'admin');
 
 -- 初始化用户基本信息
-INSERT INTO `sys_organization_user`(`id`, `organization_id`, `department_id`, `user_id`, `enable`, `employee_id`, `position`, `employee_type`, `supervisor_id`, `work_city`, `create_user`, `update_user`, `create_time`, `update_time`)
-VALUES (UUID_SHORT(), '100001', '100001', 'admin', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000);
+INSERT INTO `sys_organization_user`(`id`, `organization_id`, `department_id`, `resource_user_id`, `user_id`, `enable`, `employee_id`, `position`, `employee_type`, `supervisor_id`, `work_city`, `create_user`, `update_user`, `create_time`, `update_time`)
+VALUES (UUID_SHORT(), '100001', '100001', '', 'admin', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000);
 
 -- 初始化默认组织
 INSERT INTO `sys_organization`(`id`, `name`, `create_time`, `update_time`, `create_user`, `update_user`)

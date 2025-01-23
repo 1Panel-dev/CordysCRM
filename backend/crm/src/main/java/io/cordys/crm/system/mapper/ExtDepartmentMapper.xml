@@ -32,4 +32,12 @@
         </foreach>
     </select>
 
+    <delete id="deleteByOrgId">
+        DELETE FROM sys_department WHERE organization_id  = #{orgId}
+    </delete>
+
+
+    <select id="selectAllDepartment" resultType="io.cordys.crm.system.domain.Department">
+        select id from sys_department where organization_id = #{orgId}
+    </select>
 </mapper>
