@@ -1,4 +1,4 @@
-package io.cordys.crm.system.notice.message;
+package io.cordys.crm.system.dto;
 
 import lombok.Data;
 
@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class MessageDetail implements Serializable {
+public class MessageDetailDTO implements Serializable {
     private List<String> receiverIds = new ArrayList<>();
     private String id;
     private String event;

@@ -9,9 +9,9 @@ import io.cordys.crm.system.domain.OrganizationConfigDetail;
 import io.cordys.crm.system.dto.response.EmailDTO;
 import io.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import io.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
-import io.cordys.crm.system.notice.message.MessageDetail;
-import io.cordys.crm.system.notice.NoticeModel;
-import io.cordys.crm.system.notice.Receiver;
+import io.cordys.crm.system.dto.MessageDetailDTO;
+import io.cordys.crm.system.notice.common.NoticeModel;
+import io.cordys.crm.system.notice.common.Receiver;
 import io.cordys.crm.system.notice.sender.AbstractNoticeSender;
 import jakarta.annotation.Resource;
 import jakarta.mail.internet.InternetAddress;
@@ -127,11 +127,11 @@ public class MailNoticeSender extends AbstractNoticeSender {
     }
 
     @Override
-    public void send(MessageDetail messageDetail, NoticeModel noticeModel) {
-        String context = super.getContext(messageDetail, noticeModel);
-        String subjectText = super.getSubjectText(messageDetail, noticeModel);
+    public void send(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
+        String context = super.getContext(messageDetailDTO, noticeModel);
+        String subjectText = super.getSubjectText(messageDetailDTO, noticeModel);
         try {
-            sendMail(context, noticeModel, messageDetail.getOrganizationId(), subjectText);
+            sendMail(context, noticeModel, messageDetailDTO.getOrganizationId(), subjectText);
             LogUtils.debug("发送邮件结束");
         } catch (Exception e) {
             LogUtils.error(e);

@@ -1,4 +1,4 @@
-package io.cordys.crm.system.notice.message;
+package io.cordys.crm.system.utils;
 
 
 import io.cordys.common.util.CommonBeanFactory;

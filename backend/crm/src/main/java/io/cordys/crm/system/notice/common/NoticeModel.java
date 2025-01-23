@@ -1,4 +1,4 @@
-package io.cordys.crm.system.notice;
+package io.cordys.crm.system.notice.common;
 
 import lombok.Builder;
 import lombok.Data;

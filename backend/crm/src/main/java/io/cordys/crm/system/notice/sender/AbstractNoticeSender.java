@@ -6,9 +6,10 @@ import io.cordys.common.util.LogUtils;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.mapper.ExtUserMapper;
-import io.cordys.crm.system.notice.*;
-import io.cordys.crm.system.notice.message.MessageDetail;
-import io.cordys.crm.system.notice.message.MessageTemplateUtils;
+import io.cordys.crm.system.dto.MessageDetailDTO;
+import io.cordys.crm.system.notice.common.NoticeModel;
+import io.cordys.crm.system.notice.common.Receiver;
+import io.cordys.crm.system.utils.MessageTemplateUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,12 +24,12 @@ public abstract class AbstractNoticeSender implements NoticeSender {
     @Resource
     private ExtUserMapper extUserMapper;
 
-    protected String getContext(MessageDetail messageDetail, NoticeModel noticeModel) {
+    protected String getContext(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
         // 处理 userIds 中包含的特殊值
-        noticeModel.setReceivers(getRealUserIds(messageDetail, noticeModel, messageDetail.getEvent()));
+        noticeModel.setReceivers(getRealUserIds(messageDetailDTO, noticeModel, messageDetailDTO.getEvent()));
         // 如果配置了模版就直接使用模版
-        if (StringUtils.isNotBlank(messageDetail.getTemplate())) {
-            return MessageTemplateUtils.getContent(messageDetail.getTemplate(), noticeModel.getParamMap());
+        if (StringUtils.isNotBlank(messageDetailDTO.getTemplate())) {
+            return MessageTemplateUtils.getContent(messageDetailDTO.getTemplate(), noticeModel.getParamMap());
         }
         String context = StringUtils.EMPTY;
         if (StringUtils.isBlank(context)) {
@@ -37,12 +38,12 @@ public abstract class AbstractNoticeSender implements NoticeSender {
         return MessageTemplateUtils.getContent(context, noticeModel.getParamMap());
     }
 
-    protected String getSubjectText(MessageDetail messageDetail, NoticeModel noticeModel) {
+    protected String getSubjectText(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
         //目前只有公告有标题
 
         // 如果配置了模版就直接使用模版
-        if (StringUtils.isNotBlank(messageDetail.getSubject())) {
-            return MessageTemplateUtils.getContent(messageDetail.getSubject(), noticeModel.getParamMap());
+        if (StringUtils.isNotBlank(messageDetailDTO.getSubject())) {
+            return MessageTemplateUtils.getContent(messageDetailDTO.getSubject(), noticeModel.getParamMap());
         }
         String context = StringUtils.EMPTY;
         if (StringUtils.isBlank(context)) {
@@ -51,17 +52,17 @@ public abstract class AbstractNoticeSender implements NoticeSender {
         return MessageTemplateUtils.getContent(context, noticeModel.getParamMap());
     }
 
-    private List<Receiver> getRealUserIds(MessageDetail messageDetail, NoticeModel noticeModel, String event) {
+    private List<Receiver> getRealUserIds(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel, String event) {
         List<Receiver> toUsers = new ArrayList<>();
         Map<String, Object> paramMap = noticeModel.getParamMap();
-        for (String userId : messageDetail.getReceiverIds()) {
+        for (String userId : messageDetailDTO.getReceiverIds()) {
             switch (userId) {
                 case NotificationConstants.RelatedUser.CREATE_USER -> {
                     String createUser = (String) paramMap.get("createUser");
                     if (StringUtils.isNotBlank(createUser)) {
                         toUsers.add(new Receiver(createUser, NotificationConstants.Type.SYSTEM_NOTICE.name()));
                     } else {
-                        Receiver receiver = handleCreateUser(messageDetail, noticeModel);
+                        Receiver receiver = handleCreateUser(messageDetailDTO, noticeModel);
                         toUsers.add(Objects.requireNonNullElseGet(receiver, () -> new Receiver((String) paramMap.get(NotificationConstants.RelatedUser.OPERATOR), NotificationConstants.Type.SYSTEM_NOTICE.name())));
                     }
                 }
@@ -85,7 +86,7 @@ public abstract class AbstractNoticeSender implements NoticeSender {
         // 去重复
         List<String> userIds = toUsers.stream().map(Receiver::getUserId).toList();
         LogUtils.info("userIds: ", JSON.toJSONString(userIds));
-        List<User> users = getUsers(userIds, messageDetail.getOrganizationId());
+        List<User> users = getUsers(userIds, messageDetailDTO.getOrganizationId());
         List<String> realUserIds = users.stream().map(User::getId).distinct().toList();
         return toUsers.stream().filter(t -> realUserIds.contains(t.getUserId())).distinct().toList();
     }
@@ -98,12 +99,12 @@ public abstract class AbstractNoticeSender implements NoticeSender {
         }
     }
 
-    private Receiver handleCreateUser(MessageDetail messageDetail, NoticeModel noticeModel) {
+    private Receiver handleCreateUser(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
         String id = (String) noticeModel.getParamMap().get("id");
         if (StringUtils.isBlank(id)) {
             return null;
         }
-        String taskType = messageDetail.getTaskType();
+        String taskType = messageDetailDTO.getTaskType();
 
         Receiver receiver = null;
         switch (taskType) {

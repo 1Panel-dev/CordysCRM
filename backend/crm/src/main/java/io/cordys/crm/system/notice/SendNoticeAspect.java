@@ -34,7 +34,7 @@ import java.util.Map;
 @Component
 public class SendNoticeAspect {
     @Resource
-    private CommonNoticeSendService commonNoticeSendService;
+    private BatchNoticeSendService batchNoticeSendService;
 
     private ExpressionParser parser = new SpelExpressionParser();
     private StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();
@@ -174,7 +174,7 @@ public class SendNoticeAspect {
                     }
                 }
             }
-            commonNoticeSendService.sendNotice(module, event, resources, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+            batchNoticeSendService.sendNotice(module, event, resources, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         } catch (Exception e) {
             LogUtils.error(e.getMessage(), e);
         } finally {

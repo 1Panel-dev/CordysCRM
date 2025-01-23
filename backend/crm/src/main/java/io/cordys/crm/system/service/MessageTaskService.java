@@ -20,7 +20,7 @@ import io.cordys.crm.system.dto.response.ProjectRobotConfigDTO;
 import io.cordys.crm.system.mapper.ExtMessageTaskBlobMapper;
 import io.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
-import io.cordys.crm.system.notice.message.MessageTemplateUtils;
+import io.cordys.crm.system.utils.MessageTemplateUtils;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 

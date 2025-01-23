@@ -4,7 +4,8 @@ package io.cordys.crm.system.notice;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.User;
 
-import io.cordys.crm.system.notice.message.MessageTemplateUtils;
+import io.cordys.crm.system.notice.common.NoticeModel;
+import io.cordys.crm.system.utils.MessageTemplateUtils;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
-public class CommonNoticeSendService {
+public class BatchNoticeSendService {
     @Resource
     private NoticeSendService noticeSendService;
     @Resource
@@ -74,9 +75,6 @@ public class CommonNoticeSendService {
         // 占位符
         handleDefaultValues(paramMap);
 
-        //当前只有公告有主题
-        //TODO: 判断否是公告，获取公告主题
-
         String context = getContext(event);
 
         List<String> relatedUsers = getRelatedUsers(resource.get("relatedUsers"));
@@ -84,7 +82,6 @@ public class CommonNoticeSendService {
         NoticeModel noticeModel = NoticeModel.builder()
                 .operator(operator.getId())
                 .context(context)
-               // .subject(subject)
                 .paramMap(paramMap)
                 .event(event)
                 .status((String) paramMap.get("status"))
