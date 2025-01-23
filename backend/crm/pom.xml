@@ -2,6 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>io.cordys</groupId>
         <artifactId>backend</artifactId>
@@ -10,7 +11,6 @@
 
     <artifactId>crm</artifactId>
     <version>${revision}</version>
-    <name>crm</name>
 
     <dependencies>
         <dependency>
@@ -19,101 +19,4 @@
             <version>${revision}</version>
         </dependency>
     </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                    <include>**/*.xml</include>
-                    <include>**/*.json</include>
-                    <include>**/*.tpl</include>
-                    <include>**/*.js</include>
-                </includes>
-                <filtering>false</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*</include>
-                </includes>
-                <filtering>false</filtering>
-            </resource>
-        </resources>
-
-        <plugins>
-            <!-- Spring Boot 插件，支持 Spring Boot 应用的构建 -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                    <loaderImplementation>CLASSIC</loaderImplementation>
-                </configuration>
-            </plugin>
-
-            <!-- Maven Clean 插件，清理资源文件夹中的静态文件 -->
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>src/main/resources/static</directory>
-                            <includes>
-                                <include>**</include>
-                            </includes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
-
-            <!-- Maven Antrun 插件，用于复制前端资源到静态目录 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>main-class-placement</id>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <skip>${skipAntRunForJenkins}</skip>
-                            <target>
-                                <copy todir="src/main/resources/static/mobile">
-                                    <file file="../../frontend/packages/mobile/dist/index.html"/>
-                                </copy>
-                                <copy todir="src/main/resources/static/static">
-                                    <fileset dir="../../frontend/packages/mobile/dist/static"/>
-                                </copy>
-                                <copy todir="src/main/resources/static">
-                                    <fileset dir="../../frontend/packages/web/dist"/>
-                                </copy>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Maven Surefire 插件，配置测试执行顺序 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <runOrder>alphabetical</runOrder>
-                    <argLine>${argLine} -Dfile.encoding=UTF-8</argLine>
-                </configuration>
-            </plugin>
-        </plugins>
-
-    </build>
-
 </project>

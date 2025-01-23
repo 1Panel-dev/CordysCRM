@@ -32,3 +32,4 @@ qywx.json
 ### flattened
 .flattened-pom.xml
 /backend/crm/src/main/resources/static/
+/backend/app/src/main/resources/static/

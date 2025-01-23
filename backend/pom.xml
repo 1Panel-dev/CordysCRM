@@ -17,6 +17,7 @@
     <modules>
         <module>framework</module>
         <module>crm</module>
+        <module>app</module>
     </modules>
 
     <dependencies>

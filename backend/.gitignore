@@ -34,3 +34,4 @@ target
 .classpath
 .factorypath
 /crm/src/main/resources/packages/
+/app/src/main/resources/static/
