@@ -4,11 +4,12 @@ import io.cordys.aspectj.builder.LogDTOBuilder;
 import io.cordys.aspectj.constants.LogConstants;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.HttpMethodConstants;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.UserKey;
 import io.cordys.mybatis.BaseMapper;
@@ -160,9 +161,14 @@ public class UserKeyService {
                 .path("/user/api/key/add")
                 .sourceId(userKey.getId())
                 .content(userKey.getAccessKey())
-                .originalValue(JSON.toJSONBytes(userKey))
                 .build()
                 .getLogDTO();
+
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .modifiedValue(userKey)
+                        .build()
+        );
         logService.add(logDTO);
     }
 }

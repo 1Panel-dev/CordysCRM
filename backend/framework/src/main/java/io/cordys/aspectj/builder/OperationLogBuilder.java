@@ -6,11 +6,10 @@ import lombok.Data;
 @Data
 @Builder
 public class OperationLogBuilder {
-    private String successLogTemplate;
-    private String failLogTemplate;
+    private String resourceId;
+    private String resourceName;
     private String operatorId;
     private String type;
-    private String resourceId;
     private String subType;
     private String extra;
     private String loginAddress;

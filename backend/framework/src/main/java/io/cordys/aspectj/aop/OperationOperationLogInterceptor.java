@@ -3,7 +3,6 @@ package io.cordys.aspectj.aop;
 import io.cordys.aspectj.builder.MethodExecuteResult;
 import io.cordys.aspectj.builder.OperationLog;
 import io.cordys.aspectj.builder.OperationLogBuilder;
-import io.cordys.aspectj.builder.parse.OperationLogFunctionParser;
 import io.cordys.aspectj.builder.parse.OperationLogValueParser;
 import io.cordys.aspectj.constants.CodeVariableType;
 import io.cordys.aspectj.context.OperationLogContext;
@@ -23,6 +22,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 日志记录拦截器，拦截方法执行并生成日志记录。
@@ -70,8 +70,6 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
         MethodExecuteResult methodExecuteResult = new MethodExecuteResult(method, args, targetClass);
         OperationLogContext.putEmptySpan();
         Collection<OperationLogBuilder> operations = new ArrayList<>();
-        Map<String, String> functionNameAndReturnMap = new HashMap<>();
-
         try {
             operations = operationLogSource.computeLogRecordOperations(method, targetClass);
         } catch (Exception e) {
@@ -88,7 +86,7 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
             methodExecuteResult.setErrorMsg(e.getMessage());
         }
 
-        processLogRecords(methodExecuteResult, functionNameAndReturnMap, operations);
+        processLogRecords(methodExecuteResult, operations);
 
         if (methodExecuteResult.getThrowable() != null) {
             throw methodExecuteResult.getThrowable();
@@ -101,25 +99,21 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
      * 处理日志记录逻辑，根据方法执行结果生成操作日志。
      *
      * @param methodExecuteResult      方法执行结果
-     * @param functionNameAndReturnMap 解析的函数名和返回值映射
      * @param operations               日志操作集合
      */
-    private void processLogRecords(MethodExecuteResult methodExecuteResult, Map<String, String> functionNameAndReturnMap,
-                                   Collection<OperationLogBuilder> operations) {
+    private void processLogRecords(MethodExecuteResult methodExecuteResult, Collection<OperationLogBuilder> operations) {
         if (CollectionUtils.isEmpty(operations)) {
             return;
         }
 
         for (OperationLogBuilder operation : operations) {
             try {
-                if (StringUtils.isAllEmpty(operation.getSuccessLogTemplate(), operation.getFailLogTemplate())) {
+                if (!operationLogSource.isLogRecordOperationValidated(operation)) {
                     continue;
                 }
 
-                if (!methodExecuteResult.isSuccess()) {
-                    handleFailureLog(methodExecuteResult, functionNameAndReturnMap, operation);
-                } else {
-                    handleSuccessLog(methodExecuteResult, functionNameAndReturnMap, operation);
+                if (methodExecuteResult.isSuccess()) {
+                    handleSuccessLog(methodExecuteResult, operation);
                 }
             } catch (Exception e) {
                 LogUtils.error("日志执行异常", e);
@@ -131,69 +125,32 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
      * 处理成功的日志记录。
      *
      * @param methodExecuteResult      方法执行结果
-     * @param functionNameAndReturnMap 函数名和返回值映射
      * @param operation                日志操作信息
      */
-    private void handleSuccessLog(MethodExecuteResult methodExecuteResult, Map<String, String> functionNameAndReturnMap,
-                                  OperationLogBuilder operation) {
-        String action = operation.getSuccessLogTemplate();
-        if (StringUtils.isEmpty(action)) {
-            return;
-        }
-
-        List<String> templates = getSpElTemplates(operation, action);
+    private void handleSuccessLog(MethodExecuteResult methodExecuteResult, OperationLogBuilder operation) {
+        List<String> templates = getSpElTemplates(operation);
         String operatorId = resolveOperatorId(operation, templates);
-        Map<String, String> expressionValues = processTemplate(templates, methodExecuteResult, functionNameAndReturnMap);
+        Map<String, String> expressionValues = processTemplate(templates, methodExecuteResult);
 
-        saveLogRecord(methodExecuteResult.getMethod(), false, operation, operatorId, action, expressionValues);
-    }
-
-    /**
-     * 处理失败的日志记录。
-     *
-     * @param methodExecuteResult      方法执行结果
-     * @param functionNameAndReturnMap 函数名和返回值映射
-     * @param operation                日志操作信息
-     */
-    private void handleFailureLog(MethodExecuteResult methodExecuteResult, Map<String, String> functionNameAndReturnMap,
-                                  OperationLogBuilder operation) {
-        if (StringUtils.isEmpty(operation.getFailLogTemplate())) {
-            return;
-        }
-
-        String action = operation.getFailLogTemplate();
-        List<String> templates = getSpElTemplates(operation, action);
-        String operatorId = resolveOperatorId(operation, templates);
-        Map<String, String> expressionValues = processTemplate(templates, methodExecuteResult, functionNameAndReturnMap);
-
-        saveLogRecord(methodExecuteResult.getMethod(), true, operation, operatorId, action, expressionValues);
+        saveLogRecord(methodExecuteResult.getMethod(), operation, operatorId, expressionValues);
     }
 
     /**
      * 保存日志记录。
      *
      * @param method           方法对象
-     * @param isFailure        是否为失败日志
      * @param operation        日志操作信息
      * @param operatorId       操作人 ID
-     * @param action           操作描述
      * @param expressionValues 模板解析后的值
      */
-    private void saveLogRecord(Method method, boolean isFailure, OperationLogBuilder operation, String operatorId,
-                               String action, Map<String, String> expressionValues) {
-        if (StringUtils.isEmpty(expressionValues.get(action))) {
-            return;
-        }
-
+    private void saveLogRecord(Method method, OperationLogBuilder operation, String operatorId, Map<String, String> expressionValues) {
         OperationLog operationLog = OperationLog.builder()
                 .type(expressionValues.get(operation.getType()))
                 .resourceId(expressionValues.get(operation.getResourceId()))
+                .resourceName(expressionValues.get(operation.getResourceName()))
                 .operator(expressionValues.get(operatorId))
                 .subType(expressionValues.get(operation.getSubType()))
-                .extra(expressionValues.get(operation.getExtra()))
                 .codeVariable(resolveCodeVariable(method))
-                .action(expressionValues.get(action))
-                .fail(isFailure)
                 .createTime(new Date())
                 .loginAddress(expressionValues.get(operation.getLoginAddress()))
                 .platform(expressionValues.get(operation.getPlatform()))
@@ -211,6 +168,7 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
 
     private String resolveOperatorId(OperationLogBuilder operation, List<String> templates) {
         if (StringUtils.isEmpty(operation.getOperatorId())) {
+            // 如果没有标注操作人，则获取登入用户
             operation.setOperatorId(SessionUtils.getUserId());
         }
         templates.add(operation.getOperatorId());
@@ -221,22 +179,22 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
         return AopProxyUtils.ultimateTargetClass(target);
     }
 
-    private List<String> getSpElTemplates(OperationLogBuilder operation, String... actions) {
+    private List<String> getSpElTemplates(OperationLogBuilder operation) {
         List<String> spElTemplates = new ArrayList<>();
         spElTemplates.add(operation.getType());
         spElTemplates.add(operation.getResourceId());
+        spElTemplates.add(operation.getResourceName());
         spElTemplates.add(operation.getSubType());
-        spElTemplates.add(operation.getExtra());
         spElTemplates.add(operation.getLoginAddress());
         spElTemplates.add(operation.getPlatform());
-        spElTemplates.addAll(Arrays.asList(actions));
-        return spElTemplates;
+        return spElTemplates.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void afterSingletonsInstantiated() {
         operationLogService = CommonBeanFactory.getBean(OperationLogService.class);
-        this.setOperationLogFunctionParser(new OperationLogFunctionParser());
     }
 
 }

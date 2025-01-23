@@ -4,7 +4,7 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
-import io.cordys.aspectj.dto.LogExtraDTO;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.exception.GenericException;
@@ -14,6 +14,7 @@ import io.cordys.common.util.ServiceUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.DepartmentCommander;
+import io.cordys.crm.system.dto.log.DepartmentSetCommanderLog;
 import io.cordys.crm.system.dto.request.DepartmentAddRequest;
 import io.cordys.crm.system.dto.request.DepartmentCommanderRequest;
 import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
@@ -22,10 +23,12 @@ import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.integration.wecom.dto.WeComDepartment;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service("departmentService")
@@ -59,7 +62,7 @@ public class DepartmentService {
      * @param request
      * @param orgId
      */
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, operator = "{{#userId}}", success = "添加部门成功", extra = "{{#newDepartment}}")
+    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.ADD)
     public void addDepartment(DepartmentAddRequest request, String orgId, String userId) {
         String id = IDGenerator.nextStr();
         Department department = new Department();
@@ -76,10 +79,10 @@ public class DepartmentService {
         departmentMapper.insert(department);
 
         // 添加日志上下文
-        OperationLogContext.putVariable("newDepartment", LogExtraDTO.builder()
-                .originalValue(null)
+        OperationLogContext.setContext(LogContextInfo.builder()
                 .modifiedValue(department)
                 .resourceId(id)
+                .resourceName(department.getName())
                 .build());
     }
 
@@ -95,7 +98,7 @@ public class DepartmentService {
      * @param request
      * @param userId
      */
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{{#request.id}}", operator = "{{#userId}}", success = "修改部门名称成功", extra = "{{#updateDepartment}}")
+    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.UPDATE)
     public void rename(DepartmentRenameRequest request, String userId) {
         Department originalDepartment = checkDepartment(request.getId());
 
@@ -106,11 +109,15 @@ public class DepartmentService {
         departmentMapper.updateById(department);
 
         // 添加日志上下文
-        OperationLogContext.putVariable("updateDepartment", LogExtraDTO.builder()
-                .originalValue(originalDepartment)
-                .modifiedValue(department)
-                .build());
-
+        String resourceName = Optional.ofNullable(department.getName()).orElse(originalDepartment.getName());
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .originalValue(originalDepartment)
+                        .modifiedValue(checkDepartment(request.getId()))
+                        .resourceId(request.getId())
+                        .resourceName(resourceName)
+                        .build()
+        );
     }
 
     private Department checkDepartment(String id) {
@@ -121,19 +128,25 @@ public class DepartmentService {
         return department;
     }
 
-
     /**
      * 设置部门负责人
      *
      * @param request
      * @param userId
      */
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, resourceId = "{{#request.departmentId}}", operator = "{{#userId}}", success = "设置部门负责人成功")
+    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.UPDATE)
     public void setCommander(DepartmentCommanderRequest request, String userId) {
         Department department = departmentMapper.selectByPrimaryKey(request.getDepartmentId());
         if (department == null) {
             throw new GenericException(Translator.get("department.blank"));
         }
+        // 获取原部门负责人
+        String originCommander = setCommanderByDeptId(request.getDepartmentId());
+
+        // 先删除
+        deleteCommanderByDeptId(request.getDepartmentId());
+
+        // 再插入
         DepartmentCommander commander = new DepartmentCommander();
         commander.setId(IDGenerator.nextStr());
         commander.setUserId(request.getCommanderId());
@@ -143,15 +156,48 @@ public class DepartmentService {
         commander.setCreateUser(userId);
         commander.setUpdateUser(userId);
         departmentCommanderMapper.insert(commander);
+
+        // 设置日志上下文
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(request.getDepartmentId())
+                        .resourceName(department.getName())
+                        .originalValue(
+                                DepartmentSetCommanderLog.builder()
+                                        .commander(originCommander)
+                                        .build()
+                        )
+                        .modifiedValue(
+                                DepartmentSetCommanderLog.builder()
+                                        .commander(request.getCommanderId())
+                                        .build()
+                        )
+                        .build()
+        );
     }
 
+    private String setCommanderByDeptId(String departmentId) {
+        DepartmentCommander example = new DepartmentCommander();
+        example.setDepartmentId(departmentId);
+        List<DepartmentCommander> commanders = departmentCommanderMapper.select(example);
+        if (CollectionUtils.isNotEmpty(commanders)) {
+            return commanders.getFirst().getUserId();
+        }
+        return null;
+    }
+
+    private void deleteCommanderByDeptId(String departmentId) {
+        DepartmentCommander example = new DepartmentCommander();
+        example.setDepartmentId(departmentId);
+        departmentCommanderMapper.delete(example);
+    }
 
     /**
      * 刪除部门
      *
      * @param id
      */
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.DELETE, resourceId = "{{#id}}", success = "删除部门成功", extra = "{{#updateDepartment}}")
+    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String orgId) {
         Department department = checkDepartment(id);
         if (deleteCheck(id, orgId)) {
@@ -159,11 +205,9 @@ public class DepartmentService {
             departmentMapper.deleteByPrimaryKey(id);
             //todo 部门&责任人关系是否需要删除？ 部门&角色关系是否需要删除？
         }
+
         // 添加日志上下文
-        OperationLogContext.putVariable("updateDepartment", LogExtraDTO.builder()
-                .originalValue(department)
-                .modifiedValue(null)
-                .build());
+        OperationLogContext.setResourceName(department.getName());
     }
 
 

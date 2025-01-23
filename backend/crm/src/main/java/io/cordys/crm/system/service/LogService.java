@@ -1,19 +1,25 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.handler.OperationLogHandler;
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.OperationLog;
 import io.cordys.crm.system.domain.OperationLogBlob;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -43,12 +49,17 @@ public class LogService implements OperationLogHandler {
         OperationLogBlob blob = new OperationLogBlob();
         blob.setId(log.getId());
 
-        if (log.getExtra() != null && ObjectUtils.isNotEmpty(log.getExtra().getOriginalValue())) {
-            blob.setOriginalValue(JSON.toJSONBytes(log.getExtra().getOriginalValue()));
+        LogContextInfo extra = OperationLogContext.getContext();
+
+        if (extra != null) {
+            if (ObjectUtils.isNotEmpty(extra.getOriginalValue())) {
+                blob.setOriginalValue(JSON.toJSONBytes(extra.getOriginalValue()));
+            }
+            if (ObjectUtils.isNotEmpty(extra.getModifiedValue())) {
+                blob.setModifiedValue(JSON.toJSONBytes(extra.getModifiedValue()));
+            }
         }
-        if (log.getExtra() != null && ObjectUtils.isNotEmpty(log.getExtra().getModifiedValue())) {
-            blob.setModifiedValue(JSON.toJSONBytes(log.getExtra().getModifiedValue()));
-        }
+
         return blob;
     }
 
@@ -73,25 +84,46 @@ public class LogService implements OperationLogHandler {
     @Async
     public void add(LogDTO log) {
         if (StringUtils.isBlank(log.getOrganizationId())) {
-            log.setOrganizationId("none");
+            log.setOrganizationId(OrganizationContext.getOrganizationId());
         }
+
         // 如果创建用户为空，设置为“admin”
         if (StringUtils.isBlank(log.getCreateUser())) {
-            log.setCreateUser("admin");
+            if (StringUtils.isBlank(SessionUtils.getUserId())) {
+                log.setCreateUser(InternalUser.ADMIN.getValue());
+            } else {
+                log.setCreateUser(SessionUtils.getUserId());
+            }
         }
-        // 截断日志内容
-        log.setContent(subStrContent(log.getContent()));
 
         // 插入操作日志和日志Blob数据
         log.setId(IDGenerator.nextStr());
 
-        //设置resourceId
-        if(StringUtils.isBlank(log.getSourceId())&& log.getExtra() != null && ObjectUtils.isNotEmpty(log.getExtra().getResourceId())){
-            log.setSourceId(log.getExtra().getResourceId());
+        LogContextInfo extra = OperationLogContext.getContext();
+
+        if (extra != null) {
+            // 如果注解中没有设置 sourceId ，则使用 extra 中的 resourceId
+            if(StringUtils.isBlank(log.getResourceId()) && ObjectUtils.isNotEmpty(extra.getResourceId())){
+                log.setResourceId(extra.getResourceId());
+            }
+
+            // 如果注解中没有设置 resourceName ，则使用 extra 中的 resourceName
+            if(StringUtils.isBlank(log.getResourceName()) && ObjectUtils.isNotEmpty(extra.getResourceName())){
+                log.setResourceName(extra.getResourceName());
+            }
         }
 
-        operationLogMapper.insert(BeanUtils.copyBean(new OperationLog(), log));
-        operationLogBlobMapper.insert(getBlob(log));
+        // 截断日志内容
+        log.setResourceName(subStrContent(log.getResourceName()));
+
+        OperationLog operationLog = BeanUtils.copyBean(new OperationLog(), log);
+        operationLog.setResourceName(log.getResourceName());
+        operationLogMapper.insert(operationLog);
+
+        OperationLogBlob blob = getBlob(log);
+        if (blob.getOriginalValue() != null || blob.getModifiedValue() != null) {
+            operationLogBlobMapper.insert(getBlob(log));
+        }
     }
 
     /**
@@ -112,13 +144,14 @@ public class LogService implements OperationLogHandler {
         var blobs = logs.stream()
                 .peek(log -> {
                     log.setId(IDGenerator.nextStr());
-                    log.setContent(subStrContent(log.getContent()));
+                    log.setResourceName(subStrContent(log.getResourceName()));
                     log.setCreateTime(currentTimeMillis);
                     OperationLog item = new OperationLog();
                     BeanUtils.copyBean(item, log);
                     items.add(item);
                 })
                 .map(this::getBlob)
+                .filter(blob -> blob.getOriginalValue() != null || blob.getModifiedValue() != null)
                 .toList();
         // 批量插入操作日志和日志Blob数据
         operationLogMapper.batchInsert(items);

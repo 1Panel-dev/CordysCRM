@@ -67,11 +67,8 @@ public class UserLoginService {
     @OperationLog(
             module = LogModule.SYSTEM,
             type = LogType.LOGIN,
-            operator = "",
-            resourceId = "",
-            success = "登录成功",
-            loginAddress = "{{#request.loginAddress}}",
-            platform = "{{#request.platform}}"
+            loginAddress = "{#request.loginAddress}",
+            platform = "{#request.platform}"
     )
     public SessionUser login(LoginRequest request) {
         String login = (String) SecurityUtils.getSubject().getSession().getAttribute("authenticate");

@@ -88,7 +88,7 @@ public class AnnouncementController {
     @Operation(summary = "删除公告")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_DELETE)
     public void deleteAnnouncement(@PathVariable String announcementId) {
-        announcementService.delete(announcementId, SessionUtils.getUserId());
+        announcementService.delete(announcementId);
     }
 
 }

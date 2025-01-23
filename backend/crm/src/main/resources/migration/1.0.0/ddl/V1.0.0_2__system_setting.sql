@@ -58,8 +58,8 @@ CREATE TABLE sys_operation_log
     `organization_id` VARCHAR(32)  NOT NULL DEFAULT 'NONE' COMMENT '组织id',
     `type`            VARCHAR(32)  NOT NULL COMMENT '操作类型/add/update/delete',
     `module`          VARCHAR(32)  NOT NULL COMMENT '操作模块',
-    `details`         VARCHAR(500) COMMENT '操作详情',
-    `source_id`       VARCHAR(32)  NOT NULL COMMENT '资源id',
+    `resource_id`     VARCHAR(32)  NOT NULL   COMMENT '资源id' ,
+    `resource_name`   VARCHAR(500) COMMENT '资源名称' ,
     `create_time`     BIGINT       NOT NULL COMMENT '操作时间',
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '操作人',
     `path`            VARCHAR(255) COMMENT '操作路径',
@@ -73,7 +73,7 @@ CREATE TABLE sys_operation_log
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_organization_id ON sys_operation_log (organization_id ASC);
-CREATE INDEX idx_source_id ON sys_operation_log (source_id ASC);
+CREATE INDEX idx_resource_id ON sys_operation_log(resource_id ASC);
 CREATE INDEX idx_type ON sys_operation_log (type ASC);
 
 CREATE TABLE sys_operation_log_blob

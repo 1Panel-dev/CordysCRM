@@ -4,8 +4,8 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
-import io.cordys.aspectj.dto.LogExtraDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
@@ -19,6 +19,7 @@ import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
-public class AnnouncementService{
+public class AnnouncementService {
 
     @Resource
     private BaseMapper<Announcement> announcementMapper;
@@ -34,7 +35,7 @@ public class AnnouncementService{
     private ExtAnnouncementMapper extAnnouncementMapper;
 
     @Transactional(rollbackFor = Exception.class)
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, operator = "{{#userId}}", success = "新增公告成功", extra = "{{#announcement}}")
+    @OperationLog(module = LogModule.SYSTEM_ANNOUNCEMENT, type = LogType.ADD)
     public void add(AnnouncementRequest request, String userId) {
         Announcement announcement = new Announcement();
         announcement.setId(IDGenerator.nextStr());
@@ -51,15 +52,19 @@ public class AnnouncementService{
         announcement.setUpdateUser(userId);
         announcement.setStatus(NotificationConstants.Status.UNREAD.name());
         announcementMapper.insert(announcement);
-          // 添加日志上下文
-        OperationLogContext.putVariable("announcement", LogExtraDTO.builder()
-                .originalValue(null)
-                .modifiedValue(announcement)
-                .build());
+
+        // 添加日志上下文
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(announcement.getId())
+                        .resourceName(announcement.getSubject())
+                        .modifiedValue(announcement)
+                        .build()
+        );
     }
 
     @Transactional(rollbackFor = Exception.class)
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{{#announcement.id}}", operator = "{{#announcement.subject}}", success = "修改公告成功", extra = "{{#announcement}}")
+    @OperationLog(module = LogModule.SYSTEM_ANNOUNCEMENT, type = LogType.UPDATE)
     public void update(AnnouncementRequest request, String userId) {
         Announcement originalAnnouncement = announcementMapper.selectByPrimaryKey(request.getId());
         if (originalAnnouncement == null) {
@@ -79,15 +84,20 @@ public class AnnouncementService{
         announcementMapper.updateById(announcement);
 
         // 添加日志上下文
-        OperationLogContext.putVariable("announcement", LogExtraDTO.builder()
-                .originalValue(originalAnnouncement)
-                .modifiedValue(announcement)
-                .build());
+        String resourceName = Optional.ofNullable(announcement.getSubject()).orElse(originalAnnouncement.getSubject());
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .originalValue(originalAnnouncement)
+                        .resourceId(originalAnnouncement.getId())
+                        .resourceName(resourceName)
+                        .modifiedValue(announcementMapper.selectByPrimaryKey(request.getId()))
+                        .build()
+        );
     }
 
     @Transactional(rollbackFor = Exception.class)
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.DELETE, resourceId = "{{#id}}", operator = "{{#userId}}", success = "删除公告成功", extra = "{{#announcement}}")
-    public void delete(String id, String userId) {
+    @OperationLog(module = LogModule.SYSTEM_ANNOUNCEMENT, type = LogType.DELETE, resourceId = "{#id}")
+    public void delete(String id) {
         Announcement announcement = announcementMapper.selectByPrimaryKey(id);
         if (announcement == null) {
             throw new RuntimeException(Translator.get("announcement.blank"));
@@ -95,14 +105,12 @@ public class AnnouncementService{
         announcementMapper.deleteByPrimaryKey(id);
 
         // 添加日志上下文
-        OperationLogContext.putVariable("announcement", LogExtraDTO.builder()
-                .originalValue(announcement)
-                .modifiedValue(null)
-                .build());
+        OperationLogContext.setResourceName(announcement.getSubject());
     }
 
     /**
      * 公告列表分页查询
+     *
      * @param request
      * @return
      */
@@ -118,6 +126,7 @@ public class AnnouncementService{
 
     /**
      * 获取公告
+     *
      * @param id
      * @return
      */

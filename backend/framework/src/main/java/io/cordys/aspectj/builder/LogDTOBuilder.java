@@ -1,6 +1,5 @@
 package io.cordys.aspectj.builder;
 
-import io.cordys.aspectj.dto.LogExtraDTO;
 import io.cordys.aspectj.dto.LogDTO;
 import lombok.Builder;
 import lombok.Getter;
@@ -56,16 +55,6 @@ public class LogDTOBuilder {
     private String path;
 
     /**
-     * 原始值（字节数组）
-     */
-    private byte[] originalValue;
-
-    /**
-     * 修改后的值（字节数组）
-     */
-    private byte[] modifiedValue;
-
-    /**
      * 构建 {@link LogDTO} 对象
      *
      * @return {@link LogDTO} 对象
@@ -74,7 +63,6 @@ public class LogDTOBuilder {
         LogDTO logDTO = new LogDTO(organizationId, sourceId, createUser, type, module, content);
         logDTO.setPath(path);
         logDTO.setMethod(method);
-        logDTO.setExtra(LogExtraDTO.builder().originalValue(originalValue).modifiedValue(modifiedValue).build());
         return logDTO;
     }
 }

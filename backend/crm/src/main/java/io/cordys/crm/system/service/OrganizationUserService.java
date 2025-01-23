@@ -4,13 +4,14 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.dto.LogDTO;
-import io.cordys.aspectj.dto.LogExtraDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.CodingUtils;
+import io.cordys.common.util.SubListUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.*;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
@@ -116,7 +117,7 @@ public class OrganizationUserService {
      * @param organizationId
      * @param operatorId
      */
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, operator = "{{#operatorId}}", success = "添加用户成功", extra = "{{#newUser}}")
+    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.ADD, operator = "{#operatorId}")
     public void addUser(UserAddRequest request, String organizationId, String operatorId) {
         //邮箱和手机号唯一性校验
         checkEmailAndPhone(request.getEmail(), request.getPhone());
@@ -128,9 +129,10 @@ public class OrganizationUserService {
         addUserRole(request.getRoleIds(), user.getId(), operatorId);
         //todo add user group
         //添加日志上下文
-        OperationLogContext.putVariable("newUser", LogExtraDTO.builder()
+        OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(null)
                 .modifiedValue(user)
+                .resourceName(user.getName())
                 .resourceId(user.getId())
                 .build());
     }
@@ -243,7 +245,7 @@ public class OrganizationUserService {
      * @param request
      * @param operatorId
      */
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, operator = "{{#operatorId}}", success = "更新用户成功", extra = "{{#newUser}}")
+    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.UPDATE, operator = "{#operatorId}")
     public void updateUser(UserUpdateRequest request, String operatorId) {
         //邮箱和手机号唯一性校验
         checkEmailAndPhone(request.getEmail(), request.getPhone());
@@ -258,8 +260,9 @@ public class OrganizationUserService {
 
 
         //添加日志上下文
-        OperationLogContext.putVariable("newUser", LogExtraDTO.builder()
+        OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(oldUser)
+                .resourceName(oldUser.getUserName())
                 .modifiedValue(getUserDetail(request.getId()))
                 .resourceId(oldUser.getId())
                 .build());
@@ -320,13 +323,24 @@ public class OrganizationUserService {
      * @param userId
      * @param operatorId
      */
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{{#userId}}", operator = "{{#operatorId}}", success = "重置用户密码成功")
+    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.UPDATE, resourceId = "{#userId}", operator = "{#operatorId}")
     public void resetPassword(String userId, String operatorId) {
         User user = userMapper.selectByPrimaryKey(userId);
         user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
         user.setUpdateTime(System.currentTimeMillis());
         user.setUpdateUser(operatorId);
         userMapper.updateById(user);
+
+        // 日志详情对比需要有差异，并且脱敏
+        User originPasswdUser = new User();
+        originPasswdUser.setPassword("############");
+        User newPasswdUser = new User();
+        newPasswdUser.setPassword("************");
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .originalValue(originPasswdUser)
+                .modifiedValue(newPasswdUser)
+                .resourceName(user.getName())
+                .build());
     }
 
     /**
@@ -338,12 +352,23 @@ public class OrganizationUserService {
     public void enable(UserBatchEnableRequest request, String operatorId, String orgId) {
         extOrganizationUserMapper.enable(request, operatorId, System.currentTimeMillis());
 
-        List<LogDTO> logDTOS = new ArrayList<>();
-        request.getIds().forEach(id -> {
-            LogDTO logDTO = new LogDTO(orgId, id, operatorId, LogType.UPDATE, LogModule.SYSTEM, request.isEnable() ? "启用用户成功" : "禁用用户成功");
-            logDTOS.add(logDTO);
+        // 记录日志
+        OrganizationUser originUser = new OrganizationUser();
+        originUser.setEnable(!request.isEnable());
+        OrganizationUser newUser = new OrganizationUser();
+        newUser.setEnable(request.isEnable());
+        SubListUtils.dealForSubList(request.getIds(), 50, ids -> {
+            List<OptionDTO> orgUsers = extOrganizationUserMapper.selectEnableOrgUser(ids, !request.isEnable());
+            List<LogDTO> logs = new ArrayList<>();
+            orgUsers.forEach(orgUser -> {
+                LogDTO logDTO = new LogDTO(orgId, orgUser.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_DEPARTMENT_USER, orgUser.getName());
+                logDTO.setOriginalValue(originUser);
+                logDTO.setModifiedValue(newUser);
+                logs.add(logDTO);
+            });
+
+            logService.batchAdd(logs);
         });
-        logService.batchAdd(logDTOS);
     }
 
 
@@ -356,12 +381,19 @@ public class OrganizationUserService {
      */
     public void batchResetPassword(UserBatchRequest request, String operatorId, String orgId) {
         List<User> userList = extOrganizationUserMapper.getUserList(request);
+
         List<LogDTO> logDTOS = new ArrayList<>();
+        User originPasswdUser = new User();
+        originPasswdUser.setPassword("############");
+        User newPasswdUser = new User();
+        newPasswdUser.setPassword("************");
         userList.forEach(user -> {
             user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
             user.setUpdateTime(System.currentTimeMillis());
             user.setUpdateUser(operatorId);
-            LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM, "重置用户密码成功");
+            LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_DEPARTMENT_USER, user.getName());
+            logDTO.setOriginalValue(originPasswdUser);
+            logDTO.setModifiedValue(newPasswdUser);
             logDTOS.add(logDTO);
         });
         extUserMapper.batchUpdatePassword(userList);

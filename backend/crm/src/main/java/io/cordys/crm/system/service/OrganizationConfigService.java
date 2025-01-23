@@ -2,13 +2,12 @@ package io.cordys.crm.system.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
-import io.cordys.aspectj.dto.LogExtraDTO;
+import io.cordys.aspectj.dto.LogContextInfo;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +58,7 @@ public class OrganizationConfigService {
         if (organizationConfig == null) {
             return new ArrayList<>();
         }
-        List<SyncOrganizationDTO>syncOrganizationDTOS = new ArrayList<>();
+        List<SyncOrganizationDTO> syncOrganizationDTOS = new ArrayList<>();
         List<OrganizationConfigDetail> organizationConfigDetails = extOrganizationConfigDetailMapper.getOrganizationConfigDetails(organizationConfig.getId());
         for (OrganizationConfigDetail organizationConfigDetail : organizationConfigDetails) {
             SyncOrganizationDTO syncOrganizationDTO = JSON.parseObject(new String(organizationConfigDetail.getContent()), SyncOrganizationDTO.class);
@@ -78,7 +77,7 @@ public class OrganizationConfigService {
         organizationConfigDetailBaseMapper.deleteByPrimaryKey(id);
     }
 
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, operator = "{{#userId}}", success = "新增邮件成功", extra = "{{#emailDTO}}")
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, operator = "{#userId}")
     public void addEmail(EmailDTO emailDTO, String organizationId, String userId) {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.EMAIL.name());
         if (organizationConfig == null) {
@@ -96,10 +95,13 @@ public class OrganizationConfigService {
         organizationConfigDetail.setType(OrganizationConfigConstants.ConfigType.EMAIL.name());
         organizationConfigDetailBaseMapper.insert(organizationConfigDetail);
         // 添加日志上下文
-        OperationLogContext.putVariable("emailDTO", LogExtraDTO.builder()
-                .originalValue(null)
-                .modifiedValue(emailDTO)
-                .build());
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(organizationConfig.getId())
+                        .resourceName("邮件设置")
+                        .modifiedValue(emailDTO)
+                        .build()
+        );
 
     }
 
@@ -117,7 +119,7 @@ public class OrganizationConfigService {
         return organizationConfigDetail;
     }
 
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, operator = "{{#userId}}", success = "新增同步组织架构配置成功", extra = "{{#syncOrganizationDTO}}")
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, operator = "{#userId}")
     public void addSynchronization(SyncOrganizationDTO syncOrganizationDTO, String organizationId, String userId) {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
         if (organizationConfig == null) {
@@ -135,13 +137,14 @@ public class OrganizationConfigService {
         organizationConfigDetail.setType(syncOrganizationDTO.getType());
         organizationConfigDetailBaseMapper.insert(organizationConfigDetail);
         // 添加日志上下文
-        OperationLogContext.putVariable("syncOrganizationDTO", LogExtraDTO.builder()
+        OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(null)
+                .resourceName("同步组织设置")
                 .modifiedValue(syncOrganizationDTO)
                 .build());
     }
 
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId ="{{#emailDTO.id}}",  operator = "{{#userId}}", success = "更新邮件成功", extra = "{{#emailDTO}}")
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{#emailDTO.id}", operator = "{#userId}")
     public void updateEmail(EmailDTO emailDTO, String userId) {
         OrganizationConfigDetail organizationConfigDetail = organizationConfigDetailBaseMapper.selectByPrimaryKey(emailDTO.getId());
         EmailDTO emailDTOOld = JSON.parseObject(new String(organizationConfigDetail.getContent()), EmailDTO.class);
@@ -150,13 +153,14 @@ public class OrganizationConfigService {
         organizationConfigDetail.setUpdateUser(userId);
         organizationConfigDetailBaseMapper.update(organizationConfigDetail);
         // 添加日志上下文
-        OperationLogContext.putVariable("emailDTO", LogExtraDTO.builder()
+        OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(emailDTOOld)
+                .resourceName("邮件设置")
                 .modifiedValue(emailDTO)
                 .build());
     }
 
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId ="{{#syncOrganizationDTO.id}}",  operator = "{{#userId}}", success = "更新同步组织架构配置成功", extra = "{{#syncOrganizationDTO}}")
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{#syncOrganizationDTO.id}", operator = "{#userId}")
     public void updateSynchronization(SyncOrganizationDTO syncOrganizationDTO, String userId) {
         OrganizationConfigDetail organizationConfigDetail = organizationConfigDetailBaseMapper.selectByPrimaryKey(syncOrganizationDTO.getId());
         SyncOrganizationDTO syncOrganizationDTOOld = JSON.parseObject(new String(organizationConfigDetail.getContent()), SyncOrganizationDTO.class);
@@ -165,7 +169,8 @@ public class OrganizationConfigService {
         organizationConfigDetail.setUpdateUser(userId);
         organizationConfigDetailBaseMapper.update(organizationConfigDetail);
         // 添加日志上下文
-        OperationLogContext.putVariable("syncOrganizationDTO", LogExtraDTO.builder()
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .resourceName("同步组织设置")
                 .originalValue(syncOrganizationDTOOld)
                 .modifiedValue(syncOrganizationDTO)
                 .build());

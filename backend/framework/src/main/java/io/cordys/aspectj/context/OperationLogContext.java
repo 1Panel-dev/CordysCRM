@@ -1,5 +1,7 @@
 package io.cordys.aspectj.context;
 
+import io.cordys.aspectj.dto.LogContextInfo;
+
 import java.util.*;
 
 /**
@@ -9,6 +11,8 @@ import java.util.*;
  * </p>
  */
 public class OperationLogContext {
+
+    public static final String OPERATION_LOG_CONTEXT_KEY = "OPERATION_LOG_CONTEXT_KEY";
 
     /**
      * 存储方法级别变量的栈，每个方法调用对应一个栈帧。
@@ -47,19 +51,29 @@ public class OperationLogContext {
     }
 
     /**
-     * 向全局变量映射中放入变量。
-     *
-     * @param name  变量名
-     * @param value 变量值
+     * 设置额外信息
      */
-    public static void putGlobalVariable(String name, Object value) {
-        Map<String, Object> globalMap = Optional.ofNullable(GLOBAL_VARIABLE_MAP.get())
-                .orElseGet(() -> {
-                    Map<String, Object> map = new HashMap<>();
-                    GLOBAL_VARIABLE_MAP.set(map);
-                    return map;
-                });
-        globalMap.put(name, value);
+    public static void setContext(LogContextInfo logContextInfo) {
+        putVariable(OPERATION_LOG_CONTEXT_KEY, logContextInfo);
+    }
+
+    /**
+     * 设置额外信息
+     */
+    public static LogContextInfo getContext() {
+        return (LogContextInfo) getVariable(OPERATION_LOG_CONTEXT_KEY);
+    }
+
+    /**
+     * 设置资源名称
+     * @param resourceName
+     */
+    public static void setResourceName(String resourceName) {
+        setContext(
+                LogContextInfo.builder()
+                        .resourceName(resourceName)
+                        .build()
+        );
     }
 
     /**

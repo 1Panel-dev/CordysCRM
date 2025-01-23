@@ -34,7 +34,10 @@ public class LogDTO {
     private String createUser;
 
     @Schema(description = "资源id")
-    private String sourceId;
+    private String resourceId;
+
+    @Schema(description = "资源名称")
+    private String resourceName;
 
     @Schema(description = "操作方法", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "{operation_log.method.not_blank}", groups = {Created.class})
@@ -49,9 +52,6 @@ public class LogDTO {
     @Schema(description = "操作模块")
     private String module;
 
-    @Schema(description = "操作详情")
-    private String content;
-
     @Schema(description = "操作路径")
     private String path;
 
@@ -62,9 +62,14 @@ public class LogDTO {
     private String platform;
 
     /**
-     * 变更内容，原始值，变更后的值
+     * 原始值
      */
-    private LogExtraDTO extra;
+    private Object originalValue;
+
+    /**
+     * 修改后的值
+     */
+    private Object modifiedValue;
 
     /**
      * 默认构造函数
@@ -76,19 +81,18 @@ public class LogDTO {
      * 带参构造函数，用于快速初始化日志数据
      *
      * @param organizationId 组织ID
-     * @param sourceId       数据源ID
+     * @param resourceId       数据源ID
      * @param createUser     创建用户
      * @param type           日志类型
      * @param module         模块
-     * @param content        日志内容
      */
-    public LogDTO(String organizationId, String sourceId, String createUser, String type, String module, String content) {
+    public LogDTO(String organizationId, String resourceId, String createUser, String type, String module, String resourceName) {
         this.setOrganizationId(organizationId);
-        this.setSourceId(sourceId);
+        this.setResourceId(resourceId);
         this.setCreateUser(createUser);
         this.setType(type);
         this.setModule(module);
-        this.setContent(content);
+        this.setResourceName(resourceName);
         this.setCreateTime(System.currentTimeMillis());
     }
 }

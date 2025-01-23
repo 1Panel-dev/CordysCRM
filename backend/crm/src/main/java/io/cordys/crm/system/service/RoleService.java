@@ -1,5 +1,10 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.InternalRole;
 import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.exception.GenericException;
@@ -74,6 +79,7 @@ public class RoleService {
 
     /**
      * 翻译内置角色名
+     *
      * @param role
      * @return
      */
@@ -86,6 +92,7 @@ public class RoleService {
 
     /**
      * 翻译内置角色名
+     *
      * @param roleKey
      * @return
      */
@@ -100,6 +107,7 @@ public class RoleService {
         return baseService.setCreateAndUpdateUserName(roleGetResponse);
     }
 
+    @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.ADD, resourceName = "{#request.name}")
     public Role add(RoleAddRequest request, String userId, String orgId) {
         Role role = BeanUtils.copyBean(new Role(), request);
         role.setId(IDGenerator.nextStr());
@@ -114,10 +122,20 @@ public class RoleService {
         // 校验名称重复
         checkAddExist(role);
         roleMapper.insert(role);
+
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(role.getId())
+                        .modifiedValue(role)
+                        .build()
+        );
+
         return role;
     }
 
+    @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Role update(RoleUpdateRequest request, String userId) {
+        Role originRole = roleMapper.selectByPrimaryKey(request.getId());
         Role role = BeanUtils.copyBean(new Role(), request);
         // 校验名称重复
         checkUpdateExist(role);
@@ -125,7 +143,18 @@ public class RoleService {
         role.setUpdateTime(System.currentTimeMillis());
         role.setUpdateUser(userId);
         roleMapper.update(role);
-        return get(role.getId());
+
+        RoleGetResponse roleGetResponse = get(role.getId());
+
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(roleGetResponse.getName())
+                        .originalValue(originRole)
+                        .modifiedValue(roleMapper.selectByPrimaryKey(request.getId()))
+                        .build()
+        );
+
+        return roleGetResponse;
     }
 
     /**
@@ -150,6 +179,7 @@ public class RoleService {
         }
     }
 
+    @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         Role role = roleMapper.selectByPrimaryKey(id);
         if (BooleanUtils.isTrue(role.getInternal())) {
@@ -159,6 +189,9 @@ public class RoleService {
         roleMapper.deleteByPrimaryKey(id);
         // 删除与权限的关联表
         deletePermissionByRoleId(id);
+
+        // 设置操作对象
+        OperationLogContext.setResourceName(role.getName());
     }
 
     private void deletePermissionByRoleId(String id) {
@@ -239,6 +272,7 @@ public class RoleService {
 
     /**
      * 翻译默认的权限名称
+     *
      * @param p
      * @return
      */

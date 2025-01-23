@@ -41,6 +41,12 @@ public class OperationLog {
     private String resourceId;
 
     /**
+     * 操作对象的名称
+     */
+    @NotBlank(message = "resourceName name")
+    private String resourceName;
+
+    /**
      * 操作人
      */
     @NotBlank(message = "operator required")
@@ -55,19 +61,9 @@ public class OperationLog {
     private String action;
 
     /**
-     * 记录是否是操作失败的日志
-     */
-    private boolean fail;
-
-    /**
      * 日志的创建时间
      */
     private Date createTime;
-
-    /**
-     * 日志的额外信息
-     **/
-    private String extra;
 
     /**
      * 打印日志的代码信息

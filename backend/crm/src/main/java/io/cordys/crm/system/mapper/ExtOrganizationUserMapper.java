@@ -4,6 +4,7 @@ import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.*;
 import org.apache.ibatis.annotations.Param;
+import io.cordys.common.dto.OptionDTO;
 
 import java.util.List;
 
@@ -23,4 +24,6 @@ public interface ExtOrganizationUserMapper {
     List<User> getUserList(@Param("request") UserBatchRequest request);
 
     void deleteUserByOrgId(@Param("orgId") String orgId);
+
+    List<OptionDTO> selectEnableOrgUser(@Param("ids") List<String> ids, @Param("enable") boolean enable);
 }

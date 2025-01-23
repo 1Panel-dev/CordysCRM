@@ -5,7 +5,7 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
-import io.cordys.aspectj.dto.LogExtraDTO;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
@@ -56,7 +56,7 @@ private BaseMapper<MessageTaskBlob> messageTaskBlobMapper;
 private ExtUserMapper extUserMapper;
 
     @Transactional(rollbackFor = Exception.class)
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD,  operator = "{{#userId}}", success = "新增消息任务成功", extra = "{{#messageTask}}")
+    @OperationLog(module = LogModule.SYSTEM_NOTICE, type = LogType.ADD,  operator = "{#userId}")
     public MessageTask saveMessageTask(MessageTaskRequest messageTaskRequest, String userId, String organizationId) {
         //检查设置的通知是否存在，如果存在则更新
         MessageTask messageTask = new MessageTask();
@@ -84,8 +84,10 @@ private ExtUserMapper extUserMapper;
                 messageTaskBlob.setTemplate(messageTaskRequest.getTemplate().getBytes());
                 messageTaskBlobMapper.insert(messageTaskBlob);
                 // 添加日志上下文
-                OperationLogContext.putVariable("messageTask", LogExtraDTO.builder()
+                OperationLogContext.setContext(LogContextInfo.builder()
                         .originalValue(null)
+                        .resourceId(messageTask.getEvent())
+                        .resourceName(messageTask.getTaskType())
                         .modifiedValue(messageTask)
                         .build());
             }
@@ -100,7 +102,7 @@ private ExtUserMapper extUserMapper;
      * @param userId             当前用户ID
      */
     @Transactional(rollbackFor = Exception.class)
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{{#messageTask.id}}",  operator = "{{#userId}}", success = "新增消息任务成功", extra = "{{#messageTask}}")
+    @OperationLog(module = LogModule.SYSTEM_NOTICE, type = LogType.UPDATE,operator = "{{#userId}}")
     public MessageTask updateMessageTasks(MessageTaskRequest messageTaskRequest, String userId, MessageTask oldMessageTask) {
         MessageTask messageTask = new MessageTask();
         messageTask.setId(oldMessageTask.getId());
@@ -115,7 +117,9 @@ private ExtUserMapper extUserMapper;
         messageTaskBlob.setTemplate(messageTaskRequest.getTemplate().getBytes());
         messageTaskBlobMapper.update(messageTaskBlob);
         // 添加日志上下文
-        OperationLogContext.putVariable("messageTask", LogExtraDTO.builder()
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .resourceId(messageTask.getId())
+                .resourceName(messageTask.getTaskType())
                 .originalValue(oldMessageTask)
                 .modifiedValue(messageTask)
                 .build());

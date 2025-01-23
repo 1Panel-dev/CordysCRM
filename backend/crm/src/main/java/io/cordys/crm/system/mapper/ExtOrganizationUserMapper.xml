@@ -57,6 +57,7 @@
     <select id="getUserList" resultType="io.cordys.crm.system.domain.User">
         SELECT
             su.id,
+            su.name,
             su.phone,
             su.password
         from sys_user su
@@ -70,4 +71,16 @@
     <delete id="deleteUserByOrgId">
         DELETE FROM sys_organization_user WHERE organization_id  = #{orgId} and user_id != 'admin'
     </delete>
+
+    <select id="selectEnableOrgUser" resultType="io.cordys.common.dto.OptionDTO">
+        SELECT
+        su.id,
+        su.name
+        from sys_user su
+        inner join sys_organization_user sou on su.id = sou.user_id
+        where sou.id in
+        <foreach collection="request.ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

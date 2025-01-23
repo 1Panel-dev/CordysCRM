@@ -3,11 +3,13 @@ package io.cordys.aspectj.aop;
 import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.annotation.OperationLogs;
 import io.cordys.aspectj.builder.OperationLogBuilder;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.BridgeMethodResolver;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
-import org.springframework.util.StringUtils;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
@@ -113,31 +115,36 @@ public class OperationLogSource {
      */
     private OperationLogBuilder parseLogRecordAnnotation(AnnotatedElement ae, OperationLog recordAnnotation) {
         OperationLogBuilder recordOps = OperationLogBuilder.builder()
-                .successLogTemplate(recordAnnotation.success())
-                .failLogTemplate(recordAnnotation.fail())
+                .resourceName(recordAnnotation.resourceName())
                 .type(recordAnnotation.type())
                 .resourceId(recordAnnotation.resourceId())
                 .operatorId(recordAnnotation.operator())
                 .subType(recordAnnotation.module())
-                .extra(recordAnnotation.extra())
                 .loginAddress(recordAnnotation.loginAddress())
                 .platform(recordAnnotation.platform())
                 .build();
-        validateLogRecordOperation(ae, recordOps);
         return recordOps;
     }
 
     /**
      * 验证日志记录操作配置是否合法。
      *
-     * @param ae        被注解的元素
      * @param recordOps 日志记录构建器
      * @throws IllegalStateException 如果配置不合法
      */
-    private void validateLogRecordOperation(AnnotatedElement ae, OperationLogBuilder recordOps) {
-        if (!StringUtils.hasText(recordOps.getSuccessLogTemplate()) && !StringUtils.hasText(recordOps.getFailLogTemplate())) {
-            throw new IllegalStateException("无效的日志记录注解配置: '" +
-                    ae.toString() + "'. 必须设置 'successTemplate' 或 'failLogTemplate' 属性。");
+    public boolean isLogRecordOperationValidated(OperationLogBuilder recordOps) {
+        LogContextInfo extra = OperationLogContext.getContext();
+        String resourceName = recordOps.getResourceName();
+        String resourceId = recordOps.getResourceId();
+        if (extra != null && StringUtils.isNotBlank(extra.getResourceName())) {
+            resourceName = extra.getResourceName();
         }
+        if (extra != null && StringUtils.isNotBlank(extra.getResourceId())) {
+            resourceId = extra.getResourceId();
+        }
+        if (StringUtils.isBlank(resourceName) || StringUtils.isBlank(resourceId)) {
+           return false;
+        }
+        return true;
     }
 }
