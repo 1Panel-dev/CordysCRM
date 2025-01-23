@@ -4,7 +4,7 @@
   </CrmCard>
   <AuthenticationSettings v-if="activeTab === 'authenticationSettings'" />
   <MailSettings v-if="activeTab === 'mailSettings'" />
-  <IntegrationList v-if="activeTab === 'scanLogin'" />
+  <IntegrationList v-if="['scanLogin', 'syncOrganization'].includes(activeTab)" :active-tab="activeTab" />
 </template>
 
 <script setup lang="ts">

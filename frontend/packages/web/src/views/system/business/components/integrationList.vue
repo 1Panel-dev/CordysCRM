@@ -49,6 +49,7 @@
   </CrmCard>
 
   <EditIntegrationModal v-model:show="showEditIntegrationModal" :integration="currentIntegration" />
+  <SyncWeChat v-model:show="showSyncWeChatModal" />
 </template>
 
 <script setup lang="ts">
@@ -58,11 +59,17 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import EditIntegrationModal from './editIntegrationModal.vue';
+  import SyncWeChat from '@/views/system/org/components/syncWeChat.vue';
 
   const { t } = useI18n();
 
+  const props = defineProps<{
+    activeTab: string;
+  }>();
+
   // TODO lmy 类型
-  const integrationList = ref<any[]>([
+  // 所有可用的集成平台配置
+  const allIntegrations: any[] = [
     {
       key: 'WE_COM',
       title: t('system.business.WE_COM'),
@@ -75,7 +82,7 @@
       key: 'DING_TALK',
       title: t('system.business.DING_TALK'),
       description: t('system.business.DING_TALK.description'),
-      enable: true,
+      enable: false,
       logo: 'iconlogo_dingtalk',
       hasConfig: false,
     },
@@ -85,7 +92,7 @@
       description: t('system.business.LARK.description'),
       enable: false,
       logo: 'iconlogo_lark',
-      hasConfig: true,
+      hasConfig: false,
     },
     {
       key: 'LARK_SUITE',
@@ -95,15 +102,31 @@
       logo: 'iconlogo_lark',
       hasConfig: false,
     },
-  ]);
+  ];
+
+  // 根据 activeTab 计算显示的集成列表
+  const integrationList = computed(() => {
+    if (props.activeTab === 'syncOrganization') {
+      // 同步组织架构页面只显示企业微信
+      return allIntegrations.filter((item) => item.key === 'WE_COM');
+    }
+    // 扫码登录页面显示所有
+    return allIntegrations;
+  });
 
   const showEditIntegrationModal = ref(false);
+  const showSyncWeChatModal = ref<boolean>(false);
+
   // TODO lmy 类型
   const currentIntegration = ref<any>(null);
 
   // TODO lmy 类型
   function handleEdit(item: any) {
     currentIntegration.value = item;
-    showEditIntegrationModal.value = true;
+    if (props.activeTab === 'scanLogin') {
+      showEditIntegrationModal.value = true;
+    } else {
+      showSyncWeChatModal.value = true;
+    }
   }
 </script>

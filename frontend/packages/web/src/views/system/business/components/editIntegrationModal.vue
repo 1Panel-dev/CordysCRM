@@ -1,5 +1,5 @@
 <template>
-  <CrmModal v-model:show="showModal" size="small" :title="currentIntegration?.title">
+  <CrmModal v-model:show="showModal" :title="currentIntegration?.title">
     <n-form
       ref="formRef"
       :model="form"
