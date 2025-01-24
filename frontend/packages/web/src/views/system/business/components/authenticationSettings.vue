@@ -1,7 +1,9 @@
 <template>
   <CrmCard hide-footer>
     <div class="mb-[16px] flex items-center justify-between">
-      <n-button type="primary">{{ t('system.business.authenticationSettings.add') }}</n-button>
+      <n-button type="primary" @click="handleAdd">
+        {{ t('system.business.authenticationSettings.add') }}
+      </n-button>
       <n-input v-model:value="keyword" :placeholder="t('common.searchByName')" clearable class="!w-[240px]" />
     </div>
     <CrmTable
@@ -27,7 +29,7 @@
       </CrmTag>
     </template>
     <template #titleRight>
-      <n-button type="primary" ghost> {{ t('common.edit') }} </n-button>
+      <n-button type="primary" ghost @click="handleEdit(activeAuthDetail, true)"> {{ t('common.edit') }} </n-button>
     </template>
     <CrmDescription
       :one-line-label="false"
@@ -57,6 +59,8 @@
       </template>
     </CrmDescription>
   </CrmDrawer>
+
+  <AddOrEditAuthDrawer v-model:show="showAddOrEditAuthDrawer" :edit-auth-info="editAuthInfo" />
 </template>
 
 <script setup lang="ts">
@@ -70,8 +74,9 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import AddOrEditAuthDrawer from './addOrEditAuthDrawer.vue';
 
-  import { authTypeFieldMap } from '@/config/business';
+  import { authTypeFieldMap, defaultAuthForm } from '@/config/business';
   import { useI18n } from '@/hooks/useI18n';
   import { desensitize } from '@/utils';
 
@@ -83,16 +88,7 @@
 
   // 详情
   const showDetailDrawer = ref(false);
-  const activeAuthDetail = ref<any>({
-    id: '',
-    enable: true,
-    description: '',
-    name: '',
-    type: 'LDAP',
-    updateTime: 0,
-    createTime: 0,
-    configuration: {},
-  });
+  const activeAuthDetail = ref<any>({ ...defaultAuthForm });
   const descriptions = ref<Description[]>([]);
 
   async function openAuthDetail(id: string) {
@@ -246,4 +242,19 @@
   onMounted(() => {
     searchData();
   });
+
+  // 新增和编辑
+  const showAddOrEditAuthDrawer = ref(false);
+  const editAuthInfo = ref<any>({});
+
+  function handleAdd() {
+    editAuthInfo.value = { ...defaultAuthForm };
+    showAddOrEditAuthDrawer.value = true;
+  }
+  function handleEdit(record: any, isFromDetail = false) {
+    if (isFromDetail) {
+      editAuthInfo.value = { ...record };
+      showAddOrEditAuthDrawer.value = true;
+    }
+  }
 </script>
