@@ -75,7 +75,7 @@
       bordered?: boolean; // 是否显示边框
       activeItemKey?: string | number; // 当前选中的项的 key
       focusItemKey?: string | number; // 聚焦的项的 key
-      itemMoreActions: ActionsItem[]; // 节点展示在省略号按钮内的更多操作
+      itemMoreActions?: ActionsItem[]; // 节点展示在省略号按钮内的更多操作
       keyField?: string; // 唯一值 key 的字段名，默认为 key
       itemHeight?: number; // 每一项的高度
       emptyText?: string; // 空数据时的文案

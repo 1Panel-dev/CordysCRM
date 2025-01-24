@@ -141,6 +141,7 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       // Info Alert边框和背景颜色
       borderInfo: `1px solid ${getLessVariableValue('--info-blue')}`,
       colorInfo: getLessVariableValue('--info-5'),
+      iconColor: getLessVariableValue('--primary-8'),
     },
     Message: {
       borderRadius: '6px',

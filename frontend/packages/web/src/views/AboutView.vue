@@ -94,6 +94,7 @@
                   v-model:active-item-key="activeItemKey"
                   :item-more-actions="moreOptions"
                   virtual-scroll-height="200px"
+                  key-field="id"
                   @item-click="handleItemClick"
                 >
                   <template #title="{ item }">

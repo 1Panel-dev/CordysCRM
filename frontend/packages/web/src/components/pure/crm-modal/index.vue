@@ -4,8 +4,6 @@
     v-model:show="showModal"
     :show-icon="props.showIcon"
     :preset="props.preset"
-    :positive-text="props.positiveText"
-    :negative-text="props.negativeText"
     :class="`crm-modal-${props.size || 'medium'}`"
     @positive-click="positiveClick"
     @negative-click="negativeClick"
@@ -27,18 +25,18 @@
     <div>
       <slot></slot>
     </div>
-    <template #action>
+    <template v-if="props.footer" #action>
       <slot name="footer">
         <div class="flex items-center justify-between">
           <slot name="footerLeft"> </slot>
           <slot name="footerRight">
-            <div class="flex items-center gap-[8px]">
+            <div class="flex items-center gap-[12px]">
               <n-button
                 :disabled="props.okLoading"
                 v-bind="{ secondary: true, ...props.cancelButtonProps }"
                 @click="negativeClick"
               >
-                {{ t(props.negativeText) }}
+                {{ props.negativeText || t('common.cancel') }}
               </n-button>
               <n-button v-if="showContinue" :loading="props.okLoading" type="tertiary" @click="handleContinue">
                 {{ t(props.continueText || '') }}
@@ -48,7 +46,7 @@
                 v-bind="{ type: 'primary', ...props.okButtonProps }"
                 @click="positiveClick"
               >
-                {{ t(props.positiveText) }}
+                {{ props.positiveText || t('common.confirm') }}
               </n-button>
             </div>
           </slot>
@@ -81,13 +79,13 @@
       okButtonProps?: ButtonProps; // 确定按钮属性
       titleClass?: string; // 标题类名
       titleStyle?: Record<string, any>; // 标题样式
+      footer?: boolean; // 是否展示footer
     }>(),
     {
       preset: 'dialog',
-      positiveText: 'common.confirm',
-      negativeText: 'common.cancel',
       showIcon: false,
       showContinue: false,
+      footer: true,
     }
   );
 

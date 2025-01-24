@@ -304,20 +304,22 @@
               () => renderExtraDom(info)
             ),
             // 操作
-            h(CrmMoreAction, {
-              options: props.filterMoreActionFunc
-                ? props.filterMoreActionFunc(props.nodeMoreActions || [], option)
-                : props.nodeMoreActions || [],
-              onSelect: (actionItem: ActionsItem) => selectMoreAction(actionItem, option),
-              onUpdateShow: (show: boolean) => {
-                focusNodeKeys.value.clear();
-                if (show) {
-                  focusNodeKeys.value.add(option[props.fieldNames.keyField]);
-                } else {
-                  focusNodeKeys.value.clear();
-                }
-              },
-            }),
+            props.nodeMoreActions?.length
+              ? h(CrmMoreAction, {
+                  options: props.filterMoreActionFunc
+                    ? props.filterMoreActionFunc(props.nodeMoreActions || [], option)
+                    : props.nodeMoreActions || [],
+                  onSelect: (actionItem: ActionsItem) => selectMoreAction(actionItem, option),
+                  onUpdateShow: (show: boolean) => {
+                    focusNodeKeys.value.clear();
+                    if (show) {
+                      focusNodeKeys.value.add(option[props.fieldNames.keyField]);
+                    } else {
+                      focusNodeKeys.value.clear();
+                    }
+                  },
+                })
+              : null,
           ];
         },
       }

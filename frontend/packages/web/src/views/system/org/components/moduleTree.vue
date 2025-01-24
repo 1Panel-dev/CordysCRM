@@ -213,7 +213,7 @@
     const { option } = infoProps;
     if (option.corporation) {
       return h(CrmIcon, {
-        type: 'iconicon_product',
+        type: 'iconicon_control_platform1',
         size: 16,
       });
     }

@@ -1,8 +1,8 @@
 <template>
   <div class="w-full p-[24px]">
     <div class="mb-[16px]">
-      <n-button class="mr-[12px]" type="primary" @click="addMember">{{ t('org.addStaff') }}</n-button>
-      <CrmMoreAction :options="moreActions" trigger="click">
+      <n-button class="mr-[12px]" type="primary" @click="addOrEditMember(false)">{{ t('org.addStaff') }}</n-button>
+      <CrmMoreAction :options="moreActions" trigger="click" @select="selectMoreActions">
         <n-button type="default" class="outline--secondary">
           {{ t('common.more') }}
           <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
@@ -18,6 +18,27 @@
     />
     <AddMember v-model:show="showDrawer" />
     <SyncWeChat v-model:show="showSyncWeChatModal" />
+    <MemberDetail v-model:show="showDetailModal" :rows-data="rowsData" @edit="addOrEditMember(true)" />
+    <!-- 导入开始 -->
+    <!-- 导入弹窗 -->
+    <ImportModal v-model:show="importModal" :confirm-loading="validateLoading" @validate="validateTemplate" />
+
+    <!-- 校验弹窗 -->
+    <ValidateModal
+      v-model:show="validateModal"
+      :percent="progress"
+      @cancel="cancelValidate"
+      @check-finished="checkFinished"
+    />
+
+    <!-- 校验结果弹窗 -->
+    <ValidateResult
+      v-model:show="validateResultModal"
+      :validate-info="validateInfo"
+      :import-loading="importLoading"
+      @close="importModal = false"
+    />
+    <!-- 导入结束 -->
   </div>
 </template>
 
@@ -31,18 +52,26 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn, CrmTableDataItem } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
+  import type { CrmFileItem } from '@/components/pure/crm-upload/types';
   import AddMember from './addMember.vue';
+  import MemberDetail from './memberDetail.vue';
   import SyncWeChat from './syncWeChat.vue';
+  import ImportModal from '@/views/system/org/components/import/importModal.vue';
+  import ValidateModal from '@/views/system/org/components/import/validateModal.vue';
+  import ValidateResult from '@/views/system/org/components/import/validateResult.vue';
 
   import { useI18n } from '@/hooks/useI18n';
+  import useProgressBar from '@/hooks/useProgressBar';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import type { CommonList } from '@lib/shared/models/common';
 
   const { t } = useI18n();
 
+  /**
+   * 设置同步微信
+   */
   const isHasSetting = ref<boolean>(false);
-
   const showSyncWeChatModal = ref<boolean>(false);
   function settingWeChat(e: MouseEvent) {
     e.stopPropagation();
@@ -100,7 +129,7 @@
     {
       title: t('common.status'),
       key: 'status',
-      width: 200,
+      width: 100,
       ellipsis: {
         tooltip: true,
       },
@@ -217,7 +246,6 @@
       ellipsis: {
         tooltip: true,
       },
-      showInTable: false,
     },
     {
       title: t('org.userGroup'),
@@ -226,7 +254,6 @@
       ellipsis: {
         tooltip: true,
       },
-      showInTable: false,
     },
     {
       title: t('common.createTime'),
@@ -235,7 +262,6 @@
       ellipsis: {
         tooltip: true,
       },
-      showInTable: false,
     },
     {
       title: t('common.creator'),
@@ -244,7 +270,6 @@
       ellipsis: {
         tooltip: true,
       },
-      showInTable: false,
     },
     {
       title: t('common.updateTime'),
@@ -253,7 +278,6 @@
       ellipsis: {
         tooltip: true,
       },
-      showInTable: false,
     },
     {
       title: t('common.updateUserName'),
@@ -262,7 +286,6 @@
       ellipsis: {
         tooltip: true,
       },
-      showInTable: false,
     },
     { key: 'operation', width: 80 },
   ];
@@ -309,11 +332,139 @@
     loadList();
   }
 
+  /**
+   * 添加&编辑用户
+   */
   const showDrawer = ref<boolean>(false);
-
-  function addMember() {
+  function addOrEditMember(isEdit: boolean) {
     showDrawer.value = true;
   }
+  // TODO xxw 类型
+  const rowsData = ref<Record<string, any>>({
+    enabled: true,
+    name: '标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题',
+  });
+
+  /**
+   * 用户详情
+   */
+  const showDetailModal = ref<boolean>(false);
+  function showDetail() {
+    showDetailModal.value = true;
+  }
+
+  /**
+   * 导入用户
+   */
+  const importModal = ref<boolean>(false);
+  const validateLoading = ref<boolean>(false);
+  function handleImportUser() {
+    importModal.value = true;
+  }
+
+  const validateModal = ref<boolean>(false);
+  function cancelValidate() {
+    validateModal.value = false;
+  }
+
+  const fileList = ref<CrmFileItem[]>([]);
+  // TODO类型 xxw
+  const validateInfo = ref<any>({
+    failCount: 10,
+    successCount: 0,
+    errorMessages: [
+      {
+        rowNum: 13,
+        errMsg: '第 14 行出错：[名称]不能为空; ',
+      },
+      {
+        rowNum: 14,
+        errMsg: '第 15 行出错：[名称]不能为空; ',
+      },
+      {
+        rowNum: 15,
+        errMsg: '第 16 行出错：[名称]不能为空; ',
+      },
+      {
+        rowNum: 16,
+        errMsg: '第 17 行出错：[名称]不能为空; ',
+      },
+      {
+        rowNum: 13,
+        errMsg: '第 14 行出错：[名称]不能为空; ',
+      },
+      {
+        rowNum: 14,
+        errMsg: '第 15 行出错：[名称]不能为空; ',
+      },
+      {
+        rowNum: 15,
+        errMsg: '第 16 行出错：[名称]不能为空; ',
+      },
+      {
+        rowNum: 16,
+        errMsg: '第 17 行出错：[名称]不能为空; ',
+      },
+      {
+        rowNum: 13,
+        errMsg: '第 14 行出错：[名称]不能为空; ',
+      },
+      {
+        rowNum: 14,
+        errMsg: '第 15 行出错：[名称]不能为空; ',
+      },
+      {
+        rowNum: 15,
+        errMsg: '第 16 行出错：[名称]不能为空; ',
+      },
+      {
+        rowNum: 16,
+        errMsg: '第 17 行出错：[名称]不能为空; ',
+      },
+    ],
+  });
+
+  const { progress, start, finish } = useProgressBar();
+  // 校验导入模板
+  async function validateTemplate(files: CrmFileItem[]) {
+    fileList.value = files;
+    validateLoading.value = true;
+    try {
+      validateModal.value = true;
+      start();
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(true);
+        }, 10000);
+      });
+      finish();
+    } catch (error) {
+      validateModal.value = false;
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      validateLoading.value = false;
+    }
+  }
+
+  function selectMoreActions(item: ActionsItem) {
+    switch (item.key) {
+      case 'import':
+        handleImportUser();
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  const validateResultModal = ref<boolean>(false);
+  function checkFinished() {
+    validateLoading.value = false;
+    validateResultModal.value = true;
+  }
+
+  const importLoading = ref<boolean>(false);
 
   onMounted(() => {
     initOrgList();

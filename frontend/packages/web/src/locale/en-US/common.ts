@@ -224,4 +224,7 @@ export default {
   'common.emailErrTip': 'Email format error, please reenter',
   'common.userPhoneErrTip': 'Please enter the 11 phone number',
   'common.addTime': 'Add time',
+  'common.opened': 'Enabled',
+  'common.disabled': 'Disabled',
+  'common.ViewMore': 'View more',
 };

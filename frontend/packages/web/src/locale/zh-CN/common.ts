@@ -224,4 +224,7 @@ export default {
   'common.emailErrTip': '邮箱格式错误，请重新输入',
   'common.userPhoneErrTip': '请输入 11 位手机号',
   'common.addTime': '添加时间',
+  'common.opened': '已开启',
+  'common.disabled': '已禁用',
+  'common.ViewMore': '查看更多',
 };

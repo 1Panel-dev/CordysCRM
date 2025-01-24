@@ -1,6 +1,6 @@
 <template>
   <n-dropdown
-    trigger="hover"
+    :trigger="props.trigger"
     :options="props.options"
     :render-label="renderLabel"
     class="crm-dropdown"
@@ -59,6 +59,7 @@
     }>(),
     {
       placement: 'bottom-start',
+      trigger: 'hover',
     }
   );
 
