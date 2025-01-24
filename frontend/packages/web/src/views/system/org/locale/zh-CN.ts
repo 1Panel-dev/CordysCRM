@@ -50,4 +50,11 @@ export default {
   'org.ignoreErrorContinueImporting': '忽略错误继续导入',
   'org.successImportActionTip': '点击 导入 可录入系统',
   'org.importErrorData': '导入失败数据',
+  'org.addDepartment': '新建部门',
+  'org.resetPassWordTip': '确认重置 {name} 密码吗？',
+  'org.resetPassWordContent': '重置后，员工通过初始密码（手机号后 6位）登录系统',
+  'org.resetPassWordSuccess': '重置成功',
+  'org.confirmReset': '确认重置',
+  'org.resetPassWord': '重置密码',
+  'org.noDepartmentToChoose': '暂无可选部门',
 };

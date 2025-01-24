@@ -51,4 +51,12 @@ export default {
   'org.ignoreErrorContinueImporting': 'Ignore errors and continue importing',
   'org.successImportActionTip': 'Click Import to enter into system',
   'org.importErrorData': 'Import failed data',
+  'org.addDepartment': 'Add department',
+  'org.resetPassWordTip': 'Confirm reset password for {name}?',
+  'org.resetPassWordContent':
+    'After reset, employees log in to the system with the initial password (last 6 digits of phone number)',
+  'org.resetPassWordSuccess': 'Reset successful',
+  'org.confirmReset': 'Confirm Reset',
+  'org.resetPassWord': 'Reset Password',
+  'org.noDepartmentToChoose': 'No department available',
 };

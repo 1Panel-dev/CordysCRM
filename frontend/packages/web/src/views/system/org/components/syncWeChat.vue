@@ -90,8 +90,8 @@
   });
 
   const rules: FormRules = {
-    enterpriseId: [{ required: true, message: t('common.pleaseInput') }],
-    secret: [{ required: true, message: t('common.pleaseInput') }],
+    enterpriseId: [{ required: true, message: t('common.notNull', { value: `${t('org.enterpriseID')}` }) }],
+    secret: [{ required: true, message: t('common.notNull', { value: `${t('org.Secret')}` }) }],
   };
 
   function cancel() {

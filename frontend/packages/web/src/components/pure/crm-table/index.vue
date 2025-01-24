@@ -73,6 +73,8 @@
       columns = await tableStore.getShowInTableColumns(attrs.tableKey as TableKeyEnum);
     }
     currentColumns.value = columns.map((column) => {
+      // 添加上render
+      const render = props.columns.find((item) => item.key === column.key)?.render;
       // 选择列
       if (column.type === SpecialColumnEnum.SELECTION) {
         return {
@@ -99,6 +101,7 @@
             }
             return h('div', { class: 'flex items-center gap-[8px]' }, children);
           },
+          render,
         };
       }
       // 排序图标处理
@@ -133,9 +136,6 @@
             },
           }
         : {};
-
-      // 添加上render
-      const render = props.columns.find((item) => item.key === column.key)?.render;
 
       return {
         ...column,

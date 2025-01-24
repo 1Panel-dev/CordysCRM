@@ -1,7 +1,14 @@
 <template>
   <CrmDrawer v-model:show="showDrawer" :width="480" :title="t('org.addMember')" :ok-text="t('common.update')">
     <div>
-      <n-form ref="formRef" :model="form" :rules="rules" label-placement="left" label-width="auto">
+      <n-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        label-placement="left"
+        label-width="90px"
+        require-mark-placement="left"
+      >
         <n-form-item require-mark-placement="left" label-placement="left" path="name" :label="t('org.userName')">
           <n-input v-model:value="form.name" type="text" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
@@ -34,7 +41,23 @@
           path="department"
           :label="t('org.department')"
         >
-          <n-select v-model:value="form.department" :placeholder="t('common.pleaseSelect')" :options="department" />
+          <n-select v-model:value="form.department" :placeholder="t('common.pleaseSelect')" :options="department">
+            <template #empty>
+              <div class="flex w-full items-center justify-start text-[var(--text-n4)]">
+                {{ t('org.noDepartmentToChoose') }}
+              </div>
+            </template>
+            <template #action>
+              <div class="text-left">
+                <n-button type="primary" text @click="addDepartment">
+                  <template #icon>
+                    <CrmIcon type="iconicon_add" :size="16" class="text-[var(--primary-8)]" />
+                  </template>
+                  {{ t('org.addDepartment') }}
+                </n-button>
+              </div>
+            </template>
+          </n-select>
         </n-form-item>
         <n-form-item
           require-mark-placement="left"
@@ -148,6 +171,10 @@
 
   const { t } = useI18n();
 
+  const emit = defineEmits<{
+    (e: 'addSuccess'): void;
+  }>();
+
   const showDrawer = defineModel<boolean>('show', {
     required: true,
     default: false,
@@ -171,7 +198,7 @@
 
   function validateUserEmail(rule: FormItemRule, value: string) {
     if (!value) {
-      return new Error(t('common.pleaseInput'));
+      return new Error(t('common.notNull', { value: `${t('org.userEmail')}` }));
     }
     if (!validateEmail(value)) {
       return new Error(t('common.emailErrTip'));
@@ -181,7 +208,7 @@
 
   function validateUserPhone(rule: FormItemRule, value: string) {
     if (!value) {
-      return new Error(t('common.pleaseInput'));
+      return new Error(t('common.notNull', { value: `${t('org.phoneNumber')}` }));
     }
     if (!validatePhone(value)) {
       return new Error(t('common.userPhoneErrTip'));
@@ -190,7 +217,7 @@
   }
 
   const rules: FormRules = {
-    name: [{ required: true, message: t('common.pleaseInput') }],
+    name: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }) }],
     phoneNumber: [{ validator: validateUserPhone, trigger: ['input', 'blur'] }],
     email: [{ validator: validateUserEmail, trigger: ['input', 'blur'] }],
     department: [{ required: true, message: t('common.pleaseSelect') }],
@@ -230,6 +257,10 @@
   }
 
   function continueAdd() {}
+
+  function addDepartment() {
+    emit('addSuccess');
+  }
 </script>
 
 <style scoped></style>

@@ -7,7 +7,7 @@
         </div>
       </template>
       <template #2>
-        <OrgTable />
+        <OrgTable @add-success="addSuccess" />
       </template>
     </CrmSplitPanel>
   </CrmCard>
@@ -18,6 +18,8 @@
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
   import OrgModuleTree from './components/moduleTree.vue';
   import OrgTable from '@/views/system/org/components/orgTable.vue';
+
+  function addSuccess() {}
 </script>
 
 <style lang="less" scoped>

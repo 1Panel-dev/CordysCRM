@@ -86,6 +86,15 @@
                   accept="excel"
                   @change="changeHandler"
                 />
+                <CrmButtonGroup :list="groupList" @select="selectHandler">
+                  <template #more>
+                    <CrmMoreAction :options="moreOptions">
+                      <div class="flex items-center justify-center">
+                        <CrmIcon class="cursor-pointer" type="iconicon_ellipsis" :size="16" />
+                      </div>
+                    </CrmMoreAction>
+                  </template>
+                </CrmButtonGroup>
               </div>
               <div class="flex-1">
                 <CrmList
@@ -176,10 +185,12 @@
 <script setup lang="ts">
   import { NButton, NForm, NFormItem, NInput, NTag, TabPaneProps, useMessage } from 'naive-ui';
 
+  import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
@@ -557,6 +568,30 @@
 
   function handleItemClick(item: Record<string, any>) {
     activeItemKey.value = item.key;
+  }
+
+  const groupList = ref([
+    {
+      label: '重命名',
+      key: 'rename', // 事件标识
+    },
+    {
+      label: '复制',
+      key: 'copy', // 事件标识
+    },
+    {
+      label: '删除',
+      key: 'delete', // 事件标识
+      danger: true,
+    },
+    {
+      label: '更多',
+      key: 'more',
+      slotName: 'more',
+    },
+  ]);
+  function selectHandler(key: string) {
+    console.log(key, 'keykey');
   }
 </script>
 

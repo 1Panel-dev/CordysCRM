@@ -2,14 +2,21 @@
   <div class="mb-[8px] flex items-center justify-between gap-[8px]">
     <n-input v-model:value="keyword" :placeholder="t('common.searchByName')">
       <template #suffix>
-        <CrmIcon type="iconicon_search" :size="16" class="text-[var(--text-n4)]" />
+        <n-icon>
+          <Search />
+        </n-icon>
       </template>
     </n-input>
-    <n-button type="primary" ghost class="!px-[7px]" @click="changeExpand">
-      <template #icon>
-        <CrmIcon type="iconicon_add" class="" :size="16" />
+    <n-tooltip trigger="hover" :delay="300">
+      <template #trigger>
+        <n-button type="tertiary" class="px-[6px]" @click="changeExpand">
+          <template #icon>
+            <n-icon><Add /></n-icon>
+          </template>
+        </n-button>
       </template>
-    </n-button>
+      {{ t('org.addDepartment') }}
+    </n-tooltip>
   </div>
   <CrmTree
     v-model:data="orgModuleTree"
@@ -37,7 +44,8 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NInput, useMessage } from 'naive-ui';
+  import { NButton, NIcon, NInput, NTooltip, useMessage } from 'naive-ui';
+  import { Add, Search } from '@vicons/ionicons5';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -259,6 +267,7 @@
     try {
       Message.success(t('common.addSuccess'));
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.log(error);
     }
   }
