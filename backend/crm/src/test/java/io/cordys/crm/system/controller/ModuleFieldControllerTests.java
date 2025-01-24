@@ -4,6 +4,7 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleFieldOption;
+import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.dto.request.ModuleFieldRequest;
 import io.cordys.crm.system.dto.request.ModuleFieldSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
@@ -33,6 +34,8 @@ public class ModuleFieldControllerTests extends BaseTest{
 		this.requestPostWithOk("/module/field/save", request);
 		request.setDeleteFieldIds(List.of("default-delete-id"));
 		request.setFields(List.of(buildField()));
+		ModuleForm form = buildForm();
+		request.setForm(form);
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/module/field/save", request);
 		List<ModuleFieldDTO> fields = getResultDataArray(mvcResult, ModuleFieldDTO.class);
 		assert fields.size() == 1;
@@ -41,6 +44,8 @@ public class ModuleFieldControllerTests extends BaseTest{
 		ModuleFieldOption option = ModuleFieldOption.builder().fieldKey("default-key").fieldLabel("default-value").build();
 		saveField.setOptions(List.of(option));
 		request.setFields(List.of(saveField));
+		form.setId("default-form-id");
+		request.setForm(form);
 		this.requestPostWithOk("/module/field/save", request);
 	}
 
@@ -63,5 +68,15 @@ public class ModuleFieldControllerTests extends BaseTest{
 		ModuleFieldDTO dto = new ModuleFieldDTO();
 		BeanUtils.copyBean(dto, field);
 		return dto;
+	}
+
+	private ModuleForm buildForm() {
+		return ModuleForm.builder()
+				.moduleId("default-module").frontCache(1).layout("layout")
+				.labelPos("middle").labelWidth("default")
+				.labelAlignment("left").showDesc(1)
+				.inputWidth("default").optBtnPos("middle")
+				.saveBtn(1).saveContinueBtn(1).cancelBtn(1)
+				.build();
 	}
 }

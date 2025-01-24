@@ -4,6 +4,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleFieldOption;
+import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.dto.request.ModuleFieldRequest;
 import io.cordys.crm.system.dto.request.ModuleFieldSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
@@ -30,6 +31,8 @@ public class ModuleFieldService {
 	private BaseMapper<ModuleField> moduleFieldMapper;
 	@Resource
 	private BaseMapper<ModuleFieldOption> moduleFieldOptionMapper;
+	@Resource
+	private BaseMapper<ModuleForm> moduleFormMapper;
 	@Resource
 	private ExtModuleFieldMapper extModuleFieldMapper;
 	@Resource
@@ -110,6 +113,19 @@ public class ModuleFieldService {
 		}
 		if (CollectionUtils.isNotEmpty(addFieldOptions)) {
 			moduleFieldOptionMapper.batchInsert(addFieldOptions);
+		}
+		// 表单属性
+		ModuleForm form = saveParam.getForm();
+		form.setUpdateTime(System.currentTimeMillis());
+		form.setUpdateUser(currentUserId);
+		if (form.getId() == null) {
+			form.setId(IDGenerator.nextStr());
+			form.setModuleId(saveParam.getModuleId());
+			form.setCreateTime(System.currentTimeMillis());
+			form.setCreateUser(currentUserId);
+			moduleFormMapper.insert(form);
+		} else {
+			moduleFormMapper.updateById(form);
 		}
 		return saveParam.getFields();
 	}
