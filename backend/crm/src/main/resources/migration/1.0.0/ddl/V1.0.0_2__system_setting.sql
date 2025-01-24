@@ -678,6 +678,32 @@ CREATE TABLE customer_capacity(
 
 CREATE INDEX idx_organization_id ON customer_capacity(organization_id ASC);
 
+CREATE TABLE sys_module_form(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `module_id` VARCHAR(32) NOT NULL   COMMENT '所属模块' ,
+    `front_cache` BIT(1) NOT NULL  DEFAULT 0 COMMENT '前台缓存' ,
+    `layout` VARCHAR(10) NOT NULL   COMMENT '布局(常量)' ,
+    `label_pos` VARCHAR(10) NOT NULL   COMMENT '标题位置(常量)' ,
+    `label_width` VARCHAR(10) NOT NULL   COMMENT '标题宽度' ,
+    `label_alignment` VARCHAR(10) NOT NULL   COMMENT '标题对齐方式' ,
+    `show_desc` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否展示描述信息' ,
+    `input_width` VARCHAR(10) NOT NULL   COMMENT '输入框宽度' ,
+    `opt_btn_pos` VARCHAR(10) NOT NULL   COMMENT '操作按钮位置(常量)' ,
+    `save_btn` BIT(1) NOT NULL  DEFAULT 1 COMMENT '保存按钮' ,
+    `save_continue_btn` BIT(1) NOT NULL  DEFAULT 1 COMMENT '保存并继续' ,
+    `cancel_btn` BIT(1) NOT NULL  DEFAULT 1 COMMENT '取消按钮' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '模块表单配置'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_module_id ON sys_module_form(module_id ASC);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
