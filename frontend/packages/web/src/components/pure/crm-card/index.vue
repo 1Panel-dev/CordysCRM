@@ -22,7 +22,7 @@
       <template #header-extra>
         <slot name="header-extra"></slot>
       </template>
-      <n-scrollbar :content-style="{ 'max-height': props.contentMaxHeight || '100%' }">
+      <n-scrollbar :content-style="{ 'max-height': props.contentMaxHeight || undefined }">
         <slot></slot>
       </n-scrollbar>
       <template #footer>
@@ -115,6 +115,8 @@
       }
     }
     .n-card__content {
+      @apply h-full;
+
       padding: 0 24px 16px;
     }
     &:hover {

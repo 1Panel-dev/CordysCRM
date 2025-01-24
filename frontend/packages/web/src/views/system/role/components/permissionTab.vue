@@ -1,35 +1,41 @@
 <template>
-  <n-scrollbar x-scrollable :content-style="{ 'min-width': '600px', 'width': '100%' }">
-    <div class="group-title">{{ t('role.dataPermission') }}</div>
-    <div class="mb-[24px] flex h-[32px] items-center gap-[8px]">
-      <n-radio-group v-model:value="dataPermission" @update-value="handleDataPermissionChange">
-        <n-space>
-          <n-radio v-for="item in dataPermissionOptions" :key="item.value" :value="item.value">
-            {{ item.label }}
-          </n-radio>
-        </n-space>
-      </n-radio-group>
-      <n-tree-select
-        v-if="dataPermission === 'specifiedDepartment'"
-        v-model:value="departments"
-        :options="departmentOptions"
-        :consistent-menu-width="false"
-        max-tag-count="responsive"
-        multiple
-        class="w-[240px]"
-        :placeholder="t('role.pleaseSelectDepartment')"
+  <div class="relative h-full px-[24px]">
+    <n-scrollbar
+      x-scrollable
+      :content-style="{ 'min-width': '600px', 'width': '100%', 'min-height': '500px', 'margin-bottom': '96px' }"
+    >
+      <div class="group-title">{{ t('role.dataPermission') }}</div>
+      <div class="mb-[24px] flex h-[32px] items-center gap-[8px]">
+        <n-radio-group v-model:value="dataPermission" @update-value="handleDataPermissionChange">
+          <n-space>
+            <n-radio v-for="item in dataPermissionOptions" :key="item.value" :value="item.value">
+              {{ item.label }}
+            </n-radio>
+          </n-space>
+        </n-radio-group>
+        <n-tree-select
+          v-if="dataPermission === 'specifiedDepartment'"
+          v-model:value="departments"
+          :options="departmentOptions"
+          :consistent-menu-width="false"
+          max-tag-count="responsive"
+          multiple
+          class="w-[240px]"
+          :placeholder="t('role.pleaseSelectDepartment')"
+        />
+      </div>
+      <div class="group-title">{{ t('role.featurePermission') }}</div>
+      <n-data-table
+        :single-line="false"
+        :columns="columns"
+        :data="data"
+        :paging="false"
+        :pagination="false"
+        :loading="loading"
+        :scroll-x="800"
+        :max-height="500"
       />
-    </div>
-    <div class="group-title">{{ t('role.featurePermission') }}</div>
-    <n-data-table
-      :single-line="false"
-      :columns="columns"
-      :data="data"
-      :paging="false"
-      :pagination="false"
-      :loading="loading"
-      :scroll-x="800"
-    />
+    </n-scrollbar>
     <div class="tab-footer">
       <n-button :disabled="loading" secondary @click="handleCancel">
         {{ t('common.cancel') }}
@@ -38,7 +44,7 @@
         {{ t(isEdit ? 'common.update' : 'common.create') }}
       </n-button>
     </div>
-  </n-scrollbar>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -180,6 +186,382 @@
                   id: '1114',
                   name: '删除',
                   license: true,
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '12',
+          name: '订单管理',
+          enable: false,
+          children: [
+            {
+              id: '121',
+              name: '订单',
+              enable: false,
+              permissions: [
+                {
+                  id: '1211',
+                  name: '查看',
+                  enable: false,
+                },
+                {
+                  id: '1212',
+                  name: '新增',
+                  enable: false,
+                },
+                {
+                  id: '1213',
+                  name: '编辑',
+                  enable: false,
+                },
+                {
+                  id: '1214',
+                  name: '删除',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '13',
+          name: '产品管理',
+          enable: false,
+          children: [
+            {
+              id: '131',
+              name: '产品',
+              enable: false,
+              permissions: [
+                {
+                  id: '1311',
+                  name: '查看',
+                  enable: false,
+                },
+                {
+                  id: '1312',
+                  name: '新增',
+                  enable: false,
+                },
+                {
+                  id: '1313',
+                  name: '编辑',
+                  enable: false,
+                },
+                {
+                  id: '1314',
+                  name: '删除',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '14',
+          name: '统计分析',
+          enable: false,
+          children: [
+            {
+              id: '141',
+              name: '销售统计',
+              enable: false,
+              permissions: [
+                {
+                  id: '1411',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '15',
+          name: '系统设置',
+          enable: false,
+          children: [
+            {
+              id: '151',
+              name: '角色管理',
+              enable: false,
+              permissions: [
+                {
+                  id: '1511',
+                  name: '查看',
+                  enable: false,
+                },
+                {
+                  id: '1512',
+                  name: '新增',
+                  enable: false,
+                },
+                {
+                  id: '1513',
+                  name: '编辑',
+                  enable: false,
+                },
+                {
+                  id: '1514',
+                  name: '删除',
+                  enable: false,
+                },
+              ],
+            },
+            {
+              id: '152',
+              name: '用户管理',
+              enable: false,
+              permissions: [
+                {
+                  id: '1521',
+                  name: '查看',
+                  enable: false,
+                },
+                {
+                  id: '1522',
+                  name: '新增',
+                  enable: false,
+                },
+                {
+                  id: '1523',
+                  name: '编辑',
+                  enable: false,
+                },
+                {
+                  id: '1524',
+                  name: '删除',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '16',
+          name: '系统监控',
+          enable: false,
+          children: [
+            {
+              id: '161',
+              name: '日志监控',
+              enable: false,
+              permissions: [
+                {
+                  id: '1611',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '17',
+          name: '系统工具',
+          enable: false,
+          children: [
+            {
+              id: '171',
+              name: '代码生成',
+              enable: false,
+              permissions: [
+                {
+                  id: '1711',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '18',
+          name: '系统帮助',
+          enable: false,
+          children: [
+            {
+              id: '181',
+              name: '文档中心',
+              enable: false,
+              permissions: [
+                {
+                  id: '1811',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '19',
+          name: '系统设置',
+          enable: false,
+          children: [
+            {
+              id: '191',
+              name: '系统设置',
+              enable: false,
+              permissions: [
+                {
+                  id: '1911',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '20',
+          name: '系统设置',
+          enable: false,
+          children: [
+            {
+              id: '201',
+              name: '系统设置',
+              enable: false,
+              permissions: [
+                {
+                  id: '2011',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '21',
+          name: '系统设置',
+          enable: false,
+          children: [
+            {
+              id: '211',
+              name: '系统设置',
+              enable: false,
+              permissions: [
+                {
+                  id: '2111',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '22',
+          name: '系统设置',
+          enable: false,
+          children: [
+            {
+              id: '221',
+              name: '系统设置',
+              enable: false,
+              permissions: [
+                {
+                  id: '2211',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '23',
+          name: '系统设置',
+          enable: false,
+          children: [
+            {
+              id: '231',
+              name: '系统设置',
+              enable: false,
+              permissions: [
+                {
+                  id: '2311',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '24',
+          name: '系统设置',
+          enable: false,
+          children: [
+            {
+              id: '241',
+              name: '系统设置',
+              enable: false,
+              permissions: [
+                {
+                  id: '2411',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '25',
+          name: '系统设置',
+          enable: false,
+          children: [
+            {
+              id: '251',
+              name: '系统设置',
+              enable: false,
+              permissions: [
+                {
+                  id: '2511',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '26',
+          name: '系统设置',
+          enable: false,
+          children: [
+            {
+              id: '261',
+              name: '系统设置',
+              enable: false,
+              permissions: [
+                {
+                  id: '2611',
+                  name: '查看',
+                  enable: false,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: '27',
+          name: '系统设置',
+          enable: false,
+          children: [
+            {
+              id: '271',
+              name: '系统设置',
+              enable: false,
+              permissions: [
+                {
+                  id: '2711',
+                  name: '查看',
                   enable: false,
                 },
               ],
@@ -343,11 +725,12 @@
     background-color: var(--text-n9);
   }
   .tab-footer {
-    @apply absolute bottom-0 flex items-center justify-end;
+    @apply absolute z-10 flex w-full items-center justify-end;
 
-    left: -24px;
+    bottom: 0;
+    left: 0;
     padding: 24px;
-    width: calc(100% + 48px);
+    background-color: var(--text-n10);
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #00000000), var(--tw-ring-shadow, 0 0 #00000000), var(--tw-shadow);
     gap: 16px;
 

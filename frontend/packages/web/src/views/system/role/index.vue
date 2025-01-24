@@ -34,7 +34,7 @@
         </div>
       </template>
       <template #2>
-        <div class="h-full px-[24px] pt-[13px]">
+        <div class="h-full pt-[13px]" :class="activeTab === 'permission' ? '' : 'px-[24px]'">
           <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="line">
             <template #permission>
               <permissionTab />
@@ -74,23 +74,23 @@
   const keyword = ref('');
   const roles = ref<CrmTreeNodeData[]>([
     {
-      id: 1,
-      name: '超级管理员',
-      system: true,
+      key: 1,
+      label: '超级管理员',
+      internal: true,
     },
     {
-      id: 2,
-      name: '管理员',
+      key: 2,
+      label: '管理员',
     },
     {
-      id: 3,
-      name: '普通用户',
+      key: 3,
+      label: '普通用户',
     },
   ]);
   const selectedKeys = ref<string[]>([roles.value[0].key as string]);
 
   function renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
-    if (node.option.system) {
+    if (node.option.internal) {
       return h(roleTreeNodePrefix);
     }
   }
@@ -115,8 +115,8 @@
   ];
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
-    if (node.system) {
-      return items.slice(0, 2);
+    if (node.internal) {
+      return [];
     }
     return items;
   }
@@ -130,7 +130,7 @@
         roles.value.push({
           ...roles.value[roles.value.length - 1],
           name: `${node.name}Copy`,
-          system: false,
+          internal: false,
           id,
         });
         selectedKeys.value = [id];
@@ -185,8 +185,8 @@
   :deep(.n-tree-node-wrapper) {
     padding: 0;
   }
-  .n-tabs,
+  :deep(.n-tabs),
   :deep(.n-tab-pane) {
-    @apply h-full;
+    @apply h-full overflow-hidden;
   }
 </style>
