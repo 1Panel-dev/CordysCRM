@@ -23,6 +23,7 @@ export type CrmDataTableColumn = DataTableColumn & {
   sorter?: boolean | 'default'; // true是只展示图标，'default'是使用内置排序
   filter?: boolean | ((optionValue: string | number, rowData: object) => boolean) | 'default'; // true是只展示图标
   sortOrder?: 'descend' | 'ascend' | false; // 受控状态下表格的排序方式
+  render?: (rowData: object, rowIndex: number) => VNodeChild;
 };
 
 export interface CrmTableProps<T> extends DataTableProps {

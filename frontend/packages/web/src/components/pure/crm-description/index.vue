@@ -14,7 +14,7 @@
         >
           <n-tooltip>
             <template #trigger>
-              <div class="one-line-text">
+              <div :class="props.oneLineLabel ? 'one-line-text' : ''">
                 {{ item.label }}
               </div>
             </template>
@@ -74,13 +74,15 @@
       descriptions: Description[];
       labelWidth?: string;
       lineGap?: number;
-      labelAlign?: 'center' | 'start' | 'end';
-      oneLineValue?: boolean;
+      labelAlign?: 'center' | 'start' | 'end'; // label 对齐方式
+      oneLineValue?: boolean; // value 是否单行显示
+      oneLineLabel?: boolean; // label 是否单行显示
     }>(),
     {
       column: 1,
       lineGap: 16,
       labelAlign: 'start',
+      oneLineLabel: true,
     }
   );
 

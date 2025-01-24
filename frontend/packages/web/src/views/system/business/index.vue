@@ -18,7 +18,7 @@
   const MailSettings = defineAsyncComponent(() => import('./components/mailSettings.vue'));
   const { t } = useI18n();
 
-  const activeTab = ref('scanLogin');
+  const activeTab = ref('authenticationSettings');
   const tabList = ref([
     { name: 'interfaceSettings', tab: t('system.business.tab.interfaceSettings') },
     { name: 'scanLogin', tab: t('system.business.tab.scanLogin') },

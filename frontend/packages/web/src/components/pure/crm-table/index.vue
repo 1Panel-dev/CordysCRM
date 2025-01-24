@@ -61,10 +61,14 @@
 
   // TODO lmy 设置列
   async function initColumn(hasInitStore = false) {
-    let columns = cloneDeep(props.columns);
+    // 将render去掉，防止报错
+    let columns = cloneDeep(props.columns).map((column) => {
+      const { render, ...rest } = column;
+      return rest;
+    });
     if (attrs.showSetting) {
       if (!hasInitStore && attrs.showSetting && attrs.tableKey) {
-        await tableStore.initColumn(attrs.tableKey as TableKeyEnum, props.columns);
+        await tableStore.initColumn(attrs.tableKey as TableKeyEnum, columns);
       }
       columns = await tableStore.getShowInTableColumns(attrs.tableKey as TableKeyEnum);
     }
@@ -130,12 +134,16 @@
           }
         : {};
 
+      // 添加上render
+      const render = props.columns.find((item) => item.key === column.key)?.render;
+
       return {
         ...column,
         ...sorterColumn,
         ...filterColumn,
         titleAlign: 'left',
         resizable: true,
+        render,
       };
     });
   }
