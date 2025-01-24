@@ -14,8 +14,8 @@ COPY . /build
 COPY --from=frontend /frontend/packages/web/dist /build/frontend/packages/web/dist
 COPY --from=frontend /frontend/packages/mobile/dist /build/frontend/packages/mobile/dist
 RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
-    mkdir backend/crm/target/dependency && \
-    cd backend/crm/target/dependency && \
+    mkdir backend/app/target/dependency && \
+    cd backend/app/target/dependency && \
     jar -xf ../*.jar
 
 
@@ -25,7 +25,7 @@ FROM ghcr.io/cordys-dev/cordys-base
 LABEL maintainer="FIT2CLOUD <support@fit2cloud.com>"
 
 ARG CRM_VERSION=main
-ARG MODULE=crm
+ARG MODULE=app
 ARG DEPENDENCY=/build/backend/${MODULE}/target/dependency
 
 COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
