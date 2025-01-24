@@ -171,7 +171,10 @@ public class RoleService {
         Role role = BeanUtils.copyBean(new Role(), request);
         // 校验名称重复
         checkUpdateExist(role);
-        checkUpdateInternalRole(request.getId());
+        if (originRole.getInternal()) {
+            // 内置角色名称不能修改
+            role.setName(null);
+        }
         role.setUpdateTime(System.currentTimeMillis());
         role.setUpdateUser(userId);
         roleMapper.update(role);
@@ -218,11 +221,11 @@ public class RoleService {
     }
 
     /**
-     * 校验是否是内置管理员
+     * 校验是否是内置角色
      */
-    public void checkUpdateInternalRole(String roleId) {
+    public void checkInternalRole(String roleId) {
         Role role = roleMapper.selectByPrimaryKey(roleId);
-        if (BooleanUtils.isTrue(role.getInternal()) && StringUtils.equals(role.getName(), InternalRole.ORG_ADMIN.getValue())) {
+        if (BooleanUtils.isTrue(role.getInternal())) {
             throw new GenericException(INTERNAL_ROLE_PERMISSION);
         }
     }
@@ -242,9 +245,8 @@ public class RoleService {
     @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         Role role = roleMapper.selectByPrimaryKey(id);
-        if (BooleanUtils.isTrue(role.getInternal())) {
-            throw new GenericException(INTERNAL_ROLE_PERMISSION);
-        }
+        // 内置角色不能删除
+        checkInternalRole(role.getId());
         // 删除角色
         roleMapper.deleteByPrimaryKey(id);
         // 删除与权限的关联关系

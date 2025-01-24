@@ -1,4 +1,4 @@
-INSERT INTO `sys_operation_log`(`id`, `organization_id`, `type`, `module`, `details`, `source_id`, `create_time`, `create_user`, `path`, `login_address`, `method`, `platform`)
+INSERT INTO `sys_operation_log`(`id`, `organization_id`, `type`, `module`, `resource_name`, `resource_id`, `create_time`, `create_user`, `path`, `login_address`, `method`, `platform`)
 VALUES ('123', 'none', 'SELECT', '系统管理', NULL, '124345', 1735812237039, 'admin', '/operation/log/list', NULL, 'POST', NULL);
 
 

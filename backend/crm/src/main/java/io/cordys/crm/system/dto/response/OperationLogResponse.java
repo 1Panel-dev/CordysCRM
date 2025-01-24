@@ -26,7 +26,7 @@ public class OperationLogResponse implements Serializable {
     @Schema(description = "操作类型")
     private String type;
 
-    @Schema(description = "详情")
-    private String details;
+    @Schema(description = "资源名称")
+    private String resourceName;
 
 }

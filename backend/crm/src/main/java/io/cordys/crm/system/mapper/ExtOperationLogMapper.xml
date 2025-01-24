@@ -10,7 +10,7 @@
             t.module,
             t.create_time,
             t.create_user as operator,
-            t.details
+            t.resource_name
         FROM
         sys_operation_log t
         where t.type not in ('LOGIN', 'LOGOUT')
@@ -39,7 +39,7 @@
         t.module,
         t.create_time,
         t.create_user as operator,
-        t.details
+        t.resource_name
         FROM
         sys_operation_log t
         where t.type = 'LOGIN'

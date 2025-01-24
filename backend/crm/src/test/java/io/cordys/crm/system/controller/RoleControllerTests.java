@@ -41,6 +41,7 @@ class RoleControllerTests extends BaseTest {
     private static final String BASE_PATH = "/role/";
     private static final String PERMISSION_SETTING = "permission/setting";
     private static final String USER_PAGE = "user/page";
+    private static final String DEPT_TREE = "dept/tree";
     private static final String USER_DEPT_TREE = "user/dept/tree/{roleId}";
     private static final String USER_ROLE_TREE = "user/role/tree/{roleId}";
     private static final String USER_RELATE = "user/relate";
@@ -197,15 +198,11 @@ class RoleControllerTests extends BaseTest {
         request.setName(anotherUserRole.getName());
         assertErrorCode(this.requestPost(DEFAULT_UPDATE, request), ROLE_EXIST);
 
-        // 校验内置管理员修改异常
+        // 校验内置不能修改名称
         request.setId(InternalRole.ORG_ADMIN.getValue());
         request.setName("test");
-        assertErrorCode(this.requestPost(DEFAULT_UPDATE, request), INTERNAL_ROLE_PERMISSION);
-
-        // 其他内置角色可以修改
-        request.setId(InternalRole.SALES_MANAGER.getValue());
-        request.setName(InternalRole.SALES_MANAGER.getValue());
-        this.requestPostWithOk(DEFAULT_UPDATE, request);
+        this.requestPost(DEFAULT_UPDATE, request);
+        Assertions.assertEquals(roleMapper.selectByPrimaryKey(InternalRole.ORG_ADMIN.getValue()).getName(), InternalRole.ORG_ADMIN.getValue());
 
         // @@校验权限
         requestPostPermissionTest(PermissionConstants.SYSTEM_ROLE_UPDATE, DEFAULT_UPDATE, request);
@@ -250,7 +247,7 @@ class RoleControllerTests extends BaseTest {
         Assertions.assertEquals(role, BeanUtils.copyBean(new Role(), getResponse));
 
         // 获取该用户组拥有的权限
-        Set<String> permissionIds = getPermissionIdSetByRoleId(InternalRole.ORG_ADMIN.getValue());
+        Set<String> permissionIds = getPermissionIdSetByRoleId(addRole.getId());
         // 设置勾选项
         permissionDefinition.forEach(firstLevel -> {
             List<PermissionDefinitionItem> children = firstLevel.getChildren();
@@ -353,6 +350,15 @@ class RoleControllerTests extends BaseTest {
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD_USER, USER_DEPT_TREE, addRole.getId());
+    }
+
+    @Test
+    @Order(8)
+    void testDeptTree() throws Exception {
+        // 请求成功
+        this.requestGetWithOkAndReturn(DEPT_TREE);
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, DEPT_TREE);
     }
 
     @Test
