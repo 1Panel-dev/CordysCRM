@@ -6,6 +6,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.request.OperationLogRequest;
 import io.cordys.crm.system.dto.response.OperationLogResponse;
 import io.cordys.crm.system.service.SysOperationLogService;
@@ -33,19 +34,8 @@ public class OperationLogController {
     public Pager<List<OperationLogResponse>> list(@Validated @RequestBody OperationLogRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
                 StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
-        return PageUtils.setPageInfo(page, sysOperationLogService.list(request));
+        return PageUtils.setPageInfo(page, sysOperationLogService.list(request, OrganizationContext.getOrganizationId()));
     }
-
-
-    @PostMapping("/login/list")
-    @Operation(summary = "系统管理-登录日志-列表查询")
-    @RequiresPermissions(PermissionConstants.OPERATION_LOG_READ)
-    public Pager<List<OperationLogResponse>> loginList(@Validated @RequestBody OperationLogRequest request) {
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
-                StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
-        return PageUtils.setPageInfo(page, sysOperationLogService.loginList(request));
-    }
-
 
     @GetMapping("/detail/{id}")
     @Operation(summary = "系统管理-操作日志-详情")

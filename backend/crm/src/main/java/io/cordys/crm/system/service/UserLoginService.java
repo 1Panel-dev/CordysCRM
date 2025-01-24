@@ -1,13 +1,12 @@
 package io.cordys.crm.system.service;
 
-import io.cordys.aspectj.annotation.OperationLog;
-import io.cordys.aspectj.constants.LogModule;
-import io.cordys.aspectj.constants.LogType;
 import io.cordys.common.constants.UserSource;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.request.LoginRequest;
+import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.domain.LoginLog;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.mapper.ExtUserMapper;
@@ -40,6 +39,8 @@ public class UserLoginService {
     private ExtUserMapper extUserMapper;
     @Resource
     private RoleService roleService;
+    @Resource
+    private BaseMapper<LoginLog> loginLogMapper;
 
     public UserDTO getUserDTO(String userId) {
         UserDTO userDTO = extUserMapper.selectById(userId);
@@ -64,12 +65,6 @@ public class UserLoginService {
                 .map(OrganizationUser::getOrganizationId).collect(Collectors.toSet());
     }
 
-    @OperationLog(
-            module = LogModule.SYSTEM,
-            type = LogType.LOGIN,
-            loginAddress = "{#request.loginAddress}",
-            platform = "{#request.platform}"
-    )
     public SessionUser login(LoginRequest request) {
         String login = (String) SecurityUtils.getSubject().getSession().getAttribute("authenticate");
         String username = StringUtils.trim(request.getUsername());
@@ -85,6 +80,8 @@ public class UserLoginService {
                 SessionUser sessionUser = SessionUtils.getUser();
                 // 放入session中
                 SessionUtils.putUser(sessionUser);
+                // 记录登入日志
+                insertLoginLog(request);
                 return sessionUser;
             } else {
                 throw new GenericException(Translator.get("login_fail"));
@@ -102,6 +99,16 @@ public class UserLoginService {
         } catch (UnauthorizedException e) {
             throw new UnauthorizedException(Translator.get("not_authorized") + e.getMessage());
         }
+    }
+
+    private void insertLoginLog(LoginRequest request) {
+        LoginLog loginLog = new LoginLog();
+        loginLog.setId(IDGenerator.nextStr());
+        loginLog.setLoginAddress(request.getLoginAddress());
+        loginLog.setPlatform(request.getPlatform());
+        loginLog.setOperator(SessionUtils.getUserId());
+        loginLog.setCreateTime(System.currentTimeMillis());
+        loginLogMapper.insert(loginLog);
     }
 
     public boolean checkUserPassword(String userId, String password) {

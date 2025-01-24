@@ -8,7 +8,5 @@ import java.util.List;
 
 public interface ExtOperationLogMapper {
 
-    List<OperationLogResponse> list(@Param("request") OperationLogRequest request);
-
-    List<OperationLogResponse> loginList(@Param("request") OperationLogRequest request);
+    List<OperationLogResponse> list(@Param("request") OperationLogRequest request, @Param("orgId") String orgId);
 }

@@ -41,8 +41,6 @@ public class OperationLogService {
         reqDTO.setModule(operationLog.getSubType());// 操作类型：CURD
         reqDTO.setResourceId(operationLog.getResourceId()); // 资源id
         reqDTO.setResourceName(operationLog.getResourceName()); // 资源名称
-        reqDTO.setLoginAddress(operationLog.getLoginAddress());// 登录地址
-        reqDTO.setPlatform(operationLog.getPlatform());// 平台
     }
 
     private static void fillRequestFields(LogDTO reqDTO) {

@@ -13,7 +13,7 @@
             t.resource_name
         FROM
         sys_operation_log t
-        where t.type not in ('LOGIN', 'LOGOUT')
+        where t.organization_id = #{orgId}
             <if test="request.operator != null and request.operator != ''">
                 AND t.create_user = #{request.operUser, jdbcType=VARCHAR}
             </if>
@@ -30,31 +30,4 @@
         ORDER BY t.create_time DESC
     </select>
 
-
-    <select id="loginList" parameterType="io.cordys.crm.system.dto.request.OperationLogRequest" resultType="io.cordys.crm.system.dto.response.OperationLogResponse">
-        SELECT
-        t.id,
-        t.organization_id,
-        t.type,
-        t.module,
-        t.create_time,
-        t.create_user as operator,
-        t.resource_name
-        FROM
-        sys_operation_log t
-        where t.type = 'LOGIN'
-        <if test="request.operator != null and request.operator != ''">
-            AND t.create_user = #{request.operUser, jdbcType=VARCHAR}
-        </if>
-        <if test="request.startTime != null and request.endTime != null">
-            AND t.create_time BETWEEN #{request.startTime} AND #{request.endTime}
-        </if>
-        <if test="request.type != null and request.type != ''">
-            AND t.type = #{request.type}
-        </if>
-        <if test="request.module != null and request.module != ''">
-            <bind name="module" value="request.module+'%'"/>
-            AND t.module like #{module}
-        </if>
-    </select>
-</mapper> 
+</mapper>

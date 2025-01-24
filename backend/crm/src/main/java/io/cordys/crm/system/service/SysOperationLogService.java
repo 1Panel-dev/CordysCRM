@@ -40,9 +40,9 @@ public class SysOperationLogService {
     /**
      * 操作日志列表查询
      */
-    public List<OperationLogResponse> list(OperationLogRequest request) {
+    public List<OperationLogResponse> list(OperationLogRequest request, String orgId) {
         checkTime(request.getStartTime(), request.getEndTime());
-        List<OperationLogResponse> list = extOperationLogMapper.list(request);
+        List<OperationLogResponse> list = extOperationLogMapper.list(request, orgId);
         handleData(list);
         return list;
     }
@@ -74,20 +74,6 @@ public class SysOperationLogService {
         if (compare > 0) {
             throw new GenericException(Translator.get("startTime_must_be_less_than_endTime"));
         }
-    }
-
-
-    /**
-     * 登录日志列表查询
-     *
-     * @param request
-     * @return
-     */
-    public List<OperationLogResponse> loginList(OperationLogRequest request) {
-        checkTime(request.getStartTime(), request.getEndTime());
-        List<OperationLogResponse> list = extOperationLogMapper.loginList(request);
-        handleData(list);
-        return list;
     }
 
     public List<JsonDifferenceDTO> getLogDetail(String id) {

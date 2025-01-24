@@ -12,6 +12,4 @@ public class OperationLogBuilder {
     private String type;
     private String subType;
     private String extra;
-    private String loginAddress;
-    private String platform;
 }

@@ -120,8 +120,6 @@ public class OperationLogSource {
                 .resourceId(recordAnnotation.resourceId())
                 .operatorId(recordAnnotation.operator())
                 .subType(recordAnnotation.module())
-                .loginAddress(recordAnnotation.loginAddress())
-                .platform(recordAnnotation.platform())
                 .build();
         return recordOps;
     }

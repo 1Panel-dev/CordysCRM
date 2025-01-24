@@ -33,12 +33,6 @@ public class OperationLog  {
     @Schema(description = "资源名称")
     private String resourceName;
 
-    @Schema(description = "登录地")
-    private String loginAddress;
-
-    @Schema(description = "平台")
-    private String platform;
-
     @Schema(description = "操作时间")
     private Long createTime;
 

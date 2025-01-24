@@ -152,8 +152,6 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
                 .subType(expressionValues.get(operation.getSubType()))
                 .codeVariable(resolveCodeVariable(method))
                 .createTime(new Date())
-                .loginAddress(expressionValues.get(operation.getLoginAddress()))
-                .platform(expressionValues.get(operation.getPlatform()))
                 .build();
 
         operationLogService.record(operationLog);
@@ -185,8 +183,6 @@ public class OperationOperationLogInterceptor extends OperationLogValueParser im
         spElTemplates.add(operation.getResourceId());
         spElTemplates.add(operation.getResourceName());
         spElTemplates.add(operation.getSubType());
-        spElTemplates.add(operation.getLoginAddress());
-        spElTemplates.add(operation.getPlatform());
         return spElTemplates.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

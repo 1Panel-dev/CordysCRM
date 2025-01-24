@@ -42,14 +42,4 @@ public @interface OperationLog {
      * 优先级低于 LogContextInfo
      */
     String resourceName() default "";
-
-    /**
-     * @return 登录地址
-     */
-    String loginAddress() default "";
-
-    /**
-     * @return 平台
-     */
-    String platform() default "";
 }

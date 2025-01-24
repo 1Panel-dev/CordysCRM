@@ -21,9 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class OperationLogControllerTest extends BaseTest {
     public static final String OPERATION_LOG_LIST = "/operation/log/list";
-    public static final String OPERATION_LOG_LOGIN_LIST = "/operation/log/login/list";
     public static final String OPERATION_LOG_DETAIL = "/operation/log/detail/";
-
 
     @Sql(scripts = {"/dml/init_operation_log_test.sql"},
             config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
@@ -50,25 +48,9 @@ public class OperationLogControllerTest extends BaseTest {
         return request;
     }
 
-
-    @Test
-    @Order(2)
-    public void operationLogLoginList() throws Exception {
-        OperationLogRequest request = buildRequest();
-        this.requestPost(OPERATION_LOG_LOGIN_LIST, request).andExpect(status().isOk());
-        request.setStartTime(1735890402193l);
-        request.setEndTime(1735808851000l);
-        Map<String, String> sort = new HashMap<>();
-        sort.put("id", "desc");
-        request.setSort(sort);
-        this.requestPost(OPERATION_LOG_LOGIN_LIST, request);
-    }
-
-
     @Test
     @Order(3)
     public void operationLogDetail() throws Exception {
         this.requestGet(OPERATION_LOG_DETAIL + "123").andExpect(status().isOk());
     }
-
 }
