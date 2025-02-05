@@ -11,6 +11,7 @@ import io.cordys.crm.system.dto.request.RoleUserPageRequest;
 import io.cordys.crm.system.dto.request.RoleUserRelateRequest;
 import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.crm.system.dto.response.RoleUserListResponse;
+import io.cordys.crm.system.dto.response.RoleUserOptionResponse;
 import io.cordys.crm.system.mapper.ExtDepartmentMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.mapper.ExtUserRoleMapper;
@@ -163,5 +164,22 @@ public class UserRoleService {
 
     public void batchDeleteRoleUser(List<String> ids) {
         extUserRoleMapper.deleteByIds(ids);
+    }
+
+    public List<RoleUserOptionResponse> getUserOptionByRoleId(String organizationId, String roleId) {
+        List<RoleUserOptionResponse> roleUserOptions = extUserRoleMapper.selectUserOptionByRoleId(organizationId, roleId);
+        Set<String> roleUserIdSet = extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId))
+                .stream()
+                .collect(Collectors.toSet());
+
+        roleUserOptions.forEach(userOption -> {
+            if (roleUserIdSet.contains(userOption.getId())) {
+                userOption.setEnabled(false);
+            } else {
+                userOption.setEnabled(true);
+            }
+        });
+
+        return roleUserOptions;
     }
 }

@@ -24,4 +24,6 @@ public interface ExtUserRoleMapper {
     List<String> getUserIdsByRoleIds(@Param("roleIds") List<String> roleIds);
 
     void deleteByIds(@Param("ids") List<String> ids);
+
+    List<RoleUserOptionResponse> selectUserOptionByRoleId(@Param("orgId") String orgId, @Param("roleId") String roleId);
 }
