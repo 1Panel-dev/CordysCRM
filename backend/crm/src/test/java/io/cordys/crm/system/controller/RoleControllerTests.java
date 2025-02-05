@@ -15,6 +15,7 @@ import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.RoleGetResponse;
 import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.crm.system.dto.response.RoleUserListResponse;
+import io.cordys.crm.system.dto.response.RoleUserOptionResponse;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 import static io.cordys.crm.system.constants.SystemResultCode.INTERNAL_ROLE_PERMISSION;
 import static io.cordys.crm.system.constants.SystemResultCode.ROLE_EXIST;
 
+
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -44,6 +46,7 @@ class RoleControllerTests extends BaseTest {
     private static final String DEPT_TREE = "dept/tree";
     private static final String USER_DEPT_TREE = "user/dept/tree/{roleId}";
     private static final String USER_ROLE_TREE = "user/role/tree/{roleId}";
+    private static final String USER_OPTION = "user/option/{roleId}";
     private static final String USER_RELATE = "user/relate";
     private static final String USER_DELETE = "user/delete/{id}";
     private static final String USER_BATCH_DELETE = "user/batch/delete";
@@ -380,6 +383,24 @@ class RoleControllerTests extends BaseTest {
                 });
             }
         });
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD_USER, USER_ROLE_TREE, addRole.getId());
+    }
+
+    @Test
+    @Order(9)
+    void testUserOption() throws Exception {
+        // 请求成功
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(USER_OPTION, addRole.getId());
+        List<RoleUserOptionResponse> userOptionResponses = getResultDataArray(mvcResult, RoleUserOptionResponse.class);
+
+        OrganizationUser example = new OrganizationUser();
+        example.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        example.setEnable(true);
+        List<OrganizationUser> orgUsers =  organizationUserMapper.select(example);
+        // 校验数据
+        Assertions.assertEquals(orgUsers.size(), userOptionResponses.size());
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD_USER, USER_ROLE_TREE, addRole.getId());

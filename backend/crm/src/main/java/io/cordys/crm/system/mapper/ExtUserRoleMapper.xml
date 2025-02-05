@@ -60,4 +60,13 @@
             #{roleId}
         </foreach>
     </select>
+
+    <select id="selectUserOptionByRoleId" resultType="io.cordys.crm.system.dto.response.RoleUserOptionResponse">
+        select su.id, su.name, sue.avatar
+        from sys_user su
+        join sys_organization_user sou
+            on su.id = sou.user_id and sou.organization_id = #{orgId} and sou.enable = true
+        left join sys_user_extend sue
+            on su.id = sue.id
+    </select>
 </mapper>

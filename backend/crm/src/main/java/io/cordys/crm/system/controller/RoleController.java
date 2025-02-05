@@ -14,6 +14,7 @@ import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.RoleGetResponse;
 import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.crm.system.dto.response.RoleUserListResponse;
+import io.cordys.crm.system.dto.response.RoleUserOptionResponse;
 import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.RoleService;
 import io.cordys.crm.system.service.UserRoleService;
@@ -112,6 +113,13 @@ public class RoleController {
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
     public List<DeptUserTreeNode> getRoleUserTree(@PathVariable String roleId) {
         return userRoleService.getRoleUserTree(OrganizationContext.getOrganizationId(), roleId);
+    }
+
+    @GetMapping("/user/option/{roleId}")
+    @Operation(summary = "获取所有用户选项")
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
+    public List<RoleUserOptionResponse> RoleUserOptionResponse(@PathVariable String roleId) {
+        return userRoleService.getUserOptionByRoleId(OrganizationContext.getOrganizationId(), roleId);
     }
 
     @PostMapping("/user/relate")
