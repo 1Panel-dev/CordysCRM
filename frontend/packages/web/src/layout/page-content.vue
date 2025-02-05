@@ -21,7 +21,7 @@
 
 <style lang="less">
   .page-content {
-    @apply h-full w-full;
+    @apply absolute h-full w-full;
 
     padding: 16px;
     background-color: var(--text-n9);

@@ -42,6 +42,7 @@ module.exports = {
     'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['global', 'deep'] }],
     'function-no-unknown': null,
     'declaration-block-no-redundant-longhand-properties': null,
+    'no-descending-specificity': null,
     'order/properties-order': [
       'position',
       'top',

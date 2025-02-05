@@ -30,6 +30,7 @@ export default {
   'common.updateFailed': 'Update failed',
   'common.deleteConfirm': 'Delete confirm',
   'common.deleteConfirmTitle': 'Are you sure to delete {name}?',
+  'common.removeConfirmTitle': 'Confirm remove {name}?',
   'common.archiveConfirmTitle': 'Confirm archive {name}?',
   'common.deleteSuccess': 'Delete success',
   'common.deleteFailed': 'Delete failed',

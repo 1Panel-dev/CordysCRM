@@ -34,7 +34,7 @@
         </div>
       </template>
       <template #2>
-        <div class="h-full pt-[13px]" :class="activeTab === 'permission' ? '' : 'px-[24px]'">
+        <div class="h-full pt-[13px]">
           <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="line">
             <template #permission>
               <permissionTab />
@@ -184,6 +184,9 @@
   }
   :deep(.n-tree-node-wrapper) {
     padding: 0;
+  }
+  :deep(.n-tabs-nav--line-type) {
+    padding: 0 24px;
   }
   :deep(.n-tabs),
   :deep(.n-tab-pane) {

@@ -31,6 +31,7 @@ export default {
   'common.updateFailed': '更新失败',
   'common.deleteConfirm': '确认删除？',
   'common.deleteConfirmTitle': '确认删除 {name} 吗？',
+  'common.removeConfirmTitle': '确认移除 {name} 吗？',
   'common.archiveConfirmTitle': '确认归档 {name} 吗？',
   'common.deleteSuccess': '删除成功',
   'common.deleteFailed': '删除失败',

@@ -1,5 +1,5 @@
 <template>
-  <n-config-provider :theme-overrides="themeOverridesConfig" :locale="naiveUILocale">
+  <n-config-provider :theme-overrides="themeOverridesConfig" :locale="naiveUILocale" :date-locale="naiveUIDateLocale">
     <n-message-provider>
       <n-dialog-provider>
         <RouterView />
@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
+  import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
   import useLocale from '@/locale/useLocale';
   import { getThemeOverrides } from '@/utils/themeOverrides';
@@ -18,63 +18,13 @@
 
   const { currentLocale } = useLocale();
 
+  const themeOverridesConfig = ref<GlobalThemeOverrides>(getThemeOverrides());
+
   const naiveUILocale = computed(() => {
-    return currentLocale.value === 'zh-CN' ? zhCN : null;
+    return currentLocale.value === 'zh-CN' ? zhCN : enUS;
   });
 
-  const themeOverridesConfig = ref<GlobalThemeOverrides>(getThemeOverrides());
+  const naiveUIDateLocale = computed(() => {
+    return currentLocale.value === 'zh-CN' ? dateZhCN : dateEnUS;
+  });
 </script>
-
-<style scoped>
-  header {
-    line-height: 1.5;
-    max-height: 100vh;
-  }
-  .logo {
-    display: block;
-    margin: 0 auto 2rem;
-  }
-  nav {
-    margin-top: 2rem;
-    width: 100%;
-    font-size: 12px;
-    text-align: center;
-  }
-  nav a.router-link-exact-active {
-    color: var(--color-text);
-  }
-  nav a.router-link-exact-active:hover {
-    background-color: transparent;
-  }
-  nav a {
-    display: inline-block;
-    padding: 0 1rem;
-    border-left: 1px solid var(--color-border);
-  }
-  nav a:first-of-type {
-    border: 0;
-  }
-
-  @media (min-width: 1024px) {
-    header {
-      display: flex;
-      place-items: center;
-      padding-right: calc(var(--section-gap) / 2);
-    }
-    .logo {
-      margin: 0 2rem 0 0;
-    }
-    header .wrapper {
-      display: flex;
-      place-items: flex-start;
-      flex-wrap: wrap;
-    }
-    nav {
-      margin-top: 1rem;
-      margin-left: -1rem;
-      padding: 1rem 0;
-      font-size: 1rem;
-      text-align: left;
-    }
-  }
-</style>

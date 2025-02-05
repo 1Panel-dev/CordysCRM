@@ -334,6 +334,11 @@
     }
   }
 }
+.no-content {
+  .n-tabs-pane-wrapper {
+    @apply hidden;
+  }
+}
 
 // 级联选择器、树形选择器
 .n-cascader,
@@ -360,4 +365,12 @@
   .n-base-selection-tag-wrapper {
     padding-bottom: 8px;
   }
+}
+
+// 树
+.n-tree.n-tree--block-line .n-tree-node:not(.n-tree-node--disabled).n-tree-node--pending {
+  @apply bg-transparent;
+}
+.n-tree-node--selected {
+  background: var(--n-node-color-active) !important;
 }
