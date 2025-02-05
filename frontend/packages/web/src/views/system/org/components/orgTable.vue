@@ -56,7 +56,6 @@
   import { NButton, NIcon, NInput, useMessage } from 'naive-ui';
   import { Search } from '@vicons/ionicons5';
 
-  import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -64,6 +63,7 @@
   import { CrmDataTableColumn, CrmTableDataItem } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddMember from './addMember.vue';
   import MemberDetail from './memberDetail.vue';
   import SyncWeChat from './syncWeChat.vue';
@@ -149,6 +149,14 @@
     },
   ]);
 
+  const moreOperationList = ref<ActionsItem[]>([
+    {
+      label: t('common.delete'),
+      key: 'delete',
+      danger: true,
+    },
+  ]);
+
   function initData() {
     const data: CommonList<CrmTableDataItem<any>> = {
       total: 11,
@@ -215,20 +223,6 @@
     });
   }
 
-  // TODO 类型
-  function handleActionSelect(row: any, actionKey: string) {
-    switch (actionKey) {
-      case 'edit':
-        addOrEditMember(true);
-        break;
-      case 'resetPassWord':
-        handleResetPassWord(row);
-        break;
-      default:
-        break;
-    }
-  }
-
   // 删除员工 TODO 工作交接中 文案未定
   function deleteMember(row: any) {
     openModal({
@@ -246,6 +240,23 @@
         }
       },
     });
+  }
+
+  // TODO 类型
+  function handleActionSelect(row: any, actionKey: string) {
+    switch (actionKey) {
+      case 'edit':
+        addOrEditMember(true);
+        break;
+      case 'resetPassWord':
+        handleResetPassWord(row);
+        break;
+      case 'delete':
+        deleteMember(row);
+        break;
+      default:
+        break;
+    }
   }
 
   // TODO 未调整样式
@@ -424,46 +435,15 @@
     },
     {
       key: 'operation',
-      width: 100,
+      width: 150,
       fixed: 'right',
       // TODO xxw 类型
-      render: (row: any) => {
-        return h(
-          CrmButtonGroup,
-          {
-            list: groupList.value,
-            onSelect: (key: string) => handleActionSelect(row, key),
-          },
-          {
-            more: () => {
-              return h(
-                CrmMoreAction,
-                {
-                  options: [
-                    {
-                      label: t('common.delete'),
-                      key: 'delete',
-                      danger: true,
-                    },
-                  ],
-                  onSelect: () => deleteMember(row),
-                },
-                {
-                  default: () => {
-                    return h('div', { class: 'flex items-center justify-center' }, [
-                      h(CrmIcon, {
-                        class: 'cursor-pointer',
-                        type: 'iconicon_ellipsis',
-                        size: 16,
-                      }),
-                    ]);
-                  },
-                }
-              );
-            },
-          }
-        );
-      },
+      render: (row: any) =>
+        h(CrmOperationButton, {
+          groupList: groupList.value,
+          moreList: moreOperationList.value,
+          onSelect: (key: string) => handleActionSelect(row, key),
+        }),
     },
   ];
 

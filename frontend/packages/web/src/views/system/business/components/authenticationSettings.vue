@@ -74,6 +74,7 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddOrEditAuthDrawer from './addOrEditAuthDrawer.vue';
 
   import { authTypeFieldMap, defaultAuthForm } from '@/config/business';
@@ -91,9 +92,8 @@
   const activeAuthDetail = ref<any>({ ...defaultAuthForm });
   const descriptions = ref<Description[]>([]);
 
-  async function openAuthDetail(id: string) {
+  async function getDetail(id: string) {
     try {
-      showDetailDrawer.value = true;
       // const res = await getAuthDetail(id);
       const res = {
         id: '1029847274971136',
@@ -106,18 +106,23 @@
       };
       const configuration = JSON.parse(res.configuration || '{}');
       activeAuthDetail.value = { ...res, configuration };
-      descriptions.value = [
-        { label: t('common.desc'), value: res.description },
-        ...(authTypeFieldMap[res.type]?.map(({ label, key }) => ({
-          label,
-          value: configuration[key],
-          slotName: key === 'password' ? 'password' : undefined,
-        })) || []),
-      ];
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
     }
+  }
+
+  async function openAuthDetail(id: string) {
+    showDetailDrawer.value = true;
+    await getDetail(id);
+    descriptions.value = [
+      { label: t('common.desc'), value: activeAuthDetail.value.description },
+      ...(authTypeFieldMap[activeAuthDetail.value.type]?.map(({ label, key }) => ({
+        label,
+        value: activeAuthDetail.value.configuration[key],
+        slotName: key === 'password' ? 'password' : undefined,
+      })) || []),
+    ];
   }
 
   const showPassword = ref(false);
@@ -133,8 +138,52 @@
     }
   }
 
+  // 新增和编辑
+  const showAddOrEditAuthDrawer = ref(false);
+  const editAuthInfo = ref<any>({});
+
+  function handleAdd() {
+    editAuthInfo.value = { ...defaultAuthForm };
+    showAddOrEditAuthDrawer.value = true;
+  }
+  async function handleEdit(record: any, isFromDetail = false) {
+    if (isFromDetail) {
+      editAuthInfo.value = { ...record };
+      showAddOrEditAuthDrawer.value = true;
+    } else {
+      await getDetail(record.id);
+      editAuthInfo.value = { ...activeAuthDetail.value };
+      showAddOrEditAuthDrawer.value = true;
+    }
+  }
+
   // 表格
   const keyword = ref('');
+
+  // 操作列
+  const operationGroupList = ref([
+    {
+      label: t('common.edit'),
+      key: 'edit',
+    },
+    {
+      label: t('common.delete'),
+      key: 'delete',
+    },
+  ]);
+
+  function handleActionSelect(row: any, actionKey: string) {
+    switch (actionKey) {
+      case 'edit':
+        handleEdit(row);
+        break;
+      case 'delete':
+        break;
+      default:
+        break;
+    }
+  }
+
   const columns: CrmDataTableColumn[] = [
     {
       title: t('common.creator'),
@@ -194,7 +243,15 @@
       ],
       filter: 'default',
     },
-    { key: 'operation', width: 80 },
+    {
+      key: 'operation',
+      width: 100,
+      render: (row: any) =>
+        h(CrmOperationButton, {
+          groupList: operationGroupList.value,
+          onSelect: (key: string) => handleActionSelect(row, key),
+        }),
+    },
   ];
 
   function initData() {
@@ -242,19 +299,4 @@
   onMounted(() => {
     searchData();
   });
-
-  // 新增和编辑
-  const showAddOrEditAuthDrawer = ref(false);
-  const editAuthInfo = ref<any>({});
-
-  function handleAdd() {
-    editAuthInfo.value = { ...defaultAuthForm };
-    showAddOrEditAuthDrawer.value = true;
-  }
-  function handleEdit(record: any, isFromDetail = false) {
-    if (isFromDetail) {
-      editAuthInfo.value = { ...record };
-      showAddOrEditAuthDrawer.value = true;
-    }
-  }
 </script>

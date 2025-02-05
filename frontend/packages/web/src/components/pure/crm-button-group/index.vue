@@ -1,6 +1,6 @@
 <template>
   <div class="crm-button-group">
-    <div v-for="(item, index) of props.list" :key="item.key" class="crm-button-item">
+    <div v-for="(item, index) of props.list" :key="item.key" class="crm-button-item flex items-center">
       <slot :name="item.slotName" :item="item" :index="index">
         <n-button v-bind="item" type="primary" text class="!p-0" @click="() => emit('select', item.key as string)">
           {{ item.label }}
