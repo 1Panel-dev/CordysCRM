@@ -2,6 +2,7 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.crm.system.dto.request.ModuleRequest;
+import io.cordys.crm.system.dto.request.ModuleSortRequest;
 import io.cordys.crm.system.dto.response.ModuleDTO;
 import io.cordys.crm.system.service.ModuleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,5 +34,12 @@ public class ModuleController {
 	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
 	public void switchModule(@PathVariable String id) {
 		moduleService.switchModule(id);
+	}
+
+	@PostMapping("/sort")
+	@Operation(summary = "模块排序")
+	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
+	public void sortModule(@Validated @RequestBody ModuleSortRequest request) {
+		moduleService.sort(request);
 	}
 }

@@ -254,7 +254,7 @@ CREATE TABLE sys_module
 (
     `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
-    `name`            VARCHAR(255) NOT NULL COMMENT '模块名称(国际化KEY)',
+    `key`             VARCHAR(255) NOT NULL COMMENT '模块KEY',
     `enable`          BIT(1)       NOT NULL DEFAULT 1 COMMENT '启用/禁用',
     `pos`             BIGINT       NOT NULL COMMENT '自定义排序',
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',

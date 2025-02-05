@@ -14,8 +14,8 @@ public class Module extends BaseModel {
 	@Schema(description = "组织ID")
 	private String organizationId;
 
-	@Schema(description = "模块名称(国际化KEY)")
-	private String name;
+	@Schema(description = "模块KEY")
+	private String key;
 
 	@Schema(description = "启用/禁用")
 	private int enable;

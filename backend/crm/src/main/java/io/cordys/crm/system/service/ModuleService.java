@@ -7,7 +7,9 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.dto.request.ModuleRequest;
+import io.cordys.crm.system.dto.request.ModuleSortRequest;
 import io.cordys.crm.system.dto.response.ModuleDTO;
+import io.cordys.crm.system.mapper.ExtModuleMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -25,6 +27,8 @@ public class ModuleService {
 
 	@Resource
 	private BaseMapper<Module> moduleMapper;
+	@Resource
+	private ExtModuleMapper extModuleMapper;
 
 	/**
 	 * 获取系统模块配置列表
@@ -35,11 +39,9 @@ public class ModuleService {
 		LambdaQueryWrapper<Module> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(Module::getOrganizationId, request.getOrganizationId());
 		List<Module> modules = moduleMapper.selectListByLambda(queryWrapper);
-		// translate i18n key
 		return modules.stream().map(module -> {
 			ModuleDTO moduleDTO = new ModuleDTO();
 			BeanUtils.copyBean(moduleDTO, module);
-			moduleDTO.setTranslateName(Translator.get(module.getName()));
 			return moduleDTO;
 		}).sorted(Comparator.comparing(ModuleDTO::getPos)).toList();
 	}
@@ -58,6 +60,24 @@ public class ModuleService {
 	}
 
 	/**
+	 * 模块排序
+	 * @param request 请求参数
+	 */
+	public void sort(ModuleSortRequest request) {
+		if (request.getStart() < request.getEnd()) {
+			// start < end, 区间模块上移, pos - 1
+			extModuleMapper.moveUpModule(request.getStart(), request.getEnd());
+		} else {
+			// start > end, 区间模块下移, pos + 1
+			extModuleMapper.moveDownModule(request.getEnd(), request.getStart());
+		}
+		Module dragModule = new Module();
+		dragModule.setId(request.getDragModuleId());
+		dragModule.setPos(request.getEnd());
+		moduleMapper.updateById(dragModule);
+	}
+
+	/**
 	 * 初始化系统(组织或公司)模块数据
 	 */
 	@Transactional(rollbackFor = Exception.class)
@@ -68,7 +88,7 @@ public class ModuleService {
 		Arrays.stream(ModuleConstants.values()).forEach(moduleConstant -> {
 			Module module = new Module();
 			module.setId(IDGenerator.nextStr());
-			module.setName(moduleConstant.getKey());
+			module.setKey(moduleConstant.getKey());
 			module.setOrganizationId(organizationId);
 			module.setPos(pos.getAndIncrement());
 			module.setCreateUser("admin");

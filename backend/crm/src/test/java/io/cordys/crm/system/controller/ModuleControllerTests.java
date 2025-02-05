@@ -4,6 +4,7 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.dto.request.ModuleRequest;
+import io.cordys.crm.system.dto.request.ModuleSortRequest;
 import io.cordys.crm.system.dto.response.ModuleDTO;
 import io.cordys.crm.system.service.ModuleService;
 import io.cordys.mybatis.BaseMapper;
@@ -51,5 +52,13 @@ public class ModuleControllerTests extends BaseTest {
 		// switch not exist module
 		MvcResult mvcResult1 = this.requestGet("/module/switch/" + "none").andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("module.not_exist"));
+		ModuleSortRequest sortRequest = new ModuleSortRequest();
+		sortRequest.setDragModuleId(param);
+		sortRequest.setStart(1L);
+		sortRequest.setEnd(3L);
+		this.requestPostWithOk("/module/sort", sortRequest);
+		sortRequest.setStart(3L);
+		sortRequest.setEnd(1L);
+		this.requestPostWithOk("/module/sort", sortRequest);
 	}
 }

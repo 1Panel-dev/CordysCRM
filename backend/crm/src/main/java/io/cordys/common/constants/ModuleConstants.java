@@ -8,27 +8,27 @@ public enum ModuleConstants {
 	/**
 	 * 首页
 	 */
-	HOME("module.home"),
+	HOME("home"),
 	/**
 	 * 客户管理
 	 */
-	CUSTOMER("module.customer"),
+	CUSTOMER("customer"),
 	/**
 	 * 线索管理
 	 */
-	CLUE("module.clue"),
+	CLUE("clue"),
 	/**
 	 * 商机管理
 	 */
-	BUSINESS("module.business"),
+	BUSINESS("business"),
 	/**
 	 * 数据管理
 	 */
-	DATA("module.data"),
+	DATA("data"),
 	/**
 	 * 产品管理
 	 */
-	PRODUCT("module.product");
+	PRODUCT("product");
 
 	private final String key;
 
