@@ -153,6 +153,7 @@
   }
   .n-data-table-th {
     border-top: 1px solid var(--text-n8);
+    white-space: nowrap;
     &.n-data-table-th--filterable {
       padding-right: 12px !important;
     }
@@ -160,6 +161,7 @@
       float: left; // 只有设置这个 排序和过滤才能拼一起
       width: fit-content;
       height: 22px;
+      white-space: normal;
       .n-data-table-th__title {
         flex: none !important;
       }
@@ -170,6 +172,7 @@
     // 过滤的样式
     .n-data-table-filter {
       position: relative;
+      display: inline-flex;
       width: 24px;
       height: 22px;
       &:hover {

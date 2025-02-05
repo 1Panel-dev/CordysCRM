@@ -1,5 +1,5 @@
 <template>
-  <n-config-provider :theme-overrides="themeOverridesConfig">
+  <n-config-provider :theme-overrides="themeOverridesConfig" :locale="naiveUILocale">
     <n-message-provider>
       <n-dialog-provider>
         <RouterView />
@@ -9,11 +9,18 @@
 </template>
 
 <script setup lang="ts">
-  import { NConfigProvider, NDialogProvider, NMessageProvider } from 'naive-ui';
+  import { NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
+  import useLocale from '@/locale/useLocale';
   import { getThemeOverrides } from '@/utils/themeOverrides';
 
   import type { GlobalThemeOverrides } from 'naive-ui';
+
+  const { currentLocale } = useLocale();
+
+  const naiveUILocale = computed(() => {
+    return currentLocale.value === 'zh-CN' ? zhCN : null;
+  });
 
   const themeOverridesConfig = ref<GlobalThemeOverrides>(getThemeOverrides());
 </script>
