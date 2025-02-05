@@ -28,6 +28,7 @@
     <AddMember v-model:show="showDrawer" @add-success="emit('addSuccess')" />
     <SyncWeChat v-model:show="showSyncWeChatModal" />
     <MemberDetail v-model:show="showDetailModal" :rows-data="rowsData" @edit="addOrEditMember(true)" />
+    <batchEditModal v-model:show="showEditModal" />
     <!-- 导入开始 -->
     <!-- 导入弹窗 -->
     <ImportModal v-model:show="importModal" :confirm-loading="validateLoading" @validate="validateTemplate" />
@@ -65,6 +66,7 @@
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddMember from './addMember.vue';
+  import batchEditModal from './batchEditModal.vue';
   import MemberDetail from './memberDetail.vue';
   import SyncWeChat from './syncWeChat.vue';
   import ImportModal from '@/views/system/org/components/import/importModal.vue';
@@ -225,11 +227,16 @@
 
   // 删除员工 TODO 工作交接中 文案未定
   function deleteMember(row: any) {
+    const hasNotMoved = false;
+    const tipContent = hasNotMoved ? '' : t('org.deleteMemberTipContent');
+    const tipTitle = hasNotMoved
+      ? t('org.deleteHasNotMovedTipContent')
+      : t('common.deleteConfirmTitle', { name: row.name });
     openModal({
       type: 'error',
-      title: t('common.deleteConfirmTitle', { name: row.name }),
-      content: t('org.resetPassWordContent'),
-      positiveText: t('common.confirm'),
+      title: tipTitle,
+      content: tipContent,
+      positiveText: hasNotMoved ? '' : t('common.confirm'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
@@ -275,7 +282,7 @@
     {
       title: t('common.status'),
       key: 'status',
-      width: 100,
+      width: 120,
       ellipsis: {
         tooltip: true,
       },
@@ -581,6 +588,8 @@
   }
 
   const importLoading = ref<boolean>(false);
+
+  const showEditModal = ref<boolean>(false);
 
   onMounted(() => {
     initOrgList();

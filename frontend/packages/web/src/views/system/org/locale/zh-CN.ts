@@ -57,4 +57,7 @@ export default {
   'org.confirmReset': '确认重置',
   'org.resetPassWord': '重置密码',
   'org.noDepartmentToChoose': '暂无可选部门',
+  'org.deleteMemberTipContent': '删除该员工在系统上的全部数据将会被清理',
+  'org.deleteHasNotMovedTipContent': '该员工存在未转移的客户资源，无法删除！',
+  'org.attributes': '属性',
 };

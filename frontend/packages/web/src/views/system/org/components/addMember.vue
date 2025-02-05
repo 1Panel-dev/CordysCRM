@@ -1,12 +1,12 @@
 <template>
   <CrmDrawer v-model:show="showDrawer" :width="480" :title="t('org.addMember')" :ok-text="t('common.update')">
-    <div>
+    <div class="mr-[20%]">
       <n-form
         ref="formRef"
         :model="form"
         :rules="rules"
         label-placement="left"
-        label-width="90px"
+        label-width="auto"
         require-mark-placement="left"
       >
         <n-form-item require-mark-placement="left" label-placement="left" path="name" :label="t('org.userName')">

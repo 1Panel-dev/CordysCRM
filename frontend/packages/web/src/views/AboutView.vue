@@ -1,185 +1,180 @@
 <template>
-  <div class="p-[24px]">
-    <CrmCard title="按钮类型demo" sub-title="subTitle" no-content-padding>
-      <div class="flex">
-        <div class="flex flex-1 flex-col gap-4 p-4">
-          <!-- TODO 按钮类型demo 暂时提供参考 you can delete it  ^_^  -->
-          <div class="flex gap-[16px]">
-            <n-button type="primary">主要按钮</n-button>
-            <n-button type="tertiary">次要按钮</n-button>
-            <n-button type="default" class="outline--secondary">次要外框按钮</n-button>
-            <n-button strong secondary>次要背景按钮</n-button>
-            <n-button type="success"> 成功背景按钮 </n-button>
-            <n-button type="warning"> 警告背景按钮 </n-button>
-            <n-button type="error"> 错误背景按钮 </n-button>
-          </div>
-          <div class="mt-[24px] flex gap-[16px]">
-            <n-button quaternary class="text-btn-secondary"> 文本次要按钮 </n-button>
-            <n-button quaternary type="primary" class="text-btn-primary"> 文本主题按钮 </n-button>
-            <n-button quaternary type="info" class="text-btn-info"> 文本info按钮 </n-button>
-            <n-button quaternary type="success" class="text-btn-success"> 文本success按钮 </n-button>
-            <n-button quaternary type="warning" class="text-btn-warning"> 文本warning按钮 </n-button>
-            <n-button quaternary type="error" class="text-btn-error"> 文本Error按钮 </n-button>
-          </div>
-          <div class="mt-[24px] flex gap-[16px]">
-            <n-button type="primary" ghost> Primary </n-button>
-            <n-button type="info" ghost class="n-btn-outline-info"> Info </n-button>
-            <n-button type="success" ghost class="n-btn-outline-success"> Success </n-button>
-            <n-button type="warning" ghost class="n-btn-outline-warning"> Warning </n-button>
-            <n-button type="error" ghost class="n-btn-outline-error"> Error </n-button>
-          </div>
-          <div class="mt-[24px] flex gap-[16px]">
-            <n-button type="primary" ghost> Primary </n-button>
-            <n-button type="info" ghost> Info </n-button>
-            <n-button type="success" ghost> Success </n-button>
-            <n-button type="warning" ghost @click="openCrmModal"> Warning 打开弹窗 </n-button>
-            <n-button type="error" ghost @click="handleDialog"> Error </n-button>
-          </div>
-          <div class="flex flex-1 flex-col gap-[8px]">
-            <div class="flex items-center gap-2">
-              <CrmTag size="small"> 标签 </CrmTag>
-              <CrmTag size="small" type="primary"> 标签 </CrmTag>
-              <CrmTag size="small" type="success"> 标签 </CrmTag>
-              <CrmTag size="small" type="warning"> 标签 </CrmTag>
-              <CrmTag size="small" type="error"> 标签 </CrmTag>
-              <CrmTag size="small" type="info"> 标签 </CrmTag>
-            </div>
-            <div class="flex items-center gap-2">
-              <CrmTag theme="light"> 标签 </CrmTag>
-              <CrmTag theme="light" type="primary"> 标签 </CrmTag>
-              <CrmTag theme="light" type="success"> 标签 </CrmTag>
-              <CrmTag theme="light" type="warning"> 标签 </CrmTag>
-              <CrmTag theme="light" type="error"> 标签 </CrmTag>
-              <CrmTag theme="light" type="info"> 标签 </CrmTag>
-            </div>
-            <div class="flex items-center gap-2">
-              <CrmTag theme="outline"> 标签 </CrmTag>
-              <CrmTag theme="outline" type="primary"> 标签 </CrmTag>
-              <CrmTag theme="outline" type="success"> 标签 </CrmTag>
-              <CrmTag theme="outline" type="warning"> 标签 </CrmTag>
-              <CrmTag theme="outline" type="error"> 标签 </CrmTag>
-              <CrmTag theme="outline" type="info"> 标签 </CrmTag>
-            </div>
-            <div class="flex items-center gap-2">
-              <CrmTag size="large" theme="lightOutLine"> 标签 </CrmTag>
-              <CrmTag size="large" theme="lightOutLine" type="primary"> 标签 </CrmTag>
-              <CrmTag size="large" theme="lightOutLine" type="success"> 标签 </CrmTag>
-              <CrmTag size="large" theme="lightOutLine" type="warning"> 标签 </CrmTag>
-              <CrmTag size="large" theme="lightOutLine" type="error"> 标签 </CrmTag>
-              <CrmTag size="large" theme="lightOutLine" type="info">
-                标签
-                <template #tooltipContent>自定义</template>
-              </CrmTag>
-              <CrmRemoveButton
-                :loading="deleteLoading"
-                title="确定移除 小城与不确定性的墙 吗？"
-                content="移除后，成员将不再拥有该角色权限"
-                @confirm="confirm"
-              />
-            </div>
-            <div class="flex h-[800px] gap-4">
-              <div class="flex-1">
-                <CrmUpload
-                  v-model:file-list="fileList"
-                  :is-all-screen="true"
-                  :show-file-list="true"
-                  accept="excel"
-                  @change="changeHandler"
-                />
-                <CrmButtonGroup :list="groupList" @select="selectHandler">
-                  <template #more>
-                    <CrmMoreAction :options="moreOptions">
-                      <div class="flex items-center justify-center">
-                        <CrmIcon class="cursor-pointer" type="iconicon_ellipsis" :size="16" />
-                      </div>
-                    </CrmMoreAction>
-                  </template>
-                </CrmButtonGroup>
-              </div>
-              <div class="flex-1">
-                <CrmList
-                  v-model:data="crmList"
-                  v-model:focus-item-key="focusItemKey"
-                  v-model:active-item-key="activeItemKey"
-                  :item-more-actions="moreOptions"
-                  virtual-scroll-height="200px"
-                  key-field="id"
-                  @item-click="handleItemClick"
-                >
-                  <template #title="{ item }">
-                    <div :key="item.id" class="flex items-center">
-                      <div>
-                        {{ item.name }}
-                      </div>
-                    </div>
-                  </template>
-                  <template #item="{ item }">
-                    {{ item }}
-                  </template>
-                </CrmList>
-              </div>
-            </div>
-          </div>
+  <CrmCard title="按钮类型demo" sub-title="subTitle" no-content-padding>
+    <div class="flex">
+      <div class="flex flex-1 flex-col gap-4 p-4">
+        <!-- TODO 按钮类型demo 暂时提供参考 you can delete it  ^_^  -->
+        <div class="flex gap-[16px]">
+          <n-button type="primary">主要按钮</n-button>
+          <n-button type="tertiary">次要按钮</n-button>
+          <n-button type="default" class="outline--secondary">次要外框按钮</n-button>
+          <n-button strong secondary>次要背景按钮</n-button>
+          <n-button type="success"> 成功背景按钮 </n-button>
+          <n-button type="warning"> 警告背景按钮 </n-button>
+          <n-button type="error"> 错误背景按钮 </n-button>
         </div>
-        <div class="flex-1">
-          <div class="w-[800px] overflow-auto">
-            <div class="flex items-center justify-between gap-2">
-              <NInput v-model:value="keyword" />
-              <n-button type="primary" ghost @click="changeExpand"> change</n-button>
-            </div>
-            <CrmTree
-              v-model:data="moduleTree"
-              v-model:selected-keys="selectedKeys"
-              v-model:checked-keys="checkedKeys"
-              v-model:expanded-keys="expandedKeys"
-              v-model:default-expand-all="expandAll"
-              checkable
-              draggable
-              :keyword="keyword"
-              :render-prefix="renderPrefixDom"
-              :node-more-actions="moreOptions"
-              :render-extra="renderExtraDom"
-              :render-label="renderLabel"
-              :virtual-scroll-props="{ virtualScroll: false, virtualScrollHeight: '400px' }"
-              @rename="renameHandler"
-              @create="createHandler"
-              @drop="handleDrag"
-              @more-action-select="handleFolderMoreSelect"
+        <div class="mt-[24px] flex gap-[16px]">
+          <n-button quaternary class="text-btn-secondary"> 文本次要按钮 </n-button>
+          <n-button quaternary type="primary" class="text-btn-primary"> 文本主题按钮 </n-button>
+          <n-button quaternary type="info" class="text-btn-info"> 文本info按钮 </n-button>
+          <n-button quaternary type="success" class="text-btn-success"> 文本success按钮 </n-button>
+          <n-button quaternary type="warning" class="text-btn-warning"> 文本warning按钮 </n-button>
+          <n-button quaternary type="error" class="text-btn-error"> 文本Error按钮 </n-button>
+        </div>
+        <div class="mt-[24px] flex gap-[16px]">
+          <n-button type="primary" ghost> Primary </n-button>
+          <n-button type="info" ghost class="n-btn-outline-info"> Info </n-button>
+          <n-button type="success" ghost class="n-btn-outline-success"> Success </n-button>
+          <n-button type="warning" ghost class="n-btn-outline-warning"> Warning </n-button>
+          <n-button type="error" ghost class="n-btn-outline-error"> Error </n-button>
+        </div>
+        <div class="mt-[24px] flex gap-[16px]">
+          <n-button type="primary" ghost> Primary </n-button>
+          <n-button type="info" ghost> Info </n-button>
+          <n-button type="success" ghost> Success </n-button>
+          <n-button type="warning" ghost @click="openCrmModal"> Warning 打开弹窗 </n-button>
+          <n-button type="error" ghost @click="handleDialog"> Error </n-button>
+        </div>
+        <div class="flex flex-1 flex-col gap-[8px]">
+          <div class="flex items-center gap-2">
+            <CrmTag size="small"> 标签 </CrmTag>
+            <CrmTag size="small" type="primary"> 标签 </CrmTag>
+            <CrmTag size="small" type="success"> 标签 </CrmTag>
+            <CrmTag size="small" type="warning"> 标签 </CrmTag>
+            <CrmTag size="small" type="error"> 标签 </CrmTag>
+            <CrmTag size="small" type="info"> 标签 </CrmTag>
+          </div>
+          <div class="flex items-center gap-2">
+            <CrmTag theme="light"> 标签 </CrmTag>
+            <CrmTag theme="light" type="primary"> 标签 </CrmTag>
+            <CrmTag theme="light" type="success"> 标签 </CrmTag>
+            <CrmTag theme="light" type="warning"> 标签 </CrmTag>
+            <CrmTag theme="light" type="error"> 标签 </CrmTag>
+            <CrmTag theme="light" type="info"> 标签 </CrmTag>
+          </div>
+          <div class="flex items-center gap-2">
+            <CrmTag theme="outline"> 标签 </CrmTag>
+            <CrmTag theme="outline" type="primary"> 标签 </CrmTag>
+            <CrmTag theme="outline" type="success"> 标签 </CrmTag>
+            <CrmTag theme="outline" type="warning"> 标签 </CrmTag>
+            <CrmTag theme="outline" type="error"> 标签 </CrmTag>
+            <CrmTag theme="outline" type="info"> 标签 </CrmTag>
+          </div>
+          <div class="flex items-center gap-2">
+            <CrmTag size="large" theme="lightOutLine"> 标签 </CrmTag>
+            <CrmTag size="large" theme="lightOutLine" type="primary"> 标签 </CrmTag>
+            <CrmTag size="large" theme="lightOutLine" type="success"> 标签 </CrmTag>
+            <CrmTag size="large" theme="lightOutLine" type="warning"> 标签 </CrmTag>
+            <CrmTag size="large" theme="lightOutLine" type="error"> 标签 </CrmTag>
+            <CrmTag size="large" theme="lightOutLine" type="info">
+              标签
+              <template #tooltipContent>自定义</template>
+            </CrmTag>
+            <CrmRemoveButton
+              :loading="deleteLoading"
+              title="确定移除 小城与不确定性的墙 吗？"
+              content="移除后，成员将不再拥有该角色权限"
+              @confirm="confirm"
             />
+          </div>
+          <div class="flex h-[200px] gap-4">
+            <div class="flex-1">
+              <CrmUpload
+                v-model:file-list="fileList"
+                :is-all-screen="true"
+                :show-file-list="true"
+                accept="excel"
+                @change="changeHandler"
+              />
+              <CrmButtonGroup :list="groupList" @select="selectHandler">
+                <template #more>
+                  <CrmMoreAction :options="moreOptions">
+                    <div class="flex items-center justify-center">
+                      <CrmIcon class="cursor-pointer" type="iconicon_ellipsis" :size="16" />
+                    </div>
+                  </CrmMoreAction>
+                </template>
+              </CrmButtonGroup>
+            </div>
+            <div class="flex-1">
+              <CrmList
+                v-model:data="crmList"
+                v-model:focus-item-key="focusItemKey"
+                v-model:active-item-key="activeItemKey"
+                :item-more-actions="moreOptions"
+                virtual-scroll-height="200px"
+                key-field="id"
+                @item-click="handleItemClick"
+              >
+                <template #title="{ item }">
+                  <div :key="item.id" class="flex items-center">
+                    <div>
+                      {{ item.name }}
+                    </div>
+                  </div>
+                </template>
+                <template #item="{ item }">
+                  {{ item }}
+                </template>
+              </CrmList>
+            </div>
           </div>
         </div>
       </div>
-
-      <CrmModal
-        v-model:show="showModal"
-        :title="'我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题'"
-        :ok-loading="loading"
-      >
-        <div>
-          <n-form ref="formRef" :model="modelRef">
-            <n-form-item path="age" label="年龄">
-              <n-input v-model:value="modelRef.age" @keydown.enter.prevent />
-            </n-form-item>
-            <n-form-item path="password" label="密码">
-              <n-input v-model:value="modelRef.password" />
-            </n-form-item>
-            <n-form-item ref="rPasswordFormItemRef" first path="reenteredPassword" label="重复密码">
-              <n-input v-model:value="modelRef.reenteredPassword" type="password" @keydown.enter.prevent />
-            </n-form-item>
-          </n-form>
+      <div class="flex-1">
+        <div class="w-[800px] overflow-auto">
+          <div class="flex items-center justify-between gap-2">
+            <NInput v-model:value="keyword" />
+            <n-button type="primary" ghost @click="changeExpand"> change</n-button>
+          </div>
+          <CrmTree
+            v-model:data="moduleTree"
+            v-model:selected-keys="selectedKeys"
+            v-model:checked-keys="checkedKeys"
+            v-model:expanded-keys="expandedKeys"
+            v-model:default-expand-all="expandAll"
+            checkable
+            draggable
+            :keyword="keyword"
+            :render-prefix="renderPrefixDom"
+            :node-more-actions="moreOptions"
+            :render-extra="renderExtraDom"
+            :render-label="renderLabel"
+            :virtual-scroll-props="{ virtualScroll: false, virtualScrollHeight: '400px' }"
+            @rename="renameHandler"
+            @create="createHandler"
+            @drop="handleDrag"
+            @more-action-select="handleFolderMoreSelect"
+          />
         </div>
-      </CrmModal>
-    </CrmCard>
+      </div>
+    </div>
 
+    <CrmModal
+      v-model:show="showModal"
+      :title="'我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题我是标题'"
+      :ok-loading="loading"
+    >
+      <div>
+        <n-form ref="formRef" :model="modelRef">
+          <n-form-item path="age" label="年龄">
+            <n-input v-model:value="modelRef.age" @keydown.enter.prevent />
+          </n-form-item>
+          <n-form-item path="password" label="密码">
+            <n-input v-model:value="modelRef.password" />
+          </n-form-item>
+          <n-form-item ref="rPasswordFormItemRef" first path="reenteredPassword" label="重复密码">
+            <n-input v-model:value="modelRef.reenteredPassword" type="password" @keydown.enter.prevent />
+          </n-form-item>
+        </n-form>
+      </div>
+    </CrmModal>
     <TableDemo class="my-[16px]" />
 
-    <CrmCard>
-      <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="line" />
-      <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="segment" size="small" />
-      <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="segment" />
-      <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="segment" size="large" />
-    </CrmCard>
-  </div>
+    <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="line" />
+    <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="segment" size="small" />
+    <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="segment" />
+    <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="segment" size="large" />
+  </CrmCard>
 </template>
 
 <script setup lang="ts">

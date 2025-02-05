@@ -59,4 +59,7 @@ export default {
   'org.confirmReset': 'Confirm Reset',
   'org.resetPassWord': 'Reset Password',
   'org.noDepartmentToChoose': 'No department available',
+  'org.deleteMemberTipContent': 'All data of this employee in the system will be cleared',
+  'org.deleteHasNotMovedTipContent': 'This employee has untransferred customer resources and cannot be deleted!',
+  'org.attributes': 'Attributes',
 };
