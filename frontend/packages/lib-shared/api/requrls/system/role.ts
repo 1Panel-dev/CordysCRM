@@ -1,0 +1,12 @@
+export const RelateRoleUrl = '/role/user/relate'; // 角色关联用户
+export const GetRoleMemberUrl = '/role/user/page'; // 角色已关联用户列表
+export const BatchRemoveRoleMemberUrl = '/role/user/batch/delete'; // 批量移除角色关联用户
+export const UpdateRoleUrl = '/role/update'; // 更新角色
+export const CreateRoleUrl = '/role/add'; // 新增角色
+export const GetRoleMemberTreeUrl = '/role/user/role/tree'; // 获取角色用户树
+export const GetRoleDeptTreeUrl = '/role/user/dept/tree'; // 获取角色下部门用户树
+export const RemoveRoleMemberUrl = '/role/user/delete'; // 移除角色关联用户
+export const GetPermissionsUrl = '/role/permission/setting'; // 获取全量权限
+export const GetRolesUrl = '/role/list'; // 获取角色列表
+export const GetRoleDetailUrl = '/role/get'; // 获取角色详情
+export const DeleteRoleUrl = '/role/delete'; // 删除角色

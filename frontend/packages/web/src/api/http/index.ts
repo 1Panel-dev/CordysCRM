@@ -189,5 +189,5 @@ function createAxios(opt?: Partial<CreateAxiosOptions>) {
     )
   );
 }
-const MSR = createAxios();
-export default MSR;
+const CDR = createAxios();
+export default CDR;

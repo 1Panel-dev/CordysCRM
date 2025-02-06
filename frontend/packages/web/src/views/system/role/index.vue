@@ -115,7 +115,7 @@
   ];
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
-    if (node.internal) {
+    if (node.internal || node.isNew) {
       return [];
     }
     return items;
@@ -129,7 +129,7 @@
         const id = getGenerateId();
         roles.value.push({
           ...roles.value[roles.value.length - 1],
-          name: `${node.name}Copy`,
+          label: `${node.label}Copy`,
           internal: false,
           id,
         });
@@ -138,7 +138,7 @@
       case 'delete':
         openModal({
           type: 'error',
-          title: t('common.deleteConfirmTitle', { name: node.name }),
+          title: t('common.deleteConfirmTitle', { name: node.label }),
           content: t('role.deleteConfirmContent'),
           positiveText: t('common.confirmDelete'),
           negativeText: t('common.cancel'),
@@ -160,7 +160,8 @@
     const id = getGenerateId();
     roles.value.push({
       id,
-      name: '新角色',
+      label: '新角色',
+      isNew: true,
     });
     selectedKeys.value = [id];
   }
