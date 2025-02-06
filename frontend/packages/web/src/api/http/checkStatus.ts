@@ -4,9 +4,8 @@ import useUser from '@/hooks/useUser';
 import router from '@/router';
 import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
 
-const { message } = useDiscreteApi();
-
 export default function checkStatus(status: number, msg: string, code?: number): void {
+  const { message } = useDiscreteApi();
   const { t } = useI18n();
   const { logout, isLoginPage, isWhiteListPage } = useUser();
   let errMessage = '';

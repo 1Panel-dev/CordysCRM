@@ -79,15 +79,16 @@ export interface DeptTreeNode {
 // 角色列表项
 export interface RoleItem {
   id: string;
-  createUser: string;
-  updateUser: string;
-  createTime: number;
-  updateTime: number;
+  createUser?: string;
+  updateUser?: string;
+  createTime?: number;
+  updateTime?: number;
   name: string;
   internal: boolean; // 是否内置
   dataScope: string;
-  description: string;
-  organizationId: string;
-  createUserName: string;
-  updateUserName: string;
+  description?: string;
+  organizationId?: string;
+  createUserName?: string;
+  updateUserName?: string;
+  [key: string]: any; // 前端扩展字段
 }

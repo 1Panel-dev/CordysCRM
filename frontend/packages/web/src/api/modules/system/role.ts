@@ -71,8 +71,8 @@ export function getPermissions() {
 }
 
 // 获取角色列表
-export function getRoles(orgId: string) {
-  return CDR.get<RoleItem[]>({ url: `${GetRolesUrl}/${orgId}` });
+export function getRoles() {
+  return CDR.get<RoleItem[]>({ url: GetRolesUrl });
 }
 
 // 获取角色详情

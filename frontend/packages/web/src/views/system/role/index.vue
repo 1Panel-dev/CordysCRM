@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer no-content-padding>
+  <CrmCard :loading="loading" hide-footer no-content-padding>
     <CrmSplitPanel class="h-full" :max="0.5" :min="0.25" :default-size="0.25">
       <template #1>
         <div class="p-[24px]">
@@ -29,6 +29,7 @@
             :node-more-actions="nodeMoreActions"
             title-tooltip-position="top-start"
             :filter-more-action-func="filterMoreActionFunc"
+            :field-names="{ keyField: 'id', labelField: 'name', childrenField: 'children' }"
             @more-action-select="handleMoreActionSelect"
           />
         </div>
@@ -63,31 +64,20 @@
   import permissionTab from './components/permissionTab.vue';
   import roleTreeNodePrefix from './components/roleTreeNodePrefix.vue';
 
+  import { getRoles } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { getGenerateId } from '@/utils';
+
+  import type { RoleItem } from '@lib/shared/models/system/role';
 
   const { t } = useI18n();
   const { openModal } = useModal();
   const message = useMessage();
 
   const keyword = ref('');
-  const roles = ref<CrmTreeNodeData[]>([
-    {
-      key: 1,
-      label: '超级管理员',
-      internal: true,
-    },
-    {
-      key: 2,
-      label: '管理员',
-    },
-    {
-      key: 3,
-      label: '普通用户',
-    },
-  ]);
-  const selectedKeys = ref<string[]>([roles.value[0].key as string]);
+  const roles = ref<RoleItem[]>([]);
+  const selectedKeys = ref<string[]>([]);
 
   function renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     if (node.option.internal) {
@@ -129,7 +119,7 @@
         const id = getGenerateId();
         roles.value.push({
           ...roles.value[roles.value.length - 1],
-          label: `${node.label}Copy`,
+          name: `${node.name}Copy`,
           internal: false,
           id,
         });
@@ -160,7 +150,10 @@
     const id = getGenerateId();
     roles.value.push({
       id,
-      label: '新角色',
+      name: '新角色',
+      internal: false,
+      dataScope: 'all',
+      description: '',
       isNew: true,
     });
     selectedKeys.value = [id];
@@ -177,6 +170,24 @@
       tab: t('role.member'),
     },
   ];
+
+  const loading = ref(false);
+
+  async function init() {
+    loading.value = true;
+    try {
+      roles.value = await getRoles();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  onBeforeMount(() => {
+    init();
+  });
 </script>
 
 <style lang="less" scoped>

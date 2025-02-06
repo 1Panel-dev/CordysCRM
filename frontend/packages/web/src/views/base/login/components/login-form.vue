@@ -133,17 +133,19 @@
   // import { GetLoginLogoUrl } from '@/api/requrls/setting/config';
   import { useI18n } from '@/hooks/useI18n';
   import useLoading from '@/hooks/useLoading';
+  import useAppStore from '@/store/modules/app';
   // import useModal from '@/hooks/useModal';
   import useUserStore from '@/store/modules/user';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
-  import { getLongType, isLogin, setLoginExpires, setLongType } from '@lib/shared/method/auth';
+  import { getLongType, setLoginExpires, setLongType } from '@lib/shared/method/auth';
   import { encrypted } from '@lib/shared/method/index';
   import { Option } from 'naive-ui/es/legacy-transfer/src/interface';
 
   const router = useRouter();
   const { t } = useI18n();
+  const appStore = useAppStore();
   const userStore = useUserStore();
   const Message = useMessage();
   // const { openModal } = useModal();
@@ -169,7 +171,6 @@
 
   const showDemo = window.location.hostname === 'demo.metersphere.com';
 
-  const errorMessage = ref('');
   const { loading, setLoading } = useLoading();
 
   const loginConfig = useStorage('login-config', {
@@ -207,15 +208,16 @@
         setLoading(true);
         try {
           try {
-            await userStore.logout(); // 登录之前先注销，防止未登出就继续登录导致报错
+            await userStore.logout(true); // 登录之前先注销，防止未登出就继续登录导致报错
           } catch (error) {
             // eslint-disable-next-line no-console
             console.log('logout error', error);
           }
           await userStore.login({
-            username: encrypted(userInfo.value.username),
-            password: encrypted(userInfo.value.password),
+            username: encrypted(userInfo.value.username) || '',
+            password: encrypted(userInfo.value.password) || '',
             authenticate: userInfo.value.authenticate,
+            platform: 'WEB',
           });
           setLoginExpires();
           setLongType(userInfo.value.authenticate);
@@ -232,7 +234,6 @@
             },
           });
         } catch (err) {
-          errorMessage.value = (err as Error).message;
           // eslint-disable-next-line no-console
           console.log(err);
         } finally {
@@ -341,14 +342,13 @@
     // });
   }
 
-  onMounted(() => {
+  onMounted(async () => {
     if (!props.isPreview) {
-      userStore.getAuthentication();
+      // userStore.getAuthentication();
       initPlatformInfo();
+      appStore.initPublicKey();
       try {
-        isLogin().then((res) => {
-          preheat.value = res;
-        });
+        preheat.value = await userStore.isLogin();
       } catch (e) {
         preheat.value = false;
       }
@@ -397,7 +397,6 @@
     padding-right: 0;
     padding-left: 0;
     width: 400px;
-    height: 36px;
   }
   .login-input :deep(.arco-input) {
     padding-right: 10px;

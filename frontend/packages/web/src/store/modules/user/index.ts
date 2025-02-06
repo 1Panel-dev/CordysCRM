@@ -1,21 +1,60 @@
 import { defineStore } from 'pinia';
 
+import { isLogin, login, signout } from '@/api/modules/system/login';
+import { useI18n } from '@/hooks/useI18n';
+
+import useAppStore from '../app';
+import { clearToken } from '@lib/shared/method/auth';
+import { removeRouteListener } from '@lib/shared/method/route-listener';
+import type { LoginParams } from '@lib/shared/models/system/login';
+
 export interface UserState {
   loginType: string[];
+  orgId: string;
 }
 
-const useAppStore = defineStore('user', {
+const useUserStore = defineStore('user', {
   state: (): UserState => ({
     loginType: [],
+    orgId: '',
   }),
 
-  getters: {},
-  actions: {
-    login(params: Record<string, any>) {
-      // do something
+  getters: {
+    getOrgId(state: UserState) {
+      return state.orgId;
     },
-    logout() {
-      // do something
+  },
+  actions: {
+    async login(params: LoginParams) {
+      try {
+        await login(params);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+        throw new Error(error as string);
+      }
+    },
+    // 登出回调
+    logoutCallBack() {
+      const appStore = useAppStore();
+      // 重置用户信息
+      this.$reset();
+      clearToken();
+      removeRouteListener();
+      appStore.hideLoading();
+    },
+    // 登出
+    async logout(silence = false) {
+      try {
+        const { t } = useI18n();
+        if (!silence) {
+          const appStore = useAppStore();
+          appStore.showLoading(t('message.logouting'));
+        }
+        await signout();
+      } finally {
+        this.logoutCallBack();
+      }
     },
     // 获取登录认证方式
     async getAuthentication() {
@@ -28,7 +67,15 @@ const useAppStore = defineStore('user', {
       }
     },
     qrCodeLogin(params: any) {},
+    async isLogin() {
+      try {
+        await isLogin();
+        return true;
+      } catch (err) {
+        return false;
+      }
+    },
   },
 });
 
-export default useAppStore;
+export default useUserStore;

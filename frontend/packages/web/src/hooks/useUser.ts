@@ -8,22 +8,24 @@ import useDiscreteApi from './useDiscreteApi';
 export default function useUser() {
   const { t } = useI18n();
 
-  const logout = async (logoutTo?: string, noRedirect?: boolean) => {
+  const logout = async (logoutTo?: string, noRedirect?: boolean, silence = false) => {
     try {
       const userStore = useUserStore();
       await userStore.logout();
       const { message } = useDiscreteApi();
       const currentRoute = router.currentRoute.value;
-      message.success(t('message.logoutSuccess'));
-      router.push({
-        name: logoutTo && typeof logoutTo === 'string' ? logoutTo : 'login',
-        query: noRedirect
-          ? {}
-          : {
-              ...router.currentRoute.value.query,
-              redirect: currentRoute.name as string,
-            },
-      });
+      if (!silence) {
+        message.success(t('message.logoutSuccess'));
+        router.push({
+          name: logoutTo && typeof logoutTo === 'string' ? logoutTo : 'login',
+          query: noRedirect
+            ? {}
+            : {
+                ...router.currentRoute.value.query,
+                redirect: currentRoute.name as string,
+              },
+        });
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

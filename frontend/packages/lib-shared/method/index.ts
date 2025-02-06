@@ -1,5 +1,7 @@
-import { isObject } from "./is";
 import JSEncrypt from 'jsencrypt';
+
+import { isObject } from './is';
+import { getLocalStorage } from '@lib/shared/method/local-storage';
 
 /**
  * 递归深度合并
@@ -13,7 +15,6 @@ export const deepMerge = <T = any>(src: any = {}, target: any = {}): T => {
   });
   return src;
 };
-
 
 /**
  * 遍历对象属性并一一添加到 url 地址参数上
@@ -37,7 +38,7 @@ export function setObjToUrlParams(baseUrl: string, obj: any): string {
  * @returns
  */
 export function encrypted(input: string) {
-  const publicKey = localStorage.getItem('salt') || '';
+  const publicKey = getLocalStorage('publicKey') || '';
   const encrypt = new JSEncrypt({ default_key_size: '1024' });
   encrypt.setPublicKey(publicKey);
 
