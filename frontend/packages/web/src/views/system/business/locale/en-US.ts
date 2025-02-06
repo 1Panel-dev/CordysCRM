@@ -35,6 +35,13 @@ export default {
   'system.business.tab.authenticationSettings': 'Authentication Settings',
   'system.business.authenticationSettings.add': 'Add Authentication',
   'system.business.authenticationSettings.edit': 'Update Authentication',
+  'system.business.authenticationSettings.deleteConfirmTitle': 'Confirm deletion of authentication {name}?',
+  'system.business.authenticationSettings.enableConfirmTitle': 'Confirm enabling authentication {name}?',
+  'system.business.authenticationSettings.enableConfirmContent':
+    'Once enabled, this authentication method can be used to log in.',
+  'system.business.authenticationSettings.disableConfirmTitle': 'Confirm disabling authentication {name}?',
+  'system.business.authenticationSettings.disableConfirmContent':
+    'Once disabled, this authentication method will no longer be supported for login.',
   'system.business.authenticationSettings.addResource': 'Add Resource',
   'system.business.authenticationSettings.commonUrlPlaceholder': 'Example: {url}',
   'system.business.authenticationSettings.serviceUrl': 'Service URL',

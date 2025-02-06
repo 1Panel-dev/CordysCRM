@@ -65,7 +65,7 @@
 
 <script setup lang="ts">
   import { useClipboard } from '@vueuse/core';
-  import { NButton, NInput, useMessage } from 'naive-ui';
+  import { NButton, NInput, NSwitch, useMessage } from 'naive-ui';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
@@ -74,16 +74,19 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddOrEditAuthDrawer from './addOrEditAuthDrawer.vue';
 
   import { authTypeFieldMap, defaultAuthForm } from '@/config/business';
   import { useI18n } from '@/hooks/useI18n';
+  import useModal from '@/hooks/useModal';
   import { desensitize } from '@/utils';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 
   const { t } = useI18n();
+  const { openModal } = useModal();
   const Message = useMessage();
   const { copy, isSupported } = useClipboard({ legacy: true });
 
@@ -172,76 +175,146 @@
     },
   ]);
 
+  function handleDelete(row: any) {
+    openModal({
+      type: 'error',
+      title: t('system.business.authenticationSettings.deleteConfirmTitle', { name: row.name }),
+      content: t('common.deleteConfirmContent'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          Message.success(t('common.deleteSuccess'));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
+      },
+    });
+  }
+
   function handleActionSelect(row: any, actionKey: string) {
     switch (actionKey) {
       case 'edit':
         handleEdit(row);
         break;
       case 'delete':
+        handleDelete(row);
         break;
       default:
         break;
     }
   }
 
+  function handleEnable(row: any) {
+    openModal({
+      type: 'default',
+      title: t('system.business.authenticationSettings.enableConfirmTitle', { name: row.name }),
+      content: t('system.business.authenticationSettings.enableConfirmContent'),
+      positiveText: t('common.confirmStart'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          Message.success(t('common.opened'));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
+      },
+    });
+  }
+
+  function handleDisable(row: any) {
+    openModal({
+      type: 'default',
+      title: t('system.business.authenticationSettings.disableConfirmTitle', { name: row.name }),
+      content: t('system.business.authenticationSettings.disableConfirmContent'),
+      positiveText: t('common.confirmDisable'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          Message.success(t('common.disabled'));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
+      },
+    });
+  }
+
   const columns: CrmDataTableColumn[] = [
     {
-      title: t('common.creator'),
-      key: 'num',
-      width: 60,
-      sortOrder: false,
-      sorter: true,
+      title: t('common.name'),
+      key: 'name',
+      width: 200,
       render: (row: any) => {
         return h(
-          NButton,
+          CrmEditableText,
           {
-            text: true,
-            type: 'primary',
-            onClick: () => openAuthDetail(row.id as string),
+            value: row.name,
+            onHandleEdit: (val: string) => {
+              // TODO 调接口
+              row.name = val;
+            },
           },
-          { default: () => row.num }
+          {
+            default: h(
+              NButton,
+              {
+                text: true,
+                type: 'primary',
+                onClick: () => openAuthDetail(row.id as string),
+              },
+              { default: () => row.name }
+            ),
+          }
         );
       },
     },
     {
-      title: t('common.execute'),
-      key: 'title',
+      title: t('common.status'),
+      key: 'enable',
+      width: 60,
+      render: (row: any) => {
+        return h(NSwitch, {
+          value: row.enable,
+          onClick: () => {
+            if (row.enable) {
+              handleDisable(row);
+            } else {
+              handleEnable(row);
+            }
+          },
+        });
+      },
+    },
+    {
+      title: t('common.desc'),
+      key: 'description',
+      width: 200,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('common.createTime'),
+      key: 'createTime',
       width: 100,
       ellipsis: {
         tooltip: true,
       },
       sortOrder: false,
       sorter: true,
-      filterOptions: [
-        {
-          label: 'London',
-          value: 'London',
-        },
-        {
-          label: 'New York',
-          value: 'New York',
-        },
-      ],
-      filter: 'default',
     },
     {
-      title: t('common.text'),
-      key: 'status',
+      title: t('common.updateTime'),
+      key: 'updateTime',
       width: 100,
       ellipsis: {
         tooltip: true,
       },
-      filterOptions: [
-        {
-          label: 'London',
-          value: 'London',
-        },
-        {
-          label: 'New York',
-          value: 'New York',
-        },
-      ],
-      filter: 'default',
+      sortOrder: false,
+      sorter: true,
     },
     {
       key: 'operation',
@@ -261,20 +334,24 @@
       current: 1,
       list: [
         {
-          id: '11',
-          num: 'string',
-          title: 'string',
-          status: 'string',
-          updateTime: null,
-          createTime: null,
+          id: '702175637397504',
+          enable: false,
+          createTime: 1722568872431,
+          updateTime: 1722568872431,
+          description: '',
+          name: '1',
+          type: 'OAUTH2',
+          configuration: null,
         },
         {
-          id: '22',
-          num: '232324323',
-          title: '222',
-          status: 'aaaa',
-          updateTime: null,
-          createTime: null,
+          id: '693860580712448',
+          enable: true,
+          createTime: 1722568388178,
+          updateTime: 1722568388178,
+          description: '',
+          name: '1213',
+          type: 'OAuth 2.0',
+          configuration: null,
         },
       ],
     };

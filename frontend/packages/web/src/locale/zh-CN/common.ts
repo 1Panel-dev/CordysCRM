@@ -33,6 +33,7 @@ export default {
   'common.deleteConfirmTitle': '确认删除 {name} 吗？',
   'common.removeConfirmTitle': '确认移除 {name} 吗？',
   'common.archiveConfirmTitle': '确认归档 {name} 吗？',
+  'common.deleteConfirmContent': '删除后，不可恢复，请谨慎操作！',
   'common.deleteSuccess': '删除成功',
   'common.deleteFailed': '删除失败',
   'common.addSuccess': '添加成功',
