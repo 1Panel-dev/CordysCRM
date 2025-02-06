@@ -28,6 +28,8 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_BATCH_ENABLE = "/user/batch-enable";
     public static final String USER_BATCH_RESET_PASSWORD = "/user/batch/reset-password";
     public static final String USER_SYNC = "/user/sync/";
+    public static final String USER_BATCH_EDIT = "/user/batch/edit";
+
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
             config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
@@ -82,7 +84,7 @@ public class OrganizationUserControllerTests extends BaseTest {
         request.setGender(true);
         request.setEnable(true);
         request.setEmail("221@Cordys.com");
-        request.setDepartmentId("8");
+        request.setDepartmentId("9");
         request.setRoleIds(List.of("1", "2", "3"));
         request.setId("u_1");
         this.requestPost(USER_UPDATE, request).andExpect(status().isOk());
@@ -117,5 +119,14 @@ public class OrganizationUserControllerTests extends BaseTest {
     @Order(8)
     public void syncUser() throws Exception {
         this.requestGet(USER_SYNC + "WECOM");
+    }
+
+    @Test
+    @Order(9)
+    public void batchEdit() throws Exception {
+        UserBatchEditRequest request = new UserBatchEditRequest();
+        request.setIds(List.of("u_1", "u_2"));
+        request.setWorkCity("深圳");
+        this.requestPost(USER_BATCH_EDIT,request).andExpect(status().isOk());
     }
 }

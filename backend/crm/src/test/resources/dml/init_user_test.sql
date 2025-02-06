@@ -12,11 +12,11 @@ VALUES
 
 INSERT INTO `sys_organization_user`(`id`, `organization_id`, `department_id`, `resource_user_id`, `user_id`, `enable`, `employee_id`, `position`, `employee_type`, `supervisor_id`, `work_city`, `create_user`, `update_user`, `create_time`, `update_time`)
 VALUES
-    ('u_1', '100001', '8', '', '1', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000),
-    ('u_2', '100001', '8', '', '2', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000),
-    ('u_3', '100001', '8', '', '3', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000),
-    ('u_4', '100001', '8', '', '4', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000),
-    ('u_5', '100001', '8', '', '5', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000);
+    ('u_1', '100001', '9', '', '1', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000),
+    ('u_2', '100001', '9', '', '2', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000),
+    ('u_3', '100001', '9', '', '3', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000),
+    ('u_4', '100001', '9', '', '4', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000),
+    ('u_5', '100001', '9', '', '5', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000);
 
 
 INSERT INTO `sys_role`(`id`, `name`, `internal`, `data_scope`, `create_time`, `update_time`, `create_user`, `update_user`, `description`, `organization_id`)
@@ -24,3 +24,8 @@ VALUES ('r_1', '测试角色', 0, '1', 1716175907000, 1716175907000, 'admin', 'a
 
 INSERT INTO `sys_user_role`(`id`, `role_id`, `user_id`, `create_time`, `update_time`, `create_user`, `update_user`)
 VALUES ('sur_1', 'r_1', '1', 1716175907000, 1716175907000, 'admin', 'admin');
+
+
+INSERT INTO `sys_department`(`id`, `name`, `organization_id`, `parent_id`, `num`, `create_time`, `update_time`, `create_user`, `update_user`, `resource`, `resource_id`)
+VALUES
+    ('9', '部门9', '100001', '4', 6, 1736240043609, 1736240043609, 'admin', 'admin', 'INTERNAL', NULL);

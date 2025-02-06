@@ -94,5 +94,10 @@ public class OrganizationUserController {
         organizationUserService.syncUser(type, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-
+    @PostMapping("/batch/edit")
+    @Operation(summary = "用户(员工)-批量编辑")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    public void batchEditFunctionalCase(@Validated @RequestBody UserBatchEditRequest request) {
+        organizationUserService.batchEditUser(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 }

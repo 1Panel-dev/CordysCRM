@@ -9,13 +9,12 @@ import io.cordys.common.dto.OptionDTO;
 import java.util.List;
 
 /**
- *
  * @author jianxing
  * @date 2025-01-09 16:11:37
  */
 public interface ExtOrganizationUserMapper {
 
-    int countUserByDepartmentId(@Param("departmentId") String departmentId,@Param("orgId")String orgId);
+    int countUserByDepartmentId(@Param("departmentId") String departmentId, @Param("orgId") String orgId);
 
     List<UserPageResponse> list(@Param("request") UserPageRequest request);
 
@@ -26,4 +25,6 @@ public interface ExtOrganizationUserMapper {
     void deleteUserByOrgId(@Param("orgId") String orgId);
 
     List<OptionDTO> selectEnableOrgUser(@Param("ids") List<String> ids, @Param("enable") boolean enable);
+
+    void updateUserByIds(@Param("request") UserBatchEditRequest request, @Param("operatorId") String operatorId, @Param("orgId") String orgId);
 }

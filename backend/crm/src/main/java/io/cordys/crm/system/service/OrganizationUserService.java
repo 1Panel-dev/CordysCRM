@@ -19,9 +19,9 @@ import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.*;
-import io.cordys.mybatis.BaseMapper;
 import io.cordys.integration.wecom.dto.WeComDepartment;
 import io.cordys.integration.wecom.dto.WeComUser;
+import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.scheduling.annotation.Async;
@@ -511,5 +511,18 @@ public class OrganizationUserService {
         userExtendMapper.batchInsert(userExtends);
         organizationUserMapper.batchInsert(organizationUsers);
         departmentCommanderMapper.batchInsert(departmentCommanders);
+    }
+
+
+    /**
+     * 批量编辑用户
+     *
+     * @param request
+     * @param operatorId
+     * @param organizationId
+     */
+    public void batchEditUser(UserBatchEditRequest request, String operatorId, String organizationId) {
+        extOrganizationUserMapper.updateUserByIds(request, operatorId, organizationId);
+        //todo 日志
     }
 }

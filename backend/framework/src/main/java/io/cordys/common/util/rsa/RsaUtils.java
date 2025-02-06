@@ -155,7 +155,7 @@ public class RsaUtils {
      * @throws Exception 如果解密失败
      */
     private static String privateDecrypt(String cipherText, RSAPrivateKey privateKey) throws Exception {
-        Cipher cipher = Cipher.getInstance(RSA_CIPHER_TRANSFORMATION_OAEP);
+        Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
 
         byte[] decryptedData = rsaSplitCodec(cipher, Cipher.DECRYPT_MODE, Base64.getDecoder().decode(cipherText), privateKey.getModulus().bitLength());

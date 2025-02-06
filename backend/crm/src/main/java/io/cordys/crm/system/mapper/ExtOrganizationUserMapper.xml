@@ -46,7 +46,7 @@
     <update id="enable">
         update sys_organization_user
         set `enable` = #{request.enable},
-            update_time = #{time},
+            update_time = UNIX_TIMESTAMP() * 1000,
             update_user = #{operatorId}
         where id in
         <foreach collection="request.ids" item="id" open="(" separator="," close=")">
@@ -79,8 +79,31 @@
         from sys_user su
         inner join sys_organization_user sou on su.id = sou.user_id
         where sou.id in
-        <foreach collection="request.ids" item="id" open="(" separator="," close=")">
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
     </select>
+
+    <update id="updateUserByIds">
+        update sys_organization_user
+        <set>
+            <if test="request.departmentId != null">
+                department_id = #{request.departmentId},
+            </if>
+            <if test="request.supervisorId != null">
+                supervisor_id = #{request.supervisorId},
+            </if>
+            <if test="request.workCity != null">
+                work_city = #{request.workCity},
+            </if>
+            update_time = UNIX_TIMESTAMP() * 1000,
+            update_user = #{operatorId}
+        </set>
+        <where>
+            id in
+            <foreach collection="request.ids" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+    </update>
 </mapper>
