@@ -524,6 +524,10 @@
       }
     }
   );
+
+  defineExpose({
+    toggleEdit,
+  });
 </script>
 
 <style lang="less">
