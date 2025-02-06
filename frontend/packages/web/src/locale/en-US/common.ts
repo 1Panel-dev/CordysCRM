@@ -229,4 +229,5 @@ export default {
   'common.opened': 'Enabled',
   'common.disabled': 'Disabled',
   'common.ViewMore': 'View more',
+  'common.unNamed': 'Not named',
 };

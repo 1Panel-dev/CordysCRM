@@ -229,4 +229,5 @@ export default {
   'common.opened': '已开启',
   'common.disabled': '已禁用',
   'common.ViewMore': '查看更多',
+  'common.unNamed': '未命名',
 };

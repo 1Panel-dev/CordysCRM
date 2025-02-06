@@ -47,9 +47,8 @@
 </template>
 
 <script setup lang="ts">
-  // TODO 没有action的时候也展示了 待完善
   import { ref, VNodeChild } from 'vue';
-  import { FormItemRule, NTooltip, NTree } from 'naive-ui';
+  import { FormItemRule, NTree } from 'naive-ui';
   import { debounce } from 'lodash-es';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -68,6 +67,7 @@
     CrmTreeRenderIconData,
     VirtualScrollPropsType,
   } from './type';
+  import useRenameNode from './useRenameNode';
   import { DropPosition } from 'naive-ui/es/tree/src/interface';
 
   const { t } = useI18n();
@@ -113,9 +113,9 @@
         | 'left'
         | 'left-end'; // 标题 tooltip 的位置
       allowDrop?: (info: { dropPosition: DropPosition; node: CrmTreeNodeData; phase: 'drag' | 'drop' }) => boolean; // 是否允许放置
-      // TODO 按钮
       filterMoreActionFunc?: (items: ActionsItem[], node: CrmTreeNodeData) => any[]; // 过滤更多操作按钮
       titleClass?: string;
+      renameApi?: (node: CrmTreeNodeData) => Promise<boolean>;
     }>(),
     {
       searchDebounce: 300,
@@ -127,7 +127,6 @@
         labelField: 'label',
         childrenField: 'children',
         disabledField: 'disabled',
-        isLeaf: 'isLeaf',
       }),
       multiple: false,
       disabledTitleTooltip: false,
@@ -189,6 +188,7 @@
 
   const filterTreeData = ref<CrmTreeNodeData[]>([]); // 初始化时全量的树数据或在非搜索情况下更新后的全量树数据
 
+  const { toggleEdit, createEditInput } = useRenameNode(props.renameApi, props.fieldNames);
   /**
    * 选中节点事件
    */
@@ -218,39 +218,14 @@
    */
   function renderLabelDom(info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     const { option, selected, checked } = info;
-
-    const label = option[props.fieldNames.labelField];
-
-    return h(
-      NTooltip,
+    return createEditInput(
+      { option, selected, checked },
       {
-        delay: 300,
-        flip: true,
-        placement: props.titleTooltipPosition,
+        name: option[props.fieldNames.labelField],
+        rules: props.editRules,
       },
-      {
-        trigger: () => {
-          if (props.renderLabel && typeof props.renderLabel === 'function') {
-            return h(
-              'div',
-              {
-                class: 'crm-tree-node-title',
-              },
-              [
-                props.renderLabel({ option, selected, checked }), // 如果开发者提供了 renderLabel，则使用外部定义的渲染逻辑
-              ]
-            );
-          }
-          return h(
-            'div',
-            {
-              class: `one-line-text w-full ${props.titleClass || 'crm-tree-node-title'}`,
-            },
-            label
-          );
-        },
-        default: () => label,
-      }
+      props.renderLabel,
+      { titleTooltipPosition: props.titleTooltipPosition, titleClass: props.titleClass }
     );
   }
 
@@ -264,8 +239,15 @@
     }
   }
 
+  // 更多操作
   function selectMoreAction(actionItem: ActionsItem, option: CrmTreeNodeData) {
-    emit('moreActionSelect', actionItem, option);
+    const nodeKey = option[props.fieldNames.keyField];
+    if (actionItem.key === 'rename') {
+      option.hideMoreAction = true;
+      toggleEdit(nodeKey);
+    } else {
+      emit('moreActionSelect', actionItem, option);
+    }
   }
 
   function renderExtraDom(info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
@@ -291,39 +273,26 @@
       return props.renderSuffix({ option, selected, checked });
     }
 
-    return h(
-      'div',
-      {
-        class: 'crm-tree-node-extra',
-      },
-      {
-        default: () => {
-          return [
-            h(
-              // 额外的节点
-              () => renderExtraDom(info)
-            ),
-            // 操作
-            props.nodeMoreActions?.length
-              ? h(CrmMoreAction, {
-                  options: props.filterMoreActionFunc
-                    ? props.filterMoreActionFunc(props.nodeMoreActions || [], option)
-                    : props.nodeMoreActions || [],
-                  onSelect: (actionItem: ActionsItem) => selectMoreAction(actionItem, option),
-                  onUpdateShow: (show: boolean) => {
-                    focusNodeKeys.value.clear();
-                    if (show) {
-                      focusNodeKeys.value.add(option[props.fieldNames.keyField]);
-                    } else {
-                      focusNodeKeys.value.clear();
-                    }
-                  },
-                })
-              : null,
-          ];
-        },
-      }
-    );
+    const filteredActions =
+      typeof props.filterMoreActionFunc === 'function'
+        ? props.filterMoreActionFunc(props.nodeMoreActions || [], option)
+        : props.nodeMoreActions || [];
+
+    const moreActionNode =
+      filteredActions.length > 0
+        ? h(CrmMoreAction, {
+            options: filteredActions,
+            onSelect: (actionItem: ActionsItem) => selectMoreAction(actionItem, option),
+            onUpdateShow: (show: boolean) => {
+              focusNodeKeys.value.clear();
+              if (show) {
+                focusNodeKeys.value.add(option[props.fieldNames.keyField]);
+              }
+            },
+          })
+        : null;
+
+    return h('div', { class: 'crm-tree-node-extra' }, [renderExtraDom(info), moreActionNode]);
   }
 
   /**

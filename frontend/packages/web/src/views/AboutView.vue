@@ -132,16 +132,19 @@
             v-model:checked-keys="checkedKeys"
             v-model:expanded-keys="expandedKeys"
             v-model:default-expand-all="expandAll"
-            checkable
-            draggable
             :keyword="keyword"
             :render-prefix="renderPrefixDom"
             :node-more-actions="moreOptions"
             :render-extra="renderExtraDom"
             :render-label="renderLabel"
             :virtual-scroll-props="{ virtualScroll: false, virtualScrollHeight: '400px' }"
-            @rename="renameHandler"
-            @create="createHandler"
+            :field-names="{
+              keyField: 'id',
+              labelField: 'name',
+              childrenField: 'children',
+              disabledField: 'disabled',
+              isLeaf: 'isLeaf',
+            }"
             @drop="handleDrag"
             @more-action-select="handleFolderMoreSelect"
           />
@@ -226,137 +229,139 @@
       type: 'MODULE',
       parentId: 'NONE',
       projectId: null,
-      children: undefined,
       attachInfo: {},
       count: 0,
-      hideMoreAction: true,
+      corporation: true,
       path: '/未规划用例',
-    },
-    {
-      id: '849389914030080',
-      name: '测试默默',
-      type: 'module',
-      parentId: 'NONE',
-      projectId: null,
       children: [
         {
-          id: 'd3qgf11a02w0',
-          name: '1',
+          id: '849389914030080',
+          name: '测试默默',
           type: 'module',
-          parentId: '849389914030080',
+          parentId: 'NONE',
           projectId: null,
+          count: 10,
           children: [
             {
-              id: '172473746390800000',
-              name: '测试1',
+              id: 'd3qgf11a02w0',
+              name: '1',
               type: 'module',
-              parentId: 'd3qgf11a02w0',
+              parentId: '849389914030080',
               projectId: null,
               children: [
                 {
-                  id: 'd4q2hgqzlc80',
-                  name: '模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88',
+                  id: '172473746390800000',
+                  name: '测试1',
                   type: 'module',
-                  parentId: '172473746390800000',
+                  parentId: 'd3qgf11a02w0',
                   projectId: null,
-                  children: undefined,
+                  children: [
+                    {
+                      id: 'd4q2hgqzlc80',
+                      name: '模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88',
+                      type: 'module',
+                      parentId: '172473746390800000',
+                      projectId: null,
+                      children: undefined,
+                      attachInfo: {},
+                      count: 0,
+                      path: '/测试默默/1/测试1/模块88',
+                    },
+                  ],
                   attachInfo: {},
                   count: 0,
-                  path: '/测试默默/1/测试1/模块88',
+                  path: '/测试默默/1/测试1',
                 },
               ],
               attachInfo: {},
               count: 0,
-              path: '/测试默默/1/测试1',
+              path: '/测试默默/1',
+            },
+          ],
+          attachInfo: {},
+
+          path: '/测试默默',
+        },
+        {
+          id: '905344769294336',
+          name: '22222',
+          type: 'module',
+          parentId: 'NONE',
+          projectId: null,
+          children: [
+            {
+              id: '905722726416384',
+              name: 'ceceafsfa',
+              type: 'module',
+              parentId: '905344769294336',
+              projectId: null,
+              children: [],
+              attachInfo: {},
+              count: 0,
+              path: '/22222/ceceafsfa',
+            },
+          ],
+          attachInfo: {},
+          count: 200,
+          path: '/22222',
+        },
+        {
+          id: '859989918220288',
+          name: '鑫鑫测试',
+          type: 'module',
+          parentId: 'NONE',
+          projectId: null,
+          children: [],
+          attachInfo: {},
+          count: 0,
+          path: '/鑫鑫测试',
+        },
+        {
+          id: '1096900316143616',
+          name: 'yuan',
+          type: 'module',
+          parentId: 'NONE',
+          projectId: null,
+          children: [
+            {
+              id: '705714697707520',
+              name: '4444',
+              type: 'module',
+              parentId: '1096900316143616',
+              projectId: null,
+              children: [],
+              attachInfo: {},
+              count: 0,
+              path: '/yuan/4444',
+            },
+            {
+              id: '706590871035904',
+              name: '555',
+              type: 'module',
+              parentId: '1096900316143616',
+              projectId: null,
+              children: [],
+              attachInfo: {},
+              count: 0,
+              path: '/yuan/555',
             },
           ],
           attachInfo: {},
           count: 0,
-          path: '/测试默默/1',
+          path: '/yuan',
         },
-      ],
-      attachInfo: {},
-      count: 0,
-      path: '/测试默默',
-    },
-    {
-      id: '905344769294336',
-      name: '22222',
-      type: 'module',
-      parentId: 'NONE',
-      projectId: null,
-      children: [
         {
-          id: '905722726416384',
-          name: 'ceceafsfa',
+          id: '674876834054144',
+          name: '郭雨琦测试',
           type: 'module',
-          parentId: '905344769294336',
+          parentId: 'NONE',
           projectId: null,
           children: [],
           attachInfo: {},
           count: 0,
-          path: '/22222/ceceafsfa',
+          path: '/郭雨琦测试',
         },
       ],
-      attachInfo: {},
-      count: 0,
-      path: '/22222',
-    },
-    {
-      id: '859989918220288',
-      name: '鑫鑫测试',
-      type: 'module',
-      parentId: 'NONE',
-      projectId: null,
-      children: [],
-      attachInfo: {},
-      count: 0,
-      path: '/鑫鑫测试',
-    },
-    {
-      id: '1096900316143616',
-      name: 'yuan',
-      type: 'module',
-      parentId: 'NONE',
-      projectId: null,
-      children: [
-        {
-          id: '705714697707520',
-          name: '4444',
-          type: 'module',
-          parentId: '1096900316143616',
-          projectId: null,
-          children: [],
-          attachInfo: {},
-          count: 0,
-          path: '/yuan/4444',
-        },
-        {
-          id: '706590871035904',
-          name: '555',
-          type: 'module',
-          parentId: '1096900316143616',
-          projectId: null,
-          children: [],
-          attachInfo: {},
-          count: 0,
-          path: '/yuan/555',
-        },
-      ],
-      attachInfo: {},
-      count: 0,
-      path: '/yuan',
-    },
-    {
-      id: '674876834054144',
-      name: '郭雨琦测试',
-      type: 'module',
-      parentId: 'NONE',
-      projectId: null,
-      children: [],
-      attachInfo: {},
-      count: 0,
-      path: '/郭雨琦测试',
     },
   ]);
 
@@ -384,31 +389,10 @@
 
   const checkedKeys = ref([]);
 
-  const expandAll = ref(false);
+  const expandAll = ref(true);
 
   function changeExpand() {
     expandAll.value = !expandAll.value;
-  }
-
-  function renameHandler(option: any, newName: string, done: (suc: boolean) => void) {
-    try {
-      setTimeout(() => {
-        console.log('更新成功');
-        done(true);
-      }, 3000);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-  function createHandler(option: any, newName: string, done: (suc: boolean) => void) {
-    try {
-      setTimeout(() => {
-        console.log('创建成功');
-        done(true);
-      }, 3000);
-    } catch (e) {
-      console.log(e);
-    }
   }
 
   function renderPrefixDom(infoProps: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {

@@ -37,6 +37,7 @@
       disabledField: 'disabled',
       isLeaf: 'isLeaf',
     }"
+    :rename-api="renameHandler"
     @drop="handleDrag"
     @more-action-select="handleFolderMoreSelect"
   />
@@ -251,12 +252,31 @@
     },
   ]);
 
+  // TODO 待联调
+  async function renameHandler(option: CrmTreeNodeData) {
+    try {
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(true);
+        }, 3000);
+      });
+      Message.success(t('common.updateSuccess'));
+      return Promise.resolve(true);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+      return Promise.resolve(false);
+    }
+  }
+
+  // 添加
   async function handleAdd(option: CrmTreeNodeData) {
     const nodeKey: string = getGenerateId();
     const newNode: CrmTreeNodeData = {
       id: nodeKey,
-      name: '未命名',
+      name: t('common.unNamed'),
       children: undefined,
+      hideMoreAction: true,
     };
     if (option.children && option.children.length) {
       option.children.unshift(newNode);
@@ -272,8 +292,6 @@
     }
   }
 
-  const loading = ref<boolean>(false);
-  const allNamesList = ref([]);
   function renderExtraDom(infoProps: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     const { option } = infoProps;
     // 额外的节点
