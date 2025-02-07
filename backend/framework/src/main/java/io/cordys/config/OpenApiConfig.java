@@ -71,4 +71,13 @@ public class OpenApiConfig {
                 .build();
     }
 
+    @Bean
+    @ConditionalOnProperty(name = {"springdoc.swagger-ui.enabled", "springdoc.api-docs.enabled"}, havingValue = "true")
+    public GroupedOpenApi xpackApi() {
+        return GroupedOpenApi.builder()
+                .group("xpack")
+                .packagesToScan(prePackages + "xpack")
+                .build();
+    }
+
 }
