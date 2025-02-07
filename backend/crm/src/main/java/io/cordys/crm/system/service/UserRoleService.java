@@ -5,6 +5,7 @@ import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.SubListUtils;
 import io.cordys.crm.system.domain.Department;
+import io.cordys.crm.system.domain.UserExtend;
 import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.request.RoleUserPageRequest;
@@ -46,6 +47,8 @@ public class UserRoleService {
     private RoleService roleService;
     @Resource
     private BaseMapper<Department> departmentMapper;
+    @Resource
+    private BaseMapper<UserExtend> userExtendMapper;
 
     public void delete(String id) {
         userRoleMapper.deleteByPrimaryKey(id);
@@ -56,15 +59,26 @@ public class UserRoleService {
         Map<String, List<UserRoleConvert>> userRoleMap = getUserRoleMap(orgId, users);
 
         Map<String, String> deptNameMap = getDeptNameMap(users);
+        Map<String, String> userAvatarMap = getUserAvatarMap(users);
+
         for (RoleUserListResponse user : users) {
             user.setRoles(userRoleMap.get(user.getUserId()));
             user.setDepartmentName(deptNameMap.get(user.getDepartmentId()));
+            user.setAvatar(userAvatarMap.get(user.getUserId()));
         }
         return users;
     }
 
+    private Map<String, String> getUserAvatarMap(List<RoleUserListResponse> users) {
+        List<String> userIds = users.stream().map(RoleUserListResponse::getUserId).toList();
+        Map<String, String> userAvatarMap = userExtendMapper.selectByIds(userIds.toArray(new String[0]))
+                .stream()
+                .collect(Collectors.toMap(UserExtend::getId, UserExtend::getAvatar));
+        return userAvatarMap;
+    }
+
     private Map<String, String> getDeptNameMap(List<RoleUserListResponse> users) {
-        Set<String> deptIds = users.stream().map(RoleUserListResponse::getUserId).collect(Collectors.toSet());
+        Set<String> deptIds = users.stream().map(RoleUserListResponse::getDepartmentId).collect(Collectors.toSet());
         Map<String, String> deptNameMap = departmentMapper.selectByIds(deptIds.toArray(new String[0]))
                 .stream()
                 .collect(Collectors.toMap(Department::getId, Department::getName));

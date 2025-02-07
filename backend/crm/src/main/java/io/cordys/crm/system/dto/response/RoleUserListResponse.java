@@ -23,6 +23,9 @@ public class RoleUserListResponse {
     @Schema(description = "用户名")
     private String userName;
 
+    @Schema(description = "头像")
+    private String avatar;
+
     @Schema(description = "是否启用")
     private Boolean enable;
 
