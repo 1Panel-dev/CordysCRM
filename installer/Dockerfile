@@ -7,7 +7,6 @@ RUN npm install -g pnpm && \
     pnpm run build
 
 
-
 FROM eclipse-temurin:21-jdk AS build
 WORKDIR /build
 COPY . /build
@@ -18,6 +17,23 @@ RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
     cd backend/app/target/dependency && \
     jar -xf ../*.jar
 
+
+RUN VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout) && \
+    echo "Using version: $VERSION"
+
+ARG FIT2CLOUD_MAVEN_USERNAME
+ARG FIT2CLOUD_MAVEN_PASSWORD
+
+RUN ./mvnw deploy:deploy-file \
+    -Dfile=backend/crm/target/crm-${VERSION}.jar \
+    -DrepositoryId=cordys-public \
+    -Durl=https://repository.fit2cloud.com/repository/cordys/ \
+    -DgroupId=io.cordys \
+    -DartifactId=cordys-crm \
+    -Dversion=${VERSION} \
+    -Dpackaging=jar \
+    -Dusername=${FIT2CLOUD_MAVEN_USERNAME} \
+    -Dpassword=${FIT2CLOUD_MAVEN_PASSWORD}
 
 
 FROM ghcr.io/cordys-dev/cordys-base
