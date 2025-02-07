@@ -310,26 +310,29 @@ CREATE INDEX idx_organization_id ON sys_organization_user (organization_id ASC);
 CREATE INDEX idx_department_id ON sys_organization_user (department_id ASC);
 CREATE INDEX idx_user_id ON sys_organization_user (user_id ASC);
 
-CREATE TABLE sys_module_field
-(
-    `id`            VARCHAR(32)  NOT NULL COMMENT 'ID',
-    `module_id`     VARCHAR(32)  NOT NULL COMMENT '所属模块',
-    `name`          VARCHAR(255) NOT NULL COMMENT '字段名称',
-    `type`          VARCHAR(10)  NOT NULL COMMENT '字段类型(input/select 等)',
-    `pos`           BIGINT       NOT NULL COMMENT '排序',
-    `enable`        BIT(1)       NOT NULL DEFAULT 1 COMMENT '启用/禁用',
-    `tooltip`       VARCHAR(500) COMMENT '自定提示内容',
-    `required`      BIT(1)       NOT NULL DEFAULT 1 COMMENT '必填',
-    `unique`        BIT(1)       NOT NULL DEFAULT 0 COMMENT '唯一/不唯一(默认不唯一)',
-    `field_width`   VARCHAR(10)  NOT NULL COMMENT '自定义宽度(常量值待定)',
-    `default_value` VARCHAR(255) COMMENT '默认值 (支持多个值)',
-    `is_default`    BIT(1)       NOT NULL DEFAULT 1 COMMENT '是否系统默认属性',
-    `create_user`   VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `create_time`   BIGINT       NOT NULL COMMENT '创建时间',
-    `update_user`   VARCHAR(32)  NOT NULL COMMENT '更新人',
-    `update_time`   BIGINT       NOT NULL COMMENT '更新时间',
+CREATE TABLE sys_module_field(
+    `id`            VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `module_id`     VARCHAR(32) NOT NULL   COMMENT '所属模块' ,
+    `name`          VARCHAR(255) NOT NULL   COMMENT '字段名称' ,
+    `type`          VARCHAR(10) NOT NULL   COMMENT '字段类型(常量)' ,
+    `show_label`    BIT(1) NOT NULL  DEFAULT 1 COMMENT '显示标题(默认显示)' ,
+    `description`   VARCHAR(1000)    COMMENT '描述' ,
+    `tooltip`       VARCHAR(255)    COMMENT '提示文字' ,
+    `default_value` VARCHAR(255)    COMMENT '默认值 (支持多个值)' ,
+    `custom_config` TEXT    COMMENT '个性化配置' ,
+    `layout`        VARCHAR(10) NOT NULL   COMMENT '分布方式(常量)' ,
+    `required`      BIT(1) NOT NULL  DEFAULT 0 COMMENT '必填(默认非必填)' ,
+    `unique`        BIT(1) NOT NULL  DEFAULT 0 COMMENT '唯一/不唯一(默认不唯一)' ,
+    `readable`      BIT(1) NOT NULL  DEFAULT 1 COMMENT '可见(默认可见)' ,
+    `editable`      BIT(1) NOT NULL  DEFAULT 1 COMMENT '可编辑(默认可编辑)' ,
+    `field_width`   VARCHAR(10) NOT NULL   COMMENT '自定义宽度(常量)' ,
+    `pos`           BIGINT NOT NULL   COMMENT '排序' ,
+    `create_user`   VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `create_time`   BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_user`   VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    `update_time`   BIGINT NOT NULL   COMMENT '更新时间' ,
     PRIMARY KEY (id)
-) COMMENT = '模块字段配置'
+)  COMMENT = '模块字段配置'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;

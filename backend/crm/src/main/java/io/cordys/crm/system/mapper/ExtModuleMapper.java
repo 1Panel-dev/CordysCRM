@@ -5,14 +5,14 @@ import org.apache.ibatis.annotations.Param;
 public interface ExtModuleMapper {
 
 	/**
-	 * 区间模块上移
+	 * 模块区间上移
 	 * @param start 开始
 	 * @param end 结束
 	 */
 	void moveUpModule(@Param("start") Long start, @Param("end") Long end);
 
 	/**
-	 * 区间模块下移
+	 * 模块区间下移
 	 * @param start 开始
 	 * @param end 结束
 	 */
