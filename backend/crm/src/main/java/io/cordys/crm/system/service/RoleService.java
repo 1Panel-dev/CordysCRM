@@ -138,7 +138,7 @@ public class RoleService {
         roleMapper.insert(role);
 
         // 配置指定部门权限
-        if (StringUtils.equals(request.getDataScope(), RoleDataScope.DEPT_CUSTOM.name()) && CollectionUtils.isEmpty(request.getDeptIds())) {
+        if (StringUtils.equals(request.getDataScope(), RoleDataScope.DEPT_CUSTOM.name()) && CollectionUtils.isNotEmpty(request.getDeptIds())) {
             roleScopeDeptMapper.batchInsert(getRoleScopeDept(role.getId(), request.getDeptIds()));
         }
 

@@ -140,6 +140,12 @@ class RoleControllerTests extends BaseTest {
         }});
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         anotherUserRole = roleMapper.selectByPrimaryKey(getResultData(mvcResult, Role.class).getId());
+        // 校验组织
+        RoleScopeDept example = new RoleScopeDept();
+        example.setDeptId("deptId");
+        example.setRoleId(anotherUserRole.getId());
+        Assertions.assertTrue(roleScopeDeptMapper.select(example).size() > 0);
+
         // 获取该用户组拥有的权限
         Set<String> permissionIds = getPermissionIdSetByRoleId(anotherUserRole.getId());
         Set<String> requestPermissionIds = request.getPermissions().stream()
