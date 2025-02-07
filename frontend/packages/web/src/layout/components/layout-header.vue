@@ -1,8 +1,15 @@
 <template>
   <n-layout-header class="flex" bordered>
     <div class="flex w-[180px] items-center gap-[4px] px-[30px] py-[12px]">
-      <img src="/logo.png" width="32px" height="32px" />
-      <div class="flex items-center text-[20px] font-semibold leading-[32px]">Cordys</div>
+      <img :src="props.logo ?? '/logo.png'" width="32px" height="32px" />
+      <n-tooltip :delay="300">
+        <template #trigger>
+          <div class="one-line-text text-[20px] font-semibold leading-[32px]">
+            {{ props.name ?? 'Cordys' }}
+          </div>
+        </template>
+        {{ props.name ?? 'Cordys' }}
+      </n-tooltip>
     </div>
     <div class="flex flex-1 items-center justify-between px-[16px]">
       <!-- <n-breadcrumb>
@@ -35,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NLayoutHeader, NPopselect } from 'naive-ui';
+  import { NButton, NLayoutHeader, NPopselect, NTooltip } from 'naive-ui';
 
   import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
 
@@ -43,6 +50,11 @@
   import useLocale from '@/locale/useLocale';
 
   import { LocaleType } from '@lib/shared/types/global';
+
+  const props = defineProps<{
+    logo?: string;
+    name?: string;
+  }>();
 
   const { changeLocale, currentLocale } = useLocale();
 

@@ -1,5 +1,9 @@
 <template>
-  <n-config-provider :theme-overrides="themeOverridesConfig" :locale="naiveUILocale" :date-locale="naiveUIDateLocale">
+  <n-config-provider
+    :theme-overrides="appStore.themeOverridesConfig"
+    :locale="naiveUILocale"
+    :date-locale="naiveUIDateLocale"
+  >
     <n-message-provider>
       <n-dialog-provider>
         <RouterView />
@@ -12,13 +16,10 @@
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
   import useLocale from '@/locale/useLocale';
-  import { getThemeOverrides } from '@/utils/themeOverrides';
-
-  import type { GlobalThemeOverrides } from 'naive-ui';
+  import useAppStore from '@/store/modules/app';
 
   const { currentLocale } = useLocale();
-
-  const themeOverridesConfig = ref<GlobalThemeOverrides>(getThemeOverrides());
+  const appStore = useAppStore();
 
   const naiveUILocale = computed(() => {
     return currentLocale.value === 'zh-CN' ? zhCN : enUS;

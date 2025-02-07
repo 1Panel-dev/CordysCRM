@@ -66,4 +66,36 @@ export default {
   'system.business.authenticationSettings.LDAPPropertyMapTip': '左侧键为 Cordys 用户属性，右侧值为认证平台用户属性',
   'system.business.authenticationSettings.propertyMap': '属性映射',
   'system.business.authenticationSettings.testLogin': '测试登录',
+
+  'system.business.page.platformStyle': '平台风格',
+  'system.business.page.background': '背景色',
+  'system.business.page.follow': '跟随主题色',
+  'system.business.page.replace': '替换图片',
+  'system.config.page.loginPageConfig': '平台登录设置',
+  'system.config.page.pagePreview': '页面预览',
+  'system.config.page.reset': '撤销修改',
+  'system.config.page.loginPreviewTip': 'tips:默认为 Cordys 系统界面，支持自定义平台界面设置',
+
+  'system.config.page.icon': '网站 Logo',
+  'system.config.page.iconTip':
+    '顶部网站显示的 logo ；建议使用 SVG 或 PNG 格式透明背景图片，高度小于 32px；图片大小仅支持 200kb 以内',
+  'system.config.page.loginLogo': '登录 Logo',
+  'system.config.page.loginLogoTip':
+    '登录页面右侧显示的 logo；建议使用 SVG 或 PNG 格式透明背景图片，高度小于 48px；图片大小仅支持 200kb 以内',
+  'system.config.page.loginBg': '登录背景图',
+  'system.config.page.loginBgTip':
+    '背景图建议使用 SVG 格式；矢量图建议尺寸 1440*900，位图建议尺寸1920*1080；图片大小仅支持 800kb 以内',
+  'system.config.page.slogan': 'Slogan',
+  'system.config.page.sloganTip': '产品 Logo 下的 Slogan',
+  'system.config.page.title': '网站名称',
+  'system.config.page.titleTip': '显示在网页 Tab 的平台名称',
+  'system.config.page.platformConfig': '平台设置',
+  'system.config.page.platformLogo': 'Logo',
+  'system.config.page.platformLogoTip':
+    '主题栏显示的 logo；建议使用 SVG 或 PNG 格式透明背景图片，高度小于 32px；图片大小仅支持 200kb 以内',
+  'system.config.page.platformName': '系统名称',
+  'system.config.page.platformNameTip': '全站通用产品名称，建议字数 8',
+  'system.config.page.helpDocTip': '可设置帮助文档跳转链接，默认为官方帮助文档',
+  'system.config.page.cancel': '放弃更新',
+  'system.config.page.save': '保存并应用',
 };

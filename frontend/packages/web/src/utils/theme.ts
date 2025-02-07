@@ -1,4 +1,9 @@
+import type { PageConfig, Style, Theme } from '@/api/modules/system/business';
+import useAppStore from '@/store/modules/app';
+
 import Color from 'color';
+
+const appStore = useAppStore();
 
 /**
  * 获取颜色对象的 rgb 色值
@@ -49,6 +54,7 @@ export function setCustomTheme(primaryColor: string) {
     prevStyleTag.remove();
   }
   document.body.appendChild(styleTag);
+  appStore.resetThemeOverridesConfig();
 }
 
 /**
@@ -58,6 +64,81 @@ export function resetTheme() {
   const prevStyleTag = document.getElementById('CRM-CUSTOM-THEME');
   if (prevStyleTag) {
     prevStyleTag.remove();
+  }
+  appStore.resetThemeOverridesConfig();
+}
+
+/**
+ * 设置平台色
+ * @param color 平台色
+ */
+export function setPlatformColor(color: string, isFollow = false) {
+  const styleTag = document.createElement('style');
+  styleTag.id = 'CRM-CUSTOM-STYLE';
+  const white = Color('#fff');
+  // 跟随主题色，设置为P1
+  const platformColor = isFollow ? new Color(color).mix(white, 0.95) : new Color(color);
+  styleTag.innerHTML = `
+    :root {
+      --text-n9: ${platformColor};
+    }
+  `;
+  // 移除之前的 style 标签（如果有）
+  const prevStyleTag = document.getElementById('CRM-CUSTOM-STYLE');
+  if (prevStyleTag) {
+    prevStyleTag.remove();
+  }
+  document.body.appendChild(styleTag);
+  appStore.resetThemeOverridesConfig();
+}
+
+/**
+ * 平台风格重置为默认平台风格
+ */
+export function resetStyle() {
+  const prevStyleTag = document.getElementById('CRM-CUSTOM-STYLE');
+  if (prevStyleTag) {
+    prevStyleTag.remove();
+  }
+  appStore.resetThemeOverridesConfig();
+}
+
+/**
+ * 检测风格变化
+ * @param val 风格
+ * @param pageConfig 页面配置对象
+ */
+export function watchStyle(val: Style, pageConfig: PageConfig) {
+  if (val === 'default') {
+    // 默认就是系统自带的颜色
+    resetStyle();
+  } else if (val === 'custom') {
+    // 自定义风格颜色
+    setPlatformColor(pageConfig.customStyle);
+  } else {
+    // 跟随主题色
+    setPlatformColor(pageConfig.customTheme, true);
+  }
+}
+
+/**
+ * 检测主题色变化
+ * @param val 主题色
+ * @param pageConfig 页面配置对象
+ */
+export function watchTheme(val: Theme, pageConfig: PageConfig) {
+  if (val === 'default') {
+    resetTheme();
+    if (pageConfig.style === 'follow') {
+      // 若平台风格跟随主题色
+      resetStyle();
+    }
+  } else {
+    setCustomTheme(pageConfig.customTheme);
+    if (pageConfig.style === 'follow') {
+      // 若平台风格跟随主题色
+      setPlatformColor(pageConfig.customTheme, true);
+    }
   }
 }
 

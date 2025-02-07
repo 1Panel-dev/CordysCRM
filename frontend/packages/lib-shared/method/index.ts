@@ -44,3 +44,14 @@ export function encrypted(input: string) {
 
   return encrypt.encrypt(input);
 }
+
+/**
+ * 休眠
+ * @param ms 睡眠时长，单位毫秒
+ * @returns
+ */
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(), ms);
+  });
+}

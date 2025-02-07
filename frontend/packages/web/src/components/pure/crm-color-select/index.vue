@@ -1,25 +1,51 @@
 <template>
-  <n-color-picker
-    v-model:value="innerPureColor"
-    v-bind="$attrs"
-    default-show
-    show-preview
-    @update-value="handleUpdate"
-  />
+  <ColorPicker v-model:pure-color="innerPureColor" :z-index="1" picker-type="chrome" is-widget round-history />
 </template>
 
 <script setup lang="ts">
-  import { useDebounceFn } from '@vueuse/core';
+  import { ref, watch } from 'vue';
 
-  const innerPureColor = defineModel<string>('pureColor', {
-    required: true,
-  });
+  import 'vue3-colorpicker/style.css';
+  import { ColorPicker } from 'vue3-colorpicker';
 
-  const emits = defineEmits<{
-    (e: 'change', color: string): void;
+  const props = defineProps<{
+    pureColor: string;
   }>();
 
-  const handleUpdate = useDebounceFn((val: string) => {
-    emits('change', val);
-  }, 200);
+  const emit = defineEmits(['update:pureColor']);
+
+  const innerPureColor = ref(props.pureColor || '#CF00FF');
+
+  watch(
+    () => props.pureColor,
+    (val) => {
+      innerPureColor.value = val;
+    },
+    {
+      immediate: true,
+    }
+  );
+
+  watch(
+    () => innerPureColor.value,
+    (val) => {
+      emit('update:pureColor', val);
+    }
+  );
 </script>
+
+<style lang="less">
+  .color-cube {
+    overflow: hidden;
+    border-radius: var(--border-radius-small);
+  }
+  .vc-transparent {
+    background-image: none !important;
+  }
+  .color-list {
+    width: 100% !important;
+  }
+  .color-item:not(:last-child) {
+    margin-right: 2px !important;
+  }
+</style>

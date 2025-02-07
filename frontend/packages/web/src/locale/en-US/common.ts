@@ -166,6 +166,7 @@ export default {
   'common.value.notNull': 'The attribute value cannot be empty',
   'common.nameNotNull': 'Name cannot be empty',
   'common.namePlaceholder': 'Please enter the name and press Enter to save',
+  'common.unsaved': 'Unsaved',
   'common.unsavedLeave':
     'The content of some tabs has not been saved. The unsaved content will be lost after leaving. Are you sure you want to leave?',
   'common.image': 'Image',

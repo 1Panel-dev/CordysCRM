@@ -1,9 +1,12 @@
 import { defineStore } from 'pinia';
 
+import type { LoginConfig, PageConfig, PlatformConfig, Style, Theme, ThemeConfig } from '@/api/modules/system/business';
 import { getKey } from '@/api/modules/system/login';
 import { useI18n } from '@/hooks/useI18n';
+import { getThemeOverrides } from '@/utils/themeOverrides';
 
 import { setLocalStorage } from '@lib/shared/method/local-storage';
+import type { GlobalThemeOverrides } from 'naive-ui';
 
 export interface AppState {
   pageSize: number;
@@ -14,7 +17,31 @@ export interface AppState {
   loginLoading: boolean; // 登录页面加载中
   loading: boolean; // 全局加载中
   loadingTip: string; // 全局加载提示
+  pageConfig: PageConfig;
+  defaultThemeConfig: ThemeConfig;
+  defaultLoginConfig: LoginConfig;
+  defaultPlatformConfig: PlatformConfig;
+  themeOverridesConfig: GlobalThemeOverrides;
 }
+
+const defaultThemeConfig = {
+  style: 'default' as Style,
+  customStyle: '#f9fbfb',
+  theme: 'default' as Theme,
+  customTheme: '#008d91',
+};
+const defaultLoginConfig = {
+  title: 'Cordys',
+  icon: [],
+  loginLogo: [],
+  loginImage: [],
+  slogan: 'login.form.title',
+};
+const defaultPlatformConfig = {
+  logoPlatform: [],
+  platformName: 'Cordys',
+  helpDoc: 'https://metersphere.io/docs/v3.x/',
+};
 
 const useAppStore = defineStore('app', {
   state: (): AppState => ({
@@ -27,6 +54,15 @@ const useAppStore = defineStore('app', {
     loginLoading: false,
     loading: false,
     loadingTip: '',
+    defaultThemeConfig,
+    defaultLoginConfig,
+    defaultPlatformConfig,
+    themeOverridesConfig: getThemeOverrides(),
+    pageConfig: {
+      ...defaultThemeConfig,
+      ...defaultLoginConfig,
+      ...defaultPlatformConfig,
+    },
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -34,6 +70,13 @@ const useAppStore = defineStore('app', {
     },
     getLoginLoadingStatus(state: AppState): boolean {
       return state.loginLoading;
+    },
+    getDefaultPageConfig(state: AppState): PageConfig {
+      return {
+        ...state.defaultThemeConfig,
+        ...state.defaultLoginConfig,
+        ...state.defaultPlatformConfig,
+      };
     },
   },
   actions: {
@@ -67,6 +110,9 @@ const useAppStore = defineStore('app', {
         // eslint-disable-next-line no-console
         console.error(error);
       }
+    },
+    resetThemeOverridesConfig() {
+      this.themeOverridesConfig = getThemeOverrides();
     },
   },
   persist: {
