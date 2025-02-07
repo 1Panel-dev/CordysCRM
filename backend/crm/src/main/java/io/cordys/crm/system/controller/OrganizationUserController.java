@@ -87,13 +87,6 @@ public class OrganizationUserController {
     }
 
 
-    @GetMapping("/sync/{type}")
-    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
-    @Operation(summary = "用户(员工)-同步组织架构")
-    public void syncUser(@PathVariable String type) {
-        organizationUserService.syncUser(type, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
     @PostMapping("/batch/edit")
     @Operation(summary = "用户(员工)-批量编辑")
     @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)

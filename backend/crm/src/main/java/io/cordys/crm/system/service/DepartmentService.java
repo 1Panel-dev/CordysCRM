@@ -21,7 +21,6 @@ import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
 import io.cordys.crm.system.mapper.ExtDepartmentMapper;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.integration.wecom.dto.WeComDepartment;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -224,31 +223,6 @@ public class DepartmentService {
             return false;
         }
         return true;
-    }
-
-
-    /**
-     * 同步构建部门信息
-     *
-     * @param weComDepartment
-     * @param operatorId
-     * @param orgId
-     * @param departmentList
-     */
-    public void buildDepartment(WeComDepartment weComDepartment, String operatorId, String orgId, List<Department> departmentList) {
-        Department department = new Department();
-        department.setId(weComDepartment.getCrmId());
-        department.setName(weComDepartment.getName());
-        department.setOrganizationId(orgId);
-        department.setParentId(weComDepartment.getCrmParentId());
-        department.setNum(getNextNum(orgId));
-        department.setResource(DepartmentConstants.WECOM.name());
-        department.setResourceId(weComDepartment.getId().toString());
-        department.setCreateUser(operatorId);
-        department.setUpdateUser(operatorId);
-        department.setCreateTime(System.currentTimeMillis());
-        department.setUpdateTime(System.currentTimeMillis());
-        departmentList.add(department);
     }
 
 

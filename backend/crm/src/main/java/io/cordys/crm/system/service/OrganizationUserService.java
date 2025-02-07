@@ -19,12 +19,9 @@ import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.*;
-import io.cordys.integration.wecom.dto.WeComDepartment;
-import io.cordys.integration.wecom.dto.WeComUser;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -398,82 +395,6 @@ public class OrganizationUserService {
         });
         extUserMapper.batchUpdatePassword(userList);
         logService.batchAdd(logDTOS);
-
-    }
-
-    /**
-     * 同步组织架构
-     *
-     * @param type
-     * @param operatorId
-     * @param orgId
-     */
-    @Async
-    public void syncUser(String type, String operatorId, String orgId) {
-        SyncUserServiceFactory.getSyncUserService(type).syncUser(operatorId, orgId);
-    }
-
-    public void buildUser(WeComDepartment weComDepartment, List<WeComUser> weComUsers, String operatorId, String orgId,
-                          List<User> users, List<UserExtend> userExtends, List<OrganizationUser> organizationUsers, List<DepartmentCommander> departmentCommanders) {
-        if (CollectionUtils.isNotEmpty(weComUsers)) {
-            weComUsers.forEach(weComUser -> {
-                String id = IDGenerator.nextStr();
-                //基本信息
-                User user = new User();
-                user.setId(id);
-                user.setName(weComUser.getName());
-                user.setPhone(weComUser.getMobile());
-                user.setEmail(weComUser.getEmail());
-                user.setPassword(CodingUtils.md5("CordysCRM"));
-                if (weComUser.getGender() != null) {
-                    user.setGender(weComUser.getGender() == 1 ? false : true);
-                } else {
-                    user.setGender(false);
-                }
-                user.setLanguage("zh_CN");
-                user.setCreateTime(System.currentTimeMillis());
-                user.setCreateUser(operatorId);
-                user.setUpdateTime(System.currentTimeMillis());
-                user.setUpdateUser(operatorId);
-                users.add(user);
-
-                //拓展信息
-                UserExtend userExtend = new UserExtend();
-                userExtend.setId(id);
-                userExtend.setAvatar(weComUser.getAvatar());
-                userExtends.add(userExtend);
-                //其他信息
-                OrganizationUser organizationUser = new OrganizationUser();
-                organizationUser.setId(IDGenerator.nextStr());
-                organizationUser.setDepartmentId(weComDepartment.getCrmId());
-                organizationUser.setOrganizationId(orgId);
-                organizationUser.setUserId(id);
-                organizationUser.setResourceUserId(weComUser.getUserId());
-                organizationUser.setEnable(true);
-                organizationUser.setPosition(weComUser.getPosition());
-                organizationUser.setCreateTime(System.currentTimeMillis());
-                organizationUser.setCreateUser(operatorId);
-                organizationUser.setUpdateTime(System.currentTimeMillis());
-                organizationUser.setUpdateUser(operatorId);
-                organizationUsers.add(organizationUser);
-
-
-                int i = weComUser.getDepartment().indexOf(weComDepartment.getId());
-                if (weComUser.getIsLeaderInDept().get(i) == 1) {
-                    //构建部门责任人信息
-                    DepartmentCommander departmentCommander = new DepartmentCommander();
-                    departmentCommander.setId(IDGenerator.nextStr());
-                    departmentCommander.setUserId(id);
-                    departmentCommander.setDepartmentId(weComDepartment.getCrmId());
-                    departmentCommander.setCreateTime(System.currentTimeMillis());
-                    departmentCommander.setCreateUser(operatorId);
-                    departmentCommander.setUpdateTime(System.currentTimeMillis());
-                    departmentCommander.setUpdateUser(operatorId);
-                    departmentCommanders.add(departmentCommander);
-                }
-
-            });
-        }
 
     }
 
