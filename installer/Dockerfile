@@ -32,12 +32,12 @@ ENV FIT2CLOUD_MAVEN_PASSWORD=${FIT2CLOUD_MAVEN_PASSWORD}
 ENV CRM_VERSION=${CRM_VERSION}
 
 RUN ./mvnw deploy:deploy-file \
-    -Dfile=backend/crm/target/crm-${JAR_VERSION}.jar \
+    -Dfile=backend/crm/target/crm-1.0.x.jar \
     -DrepositoryId=cordys-public \
     -Durl=https://repository.fit2cloud.com/repository/cordys/ \
     -DgroupId=io.cordys \
     -DartifactId=cordys-crm \
-    -Dversion=${JAR_VERSION} \
+    -Dversion=1.0.x \
     -Dpackaging=jar \
     -Dusername=${FIT2CLOUD_MAVEN_USERNAME} \
     -Dpassword=${FIT2CLOUD_MAVEN_PASSWORD}
