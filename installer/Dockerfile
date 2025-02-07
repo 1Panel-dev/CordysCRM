@@ -18,13 +18,11 @@ RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
     jar -xf ../*.jar
 
 
-RUN VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout) && \
-    echo "Using version: $VERSION"
-
 ARG FIT2CLOUD_MAVEN_USERNAME
 ARG FIT2CLOUD_MAVEN_PASSWORD
 
-RUN ./mvnw deploy:deploy-file \
+RUN VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout) && \
+    ./mvnw deploy:deploy-file \
     -Dfile=backend/crm/target/crm-${VERSION}.jar \
     -DrepositoryId=cordys-public \
     -Durl=https://repository.fit2cloud.com/repository/cordys/ \
