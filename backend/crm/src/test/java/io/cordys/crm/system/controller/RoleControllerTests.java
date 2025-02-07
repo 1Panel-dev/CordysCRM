@@ -142,7 +142,7 @@ class RoleControllerTests extends BaseTest {
         anotherUserRole = roleMapper.selectByPrimaryKey(getResultData(mvcResult, Role.class).getId());
         // 校验组织
         RoleScopeDept example = new RoleScopeDept();
-        example.setDeptId("deptId");
+        example.setDepartmentId("deptId");
         example.setRoleId(anotherUserRole.getId());
         Assertions.assertTrue(roleScopeDeptMapper.select(example).size() > 0);
 

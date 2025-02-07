@@ -22,5 +22,5 @@ public class RoleScopeDept {
 	private String roleId;
 
 	@Schema(description = "部门ID")
-	private String deptId;
+	private String departmentId;
 }

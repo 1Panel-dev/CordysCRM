@@ -116,7 +116,7 @@ public class RoleService {
         example.setRoleId(roleId);
         List<String> deptIds = roleScopeDeptMapper.select(example)
                 .stream()
-                .map(RoleScopeDept::getDeptId)
+                .map(RoleScopeDept::getDepartmentId)
                 .collect(Collectors.toList());
         return deptIds;
     }
@@ -160,7 +160,7 @@ public class RoleService {
             RoleScopeDept roleScopeDept = new RoleScopeDept();
             roleScopeDept.setId(IDGenerator.nextStr());
             roleScopeDept.setRoleId(roleId);
-            roleScopeDept.setDeptId(deptId);
+            roleScopeDept.setDepartmentId(deptId);
             return roleScopeDept;
         }).collect(Collectors.toList());
     }
