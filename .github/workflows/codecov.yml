@@ -25,6 +25,16 @@ jobs:
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUBTOKEN }}
+
+      # Cache Maven dependencies
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
@@ -32,7 +42,7 @@ jobs:
           java-version: 21
           cache: 'maven'
           cache-dependency-path: '**/pom.xml'
-          check-latest: true
+          check-latest: false
 
       - name: Build with Maven - other
         run: mvn -B package -DskipAntRunForJenkins --file pom.xml -pl '!frontend'
