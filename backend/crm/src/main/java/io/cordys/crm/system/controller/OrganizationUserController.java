@@ -14,6 +14,7 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
@@ -52,7 +53,7 @@ public class OrganizationUserController {
     @GetMapping("/detail/{id}")
     @Operation(summary = "用户(员工)-员工详情")
     @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_READ)
-    public UserResponse getFunctionalCaseDetail(@PathVariable String id) {
+    public UserResponse getUserDetail(@PathVariable String id) {
         return organizationUserService.getUserDetail(id);
     }
 
@@ -90,7 +91,15 @@ public class OrganizationUserController {
     @PostMapping("/batch/edit")
     @Operation(summary = "用户(员工)-批量编辑")
     @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
-    public void batchEditFunctionalCase(@Validated @RequestBody UserBatchEditRequest request) {
+    public void batchEditUser(@Validated @RequestBody UserBatchEditRequest request) {
         organizationUserService.batchEditUser(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+
+    @GetMapping("/download/template")
+    @Operation(summary = "用户(员工)-excel导入-下载模板")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_ADD)
+    public void userTemplateExport(HttpServletResponse response) {
+        organizationUserService.downloadExcelTemplate(response);
     }
 }

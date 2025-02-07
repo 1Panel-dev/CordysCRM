@@ -2,6 +2,7 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.dto.request.*;
+import io.cordys.security.SessionConstants;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
 
@@ -28,6 +31,7 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_BATCH_ENABLE = "/user/batch-enable";
     public static final String USER_BATCH_RESET_PASSWORD = "/user/batch/reset-password";
     public static final String USER_BATCH_EDIT = "/user/batch/edit";
+    public static final String USER_DOWNLOAD_TEMPLATE = "/user/download/template";
 
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
@@ -121,5 +125,17 @@ public class OrganizationUserControllerTests extends BaseTest {
         request.setIds(List.of("u_1", "u_2"));
         request.setWorkCity("深圳");
         this.requestPost(USER_BATCH_EDIT,request).andExpect(status().isOk());
+    }
+
+
+    @Test
+    @Order(10)
+    public void downloadTemplate() throws Exception {
+        this.requestGetExcel(USER_DOWNLOAD_TEMPLATE);
+    }
+
+    private MvcResult requestGetExcel(String url) throws Exception {
+        return mockMvc.perform(getRequestBuilder(url))
+                .andExpect(status().isOk()).andReturn();
     }
 }

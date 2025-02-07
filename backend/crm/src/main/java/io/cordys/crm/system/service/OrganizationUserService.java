@@ -18,9 +18,14 @@ import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
+import io.cordys.crm.system.excel.domain.UserExcelData;
+import io.cordys.crm.system.excel.domain.UserExcelDataFactory;
+import io.cordys.crm.system.excel.handler.UserTemplateWriteHandler;
 import io.cordys.crm.system.mapper.*;
+import io.cordys.excel.utils.EasyExcelExporter;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -445,5 +450,36 @@ public class OrganizationUserService {
     public void batchEditUser(UserBatchEditRequest request, String operatorId, String organizationId) {
         extOrganizationUserMapper.updateUserByIds(request, operatorId, organizationId);
         //todo 日志
+    }
+
+
+    /**
+     * excel导入-下载模板
+     *
+     * @param response
+     */
+    public void downloadExcelTemplate(HttpServletResponse response) {
+        //获取表头字段
+        List<List<String>> heads = getTemplateHead();
+        UserExcelData userExcelData = new UserExcelDataFactory().getUserExcelDataLocal();
+
+        //表头备注信息
+        UserTemplateWriteHandler handler = new UserTemplateWriteHandler(heads);
+        List<List<Object>> data = new ArrayList<>();
+
+        new EasyExcelExporter(userExcelData.getClass())
+                .exportByCustomWriteHandler(response, heads, data, Translator.get("user_import_template_name"),
+                        Translator.get("user_import_template_sheet"), handler);
+    }
+
+
+    /**
+     * 获取表头字段
+     *
+     * @return
+     */
+    private List<List<String>> getTemplateHead() {
+        List<List<String>> heads = new UserExcelDataFactory().getUserExcelDataLocal().getHead();
+        return heads;
     }
 }
