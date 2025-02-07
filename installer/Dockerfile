@@ -12,7 +12,10 @@ WORKDIR /build
 COPY . /build
 COPY --from=frontend /frontend/packages/web/dist /build/frontend/packages/web/dist
 COPY --from=frontend /frontend/packages/mobile/dist /build/frontend/packages/mobile/dist
-RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
+
+RUN JAR_VERSION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout) && \
+    echo "Using Jar version: $JAR_VERSION" && \
+    ./mvnw clean package -DskipTests -pl '!frontend' && \
     mkdir backend/app/target/dependency && \
     cd backend/app/target/dependency && \
     jar -xf ../*.jar
@@ -26,12 +29,12 @@ ENV FIT2CLOUD_MAVEN_PASSWORD=${FIT2CLOUD_MAVEN_PASSWORD}
 ENV CRM_VERSION=${CRM_VERSION}
 
 RUN ./mvnw deploy:deploy-file \
-    -Dfile=backend/crm/target/crm-${CRM_VERSION}.jar \
+    -Dfile=backend/crm/target/crm-${JAR_VERSION}.jar \
     -DrepositoryId=cordys-public \
     -Durl=https://repository.fit2cloud.com/repository/cordys/ \
     -DgroupId=io.cordys \
     -DartifactId=cordys-crm \
-    -Dversion=${CRM_VERSION} \
+    -Dversion=${JAR_VERSION} \
     -Dpackaging=jar \
     -Dusername=${FIT2CLOUD_MAVEN_USERNAME} \
     -Dpassword=${FIT2CLOUD_MAVEN_PASSWORD}
