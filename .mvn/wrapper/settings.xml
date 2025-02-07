@@ -1,0 +1,12 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+<servers>
+    <server>
+        <id>cordys</id>
+        <username>${env.FIT2CLOUD_MAVEN_USERNAME}</username>
+        <password>${env.FIT2CLOUD_MAVEN_PASSWORD}</password>
+    </server>
+</servers>
+
+</settings>
