@@ -20,15 +20,18 @@ RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
 
 ARG FIT2CLOUD_MAVEN_USERNAME
 ARG FIT2CLOUD_MAVEN_PASSWORD
+ARG CRM_VERSION=main
+ENV FIT2CLOUD_MAVEN_USERNAME=${FIT2CLOUD_MAVEN_USERNAME}
+ENV FIT2CLOUD_MAVEN_PASSWORD=${FIT2CLOUD_MAVEN_PASSWORD}
+ENV CRM_VERSION=${CRM_VERSION}
 
-RUN VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout) && \
-    ./mvnw deploy:deploy-file \
-    -Dfile=backend/crm/target/crm-${VERSION}.jar \
+RUN ./mvnw deploy:deploy-file \
+    -Dfile=backend/crm/target/crm-${CRM_VERSION}.jar \
     -DrepositoryId=cordys-public \
     -Durl=https://repository.fit2cloud.com/repository/cordys/ \
     -DgroupId=io.cordys \
     -DartifactId=cordys-crm \
-    -Dversion=${VERSION} \
+    -Dversion=${CRM_VERSION} \
     -Dpackaging=jar \
     -Dusername=${FIT2CLOUD_MAVEN_USERNAME} \
     -Dpassword=${FIT2CLOUD_MAVEN_PASSWORD}
@@ -38,7 +41,6 @@ FROM ghcr.io/cordys-dev/cordys-base
 
 LABEL maintainer="FIT2CLOUD <support@fit2cloud.com>"
 
-ARG CRM_VERSION=main
 ARG MODULE=app
 ARG DEPENDENCY=/build/backend/${MODULE}/target/dependency
 
@@ -52,7 +54,6 @@ COPY installer/shells /shells
 ENV JAVA_CLASSPATH=/app:/app/lib/*
 ENV JAVA_MAIN_CLASS=io.cordys.Application
 ENV AB_OFF=true
-ENV CRM_VERSION=${CRM_VERSION}
 ENV JAVA_OPTIONS="-Dfile.encoding=utf-8 -Djava.awt.headless=true --add-opens java.base/jdk.internal.loader=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
 
 RUN echo -n "${CRM_VERSION}" > /tmp/CRM_VERSION
