@@ -62,6 +62,7 @@ public class OrganizationConfigService {
         List<OrganizationConfigDetail> organizationConfigDetails = extOrganizationConfigDetailMapper.getOrganizationConfigDetails(organizationConfig.getId());
         for (OrganizationConfigDetail organizationConfigDetail : organizationConfigDetails) {
             SyncOrganizationDTO syncOrganizationDTO = JSON.parseObject(new String(organizationConfigDetail.getContent()), SyncOrganizationDTO.class);
+            syncOrganizationDTO.setType(organizationConfigDetail.getType());
             syncOrganizationDTO.setId(organizationConfigDetail.getId());
             syncOrganizationDTOS.add(syncOrganizationDTO);
         }

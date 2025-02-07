@@ -29,7 +29,6 @@
         <flatten.version>1.6.0</flatten.version>
         <embedded.version>3.1.6</embedded.version>
         <mail.version>2.0.3</mail.version>
-        <commons-text.version>1.11.0</commons-text.version>
         <!-- frontend -->
         <frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
         <node.version>v22.11.0</node.version>
@@ -41,6 +40,7 @@
         <sonar.organization>cordys-dev</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <commons-collections4.version>4.4</commons-collections4.version>
+        <commons-text.version>1.13.0</commons-text.version>
         <commons-io.version>2.15.1</commons-io.version>
         <testcontainers.version>1.20.4</testcontainers.version>
         <kotlin.version>2.0.21</kotlin.version>

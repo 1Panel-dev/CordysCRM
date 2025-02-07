@@ -68,6 +68,17 @@
         </foreach>
     </select>
 
+    <select id="getEnableUser" resultType="io.cordys.crm.system.dto.response.UserPageResponse">
+        SELECT
+        su.id,
+        su.name,
+        su.password,
+        sou.enable
+        from sys_user su
+        inner join sys_organization_user sou on su.id = sou.user_id
+        where sou.resource_user_id = #{resourceUserId}
+    </select>
+
     <delete id="deleteUserByOrgId">
         DELETE FROM sys_organization_user WHERE organization_id  = #{orgId} and user_id != 'admin'
     </delete>

@@ -24,6 +24,8 @@ public interface ExtOrganizationUserMapper {
 
     void deleteUserByOrgId(@Param("orgId") String orgId);
 
+    UserPageResponse getEnableUser(@Param("resourceUserId") String resourceUserId);
+
     List<OptionDTO> selectEnableOrgUser(@Param("ids") List<String> ids, @Param("enable") boolean enable);
 
     void updateUserByIds(@Param("request") UserBatchEditRequest request, @Param("operatorId") String operatorId, @Param("orgId") String orgId);
