@@ -13,10 +13,12 @@ COPY . /build
 COPY --from=frontend /frontend/packages/web/dist /build/frontend/packages/web/dist
 COPY --from=frontend /frontend/packages/mobile/dist /build/frontend/packages/mobile/dist
 
-ENV JAR_VERSION=$(./mvnw help:evaluate -Dexpression=revision -q -DforceStdout)
-echo "Using Jar version: $JAR_VERSION"
-
-RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
+RUN JAR_VERSION=$(./mvnw help:evaluate -Dexpression=revision -q -DforceStdout) && \
+    if [ -z "$JAR_VERSION" ]; then \
+        JAR_VERSION="1.0.x"; \
+    fi && \
+    echo "Using Jar version: $JAR_VERSION" && \
+   ./mvnw clean package -DskipTests -pl '!frontend' && \
     mkdir backend/app/target/dependency && \
     cd backend/app/target/dependency && \
     jar -xf ../*.jar
