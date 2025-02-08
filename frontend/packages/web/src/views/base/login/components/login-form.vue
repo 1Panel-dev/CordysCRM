@@ -139,7 +139,7 @@
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
-  import { getLongType, setLoginExpires, setLongType } from '@lib/shared/method/auth';
+  import { getLoginType, setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import { encrypted } from '@lib/shared/method/index';
   import { Option } from 'naive-ui/es/legacy-transfer/src/interface';
 
@@ -184,7 +184,7 @@
     username: string;
     password: string;
   }>({
-    authenticate: getLongType() || 'LOCAL',
+    authenticate: getLoginType() || 'LOCAL',
     username: '',
     password: '',
   });
@@ -220,7 +220,7 @@
             platform: 'WEB',
           });
           setLoginExpires();
-          setLongType(userInfo.value.authenticate);
+          setLoginType(userInfo.value.authenticate);
           Message.success(t('login.form.login.success'));
           const { rememberPassword } = loginConfig.value;
           const { username, password } = userInfo.value;
@@ -271,9 +271,9 @@
     try {
       // const res = await getPlatformParamUrl();
       const res: any[] = []; // TODO: getPlatformParamUrl();
-      if (getLongType() && getLongType() !== 'LOCAL' && getLongType() !== 'LDAP') {
+      if (getLoginType() && getLoginType() !== 'LOCAL' && getLoginType() !== 'LDAP') {
         showQrCodeTab.value = true;
-        activeName.value = getLongType() || 'WE_COM';
+        activeName.value = getLoginType() || 'WE_COM';
       }
       orgOptions.value = res.map((e) => ({
         label: e.name,
@@ -314,7 +314,7 @@
     //     const config = JSON.parse(res.configuration);
     //     // eslint-disable-next-line no-eval
     //     const redirectUrl = eval(`\`${config.redirectUrl}\``);
-    //     setLongType('LOCAL');
+    //     setLoginType('LOCAL');
     //     let url;
     //     if (authType === 'CAS') {
     //       url = `${config.loginUrl}?service=${encodeURIComponent(redirectUrl)}`;

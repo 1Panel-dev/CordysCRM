@@ -22,6 +22,7 @@ export interface AppState {
   defaultLoginConfig: LoginConfig;
   defaultPlatformConfig: PlatformConfig;
   themeOverridesConfig: GlobalThemeOverrides;
+  orgId: string;
 }
 
 const defaultThemeConfig = {
@@ -63,6 +64,7 @@ const useAppStore = defineStore('app', {
       ...defaultLoginConfig,
       ...defaultPlatformConfig,
     },
+    orgId: '',
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -78,8 +80,14 @@ const useAppStore = defineStore('app', {
         ...state.defaultPlatformConfig,
       };
     },
+    getOrgId(state: AppState) {
+      return state.orgId;
+    },
   },
   actions: {
+    setOrgId(id: string) {
+      this.orgId = id;
+    },
     setMenuCollapsed(collapsed: boolean) {
       this.menuCollapsed = collapsed;
     },

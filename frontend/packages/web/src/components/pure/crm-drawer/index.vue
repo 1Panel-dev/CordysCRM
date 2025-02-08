@@ -5,6 +5,7 @@
     :width="props.width"
     :show-mask="props.showMask"
     :placement="props.placement"
+    @after-leave="emit('cancel')"
   >
     <n-drawer-content :title="props.title" closable :header-class="`${props.headerClass} crm-drawer-header-class`">
       <template #header>
@@ -32,13 +33,20 @@
             <slot name="footerLeft"></slot>
 
             <div class="flex gap-[8px]">
-              <n-button secondary @click="handleCancel">
+              <n-button :disabled="props.loading" secondary @click="handleCancel">
                 {{ t(props.cancelText || 'common.cancel') }}
               </n-button>
-              <n-button v-if="props.showContinue" type="primary" ghost :disabled="okDisabled" @click="handleContinue">
+              <n-button
+                v-if="props.showContinue"
+                type="primary"
+                ghost
+                :loading="props.loading"
+                :disabled="okDisabled"
+                @click="handleContinue"
+              >
                 {{ t(props.saveContinueText || 'common.saveAndContinue') }}</n-button
               >
-              <n-button type="primary" :disabled="okDisabled" @click="handleOk">
+              <n-button type="primary" :disabled="okDisabled" :loading="props.loading" @click="handleOk">
                 {{ t(props.okText || 'common.add') }}
               </n-button>
             </div>
@@ -68,6 +76,7 @@
       okDisabled?: boolean;
       headerClass?: string; // 头部的class
       footer?: boolean; // 是否展示footer
+      loading?: boolean;
     }>(),
     {
       placement: 'right',

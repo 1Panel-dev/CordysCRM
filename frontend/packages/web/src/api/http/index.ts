@@ -1,6 +1,6 @@
 import useDiscreteApi from '@/hooks/useDiscreteApi';
 import { useI18n } from '@/hooks/useI18n';
-import useUserStore from '@/store/modules/user';
+import useAppStore from '@/store/modules/app';
 
 import checkStatus from './checkStatus';
 import { CordysAxios } from '@lib/shared/api/http/Axios';
@@ -97,7 +97,7 @@ const transform: AxiosTransform = {
     // 请求之前处理config
     const currentLocale = localStorage.getItem('CordysLocale') || 'zh-CN';
     const token = getToken();
-    const userStore = useUserStore();
+    const appStore = useAppStore();
     if (token && (config as Recordable)?.requestOptions?.withToken !== false) {
       const { sessionId, csrfToken } = token;
 
@@ -106,7 +106,7 @@ const transform: AxiosTransform = {
         'X-AUTH-TOKEN': sessionId,
         'CSRF-TOKEN': csrfToken,
         'Accept-Language': currentLocale,
-        'Organization-Id': userStore.orgId,
+        'Organization-Id': appStore.getOrgId,
       };
     }
     return config;

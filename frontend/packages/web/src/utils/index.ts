@@ -166,6 +166,40 @@ export function getAllParentNodeIds<T>(
 }
 
 /**
+ * 过滤树形数组或树
+ * @param tree 树形数组或树
+ * @param customNodeFn 自定义节点函数
+ * @param customChildrenKey 自定义子节点的key
+ * @returns 遍历后的树形数组
+ */
+export function filterTree<T>(
+  tree: TreeNode<T> | TreeNode<T>[] | T | T[],
+  filterFn: (node: TreeNode<T>, nodeIndex: number, parent?: TreeNode<T> | null) => boolean,
+  customChildrenKey = 'children',
+  parentNode: TreeNode<T> | null = null
+): TreeNode<T>[] {
+  if (!Array.isArray(tree)) {
+    tree = [tree];
+  }
+  const filteredTree: TreeNode<T>[] = [];
+  for (let i = 0; i < tree.length; i++) {
+    const node = (tree as TreeNode<T>[])[i];
+    // 如果节点满足过滤条件，则保留该节点，并递归过滤子节点
+    if (filterFn(node, i, parentNode)) {
+      const newNode = cloneDeep({ ...node, [customChildrenKey]: [] });
+      if (node[customChildrenKey] && node[customChildrenKey].length > 0) {
+        // 递归过滤子节点，并将过滤后的子节点添加到当前节点中
+        newNode[customChildrenKey] = filterTree(node[customChildrenKey], filterFn, customChildrenKey, node);
+      } else {
+        newNode[customChildrenKey] = [];
+      }
+      filteredTree.push(newNode);
+    }
+  }
+  return filteredTree;
+}
+
+/**
  *
  * 返回文件的大小
  * @param fileSize file文件的大小size

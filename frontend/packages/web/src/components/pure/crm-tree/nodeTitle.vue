@@ -26,6 +26,7 @@
             @keydown.enter="handleSave"
             @blur="handleSave"
             @input="validateValue"
+            @click.stop
           >
             <template #suffix>
               <CrmClearSuffix :status="validateNameError" @clear="clearHandler" />

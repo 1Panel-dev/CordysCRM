@@ -1,3 +1,4 @@
+import type { DeptNodeTypeEnum } from '../../enums/systemEnum';
 import type { TableQueryParams } from '../common';
 
 // 角色关联用户分页列表接口参数
@@ -37,7 +38,7 @@ export interface RolePermissionItem {
 
 export interface Role {
   name: string;
-  dataScope: string;
+  dataScope?: string;
   deptIds?: string[];
   description?: string;
 }
@@ -48,7 +49,7 @@ export interface RoleCreateParams extends Role {
 
 export interface RoleUpdateParams extends Role {
   id: string;
-  permissions: RolePermissionItem[];
+  permissions?: RolePermissionItem[];
 }
 
 export interface RoleDetail extends Role {
@@ -65,15 +66,24 @@ export interface DeptTreeMember {
   organizationId: string;
 }
 
+export type DeptNodeType = DeptNodeTypeEnum;
 // 部门用户树节点
+export interface DeptUserTreeNode {
+  id: string;
+  name: string;
+  parentId: string;
+  organizationId: string;
+  children?: DeptTreeMember[];
+  nodeType?: DeptNodeType;
+  enabled?: boolean; // 是否启用
+}
+
+// 部门树节点
 export interface DeptTreeNode {
   id: string;
   name: string;
   parentId: string;
   organizationId: string;
-  children: DeptTreeMember[];
-  nodeType: string;
-  enabled: boolean; // 是否启用
 }
 
 // 角色列表项
@@ -91,4 +101,21 @@ export interface RoleItem {
   createUserName?: string;
   updateUserName?: string;
   [key: string]: any; // 前端扩展字段
+}
+
+export interface RoleMemberRoleItem {
+  id: string;
+  name: string;
+  userId: string;
+}
+export interface RoleMemberItem {
+  id: string;
+  userId: string;
+  userName: string;
+  enable: boolean;
+  departmentId: string;
+  departmentName: string;
+  position: string;
+  createTime: number;
+  roles: RoleMemberRoleItem[];
 }

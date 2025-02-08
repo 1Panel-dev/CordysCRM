@@ -1,9 +1,21 @@
 // 路由白名单，无需校验权限与登录状态
-export const WHITE_LIST = [{ name: 'notFound', path: '/notFound', children: [] }];
+export const WHITE_LIST = [
+  {
+    name: 'notFound',
+    path: '/notFound',
+    children: [],
+    meta: {
+      requiresAuth: false,
+    },
+  },
+];
 
 // 404 路由
 export const NOT_FOUND = {
   name: 'notFound',
+  meta: {
+    requiresAuth: false,
+  },
 };
 
 // 重定向中转站路由

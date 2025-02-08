@@ -20,14 +20,14 @@
         @update-value="menuChange"
       />
       <div class="flex flex-col items-start p-[8px]">
-        <n-avatar v-if="collapsed" round :size="40" src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg" />
+        <CrmAvatar v-if="collapsed"> </CrmAvatar>
         <div
           v-else
           class="flex w-full items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
         >
-          <n-avatar round :size="40" src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg" />
+          <CrmAvatar />
           <div>
-            <div>迪丽热巴</div>
+            <div>{{ userStore.userInfo.name }}</div>
             <n-tag
               :bordered="false"
               size="small"
@@ -36,7 +36,7 @@
                 textColor: 'var(--primary-8)',
               }"
             >
-              超级管理员
+              {{ userStore.userInfo.id === 'admin' ? t('common.admin') : userStore.userInfo.roles[0] }}
             </n-tag>
           </div>
         </div>
@@ -55,14 +55,17 @@
   import { BookOutline as BookIcon } from '@vicons/ionicons5';
 
   import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
+  import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';
   import useAppStore from '@/store/modules/app';
+  import useUserStore from '@/store/modules/user';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const appStore = useAppStore();
+  const userStore = useUserStore();
   const router = useRouter();
   const collapsed = ref(appStore.getMenuCollapsed);
   const menuValue = ref<string>(AppRouteEnum.SYSTEM_ORG);

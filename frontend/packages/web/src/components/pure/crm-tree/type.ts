@@ -8,12 +8,12 @@ export interface CrmTreeFieldNames {
   [key: string]: any;
 }
 
-export type CrmTreeNodeData = {
+export type CrmTreeNodeData<T = Record<string, any>> = {
   hideMoreAction?: boolean; // 隐藏更多操作
   parentId?: string;
   expanded?: boolean; // 是否展开
-  [key: string]: any;
-} & TreeOption;
+} & TreeOption &
+  T;
 
 export interface VirtualScrollPropsType {
   virtualScroll: boolean; // 是否开启虚拟滚动

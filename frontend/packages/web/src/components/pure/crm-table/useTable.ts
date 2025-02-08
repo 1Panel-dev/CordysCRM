@@ -14,7 +14,9 @@ const appStore = useAppStore();
 
 export default function useTable<T>(
   loadListFunc?: (v?: TableQueryParams | any) => Promise<CommonList<CrmTableDataItem<T>> | CrmTableDataItem<T>>,
-  props?: Partial<CrmTableProps<T>>
+  props?: Partial<CrmTableProps<T>>,
+  // 数据处理的回调函数
+  dataTransform?: (item: CrmTableDataItem<T>) => CrmTableDataItem<T> | any
 ) {
   const defaultProps: CrmTableProps<T> = {
     bordered: false,
@@ -91,6 +93,9 @@ export default function useTable<T>(
     }
     if (item.createTime) {
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss');
+    }
+    if (dataTransform) {
+      item = dataTransform(item);
     }
     return item;
   }

@@ -14,7 +14,7 @@
           </n-space>
         </n-radio-group>
         <n-tree-select
-          v-if="dataPermission === 'specifiedDepartment'"
+          v-if="dataPermission === 'DEPT_CUSTOM'"
           v-model:value="departments"
           :options="departmentOptions"
           :consistent-menu-width="false"
@@ -22,6 +22,9 @@
           multiple
           class="w-[240px]"
           :placeholder="t('role.pleaseSelectDepartment')"
+          :loading="departmentLoading"
+          key-field="id"
+          label-field="name"
         />
       </div>
       <div class="group-title">{{ t('role.featurePermission') }}</div>
@@ -32,7 +35,7 @@
         :paging="false"
         :pagination="false"
         :loading="loading"
-        :scroll-x="800"
+        :scroll-x="500"
         :max-height="500"
       />
     </n-scrollbar>
@@ -41,7 +44,7 @@
         {{ t('common.cancel') }}
       </n-button>
       <n-button :loading="loading" type="primary" @click="handleSave">
-        {{ t(isEdit ? 'common.update' : 'common.create') }}
+        {{ t(props.isNew ? 'common.create' : 'common.update') }}
       </n-button>
     </div>
   </div>
@@ -62,524 +65,82 @@
     useMessage,
   } from 'naive-ui';
 
+  import { createRole, getPermissions, getRoleDeptTree, getRoleDetail, updateRole } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
+
+  import { DeptTreeNode, RolePermissionItem } from '@lib/shared/models/system/role';
+
+  const props = defineProps<{
+    activeRoleId: string;
+    roleName?: string;
+    isNew: boolean;
+  }>();
+  const emit = defineEmits(['createSuccess']);
 
   const { t } = useI18n();
   const message = useMessage();
 
-  const dataPermission = ref('all');
+  const dataPermission = ref('ALL');
   const dataPermissionOptions = [
-    { label: t('role.dataPermissionAll'), value: 'all' },
-    { label: t('role.departmentData'), value: 'department' },
-    { label: t('role.personalData'), value: 'personal' },
-    { label: t('role.specifiedDepartmentData'), value: 'specifiedDepartment' },
+    { label: t('role.dataPermissionAll'), value: 'ALL' },
+    { label: t('role.departmentData'), value: 'DEPT_AND_CHILD' },
+    { label: t('role.personalData'), value: 'SELF' },
+    { label: t('role.specifiedDepartmentData'), value: 'DEPT_CUSTOM' },
   ];
-  const departments = ref([]);
-  const departmentOptions = ref([
-    {
-      label: '一级 1',
-      key: '1',
-      children: [
-        {
-          label: '二级 1-1',
-          key: '1-1',
-          children: [
-            {
-              label: '三级 1-1-1',
-              key: '1-1-1',
-            },
-            {
-              label: '三级 1-1-2',
-              key: '1-1-2',
-            },
-            {
-              label: '三级 1-1-3',
-              key: '1-1-3',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      label: '一级 2',
-      key: '2',
-      children: [
-        {
-          label: '二级 2-1',
-          key: '2-1',
-          children: [
-            {
-              label: '三级 2-1-1',
-              key: '2-1-1',
-            },
-          ],
-        },
-      ],
-    },
-  ]);
+  const departments = ref<string[]>([]);
+  const departmentOptions = ref<DeptTreeNode[]>([]);
 
   const loading = ref(false);
   const data = ref<Record<string, any>[]>([]);
 
-  async function initPermissionTable() {
+  const departmentLoading = ref(false);
+  async function initDept() {
+    try {
+      departmentLoading.value = true;
+      departmentOptions.value = await getRoleDeptTree();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      departmentLoading.value = false;
+    }
+  }
+
+  async function init() {
     try {
       loading.value = true;
-      [
-        {
-          id: '11',
-          name: '客户管理',
-          enable: false,
-          license: true,
-          children: [
-            {
-              id: '111',
-              name: '公海',
+      data.value = [];
+      if (props.isNew) {
+        const res = await getPermissions();
+        res.forEach((item) => {
+          item.children.forEach((child, index) => {
+            data.value.push({
+              id: child.id,
+              feature: item.name,
+              operator: child.name,
+              rowSpan: index === 0 ? item.children?.length || 1 : undefined,
+              permissions: child.permissions,
               enable: false,
-              license: true,
-              permissions: [
-                {
-                  id: '1111',
-                  name: '查看',
-                  license: true,
-                  enable: false,
-                },
-                {
-                  id: '1112',
-                  name: '新增',
-                  license: true,
-                  enable: false,
-                },
-                {
-                  id: '1113',
-                  name: '编辑',
-                  license: true,
-                  enable: false,
-                },
-                {
-                  id: '1114',
-                  name: '删除',
-                  enable: false,
-                },
-              ],
-            },
-            {
-              id: '112',
-              name: '客户',
-              enable: false,
-              permissions: [
-                {
-                  id: '1111',
-                  name: '查看',
-                  enable: false,
-                },
-                {
-                  id: '1112',
-                  name: '新增',
-                  enable: false,
-                },
-                {
-                  id: '1113',
-                  name: '编辑',
-                  enable: false,
-                },
-                {
-                  id: '1114',
-                  name: '删除',
-                  license: true,
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '12',
-          name: '订单管理',
-          enable: false,
-          children: [
-            {
-              id: '121',
-              name: '订单',
-              enable: false,
-              permissions: [
-                {
-                  id: '1211',
-                  name: '查看',
-                  enable: false,
-                },
-                {
-                  id: '1212',
-                  name: '新增',
-                  enable: false,
-                },
-                {
-                  id: '1213',
-                  name: '编辑',
-                  enable: false,
-                },
-                {
-                  id: '1214',
-                  name: '删除',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '13',
-          name: '产品管理',
-          enable: false,
-          children: [
-            {
-              id: '131',
-              name: '产品',
-              enable: false,
-              permissions: [
-                {
-                  id: '1311',
-                  name: '查看',
-                  enable: false,
-                },
-                {
-                  id: '1312',
-                  name: '新增',
-                  enable: false,
-                },
-                {
-                  id: '1313',
-                  name: '编辑',
-                  enable: false,
-                },
-                {
-                  id: '1314',
-                  name: '删除',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '14',
-          name: '统计分析',
-          enable: false,
-          children: [
-            {
-              id: '141',
-              name: '销售统计',
-              enable: false,
-              permissions: [
-                {
-                  id: '1411',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '15',
-          name: '系统设置',
-          enable: false,
-          children: [
-            {
-              id: '151',
-              name: '角色管理',
-              enable: false,
-              permissions: [
-                {
-                  id: '1511',
-                  name: '查看',
-                  enable: false,
-                },
-                {
-                  id: '1512',
-                  name: '新增',
-                  enable: false,
-                },
-                {
-                  id: '1513',
-                  name: '编辑',
-                  enable: false,
-                },
-                {
-                  id: '1514',
-                  name: '删除',
-                  enable: false,
-                },
-              ],
-            },
-            {
-              id: '152',
-              name: '用户管理',
-              enable: false,
-              permissions: [
-                {
-                  id: '1521',
-                  name: '查看',
-                  enable: false,
-                },
-                {
-                  id: '1522',
-                  name: '新增',
-                  enable: false,
-                },
-                {
-                  id: '1523',
-                  name: '编辑',
-                  enable: false,
-                },
-                {
-                  id: '1524',
-                  name: '删除',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '16',
-          name: '系统监控',
-          enable: false,
-          children: [
-            {
-              id: '161',
-              name: '日志监控',
-              enable: false,
-              permissions: [
-                {
-                  id: '1611',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '17',
-          name: '系统工具',
-          enable: false,
-          children: [
-            {
-              id: '171',
-              name: '代码生成',
-              enable: false,
-              permissions: [
-                {
-                  id: '1711',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '18',
-          name: '系统帮助',
-          enable: false,
-          children: [
-            {
-              id: '181',
-              name: '文档中心',
-              enable: false,
-              permissions: [
-                {
-                  id: '1811',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '19',
-          name: '系统设置',
-          enable: false,
-          children: [
-            {
-              id: '191',
-              name: '系统设置',
-              enable: false,
-              permissions: [
-                {
-                  id: '1911',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '20',
-          name: '系统设置',
-          enable: false,
-          children: [
-            {
-              id: '201',
-              name: '系统设置',
-              enable: false,
-              permissions: [
-                {
-                  id: '2011',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '21',
-          name: '系统设置',
-          enable: false,
-          children: [
-            {
-              id: '211',
-              name: '系统设置',
-              enable: false,
-              permissions: [
-                {
-                  id: '2111',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '22',
-          name: '系统设置',
-          enable: false,
-          children: [
-            {
-              id: '221',
-              name: '系统设置',
-              enable: false,
-              permissions: [
-                {
-                  id: '2211',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '23',
-          name: '系统设置',
-          enable: false,
-          children: [
-            {
-              id: '231',
-              name: '系统设置',
-              enable: false,
-              permissions: [
-                {
-                  id: '2311',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '24',
-          name: '系统设置',
-          enable: false,
-          children: [
-            {
-              id: '241',
-              name: '系统设置',
-              enable: false,
-              permissions: [
-                {
-                  id: '2411',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '25',
-          name: '系统设置',
-          enable: false,
-          children: [
-            {
-              id: '251',
-              name: '系统设置',
-              enable: false,
-              permissions: [
-                {
-                  id: '2511',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '26',
-          name: '系统设置',
-          enable: false,
-          children: [
-            {
-              id: '261',
-              name: '系统设置',
-              enable: false,
-              permissions: [
-                {
-                  id: '2611',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '27',
-          name: '系统设置',
-          enable: false,
-          children: [
-            {
-              id: '271',
-              name: '系统设置',
-              enable: false,
-              permissions: [
-                {
-                  id: '2711',
-                  name: '查看',
-                  enable: false,
-                },
-              ],
-            },
-          ],
-        },
-      ].forEach((item) => {
-        item.children.forEach((child, index) => {
-          data.value.push({
-            id: child.id,
-            feature: item.name,
-            operator: child.name,
-            rowSpan: index === 0 ? item.children?.length || 1 : undefined,
-            permissions: child.permissions,
-            enable: child.enable,
+            });
           });
         });
-      });
+      } else {
+        const res = await getRoleDetail(props.activeRoleId);
+        dataPermission.value = res.dataScope || 'ALL';
+        departments.value = res.deptIds || [];
+        res.permissions.forEach((item) => {
+          item.children.forEach((child, index) => {
+            data.value.push({
+              id: child.id,
+              feature: item.name,
+              operator: child.name,
+              rowSpan: index === 0 ? item.children?.length || 1 : undefined,
+              permissions: child.permissions,
+              enable: child.enable,
+            });
+          });
+        });
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -589,7 +150,7 @@
   }
 
   function handleDataPermissionChange(value: string) {
-    if (value !== 'specifiedDepartment') {
+    if (value !== 'DEPT_CUSTOM') {
       departments.value = [];
     }
   }
@@ -623,6 +184,7 @@
             h(
               NCheckbox,
               {
+                class: 'mr-[8px]',
                 checked: item.enable as boolean,
                 onUpdateChecked: (value: boolean) => {
                   item.enable = value;
@@ -642,7 +204,7 @@
             )
           );
         });
-        return h('div', { class: 'flex item-center gap-[16px]' }, children);
+        return h('div', { class: 'flex item-center flex-wrap py-[6px] gap-[6px]' }, children);
       },
     },
     {
@@ -685,14 +247,39 @@
     },
   ];
 
-  const isEdit = ref(false);
-
   function handleCancel() {}
 
   async function handleSave() {
     try {
       loading.value = true;
-      message.success(t('common.saveSuccess'));
+      const permissions: RolePermissionItem[] = [];
+      data.value.forEach((e) => {
+        e.permissions?.forEach((ele: RolePermissionItem) => {
+          permissions.push({
+            id: ele.id,
+            enable: ele.enable,
+          });
+        });
+      });
+      if (props.isNew) {
+        const res = await createRole({
+          name: props.roleName || '',
+          dataScope: dataPermission.value,
+          deptIds: departments.value,
+          permissions,
+        });
+        emit('createSuccess', res.id);
+        message.success(t('common.addSuccess'));
+      } else {
+        await updateRole({
+          id: props.activeRoleId,
+          name: props.roleName || '',
+          dataScope: dataPermission.value,
+          deptIds: departments.value,
+          permissions,
+        });
+        message.success(t('common.saveSuccess'));
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -701,8 +288,16 @@
     }
   }
 
+  watch(
+    () => props.activeRoleId,
+    () => {
+      init();
+    },
+    { immediate: true }
+  );
+
   onBeforeMount(() => {
-    initPermissionTable();
+    initDept();
   });
 </script>
 

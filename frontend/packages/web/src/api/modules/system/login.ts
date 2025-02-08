@@ -2,10 +2,11 @@ import CDR from '@/api/http/index';
 
 import { getKeyUrl, isLoginUrl, loginUrl, signoutUrl } from '@lib/shared/api/requrls/system/login';
 import type { LoginParams } from '@lib/shared/models/system/login';
+import type { UserInfo } from '@lib/shared/models/user';
 
 // 登录
 export function login(data: LoginParams) {
-  return CDR.post({ url: loginUrl, data });
+  return CDR.post<UserInfo>({ url: loginUrl, data });
 }
 
 // 登出
@@ -15,7 +16,7 @@ export function signout() {
 
 // 是否登录
 export function isLogin() {
-  return CDR.get({ url: isLoginUrl });
+  return CDR.get<UserInfo>({ url: isLoginUrl }, { ignoreCancelToken: true });
 }
 
 // 获取登录密钥

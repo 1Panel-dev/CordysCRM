@@ -63,8 +63,13 @@
   async function initColumn(hasInitStore = false) {
     // 将render去掉，防止报错
     let columns = cloneDeep(props.columns).map((column) => {
-      const { render, ...rest } = column;
-      return rest;
+      const _col = { ...column };
+      Object.keys(_col).forEach((key) => {
+        if (typeof _col[key as keyof CrmDataTableColumn] === 'function') {
+          delete _col[key as keyof CrmDataTableColumn];
+        }
+      });
+      return _col;
     });
     if (attrs.showSetting) {
       if (!hasInitStore && attrs.showSetting && attrs.tableKey) {

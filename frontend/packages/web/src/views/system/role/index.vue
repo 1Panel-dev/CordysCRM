@@ -2,7 +2,7 @@
   <CrmCard :loading="loading" hide-footer no-content-padding>
     <CrmSplitPanel class="h-full" :max="0.5" :min="0.25" :default-size="0.25">
       <template #1>
-        <div class="p-[24px]">
+        <div class="flex h-full flex-col p-[24px]">
           <div class="mb-[8px] flex items-center justify-between gap-[8px]">
             <n-input v-model:value="keyword" :placeholder="t('common.searchByName')" clearable>
               <template #suffix>
@@ -30,6 +30,7 @@
             title-tooltip-position="top-start"
             :filter-more-action-func="filterMoreActionFunc"
             :field-names="{ keyField: 'id', labelField: 'name', childrenField: 'children' }"
+            :rename-api="updateRoleName"
             @more-action-select="handleMoreActionSelect"
           />
         </div>
@@ -38,10 +39,16 @@
         <div class="h-full pt-[13px]">
           <CrmTab v-model:active-tab="activeTab" :tab-list="tabList" type="line">
             <template #permission>
-              <permissionTab />
+              <permissionTab
+                v-if="activeRole"
+                :active-role-id="selectedKeys[0]"
+                :is-new="!!activeRole.isNew"
+                :role-name="activeRole.name"
+                @create-success="handleCreated"
+              />
             </template>
             <template #member>
-              <memberTab />
+              <memberTab v-if="activeRole" :active-role-id="selectedKeys[0]" />
             </template>
           </CrmTab>
         </div>
@@ -64,7 +71,7 @@
   import permissionTab from './components/permissionTab.vue';
   import roleTreeNodePrefix from './components/roleTreeNodePrefix.vue';
 
-  import { getRoles } from '@/api/modules/system/role';
+  import { deleteRole, getRoles, updateRole } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { getGenerateId } from '@/utils';
@@ -75,6 +82,7 @@
   const { openModal } = useModal();
   const message = useMessage();
 
+  const loading = ref(false);
   const keyword = ref('');
   const roles = ref<RoleItem[]>([]);
   const selectedKeys = ref<string[]>([]);
@@ -83,6 +91,15 @@
     if (node.option.internal) {
       return h(roleTreeNodePrefix);
     }
+  }
+
+  function updateRoleName(node: CrmTreeNodeData) {
+    return Promise.resolve(
+      updateRole({
+        id: node.id,
+        name: node.name,
+      })
+    );
   }
 
   const nodeMoreActions: ActionsItem[] = [
@@ -128,16 +145,25 @@
       case 'delete':
         openModal({
           type: 'error',
-          title: t('common.deleteConfirmTitle', { name: node.label }),
+          title: t('common.deleteConfirmTitle', { name: node.name }),
           content: t('role.deleteConfirmContent'),
           positiveText: t('common.confirmDelete'),
           negativeText: t('common.cancel'),
           onPositiveClick: async () => {
-            roles.value = roles.value.filter((role) => role.id !== node.id);
-            if (selectedKeys.value.includes(node.id)) {
-              selectedKeys.value = [roles.value[0].id];
+            try {
+              loading.value = true;
+              await deleteRole(node.id);
+              roles.value = roles.value.filter((role) => role.id !== node.id);
+              if (selectedKeys.value.includes(node.id)) {
+                selectedKeys.value = [roles.value[0].id];
+              }
+              message.success(t('common.deleteSuccess'));
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.log(error);
+            } finally {
+              loading.value = false;
             }
-            message.success(t('common.deleteSuccess'));
           },
         });
         break;
@@ -146,6 +172,7 @@
     }
   }
 
+  const activeRole = computed(() => roles.value.find((e) => e.id === selectedKeys.value[0]));
   function addRole() {
     const id = getGenerateId();
     roles.value.push({
@@ -160,29 +187,42 @@
   }
 
   const activeTab = ref('permission');
-  const tabList: TabPaneProps[] = [
-    {
-      name: 'permission',
-      tab: t('role.permission'),
-    },
-    {
-      name: 'member',
-      tab: t('role.member'),
-    },
-  ];
-
-  const loading = ref(false);
+  const tabList = computed<TabPaneProps[]>(() => {
+    if (activeRole.value?.isNew) {
+      return [
+        {
+          name: 'permission',
+          tab: t('role.permission'),
+        },
+      ];
+    }
+    return [
+      {
+        name: 'permission',
+        tab: t('role.permission'),
+      },
+      {
+        name: 'member',
+        tab: t('role.member'),
+      },
+    ];
+  });
 
   async function init() {
     loading.value = true;
     try {
       roles.value = await getRoles();
+      selectedKeys.value = roles.value[0] ? [roles.value[0].id] : [];
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
     } finally {
       loading.value = false;
     }
+  }
+
+  function handleCreated(id: string) {
+    selectedKeys.value = [id];
   }
 
   onBeforeMount(() => {

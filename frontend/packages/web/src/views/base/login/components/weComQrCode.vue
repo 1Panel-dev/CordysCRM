@@ -11,7 +11,7 @@
   import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
   import useUserStore from '@/store/modules/user';
 
-  import { setLoginExpires, setLongType } from '@lib/shared/method/auth';
+  import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import * as ww from '@wecom/jssdk';
   import { WWLoginErrorResp, WWLoginPanelSizeType, WWLoginRedirectType, WWLoginType } from '@wecom/jssdk';
 
@@ -53,7 +53,7 @@
           resolve('123');
         });
         userStore.qrCodeLogin(await weComCallback);
-        setLongType('WE_COM');
+        setLoginType('WE_COM');
         Message.success(t('login.form.login.success'));
         const { redirect, ...othersQuery } = router.currentRoute.value.query;
         setLoginExpires();

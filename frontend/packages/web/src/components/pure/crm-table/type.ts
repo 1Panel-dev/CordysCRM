@@ -9,21 +9,24 @@ import type {
   DataTableRowKey,
   PaginationProps,
 } from 'naive-ui';
+import type { RenderFilterMenu } from 'naive-ui/es/data-table/src/interface';
 
-export type CrmTableDataItem<T> = T & {
+export type CrmTableDataItem<T> = {
   updateTime?: string | number | null;
   createTime?: string | number | null;
   children?: CrmTableDataItem<T>[];
-} & DataTableRowData;
+} & DataTableRowData &
+  T;
 
-export type CrmDataTableColumn = DataTableColumn & {
+export type CrmDataTableColumn<T = any> = DataTableColumn<T> & {
   showInTable?: boolean; // 是否展示在表格上
   key?: DataTableColumnKey; // 这一列的 key，不可重复
   title?: string | (() => VNodeChild);
   sorter?: boolean | 'default'; // true是只展示图标，'default'是使用内置排序
   filter?: boolean | ((optionValue: string | number, rowData: object) => boolean) | 'default'; // true是只展示图标
   sortOrder?: 'descend' | 'ascend' | false; // 受控状态下表格的排序方式
-  render?: (rowData: object, rowIndex: number) => VNodeChild;
+  render?: (rowData: T, rowIndex: number) => VNodeChild;
+  renderFilterMenu?: RenderFilterMenu;
 };
 
 export interface CrmTableProps<T> extends DataTableProps {

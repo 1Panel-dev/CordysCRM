@@ -13,7 +13,7 @@
   // import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
 
-  import { setLoginExpires, setLongType } from '@lib/shared/method/auth';
+  import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
   const { t } = useI18n();
 
@@ -50,7 +50,7 @@
           resolve(authCode);
         });
         userStore.qrCodeLogin(await dingCallback);
-        setLongType('DING_TALK');
+        setLoginType('DING_TALK');
         Message.success(t('login.form.login.success'));
         const { redirect, ...othersQuery } = router.currentRoute.value.query;
         const redirectHasPermission = redirect && ![NO_RESOURCE_ROUTE_NAME].includes(redirect as string);

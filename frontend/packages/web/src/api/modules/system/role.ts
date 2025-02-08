@@ -4,23 +4,28 @@ import {
   BatchRemoveRoleMemberUrl,
   CreateRoleUrl,
   DeleteRoleUrl,
+  GetDeptTreeUrl,
   GetPermissionsUrl,
   GetRoleDeptTreeUrl,
   GetRoleDetailUrl,
   GetRoleMemberTreeUrl,
   GetRoleMemberUrl,
   GetRolesUrl,
+  GetUserOptionUrl,
   RelateRoleUrl,
   RemoveRoleMemberUrl,
   UpdateRoleUrl,
 } from '@lib/shared/api/requrls/system/role';
+import type { CommonList } from '@lib/shared/models/common';
 import type {
   DeptTreeNode,
+  DeptUserTreeNode,
   PermissionTreeNode,
   RelateRoleMemberParams,
   RoleCreateParams,
   RoleDetail,
   RoleItem,
+  RoleMemberItem,
   RoleMemberTableQueryParams,
   RoleUpdateParams,
 } from '@lib/shared/models/system/role';
@@ -32,7 +37,7 @@ export function relateRoleMember(data: RelateRoleMemberParams) {
 
 // 获取角色关联用户列表
 export function getRoleMember(data: RoleMemberTableQueryParams) {
-  return CDR.post({ url: GetRoleMemberUrl, data });
+  return CDR.post<CommonList<RoleMemberItem>>({ url: GetRoleMemberUrl, data });
 }
 
 // 批量移除角色关联用户
@@ -56,8 +61,13 @@ export function getRoleMemberTree(roleId: string) {
 }
 
 // 获取部门用户树
-export function getRoleDeptTree(roleId: string) {
-  return CDR.get<DeptTreeNode[]>({ url: `${GetRoleDeptTreeUrl}/${roleId}` });
+export function getRoleDeptUserTree(roleId: string) {
+  return CDR.get<DeptUserTreeNode[]>({ url: `${GetRoleDeptTreeUrl}/${roleId}` });
+}
+
+// 获取部门树
+export function getRoleDeptTree() {
+  return CDR.get<DeptTreeNode[]>({ url: GetDeptTreeUrl });
 }
 
 // 移除角色关联用户
@@ -83,4 +93,9 @@ export function getRoleDetail(id: string) {
 // 删除角色
 export function deleteRole(id: string) {
   return CDR.get({ url: `${DeleteRoleUrl}/${id}` });
+}
+
+// 获取用户列表
+export function getUsers(id: string) {
+  return CDR.get<RoleItem[]>({ url: `${GetUserOptionUrl}/${id}` });
 }

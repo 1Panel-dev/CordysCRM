@@ -5,13 +5,7 @@
         <n-button type="primary" @click="handleCreate">
           {{ t('role.addMember') }}
         </n-button>
-        <n-input v-model:value="keyword" :placeholder="t('common.searchByName')" clearable class="!w-[240px]">
-          <template #suffix>
-            <n-icon>
-              <Search />
-            </n-icon>
-          </template>
-        </n-input>
+        <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
       </div>
       <crm-table
         v-bind="propsRes"
@@ -27,6 +21,9 @@
     :title="t('role.addMember')"
     :width="800"
     :ok-disabled="addMembers.length === 0"
+    :loading="addMemberLoading"
+    @cancel="handleCancelAdd"
+    @confirm="handleAddConfirm"
   >
     <div class="flex h-full w-full flex-col gap-[16px]">
       <div class="flex items-center gap-[16px]">
@@ -36,11 +33,7 @@
           type="segment"
           class="no-content"
           animated
-          @update-value="
-            () => {
-              addMembers = [];
-            }
-          "
+          @update-value="handleTypeChange"
         >
           <n-tab-pane v-for="item of addMemberTypes" :key="item.value" :name="item.value" :tab="item.label">
           </n-tab-pane>
@@ -48,7 +41,7 @@
       </div>
       <n-transfer
         v-model:value="addMembers"
-        :options="flattenTree(options)"
+        :options="flattenTree(options as unknown as Option[])"
         :render-source-list="renderSourceList"
         source-filterable
         class="addMemberTransfer"
@@ -60,8 +53,6 @@
 <script setup lang="ts">
   import {
     NButton,
-    NIcon,
-    NInput,
     NScrollbar,
     NSwitch,
     NTabPane,
@@ -71,44 +62,51 @@
     TransferRenderSourceList,
     useMessage,
   } from 'naive-ui';
-  import { Search } from '@vicons/ionicons5';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
+  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import { CrmDataTableColumn, CrmTableDataItem } from '@/components/pure/crm-table/type';
+  import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
 
+  import {
+    getRoleDeptUserTree,
+    getRoleMember,
+    getRoleMemberTree,
+    getUsers,
+    relateRoleMember,
+    removeRoleMember,
+  } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
+  import { mapTree } from '@/utils';
 
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import type { CommonList } from '@lib/shared/models/common';
+  import { DeptTreeNode, RoleItem, RoleMemberItem } from '@lib/shared/models/system/role';
 
-  interface RoleItem {
-    id: string;
-    name: string;
+  interface Option {
+    label: string;
+    value: string;
+    children?: Option[];
   }
 
-  interface MemberItem {
-    id: string;
-    num: string;
-    userName: string;
-    enable: boolean;
-    departmentName: string;
-    position: string;
-    createTime: number;
-    roles: RoleItem[];
-  }
+  const props = defineProps<{
+    activeRoleId: string;
+  }>();
 
   const { t } = useI18n();
   const Message = useMessage();
 
+  const tableRefreshId = ref(0);
   const removeLoading = ref(false);
-  async function removeMember(row: Record<string, any>, close: () => void) {
+  async function removeMember(row: RoleMemberItem, close: () => void) {
     try {
       removeLoading.value = true;
+      await removeRoleMember(row.id);
       Message.success(t('common.removeSuccess'));
       close();
+      tableRefreshId.value += 1;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -117,7 +115,7 @@
     }
   }
 
-  const columns: CrmDataTableColumn[] = [
+  const columns: CrmDataTableColumn<RoleMemberItem>[] = [
     {
       type: 'selection',
       fixed: 'left',
@@ -127,6 +125,9 @@
       key: 'userName',
       width: 100,
       fixed: 'left',
+      ellipsis: {
+        tooltip: true,
+      },
     },
     {
       title: t('common.status'),
@@ -139,16 +140,16 @@
       sorter: true,
       filterOptions: [
         {
-          label: '222',
-          value: '222',
+          label: t('common.enable'),
+          value: 'enable',
         },
         {
-          label: 'string',
-          value: 'string',
+          label: t('common.disable'),
+          value: 'disabled',
         },
       ],
       filter: true,
-      render: (row: Record<string, any>) => {
+      render: (row) => {
         return h(NSwitch, { value: row.enable, disabled: true });
       },
     },
@@ -159,17 +160,7 @@
       ellipsis: {
         tooltip: true,
       },
-      filterOptions: [
-        {
-          label: 'London',
-          value: 'London',
-        },
-        {
-          label: 'New York',
-          value: 'New York',
-        },
-      ],
-      filter: 'default',
+      sorter: true,
     },
     {
       title: t('role.job'),
@@ -184,18 +175,13 @@
     {
       title: t('common.addTime'),
       key: 'createTime',
-      width: 180,
-    },
-    {
-      title: t('common.updateTime'),
-      key: 'updateTime',
-      width: 180,
+      width: 160,
     },
     {
       key: 'operation',
       width: 80,
       fixed: 'right',
-      render: (row: Record<string, any>) =>
+      render: (row) =>
         h(CrmRemoveButton, {
           loading: removeLoading.value,
           title: t('common.removeConfirmTitle', { name: row.userName }),
@@ -205,252 +191,36 @@
     },
   ];
 
-  function getRoleList() {
-    const data: CommonList<CrmTableDataItem<MemberItem>> = {
-      list: [
-        {
-          id: '11',
-          num: 'string',
-          userName: 'string',
-          enable: true,
-          departmentName: 'bumen',
-          position: 'job',
-          roles: [
-            {
-              id: '1',
-              name: 'role1',
-            },
-            {
-              id: '2',
-              name: 'role2',
-            },
-          ],
-          updateTime: 1738722457410,
-          createTime: 1738722457410,
-        },
-        {
-          id: '22',
-          num: '232324323',
-          userName: '222',
-          enable: true,
-          departmentName: 'bumen',
-          position: 'job',
-          roles: [
-            {
-              id: '1',
-              name: 'role1',
-            },
-            {
-              id: '2',
-              name: 'role2',
-            },
-          ],
-          createTime: 1738722457410,
-        },
-        {
-          id: '33',
-          num: 'string',
-          userName: 'string',
-          enable: false,
-          departmentName: 'bumen',
-          position: 'job',
-          roles: [
-            {
-              id: '1',
-              name: 'role1',
-            },
-            {
-              id: '2',
-              name: 'role2',
-            },
-          ],
-          createTime: 1738722457410,
-        },
-        {
-          id: '44',
-          num: '232324323',
-          userName: '222',
-          enable: false,
-          updateTime: 1738722457410,
-          departmentName: 'bumen',
-          position: 'job',
-          roles: [
-            {
-              id: '1',
-              name: 'role1',
-            },
-            {
-              id: '2',
-              name: 'role2',
-            },
-          ],
-          createTime: 1738722457410,
-        },
-        {
-          id: '55',
-          num: 'string',
-          userName: 'string',
-          departmentName: 'bumen',
-          position: 'job',
-          roles: [
-            {
-              id: '1',
-              name: 'role1',
-            },
-            {
-              id: '2',
-              name: 'role2',
-            },
-          ],
-          enable: false,
-          updateTime: 1738722457410,
-          createTime: 1738722457410,
-        },
-        {
-          id: '66',
-          num: '232324323',
-          userName: '222',
-          enable: false,
-          departmentName: 'bumen',
-          position: 'job',
-          roles: [
-            {
-              id: '1',
-              name: 'role1',
-            },
-            {
-              id: '2',
-              name: 'role2',
-            },
-          ],
-          updateTime: 1738722457410,
-          createTime: 1738722457410,
-        },
-        {
-          id: '77',
-          num: 'string',
-          userName: 'string',
-          enable: false,
-          departmentName: 'bumen',
-          position: 'job',
-          roles: [
-            {
-              id: '1',
-              name: 'role1',
-            },
-            {
-              id: '2',
-              name: 'role2',
-            },
-          ],
-          updateTime: 1738722457410,
-          createTime: 1738722457410,
-        },
-        {
-          id: '88',
-          num: '232324323',
-          userName: '222',
-          enable: false,
-          departmentName: 'bumen',
-          position: 'job',
-          roles: [
-            {
-              id: '1',
-              name: 'role1',
-            },
-            {
-              id: '2',
-              name: 'role2',
-            },
-          ],
-          updateTime: 1738722457410,
-          createTime: 1738722457410,
-        },
-        {
-          id: '99',
-          num: 'string',
-          userName: 'string',
-          enable: true,
-          departmentName: 'bumen',
-          position: 'job',
-          roles: [
-            {
-              id: '1',
-              name: 'role1',
-            },
-            {
-              id: '2',
-              name: 'role2',
-            },
-          ],
-          updateTime: 1738722457410,
-          createTime: 1738722457410,
-        },
-        {
-          id: '1',
-          num: '232324323',
-          userName: '222',
-          enable: true,
-          departmentName: 'bumen',
-          position: 'job',
-          roles: [
-            {
-              id: '1',
-              name: 'role1',
-            },
-            {
-              id: '2',
-              name: 'role2',
-            },
-          ],
-          updateTime: 1738722457410,
-          createTime: 1738722457410,
-        },
-        {
-          id: '2',
-          num: '232324323',
-          userName: '222',
-          enable: true,
-          departmentName: 'bumen',
-          position: 'job',
-          roles: [
-            {
-              id: '1',
-              name: 'role1',
-            },
-            {
-              id: '2',
-              name: 'role2',
-            },
-          ],
-          updateTime: 1738722457410,
-          createTime: 1738722457410,
-        },
-      ],
-      total: 11,
-      pageSize: 10,
-      current: 1,
-    };
-    return new Promise<CommonList<CrmTableDataItem<MemberItem>>>((resolve) => {
-      setTimeout(() => {
-        resolve(data);
-      }, 200);
-    });
-  }
-
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getRoleList, {
-    tableKey: TableKeyEnum.SYSTEM_USER,
-    showSetting: true,
-    columns,
-    scrollX: 1000,
-    maxHeight: 600,
-  });
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
+    getRoleMember,
+    {
+      tableKey: TableKeyEnum.SYSTEM_USER,
+      showSetting: true,
+      columns,
+      scrollX: 1000,
+      maxHeight: 600,
+    },
+    (item) => {
+      return {
+        ...item,
+        position: item.position || '-',
+        departmentName: item.departmentName || '-',
+      };
+    }
+  );
 
   const keyword = ref('');
   function searchData() {
-    setLoadListParams({ keyword: keyword.value });
+    setLoadListParams({ keyword: keyword.value, roleId: props.activeRoleId });
     loadList();
   }
+
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      searchData();
+    }
+  );
 
   const drawerVisible = ref(false);
   function handleCreate() {
@@ -471,55 +241,85 @@
       value: 'member',
     },
   ];
-  const addMembers = ref<string[]>([]);
-  const options = ref([
-    {
-      label: '一级 1',
-      value: '1',
-      children: [
-        {
-          label: '二级 1-1',
-          value: '1-1',
-          children: [
-            {
-              label: '三级 1-1-1',
-              value: '1-1-1',
-            },
-            {
-              label: '三级 1-1-2',
-              value: '1-1-2',
-            },
-            {
-              label: '三级 1-1-3',
-              value: '1-1-3',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      label: '一级 2',
-      value: '2222',
-      children: [
-        {
-          label: '二级 2-1',
-          value: '2-1',
-          children: [
-            {
-              label: '三级 2-1-1',
-              value: '2-1-1',
-            },
-          ],
-        },
-      ],
-    },
-  ]);
 
-  interface Option {
-    label: string;
-    value: string;
-    children?: Option[];
+  const addMembers = ref<string[]>([]);
+  const userIds = ref<string[]>([]);
+  const roleIds = ref<string[]>([]);
+  const deptIds = ref<string[]>([]);
+  const departmentOptions = ref<DeptTreeNode[]>([]);
+
+  async function initDeptUserTree() {
+    try {
+      departmentOptions.value = await getRoleDeptUserTree(props.activeRoleId);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
+
+  const roleOptions = ref<Option[]>([]);
+  async function initRoleUserTree() {
+    try {
+      roleOptions.value = await getRoleMemberTree(props.activeRoleId);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const userOptions = ref<RoleItem[]>([]);
+  async function initUserList() {
+    try {
+      userOptions.value = await getUsers(props.activeRoleId);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  function handleTypeChange(value: string) {
+    if (value === 'org') {
+      initDeptUserTree();
+    } else if (value === 'role') {
+      initRoleUserTree();
+    } else {
+      initUserList();
+    }
+    addMembers.value = [];
+  }
+
+  const options = computed(() => {
+    if (addMemberType.value === 'org') {
+      return mapTree(departmentOptions.value, (item) => {
+        return {
+          label: item.name,
+          value: item.id,
+          disabled: !item.enabled,
+          children: item.children?.length ? item.children : undefined,
+          nodeType: item.nodeType,
+        };
+      });
+    }
+    if (addMemberType.value === 'role') {
+      return mapTree(roleOptions.value, (item) => {
+        return {
+          label: item.name,
+          value: item.id,
+          disabled: !item.enabled,
+          children: item.children?.length ? item.children : undefined,
+          nodeType: item.nodeType,
+        };
+      });
+    }
+    return userOptions.value.map((item) => {
+      return {
+        label: item.name,
+        value: item.id,
+        disabled: !item.enabled,
+        nodeType: item.nodeType,
+      };
+    });
+  });
 
   function flattenTree(list: undefined | Option[]): Option[] {
     const result: Option[] = [];
@@ -543,13 +343,64 @@
       pattern,
       selectedKeys: addMembers.value,
       showIrrelevantNodes: false,
-      onUpdateSelectedKeys: (selectedKeys: Array<string | number>) => {
+      onUpdateSelectedKeys: (selectedKeys: Array<string | number>, nodes) => {
         onCheck(selectedKeys);
+        userIds.value = [];
+        roleIds.value = [];
+        deptIds.value = [];
+        nodes.forEach((node) => {
+          if (node) {
+            if (node.nodeType === DeptNodeTypeEnum.USER) {
+              userIds.value.push(node.value as string);
+            } else if (node.nodeType === DeptNodeTypeEnum.ROLE) {
+              roleIds.value.push(node.value as string);
+            } else if (node.nodeType === DeptNodeTypeEnum.ORG) {
+              deptIds.value.push(node.value as string);
+            }
+          }
+        });
       },
     });
   };
 
+  function handleCancelAdd() {
+    addMembers.value = [];
+    userIds.value = [];
+    roleIds.value = [];
+    deptIds.value = [];
+    addMemberType.value = 'org';
+  }
+
+  const addMemberLoading = ref(false);
+  async function handleAddConfirm() {
+    try {
+      addMemberLoading.value = true;
+      await relateRoleMember({
+        roleId: props.activeRoleId,
+        userIds: userIds.value,
+        roleIds: roleIds.value,
+        deptIds: deptIds.value,
+      });
+      Message.success(t('common.addSuccess'));
+      drawerVisible.value = false;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      addMemberLoading.value = false;
+      searchData();
+    }
+  }
+
+  watch(
+    () => props.activeRoleId,
+    () => {
+      searchData();
+    }
+  );
+
   onMounted(() => {
+    initDeptUserTree();
     searchData();
   });
 </script>

@@ -12,11 +12,11 @@ const setToken = (sessionId: string, csrfToken: string) => {
   localStorage.setItem(CSRF_TOKEN, csrfToken);
 };
 
-const setLongType = (loginType: string) => {
+const setLoginType = (loginType: string) => {
   localStorage.setItem(LOGIN_TYPE, loginType);
 };
 
-const getLongType = () => {
+const getLoginType = () => {
   return localStorage.getItem(LOGIN_TYPE);
 };
 
@@ -41,4 +41,4 @@ const isLoginExpires = () => {
   return diff > thirtyDay;
 };
 
-export { clearToken, getLongType, getToken, hasToken, isLoginExpires, setLoginExpires, setLongType, setToken };
+export { clearToken, getLoginType, getToken, hasToken, isLoginExpires, setLoginExpires, setLoginType, setToken };
