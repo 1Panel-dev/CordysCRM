@@ -3,6 +3,7 @@ package io.cordys.crm.system.mapper;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.*;
+import io.cordys.security.UserDTO;
 import org.apache.ibatis.annotations.Param;
 import io.cordys.common.dto.OptionDTO;
 
@@ -24,7 +25,7 @@ public interface ExtOrganizationUserMapper {
 
     void deleteUserByOrgId(@Param("orgId") String orgId);
 
-    UserPageResponse getEnableUser(@Param("resourceUserId") String resourceUserId);
+    UserDTO getEnableUser(@Param("resourceUserId") String resourceUserId);
 
     List<OptionDTO> selectEnableOrgUser(@Param("ids") List<String> ids, @Param("enable") boolean enable);
 

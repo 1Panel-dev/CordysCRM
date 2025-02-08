@@ -68,7 +68,7 @@
         </foreach>
     </select>
 
-    <select id="getEnableUser" resultType="io.cordys.crm.system.dto.response.UserPageResponse">
+    <select id="getEnableUser" resultType="io.cordys.security.UserDTO">
         SELECT
         su.id,
         su.name,
