@@ -1,29 +1,11 @@
 import { defineStore } from 'pinia';
 
-import type { LoginConfig, PageConfig, PlatformConfig, Style, Theme, ThemeConfig } from '@/api/modules/system/business';
 import { getKey } from '@/api/modules/system/login';
 import { useI18n } from '@/hooks/useI18n';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
+import type { AppState, PageConfig, Style, Theme } from './types';
 import { setLocalStorage } from '@lib/shared/method/local-storage';
-import type { GlobalThemeOverrides } from 'naive-ui';
-
-export interface AppState {
-  pageSize: number;
-  showSizePicker: boolean;
-  showQuickJumper: boolean;
-  menuCollapsed: boolean; // 侧边菜单栏是否收缩
-  collapsedWidth: number; // 侧边菜单栏收缩宽度
-  loginLoading: boolean; // 登录页面加载中
-  loading: boolean; // 全局加载中
-  loadingTip: string; // 全局加载提示
-  pageConfig: PageConfig;
-  defaultThemeConfig: ThemeConfig;
-  defaultLoginConfig: LoginConfig;
-  defaultPlatformConfig: PlatformConfig;
-  themeOverridesConfig: GlobalThemeOverrides;
-  orgId: string;
-}
 
 const defaultThemeConfig = {
   style: 'default' as Style,

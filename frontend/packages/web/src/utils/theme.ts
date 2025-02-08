@@ -1,5 +1,5 @@
-import type { PageConfig, Style, Theme } from '@/api/modules/system/business';
 import useAppStore from '@/store/modules/app';
+import type { PageConfig, Style, Theme } from '@/store/modules/app/types';
 
 import Color from 'color';
 

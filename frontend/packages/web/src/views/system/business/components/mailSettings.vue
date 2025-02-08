@@ -1,5 +1,5 @@
 <template>
-  <CrmCard auto-height no-content-padding hide-footer>
+  <CrmCard auto-height no-content-padding hide-footer :loading="emailLoading">
     <CrmDescription class="p-[24px]" :descriptions="descriptions" :column="2">
       <template #password="{ item }">
         <div class="flex items-center gap-[8px]">
@@ -24,9 +24,9 @@
           <CrmIcon v-else type="iconicon_disable" :size="16" class="text-[var(--text-n4)]" />
           <div>
             {{
-              item.value === 'false'
-                ? t('system.business.mailSettings.closed')
-                : t('system.business.mailSettings.opened')
+              item.value === 'true'
+                ? t('system.business.mailSettings.opened')
+                : t('system.business.mailSettings.closed')
             }}
           </div>
         </div>
@@ -44,6 +44,7 @@
     :width="680"
     :title="t('system.business.mailSettings.updateEmailSettings')"
     :ok-text="t('common.update')"
+    :loading="emailDrawerLoading"
     @confirm="confirm"
   >
     <n-form
@@ -55,24 +56,24 @@
       require-mark-placement="left"
       :label-width="100"
     >
-      <n-form-item :label="t('system.business.mailSettings.smtpHost')" path="smtpHost">
-        <n-input v-model:value="form.smtpHost" :maxlength="255" :placeholder="t('common.pleaseInput')" clearable />
+      <n-form-item :label="t('system.business.mailSettings.smtpHost')" path="host">
+        <n-input v-model:value="form.host" :maxlength="255" :placeholder="t('common.pleaseInput')" clearable />
       </n-form-item>
-      <n-form-item :label="t('system.business.mailSettings.smtpPort')" path="smtpPort">
+      <n-form-item :label="t('system.business.mailSettings.smtpPort')" path="port">
         <n-input
-          v-model:value="form.smtpPort"
+          v-model:value="form.port"
           class="!w-[240px]"
           :maxlength="255"
           :placeholder="t('common.pleaseInput')"
           clearable
         />
       </n-form-item>
-      <n-form-item :label="t('system.business.mailSettings.smtpAccount')" path="smtpAccount">
-        <n-input v-model:value="form.smtpAccount" :maxlength="255" :placeholder="t('common.pleaseInput')" clearable />
+      <n-form-item :label="t('system.business.mailSettings.smtpAccount')" path="account">
+        <n-input v-model:value="form.account" :maxlength="255" :placeholder="t('common.pleaseInput')" clearable />
       </n-form-item>
-      <n-form-item :label="t('system.business.mailSettings.smtpPassword')" path="smtpPassword">
+      <n-form-item :label="t('system.business.mailSettings.smtpPassword')" path="password">
         <n-input
-          v-model:value="form.smtpPassword"
+          v-model:value="form.password"
           type="password"
           show-password-on="click"
           :input-props="{ autocomplete: 'new-password' }"
@@ -119,6 +120,7 @@
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
+  import { getConfigEmail, updateConfigEmail } from '@/api/modules/system/business';
   import { useI18n } from '@/hooks/useI18n';
   import { desensitize } from '@/utils';
   import { validateEmail } from '@/utils/validate';
@@ -131,30 +133,18 @@
     showPassword.value = !showPassword.value;
   }
 
-  const descriptions = ref<Description[]>([
-    {
-      label: t('system.business.mailSettings.smtpHost'),
-      value: 'xxxxxxxx',
-    },
-    { label: t('system.business.mailSettings.smtpPort'), value: 'xxx' },
-    { label: t('system.business.mailSettings.smtpAccount'), value: 'xxx' },
-    { label: t('system.business.mailSettings.smtpPassword'), value: 'xxx', slotName: 'password' },
-    { label: t('system.business.mailSettings.from'), value: 'xxx' },
-    { label: t('system.business.mailSettings.recipient'), value: 'xxx' },
-    { label: t('system.business.mailSettings.ssl'), value: 'true', slotName: 'ssl' },
-    { label: t('system.business.mailSettings.tsl'), value: 'false', slotName: 'ssl' },
-  ]);
+  const descriptions = ref<Description[]>([]);
 
   const showDrawer = ref(false);
   const formRef = ref<FormInst | null>(null);
   const form = ref({
-    smtpHost: '',
-    smtpPort: '',
-    smtpAccount: '',
-    smtpPassword: '',
+    host: '',
+    port: '',
+    account: '',
+    password: '',
     from: '',
     recipient: '',
-    ssl: 'true',
+    ssl: 'false',
     tsl: 'false',
   });
 
@@ -169,21 +159,21 @@
   };
 
   const rules = ref({
-    smtpHost: [
+    host: [
       {
         required: true,
         message: t('common.notNull', { value: t('system.business.mailSettings.smtpHost') }),
         trigger: ['blur'],
       },
     ],
-    smtpPort: [
+    port: [
       {
         required: true,
         message: t('common.notNull', { value: t('system.business.mailSettings.smtpPort') }),
         trigger: ['blur'],
       },
     ],
-    smtpAccount: [
+    account: [
       {
         required: true,
         message: t('common.notNull', { value: t('system.business.mailSettings.smtpAccount') }),
@@ -194,12 +184,51 @@
     recipient: [emailRule],
   });
 
-  function confirm() {
-    formRef.value?.validate((errors) => {
+  const emailLoading = ref(false);
+  async function initEmailInfo() {
+    try {
+      emailLoading.value = true;
+      const res = await getConfigEmail();
+      form.value = { ...res };
+      descriptions.value = [
+        { label: t('system.business.mailSettings.smtpHost'), value: res.host },
+        { label: t('system.business.mailSettings.smtpPort'), value: res.port },
+        { label: t('system.business.mailSettings.smtpAccount'), value: res.account },
+        { label: t('system.business.mailSettings.smtpPassword'), value: res.password, slotName: 'password' },
+        { label: t('system.business.mailSettings.from'), value: res.from },
+        { label: t('system.business.mailSettings.recipient'), value: res.recipient },
+        { label: t('system.business.mailSettings.ssl'), value: res.ssl, slotName: 'ssl' },
+        { label: t('system.business.mailSettings.tsl'), value: res.tsl, slotName: 'ssl' },
+      ];
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      emailLoading.value = false;
+    }
+  }
+
+  const emailDrawerLoading = ref(false);
+  async function confirm() {
+    formRef.value?.validate(async (errors) => {
       if (!errors) {
-        Message.success(t('common.updateSuccess'));
-        showDrawer.value = false;
+        try {
+          emailDrawerLoading.value = true;
+          await updateConfigEmail(form.value);
+          Message.success(t('common.updateSuccess'));
+          showDrawer.value = false;
+          initEmailInfo();
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        } finally {
+          emailLoading.value = false;
+        }
       }
     });
   }
+
+  onBeforeMount(() => {
+    initEmailInfo();
+  });
 </script>

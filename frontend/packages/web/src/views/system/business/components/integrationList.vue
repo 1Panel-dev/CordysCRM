@@ -1,10 +1,10 @@
 <template>
   <!-- special-height 64是tab的高度和margin -->
-  <CrmCard hide-footer :special-height="64">
+  <CrmCard hide-footer :special-height="64" :loading="loading">
     <div v-if="integrationList.length" class="flex flex-wrap gap-[16px]">
       <div
         v-for="item of integrationList"
-        :key="item.key"
+        :key="item.type"
         class="flex h-[140px] w-[380px] flex-col justify-between rounded-[6px] bg-[var(--text-n9)] p-[24px]"
       >
         <div class="flex">
@@ -62,67 +62,79 @@
   import EditIntegrationModal from './editIntegrationModal.vue';
   import SyncWeChat from '@/views/system/org/components/syncWeChat.vue';
 
+  import { getConfigSynchronization } from '@/api/modules/system/business';
+
+  import type { ConfigSynchronization, IntegrationItem } from '@lib/shared/models/system/business';
+
   const { t } = useI18n();
 
   const props = defineProps<{
     activeTab: string;
   }>();
 
-  // TODO lmy 类型
   // 所有可用的集成平台配置
-  const allIntegrations: any[] = [
+  const allIntegrations = [
     {
-      key: 'WE_COM',
+      type: 'WECOM',
       title: t('system.business.WE_COM'),
       description: t('system.business.WE_COM.description'),
       logo: 'iconlogo_wechat-work',
-      enable: false,
-      hasConfig: false,
     },
     {
-      key: 'DING_TALK',
+      type: 'DINGTALK',
       title: t('system.business.DING_TALK'),
       description: t('system.business.DING_TALK.description'),
-      enable: false,
       logo: 'iconlogo_dingtalk',
-      hasConfig: false,
     },
     {
-      key: 'LARK',
+      type: 'LARK',
       title: t('system.business.LARK'),
       description: t('system.business.LARK.description'),
-      enable: false,
       logo: 'iconlogo_lark',
-      hasConfig: false,
     },
     {
-      key: 'LARK_SUITE',
+      type: 'INTERNAL',
       title: t('system.business.LARK_SUITE'),
       description: t('system.business.LARK.description'),
-      enable: false,
       logo: 'iconlogo_lark',
-      hasConfig: false,
     },
   ];
 
-  // 根据 activeTab 计算显示的集成列表
-  const integrationList = computed(() => {
-    if (props.activeTab === 'syncOrganization') {
-      // 同步组织架构页面只显示企业微信
-      return allIntegrations.filter((item) => item.key === 'WE_COM');
+  const integrationList = ref<IntegrationItem[]>([]);
+
+  const loading = ref(false);
+  async function initSyncList() {
+    try {
+      loading.value = true;
+      let res: ConfigSynchronization[] = [];
+      if (props.activeTab === 'syncOrganization') {
+        res = await getConfigSynchronization();
+      }
+
+      const configMap = new Map(res.map((item) => [item.type, item]));
+      integrationList.value = allIntegrations
+        .filter((item) => configMap.has(item.type))
+        .map((item) => {
+          const config = configMap.get(item.type)!;
+          return {
+            ...item,
+            ...config,
+            hasConfig: Boolean(config.appSecret),
+          };
+        });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
     }
-    // 扫码登录页面显示所有
-    return allIntegrations;
-  });
+  }
 
   const showEditIntegrationModal = ref(false);
   const showSyncWeChatModal = ref<boolean>(false);
 
-  // TODO lmy 类型
-  const currentIntegration = ref<any>(null);
-
-  // TODO lmy 类型
-  function handleEdit(item: any) {
+  const currentIntegration = ref<IntegrationItem>();
+  function handleEdit(item: IntegrationItem) {
     currentIntegration.value = item;
     if (props.activeTab === 'scanLogin') {
       showEditIntegrationModal.value = true;
@@ -130,4 +142,8 @@
       showSyncWeChatModal.value = true;
     }
   }
+
+  onBeforeMount(() => {
+    initSyncList();
+  });
 </script>

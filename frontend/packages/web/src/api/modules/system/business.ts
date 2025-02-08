@@ -1,34 +1,29 @@
-import { UploadFileInfo } from 'naive-ui';
+import CDR from '@/api/http/index';
 
-// 平台风格
-export type Style = 'default' | 'custom' | 'follow';
+import {
+  GetConfigEmailUrl,
+  GetConfigSynchronizationUrl,
+  UpdateConfigEmailUrl,
+  UpdateConfigSynchronizationUrl,
+} from '@lib/shared/api/requrls/system/business';
+import type { ConfigEmailParams, ConfigSynchronization } from '@lib/shared/models/system/business';
 
-// 主题
-export type Theme = 'default' | 'custom';
-
-// 主题配置对象
-export interface ThemeConfig {
-  style: Style;
-  customStyle: string;
-  theme: Theme;
-  customTheme: string;
+// 获取邮件设置
+export function getConfigEmail() {
+  return CDR.get<ConfigEmailParams>({ url: GetConfigEmailUrl });
 }
 
-// 登录页配置对象
-export interface LoginConfig {
-  title: string;
-  icon: (UploadFileInfo | never)[];
-  loginLogo: (UploadFileInfo | never)[];
-  loginImage: (UploadFileInfo | never)[];
-  slogan: string;
+// 更新邮件设置
+export function updateConfigEmail(data: ConfigEmailParams) {
+  return CDR.post({ url: UpdateConfigEmailUrl, data });
 }
 
-//  平台配置对象
-export interface PlatformConfig {
-  logoPlatform: (UploadFileInfo | never)[];
-  platformName: string;
-  helpDoc: string;
+// 获取同步组织设置
+export function getConfigSynchronization() {
+  return CDR.get<ConfigSynchronization[]>({ url: GetConfigSynchronizationUrl });
 }
 
-//  界面配置对象
-export interface PageConfig extends ThemeConfig, LoginConfig, PlatformConfig {}
+// 更新同步组织设置
+export function updateConfigSynchronization(data: ConfigSynchronization) {
+  return CDR.post({ url: UpdateConfigSynchronizationUrl, data });
+}
