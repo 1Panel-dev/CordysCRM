@@ -23,7 +23,4 @@ public class LeadPool extends BaseModel {
 
 	@Schema(description = "启用/禁用")
 	private int enable;
-
-	@Schema(description = "是否自动回收")
-	private int recycled;
 }

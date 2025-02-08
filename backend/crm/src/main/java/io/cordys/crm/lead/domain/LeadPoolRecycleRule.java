@@ -18,5 +18,12 @@ public class LeadPoolRecycleRule extends BaseModel {
 	@Schema(description = "提前提醒天数")
 	private Integer noticeDays;
 
-	// TODO: some recycle condition
+	@Schema(description = "自动回收")
+	private int auto;
+
+	@Schema(description = "操作符")
+	private String operator;
+
+	@Schema(description = "回收条件")
+	private String condition;
 }

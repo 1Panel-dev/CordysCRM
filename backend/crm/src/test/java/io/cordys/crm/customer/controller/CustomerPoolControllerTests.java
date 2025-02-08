@@ -127,7 +127,6 @@ public class CustomerPoolControllerTests extends BaseTest {
 		customerPool.setOrganizationId(DEFAULT_ORGANIZATION_ID);
 		customerPool.setOwnerId("default-owner");
 		customerPool.setEnable(0);
-		customerPool.setRecycled(0);
 		return customerPool;
 	}
 
