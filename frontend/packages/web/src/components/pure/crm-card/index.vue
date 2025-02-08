@@ -1,5 +1,9 @@
 <template>
-  <div :class="`relative ${props.autoHeight ? '' : 'h-full'}`">
+  <div
+    :class="`relative ${
+      props.autoHeight ? '' : !!props.specialHeight ? `h-[calc(100%-${props.specialHeight}px)]` : 'h-full'
+    }`"
+  >
     <!-- 有卡片footer 时，高度为100%-64px，64px 为：footer 高度80px 减去底部内边距 16px -->
     <n-card
       class="h-full"
@@ -84,11 +88,13 @@
       hideContinue?: boolean;
       bordered?: boolean;
       autoHeight?: boolean;
+      specialHeight?: number; // 特殊高度，例如某些页面有面包屑，autoHeight 时无效
     }>(),
     {
       noContentPadding: false,
       hideFooter: false,
       hideContinue: false,
+      specialHeight: 0,
     }
   );
   const emit = defineEmits(['cancel', 'save', 'saveAndContinue']);

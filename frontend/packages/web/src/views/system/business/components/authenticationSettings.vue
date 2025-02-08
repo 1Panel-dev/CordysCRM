@@ -1,10 +1,11 @@
 <template>
-  <CrmCard hide-footer>
+  <!-- special-height 64是tab的高度和margin -->
+  <CrmCard hide-footer :special-height="64">
     <div class="mb-[16px] flex items-center justify-between">
       <n-button type="primary" @click="handleAdd">
         {{ t('system.business.authenticationSettings.add') }}
       </n-button>
-      <n-input v-model:value="keyword" :placeholder="t('common.searchByName')" clearable class="!w-[240px]" />
+      <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
     </div>
     <CrmTable
       v-bind="propsRes"
@@ -65,11 +66,12 @@
 
 <script setup lang="ts">
   import { useClipboard } from '@vueuse/core';
-  import { NButton, NInput, NSwitch, useMessage } from 'naive-ui';
+  import { NButton, NSwitch, useMessage } from 'naive-ui';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
@@ -258,15 +260,16 @@
             },
           },
           {
-            default: h(
-              NButton,
-              {
-                text: true,
-                type: 'primary',
-                onClick: () => openAuthDetail(row.id as string),
-              },
-              { default: () => row.name }
-            ),
+            default: () =>
+              h(
+                NButton,
+                {
+                  text: true,
+                  type: 'primary',
+                  onClick: () => openAuthDetail(row.id as string),
+                },
+                { default: () => row.name }
+              ),
           }
         );
       },

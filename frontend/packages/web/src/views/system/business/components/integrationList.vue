@@ -1,5 +1,6 @@
 <template>
-  <CrmCard hide-footer>
+  <!-- special-height 64是tab的高度和margin -->
+  <CrmCard hide-footer :special-height="64">
     <div v-if="integrationList.length" class="flex flex-wrap gap-[16px]">
       <div
         v-for="item of integrationList"

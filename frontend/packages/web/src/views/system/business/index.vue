@@ -1,14 +1,21 @@
 <template>
-  <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
-  </CrmCard>
-  <PageSettings v-if="activeTab === 'pageSettings'" />
-  <AuthenticationSettings v-if="activeTab === 'authenticationSettings'" />
-  <MailSettings v-if="activeTab === 'mailSettings'" />
-  <IntegrationList v-if="['scanLogin', 'syncOrganization'].includes(activeTab)" :active-tab="activeTab" />
+  <n-scrollbar
+    class="business"
+    :content-class="`${activeTab === 'pageSettings' ? 'overflow-auto' : 'h-full overflow-hidden'}`"
+  >
+    <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+      <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+    </CrmCard>
+    <PageSettings v-if="activeTab === 'pageSettings'" />
+    <AuthenticationSettings v-if="activeTab === 'authenticationSettings'" />
+    <MailSettings v-if="activeTab === 'mailSettings'" />
+    <IntegrationList v-if="['scanLogin', 'syncOrganization'].includes(activeTab)" :active-tab="activeTab" />
+  </n-scrollbar>
 </template>
 
 <script setup lang="ts">
+  import { NScrollbar } from 'naive-ui';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import IntegrationList from './components/integrationList.vue';
