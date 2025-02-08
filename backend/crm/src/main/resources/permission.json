@@ -60,5 +60,29 @@
         ]
       }
     ]
+  },
+  {
+    "id": "CUSTOMER_MANAGEMENT",
+    "name": "permission.customer_management.name",
+    "children": [
+      {
+        "id": "CUSTOMER_MANAGEMENT_CUSTOMER",
+        "name": "permission.customer_management.customer.name",
+        "permissions": [
+          {
+            "id": "CUSTOMER_MANAGEMENT:READ"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:ADD"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:UPDATE"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:DELETE"
+          }
+        ]
+      }
+    ]
   }
 ]

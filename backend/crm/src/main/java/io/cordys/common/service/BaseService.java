@@ -1,4 +1,4 @@
-package io.cordys.crm.system.service;
+package io.cordys.common.service;
 
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;

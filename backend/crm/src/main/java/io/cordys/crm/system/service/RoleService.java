@@ -10,6 +10,7 @@ import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.permission.Permission;
 import io.cordys.common.permission.PermissionDefinitionItem;
+import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;

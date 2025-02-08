@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.cordys.crm.customer.mapper.ExtCustomerMapper">
+
+    <select id="list" resultType="io.cordys.crm.customer.dto.response.CustomerListResponse">
+        SELECT *
+        FROM customer
+        WHERE organization_id = #{orgId}
+    </select>
+
+    <select id="checkAddExist" resultType="java.lang.Boolean">
+        SELECT COUNT(1)
+        FROM customer
+        WHERE name = #{customer.name} and organization_id = #{customer.organizationId} limit 1
+    </select>
+
+    <select id="checkUpdateExist" resultType="java.lang.Boolean">
+        SELECT COUNT(1)
+        FROM customer
+        WHERE name = #{customer.name}
+          and organization_id = (
+            select organization_id from customer where id = #{customer.id}
+        )
+          and id != #{customer.id} limit 1
+    </select>
+</mapper>

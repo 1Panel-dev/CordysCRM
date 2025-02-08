@@ -45,4 +45,12 @@ public class PermissionConstants {
      */
     public static final String MODULE_SETTING_READ = "MODULE_SETTING:READ";
     public static final String MODULE_SETTING_UPDATE = "MODULE_SETTING:UPDATE";
+
+
+    /*------ start: CUSTOMER_MANAGEMENT_ROLE ------*/
+    public static final String CUSTOMER_MANAGEMENT_READ = "CUSTOMER_MANAGEMENT:READ";
+    public static final String CUSTOMER_MANAGEMENT_ADD = "CUSTOMER_MANAGEMENT:ADD";
+    public static final String CUSTOMER_MANAGEMENT_UPDATE = "CUSTOMER_MANAGEMENT:UPDATE";
+    public static final String CUSTOMER_MANAGEMENT_DELETE = "CUSTOMER_MANAGEMENT:DELETE";
+    /*------ end: CUSTOMER_MANAGEMENT_ROLE ------*/
 }

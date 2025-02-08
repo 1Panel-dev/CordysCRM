@@ -2,6 +2,7 @@ package io.cordys.crm.system.service;
 
 
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.service.BaseService;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.dto.request.LoginLogRequest;
 import io.cordys.crm.system.dto.response.LoginLogListResponse;
