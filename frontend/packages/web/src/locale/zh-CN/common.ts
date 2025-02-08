@@ -231,4 +231,5 @@ export default {
   'common.disabled': '已禁用',
   'common.ViewMore': '查看更多',
   'common.unNamed': '未命名',
+  'common.revokeChange': '撤销更改',
 };

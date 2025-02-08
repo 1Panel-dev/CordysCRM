@@ -20,4 +20,6 @@ export default {
   'role.department': 'Department',
   'role.job': 'Job',
   'role.role': 'Role',
+  'role.removeMemberTip': 'After removal, the member will no longer have this role permission',
+  'role.saveFirst': 'The role being viewed has not been saved yet, please save it first before operating',
 };

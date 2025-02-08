@@ -42,7 +42,7 @@
         </div>
         <n-divider />
         <div class="ml-[8px] w-full cursor-pointer px-[8px]" @click="() => appStore.setMenuCollapsed(!collapsed)">
-          <CrmIconFont :type="collapsed ? 'iconicon_menu_fold' : 'iconicon_menu_unfold'" :size="16" />
+          <CrmIconFont :type="collapsed ? 'iconicon_menu_fold1' : 'iconicon_menu_unfold1'" :size="16" />
         </div>
       </div>
     </div>
@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { NAvatar, NDivider, NIcon, NLayoutSider, NMenu, NTag } from 'naive-ui';
+  import { NDivider, NIcon, NLayoutSider, NMenu, NTag } from 'naive-ui';
   import { BookOutline as BookIcon } from '@vicons/ionicons5';
 
   import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';

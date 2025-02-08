@@ -231,4 +231,5 @@ export default {
   'common.disabled': 'Disabled',
   'common.ViewMore': 'View more',
   'common.unNamed': 'Not named',
+  'common.revokeChange': 'Revoke change',
 };

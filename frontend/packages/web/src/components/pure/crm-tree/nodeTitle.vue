@@ -23,7 +23,7 @@
             :maxlength="props.fieldConfig?.maxLength || 255"
             :placeholder="props.fieldConfig?.placeholder || t('common.pleaseInputToEnter')"
             :loading="props.loading"
-            @keydown.enter="handleSave"
+            @keydown.enter="handleKeyDown"
             @blur="handleSave"
             @input="validateValue"
             @click.stop
@@ -57,7 +57,6 @@
     loading?: boolean;
     fieldConfig?: FieldConfig; // 表单配置项
     allNames?: string[]; // 添加或者重命名名称重复
-    nodeId?: string; // 节点 id
     titleClass?: string;
     titleTooltipPosition?:
       | 'top-start'
@@ -77,6 +76,7 @@
   const emit = defineEmits<{
     (e: 'save', name: string, notChange: boolean): void;
     (e: 'click'): void;
+    (e: 'cancel'): void;
   }>();
 
   const form = ref({ name: props.fieldConfig?.name || '' });
@@ -113,6 +113,18 @@
         validateNameError.value = 'error';
       }
     });
+  }
+
+  function handleCancel() {
+    emit('cancel');
+  }
+
+  function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      handleSave();
+    } else if (e.key === 'Escape') {
+      handleCancel();
+    }
   }
 
   function validateValue() {

@@ -25,6 +25,7 @@
           :loading="departmentLoading"
           key-field="id"
           label-field="name"
+          @update-value="() => (unsave = true)"
         />
       </div>
       <div class="group-title">{{ t('role.featurePermission') }}</div>
@@ -40,8 +41,8 @@
       />
     </n-scrollbar>
     <div class="tab-footer">
-      <n-button :disabled="loading" secondary @click="handleCancel">
-        {{ t('common.cancel') }}
+      <n-button :disabled="loading || (!props.isNew && !unsave)" secondary @click="handleCancel">
+        {{ t(props.isNew ? 'common.cancel' : 'common.revokeChange') }}
       </n-button>
       <n-button :loading="loading" type="primary" @click="handleSave">
         {{ t(props.isNew ? 'common.create' : 'common.update') }}
@@ -64,18 +65,23 @@
     NTreeSelect,
     useMessage,
   } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import { createRole, getPermissions, getRoleDeptTree, getRoleDetail, updateRole } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
 
-  import { DeptTreeNode, RolePermissionItem } from '@lib/shared/models/system/role';
+  import { DeptTreeNode, PermissionTreeNode, RoleDetail, RolePermissionItem } from '@lib/shared/models/system/role';
 
   const props = defineProps<{
     activeRoleId: string;
     roleName?: string;
     isNew: boolean;
   }>();
-  const emit = defineEmits(['createSuccess']);
+  const emit = defineEmits<{
+    (e: 'cancelCreate'): void;
+    (e: 'createSuccess', id: string): void;
+    (e: 'unsaveChange', value: boolean): void;
+  }>();
 
   const { t } = useI18n();
   const message = useMessage();
@@ -91,6 +97,8 @@
   const departmentOptions = ref<DeptTreeNode[]>([]);
 
   const loading = ref(false);
+  const unsave = ref<boolean>(false);
+  const backupDetail = ref<RoleDetail>();
   const data = ref<Record<string, any>[]>([]);
 
   const departmentLoading = ref(false);
@@ -126,6 +134,7 @@
         });
       } else {
         const res = await getRoleDetail(props.activeRoleId);
+        backupDetail.value = res;
         dataPermission.value = res.dataScope || 'ALL';
         departments.value = res.deptIds || [];
         res.permissions.forEach((item) => {
@@ -140,7 +149,9 @@
             });
           });
         });
+        backupDetail.value.permissions = cloneDeep(data.value as PermissionTreeNode[]);
       }
+      unsave.value = false;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -150,6 +161,7 @@
   }
 
   function handleDataPermissionChange(value: string) {
+    unsave.value = true;
     if (value !== 'DEPT_CUSTOM') {
       departments.value = [];
     }
@@ -187,6 +199,7 @@
                 class: 'mr-[8px]',
                 checked: item.enable as boolean,
                 onUpdateChecked: (value: boolean) => {
+                  unsave.value = true;
                   item.enable = value;
                   // 判断当前功能对象所有的权限是否全部选中/取消选中，并设置当前行的选中状态
                   if (((rowData.permissions as []) || []).every((permission: any) => permission.enable)) {
@@ -216,6 +229,7 @@
           checked: permissionAllChecked.value,
           indeterminate: data.value.some((item) => item.enable || item.indeterminate) && !permissionAllChecked.value,
           onUpdateChecked: (value: boolean) => {
+            unsave.value = true;
             permissionAllChecked.value = value;
             // 全表格全选/取消全选
             data.value.forEach((item) => {
@@ -231,6 +245,7 @@
           checked: rowData.enable as boolean,
           indeterminate: ((rowData.permissions as []) || []).some((item: any) => item.enable) && !rowData.enable,
           onUpdateChecked: (value: boolean) => {
+            unsave.value = true;
             rowData.enable = value;
             // 设置当前功能对象所有的权限选中状态
             if (value) {
@@ -247,7 +262,16 @@
     },
   ];
 
-  function handleCancel() {}
+  function handleCancel() {
+    if (props.isNew) {
+      emit('cancelCreate');
+    } else if (unsave.value) {
+      dataPermission.value = backupDetail.value?.dataScope || 'ALL';
+      departments.value = backupDetail.value?.deptIds || [];
+      data.value = cloneDeep(backupDetail.value?.permissions as PermissionTreeNode[]);
+      unsave.value = false;
+    }
+  }
 
   async function handleSave() {
     try {
@@ -294,6 +318,13 @@
       init();
     },
     { immediate: true }
+  );
+
+  watch(
+    () => unsave.value,
+    () => {
+      emit('unsaveChange', unsave.value);
+    }
   );
 
   onBeforeMount(() => {

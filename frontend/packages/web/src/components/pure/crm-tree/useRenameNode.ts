@@ -2,6 +2,9 @@ import { VNodeChild } from 'vue';
 
 import NodeTitle from './nodeTitle.vue';
 
+import useDiscreteApi from '@/hooks/useDiscreteApi';
+import { useI18n } from '@/hooks/useI18n';
+
 import type { CrmInfoNode, CrmTreeFieldNames, CrmTreeNodeData, FieldConfig } from './type';
 /**
  *
@@ -11,8 +14,11 @@ import type { CrmInfoNode, CrmTreeFieldNames, CrmTreeNodeData, FieldConfig } fro
  */
 export default function useRenameNode(
   renameApi?: (node: CrmTreeNodeData) => Promise<boolean>,
+  renameStatic?: boolean,
   fieldNames: CrmTreeFieldNames = { keyField: 'key', labelField: 'label', childrenField: 'children' }
 ) {
+  const { t } = useI18n();
+  const { message } = useDiscreteApi();
   // 切换编辑模式 管理节点的编辑状态
   const editingKey = ref<string | number>('');
 
@@ -39,6 +45,7 @@ export default function useRenameNode(
       if (res) {
         toggleEdit(node[keyField]);
         node.hideMoreAction = false;
+        message.success(t('common.updateSuccess'));
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -52,7 +59,7 @@ export default function useRenameNode(
   function handleEdit(node: CrmTreeNodeData, newLabel: string, notChange: boolean) {
     const key = node[keyField];
     // 有改变且为重命名
-    if (!notChange && getEditingMode(key) === 'rename') {
+    if (!notChange && getEditingMode(key) === 'rename' && !renameStatic) {
       node[labelField] = newLabel;
       handleRenameMode(node);
       // 否则切换预览模式
@@ -96,6 +103,10 @@ export default function useRenameNode(
         class: selected ? 'crm-select-label' : '',
         ...titleProps,
         onSave: (newLabel: string, notChange: boolean) => handleEdit(option, newLabel, notChange),
+        onCancel: () => {
+          toggleEdit(option[keyField]);
+          option.hideMoreAction = false;
+        },
       },
       {
         labelSlot: () => renderLabel?.({ option, editing: mode !== 'view', selected, checked }),

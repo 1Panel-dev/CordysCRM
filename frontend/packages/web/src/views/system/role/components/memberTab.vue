@@ -69,6 +69,8 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
+  import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
+  import roleTreeNodePrefix from './roleTreeNodePrefix.vue';
 
   import {
     getRoleDeptUserTree,
@@ -161,10 +163,13 @@
         tooltip: true,
       },
       sorter: true,
+      sortOrder: false,
     },
     {
       title: t('role.job'),
       key: 'position',
+      sortOrder: false,
+      sorter: true,
       width: 100,
     },
     {
@@ -343,6 +348,11 @@
       pattern,
       selectedKeys: addMembers.value,
       showIrrelevantNodes: false,
+      renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
+        if (node.option.internal) {
+          return h(roleTreeNodePrefix);
+        }
+      },
       onUpdateSelectedKeys: (selectedKeys: Array<string | number>, nodes) => {
         onCheck(selectedKeys);
         userIds.value = [];

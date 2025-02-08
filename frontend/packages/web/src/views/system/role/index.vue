@@ -4,13 +4,7 @@
       <template #1>
         <div class="flex h-full flex-col p-[24px]">
           <div class="mb-[8px] flex items-center justify-between gap-[8px]">
-            <n-input v-model:value="keyword" :placeholder="t('common.searchByName')" clearable>
-              <template #suffix>
-                <n-icon>
-                  <Search />
-                </n-icon>
-              </template>
-            </n-input>
+            <CrmSearchInput v-model:value="keyword" :placeholder="t('common.searchByName')" />
             <n-tooltip trigger="hover" :delay="300">
               <template #trigger>
                 <n-button type="tertiary" class="px-[6px]" @click="addRole">
@@ -23,14 +17,18 @@
             </n-tooltip>
           </div>
           <CrmTree
+            ref="roleTreeRef"
             v-model:selected-keys="selectedKeys"
             v-model:data="roles"
+            :keyword="keyword"
             :render-prefix="renderPrefix"
             :node-more-actions="nodeMoreActions"
             title-tooltip-position="top-start"
             :filter-more-action-func="filterMoreActionFunc"
             :field-names="{ keyField: 'id', labelField: 'name', childrenField: 'children' }"
             :rename-api="updateRoleName"
+            :rename-static="renameStatic"
+            :selectable="roleTreeSelectable"
             @more-action-select="handleMoreActionSelect"
           />
         </div>
@@ -45,6 +43,8 @@
                 :is-new="!!activeRole.isNew"
                 :role-name="activeRole.name"
                 @create-success="handleCreated"
+                @cancel-create="handleCancelCreate"
+                @unsave-change="handleUnsaveChange"
               />
             </template>
             <template #member>
@@ -58,11 +58,12 @@
 </template>
 
 <script lang="ts" setup>
-  import { NButton, NIcon, NInput, NTooltip, TabPaneProps, useMessage } from 'naive-ui';
-  import { Add, Search } from '@vicons/ionicons5';
+  import { NButton, NIcon, NTooltip, TabPaneProps, useMessage } from 'naive-ui';
+  import { Add } from '@vicons/ionicons5';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTree from '@/components/pure/crm-tree/index.vue';
@@ -86,6 +87,7 @@
   const keyword = ref('');
   const roles = ref<RoleItem[]>([]);
   const selectedKeys = ref<string[]>([]);
+  const roleTreeRef = ref<InstanceType<typeof CrmTree> | null>(null);
 
   function renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     if (node.option.internal) {
@@ -128,16 +130,23 @@
     return items;
   }
 
+  const roleTreeSelectable = computed(() => !roles.value.some((role) => role.isNew || role.unsave));
+
   function handleMoreActionSelect(item: ActionsItem, node: CrmTreeNodeData) {
     switch (item.key) {
       case 'rename':
         break;
       case 'copy':
+        if (!roleTreeSelectable.value) {
+          message.warning(t('role.saveFirst'));
+          return;
+        }
         const id = getGenerateId();
         roles.value.push({
           ...roles.value[roles.value.length - 1],
           name: `${node.name}Copy`,
           internal: false,
+          isNew: true,
           id,
         });
         selectedKeys.value = [id];
@@ -173,17 +182,26 @@
   }
 
   const activeRole = computed(() => roles.value.find((e) => e.id === selectedKeys.value[0]));
+  const renameStatic = computed(() => activeRole.value?.isNew);
+
   function addRole() {
+    if (!roleTreeSelectable.value) {
+      message.warning(t('role.saveFirst'));
+      return;
+    }
     const id = getGenerateId();
     roles.value.push({
       id,
       name: '新角色',
       internal: false,
-      dataScope: 'all',
+      dataScope: 'ALL',
       description: '',
       isNew: true,
     });
     selectedKeys.value = [id];
+    nextTick(() => {
+      roleTreeRef.value?.toggleEdit(id);
+    });
   }
 
   const activeTab = ref('permission');
@@ -223,6 +241,20 @@
 
   function handleCreated(id: string) {
     selectedKeys.value = [id];
+    if (activeRole.value) {
+      activeRole.value.isNew = false;
+    }
+  }
+
+  function handleCancelCreate() {
+    roles.value = roles.value.filter((role) => role.id !== selectedKeys.value[0]);
+    selectedKeys.value = roles.value[0] ? [roles.value[0].id] : [];
+  }
+
+  function handleUnsaveChange(val: boolean) {
+    if (activeRole.value) {
+      activeRole.value.unsave = val;
+    }
   }
 
   onBeforeMount(() => {

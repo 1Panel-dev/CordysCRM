@@ -6,25 +6,19 @@
       v-model:selected-keys="selectedKeys"
       v-model:expanded-keys="expandedKeys"
       v-model:indeterminate-keys="indeterminateKeys"
-      v-bind="{ ...props, ...props.fieldNames }"
-      :data="filterTreeData"
       :virtual-scroll="props.virtualScrollProps?.virtualScroll"
       :style="{
         height: `${props.virtualScrollProps?.virtualScrollHeight}`,
       }"
-      :allow-drop="handleAllowDrop"
-      block-line
-      expand-on-dragenter
-      :selectable="true"
-      default-expand-all
       :class="`crm-tree h-[${props.virtualScrollProps?.virtualScrollHeight}]`"
+      v-bind="{ ...props, ...props.fieldNames }"
+      :data="filterTreeData"
+      :node-props="nodeProps"
+      :allow-drop="handleAllowDrop"
       :render-label="renderLabelDom"
       :render-prefix="renderPrefixDom"
       :render-suffix="renderSuffixDom"
       :render-switcher-icon="renderSwitcherIconDom"
-      :expand-on-click="false"
-      :cancelable="false"
-      :node-props="nodeProps"
       @update:selected-keys="select"
       @update:expanded-keys="expanded"
       @update:checked-keys="checkNode"
@@ -116,6 +110,7 @@
       filterMoreActionFunc?: (items: ActionsItem[], node: CrmTreeNodeData) => any[]; // 过滤更多操作按钮
       titleClass?: string;
       renameApi?: (node: CrmTreeNodeData) => Promise<boolean>;
+      renameStatic?: boolean; // 是否是静态重命名，不调用接口
     }>(),
     {
       searchDebounce: 300,
@@ -130,6 +125,7 @@
       }),
       multiple: false,
       disabledTitleTooltip: false,
+      blockLine: true,
     }
   );
 
@@ -188,7 +184,8 @@
 
   const filterTreeData = ref<CrmTreeNodeData[]>([]); // 初始化时全量的树数据或在非搜索情况下更新后的全量树数据
 
-  const { toggleEdit, createEditInput } = useRenameNode(props.renameApi, props.fieldNames);
+  const { toggleEdit, createEditInput } = useRenameNode(props.renameApi, props.renameStatic, props.fieldNames);
+
   /**
    * 选中节点事件
    */
@@ -243,7 +240,6 @@
   function selectMoreAction(actionItem: ActionsItem, option: CrmTreeNodeData) {
     const nodeKey = option[props.fieldNames.keyField];
     if (actionItem.key === 'rename') {
-      option.hideMoreAction = true;
       toggleEdit(nodeKey);
     } else {
       emit('moreActionSelect', actionItem, option);
