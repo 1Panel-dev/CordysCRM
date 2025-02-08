@@ -1,6 +1,7 @@
 package io.cordys.crm.system.mapper;
 
 import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.dto.RoleUserTreeNode;
 import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.*;
 import org.apache.ibatis.annotations.Param;
@@ -17,7 +18,7 @@ public interface ExtUserRoleMapper {
 
     List<DeptUserTreeNode> selectUserDeptForRelevance(@Param("orgId") String orgId, @Param("roleId") String roleId);
 
-    List<DeptUserTreeNode> selectUserRoleForRelevance(@Param("orgId") String orgId, @Param("roleId") String roleId);
+    List<RoleUserTreeNode> selectUserRoleForRelevance(@Param("orgId") String orgId, @Param("roleId") String roleId);
 
     void deleteUserRole(@Param("ids") List<String> ids);
 

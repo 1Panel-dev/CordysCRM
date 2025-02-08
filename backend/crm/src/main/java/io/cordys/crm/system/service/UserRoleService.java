@@ -2,6 +2,7 @@ package io.cordys.crm.system.service;
 
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.dto.RoleUserTreeNode;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.SubListUtils;
 import io.cordys.crm.system.domain.Department;
@@ -21,6 +22,7 @@ import jakarta.annotation.Resource;
 import jodd.util.StringUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -111,19 +113,20 @@ public class UserRoleService {
         return BaseTreeNode.buildTree(treeNodes);
     }
 
-    public List<DeptUserTreeNode> getRoleUserTree(String orgId, String roleId) {
+    public List<RoleUserTreeNode> getRoleUserTree(String orgId, String roleId) {
         // 查询角色信息
         List<RoleListResponse> list = roleService.list(orgId);
-        List<DeptUserTreeNode> treeNodes = list.stream().filter(role -> !StringUtil.equals(roleId, role.getId()))
+        List<RoleUserTreeNode> treeNodes = list.stream().filter(role -> !StringUtil.equals(roleId, role.getId()))
                 .map((role) -> {
-                    DeptUserTreeNode roleNode = new DeptUserTreeNode();
+                    RoleUserTreeNode roleNode = new RoleUserTreeNode();
                     roleNode.setNodeType("ROLE");
+                    roleNode.setInternal(BooleanUtils.isTrue(role.getInternal()));
                     roleNode.setId(role.getId());
                     roleNode.setName(role.getName());
                     return roleNode;
                 }).collect(Collectors.toList());
         // 查询用户信息
-        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserRoleForRelevance(orgId, roleId);
+        List<RoleUserTreeNode> userNodes = extUserRoleMapper.selectUserRoleForRelevance(orgId, roleId);
 
         // 如果已经关联的用户，设置为 disable
         Set<String> currentRoleUserIds = extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId))

@@ -5,6 +5,7 @@ import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.dto.RoleUserTreeNode;
 import io.cordys.common.permission.Permission;
 import io.cordys.common.permission.PermissionDefinitionItem;
 import io.cordys.common.util.BeanUtils;
@@ -375,13 +376,19 @@ class RoleControllerTests extends BaseTest {
     void testUserRoleTree() throws Exception {
         // 请求成功
         MvcResult mvcResult = this.requestGetWithOkAndReturn(USER_ROLE_TREE, addRole.getId());
-        List<DeptUserTreeNode> deptUserTreeNodes = getResultDataArray(mvcResult, DeptUserTreeNode.class);
+        List<RoleUserTreeNode> deptUserTreeNodes = getResultDataArray(mvcResult, RoleUserTreeNode.class);
 
         // 校验数据
         deptUserTreeNodes.forEach(roleNode -> {
             if (StringUtils.equals(roleNode.getNodeType(), "ROLE")) {
                 UserRole userRole = new UserRole();
                 userRole.setRoleId(roleNode.getId());
+                if (StringUtils.equalsAny(roleNode.getId(),
+                        InternalRole.ORG_ADMIN.getValue(),
+                        InternalRole.SALES_MANAGER.getValue(),
+                        InternalRole.SALES_STAFF.getValue())) {
+                    Assertions.assertTrue(roleNode.getInternal());
+                }
                 List<UserRole> userRoles = userRoleMapper.select(userRole);
                 userRoles.forEach(user -> {
                     Assertions.assertTrue(roleNode.getChildren().stream()

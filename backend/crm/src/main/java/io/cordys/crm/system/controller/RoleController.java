@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.dto.RoleUserTreeNode;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.permission.PermissionDefinitionItem;
@@ -111,7 +112,7 @@ public class RoleController {
     @GetMapping("/user/role/tree/{roleId}")
     @Operation(summary = "获取角色用户树")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
-    public List<DeptUserTreeNode> getRoleUserTree(@PathVariable String roleId) {
+    public List<RoleUserTreeNode> getRoleUserTree(@PathVariable String roleId) {
         return userRoleService.getRoleUserTree(OrganizationContext.getOrganizationId(), roleId);
     }
 
