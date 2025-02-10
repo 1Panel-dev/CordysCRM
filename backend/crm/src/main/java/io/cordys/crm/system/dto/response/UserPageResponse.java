@@ -33,6 +33,9 @@ public class UserPageResponse {
     @Schema(description = "部门id")
     private String departmentId;
 
+    @Schema(description = "部门名称")
+    private String departmentName;
+
     @Schema(description = "组织id")
     private String organizationId;
 

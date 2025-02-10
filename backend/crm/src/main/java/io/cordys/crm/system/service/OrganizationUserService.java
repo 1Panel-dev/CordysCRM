@@ -27,6 +27,7 @@ import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,6 +68,8 @@ public class OrganizationUserService {
     private BaseMapper<UserExtend> userExtendMapper;
     @Resource
     private ExtUserExtendMapper extUserExtendMapper;
+    @Resource
+    private BaseMapper<Department> departmentMapper;
 
     /**
      * 员工列表查询
@@ -95,6 +98,10 @@ public class OrganizationUserService {
             ids.addAll(list.stream().map(UserPageResponse::getUpdateUser).toList());
             List<OptionDTO> optionDTOS = extUserMapper.selectUserOptionByIds(ids);
             Map<String, String> userMap = optionDTOS.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+            //部门
+            List<String> departmentIds = list.stream().map(UserPageResponse::getDepartmentId).distinct().toList();
+            List<Department> departmentList = departmentMapper.selectByIds(departmentIds.toArray(new String[0]));
+            Map<String, String> departmentMap = departmentList.stream().collect(Collectors.toMap(Department::getId, Department::getName));
 
             //todo 暂无用户组 后续需求再处理
             list.forEach(user -> {
@@ -106,6 +113,9 @@ public class OrganizationUserService {
                 }
                 if (userMap.containsKey(user.getUpdateUser())) {
                     user.setUpdateUserName(userMap.get(user.getUpdateUser()));
+                }
+                if (departmentMap.containsKey(user.getDepartmentId())) {
+                    user.setDepartmentName(departmentMap.get(user.getDepartmentId()));
                 }
             });
 

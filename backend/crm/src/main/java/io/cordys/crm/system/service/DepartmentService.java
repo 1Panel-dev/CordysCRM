@@ -62,7 +62,7 @@ public class DepartmentService {
      * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.ADD)
-    public void addDepartment(DepartmentAddRequest request, String orgId, String userId) {
+    public Department addDepartment(DepartmentAddRequest request, String orgId, String userId) {
         String id = IDGenerator.nextStr();
         Department department = new Department();
         department.setId(id);
@@ -83,6 +83,7 @@ public class DepartmentService {
                 .resourceId(id)
                 .resourceName(department.getName())
                 .build());
+        return department;
     }
 
     public Long getNextNum(String orgId) {
