@@ -1,6 +1,6 @@
 package io.cordys.crm.system.service;
 
-import io.cordys.common.constants.ModuleConstants;
+import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -85,7 +85,7 @@ public class ModuleService {
 		// init module data
 		List<Module> modules = new ArrayList<>();
 		AtomicLong pos = new AtomicLong(1L);
-		Arrays.stream(ModuleConstants.values()).forEach(moduleConstant -> {
+		Arrays.stream(ModuleKey.values()).forEach(moduleConstant -> {
 			Module module = new Module();
 			module.setId(IDGenerator.nextStr());
 			module.setKey(moduleConstant.getKey());

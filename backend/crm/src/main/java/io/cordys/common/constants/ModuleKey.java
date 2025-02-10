@@ -3,7 +3,7 @@ package io.cordys.common.constants;
 import lombok.Getter;
 
 @Getter
-public enum ModuleConstants {
+public enum ModuleKey {
 
 	/**
 	 * 首页
@@ -22,17 +22,13 @@ public enum ModuleConstants {
 	 */
 	BUSINESS("business"),
 	/**
-	 * 数据管理
-	 */
-	DATA("data"),
-	/**
 	 * 产品管理
 	 */
 	PRODUCT("product");
 
 	private final String key;
 
-	ModuleConstants(String key) {
+	ModuleKey(String key) {
 		this.key = key;
 	}
 }
