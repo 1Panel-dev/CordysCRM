@@ -58,8 +58,8 @@ CREATE TABLE sys_operation_log
     `organization_id` VARCHAR(32)  NOT NULL DEFAULT 'NONE' COMMENT '组织id',
     `type`            VARCHAR(32)  NOT NULL COMMENT '操作类型/add/update/delete',
     `module`          VARCHAR(32)  NOT NULL COMMENT '操作模块',
-    `resource_id`     VARCHAR(32)  NOT NULL   COMMENT '资源id' ,
-    `resource_name`   VARCHAR(500) COMMENT '资源名称' ,
+    `resource_id`     VARCHAR(32)  NOT NULL COMMENT '资源id',
+    `resource_name`   VARCHAR(500) COMMENT '资源名称',
     `create_time`     BIGINT       NOT NULL COMMENT '操作时间',
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '操作人',
     `path`            VARCHAR(255) COMMENT '操作路径',
@@ -70,23 +70,24 @@ CREATE TABLE sys_operation_log
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE sys_login_log(
-  `id` VARCHAR(32) NOT NULL   COMMENT '主键' ,
-  `create_time` BIGINT NOT NULL   COMMENT '操作时间' ,
-  `operator` VARCHAR(32) NOT NULL   COMMENT '操作人' ,
-  `login_address` VARCHAR(255)    COMMENT '登录地' ,
-  `platform` VARCHAR(32)    COMMENT '平台' ,
-  PRIMARY KEY (id)
-)  COMMENT = '登入日志'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+CREATE TABLE sys_login_log
+(
+    `id`            VARCHAR(32) NOT NULL COMMENT '主键',
+    `create_time`   BIGINT      NOT NULL COMMENT '操作时间',
+    `operator`      VARCHAR(32) NOT NULL COMMENT '操作人',
+    `login_address` VARCHAR(255) COMMENT '登录地',
+    `platform`      VARCHAR(32) COMMENT '平台',
+    PRIMARY KEY (id)
+) COMMENT = '登入日志'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_operator ON sys_login_log(operator ASC);
-CREATE INDEX idx_create_time ON sys_login_log(create_time ASC);
+CREATE INDEX idx_operator ON sys_login_log (operator ASC);
+CREATE INDEX idx_create_time ON sys_login_log (create_time ASC);
 
 CREATE INDEX idx_organization_id ON sys_operation_log (organization_id ASC);
-CREATE INDEX idx_resource_id ON sys_operation_log(resource_id ASC);
+CREATE INDEX idx_resource_id ON sys_operation_log (resource_id ASC);
 CREATE INDEX idx_type ON sys_operation_log (type ASC);
 
 CREATE TABLE sys_operation_log_blob
@@ -285,21 +286,21 @@ CREATE TABLE sys_organization
 
 CREATE TABLE sys_organization_user
 (
-    `id`              VARCHAR(32) NOT NULL COMMENT 'id',
-    `organization_id` VARCHAR(32) NOT NULL COMMENT '组织id',
-    `department_id`   VARCHAR(32) COMMENT '部门id',
-    `resource_user_id` VARCHAR(64)    COMMENT '三方唯一id' ,
-    `user_id`         VARCHAR(32) NOT NULL COMMENT '用户id',
-    `enable`          BIT(1)      NOT NULL DEFAULT 1 COMMENT '是否启用',
-    `employee_id`     VARCHAR(255)         DEFAULT '' COMMENT '工号',
-    `position`        VARCHAR(255)         DEFAULT '' COMMENT '职位',
-    `employee_type`   VARCHAR(255)         DEFAULT '' COMMENT '员工类型',
-    `supervisor_id`   VARCHAR(32)          DEFAULT '' COMMENT '直属上级',
-    `work_city`       VARCHAR(255)         DEFAULT '' COMMENT '工作城市',
-    `create_time`     BIGINT      NOT NULL COMMENT '创建时间',
-    `update_time`     BIGINT      NOT NULL COMMENT '更新时间',
-    `create_user`     VARCHAR(32) NOT NULL COMMENT '创建人',
-    `update_user`     VARCHAR(32) NOT NULL COMMENT '更新人',
+    `id`               VARCHAR(32) NOT NULL COMMENT 'id',
+    `organization_id`  VARCHAR(32) NOT NULL COMMENT '组织id',
+    `department_id`    VARCHAR(32) COMMENT '部门id',
+    `resource_user_id` VARCHAR(64) COMMENT '三方唯一id',
+    `user_id`          VARCHAR(32) NOT NULL COMMENT '用户id',
+    `enable`           BIT(1)      NOT NULL DEFAULT 1 COMMENT '是否启用',
+    `employee_id`      VARCHAR(255)         DEFAULT '' COMMENT '工号',
+    `position`         VARCHAR(255)         DEFAULT '' COMMENT '职位',
+    `employee_type`    VARCHAR(255)         DEFAULT '' COMMENT '员工类型',
+    `supervisor_id`    VARCHAR(32)          DEFAULT '' COMMENT '直属上级',
+    `work_city`        VARCHAR(255)         DEFAULT '' COMMENT '工作城市',
+    `create_time`      BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`      BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`      VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`      VARCHAR(32) NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
 ) COMMENT = '组织成员'
     ENGINE = InnoDB
@@ -329,7 +330,7 @@ CREATE TABLE sys_module_field(
     `update_user`   VARCHAR(32) NOT NULL   COMMENT '更新人' ,
     `update_time`   BIGINT NOT NULL   COMMENT '更新时间' ,
     PRIMARY KEY (id)
-)  COMMENT = '模块字段配置'
+) COMMENT = '模块字段配置'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
@@ -400,15 +401,16 @@ CREATE TABLE sys_role_permission
 
 CREATE INDEX idx_role_id ON sys_role_permission (role_id ASC);
 
-CREATE TABLE sys_role_scope_dept(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-    `role_id` VARCHAR(32) NOT NULL   COMMENT '角色ID' ,
-    `department_id` VARCHAR(32) NOT NULL   COMMENT '部门ID' ,
+CREATE TABLE sys_role_scope_dept
+(
+    `id`            VARCHAR(32) NOT NULL COMMENT 'ID',
+    `role_id`       VARCHAR(32) NOT NULL COMMENT '角色ID',
+    `department_id` VARCHAR(32) NOT NULL COMMENT '部门ID',
     PRIMARY KEY (id)
-)  COMMENT = '角色与部门的关联表，角色 data_scope 为指定部门时使用'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+) COMMENT = '角色与部门的关联表，角色 data_scope 为指定部门时使用'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE sys_user_role
 (
@@ -430,14 +432,17 @@ CREATE INDEX idx_user_id ON sys_user_role (user_id ASC);
 
 CREATE TABLE sys_organization_config_detail
 (
-    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
-    `config_id`   VARCHAR(32) NOT NULL COMMENT '配置id',
-    `content`     BLOB        NOT NULL COMMENT '配置内容',
-    `type`        VARCHAR(64) NOT NULL COMMENT '配置内容类型',
-    `create_time` BIGINT      NOT NULL COMMENT '创建时间',
-    `update_time` BIGINT      NOT NULL COMMENT '更新时间',
-    `create_user` VARCHAR(32) NOT NULL COMMENT '创建人',
-    `update_user` VARCHAR(32) NOT NULL COMMENT '更新人',
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `config_id`   VARCHAR(32)  NOT NULL COMMENT '配置id',
+    `type`        VARCHAR(64)  NOT NULL COMMENT '配置内容类型',
+    `enable`      BIT NOT NULL  DEFAULT 0 COMMENT '是否启用' ,
+    `name`        VARCHAR(255) NOT NULL DEFAULT 'NONE' COMMENT '配置名称',
+    `content`     BLOB         NOT NULL COMMENT '配置内容',
+    `description` VARCHAR(1000) COMMENT '描述',
+    `create_time` BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time` BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user` VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user` VARCHAR(32)  NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
 ) COMMENT = '企业设置详情表'
     ENGINE = InnoDB
@@ -446,6 +451,7 @@ CREATE TABLE sys_organization_config_detail
 
 CREATE INDEX idx_config_id ON sys_organization_config_detail (config_id ASC);
 CREATE INDEX idx_type ON sys_organization_config_detail (type ASC);
+CREATE INDEX idx_name ON sys_organization_config_detail (name ASC);
 
 CREATE TABLE sys_organization_config
 (
@@ -529,12 +535,12 @@ CREATE TABLE sys_module_form(
     `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
     `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
     PRIMARY KEY (id)
-)  COMMENT = '模块表单配置'
+) COMMENT = '模块表单配置'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_module_id ON sys_module_form(module_id ASC);
+CREATE INDEX idx_module_id ON sys_module_form (module_id ASC);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

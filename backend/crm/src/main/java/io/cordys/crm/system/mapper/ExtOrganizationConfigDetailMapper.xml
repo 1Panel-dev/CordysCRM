@@ -8,6 +8,23 @@
 
     <select id="getOrganizationConfigDetails" parameterType="io.cordys.crm.system.domain.OrganizationConfigDetail" resultType="io.cordys.crm.system.domain.OrganizationConfigDetail">
         SELECT * FROM sys_organization_config_detail WHERE config_id = #{configId}
+        <if test="name != null">
+            and name like concat('%', #{name},'%')
+        </if>
     </select>
+
+    <select id="getRepeatDetails" parameterType="io.cordys.crm.system.domain.OrganizationConfigDetail" resultType="java.lang.Integer">
+        SELECT count(id)
+        FROM sys_organization_config_detail
+        WHERE sys_organization_config_detail.name = #{name}
+        <if test="id != null">
+            and id != #{id}
+        </if>
+    </select>
+
+    <update id="updateStatus" parameterType="io.cordys.crm.system.domain.OrganizationConfigDetail">
+        UPDATE sys_organization_config_detail SET enable = #{enable} WHERE type = #{type} AND id != #{id}
+        AND config_id = #{configId}
+    </update>
 
 </mapper>

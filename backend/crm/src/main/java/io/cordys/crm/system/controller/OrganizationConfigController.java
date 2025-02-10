@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.cordys.security.SessionUtils;
 
-@Tag(name = "组织设置")
+@Tag(name = "企业设置")
 @RestController
 @RequestMapping("/organization/config")
 public class OrganizationConfigController {
@@ -31,14 +31,6 @@ public class OrganizationConfigController {
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
     public EmailDTO getEmail() {
         return organizationConfigService.getEmail(OrganizationContext.getOrganizationId());
-    }
-
-    //获取同步组织设置
-    @GetMapping("/synchronization")
-    @Operation(summary = "获取同步组织设置")
-    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
-    public List<SyncOrganizationDTO> getSynOrganization() {
-        return organizationConfigService.getSynOrganization(OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add/email")
@@ -55,13 +47,21 @@ public class OrganizationConfigController {
         organizationConfigService.updateEmail(emailDTO, SessionUtils.getUserId());
     }
 
+
+    //获取同步组织设置
+    @GetMapping("/synchronization")
+    @Operation(summary = "获取同步组织设置")
+    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
+    public List<SyncOrganizationDTO> getSynOrganization() {
+        return organizationConfigService.getSynOrganization(OrganizationContext.getOrganizationId());
+    }
+
     @PostMapping("/add/synchronization")
     @Operation(summary = "新增同步组织设置")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
     public void addSynchronization(@Validated @RequestBody SyncOrganizationDTO syncOrganizationDTO) {
         organizationConfigService.addSynchronization(syncOrganizationDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
-
 
     @PostMapping("/update/synchronization")
     @Operation(summary = "更新同步组织设置")

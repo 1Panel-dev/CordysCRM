@@ -10,5 +10,10 @@ public interface ExtOrganizationConfigDetailMapper {
 
     OrganizationConfigDetail getOrganizationConfigDetail(@Param("configId") String configId);
 
-    List<OrganizationConfigDetail> getOrganizationConfigDetails(@Param("configId") String configId);
+    List<OrganizationConfigDetail> getOrganizationConfigDetails(@Param("configId") String configId, @Param("name") String name);
+
+    int getRepeatDetails(@Param("id") String id, @Param("name") String name);
+
+    int updateStatus(@Param("id") String id, @Param("enable") Boolean enable, @Param("type") String type, @Param("configId") String configId);
+
 }
