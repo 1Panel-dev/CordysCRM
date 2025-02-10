@@ -1,5 +1,7 @@
 import { VNodeChild } from 'vue';
 
+import type { CrmTagGroupProps } from '@/components/pure/crm-tag-group/index.vue';
+
 import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import type {
   DataTableColumn,
@@ -27,6 +29,8 @@ export type CrmDataTableColumn<T = any> = DataTableColumn<T> & {
   sortOrder?: 'descend' | 'ascend' | false; // 受控状态下表格的排序方式
   render?: (rowData: T, rowIndex: number) => VNodeChild;
   renderFilterMenu?: RenderFilterMenu;
+  isTag?: boolean; // 标签列
+  tagGroupProps?: Omit<CrmTagGroupProps, 'tags'>; // 标签列属性
 };
 
 export interface CrmTableProps<T> extends DataTableProps {

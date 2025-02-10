@@ -44,37 +44,35 @@
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
-  const props = withDefaults(
-    defineProps<{
-      tags: Record<string, any>[]; // 标签组
-      size?: 'small' | 'medium' | 'large';
-      type?: 'default' | 'primary' | 'info' | 'success' | 'warning' | 'error';
-      theme?: 'dark' | 'light' | 'outline' | 'lightOutLine' | 'default';
-      isStringTags?: boolean; // 是否是字符串标签 注: table使用时候不要打开table的省略属性，否则容器宽度会被限制导致无法自适应table单元格宽度
-      labelKey?: string;
-      placement?:
-        | 'top-start'
-        | 'top'
-        | 'top-end'
-        | 'right-start'
-        | 'right'
-        | 'right-end'
-        | 'bottom-start'
-        | 'bottom'
-        | 'bottom-end'
-        | 'left-start'
-        | 'left'
-        | 'left-end';
-    }>(),
-    {
-      size: 'medium',
-      type: 'default',
-      theme: 'default',
-      labelKey: 'label',
-      isStringTags: false,
-      placement: 'top',
-    }
-  );
+  export interface CrmTagGroupProps {
+    tags: Record<string, any>[]; // 标签组
+    size?: 'small' | 'medium' | 'large';
+    type?: 'default' | 'primary' | 'info' | 'success' | 'warning' | 'error';
+    theme?: 'dark' | 'light' | 'outline' | 'lightOutLine' | 'default';
+    isStringTags?: boolean; // 是否是字符串标签 注: table使用时候不要打开table的省略属性，否则容器宽度会被限制导致无法自适应table单元格宽度
+    labelKey?: string;
+    placement?:
+      | 'top-start'
+      | 'top'
+      | 'top-end'
+      | 'right-start'
+      | 'right'
+      | 'right-end'
+      | 'bottom-start'
+      | 'bottom'
+      | 'bottom-end'
+      | 'left-start'
+      | 'left'
+      | 'left-end';
+  }
+  const props = withDefaults(defineProps<CrmTagGroupProps>(), {
+    size: 'medium',
+    type: 'default',
+    theme: 'default',
+    labelKey: 'label',
+    isStringTags: false,
+    placement: 'top',
+  });
 
   const container = ref<HTMLElement | null>(null);
   const measureRef = ref<HTMLElement | null>(null);

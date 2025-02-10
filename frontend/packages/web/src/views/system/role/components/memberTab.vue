@@ -176,6 +176,10 @@
       title: t('role.role'),
       key: 'roles',
       width: 100,
+      isTag: true,
+      tagGroupProps: {
+        labelKey: 'name',
+      },
     },
     {
       title: t('common.addTime'),

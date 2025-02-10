@@ -33,6 +33,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmPagination from '@/components/pure/crm-pagination/index.vue';
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
+  import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
   import ColumnSetting from './components/columnSetting.vue';
 
   import { useI18n } from '@/hooks/useI18n';
@@ -62,7 +63,7 @@
   // TODO lmy 设置列
   async function initColumn(hasInitStore = false) {
     // 将render去掉，防止报错
-    let columns = cloneDeep(props.columns).map((column) => {
+    let columns = cloneDeep(props.columns).map((column: CrmDataTableColumn) => {
       const _col = { ...column };
       Object.keys(_col).forEach((key) => {
         if (typeof _col[key as keyof CrmDataTableColumn] === 'function') {
@@ -109,6 +110,15 @@
           render,
         };
       }
+      const tagsColumn = column.isTag
+        ? {
+            render: (row: Record<string, any>) =>
+              h(CrmTagGroup, {
+                tags: row[column.key as string],
+                ...column.tagGroupProps,
+              }),
+          }
+        : {};
       // 排序图标处理
       const sorterColumn = column.sorter
         ? {
@@ -141,14 +151,14 @@
             },
           }
         : {};
-
       return {
         ...column,
         ...sorterColumn,
         ...filterColumn,
+        ...tagsColumn,
         titleAlign: 'left',
         resizable: true,
-        render,
+        ...(render || undefined),
       };
     });
   }
