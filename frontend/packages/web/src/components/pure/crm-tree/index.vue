@@ -93,6 +93,7 @@
       renderSwitcherIcon?: (info: CrmTreeRenderIconData) => VNodeChild; // 渲染icon
       nodeHighlightClass?: string; // 节点高亮背景色
       handleDrop?: boolean; // 节点高亮背景色
+      cancelable?: boolean; // 选中可取消
       titleTooltipPosition?:
         | 'top-start'
         | 'top'
@@ -126,6 +127,7 @@
       multiple: false,
       disabledTitleTooltip: false,
       blockLine: true,
+      cancelable: false,
     }
   );
 

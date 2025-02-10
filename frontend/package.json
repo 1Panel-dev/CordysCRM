@@ -23,6 +23,7 @@
     "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",
     "echarts": "^5.5.1",
+    "element-china-area-data": "^6.1.0",
     "jsencrypt": "^3.3.2",
     "localforage": "^1.10.0",
     "lodash-es": "^4.17.21",

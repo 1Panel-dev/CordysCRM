@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NButton, NSwitch, useMessage } from 'naive-ui';
+  import { NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
@@ -74,11 +74,13 @@
   import ValidateModal from '@/views/system/org/components/import/validateModal.vue';
   import ValidateResult from '@/views/system/org/components/import/validateResult.vue';
 
-  import { getUserList, resetUserPassword, updateUser } from '@/api/modules/system/org';
+  import { getUserList, resetUserPassword, syncOrg, updateUser } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
-  import { characterLimit } from '@/utils';
+  import { characterLimit, getCityPath } from '@/utils';
+
+  import { CompanyTypeEnum } from '@/enums/commonEnum';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import type { MemberItem } from '@lib/shared/models/system/org';
@@ -100,27 +102,66 @@
   /**
    * 设置同步微信
    */
-  const isHasSetting = ref<boolean>(false);
+
   const showSyncWeChatModal = ref<boolean>(false);
   function settingWeChat(e: MouseEvent) {
     e.stopPropagation();
     showSyncWeChatModal.value = true;
   }
 
+  const isHasConfigPermission = ref<boolean>(true); // 有配置权限
+  const isHasSyncPermission = ref<boolean>(true); // 有同步权限
+  const isHasConfig = ref<boolean>(false); // 已配置
+
+  async function handleSync() {
+    if (!isHasConfig.value) {
+      return false;
+    }
+    try {
+      await syncOrg(CompanyTypeEnum.WECOM);
+      Message.success(t('org.syncSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   function renderSync() {
+    if (!isHasSyncPermission.value && !isHasConfigPermission.value) {
+      return null;
+    }
     return h(
       'div',
       {
-        class: `flex items-center ${isHasSetting.value ? 'text-[var(--text-n1)]' : 'text-[var(--text-n6)]'}`,
+        class: `flex items-center ${
+          isHasConfigPermission.value && isHasConfig.value ? 'text-[var(--text-n1)]' : 'text-[var(--text-n6)]'
+        }`,
+        onClick: () => handleSync(),
       },
       [
-        t('org.enterpriseWhatSync'),
-        h(CrmIcon, {
-          type: 'iconicon_set_up',
-          size: 16,
-          class: 'ml-2 text-[var(--primary-8)]',
-          onClick: (e: MouseEvent) => settingWeChat(e),
-        }),
+        h(
+          NTooltip,
+          {
+            delay: 300,
+            flip: true,
+            disabled: isHasConfigPermission.value && isHasConfig.value,
+          },
+          {
+            trigger: () => {
+              return t('org.enterpriseWhatSync');
+            },
+            default: () => t('org.checkIsOpenConfig'),
+          }
+        ),
+        // 有同步微信配置权限则都展示
+        isHasConfigPermission.value
+          ? h(CrmIcon, {
+              type: 'iconicon_set_up',
+              size: 16,
+              class: 'ml-2 text-[var(--primary-8)]',
+              onClick: (e: MouseEvent) => settingWeChat(e),
+            })
+          : null,
       ]
     );
   }
@@ -194,7 +235,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await resetUserPassword(row.id);
+          await resetUserPassword(row.userId);
           Message.success(t('org.resetPassWordSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -315,15 +356,17 @@
             },
           },
           {
-            default: h(
-              NButton,
-              {
-                text: true,
-                type: 'primary',
-                onClick: () => showDetail(row.id),
-              },
-              { default: () => row.userName }
-            ),
+            default: () => {
+              return h(
+                NButton,
+                {
+                  text: true,
+                  type: 'primary',
+                  onClick: () => showDetail(row.id),
+                },
+                { default: () => row.userName }
+              );
+            },
           }
         );
       },
@@ -523,7 +566,7 @@
         gender: row.gender ? t('org.female') : t('org.male'),
         position: row.position || '-',
         departmentName: row.departmentName || '-',
-        workCity: row.workCity || '-',
+        workCity: getCityPath(row.workCity) || '-',
       };
     }
   );

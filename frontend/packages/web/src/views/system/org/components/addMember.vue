@@ -110,11 +110,7 @@
             path="workCity"
             :label="t('org.workingCity')"
           >
-            <n-select
-              v-model:value="form.workCity"
-              :placeholder="t('common.pleaseSelect')"
-              :options="workingCityOptions"
-            />
+            <CrmCitySelect v-model:value="form.workCity" />
           </n-form-item>
           <n-form-item require-mark-placement="left" label-placement="left" path="roleIds" :label="t('org.role')">
             <n-select v-model:value="form.roleIds" :placeholder="t('common.pleaseSelect')" :options="roleOptions" />
@@ -184,6 +180,7 @@
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
+  import CrmCitySelect from '@/components/business/crm-city-select/index.vue';
   import CrmExpandButton from '@/components/business/crm-expand-button/index.vue';
 
   import { addUser, getDepartmentTree, getUserDetail, updateUser } from '@/api/modules/system/org';
@@ -278,7 +275,6 @@
 
   const superiorOptions = ref([]);
 
-  const workingCityOptions = ref([]);
   const loading = ref(false);
   const formRef = ref<FormInst | null>(null);
 

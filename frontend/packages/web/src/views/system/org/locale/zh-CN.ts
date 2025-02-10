@@ -66,4 +66,6 @@ export default {
   'org.formalUser': '正式',
   'org.internshipUser': '实习',
   'org.outsourcingUser': '外包',
+  'org.checkIsOpenConfig': '请检查企业设置-同步组织架构功能配置!',
+  'org.syncSuccess': '同步成功',
 };

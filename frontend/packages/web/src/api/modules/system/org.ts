@@ -94,12 +94,12 @@ export function resetUserPassword(userId: string) {
   return CDR.get({ url: `${resetUserPasswordUrl}/${userId}` });
 }
 
-// 用户(员工)-重置密码 TODO 类型
+// 用户(员工)- 同步组织架构 TODO 类型
 export function syncOrg(type: string) {
-  return CDR.post({ url: `${syncOrgUrl}/${type}` });
+  return CDR.get({ url: `${syncOrgUrl}/${type}` });
 }
 
-// 用户(员工)-重置密码 TODO 类型
+// 用户(员工)-批量编辑 TODO 类型
 export function batchEditUser(data: any) {
   return CDR.post({ url: batchEditUserUrl, data });
 }

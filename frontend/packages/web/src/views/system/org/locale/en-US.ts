@@ -68,4 +68,6 @@ export default {
   'org.formalUser': 'Formal',
   'org.internshipUser': 'Internship',
   'org.outsourcingUser': 'Outsourcing',
+  'org.checkIsOpenConfig': 'Please check the enterprise Settings - synchronous structure function configuration!',
+  'org.syncSuccess': 'Synchronization success',
 };
