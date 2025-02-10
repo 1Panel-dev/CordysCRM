@@ -13,7 +13,7 @@ public class CustomerPoolPickRule extends BaseModel {
 	private String poolId;
 
 	@Schema(description = "是否限制领取数量")
-	private boolean limitOnNumber;
+	private Boolean limitOnNumber;
 
 	@Schema(description = "领取数量")
 	private Integer pickNumber;

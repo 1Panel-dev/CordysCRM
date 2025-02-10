@@ -127,22 +127,22 @@ public class LeadPoolControllerTests extends BaseTest {
 		leadPool.setScopeId("default-dp");
 		leadPool.setOrganizationId(DEFAULT_ORGANIZATION_ID);
 		leadPool.setOwnerId("default-owner");
-		leadPool.setEnable(0);
+		leadPool.setEnable(true);
 		return leadPool;
 	}
 
 	private LeadPoolPickRule createPickRule() {
 		LeadPoolPickRule pickRule = new LeadPoolPickRule();
 		pickRule.setPickNumber(1);
-		pickRule.setLimitOnNumber(1);
-		pickRule.setLimitPreOwner(1);
+		pickRule.setLimitOnNumber(true);
+		pickRule.setLimitPreOwner(true);
 		pickRule.setPickIntervalDays(1);
 		return pickRule;
 	}
 
 	private LeadPoolRecycleRule createRecycleRule() {
 		LeadPoolRecycleRule recycleRule = new LeadPoolRecycleRule();
-		recycleRule.setExpireNotice(1);
+		recycleRule.setExpireNotice(true);
 		recycleRule.setNoticeDays(10);
 		return recycleRule;
 	}

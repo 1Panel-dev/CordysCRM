@@ -13,7 +13,7 @@ public class CustomerPoolRecycleRule extends BaseModel {
 	private String poolId;
 
 	@Schema(description = "到期提醒")
-	private boolean expireNotice;
+	private Boolean expireNotice;
 
 	@Schema(description = "提前提醒天数")
 	private Integer noticeDays;

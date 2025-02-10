@@ -126,22 +126,22 @@ public class CustomerPoolControllerTests extends BaseTest {
 		customerPool.setScopeId("default-dp");
 		customerPool.setOrganizationId(DEFAULT_ORGANIZATION_ID);
 		customerPool.setOwnerId("default-owner");
-		customerPool.setEnable(0);
+		customerPool.setEnable(true);
 		return customerPool;
 	}
 
 	private CustomerPoolPickRule createPickRule() {
 		CustomerPoolPickRule pickRule = new CustomerPoolPickRule();
 		pickRule.setPickNumber(1);
-		pickRule.setLimitOnNumber(1);
-		pickRule.setLimitPreOwner(1);
+		pickRule.setLimitOnNumber(true);
+		pickRule.setLimitPreOwner(true);
 		pickRule.setPickIntervalDays(1);
 		return pickRule;
 	}
 
 	private CustomerPoolRecycleRule createRecycleRule() {
 		CustomerPoolRecycleRule recycleRule = new CustomerPoolRecycleRule();
-		recycleRule.setExpireNotice(1);
+		recycleRule.setExpireNotice(true);
 		recycleRule.setNoticeDays(10);
 		return recycleRule;
 	}
