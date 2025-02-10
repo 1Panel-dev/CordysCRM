@@ -2,14 +2,16 @@ package io.cordys.crm.system.excel.handler;
 
 import com.alibaba.excel.util.BooleanUtils;
 import com.alibaba.excel.write.handler.RowWriteHandler;
+import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.handler.context.RowWriteHandlerContext;
+import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
+import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.alibaba.excel.write.metadata.style.WriteCellStyle;
 import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.excel.constants.UserImportFiled;
-import org.apache.poi.ss.usermodel.Comment;
-import org.apache.poi.ss.usermodel.Drawing;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 
@@ -22,11 +24,12 @@ import java.util.Map;
 /**
  * @author wx
  */
-public class UserTemplateWriteHandler implements RowWriteHandler {
+public class UserTemplateWriteHandler implements RowWriteHandler, SheetWriteHandler {
 
     private Sheet sheet;
     private Drawing<?> drawingPatriarch;
     private Map<String, Integer> fieldMap = new HashMap<>();
+    private int totalColumns; // 记录总列数
 
     public UserTemplateWriteHandler(List<List<String>> headList) {
         initIndex(headList);
@@ -40,7 +43,22 @@ public class UserTemplateWriteHandler implements RowWriteHandler {
                 index++;
             }
         }
+        this.totalColumns = index; // 初始化总列数
     }
+
+    @Override
+    public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
+        sheet = writeSheetHolder.getSheet();
+
+        // 创建第二行并合并单元格
+        Row row1 = sheet.createRow(1);
+        Cell cell1 = row1.createCell(0);
+        cell1.setCellValue("第二行说明文字：\n" +
+                "1、不能再Excel中对成员信息类别进行增加、修改、删除\n" +
+                "2、上下级部门间用‘/’隔开，且从最上级部门开始，例如\"XX公司/XX事业部/研发部\"");
+        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, totalColumns - 1));
+    }
+
 
     @Override
     public void afterRowDispose(RowWriteHandlerContext context) {

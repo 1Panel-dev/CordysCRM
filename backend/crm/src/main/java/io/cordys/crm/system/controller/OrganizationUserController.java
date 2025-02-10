@@ -7,6 +7,7 @@ import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.request.*;
+import io.cordys.crm.system.dto.response.UserImportResponse;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.service.OrganizationUserService;
@@ -19,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -102,4 +104,13 @@ public class OrganizationUserController {
     public void userTemplateExport(HttpServletResponse response) {
         organizationUserService.downloadExcelTemplate(response);
     }
+
+
+    @PostMapping("/import/pre-check")
+    @Operation(summary = "用户(员工)-excel导入检查")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    public UserImportResponse preCheckXMind(@RequestPart(value = "file", required = false) MultipartFile file) {
+        return organizationUserService.preCheck(file);
+    }
+
 }

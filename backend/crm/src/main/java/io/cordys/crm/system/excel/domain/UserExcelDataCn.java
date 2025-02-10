@@ -18,48 +18,49 @@ import java.util.Locale;
 public class UserExcelDataCn extends UserExcelData {
 
     @ColumnWidth(50)
-    @ExcelProperty("Employee id")
+    @ExcelProperty("工号")
     @NotRequired
     private String employeeId;
 
     @NotBlank(message = "{cannot_be_null}")
     @Length(max = 255)
-    @ExcelProperty("Name")
+    @ExcelProperty("姓名")
     private String name;
 
     @ColumnWidth(50)
-    @ExcelProperty("Gender")
+    @ExcelProperty("性别")
     private String gender;
 
-    @NotBlank(message = "{cannot_be_null}")
-    @Length(max = 100)
-    @ExcelProperty("Department")
-    @ColumnWidth(30)
+    @ExcelProperty("部门")
+    @ColumnWidth(50)
     private String department;
 
 
     @ColumnWidth(50)
-    @ExcelProperty("Position")
+    @ExcelProperty("职位")
     private String position;
 
+    @NotBlank(message = "{cannot_be_null}")
     @ColumnWidth(50)
-    @ExcelProperty("Phone")
+    @Length(max = 255)
+    @ExcelProperty("手机号")
     private String phone;
 
+    @NotBlank(message = "{cannot_be_null}")
     @ColumnWidth(50)
-    @ExcelProperty("Email")
+    @ExcelProperty("邮箱")
     private String email;
 
     @ColumnWidth(50)
-    @ExcelProperty("Supervisor")
+    @ExcelProperty("直属上级")
     private String supervisor;
 
     @ColumnWidth(50)
-    @ExcelProperty("Work city")
+    @ExcelProperty("工作城市")
     private String workCity;
 
     @ColumnWidth(50)
-    @ExcelProperty("Employee type")
+    @ExcelProperty("员工类型")
     private String employeeType;
 
 

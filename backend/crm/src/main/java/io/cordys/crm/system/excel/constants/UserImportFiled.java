@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 public enum UserImportFiled {
 
-    EMPLOYEE_ID("employeeId", "工号", "EmployeeId", UserExcelData::getEmployeeId),
+    EMPLOYEE_ID("employeeId", "工号", "Employee id", UserExcelData::getEmployeeId),
     NAME("name", "姓名", "Name", UserExcelData::getName),
     GENDER("gender", "性别", "Gender", UserExcelData::getGender),
     DEPARTMENT("department", "部门", "Department", UserExcelData::getDepartment),

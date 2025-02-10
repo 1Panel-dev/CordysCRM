@@ -1,5 +1,6 @@
 package io.cordys.crm.system.service;
 
+import com.alibaba.excel.EasyExcelFactory;
 import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
@@ -9,18 +10,17 @@ import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.CodingUtils;
-import io.cordys.common.util.SubListUtils;
-import io.cordys.common.util.Translator;
+import io.cordys.common.util.*;
 import io.cordys.crm.system.domain.*;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.request.*;
+import io.cordys.crm.system.dto.response.UserImportResponse;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.excel.domain.UserExcelData;
 import io.cordys.crm.system.excel.domain.UserExcelDataFactory;
 import io.cordys.crm.system.excel.handler.UserTemplateWriteHandler;
+import io.cordys.crm.system.excel.listener.UserCheckEventListener;
 import io.cordys.crm.system.mapper.*;
 import io.cordys.excel.utils.EasyExcelExporter;
 import io.cordys.mybatis.BaseMapper;
@@ -29,6 +29,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -481,5 +482,38 @@ public class OrganizationUserService {
     private List<List<String>> getTemplateHead() {
         List<List<String>> heads = new UserExcelDataFactory().getUserExcelDataLocal().getHead();
         return heads;
+    }
+
+
+    /**
+     * 导入excel检查
+     *
+     * @param file
+     * @return
+     */
+    public UserImportResponse preCheck(MultipartFile file) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+
+        UserImportResponse response = new UserImportResponse();
+        checkImportExcel(response, file);
+        return response;
+    }
+
+
+    private void checkImportExcel(UserImportResponse response, MultipartFile file) {
+        try {
+            //根据本地语言环境选择用哪种数据对象进行存放读取的数据
+            Class clazz = new UserExcelDataFactory().getExcelDataByLocal();
+            UserCheckEventListener eventListener = new UserCheckEventListener(clazz);
+            EasyExcelFactory.read(file.getInputStream(), eventListener).sheet().doRead();
+            response.setErrorMessages(eventListener.getErrList());
+            response.setSuccessCount(eventListener.getList().size());
+            response.setFailCount(eventListener.getErrList().size());
+        } catch (Exception e) {
+            LogUtils.error("checkImportExcel error", e);
+            throw new GenericException(Translator.get("check_import_excel_error"));
+        }
     }
 }

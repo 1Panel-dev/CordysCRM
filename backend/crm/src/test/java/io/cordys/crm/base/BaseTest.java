@@ -23,14 +23,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.MultiValueMap;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -247,8 +254,8 @@ public abstract class BaseTest {
      * 校验权限
      * 实现步骤
      * 1. 在 application.properties 配置权限的初始化 sql
-     *      spring.sql.init.mode=always
-     *      spring.sql.init.schema-locations=classpath*:dml/init_permission_test.sql
+     * spring.sql.init.mode=always
+     * spring.sql.init.schema-locations=classpath*:dml/init_permission_test.sql
      * 2. 在 init_permission_test.sql 中配置权限，
      * 3. 向该用户组中添加权限测试是否生效，删除权限测试是否可以访问
      *
@@ -340,5 +347,88 @@ public abstract class BaseTest {
             this.sessionId = sessionId;
             this.csrfToken = csrfToken;
         }
+    }
+
+
+    protected ResultActions requestMultipart(String url, MultiValueMap<String, Object> paramMap, Object... uriVariables) throws Exception {
+        MockHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilder(url, paramMap, uriVariables);
+        return mockMvc.perform(requestBuilder)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+
+    private MockHttpServletRequestBuilder getMultipartRequestBuilder(String url,
+                                                                     MultiValueMap<String, Object> paramMap,
+                                                                     Object[] uriVariables) {
+        MockMultipartHttpServletRequestBuilder requestBuilder = getMultipartRequestBuilderWithParam(url, paramMap, uriVariables);
+        return setRequestBuilderHeader(requestBuilder, adminAuthInfo)
+                .header(SessionConstants.HEADER_TOKEN, adminAuthInfo.getSessionId())
+                .header(SessionConstants.CSRF_TOKEN, adminAuthInfo.getCsrfToken());
+    }
+
+    /**
+     * 构建 multipart 带参数的请求
+     *
+     * @param url
+     * @param paramMap
+     * @param uriVariables
+     * @return
+     */
+    private MockMultipartHttpServletRequestBuilder getMultipartRequestBuilderWithParam(String url, MultiValueMap<String, Object> paramMap, Object[] uriVariables) {
+        MockMultipartHttpServletRequestBuilder requestBuilder =
+                MockMvcRequestBuilders.multipart(getBasePath() + url, uriVariables);
+        paramMap.forEach((key, value) -> {
+            List list = value;
+            for (Object o : list) {
+                try {
+                    if (o == null) {
+                        continue;
+                    }
+                    MockMultipartFile multipartFile;
+                    if (o instanceof List) {
+                        List listObject = ((List) o);
+                        if (CollectionUtils.isEmpty(listObject)) {
+                            continue;
+                        }
+                        if (listObject.getFirst() instanceof File || listObject.getFirst() instanceof MockMultipartFile) {
+                            // 参数是多个文件时,设置多个文件
+                            for (Object subObject : ((List) o)) {
+                                multipartFile = getMockMultipartFile(key, subObject);
+                                requestBuilder.file(multipartFile);
+                            }
+                        } else {
+                            multipartFile = getMockMultipartFile(key, o);
+                            requestBuilder.file(multipartFile);
+                        }
+                    } else {
+                        multipartFile = getMockMultipartFile(key, o);
+                        requestBuilder.file(multipartFile);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+        });
+        return requestBuilder;
+    }
+
+
+    private static MockMultipartFile getMockMultipartFile(String key, Object value) throws IOException {
+        MockMultipartFile multipartFile;
+        if (value instanceof File) {
+            File file = (File) value;
+            multipartFile = new MockMultipartFile(key, file.getName(),
+                    MediaType.APPLICATION_OCTET_STREAM_VALUE, Files.readAllBytes(file.toPath()));
+        } else if (value instanceof MockMultipartFile) {
+            multipartFile = (MockMultipartFile) value;
+            // 有些地方的参数 name 写的是文件名，这里统一处理成参数名 key
+            multipartFile = new MockMultipartFile(key, multipartFile.getOriginalFilename(),
+                    MediaType.APPLICATION_OCTET_STREAM_VALUE, multipartFile.getBytes());
+        } else {
+            multipartFile = new MockMultipartFile(key, key,
+                    MediaType.APPLICATION_JSON_VALUE, value.toString().getBytes());
+        }
+        return multipartFile;
     }
 }

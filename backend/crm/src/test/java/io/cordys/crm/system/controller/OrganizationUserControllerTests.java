@@ -2,19 +2,22 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.dto.request.*;
-import io.cordys.security.SessionConstants;
+import io.cordys.crm.utils.FileBaseUtils;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.util.LinkedMultiValueMap;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,6 +35,7 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_BATCH_RESET_PASSWORD = "/user/batch/reset-password";
     public static final String USER_BATCH_EDIT = "/user/batch/edit";
     public static final String USER_DOWNLOAD_TEMPLATE = "/user/download/template";
+    public static final String USER_IMPORT_PRE_CHECK = "/user/import/pre-check";
 
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
@@ -124,7 +128,7 @@ public class OrganizationUserControllerTests extends BaseTest {
         UserBatchEditRequest request = new UserBatchEditRequest();
         request.setIds(List.of("u_1", "u_2"));
         request.setWorkCity("深圳");
-        this.requestPost(USER_BATCH_EDIT,request).andExpect(status().isOk());
+        this.requestPost(USER_BATCH_EDIT, request).andExpect(status().isOk());
     }
 
 
@@ -137,5 +141,16 @@ public class OrganizationUserControllerTests extends BaseTest {
     private MvcResult requestGetExcel(String url) throws Exception {
         return mockMvc.perform(getRequestBuilder(url))
                 .andExpect(status().isOk()).andReturn();
+    }
+
+    @Test
+    @Order(11)
+    public void testImportCheckExcel() throws Exception {
+        String filePath = Objects.requireNonNull(this.getClass().getClassLoader().getResource("file/user.xlsx")).getPath();
+        MockMultipartFile file = new MockMultipartFile("file", "11.xlsx", MediaType.APPLICATION_OCTET_STREAM_VALUE, FileBaseUtils.getFileBytes(filePath));
+        LinkedMultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        paramMap.add("file", file);
+        this.requestMultipart(USER_IMPORT_PRE_CHECK, paramMap);
+
     }
 }

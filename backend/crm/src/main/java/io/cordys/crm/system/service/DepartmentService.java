@@ -243,4 +243,16 @@ public class DepartmentService {
     public void deleteByOrgId(String orgId) {
         extDepartmentMapper.deleteByOrgId(orgId);
     }
+
+
+    /**
+     * 根据部门名称查询部门数量
+     * @param topDepartment
+     * @return
+     */
+    public Long countDepartmentByName(String topDepartment) {
+        Department department = new Department();
+        department.setName(topDepartment);
+        return departmentMapper.countByExample(department);
+    }
 }
