@@ -5,14 +5,14 @@
     :title="t('org.setDepartmentHead')"
     :ok-loading="loading"
     @confirm="confirmHandler"
+    @close="closeHandler"
   >
     <div>
       <n-form ref="formRef" :model="form" :rules="rules">
-        <n-form-item require-mark-placement="left" label-placement="left" path="users" :label="t('org.head')">
+        <n-form-item require-mark-placement="left" label-placement="left" path="commanderId" :label="t('org.head')">
           <n-select
-            v-model:value="form.users"
+            v-model:value="form.commanderId"
             :placeholder="t('org.selectHeadPlaceholder')"
-            multiple
             :options="options"
             :render-label="renderLabel"
             :render-tag="renderTag"
@@ -31,22 +31,34 @@
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
+  import { setCommander } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
+
+  import type { SetCommanderParams } from '@lib/shared/models/system/org';
 
   const { t } = useI18n();
   const Message = useMessage();
+
+  const props = defineProps<{
+    departmentId: string;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'close'): void;
+  }>();
 
   const showModal = defineModel<boolean>('show', {
     required: true,
     default: false,
   });
 
-  const form = ref({
-    users: [],
+  const form = ref<SetCommanderParams>({
+    commanderId: '',
+    departmentId: '',
   });
 
   const rules: FormRules = {
-    users: [{ required: true, message: t('org.selectHeadPlaceholder') }],
+    commanderId: [{ required: true, message: t('org.selectHeadPlaceholder') }],
   };
 
   const options = ref<SelectOption[]>([
@@ -97,8 +109,8 @@
     );
   }
 
-  function renderTag(props: { option: SelectOption; handleClose: () => void }) {
-    const { option, handleClose } = props;
+  function renderTag(infoProps: { option: SelectOption; handleClose: () => void }) {
+    const { option, handleClose } = infoProps;
     return h(
       CrmTag,
       {
@@ -112,15 +124,26 @@
   }
 
   const formRef = ref<FormInst | null>(null);
+
+  function closeHandler() {
+    emit('close');
+  }
+
   const loading = ref(false);
 
   function confirmHandler() {
-    formRef.value?.validate((error) => {
+    formRef.value?.validate(async (error) => {
       if (!error) {
         try {
           loading.value = true;
+          await setCommander({
+            ...form.value,
+            departmentId: props.departmentId,
+          });
+          closeHandler();
           Message.success(t('org.setupSuccess'));
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.log(e);
         }
       }

@@ -9,7 +9,7 @@
     </n-input>
     <n-tooltip trigger="hover" :delay="300">
       <template #trigger>
-        <n-button type="tertiary" class="px-[6px]" @click="changeExpand">
+        <n-button type="primary" ghost class="n-btn-outline-primary px-[7px]" @click="addDepart">
           <template #icon>
             <n-icon><Add /></n-icon>
           </template>
@@ -19,6 +19,7 @@
     </n-tooltip>
   </div>
   <CrmTree
+    ref="deptTreeRef"
     v-model:data="orgModuleTree"
     v-model:selected-keys="selectedKeys"
     v-model:checked-keys="checkedKeys"
@@ -41,7 +42,7 @@
     @drop="handleDrag"
     @more-action-select="handleFolderMoreSelect"
   />
-  <SetDepHeadModal v-model:show="showSetHeadModal" />
+  <SetDepHeadModal v-model:show="showSetHeadModal" :department-id="departmentId" @close="closeSetCommanderId" />
 </template>
 
 <script setup lang="ts">
@@ -54,6 +55,13 @@
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import SetDepHeadModal from './setDepHead.vue';
 
+  import {
+    addDepartment,
+    checkDeleteDepartment,
+    deleteDepartment,
+    getDepartmentTree,
+    renameDepartment,
+  } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit, getGenerateId } from '@/utils';
@@ -64,148 +72,11 @@
 
   const { t } = useI18n();
 
-  const orgModuleTree = ref<CrmTreeNodeData[]>([
-    {
-      id: 'root',
-      name: '未规划用例',
-      type: 'MODULE',
-      parentId: 'NONE',
-      projectId: null,
-      attachInfo: {},
-      count: 0,
-      corporation: true,
-      path: '/未规划用例',
-      children: [
-        {
-          id: '849389914030080',
-          name: '测试默默',
-          type: 'module',
-          parentId: 'NONE',
-          projectId: null,
-          count: 10,
-          children: [
-            {
-              id: 'd3qgf11a02w0',
-              name: '1',
-              type: 'module',
-              parentId: '849389914030080',
-              projectId: null,
-              children: [
-                {
-                  id: '172473746390800000',
-                  name: '测试1',
-                  type: 'module',
-                  parentId: 'd3qgf11a02w0',
-                  projectId: null,
-                  children: [
-                    {
-                      id: 'd4q2hgqzlc80',
-                      name: '模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88模块88',
-                      type: 'module',
-                      parentId: '172473746390800000',
-                      projectId: null,
-                      children: undefined,
-                      attachInfo: {},
-                      count: 0,
-                      path: '/测试默默/1/测试1/模块88',
-                    },
-                  ],
-                  attachInfo: {},
-                  count: 0,
-                  path: '/测试默默/1/测试1',
-                },
-              ],
-              attachInfo: {},
-              count: 0,
-              path: '/测试默默/1',
-            },
-          ],
-          attachInfo: {},
+  const emit = defineEmits<{
+    (e: 'selectNode', nodeId: string | number): void;
+  }>();
 
-          path: '/测试默默',
-        },
-        {
-          id: '905344769294336',
-          name: '22222',
-          type: 'module',
-          parentId: 'NONE',
-          projectId: null,
-          children: [
-            {
-              id: '905722726416384',
-              name: 'ceceafsfa',
-              type: 'module',
-              parentId: '905344769294336',
-              projectId: null,
-              children: [],
-              attachInfo: {},
-              count: 0,
-              path: '/22222/ceceafsfa',
-            },
-          ],
-          attachInfo: {},
-          count: 0,
-          path: '/22222',
-        },
-        {
-          id: '859989918220288',
-          name: '鑫鑫测试',
-          type: 'module',
-          parentId: 'NONE',
-          projectId: null,
-          children: [],
-          attachInfo: {},
-          count: 0,
-          path: '/鑫鑫测试',
-        },
-        {
-          id: '1096900316143616',
-          name: 'yuan',
-          type: 'module',
-          parentId: 'NONE',
-          projectId: null,
-          children: [
-            {
-              id: '705714697707520',
-              name: '4444',
-              type: 'module',
-              parentId: '1096900316143616',
-              projectId: null,
-              children: [],
-              attachInfo: {},
-              count: 0,
-              path: '/yuan/4444',
-            },
-            {
-              id: '706590871035904',
-              name: '555',
-              type: 'module',
-              parentId: '1096900316143616',
-              projectId: null,
-              children: [],
-              attachInfo: {},
-              count: 0,
-              path: '/yuan/555',
-            },
-          ],
-          attachInfo: {},
-          count: 0,
-          path: '/yuan',
-        },
-        {
-          id: '674876834054144',
-          name: '郭雨琦测试',
-          type: 'module',
-          parentId: 'NONE',
-          projectId: null,
-          children: [],
-          attachInfo: {},
-          count: 0,
-          path: '/郭雨琦测试',
-        },
-      ],
-    },
-  ]);
+  const orgModuleTree = ref<CrmTreeNodeData[]>([]);
 
   const selectedKeys = ref<Array<string | number>>([]);
   const expandedKeys = ref<Array<string | number>>([]);
@@ -214,13 +85,12 @@
   const keyword = ref<string>('');
 
   const expandAll = ref<boolean>(true);
-  function changeExpand() {
-    expandAll.value = !expandAll.value;
-  }
+
+  const activeNodeId = computed(() => selectedKeys.value[0]);
 
   function renderPrefixDom(infoProps: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     const { option } = infoProps;
-    if (option.corporation) {
+    if (option.parentId === 'NONE') {
       return h(CrmIcon, {
         type: 'iconicon_control_platform1',
         size: 16,
@@ -233,10 +103,6 @@
     {
       label: t('common.rename'),
       key: 'rename',
-    },
-    {
-      label: t('org.addSubDepartment'),
-      key: 'addSub',
     },
     {
       label: t('org.setDepartmentHead'),
@@ -252,15 +118,29 @@
     },
   ]);
 
-  // TODO 待联调
+  // 获取模块树
+  async function initTree(isInit = false) {
+    try {
+      orgModuleTree.value = await getDepartmentTree();
+
+      if (isInit) {
+        selectedKeys.value = orgModuleTree.value[0] ? [orgModuleTree.value[0].id] : [];
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  //  重命名 TODO 接口有问题
   async function renameHandler(option: CrmTreeNodeData) {
     try {
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(true);
-        }, 3000);
+      await renameDepartment({
+        id: option.id,
+        name: option.name,
       });
       Message.success(t('common.updateSuccess'));
+      initTree();
       return Promise.resolve(true);
     } catch (e) {
       // eslint-disable-next-line no-console
@@ -269,27 +149,55 @@
     }
   }
 
-  // 添加
-  async function handleAdd(option: CrmTreeNodeData) {
+  const deptTreeRef = ref();
+  const currentParentId = ref<string>('');
+
+  // 添加节点 TODO 缺东西
+  async function addNode(parent: CrmTreeNodeData | null) {
     const nodeKey: string = getGenerateId();
+    currentParentId.value = parent ? parent.id : orgModuleTree.value[0].id;
+
     const newNode: CrmTreeNodeData = {
       id: nodeKey,
       name: t('common.unNamed'),
       children: undefined,
       hideMoreAction: true,
     };
-    if (option.children && option.children.length) {
-      option.children.unshift(newNode);
+
+    if (parent) {
+      parent.children = parent.children ?? [];
+      parent.children.push(newNode);
     } else {
-      option.children = [newNode];
+      orgModuleTree.value[0].children = orgModuleTree.value[0].children ?? [];
+      orgModuleTree.value[0].children.push(newNode);
     }
-    expandedKeys.value.push(nodeKey);
+
     try {
-      Message.success(t('common.addSuccess'));
+      const id = await addDepartment({
+        name: t('common.unNamed'),
+        parentId: currentParentId.value,
+      });
+
+      selectedKeys.value = [id];
+      expandedKeys.value.push(currentParentId.value);
+
+      nextTick(() => {
+        deptTreeRef.value?.toggleEdit(nodeKey);
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
     }
+  }
+
+  // 添加子节点
+  function handleAdd(option: CrmTreeNodeData) {
+    addNode(option);
+  }
+
+  // 添加到根节点
+  function addDepart() {
+    addNode(null);
   }
 
   function renderExtraDom(infoProps: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
@@ -298,8 +206,10 @@
     return h(
       NButton,
       {
+        type: 'primary',
         size: 'small',
-        class: `crm-suffix-btn h-[24px] h-[24px] !p-[4px] mr-[4px] rounded`,
+        bordered: false,
+        class: `crm-suffix-btn !p-[4px] ml-[4px] h-[24px] h-[24px]  mr-[4px] rounded`,
         onClick: () => handleAdd(option),
       },
       () => {
@@ -334,43 +244,44 @@
   }
 
   /**
-   * 重命名
-   */
-  function handleRename(option: CrmTreeNodeData) {}
-
-  /**
-   * 添加子部门
-   */
-  function handleAddSubDepartment() {}
-
-  /**
    * 设置部门负责人
    */
   const showSetHeadModal = ref<boolean>(false);
+  const departmentId = ref<string>('');
   function handleSetHead(option: CrmTreeNodeData) {
+    departmentId.value = option.id;
     showSetHeadModal.value = true;
   }
 
+  function closeSetCommanderId() {
+    showSetHeadModal.value = false;
+    departmentId.value = '';
+  }
+
   /**
-   * 删除
+   * 删除  TODO 接口有问题
    */
-  function handleDelete(option: CrmTreeNodeData) {
+  async function handleDelete(option: CrmTreeNodeData) {
+    const isNotAllow = await checkDeleteDepartment(option.id);
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(option.name) }),
-      content: option.count ? t('org.deleteExistUserDepartment') : t('org.deleteDepartmentContent'),
-      positiveText: option.count ? t('org.ok') : t('common.confirm'),
-      negativeText: option.count ? '' : t('common.cancel'),
+      content: !isNotAllow ? t('org.deleteExistUserDepartment') : t('org.deleteDepartmentContent'),
+      positiveText: !isNotAllow ? t('org.ok') : t('common.confirm'),
+      negativeText: !isNotAllow ? '' : t('common.cancel'),
       positiveButtonProps: {
-        type: option.count ? 'primary' : 'error',
+        type: !isNotAllow ? 'primary' : 'error',
         size: 'medium',
       },
       onPositiveClick: async () => {
         try {
-          if (!option.count) {
+          if (isNotAllow) {
+            await deleteDepartment(option.id);
             Message.success(t('common.deleteSuccess'));
+            initTree(true);
           }
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.log(error);
         }
       },
@@ -379,12 +290,6 @@
 
   function handleFolderMoreSelect(item: ActionsItem, option: CrmTreeNodeData) {
     switch (item.key) {
-      case 'rename':
-        handleRename(option);
-        break;
-      case 'addSub':
-        handleAddSubDepartment();
-        break;
       case 'setHead':
         handleSetHead(option);
         break;
@@ -395,6 +300,17 @@
         break;
     }
   }
+
+  watch(
+    () => activeNodeId.value,
+    (val) => {
+      emit('selectNode', val);
+    }
+  );
+
+  onBeforeMount(() => {
+    initTree(true);
+  });
 </script>
 
 <style scoped></style>

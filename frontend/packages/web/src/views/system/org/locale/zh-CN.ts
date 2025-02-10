@@ -24,6 +24,7 @@ export default {
   'org.male': '男',
   'org.female': '女',
   'org.addMember': '添加成员',
+  'org.updateMember': '更新成员',
   'org.enterpriseID': '企业ID',
   'org.Secret': 'Secret',
   'org.callbackAddress': '回调地址',
@@ -60,4 +61,9 @@ export default {
   'org.deleteMemberTipContent': '删除该员工在系统上的全部数据将会被清理',
   'org.deleteHasNotMovedTipContent': '该员工存在未转移的客户资源，无法删除！',
   'org.attributes': '属性',
+  'org.disabledUserTipContent': '禁用后，员工无法登录系统，请谨慎操作！',
+  'org.enabledUserTipContent': '启用后，员工可以通过手机号登录系统',
+  'org.formalUser': '正式',
+  'org.internshipUser': '实习',
+  'org.outsourcingUser': '外包',
 };

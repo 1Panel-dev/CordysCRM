@@ -7,7 +7,7 @@
             <CrmSearchInput v-model:value="keyword" :placeholder="t('common.searchByName')" />
             <n-tooltip trigger="hover" :delay="300">
               <template #trigger>
-                <n-button type="tertiary" class="px-[6px]" @click="addRole">
+                <n-button type="primary" ghost class="n-btn-outline-primary px-[7px]" @click="addRole">
                   <template #icon>
                     <n-icon><Add /></n-icon>
                   </template>

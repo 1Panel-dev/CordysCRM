@@ -70,14 +70,16 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       heightLarge: '40px',
     },
     Button: {
-      // 因只能配置一种颜色，禁用默认border边框
-      border: 'none',
       borderHover: getLessVariableValue('--text-n7'),
       borderPressed: getLessVariableValue('--text-n8'),
       borderFocus: getLessVariableValue('--text-n8'),
       borderDisabled: getLessVariableValue('--text-n9'),
       textColor: getLessVariableValue('--text-n1'),
+      textColorHover: getLessVariableValue('--text-n1'),
+      textColorPressed: getLessVariableValue('--text-n1'),
+      textColorFocus: getLessVariableValue('--text-n1'),
       textColorDisabled: getLessVariableValue('--text-n6'),
+      rippleColor: getLessVariableValue('--text-n7'),
       // 主题主要按钮
       borderPrimary: `1px solid ${getLessVariableValue('--primary-8')}`,
       borderHoverPrimary: `1px solid ${getLessVariableValue('--primary-1')}`,
@@ -98,7 +100,7 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       colorSecondary: getLessVariableValue('--text-n8'),
       colorSecondaryHover: getLessVariableValue('--text-n9'),
       colorSecondaryPressed: getLessVariableValue('--text-n7'),
-      textColorHover: getLessVariableValue('--text-n9'),
+
       textColorSuccess: getLessVariableValue('--text-n9'),
       textColorHoverSuccess: getLessVariableValue('--text-n9'),
       textColorPressedSuccess: getLessVariableValue('--text-n9'),

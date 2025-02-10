@@ -10,13 +10,7 @@
           </n-button>
         </CrmMoreAction>
       </div>
-      <n-input v-model:value="keyword" :placeholder="t('common.searchByName')" clearable class="!w-[240px]">
-        <template #suffix>
-          <n-icon>
-            <Search />
-          </n-icon>
-        </template>
-      </n-input>
+      <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
     </div>
     <CrmTable
       v-bind="propsRes"
@@ -25,9 +19,15 @@
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
     />
-    <AddMember v-model:show="showDrawer" @add-success="emit('addSuccess')" />
+
+    <AddMember v-model:show="showDrawer" :user-id="currentUserId" @brash="initOrgList()" @close="cancelHandler" />
     <SyncWeChat v-model:show="showSyncWeChatModal" />
-    <MemberDetail v-model:show="showDetailModal" :rows-data="rowsData" @edit="addOrEditMember(true)" />
+    <MemberDetail
+      v-model:show="showDetailModal"
+      :user-id="currentUserId"
+      @edit="addOrEditMember(true)"
+      @cancel="cancelHandler"
+    />
     <batchEditModal v-model:show="showEditModal" />
     <!-- 导入开始 -->
     <!-- 导入弹窗 -->
@@ -54,16 +54,17 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NButton, NIcon, NInput, useMessage } from 'naive-ui';
-  import { Search } from '@vicons/ionicons5';
+  import { NButton, NSwitch, useMessage } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import { CrmDataTableColumn, CrmTableDataItem } from '@/components/pure/crm-table/type';
+  import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
+  import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddMember from './addMember.vue';
   import batchEditModal from './batchEditModal.vue';
@@ -73,18 +74,24 @@
   import ValidateModal from '@/views/system/org/components/import/validateModal.vue';
   import ValidateResult from '@/views/system/org/components/import/validateResult.vue';
 
+  import { getUserList, resetUserPassword, updateUser } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
+  import { characterLimit } from '@/utils';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import type { CommonList } from '@lib/shared/models/common';
+  import type { MemberItem } from '@lib/shared/models/system/org';
 
   const Message = useMessage();
 
   const { openModal } = useModal();
 
   const { t } = useI18n();
+
+  const props = defineProps<{
+    activeNode: string | number;
+  }>();
 
   const emit = defineEmits<{
     (e: 'addSuccess'): void;
@@ -159,63 +166,35 @@
     },
   ]);
 
-  function initData() {
-    const data: CommonList<CrmTableDataItem<any>> = {
-      total: 11,
-      pageSize: 10,
-      current: 1,
-      list: [
-        {
-          id: '11',
-          num: 'string',
-          title: 'string',
-          status: 'string',
-          updateTime: null,
-          createTime: null,
-        },
-        {
-          id: '22',
-          num: '232324323',
-          title: '222',
-          status: 'aaaa',
-          updateTime: null,
-          createTime: null,
-        },
-      ],
-    };
-    return new Promise<CommonList<CrmTableDataItem<any>>>((resolve) => {
-      setTimeout(() => {
-        resolve(data);
-      }, 200);
-    });
-  }
-
   /**
    * 添加&编辑用户
    */
   const showDrawer = ref<boolean>(false);
-  // TODO xxw 类型
-  const rowsData = ref<Record<string, any>>({
-    enabled: true,
-    name: '标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题标题',
-  });
-  function addOrEditMember(isEdit: boolean, row?: any) {
+
+  const currentUserId = ref<string>('');
+  function addOrEditMember(isEdit: boolean, row?: MemberItem) {
     showDrawer.value = true;
-    if (isEdit) {
-      rowsData.value = { ...row };
+    if (isEdit && row) {
+      currentUserId.value = row.id;
     }
   }
 
+  function cancelHandler() {
+    showDrawer.value = false;
+    currentUserId.value = '';
+  }
+
   // 重置密码
-  function handleResetPassWord(row: any) {
+  function handleResetPassWord(row: MemberItem) {
     openModal({
       type: 'warning',
-      title: t('org.resetPassWordTip', { name: row.name }),
+      title: t('org.resetPassWordTip', { name: characterLimit(row.userName) }),
       content: t('org.resetPassWordContent'),
       positiveText: t('org.confirmReset'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
+          await resetUserPassword(row.id);
           Message.success(t('org.resetPassWordSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -225,13 +204,13 @@
     });
   }
 
-  // 删除员工 TODO 工作交接中 文案未定
-  function deleteMember(row: any) {
+  // 删除员工
+  function deleteMember(row: MemberItem) {
     const hasNotMoved = false;
     const tipContent = hasNotMoved ? '' : t('org.deleteMemberTipContent');
     const tipTitle = hasNotMoved
       ? t('org.deleteHasNotMovedTipContent')
-      : t('common.deleteConfirmTitle', { name: row.name });
+      : t('common.deleteConfirmTitle', { name: characterLimit(row.userName) });
     openModal({
       type: 'error',
       title: tipTitle,
@@ -249,11 +228,46 @@
     });
   }
 
-  // TODO 类型
-  function handleActionSelect(row: any, actionKey: string) {
+  /**
+   * 用户详情
+   */
+  const showDetailModal = ref<boolean>(false);
+  function showDetail(id: string) {
+    showDetailModal.value = true;
+    currentUserId.value = id;
+  }
+
+  // 切换员工状态
+  function handleToggleStatus(row: MemberItem) {
+    const enable = !row.enable;
+    openModal({
+      type: enable ? 'default' : 'error',
+      title: t(enable ? 'common.confirmEnableTitle' : 'common.confirmDisabledTitle', {
+        name: characterLimit(row.userName),
+      }),
+      content: t(enable ? 'org.enabledUserTipContent' : 'org.disabledUserTipContent'),
+      positiveText: t(enable ? 'common.confirmStart' : 'common.confirmDisable'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await updateUser({
+            ...row,
+            name: row.userName,
+            enable,
+          });
+          Message.success(t(enable ? 'common.opened' : 'common.disabled'));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
+  function handleActionSelect(row: MemberItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
-        addOrEditMember(true);
+        addOrEditMember(true, row);
         break;
       case 'resetPassWord':
         handleResetPassWord(row);
@@ -266,7 +280,20 @@
     }
   }
 
-  // TODO 未调整样式
+  async function updateUserName(row: MemberItem, newVal: string) {
+    try {
+      await updateUser({
+        ...row,
+        name: newVal,
+      });
+      return Promise.resolve(true);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+      return Promise.resolve(false);
+    }
+  }
+
   const columns: CrmDataTableColumn[] = [
     {
       type: 'selection',
@@ -274,14 +301,36 @@
     {
       title: t('org.userName'),
       key: 'userName',
-      width: 100,
+      width: 200,
       sortOrder: false,
       sorter: true,
-      showInTable: true,
+      render: (row: MemberItem) => {
+        return h(
+          CrmEditableText,
+          {
+            value: row.userName,
+            onHandleEdit: (val: string) => {
+              updateUserName(row, val);
+              row.userName = val;
+            },
+          },
+          {
+            default: h(
+              NButton,
+              {
+                text: true,
+                type: 'primary',
+                onClick: () => showDetail(row.id),
+              },
+              { default: () => row.userName }
+            ),
+          }
+        );
+      },
     },
     {
       title: t('common.status'),
-      key: 'status',
+      key: 'enable',
       width: 120,
       ellipsis: {
         tooltip: true,
@@ -291,15 +340,23 @@
       showInTable: true,
       filterOptions: [
         {
-          label: '222',
-          value: '222',
+          label: t('common.enable'),
+          value: 1,
         },
         {
-          label: 'string',
-          value: 'string',
+          label: t('common.disable'),
+          value: 0,
         },
       ],
       filter: true,
+      render: (row: MemberItem) => {
+        return h(NSwitch, {
+          value: row.enable,
+          onClick: () => {
+            handleToggleStatus(row);
+          },
+        });
+      },
     },
     {
       title: t('org.gender'),
@@ -311,19 +368,18 @@
       filterOptions: [
         {
           label: t('org.male'),
-          value: 'male',
+          value: 0,
         },
         {
           label: t('org.female'),
-          value: 'female',
+          value: 1,
         },
       ],
       filter: 'default',
-      showInTable: true,
     },
     {
       title: t('org.phoneNumber'),
-      key: 'phoneNumber',
+      key: 'phone',
       ellipsis: {
         tooltip: true,
       },
@@ -331,7 +387,7 @@
     },
     {
       title: t('org.userEmail'),
-      key: 'userEmail',
+      key: 'email',
       ellipsis: {
         tooltip: true,
       },
@@ -340,7 +396,7 @@
     },
     {
       title: t('org.department'),
-      key: 'department',
+      key: 'departmentName',
       ellipsis: {
         tooltip: true,
       },
@@ -349,7 +405,7 @@
     },
     {
       title: t('org.directSuperior'),
-      key: 'directSuperior',
+      key: 'supervisorId',
       ellipsis: {
         tooltip: true,
       },
@@ -367,7 +423,7 @@
     },
     {
       title: t('org.employeeNumber'),
-      key: 'employeeNumber',
+      key: 'employeeId',
       width: 100,
       ellipsis: {
         tooltip: true,
@@ -376,7 +432,7 @@
     },
     {
       title: t('org.Position'),
-      key: 'Position',
+      key: 'position',
       width: 100,
       ellipsis: {
         tooltip: true,
@@ -394,7 +450,7 @@
     },
     {
       title: t('org.workingCity'),
-      key: 'workingCity',
+      key: 'workCity',
       width: 100,
       ellipsis: {
         tooltip: true,
@@ -444,8 +500,7 @@
       key: 'operation',
       width: 150,
       fixed: 'right',
-      // TODO xxw 类型
-      render: (row: any) =>
+      render: (row: MemberItem) =>
         h(CrmOperationButton, {
           groupList: groupList.value,
           moreList: moreOperationList.value,
@@ -454,26 +509,35 @@
     },
   ];
 
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(initData, {
-    tableKey: TableKeyEnum.SYSTEM_ORG_TABLE,
-    showSetting: true,
-    columns,
-    scrollX: 1600,
-  });
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
+    getUserList,
+    {
+      tableKey: TableKeyEnum.SYSTEM_ORG_TABLE,
+      showSetting: true,
+      columns,
+      scrollX: 1600,
+    },
+    (row: MemberItem) => {
+      return {
+        ...row,
+        gender: row.gender ? t('org.female') : t('org.male'),
+        position: row.position || '-',
+        departmentName: row.departmentName || '-',
+        workCity: row.workCity || '-',
+      };
+    }
+  );
 
   const keyword = ref('');
 
   function initOrgList() {
-    setLoadListParams({ keyword: '' });
+    setLoadListParams({ keyword: keyword.value, departmentId: props.activeNode });
     loadList();
   }
 
-  /**
-   * 用户详情
-   */
-  const showDetailModal = ref<boolean>(false);
-  function showDetail() {
-    showDetailModal.value = true;
+  function searchData(val: string) {
+    keyword.value = val;
+    initOrgList();
   }
 
   /**
@@ -591,9 +655,12 @@
 
   const showEditModal = ref<boolean>(false);
 
-  onMounted(() => {
-    initOrgList();
-  });
+  watch(
+    () => props.activeNode,
+    () => {
+      initOrgList();
+    }
+  );
 </script>
 
 <style scoped></style>

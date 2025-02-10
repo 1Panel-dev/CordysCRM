@@ -232,4 +232,6 @@ export default {
   'common.ViewMore': '查看更多',
   'common.unNamed': '未命名',
   'common.revokeChange': '撤销更改',
+  'common.confirmDisabledTitle': '确认禁用 {name} 吗？',
+  'common.confirmEnableTitle': '确认启用 {name} 吗？',
 };

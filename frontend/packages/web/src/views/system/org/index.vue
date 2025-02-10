@@ -3,11 +3,11 @@
     <CrmSplitPanel :max="0.5" :min="0.2" :default-size="0.2">
       <template #1>
         <div class="org-tree-wrapper">
-          <OrgModuleTree />
+          <OrgModuleTree @select-node="selectNode" />
         </div>
       </template>
       <template #2>
-        <OrgTable @add-success="addSuccess" />
+        <OrgTable :active-node="activeNodeId" @add-success="addSuccess" />
       </template>
     </CrmSplitPanel>
   </CrmCard>
@@ -18,6 +18,12 @@
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
   import OrgModuleTree from './components/moduleTree.vue';
   import OrgTable from '@/views/system/org/components/orgTable.vue';
+
+  const activeNodeId = ref<string | number>('');
+
+  function selectNode(_selectedKey: string | number) {
+    activeNodeId.value = _selectedKey;
+  }
 
   function addSuccess() {}
 </script>

@@ -49,7 +49,13 @@
           <n-button :disabled="loading" secondary @click="cancel">
             {{ t('common.cancel') }}
           </n-button>
-          <n-button class="mx-[12px]" :loading="linkLoading" type="tertiary" @click="continueLink">
+          <n-button
+            :loading="linkLoading"
+            type="primary"
+            ghost
+            class="n-btn-outline-primary mx-[12px]"
+            @click="continueLink"
+          >
             {{ t('org.testConnection') }}
           </n-button>
           <n-button :loading="loading" type="primary" @click="confirmHandler">

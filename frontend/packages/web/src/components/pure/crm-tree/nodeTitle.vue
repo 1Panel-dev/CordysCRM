@@ -29,7 +29,7 @@
             @click.stop
           >
             <template #suffix>
-              <CrmClearSuffix :status="validateNameError" @clear="clearHandler" />
+              <CrmClearSuffix :tooltip-content="tooltipContent" :status="validateNameError" @clear="clearHandler" />
             </template>
           </n-input>
         </n-form-item>
@@ -86,10 +86,13 @@
   const inputInstRef = ref<InputInst | null>(null);
 
   // 校验名称是否重复
+  const tooltipContent = ref('');
   const validateName = (rule: FormItemRule, value: string) => {
     if ((props.allNames || []).includes(value)) {
+      tooltipContent.value = t('common.nameExists');
       return new Error(t(props.fieldConfig?.nameExistTipText || 'common.nameExists'));
     }
+    tooltipContent.value = '';
   };
 
   const rules: FormRules = {

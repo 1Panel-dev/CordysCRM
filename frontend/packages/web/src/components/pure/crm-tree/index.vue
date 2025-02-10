@@ -51,7 +51,7 @@
 
   import useContainerShadow from '@/hooks/useContainerShadow';
   import { useI18n } from '@/hooks/useI18n';
-  import { getAllParentNodeIds, traverseTree } from '@/utils';
+  import { findNodeByKey, getAllParentNodeIds, traverseTree } from '@/utils';
 
   import type {
     CrmInfoNode,
@@ -209,18 +209,37 @@
     const options = props.multiple ? _option : (meta.node as CrmTreeNodeData);
     emit('expand', _expandKeys, options, meta);
   }
+  function getSiblingLabels(option: CrmTreeNodeData): string[] {
+    // 如果有 parentId，查找节点
+    const parentNode = option.parentId
+      ? findNodeByKey<CrmTreeNodeData>(data.value, option.parentId, props.fieldNames.keyField)
+      : null;
+
+    // 如果找到了父节点，树结构
+    if (parentNode) {
+      return (
+        parentNode[props.fieldNames.childrenField]?.map(
+          (child: CrmTreeNodeData) => child[props.fieldNames.labelField]
+        ) || []
+      );
+    }
+    // 列表结构
+    return data.value.map((e) => e[props.fieldNames.labelField]);
+  }
 
   /**
    * 渲染label
    */
   function renderLabelDom(info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     const { option, selected, checked } = info;
+    const siblingLabels = getSiblingLabels(option);
     return createEditInput(
       { option, selected, checked },
       {
         name: option[props.fieldNames.labelField],
         rules: props.editRules,
       },
+      siblingLabels,
       props.renderLabel,
       { titleTooltipPosition: props.titleTooltipPosition, titleClass: props.titleClass }
     );
@@ -240,6 +259,7 @@
   function selectMoreAction(actionItem: ActionsItem, option: CrmTreeNodeData) {
     const nodeKey = option[props.fieldNames.keyField];
     if (actionItem.key === 'rename') {
+      option.hideMoreAction = true;
       toggleEdit(nodeKey);
     } else {
       emit('moreActionSelect', actionItem, option);
@@ -288,7 +308,7 @@
           })
         : null;
 
-    return h('div', { class: 'crm-tree-node-extra' }, [renderExtraDom(info), moreActionNode]);
+    return h('div', { class: 'crm-tree-node-extra' }, [moreActionNode, renderExtraDom(info)]);
   }
 
   /**
@@ -470,6 +490,10 @@
     }
   );
 
+  function toggleExpand(expandAll: boolean) {
+    expandedKeys.value = expandAll ? getAllParentNodeIds(data.value) : [];
+  }
+
   watch(
     () => data.value,
     () => {
@@ -482,7 +506,6 @@
   );
 
   onBeforeMount(() => {
-    expandAllNodes(); // 初始化时调用复用的逻辑
     filterTreeData.value = data.value;
   });
 
@@ -513,11 +536,7 @@
   watch(
     () => defaultExpandAllKeys.value,
     (val) => {
-      if (val) {
-        expandedKeys.value = getAllParentNodeIds(data.value);
-      } else {
-        expandedKeys.value = [];
-      }
+      toggleExpand(val);
     }
   );
 
@@ -558,6 +577,7 @@
             .n-tree-node-content__suffix {
               .crm-tree-node-extra {
                 margin-left: -4px;
+                gap: 4px;
                 @apply invisible flex w-0 items-center;
                 .crm-suffix-btn {
                   width: 24px;

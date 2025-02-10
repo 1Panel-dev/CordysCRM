@@ -5,7 +5,7 @@
         <!-- TODO 按钮类型demo 暂时提供参考 you can delete it  ^_^  -->
         <div class="flex gap-[16px]">
           <n-button type="primary">主要按钮</n-button>
-          <n-button type="tertiary">次要按钮</n-button>
+          <n-button type="primary" ghost class="n-btn-outline-primary"> 次要按钮 </n-button>
           <n-button type="default" class="outline--secondary">次要外框按钮</n-button>
           <n-button strong secondary>次要背景按钮</n-button>
           <n-button type="success"> 成功背景按钮 </n-button>

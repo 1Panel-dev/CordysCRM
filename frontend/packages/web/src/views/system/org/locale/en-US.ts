@@ -25,6 +25,7 @@ export default {
   'org.male': 'Male',
   'org.female': 'Female',
   'org.addMember': 'Add a member',
+  'org.updateMember': 'Update member',
   'org.enterpriseID': 'Enterprise ID',
   'org.Secret': 'Secret',
   'org.callbackAddress': 'Callback Address',
@@ -62,4 +63,9 @@ export default {
   'org.deleteMemberTipContent': 'All data of this employee in the system will be cleared',
   'org.deleteHasNotMovedTipContent': 'This employee has untransferred customer resources and cannot be deleted!',
   'org.attributes': 'Attributes',
+  'org.disabledUserTipContent': 'After disable, staff can not log in the system, please operate with caution!',
+  'org.enabledUserTipContent': 'Enabled, employees can through the mobile phone number login system',
+  'org.formalUser': 'Formal',
+  'org.internshipUser': 'Internship',
+  'org.outsourcingUser': 'Outsourcing',
 };

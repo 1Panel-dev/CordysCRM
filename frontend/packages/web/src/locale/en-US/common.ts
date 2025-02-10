@@ -232,4 +232,6 @@ export default {
   'common.ViewMore': 'View more',
   'common.unNamed': 'Not named',
   'common.revokeChange': 'Revoke change',
+  'common.confirmDisabledTitle': 'Are you sure to disable {name}?',
+  'common.confirmEnableTitle': 'Are you sure to enable {name}?',
 };

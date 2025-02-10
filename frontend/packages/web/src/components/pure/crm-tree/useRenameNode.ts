@@ -22,7 +22,7 @@ export default function useRenameNode(
   // 切换编辑模式 管理节点的编辑状态
   const editingKey = ref<string | number>('');
 
-  const { keyField, labelField, childrenField } = fieldNames;
+  const { keyField, labelField } = fieldNames;
 
   const getEditingMode = (key: string | number) => (editingKey.value === key ? 'rename' : 'view');
 
@@ -73,6 +73,7 @@ export default function useRenameNode(
   function createEditInput(
     infoProps: { option: CrmTreeNodeData; selected: boolean; checked: boolean },
     fieldConfig: FieldConfig,
+    siblingLabels: string[],
     renderLabel?: (info: CrmInfoNode) => VNodeChild,
     titleProps?: {
       titleTooltipPosition?:
@@ -98,7 +99,7 @@ export default function useRenameNode(
       {
         mode,
         fieldConfig,
-        allNames: (option[childrenField] || []).map((e: CrmTreeNodeData) => e[labelField] || ''),
+        allNames: siblingLabels,
         loading: loading.value,
         class: selected ? 'crm-select-label' : '',
         ...titleProps,

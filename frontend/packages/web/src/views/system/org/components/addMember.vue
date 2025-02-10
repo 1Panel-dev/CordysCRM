@@ -1,12 +1,18 @@
 <template>
-  <CrmDrawer v-model:show="showDrawer" :width="480" :title="t('org.addMember')" :ok-text="t('common.update')">
+  <CrmDrawer
+    v-model:show="showDrawer"
+    :width="480"
+    :title="form.id ? t('org.updateMember') : t('org.addMember')"
+    :ok-text="t('common.update')"
+    @cancel="cancelHandler"
+  >
     <div class="mr-[20%]">
       <n-form
         ref="formRef"
         :model="form"
         :rules="rules"
         label-placement="left"
-        label-width="auto"
+        :label-width="100"
         require-mark-placement="left"
       >
         <n-form-item require-mark-placement="left" label-placement="left" path="name" :label="t('org.userName')">
@@ -15,22 +21,17 @@
         <n-form-item require-mark-placement="left" label-placement="left" path="gender" :label="t('org.gender')">
           <n-radio-group v-model:value="form.gender" name="radiogroup">
             <n-space>
-              <n-radio key="male" value="male">
+              <n-radio key="male" :value="false">
                 {{ t('org.male') }}
               </n-radio>
-              <n-radio key="female" value="female">
+              <n-radio key="female" :value="true">
                 {{ t('org.female') }}
               </n-radio>
             </n-space>
           </n-radio-group>
         </n-form-item>
-        <n-form-item
-          require-mark-placement="left"
-          label-placement="left"
-          path="phoneNumber"
-          :label="t('org.phoneNumber')"
-        >
-          <n-input v-model:value="form.phoneNumber" type="text" :placeholder="t('common.pleaseInput')" />
+        <n-form-item require-mark-placement="left" label-placement="left" path="phone" :label="t('org.phoneNumber')">
+          <n-input v-model:value="form.phone" type="text" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
         <n-form-item require-mark-placement="left" label-placement="left" path="email" :label="t('org.userEmail')">
           <n-input v-model:value="form.email" type="text" :placeholder="t('common.pleaseInput')" />
@@ -38,10 +39,18 @@
         <n-form-item
           require-mark-placement="left"
           label-placement="left"
-          path="department"
+          path="departmentId"
           :label="t('org.department')"
         >
-          <n-select v-model:value="form.department" :placeholder="t('common.pleaseSelect')" :options="department">
+          <n-tree-select
+            v-model:value="form.departmentId"
+            :options="department"
+            label-field="name"
+            key-field="id"
+            filterable
+            clearable
+            children-field="children"
+          >
             <template #empty>
               <div class="flex w-full items-center justify-start text-[var(--text-n4)]">
                 {{ t('org.noDepartmentToChoose') }}
@@ -49,7 +58,7 @@
             </template>
             <template #action>
               <div class="text-left">
-                <n-button type="primary" text @click="addDepartment">
+                <n-button type="primary" text>
                   <template #icon>
                     <CrmIcon type="iconicon_add" :size="16" class="text-[var(--primary-8)]" />
                   </template>
@@ -57,15 +66,15 @@
                 </n-button>
               </div>
             </template>
-          </n-select>
+          </n-tree-select>
         </n-form-item>
         <n-form-item
           require-mark-placement="left"
           label-placement="left"
-          path="employeeNumber"
+          path="employeeId"
           :label="t('org.employeeNumber')"
         >
-          <n-input v-model:value="form.employeeNumber" type="text" :placeholder="t('common.pleaseInput')" />
+          <n-input v-model:value="form.employeeId" type="text" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
         <CrmExpandButton v-model:expand="showForm">
           <n-form-item
@@ -83,38 +92,41 @@
           <n-form-item
             require-mark-placement="left"
             label-placement="left"
-            path="directSuperior"
+            path="supervisorId"
             :label="t('org.directSuperior')"
           >
             <n-select
-              v-model:value="form.directSuperior"
+              v-model:value="form.supervisorId"
               :placeholder="t('common.pleaseSelect')"
               :options="superiorOptions"
             />
           </n-form-item>
+          <n-form-item require-mark-placement="left" label-placement="left" path="position" :label="t('org.Position')">
+            <n-input v-model:value="form.position" type="text" :placeholder="t('common.pleaseInput')" />
+          </n-form-item>
           <n-form-item
             require-mark-placement="left"
             label-placement="left"
-            path="workingCity"
+            path="workCity"
             :label="t('org.workingCity')"
           >
             <n-select
-              v-model:value="form.workingCity"
+              v-model:value="form.workCity"
               :placeholder="t('common.pleaseSelect')"
               :options="workingCityOptions"
             />
           </n-form-item>
-          <n-form-item require-mark-placement="left" label-placement="left" path="role" :label="t('org.role')">
-            <n-select v-model:value="form.role" :placeholder="t('common.pleaseSelect')" :options="roleOptions" />
+          <n-form-item require-mark-placement="left" label-placement="left" path="roleIds" :label="t('org.role')">
+            <n-select v-model:value="form.roleIds" :placeholder="t('common.pleaseSelect')" :options="roleOptions" />
           </n-form-item>
           <n-form-item
             require-mark-placement="left"
             label-placement="left"
-            path="userGroup"
+            path="userGroupIds"
             :label="t('org.userGroup')"
           >
             <n-select
-              v-model:value="form.userGroup"
+              v-model:value="form.userGroupIds"
               :placeholder="t('common.pleaseSelect')"
               :options="userGroupOptions"
             />
@@ -125,16 +137,23 @@
     <template #footer>
       <div class="flex w-full items-center justify-between">
         <div class="ml-[4px] flex items-center gap-[8px]">
-          <n-switch v-model:value="form.status" /> {{ t('common.status') }}
+          <n-switch v-model:value="form.enable" /> {{ t('common.status') }}
         </div>
-        <div>
+        <div class="flex items-center justify-end gap-[12px]">
           <n-button :disabled="loading" secondary @click="cancelHandler">
             {{ t('common.cancel') }}
           </n-button>
-          <n-button class="mx-[12px]" :loading="loading" type="tertiary" @click="continueAdd">
+          <n-button
+            v-if="!form.id"
+            :loading="loading"
+            type="primary"
+            ghost
+            class="n-btn-outline-primary"
+            @click="handleSave(true)"
+          >
             {{ t('common.saveAndContinue') }}
           </n-button>
-          <n-button :loading="loading" type="primary" @click="confirmHandler">
+          <n-button :loading="loading" type="primary" @click="handleSave(false)">
             {{ t('common.confirm') }}
           </n-button>
         </div>
@@ -158,21 +177,31 @@
     NSelect,
     NSpace,
     NSwitch,
+    NTreeSelect,
     useMessage,
   } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import CrmExpandButton from '@/components/business/crm-expand-button/index.vue';
 
+  import { addUser, getDepartmentTree, getUserDetail, updateUser } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import { validateEmail, validatePhone } from '@/utils/validate';
 
-  const Message = useMessage();
+  import type { MemberParams } from '@lib/shared/models/system/org';
 
+  const Message = useMessage();
   const { t } = useI18n();
 
   const emit = defineEmits<{
-    (e: 'addSuccess'): void;
+    (e: 'brash'): void;
+    (e: 'close'): void;
+  }>();
+
+  const props = defineProps<{
+    userId: string;
   }>();
 
   const showDrawer = defineModel<boolean>('show', {
@@ -180,21 +209,24 @@
     default: false,
   });
 
-  const form = ref({
+  const initUserForm: MemberParams = {
     name: '',
-    gender: 'male',
-    phoneNumber: '',
+    gender: false,
+    phone: '',
     email: '',
-    department: '',
-    employeeNumber: '',
+    departmentId: '',
+    employeeId: '',
     position: '',
-    status: true,
-    employeeType: undefined,
-    workingCity: undefined,
-    directSuperior: undefined,
-    role: undefined,
-    userGroup: undefined,
-  });
+    enable: true,
+    employeeType: null,
+    workCity: null,
+    supervisorId: null,
+    roleIds: [],
+    userGroupIds: [],
+    userName: '',
+  };
+
+  const form = ref<MemberParams>(cloneDeep(initUserForm));
 
   function validateUserEmail(rule: FormItemRule, value: string) {
     if (!value) {
@@ -218,16 +250,27 @@
 
   const rules: FormRules = {
     name: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }) }],
-    phoneNumber: [{ validator: validateUserPhone, trigger: ['input', 'blur'] }],
+    phone: [{ validator: validateUserPhone, trigger: ['input', 'blur'] }],
     email: [{ validator: validateUserEmail, trigger: ['input', 'blur'] }],
-    department: [{ required: true, message: t('common.pleaseSelect') }],
+    departmentId: [{ required: true, message: t('common.pleaseSelect') }],
   };
-
-  const department = ref([]);
 
   const showForm = ref(false);
 
-  const employeeTypeOptions = ref([]);
+  const employeeTypeOptions = ref([
+    {
+      value: 'formal',
+      label: t('org.formalUser'),
+    },
+    {
+      value: 'internship',
+      label: t('org.internshipUser'),
+    },
+    {
+      value: 'outsourcing',
+      label: t('org.outsourcingUser'),
+    },
+  ]);
 
   const roleOptions = ref([]);
 
@@ -240,27 +283,72 @@
   const formRef = ref<FormInst | null>(null);
 
   function cancelHandler() {
-    showDrawer.value = false;
+    form.value = cloneDeep(initUserForm);
+    emit('close');
   }
 
-  function confirmHandler() {
-    formRef.value?.validate((error) => {
+  function handleSave(isContinue: boolean) {
+    formRef.value?.validate(async (error) => {
       if (!error) {
         try {
           loading.value = true;
-          Message.success(t('common.updateSuccess'));
+          if (form.value.id) {
+            await updateUser(form.value);
+            Message.success(t('common.updateSuccess'));
+          } else {
+            await addUser(form.value);
+            Message.success(t('common.addSuccess'));
+          }
+
+          if (isContinue) {
+            form.value = cloneDeep(initUserForm);
+          } else {
+            cancelHandler();
+          }
+          emit('brash');
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.log(e);
+        } finally {
+          loading.value = false;
         }
       }
     });
   }
 
-  function continueAdd() {}
-
-  function addDepartment() {
-    emit('addSuccess');
+  const department = ref<CrmTreeNodeData[]>([]);
+  async function initDepartList() {
+    try {
+      department.value = await getDepartmentTree();
+    } catch (error) {
+      console.log(error);
+    }
   }
+
+  async function getDetail() {
+    try {
+      if (props.userId) {
+        const detail = await getUserDetail(props.userId);
+        form.value = {
+          ...detail,
+          name: detail.userName,
+        };
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  watch(
+    () => showDrawer.value,
+    (val) => {
+      if (val) {
+        getDetail();
+        initDepartList();
+      }
+    }
+  );
 </script>
 
 <style scoped></style>

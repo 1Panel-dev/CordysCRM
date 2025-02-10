@@ -38,6 +38,31 @@
   }
 }
 
+// outline primary 状态按钮
+.btn-outline-primary-hover() {
+  &:not(:disabled):hover {
+    border-color: var(--primary-1) !important;
+    color: var(--primary-0) !important;
+    background-color: var(--primary-6) !important;
+  }
+}
+
+.btn-outline-primary-active() {
+  &:not(:disabled):active {
+    border-color: var(--primary-0) !important;
+    color: var(--primary-0) !important;
+    background-color: var(--primary-6) !important;
+  }
+}
+
+.btn-outline-primary-disabled() {
+  &:disabled {
+    border-color: var(--primary-4) !important;
+    color: var(--primary-4) !important;
+    background-color: var(--text-n10) !important;
+  }
+}
+
 // outline error状态按钮
 .btn-outline-error-hover() {
   &:not(:disabled):hover {
@@ -140,9 +165,8 @@
 
 // 次要outline按钮
 .btn-outline-sec-default() {
-  border: 1px solid var(--text-n7) !important;
   color: var(--text-n1) !important;
-  background-color: var(--text-n9) !important;
+  background-color: var(--text-n10) !important;
 }
 
 .btn-outline-sec-hover() {
