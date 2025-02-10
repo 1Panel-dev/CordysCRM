@@ -46,10 +46,10 @@ CREATE TABLE lead_pool_recycle_rule
     `id`            VARCHAR(32) NOT NULL COMMENT 'ID',
     `pool_id`       VARCHAR(32) NOT NULL COMMENT '线索池ID',
     `expire_notice` BIT(1)      NOT NULL DEFAULT 1 COMMENT '到期提醒',
-    `notice_days`   INT             COMMENT '提前提醒天数' ,
-    `auto`          BIT(1)      NOT NULL  DEFAULT 0 COMMENT '自动回收' ,
-    `operator`      VARCHAR(10)     COMMENT '操作符' ,
-    `condition`     TEXT            COMMENT '回收条件' ,
+    `notice_days`   INT COMMENT '提前提醒天数',
+    `auto`          BIT(1)      NOT NULL DEFAULT 0 COMMENT '自动回收',
+    `operator`      VARCHAR(10) COMMENT '操作符',
+    `condition`     TEXT COMMENT '回收条件',
     `create_time`   BIGINT      NOT NULL COMMENT '创建时间',
     `update_time`   BIGINT      NOT NULL COMMENT '更新时间',
     `create_user`   VARCHAR(32) NOT NULL COMMENT '创建人',
@@ -97,3 +97,6 @@ CREATE TABLE lead_capacity
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_organization_id ON lead_capacity (organization_id ASC);
+
+-- set innodb lock wait timeout to default
+SET SESSION innodb_lock_wait_timeout = DEFAULT;
