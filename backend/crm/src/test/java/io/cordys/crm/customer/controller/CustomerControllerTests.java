@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.controller;
 
+import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.Pager;
 import io.cordys.crm.base.BaseTest;
@@ -8,6 +9,7 @@ import io.cordys.crm.customer.dto.request.CustomerAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.system.dto.response.ModuleFieldDTO;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -24,6 +26,8 @@ import java.util.List;
 class CustomerControllerTests extends BaseTest {
     private static final String BASE_PATH = "/customer/";
 
+    protected static final String MODULE_FIELD = "module/field";
+
     private static Customer addCustomer;
 
     @Resource
@@ -32,6 +36,19 @@ class CustomerControllerTests extends BaseTest {
     @Override
     protected String getBasePath() {
         return BASE_PATH;
+    }
+
+    @Test
+    @Order(0)
+    void testModuleField() throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FIELD);
+        List<ModuleFieldDTO> moduleFields = getResultDataArray(mvcResult, ModuleFieldDTO.class);
+        moduleFields.forEach(moduleField -> {
+            Assertions.assertEquals(moduleField.getModuleId(), ModuleKey.CUSTOMER);
+        });
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, MODULE_FIELD);
     }
 
     @Test

@@ -21,10 +21,6 @@ public class CustomerUpdateRequest {
     @Schema(description = "客户名称")
     private String name;
 
-
-
-
-
     @Schema(description = "标签")
     private String tags;
 

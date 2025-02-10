@@ -2,6 +2,11 @@ package io.cordys.crm.customer.controller;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.cordys.common.constants.ModuleKey;
+import io.cordys.crm.system.domain.Module;
+import io.cordys.crm.system.dto.response.ModuleFieldDTO;
+import io.cordys.crm.system.service.ModuleFieldService;
+import io.cordys.crm.system.service.ModuleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -32,6 +37,18 @@ import java.util.List;
 public class CustomerController {
     @Resource
     private CustomerService customerService;
+    @Resource
+    private ModuleService moduleService;
+    @Resource
+    private ModuleFieldService moduleFieldService;
+
+    @GetMapping("/module/field")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @Operation(summary = "获取模块字段")
+    public List<ModuleFieldDTO> getModuleFields(){
+        Module module = moduleService.getModuleByKey(ModuleKey.CUSTOMER, OrganizationContext.getOrganizationId());
+        return moduleFieldService.getFieldList(module.getId());
+    }
 
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)

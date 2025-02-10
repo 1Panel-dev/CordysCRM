@@ -38,16 +38,20 @@ public class ModuleFieldService {
 	@Resource
 	private ExtModuleFieldOptionMapper extModuleFieldOptionMapper;
 
+	public List<ModuleFieldDTO> getFieldList(ModuleFieldRequest request) {
+		return getFieldList(request.getModuleId());
+	}
+
 	/**
 	 * 获取模块字段集合
-	 * @param request 请求参数
+	 * @param moduleId 请求参数
 	 * @return 字段集合
 	 */
-	@Cacheable(value = "fields", key = "#request.moduleId", unless = "#result == null")
-	public List<ModuleFieldDTO> getFieldList(ModuleFieldRequest request) {
+	@Cacheable(value = "fields", key = "#moduleId", unless = "#result == null")
+	public List<ModuleFieldDTO> getFieldList(String moduleId) {
 		List<ModuleFieldDTO> fieldDTOList = new ArrayList<>();
 		LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.eq(ModuleField::getModuleId, request.getModuleId());
+		queryWrapper.eq(ModuleField::getModuleId, moduleId);
 		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(queryWrapper);
 		if (CollectionUtils.isEmpty(fields)) {
 			return fieldDTOList;

@@ -1,6 +1,7 @@
 package io.cordys.crm.system.service;
 
 import io.cordys.common.constants.ModuleKey;
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -55,7 +56,7 @@ public class ModuleService {
 		if (module == null) {
 			throw new GenericException(Translator.get("module.not_exist"));
 		}
-		module.setEnable(module.getEnable() ^ 1);
+		module.setEnable(!module.getEnable());
 		moduleMapper.updateById(module);
 	}
 
@@ -91,12 +92,19 @@ public class ModuleService {
 			module.setKey(moduleConstant.getKey());
 			module.setOrganizationId(organizationId);
 			module.setPos(pos.getAndIncrement());
-			module.setCreateUser("admin");
+			module.setCreateUser(InternalUser.ADMIN.getValue());
 			module.setCreateTime(System.currentTimeMillis());
-			module.setUpdateUser("admin");
+			module.setUpdateUser(InternalUser.ADMIN.getValue());
 			module.setUpdateTime(System.currentTimeMillis());
 			modules.add(module);
 		});
 		moduleMapper.batchInsert(modules);
+	}
+
+	public Module getModuleByKey(ModuleKey moduleConstants, String organizationId) {
+		Module module = new Module();
+		module.setKey(moduleConstants.getKey());
+		module.setOrganizationId(organizationId);
+		return moduleMapper.select(module).getFirst();
 	}
 }

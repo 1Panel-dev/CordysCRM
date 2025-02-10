@@ -67,7 +67,6 @@ public class CustomerService {
         Customer customer = BeanUtils.copyBean(new Customer(), request);
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setUpdateUser(userId);
-        customer.setId(IDGenerator.nextStr());
         // 校验名称重复
         checkUpdateExist(customer);
         customerMapper.update(customer);
