@@ -21,9 +21,9 @@ public class ModuleFieldOption extends BaseModel {
 	@Schema(description = "所属模块字段ID")
 	private String fieldId;
 
-	@Schema(description = "选项值")
+	@Schema(description = "选项文本")
 	private String fieldKey;
 
-	@Schema(description = "选项文本")
-	private String fieldLabel;
+	@Schema(description = "选项值")
+	private String fieldValue;
 }

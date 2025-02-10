@@ -29,7 +29,7 @@ public class ModuleField extends BaseModel {
 	private String type;
 
 	@Schema(description = "显示标题", defaultValue = "1")
-	private boolean showLabel;
+	private Boolean showLabel;
 
 	@Schema(description = "描述")
 	private String description;
@@ -47,16 +47,16 @@ public class ModuleField extends BaseModel {
 	private String layout;
 
 	@Schema(description = "必填", defaultValue = "0")
-	private boolean required;
+	private Boolean required;
 
 	@Schema(description = "唯一", defaultValue = "0")
-	private boolean unique;
+	private Boolean unique;
 
 	@Schema(description = "可见", defaultValue = "1")
-	private boolean readable;
+	private Boolean readable;
 
 	@Schema(description = "可编辑", defaultValue = "1")
-	private boolean editable;
+	private Boolean editable;
 
 	@Schema(description = "自定义宽度", allowableValues = {"full"})
 	private String fieldWidth;

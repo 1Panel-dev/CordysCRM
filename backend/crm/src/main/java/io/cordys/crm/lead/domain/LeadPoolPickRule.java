@@ -19,7 +19,7 @@ public class LeadPoolPickRule extends BaseModel {
 	private Integer pickNumber;
 
 	@Schema(description = "是否限制前归属人领取")
-	private boolean limitPreOwner;
+	private Boolean limitPreOwner;
 
 	@Schema(description = "领取间隔天数")
 	private Integer pickIntervalDays;

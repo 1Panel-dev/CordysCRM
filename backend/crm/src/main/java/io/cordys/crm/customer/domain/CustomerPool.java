@@ -22,5 +22,5 @@ public class CustomerPool extends BaseModel {
 	private String ownerId;
 
 	@Schema(description = "启用/禁用")
-	private boolean enable;
+	private Boolean enable;
 }

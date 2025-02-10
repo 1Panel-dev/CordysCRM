@@ -314,15 +314,12 @@ CREATE TABLE sys_module_field(
     `id`            VARCHAR(32) NOT NULL   COMMENT 'ID' ,
     `module_id`     VARCHAR(32) NOT NULL   COMMENT '所属模块' ,
     `name`          VARCHAR(255) NOT NULL   COMMENT '字段名称' ,
+    `internal_key`  VARCHAR(255)    COMMENT '字段内置Key' ,
     `type`          VARCHAR(10) NOT NULL   COMMENT '字段类型(常量)' ,
-    `show_label`    BIT(1) NOT NULL  DEFAULT 1 COMMENT '显示标题(默认显示)' ,
+    `show_label`    BIT(1) NOT NULL  DEFAULT 1 COMMENT '显示标题' ,
     `description`   VARCHAR(1000)    COMMENT '描述' ,
     `tooltip`       VARCHAR(255)    COMMENT '提示文字' ,
-    `default_value` VARCHAR(255)    COMMENT '默认值 (支持多个值)' ,
-    `custom_config` TEXT    COMMENT '个性化配置' ,
-    `layout`        VARCHAR(10) NOT NULL   COMMENT '分布方式(常量)' ,
-    `required`      BIT(1) NOT NULL  DEFAULT 0 COMMENT '必填(默认非必填)' ,
-    `unique`        BIT(1) NOT NULL  DEFAULT 0 COMMENT '唯一/不唯一(默认不唯一)' ,
+    `default_value` VARCHAR(1000)    COMMENT '默认值 (待定)' ,
     `readable`      BIT(1) NOT NULL  DEFAULT 1 COMMENT '可见(默认可见)' ,
     `editable`      BIT(1) NOT NULL  DEFAULT 1 COMMENT '可编辑(默认可编辑)' ,
     `field_width`   VARCHAR(10) NOT NULL   COMMENT '自定义宽度(常量)' ,
@@ -337,28 +334,36 @@ CREATE TABLE sys_module_field(
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-
 CREATE INDEX idx_module_id ON sys_module_field (module_id ASC);
 
-CREATE TABLE sys_module_field_option
-(
-    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
-    `field_id`    VARCHAR(32)  NOT NULL COMMENT '字段id',
-    `field_key`   VARCHAR(255) NOT NULL COMMENT '字段key',
-    `field_label` VARCHAR(255) NOT NULL COMMENT '显示名称',
-    `create_user` VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `create_time` BIGINT       NOT NULL COMMENT '创建时间',
-    `update_user` VARCHAR(32)  NOT NULL COMMENT '更新人',
-    `update_time` BIGINT       NOT NULL COMMENT '更新时间',
+CREATE TABLE sys_module_field_blob(
+    `id`            VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `extra_prop`    BLOB    COMMENT '额外属性' ,
+    `rules`         BLOB    COMMENT '校验规则' ,
     PRIMARY KEY (id)
-) COMMENT = '模块字段选项值配置(部分选项字段)'
+)  COMMENT = '模块字段大字段配置'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE TABLE sys_module_field_option(
+    `id`            VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `field_id`      VARCHAR(32) NOT NULL   COMMENT '字段id' ,
+    `field_key`     VARCHAR(255) NOT NULL   COMMENT '字段key' ,
+    `field_value`   VARCHAR(255) NOT NULL   COMMENT '显示名称' ,
+    `create_user`   VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `create_time`   BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_user`   VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    `update_time`   BIGINT NOT NULL   COMMENT '更新时间' ,
+    PRIMARY KEY (id)
+)  COMMENT = '模块字段选项值配置(部分选项字段)'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
 
 CREATE INDEX idx_field_id ON sys_module_field_option (field_id ASC);
-CREATE INDEX idx_field_key ON sys_module_field_option (field_key ASC);
+CREATE INDEX idx_field_value ON sys_module_field_option(field_value ASC);
 
 CREATE TABLE sys_role
 (

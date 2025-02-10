@@ -141,7 +141,7 @@ public class CustomerPoolService {
 	public void switchStatus(String id, String currentUserId) {
 		CustomerPool pool = checkPoolExist(id);
 		checkPoolOwner(pool, currentUserId);
-		pool.setEnable(pool.getEnable() ^ 1);
+		pool.setEnable(!pool.getEnable());
 		pool.setUpdateTime(System.currentTimeMillis());
 		pool.setUpdateUser(currentUserId);
 		customerPoolMapper.updateById(pool);
