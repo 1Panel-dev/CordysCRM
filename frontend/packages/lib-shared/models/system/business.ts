@@ -22,9 +22,10 @@ export interface ConfigSynchronization {
 }
 
 // 同步组织和扫码卡片数据类型
-export interface IntegrationItem extends ConfigSynchronization {
+export interface IntegrationItem {
   title: string;
   description: string;
   logo: string;
   hasConfig: boolean;
+  response: ConfigSynchronization;
 }

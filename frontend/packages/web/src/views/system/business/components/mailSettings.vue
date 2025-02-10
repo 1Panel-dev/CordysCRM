@@ -46,6 +46,7 @@
     :ok-text="t('common.update')"
     :loading="emailDrawerLoading"
     @confirm="confirm"
+    @cancel="cancel"
   >
     <n-form
       ref="formRef"
@@ -137,16 +138,17 @@
 
   const showDrawer = ref(false);
   const formRef = ref<FormInst | null>(null);
-  const form = ref({
+  const originForm = ref({
     host: '',
     port: '',
     account: '',
     password: '',
     from: '',
     recipient: '',
-    ssl: 'false',
-    tsl: 'false',
+    ssl: false,
+    tsl: false,
   });
+  const form = ref({ ...originForm.value });
 
   const emailRule = {
     validator: (rule: FormItemRule, value: string) => {
@@ -189,7 +191,8 @@
     try {
       emailLoading.value = true;
       const res = await getConfigEmail();
-      form.value = { ...res };
+      originForm.value = { ...res, ssl: res.ssl === 'true', tsl: res.tsl === 'true' };
+      form.value = { ...res, ssl: res.ssl === 'true', tsl: res.tsl === 'true' };
       descriptions.value = [
         { label: t('system.business.mailSettings.smtpHost'), value: res.host },
         { label: t('system.business.mailSettings.smtpPort'), value: res.port },
@@ -214,7 +217,7 @@
       if (!errors) {
         try {
           emailDrawerLoading.value = true;
-          await updateConfigEmail(form.value);
+          await updateConfigEmail({ ...form.value, ssl: String(form.value.ssl), tsl: String(form.value.tsl) });
           Message.success(t('common.updateSuccess'));
           showDrawer.value = false;
           initEmailInfo();
@@ -222,10 +225,14 @@
           // eslint-disable-next-line no-console
           console.log(error);
         } finally {
-          emailLoading.value = false;
+          emailDrawerLoading.value = false;
         }
       }
     });
+  }
+
+  function cancel() {
+    form.value = { ...originForm.value };
   }
 
   onBeforeMount(() => {

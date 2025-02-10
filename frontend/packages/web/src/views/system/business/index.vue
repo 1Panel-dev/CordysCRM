@@ -18,19 +18,19 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
-  import IntegrationList from './components/integrationList.vue';
-  import PageSettings from './components/pageSettings.vue';
+  import MailSettings from './components/mailSettings.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 
   const AuthenticationSettings = defineAsyncComponent(() => import('./components/authenticationSettings.vue'));
-  const MailSettings = defineAsyncComponent(() => import('./components/mailSettings.vue'));
+  const PageSettings = defineAsyncComponent(() => import('./components/pageSettings.vue'));
+  const IntegrationList = defineAsyncComponent(() => import('./components/integrationList.vue'));
   const { t } = useI18n();
 
-  const activeTab = ref('pageSettings');
+  const activeTab = ref('mailSettings');
   const tabList = ref([
-    { name: 'pageSettings', tab: t('system.business.tab.interfaceSettings') },
-    { name: 'scanLogin', tab: t('system.business.tab.scanLogin') },
+    // { name: 'pageSettings', tab: t('system.business.tab.interfaceSettings') }, // 第一版先不上
+    // { name: 'scanLogin', tab: t('system.business.tab.scanLogin') }, // 第一版先不上
     { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
     { name: 'authenticationSettings', tab: t('system.business.tab.authenticationSettings') },
     { name: 'syncOrganization', tab: t('system.business.tab.syncOrganization') },

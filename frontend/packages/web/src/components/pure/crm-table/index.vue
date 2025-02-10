@@ -60,7 +60,6 @@
 
   const currentColumns = ref<CrmDataTableColumn[]>([]);
 
-  // TODO lmy 设置列
   async function initColumn(hasInitStore = false) {
     // 将render去掉，防止报错
     let columns = cloneDeep(props.columns).map((column: CrmDataTableColumn) => {

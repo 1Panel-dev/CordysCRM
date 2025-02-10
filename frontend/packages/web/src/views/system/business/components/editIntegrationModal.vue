@@ -1,5 +1,5 @@
 <template>
-  <CrmModal v-model:show="showModal" :title="currentIntegration?.title">
+  <CrmModal v-model:show="showModal" :title="props.title">
     <n-form
       ref="formRef"
       :model="form"
@@ -8,22 +8,8 @@
       require-mark-placement="left"
       :label-width="80"
     >
-      <!-- 企业 ID，应用 ID -->
-      <template v-if="['WE_COM', 'DING_TALK'].includes(currentIntegration?.key)">
-        <n-form-item path="corpId" :label="t('system.business.corpId')">
-          <n-input v-model:value="form.corpId" :placeholder="t('common.pleaseInput')" />
-        </n-form-item>
-        <n-form-item path="agentId" :label="t('system.business.agentId')">
-          <n-input v-model:value="form.agentId" :placeholder="t('common.pleaseInput')" />
-        </n-form-item>
-      </template>
-
-      <!-- 应用 key -->
-      <n-form-item
-        v-if="['LARK', 'LARK_SUITE', 'DING_TALK'].includes(currentIntegration?.key)"
-        path="appKey"
-        :label="t('system.business.appKey')"
-      >
+      <!-- 应用 key 第一版没有 -->
+      <!-- <n-form-item v-if="['DINGTALK'].includes(form?.type)" path="appKey" :label="t('system.business.appKey')">
         <n-input
           v-model:value="form.appKey"
           type="password"
@@ -31,9 +17,23 @@
           :input-props="{ autocomplete: 'new-password' }"
           :placeholder="t('common.pleaseInput')"
         />
-      </n-form-item>
+      </n-form-item> -->
 
-      <!-- 应用密钥，回调域名 -->
+      <!-- 企业 ID -->
+      <template v-if="['WECOM'].includes(form?.type)">
+        <n-form-item path="corpId" :label="t('system.business.corpId')">
+          <n-input v-model:value="form.corpId" :placeholder="t('common.pleaseInput')" />
+        </n-form-item>
+      </template>
+
+      <!-- 应用 ID -->
+      <template v-if="['WECOM', 'DINGTALK', 'LARK', 'INTERNAL'].includes(form?.type)">
+        <n-form-item path="agentId" :label="t('system.business.agentId')">
+          <n-input v-model:value="form.agentId" :placeholder="t('common.pleaseInput')" />
+        </n-form-item>
+      </template>
+
+      <!-- 应用密钥 -->
       <n-form-item path="appSecret" :label="t('system.business.appSecret')">
         <n-input
           v-model:value="form.appSecret"
@@ -42,9 +42,6 @@
           :input-props="{ autocomplete: 'new-password' }"
           :placeholder="t('common.pleaseInput')"
         />
-      </n-form-item>
-      <n-form-item path="callBack" :label="t('system.business.callBack')">
-        <n-input v-model:value="form.callBack" :placeholder="t('common.pleaseInput')" />
       </n-form-item>
     </n-form>
     <template #footer>
@@ -80,13 +77,17 @@
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
+  import { updateConfigSynchronization } from '@/api/modules/system/business';
   import { useI18n } from '@/hooks/useI18n';
+
+  import type { ConfigSynchronization } from '@lib/shared/models/system/business';
 
   const { t } = useI18n();
   const Message = useMessage();
 
   const props = defineProps<{
-    integration: any; // TODO: 定义具体的类型
+    integration?: ConfigSynchronization;
+    title: string;
   }>();
 
   const showModal = defineModel<boolean>('show', {
@@ -94,30 +95,32 @@
     default: false,
   });
 
-  const currentIntegration = ref();
+  const emit = defineEmits<{
+    (e: 'initSync'): void;
+  }>();
+
+  const form = ref<ConfigSynchronization>({
+    corpId: '',
+    agentId: '',
+    appSecret: '',
+    enable: true,
+    type: '',
+    id: '',
+  });
+
   watch(
     () => props.integration,
     (val) => {
-      currentIntegration.value = val;
+      form.value = { ...(val as ConfigSynchronization) };
     },
     { deep: true }
   );
-
-  const form = ref({
-    corpId: '',
-    agentId: '',
-    appKey: '',
-    appSecret: '',
-    callBack: '',
-    enable: true,
-  });
 
   const rules: FormRules = {
     corpId: [{ required: true, message: t('common.notNull', { value: `${t('system.business.corpId')} ` }) }],
     agentId: [{ required: true, message: t('common.notNull', { value: `${t('system.business.agentId')} ` }) }],
     appKey: [{ required: true, message: t('common.notNull', { value: `${t('system.business.appKey')} ` }) }],
     appSecret: [{ required: true, message: t('common.notNull', { value: t('system.business.appSecret') }) }],
-    callBack: [{ required: true, message: t('common.notNull', { value: t('system.business.callBack') }) }],
   };
 
   const formRef = ref<FormInst | null>(null);
@@ -129,14 +132,19 @@
    */
   const loading = ref(false);
   function confirmHandler() {
-    formRef.value?.validate((error) => {
+    formRef.value?.validate(async (error) => {
       if (!error) {
         try {
           loading.value = true;
+          await updateConfigSynchronization(form.value);
           Message.success(t('common.updateSuccess'));
+          showModal.value = false;
+          emit('initSync');
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
+        } finally {
+          loading.value = false;
         }
       }
     });

@@ -4,7 +4,7 @@
     <div v-if="integrationList.length" class="flex flex-wrap gap-[16px]">
       <div
         v-for="item of integrationList"
-        :key="item.type"
+        :key="item.response.type"
         class="flex h-[140px] w-[380px] flex-col justify-between rounded-[6px] bg-[var(--text-n9)] p-[24px]"
       >
         <div class="flex">
@@ -40,7 +40,11 @@
 
           <n-tooltip :disabled="item.hasConfig">
             <template #trigger>
-              <n-switch v-model:value="item.enable" :disabled="!item.hasConfig" />
+              <n-switch
+                :value="item.response.enable"
+                :disabled="!item.hasConfig"
+                @update:value="handleChangeEnable(item)"
+              />
             </template>
             {{ t('system.business.notConfiguredTip') }}
           </n-tooltip>
@@ -49,24 +53,28 @@
     </div>
   </CrmCard>
 
-  <EditIntegrationModal v-model:show="showEditIntegrationModal" :integration="currentIntegration" />
-  <SyncWeChat v-model:show="showSyncWeChatModal" />
+  <EditIntegrationModal
+    v-model:show="showEditIntegrationModal"
+    :title="currentTitle"
+    :integration="currentIntegration as ConfigSynchronization"
+    @init-sync="initSyncList"
+  />
 </template>
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n';
-  import { NButton, NSwitch, NTooltip } from 'naive-ui';
+  import { NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import EditIntegrationModal from './editIntegrationModal.vue';
-  import SyncWeChat from '@/views/system/org/components/syncWeChat.vue';
 
-  import { getConfigSynchronization } from '@/api/modules/system/business';
+  import { getConfigSynchronization, updateConfigSynchronization } from '@/api/modules/system/business';
 
   import type { ConfigSynchronization, IntegrationItem } from '@lib/shared/models/system/business';
 
   const { t } = useI18n();
+  const Message = useMessage();
 
   const props = defineProps<{
     activeTab: string;
@@ -118,8 +126,8 @@
           const config = configMap.get(item.type)!;
           return {
             ...item,
-            ...config,
             hasConfig: Boolean(config.appSecret),
+            response: config,
           };
         });
     } catch (error) {
@@ -131,15 +139,24 @@
   }
 
   const showEditIntegrationModal = ref(false);
-  const showSyncWeChatModal = ref<boolean>(false);
 
-  const currentIntegration = ref<IntegrationItem>();
+  const currentTitle = ref('');
+  const currentIntegration = ref<ConfigSynchronization>();
   function handleEdit(item: IntegrationItem) {
-    currentIntegration.value = item;
-    if (props.activeTab === 'scanLogin') {
-      showEditIntegrationModal.value = true;
-    } else {
-      showSyncWeChatModal.value = true;
+    currentTitle.value = item.title;
+    currentIntegration.value = { ...item.response };
+    showEditIntegrationModal.value = true;
+  }
+
+  async function handleChangeEnable(item: IntegrationItem) {
+    try {
+      loading.value = true;
+      await updateConfigSynchronization({ ...item.response, enable: !item.response.enable });
+      Message.success(item.response.enable ? t('common.disableSuccess') : t('common.enableSuccess'));
+      initSyncList();
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
     }
   }
 
