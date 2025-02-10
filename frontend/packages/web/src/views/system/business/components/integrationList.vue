@@ -71,6 +71,8 @@
 
   import { getConfigSynchronization, updateConfigSynchronization } from '@/api/modules/system/business';
 
+  import { CompanyTypeEnum } from '@/enums/commonEnum';
+
   import type { ConfigSynchronization, IntegrationItem } from '@lib/shared/models/system/business';
 
   const { t } = useI18n();
@@ -83,25 +85,25 @@
   // 所有可用的集成平台配置
   const allIntegrations = [
     {
-      type: 'WECOM',
+      type: CompanyTypeEnum.WECOM,
       title: t('system.business.WE_COM'),
       description: t('system.business.WE_COM.description'),
       logo: 'iconlogo_wechat-work',
     },
     {
-      type: 'DINGTALK',
+      type: CompanyTypeEnum.DINGTALK,
       title: t('system.business.DING_TALK'),
       description: t('system.business.DING_TALK.description'),
       logo: 'iconlogo_dingtalk',
     },
     {
-      type: 'LARK',
+      type: CompanyTypeEnum.LARK,
       title: t('system.business.LARK'),
       description: t('system.business.LARK.description'),
       logo: 'iconlogo_lark',
     },
     {
-      type: 'INTERNAL',
+      type: CompanyTypeEnum.INTERNAL,
       title: t('system.business.LARK_SUITE'),
       description: t('system.business.LARK.description'),
       logo: 'iconlogo_lark',

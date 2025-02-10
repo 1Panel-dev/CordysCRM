@@ -21,7 +21,12 @@
     />
 
     <AddMember v-model:show="showDrawer" :user-id="currentUserId" @brash="initOrgList()" @close="cancelHandler" />
-    <SyncWeChat v-model:show="showSyncWeChatModal" />
+    <EditIntegrationModal
+      v-model:show="showSyncWeChatModal"
+      :title="t('system.business.syncFrom', { name: t('system.business.WE_COM') })"
+      :integration="currentIntegration"
+      @init-sync="updateConfig"
+    />
     <MemberDetail
       v-model:show="showDetailModal"
       :user-id="currentUserId"
@@ -69,11 +74,12 @@
   import AddMember from './addMember.vue';
   import batchEditModal from './batchEditModal.vue';
   import MemberDetail from './memberDetail.vue';
-  import SyncWeChat from './syncWeChat.vue';
+  import EditIntegrationModal from '@/views/system/business/components/editIntegrationModal.vue';
   import ImportModal from '@/views/system/org/components/import/importModal.vue';
   import ValidateModal from '@/views/system/org/components/import/validateModal.vue';
   import ValidateResult from '@/views/system/org/components/import/validateResult.vue';
 
+  import { getConfigSynchronization } from '@/api/modules/system/business';
   import { getUserList, resetUserPassword, syncOrg, updateUser } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -83,6 +89,7 @@
   import { CompanyTypeEnum } from '@/enums/commonEnum';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import type { ConfigSynchronization } from '@lib/shared/models/system/business';
   import type { MemberItem } from '@lib/shared/models/system/org';
 
   const Message = useMessage();
@@ -104,8 +111,19 @@
    */
 
   const showSyncWeChatModal = ref<boolean>(false);
-  function settingWeChat(e: MouseEvent) {
+  const currentIntegration = ref<ConfigSynchronization>({
+    id: '',
+    type: CompanyTypeEnum.WECOM,
+    corpId: '',
+    agentId: '',
+    appSecret: '',
+    enable: true,
+  });
+
+  async function settingWeChat(e: MouseEvent) {
     e.stopPropagation();
+    const res = await getConfigSynchronization();
+    [currentIntegration.value] = res;
     showSyncWeChatModal.value = true;
   }
 
@@ -182,6 +200,12 @@
       key: 'export',
     },
   ];
+
+  // 更新配置
+  function updateConfig() {
+    isHasConfig.value = true;
+    moreActions[0].render = renderSync();
+  }
 
   const groupList = ref([
     {

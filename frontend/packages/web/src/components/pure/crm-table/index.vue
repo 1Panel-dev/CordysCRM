@@ -79,7 +79,16 @@
     }
     currentColumns.value = columns.map((column) => {
       // 添加上render
-      const render = props.columns.find((item) => item.key === column.key)?.render;
+      let render = props.columns.find((item) => item.key === column.key)?.render;
+
+      if (column.isTag) {
+        render = (row: Record<string, any>) =>
+          h(CrmTagGroup, {
+            tags: row[column.key as string],
+            ...column.tagGroupProps,
+          });
+      }
+
       // 选择列
       if (column.type === SpecialColumnEnum.SELECTION) {
         return {
@@ -109,15 +118,7 @@
           render,
         };
       }
-      const tagsColumn = column.isTag
-        ? {
-            render: (row: Record<string, any>) =>
-              h(CrmTagGroup, {
-                tags: row[column.key as string],
-                ...column.tagGroupProps,
-              }),
-          }
-        : {};
+
       // 排序图标处理
       const sorterColumn = column.sorter
         ? {
@@ -154,10 +155,9 @@
         ...column,
         ...sorterColumn,
         ...filterColumn,
-        ...tagsColumn,
         titleAlign: 'left',
         resizable: true,
-        ...(render || undefined),
+        render,
       };
     });
   }
