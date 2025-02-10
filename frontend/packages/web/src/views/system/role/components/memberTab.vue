@@ -304,8 +304,8 @@
           label: item.name,
           value: item.id,
           disabled: !item.enabled,
+          ...item,
           children: item.children?.length ? item.children : undefined,
-          nodeType: item.nodeType,
         };
       });
     }
@@ -315,8 +315,8 @@
           label: item.name,
           value: item.id,
           disabled: !item.enabled,
+          ...item,
           children: item.children?.length ? item.children : undefined,
-          nodeType: item.nodeType,
         };
       });
     }
@@ -325,7 +325,7 @@
         label: item.name,
         value: item.id,
         disabled: !item.enabled,
-        nodeType: item.nodeType,
+        ...item,
       };
     });
   });
@@ -364,7 +364,7 @@
         deptIds.value = [];
         nodes.forEach((node) => {
           if (node) {
-            if (node.nodeType === DeptNodeTypeEnum.USER) {
+            if (node.nodeType === DeptNodeTypeEnum.USER || addMemberType.value === 'member') {
               userIds.value.push(node.value as string);
             } else if (node.nodeType === DeptNodeTypeEnum.ROLE) {
               roleIds.value.push(node.value as string);
