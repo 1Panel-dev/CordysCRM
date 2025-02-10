@@ -13,13 +13,13 @@ public class LeadPoolRecycleRule extends BaseModel {
 	private String poolId;
 
 	@Schema(description = "到期提醒")
-	private int expireNotice;
+	private boolean expireNotice;
 
 	@Schema(description = "提前提醒天数")
 	private Integer noticeDays;
 
 	@Schema(description = "自动回收")
-	private int auto;
+	private boolean auto;
 
 	@Schema(description = "操作符")
 	private String operator;

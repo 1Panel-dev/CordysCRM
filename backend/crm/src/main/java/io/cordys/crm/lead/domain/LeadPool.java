@@ -22,5 +22,5 @@ public class LeadPool extends BaseModel {
 	private String ownerId;
 
 	@Schema(description = "启用/禁用")
-	private int enable;
+	private boolean enable;
 }

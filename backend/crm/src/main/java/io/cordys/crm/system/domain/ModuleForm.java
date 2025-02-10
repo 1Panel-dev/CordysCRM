@@ -19,7 +19,7 @@ public class ModuleForm extends BaseModel {
 	private String moduleId;
 
 	@Schema(description = "前台缓存")
-	private int frontCache;
+	private boolean frontCache;
 
 	@Schema(description = "布局(常量)")
 	private String layout;
@@ -34,7 +34,7 @@ public class ModuleForm extends BaseModel {
 	private String labelAlignment;
 
 	@Schema(description = "是否展示描述信息")
-	private int showDesc;
+	private boolean showDesc;
 
 	@Schema(description = "输入框宽度")
 	private String inputWidth;
@@ -43,11 +43,11 @@ public class ModuleForm extends BaseModel {
 	private String optBtnPos;
 
 	@Schema(description = "保存按钮")
-	private int saveBtn;
+	private boolean saveBtn;
 
 	@Schema(description = "保存并继续")
-	private int saveContinueBtn;
+	private boolean saveContinueBtn;
 
 	@Schema(description = "取消按钮")
-	private int cancelBtn;
+	private boolean cancelBtn;
 }
