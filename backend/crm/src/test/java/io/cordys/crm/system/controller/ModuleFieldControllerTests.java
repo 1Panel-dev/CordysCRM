@@ -41,7 +41,7 @@ public class ModuleFieldControllerTests extends BaseTest{
 		assert fields.size() == 1;
 		ModuleFieldDTO saveField = fields.getFirst();
 		saveField.setName("default-name-update");
-		ModuleFieldOption option = ModuleFieldOption.builder().fieldKey("default-key").fieldLabel("default-value").build();
+		ModuleFieldOption option = ModuleFieldOption.builder().fieldKey("default-key").fieldValue("default-value").build();
 		saveField.setOptions(List.of(option));
 		request.setFields(List.of(saveField));
 		form.setId("default-form-id");
@@ -62,7 +62,7 @@ public class ModuleFieldControllerTests extends BaseTest{
 	private ModuleFieldDTO buildField() {
 		ModuleField field = ModuleField.builder()
 				.moduleId("default-module").name("default-name").type("select").pos(1L)
-				.tooltip("default-tooltip").required(1).unique(1).fieldWidth("half")
+				.tooltip("default-tooltip").required(true).unique(true).fieldWidth("half")
 				.defaultValue("default-value")
 				.build();
 		ModuleFieldDTO dto = new ModuleFieldDTO();
@@ -72,11 +72,11 @@ public class ModuleFieldControllerTests extends BaseTest{
 
 	private ModuleForm buildForm() {
 		return ModuleForm.builder()
-				.moduleId("default-module").frontCache(1).layout("layout")
+				.moduleId("default-module").frontCache(true).layout("layout")
 				.labelPos("middle").labelWidth("default")
-				.labelAlignment("left").showDesc(1)
+				.labelAlignment("left").showDesc(true)
 				.inputWidth("default").optBtnPos("middle")
-				.saveBtn(1).saveContinueBtn(1).cancelBtn(1)
+				.saveBtn(true).saveContinueBtn(true).cancelBtn(true)
 				.build();
 	}
 }
