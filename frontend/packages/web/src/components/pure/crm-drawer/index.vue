@@ -7,7 +7,12 @@
     :placement="props.placement"
     @after-leave="emit('cancel')"
   >
-    <n-drawer-content :title="props.title" closable :header-class="`${props.headerClass} crm-drawer-header-class`">
+    <n-drawer-content
+      :title="props.title"
+      :closable="props.closable"
+      :header-class="`${props.headerClass} crm-drawer-header-class`"
+      :body-content-class="props.bodyContentClass"
+    >
       <template #header>
         <slot name="header">
           <div class="flex w-full items-center justify-between gap-[8px] overflow-hidden">
@@ -75,13 +80,16 @@
       showContinue?: boolean; // 是否显示保存并继续添加按钮
       okDisabled?: boolean;
       headerClass?: string; // 头部的class
+      bodyContentClass?: string; // 内容区的class
       footer?: boolean; // 是否展示footer
       loading?: boolean;
+      closable?: boolean;
     }>(),
     {
       placement: 'right',
       showMask: true,
       footer: true,
+      closable: true,
     }
   );
 
@@ -113,7 +121,7 @@
 <style lang="less">
   .crm-drawer-header-class {
     .n-drawer-header__main {
-      max-width: calc(100% - 28px) !important;
+      max-width: calc(100% - 28px);
     }
   }
 </style>

@@ -1,0 +1,35 @@
+<template>
+  <div class="flex h-full bg-[var(--text-n9)]">
+    <div class="crm-form-design--left">i am left</div>
+    <div class="crm-form-design--center">
+      <div class="crm-form-design--center-content"> i am center </div>
+    </div>
+    <div class="crm-form-design--right">i am right</div>
+  </div>
+</template>
+
+<script setup lang="ts"></script>
+
+<style lang="less" scoped>
+  .crm-form-design--left,
+  .crm-form-design--right {
+    @apply h-full;
+
+    width: 280px;
+    background-color: var(--text-n10);
+  }
+  .crm-form-design--left {
+    padding: 16px;
+  }
+  .crm-form-design--center {
+    @apply h-full flex-1 bg-transparent;
+
+    padding: 16px;
+    .crm-form-design--center-content {
+      @apply h-full;
+
+      border-radius: var(--border-radius-small);
+      background-color: var(--text-n10);
+    }
+  }
+</style>

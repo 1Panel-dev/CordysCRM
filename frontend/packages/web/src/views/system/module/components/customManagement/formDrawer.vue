@@ -1,13 +1,19 @@
 <template>
-  <CrmDrawer v-model:show="visible" width="100%" :footer="false"> </CrmDrawer>
+  <CrmFormDrawer v-model:visible="visible" :title="title"> </CrmFormDrawer>
 </template>
 
 <script setup lang="ts">
-  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmFormDrawer from '@/components/business/crm-form-drawer/index.vue';
+
+  import { useI18n } from '@/hooks/useI18n';
+
+  const { t } = useI18n();
 
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
+
+  const title = ref(t('customManagement.newCustomer'));
 </script>
 
 <style lang="less" scoped></style>
