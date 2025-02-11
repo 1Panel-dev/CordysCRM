@@ -21,10 +21,6 @@ public class CustomerAddRequest {
     @Size(max = 1000)
     private String tags;
 
-    @NotNull
-    @Schema(description = "是否在公海池")
-    private Boolean isInSharedPool;
-
     @Size(max = 255)
     @NotBlank
     @Schema(description = "最终成交状态", requiredMode = Schema.RequiredMode.REQUIRED)

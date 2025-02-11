@@ -23,7 +23,7 @@ public class Customer extends BaseModel {
 	private String tags;
 
 	@Schema(description = "是否在公海池")
-	private Boolean isInSharedPool;
+	private Boolean inSharedPool;
 
 	@Schema(description = "最终成交状态")
 	private String dealStatus;

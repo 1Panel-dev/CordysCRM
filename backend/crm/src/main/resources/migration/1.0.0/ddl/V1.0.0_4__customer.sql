@@ -10,7 +10,7 @@ CREATE TABLE customer
     `create_user`       VARCHAR(32)  NOT NULL COMMENT '创建人',
     `update_user`       VARCHAR(32)  NOT NULL COMMENT '更新人',
     `tags`              VARCHAR(1000) COMMENT '标签',
-    `is_in_shared_pool` BIT(1)       NOT NULL DEFAULT 0 COMMENT '是否在公海池',
+    `in_shared_pool` BIT(1)       NOT NULL DEFAULT 0 COMMENT '是否在公海池',
     `deal_status`       VARCHAR(255) NOT NULL COMMENT '最终成交状态',
     `organization_id`   VARCHAR(32)  NOT NULL COMMENT '组织id',
     PRIMARY KEY (id)
@@ -118,6 +118,21 @@ CREATE TABLE customer_capacity
 
 CREATE INDEX idx_organization_id ON customer_capacity (organization_id ASC);
 
+
+CREATE TABLE customer_field
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `customer_id`     VARCHAR(32)  NOT NULL COMMENT '客户id',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `field_id`        VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
+    `field_value`     VARCHAR(255) NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '客户自定义属性'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_customer_id ON customer_field (customer_id ASC);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

@@ -24,9 +24,6 @@ public class CustomerUpdateRequest {
     @Schema(description = "标签")
     private String tags;
 
-    @Schema(description = "是否在公海池")
-    private Boolean isInSharedPool;
-
     @Schema(description = "最终成交状态")
     private String dealStatus;
 

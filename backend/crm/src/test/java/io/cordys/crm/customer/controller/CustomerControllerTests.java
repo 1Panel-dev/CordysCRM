@@ -3,6 +3,7 @@ package io.cordys.crm.customer.controller;
 import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
@@ -19,6 +20,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -58,8 +62,7 @@ class CustomerControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
 
-        MvcResult mvcResult = this.requestPostWithOk(DEFAULT_PAGE, request)
-                .andReturn();
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
         List<CustomerListResponse> customerList = pageResult.getList();
         Assertions.assertTrue(CollectionUtils.isEmpty(customerList));
@@ -74,7 +77,6 @@ class CustomerControllerTests extends BaseTest {
         // 请求成功
         CustomerAddRequest request = new CustomerAddRequest();
         request.setName("test");
-        request.setIsInSharedPool(true);
         request.setDealStatus("test");
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Customer resultData = getResultData(mvcResult, Customer.class);
@@ -116,11 +118,25 @@ class CustomerControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
 
-        MvcResult mvcResult = this.requestPostWithOk(DEFAULT_PAGE, request)
-                .andReturn();
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
         List<CustomerListResponse> customerList = pageResult.getList();
-        // todo
+
+        Customer example = new Customer();
+        example.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        example.setInSharedPool(false);
+        Map<String, Customer> customerMap = customerMapper.select(example)
+                .stream()
+                .collect(Collectors.toMap(Customer::getId, Function.identity()));
+
+        customerList.forEach(customerListResponse -> {
+            Customer customer = customerMap.get(customerListResponse.getId());
+            Customer responseCustomer = BeanUtils.copyBean(new Customer(), customerListResponse);
+            responseCustomer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+            responseCustomer.setInSharedPool(false);
+            Assertions.assertEquals(customer, responseCustomer);
+        });
+
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, DEFAULT_PAGE, request);

@@ -4,24 +4,24 @@
 <mapper namespace="io.cordys.crm.customer.mapper.ExtCustomerMapper">
 
     <select id="list" resultType="io.cordys.crm.customer.dto.response.CustomerListResponse">
-        SELECT *
-        FROM customer
-        WHERE organization_id = #{orgId}
+        select id, name, tags, tags, deal_status, create_time, update_time, create_user, update_user
+        from customer
+        where organization_id = #{orgId} and in_shared_pool is false
     </select>
 
     <select id="checkAddExist" resultType="java.lang.Boolean">
-        SELECT COUNT(1)
-        FROM customer
-        WHERE name = #{customer.name} and organization_id = #{customer.organizationId} limit 1
+        select count(1)
+        from customer
+        where name = #{customer.name} and organization_id = #{customer.organizationId} limit 1
     </select>
 
     <select id="checkUpdateExist" resultType="java.lang.Boolean">
-        SELECT COUNT(1)
-        FROM customer
-        WHERE name = #{customer.name}
-          and organization_id = (
+        select count(1)
+        from customer
+        where name = #{customer.name}
+        and organization_id = (
             select organization_id from customer where id = #{customer.id}
         )
-          and id != #{customer.id} limit 1
+        and id != #{customer.id} limit 1
     </select>
 </mapper>
