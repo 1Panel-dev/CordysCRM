@@ -32,4 +32,6 @@ public interface ExtUserMapper {
     int countByEmail(@Param("email") String email, @Param("id") String id);
 
     int countByPhone(@Param("phone")String phone, @Param("id")String id);
+
+    List<OptionDTO> selectUserOptionByOrgId(@Param("orgId") String orgId);
 }

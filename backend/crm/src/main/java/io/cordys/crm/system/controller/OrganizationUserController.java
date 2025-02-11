@@ -4,14 +4,17 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.constants.UserSource;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.request.*;
+import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.crm.system.dto.response.UserImportResponse;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.service.OrganizationUserService;
+import io.cordys.crm.system.service.RoleService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +36,8 @@ public class OrganizationUserController {
 
     @Resource
     private OrganizationUserService organizationUserService;
-
+    @Resource
+    private RoleService roleService;
 
     @PostMapping("/list")
     @Operation(summary = "用户(员工)-列表查询")
@@ -122,4 +126,19 @@ public class OrganizationUserController {
         return organizationUserService.importByExcel(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+
+    @GetMapping(value = "/option")
+    @Operation(summary = "获取用户下拉option")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_READ)
+    public List<OptionDTO> getUserList() {
+        return organizationUserService.getUserOptions(OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping(value = "/role/option")
+    @Operation(summary = "获取用户角色下拉option")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_READ)
+    public List<OptionDTO> getUserRoleList() {
+        List<RoleListResponse> list = roleService.list(OrganizationContext.getOrganizationId());
+        return list.stream().map(role -> new OptionDTO(role.getId(), role.getName())).toList();
+    }
 }

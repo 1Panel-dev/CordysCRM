@@ -125,4 +125,11 @@
             </if>
         </where>
     </select>
+
+    <select id="selectUserOptionByOrgId" resultType="io.cordys.common.dto.OptionDTO">
+        SELECT sys_user.id, sys_user.name
+        FROM sys_user
+        inner join sys_organization_user on sys_user.id = sys_organization_user.user_id
+        WHERE sys_organization_user.organization_id = #{orgId}
+    </select>
 </mapper>

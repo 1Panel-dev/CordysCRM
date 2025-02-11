@@ -45,4 +45,8 @@
     <select id="selectDepartment" resultType="io.cordys.common.dto.BaseTreeNode">
         select id, name, parent_id, organization_id from sys_department where name = #{name} and organization_id = #{orgId}
     </select>
+
+    <select id="countByName" resultType="java.lang.Integer">
+        select count(id) from sys_department where name = #{name} and organization_id = #{orgId} and parent_id = #{parentId}
+    </select>
 </mapper>

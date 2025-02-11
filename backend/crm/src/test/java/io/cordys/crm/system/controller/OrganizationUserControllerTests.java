@@ -36,7 +36,9 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_BATCH_EDIT = "/user/batch/edit";
     public static final String USER_DOWNLOAD_TEMPLATE = "/user/download/template";
     public static final String USER_IMPORT_PRE_CHECK = "/user/import/pre-check";
-    public static final String USER_IMPORT = "/user/import/";
+    public static final String USER_IMPORT = "/user/import";
+    public static final String USER_OPTION = "/user/option";
+    public static final String USER_ROLE_OPTION = "/user/role/option";
 
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
@@ -164,5 +166,17 @@ public class OrganizationUserControllerTests extends BaseTest {
         paramMap.add("file", file);
         this.requestMultipart(USER_IMPORT, paramMap);
 
+    }
+
+    @Test
+    @Order(13)
+    public void testUserOption() throws Exception {
+        this.requestGet(USER_OPTION).andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(14)
+    public void testUserRoleOption() throws Exception {
+        this.requestGet(USER_ROLE_OPTION).andExpect(status().isOk());
     }
 }

@@ -665,4 +665,13 @@ public class OrganizationUserService {
     public boolean checkEmail(String email) {
         return extUserMapper.countByEmail(email, null) > 0;
     }
+
+    /**
+     * 获取系统用户options
+     * @param orgId
+     * @return
+     */
+    public List<OptionDTO> getUserOptions(String orgId) {
+        return extUserMapper.selectUserOptionByOrgId(orgId);
+    }
 }

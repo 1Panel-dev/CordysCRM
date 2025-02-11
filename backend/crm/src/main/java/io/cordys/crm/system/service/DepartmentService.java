@@ -64,6 +64,8 @@ public class DepartmentService {
      */
     @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.ADD)
     public Department addDepartment(DepartmentAddRequest request, String orgId, String userId) {
+        //同一层级部门名称唯一
+        checkDepartmentName(request.getName(), request.getParentId(), orgId);
         String id = IDGenerator.nextStr();
         Department department = new Department();
         department.setId(id);
@@ -85,6 +87,12 @@ public class DepartmentService {
                 .resourceName(department.getName())
                 .build());
         return department;
+    }
+
+    private void checkDepartmentName(String name, String parentId, String orgId) {
+        if (extDepartmentMapper.countByName(name, parentId, orgId) > 0) {
+            throw new GenericException(Translator.get("department_name_exist"));
+        }
     }
 
     public Long getNextNum(String orgId) {

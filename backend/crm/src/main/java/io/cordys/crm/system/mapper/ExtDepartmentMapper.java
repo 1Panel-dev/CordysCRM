@@ -23,4 +23,6 @@ public interface ExtDepartmentMapper {
     List<Department> selectAllDepartment(@Param("orgId") String orgId);
 
     BaseTreeNode selectDepartment(@Param("name") String name, @Param("orgId") String orgId);
+
+    int countByName(@Param("name") String name, @Param("parentId") String parentId, @Param("orgId") String orgId);
 }
