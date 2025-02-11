@@ -33,6 +33,10 @@ public class PermissionConstants {
     public static final String SYS_DEPARTMENT_ADD = "SYS_DEPARTMENT:ADD";
     public static final String SYS_DEPARTMENT_UPDATE = "SYS_DEPARTMENT:UPDATE";
     public static final String SYS_DEPARTMENT_DELETE = "SYS_DEPARTMENT:DELETE";
+    public static final String SYS_DEPARTMENT_IMPORT = "SYS_DEPARTMENT:IMPORT";
+    public static final String SYS_DEPARTMENT_SYNC = "SYS_DEPARTMENT:SYNC";
+    public static final String SYS_DEPARTMENT_USER_RESET_PASSWORD = "SYS_DEPARTMENT_USER:RESET";
+
     /*------ end: SYS_DEPARTMENT ------*/
 
     /*------ start: SYSTEM_SETTING ------*/

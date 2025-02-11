@@ -1,11 +1,15 @@
 package io.cordys.crm.system.mapper;
 
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.system.domain.User;
-import io.cordys.crm.system.dto.request.*;
-import io.cordys.crm.system.dto.response.*;
+import io.cordys.crm.system.dto.request.UserBatchEditRequest;
+import io.cordys.crm.system.dto.request.UserBatchEnableRequest;
+import io.cordys.crm.system.dto.request.UserBatchRequest;
+import io.cordys.crm.system.dto.request.UserPageRequest;
+import io.cordys.crm.system.dto.response.UserImportDTO;
+import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.security.UserDTO;
 import org.apache.ibatis.annotations.Param;
-import io.cordys.common.dto.OptionDTO;
 
 import java.util.List;
 
@@ -30,4 +34,6 @@ public interface ExtOrganizationUserMapper {
     List<OptionDTO> selectEnableOrgUser(@Param("ids") List<String> ids, @Param("enable") boolean enable);
 
     void updateUserByIds(@Param("request") UserBatchEditRequest request, @Param("operatorId") String operatorId, @Param("orgId") String orgId);
+
+    List<UserImportDTO> selectSupervisor(@Param("nameList") List<String> nameList, @Param("orgId") String orgId);
 }

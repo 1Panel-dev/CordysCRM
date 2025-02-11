@@ -28,4 +28,8 @@ public interface ExtUserMapper {
     List<User> getAllUserIds(@Param("orgId") String orgId);
 
     void deleteByIds(@Param("ids") List<String> ids);
+
+    int countByEmail(@Param("email") String email, @Param("id") String id);
+
+    int countByPhone(@Param("phone")String phone, @Param("id")String id);
 }

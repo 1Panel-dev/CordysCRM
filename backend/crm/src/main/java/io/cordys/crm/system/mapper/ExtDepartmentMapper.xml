@@ -40,4 +40,9 @@
     <select id="selectAllDepartment" resultType="io.cordys.crm.system.domain.Department">
         select id from sys_department where organization_id = #{orgId}
     </select>
+
+
+    <select id="selectDepartment" resultType="io.cordys.common.dto.BaseTreeNode">
+        select id, name, parent_id, organization_id from sys_department where name = #{name} and organization_id = #{orgId}
+    </select>
 </mapper>

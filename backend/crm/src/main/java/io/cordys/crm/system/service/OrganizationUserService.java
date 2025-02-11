@@ -7,6 +7,7 @@ import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
@@ -14,6 +15,7 @@ import io.cordys.common.util.*;
 import io.cordys.crm.system.domain.*;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.request.*;
+import io.cordys.crm.system.dto.response.UserImportDTO;
 import io.cordys.crm.system.dto.response.UserImportResponse;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
@@ -21,19 +23,21 @@ import io.cordys.crm.system.excel.domain.UserExcelData;
 import io.cordys.crm.system.excel.domain.UserExcelDataFactory;
 import io.cordys.crm.system.excel.handler.UserTemplateWriteHandler;
 import io.cordys.crm.system.excel.listener.UserCheckEventListener;
+import io.cordys.crm.system.excel.listener.UserImportEventListener;
 import io.cordys.crm.system.mapper.*;
 import io.cordys.excel.utils.EasyExcelExporter;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -70,6 +74,8 @@ public class OrganizationUserService {
     private ExtUserExtendMapper extUserExtendMapper;
     @Resource
     private BaseMapper<Department> departmentMapper;
+    @Resource
+    private DepartmentService departmentService;
 
     /**
      * 员工列表查询
@@ -132,10 +138,11 @@ public class OrganizationUserService {
      */
     @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.ADD, operator = "{#operatorId}")
     public void addUser(UserAddRequest request, String organizationId, String operatorId) {
+        String id = IDGenerator.nextStr();
         //邮箱和手机号唯一性校验
-        checkEmailAndPhone(request.getEmail(), request.getPhone());
+        checkEmailAndPhone(request.getEmail(), request.getPhone(), id);
         //add user base
-        User user = addUserBaseData(request, operatorId);
+        User user = addUserBaseData(request, operatorId, id);
         //add user info
         addUserInfo(request, organizationId, operatorId, user.getId());
         //add user role
@@ -203,15 +210,11 @@ public class OrganizationUserService {
      * @param email
      * @param phone
      */
-    private void checkEmailAndPhone(String email, String phone) {
-        User user = new User();
-        user.setEmail(email);
-        if (userMapper.countByExample(user) > 0) {
+    private void checkEmailAndPhone(String email, String phone, String id) {
+        if (extUserMapper.countByEmail(email, id) > 0) {
             throw new GenericException(Translator.get("email.exist"));
         }
-        user.setEmail(null);
-        user.setPhone(phone);
-        if (userMapper.countByExample(user) > 0) {
+        if (extUserMapper.countByPhone(phone, id) > 0) {
             throw new GenericException(Translator.get("phone.exist"));
         }
 
@@ -224,15 +227,16 @@ public class OrganizationUserService {
      * @param operatorId
      * @return
      */
-    private User addUserBaseData(UserAddRequest request, String operatorId) {
+    private User addUserBaseData(UserAddRequest request, String operatorId, String id) {
         User user = new User();
         BeanUtils.copyBean(user, request);
-        user.setId(IDGenerator.nextStr());
+        user.setId(id);
         user.setPassword(CodingUtils.md5(request.getPhone().substring(request.getPhone().length() - 6)));
         user.setCreateTime(System.currentTimeMillis());
         user.setCreateUser(operatorId);
         user.setUpdateTime(System.currentTimeMillis());
         user.setUpdateUser(operatorId);
+        user.setLanguage(Locale.SIMPLIFIED_CHINESE.toString());
         userMapper.insert(user);
         return user;
     }
@@ -260,9 +264,9 @@ public class OrganizationUserService {
      */
     @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.UPDATE, operator = "{#operatorId}")
     public void updateUser(UserUpdateRequest request, String operatorId) {
-        //邮箱和手机号唯一性校验
-        checkEmailAndPhone(request.getEmail(), request.getPhone());
         UserResponse oldUser = getUserDetail(request.getId());
+        //邮箱和手机号唯一性校验
+        checkEmailAndPhone(request.getEmail(), request.getPhone(), oldUser.getId());
         //update user info
         updateUserInfo(request, operatorId, oldUser);
         //update user base
@@ -501,22 +505,22 @@ public class OrganizationUserService {
      * @param file
      * @return
      */
-    public UserImportResponse preCheck(MultipartFile file) {
+    public UserImportResponse preCheck(MultipartFile file, String orgId) {
         if (file == null) {
             throw new GenericException(Translator.get("file_cannot_be_null"));
         }
 
         UserImportResponse response = new UserImportResponse();
-        checkImportExcel(response, file);
+        checkImportExcel(response, file, orgId);
         return response;
     }
 
 
-    private void checkImportExcel(UserImportResponse response, MultipartFile file) {
+    private void checkImportExcel(UserImportResponse response, MultipartFile file, String orgId) {
         try {
             //根据本地语言环境选择用哪种数据对象进行存放读取的数据
             Class clazz = new UserExcelDataFactory().getExcelDataByLocal();
-            UserCheckEventListener eventListener = new UserCheckEventListener(clazz);
+            UserCheckEventListener eventListener = new UserCheckEventListener(clazz, orgId);
             EasyExcelFactory.read(file.getInputStream(), eventListener).sheet().doRead();
             response.setErrorMessages(eventListener.getErrList());
             response.setSuccessCount(eventListener.getList().size());
@@ -525,5 +529,140 @@ public class OrganizationUserService {
             LogUtils.error("checkImportExcel error", e);
             throw new GenericException(Translator.get("check_import_excel_error"));
         }
+    }
+
+
+    /**
+     * 用户导入
+     *
+     * @param file
+     * @param operatorId
+     * @param orgId
+     * @return
+     */
+    public UserImportResponse importByExcel(MultipartFile file, String operatorId, String orgId) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+        try {
+            UserImportResponse response = new UserImportResponse();
+            //根据本地语言环境选择用哪种数据对象进行存放读取的数据
+            Class clazz = new UserExcelDataFactory().getExcelDataByLocal();
+            UserImportEventListener eventListener = new UserImportEventListener(clazz, operatorId, orgId);
+            EasyExcelFactory.read(file.getInputStream(), eventListener).sheet().doRead();
+            response.setErrorMessages(eventListener.getErrList());
+            response.setSuccessCount(eventListener.getSuccessCount());
+            response.setFailCount(eventListener.getErrList().size());
+            return response;
+        } catch (Exception e) {
+            LogUtils.error("checkImportExcel error", e);
+            throw new GenericException(Translator.get("check_import_excel_error"));
+        }
+    }
+
+
+    /**
+     * 保存导入数据
+     *
+     * @param list
+     * @param departmentTree
+     * @param departmentMap
+     * @param operatorId
+     * @param orgId
+     */
+    public void saveImportData(List<UserExcelData> list, List<BaseTreeNode> departmentTree, Map<String, String> departmentMap, String operatorId, String orgId) {
+        //部门
+        List<String> departmentPath = list.stream().map(UserExcelData::getDepartment).toList();
+        //构建部门树
+        Map<String, String> departmentPathMap = departmentService.createDepartment(departmentPath, orgId, departmentTree, operatorId, departmentMap);
+        List<String> nameList = list.stream().map(UserExcelData::getSupervisor).filter(StringUtils::isNotBlank).toList();
+        List<UserImportDTO> supervisorList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(nameList)) {
+            supervisorList = extOrganizationUserMapper.selectSupervisor(nameList, orgId);
+        }
+
+        List<User> userList = new ArrayList<>();
+        List<OrganizationUser> organizationUsers = new ArrayList<>();
+        List<UserImportDTO> finalSupervisorList = supervisorList;
+        list.forEach(userData -> {
+            buildUser(userData, operatorId, userList, departmentPathMap, orgId, organizationUsers, finalSupervisorList);
+        });
+
+        userMapper.batchInsert(userList);
+        organizationUserMapper.batchInsert(organizationUsers);
+
+    }
+
+    private void buildUser(UserExcelData userData, String operatorId, List<User> userList, Map<String, String> departmentPathMap, String orgId, List<OrganizationUser> organizationUsers, List<UserImportDTO> supervisorList) {
+        User user = new User();
+        user.setId(IDGenerator.nextStr());
+        user.setName(userData.getName());
+        user.setPhone(userData.getPhone());
+        user.setEmail(userData.getEmail());
+        user.setPassword(CodingUtils.md5(userData.getPhone().substring(userData.getPhone().length() - 6)));
+        user.setLanguage(Locale.SIMPLIFIED_CHINESE.toString());
+        user.setGender(Boolean.valueOf(userData.getGender()));
+        user.setCreateUser(operatorId);
+        user.setCreateTime(System.currentTimeMillis());
+        user.setUpdateUser(operatorId);
+        user.setUpdateTime(System.currentTimeMillis());
+        userList.add(user);
+
+        OrganizationUser organizationUser = new OrganizationUser();
+        organizationUser.setId(IDGenerator.nextStr());
+        organizationUser.setOrganizationId(orgId);
+        organizationUser.setDepartmentId(departmentPathMap.get(userData.getDepartment()));
+        organizationUser.setUserId(user.getId());
+        organizationUser.setEnable(true);
+        organizationUser.setEmployeeId(userData.getEmployeeId());
+        organizationUser.setPosition(userData.getPosition());
+        organizationUser.setEmployeeType(userData.getEmployeeType());
+        organizationUser.setSupervisorId(handleSupervisor(supervisorList, userData.getDepartment(), userData.getSupervisor()));
+        organizationUser.setWorkCity(userData.getWorkCity());
+        organizationUser.setCreateTime(System.currentTimeMillis());
+        organizationUser.setCreateUser(operatorId);
+        organizationUser.setUpdateTime(System.currentTimeMillis());
+        organizationUser.setUpdateUser(operatorId);
+        organizationUsers.add(organizationUser);
+
+    }
+
+
+    /**
+     * 所属上级
+     *
+     * @param supervisorList
+     * @param departmentId
+     * @param name
+     * @return
+     */
+    private String handleSupervisor(List<UserImportDTO> supervisorList, String departmentId, String name) {
+        List<UserImportDTO> list = supervisorList.stream().filter(supervisor -> StringUtils.equalsIgnoreCase(supervisor.getName(), name) && StringUtils.equalsIgnoreCase(supervisor.getDepartmentId(), departmentId)).toList();
+        if (CollectionUtils.isNotEmpty(list)) {
+            return list.getFirst().getUserId();
+        }
+        if (CollectionUtils.isNotEmpty(supervisorList)) {
+            return supervisorList.getFirst().getUserId();
+        }
+        return null;
+    }
+
+
+    /**
+     * 导入校验电话号码唯一
+     * @param phone
+     * @return
+     */
+    public boolean checkPhone(String phone) {
+        return extUserMapper.countByPhone(phone, null) > 0;
+    }
+
+    /**
+     * 导入校验邮箱唯一
+     * @param email
+     * @return
+     */
+    public boolean checkEmail(String email) {
+        return extUserMapper.countByEmail(email, null) > 0;
     }
 }

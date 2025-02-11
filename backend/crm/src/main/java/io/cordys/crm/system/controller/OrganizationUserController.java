@@ -3,6 +3,7 @@ package io.cordys.crm.system.controller;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.constants.UserSource;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
@@ -83,7 +84,7 @@ public class OrganizationUserController {
     }
 
     @PostMapping("/batch/reset-password")
-    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_USER_RESET_PASSWORD)
     @Operation(summary = "用户(员工)-批量重置密码")
     public void batchResetPassword(@Validated @RequestBody UserBatchRequest request) {
         organizationUserService.batchResetPassword(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -108,9 +109,17 @@ public class OrganizationUserController {
 
     @PostMapping("/import/pre-check")
     @Operation(summary = "用户(员工)-excel导入检查")
-    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_IMPORT)
     public UserImportResponse preCheckXMind(@RequestPart(value = "file", required = false) MultipartFile file) {
-        return organizationUserService.preCheck(file);
+        return organizationUserService.preCheck(file, OrganizationContext.getOrganizationId());
+    }
+
+
+    @PostMapping(value = "/import")
+    @Operation(summary = "用户(员工)-excel导入")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_IMPORT)
+    public UserImportResponse importUser(@RequestPart(value = "file", required = false) MultipartFile file) {
+        return organizationUserService.importByExcel(file, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 }

@@ -3,6 +3,7 @@ package io.cordys.crm.system.excel.listener;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
+import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
@@ -14,6 +15,7 @@ import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.OrganizationUserService;
 import io.cordys.excel.domain.ExcelErrData;
 import io.cordys.excel.utils.ExcelValidateHelper;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
@@ -21,7 +23,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, String>> {
+public class UserImportEventListener extends AnalysisEventListener<Map<Integer, String>> {
 
     private Class excelDataClass;
     private Map<Integer, String> headMap;
@@ -33,13 +35,20 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
     protected static final int PHONE_LENGTH = 20;
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
     private DepartmentService departmentService;
-    private OrganizationUserService organizationUserService;
+    private String operatorId;
     private String orgId;
+    private int successCount = 0;
+    protected static final int BATCH_COUNT = 1000;
+    private OrganizationUserService organizationUserService;
+    private List<BaseTreeNode> departmentTree;
+    private Map<String, String> departmentMap = new HashMap<>();
 
-    public UserCheckEventListener(Class clazz, String orgId) {
+    public UserImportEventListener(Class clazz, String operatorId, String orgId) {
         excelDataClass = clazz;
         departmentService = CommonBeanFactory.getBean(DepartmentService.class);
         organizationUserService = CommonBeanFactory.getBean(OrganizationUserService.class);
+        departmentTree = departmentService.getTree(orgId);
+        this.operatorId = operatorId;
         this.orgId = orgId;
     }
 
@@ -65,11 +74,25 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
         UserExcelData userExcelData = parseDataToModel(data);
         //校验数据
         buildUpdateOrErrorList(rowIndex, userExcelData);
+        if (list.size() > BATCH_COUNT) {
+            saveData();
+            this.successCount += list.size();
+            list.clear();
+        }
     }
 
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
+        saveData();
+        this.successCount += list.size();
+        list.clear();
+    }
+
+    private void saveData() {
+        if (CollectionUtils.isNotEmpty(list)) {
+            organizationUserService.saveImportData(list, departmentTree, departmentMap, operatorId, orgId);
+        }
     }
 
 
@@ -122,6 +145,22 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
         validateEmail(data, errMsg);
         //校验顶级部门
         validateDepartment(data, errMsg);
+        //处理性别
+        handleGender(data);
+
+    }
+
+
+    private void handleGender(UserExcelData data) {
+        if (StringUtils.isNotEmpty(data.getGender())) {
+            if (data.getGender().equals(Translator.get("man"))) {
+                data.setGender("0");
+            } else if (data.getGender().equals(Translator.get("woman"))) {
+                data.setGender("1");
+            } else {
+                data.setGender(null);
+            }
+        }
 
     }
 
@@ -288,5 +327,9 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
 
     public List<UserExcelData> getList() {
         return list;
+    }
+
+    public int getSuccessCount() {
+        return successCount;
     }
 }

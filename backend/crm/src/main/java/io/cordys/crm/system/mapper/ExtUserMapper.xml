@@ -100,4 +100,29 @@
             #{id}
         </foreach>
     </delete>
+
+
+    <select id="countByEmail" resultType="java.lang.Integer">
+        select count(id) from sys_user
+        <where>
+            <if test="email != null and email != ''">
+                and email = #{email}
+            </if>
+            <if test="id != null and id != ''">
+                and id != #{id}
+            </if>
+        </where>
+    </select>
+
+    <select id="countByPhone" resultType="java.lang.Integer">
+        select count(id) from sys_user
+        <where>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="id != null and id != ''">
+                and id != #{id}
+            </if>
+        </where>
+    </select>
 </mapper>

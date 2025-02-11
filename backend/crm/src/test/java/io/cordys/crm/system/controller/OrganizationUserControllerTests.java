@@ -36,6 +36,7 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_BATCH_EDIT = "/user/batch/edit";
     public static final String USER_DOWNLOAD_TEMPLATE = "/user/download/template";
     public static final String USER_IMPORT_PRE_CHECK = "/user/import/pre-check";
+    public static final String USER_IMPORT = "/user/import/";
 
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
@@ -151,6 +152,17 @@ public class OrganizationUserControllerTests extends BaseTest {
         LinkedMultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
         paramMap.add("file", file);
         this.requestMultipart(USER_IMPORT_PRE_CHECK, paramMap);
+
+    }
+
+    @Test
+    @Order(12)
+    public void testImportExcel() throws Exception {
+        String filePath = Objects.requireNonNull(this.getClass().getClassLoader().getResource("file/user1.xlsx")).getPath();
+        MockMultipartFile file = new MockMultipartFile("file", "1111.xlsx", MediaType.APPLICATION_OCTET_STREAM_VALUE, FileBaseUtils.getFileBytes(filePath));
+        LinkedMultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        paramMap.add("file", file);
+        this.requestMultipart(USER_IMPORT, paramMap);
 
     }
 }

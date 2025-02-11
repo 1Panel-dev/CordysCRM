@@ -117,4 +117,16 @@
             </foreach>
         </where>
     </update>
+
+
+    <select id="selectSupervisor" resultType="io.cordys.crm.system.dto.response.UserImportDTO">
+        select user_id, department_id, name
+        from sys_organization_user sou
+        INNER JOIN sys_user su on sou.user_id = su.id
+        where sou.organization_id = #{orgId}
+          and su.name in
+            <foreach collection="nameList" item="name" open="(" separator="," close=")">
+                #{name}
+            </foreach>
+    </select>
 </mapper>

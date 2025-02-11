@@ -23,11 +23,12 @@ import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 @Service("departmentService")
@@ -248,12 +249,126 @@ public class DepartmentService {
 
     /**
      * 根据部门名称查询部门数量
+     *
      * @param topDepartment
      * @return
      */
-    public Long countDepartmentByName(String topDepartment) {
+    public Long countDepartmentByName(String topDepartment, String orgId) {
         Department department = new Department();
         department.setName(topDepartment);
+        department.setOrganizationId(orgId);
         return departmentMapper.countByExample(department);
+    }
+
+
+    /**
+     * 创建部门
+     *
+     * @param departmentPath
+     * @param orgId
+     * @param departmentTree
+     * @param operatorId
+     * @param departmentMap
+     * @return
+     */
+    public Map<String, String> createDepartment(List<String> departmentPath, String orgId, List<BaseTreeNode> departmentTree, String operatorId, Map<String, String> departmentMap) {
+        departmentPath.forEach(path -> {
+            List<String> depNames = new ArrayList<>(List.of(path.split("/")));
+            String topDepartment = depNames.getFirst();
+            //List<String> subDepNames = new ArrayList<>(depNames.subList(1, depNames.size()));
+            Iterator<String> itemIterator = depNames.iterator();
+            AtomicReference<Boolean> hasNode = new AtomicReference<>(false);
+            //当前节点部门名称
+            String currentDepName;
+            if (depNames.size() <= 1) {
+                throw new GenericException(Translator.get("department_create_fail") + ":" + path);
+            } else {
+                itemIterator.next();
+                itemIterator.remove();
+                currentDepName = itemIterator.next().trim();
+                departmentTree.forEach(department -> {
+                    //根节点是否存在
+                    if (StringUtils.equalsIgnoreCase(currentDepName, department.getName())) {
+                        hasNode.set(true);
+                        //根节点存在，检查子节点是否存在
+                        createDepByPathIterator(itemIterator, "/" + currentDepName, department, departmentMap, orgId, operatorId);
+                    }
+                });
+            }
+            if (!hasNode.get()) {
+                //获取顶级部门id
+                BaseTreeNode top = extDepartmentMapper.selectDepartment(topDepartment, orgId);
+                createDepByPath(itemIterator, currentDepName, top, orgId, StringUtils.EMPTY, departmentMap, operatorId);
+            }
+        });
+        return departmentMap;
+    }
+
+    private void createDepByPathIterator(Iterator<String> itemIterator, String currentDepPath, BaseTreeNode departmentTreeNode, Map<String, String> departmentMap, String orgId, String operatorId) {
+        List<BaseTreeNode> children = departmentTreeNode.getChildren();
+        if (CollectionUtils.isEmpty(children) || !itemIterator.hasNext()) {
+            //没有子节点，根据当前部门创建部门节点
+            departmentMap.put(currentDepPath, departmentTreeNode.getId());
+            if (itemIterator.hasNext()) {
+                createDepByPath(itemIterator, itemIterator.next().trim(), departmentTreeNode, orgId, currentDepPath, departmentMap, operatorId);
+            }
+            return;
+        }
+        String nodeName = itemIterator.next().trim();
+        AtomicReference<Boolean> hasNode = new AtomicReference<>(false);
+        children.forEach(child -> {
+            if (StringUtils.equalsIgnoreCase(nodeName, child.getName())) {
+                hasNode.set(true);
+                createDepByPathIterator(itemIterator, currentDepPath + "/" + child.getName(), child, departmentMap, orgId, operatorId);
+            }
+        });
+
+        //若子节点中不包含该目标节点，则在该节点下创建
+        if (!hasNode.get()) {
+            createDepByPath(itemIterator, nodeName, departmentTreeNode, orgId, currentDepPath, departmentMap, operatorId);
+        }
+    }
+
+    private void createDepByPath(Iterator<String> itemIterator, String departmentName, BaseTreeNode parentDep, String orgId, String currentDepPath, Map<String, String> departmentMap, String operatorId) {
+        StringBuilder path = new StringBuilder(currentDepPath);
+        path.append("/" + departmentName.trim());
+
+        //模块id
+        String pid;
+        if (departmentMap.get(path.toString()) != null) {
+            //如果创建过，直接获取模块ID
+            pid = departmentMap.get(path.toString());
+        } else {
+            pid = insertNode(departmentName, parentDep.getId(), orgId, operatorId);
+            departmentMap.put(path.toString(), pid);
+        }
+
+        while (itemIterator.hasNext()) {
+            String nextDepName = itemIterator.next().trim();
+            path.append("/" + nextDepName);
+            if (departmentMap.get(path.toString()) != null) {
+                pid = departmentMap.get(path.toString());
+            } else {
+                pid = insertNode(nextDepName, pid, orgId, operatorId);
+                departmentMap.put(path.toString(), pid);
+            }
+        }
+    }
+
+    private String insertNode(String departmentName, String praentId, String orgId, String operatorId) {
+        String id = IDGenerator.nextStr();
+        Department department = new Department();
+        department.setId(id);
+        department.setName(departmentName);
+        department.setParentId(praentId);
+        department.setOrganizationId(orgId);
+        department.setNum(getNextNum(orgId));
+        department.setCreateTime(System.currentTimeMillis());
+        department.setUpdateTime(System.currentTimeMillis());
+        department.setCreateUser(operatorId);
+        department.setUpdateUser(operatorId);
+        department.setResource(DepartmentConstants.INTERNAL.name());
+        departmentMapper.insert(department);
+        return id;
     }
 }
