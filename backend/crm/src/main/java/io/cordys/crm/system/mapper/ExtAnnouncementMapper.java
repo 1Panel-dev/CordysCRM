@@ -11,4 +11,7 @@ public interface ExtAnnouncementMapper {
     List<AnnouncementDTO> selectByBaseRequest(@Param("request") AnnouncementPageRequest request);
 
     AnnouncementDTO selectById(@Param("id") String id);
+
+    int updateStatus(@Param("id") String id,  @Param("status") String status, @Param("organizationId") String organizationId);
+
 }
