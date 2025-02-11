@@ -37,4 +37,11 @@
         AND config_id = #{configId}
     </update>
 
+    <select id="getEnableOrganizationConfigDetails" parameterType="io.cordys.crm.system.domain.OrganizationConfigDetail" resultType="io.cordys.crm.system.domain.OrganizationConfigDetail">
+        SELECT * FROM sys_organization_config_detail WHERE config_id = #{configId} and enable = true
+        <if test="type != null">
+            and type = #{type}
+        </if>
+    </select>
+
 </mapper>
