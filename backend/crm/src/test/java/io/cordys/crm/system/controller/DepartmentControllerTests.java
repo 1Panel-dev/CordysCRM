@@ -4,6 +4,7 @@ import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.dto.request.DepartmentAddRequest;
 import io.cordys.crm.system.dto.request.DepartmentCommanderRequest;
 import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
+import io.cordys.crm.system.dto.request.NodeMoveRequest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ public class DepartmentControllerTests extends BaseTest {
     public static final String DEPARTMENT_SET_COMMANDER = "/department/set-commander";
     public static final String DEPARTMENT_DELETE_CHECK = "/department/delete/check/";
     public static final String DEPARTMENT_DELETE = "/department/delete/";
+    public static final String DEPARTMENT_SORT = "/department/sort";
 
 
     @Sql(scripts = {"/dml/init_department_test.sql"},
@@ -82,5 +84,16 @@ public class DepartmentControllerTests extends BaseTest {
     public void departmentDelete() throws Exception {
         this.requestGet(DEPARTMENT_DELETE + "7");
         this.requestGet(DEPARTMENT_DELETE + "8");
+    }
+
+
+    @Test
+    @Order(4)
+    public void departmentSort() throws Exception {
+        NodeMoveRequest request = new NodeMoveRequest();
+        request.setDropNodeId("4");
+        request.setDragNodeId("1");
+        request.setDropPosition(1);
+        this.requestPost(DEPARTMENT_SORT, request).andExpect(status().isOk());
     }
 }

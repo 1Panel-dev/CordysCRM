@@ -7,10 +7,11 @@ import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.dto.BaseTreeNode;
+import io.cordys.common.dto.NodeSortDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.ServiceUtils;
+import io.cordys.common.util.NodeSortUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.DepartmentCommander;
@@ -18,6 +19,7 @@ import io.cordys.crm.system.dto.log.DepartmentSetCommanderLog;
 import io.cordys.crm.system.dto.request.DepartmentAddRequest;
 import io.cordys.crm.system.dto.request.DepartmentCommanderRequest;
 import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
+import io.cordys.crm.system.dto.request.NodeMoveRequest;
 import io.cordys.crm.system.mapper.ExtDepartmentMapper;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.mybatis.BaseMapper;
@@ -33,7 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Service("departmentService")
 @Transactional(rollbackFor = Exception.class)
-public class DepartmentService {
+public class DepartmentService extends MoveNodeService {
 
     @Resource
     private BaseMapper<Department> departmentMapper;
@@ -97,7 +99,7 @@ public class DepartmentService {
 
     public Long getNextNum(String orgId) {
         Long num = extDepartmentMapper.getNextNumByOrgId(orgId);
-        return (num == null ? 0 : num) + ServiceUtils.NUM_STEP;
+        return (num == null ? 0 : num) + NodeSortUtils.DEFAULT_NODE_INTERVAL_NUM;
     }
 
 
@@ -378,5 +380,54 @@ public class DepartmentService {
         department.setResource(DepartmentConstants.INTERNAL.name());
         departmentMapper.insert(department);
         return id;
+    }
+
+
+    /**
+     * 部门树排序
+     *
+     * @param request
+     * @param operatorId
+     * @param orgId
+     */
+    public void sort(NodeMoveRequest request, String operatorId, String orgId) {
+        NodeSortDTO nodeSortDTO = super.getNodeSortDTO(request,
+                extDepartmentMapper::selectBaseTreeById,
+                extDepartmentMapper::selectTreeByParentIdAndNumOperator);
+        Department department = new Department();
+        department.setParentId(nodeSortDTO.getParent().getId());
+        department.setId(request.getDragNodeId());
+        if (departmentMapper.countByExample(department) == 0) {
+            Department moveDepartment = departmentMapper.selectByPrimaryKey(request.getDragNodeId());
+            moveDepartment.setParentId(nodeSortDTO.getParent().getId());
+            checkDepartmentName(moveDepartment.getName(), moveDepartment.getParentId(), orgId);
+
+            moveDepartment.setUpdateUser(operatorId);
+            moveDepartment.setUpdateTime(System.currentTimeMillis());
+            departmentMapper.update(moveDepartment);
+        }
+        super.sort(nodeSortDTO);
+    }
+
+    @Override
+    public void updateNum(String id, long num) {
+        Department department = new Department();
+        department.setNum(num);
+        department.setId(id);
+        departmentMapper.update(department);
+    }
+
+    @Override
+    public void refreshNum(String parentId) {
+        List<String> childrenIds = extDepartmentMapper.selectChildrenIds(parentId);
+        List<Department> departmentList = new ArrayList<>();
+        for (int i = 0; i < childrenIds.size(); i++) {
+            String nodeId = childrenIds.get(i);
+            Department updateDepartment = new Department();
+            updateDepartment.setId(nodeId);
+            updateDepartment.setNum((i + 1) * LIMIT_NUM);
+            departmentList.add(updateDepartment);
+        }
+        extDepartmentMapper.batchUpdate(departmentList);
     }
 }

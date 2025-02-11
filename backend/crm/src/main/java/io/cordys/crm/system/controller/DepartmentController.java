@@ -7,6 +7,7 @@ import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.dto.request.DepartmentAddRequest;
 import io.cordys.crm.system.dto.request.DepartmentCommanderRequest;
 import io.cordys.crm.system.dto.request.DepartmentRenameRequest;
+import io.cordys.crm.system.dto.request.NodeMoveRequest;
 import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -73,6 +74,13 @@ public class DepartmentController {
         departmentService.delete(id, OrganizationContext.getOrganizationId());
 
     }
-    //todo  排序 num值
+
+
+    @PostMapping("/sort")
+    @Operation(summary = "组织架构-部门排序")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_UPDATE)
+    public void sort(@Validated @RequestBody NodeMoveRequest request) {
+        departmentService.sort(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 
 }

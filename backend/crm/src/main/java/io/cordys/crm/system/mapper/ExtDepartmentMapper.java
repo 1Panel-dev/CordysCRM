@@ -1,7 +1,9 @@
 package io.cordys.crm.system.mapper;
 
+import io.cordys.common.dto.BaseTree;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.dto.NodeSortQueryParam;
 import io.cordys.crm.system.domain.Department;
 import org.apache.ibatis.annotations.Param;
 
@@ -25,4 +27,12 @@ public interface ExtDepartmentMapper {
     BaseTreeNode selectDepartment(@Param("name") String name, @Param("orgId") String orgId);
 
     int countByName(@Param("name") String name, @Param("parentId") String parentId, @Param("orgId") String orgId);
+
+    BaseTree selectBaseTreeById(@Param("dragNodeId") String dragNodeId);
+
+    BaseTree selectTreeByParentIdAndNumOperator(@Param("nodeSortQueryParam") NodeSortQueryParam nodeSortQueryParam);
+
+    List<String> selectChildrenIds(@Param("parentId") String parentId);
+
+    void batchUpdate(@Param("departmentList") List<Department> departmentList);
 }

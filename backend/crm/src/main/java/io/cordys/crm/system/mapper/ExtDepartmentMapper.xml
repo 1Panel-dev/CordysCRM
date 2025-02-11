@@ -49,4 +49,49 @@
     <select id="countByName" resultType="java.lang.Integer">
         select count(id) from sys_department where name = #{name} and organization_id = #{orgId} and parent_id = #{parentId}
     </select>
+
+
+    <select id="selectBaseTreeById" resultType="io.cordys.common.dto.BaseTree">
+        SELECT id, name, num, organization_id, parent_id
+        FROM sys_department
+        WHERE id = #{dragNodeId}
+    </select>
+
+    <select id="selectTreeByParentIdAndNumOperator"
+            parameterType="io.cordys.common.dto.NodeSortQueryParam"
+            resultType="io.cordys.common.dto.BaseTree">
+        SELECT id, name, num, organization_id, parent_id
+        FROM sys_department
+        WHERE parent_id = #{nodeSortQueryParam.parentId}
+        <if test="nodeSortQueryParam.operator == 'moreThan'">
+            AND num &gt; #{nodeSortQueryParam.num}
+        </if>
+        <if test="nodeSortQueryParam.operator == 'lessThan'">
+            AND num &lt; #{nodeSortQueryParam.num}
+        </if>
+        ORDER BY num
+        <if test="nodeSortQueryParam.operator == 'lessThan' or nodeSortQueryParam.operator == 'latest'">
+            DESC
+        </if>
+        LIMIT 1
+    </select>
+
+
+    <select id="selectChildrenIds" resultType="java.lang.String">
+        SELECT id FROM sys_department WHERE parent_id  = #{parentId}
+        ORDER BY num ASC
+    </select>
+
+    <update id="batchUpdate">
+        UPDATE sys_department
+        SET num = CASE
+        <foreach collection="departmentList" item="department" separator=" ">
+            WHEN id = #{department.id} THEN #{department.num}
+        </foreach>
+        END
+        WHERE id IN
+        <foreach collection="departmentList" item="department" open="(" close=")" separator=",">
+            #{department.id}
+        </foreach>
+    </update>
 </mapper>
