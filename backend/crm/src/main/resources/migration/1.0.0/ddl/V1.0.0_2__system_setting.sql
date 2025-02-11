@@ -251,25 +251,6 @@ CREATE TABLE sys_announcement
 CREATE INDEX idx_organizationId ON sys_announcement (organization_id ASC);
 CREATE INDEX idx_create_time ON sys_announcement (create_time DESC);
 
-CREATE TABLE sys_module
-(
-    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
-    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
-    `key`             VARCHAR(255) NOT NULL COMMENT '模块KEY',
-    `enable`          BIT(1)       NOT NULL DEFAULT 1 COMMENT '启用/禁用',
-    `pos`             BIGINT       NOT NULL COMMENT '自定义排序',
-    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
-    `update_user`     VARCHAR(32)  NOT NULL COMMENT '修改人',
-    `update_time`     BIGINT       NOT NULL COMMENT '修改时间',
-    PRIMARY KEY (id)
-) COMMENT = '模块设置'
-    ENGINE = InnoDB
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_general_ci;
-
-CREATE INDEX idx_organization_id ON sys_module (organization_id ASC);
-
 CREATE TABLE sys_organization
 (
     `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
@@ -310,61 +291,6 @@ CREATE TABLE sys_organization_user
 CREATE INDEX idx_organization_id ON sys_organization_user (organization_id ASC);
 CREATE INDEX idx_department_id ON sys_organization_user (department_id ASC);
 CREATE INDEX idx_user_id ON sys_organization_user (user_id ASC);
-
-CREATE TABLE sys_module_field(
-    `id`            VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-    `module_id`     VARCHAR(32) NOT NULL   COMMENT '所属模块' ,
-    `name`          VARCHAR(255) NOT NULL   COMMENT '字段名称' ,
-    `internal_key`  VARCHAR(255)    COMMENT '字段内置Key' ,
-    `type`          VARCHAR(10) NOT NULL   COMMENT '字段类型(常量)' ,
-    `show_label`    BIT(1) NOT NULL  DEFAULT 1 COMMENT '显示标题' ,
-    `description`   VARCHAR(1000)    COMMENT '描述' ,
-    `tooltip`       VARCHAR(255)    COMMENT '提示文字' ,
-    `default_value` VARCHAR(1000)    COMMENT '默认值 (待定)' ,
-    `readable`      BIT(1) NOT NULL  DEFAULT 1 COMMENT '可见(默认可见)' ,
-    `editable`      BIT(1) NOT NULL  DEFAULT 1 COMMENT '可编辑(默认可编辑)' ,
-    `field_width`   VARCHAR(10) NOT NULL   COMMENT '自定义宽度(常量)' ,
-    `pos`           BIGINT NOT NULL   COMMENT '排序' ,
-    `create_user`   VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `create_time`   BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_user`   VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-    `update_time`   BIGINT NOT NULL   COMMENT '更新时间' ,
-    PRIMARY KEY (id)
-) COMMENT = '模块字段配置'
-    ENGINE = InnoDB
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_general_ci;
-
-CREATE INDEX idx_module_id ON sys_module_field (module_id ASC);
-
-CREATE TABLE sys_module_field_blob(
-    `id`            VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `extra_prop`    BLOB    COMMENT '额外属性' ,
-    `rules`         BLOB    COMMENT '校验规则' ,
-    PRIMARY KEY (id)
-)  COMMENT = '模块字段大字段配置'
-    ENGINE = InnoDB
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_general_ci;
-
-CREATE TABLE sys_module_field_option(
-    `id`            VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `field_id`      VARCHAR(32) NOT NULL   COMMENT '字段id' ,
-    `field_key`     VARCHAR(255) NOT NULL   COMMENT '字段key' ,
-    `field_value`   VARCHAR(255) NOT NULL   COMMENT '显示名称' ,
-    `create_user`   VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `create_time`   BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_user`   VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-    `update_time`   BIGINT NOT NULL   COMMENT '更新时间' ,
-    PRIMARY KEY (id)
-)  COMMENT = '模块字段选项值配置(部分选项字段)'
-    ENGINE = InnoDB
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_general_ci;
-
-
-CREATE INDEX idx_field_id ON sys_module_field_option (field_id ASC);
-CREATE INDEX idx_field_value ON sys_module_field_option(field_value ASC);
 
 CREATE TABLE sys_role
 (
@@ -516,31 +442,100 @@ CREATE TABLE sys_department_commander
 CREATE INDEX idx_user_id ON sys_department_commander (user_id ASC);
 CREATE INDEX idx_department_id ON sys_department_commander (department_id ASC);
 
-CREATE TABLE sys_module_form(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `module_id` VARCHAR(32) NOT NULL   COMMENT '所属模块' ,
-    `front_cache` BIT(1) NOT NULL  DEFAULT 0 COMMENT '前台缓存' ,
-    `layout` VARCHAR(10) NOT NULL   COMMENT '布局(常量)' ,
-    `label_pos` VARCHAR(10) NOT NULL   COMMENT '标题位置(常量)' ,
-    `label_width` VARCHAR(10) NOT NULL   COMMENT '标题宽度' ,
-    `label_alignment` VARCHAR(10) NOT NULL   COMMENT '标题对齐方式' ,
-    `show_desc` BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否展示描述信息' ,
-    `input_width` VARCHAR(10) NOT NULL   COMMENT '输入框宽度' ,
-    `opt_btn_pos` VARCHAR(10) NOT NULL   COMMENT '操作按钮位置(常量)' ,
-    `save_btn` BIT(1) NOT NULL  DEFAULT 1 COMMENT '保存按钮' ,
-    `save_continue_btn` BIT(1) NOT NULL  DEFAULT 1 COMMENT '保存并继续' ,
-    `cancel_btn` BIT(1) NOT NULL  DEFAULT 1 COMMENT '取消按钮' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+## module setting
+CREATE TABLE sys_module
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `module_key`      VARCHAR(20)  NOT NULL   COMMENT '模块KEY' ,
+    `enable`          BIT(1)       NOT NULL DEFAULT 1 COMMENT '启用/禁用',
+    `pos`             BIGINT       NOT NULL COMMENT '自定义排序',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '修改人',
+    `update_time`     BIGINT       NOT NULL COMMENT '修改时间',
     PRIMARY KEY (id)
-) COMMENT = '模块表单配置'
+) COMMENT = '模块设置'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_organization_id ON sys_module (organization_id ASC);
+
+CREATE TABLE sys_module_form(
+    `id`            VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `form_key`      VARCHAR(20) NOT NULL   COMMENT '表单Key' ,
+    `module_id`     VARCHAR(32) NOT NULL   COMMENT '所属模块' ,
+    `front_cache`   BIT(1) NOT NULL  DEFAULT 0 COMMENT '前台缓存' ,
+    `layout`        VARCHAR(10) NOT NULL   COMMENT '布局(常量)' ,
+    `label_pos`     VARCHAR(10) NOT NULL   COMMENT '标题位置(常量)' ,
+    `label_width`   VARCHAR(10) NOT NULL   COMMENT '标题宽度' ,
+    `label_alignment` VARCHAR(10) NOT NULL   COMMENT '标题对齐方式' ,
+    `show_desc`     BIT(1) NOT NULL  DEFAULT 1 COMMENT '是否展示描述信息' ,
+    `input_width`   VARCHAR(10) NOT NULL   COMMENT '输入框宽度' ,
+    `opt_btn_pos`   VARCHAR(10) NOT NULL   COMMENT '操作按钮位置(常量)' ,
+    `save_btn`      BIT(1) NOT NULL  DEFAULT 1 COMMENT '保存按钮' ,
+    `save_continue_btn` BIT(1) NOT NULL  DEFAULT 1 COMMENT '保存并继续' ,
+    `cancel_btn`    BIT(1) NOT NULL  DEFAULT 1 COMMENT '取消按钮' ,
+    `create_time`   BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time`   BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user`   VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user`   VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '模块表单配置'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_module_id ON sys_module_form (module_id ASC);
+
+CREATE TABLE sys_module_field(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `form_id` VARCHAR(32) NOT NULL   COMMENT '所属表单' ,
+    `name` VARCHAR(255) NOT NULL   COMMENT '字段名称' ,
+    `internal_key` VARCHAR(255)    COMMENT '字段内置Key' ,
+    `type` VARCHAR(10) NOT NULL   COMMENT '字段类型(常量)' ,
+    `show_label` BIT(1) NOT NULL  DEFAULT 1 COMMENT '显示标题' ,
+    `description` VARCHAR(1000)    COMMENT '描述' ,
+    `tooltip` VARCHAR(255)    COMMENT '提示文字' ,
+    `default_value` VARCHAR(1000)    COMMENT '默认值 (待定)' ,
+    `readable` BIT(1) NOT NULL  DEFAULT 1 COMMENT '可见(默认可见)' ,
+    `editable` BIT(1) NOT NULL  DEFAULT 1 COMMENT '可编辑(默认可编辑)' ,
+    `field_width` VARCHAR(10) NOT NULL   COMMENT '自定义宽度(常量)' ,
+    `pos` BIGINT NOT NULL   COMMENT '排序' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    PRIMARY KEY (id)
+)  COMMENT = '模块字段配置'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_form_id ON sys_module_field(form_id ASC);
+
+CREATE TABLE sys_module_field_blob(
+                                      `id`            VARCHAR(32) NOT NULL   COMMENT 'id' ,
+                                      `extra_prop`    BLOB    COMMENT '额外属性' ,
+                                      `rules`         BLOB    COMMENT '校验规则' ,
+                                      PRIMARY KEY (id)
+)  COMMENT = '模块字段大字段配置'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE TABLE sys_module_field_option(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `field_id` VARCHAR(32) NOT NULL   COMMENT '字段id' ,
+    `label` VARCHAR(255) NOT NULL   COMMENT '文本' ,
+    PRIMARY KEY (id)
+)  COMMENT = '模块字段选项值配置(部分选项字段)'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_field_id ON sys_module_field_option (field_id ASC);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
