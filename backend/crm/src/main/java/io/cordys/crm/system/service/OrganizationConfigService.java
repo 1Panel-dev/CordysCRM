@@ -1,6 +1,8 @@
 package io.cordys.crm.system.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import io.cordys.aspectj.annotation.OperationLog;
@@ -9,8 +11,15 @@ import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.notice.sender.mail.MailNoticeSender;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import io.cordys.common.uid.IDGenerator;
@@ -39,6 +48,9 @@ public class OrganizationConfigService {
 
     @Resource
     private BaseMapper<OrganizationConfig> organizationConfigBaseMapper;
+    
+    @Resource
+    private MailNoticeSender mailNoticeSender;
 
 
     public EmailDTO getEmail(String organizationId) {
@@ -97,12 +109,14 @@ public class OrganizationConfigService {
         }
         OrganizationConfigDetail organizationConfigDetail = getOrganizationConfigDetail(userId, organizationConfig, JSON.toJSONString(emailDTO));
         organizationConfigDetail.setType(OrganizationConfigConstants.ConfigType.EMAIL.name());
+        organizationConfigDetail.setName(Translator.get("email.setting"));
+        organizationConfigDetail.setEnable(true);
         organizationConfigDetailBaseMapper.insert(organizationConfigDetail);
         // 添加日志上下文
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceId(organizationConfig.getId())
-                        .resourceName(Translator.get("email.setting"))
+                        .resourceName(organizationConfigDetail.getName())
                         .modifiedValue(emailDTO)
                         .build()
         );
@@ -140,11 +154,12 @@ public class OrganizationConfigService {
         OrganizationConfigDetail organizationConfigDetail = getOrganizationConfigDetail(userId, organizationConfig, JSON.toJSONString(syncOrganizationDTO));
         organizationConfigDetail.setType(syncOrganizationDTO.getType());
         organizationConfigDetail.setEnable(syncOrganizationDTO.getEnable());
+        organizationConfigDetail.setName(Translator.get("sync.organization"));
         organizationConfigDetailBaseMapper.insert(organizationConfigDetail);
         // 添加日志上下文
         OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(null)
-                .resourceName(Translator.get("sync.organization"))
+                .resourceName(organizationConfigDetail.getName())
                 .modifiedValue(syncOrganizationDTO)
                 .build());
     }
@@ -186,6 +201,65 @@ public class OrganizationConfigService {
                 .originalValue(syncOrganizationDTOOld)
                 .modifiedValue(syncOrganizationDTO)
                 .build());
+    }
+
+    public void testEmailConnection(EmailDTO emailDTO) {
+        JavaMailSenderImpl javaMailSender = null;
+        try {
+            javaMailSender = mailNoticeSender.getMailSender(emailDTO);
+            javaMailSender.testConnection();
+        } catch (Exception e) {
+            LogUtils.error(e.getMessage(), e);
+            throw new GenericException(Translator.get("email.connection.failed"));
+        }
+        String recipient = emailDTO.getRecipient();
+        if (!StringUtils.isBlank(recipient)) {
+            try {
+                MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+                String username = javaMailSender.getUsername();
+                String email;
+                if (username.contains("@")) {
+                    email = username;
+                } else {
+                    String mailHost = javaMailSender.getHost();
+                    String domainName = mailHost.substring(mailHost.indexOf(".") + 1);
+                    email = username + "@" + domainName;
+                }
+                InternetAddress from = new InternetAddress();
+                
+                String smtpFrom = emailDTO.getFrom();
+                if (StringUtils.isBlank(smtpFrom)) {
+                    from.setAddress(email);
+                    from.setPersonal(username);
+                } else {
+                    // 指定发件人后，address 应该是邮件服务器验证过的发件人
+                    if (smtpFrom.contains("@")) {
+                        from.setAddress(smtpFrom);
+                    } else {
+                        from.setAddress(email);
+                    }
+                    from.setPersonal(smtpFrom);
+                }
+                helper.setFrom(from);
+
+                LogUtils.debug("发件人地址" + javaMailSender.getUsername());
+                LogUtils.debug("helper" + helper);
+                helper.setSubject("MeterSphere测试邮件");
+
+                LogUtils.info("收件人地址: {}", Arrays.asList(recipient));
+                helper.setText("这是一封测试邮件，邮件发送成功", true);
+                helper.setTo(recipient);
+                try {
+                    javaMailSender.send(mimeMessage);
+                } catch (Exception e) {
+                    LogUtils.error("发送邮件失败: ", e);
+                }
+            } catch (Exception e) {
+                LogUtils.error(e);
+                throw new GenericException(Translator.get("email.connection.failed"));
+            }
+        }
     }
 }
 

@@ -19,6 +19,9 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import jakarta.annotation.Resource;
+
+import java.util.HashMap;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -53,6 +56,8 @@ public class OrganizationConfigControllerTests extends BaseTest {
         organizationConfigDetail.setId(IDGenerator.nextStr());
         organizationConfigDetail.setConfigId(organizationConfig.getId());
         organizationConfigDetail.setType(OrganizationConfigConstants.ConfigType.EMAIL.name());
+        organizationConfigDetail.setName("null");
+        organizationConfigDetail.setEnable(true);
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setHost("test.com");
         emailDTO.setPort("25");   
@@ -81,6 +86,7 @@ public class OrganizationConfigControllerTests extends BaseTest {
         syncOrganizationDTO.setAgentId("test");
         syncOrganizationDTO.setAppSecret("test");
         syncOrganizationDTO.setType("WECOM");
+        syncOrganizationDTO.setEnable(true);
         this.requestPost("/organization/config/add/synchronization", syncOrganizationDTO).andExpect(status().isOk());
     }
 
@@ -108,6 +114,7 @@ public class OrganizationConfigControllerTests extends BaseTest {
         syncOrganizationDTO.setAgentId("test");
         syncOrganizationDTO.setAppSecret("test");
         syncOrganizationDTO.setType("WECOM");
+        syncOrganizationDTO.setEnable(true);
         syncOrganizationDTO.setId(organizationConfigDetail.getId());
         this.requestPost("/organization/config/update/synchronization", syncOrganizationDTO).andExpect(status().isOk());
     }
@@ -132,6 +139,21 @@ public class OrganizationConfigControllerTests extends BaseTest {
     @Order(5)
     public void testGetSynOrganization() throws Exception {
         this.requestGet("/organization/config/synchronization").andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(4)
+    public void testEmailConnect() throws Exception {
+        EmailDTO emailDTO = new EmailDTO();
+        emailDTO.setHost("https://baidu.com");
+        emailDTO.setPort("80");
+        emailDTO.setAccount("aaa@fit2cloud.com");
+        emailDTO.setPassword("test");
+        emailDTO.setFrom("aaa@fit2cloud.com");
+        emailDTO.setRecipient("aaa@fit2cloud.com");
+        emailDTO.setSsl("true");
+        emailDTO.setTsl("false");
+        this.requestPost("/organization/config/test/email", emailDTO, status().is5xxServerError());
     }
 
    

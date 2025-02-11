@@ -76,4 +76,13 @@ public class OrganizationConfigController {
     public void delete(@PathVariable String id) {
         organizationConfigService.delete(id);
     }
+
+
+    @PostMapping("/test/email")
+    @Operation(summary = "系统设置-系统-系统参数-基本设置-邮件设置-测试连接")
+    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
+    public void testEmailConnection(@Validated @RequestBody EmailDTO emailDTO) {
+        organizationConfigService.testEmailConnection(emailDTO);
+    }
+
 }
