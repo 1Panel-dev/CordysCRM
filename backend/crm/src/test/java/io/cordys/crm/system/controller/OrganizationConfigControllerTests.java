@@ -1,5 +1,6 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.base.BaseTest;
@@ -142,7 +143,7 @@ public class OrganizationConfigControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(4)
+    @Order(6)
     public void testEmailConnect() throws Exception {
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setHost("https://baidu.com");
@@ -154,6 +155,31 @@ public class OrganizationConfigControllerTests extends BaseTest {
         emailDTO.setSsl("true");
         emailDTO.setTsl("false");
         this.requestPost("/organization/config/test/email", emailDTO, status().is5xxServerError());
+    }
+
+    @Test
+    @Order(7)
+    public void testSyncConnect() throws Exception {
+        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(DEFAULT_ORGANIZATION_ID, OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
+        OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
+        SyncOrganizationDTO weCom = new SyncOrganizationDTO();
+        weCom.setId(organizationConfigDetail.getId());
+        weCom.setType(DepartmentConstants.WECOM.name());
+        weCom.setAppSecret("ddd");
+        weCom.setCorpId("fff");
+        this.requestPost("/organization/config/test/sync", weCom, status().is5xxServerError());
+        weCom = new SyncOrganizationDTO();
+        weCom.setId(organizationConfigDetail.getId());
+        weCom.setType(DepartmentConstants.DINGTALK.name());
+        weCom.setAppSecret("ddd");
+        weCom.setAppKey("fff");
+        this.requestPost("/organization/config/test/sync", weCom, status().is5xxServerError());
+        weCom = new SyncOrganizationDTO();
+        weCom.setId(organizationConfigDetail.getId());
+        weCom.setType(DepartmentConstants.LARK.name());
+        weCom.setAppSecret("ddd");
+        weCom.setAgentId("fff");
+        this.requestPost("/organization/config/test/sync", weCom, status().is5xxServerError());
     }
 
    

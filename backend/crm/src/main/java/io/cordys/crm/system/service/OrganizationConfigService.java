@@ -1,23 +1,27 @@
 package io.cordys.crm.system.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.client.QrCodeClient;
+import io.cordys.crm.system.constants.SyncSettingApiPaths;
+import io.cordys.crm.system.dto.dingtalk.DingTalkBaseParamDTO;
+import io.cordys.crm.system.dto.lark.LarkBaseParamDTO;
 import io.cordys.crm.system.notice.sender.mail.MailNoticeSender;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -48,9 +52,12 @@ public class OrganizationConfigService {
 
     @Resource
     private BaseMapper<OrganizationConfig> organizationConfigBaseMapper;
-    
+
     @Resource
     private MailNoticeSender mailNoticeSender;
+
+    @Resource
+    private QrCodeClient qrCodeClient;
 
 
     public EmailDTO getEmail(String organizationId) {
@@ -151,6 +158,10 @@ public class OrganizationConfigService {
             organizationConfig.setUpdateUser(userId);
             organizationConfigBaseMapper.insert(organizationConfig);
         }
+        int organizationConfigDetailCount = extOrganizationConfigDetailMapper.getOrganizationConfigDetailCount(organizationConfig.getId(), null, syncOrganizationDTO.getType());
+        if (organizationConfigDetailCount > 0) {
+            throw new GenericException(Translator.get("sync.organization.type.exist"));
+        }
         OrganizationConfigDetail organizationConfigDetail = getOrganizationConfigDetail(userId, organizationConfig, JSON.toJSONString(syncOrganizationDTO));
         organizationConfigDetail.setType(syncOrganizationDTO.getType());
         organizationConfigDetail.setEnable(syncOrganizationDTO.getEnable());
@@ -227,7 +238,7 @@ public class OrganizationConfigService {
                     email = username + "@" + domainName;
                 }
                 InternetAddress from = new InternetAddress();
-                
+
                 String smtpFrom = emailDTO.getFrom();
                 if (StringUtils.isBlank(smtpFrom)) {
                     from.setAddress(email);
@@ -260,6 +271,80 @@ public class OrganizationConfigService {
                 throw new GenericException(Translator.get("email.connection.failed"));
             }
         }
+    }
+
+    public void testSyncConnection(SyncOrganizationDTO syncOrganizationDTO, String userId) {
+        String accessToken = "";
+        if (StringUtils.equalsIgnoreCase(syncOrganizationDTO.getType(), DepartmentConstants.WECOM.name())) {
+            accessToken = generateWeComToken(syncOrganizationDTO);
+        }
+        if (StringUtils.equalsIgnoreCase(syncOrganizationDTO.getType(), DepartmentConstants.DINGTALK.name())) {
+            accessToken = generateDingTalkToken(syncOrganizationDTO);
+        }
+        if (StringUtils.equalsIgnoreCase(syncOrganizationDTO.getType(), DepartmentConstants.LARK.name())) {
+            accessToken = generateLarkToken(syncOrganizationDTO);
+        }
+
+        if (StringUtils.isNotBlank(accessToken)) {
+            syncOrganizationDTO.setValid(true);
+            OrganizationConfigDetail organizationConfigDetail = new OrganizationConfigDetail();
+            organizationConfigDetail.setId(syncOrganizationDTO.getId());
+            organizationConfigDetail.setContent(JSON.toJSONBytes(syncOrganizationDTO));
+            organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
+            organizationConfigDetail.setUpdateUser(userId);
+            organizationConfigDetail.setEnable(syncOrganizationDTO.getEnable());
+            organizationConfigDetailBaseMapper.update(organizationConfigDetail);
+        }
+
+    }
+
+    public String generateDingTalkToken(SyncOrganizationDTO syncOrganizationDTO) {
+        if (StringUtils.isBlank(syncOrganizationDTO.getAppSecret())) {
+            throw new GenericException(Translator.get("sync.organization.test.error"));
+        }
+        String appKey = syncOrganizationDTO.getAppKey();
+        String appSecret = syncOrganizationDTO.getAppSecret();
+        DingTalkBaseParamDTO dingTalkTokenParamDTO = new DingTalkBaseParamDTO();
+        dingTalkTokenParamDTO.setAppKey(appKey);
+        dingTalkTokenParamDTO.setAppSecret(appSecret);
+        String body = qrCodeClient.postExchange(SyncSettingApiPaths.DING_TALK_GET_TOKEN,null, null, dingTalkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+        Map bodyMap = JSON.parseMap(body);
+        if (ObjectUtils.isNotEmpty(bodyMap.get("errcode")) && Integer.parseInt(bodyMap.get("errcode").toString()) != 0) {
+            throw new GenericException(Translator.get("sync.organization.test.error"));
+        }
+        return bodyMap.get("accessToken").toString();
+    }
+
+    private String generateWeComToken(SyncOrganizationDTO syncOrganizationDTO) {
+        if (StringUtils.isBlank(syncOrganizationDTO.getAppSecret())) {
+            throw new GenericException(Translator.get("sync.organization.test.error"));
+        }
+        String corpid = syncOrganizationDTO.getCorpId();
+        String appSecret = syncOrganizationDTO.getAppSecret();
+        String url = String.format(SyncSettingApiPaths.WE_COM_GET_TOKEN, corpid, appSecret);
+        String body = qrCodeClient.get(url);
+        Map bodyMap = JSON.parseMap(body);
+        if (ObjectUtils.isNotEmpty(bodyMap.get("errcode")) && Integer.parseInt(bodyMap.get("errcode").toString()) != 0) {
+            throw new GenericException(Translator.get("sync.organization.test.error"));
+        }
+        return bodyMap.get("access_token").toString();
+    }
+
+    private String generateLarkToken(SyncOrganizationDTO syncOrganizationDTO) {
+        if (StringUtils.isBlank(syncOrganizationDTO.getAppSecret())) {
+            throw new GenericException(Translator.get("sync.organization.test.error"));
+        }
+        String agentId = syncOrganizationDTO.getAgentId();
+        String appSecret = syncOrganizationDTO.getAppSecret();
+        LarkBaseParamDTO larkBaseParamDTO = new LarkBaseParamDTO();
+        larkBaseParamDTO.setApp_id(agentId);
+        larkBaseParamDTO.setApp_secret(appSecret);
+        String body = qrCodeClient.postExchange(SyncSettingApiPaths.LARK_GET_TOKEN,null,null,larkBaseParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+        Map bodyMap = JSON.parseMap(body);
+        if (ObjectUtils.isNotEmpty(bodyMap.get("code")) && Integer.parseInt(bodyMap.get("code").toString()) > 0) {
+            throw new GenericException(Translator.get("sync.organization.test.error"));
+        }
+        return bodyMap.get("tenant_access_token").toString();
     }
 }
 

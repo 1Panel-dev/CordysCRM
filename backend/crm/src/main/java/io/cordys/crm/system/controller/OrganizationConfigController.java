@@ -85,4 +85,11 @@ public class OrganizationConfigController {
         organizationConfigService.testEmailConnection(emailDTO);
     }
 
+    @PostMapping(value = "/test/sync")
+    @Operation(summary = "校验配置是否链接成功")
+    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
+    public void validate(@RequestBody SyncOrganizationDTO syncOrganizationDTO) {
+        organizationConfigService.testSyncConnection(syncOrganizationDTO, SessionUtils.getUserId());
+    }
+
 }
