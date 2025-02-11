@@ -13,6 +13,7 @@
       </div>
     </div>
   </div>
+  <customManagementFormDrawer v-model:visible="customerManagementFormVisible" />
 </template>
 
 <script setup lang="ts">
@@ -22,6 +23,7 @@
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import customManagementFormDrawer from './customManagement/formDrawer.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 
@@ -31,7 +33,7 @@
 
   type ModuleConfigItem = {
     label: string;
-    key: string;
+    key: ModuleConfigEnum;
     icon?: string;
     enable: boolean;
     groupList: ActionsItem[];
@@ -97,7 +99,7 @@
         },
         {
           label: t('module.businessManage.businessParamsSet'),
-          key: 'newForm',
+          key: 'businessParamsSet',
         },
       ],
     },
@@ -122,8 +124,54 @@
     },
   ]);
 
-  function handleSelect(key: string, item: any) {
-    console.log(key, item);
+  const customerManagementFormVisible = ref(false);
+  const customerManagementOpenSeaVisible = ref(false);
+  const customerManagementCapacitySetVisible = ref(false);
+
+  const clueManagementFormVisible = ref(false);
+  const clueManagementCluePoolVisible = ref(false);
+  const clueManagementCapacitySetVisible = ref(false);
+
+  const businessManagementFormVisible = ref(false);
+  const businessManagementBusinessParamsSetVisible = ref(false);
+
+  const productManagementFormVisible = ref(false);
+
+  function handleSelect(key: string, item: ModuleConfigItem) {
+    switch (item.key) {
+      case ModuleConfigEnum.CUSTOMER_MANAGEMENT:
+        if (key === 'newForm') {
+          customerManagementFormVisible.value = true;
+        } else if (key === 'openSea') {
+          customerManagementOpenSeaVisible.value = true;
+        } else if (key === 'capacitySet') {
+          customerManagementCapacitySetVisible.value = true;
+        }
+        break;
+      case ModuleConfigEnum.CLUE_MANAGEMENT:
+        if (key === 'newForm') {
+          clueManagementFormVisible.value = true;
+        } else if (key === 'cluePool') {
+          clueManagementCluePoolVisible.value = true;
+        } else if (key === 'capacitySet') {
+          clueManagementCapacitySetVisible.value = true;
+        }
+        break;
+      case ModuleConfigEnum.BUSINESS_MANAGEMENT:
+        if (key === 'newForm') {
+          businessManagementFormVisible.value = true;
+        } else if (key === 'businessParamsSet') {
+          businessManagementBusinessParamsSetVisible.value = true;
+        }
+        break;
+      case ModuleConfigEnum.PRODUCT_MANAGEMENT:
+        if (key === 'newForm') {
+          productManagementFormVisible.value = true;
+        }
+        break;
+      default:
+        break;
+    }
   }
 </script>
 
