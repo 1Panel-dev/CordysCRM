@@ -1,5 +1,6 @@
 export enum TableKeyEnum {
   SYSTEM_USER = 'systemUser', // TODO lmy 没用 可删
+  AUTH = 'auth',
   SYSTEM_ORG_TABLE = 'systemOrgTable',
 }
 

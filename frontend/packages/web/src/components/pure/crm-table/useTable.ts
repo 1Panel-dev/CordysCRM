@@ -118,7 +118,7 @@ export default function useTable<T>(
         }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
       } else {
         const tmpArr = data as CommonList<CrmTableDataItem<T>>;
-        propsRes.value.data = tmpArr.list.map((item: CrmTableDataItem<T>) => {
+        propsRes.value.data = tmpArr.list?.map((item: CrmTableDataItem<T>) => {
           return processRecordItem(item);
         }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
         // 设置分页

@@ -1,5 +1,5 @@
 <template>
-  <CrmModal v-model:show="showModal" :title="props.title">
+  <CrmModal v-model:show="showModal" :title="t('system.business.syncFrom', { title: props.title })">
     <n-form
       ref="formRef"
       :model="form"

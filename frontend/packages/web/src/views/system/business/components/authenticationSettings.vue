@@ -61,12 +61,13 @@
     </CrmDescription>
   </CrmDrawer>
 
-  <AddOrEditAuthDrawer v-model:show="showAddOrEditAuthDrawer" :edit-auth-info="editAuthInfo" />
+  <AddOrEditAuthDrawer v-model:show="showAddOrEditAuthDrawer" :edit-auth-info="editAuthInfo" @refresh="loadList" />
 </template>
 
 <script setup lang="ts">
   import { useClipboard } from '@vueuse/core';
   import { NButton, NSwitch, useMessage } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
@@ -80,12 +81,20 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddOrEditAuthDrawer from './addOrEditAuthDrawer.vue';
 
+  import {
+    deleteAuth,
+    getAuthDetail,
+    getAuthList,
+    updateAuthName,
+    updateAuthStatus,
+  } from '@/api/modules/system/business';
   import { authTypeFieldMap, defaultAuthForm } from '@/config/business';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { desensitize } from '@/utils';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import type { AuthForm, AuthItem } from '@lib/shared/models/system/business';
 
   const { t } = useI18n();
   const { openModal } = useModal();
@@ -94,21 +103,12 @@
 
   // 详情
   const showDetailDrawer = ref(false);
-  const activeAuthDetail = ref<any>({ ...defaultAuthForm });
+  const activeAuthDetail = ref<AuthForm>(cloneDeep(defaultAuthForm));
   const descriptions = ref<Description[]>([]);
 
   async function getDetail(id: string) {
     try {
-      // const res = await getAuthDetail(id);
-      const res = {
-        id: '1029847274971136',
-        description: '描述',
-        name: '测测试测测试测试测试测试测试测试测试测试测试试测测试测试测试测试测试测试测试测试测试试测测试测试测试测试测试测试测试测试测试试测试测试测试测试测试测试测试测试试',
-        type: 'LDAP',
-        configuration:
-          '{"url":"192.168.12.11","dn":"ghjkkj","password":"sdsadsa","ou":"wq","filter":"ds","mapping":"we"}',
-        enable: true,
-      };
+      const res = await getAuthDetail(id);
       const configuration = JSON.parse(res.configuration || '{}');
       activeAuthDetail.value = { ...res, configuration };
     } catch (e) {
@@ -121,10 +121,10 @@
     showDetailDrawer.value = true;
     await getDetail(id);
     descriptions.value = [
-      { label: t('common.desc'), value: activeAuthDetail.value.description },
-      ...(authTypeFieldMap[activeAuthDetail.value.type]?.map(({ label, key }) => ({
+      { label: t('common.desc'), value: activeAuthDetail.value.description || '' },
+      ...(authTypeFieldMap[activeAuthDetail.value?.type as string]?.map(({ label, key }) => ({
         label,
-        value: activeAuthDetail.value.configuration[key],
+        value: activeAuthDetail.value.configuration[key as string],
         slotName: key === 'password' ? 'password' : undefined,
       })) || []),
     ];
@@ -145,18 +145,17 @@
 
   // 新增和编辑
   const showAddOrEditAuthDrawer = ref(false);
-  const editAuthInfo = ref<any>({});
+  const editAuthInfo = ref<AuthForm>(cloneDeep(defaultAuthForm));
 
   function handleAdd() {
-    editAuthInfo.value = { ...defaultAuthForm };
     showAddOrEditAuthDrawer.value = true;
   }
-  async function handleEdit(record: any, isFromDetail = false) {
+  async function handleEdit(record: AuthForm | AuthItem, isFromDetail = false) {
     if (isFromDetail) {
-      editAuthInfo.value = { ...record };
+      editAuthInfo.value = { ...(record as AuthForm) };
       showAddOrEditAuthDrawer.value = true;
     } else {
-      await getDetail(record.id);
+      await getDetail((record as AuthItem).id);
       editAuthInfo.value = { ...activeAuthDetail.value };
       showAddOrEditAuthDrawer.value = true;
     }
@@ -177,7 +176,8 @@
     },
   ]);
 
-  function handleDelete(row: any) {
+  const tableRefreshId = ref(0);
+  function handleDelete(row: AuthItem) {
     openModal({
       type: 'error',
       title: t('system.business.authenticationSettings.deleteConfirmTitle', { name: row.name }),
@@ -186,16 +186,18 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
+          await deleteAuth(row.id);
           Message.success(t('common.deleteSuccess'));
+          tableRefreshId.value += 1;
         } catch (error) {
           // eslint-disable-next-line no-console
-          console.log(error);
+          console.error(error);
         }
       },
     });
   }
 
-  function handleActionSelect(row: any, actionKey: string) {
+  function handleActionSelect(row: AuthItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
         handleEdit(row);
@@ -208,7 +210,7 @@
     }
   }
 
-  function handleEnable(row: any) {
+  function handleEnable(row: AuthItem) {
     openModal({
       type: 'default',
       title: t('system.business.authenticationSettings.enableConfirmTitle', { name: row.name }),
@@ -217,7 +219,9 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
+          await updateAuthStatus(row.id, true);
           Message.success(t('common.opened'));
+          tableRefreshId.value += 1;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -226,7 +230,7 @@
     });
   }
 
-  function handleDisable(row: any) {
+  function handleDisable(row: AuthItem) {
     openModal({
       type: 'default',
       title: t('system.business.authenticationSettings.disableConfirmTitle', { name: row.name }),
@@ -235,7 +239,9 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
+          await updateAuthStatus(row.id, false);
           Message.success(t('common.disabled'));
+          tableRefreshId.value += 1;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -244,18 +250,28 @@
     });
   }
 
+  async function handleChangeName(id: string, name: string) {
+    try {
+      await updateAuthName(id, name);
+      Message.success(t('common.updateSuccess'));
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
+  }
+
   const columns: CrmDataTableColumn[] = [
     {
       title: t('common.name'),
       key: 'name',
       width: 200,
-      render: (row: any) => {
+      render: (row: AuthItem) => {
         return h(
           CrmEditableText,
           {
             value: row.name,
-            onHandleEdit: (val: string) => {
-              // TODO 调接口
+            onHandleEdit: async (val: string) => {
+              await handleChangeName(row.id, val);
               row.name = val;
             },
           },
@@ -278,7 +294,7 @@
       title: t('common.status'),
       key: 'enable',
       width: 60,
-      render: (row: any) => {
+      render: (row: AuthItem) => {
         return h(NSwitch, {
           value: row.enable,
           onClick: () => {
@@ -322,7 +338,7 @@
     {
       key: 'operation',
       width: 100,
-      render: (row: any) =>
+      render: (row: AuthItem) =>
         h(CrmOperationButton, {
           groupList: operationGroupList.value,
           onSelect: (key: string) => handleActionSelect(row, key),
@@ -330,51 +346,23 @@
     },
   ];
 
-  function initData() {
-    const data: any = {
-      total: 11,
-      pageSize: 10,
-      current: 1,
-      list: [
-        {
-          id: '702175637397504',
-          enable: false,
-          createTime: 1722568872431,
-          updateTime: 1722568872431,
-          description: '',
-          name: '1',
-          type: 'OAUTH2',
-          configuration: null,
-        },
-        {
-          id: '693860580712448',
-          enable: true,
-          createTime: 1722568388178,
-          updateTime: 1722568388178,
-          description: '',
-          name: '1213',
-          type: 'OAuth 2.0',
-          configuration: null,
-        },
-      ],
-    };
-    return new Promise<any>((resolve) => {
-      setTimeout(() => {
-        resolve(data);
-      }, 200);
-    });
-  }
-
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(initData, {
-    tableKey: TableKeyEnum.SYSTEM_USER,
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getAuthList, {
+    tableKey: TableKeyEnum.AUTH,
     showSetting: true,
     columns,
   });
 
   function searchData() {
-    setLoadListParams({ keyword: '' });
+    setLoadListParams({ keyword: keyword.value });
     loadList();
   }
+
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      loadList();
+    }
+  );
 
   onMounted(() => {
     searchData();

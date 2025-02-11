@@ -9,6 +9,7 @@
     :ok-text="form.id ? t('common.update') : undefined"
     @confirm="confirm"
     @cancel="cancel"
+    @continue="confirm(true)"
   >
     <n-form ref="formRef" :model="form" require-mark-placement="left" label-placement="left" label-width="100px">
       <n-form-item
@@ -34,12 +35,13 @@
           allow-clear
         />
       </n-form-item>
-      <n-form-item path="type" :label="t('system.business.authenticationSettings.addResource')">
+      <!-- 先不上 -->
+      <!-- <n-form-item path="type" :label="t('system.business.authenticationSettings.addResource')">
         <CrmTab v-model:active-tab="form.type" :tab-list="tabList" type="segment" />
-      </n-form-item>
+      </n-form-item> -->
 
-      <!-- 根据类型展示不同的表单 -->
-      <template v-for="item of authTypeFieldMap[form.type]" :key="item.key">
+      <!-- 根据类型展示不同的表单 目前只有 OAUTH2 -->
+      <template v-for="item of authTypeFieldMap['OAUTH2']" :key="item.key">
         <n-form-item :label="item.label" :path="`configuration.${item.key}`" :rule="item.rule">
           <n-input
             v-model:value="form.configuration[item.key]"
@@ -62,39 +64,67 @@
 </template>
 
 <script setup lang="ts">
-  import { FormInst, NButton, NForm, NFormItem, NInput } from 'naive-ui';
+  import { FormInst, NButton, NForm, NFormItem, NInput, useMessage } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import CrmTab from '@/components/pure/crm-tab/index.vue';
 
+  // import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import { createAuth, updateAuth } from '@/api/modules/system/business';
   import { authTypeFieldMap, defaultAuthForm } from '@/config/business';
   import { useI18n } from '@/hooks/useI18n';
 
+  import { AuthForm, AuthUpdateParams } from '@lib/shared/models/system/business';
+
   const { t } = useI18n();
+  const Message = useMessage();
 
   const showDrawer = defineModel<boolean>('show', {
     required: true,
     default: false,
   });
 
-  const form = defineModel<any>('editAuthInfo', {
-    required: false,
+  const form = defineModel<AuthForm>('editAuthInfo', {
+    required: true,
   });
 
-  const tabList = computed(() => {
-    return Object.keys(authTypeFieldMap).map((item) => ({
-      name: item,
-      tab: item,
-    }));
-  });
+  const emit = defineEmits<{
+    (e: 'refresh'): void;
+  }>();
+
+  // 先不上
+  // const tabList = computed(() => {
+  //   return Object.keys(authTypeFieldMap).map((item) => ({
+  //     name: item,
+  //     tab: item,
+  //   }));
+  // });
 
   const formRef = ref<FormInst | null>(null);
 
-  function confirm() {
-    formRef.value?.validate((error) => {
+  // 新增和编辑操作
+  async function confirm(isContinue?: boolean) {
+    formRef.value?.validate(async (error) => {
       if (!error) {
         try {
-          showDrawer.value = false;
+          const formData: AuthUpdateParams = {
+            ...form.value,
+            configuration: JSON.stringify(form.value.configuration),
+          };
+
+          if (form.value.id) {
+            await updateAuth(formData);
+            Message.success(t('common.updateSuccess'));
+          } else {
+            await createAuth(formData);
+            Message.success(t('common.addSuccess'));
+          }
+          if (isContinue) {
+            form.value = cloneDeep(defaultAuthForm);
+          } else {
+            showDrawer.value = false;
+          }
+          emit('refresh');
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -104,7 +134,7 @@
   }
 
   function cancel() {
-    form.value = { ...defaultAuthForm };
+    form.value = cloneDeep(defaultAuthForm);
   }
 </script>
 

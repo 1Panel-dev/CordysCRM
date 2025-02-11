@@ -1,3 +1,5 @@
+import type { TableQueryParams } from '../common';
+
 // 邮件设置
 export interface ConfigEmailParams {
   host: string; // SMTP 主机
@@ -28,4 +30,36 @@ export interface IntegrationItem {
   logo: string;
   hasConfig: boolean;
   response: ConfigSynchronization;
+}
+
+// 认证设置
+export interface Auth {
+  description: string; // 描述
+  name: string; // 名称
+  type: string; // 类型 OAUTH2, LDAP, OIDC, CAS
+  enable: boolean; // 是否启用
+}
+
+export interface AuthForm extends Auth {
+  id?: string; // 认证源ID
+  configuration: Record<string, any>;
+}
+
+export interface AuthUpdateParams extends Auth {
+  id?: string; // 认证源ID
+  configuration: string; // 认证源配置
+}
+
+export interface AuthItem extends Auth {
+  id: string; // ID
+  createUser: string; // 创建人
+  updateUser: string; // 修改人
+  createTime: number; // 创建时间
+  updateTime: number; // 更新时间
+  configId: string; // 配置id
+  content: string; // 配置内容
+}
+
+export interface AuthTableQueryParams extends TableQueryParams {
+  configId: string; // 认证设置id
 }

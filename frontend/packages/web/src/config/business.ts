@@ -145,19 +145,6 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
       }),
     },
     {
-      label: t('system.business.authenticationSettings.logoutSessionUrl'),
-      key: 'logoutUrl',
-      rule: [
-        {
-          required: true,
-          message: t('common.notNull', { value: t('system.business.authenticationSettings.logoutSessionUrl') }),
-        },
-      ],
-      placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<keyclock>auth/realms/<metersphere>/protocol/openid- connect/token',
-      }),
-    },
-    {
       label: t('system.business.authenticationSettings.loginUrl'),
       key: 'loginUrl',
       rule: [
@@ -263,24 +250,9 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
       placeholder: '{"userid":"login","username":"name","email":"email"}',
     },
     {
-      label: t('system.business.authenticationSettings.logoutSessionUrl'),
-      key: 'logoutUrl',
-      placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<keyclock>auth/realms/<metersphere>/protocol/openid-connect/token',
-      }),
-    },
-    {
       label: t('system.business.authenticationSettings.linkRange'),
       key: 'scope',
       placeholder: 'openid profile email',
-    },
-    {
-      label: t('system.business.authenticationSettings.loginUrl'),
-      key: 'loginUrl',
-      placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<casurl>/login',
-      }),
-      subTip: t('system.business.authenticationSettings.loginUrlTip'),
     },
   ],
   LDAP: [
@@ -351,10 +323,9 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
 };
 
 export const defaultAuthForm = {
-  id: '',
-  enable: true,
+  enable: false,
   description: '',
   name: '',
-  type: 'CAS',
+  type: 'OAUTH2',
   configuration: {},
 };
