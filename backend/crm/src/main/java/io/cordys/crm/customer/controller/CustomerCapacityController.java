@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,36 +25,36 @@ import java.util.List;
 @Tag(name = "客户库容容量")
 public class CustomerCapacityController {
 
-	@Resource
-	private CustomerCapacityService customerCapacityService;
+    @Resource
+    private CustomerCapacityService customerCapacityService;
 
-	@PostMapping("/page")
-	@Operation(summary = "分页获取客户库容规则")
-	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE}, logical = Logical.OR)
-	public Pager<List<CustomerCapacity>> page(@Validated @RequestBody CustomerCapacityPageRequest request) {
-		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
-				StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
-		return PageUtils.setPageInfo(page, customerCapacityService.page());
-	}
+    @PostMapping("/page")
+    @Operation(summary = "分页获取客户库容规则")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public Pager<List<CustomerCapacity>> page(@Validated @RequestBody CustomerCapacityPageRequest request) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
+                StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
+        return PageUtils.setPageInfo(page, customerCapacityService.page());
+    }
 
-	@PostMapping("/add")
-	@Operation(summary = "新增客户库容规则")
-	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void add(@Validated @RequestBody CustomerCapacitySaveRequest request) {
-		customerCapacityService.save(request, SessionUtils.getUserId());
-	}
+    @PostMapping("/add")
+    @Operation(summary = "新增客户库容规则")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void add(@Validated @RequestBody CustomerCapacitySaveRequest request) {
+        customerCapacityService.save(request, SessionUtils.getUserId());
+    }
 
-	@PostMapping("/update")
-	@Operation(summary = "编辑客户库容规则")
-	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void update(@Validated @RequestBody CustomerCapacitySaveRequest request) {
-		customerCapacityService.save(request, SessionUtils.getUserId());
-	}
+    @PostMapping("/update")
+    @Operation(summary = "编辑客户库容规则")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void update(@Validated @RequestBody CustomerCapacitySaveRequest request) {
+        customerCapacityService.save(request, SessionUtils.getUserId());
+    }
 
-	@GetMapping("/delete/{id}")
-	@Operation(summary = "删除客户库容规则")
-	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void delete(@PathVariable String id) {
-		customerCapacityService.delete(id);
-	}
+    @GetMapping("/delete/{id}")
+    @Operation(summary = "删除客户库容规则")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void delete(@PathVariable String id) {
+        customerCapacityService.delete(id);
+    }
 }
