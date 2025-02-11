@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class NodeSortCountResultDTO {
-    private boolean isRefreshNum;
-    private long num;
+    private boolean isRefreshPos;
+    private long pos;
 }

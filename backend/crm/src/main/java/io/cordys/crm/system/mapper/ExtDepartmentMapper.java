@@ -16,7 +16,7 @@ public interface ExtDepartmentMapper {
 
     List<DeptUserTreeNode> selectDeptUserTreeNode(@Param("orgId") String orgId);
 
-    Long getNextNumByOrgId(@Param("orgId") String orgId);
+    Long getNextPosByOrgId(@Param("orgId") String orgId);
 
     List<String> getUserIdsByDeptIds(@Param("deptIds") List<String> deptIds);
 
@@ -30,7 +30,7 @@ public interface ExtDepartmentMapper {
 
     BaseTree selectBaseTreeById(@Param("dragNodeId") String dragNodeId);
 
-    BaseTree selectTreeByParentIdAndNumOperator(@Param("nodeSortQueryParam") NodeSortQueryParam nodeSortQueryParam);
+    BaseTree selectTreeByParentIdAndPosOperator(@Param("nodeSortQueryParam") NodeSortQueryParam nodeSortQueryParam);
 
     List<String> selectChildrenIds(@Param("parentId") String parentId);
 

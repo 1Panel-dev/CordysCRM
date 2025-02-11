@@ -408,7 +408,7 @@ CREATE TABLE sys_department
     `name`            VARCHAR(255) NOT NULL COMMENT '名称',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
     `parent_id`       VARCHAR(32)  NOT NULL COMMENT '父级',
-    `num`             BIGINT       NOT NULL COMMENT '排序',
+    `pos`             BIGINT       NOT NULL COMMENT '排序',
     `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',

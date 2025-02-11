@@ -15,16 +15,16 @@ import java.util.function.Function;
 
 public abstract class MoveNodeService {
 
-    protected static final long LIMIT_NUM = NodeSortUtils.DEFAULT_NODE_INTERVAL_NUM;
+    protected static final long LIMIT_POS = NodeSortUtils.DEFAULT_NODE_INTERVAL_POS;
 
-    public abstract void updateNum(String id, long num);
+    public abstract void updatePos(String id, long pos);
 
-    public abstract void refreshNum(String testPlanId);
+    public abstract void refreshPos(String testPlanId);
 
 
-    private static final String MOVE_NUM_OPERATOR_LESS = "lessThan";
-    private static final String MOVE_NUM_OPERATOR_MORE = "moreThan";
-    private static final String MOVE_NUM_OPERATOR_LATEST = "latest";
+    private static final String MOVE_POS_OPERATOR_LESS = "lessThan";
+    private static final String MOVE_POS_OPERATOR_MORE = "moreThan";
+    private static final String MOVE_POS_OPERATOR_LATEST = "latest";
     private static final String DRAG_NODE_NOT_EXIST = "drag_node.not.exist";
 
 
@@ -33,10 +33,10 @@ public abstract class MoveNodeService {
      *
      * @param request           拖拽的前端请求参数
      * @param selectIdNodeFunc  通过id查询节点的函数
-     * @param selectNumNodeFunc 通过parentId和num运算符查询节点的函数
+     * @param selectPosNodeFunc 通过parentId和Pos运算符查询节点的函数
      * @return
      */
-    public NodeSortDTO getNodeSortDTO(NodeMoveRequest request, Function<String, BaseTree> selectIdNodeFunc, Function<NodeSortQueryParam, BaseTree> selectNumNodeFunc) {
+    public NodeSortDTO getNodeSortDTO(NodeMoveRequest request, Function<String, BaseTree> selectIdNodeFunc, Function<NodeSortQueryParam, BaseTree> selectPosNodeFunc) {
         if (StringUtils.equals(request.getDragNodeId(), request.getDropNodeId())) {
             //两种节点不能一样
             throw new GenericException(Translator.get("invalid_parameter") + ": drag node  and drop node");
@@ -56,32 +56,32 @@ public abstract class MoveNodeService {
         BaseTree previousNode;
         BaseTree nextNode = null;
         if (request.getDropPosition() == 0) {
-            parentModule = new BaseTree(dropNode.getId(), dropNode.getName(), dropNode.getNum(), dropNode.getOrganizationId(), dropNode.getParentId());
+            parentModule = new BaseTree(dropNode.getId(), dropNode.getName(), dropNode.getPos(), dropNode.getOrganizationId(), dropNode.getParentId());
 
             NodeSortQueryParam sortParam = new NodeSortQueryParam();
             sortParam.setParentId(dropNode.getId());
-            sortParam.setOperator(MOVE_NUM_OPERATOR_LATEST);
-            previousNode = selectNumNodeFunc.apply(sortParam);
+            sortParam.setOperator(MOVE_POS_OPERATOR_LATEST);
+            previousNode = selectPosNodeFunc.apply(sortParam);
         } else {
             parentModule = selectIdNodeFunc.apply(dropNode.getParentId());
             if (request.getDropPosition() == 1) {
-                //dropnumition=1: 放到dropNode节点后，原dropNode后面的节点之前
+                //dropPosition=1: 放到dropNode节点后，原dropNode后面的节点之前
                 previousNode = dropNode;
 
                 NodeSortQueryParam sortParam = new NodeSortQueryParam();
                 sortParam.setParentId(parentModule.getId());
-                sortParam.setNum(previousNode.getNum());
-                sortParam.setOperator(MOVE_NUM_OPERATOR_MORE);
-                nextNode = selectNumNodeFunc.apply(sortParam);
+                sortParam.setPos(previousNode.getPos());
+                sortParam.setOperator(MOVE_POS_OPERATOR_MORE);
+                nextNode = selectPosNodeFunc.apply(sortParam);
             } else if (request.getDropPosition() == -1) {
-                //dropnumition=-1: 放到dropNode节点前，原dropNode前面的节点之后
+                //dropPosition=-1: 放到dropNode节点前，原dropNode前面的节点之后
                 nextNode = dropNode;
 
                 NodeSortQueryParam sortParam = new NodeSortQueryParam();
                 sortParam.setParentId(parentModule.getId());
-                sortParam.setNum(nextNode.getNum());
-                sortParam.setOperator(MOVE_NUM_OPERATOR_LESS);
-                previousNode = selectNumNodeFunc.apply(sortParam);
+                sortParam.setPos(nextNode.getPos());
+                sortParam.setOperator(MOVE_POS_OPERATOR_LESS);
+                previousNode = selectPosNodeFunc.apply(sortParam);
             } else {
                 throw new GenericException(Translator.get("invalid_parameter") + ": dropPosition");
             }
@@ -97,11 +97,11 @@ public abstract class MoveNodeService {
         BaseTree nextNode = nodeMoveDTO.getNextNode();
 
         NodeSortCountResultDTO countResultDTO = NodeSortUtils.countModuleSort(
-                previousNode == null ? -1 : previousNode.getNum(),
-                nextNode == null ? -1 : nextNode.getNum());
-        updateNum(nodeMoveDTO.getNode().getId(), countResultDTO.getNum());
-        if (countResultDTO.isRefreshNum()) {
-            refreshNum(nodeMoveDTO.getParent().getId());
+                previousNode == null ? -1 : previousNode.getPos(),
+                nextNode == null ? -1 : nextNode.getPos());
+        updatePos(nodeMoveDTO.getNode().getId(), countResultDTO.getPos());
+        if (countResultDTO.isRefreshPos()) {
+            refreshPos(nodeMoveDTO.getParent().getId());
         }
     }
 

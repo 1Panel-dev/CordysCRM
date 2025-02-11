@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class NodeSortQueryParam {
     private String parentId;
     private String operator;
-    private long num;
+    private long pos;
 }
 

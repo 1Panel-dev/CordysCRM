@@ -16,7 +16,7 @@ public class BaseTree {
     private String name;
 
     @Schema(description = "排序单位")
-    private long num;
+    private long pos;
 
     @Schema(description = "组织id")
     private String organizationId;

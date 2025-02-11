@@ -74,7 +74,7 @@ public class DepartmentService extends MoveNodeService {
         department.setName(request.getName());
         department.setParentId(request.getParentId());
         department.setOrganizationId(orgId);
-        department.setNum(getNextNum(orgId));
+        department.setPos(getNextPos(orgId));
         department.setCreateTime(System.currentTimeMillis());
         department.setUpdateTime(System.currentTimeMillis());
         department.setCreateUser(userId);
@@ -97,9 +97,9 @@ public class DepartmentService extends MoveNodeService {
         }
     }
 
-    public Long getNextNum(String orgId) {
-        Long num = extDepartmentMapper.getNextNumByOrgId(orgId);
-        return (num == null ? 0 : num) + NodeSortUtils.DEFAULT_NODE_INTERVAL_NUM;
+    public Long getNextPos(String orgId) {
+        Long pos = extDepartmentMapper.getNextPosByOrgId(orgId);
+        return (pos == null ? 0 : pos) + NodeSortUtils.DEFAULT_NODE_INTERVAL_POS;
     }
 
 
@@ -372,7 +372,7 @@ public class DepartmentService extends MoveNodeService {
         department.setName(departmentName);
         department.setParentId(praentId);
         department.setOrganizationId(orgId);
-        department.setNum(getNextNum(orgId));
+        department.setPos(getNextPos(orgId));
         department.setCreateTime(System.currentTimeMillis());
         department.setUpdateTime(System.currentTimeMillis());
         department.setCreateUser(operatorId);
@@ -393,7 +393,7 @@ public class DepartmentService extends MoveNodeService {
     public void sort(NodeMoveRequest request, String operatorId, String orgId) {
         NodeSortDTO nodeSortDTO = super.getNodeSortDTO(request,
                 extDepartmentMapper::selectBaseTreeById,
-                extDepartmentMapper::selectTreeByParentIdAndNumOperator);
+                extDepartmentMapper::selectTreeByParentIdAndPosOperator);
         Department department = new Department();
         department.setParentId(nodeSortDTO.getParent().getId());
         department.setId(request.getDragNodeId());
@@ -410,22 +410,22 @@ public class DepartmentService extends MoveNodeService {
     }
 
     @Override
-    public void updateNum(String id, long num) {
+    public void updatePos(String id, long pos) {
         Department department = new Department();
-        department.setNum(num);
+        department.setPos(pos);
         department.setId(id);
         departmentMapper.update(department);
     }
 
     @Override
-    public void refreshNum(String parentId) {
+    public void refreshPos(String parentId) {
         List<String> childrenIds = extDepartmentMapper.selectChildrenIds(parentId);
         List<Department> departmentList = new ArrayList<>();
         for (int i = 0; i < childrenIds.size(); i++) {
             String nodeId = childrenIds.get(i);
             Department updateDepartment = new Department();
             updateDepartment.setId(nodeId);
-            updateDepartment.setNum((i + 1) * LIMIT_NUM);
+            updateDepartment.setPos((i + 1) * LIMIT_POS);
             departmentList.add(updateDepartment);
         }
         extDepartmentMapper.batchUpdate(departmentList);

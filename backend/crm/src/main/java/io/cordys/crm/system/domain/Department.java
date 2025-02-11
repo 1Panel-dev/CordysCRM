@@ -19,7 +19,7 @@ public class Department extends BaseModel {
 	private String parentId;
 
 	@Schema(description = "排序")
-	private Long num;
+	private Long pos;
 
 	@Schema(description = "来源")
 	private String resource;
