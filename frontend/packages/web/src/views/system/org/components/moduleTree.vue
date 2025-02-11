@@ -152,37 +152,36 @@
   const deptTreeRef = ref();
   const currentParentId = ref<string>('');
 
-  // 添加节点 TODO 缺东西
+  // 添加节点
   async function addNode(parent: CrmTreeNodeData | null) {
-    const nodeKey: string = getGenerateId();
     currentParentId.value = parent ? parent.id : orgModuleTree.value[0].id;
 
-    const newNode: CrmTreeNodeData = {
-      id: nodeKey,
-      name: t('common.unNamed'),
-      children: undefined,
-      hideMoreAction: true,
-    };
-
-    if (parent) {
-      parent.children = parent.children ?? [];
-      parent.children.push(newNode);
-    } else {
-      orgModuleTree.value[0].children = orgModuleTree.value[0].children ?? [];
-      orgModuleTree.value[0].children.push(newNode);
-    }
-
     try {
-      const id = await addDepartment({
+      const data = await addDepartment({
         name: t('common.unNamed'),
         parentId: currentParentId.value,
       });
 
-      selectedKeys.value = [id];
+      const newNode: CrmTreeNodeData = {
+        id: data.id,
+        name: data.name,
+        children: undefined,
+        hideMoreAction: true,
+      };
+
+      if (parent) {
+        parent.children = parent.children ?? [];
+        parent.children.push(newNode);
+      } else {
+        orgModuleTree.value[0].children = orgModuleTree.value[0].children ?? [];
+        orgModuleTree.value[0].children.push(newNode);
+      }
+
+      selectedKeys.value = [data.id];
       expandedKeys.value.push(currentParentId.value);
 
       nextTick(() => {
-        deptTreeRef.value?.toggleEdit(nodeKey);
+        deptTreeRef.value?.toggleEdit(data.id);
       });
     } catch (error) {
       // eslint-disable-next-line no-console

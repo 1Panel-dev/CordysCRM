@@ -1,0 +1,15 @@
+export default {
+  'module.workbenchHome': '首页',
+  'module.customerManagement': '客户管理',
+  'module.clueManagement': '线索管理',
+  'module.businessManagement': '商机管理',
+  'module.dataManagement': '数据管理',
+  'module.productManagement': '产品管理',
+  'module.newForm': '新建表单设置',
+  'module.customer.openSea': '公海设置',
+  'module.customer.capacitySet': '客户库容设置',
+  'module.clue.cluePool': '线索池设置',
+  'module.clue.capacitySet': '线索库容设置',
+  'module.businessManage.businessParamsSet': '业务参数设置',
+  'module.businessManage.mainNavConfig': '主导航配置',
+};
