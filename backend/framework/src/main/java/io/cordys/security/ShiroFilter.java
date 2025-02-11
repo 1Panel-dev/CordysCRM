@@ -52,6 +52,7 @@ public class ShiroFilter {
 
         // 匿名路径
         filterChainDefinitionMap.put("/anonymous/**", "anon");
+        filterChainDefinitionMap.put("/system/version/current", "anon");
 
         return filterChainDefinitionMap;
     }
