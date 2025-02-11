@@ -1,4 +1,4 @@
-INSERT INTO `sys_department`(`id`, `name`, `organization_id`, `parent_id`, `num`, `create_time`, `update_time`, `create_user`, `update_user`, `resource`, `resource_id`)
+INSERT INTO `sys_department`(`id`, `name`, `organization_id`, `parent_id`, `pos`, `create_time`, `update_time`, `create_user`, `update_user`, `resource`, `resource_id`)
 VALUES
     ('1', '部门1', '100001', '100001', 1, 1736240043609, 1736240043609, 'admin', 'admin', 'INTERNAL', NULL),
     ('2', '部门2', '100001', '100001', 2, 1736240043609, 1736240043609, 'admin', 'admin', 'INTERNAL', NULL),

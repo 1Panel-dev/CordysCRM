@@ -13,7 +13,7 @@ public class Module extends BaseModel {
 	private String organizationId;
 
 	@Schema(description = "模块KEY")
-	private String key;
+	private String moduleKey;
 
 	@Schema(description = "启用/禁用")
 	private Boolean enable;

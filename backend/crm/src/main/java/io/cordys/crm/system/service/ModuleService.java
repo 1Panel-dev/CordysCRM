@@ -73,7 +73,7 @@ public class ModuleService {
 		originalVal.put("module.switch", module.getEnable());
 		OperationLogContext.setContext(LogContextInfo.builder()
 				.originalValue(originalVal)
-				.resourceName(module.getKey())
+				.resourceName(module.getModuleKey())
 				.modifiedValue(modifiedVal)
 				.resourceId(id)
 				.build());
@@ -128,7 +128,7 @@ public class ModuleService {
 		Arrays.stream(ModuleKey.values()).forEach(moduleConstant -> {
 			Module module = new Module();
 			module.setId(IDGenerator.nextStr());
-			module.setKey(moduleConstant.getKey());
+			module.setModuleKey(moduleConstant.getKey());
 			module.setOrganizationId(organizationId);
 			module.setEnable(true);
 			module.setPos(pos.getAndIncrement());
@@ -149,7 +149,7 @@ public class ModuleService {
 	 */
 	public Module getModuleByKey(ModuleKey moduleConstants, String organizationId) {
 		Module module = new Module();
-		module.setKey(moduleConstants.getKey());
+		module.setModuleKey(moduleConstants.getKey());
 		module.setOrganizationId(organizationId);
 		return moduleMapper.select(module).getFirst();
 	}
@@ -163,6 +163,6 @@ public class ModuleService {
 		ModuleRequest request = new ModuleRequest();
 		request.setOrganizationId(organizationId);
 		List<ModuleDTO> moduleList = getModuleList(request);
-		return moduleList.stream().map(ModuleDTO::getKey).toList();
+		return moduleList.stream().map(ModuleDTO::getModuleKey).toList();
 	}
 }

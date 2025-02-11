@@ -37,7 +37,7 @@ INSERT INTO `sys_organization`(`id`, `name`, `create_time`, `update_time`, `crea
 VALUES ('100001', 'default', 1736152274610, 1736152274610, 'admin', 'admin');
 
 -- 初始化默认部门
-INSERT INTO `sys_department`(`id`, `name`, `organization_id`, `parent_id`, `num`, `create_time`, `update_time`,
+INSERT INTO `sys_department`(`id`, `name`, `organization_id`, `parent_id`, `pos`, `create_time`, `update_time`,
                              `create_user`, `update_user`, `resource`, `resource_id`)
 VALUES ('100001', '公司名称', '100001', 'NONE', 100001, 1736240043609, 1736240043609, 'admin', 'admin', 'INTERNAL',
         NULL);
@@ -61,7 +61,7 @@ VALUES ('sales_staff', 'sales_staff', 1, 'SELF', UNIX_TIMESTAMP() * 1000 + 2, UN
         'admin', '', '100001');
 
 -- 初始化默认组织菜单模块
-INSERT INTO sys_module (id, organization_id, `key`, enable, pos, create_user, create_time, update_user, update_time)
+INSERT INTO sys_module (id, organization_id, `module_key`, enable, pos, create_user, create_time, update_user, update_time)
 VALUES (UUID_SHORT(), '100001', 'home', true, 1, 'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000),
        (UUID_SHORT(), '100001', 'customer', true, 2, 'admin', UNIX_TIMESTAMP() * 1000 + 1, 'admin',
         UNIX_TIMESTAMP() * 1000 + 1),
