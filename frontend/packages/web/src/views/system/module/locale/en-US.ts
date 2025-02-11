@@ -1,0 +1,15 @@
+export default {
+  'module.workbenchHome': 'Home page',
+  'module.customerManagement': 'Customer Management',
+  'module.clueManagement': 'Clue Management',
+  'module.businessManagement': 'Business Management',
+  'module.dataManagement': 'Data Management',
+  'module.productManagement': 'Product Management',
+  'module.newForm': 'New Form Settings',
+  'module.customer.openSea': 'Public Sea Settings',
+  'module.customer.capacitySet': 'Customer Capacity Settings',
+  'module.clue.cluePool': 'Clue Pool Settings',
+  'module.clue.capacitySet': 'Clue Capacity Settings',
+  'module.businessManage.businessParamsSet': 'Business Parameter Settings',
+  'module.businessManage.mainNavConfig': 'Main Navigation Configuration',
+};
