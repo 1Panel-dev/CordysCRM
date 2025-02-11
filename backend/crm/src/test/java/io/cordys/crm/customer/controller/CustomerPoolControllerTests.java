@@ -143,6 +143,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 		CustomerPoolRecycleRule recycleRule = new CustomerPoolRecycleRule();
 		recycleRule.setExpireNotice(true);
 		recycleRule.setNoticeDays(10);
+		recycleRule.setAuto(true);
 		return recycleRule;
 	}
 

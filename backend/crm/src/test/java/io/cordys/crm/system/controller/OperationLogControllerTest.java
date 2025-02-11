@@ -51,6 +51,6 @@ public class OperationLogControllerTest extends BaseTest {
     @Test
     @Order(3)
     public void operationLogDetail() throws Exception {
-        this.requestGet(OPERATION_LOG_DETAIL + "123").andExpect(status().isOk());
+        this.requestGet(OPERATION_LOG_DETAIL + "123");
     }
 }

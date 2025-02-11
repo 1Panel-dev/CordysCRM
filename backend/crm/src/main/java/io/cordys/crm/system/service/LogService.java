@@ -1,8 +1,8 @@
 package io.cordys.crm.system.service;
 
 import io.cordys.aspectj.context.OperationLogContext;
-import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.aspectj.handler.OperationLogHandler;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.uid.IDGenerator;
@@ -19,7 +19,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -103,19 +102,19 @@ public class LogService implements OperationLogHandler {
 
         if (extra != null) {
             // 如果注解中没有设置 sourceId ，则使用 extra 中的 resourceId
-            if(StringUtils.isBlank(log.getResourceId()) && ObjectUtils.isNotEmpty(extra.getResourceId())){
+            if (StringUtils.isBlank(log.getResourceId()) && ObjectUtils.isNotEmpty(extra.getResourceId())) {
                 log.setResourceId(extra.getResourceId());
             }
 
             // 如果注解中没有设置 resourceName ，则使用 extra 中的 resourceName
-            if(StringUtils.isBlank(log.getResourceName()) && ObjectUtils.isNotEmpty(extra.getResourceName())){
+            if (StringUtils.isBlank(log.getResourceName()) && ObjectUtils.isNotEmpty(extra.getResourceName())) {
                 log.setResourceName(extra.getResourceName());
             }
         }
 
         // 截断日志内容
         log.setResourceName(subStrContent(log.getResourceName()));
-
+        log.setMethod(StringUtils.defaultIfBlank(log.getMethod(), "GET"));
         OperationLog operationLog = BeanUtils.copyBean(new OperationLog(), log);
         operationLog.setResourceName(log.getResourceName());
         operationLogMapper.insert(operationLog);
@@ -148,6 +147,7 @@ public class LogService implements OperationLogHandler {
                     log.setCreateTime(currentTimeMillis);
                     OperationLog item = new OperationLog();
                     BeanUtils.copyBean(item, log);
+                    item.setMethod(StringUtils.defaultIfBlank(log.getMethod(), "GET"));
                     items.add(item);
                 })
                 .map(this::getBlob)

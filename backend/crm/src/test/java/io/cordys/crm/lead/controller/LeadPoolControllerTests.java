@@ -144,6 +144,7 @@ public class LeadPoolControllerTests extends BaseTest {
 		LeadPoolRecycleRule recycleRule = new LeadPoolRecycleRule();
 		recycleRule.setExpireNotice(true);
 		recycleRule.setNoticeDays(10);
+		recycleRule.setAuto(true);
 		return recycleRule;
 	}
 
