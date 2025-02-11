@@ -1,5 +1,10 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.exception.GenericException;
@@ -14,16 +19,15 @@ import io.cordys.crm.system.mapper.ExtModuleMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class ModuleService {
 
 	@Resource
@@ -51,20 +55,41 @@ public class ModuleService {
 	 * 单个模块开启或关闭
 	 * @param id 模块ID
 	 */
-	public void switchModule(String id) {
+	@OperationLog(module = LogModule.MODULE_SETTING, type = LogType.UPDATE, operator = "{#currentUser}")
+	public void switchModule(String id, String currentUser) {
 		Module module = moduleMapper.selectByPrimaryKey(id);
 		if (module == null) {
 			throw new GenericException(Translator.get("module.not_exist"));
 		}
 		module.setEnable(!module.getEnable());
+		module.setUpdateUser(currentUser);
+		module.setUpdateTime(System.currentTimeMillis());
 		moduleMapper.updateById(module);
+
+		//添加日志上下文
+		Map<String, Boolean> originalVal = new HashMap<>(1);
+		originalVal.put("module.switch", !module.getEnable());
+		Map<String, Boolean> modifiedVal = new HashMap<>(1);
+		originalVal.put("module.switch", module.getEnable());
+		OperationLogContext.setContext(LogContextInfo.builder()
+				.originalValue(originalVal)
+				.resourceName(module.getKey())
+				.modifiedValue(modifiedVal)
+				.resourceId(id)
+				.build());
 	}
 
 	/**
 	 * 模块排序
 	 * @param request 请求参数
 	 */
-	public void sort(ModuleSortRequest request) {
+	@OperationLog(module = LogModule.MODULE_SETTING, type = LogType.UPDATE, operator = "{#currentUser}")
+	public void sort(ModuleSortRequest request, String currentUser) {
+		Module module = moduleMapper.selectByPrimaryKey(request.getDragModuleId());
+		if (module == null) {
+			throw new GenericException(Translator.get("module.not_exist"));
+		}
+		List<String> beforeKeys = getModuleSortKeys(module.getOrganizationId());
 		if (request.getStart() < request.getEnd()) {
 			// start < end, 区间模块上移, pos - 1
 			extModuleMapper.moveUpModule(request.getStart(), request.getEnd());
@@ -75,13 +100,27 @@ public class ModuleService {
 		Module dragModule = new Module();
 		dragModule.setId(request.getDragModuleId());
 		dragModule.setPos(request.getEnd());
+		dragModule.setUpdateUser(currentUser);
+		dragModule.setUpdateTime(System.currentTimeMillis());
 		moduleMapper.updateById(dragModule);
+		List<String> afterKeys = getModuleSortKeys(module.getOrganizationId());
+
+		//添加日志上下文
+		Map<String, List<String>> originalVal = new HashMap<>(1);
+		originalVal.put("module.main.nav", beforeKeys);
+		Map<String, Boolean> modifiedVal = new HashMap<>(1);
+		originalVal.put("module.main.nav", afterKeys);
+		OperationLogContext.setContext(LogContextInfo.builder()
+				.originalValue(originalVal)
+				.resourceName("module.main.nav")
+				.modifiedValue(modifiedVal)
+				.resourceId(StringUtils.EMPTY)
+				.build());
 	}
 
 	/**
 	 * 初始化系统(组织或公司)模块数据
 	 */
-	@Transactional(rollbackFor = Exception.class)
 	public void initModule(String organizationId) {
 		// init module data
 		List<Module> modules = new ArrayList<>();
@@ -102,10 +141,28 @@ public class ModuleService {
 		moduleMapper.batchInsert(modules);
 	}
 
+	/**
+	 * 获取模块
+	 * @param moduleConstants 模块常量
+	 * @param organizationId 组织ID
+	 * @return 模块
+	 */
 	public Module getModuleByKey(ModuleKey moduleConstants, String organizationId) {
 		Module module = new Module();
 		module.setKey(moduleConstants.getKey());
 		module.setOrganizationId(organizationId);
 		return moduleMapper.select(module).getFirst();
+	}
+
+	/**
+	 * 获取排序之后的模块菜单
+	 * @param organizationId 组织ID
+	 * @return 模块列表
+	 */
+	private List<String> getModuleSortKeys(String organizationId) {
+		ModuleRequest request = new ModuleRequest();
+		request.setOrganizationId(organizationId);
+		List<ModuleDTO> moduleList = getModuleList(request);
+		return moduleList.stream().map(ModuleDTO::getKey).toList();
 	}
 }

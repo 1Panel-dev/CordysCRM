@@ -40,5 +40,10 @@ public class LogModule {
      */
     public static final String PERSONAL_INFORMATION_APIKEY = "PERSONAL_INFORMATION_APIKEY";
 
+    /**
+     * 模块设置
+     */
+    public static final String MODULE_SETTING = "MODULE_SETTING";
+
     // 可以根据需要扩展其他模块常量
 }

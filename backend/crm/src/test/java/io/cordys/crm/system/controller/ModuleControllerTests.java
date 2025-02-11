@@ -1,5 +1,6 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.domain.Module;
@@ -26,6 +27,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ModuleControllerTests extends BaseTest {
 
+	private static final String LIST_ALL = "/module/list";
+	private static final String SWITCH = "/module/switch/";
+	private static final String SORT = "/module/sort";
+
 	@Resource
 	private ModuleService moduleService;
 	@Resource
@@ -44,21 +49,27 @@ public class ModuleControllerTests extends BaseTest {
 	void testGetModuleListAndSwitch() throws Exception {
 		ModuleRequest request = new ModuleRequest();
 		request.setOrganizationId("default");
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/module/list", request);
+		MvcResult mvcResult = this.requestPostWithOkAndReturn(LIST_ALL, request);
 		List<ModuleDTO> modules = getResultDataArray(mvcResult, ModuleDTO.class);
 		assert !modules.isEmpty();
 		String param = modules.getFirst().getId();
-		this.requestGetWithOk("/module/switch/" + param);
+		// permission check
+		requestPostPermissionTest(PermissionConstants.MODULE_SETTING_READ, LIST_ALL, request);
+		this.requestGetWithOk(SWITCH + param);
+		// permission check
+		requestGetPermissionTest(PermissionConstants.MODULE_SETTING_UPDATE, SWITCH + param);
 		// switch not exist module
-		MvcResult mvcResult1 = this.requestGet("/module/switch/" + "none").andExpect(status().is5xxServerError()).andReturn();
+		MvcResult mvcResult1 = this.requestGet(SWITCH + "none").andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("module.not_exist"));
 		ModuleSortRequest sortRequest = new ModuleSortRequest();
 		sortRequest.setDragModuleId(param);
 		sortRequest.setStart(1L);
 		sortRequest.setEnd(3L);
-		this.requestPostWithOk("/module/sort", sortRequest);
+		this.requestPostWithOk(SORT, sortRequest);
 		sortRequest.setStart(3L);
 		sortRequest.setEnd(1L);
-		this.requestPostWithOk("/module/sort", sortRequest);
+		this.requestPostWithOk(SORT, sortRequest);
+		// permission check
+		requestPostPermissionTest(PermissionConstants.MODULE_SETTING_UPDATE, SORT, sortRequest);
 	}
 }

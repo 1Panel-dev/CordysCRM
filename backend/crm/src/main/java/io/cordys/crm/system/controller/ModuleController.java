@@ -5,6 +5,7 @@ import io.cordys.crm.system.dto.request.ModuleRequest;
 import io.cordys.crm.system.dto.request.ModuleSortRequest;
 import io.cordys.crm.system.dto.response.ModuleDTO;
 import io.cordys.crm.system.service.ModuleService;
+import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -33,13 +34,13 @@ public class ModuleController {
 	@Operation(summary = "单个模块开启或关闭")
 	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
 	public void switchModule(@PathVariable String id) {
-		moduleService.switchModule(id);
+		moduleService.switchModule(id, SessionUtils.getUserId());
 	}
 
 	@PostMapping("/sort")
 	@Operation(summary = "模块排序")
 	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
 	public void sortModule(@Validated @RequestBody ModuleSortRequest request) {
-		moduleService.sort(request);
+		moduleService.sort(request, SessionUtils.getUserId());
 	}
 }
