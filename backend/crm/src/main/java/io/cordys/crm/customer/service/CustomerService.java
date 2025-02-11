@@ -4,7 +4,7 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.crm.common.dto.ModuleFieldValueDTO;
+import io.cordys.common.request.ModuleFieldValueDTO;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerField;

@@ -1,6 +1,6 @@
 package io.cordys.crm.customer.dto.response;
 
-import io.cordys.crm.common.dto.ModuleFieldValueDTO;
+import io.cordys.common.request.ModuleFieldValueDTO;
 import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
 

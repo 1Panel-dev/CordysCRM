@@ -1,4 +1,4 @@
-package io.cordys.crm.common.dto;
+package io.cordys.common.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
