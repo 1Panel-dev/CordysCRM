@@ -3,7 +3,6 @@ package io.cordys.crm.system.controller;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.constants.UserSource;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
@@ -13,6 +12,7 @@ import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.crm.system.dto.response.UserImportResponse;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
+import io.cordys.crm.system.service.OrganizationConfigService;
 import io.cordys.crm.system.service.OrganizationUserService;
 import io.cordys.crm.system.service.RoleService;
 import io.cordys.security.SessionUtils;
@@ -38,6 +38,8 @@ public class OrganizationUserController {
     private OrganizationUserService organizationUserService;
     @Resource
     private RoleService roleService;
+    @Resource
+    private OrganizationConfigService organizationConfigService;
 
     @PostMapping("/list")
     @Operation(summary = "用户(员工)-列表查询")
@@ -140,5 +142,13 @@ public class OrganizationUserController {
     public List<OptionDTO> getUserRoleList() {
         List<RoleListResponse> list = roleService.list(OrganizationContext.getOrganizationId());
         return list.stream().map(role -> new OptionDTO(role.getId(), role.getName())).toList();
+    }
+
+
+    @GetMapping("/sync-check")
+    @Operation(summary = "用户(员工)-是否为第三方同步数据")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_READ)
+    public boolean syncCheck() {
+        return organizationConfigService.syncCheck(OrganizationContext.getOrganizationId());
     }
 }

@@ -307,7 +307,7 @@ public class OrganizationConfigService {
         DingTalkBaseParamDTO dingTalkTokenParamDTO = new DingTalkBaseParamDTO();
         dingTalkTokenParamDTO.setAppKey(appKey);
         dingTalkTokenParamDTO.setAppSecret(appSecret);
-        String body = qrCodeClient.postExchange(SyncSettingApiPaths.DING_TALK_GET_TOKEN,null, null, dingTalkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+        String body = qrCodeClient.postExchange(SyncSettingApiPaths.DING_TALK_GET_TOKEN, null, null, dingTalkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
         Map bodyMap = JSON.parseMap(body);
         if (ObjectUtils.isNotEmpty(bodyMap.get("errcode")) && Integer.parseInt(bodyMap.get("errcode").toString()) != 0) {
             throw new GenericException(Translator.get("sync.organization.test.error"));
@@ -339,12 +339,33 @@ public class OrganizationConfigService {
         LarkBaseParamDTO larkBaseParamDTO = new LarkBaseParamDTO();
         larkBaseParamDTO.setApp_id(agentId);
         larkBaseParamDTO.setApp_secret(appSecret);
-        String body = qrCodeClient.postExchange(SyncSettingApiPaths.LARK_GET_TOKEN,null,null,larkBaseParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+        String body = qrCodeClient.postExchange(SyncSettingApiPaths.LARK_GET_TOKEN, null, null, larkBaseParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
         Map bodyMap = JSON.parseMap(body);
         if (ObjectUtils.isNotEmpty(bodyMap.get("code")) && Integer.parseInt(bodyMap.get("code").toString()) > 0) {
             throw new GenericException(Translator.get("sync.organization.test.error"));
         }
         return bodyMap.get("tenant_access_token").toString();
+    }
+
+
+    /**
+     * 当前组织的用户数据是否是第三方同步的
+     *
+     * @param organizationId
+     */
+    public boolean syncCheck(String organizationId) {
+        return extOrganizationConfigMapper.getSyncFlag(organizationId) > 0;
+    }
+
+
+    /**
+     * 更新三方同步标识
+     *
+     * @param orgId
+     * @param syncResource
+     */
+    public void updateSyncFlag(String orgId, String syncResource) {
+        extOrganizationConfigMapper.updateSyncFlag(orgId, syncResource, OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
     }
 }
 

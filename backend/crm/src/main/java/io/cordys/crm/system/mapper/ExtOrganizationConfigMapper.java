@@ -6,5 +6,9 @@ import io.cordys.crm.system.domain.OrganizationConfig;
 
 @Mapper
 public interface ExtOrganizationConfigMapper {
-    OrganizationConfig getOrganizationConfig(@Param("organizationId") String organizationId, @Param("type") String type);   
+    OrganizationConfig getOrganizationConfig(@Param("organizationId") String organizationId, @Param("type") String type);
+
+    void updateSyncFlag(@Param("orgId") String orgId, @Param("syncResource") String syncResource, @Param("type") String type);
+
+    int getSyncFlag(@Param("organizationId") String organizationId);
 }
