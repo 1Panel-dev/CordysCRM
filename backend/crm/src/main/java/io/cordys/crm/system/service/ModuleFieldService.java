@@ -5,7 +5,6 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleFieldOption;
 import io.cordys.crm.system.domain.ModuleForm;
-import io.cordys.crm.system.dto.request.ModuleFieldRequest;
 import io.cordys.crm.system.dto.request.ModuleFieldSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
 import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
@@ -37,10 +36,6 @@ public class ModuleFieldService {
 	private ExtModuleFieldMapper extModuleFieldMapper;
 	@Resource
 	private ExtModuleFieldOptionMapper extModuleFieldOptionMapper;
-
-	public List<ModuleFieldDTO> getFieldList(ModuleFieldRequest request) {
-		return getFieldList(request.getModuleId());
-	}
 
 	/**
 	 * 获取模块字段集合
@@ -143,13 +138,13 @@ public class ModuleFieldService {
 	 */
 	public ModuleField buildField(ModuleFieldDTO field, String currentUserId, boolean isNew) {
 		ModuleField moduleField = new ModuleField();
-		if (isNew) {
-			field.setCreateTime(System.currentTimeMillis());
-			field.setCreateUser(currentUserId);
-		}
-		field.setUpdateTime(System.currentTimeMillis());
-		field.setUpdateUser(currentUserId);
 		BeanUtils.copyBean(moduleField, field);
+		if (isNew) {
+			moduleField.setCreateTime(System.currentTimeMillis());
+			moduleField.setCreateUser(currentUserId);
+		}
+		moduleField.setUpdateTime(System.currentTimeMillis());
+		moduleField.setUpdateUser(currentUserId);
 		return moduleField;
 	}
 

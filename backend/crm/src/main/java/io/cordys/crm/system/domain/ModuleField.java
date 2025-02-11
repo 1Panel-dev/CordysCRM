@@ -24,6 +24,9 @@ public class ModuleField extends BaseModel {
 	@Schema(description = "字段名称")
 	private String name;
 
+	@Schema(description = "字段内置Key")
+	private String internalKey;
+
 	@Schema(description = "字段类型", allowableValues = {"input", "textarea", "number", "datetime", "radio", "checkbox", "select",
 			"multi_select", "member", "multi_member", "department", "multi_department", "divider"})
 	private String type;
@@ -39,18 +42,6 @@ public class ModuleField extends BaseModel {
 
 	@Schema(description = "默认值 (支持多个值)")
 	private String defaultValue;
-
-	@Schema(description = "个性化配置")
-	private String customConfig;
-
-	@Schema(description = "分布方式", allowableValues = {"horizontal", "vertical"})
-	private String layout;
-
-	@Schema(description = "必填", defaultValue = "0")
-	private Boolean required;
-
-	@Schema(description = "唯一", defaultValue = "0")
-	private Boolean unique;
 
 	@Schema(description = "可见", defaultValue = "1")
 	private Boolean readable;

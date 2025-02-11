@@ -61,9 +61,9 @@ public class ModuleFieldControllerTests extends BaseTest{
 
 	private ModuleFieldDTO buildField() {
 		ModuleField field = ModuleField.builder()
-				.moduleId("default-module").name("default-name").type("select").pos(1L)
-				.tooltip("default-tooltip").required(true).unique(true).fieldWidth("half")
-				.defaultValue("default-value")
+				.moduleId("default-module").name("default-name").type("select")
+				.showLabel(true).readable(true).editable(true).tooltip("default-tooltip")
+				.fieldWidth("half").defaultValue("default-value").pos(1L)
 				.build();
 		ModuleFieldDTO dto = new ModuleFieldDTO();
 		BeanUtils.copyBean(dto, field);

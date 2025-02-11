@@ -37,6 +37,6 @@ public class ModuleFieldController {
 	@Operation(summary = "获取模块字段列表")
 	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
 	public List<ModuleFieldDTO> getFieldList(@Validated @RequestBody ModuleFieldRequest request) {
-		return moduleFieldService.getFieldList(request);
+		return moduleFieldService.getFieldList(request.getModuleId());
 	}
 }

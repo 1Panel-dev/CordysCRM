@@ -91,6 +91,7 @@ public class ModuleService {
 			module.setId(IDGenerator.nextStr());
 			module.setKey(moduleConstant.getKey());
 			module.setOrganizationId(organizationId);
+			module.setEnable(true);
 			module.setPos(pos.getAndIncrement());
 			module.setCreateUser(InternalUser.ADMIN.getValue());
 			module.setCreateTime(System.currentTimeMillis());
