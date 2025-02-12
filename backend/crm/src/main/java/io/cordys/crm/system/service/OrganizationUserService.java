@@ -92,22 +92,44 @@ public class OrganizationUserService {
 
     private void handleData(List<UserPageResponse> list) {
         if (CollectionUtils.isNotEmpty(list)) {
-            String orgId = list.stream().map(UserPageResponse::getOrganizationId).toList().getFirst();
-            List<String> userIds = list.stream().map(UserPageResponse::getUserId).toList();
+            String orgId = list.stream().
+                    map(UserPageResponse::getOrganizationId)
+                    .toList()
+                    .getFirst();
+            List<String> userIds = list.stream()
+                    .map(UserPageResponse::getUserId)
+                    .toList();
             //获取用户角色
             List<UserRoleConvert> userRoles = extUserMapper.getUserRole(userIds, orgId);
             userRoles.forEach(role -> role.setName(roleService.translateInternalRole(role.getName())));
-            Map<String, List<UserRoleConvert>> userRoleMap = userRoles.stream().collect(Collectors.groupingBy(UserRoleConvert::getUserId));
+            Map<String, List<UserRoleConvert>> userRoleMap = userRoles.stream()
+                    .collect(Collectors.groupingBy(UserRoleConvert::getUserId));
             //创建人 更新人
             List<String> ids = new ArrayList<>();
             ids.addAll(list.stream().map(UserPageResponse::getCreateUser).toList());
             ids.addAll(list.stream().map(UserPageResponse::getUpdateUser).toList());
             List<OptionDTO> optionDTOS = extUserMapper.selectUserOptionByIds(ids);
-            Map<String, String> userMap = optionDTOS.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+            Map<String, String> userMap = optionDTOS
+                    .stream()
+                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+            //直属上级
+            List<String> supervisorIds = list.stream()
+                    .map(UserPageResponse::getSupervisorId)
+                    .distinct()
+                    .toList();
+            List<OptionDTO> supervisorDTOS = extUserMapper.selectUserOptionByIds(supervisorIds);
+            Map<String, String> supervisorMap = supervisorDTOS.stream()
+                    .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
             //部门
-            List<String> departmentIds = list.stream().map(UserPageResponse::getDepartmentId).distinct().toList();
+            List<String> departmentIds = list.stream()
+                    .map(UserPageResponse::getDepartmentId)
+                    .distinct()
+                    .toList();
             List<Department> departmentList = departmentMapper.selectByIds(departmentIds.toArray(new String[0]));
-            Map<String, String> departmentMap = departmentList.stream().collect(Collectors.toMap(Department::getId, Department::getName));
+            Map<String, String> departmentMap = departmentList.stream()
+                    .collect(Collectors.toMap(Department::getId, Department::getName));
+            //部门负责人
+            List<String> commanderIds = extDepartmentCommanderMapper.selectCommander(userIds, list.getFirst().getOrganizationId());
 
             //todo 暂无用户组 后续需求再处理
             list.forEach(user -> {
@@ -122,6 +144,12 @@ public class OrganizationUserService {
                 }
                 if (departmentMap.containsKey(user.getDepartmentId())) {
                     user.setDepartmentName(departmentMap.get(user.getDepartmentId()));
+                }
+                if (supervisorMap.containsKey(user.getSupervisorId())) {
+                    user.setSupervisorName(supervisorMap.get(user.getSupervisorId()));
+                }
+                if (commanderIds.contains(user.getUserId())) {
+                    user.setCommander(true);
                 }
             });
 

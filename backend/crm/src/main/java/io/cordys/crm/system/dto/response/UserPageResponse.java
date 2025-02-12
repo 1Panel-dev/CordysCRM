@@ -42,6 +42,9 @@ public class UserPageResponse {
     @Schema(description = "直属上级")
     private String supervisorId;
 
+    @Schema(description = "直属上级名称")
+    private String supervisorName;
+
     @Schema(description = "角色列表")
     private List<UserRoleConvert> roles;
 
@@ -77,5 +80,8 @@ public class UserPageResponse {
 
     @Schema(description = "更新时间")
     private Long updateTime;
+
+    @Schema(description = "是否是负责人")
+    private Boolean commander;
 
 }
