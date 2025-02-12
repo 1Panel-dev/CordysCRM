@@ -3,6 +3,7 @@ package io.cordys.crm.system.excel.listener;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
+import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
@@ -33,6 +34,7 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
     protected static final int PHONE_LENGTH = 20;
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
     private final DepartmentService departmentService;
+    private final List<BaseTreeNode> departmentTree;
     private final OrganizationUserService organizationUserService;
     private final String orgId;
 
@@ -40,6 +42,7 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
         excelDataClass = clazz;
         departmentService = CommonBeanFactory.getBean(DepartmentService.class);
         organizationUserService = CommonBeanFactory.getBean(OrganizationUserService.class);
+        departmentTree = departmentService.getTree(orgId);
         this.orgId = orgId;
     }
 
@@ -134,7 +137,7 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
         String departments = data.getDepartment();
         if (StringUtils.isNotEmpty(departments)) {
             String topDepartment = departments.split("/")[0];
-            if (departmentService.countDepartmentByName(topDepartment, orgId) == 0) {
+            if (!StringUtils.equalsIgnoreCase(departmentTree.getFirst().getName(), topDepartment)) {
                 errMsg.append(Translator.get("top_department_not_exist"))
                         .append(ERROR_MSG_SEPARATOR);
             }
@@ -236,14 +239,6 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
         return data;
     }
 
-    private Integer findColIndex(String colName) {
-        for (Integer key : headMap.keySet()) {
-            if (StringUtils.equals(headMap.get(key), colName)) {
-                return key;
-            }
-        }
-        return null;
-    }
 
     /**
      * @description: 获取注解里ExcelProperty的value

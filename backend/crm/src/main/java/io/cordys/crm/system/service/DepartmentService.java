@@ -111,6 +111,7 @@ public class DepartmentService extends MoveNodeService {
     @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.UPDATE)
     public void rename(DepartmentRenameRequest request, String userId) {
         Department originalDepartment = checkDepartment(request.getId());
+        checkDepartmentName(request.getName(), originalDepartment.getParentId(), originalDepartment.getOrganizationId());
 
         Department department = BeanUtils.copyBean(new Department(), request);
         department.setUpdateTime(System.currentTimeMillis());
@@ -253,20 +254,6 @@ public class DepartmentService extends MoveNodeService {
 
 
     /**
-     * 根据部门名称查询部门数量
-     *
-     * @param topDepartment
-     * @return
-     */
-    public Long countDepartmentByName(String topDepartment, String orgId) {
-        Department department = new Department();
-        department.setName(topDepartment);
-        department.setOrganizationId(orgId);
-        return departmentMapper.countByExample(department);
-    }
-
-
-    /**
      * 创建部门
      *
      * @param departmentPath
@@ -278,9 +265,8 @@ public class DepartmentService extends MoveNodeService {
      */
     public Map<String, String> createDepartment(List<String> departmentPath, String orgId, List<BaseTreeNode> departmentTree, String operatorId, Map<String, String> departmentMap) {
         departmentPath.forEach(path -> {
+            path = "/" + path;
             List<String> depNames = new ArrayList<>(List.of(path.split("/")));
-            String topDepartment = depNames.getFirst();
-            //List<String> subDepNames = new ArrayList<>(depNames.subList(1, depNames.size()));
             Iterator<String> itemIterator = depNames.iterator();
             AtomicReference<Boolean> hasNode = new AtomicReference<>(false);
             //当前节点部门名称
@@ -302,7 +288,7 @@ public class DepartmentService extends MoveNodeService {
             }
             if (!hasNode.get()) {
                 //获取顶级部门id
-                BaseTreeNode top = extDepartmentMapper.selectDepartment(topDepartment, orgId);
+                BaseTreeNode top = extDepartmentMapper.selectDepartment(currentDepName, orgId);
                 createDepByPath(itemIterator, currentDepName, top, orgId, StringUtils.EMPTY, departmentMap, operatorId);
             }
         });

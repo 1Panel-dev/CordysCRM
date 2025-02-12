@@ -150,16 +150,38 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         validateDepartment(data, errMsg);
         //处理性别
         handleGender(data);
+        //处理员工类型
+        handleEmployeeType(data);
 
     }
 
+    /**
+     * 处理员工类型
+     *
+     * @param data
+     */
+    private void handleEmployeeType(UserExcelData data) {
+        if (StringUtils.isNotEmpty(data.getEmployeeType())) {
+            if (StringUtils.equalsAnyIgnoreCase(data.getEmployeeType(), Translator.get("formal"), Translator.get("internship"), Translator.get("outsource"))) {
+                data.setEmployeeType(data.getEmployeeType());
+            } else {
+                data.setEmployeeType(null);
+            }
+        }
+    }
 
+
+    /**
+     * 处理性别
+     *
+     * @param data
+     */
     private void handleGender(UserExcelData data) {
         if (StringUtils.isNotEmpty(data.getGender())) {
             if (data.getGender().equals(Translator.get("man"))) {
-                data.setGender("0");
+                data.setGender("false");
             } else if (data.getGender().equals(Translator.get("woman"))) {
-                data.setGender("1");
+                data.setGender("true");
             } else {
                 data.setGender(null);
             }
@@ -177,7 +199,7 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         String departments = data.getDepartment();
         if (StringUtils.isNotEmpty(departments)) {
             String topDepartment = departments.split("/")[0];
-            if (departmentService.countDepartmentByName(topDepartment, orgId) == 0) {
+            if (!StringUtils.equalsIgnoreCase(departmentTree.getFirst().getName(), topDepartment)) {
                 errMsg.append(Translator.get("top_department_not_exist"))
                         .append(ERROR_MSG_SEPARATOR);
             }
@@ -277,15 +299,6 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
             }
         }
         return data;
-    }
-
-    private Integer findColIndex(String colName) {
-        for (Integer key : headMap.keySet()) {
-            if (StringUtils.equals(headMap.get(key), colName)) {
-                return key;
-            }
-        }
-        return null;
     }
 
     /**

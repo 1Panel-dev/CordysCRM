@@ -638,7 +638,7 @@ public class OrganizationUserService {
         OrganizationUser organizationUser = new OrganizationUser();
         organizationUser.setId(IDGenerator.nextStr());
         organizationUser.setOrganizationId(orgId);
-        organizationUser.setDepartmentId(departmentPathMap.get(userData.getDepartment()));
+        organizationUser.setDepartmentId(departmentPathMap.get("/" + userData.getDepartment()));
         organizationUser.setUserId(user.getId());
         organizationUser.setEnable(true);
         organizationUser.setEmployeeId(userData.getEmployeeId());
