@@ -4,11 +4,14 @@ import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerField;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
+import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
 import io.cordys.mybatis.BaseMapper;
@@ -36,6 +39,9 @@ class CustomerControllerTests extends BaseTest {
 
     @Resource
     private BaseMapper<Customer> customerMapper;
+
+    @Resource
+    private BaseMapper<CustomerField> customerFieldMapper;
 
     @Override
     protected String getBasePath() {
@@ -76,15 +82,14 @@ class CustomerControllerTests extends BaseTest {
     void testAdd() throws Exception {
         // 请求成功
         CustomerAddRequest request = new CustomerAddRequest();
-        request.setName("test");
-        request.setDealStatus("test");
+        request.setTags(List.of("tag1"));
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Customer resultData = getResultData(mvcResult, Customer.class);
         Customer customer = customerMapper.selectByPrimaryKey(resultData.getId());
+        Assertions.assertEquals(request.getTags(), customer.getTags());
 
         // 校验请求成功数据
         this.addCustomer = customer;
-        Assertions.assertEquals(request.getName(), customer.getName());
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_ADD, DEFAULT_ADD, request);
@@ -96,11 +101,11 @@ class CustomerControllerTests extends BaseTest {
         // 请求成功
         CustomerUpdateRequest request = new CustomerUpdateRequest();
         request.setId(addCustomer.getId());
-        request.setName("test update");
+        request.setTags(List.of("tag2"));
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         // 校验请求成功数据
-        Customer userCustomerResult = customerMapper.selectByPrimaryKey(request.getId());
-        Assertions.assertEquals(request.getName(), userCustomerResult.getName());
+        Customer customerResult = customerMapper.selectByPrimaryKey(request.getId());
+        Assertions.assertEquals(request.getTags(), customerResult.getTags());
 
         // 不修改信息
         CustomerUpdateRequest emptyRequest = new CustomerUpdateRequest();
@@ -110,6 +115,24 @@ class CustomerControllerTests extends BaseTest {
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);
     }
+
+    @Test
+    @Order(3)
+    void testGet() throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(DEFAULT_GET, addCustomer.getId());
+        CustomerGetResponse getResponse = getResultData(mvcResult, CustomerGetResponse.class);
+
+        // 校验请求成功数据
+        Customer customer = customerMapper.selectByPrimaryKey(addCustomer.getId());
+        Customer responseCustomer = BeanUtils.copyBean(new Customer(), getResponse);
+        responseCustomer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        responseCustomer.setInSharedPool(false);
+        Assertions.assertEquals(responseCustomer, customer);
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, DEFAULT_GET, addCustomer.getId());
+    }
+
 
     @Test
     @Order(3)
@@ -146,7 +169,13 @@ class CustomerControllerTests extends BaseTest {
     @Order(10)
     void delete() throws Exception {
         this.requestGetWithOk(DEFAULT_DELETE, addCustomer.getId());
-        // todo
+        Assertions.assertNull(customerMapper.selectByPrimaryKey(addCustomer.getId()));
+
+        CustomerField example = new CustomerField();
+        example.setCustomerId(addCustomer.getId());
+        List<CustomerField> fields = customerFieldMapper.select(example);
+        Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
+
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DEFAULT_DELETE, addCustomer.getId());
     }

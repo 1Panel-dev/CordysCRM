@@ -57,12 +57,7 @@ public class CustomerService {
             // 获取自定义字段
             List<CustomerField> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
             if (CollectionUtils.isNotEmpty(customerFields)) {
-                List<ModuleFieldValueDTO> moduleFieldValues = customerFields.stream().map(customerField -> {
-                    ModuleFieldValueDTO moduleFieldValue = new ModuleFieldValueDTO();
-                    moduleFieldValue.setId(customerField.getFieldId());
-                    moduleFieldValue.setValue(customerField.getFieldValue());
-                    return moduleFieldValue;
-                }).collect(Collectors.toList());
+                List<ModuleFieldValueDTO> moduleFieldValues = getModuleFieldValues(customerFields);
                 customerListResponse.setModuleFields(moduleFieldValues);
 
                 // 将毫秒数转换为天数, 并向上取整
@@ -74,20 +69,39 @@ public class CustomerService {
         return baseService.setCreateAndUpdateUserName(list);
     }
 
+    private List<ModuleFieldValueDTO> getModuleFieldValues(List<CustomerField> customerFields) {
+        List<ModuleFieldValueDTO> moduleFieldValues = customerFields.stream().map(customerField -> {
+            ModuleFieldValueDTO moduleFieldValue = new ModuleFieldValueDTO();
+            moduleFieldValue.setId(customerField.getFieldId());
+            moduleFieldValue.setValue(customerField.getFieldValue());
+            return moduleFieldValue;
+        }).collect(Collectors.toList());
+        return moduleFieldValues;
+    }
+
     public Map<String, List<CustomerField>> getCaseCustomFiledMap(List<String> customerIds) {
         if (CollectionUtils.isEmpty(customerIds)) {
             return Map.of();
         }
+        List<CustomerField> customerFields = getCustomerFieldsByCustomerIds(customerIds);
+        return customerFields.stream().collect(Collectors.groupingBy(CustomerField::getCustomerId));
+    }
+
+    private List<CustomerField> getCustomerFieldsByCustomerIds(List<String> customerIds) {
         LambdaQueryWrapper<CustomerField> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(CustomerField::getCustomerId, customerIds);
         List<CustomerField> customerFields = customerFieldMapper.selectListByLambda(wrapper);
-        return customerFields.stream().collect(Collectors.groupingBy(CustomerField::getCustomerId));
+        return customerFields;
     }
 
     public CustomerGetResponse get(String id) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
         CustomerGetResponse customerGetResponse = BeanUtils.copyBean(new CustomerGetResponse(), customer);
-        // do something...
+
+        // 获取模块字段
+        List<CustomerField> customerFields = getCustomerFieldsByCustomerIds(List.of(id));
+        List<ModuleFieldValueDTO> moduleFieldValues = getModuleFieldValues(customerFields);
+        customerGetResponse.setModuleFields(moduleFieldValues);
         return baseService.setCreateAndUpdateUserName(customerGetResponse);
     }
 
@@ -100,20 +114,65 @@ public class CustomerService {
         customer.setOrganizationId(orgId);
         customer.setId(IDGenerator.nextStr());
         customer.setInSharedPool(false);
-        // 校验名称重复
-        checkAddExist(customer);
+
         customerMapper.insert(customer);
+        // 校验名称重复 todo
+//        checkAddExist(customer);
+
+        //保存自定义字段
+        saveModuleField(customer.getId(), request.getModuleFields());
         return customer;
+    }
+
+    /**
+     *
+     * @param moduleFieldValues
+     */
+    public void saveModuleField(String customerId, List<ModuleFieldValueDTO> moduleFieldValues) {
+        if (CollectionUtils.isEmpty(moduleFieldValues)) {
+            return;
+        }
+        //  todo 字段的校验
+        List<CustomerField> customerFields = moduleFieldValues.stream().map(custom -> {
+            CustomerField customField = new CustomerField();
+            customField.setCustomerId(customerId);
+            customField.setFieldId(custom.getId());
+            customField.setFieldValue(custom.getValue());
+            customField.setId(IDGenerator.nextStr());
+            return customField;
+        }).toList();
+        customerFieldMapper.batchInsert(customerFields);
     }
 
     public Customer update(CustomerUpdateRequest request, String userId) {
         Customer customer = BeanUtils.copyBean(new Customer(), request);
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setUpdateUser(userId);
-        // 校验名称重复
-        checkUpdateExist(customer);
+
+        // 校验名称重复 todo
+//        checkUpdateExist(customer);
         customerMapper.update(customer);
+
+        // 更新模块字段
+        updateModuleField(request.getId(), request.getModuleFields());
         return customerMapper.selectByPrimaryKey(customer.getId());
+    }
+
+    private void updateModuleField(String customerId, List<ModuleFieldValueDTO> moduleFields) {
+        if (moduleFields == null) {
+            // 如果为 null，则不更新
+            return;
+        }
+        // 先删除
+        deleteCustomerFieldByCustomerId(customerId);
+        // 再保存
+        saveModuleField(customerId, moduleFields);
+    }
+
+    private void deleteCustomerFieldByCustomerId(String customerId) {
+        CustomerField example = new CustomerField();
+        example.setCustomerId(customerId);
+        customerFieldMapper.delete(example);
     }
 
     private void checkAddExist(Customer customer) {
@@ -129,6 +188,9 @@ public class CustomerService {
     }
 
     public void delete(String id) {
+        // 删除客户
         customerMapper.deleteByPrimaryKey(id);
+        // 删除客户模块字段
+        deleteCustomerFieldByCustomerId(id);
     }
 }

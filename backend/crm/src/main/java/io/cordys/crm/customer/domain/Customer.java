@@ -5,6 +5,8 @@ import io.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.List;
+
 
 /**
  * 客户
@@ -16,17 +18,11 @@ import lombok.Data;
 @Table(name = "customer")
 public class Customer extends BaseModel {
 
-	@Schema(description = "客户名称")
-	private String name;
-
 	@Schema(description = "标签")
-	private String tags;
+	private List<String> tags;
 
 	@Schema(description = "是否在公海池")
 	private Boolean inSharedPool;
-
-	@Schema(description = "最终成交状态")
-	private String dealStatus;
 
 	@Schema(description = "组织id")
 	private String organizationId;

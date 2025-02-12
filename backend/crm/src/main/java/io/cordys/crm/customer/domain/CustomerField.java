@@ -15,11 +15,11 @@ import lombok.Data;
 @Table(name = "customer_field")
 public class CustomerField {
 
+	@Schema(description = "ID")
+	private String id;
+
 	@Schema(description = "客户id")
 	private String customerId;
-
-	@Schema(description = "组织id")
-	private String organizationId;
 
 	@Schema(description = "自定义属性id")
 	private String fieldId;

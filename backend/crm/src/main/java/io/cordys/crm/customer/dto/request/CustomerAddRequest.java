@@ -1,8 +1,11 @@
 package io.cordys.crm.customer.dto.request;
 
+import io.cordys.common.request.ModuleFieldValueDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+
+import java.util.List;
 
 
 /**
@@ -13,17 +16,9 @@ import lombok.Data;
 @Data
 public class CustomerAddRequest {
 
-    @Size(max = 255)
-    @NotBlank
-    @Schema(description = "客户名称", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String name;
+    @Schema(description = "标签")
+    private List<String> tags;
 
-    @Size(max = 1000)
-    private String tags;
-
-    @Size(max = 255)
-    @NotBlank
-    @Schema(description = "最终成交状态", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String dealStatus;
-
+    @Schema(description = "自定义字段")
+    private List<ModuleFieldValueDTO> moduleFields;
 }

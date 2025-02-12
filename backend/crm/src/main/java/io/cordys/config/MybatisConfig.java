@@ -3,6 +3,7 @@ package io.cordys.config;
 import com.fit2cloud.quartz.anno.QuartzDataSource;
 import com.github.pagehelper.PageInterceptor;
 import com.zaxxer.hikari.HikariDataSource;
+import io.cordys.common.handler.ListTypeHandler;
 import io.cordys.common.interceptor.UserDesensitizationInterceptor;
 import io.cordys.mybatis.interceptor.MybatisInterceptor;
 import org.mybatis.spring.annotation.MapperScan;
@@ -163,5 +164,14 @@ public class MybatisConfig {
         return new DataSourceProperties();
     }
 
+
+    /**
+     * baseMapper 映射 tags 字段
+     * @return
+     */
+    @Bean
+    public ListTypeHandler listTypeHandler() {
+        return new ListTypeHandler();
+    }
 
 }

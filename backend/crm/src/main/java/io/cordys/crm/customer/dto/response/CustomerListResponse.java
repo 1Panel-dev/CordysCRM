@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.dto.response;
 
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.request.ModuleFieldValueDTO;
 import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,7 +22,7 @@ public class CustomerListResponse {
     private String name;
 
     @Schema(description = "标签")
-    private String tags;
+    private List<String> tags;
 
     @Schema(description = "是否在公海池")
     private Boolean inSharedPool;
@@ -46,6 +47,14 @@ public class CustomerListResponse {
 
     @Schema(description = "更新人名称")
     private String updateUserName;
+
+    // todo
+    @Schema(description = "归属销售")
+    private List<OptionDTO> owners;
+
+    // todo
+    @Schema(description = "归属部门")
+    private List<OptionDTO> departments;
 
     // todo
     @Schema(description = "最近跟进时间")

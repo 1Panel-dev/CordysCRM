@@ -4,7 +4,7 @@
 <mapper namespace="io.cordys.crm.customer.mapper.ExtCustomerMapper">
 
     <select id="list" resultType="io.cordys.crm.customer.dto.response.CustomerListResponse">
-        select id, name, tags, tags, deal_status, create_time, update_time, create_user, update_user
+        select id, tags, tags, create_time, update_time, create_user, update_user
         from customer
         where organization_id = #{orgId} and in_shared_pool is false
     </select>
