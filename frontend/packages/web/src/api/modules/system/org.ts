@@ -1,3 +1,5 @@
+import { UploadFileInfo } from 'naive-ui';
+
 import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
 
 import CDR from '@/api/http/index';
@@ -13,6 +15,7 @@ import {
   getDepartmentTreeUrl,
   getUserDetailUrl,
   getUserListUrl,
+  importUserPreCheckUrl,
   renameDepartmentUrl,
   resetUserPasswordUrl,
   setCommanderUrl,
@@ -27,6 +30,7 @@ import type {
   SetCommanderParams,
   UpdateDepartmentItemParams,
   UserTableQueryParams,
+  ValidateInfo,
 } from '@lib/shared/models/system/org';
 
 // 组织架构-部门树查询
@@ -102,4 +106,9 @@ export function syncOrg(type: string) {
 // 用户(员工)-批量编辑 TODO 类型
 export function batchEditUser(data: any) {
   return CDR.post({ url: batchEditUserUrl, data });
+}
+
+// 用户(员工)-excel导入检查
+export function importUserPreCheck(file: File) {
+  return CDR.uploadFile<{ data: ValidateInfo }>({ url: importUserPreCheckUrl }, { fileList: [file] }, 'file');
 }

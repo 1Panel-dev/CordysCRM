@@ -177,7 +177,6 @@
         orgModuleTree.value[0].children.push(newNode);
       }
 
-      selectedKeys.value = [data.id];
       expandedKeys.value.push(currentParentId.value);
 
       nextTick(() => {

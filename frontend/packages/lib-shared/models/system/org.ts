@@ -63,3 +63,15 @@ export interface MemberParams extends BaseMemberInfo {
   id?: string;
   userName: string;
 }
+
+export interface ErrorMessagesType {
+  rowNum: number;
+  errMsg: string;
+}
+
+// 导入校验信息
+export interface ValidateInfo {
+  failCount: number;
+  successCount: number;
+  errorMessages: ErrorMessagesType[];
+}

@@ -11,13 +11,16 @@
       :title="props.title"
       :closable="props.closable"
       :header-class="`${props.headerClass} crm-drawer-header-class`"
-      :body-content-class="props.bodyContentClass"
+      :body-content-class="`${props.noPadding ? 'crm-no-padding-drawer' : ''} ${props.bodyContentClass || ''}`"
     >
       <template #header>
         <slot name="header">
           <div class="flex w-full items-center justify-between gap-[8px] overflow-hidden">
             <div class="one-line-text flex flex-1 items-center gap-[8px]">
               <slot name="titleLeft"></slot>
+              <div v-if="props.showBack" @click="handleCancel">
+                <CrmIcon class="cursor-pointer" type="iconicon_chevron_left" :size="16" />
+              </div>
               <n-tooltip trigger="hover" :delay="300" :disabled="!props.title">
                 <template #trigger>
                   <span class="one-line-text">{{ props.title }}</span>
@@ -84,11 +87,15 @@
       footer?: boolean; // 是否展示footer
       loading?: boolean;
       closable?: boolean;
+      showBack?: boolean; // 显示返回关闭按钮
+      noPadding?: boolean; // 无内边距
     }>(),
     {
       placement: 'right',
       showMask: true,
       footer: true,
+      showBack: false,
+      noPadding: false,
       closable: true,
     }
   );
@@ -123,5 +130,8 @@
     .n-drawer-header__main {
       max-width: calc(100% - 28px);
     }
+  }
+  .crm-no-padding-drawer {
+    padding: 0 !important;
   }
 </style>

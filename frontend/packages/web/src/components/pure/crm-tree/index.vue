@@ -212,21 +212,19 @@
     emit('expand', _expandKeys, options, meta);
   }
   function getSiblingLabels(option: CrmTreeNodeData): string[] {
-    // 如果有 parentId，查找节点
-    const parentNode = option.parentId
-      ? findNodeByKey<CrmTreeNodeData>(data.value, option.parentId, props.fieldNames.keyField)
-      : null;
-
-    // 如果找到了父节点，树结构
-    if (parentNode) {
-      return (
-        parentNode[props.fieldNames.childrenField]?.map(
-          (child: CrmTreeNodeData) => child[props.fieldNames.labelField]
-        ) || []
-      );
-    }
-    // 列表结构
-    return data.value.map((e) => e[props.fieldNames.labelField]);
+    // 获取同层节点列表（树结构 or 列表结构）
+    const siblings = option.parentId
+      ? findNodeByKey<CrmTreeNodeData>(data.value, option.parentId, props.fieldNames.keyField)?.[
+          props.fieldNames.childrenField
+        ] ?? []
+      : data.value;
+    // 排除自己节点在内
+    return siblings.reduce((siblingsLabels: string[], node: CrmTreeNodeData) => {
+      if (node[props.fieldNames.keyField] !== option[props.fieldNames.keyField]) {
+        siblingsLabels.push(node[props.fieldNames.labelField]);
+      }
+      return siblingsLabels;
+    }, []);
   }
 
   /**

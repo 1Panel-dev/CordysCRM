@@ -15,3 +15,4 @@ export const syncOrgUrl = '/user/sync'; // 用户(员工)-同步组织架构
 export const resetUserPasswordUrl = '/user/reset-password'; // 用户(员工)-重置密码
 export const getUserDetailUrl = '/user/detail'; // 用户(员工)-员工详情
 export const batchEditUserUrl = '/user/batch/edit'; // 用户(员工)-批量编辑
+export const importUserPreCheckUrl = '/user/import/pre-check'; // 用户(员工)-excel导入检查

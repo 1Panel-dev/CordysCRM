@@ -80,7 +80,7 @@
   import ValidateResult from '@/views/system/org/components/import/validateResult.vue';
 
   import { getConfigSynchronization } from '@/api/modules/system/business';
-  import { getUserList, resetUserPassword, syncOrg, updateUser } from '@/api/modules/system/org';
+  import { getUserList, importUserPreCheck, resetUserPassword, syncOrg, updateUser } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
@@ -90,7 +90,7 @@
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import type { ConfigSynchronization } from '@lib/shared/models/system/business';
-  import type { MemberItem } from '@lib/shared/models/system/org';
+  import type { MemberItem, ValidateInfo } from '@lib/shared/models/system/org';
 
   const Message = useMessage();
 
@@ -248,7 +248,7 @@
     showDrawer.value = false;
     currentUserId.value = '';
   }
-
+  const tableRefreshId = ref(0);
   // 重置密码
   function handleResetPassWord(row: MemberItem) {
     openModal({
@@ -260,6 +260,7 @@
       onPositiveClick: async () => {
         try {
           await resetUserPassword(row.userId);
+          tableRefreshId.value += 1;
           Message.success(t('org.resetPassWordSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -320,6 +321,7 @@
             name: row.userName,
             enable,
           });
+          tableRefreshId.value += 1;
           Message.success(t(enable ? 'common.opened' : 'common.disabled'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -607,6 +609,13 @@
     initOrgList();
   }
 
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      initOrgList();
+    }
+  );
+
   /**
    * 导入用户
    */
@@ -622,60 +631,11 @@
   }
 
   const fileList = ref<CrmFileItem[]>([]);
-  // TODO类型 xxw
-  const validateInfo = ref<any>({
-    failCount: 10,
+
+  const validateInfo = ref<ValidateInfo>({
+    failCount: 0,
     successCount: 0,
-    errorMessages: [
-      {
-        rowNum: 13,
-        errMsg: '第 14 行出错：[名称]不能为空; ',
-      },
-      {
-        rowNum: 14,
-        errMsg: '第 15 行出错：[名称]不能为空; ',
-      },
-      {
-        rowNum: 15,
-        errMsg: '第 16 行出错：[名称]不能为空; ',
-      },
-      {
-        rowNum: 16,
-        errMsg: '第 17 行出错：[名称]不能为空; ',
-      },
-      {
-        rowNum: 13,
-        errMsg: '第 14 行出错：[名称]不能为空; ',
-      },
-      {
-        rowNum: 14,
-        errMsg: '第 15 行出错：[名称]不能为空; ',
-      },
-      {
-        rowNum: 15,
-        errMsg: '第 16 行出错：[名称]不能为空; ',
-      },
-      {
-        rowNum: 16,
-        errMsg: '第 17 行出错：[名称]不能为空; ',
-      },
-      {
-        rowNum: 13,
-        errMsg: '第 14 行出错：[名称]不能为空; ',
-      },
-      {
-        rowNum: 14,
-        errMsg: '第 15 行出错：[名称]不能为空; ',
-      },
-      {
-        rowNum: 15,
-        errMsg: '第 16 行出错：[名称]不能为空; ',
-      },
-      {
-        rowNum: 16,
-        errMsg: '第 17 行出错：[名称]不能为空; ',
-      },
-    ],
+    errorMessages: [],
   });
 
   const { progress, start, finish } = useProgressBar();
@@ -686,11 +646,9 @@
     try {
       validateModal.value = true;
       start();
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(true);
-        }, 10000);
-      });
+
+      const result = await importUserPreCheck(fileList.value[0].file as File);
+      validateInfo.value = result.data;
       finish();
     } catch (error) {
       validateModal.value = false;

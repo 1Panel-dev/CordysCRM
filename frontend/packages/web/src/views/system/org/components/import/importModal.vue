@@ -63,12 +63,13 @@
     default: false,
   });
 
+  const fileList = ref<CrmFileItem[]>([]);
+
   function cancel() {
     showModal.value = false;
+    fileList.value = [];
     emit('close');
   }
-
-  const fileList = ref<CrmFileItem[]>([]);
 
   /**
    * 下载excel模板
