@@ -130,6 +130,7 @@ DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_customer_id ON customer_field (customer_id ASC);
+CREATE INDEX idx_customer_id_field_id ON customer_field(customer_id ,field_id);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
