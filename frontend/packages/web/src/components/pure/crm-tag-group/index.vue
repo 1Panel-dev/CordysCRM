@@ -1,7 +1,7 @@
 <template>
   <div ref="container" class="crm-overflow-tag-list w-full">
     <!-- 测量所有标签宽度 -->
-    <div v-if="tags.length > 0" ref="measureRef" class="crm-measure-tag-item">
+    <div v-if="innerTags.length > 0" ref="measureRef" class="crm-measure-tag-item">
       <template v-for="(item, index) in tags" :key="`crm-measure-tag-item-${index}`">
         <CrmTag :size="props.size" :type="props.type" :theme="props.theme">
           {{ props.isStringTags ? item : item[props.labelKey] }}
@@ -45,7 +45,7 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
   export interface CrmTagGroupProps {
-    tags: Record<string, any>[]; // 标签组
+    tags: Record<string, any>[] | null; // 标签组
     size?: 'small' | 'medium' | 'large';
     type?: 'default' | 'primary' | 'info' | 'success' | 'warning' | 'error';
     theme?: 'dark' | 'light' | 'outline' | 'lightOutLine' | 'default';
@@ -82,6 +82,7 @@
   const defaultTagGap = 4; // 默认标签间距
 
   const moreButtonRef = ref<HTMLElement | null>(null);
+  const innerTags = computed(() => props.tags || []);
 
   const updateVisibleItems = () => {
     if (!container.value || tagsTotalWidth.value === 0) return;
@@ -93,7 +94,7 @@
     let currentWidth = 0;
     let visibleCount = 0;
 
-    for (let i = 0; i < props.tags.length; i++) {
+    for (let i = 0; i < innerTags.value.length; i++) {
       const tagWidth = (measureRef.value?.children[i] as HTMLElement).offsetWidth;
       currentWidth += tagWidth + defaultTagGap;
 
@@ -102,8 +103,8 @@
       visibleCount++;
     }
 
-    visibleItems.value = props.tags.slice(0, visibleCount);
-    hiddenItemsCount.value = props.tags.length - visibleCount;
+    visibleItems.value = innerTags.value.slice(0, visibleCount);
+    hiddenItemsCount.value = innerTags.value.length - visibleCount;
   };
 
   const updateVisibleItemsWithDelay = async () => {

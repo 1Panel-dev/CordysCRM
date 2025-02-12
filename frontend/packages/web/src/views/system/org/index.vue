@@ -3,7 +3,7 @@
     <CrmSplitPanel :max="0.5" :min="0.2" :default-size="0.2">
       <template #1>
         <div class="org-tree-wrapper">
-          <OrgModuleTree @select-node="selectNode" />
+          <OrgModuleTree ref="orgModuleTreeRef" @select-node="selectNode" />
         </div>
       </template>
       <template #2>
@@ -25,7 +25,10 @@
     activeNodeId.value = _selectedKey;
   }
 
-  function addSuccess() {}
+  const orgModuleTreeRef = ref<InstanceType<typeof OrgModuleTree>>();
+  function addSuccess() {
+    orgModuleTreeRef.value?.initTree();
+  }
 </script>
 
 <style lang="less" scoped>

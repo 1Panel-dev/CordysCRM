@@ -14,7 +14,7 @@ export interface UpdateDepartmentItemParams {
 // 设置部门负责人
 export interface SetCommanderParams {
   departmentId: string;
-  commanderId: string;
+  commanderId: string | null;
 }
 
 export interface MemberRoleItem {
@@ -57,6 +57,7 @@ export interface MemberItem extends BaseMemberInfo {
   createTime: number;
   updateTime: number;
   departmentName: string;
+  supervisorName: string; // 直属上级名称
 }
 
 export interface MemberParams extends BaseMemberInfo {

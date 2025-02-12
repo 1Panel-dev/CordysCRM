@@ -51,6 +51,7 @@
       v-model:show="validateResultModal"
       :validate-info="validateInfo"
       :import-loading="importLoading"
+      @save="importUser"
       @close="importModal = false"
     />
     <!-- 导入结束 -->
@@ -64,6 +65,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -80,7 +82,14 @@
   import ValidateResult from '@/views/system/org/components/import/validateResult.vue';
 
   import { getConfigSynchronization } from '@/api/modules/system/business';
-  import { getUserList, importUserPreCheck, resetUserPassword, syncOrg, updateUser } from '@/api/modules/system/org';
+  import {
+    getUserList,
+    importUserPreCheck,
+    importUsers,
+    resetUserPassword,
+    syncOrg,
+    updateUser,
+  } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
@@ -445,6 +454,9 @@
         },
       ],
       filter: 'default',
+      render: (row: MemberItem) => {
+        return row.gender ? t('org.female') : t('org.male');
+      },
     },
     {
       title: t('org.phoneNumber'),
@@ -480,15 +492,18 @@
       },
       width: 100,
       showInTable: false,
+      render: (row: MemberItem) => {
+        return h(CrmNameTooltip, { text: row.supervisorName });
+      },
     },
     {
       title: t('org.role'),
-      key: 'role',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
+      key: 'roles',
+      width: 150,
+      isTag: true,
+      tagGroupProps: {
+        labelKey: 'name',
       },
-      showInTable: false,
     },
     {
       title: t('org.employeeNumber'),
@@ -543,10 +558,13 @@
     },
     {
       title: t('common.creator'),
-      key: 'creator',
+      key: 'createUser',
       width: 100,
       ellipsis: {
         tooltip: true,
+      },
+      render: (row: MemberItem) => {
+        return h(CrmNameTooltip, { text: row.createUserName });
       },
     },
     {
@@ -559,10 +577,13 @@
     },
     {
       title: t('common.updateUserName'),
-      key: 'updateUserName',
+      key: 'updateUser',
       width: 100,
       ellipsis: {
         tooltip: true,
+      },
+      render: (row: MemberItem) => {
+        return h(CrmNameTooltip, { text: row.updateUserName });
       },
     },
     {
@@ -584,12 +605,11 @@
       tableKey: TableKeyEnum.SYSTEM_ORG_TABLE,
       showSetting: true,
       columns,
-      scrollX: 1600,
+      scrollX: 2000,
     },
     (row: MemberItem) => {
       return {
         ...row,
-        gender: row.gender ? t('org.female') : t('org.male'),
         position: row.position || '-',
         departmentName: row.departmentName || '-',
         workCity: getCityPath(row.workCity) || '-',
@@ -677,6 +697,24 @@
   }
 
   const importLoading = ref<boolean>(false);
+
+  // 导入模板
+  async function importUser() {
+    try {
+      importLoading.value = true;
+      await importUsers(fileList.value[0].file as File);
+      Message.success(t('common.importSuccess'));
+      initOrgList();
+      emit('addSuccess');
+      validateResultModal.value = false;
+      importModal.value = false;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      importLoading.value = false;
+    }
+  }
 
   const showEditModal = ref<boolean>(false);
 

@@ -10,10 +10,13 @@
     <div>
       <n-form ref="formRef" :model="form" :rules="rules">
         <n-form-item require-mark-placement="left" label-placement="left" path="commanderId" :label="t('org.head')">
-          <n-select
+          <CrmUserSelect
             v-model:value="form.commanderId"
             :placeholder="t('org.selectHeadPlaceholder')"
-            :options="options"
+            value-field="id"
+            label-field="name"
+            mode="remote"
+            :fetch-api="getUserOptions"
             :render-label="renderLabel"
             :render-tag="renderTag"
             max-tag-count="responsive"
@@ -26,12 +29,13 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { FormInst, FormRules, NForm, NFormItem, NSelect, NTooltip, SelectOption, useMessage } from 'naive-ui';
+  import { FormInst, FormRules, NForm, NFormItem, NTooltip, SelectOption, useMessage } from 'naive-ui';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
-  import { setCommander } from '@/api/modules/system/org';
+  import { getUserOptions, setCommander } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
 
   import type { SetCommanderParams } from '@lib/shared/models/system/org';
@@ -53,36 +57,13 @@
   });
 
   const form = ref<SetCommanderParams>({
-    commanderId: '',
+    commanderId: null,
     departmentId: '',
   });
 
   const rules: FormRules = {
     commanderId: [{ required: true, message: t('org.selectHeadPlaceholder') }],
   };
-
-  const options = ref<SelectOption[]>([
-    {
-      label: "Everybody's Got ",
-      value: 'song0',
-    },
-    {
-      label: 'Drive',
-      value: 'song1',
-    },
-    {
-      label: 'Norwegian ',
-      value: 'song2',
-    },
-    {
-      label: 'Norwegian ',
-      value: 'song22',
-    },
-    {
-      label: 'Norwegian ',
-      value: 'song23',
-    },
-  ]);
 
   function renderLabel(option: SelectOption) {
     return h(
@@ -96,15 +77,15 @@
           return h(
             'div',
             {
-              class: 'option-content',
+              class: `option-content ${option.id === form.value.commanderId ? 'option-content-selected' : ''}`,
             },
             [
-              h('div', { class: 'option-label' }, option.label as string),
-              h('div', { class: 'option-email' }, option.value),
+              h('div', { class: 'option-label' }, { default: () => option.name }),
+              h('div', { class: 'option-email' }, { default: () => option.id }),
             ]
           );
         },
-        default: () => option.label,
+        default: () => option.name,
       }
     );
   }
@@ -118,7 +99,7 @@
         onClose: () => handleClose(),
       },
       {
-        default: () => option.label,
+        default: () => option.name,
       }
     );
   }
@@ -126,6 +107,7 @@
   const formRef = ref<FormInst | null>(null);
 
   function closeHandler() {
+    form.value.commanderId = null;
     emit('close');
   }
 
@@ -145,6 +127,8 @@
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
+        } finally {
+          loading.value = false;
         }
       }
     });
@@ -162,6 +146,14 @@
     }
     .option-email {
       color: var(--text-n4);
+    }
+  }
+  .option-content-selected {
+    .option-label {
+      color: var(--primary-8);
+    }
+    .option-email {
+      color: var(--primary-8);
     }
   }
 </style>

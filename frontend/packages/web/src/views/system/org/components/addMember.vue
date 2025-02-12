@@ -95,10 +95,13 @@
             path="supervisorId"
             :label="t('org.directSuperior')"
           >
-            <n-select
+            <CrmUserSelect
               v-model:value="form.supervisorId"
-              :placeholder="t('common.pleaseSelect')"
-              :options="superiorOptions"
+              value-field="id"
+              label-field="name"
+              mode="remote"
+              filterable
+              :fetch-api="getUserOptions"
             />
           </n-form-item>
           <n-form-item require-mark-placement="left" label-placement="left" path="position" :label="t('org.Position')">
@@ -113,7 +116,13 @@
             <CrmCitySelect v-model:value="form.workCity" />
           </n-form-item>
           <n-form-item require-mark-placement="left" label-placement="left" path="roleIds" :label="t('org.role')">
-            <n-select v-model:value="form.roleIds" :placeholder="t('common.pleaseSelect')" :options="roleOptions" />
+            <n-select
+              v-model:value="form.roleIds"
+              multiple
+              filterable
+              :placeholder="t('common.pleaseSelect')"
+              :options="roleOptions"
+            />
           </n-form-item>
           <n-form-item
             require-mark-placement="left"
@@ -174,6 +183,7 @@
     NSpace,
     NSwitch,
     NTreeSelect,
+    SelectOption,
     useMessage,
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
@@ -182,8 +192,16 @@
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import CrmCitySelect from '@/components/business/crm-city-select/index.vue';
   import CrmExpandButton from '@/components/business/crm-expand-button/index.vue';
+  import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
-  import { addUser, getDepartmentTree, getUserDetail, updateUser } from '@/api/modules/system/org';
+  import {
+    addUser,
+    getDepartmentTree,
+    getRoleOptions,
+    getUserDetail,
+    getUserOptions,
+    updateUser,
+  } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import { validateEmail, validatePhone } from '@/utils/validate';
 
@@ -269,11 +287,7 @@
     },
   ]);
 
-  const roleOptions = ref([]);
-
   const userGroupOptions = ref([]);
-
-  const superiorOptions = ref([]);
 
   const loading = ref(false);
   const formRef = ref<FormInst | null>(null);
@@ -312,11 +326,25 @@
     });
   }
 
+  const roleOptions = ref<SelectOption[]>([]);
+  async function initRoleList() {
+    try {
+      const res = await getRoleOptions();
+      roleOptions.value = res.map((e: { id: string; name: string }) => {
+        return { label: e.name, value: e.id };
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   const department = ref<CrmTreeNodeData[]>([]);
   async function initDepartList() {
     try {
       department.value = await getDepartmentTree();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.log(error);
     }
   }
@@ -342,6 +370,7 @@
       if (val) {
         getDetail();
         initDepartList();
+        initRoleList();
       }
     }
   );

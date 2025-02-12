@@ -1,5 +1,3 @@
-import { UploadFileInfo } from 'naive-ui';
-
 import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
 
 import CDR from '@/api/http/index';
@@ -13,9 +11,12 @@ import {
   checkDeleteDepartmentUrl,
   deleteDepartmentUrl,
   getDepartmentTreeUrl,
+  getRoleOptionsUrl,
   getUserDetailUrl,
   getUserListUrl,
+  getUserOptionsUrl,
   importUserPreCheckUrl,
+  importUserUrl,
   renameDepartmentUrl,
   resetUserPasswordUrl,
   setCommanderUrl,
@@ -111,4 +112,19 @@ export function batchEditUser(data: any) {
 // 用户(员工)-excel导入检查
 export function importUserPreCheck(file: File) {
   return CDR.uploadFile<{ data: ValidateInfo }>({ url: importUserPreCheckUrl }, { fileList: [file] }, 'file');
+}
+
+// 用户(员工)-获取用户下拉
+export function getUserOptions() {
+  return CDR.get({ url: getUserOptionsUrl });
+}
+
+// 用户(员工)-获取角色下拉
+export function getRoleOptions() {
+  return CDR.get({ url: getRoleOptionsUrl });
+}
+
+// 用户(员工)-excel导入
+export function importUsers(file: File) {
+  return CDR.uploadFile({ url: importUserUrl }, { fileList: [file] }, 'file');
 }

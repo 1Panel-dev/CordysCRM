@@ -64,7 +64,7 @@
   } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
-  import { characterLimit, getGenerateId } from '@/utils';
+  import { characterLimit } from '@/utils';
 
   const { openModal } = useModal();
 
@@ -308,6 +308,10 @@
 
   onBeforeMount(() => {
     initTree(true);
+  });
+
+  defineExpose({
+    initTree,
   });
 </script>
 
