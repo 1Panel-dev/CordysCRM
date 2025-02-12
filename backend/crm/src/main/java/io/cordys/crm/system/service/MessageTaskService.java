@@ -23,44 +23,46 @@ import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.utils.MessageTemplateUtils;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class MessageTaskService {
 
-@Resource
-private ExtMessageTaskMapper extMessageTaskMapper;
+    @Resource
+    private ExtMessageTaskMapper extMessageTaskMapper;
 
-@Resource
-private ExtMessageTaskBlobMapper extMessageTaskBlobMapper;
+    @Resource
+    private ExtMessageTaskBlobMapper extMessageTaskBlobMapper;
 
-@Resource
-private BaseMapper<MessageTask> messageTaskMapper;
+    @Resource
+    private BaseMapper<MessageTask> messageTaskMapper;
 
-@Resource
-private BaseMapper<MessageTaskBlob> messageTaskBlobMapper;
+    @Resource
+    private BaseMapper<MessageTaskBlob> messageTaskBlobMapper;
 
-@Resource
-private ExtUserMapper extUserMapper;
+    @Resource
+    private ExtUserMapper extUserMapper;
 
     @Transactional(rollbackFor = Exception.class)
-    @OperationLog(module = LogModule.SYSTEM_NOTICE, type = LogType.ADD,  operator = "{#userId}")
+    @OperationLog(module = LogModule.SYSTEM_NOTICE, type = LogType.ADD, operator = "{#userId}")
     public MessageTask saveMessageTask(MessageTaskRequest messageTaskRequest, String userId, String organizationId) {
         //检查设置的通知是否存在，如果存在则更新
         MessageTask messageTask = new MessageTask();
-        List<MessageTask> messageTasks = extMessageTaskMapper.getMessageTaskByReceiveTypeAndTaskType(messageTaskRequest.getReceiveType(), messageTaskRequest.getModule(),organizationId);
+        List<MessageTask> messageTasks = extMessageTaskMapper.getMessageTaskByReceiveTypeAndTaskType(messageTaskRequest.getReceiveType(), messageTaskRequest.getModule(), organizationId);
         if (CollectionUtils.isNotEmpty(messageTasks)) {
             return updateMessageTasks(messageTaskRequest, userId, messageTasks.getFirst());
         } else {
@@ -102,7 +104,7 @@ private ExtUserMapper extUserMapper;
      * @param userId             当前用户ID
      */
     @Transactional(rollbackFor = Exception.class)
-    @OperationLog(module = LogModule.SYSTEM_NOTICE, type = LogType.UPDATE,operator = "{{#userId}}")
+    @OperationLog(module = LogModule.SYSTEM_NOTICE, type = LogType.UPDATE, operator = "{{#userId}}")
     public MessageTask updateMessageTasks(MessageTaskRequest messageTaskRequest, String userId, MessageTask oldMessageTask) {
         MessageTask messageTask = new MessageTask();
         messageTask.setId(oldMessageTask.getId());
@@ -133,19 +135,17 @@ private ExtUserMapper extUserMapper;
      * @param organizationId 组织ID
      * @return List<MessageTaskDTO>
      */
-    public List<MessageTaskDTO> getMessageList(String organizationId) throws IOException {
+    public List<MessageTaskDTO> getMessageList(String organizationId) {
         //获取返回数据结构
         StringBuilder jsonStr = new StringBuilder();
-        try {
-            InputStream inputStream = getClass().getResourceAsStream("/task/message_task.json");
+        try (InputStream inputStream = getClass().getResourceAsStream("/task/message_task.json")) {
             assert inputStream != null;
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                jsonStr.append(line);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    jsonStr.append(line);
+                }
             }
-            reader.close();
-            inputStream.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -159,11 +159,11 @@ private ExtUserMapper extUserMapper;
         List<String> messageTaskIds = messageTasks.stream().map(MessageTask::getId).toList();
         List<MessageTaskBlob> messageTaskBlobs = extMessageTaskBlobMapper.getExtMessageTaskBlobByMessageTaskIds(messageTaskIds);
         List<String> userIds = new ArrayList<>();
-        messageTasks.forEach(t->{
-            userIds.addAll(JSON.parseArray(t.getReceivers(),String.class));
+        messageTasks.forEach(t -> {
+            userIds.addAll(JSON.parseArray(t.getReceivers(), String.class));
         });
 
-        List<User> users = extUserMapper.getOrgUserByUserIds(organizationId,userIds);
+        List<User> users = extUserMapper.getOrgUserByUserIds(organizationId, userIds);
         Map<String, String> userNameMap = users.stream().collect(Collectors.toMap(User::getId, User::getName));
         Map<String, String> defaultRelatedUserMap = MessageTemplateUtils.getDefaultRelatedUserMap();
         userNameMap.putAll(defaultRelatedUserMap);
@@ -180,14 +180,14 @@ private ExtUserMapper extUserMapper;
                 messageTaskDetailDTO.setEventName(eventMap.get(messageTaskDetailDTO.getEvent()));
                 List<MessageTask> messageTaskList = messageEventMap.get(messageTaskDetailDTO.getEvent());
                 List<OptionDTO> receivers = new ArrayList<>();
-                String defaultTemplate = defaultTemplateMap.get(messageTaskDetailDTO.getEvent()+"_TEXT");
-                Map<String,ProjectRobotConfigDTO> projectRobotConfigMap = new LinkedHashMap<>();
+                String defaultTemplate = defaultTemplateMap.get(messageTaskDetailDTO.getEvent() + "_TEXT");
+                Map<String, ProjectRobotConfigDTO> projectRobotConfigMap = new LinkedHashMap<>();
                 if (CollectionUtils.isNotEmpty(messageTaskList)) {
                     for (MessageTask messageTask : messageTaskList) {
                         MessageTaskBlob messageTaskBlob = messageTaskBlobMap.get(messageTask.getId());
-                        List<String> receiverIds =JSON.parseArray(messageTask.getReceivers(),String.class) ;
+                        List<String> receiverIds = JSON.parseArray(messageTask.getReceivers(), String.class);
                         for (String receiverId : receiverIds) {
-                            if (userNameMap.get(receiverId)!=null) {
+                            if (userNameMap.get(receiverId) != null) {
                                 OptionDTO optionDTO = new OptionDTO();
                                 optionDTO.setId(receiverId);
                                 optionDTO.setName(userNameMap.get(receiverId));
@@ -206,7 +206,7 @@ private ExtUserMapper extUserMapper;
                         projectRobotConfigDTO.setTemplate(new String(messageTaskBlob.getTemplate()));
                         projectRobotConfigDTO.setSubject(defaultSubject);
                         projectRobotConfigDTO.setReceiveType(messageTask.getReceiveType());
-                        projectRobotConfigMap.put(messageTask.getReceiveType(),projectRobotConfigDTO);
+                        projectRobotConfigMap.put(messageTask.getReceiveType(), projectRobotConfigDTO);
                     }
                 }
                 List<OptionDTO> distinctReceivers = receivers.stream().distinct().toList();
@@ -217,7 +217,6 @@ private ExtUserMapper extUserMapper;
         }
         return messageTaskDTOList;
     }
-
 
 
 }
