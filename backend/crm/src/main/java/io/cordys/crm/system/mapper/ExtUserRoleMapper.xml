@@ -69,4 +69,15 @@
         left join sys_user_extend sue
             on su.id = sue.id
     </select>
+
+
+    <select id="selectUserRole" resultType="java.lang.String">
+        SELECT
+            sys_user_role.id
+        FROM
+            sys_user_role
+                INNER JOIN sys_role ON sys_user_role.role_id = sys_role.id
+        where sys_user_role.user_id = #{userId}
+          and sys_role.organization_id = #{orgId}
+    </select>
 </mapper>

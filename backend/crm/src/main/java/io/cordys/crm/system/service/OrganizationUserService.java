@@ -650,6 +650,7 @@ public class OrganizationUserService {
 
     /**
      * 导入校验电话号码唯一
+     *
      * @param phone
      * @return
      */
@@ -659,6 +660,7 @@ public class OrganizationUserService {
 
     /**
      * 导入校验邮箱唯一
+     *
      * @param email
      * @return
      */
@@ -668,10 +670,58 @@ public class OrganizationUserService {
 
     /**
      * 获取系统用户options
+     *
      * @param orgId
      * @return
      */
     public List<OptionDTO> getUserOptions(String orgId) {
         return extUserMapper.selectUserOptionByOrgId(orgId);
+    }
+
+
+    /**
+     * 删除用户（单个）
+     *
+     * @param id
+     * @param orgId
+     */
+    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.DELETE, resourceId = "{#id}")
+    public void deleteUserById(String id, String orgId) {
+        UserResponse user = checkUserResource(id);
+
+        //删除后该员工在系统上的全部数据将会被清理
+        deleteUserAllData(user.getUserId(), id, orgId);
+        // 添加日志上下文
+        OperationLogContext.setResourceName(user.getUserName());
+    }
+
+
+    /**
+     * 删除用户全部数据
+     *
+     * @param userId
+     */
+    private void deleteUserAllData(String userId, String id, String orgId) {
+        OrganizationUser organizationUser = new OrganizationUser();
+        organizationUser.setUserId(userId);
+        if (organizationUserMapper.countByExample(organizationUser) == 1) {
+            //删除主用户
+            userMapper.deleteByPrimaryKey(userId);
+        }
+        //删除用户
+        organizationUserMapper.deleteByPrimaryKey(id);
+        //删除用户关联角色
+        List<String> userRoleIds = extUserRoleMapper.selectUserRole(userId, orgId);
+        if (CollectionUtils.isNotEmpty(userRoleIds)) {
+            extUserRoleMapper.deleteByIds(userRoleIds);
+        }
+
+    }
+
+    private UserResponse checkUserResource(String id) {
+        UserResponse userDetail = extUserMapper.getUserDetail(id);
+        //todo 校验员工是否存在线索、客户、商机资源（等待模块业务逻辑完成补充）
+
+        return userDetail;
     }
 }

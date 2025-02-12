@@ -215,10 +215,9 @@ public class DepartmentService extends MoveNodeService {
             //刪除部門
             departmentMapper.deleteByPrimaryKey(id);
             //todo 部门&责任人关系是否需要删除？ 部门&角色关系是否需要删除？
+            // 添加日志上下文
+            OperationLogContext.setResourceName(department.getName());
         }
-
-        // 添加日志上下文
-        OperationLogContext.setResourceName(department.getName());
     }
 
 

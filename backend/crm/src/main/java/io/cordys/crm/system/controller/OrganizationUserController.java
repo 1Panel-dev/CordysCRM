@@ -151,4 +151,12 @@ public class OrganizationUserController {
     public boolean syncCheck() {
         return organizationConfigService.syncCheck(OrganizationContext.getOrganizationId());
     }
+
+
+    @GetMapping("/delete/{id}")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_DELETE)
+    @Operation(summary = "用户(员工)-删除")
+    public void deleteUser(@PathVariable String id) {
+        organizationUserService.deleteUserById(id, OrganizationContext.getOrganizationId());
+    }
 }
