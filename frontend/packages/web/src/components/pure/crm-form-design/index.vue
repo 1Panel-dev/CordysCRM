@@ -1,14 +1,27 @@
 <template>
-  <div class="flex h-full bg-[var(--text-n9)]">
-    <div class="crm-form-design--left">i am left</div>
+  <n-scrollbar x-scrollable content-class="flex h-full !w-full bg-[var(--text-n9)]" content-style="min-width: 800px">
+    <div class="crm-form-design--left"><fieldComponents @select="handleFieldSelect" /></div>
     <div class="crm-form-design--center">
-      <div class="crm-form-design--center-content"> i am center </div>
+      <div class="crm-form-design--center-content"><formComposition ref="formCompositionRef" /></div>
     </div>
     <div class="crm-form-design--right">i am right</div>
-  </div>
+  </n-scrollbar>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+  import { NScrollbar } from 'naive-ui';
+
+  import fieldComponents from './components/fieldComponents.vue';
+  import formComposition from './components/formComposition/index.vue';
+
+  import { FieldTypeEnum } from './enum';
+
+  const formCompositionRef = ref<InstanceType<typeof formComposition>>();
+
+  function handleFieldSelect(type: FieldTypeEnum, name: string) {
+    formCompositionRef.value?.addItem(type, name);
+  }
+</script>
 
 <style lang="less" scoped>
   .crm-form-design--left,

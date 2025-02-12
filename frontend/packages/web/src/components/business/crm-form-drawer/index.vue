@@ -10,7 +10,7 @@
     <template #header>
       <div class="flex items-center justify-between">
         <div class="flex items-center">
-          <n-button quaternary text class="w-[32px]" @click="handleBack">
+          <n-button text class="w-[32px]" @click="handleBack">
             <n-icon size="16">
               <ChevronBackOutline />
             </n-icon>
@@ -23,6 +23,8 @@
             clearable
             class="crm-form-drawer-title"
             autosize
+            :status="name.trim() === '' ? 'error' : undefined"
+            :maxlength="255"
           ></n-input>
         </div>
         <n-button type="primary" @click="handleSave">{{ t('common.save') }}</n-button>
