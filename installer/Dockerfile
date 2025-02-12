@@ -26,19 +26,19 @@ RUN JAR_VERSION=$(./mvnw help:evaluate -Dexpression=revision -q -DforceStdout) &
 
 ARG FIT2CLOUD_MAVEN_USERNAME
 ARG FIT2CLOUD_MAVEN_PASSWORD
-ARG CRM_VERSION=main
 
 ENV FIT2CLOUD_MAVEN_USERNAME=${FIT2CLOUD_MAVEN_USERNAME}
 ENV FIT2CLOUD_MAVEN_PASSWORD=${FIT2CLOUD_MAVEN_PASSWORD}
-ENV CRM_VERSION=${CRM_VERSION}
+
+RUN echo "JAR_VERSION is: $JAR_VERSION"
 
 RUN ./mvnw deploy:deploy-file \
-    -Dfile=backend/crm/target/crm-1.0.x.jar \
+    -Dfile=backend/crm/target/crm-${JAR_VERSION}.jar \
     -DrepositoryId=cordys \
     -Durl=https://repository.fit2cloud.com/repository/cordys/ \
     -DgroupId=io.cordys \
     -DartifactId=crm \
-    -Dversion=1.0.x \
+    -Dversion=${JAR_VERSION} \
     -Dpackaging=jar \
     -s=./.mvn/wrapper/settings.xml
 
@@ -60,6 +60,9 @@ ENV JAVA_CLASSPATH=/app:/app/lib/*
 ENV JAVA_MAIN_CLASS=io.cordys.Application
 ENV AB_OFF=true
 ENV JAVA_OPTIONS="-Dfile.encoding=utf-8 -Djava.awt.headless=true --add-opens java.base/jdk.internal.loader=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
+
+ARG CRM_VERSION=main
+ENV CRM_VERSION=${CRM_VERSION}
 
 RUN echo -n "${CRM_VERSION}" > /tmp/CRM_VERSION
 
