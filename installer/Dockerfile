@@ -13,12 +13,7 @@ COPY . /build
 COPY --from=frontend /frontend/packages/web/dist /build/frontend/packages/web/dist
 COPY --from=frontend /frontend/packages/mobile/dist /build/frontend/packages/mobile/dist
 
-RUN JAR_VERSION=$(./mvnw help:evaluate -Dexpression=revision -q -DforceStdout) && \
-    if [ -z "$JAR_VERSION" ]; then \
-        JAR_VERSION="1.0.x"; \
-    fi && \
-    echo "Using Jar version: $JAR_VERSION" && \
-   ./mvnw clean package -DskipTests -pl '!frontend' && \
+RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
     mkdir backend/app/target/dependency && \
     cd backend/app/target/dependency && \
     jar -xf ../*.jar
@@ -30,9 +25,9 @@ ARG FIT2CLOUD_MAVEN_PASSWORD
 ENV FIT2CLOUD_MAVEN_USERNAME=${FIT2CLOUD_MAVEN_USERNAME}
 ENV FIT2CLOUD_MAVEN_PASSWORD=${FIT2CLOUD_MAVEN_PASSWORD}
 
-RUN echo "JAR_VERSION is: $JAR_VERSION"
-
-RUN ./mvnw deploy:deploy-file \
+RUN JAR_VERSION=$(./mvnw help:evaluate -Dexpression=revision -q -DforceStdout || echo "1.0.x") && \
+    echo "Using Jar version: $JAR_VERSION" && \
+    ./mvnw deploy:deploy-file \
     -Dfile=backend/crm/target/crm-${JAR_VERSION}.jar \
     -DrepositoryId=cordys \
     -Durl=https://repository.fit2cloud.com/repository/cordys/ \
@@ -64,6 +59,7 @@ ENV JAVA_OPTIONS="-Dfile.encoding=utf-8 -Djava.awt.headless=true --add-opens jav
 ARG CRM_VERSION=main
 ENV CRM_VERSION=${CRM_VERSION}
 
+RUN echo "CRM_VERSION value during build: ${CRM_VERSION}"
 RUN echo -n "${CRM_VERSION}" > /tmp/CRM_VERSION
 
 VOLUME [ "/opt/cordys/data", "/opt/cordys/logs", "/opt/cordys/conf" ]
