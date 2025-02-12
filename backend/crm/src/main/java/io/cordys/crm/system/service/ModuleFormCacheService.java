@@ -1,6 +1,5 @@
 package io.cordys.crm.system.service;
 
-import io.cordys.crm.system.dto.request.ModuleFormRequest;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import jakarta.annotation.Resource;
@@ -15,23 +14,24 @@ public class ModuleFormCacheService {
 	private ModuleFormService moduleFormService;
 
 	/**
-	 * 保存模块字段集合并更新缓存
+	 * 保存表单配置并更新缓存
 	 * @param saveParam 保存参数
 	 * @param currentUserId 当前用户ID
-	 * @return
+	 * @return 表单配置
 	 */
 	@CachePut(value = "formCache", key = "#saveParam.formKey", unless = "#result == null")
-	public ModuleFormConfigDTO save(ModuleFormSaveRequest saveParam, String currentUserId) {
-		return moduleFormService.save(saveParam, currentUserId);
+	public ModuleFormConfigDTO save(ModuleFormSaveRequest saveParam, String currentUserId, String currentOrgId) {
+		return moduleFormService.save(saveParam, currentUserId, currentOrgId);
 	}
 
 	/**
-	 * 获取模块字段集合(缓存)
-	 * @param request 请求参数
-	 * @return 字段集合
+	 * 获取表单配置(缓存)
+	 * @param formKey 表单Key
+	 * @param currentOrgId 当前组织ID
+	 * @return 表单配置
 	 */
-	@Cacheable(value = "formCache", key = "#request.formKey", unless = "#result == null")
-	public ModuleFormConfigDTO getConfig(ModuleFormRequest request) {
-		return moduleFormService.getConfig(request);
+	@Cacheable(value = "formCache", key = "#formKey", unless = "#result == null")
+	public ModuleFormConfigDTO getConfig(String formKey, String currentOrgId) {
+		return moduleFormService.getConfig(formKey, currentOrgId);
 	}
 }

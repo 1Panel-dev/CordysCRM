@@ -1,7 +1,6 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.system.dto.request.ModuleFormRequest;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
 import io.cordys.crm.system.dto.response.ModuleFieldOptionDTO;
@@ -25,11 +24,9 @@ public class ModuleFormControllerTests extends BaseTest{
 	@Test
 	@Order(1)
 	void testSaveFields() throws Exception {
-		// empty param
 		ModuleFormSaveRequest request = new ModuleFormSaveRequest();
 		ModuleFormDTO form = buildForm();
 		request.setFormKey("lead");
-		request.setOrganizationId("default-org");
 		request.setFields(List.of());
 		request.setDeleteFieldIds(List.of());
 		request.setForm(form);
@@ -52,10 +49,7 @@ public class ModuleFormControllerTests extends BaseTest{
 	@Test
 	@Order(2)
 	void testGetFieldList() throws Exception {
-		ModuleFormRequest request = new ModuleFormRequest();
-		request.setFormKey("lead");
-		request.setOrganizationId("default-org");
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/module/form/config", request);
+		MvcResult mvcResult = this.requestGetWithOkAndReturn("/module/form/config/lead");
 		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
 		assert formConfig.getFields().size() == 1;
 	}

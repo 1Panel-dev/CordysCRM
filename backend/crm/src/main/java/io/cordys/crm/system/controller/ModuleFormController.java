@@ -1,7 +1,7 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.crm.system.dto.request.ModuleFormRequest;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
@@ -11,10 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/module/form")
@@ -28,13 +25,13 @@ public class ModuleFormController {
 	@Operation(summary = "保存")
 	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
 	public ModuleFormConfigDTO save(@Validated @RequestBody ModuleFormSaveRequest request) {
-		return moduleFormCacheService.save(request, SessionUtils.getUserId());
+		return moduleFormCacheService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
-	@PostMapping("/config")
+	@GetMapping("/config/{formKey}")
 	@Operation(summary = "获取表单配置")
 	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
-	public ModuleFormConfigDTO getFieldList(@Validated @RequestBody ModuleFormRequest request) {
-		return moduleFormCacheService.getConfig(request);
+	public ModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
+		return moduleFormCacheService.getConfig(formKey, OrganizationContext.getOrganizationId());
 	}
 }

@@ -8,7 +8,6 @@ import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleFieldOption;
 import io.cordys.crm.system.domain.ModuleForm;
-import io.cordys.crm.system.dto.request.ModuleFormRequest;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
 import io.cordys.crm.system.dto.response.ModuleFieldOptionDTO;
@@ -30,6 +29,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class ModuleFormService {
 
 	@Resource
@@ -45,14 +45,15 @@ public class ModuleFormService {
 
 	/**
 	 * 获取模块表单配置
-	 * @param request 请求参数
+	 * @param formKey 表单Key
+	 * @param currentOrgId 当前组织ID
 	 * @return 字段集合
 	 */
-	public ModuleFormConfigDTO getConfig(ModuleFormRequest request) {
+	public ModuleFormConfigDTO getConfig(String formKey, String currentOrgId) {
 		ModuleFormConfigDTO formConfig = new ModuleFormConfigDTO();
 		// set form
 		LambdaQueryWrapper<ModuleForm> formWrapper = new LambdaQueryWrapper<>();
-		formWrapper.eq(ModuleForm::getFormKey, request.getFormKey()).eq(ModuleForm::getOrganizationId, request.getOrganizationId());
+		formWrapper.eq(ModuleForm::getFormKey, formKey).eq(ModuleForm::getOrganizationId, currentOrgId);
 		List<ModuleForm> forms = moduleFormMapper.selectListByLambda(formWrapper);
 		if (CollectionUtils.isEmpty(forms)) {
 			throw new GenericException(Translator.get("module.form.not_exist"));
@@ -61,43 +62,25 @@ public class ModuleFormService {
 		ModuleFormDTO formDTO = new ModuleFormDTO();
 		BeanUtils.copyBean(formDTO, form);
 		formConfig.setForm(formDTO);
-		// set field
-		List<ModuleFieldDTO> fieldDTOList = new ArrayList<>();
-		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
-		fieldWrapper.eq(ModuleField::getFormId, form.getId());
-		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
-		if (CollectionUtils.isNotEmpty(fields)) {
-			List<String> fieldIds = fields.stream().map(ModuleField::getId).toList();
-			LambdaQueryWrapper<ModuleFieldOption> optionWrapper = new LambdaQueryWrapper<>();
-			optionWrapper.in(ModuleFieldOption::getFieldId, fieldIds);
-			List<ModuleFieldOption> fieldOptions = moduleFieldOptionMapper.selectListByLambda(optionWrapper);
-			Map<String, List<ModuleFieldOption>> fieldOptionMap = fieldOptions.stream().collect(Collectors.groupingBy(ModuleFieldOption::getFieldId));
-			fields.forEach(field -> {
-				ModuleFieldDTO fieldDTO = new ModuleFieldDTO();
-				BeanUtils.copyBean(fieldDTO, field);
-				fieldDTO.setOptions(fieldOptionMap.containsKey(field.getId()) ? toOptionDTO(fieldOptionMap.get(field.getId())) : List.of());
-				fieldDTOList.add(fieldDTO);
-			});
-		}
-		formConfig.setFields(fieldDTOList);
+		// set fields
+		formConfig.setFields(getAllFields(form.getId()));
 		return formConfig;
 	}
 
 	/**
-	 * 保存模块字段
+	 * 保存表单配置
 	 * @param saveParam 保存参数
-	 * @return 保存后的字段集合
+	 * @return 表单配置
 	 */
-	@Transactional(rollbackFor = Exception.class)
-	public ModuleFormConfigDTO save(ModuleFormSaveRequest saveParam, String currentUserId) {
+	public ModuleFormConfigDTO save(ModuleFormSaveRequest saveParam, String currentUserId, String currentOrgId) {
 		// handle form
 		LambdaQueryWrapper<ModuleForm> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.eq(ModuleForm::getFormKey, saveParam.getFormKey()).eq(ModuleForm::getOrganizationId, saveParam.getOrganizationId());
+		queryWrapper.eq(ModuleForm::getFormKey, saveParam.getFormKey()).eq(ModuleForm::getOrganizationId, currentOrgId);
 		List<ModuleForm> forms = moduleFormMapper.selectListByLambda(queryWrapper);
 		ModuleForm saveForm = new ModuleForm();
 		BeanUtils.copyBean(saveForm, saveParam.getForm());
 		saveForm.setFormKey(saveParam.getFormKey());
-		saveForm.setOrganizationId(saveParam.getOrganizationId());
+		saveForm.setOrganizationId(currentOrgId);
 		saveForm.setUpdateTime(System.currentTimeMillis());
 		saveForm.setUpdateUser(currentUserId);
 		if (CollectionUtils.isEmpty(forms)) {
@@ -161,8 +144,7 @@ public class ModuleFormService {
 		}
 
 		// get form config
-		ModuleFormRequest formRequest = ModuleFormRequest.builder().formKey(saveParam.getFormKey()).organizationId(saveParam.getOrganizationId()).build();
-		return getConfig(formRequest);
+		return getConfig(saveForm.getFormKey(), currentOrgId);
 	}
 
 	/**
@@ -229,6 +211,38 @@ public class ModuleFormService {
 		return moduleField;
 	}
 
+	/**
+	 * 获取表单所有字段集合
+	 * @param formId 表单ID
+	 * @return 字段集合
+	 */
+	public List<ModuleFieldDTO> getAllFields(String formId) {
+		// set field
+		List<ModuleFieldDTO> fieldDTOList = new ArrayList<>();
+		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
+		fieldWrapper.eq(ModuleField::getFormId, formId);
+		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
+		if (CollectionUtils.isNotEmpty(fields)) {
+			List<String> fieldIds = fields.stream().map(ModuleField::getId).toList();
+			LambdaQueryWrapper<ModuleFieldOption> optionWrapper = new LambdaQueryWrapper<>();
+			optionWrapper.in(ModuleFieldOption::getFieldId, fieldIds);
+			List<ModuleFieldOption> fieldOptions = moduleFieldOptionMapper.selectListByLambda(optionWrapper);
+			Map<String, List<ModuleFieldOption>> fieldOptionMap = fieldOptions.stream().collect(Collectors.groupingBy(ModuleFieldOption::getFieldId));
+			fields.forEach(field -> {
+				ModuleFieldDTO fieldDTO = new ModuleFieldDTO();
+				BeanUtils.copyBean(fieldDTO, field);
+				fieldDTO.setOptions(fieldOptionMap.containsKey(field.getId()) ? toOptionDTO(fieldOptionMap.get(field.getId())) : List.of());
+				fieldDTOList.add(fieldDTO);
+			});
+		}
+		return fieldDTOList;
+	}
+
+	/**
+	 * 解析成选项DTO
+	 * @param options 选项集合
+	 * @return 选项DTO集合
+	 */
 	private List<ModuleFieldOptionDTO> toOptionDTO(List<ModuleFieldOption> options) {
 		return options.stream().map(option -> {
 			ModuleFieldOptionDTO optionDTO = new ModuleFieldOptionDTO();
