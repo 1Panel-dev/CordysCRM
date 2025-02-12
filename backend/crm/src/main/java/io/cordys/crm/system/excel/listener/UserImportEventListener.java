@@ -15,6 +15,7 @@ import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.OrganizationUserService;
 import io.cordys.excel.domain.ExcelErrData;
 import io.cordys.excel.utils.ExcelValidateHelper;
+import lombok.Getter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,23 +26,26 @@ import java.util.regex.Pattern;
 
 public class UserImportEventListener extends AnalysisEventListener<Map<Integer, String>> {
 
-    private Class excelDataClass;
+    private final Class excelDataClass;
     private Map<Integer, String> headMap;
-    private Map<String, String> excelHeadToFieldNameDic = new HashMap<>();
+    private final Map<String, String> excelHeadToFieldNameDic = new HashMap<>();
+    @Getter
     protected List<UserExcelData> list = new ArrayList<>();
+    @Getter
     protected List<ExcelErrData<UserExcelData>> errList = new ArrayList<>();
     private static final String ERROR_MSG_SEPARATOR = ";";
     protected static final int NAME_LENGTH = 255;
     protected static final int PHONE_LENGTH = 20;
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-    private DepartmentService departmentService;
-    private String operatorId;
-    private String orgId;
+    private final DepartmentService departmentService;
+    private final String operatorId;
+    private final String orgId;
+    @Getter
     private int successCount = 0;
     protected static final int BATCH_COUNT = 1000;
-    private OrganizationUserService organizationUserService;
-    private List<BaseTreeNode> departmentTree;
-    private Map<String, String> departmentMap = new HashMap<>();
+    private final OrganizationUserService organizationUserService;
+    private final List<BaseTreeNode> departmentTree;
+    private final Map<String, String> departmentMap = new HashMap<>();
 
     public UserImportEventListener(Class clazz, String operatorId, String orgId) {
         excelDataClass = clazz;
@@ -118,11 +122,10 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         }
 
         if (StringUtils.isNotEmpty(errMsg)) {
-            Integer errorRowIndex = rowIndex;
             ExcelErrData excelErrData = new ExcelErrData(rowIndex,
                     Translator.get("number")
                             .concat(StringUtils.SPACE)
-                            .concat(String.valueOf(errorRowIndex + 1)).concat(StringUtils.SPACE)
+                            .concat(String.valueOf(rowIndex + 1)).concat(StringUtils.SPACE)
                             .concat(Translator.get("row"))
                             .concat(Translator.get("error"))
                             .concat("：")
@@ -293,8 +296,8 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         Set<String> result = new HashSet<>();
         Field field;
         Field[] fields = excelDataClass.getDeclaredFields();
-        for (int i = 0; i < fields.length; i++) {
-            field = excelDataClass.getDeclaredField(fields[i].getName());
+        for (Field item : fields) {
+            field = excelDataClass.getDeclaredField(item.getName());
             field.setAccessible(true);
             ExcelProperty excelProperty = field.getAnnotation(ExcelProperty.class);
             if (excelProperty != null) {
@@ -321,15 +324,4 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         }
     }
 
-    public List<ExcelErrData<UserExcelData>> getErrList() {
-        return errList;
-    }
-
-    public List<UserExcelData> getList() {
-        return list;
-    }
-
-    public int getSuccessCount() {
-        return successCount;
-    }
 }

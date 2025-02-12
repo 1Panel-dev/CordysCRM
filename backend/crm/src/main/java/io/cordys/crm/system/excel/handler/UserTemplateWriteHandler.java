@@ -16,7 +16,6 @@ import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +27,7 @@ public class UserTemplateWriteHandler implements RowWriteHandler, SheetWriteHand
 
     private Sheet sheet;
     private Drawing<?> drawingPatriarch;
-    private Map<String, Integer> fieldMap = new HashMap<>();
+    private final Map<String, Integer> fieldMap = new HashMap<>();
     private int totalColumns; // 记录总列数
 
     public UserTemplateWriteHandler(List<List<String>> headList) {
@@ -53,9 +52,10 @@ public class UserTemplateWriteHandler implements RowWriteHandler, SheetWriteHand
         // 创建第二行并合并单元格
         Row row1 = sheet.createRow(1);
         Cell cell1 = row1.createCell(0);
-        cell1.setCellValue("第二行说明文字：\n" +
-                "1、不能再Excel中对成员信息类别进行增加、修改、删除\n" +
-                "2、上下级部门间用‘/’隔开，且从最上级部门开始，例如\"XX公司/XX事业部/研发部\"");
+        cell1.setCellValue("""
+                第二行说明文字：
+                1、不能再Excel中对成员信息类别进行增加、修改、删除
+                2、上下级部门间用‘/’隔开，且从最上级部门开始，例如"XX公司/XX事业部/研发部\"""");
         sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, totalColumns - 1));
     }
 
@@ -66,9 +66,7 @@ public class UserTemplateWriteHandler implements RowWriteHandler, SheetWriteHand
             sheet = context.getWriteSheetHolder().getSheet();
             drawingPatriarch = sheet.createDrawingPatriarch();
 
-            Iterator<Map.Entry<String, Integer>> iterator = fieldMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, Integer> entry = iterator.next();
+            for (Map.Entry<String, Integer> entry : fieldMap.entrySet()) {
                 //默认字段
                 if (UserImportFiled.NAME.containsHead(entry.getKey())) {
                     setComment(fieldMap.get(entry.getKey()), Translator.get("required"));

@@ -23,18 +23,18 @@ import java.util.regex.Pattern;
 
 public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, String>> {
 
-    private Class excelDataClass;
+    private final Class excelDataClass;
     private Map<Integer, String> headMap;
-    private Map<String, String> excelHeadToFieldNameDic = new HashMap<>();
+    private final Map<String, String> excelHeadToFieldNameDic = new HashMap<>();
     protected List<UserExcelData> list = new ArrayList<>();
     protected List<ExcelErrData<UserExcelData>> errList = new ArrayList<>();
     private static final String ERROR_MSG_SEPARATOR = ";";
     protected static final int NAME_LENGTH = 255;
     protected static final int PHONE_LENGTH = 20;
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-    private DepartmentService departmentService;
-    private OrganizationUserService organizationUserService;
-    private String orgId;
+    private final DepartmentService departmentService;
+    private final OrganizationUserService organizationUserService;
+    private final String orgId;
 
     public UserCheckEventListener(Class clazz, String orgId) {
         excelDataClass = clazz;
@@ -95,11 +95,10 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
         }
 
         if (StringUtils.isNotEmpty(errMsg)) {
-            Integer errorRowIndex = rowIndex;
             ExcelErrData excelErrData = new ExcelErrData(rowIndex,
                     Translator.get("number")
                             .concat(StringUtils.SPACE)
-                            .concat(String.valueOf(errorRowIndex + 1)).concat(StringUtils.SPACE)
+                            .concat(String.valueOf(rowIndex + 1)).concat(StringUtils.SPACE)
                             .concat(Translator.get("row"))
                             .concat(Translator.get("error"))
                             .concat("：")
