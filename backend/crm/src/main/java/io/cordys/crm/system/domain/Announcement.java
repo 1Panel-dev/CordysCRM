@@ -24,12 +24,15 @@ public class Announcement extends BaseModel {
     private String url;
 
     @Schema(description = "接收者")
-    private String receiver;
+    private byte[] receiver;
 
     @Schema(description = "组织ID")
     private String organizationId;
 
     @Schema(description = "状态")
     private String status;
+
+    @Schema(description = "接收类型组合")
+    private byte[] receiveType;
 
 }

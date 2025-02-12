@@ -231,17 +231,18 @@ CREATE TABLE sys_announcement
 (
     `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
     `subject`         VARCHAR(255)  NOT NULL COMMENT '公告标题',
-    `content`         VARCHAR(1000) NOT NULL COMMENT '公告内容',
+    `content`         BLOB      NOT NULL COMMENT '公告内容',
     `start_time`      BIGINT        NOT NULL COMMENT '开始时间',
     `end_time`        BIGINT        NOT NULL COMMENT '结束时间',
-    `url`             VARCHAR(255) COMMENT '链接',
-    `receiver`        VARCHAR(1000) NOT NULL COMMENT '接收人id(销售ids/角色ids/部门ids)',
+    `url`             VARCHAR(255)  COMMENT '链接',
+    `receiver`        BLOB NOT NULL COMMENT '接收人id(销售ids/角色ids/部门ids)',
     `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
     `status`          VARCHAR(64)   NOT NULL COMMENT '状态',
     `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
     `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
+    `receive_type`    BLOB      NOT NULL   COMMENT '接收类型组合' ,
     PRIMARY KEY (id)
 ) COMMENT = '公告'
     ENGINE = InnoDB

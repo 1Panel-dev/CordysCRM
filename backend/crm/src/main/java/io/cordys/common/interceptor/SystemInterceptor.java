@@ -2,9 +2,7 @@ package io.cordys.common.interceptor;
 
 import io.cordys.common.util.CompressUtils;
 import io.cordys.config.MybatisInterceptorConfig;
-import io.cordys.crm.system.domain.MessageTaskBlob;
-import io.cordys.crm.system.domain.ModuleFieldBlob;
-import io.cordys.crm.system.domain.OperationLogBlob;
+import io.cordys.crm.system.domain.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -29,8 +27,12 @@ public class SystemInterceptor {
     public List<MybatisInterceptorConfig> systemCompressConfigs() {
         List<MybatisInterceptorConfig> configList = new ArrayList<>();
 
-        // TODO：实现 blob 字段压缩功能
         configList.add(new MybatisInterceptorConfig(MessageTaskBlob.class, "template", CompressUtils.class, "zip", "unzip"));
+        configList.add(new MybatisInterceptorConfig(Announcement.class, "content", CompressUtils.class, "zip", "unzip"));
+        configList.add(new MybatisInterceptorConfig(Announcement.class, "receiver", CompressUtils.class, "zip", "unzip"));
+        configList.add(new MybatisInterceptorConfig(Announcement.class, "receiveType", CompressUtils.class, "zip", "unzip"));
+        configList.add(new MybatisInterceptorConfig(OrganizationConfigDetail.class, "content", CompressUtils.class, "zip", "unzip"));
+        configList.add(new MybatisInterceptorConfig(Notification.class, "content", CompressUtils.class, "zip", "unzip"));
 
         configList.add(new MybatisInterceptorConfig(OperationLogBlob.class, "originalValue", CompressUtils.class, "zip", "unzip"));
         configList.add(new MybatisInterceptorConfig(ModuleFieldBlob.class, "extraProp", CompressUtils.class, "zip", "unzip"));

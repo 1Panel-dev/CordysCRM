@@ -3,7 +3,7 @@ package io.cordys.crm.system.service;
 
 
 import io.cordys.common.dto.OptionDTO;
-import io.cordys.crm.system.domain.Announcement;
+
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -27,8 +27,6 @@ public class NotificationService {
     private BaseMapper<Notification> notificationMapper;
     @Resource
     private ExtNotificationMapper extNotificationMapper;
-    @Resource
-    private BaseMapper<Announcement>announcementBaseMapper;
 
     public List<NotificationDTO> listNotification(NotificationRequest notificationRequest, String userId, String organizationId) {
         buildParam(notificationRequest, userId);
@@ -38,13 +36,6 @@ public class NotificationService {
     }
 
     public int read(String id, String userId) {
-        Notification notification = notificationMapper.selectByPrimaryKey(id);
-        if (StringUtils.equalsIgnoreCase(notification.getResourceType(), NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString())) {
-            Announcement announcement = new Announcement();
-            announcement.setId(notification.getResourceId());
-            announcement.setStatus(NotificationConstants.Status.READ.name());
-            announcementBaseMapper.update(announcement);
-        }
         Notification record = new Notification();
         record.setId(id);
         record.setStatus(NotificationConstants.Status.READ.name());

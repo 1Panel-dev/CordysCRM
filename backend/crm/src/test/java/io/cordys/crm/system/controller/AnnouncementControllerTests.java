@@ -36,7 +36,7 @@ public class AnnouncementControllerTests extends BaseTest {
         request.setContent("测试公告内容");
         request.setStartTime(System.currentTimeMillis());
         request.setEndTime(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7);
-        request.setReceiver("admin");
+        request.setDeptIds(List.of("admin"));
         request.setOrganizationId("1");
         this.requestPost("/announcement/add", request).andExpect(status().isOk());
     }
