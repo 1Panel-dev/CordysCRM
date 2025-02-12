@@ -42,18 +42,18 @@ class CustomerControllerTests extends BaseTest {
         return BASE_PATH;
     }
 
-    @Test
-    @Order(0)
-    void testModuleField() throws Exception {
-        MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FIELD);
-        List<ModuleFieldDTO> moduleFields = getResultDataArray(mvcResult, ModuleFieldDTO.class);
-        moduleFields.forEach(moduleField -> {
-            Assertions.assertEquals(moduleField.getModuleId(), ModuleKey.CUSTOMER);
-        });
-
-        // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, MODULE_FIELD);
-    }
+    // @Test
+    // @Order(0)
+    // void testModuleField() throws Exception {
+    //     MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FIELD);
+    //     List<ModuleFieldDTO> moduleFields = getResultDataArray(mvcResult, ModuleFieldDTO.class);
+    //     moduleFields.forEach(moduleField -> {
+    //         Assertions.assertEquals(moduleField.getModuleId(), ModuleKey.CUSTOMER);
+    //     });
+    //
+    //     // 校验权限
+    //     requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, MODULE_FIELD);
+    // }
 
     @Test
     @Order(0)

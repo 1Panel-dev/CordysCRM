@@ -465,7 +465,7 @@ CREATE INDEX idx_organization_id ON sys_module (organization_id ASC);
 CREATE TABLE sys_module_form(
     `id`            VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `form_key`      VARCHAR(20) NOT NULL   COMMENT '表单Key' ,
-    `module_id`     VARCHAR(32) NOT NULL   COMMENT '所属模块' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
     `front_cache`   BIT(1) NOT NULL  DEFAULT 0 COMMENT '前台缓存' ,
     `layout`        VARCHAR(10) NOT NULL   COMMENT '布局(常量)' ,
     `label_pos`     VARCHAR(10) NOT NULL   COMMENT '标题位置(常量)' ,
@@ -487,7 +487,7 @@ CREATE TABLE sys_module_form(
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_module_id ON sys_module_form (module_id ASC);
+CREATE INDEX idx_organization_id ON sys_module_form(organization_id ASC);
 
 CREATE TABLE sys_module_field(
     `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,

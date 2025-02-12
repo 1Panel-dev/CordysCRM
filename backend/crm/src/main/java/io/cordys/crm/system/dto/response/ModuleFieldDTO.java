@@ -1,24 +1,24 @@
 package io.cordys.crm.system.dto.response;
 
-import io.cordys.crm.system.domain.ModuleFieldOption;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ModuleFieldDTO {
 
 	@Schema(description = "ID")
 	private String id;
-
-	@Size(max = 32)
-	@NotBlank
-	@Schema(description = "模块ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String moduleId;
 
 	@Size(max = 255)
 	@NotBlank
@@ -70,9 +70,6 @@ public class ModuleFieldDTO {
 	@Schema(description = "校验规则(JSON)")
 	private String rules;
 
-	/**
-	 * TODO: 参数需替换
-	 */
-	@Schema(description = "字段选项值")
-	private List<ModuleFieldOption> options;
+	@Schema(description = "字段选项值集合")
+	private List<ModuleFieldOptionDTO> options;
 }

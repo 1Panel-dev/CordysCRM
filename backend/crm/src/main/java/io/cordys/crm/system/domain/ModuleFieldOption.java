@@ -16,14 +16,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "sys_module_field_option")
-public class ModuleFieldOption extends BaseModel {
+public class ModuleFieldOption {
+
+	@Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
+	private String id;
 
 	@Schema(description = "所属模块字段ID")
 	private String fieldId;
 
-	@Schema(description = "选项文本")
-	private String fieldKey;
-
-	@Schema(description = "选项值")
-	private String fieldValue;
+	@Schema(description = "文本")
+	private String label;
 }

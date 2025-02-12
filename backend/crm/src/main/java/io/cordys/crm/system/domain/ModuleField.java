@@ -18,8 +18,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "sys_module_field")
 public class ModuleField extends BaseModel {
 
-	@Schema(description = "所属模块")
-	private String moduleId;
+	@Schema(description = "所属表单")
+	private String formId;
 
 	@Schema(description = "字段名称")
 	private String name;

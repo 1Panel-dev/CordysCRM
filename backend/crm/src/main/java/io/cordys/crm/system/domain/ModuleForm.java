@@ -15,11 +15,14 @@ import lombok.NoArgsConstructor;
 @Table(name = "sys_module_form")
 public class ModuleForm extends BaseModel {
 
-	@Schema(description = "所属模块")
-	private String moduleId;
+	@Schema(description = "表单Key")
+	private String formKey;
+
+	@Schema(description = "组织id")
+	private String organizationId;
 
 	@Schema(description = "前台缓存")
-	private boolean frontCache;
+	private Boolean frontCache;
 
 	@Schema(description = "布局(常量)")
 	private String layout;
@@ -34,7 +37,7 @@ public class ModuleForm extends BaseModel {
 	private String labelAlignment;
 
 	@Schema(description = "是否展示描述信息")
-	private boolean showDesc;
+	private Boolean showDesc;
 
 	@Schema(description = "输入框宽度")
 	private String inputWidth;
@@ -43,11 +46,11 @@ public class ModuleForm extends BaseModel {
 	private String optBtnPos;
 
 	@Schema(description = "保存按钮")
-	private boolean saveBtn;
+	private Boolean saveBtn;
 
 	@Schema(description = "保存并继续")
-	private boolean saveContinueBtn;
+	private Boolean saveContinueBtn;
 
 	@Schema(description = "取消按钮")
-	private boolean cancelBtn;
+	private Boolean cancelBtn;
 }
