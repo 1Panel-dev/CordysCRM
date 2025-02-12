@@ -1,7 +1,8 @@
 export enum TableKeyEnum {
-  SYSTEM_USER = 'systemUser', // TODO lmy 没用 可删
+  SYSTEM_USER = 'systemUser',
   AUTH = 'auth',
   SYSTEM_ORG_TABLE = 'systemOrgTable',
+  MODULE_OPPORTUNITY_RULE_TABLE = 'moduleOpportunityRuleTable',
 }
 
 // 具有特殊功能的列

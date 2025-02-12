@@ -10,6 +10,9 @@ export default {
   'module.customer.capacitySet': '客户库容设置',
   'module.clue.cluePool': '线索池设置',
   'module.clue.capacitySet': '线索库容设置',
-  'module.businessManage.businessParamsSet': '业务参数设置',
+  'module.businessManage.businessCloseRule': '商机关闭规则',
+  'module.businessManage.addRules': '添加规则',
   'module.businessManage.mainNavConfig': '主导航配置',
+  'module.reminderAdvance': '提前',
+  'module.reminderDays': '天提醒归属人',
 };

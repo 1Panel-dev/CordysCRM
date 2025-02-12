@@ -51,9 +51,9 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { NDivider, NIcon, NLayoutSider, NMenu, NTag } from 'naive-ui';
-  import { BookOutline as BookIcon } from '@vicons/ionicons5';
+  import { NDivider, NLayoutSider, NMenu, NTag } from 'naive-ui';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
@@ -77,15 +77,19 @@
     }
   );
 
-  function renderIcon(icon: Component) {
-    return () => h(NIcon, null, { default: () => h(icon) });
+  function renderIcon(type: string) {
+    return () =>
+      h(CrmIcon, {
+        size: 20,
+        type,
+      });
   }
 
   const menuOptions = [
     {
       label: t('menu.settings'),
       key: 'a-wild-sheep-chase',
-      icon: renderIcon(BookIcon),
+      icon: renderIcon('iconicon_set_up'),
       children: [
         {
           label: t('menu.settings.org'),

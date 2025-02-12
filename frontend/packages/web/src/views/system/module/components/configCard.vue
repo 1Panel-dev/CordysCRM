@@ -9,11 +9,12 @@
       </div>
       <div class="nav-config-item-action">
         <CrmButtonGroup :list="item.groupList" @select="(key) => handleSelect(key, item)" />
-        <NSwitch v-model:value="item.enable" />
+        <NSwitch v-model:value="item.enable" @update:value="(value:boolean)=>toggleModule(value,item)" />
       </div>
     </div>
   </div>
   <customManagementFormDrawer v-model:visible="customerManagementFormVisible" />
+  <OpportunityCloseRulesDrawer v-model:visible="businessManagementBusinessParamsSetVisible" />
 </template>
 
 <script setup lang="ts">
@@ -24,6 +25,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
+  import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 
@@ -44,7 +46,12 @@
       label: t('module.workbenchHome'),
       key: ModuleConfigEnum.HOME,
       icon: 'iconicon_home',
-      groupList: [],
+      groupList: [
+        {
+          label: t('module.newForm'),
+          key: 'newForm',
+        },
+      ],
       enable: true,
     },
     {
@@ -70,7 +77,7 @@
     {
       label: t('module.clueManagement'),
       key: ModuleConfigEnum.CLUE_MANAGEMENT,
-      icon: 'iconicon_customer',
+      icon: 'iconicon_clue',
       groupList: [
         {
           label: t('module.newForm'),
@@ -90,7 +97,7 @@
     {
       label: t('module.businessManagement'),
       key: ModuleConfigEnum.BUSINESS_MANAGEMENT,
-      icon: 'iconicon_customer',
+      icon: 'iconicon_business_opportunity',
       enable: true,
       groupList: [
         {
@@ -98,7 +105,7 @@
           key: 'newForm',
         },
         {
-          label: t('module.businessManage.businessParamsSet'),
+          label: t('module.businessManage.businessCloseRule'),
           key: 'businessParamsSet',
         },
       ],
@@ -106,14 +113,14 @@
     {
       label: t('module.dataManagement'),
       key: ModuleConfigEnum.DATA_MANAGEMENT,
-      icon: 'iconicon_customer',
+      icon: 'iconicon_data',
       enable: true,
       groupList: [],
     },
     {
       label: t('module.productManagement'),
       key: ModuleConfigEnum.PRODUCT_MANAGEMENT,
-      icon: 'iconicon_customer',
+      icon: 'iconicon_product',
       groupList: [
         {
           label: t('module.newForm'),
@@ -123,6 +130,8 @@
       enable: true,
     },
   ]);
+
+  function toggleModule(value: boolean, item: ModuleConfigItem) {}
 
   const customerManagementFormVisible = ref(false);
   const customerManagementOpenSeaVisible = ref(false);

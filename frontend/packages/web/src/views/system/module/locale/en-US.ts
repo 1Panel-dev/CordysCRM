@@ -10,6 +10,9 @@ export default {
   'module.customer.capacitySet': 'Customer Capacity Settings',
   'module.clue.cluePool': 'Clue Pool Settings',
   'module.clue.capacitySet': 'Clue Capacity Settings',
-  'module.businessManage.businessParamsSet': 'Business Parameter Settings',
+  'module.businessManage.businessCloseRule': 'Business closed rules',
+  'module.businessManage.addRules': 'Add rule',
   'module.businessManage.mainNavConfig': 'Main Navigation Configuration',
+  'module.reminderAdvance': 'Advance',
+  'module.reminderDays': 'Days to Remind the Owner',
 };
