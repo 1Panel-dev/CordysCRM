@@ -266,7 +266,7 @@ public class OrganizationUserService {
     public void updateUser(UserUpdateRequest request, String operatorId) {
         UserResponse oldUser = getUserDetail(request.getId());
         //邮箱和手机号唯一性校验
-        checkEmailAndPhone(request.getEmail(), request.getPhone(), oldUser.getId());
+        checkEmailAndPhone(request.getEmail(), request.getPhone(), oldUser.getUserId());
         //update user info
         updateUserInfo(request, operatorId, oldUser);
         //update user base
