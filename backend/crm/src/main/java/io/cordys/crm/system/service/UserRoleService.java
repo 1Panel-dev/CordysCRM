@@ -73,18 +73,16 @@ public class UserRoleService {
 
     private Map<String, String> getUserAvatarMap(List<RoleUserListResponse> users) {
         List<String> userIds = users.stream().map(RoleUserListResponse::getUserId).toList();
-        Map<String, String> userAvatarMap = userExtendMapper.selectByIds(userIds.toArray(new String[0]))
+        return userExtendMapper.selectByIds(userIds.toArray(new String[0]))
                 .stream()
                 .collect(Collectors.toMap(UserExtend::getId, UserExtend::getAvatar));
-        return userAvatarMap;
     }
 
     private Map<String, String> getDeptNameMap(List<RoleUserListResponse> users) {
         Set<String> deptIds = users.stream().map(RoleUserListResponse::getDepartmentId).collect(Collectors.toSet());
-        Map<String, String> deptNameMap = departmentMapper.selectByIds(deptIds.toArray(new String[0]))
+        return departmentMapper.selectByIds(deptIds.toArray(new String[0]))
                 .stream()
                 .collect(Collectors.toMap(Department::getId, Department::getName));
-        return deptNameMap;
     }
 
     private Map<String, List<UserRoleConvert>> getUserRoleMap(String orgId, List<RoleUserListResponse> users) {
@@ -97,8 +95,7 @@ public class UserRoleService {
 
         List<UserRoleConvert> userRoles = extUserMapper.getUserRole(userIds, orgId);
         userRoles.forEach(role -> role.setName(roleService.translateInternalRole(role.getName())));
-        Map<String, List<UserRoleConvert>> userRoleMap = userRoles.stream().collect(Collectors.groupingBy(UserRoleConvert::getUserId));
-        return userRoleMap;
+        return userRoles.stream().collect(Collectors.groupingBy(UserRoleConvert::getUserId));
     }
 
     /**
@@ -129,9 +126,7 @@ public class UserRoleService {
         List<RoleUserTreeNode> userNodes = extUserRoleMapper.selectUserRoleForRelevance(orgId, roleId);
 
         // 如果已经关联的用户，设置为 disable
-        Set<String> currentRoleUserIds = extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId))
-                .stream()
-                .collect(Collectors.toSet());
+        Set<String> currentRoleUserIds = new HashSet<>(extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId)));
 
         userNodes.forEach(userNode -> {
             if (currentRoleUserIds.contains(userNode.getId())) {
@@ -154,7 +149,7 @@ public class UserRoleService {
             userSet.addAll(request.getUserIds());
         }
 
-        List<String> userIds = userSet.stream().collect(Collectors.toList());
+        List<String> userIds = new ArrayList<>(userSet);
         SubListUtils.dealForSubList(userIds, 50, (subUserIds) -> {
             List<String> currentRoleUserIds = extUserRoleMapper.getUserIdsByRoleIds(List.of(request.getRoleId()));
             // 去除已关联的用户，添加未关联的用户
@@ -185,17 +180,9 @@ public class UserRoleService {
 
     public List<RoleUserOptionResponse> getUserOptionByRoleId(String organizationId, String roleId) {
         List<RoleUserOptionResponse> roleUserOptions = extUserRoleMapper.selectUserOptionByRoleId(organizationId, roleId);
-        Set<String> roleUserIdSet = extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId))
-                .stream()
-                .collect(Collectors.toSet());
+        Set<String> roleUserIdSet = new HashSet<>(extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId)));
 
-        roleUserOptions.forEach(userOption -> {
-            if (roleUserIdSet.contains(userOption.getId())) {
-                userOption.setEnabled(false);
-            } else {
-                userOption.setEnabled(true);
-            }
-        });
+        roleUserOptions.forEach(userOption -> userOption.setEnabled(!roleUserIdSet.contains(userOption.getId())));
 
         return roleUserOptions;
     }

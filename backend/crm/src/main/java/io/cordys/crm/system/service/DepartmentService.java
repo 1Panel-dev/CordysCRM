@@ -54,8 +54,7 @@ public class DepartmentService extends MoveNodeService {
      */
     public List<BaseTreeNode> getTree(String orgId) {
         List<BaseTreeNode> departmentList = extDepartmentMapper.selectTreeNode(orgId);
-        List<BaseTreeNode> baseTreeNodes = BaseTreeNode.buildTree(departmentList);
-        return baseTreeNodes;
+        return BaseTreeNode.buildTree(departmentList);
     }
 
     /**
@@ -230,10 +229,7 @@ public class DepartmentService extends MoveNodeService {
      */
     public boolean deleteCheck(String id, String orgId) {
         checkDepartment(id);
-        if (extOrganizationUserMapper.countUserByDepartmentId(id, orgId) > 0) {
-            return false;
-        }
-        return true;
+        return extOrganizationUserMapper.countUserByDepartmentId(id, orgId) <= 0;
     }
 
 
@@ -340,7 +336,7 @@ public class DepartmentService extends MoveNodeService {
 
     private void createDepByPath(Iterator<String> itemIterator, String departmentName, BaseTreeNode parentDep, String orgId, String currentDepPath, Map<String, String> departmentMap, String operatorId) {
         StringBuilder path = new StringBuilder(currentDepPath);
-        path.append("/" + departmentName.trim());
+        path.append("/").append(departmentName.trim());
 
         //模块id
         String pid;
@@ -354,7 +350,7 @@ public class DepartmentService extends MoveNodeService {
 
         while (itemIterator.hasNext()) {
             String nextDepName = itemIterator.next().trim();
-            path.append("/" + nextDepName);
+            path.append("/").append(nextDepName);
             if (departmentMap.get(path.toString()) != null) {
                 pid = departmentMap.get(path.toString());
             } else {

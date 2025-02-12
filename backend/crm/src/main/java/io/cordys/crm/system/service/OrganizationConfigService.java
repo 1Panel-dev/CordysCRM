@@ -1,7 +1,5 @@
 package io.cordys.crm.system.service;
 
-import java.util.*;
-
 import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
@@ -9,13 +7,24 @@ import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.client.QrCodeClient;
+import io.cordys.crm.system.constants.OrganizationConfigConstants;
 import io.cordys.crm.system.constants.SyncSettingApiPaths;
+import io.cordys.crm.system.domain.OrganizationConfig;
+import io.cordys.crm.system.domain.OrganizationConfigDetail;
 import io.cordys.crm.system.dto.dingtalk.DingTalkBaseParamDTO;
 import io.cordys.crm.system.dto.lark.LarkBaseParamDTO;
+import io.cordys.crm.system.dto.response.EmailDTO;
+import io.cordys.crm.system.dto.response.SyncOrganizationDTO;
+import io.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
+import io.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import io.cordys.crm.system.notice.sender.mail.MailNoticeSender;
+import io.cordys.mybatis.BaseMapper;
+import jakarta.annotation.Resource;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.apache.commons.lang3.ObjectUtils;
@@ -26,17 +35,9 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.JSON;
-import io.cordys.crm.system.constants.OrganizationConfigConstants;
-import io.cordys.crm.system.domain.OrganizationConfig;
-import io.cordys.crm.system.domain.OrganizationConfigDetail;
-import io.cordys.crm.system.dto.response.EmailDTO;
-import io.cordys.crm.system.dto.response.SyncOrganizationDTO;
-import io.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
-import io.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
-import io.cordys.mybatis.BaseMapper;
-import jakarta.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class OrganizationConfigService {
@@ -258,7 +259,7 @@ public class OrganizationConfigService {
                 LogUtils.debug("helper" + helper);
                 helper.setSubject("MeterSphere测试邮件");
 
-                LogUtils.info("收件人地址: {}", Arrays.asList(recipient));
+                LogUtils.info("收件人地址: {}", List.of(recipient));
                 helper.setText("这是一封测试邮件，邮件发送成功", true);
                 helper.setTo(recipient);
                 try {

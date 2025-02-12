@@ -522,8 +522,7 @@ public class OrganizationUserService {
      * @return
      */
     private List<List<String>> getTemplateHead() {
-        List<List<String>> heads = new UserExcelDataFactory().getUserExcelDataLocal().getHead();
-        return heads;
+        return new UserExcelDataFactory().getUserExcelDataLocal().getHead();
     }
 
 
