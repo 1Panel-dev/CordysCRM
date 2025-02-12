@@ -50,7 +50,7 @@ export function getAuthList(data: AuthTableQueryParams) {
 
 // 获取认证设置详情
 export function getAuthDetail(id: string) {
-  return CDR.post<AuthUpdateParams>({ url: `${GetAuthDetailUrl}/${id}` });
+  return CDR.get<AuthUpdateParams>({ url: `${GetAuthDetailUrl}/${id}` });
 }
 
 // 更新认证设置
@@ -65,15 +65,15 @@ export function createAuth(data: Auth) {
 
 // 更新认证设置状态
 export function updateAuthStatus(id: string, enable: boolean) {
-  return CDR.post({ url: `${UpdateAuthStatusUrl}/${id}`, data: { enable } });
+  return CDR.get({ url: `${UpdateAuthStatusUrl}/${id}`, params: { enable } });
 }
 
 // 更新认证设置名称
 export function updateAuthName(id: string, name: string) {
-  return CDR.post({ url: `${UpdateAuthNameUrl}/${id}`, data: { name } });
+  return CDR.get({ url: `${UpdateAuthNameUrl}/${id}`, params: { name } });
 }
 
 // 删除认证设置
 export function deleteAuth(id: string) {
-  return CDR.post({ url: `${DeleteAuthUrl}/${id}` });
+  return CDR.get({ url: `${DeleteAuthUrl}/${id}` });
 }

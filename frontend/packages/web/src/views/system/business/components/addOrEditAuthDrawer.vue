@@ -120,7 +120,11 @@
             Message.success(t('common.addSuccess'));
           }
           if (isContinue) {
-            form.value = cloneDeep(defaultAuthForm);
+            form.value.name = '';
+            form.value.description = '';
+            Object.keys(form.value.configuration).forEach((key) => {
+              form.value.configuration[key] = '';
+            });
           } else {
             showDrawer.value = false;
           }
