@@ -16,82 +16,34 @@
       />
     </n-scrollbar>
   </div>
-  <CrmDrawer
-    v-model:show="drawerVisible"
-    :title="t('role.addMember')"
-    :width="800"
-    :ok-disabled="addMembers.length === 0"
+  <CrmSelectUserDrawer
+    v-model:visible="drawerVisible"
     :loading="addMemberLoading"
-    @cancel="handleCancelAdd"
+    :title="t('role.addMember')"
+    :api-type-key="MemberApiTypeEnum.SYSTEM_ROLE"
+    :base-params="{ roleId: props.activeRoleId }"
     @confirm="handleAddConfirm"
-  >
-    <div class="flex h-full w-full flex-col gap-[16px]">
-      <div class="flex items-center gap-[16px]">
-        <div class="whitespace-nowrap">{{ t('role.addMemberType') }}</div>
-        <n-tabs
-          v-model:value="addMemberType"
-          type="segment"
-          class="no-content"
-          animated
-          @update-value="handleTypeChange"
-        >
-          <n-tab-pane v-for="item of addMemberTypes" :key="item.value" :name="item.value" :tab="item.label">
-          </n-tab-pane>
-        </n-tabs>
-      </div>
-      <n-transfer
-        v-model:value="addMembers"
-        :options="flattenTree(options as unknown as Option[])"
-        :render-source-list="renderSourceList"
-        source-filterable
-        class="addMemberTransfer"
-      />
-    </div>
-  </CrmDrawer>
+  />
 </template>
 
 <script setup lang="ts">
-  import {
-    NButton,
-    NScrollbar,
-    NSwitch,
-    NTabPane,
-    NTabs,
-    NTransfer,
-    NTree,
-    TransferRenderSourceList,
-    useMessage,
-  } from 'naive-ui';
+  import { NButton, NScrollbar, NSwitch, useMessage } from 'naive-ui';
 
-  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
-  import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
-  import roleTreeNodePrefix from './roleTreeNodePrefix.vue';
+  import CrmSelectUserDrawer from '@/components/business/crm-select-user-drawer/index.vue';
+  import { SelectedUsersParams } from '@/components/business/crm-select-user-drawer/type';
 
-  import {
-    getRoleDeptUserTree,
-    getRoleMember,
-    getRoleMemberTree,
-    getUsers,
-    relateRoleMember,
-    removeRoleMember,
-  } from '@/api/modules/system/role';
+  import { getRoleMember, relateRoleMember, removeRoleMember } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
-  import { mapTree } from '@/utils';
 
-  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
+  import { MemberApiTypeEnum } from '@/enums/moduleEnum';
+
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import { DeptTreeNode, RoleItem, RoleMemberItem } from '@lib/shared/models/system/role';
-
-  interface Option {
-    label: string;
-    value: string;
-    children?: Option[];
-  }
+  import { RoleMemberItem } from '@lib/shared/models/system/role';
 
   const props = defineProps<{
     activeRoleId: string;
@@ -235,165 +187,14 @@
   function handleCreate() {
     drawerVisible.value = true;
   }
-  const addMemberType = ref<string>('org');
-  const addMemberTypes = [
-    {
-      label: t('menu.settings.org'),
-      value: 'org',
-    },
-    {
-      label: t('role.role'),
-      value: 'role',
-    },
-    {
-      label: t('role.member'),
-      value: 'member',
-    },
-  ];
-
-  const addMembers = ref<string[]>([]);
-  const userIds = ref<string[]>([]);
-  const roleIds = ref<string[]>([]);
-  const deptIds = ref<string[]>([]);
-  const departmentOptions = ref<DeptTreeNode[]>([]);
-
-  async function initDeptUserTree() {
-    try {
-      departmentOptions.value = await getRoleDeptUserTree(props.activeRoleId);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  const roleOptions = ref<Option[]>([]);
-  async function initRoleUserTree() {
-    try {
-      roleOptions.value = await getRoleMemberTree(props.activeRoleId);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  const userOptions = ref<RoleItem[]>([]);
-  async function initUserList() {
-    try {
-      userOptions.value = await getUsers(props.activeRoleId);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  function handleTypeChange(value: string) {
-    if (value === 'org') {
-      initDeptUserTree();
-    } else if (value === 'role') {
-      initRoleUserTree();
-    } else {
-      initUserList();
-    }
-    addMembers.value = [];
-  }
-
-  const options = computed(() => {
-    if (addMemberType.value === 'org') {
-      return mapTree(departmentOptions.value, (item) => {
-        return {
-          label: item.name,
-          value: item.id,
-          disabled: !item.enabled,
-          ...item,
-          children: item.children?.length ? item.children : undefined,
-        };
-      });
-    }
-    if (addMemberType.value === 'role') {
-      return mapTree(roleOptions.value, (item) => {
-        return {
-          label: item.name,
-          value: item.id,
-          disabled: !item.enabled,
-          ...item,
-          children: item.children?.length ? item.children : undefined,
-        };
-      });
-    }
-    return userOptions.value.map((item) => {
-      return {
-        label: item.name,
-        value: item.id,
-        disabled: !item.enabled,
-        ...item,
-      };
-    });
-  });
-
-  function flattenTree(list: undefined | Option[]): Option[] {
-    const result: Option[] = [];
-    function flatten(_list: Option[] = []) {
-      _list.forEach((item) => {
-        result.push(item);
-        flatten(item.children);
-      });
-    }
-    flatten(list);
-    return result;
-  }
-
-  const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
-    return h(NTree, {
-      keyField: 'value',
-      blockLine: true,
-      multiple: true,
-      selectable: true,
-      data: options.value,
-      pattern,
-      selectedKeys: addMembers.value,
-      showIrrelevantNodes: false,
-      renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
-        if (node.option.internal) {
-          return h(roleTreeNodePrefix);
-        }
-      },
-      onUpdateSelectedKeys: (selectedKeys: Array<string | number>, nodes) => {
-        onCheck(selectedKeys);
-        userIds.value = [];
-        roleIds.value = [];
-        deptIds.value = [];
-        nodes.forEach((node) => {
-          if (node) {
-            if (node.nodeType === DeptNodeTypeEnum.USER || addMemberType.value === 'member') {
-              userIds.value.push(node.value as string);
-            } else if (node.nodeType === DeptNodeTypeEnum.ROLE) {
-              roleIds.value.push(node.value as string);
-            } else if (node.nodeType === DeptNodeTypeEnum.ORG) {
-              deptIds.value.push(node.value as string);
-            }
-          }
-        });
-      },
-    });
-  };
-
-  function handleCancelAdd() {
-    addMembers.value = [];
-    userIds.value = [];
-    roleIds.value = [];
-    deptIds.value = [];
-    addMemberType.value = 'org';
-  }
 
   const addMemberLoading = ref(false);
-  async function handleAddConfirm() {
+  async function handleAddConfirm(params: SelectedUsersParams) {
     try {
       addMemberLoading.value = true;
       await relateRoleMember({
+        ...params,
         roleId: props.activeRoleId,
-        userIds: userIds.value,
-        roleIds: roleIds.value,
-        deptIds: deptIds.value,
       });
       Message.success(t('common.addSuccess'));
       drawerVisible.value = false;
@@ -414,7 +215,6 @@
   );
 
   onMounted(() => {
-    initDeptUserTree();
     searchData();
   });
 </script>

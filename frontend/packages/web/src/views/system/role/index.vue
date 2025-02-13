@@ -68,9 +68,9 @@
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTree from '@/components/pure/crm-tree/index.vue';
   import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
+  import roleTreeNodePrefix from '@/components/business/crm-select-user-drawer/roleTreeNodePrefix.vue';
   import memberTab from './components/memberTab.vue';
   import permissionTab from './components/permissionTab.vue';
-  import roleTreeNodePrefix from './components/roleTreeNodePrefix.vue';
 
   import { deleteRole, getRoles, updateRole } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';

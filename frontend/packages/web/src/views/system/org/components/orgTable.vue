@@ -83,6 +83,7 @@
 
   import { getConfigSynchronization } from '@/api/modules/system/business';
   import {
+    deleteUser,
     getUserList,
     importUserPreCheck,
     importUsers,
@@ -280,21 +281,26 @@
   }
 
   // 删除员工
-  function deleteMember(row: MemberItem) {
+  async function deleteMember(row: MemberItem) {
+    // TODO 缺少校验接口
     const hasNotMoved = false;
-    const tipContent = hasNotMoved ? '' : t('org.deleteMemberTipContent');
-    const tipTitle = hasNotMoved
+    const title = hasNotMoved
       ? t('org.deleteHasNotMovedTipContent')
       : t('common.deleteConfirmTitle', { name: characterLimit(row.userName) });
+    const content = hasNotMoved ? '' : t('org.deleteMemberTipContent');
+    const positiveText = hasNotMoved ? '' : t('common.confirm');
+
     openModal({
       type: 'error',
-      title: tipTitle,
-      content: tipContent,
-      positiveText: hasNotMoved ? '' : t('common.confirm'),
+      title,
+      content,
+      positiveText,
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
+          await deleteUser(row.id);
           Message.success(t('common.deleteSuccess'));
+          tableRefreshId.value += 1;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -313,28 +319,29 @@
   }
 
   // 切换员工状态
-  function handleToggleStatus(row: MemberItem) {
+  async function handleToggleStatus(row: MemberItem) {
     const enable = !row.enable;
+
+    const title = t(enable ? 'common.confirmEnableTitle' : 'common.confirmDisabledTitle', {
+      name: characterLimit(row.userName),
+    });
+
+    const content = t(enable ? 'org.enabledUserTipContent' : 'org.disabledUserTipContent');
+
     openModal({
       type: enable ? 'default' : 'error',
-      title: t(enable ? 'common.confirmEnableTitle' : 'common.confirmDisabledTitle', {
-        name: characterLimit(row.userName),
-      }),
-      content: t(enable ? 'org.enabledUserTipContent' : 'org.disabledUserTipContent'),
+      title,
+      content,
       positiveText: t(enable ? 'common.confirmStart' : 'common.confirmDisable'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await updateUser({
-            ...row,
-            name: row.userName,
-            enable,
-          });
+          await updateUser({ ...row, name: row.userName, enable });
           tableRefreshId.value += 1;
           Message.success(t(enable ? 'common.opened' : 'common.disabled'));
         } catch (error) {
           // eslint-disable-next-line no-console
-          console.error(error);
+          console.log(error);
         }
       },
     });

@@ -56,13 +56,13 @@ export function createRole(data: RoleCreateParams) {
 }
 
 // 获取角色关联用户树
-export function getRoleMemberTree(roleId: string) {
-  return CDR.get({ url: `${GetRoleMemberTreeUrl}/${roleId}` });
+export function getRoleMemberTree(params: { roleId: string }) {
+  return CDR.get({ url: `${GetRoleMemberTreeUrl}/${params.roleId}` });
 }
 
 // 获取部门用户树
-export function getRoleDeptUserTree(roleId: string) {
-  return CDR.get<DeptUserTreeNode[]>({ url: `${GetRoleDeptTreeUrl}/${roleId}` });
+export function getRoleDeptUserTree(params: { roleId: string }) {
+  return CDR.get<DeptUserTreeNode[]>({ url: `${GetRoleDeptTreeUrl}/${params.roleId}` });
 }
 
 // 获取部门树
@@ -96,6 +96,6 @@ export function deleteRole(id: string) {
 }
 
 // 获取用户列表
-export function getUsers(id: string) {
-  return CDR.get<RoleItem[]>({ url: `${GetUserOptionUrl}/${id}` });
+export function getUsers(data: { roleId: string }) {
+  return CDR.get<RoleItem[]>({ url: `${GetUserOptionUrl}/${data.roleId}` });
 }

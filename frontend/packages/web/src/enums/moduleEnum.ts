@@ -20,4 +20,15 @@ export enum ModuleConfigEnum {
   /** 系统设置 */
   SYSTEM_SETTINGS = 'systemSettings',
 }
-export default {};
+
+// 添加员工API
+export enum MemberApiTypeEnum {
+  SYSTEM_ROLE = 'SYSTEM_ROLE',
+}
+
+// 选择添加
+export enum MemberSelectTypeEnum {
+  ORG = 'org', // 组织架构
+  ROLE = 'role', // 角色
+  MEMBER = 'member', // 成员
+}

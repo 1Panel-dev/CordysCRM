@@ -10,6 +10,7 @@ import {
   batchResetPasswordUrl,
   checkDeleteDepartmentUrl,
   deleteDepartmentUrl,
+  deleteUserUrl,
   getDepartmentTreeUrl,
   getRoleOptionsUrl,
   getUserDetailUrl,
@@ -127,4 +128,9 @@ export function getRoleOptions() {
 // 用户(员工)-excel导入
 export function importUsers(file: File) {
   return CDR.uploadFile({ url: importUserUrl }, { fileList: [file] }, 'file');
+}
+
+// 用户(员工)-删除员工
+export function deleteUser(userId: string) {
+  return CDR.get({ url: `${deleteUserUrl}/${userId}` });
 }
