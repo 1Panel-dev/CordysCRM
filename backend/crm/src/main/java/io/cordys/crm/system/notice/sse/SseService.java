@@ -63,6 +63,12 @@ public class SseService {
      */
     @Scheduled(fixedRate = 5000) // 单位：毫秒
     public void broadcastPeriodically() {
+        // 如果没有客户端连接，则不广播
+        if (emitters.isEmpty()) {
+            return;
+        }
+
+        // TODO 业务逻辑,具体需要广播的数据
         String message = "Server time: " + System.currentTimeMillis();
 
         this.broadcastEvent("message", message);
