@@ -237,7 +237,7 @@ CREATE TABLE sys_announcement
     `url`             VARCHAR(255)  COMMENT '链接',
     `receiver`        BLOB NOT NULL COMMENT '接收人id(销售ids/角色ids/部门ids)',
     `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
-    `status`          VARCHAR(64)   NOT NULL COMMENT '状态',
+    `notice`         BIT NOT NULL  DEFAULT 0 COMMENT '转为通知' ,
     `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',

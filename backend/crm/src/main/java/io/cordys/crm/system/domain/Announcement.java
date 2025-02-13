@@ -29,8 +29,8 @@ public class Announcement extends BaseModel {
     @Schema(description = "组织ID")
     private String organizationId;
 
-    @Schema(description = "状态")
-    private String status;
+    @Schema(description = "转为通知")
+    private Boolean notice;
 
     @Schema(description = "接收类型组合")
     private byte[] receiveType;

@@ -1,9 +1,6 @@
 package io.cordys.crm.system.mapper;
 
-import io.cordys.common.dto.BaseTree;
-import io.cordys.common.dto.BaseTreeNode;
-import io.cordys.common.dto.DeptUserTreeNode;
-import io.cordys.common.dto.NodeSortQueryParam;
+import io.cordys.common.dto.*;
 import io.cordys.crm.system.domain.Department;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,6 +16,8 @@ public interface ExtDepartmentMapper {
     Long getNextPosByOrgId(@Param("orgId") String orgId);
 
     List<String> getUserIdsByDeptIds(@Param("deptIds") List<String> deptIds);
+
+    List<OptionDTO> getIdNameByIds(@Param("ids") List<String> ids);
 
     void deleteByOrgId(@Param("orgId") String orgId);
 

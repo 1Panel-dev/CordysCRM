@@ -19,4 +19,13 @@
             and id != #{role.id} limit 1
     </select>
 
+    <select id="getIdNameByIds" resultType="io.cordys.common.dto.OptionDTO">
+        select id, name
+        from sys_role
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
 </mapper>

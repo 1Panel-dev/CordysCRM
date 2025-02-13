@@ -12,6 +12,8 @@ public interface ExtAnnouncementMapper {
 
     AnnouncementDTO selectById(@Param("id") String id);
 
-    int updateStatus(@Param("id") String id,  @Param("status") String status, @Param("organizationId") String organizationId);
+    List<AnnouncementDTO> selectInEffectUnConvertData(@Param("timestamp") long timestamp);
+
+    int updateNotice(@Param("ids") List<String> ids, @Param("notice") Boolean notice, @Param("organizationId") String organizationId);
 
 }

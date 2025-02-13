@@ -17,11 +17,15 @@
         <if test='request.resourceType != null and request.resourceType != ""'>
             AND sys_notification.resource_type LIKE #{request.resourceType}
         </if>
-        ORDER BY sys_notification.create_time DESC
+        ORDER BY sys_notification.create_time, sys_notification.status DESC
     </select>
 
     <delete id="deleteByTime" parameterType="java.lang.Long">
         DELETE FROM sys_notification WHERE create_time &lt; #{timestamp}
+    </delete>
+
+    <delete id="deleteByResourceId" parameterType="java.lang.String">
+        DELETE FROM sys_notification WHERE resource_id = #{resourceId}
     </delete>
 
     <update id="updateByReceiver" parameterType="io.cordys.crm.system.domain.Notification">
@@ -59,6 +63,9 @@
         </if>
         <if test='request.receiver != null and request.receiver != ""'>
             AND sys_notification.receiver = #{request.receiver}
+        </if>
+        <if test='request.resourceId != null and request.resourceId != ""'>
+            AND sys_notification.resource_id = #{request.resourceId}
         </if>
     </select>
 

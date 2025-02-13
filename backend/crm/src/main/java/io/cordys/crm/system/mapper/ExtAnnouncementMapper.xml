@@ -3,30 +3,44 @@
 <mapper namespace="io.cordys.crm.system.mapper.ExtAnnouncementMapper">
 
 
-    <update id="updateStatus">
-        UPDATE sys_announcement SET status = #{status} WHERE organization_id = #{organizationId}
-        <if test="id != null">
-            and
-            id = #{id}
+    <update id="updateNotice">
+        UPDATE sys_announcement SET notice = #{notice} WHERE organization_id = #{organizationId}
+        <if test="ids != null and ids.size() > 0">
+            and id in
+            <foreach collection="ids" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
         </if>
     </update>
 
-    <select id="selectByBaseRequest" parameterType="io.cordys.crm.system.dto.request.AnnouncementPageRequest" resultType="io.cordys.crm.system.dto.response.AnnouncementDTO">
-     SELECT sys_announcement.*, sys_user.name as createUserName
-     FROM sys_announcement
-     LEFT JOIN sys_user ON sys_announcement.create_user = sys_user.id
-     WHERE
-     sys_announcement.organization_id = #{organizationId}
-     <if test="keyword != null">
-         and
-         sys_announcement.subject like concat('%', #{keyword},'%')
-     </if>
-     ORDER BY
-     sys_announcement.create_time DESC;
- </select>
+    <select id="selectByBaseRequest" parameterType="io.cordys.crm.system.dto.request.AnnouncementPageRequest"
+            resultType="io.cordys.crm.system.dto.response.AnnouncementDTO">
+        SELECT sys_announcement.*, sys_user.name as createUserName
+        FROM sys_announcement
+        LEFT JOIN sys_user ON sys_announcement.create_user = sys_user.id
+        WHERE
+        sys_announcement.organization_id = #{organizationId}
+        <if test="keyword != null">
+            and
+            sys_announcement.subject like concat('%', #{keyword},'%')
+        </if>
+        ORDER BY
+        sys_announcement.create_time DESC;
+    </select>
 
     <select id="selectById" resultType="io.cordys.crm.system.dto.response.AnnouncementDTO">
-        SELECT * FROM sys_announcement WHERE id = #{id}
+        SELECT *
+        FROM sys_announcement
+        WHERE id = #{id} limit 1
+    </select>
+
+    <select id="selectInEffectUnConvertData" parameterType="java.lang.Long"
+            resultType="io.cordys.crm.system.dto.response.AnnouncementDTO">
+        SELECT *
+        FROM sys_announcement
+        WHERE end_time <![CDATA[ >= ]]> #{timestamp}
+          and start_time <![CDATA[ < ]]> #{timestamp}
+          and notice = false
     </select>
 
 </mapper> 

@@ -32,6 +32,15 @@
         </foreach>
     </select>
 
+    <select id="getIdNameByIds" resultType="io.cordys.common.dto.OptionDTO">
+        select id, name
+        from sys_department
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
     <delete id="deleteByOrgId">
         DELETE FROM sys_department WHERE organization_id  = #{orgId}
     </delete>

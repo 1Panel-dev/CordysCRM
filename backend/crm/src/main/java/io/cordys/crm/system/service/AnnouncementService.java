@@ -4,30 +4,29 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
+import io.cordys.common.util.SubListUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Announcement;
+import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.AnnouncementReceiveTypeDTO;
 import io.cordys.crm.system.dto.request.AnnouncementPageRequest;
 import io.cordys.crm.system.dto.request.AnnouncementRequest;
 import io.cordys.crm.system.dto.response.AnnouncementDTO;
-import io.cordys.crm.system.mapper.ExtAnnouncementMapper;
-import io.cordys.crm.system.mapper.ExtDepartmentMapper;
-import io.cordys.crm.system.mapper.ExtUserRoleMapper;
+import io.cordys.crm.system.mapper.*;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,11 +37,19 @@ public class AnnouncementService {
     @Resource
     private BaseMapper<Announcement> announcementMapper;
     @Resource
+    private BaseMapper<Notification> notificationBaseMapper;
+    @Resource
     private ExtAnnouncementMapper extAnnouncementMapper;
     @Resource
     private ExtUserRoleMapper extUserRoleMapper;
     @Resource
     private ExtDepartmentMapper extDepartmentMapper;
+    @Resource
+    private ExtRoleMapper extRoleMapper;
+    @Resource
+    private ExtNotificationMapper notificationMapper;
+    @Resource
+    private ExtUserMapper userMapper;
 
     @Transactional(rollbackFor = Exception.class)
     @OperationLog(module = LogModule.SYSTEM_ANNOUNCEMENT, type = LogType.ADD)
@@ -77,11 +84,13 @@ public class AnnouncementService {
         announcement.setUpdateTime(System.currentTimeMillis());
         announcement.setCreateUser(userId);
         announcement.setUpdateUser(userId);
-        announcement.setStatus(NotificationConstants.Status.UNREAD.name());
+        announcement.setNotice(false);
+        //根据有效时间判断是否生成notification
+        if (request.getStartTime()<= announcement.getCreateTime() && request.getEndTime() >= announcement.getCreateTime()) {
+            convertNotification(userId, announcement, userIds);
+            announcement.setNotice(true);
+        }
         announcementMapper.insert(announcement);
-        //TODO:生成notification
-
-
         // 添加日志上下文
         OperationLogContext.setContext(
                 LogContextInfo.builder()
@@ -125,10 +134,11 @@ public class AnnouncementService {
         announcement.setOrganizationId(request.getOrganizationId());
         announcement.setUpdateTime(System.currentTimeMillis());
         announcement.setUpdateUser(userId);
-        announcement.setStatus(NotificationConstants.Status.UNREAD.name());
+        announcement.setNotice(true);
         announcementMapper.updateById(announcement);
-        //TODO：change notification to unread
-
+        //删除旧的notice，根据接收人生成新的未读的notice
+        notificationMapper.deleteByResourceId(announcement.getId());
+        convertNotification(userId, announcement, userIds);
         // 添加日志上下文
         String resourceName = Optional.ofNullable(announcement.getSubject()).orElse(originalAnnouncement.getSubject());
         OperationLogContext.setContext(
@@ -141,6 +151,39 @@ public class AnnouncementService {
         );
     }
 
+    /**
+     * 公告转为接收人收到的通知
+     * @param userId 创建人
+     * @param announcement 公告
+     * @param userIds 接收人集合
+     */
+    public void convertNotification(String userId, Announcement announcement, List<String> userIds) {
+        List<Notification>notifications = new ArrayList<>();
+        SubListUtils.dealForSubList(userIds, 50, (subUserIds) -> {
+            for (String subUserId : subUserIds) {
+                Notification notification = new Notification();
+                notification.setId(IDGenerator.nextStr());
+                notification.setType(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name());
+                notification.setReceiver(subUserId);
+                notification.setSubject(announcement.getSubject());
+                notification.setStatus(NotificationConstants.Status.UNREAD.name());
+                notification.setOperator(userId);
+                notification.setOperation(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name());
+                notification.setOrganizationId(announcement.getOrganizationId());
+                notification.setResourceId(announcement.getId());
+                notification.setResourceType(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name());
+                notification.setResourceName(announcement.getSubject());
+                notification.setContent(announcement.getContent());
+                notification.setCreateUser(userId);
+                notification.setUpdateUser(userId);
+                notification.setCreateTime(System.currentTimeMillis());
+                notification.setUpdateTime(System.currentTimeMillis());
+                notifications.add(notification);
+            }
+            notificationBaseMapper.batchInsert(notifications);
+        });
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @OperationLog(module = LogModule.SYSTEM_ANNOUNCEMENT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
@@ -149,8 +192,7 @@ public class AnnouncementService {
             throw new RuntimeException(Translator.get("announcement.blank"));
         }
         announcementMapper.deleteByPrimaryKey(id);
-        //TODO：删除 notification
-
+        notificationMapper.deleteByResourceId(id);
         // 添加日志上下文
         OperationLogContext.setResourceName(announcement.getSubject());
     }
@@ -158,8 +200,8 @@ public class AnnouncementService {
     /**
      * 公告列表分页查询
      *
-     * @param request
-     * @return
+     * @param request request
+     * @return 公告列表
      */
     public List<AnnouncementDTO> page(AnnouncementPageRequest request) {
         List<AnnouncementDTO> announcementDTOS = extAnnouncementMapper.selectByBaseRequest(request);
@@ -174,13 +216,26 @@ public class AnnouncementService {
     /**
      * 获取公告
      *
-     * @param id
-     * @return
+     * @param id 公告id
+     * @return AnnouncementDTO
      */
     public AnnouncementDTO detail(String id) {
         AnnouncementDTO announcementDTO = extAnnouncementMapper.selectById(id);
         if (announcementDTO == null) {
             throw new RuntimeException(Translator.get("announcement.blank"));
+        }
+        AnnouncementReceiveTypeDTO announcementReceiveTypeDTO  = JSON.parseObject(new String(announcementDTO.getReceiveType()), AnnouncementReceiveTypeDTO.class);
+        if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getDeptIds())) {
+            List<OptionDTO> idNameByIds = extDepartmentMapper.getIdNameByIds(announcementReceiveTypeDTO.getDeptIds());
+            announcementDTO.setDeptIdName(idNameByIds);
+        }
+        if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getRoleIds())) {
+            List<OptionDTO> idNameByIds = extRoleMapper.getIdNameByIds(announcementReceiveTypeDTO.getRoleIds());
+            announcementDTO.setRoleIdName(idNameByIds);
+        }
+        if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getUserIds())) {
+            List<OptionDTO> idNameByIds = userMapper.selectUserOptionByIds(announcementReceiveTypeDTO.getUserIds());
+            announcementDTO.setUserIdName(idNameByIds);
         }
         announcementDTO.setContentText(new String(announcementDTO.getContent()));
         return announcementDTO;

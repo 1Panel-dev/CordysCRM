@@ -15,6 +15,8 @@ public interface ExtNotificationMapper {
 
     void deleteByTime(@Param("timestamp") long timestamp);
 
+    void deleteByResourceId(@Param("resourceId") String resourceId);
+
     int updateByReceiver(@Param("request") Notification request);
 
     int countByReceiver(@Param("request") Notification request);
