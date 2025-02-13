@@ -9,6 +9,7 @@ on:
       - main
     paths:
       - "frontend/**"
+    types: [opened, synchronize, reopened]
 
 name: Frontend Code Checking
 
@@ -19,7 +20,6 @@ jobs:
   generic_handler:
     name: Frontend Code Checking
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == false  # 只在PR未合并时执行
     steps:
       - uses: actions/checkout@v3
         with:
