@@ -26,7 +26,13 @@
           <div>
             <n-tooltip :disabled="item.hasConfig">
               <template #trigger>
-                <n-button :disabled="!item.hasConfig" size="small" type="default" class="outline--secondary mr-[8px]">
+                <n-button
+                  :disabled="!item.hasConfig"
+                  size="small"
+                  type="default"
+                  class="outline--secondary mr-[8px]"
+                  @click="testLink(item)"
+                >
                   {{ t('system.business.mailSettings.testLink') }}
                 </n-button>
               </template>
@@ -69,7 +75,11 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import EditIntegrationModal from './editIntegrationModal.vue';
 
-  import { getConfigSynchronization, updateConfigSynchronization } from '@/api/modules/system/business';
+  import {
+    getConfigSynchronization,
+    testConfigSynchronization,
+    updateConfigSynchronization,
+  } from '@/api/modules/system/business';
 
   import { CompanyTypeEnum } from '@/enums/commonEnum';
 
@@ -159,6 +169,16 @@
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
+    }
+  }
+
+  async function testLink(item: IntegrationItem) {
+    try {
+      await testConfigSynchronization(item.response);
+      Message.success(t('org.testConnectionSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
     }
   }
 

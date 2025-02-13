@@ -34,7 +34,9 @@
     </CrmDescription>
     <n-divider class="!m-0" />
     <div class="my-[12px] mr-[24px] flex justify-end">
-      <n-button type="primary" ghost> {{ t('system.business.mailSettings.testLink') }} </n-button>
+      <n-button type="primary" ghost @click="testLink(false)">
+        {{ t('system.business.mailSettings.testLink') }}
+      </n-button>
       <n-button type="primary" class="ml-[8px]" @click="showDrawer = true">{{ t('common.edit') }}</n-button>
     </div>
   </CrmCard>
@@ -108,7 +110,9 @@
         </div>
       </n-form-item>
       <n-form-item label=" ">
-        <n-button type="primary" ghost> {{ t('system.business.mailSettings.testLink') }} </n-button>
+        <n-button type="primary" ghost @click="testLink(true)">
+          {{ t('system.business.mailSettings.testLink') }}
+        </n-button>
       </n-form-item>
     </n-form>
   </CrmDrawer>
@@ -121,7 +125,7 @@
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
-  import { getConfigEmail, updateConfigEmail } from '@/api/modules/system/business';
+  import { getConfigEmail, testConfigEmail, updateConfigEmail } from '@/api/modules/system/business';
   import { useI18n } from '@/hooks/useI18n';
   import { desensitize } from '@/utils';
   import { validateEmail } from '@/utils/validate';
@@ -233,6 +237,24 @@
 
   function cancel() {
     form.value = { ...originForm.value };
+  }
+
+  async function testLink(isDrawer: boolean) {
+    try {
+      if (isDrawer) {
+        await formRef.value?.validate();
+      }
+      const params = {
+        ...(isDrawer ? form.value : originForm.value),
+        ssl: String(form.value.ssl),
+        tsl: String(form.value.tsl),
+      };
+      await testConfigEmail(params);
+      Message.success(t('common.connectionSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   onBeforeMount(() => {

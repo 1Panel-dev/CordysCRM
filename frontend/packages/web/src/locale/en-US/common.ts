@@ -234,4 +234,5 @@ export default {
   'common.revokeChange': 'Revoke change',
   'common.confirmDisabledTitle': 'Are you sure to disable {name}?',
   'common.confirmEnableTitle': 'Are you sure to enable {name}?',
+  'common.connectionSuccess': 'Connection success',
 };

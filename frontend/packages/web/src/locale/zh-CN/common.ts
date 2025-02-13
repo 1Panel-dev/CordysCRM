@@ -234,4 +234,5 @@ export default {
   'common.revokeChange': '撤销更改',
   'common.confirmDisabledTitle': '确认禁用 {name} 吗？',
   'common.confirmEnableTitle': '确认启用 {name} 吗？',
+  'common.connectionSuccess': '连接成功',
 };

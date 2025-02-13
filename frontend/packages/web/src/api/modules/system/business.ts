@@ -7,6 +7,8 @@ import {
   GetAuthsUrl,
   GetConfigEmailUrl,
   GetConfigSynchronizationUrl,
+  TestConfigEmailUrl,
+  TestConfigSynchronizationUrl,
   UpdateAuthNameUrl,
   UpdateAuthStatusUrl,
   UpdateAuthUrl,
@@ -31,6 +33,16 @@ export function getConfigEmail() {
 // 更新邮件设置
 export function updateConfigEmail(data: ConfigEmailParams) {
   return CDR.post({ url: UpdateConfigEmailUrl, data });
+}
+
+// 邮件设置-测试连接
+export function testConfigEmail(data: ConfigEmailParams) {
+  return CDR.post({ url: TestConfigEmailUrl, data });
+}
+
+// 同步组织设置-测试连接
+export function testConfigSynchronization(data: ConfigSynchronization) {
+  return CDR.post({ url: TestConfigSynchronizationUrl, data });
 }
 
 // 获取同步组织设置

@@ -26,7 +26,7 @@ export default {
   'org.addMember': '添加成员',
   'org.updateMember': '更新成员',
   'org.testConnection': '连接测试',
-  'org.testConnectionSuccess': '链接测试通过',
+  'org.testConnectionSuccess': '连接测试通过',
   'org.importAlertDesc': '上传前请先按 Excel 模版中的格式编辑内容',
   'org.downloadTemplate': '下载Excel模板',
   'org.formExcelImport': '从 Excel 文件导入',

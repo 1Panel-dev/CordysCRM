@@ -11,7 +11,7 @@ export default {
   'system.business.mailSettings.recipient': '测试收件人',
   'system.business.mailSettings.ssl': 'SSL',
   'system.business.mailSettings.tsl': 'TSL',
-  'system.business.mailSettings.testLink': '测试链接',
+  'system.business.mailSettings.testLink': '测试连接',
   'system.business.mailSettings.opened': '已开启',
   'system.business.mailSettings.closed': '已关闭',
   'system.business.mailSettings.updateEmailSettings': '更新邮件设置',

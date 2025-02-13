@@ -77,7 +77,7 @@
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
-  import { updateConfigSynchronization } from '@/api/modules/system/business';
+  import { testConfigSynchronization, updateConfigSynchronization } from '@/api/modules/system/business';
   import { useI18n } from '@/hooks/useI18n';
 
   import type { ConfigSynchronization } from '@lib/shared/models/system/business';
@@ -154,14 +154,17 @@
    */
   const linkLoading = ref<boolean>(false);
   function continueLink() {
-    formRef.value?.validate((error) => {
+    formRef.value?.validate(async (error) => {
       if (!error) {
         try {
           linkLoading.value = true;
+          await testConfigSynchronization(form.value);
           Message.success(t('org.testConnectionSuccess'));
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
+        } finally {
+          linkLoading.value = false;
         }
       }
     });
