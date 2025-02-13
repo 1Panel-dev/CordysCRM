@@ -159,4 +159,12 @@ public class OrganizationUserController {
     public void deleteUser(@PathVariable String id) {
         organizationUserService.deleteUserById(id, OrganizationContext.getOrganizationId());
     }
+
+
+    @GetMapping("/delete/check/{id}")
+    @RequiresPermissions(PermissionConstants.SYS_DEPARTMENT_DELETE)
+    @Operation(summary = "用户(员工)-删除校验")
+    public boolean deleteCheck(@PathVariable String id) {
+        return organizationUserService.deleteCheck(id);
+    }
 }

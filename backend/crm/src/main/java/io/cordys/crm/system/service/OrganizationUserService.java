@@ -718,12 +718,17 @@ public class OrganizationUserService {
      */
     @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.DELETE, resourceId = "{#id}")
     public void deleteUserById(String id, String orgId) {
-        UserResponse user = checkUserResource(id);
+        UserResponse user = extUserMapper.getUserDetail(id);
+        if (checkUserResource(user.getUserId())) {
+            //删除后该员工在系统上的全部数据将会被清理
+            deleteUserAllData(user.getUserId(), id, orgId);
+            // 添加日志上下文
+            OperationLogContext.setResourceName(user.getUserName());
+        } else {
+            throw new GenericException(Translator.get("user_resource_exist"));
+        }
 
-        //删除后该员工在系统上的全部数据将会被清理
-        deleteUserAllData(user.getUserId(), id, orgId);
-        // 添加日志上下文
-        OperationLogContext.setResourceName(user.getUserName());
+
     }
 
 
@@ -749,10 +754,14 @@ public class OrganizationUserService {
 
     }
 
-    private UserResponse checkUserResource(String id) {
-        UserResponse userDetail = extUserMapper.getUserDetail(id);
+    public boolean checkUserResource(String id) {
         //todo 校验员工是否存在线索、客户、商机资源（等待模块业务逻辑完成补充）
 
-        return userDetail;
+        return true;
+    }
+
+    public boolean deleteCheck(String id) {
+        UserResponse user = extUserMapper.getUserDetail(id);
+        return checkUserResource(user.getUserId());
     }
 }
