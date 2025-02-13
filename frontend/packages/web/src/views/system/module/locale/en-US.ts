@@ -15,4 +15,9 @@ export default {
   'module.businessManage.mainNavConfig': 'Main Navigation Configuration',
   'module.reminderAdvance': 'Advance',
   'module.reminderDays': 'Days to Remind the Owner',
+  'module.capacitySet.addRule': 'Add Rule',
+  'module.capacitySet.departmentOrMember': 'Department or Member',
+  'module.capacitySet.repeatMsg': 'Already added in another rule',
+  'module.capacitySet.Maximum': 'Capacity Limit',
+  'module.capacitySet.MaximumPlaceholder': 'No limit',
 };

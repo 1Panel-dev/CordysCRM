@@ -15,6 +15,7 @@
   </div>
   <customManagementFormDrawer v-model:visible="customerManagementFormVisible" />
   <OpportunityCloseRulesDrawer v-model:visible="businessManagementBusinessParamsSetVisible" />
+  <CapacitySetDrawer v-model:visible="customerManagementCapacitySetVisible" />
 </template>
 
 <script setup lang="ts">
@@ -24,6 +25,7 @@
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CapacitySetDrawer from './customManagement/capacitySetDrawer.vue';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
 

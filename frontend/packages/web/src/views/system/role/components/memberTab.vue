@@ -155,7 +155,7 @@
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
     getRoleMember,
     {
-      tableKey: TableKeyEnum.SYSTEM_USER,
+      tableKey: TableKeyEnum.ROLE_MEMBER,
       showSetting: true,
       columns,
       scrollX: 1000,

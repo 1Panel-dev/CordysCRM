@@ -15,4 +15,9 @@ export default {
   'module.businessManage.mainNavConfig': '主导航配置',
   'module.reminderAdvance': '提前',
   'module.reminderDays': '天提醒归属人',
+  'module.capacitySet.addRule': '添加规则',
+  'module.capacitySet.departmentOrMember': '部门或成员',
+  'module.capacitySet.repeatMsg': '已在其他规则中添加',
+  'module.capacitySet.Maximum': '库容上限',
+  'module.capacitySet.MaximumPlaceholder': '不限制',
 };
