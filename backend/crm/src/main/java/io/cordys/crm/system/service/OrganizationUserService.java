@@ -371,7 +371,11 @@ public class OrganizationUserService {
     @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.UPDATE, resourceId = "{#userId}", operator = "{#operatorId}")
     public void resetPassword(String userId, String operatorId) {
         User user = userMapper.selectByPrimaryKey(userId);
-        user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
+        user.setPassword(
+                userId.equals("admin")
+                        ? CodingUtils.md5("CordysCRM")
+                        : CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6))
+        );
         user.setUpdateTime(System.currentTimeMillis());
         user.setUpdateUser(operatorId);
         userMapper.updateById(user);
