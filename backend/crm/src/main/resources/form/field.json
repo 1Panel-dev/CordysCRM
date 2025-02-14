@@ -2,7 +2,7 @@
   "customer": [
     {
       "name": "customer.name",
-      "key": "CUSTOMER_NAME",
+      "key": "customerName",
       "type": "input",
       "show_label": true,
       "placeholder": null,
@@ -11,7 +11,6 @@
       "readable": true,
       "editable": true,
       "field_width": "50%",
-      "pos": 1,
       "options": null,
       "rules": [
         {"type": "required"}, {"type": "unique"}
@@ -19,7 +18,7 @@
     },
     {
       "name": "customer.industry",
-      "key": "CUSTOMER_INDUSTRY",
+      "key": "customerIndustry",
       "type": "select",
       "show_label": true,
       "placeholder": null,
@@ -28,7 +27,6 @@
       "readable": true,
       "editable": true,
       "field_width": "50%",
-      "pos": 2,
       "options": [
         {"label": "互联网", "value":  "1"}, {"label": "金融", "value":  "2"}, {"label": "制造业", "value":  "3"}
       ],
@@ -38,7 +36,7 @@
     },
     {
       "name": "customer.level",
-      "key": "CUSTOMER_LEVEL",
+      "key": "customerLevel",
       "type": "select",
       "show_label": true,
       "placeholder": null,
@@ -47,7 +45,6 @@
       "readable": true,
       "editable": true,
       "field_width": "50%",
-      "pos": 3,
       "options": [
         {"label": "重要客户", "value":  "1"}, {"label": "一般客户", "value":  "2"}, {"label": "战略客户", "value":  "3"}
       ],
@@ -57,7 +54,7 @@
     },
     {
       "name": "customer.type",
-      "key": "CUSTOMER_TYPE",
+      "key": "customerType",
       "type": "select",
       "show_label": true,
       "placeholder": null,
@@ -66,7 +63,6 @@
       "readable": true,
       "editable": true,
       "field_width": "50%",
-      "pos": 4,
       "options": [
         {"label": "无", "value":  "1"}, {"label": "最终客户", "value":  "2"}, {"label": "代理商", "value":  "3"}
       ],
@@ -76,7 +72,7 @@
     },
     {
       "name": "customer.source",
-      "key": "CUSTOMER_SOURCE",
+      "key": "customerSource",
       "type": "select",
       "show_label": true,
       "placeholder": null,
@@ -85,7 +81,6 @@
       "readable": true,
       "editable": true,
       "field_width": "50%",
-      "pos": 5,
       "options": [
         {"label": "线上", "value":  "1"}, {"label": "线下", "value":  "2"}, {"label": "维保", "value":  "3"},
         {"label": "续约", "value":  "4"}, {"label": "扩容", "value":  "5"}, {"label": "增购", "value":  "6"}
@@ -96,7 +91,7 @@
     },
     {
       "name": "customer.online.source",
-      "key": "CUSTOMER_ONLINE_SOURCE",
+      "key": "customerOnlineSource",
       "type": "select",
       "show_label": true,
       "placeholder": null,
@@ -105,7 +100,6 @@
       "readable": true,
       "editable": true,
       "field_width": "50%",
-      "pos": 6,
       "options": [
         {"label": "400电话", "value":  "1"}, {"label": "官网咨询", "value":  "2"}, {"label": "社区用户", "value":  "3"}
       ],
@@ -115,7 +109,7 @@
     },
     {
       "name": "customer.tag",
-      "key": "CUSTOMER_TAG",
+      "key": "customerTag",
       "type": "tag",
       "show_label": true,
       "placeholder": null,
@@ -124,15 +118,12 @@
       "readable": true,
       "editable": true,
       "field_width": "50%",
-      "pos": 7,
-      "options": [
-        {"label": "400电话", "value":  "1"}, {"label": "官网咨询", "value":  "2"}, {"label": "社区用户", "value":  "3"}
-      ],
+      "options": null,
       "rules": null
     },
     {
       "name": "customer.address.info",
-      "key": "CUSTOMER_ADDRESS_INFO",
+      "key": "customerAddressInfo",
       "type": "divider",
       "show_label": true,
       "placeholder": null,
@@ -141,13 +132,12 @@
       "readable": true,
       "editable": true,
       "field_width": "50%",
-      "pos": 8,
       "options": null,
       "rules": null
     },
     {
       "name": "customer.address.detail",
-      "key": "CUSTOMER_ADDRESS_DETAIL",
+      "key": "customerAddressDetail",
       "type": "textarea",
       "show_label": true,
       "placeholder": null,
@@ -156,14 +146,13 @@
       "readable": true,
       "editable": true,
       "field_width": "50%",
-      "pos": 9,
       "options": null,
       "rules": null
     },
     {
       "name": "customer.area",
-      "key": "CUSTOMER_AREA",
-      "type": "cascade",
+      "key": "customerArea",
+      "type": "location",
       "show_label": true,
       "placeholder": null,
       "tooltip": null,
@@ -171,22 +160,6 @@
       "readable": true,
       "editable": true,
       "field_width": "50%",
-      "pos": 10,
-      "options": null,
-      "rules": null
-    },
-    {
-      "name": "customer.area",
-      "key": "CUSTOMER_AREA",
-      "type": "cascade",
-      "show_label": true,
-      "placeholder": null,
-      "tooltip": null,
-      "default_value": null,
-      "readable": true,
-      "editable": true,
-      "field_width": "50%",
-      "pos": 10,
       "options": null,
       "rules": null
     }

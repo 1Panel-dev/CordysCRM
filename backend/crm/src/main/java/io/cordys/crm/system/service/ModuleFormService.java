@@ -230,12 +230,13 @@ public class ModuleFormService {
 			fieldMap.keySet().forEach(key -> {
 				String formId = formKeyMap.get(key);
 				List<Map> initFields = fieldMap.get(key);
+				AtomicLong pos = new AtomicLong(1L);
 				initFields.forEach(initField -> {
 					ModuleField field = new ModuleField();
 					field.setId(IDGenerator.nextStr());
 					field.setFormId(formId);
 					field.setInternalKey(initField.get("key").toString());
-					field.setPos(Long.valueOf(initField.get("pos").toString()));
+					field.setPos(pos.getAndIncrement());
 					field.setCreateTime(System.currentTimeMillis());
 					field.setCreateUser("admin");
 					field.setUpdateTime(System.currentTimeMillis());
