@@ -3,6 +3,7 @@ export enum TableKeyEnum {
   AUTH = 'auth',
   SYSTEM_ORG_TABLE = 'systemOrgTable',
   MODULE_OPPORTUNITY_RULE_TABLE = 'moduleOpportunityRuleTable',
+  MODULE_CLUE_POOL = 'moduleCluePool',
 }
 
 // 具有特殊功能的列

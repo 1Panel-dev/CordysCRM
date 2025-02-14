@@ -130,9 +130,15 @@
 
   // 到期提醒表单
   .crm-reminder-advance-input {
-    &.n-input--resizable {
+    // input 和 input-number
+    &.n-input--resizable,
+    .n-input--resizable {
       margin-right: 8px;
       width: 96px;
+    }
+    // input-number
+    .n-input__suffix .n-button {
+      display: none;
     }
   }
 </style>

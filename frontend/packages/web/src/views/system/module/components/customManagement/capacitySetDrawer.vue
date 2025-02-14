@@ -11,7 +11,7 @@
       ref="batchFormRef"
       :models="formItemModel"
       :default-list="form.list"
-      :add-text="t('module.capacitySet.addRule')"
+      :add-text="t('module.businessManage.addRules')"
       validate-when-add
     ></CrmBatchForm>
   </CrmDrawer>

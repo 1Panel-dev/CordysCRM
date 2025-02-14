@@ -28,6 +28,8 @@ export default {
   'common.createSuccess': '创建成功',
   'common.createFailed': '创建失败',
   'common.updateSuccess': '更新成功',
+  'common.updateConfirmTitle': '确定要更新吗？',
+  'common.updateConfirm': '确定更新',
   'common.updateFailed': '更新失败',
   'common.deleteConfirm': '确认删除？',
   'common.deleteConfirmTitle': '确认删除 {name} 吗？',

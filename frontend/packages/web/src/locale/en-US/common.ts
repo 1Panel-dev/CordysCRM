@@ -27,6 +27,8 @@ export default {
   'common.createSuccess': 'Create success',
   'common.createFailed': 'Create failed',
   'common.updateSuccess': 'Update success',
+  'common. updateConfirmTitle': 'Are you sure you want to update?',
+  'common. updateConfirm': 'Confirm update',
   'common.updateFailed': 'Update failed',
   'common.deleteConfirm': 'Delete confirm',
   'common.deleteConfirmTitle': 'Are you sure to delete {name}?',

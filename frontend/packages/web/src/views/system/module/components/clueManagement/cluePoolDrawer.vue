@@ -2,15 +2,15 @@
   <CrmDrawer
     v-model:show="visible"
     width="100%"
-    :title="t('module.businessManage.businessCloseRule')"
+    :title="t('module.clue.cluePool')"
     :footer="false"
     no-padding
     :show-back="true"
   >
-    <div class="business-close-rule">
+    <div class="h-full w-full bg-[var(--text-n9)] p-[16px]">
       <div class="h-full bg-[var(--text-n10)] p-[16px]">
-        <n-button class="mb-[16px] mr-[12px]" type="primary" @click="addRule">
-          {{ t('module.businessManage.addRules') }}
+        <n-button class="mb-[16px]" type="primary" @click="handleAdd">
+          {{ t('module.clue.addCluePool') }}
         </n-button>
         <CrmTable
           v-bind="propsRes"
@@ -20,7 +20,7 @@
           @filter-change="propsEvent.filterChange"
         />
       </div>
-      <AddRuleDrawer v-model:visible="showAddRuleDrawer" />
+      <AddOrEditCluePoolDrawer v-model:visible="showAddOrEditDrawer" />
     </div>
   </CrmDrawer>
 </template>
@@ -36,7 +36,7 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
-  import AddRuleDrawer from './addRuleDrawer.vue';
+  import AddOrEditCluePoolDrawer from './addOrEditCluePoolDrawer.vue';
 
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -47,37 +47,35 @@
 
   const { openModal } = useModal();
   const Message = useMessage();
-
   const { t } = useI18n();
 
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
 
-  const groupList = ref([
-    {
-      label: t('common.edit'),
-      key: 'edit',
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-    },
-  ]);
+  const showAddOrEditDrawer = ref<boolean>(false);
+  // 增加
+  function handleAdd() {
+    showAddOrEditDrawer.value = true;
+  }
 
-  function addOrEditRule(row: any) {}
-  // 删除规则
-  function deleteRule(row: any) {
-    const hasData = false;
+  // 编辑
+  const currentId = ref<string>('');
+  // TODO 类型
+  async function handleEdit(row?: any) {
+    currentId.value = row.id;
+    showAddOrEditDrawer.value = true;
+  }
 
+  // TODO 类型
+  // 删除
+  function handleDelete(row: any) {
+    const hasData = true;
     const title = hasData
       ? t('opportunity.deleteRulesTitle')
       : t('common.deleteConfirmTitle', { name: characterLimit(row.userName) });
-
-    const content = hasData ? '' : t('org.deleteMemberTipContent');
-
+    const content = hasData ? '' : t('module.deleteTip', { name: t('module.clue') });
     const positiveText = t(hasData ? 'opportunity.gotIt' : 'common.confirm');
-
     const negativeText = t(hasData ? 'opportunity.goMove' : 'common.cancel');
 
     openModal({
@@ -97,35 +95,31 @@
     });
   }
 
+  // TODO 类型
   function handleActionSelect(row: any, actionKey: string) {
     switch (actionKey) {
-      case 'edit':
-        addOrEditRule(row);
+      case 'pop-edit':
+        handleEdit(row);
         break;
       case 'delete':
-        deleteRule(row);
+        handleDelete(row);
         break;
       default:
         break;
     }
   }
 
-  // 切换规则状态
-  function handleToggleRuleStatus(row: any) {
+  // 切换状态 TODO 类型
+  function handleToggleStatus(row: any) {
     const isEnabling = !row.enable;
-    const title = t(isEnabling ? 'common.confirmEnableTitle' : 'common.confirmDisabledTitle', {
-      name: characterLimit(row.userName),
-    });
-
-    const content = t(isEnabling ? 'opportunity.enabledRuleTipContent' : 'opportunity.disabledRuleTipContent');
-
-    const positiveText = t(isEnabling ? 'common.confirmStart' : 'common.confirmDisable');
 
     openModal({
       type: isEnabling ? 'default' : 'error',
-      title,
-      content,
-      positiveText,
+      title: t(isEnabling ? 'common.confirmEnableTitle' : 'common.confirmDisabledTitle', {
+        name: characterLimit(row.userName),
+      }),
+      content: t(isEnabling ? 'module.clue.enabledTipContent' : 'module.clue.disabledTipContent'),
+      positiveText: t(isEnabling ? 'common.confirmEnable' : 'common.confirmDisable'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
@@ -140,22 +134,21 @@
 
   const columns: CrmDataTableColumn[] = [
     {
-      title: t('opportunity.ruleName'),
+      title: t('module.clue.name'),
       key: 'userName',
       width: 200,
       sortOrder: false,
       sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
     },
     {
       title: t('common.status'),
       key: 'enable',
       width: 120,
-      ellipsis: {
-        tooltip: true,
-      },
       sortOrder: false,
       sorter: true,
-      showInTable: true,
       filterOptions: [
         {
           label: t('common.enable'),
@@ -172,7 +165,7 @@
         return h(NSwitch, {
           value: row.enable,
           onClick: () => {
-            handleToggleRuleStatus(row);
+            handleToggleStatus(row);
           },
         });
       },
@@ -184,14 +177,36 @@
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
     },
     {
-      title: t('opportunity.autoClose'),
-      key: 'autoClose',
+      title: t('role.member'),
+      key: 'number',
+      width: 100,
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
+    },
+    {
+      title: t('module.clue.autoRecycle'),
+      key: 'autoRecycle',
       width: 100,
+      sortOrder: false,
+      sorter: true,
+      filterOptions: [
+        {
+          label: t('common.yes'),
+          value: 1,
+        },
+        {
+          label: t('common.no'),
+          value: 0,
+        },
+      ],
+      filter: true,
     },
     {
       title: t('common.createTime'),
@@ -200,17 +215,8 @@
       ellipsis: {
         tooltip: true,
       },
-    },
-    {
-      title: t('common.creator'),
-      key: 'createUser',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => {
-        return h(CrmNameTooltip, { text: row.createUserName });
-      },
+      sortOrder: false,
+      sorter: true,
     },
     {
       title: t('common.updateTime'),
@@ -219,26 +225,41 @@
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
     },
     {
       title: t('common.updateUserName'),
       key: 'updateUser',
       width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
+      // TODO 类型
       render: (row: any) => {
         return h(CrmNameTooltip, { text: row.updateUserName });
       },
     },
     {
       key: 'operation',
-      width: 100,
+      width: 80,
       fixed: 'right',
       // TODO 类型
       render: (row: any) =>
         h(CrmOperationButton, {
-          groupList: groupList.value,
+          groupList: [
+            {
+              label: t('common.edit'),
+              key: 'edit',
+              popConfirmProps: {
+                loading: false,
+                title: t('common.updateConfirmTitle'),
+                content: t('module.clue.updateConfirmContent'),
+                positiveText: t('common.updateConfirm'),
+              },
+            },
+            {
+              label: t('common.delete'),
+              key: 'delete',
+            },
+          ],
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
@@ -255,6 +276,7 @@
           num: 'string',
           title: 'string',
           enable: false,
+          updateUserName: 'Administrator',
           updateTime: null,
           createTime: null,
         },
@@ -275,27 +297,14 @@
     });
   }
 
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(initData, {
-    tableKey: TableKeyEnum.MODULE_OPPORTUNITY_RULE_TABLE,
+  const { propsRes, propsEvent, loadList } = useTable(initData, {
+    tableKey: TableKeyEnum.MODULE_CLUE_POOL,
     showSetting: true,
     columns,
     scrollX: 1600,
   });
 
-  const showAddRuleDrawer = ref<boolean>(false);
-  function addRule() {
-    showAddRuleDrawer.value = true;
-  }
-
   onBeforeMount(() => {
     loadList();
   });
 </script>
-
-<style scoped lang="less">
-  .business-close-rule {
-    padding: 16px;
-    background: var(--text-n9);
-    @apply h-full w-full;
-  }
-</style>

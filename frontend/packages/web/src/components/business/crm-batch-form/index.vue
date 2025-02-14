@@ -54,7 +54,7 @@
               :disabled="form.list.length === 1"
               ghost
               class="px-[7px]"
-              :style="{ 'margin-top': index === 0 ? '26px' : '' }"
+              :style="{ 'margin-top': index === 0 && props.models.some((item) => item.label) ? '26px' : '' }"
               @click="handleDeleteListItem(index)"
             >
               <template #icon>

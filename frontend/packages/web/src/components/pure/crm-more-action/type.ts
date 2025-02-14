@@ -1,3 +1,5 @@
+import { CrmPopConfirmProps } from '@/components/pure/crm-pop-confirm/index.vue';
+
 import { DropdownOption } from 'naive-ui/es/dropdown/src/interface';
 
 export type ActionsItem = {
@@ -9,6 +11,8 @@ export type ActionsItem = {
   iconType?: string; // 按钮图标
   permission?: string[]; // 权限标识
   isDivider?: boolean; // 是否分割线
+  popShow?: boolean;
+  popConfirmProps?: CrmPopConfirmProps;
 } & DropdownOption;
 
 export type SelectedValue = string | number | Record<string, any> | undefined;

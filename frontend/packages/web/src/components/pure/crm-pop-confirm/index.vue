@@ -50,38 +50,37 @@
 
   const { t } = useI18n();
 
-  const props = withDefaults(
-    defineProps<{
-      loading: boolean;
-      title: string; // 标题
-      content?: string; // 内容
-      iconType?: 'error' | 'warning' | 'primary'; // 图标类型
-      negativeButtonProps?: ButtonProps; // 取消按钮文字
-      positiveButtonProps?: ButtonProps; // 确定按钮的属性
-      positiveText?: string; // 确定按钮文本
-      negativeText?: string; // 取消按钮文本
-      showIcon?: boolean; // 显示icon
-      placement?:
-        | 'top-start'
-        | 'top'
-        | 'top-end'
-        | 'right-start'
-        | 'right'
-        | 'right-end'
-        | 'bottom-start'
-        | 'bottom'
-        | 'bottom-end'
-        | 'left-start'
-        | 'left'
-        | 'left-end';
-    }>(),
-    {
-      iconType: 'error',
-      positiveText: 'common.remove',
-      negativeText: 'common.cancel',
-      showIcon: true,
-    }
-  );
+  export type CrmPopConfirmProps = {
+    loading: boolean;
+    title: string; // 标题
+    content?: string; // 内容
+    iconType?: 'error' | 'warning' | 'primary'; // 图标类型
+    negativeButtonProps?: ButtonProps; // 取消按钮文字
+    positiveButtonProps?: ButtonProps; // 确定按钮的属性
+    positiveText?: string; // 确定按钮文本
+    negativeText?: string; // 取消按钮文本
+    showIcon?: boolean; // 显示icon
+    placement?:
+      | 'top-start'
+      | 'top'
+      | 'top-end'
+      | 'right-start'
+      | 'right'
+      | 'right-end'
+      | 'bottom-start'
+      | 'bottom'
+      | 'bottom-end'
+      | 'left-start'
+      | 'left'
+      | 'left-end';
+  };
+
+  const props = withDefaults(defineProps<CrmPopConfirmProps>(), {
+    iconType: 'error',
+    positiveText: 'common.remove',
+    negativeText: 'common.cancel',
+    showIcon: true,
+  });
 
   const emit = defineEmits<{
     (e: 'confirm'): void;
