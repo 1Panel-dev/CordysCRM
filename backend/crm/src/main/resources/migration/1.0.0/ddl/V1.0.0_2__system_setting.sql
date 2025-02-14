@@ -530,6 +530,37 @@ CREATE TABLE sys_parameter
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
+
+
+CREATE TABLE product(
+                        `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+                        `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织机构id' ,
+                        `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+                        `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+                        `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+                        `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+                        PRIMARY KEY (id)
+)  COMMENT = '产品'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_organization_id ON product(organization_id ASC);
+
+CREATE TABLE product_field(
+                              `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+                              `product_id` VARCHAR(32) NOT NULL   COMMENT '产品id' ,
+                              `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
+                              `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
+                              PRIMARY KEY (id)
+)  COMMENT = '产品自定义属性'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_product_id ON product_field(product_id ASC);
+
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
