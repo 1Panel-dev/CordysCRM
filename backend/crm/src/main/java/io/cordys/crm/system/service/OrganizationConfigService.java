@@ -27,6 +27,7 @@ import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -70,9 +71,7 @@ public class OrganizationConfigService {
         if (organizationConfigDetail == null) {
             return new EmailDTO();
         }
-        EmailDTO emailDTO = JSON.parseObject(new String(organizationConfigDetail.getContent()), EmailDTO.class);
-        emailDTO.setId(organizationConfigDetail.getId());
-        return emailDTO;
+        return JSON.parseObject(new String(organizationConfigDetail.getContent()), EmailDTO.class);
     }
 
     public List<SyncOrganizationDTO> getSynOrganization(String organizationId) {
@@ -85,24 +84,14 @@ public class OrganizationConfigService {
         for (OrganizationConfigDetail organizationConfigDetail : organizationConfigDetails) {
             SyncOrganizationDTO syncOrganizationDTO = JSON.parseObject(new String(organizationConfigDetail.getContent()), SyncOrganizationDTO.class);
             syncOrganizationDTO.setType(organizationConfigDetail.getType());
-            syncOrganizationDTO.setId(organizationConfigDetail.getId());
             syncOrganizationDTO.setEnable(organizationConfigDetail.getEnable());
             syncOrganizationDTOS.add(syncOrganizationDTO);
         }
         return syncOrganizationDTOS;
     }
 
-    /**
-     * 删除组织设置(根据ID,认证的删除)
-     *
-     * @param id
-     */
-    public void delete(String id) {
-        organizationConfigDetailBaseMapper.deleteByPrimaryKey(id);
-    }
-
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, operator = "{#userId}")
-    public void addEmail(EmailDTO emailDTO, String organizationId, String userId) {
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, operator = "{#userId}")
+    public void editEmail(EmailDTO emailDTO, String organizationId, String userId) {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.EMAIL.name());
         if (organizationConfig == null) {
             organizationConfig = new OrganizationConfig();
@@ -115,19 +104,28 @@ public class OrganizationConfigService {
             organizationConfig.setUpdateUser(userId);
             organizationConfigBaseMapper.insert(organizationConfig);
         }
-        OrganizationConfigDetail organizationConfigDetail = getOrganizationConfigDetail(userId, organizationConfig, JSON.toJSONString(emailDTO));
-        organizationConfigDetail.setType(OrganizationConfigConstants.ConfigType.EMAIL.name());
-        organizationConfigDetail.setName(Translator.get("email.setting"));
-        organizationConfigDetail.setEnable(true);
-        organizationConfigDetailBaseMapper.insert(organizationConfigDetail);
+        EmailDTO emailDTOOld = new EmailDTO();
+        OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
+        if (organizationConfigDetail == null) {
+            organizationConfigDetail = getOrganizationConfigDetail(userId, organizationConfig, JSON.toJSONString(emailDTO));
+            organizationConfigDetail.setType(OrganizationConfigConstants.ConfigType.EMAIL.name());
+            organizationConfigDetail.setName(Translator.get("email.setting"));
+            organizationConfigDetail.setEnable(true);
+            organizationConfigDetailBaseMapper.insert(organizationConfigDetail);
+        } else {
+            emailDTOOld = JSON.parseObject(new String(organizationConfigDetail.getContent()), EmailDTO.class);
+            organizationConfigDetail.setContent(JSON.toJSONBytes(emailDTO));
+            organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
+            organizationConfigDetail.setUpdateUser(userId);
+            organizationConfigDetailBaseMapper.update(organizationConfigDetail);
+        }
+
         // 添加日志上下文
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceId(organizationConfig.getId())
-                        .resourceName(organizationConfigDetail.getName())
-                        .modifiedValue(emailDTO)
-                        .build()
-        );
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .originalValue(emailDTOOld)
+                .resourceName(Translator.get("email.setting"))
+                .modifiedValue(emailDTO)
+                .build());
 
     }
 
@@ -145,8 +143,8 @@ public class OrganizationConfigService {
         return organizationConfigDetail;
     }
 
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD, operator = "{#userId}")
-    public void addSynchronization(SyncOrganizationDTO syncOrganizationDTO, String organizationId, String userId) {
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, operator = "{#userId}")
+    public void editSynchronization(SyncOrganizationDTO syncOrganizationDTO, String organizationId, String userId) {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
         if (organizationConfig == null) {
             organizationConfig = new OrganizationConfig();
@@ -159,54 +157,26 @@ public class OrganizationConfigService {
             organizationConfig.setUpdateUser(userId);
             organizationConfigBaseMapper.insert(organizationConfig);
         }
-        int organizationConfigDetailCount = extOrganizationConfigDetailMapper.getOrganizationConfigDetailCount(organizationConfig.getId(), null, syncOrganizationDTO.getType());
-        if (organizationConfigDetailCount > 0) {
-            throw new GenericException(Translator.get("sync.organization.type.exist"));
+        List<OrganizationConfigDetail>organizationConfigDetails = extOrganizationConfigDetailMapper.getOrgConfigDetailByType(organizationConfig.getId(), null, syncOrganizationDTO.getType());
+        OrganizationConfigDetail organizationConfigDetail;
+        SyncOrganizationDTO syncOrganizationDTOOld = new SyncOrganizationDTO();
+        if (CollectionUtils.isNotEmpty(organizationConfigDetails)) {
+            //更新
+            organizationConfigDetail = organizationConfigDetails.getFirst();
+            syncOrganizationDTOOld = JSON.parseObject(new String(organizationConfigDetail.getContent()), SyncOrganizationDTO.class);
+            organizationConfigDetail.setContent(JSON.toJSONBytes(syncOrganizationDTO));
+            organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
+            organizationConfigDetail.setUpdateUser(userId);
+            organizationConfigDetail.setEnable(syncOrganizationDTO.getEnable());
+            organizationConfigDetailBaseMapper.update(organizationConfigDetail);
+        } else{
+            organizationConfigDetail = getOrganizationConfigDetail(userId, organizationConfig, JSON.toJSONString(syncOrganizationDTO));
+            organizationConfigDetail.setType(syncOrganizationDTO.getType());
+            organizationConfigDetail.setEnable(syncOrganizationDTO.getEnable());
+            organizationConfigDetail.setName(Translator.get("sync.organization"));
+            organizationConfigDetailBaseMapper.insert(organizationConfigDetail);
         }
-        OrganizationConfigDetail organizationConfigDetail = getOrganizationConfigDetail(userId, organizationConfig, JSON.toJSONString(syncOrganizationDTO));
-        organizationConfigDetail.setType(syncOrganizationDTO.getType());
-        organizationConfigDetail.setEnable(syncOrganizationDTO.getEnable());
-        organizationConfigDetail.setName(Translator.get("sync.organization"));
-        organizationConfigDetailBaseMapper.insert(organizationConfigDetail);
-        // 添加日志上下文
-        OperationLogContext.setContext(LogContextInfo.builder()
-                .originalValue(null)
-                .resourceName(organizationConfigDetail.getName())
-                .modifiedValue(syncOrganizationDTO)
-                .build());
-    }
 
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{#emailDTO.id}", operator = "{#userId}")
-    public void updateEmail(EmailDTO emailDTO, String userId) {
-        OrganizationConfigDetail organizationConfigDetail = organizationConfigDetailBaseMapper.selectByPrimaryKey(emailDTO.getId());
-        if (organizationConfigDetail == null) {
-            throw new GenericException(Translator.get("email.update.error.id.wrong"));
-        }
-        EmailDTO emailDTOOld = JSON.parseObject(new String(organizationConfigDetail.getContent()), EmailDTO.class);
-        organizationConfigDetail.setContent(JSON.toJSONBytes(emailDTO));
-        organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
-        organizationConfigDetail.setUpdateUser(userId);
-        organizationConfigDetailBaseMapper.update(organizationConfigDetail);
-        // 添加日志上下文
-        OperationLogContext.setContext(LogContextInfo.builder()
-                .originalValue(emailDTOOld)
-                .resourceName(Translator.get("email.setting"))
-                .modifiedValue(emailDTO)
-                .build());
-    }
-
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, resourceId = "{#syncOrganizationDTO.id}", operator = "{#userId}")
-    public void updateSynchronization(SyncOrganizationDTO syncOrganizationDTO, String userId) {
-        OrganizationConfigDetail organizationConfigDetail = organizationConfigDetailBaseMapper.selectByPrimaryKey(syncOrganizationDTO.getId());
-        if (organizationConfigDetail == null) {
-            throw new GenericException(Translator.get("sync.organization.update.error.id.wrong"));
-        }
-        SyncOrganizationDTO syncOrganizationDTOOld = JSON.parseObject(new String(organizationConfigDetail.getContent()), SyncOrganizationDTO.class);
-        organizationConfigDetail.setContent(JSON.toJSONBytes(syncOrganizationDTO));
-        organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
-        organizationConfigDetail.setUpdateUser(userId);
-        organizationConfigDetail.setEnable(syncOrganizationDTO.getEnable());
-        organizationConfigDetailBaseMapper.update(organizationConfigDetail);
         // 添加日志上下文
         OperationLogContext.setContext(LogContextInfo.builder()
                 .resourceName(Translator.get("sync.organization"))
@@ -214,6 +184,7 @@ public class OrganizationConfigService {
                 .modifiedValue(syncOrganizationDTO)
                 .build());
     }
+
 
     public void testEmailConnection(EmailDTO emailDTO) {
         JavaMailSenderImpl javaMailSender = null;
@@ -274,7 +245,7 @@ public class OrganizationConfigService {
         }
     }
 
-    public void testSyncConnection(SyncOrganizationDTO syncOrganizationDTO, String userId) {
+    public void testSyncConnection(SyncOrganizationDTO syncOrganizationDTO, String organizationId, String userId) {
         String accessToken = "";
         if (StringUtils.equalsIgnoreCase(syncOrganizationDTO.getType(), DepartmentConstants.WECOM.name())) {
             accessToken = generateWeComToken(syncOrganizationDTO);
@@ -286,16 +257,18 @@ public class OrganizationConfigService {
             accessToken = generateLarkToken(syncOrganizationDTO);
         }
 
-        if (StringUtils.isNotBlank(accessToken)) {
+        //TODO: 校验失败处理和成功处理
+       /* if (StringUtils.isNotBlank(accessToken)) {
             syncOrganizationDTO.setValid(true);
-            OrganizationConfigDetail organizationConfigDetail = new OrganizationConfigDetail();
-            organizationConfigDetail.setId(syncOrganizationDTO.getId());
+            OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
+            List<OrganizationConfigDetail>organizationConfigDetails = extOrganizationConfigDetailMapper.getOrgConfigDetailByType(organizationConfig.getId(), null, syncOrganizationDTO.getType());
+            OrganizationConfigDetail organizationConfigDetail = organizationConfigDetails.getFirst();
             organizationConfigDetail.setContent(JSON.toJSONBytes(syncOrganizationDTO));
             organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
             organizationConfigDetail.setUpdateUser(userId);
             organizationConfigDetail.setEnable(syncOrganizationDTO.getEnable());
             organizationConfigDetailBaseMapper.update(organizationConfigDetail);
-        }
+        }*/
 
     }
 

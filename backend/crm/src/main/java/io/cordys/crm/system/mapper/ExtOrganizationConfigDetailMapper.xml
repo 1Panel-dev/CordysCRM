@@ -23,6 +23,14 @@
         </if>
     </select>
 
+    <select id="getOrgConfigDetailByType" parameterType="io.cordys.crm.system.domain.OrganizationConfigDetail" resultType="io.cordys.crm.system.domain.OrganizationConfigDetail">
+        SELECT * FROM sys_organization_config_detail WHERE config_id = #{configId}
+        <if test="name != null">
+            and name like concat('%', #{name},'%')
+        </if>
+        and type = #{type}
+    </select>
+
     <select id="getRepeatDetails" parameterType="io.cordys.crm.system.domain.OrganizationConfigDetail" resultType="java.lang.Integer">
         SELECT count(id)
         FROM sys_organization_config_detail

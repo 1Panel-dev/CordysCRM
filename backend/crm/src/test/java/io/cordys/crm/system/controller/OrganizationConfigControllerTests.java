@@ -13,10 +13,7 @@ import io.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import io.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import io.cordys.mybatis.BaseMapper;
 
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import jakarta.annotation.Resource;
@@ -31,46 +28,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class OrganizationConfigControllerTests extends BaseTest {
 
     @Resource
-    private BaseMapper<OrganizationConfig> organizationConfigMapper;
-
-    @Resource
-    private BaseMapper<OrganizationConfigDetail> organizationConfigDetailMapper;
-
-    @Resource
     private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
 
     @Resource
     private ExtOrganizationConfigMapper extOrganizationConfigMapper;
-
-    // 创建组织配置
-    public String testCreateOrganizationConfig() {
-        OrganizationConfig organizationConfig = new OrganizationConfig();
-        organizationConfig.setId(IDGenerator.nextStr());
-        organizationConfig.setOrganizationId(DEFAULT_ORGANIZATION_ID);
-        organizationConfig.setType(OrganizationConfigConstants.ConfigType.EMAIL.name());
-        organizationConfig.setCreateTime(System.currentTimeMillis());
-        organizationConfig.setCreateUser("admin");
-        organizationConfig.setUpdateTime(System.currentTimeMillis());
-        organizationConfig.setUpdateUser("admin");
-        organizationConfigMapper.insert(organizationConfig);
-        OrganizationConfigDetail organizationConfigDetail = new OrganizationConfigDetail();
-        organizationConfigDetail.setId(IDGenerator.nextStr());
-        organizationConfigDetail.setConfigId(organizationConfig.getId());
-        organizationConfigDetail.setType(OrganizationConfigConstants.ConfigType.EMAIL.name());
-        organizationConfigDetail.setName("null");
-        organizationConfigDetail.setEnable(true);
-        EmailDTO emailDTO = new EmailDTO();
-        emailDTO.setHost("test.com");
-        emailDTO.setPort("25");   
-        emailDTO.setPassword("test");
-        organizationConfigDetail.setContent(JSON.toJSONBytes(emailDTO));
-        organizationConfigDetail.setCreateTime(System.currentTimeMillis());
-        organizationConfigDetail.setCreateUser("admin");
-        organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
-        organizationConfigDetail.setUpdateUser("admin");
-        organizationConfigDetailMapper.insert(organizationConfigDetail);
-        return organizationConfigDetail.getId();
-    }
 
 
     @Test
@@ -80,7 +41,7 @@ public class OrganizationConfigControllerTests extends BaseTest {
         emailDTO.setHost("test.com");
         emailDTO.setPort("25");   
         emailDTO.setPassword("test");
-        this.requestPost("/organization/config/add/email", emailDTO).andExpect(status().isOk());
+        this.requestPost("/organization/config/edit/email", emailDTO).andExpect(status().isOk());
 
         SyncOrganizationDTO syncOrganizationDTO = new SyncOrganizationDTO();
         syncOrganizationDTO.setCorpId("test");
@@ -88,7 +49,7 @@ public class OrganizationConfigControllerTests extends BaseTest {
         syncOrganizationDTO.setAppSecret("test");
         syncOrganizationDTO.setType("WECOM");
         syncOrganizationDTO.setEnable(true);
-        this.requestPost("/organization/config/add/synchronization", syncOrganizationDTO).andExpect(status().isOk());
+        this.requestPost("/organization/config/edit/synchronization", syncOrganizationDTO).andExpect(status().isOk());
     }
 
     @Test
@@ -96,6 +57,7 @@ public class OrganizationConfigControllerTests extends BaseTest {
     public void testEdit() throws Exception {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(DEFAULT_ORGANIZATION_ID, OrganizationConfigConstants.ConfigType.EMAIL.name());
         OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
+        Assertions.assertNotNull(organizationConfigDetail);
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setHost("test.com");
         emailDTO.setPort("25");   
@@ -105,45 +67,36 @@ public class OrganizationConfigControllerTests extends BaseTest {
         emailDTO.setRecipient("sddd");
         emailDTO.setSsl("true");
         emailDTO.setTsl("true");
-        emailDTO.setId(organizationConfigDetail.getId());
-        this.requestPost("/organization/config/update/email", emailDTO).andExpect(status().isOk());
+        this.requestPost("/organization/config/edit/email", emailDTO).andExpect(status().isOk());
 
         organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(DEFAULT_ORGANIZATION_ID, OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
         organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
+        Assertions.assertNotNull(organizationConfigDetail);
         SyncOrganizationDTO syncOrganizationDTO = new SyncOrganizationDTO();
         syncOrganizationDTO.setCorpId("test");
         syncOrganizationDTO.setAgentId("test");
         syncOrganizationDTO.setAppSecret("test");
         syncOrganizationDTO.setType("WECOM");
         syncOrganizationDTO.setEnable(true);
-        syncOrganizationDTO.setId(organizationConfigDetail.getId());
-        this.requestPost("/organization/config/update/synchronization", syncOrganizationDTO).andExpect(status().isOk());
-    }
-       
-
-    @Test
-    @Order(3)
-    public void testDelete() throws Exception {
-        String id = this.testCreateOrganizationConfig();
-        this.requestGet("/organization/config/delete/" + id).andExpect(status().isOk());
+        this.requestPost("/organization/config/edit/synchronization", syncOrganizationDTO).andExpect(status().isOk());
     }
 
     //获取邮件接口的测试
     @Test
-    @Order(4)
+    @Order(3)
     public void testGetEmail() throws Exception {
         this.requestGet("/organization/config/email").andExpect(status().isOk());
     }
 
     //获取同步组织接口的测试
     @Test
-    @Order(5)
+    @Order(4)
     public void testGetSynOrganization() throws Exception {
         this.requestGet("/organization/config/synchronization").andExpect(status().isOk());
     }
 
     @Test
-    @Order(6)
+    @Order(5)
     public void testEmailConnect() throws Exception {
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setHost("https://baidu.com");
@@ -158,24 +111,21 @@ public class OrganizationConfigControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(7)
+    @Order(6)
     public void testSyncConnect() throws Exception {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(DEFAULT_ORGANIZATION_ID, OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
         OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
         SyncOrganizationDTO weCom = new SyncOrganizationDTO();
-        weCom.setId(organizationConfigDetail.getId());
         weCom.setType(DepartmentConstants.WECOM.name());
         weCom.setAppSecret("ddd");
         weCom.setCorpId("fff");
         this.requestPost("/organization/config/test/sync", weCom, status().is5xxServerError());
         weCom = new SyncOrganizationDTO();
-        weCom.setId(organizationConfigDetail.getId());
         weCom.setType(DepartmentConstants.DINGTALK.name());
         weCom.setAppSecret("ddd");
         weCom.setAppKey("fff");
         this.requestPost("/organization/config/test/sync", weCom, status().is5xxServerError());
         weCom = new SyncOrganizationDTO();
-        weCom.setId(organizationConfigDetail.getId());
         weCom.setType(DepartmentConstants.LARK.name());
         weCom.setAppSecret("ddd");
         weCom.setAgentId("fff");

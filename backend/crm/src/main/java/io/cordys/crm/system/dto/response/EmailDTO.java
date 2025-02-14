@@ -30,7 +30,4 @@ public class EmailDTO {
     @Schema(description = "tsl开关")
     private String tsl;
 
-    @Schema(description = "id")
-    private String id;
-
 }

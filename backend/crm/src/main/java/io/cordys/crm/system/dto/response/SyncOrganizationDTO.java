@@ -11,12 +11,10 @@ public class SyncOrganizationDTO {
     private String corpId;
     @Schema(description = "应用ID")
     private String agentId;
-    @Schema(description = "应用key", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "应用key")
     private String appKey;
-    @Schema(description = "应用密钥")
+    @Schema(description = "应用密钥", requiredMode = Schema.RequiredMode.REQUIRED)
     private String appSecret;
-    @Schema(description = "id")
-    private String id;
     @Schema(description = "是否开启")
     private Boolean enable;
     @Schema(description = "是否验证通过")
