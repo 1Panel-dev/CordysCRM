@@ -5,16 +5,14 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
-import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.dto.request.ModuleRequest;
 import io.cordys.crm.system.dto.request.ModuleSortRequest;
-import io.cordys.crm.system.dto.response.ModuleDTO;
 import io.cordys.crm.system.mapper.ExtModuleMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -42,15 +40,11 @@ public class ModuleService {
 	 * @param request 请求参数
 	 * @return 模块配置列表
 	 */
-	public List<ModuleDTO> getModuleList(ModuleRequest request) {
+	public List<Module> getModuleList(ModuleRequest request) {
 		LambdaQueryWrapper<Module> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(Module::getOrganizationId, request.getOrganizationId());
 		List<Module> modules = moduleMapper.selectListByLambda(queryWrapper);
-		return modules.stream().map(module -> {
-			ModuleDTO moduleDTO = new ModuleDTO();
-			BeanUtils.copyBean(moduleDTO, module);
-			return moduleDTO;
-		}).sorted(Comparator.comparing(ModuleDTO::getPos)).toList();
+		return modules.stream().sorted(Comparator.comparing(Module::getPos)).toList();
 	}
 
 	/**
@@ -168,7 +162,7 @@ public class ModuleService {
 	private List<String> getModuleSortKeys(String organizationId) {
 		ModuleRequest request = new ModuleRequest();
 		request.setOrganizationId(organizationId);
-		List<ModuleDTO> moduleList = getModuleList(request);
-		return moduleList.stream().map(ModuleDTO::getModuleKey).toList();
+		List<Module> moduleList = getModuleList(request);
+		return moduleList.stream().map(Module::getModuleKey).toList();
 	}
 }
