@@ -11,7 +11,13 @@
     @clickoutside="clickOutSide"
   >
     <slot>
-      <n-button type="primary" size="small" ghost class="h-[24px] w-[24px] !p-0" @click.stop="(e) => emit('click', e)">
+      <n-button
+        type="primary"
+        :size="props.size"
+        ghost
+        :class="`crm-more-action--size-${props.size}`"
+        @click.stop="(e) => emit('click', e)"
+      >
         <template #icon>
           <n-icon>
             <CrmIcon type="iconicon_ellipsis" :size="16" class="mt-[1px] text-[var(--primary-8)]" />
@@ -43,6 +49,7 @@
       options: ActionsItem[];
       trigger?: PopoverTrigger;
       nodeProps?: (option: DropdownOption | DropdownGroupOption) => HTMLAttributes;
+      size?: 'small' | 'medium' | 'large';
       placement?:
         | 'top-start'
         | 'top'
@@ -60,6 +67,7 @@
     {
       placement: 'bottom-start',
       trigger: 'hover',
+      size: 'small',
     }
   );
 
@@ -146,6 +154,17 @@
     @apply flex items-center rounded;
     .n-dropdown-option-body {
       @apply w-full;
+    }
+  }
+  .crm-more-action--size {
+    &-small {
+      padding: 3px !important;
+    }
+    &-medium {
+      padding: 7px !important;
+    }
+    &-large {
+      padding: 10px !important;
     }
   }
 </style>

@@ -1,4 +1,19 @@
 <template>
+  <BatchAction
+    v-if="props.actionConfig"
+    :select-row-count="checkedRowKeys.length"
+    size="medium"
+    :action-config="props.actionConfig"
+    @clear="handleClear"
+    @batch-action="handleBatchAction"
+  >
+    <template #actionLeft>
+      <slot name="actionLeft"></slot>
+    </template>
+    <template #actionRight>
+      <slot name="actionRight"></slot>
+    </template>
+  </BatchAction>
   <n-data-table
     v-bind="{ ...$attrs }"
     v-model:checked-row-keys="checkedRowKeys"
@@ -31,26 +46,31 @@
   import { cloneDeep } from 'lodash-es';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmPagination from '@/components/pure/crm-pagination/index.vue';
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
+  import BatchAction from './components/batchAction.vue';
   import ColumnSetting from './components/columnSetting.vue';
 
   import { useI18n } from '@/hooks/useI18n';
   import useTableStore from '@/hooks/useTableStore';
 
+  import { BatchActionConfig } from './type';
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import type { DataTableFilterState, DataTableRowKey, DataTableSortState } from 'naive-ui';
 
   const props = defineProps<{
     columns: CrmDataTableColumn[];
     tableRowKey?: string;
+    actionConfig?: BatchActionConfig; // 批量操作
   }>();
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;
     (e: 'pageSizeChange', value: number): void;
     (e: 'sorterChange', value: { [key: string]: string }): void;
     (e: 'filterChange', value: DataTableFilterState): void;
+    (e: 'batchAction', value: ActionsItem): void;
   }>();
   const attrs = useAttrs();
   const { t } = useI18n();
@@ -206,6 +226,14 @@
   function handleFiltersChange(filters: DataTableFilterState) {
     emit('filterChange', filters);
   }
+
+  function handleClear() {
+    checkedRowKeys.value = [];
+  }
+
+  const handleBatchAction = (item: ActionsItem) => {
+    emit('batchAction', item);
+  };
 
   function handleCheck(rowKeys: DataTableRowKey[]) {
     console.log('🤔️ => handleCheck', rowKeys);

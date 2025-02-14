@@ -64,4 +64,7 @@ export default {
   'org.outsourcingUser': 'Outsourcing',
   'org.checkIsOpenConfig': 'Please check the enterprise Settings - synchronous structure function configuration!',
   'org.syncSuccess': 'Synchronization success',
+  'org.batchResetPsdTip': 'Confirm reset password for {number} employees?',
+  'org.batchToggleStatusTip': 'Confirm {enable} {number} employees?',
+  'org.batchDeleteUserTip': 'Confirm delete {number} employees?',
 };

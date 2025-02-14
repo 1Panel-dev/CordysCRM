@@ -1,5 +1,6 @@
 import { VNodeChild } from 'vue';
 
+import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 import type { CrmTagGroupProps } from '@/components/pure/crm-tag-group/index.vue';
 
 import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
@@ -49,4 +50,9 @@ export interface TableStorageConfigItem {
   column: CrmDataTableColumn[]; // 列配置
   pageSize?: number;
   columnBackup: CrmDataTableColumn[]; // 列配置的备份，用于比较当前定义的列配置是否和备份的列配置相同
+}
+
+export interface BatchActionConfig {
+  baseAction: ActionsItem[];
+  moreAction?: ActionsItem[];
 }

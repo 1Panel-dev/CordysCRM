@@ -1,24 +1,30 @@
 <template>
   <div class="w-full p-[24px]">
-    <div class="mb-[16px] flex items-center justify-between">
-      <div class="flex">
-        <n-button class="mr-[12px]" type="primary" @click="addOrEditMember(false)">{{ t('org.addStaff') }}</n-button>
-        <CrmMoreAction :options="moreActions" trigger="click" @select="selectMoreActions">
-          <n-button type="default" class="outline--secondary">
-            {{ t('common.more') }}
-            <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
-          </n-button>
-        </CrmMoreAction>
-      </div>
-      <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
-    </div>
     <CrmTable
+      v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
+      :action-config="actionConfig"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
-    />
+      @batch-action="handleBatchAction"
+    >
+      <template #actionLeft>
+        <div class="flex">
+          <n-button class="mr-[12px]" type="primary" @click="addOrEditMember(false)">{{ t('org.addStaff') }}</n-button>
+          <CrmMoreAction :options="moreActions" trigger="click" @select="selectMoreActions">
+            <n-button type="default" class="outline--secondary">
+              {{ t('common.more') }}
+              <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
+            </n-button>
+          </CrmMoreAction>
+        </div>
+      </template>
+      <template #actionRight>
+        <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+      </template>
+    </CrmTable>
 
     <AddMember v-model:show="showDrawer" :user-id="currentUserId" @brash="initOrgList()" @close="cancelHandler" />
     <EditIntegrationModal
@@ -33,7 +39,7 @@
       @edit="addOrEditMember(true)"
       @cancel="cancelHandler"
     />
-    <batchEditModal v-model:show="showEditModal" />
+    <batchEditModal v-model:show="showEditModal" :user-ids="checkedRowKeys" @load-list="handleLoadList" />
     <!-- 导入开始 -->
     <!-- 导入弹窗 -->
     <ImportModal v-model:show="importModal" :confirm-loading="validateLoading" @validate="validateTemplate" />
@@ -60,7 +66,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
@@ -68,7 +74,7 @@
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
+  import { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
   import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
@@ -83,6 +89,8 @@
 
   import { getConfigSynchronization } from '@/api/modules/system/business';
   import {
+    batchResetUserPassword,
+    batchToggleStatusUser,
     deleteUser,
     getUserList,
     importUserPreCheck,
@@ -194,6 +202,128 @@
     );
   }
 
+  const tableRefreshId = ref(0);
+
+  const actionConfig: BatchActionConfig = {
+    baseAction: [
+      {
+        label: t('common.batchEdit'),
+        key: 'batchEdit',
+      },
+      {
+        label: t('common.enable'),
+        key: 'enabled',
+      },
+      {
+        label: t('common.disable'),
+        key: 'disable',
+      },
+      {
+        label: t('org.resetPassWord'),
+        key: 'resetPassWord',
+      },
+    ],
+    moreAction: [
+      {
+        label: t('common.export'),
+        key: 'export',
+      },
+    ],
+  };
+
+  const checkedRowKeys = ref<DataTableRowKey[]>([]);
+
+  // 批量编辑
+  const showEditModal = ref<boolean>(false);
+  function batchEditMember() {
+    showEditModal.value = true;
+  }
+  // 批量启用
+  function batchToggleStatusMember(enable: boolean) {
+    const title = t('org.batchToggleStatusTip', {
+      enable: enable ? t('common.enable') : t('common.disable'),
+      number: checkedRowKeys.value.length,
+    });
+
+    const content = t(enable ? 'org.enabledUserTipContent' : 'org.disabledUserTipContent');
+    const positiveText = t(enable ? 'common.confirmStart' : 'common.confirmDisable');
+
+    openModal({
+      type: enable ? 'default' : 'error',
+      title,
+      content,
+      positiveText,
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await batchToggleStatusUser({ ids: checkedRowKeys.value, enable });
+          checkedRowKeys.value = [];
+          tableRefreshId.value += 1;
+          Message.success(t(enable ? 'common.opened' : 'common.disabled'));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
+  // 批量导出
+  function batchExportMember() {
+    try {
+      // TODO
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  // 批量重置密码
+  function batchResetPassWord() {
+    openModal({
+      type: 'warning',
+      title: t('org.batchResetPsdTip', { number: checkedRowKeys.value.length }),
+      content: t('org.resetPassWordContent'),
+      positiveText: t('org.confirmReset'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await batchResetUserPassword({
+            ids: checkedRowKeys.value,
+          });
+          checkedRowKeys.value = [];
+          tableRefreshId.value += 1;
+          Message.success(t('org.resetPassWordSuccess'));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
+      },
+    });
+  }
+
+  function handleBatchAction(item: ActionsItem) {
+    switch (item.key) {
+      case 'batchEdit':
+        batchEditMember();
+        break;
+      case 'enabled':
+        batchToggleStatusMember(true);
+        break;
+      case 'disable':
+        batchToggleStatusMember(false);
+        break;
+      case 'export':
+        batchExportMember();
+        break;
+      case 'resetPassWord':
+        batchResetPassWord();
+        break;
+      default:
+        break;
+    }
+  }
+
   const moreActions: ActionsItem[] = [
     {
       label: t('org.enterpriseWhatSync'),
@@ -258,7 +388,7 @@
     showDrawer.value = false;
     currentUserId.value = '';
   }
-  const tableRefreshId = ref(0);
+
   // 重置密码
   function handleResetPassWord(row: MemberItem) {
     openModal({
@@ -643,6 +773,12 @@
     }
   );
 
+  function handleLoadList() {
+    checkedRowKeys.value = [];
+    initOrgList();
+    emit('addSuccess');
+  }
+
   /**
    * 导入用户
    */
@@ -722,8 +858,6 @@
       importLoading.value = false;
     }
   }
-
-  const showEditModal = ref<boolean>(false);
 
   watch(
     () => props.activeNode,

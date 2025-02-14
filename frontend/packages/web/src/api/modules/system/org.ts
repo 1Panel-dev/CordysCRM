@@ -85,13 +85,13 @@ export function getUserDetail(userId: string) {
   return CDR.get<MemberParams>({ url: `${getUserDetailUrl}/${userId}` });
 }
 
-// 用户(员工)-员工详情 TODO 类型
-export function batchEnableUser(data: any) {
+// 用户(员工)-批量启用|禁用
+export function batchToggleStatusUser(data: UserTableQueryParams) {
   return CDR.post({ url: batchEnableUserUrl, data });
 }
 
-// 用户(员工)-批量重置密码 TODO 类型
-export function batchResetUserPassword(data: any) {
+// 用户(员工)-批量重置密码
+export function batchResetUserPassword(data: UserTableQueryParams) {
   return CDR.post({ url: batchResetPasswordUrl, data });
 }
 
@@ -105,8 +105,8 @@ export function syncOrg(type: string) {
   return CDR.get({ url: `${syncOrgUrl}/${type}` });
 }
 
-// 用户(员工)-批量编辑 TODO 类型
-export function batchEditUser(data: any) {
+// 用户(员工)-批量编辑
+export function batchEditUser(data: UserTableQueryParams) {
   return CDR.post({ url: batchEditUserUrl, data });
 }
 
