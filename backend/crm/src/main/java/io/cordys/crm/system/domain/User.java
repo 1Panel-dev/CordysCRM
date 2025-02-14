@@ -26,4 +26,7 @@ public class User extends BaseModel {
 
     @Schema(description = "语言")
     private String language;
+
+    @Schema(description = "当前组织ID")
+    private String lastOrganizationId;
 }

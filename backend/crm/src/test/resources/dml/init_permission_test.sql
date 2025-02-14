@@ -1,7 +1,7 @@
 -- 初始化用于项目级别权限测试的用户
-INSERT INTO `sys_user` (`id`, `name`, `email`, `password`,  `gender`, `phone`, `language`, `create_time`,
+INSERT INTO `sys_user` (`id`, `name`, `email`, `password`,  `gender`, `phone`, `language`, `last_organization_id`, `create_time`,
                         `update_time`, `create_user`, `update_user`)
-VALUES ('permission_test', 'permission_test', 'permission_test@cordys-crm.io', MD5('CordysCRM'), 1,'1253465576', 'zh_CN',
+VALUES ('permission_test', 'permission_test', 'permission_test@cordys-crm.io', MD5('CordysCRM'), 1,'1253465576', 'zh_CN', '100001',
         UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin');
 
 -- 初始化一个用于权限测试的用户组，这里默认使用 PROJECT 作为ID，如果是组织和项目级别类似，便于根据权限的前缀找到对应测试的用户组
