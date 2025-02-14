@@ -1,6 +1,6 @@
 import { FormItemRule, InputNumberProps, InputProps, SelectProps } from 'naive-ui';
 
-import { FieldTypeEnum } from '@/components/pure/crm-form-design/enum';
+import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
 
 // 自定义检验器，为了传入动态渲染的表单项下标
 export interface CustomValidator {

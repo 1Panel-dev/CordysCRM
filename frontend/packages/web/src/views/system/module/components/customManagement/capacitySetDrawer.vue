@@ -21,9 +21,9 @@
   import { cloneDeep } from 'lodash-es';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import { FieldTypeEnum } from '@/components/pure/crm-form-design/enum';
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
+  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
 
   import { useI18n } from '@/hooks/useI18n';
 

@@ -12,6 +12,7 @@ export enum FieldTypeEnum {
   DEPARTMENT_SINGLE = 'departmentSingle',
   DEPARTMENT_MULTIPLE = 'departmentMultiple',
   DIVIDER = 'divider',
+  // 高级字段
   PICTURE = 'picture',
   LOCATION = 'location',
   PHONE = 'phone',

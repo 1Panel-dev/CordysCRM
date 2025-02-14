@@ -2,7 +2,9 @@
   <n-scrollbar x-scrollable content-class="flex h-full !w-full bg-[var(--text-n9)]" content-style="min-width: 800px">
     <div class="crm-form-design--left"><fieldComponents @select="handleFieldSelect" /></div>
     <div class="crm-form-design--center">
-      <div class="crm-form-design--center-content"><formComposition ref="formCompositionRef" /></div>
+      <div class="crm-form-design--center-content">
+        <formComposition ref="formCompositionRef" v-model:list="list" :form-config="formConfig" />
+      </div>
     </div>
     <div class="crm-form-design--right">i am right</div>
   </n-scrollbar>
@@ -12,15 +14,29 @@
   import { NScrollbar } from 'naive-ui';
 
   import fieldComponents from './components/fieldComponents.vue';
-  import formComposition from './components/formComposition/index.vue';
+  import formComposition from './components/formComposition.vue';
 
-  import { FieldTypeEnum } from './enum';
+  import { useI18n } from '@/hooks/useI18n';
 
+  import { FormCreateField } from '../crm-form-create/types';
+  import { FormConfig } from './types';
+
+  const { t } = useI18n();
+
+  const list = ref<FormCreateField[]>([]);
   const formCompositionRef = ref<InstanceType<typeof formComposition>>();
 
-  function handleFieldSelect(type: FieldTypeEnum, name: string) {
-    formCompositionRef.value?.addItem(type, name);
+  function handleFieldSelect(item: FormCreateField) {
+    formCompositionRef.value?.addItem(item);
   }
+
+  const formConfig = ref<FormConfig>({
+    formCols: 4,
+    okText: t('common.save'),
+    continueText: t('common.saveAndContinue'),
+    cancelText: t('common.cancel'),
+    footerDirectionClass: 'flex-row',
+  });
 </script>
 
 <style lang="less" scoped>

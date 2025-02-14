@@ -85,8 +85,8 @@
   import { Add } from '@vicons/ionicons5';
   import { cloneDeep } from 'lodash-es';
 
-  import { FieldTypeEnum } from '@/components/pure/crm-form-design/enum';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
 
   import { useI18n } from '@/hooks/useI18n';
 

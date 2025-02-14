@@ -42,7 +42,7 @@
 
   import { useI18n } from '@/hooks/useI18n';
 
-  const CrmFormDesign = defineAsyncComponent(() => import('@/components/pure/crm-form-design/index.vue'));
+  const CrmFormDesign = defineAsyncComponent(() => import('@/components/business/crm-form-design/index.vue'));
 
   const props = defineProps<{
     title: string;

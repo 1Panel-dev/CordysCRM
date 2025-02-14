@@ -1,4 +1,4 @@
-// eslint-disable-next-line  @typescript-eslint/no-var-requires
+// eslint-disable-next-line  @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 const path = require('path');
 
 module.exports = {
@@ -105,6 +105,7 @@ module.exports = {
             '^jsencrypt$',
             '^echarts$',
             '^localforage$',
+            '^vue-draggable-plus$',
           ], // node依赖
           ['.*/assets/.*', '^@/assets$'], // 项目静态资源
           ['^@/components/pure/.*', '^@/components/business/.*', '.*\\.vue$'], // 组件

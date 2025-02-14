@@ -28,6 +28,7 @@
 
 <script setup lang="ts">
   import { NSwitch } from 'naive-ui';
+  import { VueDraggable } from 'vue-draggable-plus';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -36,8 +37,6 @@
   import { useI18n } from '@/hooks/useI18n';
 
   import { ModuleConfigEnum } from '@/enums/moduleEnum';
-
-  import { VueDraggable } from 'vue-draggable-plus';
 
   const { t } = useI18n();
 

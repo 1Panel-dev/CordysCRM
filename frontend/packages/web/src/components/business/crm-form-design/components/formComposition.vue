@@ -1,0 +1,208 @@
+<template>
+  <n-form class="crm-form-design--composition">
+    <VueDraggable
+      v-model="list"
+      :disabled="disabled"
+      :animation="150"
+      ghost-class="crm-form-design--composition-item-ghost"
+      group="crmFormDesign"
+      class="crm-form-design--composition-drag-wrapper"
+      :class="[list.length > 0 ? '' : 'border border-dashed', `grid-cols-${props.formConfig.formCols}`]"
+      @start="onStart"
+    >
+      <div
+        v-for="item in list"
+        :key="item.id"
+        class="crm-form-design--composition-item"
+        :class="activeItem?.id === item.id ? 'crm-form-design--composition-item--active' : ''"
+        :style="{ gridColumn: `span ${item.grid}` }"
+        @click="() => handleItemClick(item)"
+      >
+        <div class="crm-form-design--composition-item-tools">
+          <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+            <template #trigger>
+              <CrmIcon
+                type="iconicon_file_copy"
+                :size="16"
+                class="cursor-pointer hover:text-[var(--primary-8)]"
+                @click.stop="copyItem(item)"
+              />
+            </template>
+            {{ t('common.copy') }}
+          </n-tooltip>
+          <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+            <template #trigger>
+              <CrmIcon
+                type="iconicon_delete"
+                :size="16"
+                class="cursor-pointer hover:text-[var(--error-red)]"
+                @click.stop="deleteItem(item)"
+              />
+            </template>
+            {{ t('common.delete') }}
+          </n-tooltip>
+        </div>
+        <component :is="getItemComponent(item.type)" :field-config="item" :path="item.id" />
+        <div class="crm-form-design--composition-item-mask"></div>
+      </div>
+      <div
+        v-if="list.length === 0"
+        class="absolute col-span-4 flex h-full w-full items-center justify-center text-[var(--text-n4)]"
+        draggable="false"
+      >
+        {{ t('crmFormDesign.emptyTip') }}
+      </div>
+    </VueDraggable>
+    <div class="crm-form-design--composition-footer" :class="props.formConfig.footerDirectionClass">
+      <n-button type="primary">{{ formConfig.okText }}</n-button>
+      <n-button type="primary" ghost>{{ formConfig.continueText }}</n-button>
+      <n-button secondary>{{ formConfig.cancelText }}</n-button>
+    </div>
+  </n-form>
+</template>
+
+<script setup lang="ts">
+  import { NButton, NForm, NTooltip } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
+  import { VueDraggable } from 'vue-draggable-plus';
+
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import singleText from '@/components/business/crm-form-create/components/singleText.vue';
+  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
+  import { FormCreateField } from '@/components/business/crm-form-create/types';
+
+  import { useI18n } from '@/hooks/useI18n';
+  import { getGenerateId } from '@/utils';
+
+  import { FormConfig } from '../types';
+
+  const props = defineProps<{
+    formConfig: FormConfig;
+  }>();
+
+  const { t } = useI18n();
+
+  const list = defineModel<FormCreateField[]>('list', {
+    required: true,
+  });
+  const activeItem = ref<FormCreateField>();
+
+  const disabled = ref(false);
+
+  function onStart(e: any) {
+    activeItem.value = e.data as FormCreateField;
+  }
+
+  function handleItemClick(item: FormCreateField) {
+    activeItem.value = item;
+  }
+
+  function getItemComponent(type: FieldTypeEnum) {
+    if (type === FieldTypeEnum.INPUT) {
+      return singleText;
+    }
+  }
+
+  function addItem(item: FormCreateField) {
+    list.value.push({
+      ...item,
+      id: getGenerateId(),
+      name: t(item.name),
+      grid: 4,
+    });
+  }
+
+  function copyItem(item: FormCreateField) {
+    list.value.push(
+      cloneDeep({
+        ...item,
+        id: getGenerateId(),
+      })
+    );
+  }
+
+  function deleteItem(item: FormCreateField) {
+    list.value = list.value.filter((e) => e.id !== item.id);
+  }
+
+  defineExpose({
+    addItem,
+  });
+</script>
+
+<style lang="less">
+  .crm-form-design--composition {
+    @apply relative flex h-full flex-col;
+
+    padding: 24px 24px 0;
+    .crm-form-design--composition-drag-wrapper {
+      @apply relative grid w-full flex-1 auto-rows-min;
+
+      border-radius: var(--border-radius-small);
+      .crm-form-design--composition-item {
+        @apply relative cursor-move;
+
+        padding: 16px;
+        border: 1px solid transparent;
+        border-radius: var(--border-radius-small);
+        &:hover {
+          background-color: var(--text-n9);
+          .crm-form-design--composition-item-tools {
+            @apply visible;
+          }
+        }
+        .crm-form-design--composition-item-tools {
+          @apply invisible absolute z-20 flex items-center;
+
+          top: 16px;
+          right: 16px;
+          padding: 4px;
+          border: 1px solid var(--text-n7);
+          border-radius: var(--border-radius-small);
+          background-color: var(--text-n10);
+          gap: 8px;
+        }
+        .n-form-item-label {
+          margin-bottom: 4px;
+          padding-bottom: 0;
+        }
+        .n-form-item-feedback-wrapper {
+          @apply hidden;
+        }
+        .crm-form-design--composition-item-mask {
+          @apply absolute bottom-0 left-0 right-0 top-0 z-10 cursor-move bg-transparent;
+        }
+      }
+      .crm-form-design--composition-item--active {
+        border: 1px solid var(--primary-8);
+        background-color: var(--primary-7);
+        .crm-form-design--composition-item-tools {
+          @apply visible;
+        }
+      }
+      .crm-form-design--composition-item-ghost {
+        @apply flex items-center;
+
+        padding: 16px;
+        border: 1px solid var(--primary-8);
+        border-radius: var(--border-radius-small);
+        background-color: var(--primary-7);
+        gap: 8px;
+        grid-column: span 4;
+        line-height: 22px;
+      }
+    }
+    .crm-form-design--composition-footer {
+      @apply flex w-full;
+
+      padding: 12px 0;
+      border-top: 1px solid var(--text-n8);
+      gap: 8px;
+    }
+  }
+  .crm-form-design--composition-item-tools-tip {
+    padding: 0 4px !important;
+    font-size: 12px;
+    line-height: 20px;
+  }
+</style>

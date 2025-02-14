@@ -43,6 +43,7 @@
 
 <script setup lang="ts">
   import { NButton, NPopover, NScrollbar, NSwitch } from 'naive-ui';
+  import { VueDraggable } from 'vue-draggable-plus';
 
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 
@@ -50,7 +51,6 @@
   import useTableStore from '@/hooks/useTableStore';
 
   import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import { VueDraggable } from 'vue-draggable-plus';
 
   const props = defineProps<{
     tableKey: TableKeyEnum;
