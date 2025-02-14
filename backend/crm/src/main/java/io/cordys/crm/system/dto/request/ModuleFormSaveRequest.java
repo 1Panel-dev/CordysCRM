@@ -1,7 +1,6 @@
 package io.cordys.crm.system.dto.request;
 
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
-import io.cordys.crm.system.dto.response.ModuleFormDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -27,7 +26,7 @@ public class ModuleFormSaveRequest {
 
 	@NonNull
 	@Schema(description = "表单属性")
-	private ModuleFormDTO form;
+	private String formProp;
 
 	@Schema(description = "删除字段ID集合")
 	private List<String> deleteFieldIds;

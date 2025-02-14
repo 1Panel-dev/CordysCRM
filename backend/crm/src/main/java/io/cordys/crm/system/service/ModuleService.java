@@ -35,6 +35,8 @@ public class ModuleService {
 	@Resource
 	private ExtModuleMapper extModuleMapper;
 
+	private static final String DEFAULT_ORGANIZATION_ID = "100001";
+
 	/**
 	 * 获取系统模块配置列表
 	 * @param request 请求参数
@@ -139,6 +141,10 @@ public class ModuleService {
 			modules.add(module);
 		});
 		moduleMapper.batchInsert(modules);
+	}
+
+	public void initDefaultOrgModule() {
+		initModule(DEFAULT_ORGANIZATION_ID);
 	}
 
 	/**

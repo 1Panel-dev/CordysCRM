@@ -16,7 +16,7 @@ public enum ModuleKey {
 	/**
 	 * 线索管理
 	 */
-	CLUE("clue"),
+	LEAD("lead"),
 	/**
 	 * 商机管理
 	 */
@@ -24,7 +24,11 @@ public enum ModuleKey {
 	/**
 	 * 产品管理
 	 */
-	PRODUCT("product");
+	PRODUCT("product"),
+	/**
+	 * 系统设置
+	 */
+	SETTING("setting");
 
 	private final String key;
 

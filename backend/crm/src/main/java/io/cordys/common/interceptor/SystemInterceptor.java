@@ -35,8 +35,8 @@ public class SystemInterceptor {
         configList.add(new MybatisInterceptorConfig(Notification.class, "content", CompressUtils.class, "zip", "unzip"));
 
         configList.add(new MybatisInterceptorConfig(OperationLogBlob.class, "originalValue", CompressUtils.class, "zip", "unzip"));
-        configList.add(new MybatisInterceptorConfig(ModuleFieldBlob.class, "extraProp", CompressUtils.class, "zip", "unzip"));
-        configList.add(new MybatisInterceptorConfig(ModuleFieldBlob.class, "rules", CompressUtils.class, "zip", "unzip"));
+        configList.add(new MybatisInterceptorConfig(ModuleFormBlob.class, "prop", CompressUtils.class, "zip", "unzip"));
+        configList.add(new MybatisInterceptorConfig(ModuleFieldBlob.class, "prop", CompressUtils.class, "zip", "unzip"));
 
         // 添加自定义拦截器配置，例如压缩和解压缩功能
         // configList.add(new MybatisInterceptorConfig(TestResourcePoolBlob.class, "configuration", CompressUtils.class, "zip", "unzip"));

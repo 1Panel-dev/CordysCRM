@@ -10,6 +10,7 @@ public class ModuleFormConfigDTO {
 
 	@Schema(description = "字段集合及其属性")
 	private List<ModuleFieldDTO> fields;
+
 	@Schema(description = "表单属性")
-	private ModuleFormDTO form;
+	private String formProp;
 }

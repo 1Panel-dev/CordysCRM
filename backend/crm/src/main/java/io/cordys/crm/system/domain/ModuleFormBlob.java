@@ -1,12 +1,13 @@
 package io.cordys.crm.system.domain;
 
+import io.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
-@Table(name = "sys_module_field_blob")
-public class ModuleFieldBlob {
+@Table(name = "sys_module_form_blob")
+public class ModuleFormBlob {
 
 	@Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String id;

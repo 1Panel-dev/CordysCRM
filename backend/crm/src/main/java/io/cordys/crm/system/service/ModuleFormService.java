@@ -1,47 +1,52 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.ModuleField;
-import io.cordys.crm.system.domain.ModuleFieldOption;
+import io.cordys.crm.system.domain.ModuleFieldBlob;
 import io.cordys.crm.system.domain.ModuleForm;
+import io.cordys.crm.system.domain.ModuleFormBlob;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
-import io.cordys.crm.system.dto.response.ModuleFieldOptionDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import io.cordys.crm.system.dto.response.ModuleFormDTO;
 import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
-import io.cordys.crm.system.mapper.ExtModuleFieldOptionMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class ModuleFormService {
 
+	@Value("classpath:form/form.json")
+	private org.springframework.core.io.Resource formResource;
+	@Value("classpath:form/field.json")
+	private org.springframework.core.io.Resource fieldResource;
 	@Resource
 	private BaseMapper<ModuleForm> moduleFormMapper;
 	@Resource
+	private BaseMapper<ModuleFormBlob> moduleFormBlobMapper;
+	@Resource
 	private BaseMapper<ModuleField> moduleFieldMapper;
 	@Resource
-	private BaseMapper<ModuleFieldOption> moduleFieldOptionMapper;
+	private BaseMapper<ModuleFieldBlob> moduleFieldBlobMapper;
 	@Resource
 	private ExtModuleFieldMapper extModuleFieldMapper;
-	@Resource
-	private ExtModuleFieldOptionMapper extModuleFieldOptionMapper;
+
+	private static final String DEFAULT_ORGANIZATION_ID = "100001";
 
 	/**
 	 * 获取模块表单配置
@@ -59,9 +64,8 @@ public class ModuleFormService {
 			throw new GenericException(Translator.get("module.form.not_exist"));
 		}
 		ModuleForm form = forms.getFirst();
-		ModuleFormDTO formDTO = new ModuleFormDTO();
-		BeanUtils.copyBean(formDTO, form);
-		formConfig.setForm(formDTO);
+		ModuleFormBlob formBlob = moduleFormBlobMapper.selectByPrimaryKey(form.getId());
+		formConfig.setFormProp(new String(formBlob.getProp()));
 		// set fields
 		formConfig.setFields(getAllFields(form.getId()));
 		return formConfig;
@@ -73,122 +77,63 @@ public class ModuleFormService {
 	 * @return 表单配置
 	 */
 	public ModuleFormConfigDTO save(ModuleFormSaveRequest saveParam, String currentUserId, String currentOrgId) {
-		// handle form
+		// 处理表单
 		LambdaQueryWrapper<ModuleForm> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(ModuleForm::getFormKey, saveParam.getFormKey()).eq(ModuleForm::getOrganizationId, currentOrgId);
 		List<ModuleForm> forms = moduleFormMapper.selectListByLambda(queryWrapper);
-		ModuleForm saveForm = new ModuleForm();
-		BeanUtils.copyBean(saveForm, saveParam.getForm());
-		saveForm.setFormKey(saveParam.getFormKey());
-		saveForm.setOrganizationId(currentOrgId);
-		saveForm.setUpdateTime(System.currentTimeMillis());
-		saveForm.setUpdateUser(currentUserId);
 		if (CollectionUtils.isEmpty(forms)) {
-			// new form
-			saveForm.setId(IDGenerator.nextStr());
-			saveForm.setCreateTime(System.currentTimeMillis());
-			saveForm.setCreateUser(currentUserId);
-			moduleFormMapper.insert(saveForm);
-		} else {
-			// edited form
-			ModuleForm originalForm = forms.getFirst();
-			saveForm.setId(originalForm.getId());
-			saveForm.setUpdateTime(System.currentTimeMillis());
-			moduleFormMapper.updateById(saveForm);
+			throw new GenericException(Translator.get("module.form.not_exist"));
 		}
+		ModuleForm form = forms.getFirst();
+		form.setUpdateUser(currentUserId);
+		form.setUpdateTime(System.currentTimeMillis());
+		moduleFormMapper.updateById(form);
+		ModuleFormBlob formBlob = new ModuleFormBlob();
+		formBlob.setId(form.getId());
+		formBlob.setProp(saveParam.getFormProp().getBytes());
+		moduleFormBlobMapper.updateById(formBlob);
 
+		// 处理字段
 		if (CollectionUtils.isNotEmpty(saveParam.getDeleteFieldIds())) {
-			// remove deleted fields
 			extModuleFieldMapper.deleteByIds(saveParam.getDeleteFieldIds());
-			extModuleFieldOptionMapper.deleteByFieldIds(saveParam.getDeleteFieldIds());
 		}
 		if (CollectionUtils.isNotEmpty(saveParam.getFields())) {
-			// handle edit fields and options
 			List<ModuleField> addFields = new ArrayList<>();
 			List<ModuleField> updateFields = new ArrayList<>();
-			List<ModuleFieldOption> addOptions = new ArrayList<>();
-			List<ModuleFieldOption> updateOptions = new ArrayList<>();
-			List<String> deleteOptionIds = new ArrayList<>();
+			List<ModuleFieldBlob> addFieldBlobs = new ArrayList<>();
+			List<ModuleFieldBlob> updateFieldBlobs = new ArrayList<>();
+			AtomicLong pos = new AtomicLong(1);
 			saveParam.getFields().forEach(field -> {
+				field.setPos(pos.getAndIncrement());
+				ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
+				fieldBlob.setProp(field.getFieldProp().getBytes());
 				if (field.getId() == null) {
 					field.setId(IDGenerator.nextStr());
-					addFields.add(buildField(field, currentUserId, saveForm.getId(), false));
+					addFields.add(buildField(field, currentUserId, form.getId(), false));
+					fieldBlob.setId(field.getId());
+					addFieldBlobs.add(fieldBlob);
 				} else {
-					updateFields.add(buildField(field, currentUserId, saveForm.getId(), true));
-				}
-				// handle field option
-				if (FieldType.hasOption(field.getType())) {
-					handleFieldOptions(addOptions, updateOptions, deleteOptionIds, field.getId(), CollectionUtils.isEmpty(field.getOptions()) ? List.of() : field.getOptions());
+					updateFields.add(buildField(field, currentUserId, form.getId(), true));
+					fieldBlob.setId(field.getId());
+					updateFieldBlobs.add(fieldBlob);
 				}
 			});
 			if (CollectionUtils.isNotEmpty(addFields)) {
-				// new fields
 				moduleFieldMapper.batchInsert(addFields);
 			}
 			if (CollectionUtils.isNotEmpty(updateFields)) {
-				// edited fields
 				updateFields.forEach(field -> moduleFieldMapper.update(field));
 			}
-			if (CollectionUtils.isNotEmpty(addOptions)) {
-				// new options
-				moduleFieldOptionMapper.batchInsert(addOptions);
+			if (CollectionUtils.isNotEmpty(addFieldBlobs)) {
+				moduleFieldBlobMapper.batchInsert(addFieldBlobs);
 			}
-			if (CollectionUtils.isNotEmpty(updateOptions)) {
-				// edited options
-				updateOptions.forEach(option -> moduleFieldOptionMapper.update(option));
-			}
-			if (CollectionUtils.isNotEmpty(deleteOptionIds)) {
-				// deleted options
-				extModuleFieldOptionMapper.deleteByFieldIds(deleteOptionIds);
+			if (CollectionUtils.isNotEmpty(updateFieldBlobs)) {
+				updateFieldBlobs.forEach(fieldBlob -> moduleFieldBlobMapper.updateById(fieldBlob));
 			}
 		}
 
-		// get form config
-		return getConfig(saveForm.getFormKey(), currentOrgId);
-	}
-
-	/**
-	 * 处理字段选项
-	 * @param addOptions	新增选项集合
-	 * @param updateOptions	修改选项集合
-	 * @param deleteOptionIds	删除的选项ID集合
-	 * @param fieldId	字段ID
-	 * @param saveOptions 保存的选项集合
-	 */
-	public void handleFieldOptions(List<ModuleFieldOption> addOptions, List<ModuleFieldOption> updateOptions, List<String> deleteOptionIds,
-								   String fieldId, List<ModuleFieldOptionDTO> saveOptions) {
-		LambdaQueryWrapper<ModuleFieldOption> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.eq(ModuleFieldOption::getFieldId, fieldId);
-		List<ModuleFieldOption> originalOptions = moduleFieldOptionMapper.selectListByLambda(queryWrapper);
-		List<ModuleFieldOption> modifiedOptions = saveOptions.stream().map(option -> {
-			ModuleFieldOption fieldOption = new ModuleFieldOption();
-			fieldOption.setId(option.getId());
-			fieldOption.setLabel(option.getLabel());
-			fieldOption.setFieldId(fieldId);
-			return fieldOption;
-		}).toList();
-		if (CollectionUtils.isNotEmpty(originalOptions) || CollectionUtils.isNotEmpty(modifiedOptions)) {
-			if (CollectionUtils.isEmpty(originalOptions)) {
-				addOptions.addAll(modifiedOptions);
-			}
-			if (CollectionUtils.isEmpty(modifiedOptions)) {
-				deleteOptionIds.addAll(originalOptions.stream().map(ModuleFieldOption::getId).toList());
-			}
-			modifiedOptions.forEach(modifiedOption -> {
-				boolean noMatch = originalOptions.stream().noneMatch(option -> StringUtils.equals(option.getId(), modifiedOption.getId()));
-				if (noMatch) {
-					addOptions.add(modifiedOption);
-				} else {
-					updateOptions.add(modifiedOption);
-				}
-			});
-			originalOptions.forEach(originalOption -> {
-				boolean noMatch = modifiedOptions.stream().noneMatch(option -> StringUtils.equals(option.getId(), originalOption.getId()));
-				if (noMatch) {
-					deleteOptionIds.add(originalOption.getId());
-				}
-			});
-		}
+		// 返回表单整体配置
+		return getConfig(form.getFormKey(), currentOrgId);
 	}
 
 	/**
@@ -212,7 +157,7 @@ public class ModuleFormService {
 	}
 
 	/**
-	 * 获取表单所有字段集合
+	 * 获取表单所有字段及其属性集合
 	 * @param formId 表单ID
 	 * @return 字段集合
 	 */
@@ -224,14 +169,14 @@ public class ModuleFormService {
 		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
 		if (CollectionUtils.isNotEmpty(fields)) {
 			List<String> fieldIds = fields.stream().map(ModuleField::getId).toList();
-			LambdaQueryWrapper<ModuleFieldOption> optionWrapper = new LambdaQueryWrapper<>();
-			optionWrapper.in(ModuleFieldOption::getFieldId, fieldIds);
-			List<ModuleFieldOption> fieldOptions = moduleFieldOptionMapper.selectListByLambda(optionWrapper);
-			Map<String, List<ModuleFieldOption>> fieldOptionMap = fieldOptions.stream().collect(Collectors.groupingBy(ModuleFieldOption::getFieldId));
+			LambdaQueryWrapper<ModuleFieldBlob> blobWrapper = new LambdaQueryWrapper<>();
+			blobWrapper.in(ModuleFieldBlob::getId, fieldIds);
+			List<ModuleFieldBlob> fieldBlobs = moduleFieldBlobMapper.selectListByLambda(blobWrapper);
+			Map<String, byte[]> fieldBlobMap = fieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
 			fields.forEach(field -> {
 				ModuleFieldDTO fieldDTO = new ModuleFieldDTO();
 				BeanUtils.copyBean(fieldDTO, field);
-				fieldDTO.setOptions(fieldOptionMap.containsKey(field.getId()) ? toOptionDTO(fieldOptionMap.get(field.getId())) : List.of());
+				fieldDTO.setFieldProp(new String(fieldBlobMap.get(field.getId())));
 				fieldDTOList.add(fieldDTO);
 			});
 		}
@@ -239,16 +184,73 @@ public class ModuleFormService {
 	}
 
 	/**
-	 * 解析成选项DTO
-	 * @param options 选项集合
-	 * @return 选项DTO集合
+	 * 表单初始化
 	 */
-	private List<ModuleFieldOptionDTO> toOptionDTO(List<ModuleFieldOption> options) {
-		return options.stream().map(option -> {
-			ModuleFieldOptionDTO optionDTO = new ModuleFieldOptionDTO();
-			optionDTO.setId(option.getId());
-			optionDTO.setLabel(option.getLabel());
-			return optionDTO;
-		}).toList();
+	public void initForm() {
+		// init form
+		Map<String, String> formKeyMap = new HashMap<>(FormKey.values().length);
+		List<ModuleForm> forms = new ArrayList<>();
+		List<ModuleFormBlob> formBlobs = new ArrayList<>();
+		Arrays.stream(FormKey.values()).forEach(formKey -> {
+			ModuleForm form = new ModuleForm();
+			form.setId(IDGenerator.nextStr());
+			form.setFormKey(formKey.getKey());
+			form.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+			form.setCreateUser("admin");
+			form.setCreateTime(System.currentTimeMillis());
+			form.setUpdateUser("admin");
+			form.setUpdateTime(System.currentTimeMillis());
+			forms.add(form);
+			formKeyMap.put(formKey.getKey(), form.getId());
+			ModuleFormBlob formBlob = new ModuleFormBlob();
+			formBlob.setId(form.getId());
+			try {
+				Object formProp = JSON.parseObject(formResource.getInputStream(), Object.class);
+				formBlob.setProp(JSON.toJSONBytes(formProp));
+			} catch (IOException e) {
+				throw new GenericException("表单属性初始化失败", e);
+			}
+			formBlobs.add(formBlob);
+		});
+		moduleFormMapper.batchInsert(forms);
+		moduleFormBlobMapper.batchInsert(formBlobs);
+		// init form fields
+		initFormFields(formKeyMap);
+	}
+
+	/**
+	 * 字段初始化
+	 * @param formKeyMap 表单Key映射
+	 */
+	public void initFormFields(Map<String, String> formKeyMap) {
+		List<ModuleField> fields = new ArrayList<>();
+		List<ModuleFieldBlob> fieldBlobs = new ArrayList<>();
+		try {
+			Map<String, List<Map>> fieldMap = JSON.parseObject(fieldResource.getInputStream(), Map.class);
+			fieldMap.keySet().forEach(key -> {
+				String formId = formKeyMap.get(key);
+				List<Map> initFields = fieldMap.get(key);
+				initFields.forEach(initField -> {
+					ModuleField field = new ModuleField();
+					field.setId(IDGenerator.nextStr());
+					field.setFormId(formId);
+					field.setInternalKey(initField.get("key").toString());
+					field.setPos(Long.valueOf(initField.get("pos").toString()));
+					field.setCreateTime(System.currentTimeMillis());
+					field.setCreateUser("admin");
+					field.setUpdateTime(System.currentTimeMillis());
+					field.setUpdateUser("admin");
+					fields.add(field);
+					ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
+					fieldBlob.setId(field.getId());
+					fieldBlob.setProp(JSON.toJSONBytes(initField));
+					fieldBlobs.add(fieldBlob);
+				});
+			});
+			moduleFieldMapper.batchInsert(fields);
+			moduleFieldBlobMapper.batchInsert(fieldBlobs);
+		} catch (Exception e) {
+			throw new GenericException("表单字段初始化失败", e);
+		}
 	}
 }

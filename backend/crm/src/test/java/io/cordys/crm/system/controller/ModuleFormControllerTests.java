@@ -1,11 +1,13 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.common.constants.FormKey;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
-import io.cordys.crm.system.dto.response.ModuleFieldOptionDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import io.cordys.crm.system.dto.response.ModuleFormDTO;
+import io.cordys.crm.system.service.ModuleFormService;
+import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -16,32 +18,41 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ModuleFormControllerTests extends BaseTest{
 
+	@Resource
+	private ModuleFormService moduleFormService;
+
+	@Test
+	@Order(0)
+	void init() {
+		moduleFormService.initForm();
+	}
+
 	@Test
 	@Order(1)
 	void testSaveFields() throws Exception {
 		ModuleFormSaveRequest request = new ModuleFormSaveRequest();
-		ModuleFormDTO form = buildForm();
-		request.setFormKey("lead");
+		request.setFormKey("none-key");
 		request.setFields(List.of());
 		request.setDeleteFieldIds(List.of());
-		request.setForm(form);
-		this.requestPostWithOk("/module/form/save", request);
+		request.setFormProp(StringUtils.EMPTY);
+		this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError());
+		request.setFormKey(FormKey.CUSTOMER.getKey());
 		request.setDeleteFieldIds(List.of("default-delete-id"));
-		request.setFields(List.of(buildField()));
+		ModuleFieldDTO field = new ModuleFieldDTO();
+		field.setFieldProp("{\"k\": \"v\"}");
+		request.setFields(List.of(field));
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/module/form/save", request);
 		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
-		assert formConfig.getFields().size() == 1;
+		assert formConfig.getFields().size() > 1;
 		ModuleFieldDTO saveField = formConfig.getFields().getFirst();
-		saveField.setName("default-name-update");
-		ModuleFieldOptionDTO option = new ModuleFieldOptionDTO();
-		option.setId("default-key");
-		option.setLabel("default-label");
-		saveField.setOptions(List.of(option));
+		saveField.setFieldProp("{\"k\": \"v1\"}");
 		request.setFields(List.of(saveField));
 		this.requestPostWithOk("/module/form/save", request);
 	}
@@ -49,26 +60,8 @@ public class ModuleFormControllerTests extends BaseTest{
 	@Test
 	@Order(2)
 	void testGetFieldList() throws Exception {
-		MvcResult mvcResult = this.requestGetWithOkAndReturn("/module/form/config/lead");
+		MvcResult mvcResult = this.requestGetWithOkAndReturn("/module/form/config/" + FormKey.CUSTOMER.getKey());
 		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
-		assert formConfig.getFields().size() == 1;
-	}
-
-	private ModuleFieldDTO buildField() {
-		return ModuleFieldDTO.builder()
-				.name("default-name").type("select")
-				.showLabel(true).readable(true).editable(true).tooltip("default-tooltip")
-				.fieldWidth("half").defaultValue("default-value").pos(1L)
-				.build();
-	}
-
-	private ModuleFormDTO buildForm() {
-		return ModuleFormDTO.builder()
-				.frontCache(true).layout("layout")
-				.labelPos("middle").labelWidth("default")
-				.labelAlignment("left").showDesc(true)
-				.inputWidth("default").optBtnPos("middle")
-				.saveBtn(true).saveContinueBtn(true).cancelBtn(true)
-				.build();
+		assert formConfig.getFields().size() > 1;
 	}
 }

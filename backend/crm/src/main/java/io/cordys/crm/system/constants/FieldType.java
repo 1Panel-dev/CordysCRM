@@ -64,8 +64,4 @@ public enum FieldType {
 	FieldType(String type) {
 		this.type = type;
 	}
-
-	public static boolean hasOption(String type) {
-		return StringUtils.equalsAny(type, RADIO.type, CHECKBOX.type, SELECT.type, MULTI_SELECT.type);
-	}
 }

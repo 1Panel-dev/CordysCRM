@@ -1,0 +1,7 @@
+{
+  "layout": "one",
+  "label_pos": "vertical",
+  "input_width": "custom",
+  "opt_btn_pos": "left",
+  "opt_btn_content": [{"text": "保存", "enable": "true"}, {"text": "保存并继续添加", "enable": "false"}, {"text": "取消", "enable": "true"}]
+}
