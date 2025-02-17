@@ -1,5 +1,6 @@
 package io.cordys.crm;
 
+import io.cordys.common.service.DataInitService;
 import io.cordys.common.uid.impl.DefaultUidGenerator;
 import io.cordys.common.util.HikariCPUtils;
 import io.cordys.common.util.JSON;
@@ -25,6 +26,9 @@ class TestAppListener implements ApplicationRunner {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    @Resource
+    private DataInitService dataInitService;
+
     /**
      * 应用启动后执行的初始化方法。
      * <p>
@@ -46,6 +50,9 @@ class TestAppListener implements ApplicationRunner {
 
         LogUtils.info("初始化定时任务");
         extScheduleService.startEnableSchedules();
+
+        LogUtils.info("初始化默认组织数据");
+        dataInitService.initOneTime();
 
         HikariCPUtils.printHikariCPStatus();
 

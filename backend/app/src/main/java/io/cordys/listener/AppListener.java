@@ -1,27 +1,19 @@
 package io.cordys.listener;
 
+import io.cordys.common.service.DataInitService;
 import io.cordys.common.uid.impl.DefaultUidGenerator;
 import io.cordys.common.util.HikariCPUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.rsa.RsaKey;
 import io.cordys.common.util.rsa.RsaUtils;
-import io.cordys.common.util.OnceInterface;
-import io.cordys.crm.system.domain.Parameter;
 import io.cordys.crm.system.service.ExtScheduleService;
-import io.cordys.crm.system.service.ModuleFormService;
-import io.cordys.crm.system.service.ModuleService;
-import io.cordys.mybatis.BaseMapper;
-import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 class AppListener implements ApplicationRunner {
@@ -33,12 +25,9 @@ class AppListener implements ApplicationRunner {
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
     @Resource
-    private ModuleService moduleService;
-    @Resource
-    private ModuleFormService moduleFormService;
-    @Resource
-    private BaseMapper<Parameter> parameterMapper;
+    private DataInitService dataInitService;
 
     /**
      * 应用启动后执行的初始化方法。
@@ -64,8 +53,8 @@ class AppListener implements ApplicationRunner {
 
         HikariCPUtils.printHikariCPStatus();
 
-        LogUtils.info("初始化表单字段");
-        initOneTime();
+        LogUtils.info("初始化默认组织数据");
+        dataInitService.initOneTime();
 
         LogUtils.info("===== 完成初始化配置 =====");
     }
@@ -101,30 +90,5 @@ class AppListener implements ApplicationRunner {
         }
     }
 
-    private void initOneTime() {
-        initOneTime(moduleService::initDefaultOrgModule, "init.module");
-        initOneTime(moduleFormService::initForm, "init.form");
-    }
 
-    private void initOneTime(OnceInterface onceFunc, final String key) {
-        try {
-            LambdaQueryWrapper<Parameter> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Parameter::getParamKey, key);
-            List<Parameter> parameters = parameterMapper.selectListByLambda(queryWrapper);
-            if (CollectionUtils.isEmpty(parameters)) {
-                onceFunc.execute();
-                insertParameterOnceKey(key);
-            }
-        } catch (Throwable e) {
-            LogUtils.error(e.getMessage(), e);
-        }
-    }
-
-    private void insertParameterOnceKey(String key) {
-        Parameter parameter = new Parameter();
-        parameter.setParamKey(key);
-        parameter.setParamValue("done");
-        parameter.setType("text");
-        parameterMapper.insert(parameter);
-    }
 }

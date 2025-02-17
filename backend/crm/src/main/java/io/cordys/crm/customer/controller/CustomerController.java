@@ -2,6 +2,7 @@ package io.cordys.crm.customer.controller;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
@@ -13,7 +14,8 @@ import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
-import io.cordys.crm.system.service.ModuleService;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,17 +38,14 @@ public class CustomerController {
     @Resource
     private CustomerService customerService;
     @Resource
-    private ModuleService moduleService;
-    // @Resource
-    // private ModuleFieldService moduleFieldService;
-    //
-    // @GetMapping("/module/field")
-    // @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
-    // @Operation(summary = "获取模块字段")
-    // public List<ModuleFieldDTO> getModuleFields(){
-    //     Module module = moduleService.getModuleByKey(ModuleKey.CUSTOMER, OrganizationContext.getOrganizationId());
-    //     return moduleFieldService.getFieldList(module.getId());
-    // }
+    private ModuleFormService moduleFormService;
+
+     @GetMapping("/module/form")
+     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+     @Operation(summary = "获取表单配置")
+     public ModuleFormConfigDTO getModuleFormConfig(){
+         return moduleFormService.getConfig(FormKey.CUSTOMER.getKey(), OrganizationContext.getOrganizationId());
+     }
 
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
