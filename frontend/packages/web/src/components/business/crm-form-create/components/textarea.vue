@@ -12,6 +12,7 @@
       :placeholder="props.fieldConfig.placeholder"
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
+      type="textarea"
       clearable
     />
   </n-form-item>

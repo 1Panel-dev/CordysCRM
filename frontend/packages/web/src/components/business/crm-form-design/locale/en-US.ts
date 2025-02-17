@@ -18,4 +18,5 @@ export default {
   'crmFormDesign.location': 'Location',
   'crmFormDesign.phone': 'Phone',
   'crmFormDesign.emptyTip': 'Drag from the left or click to add fields',
+  'crmFormDesign.option': 'Option {i}',
 };

@@ -15,7 +15,7 @@
         :key="item.id"
         class="crm-form-design--composition-item"
         :class="activeItem?.id === item.id ? 'crm-form-design--composition-item--active' : ''"
-        :style="{ gridColumn: `span ${item.grid}` }"
+        :style="{ gridColumn: `span ${item.fieldWidth}` }"
         @click="() => handleItemClick(item)"
       >
         <div class="crm-form-design--composition-item-tools">
@@ -67,7 +67,7 @@
   import { VueDraggable } from 'vue-draggable-plus';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import singleText from '@/components/business/crm-form-create/components/singleText.vue';
+  import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
 
@@ -99,26 +99,101 @@
 
   function getItemComponent(type: FieldTypeEnum) {
     if (type === FieldTypeEnum.INPUT) {
-      return singleText;
+      return CrmFormCreateComponents.singleText;
+    }
+    if (type === FieldTypeEnum.TEXTAREA) {
+      return CrmFormCreateComponents.textarea;
+    }
+    if (type === FieldTypeEnum.INPUT_NUMBER) {
+      return CrmFormCreateComponents.inputNumber;
+    }
+    if (type === FieldTypeEnum.DATE_TIME) {
+      return CrmFormCreateComponents.dateTime;
+    }
+    if (type === FieldTypeEnum.RADIO) {
+      return CrmFormCreateComponents.radio;
+    }
+    if (type === FieldTypeEnum.CHECKBOX) {
+      return CrmFormCreateComponents.checkbox;
+    }
+    if ([FieldTypeEnum.SELECT_SINGLE, FieldTypeEnum.SELECT_MULTIPLE].includes(type)) {
+      return CrmFormCreateComponents.select;
     }
   }
 
   function addItem(item: FormCreateField) {
-    list.value.push({
+    const res: FormCreateField = {
       ...item,
       id: getGenerateId(),
       name: t(item.name),
-      grid: 4,
-    });
+      fieldWidth: 4,
+    };
+    if (
+      [
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+        FieldTypeEnum.DEPARTMENT_SINGLE,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+        FieldTypeEnum.MEMBER_SINGLE,
+        FieldTypeEnum.CHECKBOX,
+        FieldTypeEnum.RADIO,
+        FieldTypeEnum.SELECT_SINGLE,
+        FieldTypeEnum.SELECT_MULTIPLE,
+      ].includes(item.type)
+    ) {
+      res.options = [
+        {
+          label: 'crmFormDesign.option',
+          value: getGenerateId(),
+        },
+        {
+          label: 'crmFormDesign.option',
+          value: getGenerateId(),
+        },
+        {
+          label: 'crmFormDesign.option',
+          value: getGenerateId(),
+        },
+      ];
+    }
+
+    list.value.push(res);
   }
 
   function copyItem(item: FormCreateField) {
-    list.value.push(
-      cloneDeep({
-        ...item,
-        id: getGenerateId(),
-      })
-    );
+    const res: FormCreateField = {
+      ...item,
+      id: getGenerateId(),
+    };
+    if (
+      [
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+        FieldTypeEnum.DEPARTMENT_SINGLE,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+        FieldTypeEnum.MEMBER_SINGLE,
+        FieldTypeEnum.CHECKBOX,
+        FieldTypeEnum.RADIO,
+        FieldTypeEnum.SELECT_SINGLE,
+        FieldTypeEnum.SELECT_MULTIPLE,
+      ].includes(item.type) &&
+      item.options?.length === 0
+    ) {
+      res.options = [
+        {
+          label: 'crmFormDesign.option',
+          value: getGenerateId(),
+        },
+        {
+          label: 'crmFormDesign.option',
+          value: getGenerateId(),
+        },
+        {
+          label: 'crmFormDesign.option',
+          value: getGenerateId(),
+        },
+      ];
+    }
+
+    list.value.push(cloneDeep(res));
   }
 
   function deleteItem(item: FormCreateField) {

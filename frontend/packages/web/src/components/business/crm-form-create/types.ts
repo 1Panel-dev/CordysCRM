@@ -7,18 +7,29 @@ export interface FormCreateFieldOption extends Option {
 }
 
 export interface FormCreateField {
+  // 基础属性
   id: string;
   name: string;
   type: FieldTypeEnum;
   key?: string;
   showLabel: boolean;
   placeholder?: string;
-  tooltip: string;
+  description: string;
   readable: boolean;
   editable: boolean;
   fieldWidth: number;
-  options?: FormCreateFieldOption;
-  defaultValue?: string | number | boolean | (string | number | boolean)[];
+  options?: FormCreateFieldOption[];
+  defaultValue?: any;
   rules: FormItemRule | FormItemRule[];
+  // 数字输入属性
+  max?: number;
+  min?: number;
+  numberFormat?: 'number' | 'percent'; // 数字格式, number: 数字, percent: 百分比
+  precision?: number; // 精度
+  showThousandsSeparator?: boolean; // 是否显示千分位
+  // 日期输入属性
+  datetype?: 'month' | 'date' | 'datetime';
+  // radio属性
+  direction?: 'horizontal' | 'vertical';
   [key: string]: any;
 }

@@ -18,4 +18,5 @@ export default {
   'crmFormDesign.location': '地址',
   'crmFormDesign.phone': '手机',
   'crmFormDesign.emptyTip': '从左侧 拖拽 或 点击 添加字段',
+  'crmFormDesign.option': '选项 {i}',
 };

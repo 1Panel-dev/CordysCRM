@@ -6,19 +6,20 @@
     :rule="props.fieldConfig.rules"
   >
     <div v-if="props.fieldConfig.description" class="n-form-item-desc" v-html="props.fieldConfig.description"></div>
-    <n-input
-      v-model="value"
-      :maxlength="255"
+    <n-date-picker
+      v-model:value="value"
+      :type="props.fieldConfig.datetype"
       :placeholder="props.fieldConfig.placeholder"
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
-      clearable
-    />
+      class="w-full"
+    >
+    </n-date-picker>
   </n-form-item>
 </template>
 
 <script setup lang="ts">
-  import { NFormItem, NInput } from 'naive-ui';
+  import { NDatePicker, NFormItem } from 'naive-ui';
 
   import { FormCreateField } from '../types';
 
@@ -27,8 +28,8 @@
     path: string;
   }>();
 
-  const value = defineModel<string>('value', {
-    default: '',
+  const value = defineModel<number>('value', {
+    default: null,
   });
 </script>
 

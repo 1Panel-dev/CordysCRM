@@ -41,6 +41,7 @@
   import { VueDraggable } from 'vue-draggable-plus';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import { advancedFields, basicFields } from '@/components/business/crm-form-design/config';
 
@@ -54,12 +55,40 @@
   const { t } = useI18n();
 
   function clone(e: FormCreateField) {
-    return {
+    const res: FormCreateField = {
       ...e,
-      grid: 4,
       id: getGenerateId(),
       name: t(e.name),
     };
+    if (
+      [
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+        FieldTypeEnum.DEPARTMENT_SINGLE,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+        FieldTypeEnum.MEMBER_SINGLE,
+        FieldTypeEnum.CHECKBOX,
+        FieldTypeEnum.RADIO,
+        FieldTypeEnum.SELECT_SINGLE,
+        FieldTypeEnum.SELECT_MULTIPLE,
+      ].includes(e.type) &&
+      e.options?.length === 0
+    ) {
+      res.options = [
+        {
+          label: 'crmFormDesign.option',
+          value: getGenerateId(),
+        },
+        {
+          label: 'crmFormDesign.option',
+          value: getGenerateId(),
+        },
+        {
+          label: 'crmFormDesign.option',
+          value: getGenerateId(),
+        },
+      ];
+    }
+    return res;
   }
 
   function handleFieldClick(field: FormCreateField) {
