@@ -18,9 +18,6 @@ public class CustomerPoolRecycleRule extends BaseModel {
 	@Schema(description = "提前提醒天数")
 	private Integer noticeDays;
 
-	@Schema(description = "是否自动回收")
-	private Boolean auto;
-
 	@Schema(description = "操作符")
 	private String operator;
 

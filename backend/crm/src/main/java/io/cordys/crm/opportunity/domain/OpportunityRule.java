@@ -6,8 +6,8 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
-@Table(name = "opportunity_close_rule")
-public class OpportunityCloseRule extends BaseModel {
+@Table(name = "opportunity_rule")
+public class OpportunityRule extends BaseModel {
 
 	@Schema(description = "规则名称")
 	private String name;

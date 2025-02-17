@@ -1,7 +1,7 @@
 -- set innodb lock wait timeout
 SET SESSION innodb_lock_wait_timeout = 7200;
 
-CREATE TABLE opportunity_close_rule(
+CREATE TABLE opportunity_rule(
     `id`        VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `name`      VARCHAR(255) NOT NULL   COMMENT '规则名称' ,
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
@@ -22,6 +22,8 @@ CREATE TABLE opportunity_close_rule(
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_organization_id ON opportunity_rule(organization_id ASC);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

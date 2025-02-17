@@ -128,6 +128,7 @@ public class LeadPoolControllerTests extends BaseTest {
 		leadPool.setOrganizationId(DEFAULT_ORGANIZATION_ID);
 		leadPool.setOwnerId("default-owner");
 		leadPool.setEnable(true);
+		leadPool.setAuto(true);
 		return leadPool;
 	}
 
@@ -144,7 +145,6 @@ public class LeadPoolControllerTests extends BaseTest {
 		LeadPoolRecycleRule recycleRule = new LeadPoolRecycleRule();
 		recycleRule.setExpireNotice(true);
 		recycleRule.setNoticeDays(10);
-		recycleRule.setAuto(true);
 		return recycleRule;
 	}
 

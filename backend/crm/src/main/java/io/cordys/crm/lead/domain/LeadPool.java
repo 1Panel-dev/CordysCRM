@@ -23,4 +23,7 @@ public class LeadPool extends BaseModel {
 
 	@Schema(description = "启用/禁用")
 	private Boolean enable;
+
+	@Schema(description = "自动回收")
+	private Boolean auto;
 }

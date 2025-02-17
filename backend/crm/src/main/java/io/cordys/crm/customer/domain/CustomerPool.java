@@ -23,4 +23,7 @@ public class CustomerPool extends BaseModel {
 
 	@Schema(description = "启用/禁用")
 	private Boolean enable;
+
+	@Schema(description = "是否自动回收")
+	private Boolean auto;
 }

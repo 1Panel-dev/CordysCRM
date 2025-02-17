@@ -52,8 +52,8 @@ public class CustomerPoolService {
 	 * @param request 分页参数
 	 * @return 公海池列表
 	 */
-	public List<CustomerPoolDTO> page(CustomerPoolPageRequest request) {
-		List<CustomerPoolDTO> customerPools = extCustomerPoolMapper.list(request, OrganizationContext.getOrganizationId());
+	public List<CustomerPoolDTO> page(CustomerPoolPageRequest request, String organizationId) {
+		List<CustomerPoolDTO> customerPools = extCustomerPoolMapper.list(request, organizationId);
 		if (CollectionUtils.isEmpty(customerPools)) {
 			return new ArrayList<>();
 		}

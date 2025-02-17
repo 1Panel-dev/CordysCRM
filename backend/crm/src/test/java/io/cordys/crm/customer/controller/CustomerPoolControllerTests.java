@@ -127,6 +127,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 		customerPool.setOrganizationId(DEFAULT_ORGANIZATION_ID);
 		customerPool.setOwnerId("default-owner");
 		customerPool.setEnable(true);
+		customerPool.setAuto(true);
 		return customerPool;
 	}
 
@@ -143,7 +144,6 @@ public class CustomerPoolControllerTests extends BaseTest {
 		CustomerPoolRecycleRule recycleRule = new CustomerPoolRecycleRule();
 		recycleRule.setExpireNotice(true);
 		recycleRule.setNoticeDays(10);
-		recycleRule.setAuto(true);
 		return recycleRule;
 	}
 

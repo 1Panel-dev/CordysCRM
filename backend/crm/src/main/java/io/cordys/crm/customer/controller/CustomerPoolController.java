@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
 import io.cordys.crm.customer.dto.request.CustomerPoolPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolSaveRequest;
@@ -34,7 +35,7 @@ public class CustomerPoolController {
     public Pager<List<CustomerPoolDTO>> page(CustomerPoolPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
                 StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
-        return PageUtils.setPageInfo(page, customerPoolService.page(request));
+        return PageUtils.setPageInfo(page, customerPoolService.page(request, OrganizationContext.getOrganizationId()));
     }
 
     @PostMapping("/add")

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="io.cordys.crm.customer.mapper.ExtCustomerPoolMapper">
-    <select id="list" parameterType="io.cordys.crm.customer.dto.request.CustomerPoolPageRequest" resultType="io.cordys.crm.customer.dto.CustomerPoolDTO">
-        select * from customer_pool
+<mapper namespace="io.cordys.crm.opportunity.mapper.ExtOpportunityRuleMapper">
+    <select id="list" parameterType="io.cordys.common.pager.condition.BasePageRequest" resultType="io.cordys.crm.opportunity.dto.OpportunityRuleDTO">
+        select * from opportunity_rule
         where organization_id = #{orgId}
         <include refid="filter"/>
         order by create_time desc
@@ -15,12 +15,12 @@
                     <choose>
                         <!-- 自动回收 -->
                         <when test="key == 'recycled'">
-                            and customer_pool.auto in
+                            and opportunity_rule.auto in
                             <include refid="filterInWrapper"/>
                         </when>
                         <!-- 状态 -->
                         <when test="key == 'status'">
-                            and customer_pool.enable in
+                            and opportunity_rule.enable in
                             <include refid="filterInWrapper"/>
                         </when>
                     </choose>
