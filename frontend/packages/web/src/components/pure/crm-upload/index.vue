@@ -74,9 +74,8 @@
   import { useI18n } from '@/hooks/useI18n';
   import { formatFileSize } from '@/utils';
 
-  import { UploadAcceptEnum, UploadStatus } from '@/enums/uploadEnum';
-
   import type { CrmFileItem, UploadType } from './types';
+  import { UploadAcceptEnum, UploadStatus } from '@lib/shared/enums/uploadEnum';
 
   const Message = useMessage();
 

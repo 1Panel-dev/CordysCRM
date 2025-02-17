@@ -6,19 +6,19 @@ export enum ModuleConfigEnum {
   CUSTOMER_MANAGEMENT = 'customer',
 
   /** 线索管理 */
-  CLUE_MANAGEMENT = 'clue',
+  CLUE_MANAGEMENT = 'lead',
 
   /** 商机管理 */
-  BUSINESS_MANAGEMENT = 'businessManage',
+  BUSINESS_MANAGEMENT = 'business',
 
-  /** 数据管理 */
-  DATA_MANAGEMENT = 'data',
+  /** 数据管理 TODO 先不做 */
+  // DATA_MANAGEMENT = 'data',
 
   /** 产品管理 */
   PRODUCT_MANAGEMENT = 'product',
 
   /** 系统设置 */
-  SYSTEM_SETTINGS = 'systemSettings',
+  SYSTEM_SETTINGS = 'setting',
 }
 
 // 添加员工API

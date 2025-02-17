@@ -1,6 +1,6 @@
 import { getRoleDeptUserTree, getRoleMemberTree, getUsers } from '@/api/modules/system/role';
 
-import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@/enums/moduleEnum';
+import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
 // 添加部门、角色、成员数据API
 export const getDataApiMap: Record<MemberApiTypeEnum, Record<MemberSelectTypeEnum, (params: any) => Promise<any[]>>> = {
   [MemberApiTypeEnum.SYSTEM_ROLE]: {

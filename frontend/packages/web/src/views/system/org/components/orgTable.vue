@@ -104,8 +104,7 @@
   import useProgressBar from '@/hooks/useProgressBar';
   import { characterLimit, getCityPath } from '@/utils';
 
-  import { CompanyTypeEnum } from '@/enums/commonEnum';
-
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import type { ConfigSynchronization } from '@lib/shared/models/system/business';
   import type { MemberItem, ValidateInfo } from '@lib/shared/models/system/org';

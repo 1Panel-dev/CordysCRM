@@ -81,8 +81,7 @@
     updateConfigSynchronization,
   } from '@/api/modules/system/business';
 
-  import { CompanyTypeEnum } from '@/enums/commonEnum';
-
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import type { ConfigSynchronization, IntegrationItem } from '@lib/shared/models/system/business';
 
   const { t } = useI18n();

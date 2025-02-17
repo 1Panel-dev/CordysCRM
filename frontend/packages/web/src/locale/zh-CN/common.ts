@@ -237,4 +237,5 @@ export default {
   'common.confirmDisabledTitle': '确认禁用 {name} 吗？',
   'common.confirmEnableTitle': '确认启用 {name} 吗？',
   'common.connectionSuccess': '连接成功',
+  'common.closed': '已关闭',
 };

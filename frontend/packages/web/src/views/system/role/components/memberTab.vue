@@ -40,8 +40,7 @@
   import { getRoleMember, relateRoleMember, removeRoleMember } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
 
-  import { MemberApiTypeEnum } from '@/enums/moduleEnum';
-
+  import { MemberApiTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { RoleMemberItem } from '@lib/shared/models/system/role';
 

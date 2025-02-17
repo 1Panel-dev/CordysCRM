@@ -1,5 +1,6 @@
 import { UploadFileInfo } from 'naive-ui';
 
+import type { ModuleNavBaseInfoItem } from '@lib/shared/models/system/module';
 import type { GlobalThemeOverrides } from 'naive-ui';
 
 // 平台风格
@@ -50,4 +51,5 @@ export interface AppState {
   defaultPlatformConfig: PlatformConfig;
   themeOverridesConfig: GlobalThemeOverrides;
   orgId: string;
+  moduleConfigList: ModuleNavBaseInfoItem[]; // 模块配置列表
 }

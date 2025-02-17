@@ -237,4 +237,5 @@ export default {
   'common.confirmDisabledTitle': 'Are you sure to disable {name}?',
   'common.confirmEnableTitle': 'Are you sure to enable {name}?',
   'common.connectionSuccess': 'Connection success',
+  'common.closed': 'Closed',
 };

@@ -1,6 +1,6 @@
 import { UploadFileInfo } from 'naive-ui';
 
-import { UploadAcceptEnum, UploadStatus } from '@/enums/uploadEnum';
+import { UploadAcceptEnum, UploadStatus } from '@lib/shared/enums/uploadEnum';
 
 // 上传类型
 export type UploadType = keyof typeof UploadAcceptEnum;

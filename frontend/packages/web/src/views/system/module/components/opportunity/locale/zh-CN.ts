@@ -10,4 +10,5 @@ export default {
   'opportunity.deleteRulesTitle': '存在未分配的线索，请xx后再删除',
   'opportunity.gotIt': '知道了',
   'opportunity.goMove': '去转移',
+  'opportunity.clueRecoveryRule': '线索回收规则',
 };

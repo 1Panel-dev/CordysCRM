@@ -7,6 +7,7 @@
     :loading="loading"
     @confirm="confirmHandler(false)"
     @continue="confirmHandler(true)"
+    @cancel="cancelHandler"
   >
     <n-form
       ref="formRef"
@@ -105,6 +106,41 @@
         />
         <div class="flex flex-nowrap"> {{ t('module.reminderDays') }}</div>
       </n-form-item>
+      <div class="crm-module-form-title"> {{ t('opportunity.clueRecoveryRule') }}</div>
+      <n-form-item
+        require-mark-placement="left"
+        label-placement="left"
+        path="expirationReminder"
+        :label="t('module.autoRecycle')"
+      >
+        <n-radio-group v-model:value="form.autoRecycle" name="radiogroup">
+          <n-space>
+            <n-radio key="yes" :value="true">
+              {{ t('common.yes') }}
+            </n-radio>
+            <n-radio key="no" :value="false">
+              {{ t('common.no') }}
+            </n-radio>
+          </n-space>
+        </n-radio-group>
+      </n-form-item>
+      <n-form-item
+        require-mark-placement="left"
+        label-placement="left"
+        path="expirationReminder"
+        :label="t('module.expirationReminder')"
+      >
+        <n-radio-group v-model:value="form.expirationReminder" name="radiogroup">
+          <n-space>
+            <n-radio key="yes" :value="true">
+              {{ t('common.yes') }}
+            </n-radio>
+            <n-radio key="no" :value="false">
+              {{ t('common.no') }}
+            </n-radio>
+          </n-space>
+        </n-radio-group>
+      </n-form-item>
     </n-form>
   </CrmDrawer>
 </template>
@@ -146,6 +182,7 @@
     reminderAdvance: [{ required: true, message: t('common.pleaseInput') }],
   };
 
+  // TODO 类型
   const form = ref({
     id: '',
     ruleName: '',
@@ -154,9 +191,12 @@
     autoClose: true,
     expirationReminder: true,
     reminderAdvance: '1',
+    autoRecycle: true,
   });
 
-  function cancelHandler() {}
+  function cancelHandler() {
+    visible.value = false;
+  }
 
   const formRef = ref<FormInst | null>(null);
   const loading = ref<boolean>(false);

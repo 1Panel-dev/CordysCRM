@@ -45,9 +45,8 @@
   import { useI18n } from '@/hooks/useI18n';
   import { mapTree } from '@/utils';
 
-  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@/enums/moduleEnum';
-
   import { getDataFunc } from './utils';
+  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { DeptTreeNode, RoleItem } from '@lib/shared/models/system/role';
 

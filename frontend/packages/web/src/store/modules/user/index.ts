@@ -53,7 +53,8 @@ const useUserStore = defineStore('user', {
         setToken(res.sessionId, res.csrfToken);
         this.setInfo(res);
         const appStore = useAppStore();
-        appStore.setOrgId(res.lastOrganizationId);
+        const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
+        appStore.setOrgId(lastOrganizationId);
       } catch (error) {
         clearToken();
         throw error;
@@ -101,7 +102,8 @@ const useUserStore = defineStore('user', {
         setToken(res.sessionId, res.csrfToken);
         this.setInfo(res);
         const appStore = useAppStore();
-        appStore.setOrgId(res.lastOrganizationId);
+        const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
+        appStore.setOrgId(lastOrganizationId);
         return true;
       } catch (err) {
         return false;

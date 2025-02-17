@@ -1,6 +1,5 @@
-import { UploadAcceptEnum, UploadStatus } from '@/enums/uploadEnum';
-
 import type { CrmFileItem } from './types';
+import { UploadAcceptEnum, UploadStatus } from '@lib/shared/enums/uploadEnum';
 
 // 使用映射类型和索引签名
 export type FileIconMapping = {

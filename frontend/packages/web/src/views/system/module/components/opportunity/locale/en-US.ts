@@ -11,4 +11,5 @@ export default {
   'opportunity.deleteRulesTitle': 'There are unassigned clues, please delete after xx',
   'opportunity.gotIt': 'Got it',
   'opportunity.goMove': 'To transfer',
+  'opportunity.clueRecoveryRule': 'Clue Recovery Rule',
 };

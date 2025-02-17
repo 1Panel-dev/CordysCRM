@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 
 import { getKey } from '@/api/modules/system/login';
+import { getModuleNavConfigList } from '@/api/modules/system/module';
 import { useI18n } from '@/hooks/useI18n';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
@@ -47,6 +48,7 @@ const useAppStore = defineStore('app', {
       ...defaultPlatformConfig,
     },
     orgId: '',
+    moduleConfigList: [],
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -103,6 +105,17 @@ const useAppStore = defineStore('app', {
     },
     resetThemeOverridesConfig() {
       this.themeOverridesConfig = getThemeOverrides();
+    },
+    /**
+     * 初始化模块配置
+     */
+    async initModuleConfig() {
+      try {
+        this.moduleConfigList = await getModuleNavConfigList({ organizationId: this.orgId });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
     },
   },
   persist: {
