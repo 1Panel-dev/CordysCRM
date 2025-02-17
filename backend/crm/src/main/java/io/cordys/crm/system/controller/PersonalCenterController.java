@@ -1,16 +1,13 @@
 package io.cordys.crm.system.controller;
 
-import io.cordys.common.constants.PermissionConstants;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.response.UserResponse;
-import io.cordys.crm.system.service.OrganizationUserService;
+import io.cordys.crm.system.service.PersonalCenterService;
+import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/personal/center")
@@ -18,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PersonalCenterController {
 
     @Resource
-    private OrganizationUserService organizationUserService;
+    private PersonalCenterService personalCenterService;
 
     //接口一
     /**
@@ -39,7 +36,31 @@ public class PersonalCenterController {
     @GetMapping("/info/{id}")
     @Operation(summary = "当前用户详情")
     public UserResponse getUserDetail(@PathVariable String id) {
-        return organizationUserService.getUserDetail(id);
+        return personalCenterService.getUserDetail(id);
     }
 
+    /**
+     * 发送验证码
+     */
+    @PostMapping("/mail/send_code")
+    public void sendCode(@RequestParam(value = "email") String email) {
+        personalCenterService.sendCode(email, OrganizationContext.getOrganizationId());
+    }
+
+    /**
+     * 校验验证码
+     */
+    @PostMapping("/verifyCode")
+    public String verifyCode(@RequestParam(value = "email") String email, @RequestParam(value = "code") String code) {
+        return personalCenterService.verifyCode(email, code);
+    }
+
+    /**
+     * 更新密码
+     */
+    @PostMapping("/info/reset")
+    @Operation(summary = "用户密码重置")
+    public void resetUserPassword(@RequestParam(value = "password") String password) {
+        personalCenterService.resetUserPassword(password, SessionUtils.getUserId());
+    }
 }

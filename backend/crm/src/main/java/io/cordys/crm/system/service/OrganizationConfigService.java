@@ -5,40 +5,29 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
-import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.client.QrCodeClient;
 import io.cordys.crm.system.constants.OrganizationConfigConstants;
-import io.cordys.crm.system.constants.SyncSettingApiPaths;
 import io.cordys.crm.system.domain.OrganizationConfig;
 import io.cordys.crm.system.domain.OrganizationConfigDetail;
-import io.cordys.crm.system.dto.dingtalk.DingTalkBaseParamDTO;
-import io.cordys.crm.system.dto.lark.LarkBaseParamDTO;
 import io.cordys.crm.system.dto.response.EmailDTO;
-import io.cordys.crm.system.dto.response.SyncOrganizationDTO;
+import io.cordys.crm.system.mail.sender.MailSender;
 import io.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import io.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
-import io.cordys.crm.system.notice.sender.mail.MailNoticeSender;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class OrganizationConfigService {
@@ -56,10 +45,7 @@ public class OrganizationConfigService {
     private BaseMapper<OrganizationConfig> organizationConfigBaseMapper;
 
     @Resource
-    private MailNoticeSender mailNoticeSender;
-
-    @Resource
-    private QrCodeClient qrCodeClient;
+    private MailSender mailSender;
 
 
     public EmailDTO getEmail(String organizationId) {
@@ -72,22 +58,6 @@ public class OrganizationConfigService {
             return new EmailDTO();
         }
         return JSON.parseObject(new String(organizationConfigDetail.getContent()), EmailDTO.class);
-    }
-
-    public List<SyncOrganizationDTO> getSynOrganization(String organizationId) {
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
-        if (organizationConfig == null) {
-            return new ArrayList<>();
-        }
-        List<SyncOrganizationDTO> syncOrganizationDTOS = new ArrayList<>();
-        List<OrganizationConfigDetail> organizationConfigDetails = extOrganizationConfigDetailMapper.getOrganizationConfigDetails(organizationConfig.getId(), null);
-        for (OrganizationConfigDetail organizationConfigDetail : organizationConfigDetails) {
-            SyncOrganizationDTO syncOrganizationDTO = JSON.parseObject(new String(organizationConfigDetail.getContent()), SyncOrganizationDTO.class);
-            syncOrganizationDTO.setType(organizationConfigDetail.getType());
-            syncOrganizationDTO.setEnable(organizationConfigDetail.getEnable());
-            syncOrganizationDTOS.add(syncOrganizationDTO);
-        }
-        return syncOrganizationDTOS;
     }
 
     @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, operator = "{#userId}")
@@ -143,53 +113,10 @@ public class OrganizationConfigService {
         return organizationConfigDetail;
     }
 
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, operator = "{#userId}")
-    public void editSynchronization(SyncOrganizationDTO syncOrganizationDTO, String organizationId, String userId) {
-        OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
-        if (organizationConfig == null) {
-            organizationConfig = new OrganizationConfig();
-            organizationConfig.setId(IDGenerator.nextStr());
-            organizationConfig.setOrganizationId(organizationId);
-            organizationConfig.setType(OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
-            organizationConfig.setCreateTime(System.currentTimeMillis());
-            organizationConfig.setUpdateTime(System.currentTimeMillis());
-            organizationConfig.setCreateUser(userId);
-            organizationConfig.setUpdateUser(userId);
-            organizationConfigBaseMapper.insert(organizationConfig);
-        }
-        List<OrganizationConfigDetail>organizationConfigDetails = extOrganizationConfigDetailMapper.getOrgConfigDetailByType(organizationConfig.getId(), null, syncOrganizationDTO.getType());
-        OrganizationConfigDetail organizationConfigDetail;
-        SyncOrganizationDTO syncOrganizationDTOOld = new SyncOrganizationDTO();
-        if (CollectionUtils.isNotEmpty(organizationConfigDetails)) {
-            //更新
-            organizationConfigDetail = organizationConfigDetails.getFirst();
-            syncOrganizationDTOOld = JSON.parseObject(new String(organizationConfigDetail.getContent()), SyncOrganizationDTO.class);
-            organizationConfigDetail.setContent(JSON.toJSONBytes(syncOrganizationDTO));
-            organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
-            organizationConfigDetail.setUpdateUser(userId);
-            organizationConfigDetail.setEnable(syncOrganizationDTO.getEnable());
-            organizationConfigDetailBaseMapper.update(organizationConfigDetail);
-        } else{
-            organizationConfigDetail = getOrganizationConfigDetail(userId, organizationConfig, JSON.toJSONString(syncOrganizationDTO));
-            organizationConfigDetail.setType(syncOrganizationDTO.getType());
-            organizationConfigDetail.setEnable(syncOrganizationDTO.getEnable());
-            organizationConfigDetail.setName(Translator.get("sync.organization"));
-            organizationConfigDetailBaseMapper.insert(organizationConfigDetail);
-        }
-
-        // 添加日志上下文
-        OperationLogContext.setContext(LogContextInfo.builder()
-                .resourceName(Translator.get("sync.organization"))
-                .originalValue(syncOrganizationDTOOld)
-                .modifiedValue(syncOrganizationDTO)
-                .build());
-    }
-
-
     public void testEmailConnection(EmailDTO emailDTO) {
         JavaMailSenderImpl javaMailSender = null;
         try {
-            javaMailSender = mailNoticeSender.getMailSender(emailDTO);
+            javaMailSender = mailSender.getMailSender(emailDTO);
             javaMailSender.testConnection();
         } catch (Exception e) {
             LogUtils.error(e.getMessage(), e);
@@ -245,81 +172,7 @@ public class OrganizationConfigService {
         }
     }
 
-    public void testSyncConnection(SyncOrganizationDTO syncOrganizationDTO, String organizationId, String userId) {
-        String accessToken = "";
-        if (StringUtils.equalsIgnoreCase(syncOrganizationDTO.getType(), DepartmentConstants.WECOM.name())) {
-            accessToken = generateWeComToken(syncOrganizationDTO);
-        }
-        if (StringUtils.equalsIgnoreCase(syncOrganizationDTO.getType(), DepartmentConstants.DINGTALK.name())) {
-            accessToken = generateDingTalkToken(syncOrganizationDTO);
-        }
-        if (StringUtils.equalsIgnoreCase(syncOrganizationDTO.getType(), DepartmentConstants.LARK.name())) {
-            accessToken = generateLarkToken(syncOrganizationDTO);
-        }
 
-        //TODO: 校验失败处理和成功处理
-       /* if (StringUtils.isNotBlank(accessToken)) {
-            syncOrganizationDTO.setValid(true);
-            OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
-            List<OrganizationConfigDetail>organizationConfigDetails = extOrganizationConfigDetailMapper.getOrgConfigDetailByType(organizationConfig.getId(), null, syncOrganizationDTO.getType());
-            OrganizationConfigDetail organizationConfigDetail = organizationConfigDetails.getFirst();
-            organizationConfigDetail.setContent(JSON.toJSONBytes(syncOrganizationDTO));
-            organizationConfigDetail.setUpdateTime(System.currentTimeMillis());
-            organizationConfigDetail.setUpdateUser(userId);
-            organizationConfigDetail.setEnable(syncOrganizationDTO.getEnable());
-            organizationConfigDetailBaseMapper.update(organizationConfigDetail);
-        }*/
-
-    }
-
-    public String generateDingTalkToken(SyncOrganizationDTO syncOrganizationDTO) {
-        if (StringUtils.isBlank(syncOrganizationDTO.getAppSecret())) {
-            throw new GenericException(Translator.get("sync.organization.test.error"));
-        }
-        String appKey = syncOrganizationDTO.getAppKey();
-        String appSecret = syncOrganizationDTO.getAppSecret();
-        DingTalkBaseParamDTO dingTalkTokenParamDTO = new DingTalkBaseParamDTO();
-        dingTalkTokenParamDTO.setAppKey(appKey);
-        dingTalkTokenParamDTO.setAppSecret(appSecret);
-        String body = qrCodeClient.postExchange(SyncSettingApiPaths.DING_TALK_GET_TOKEN, null, null, dingTalkTokenParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
-        Map bodyMap = JSON.parseMap(body);
-        if (ObjectUtils.isNotEmpty(bodyMap.get("errcode")) && Integer.parseInt(bodyMap.get("errcode").toString()) != 0) {
-            throw new GenericException(Translator.get("sync.organization.test.error"));
-        }
-        return bodyMap.get("accessToken").toString();
-    }
-
-    private String generateWeComToken(SyncOrganizationDTO syncOrganizationDTO) {
-        if (StringUtils.isBlank(syncOrganizationDTO.getAppSecret())) {
-            throw new GenericException(Translator.get("sync.organization.test.error"));
-        }
-        String corpid = syncOrganizationDTO.getCorpId();
-        String appSecret = syncOrganizationDTO.getAppSecret();
-        String url = String.format(SyncSettingApiPaths.WE_COM_GET_TOKEN, corpid, appSecret);
-        String body = qrCodeClient.get(url);
-        Map bodyMap = JSON.parseMap(body);
-        if (ObjectUtils.isNotEmpty(bodyMap.get("errcode")) && Integer.parseInt(bodyMap.get("errcode").toString()) != 0) {
-            throw new GenericException(Translator.get("sync.organization.test.error"));
-        }
-        return bodyMap.get("access_token").toString();
-    }
-
-    private String generateLarkToken(SyncOrganizationDTO syncOrganizationDTO) {
-        if (StringUtils.isBlank(syncOrganizationDTO.getAppSecret())) {
-            throw new GenericException(Translator.get("sync.organization.test.error"));
-        }
-        String agentId = syncOrganizationDTO.getAgentId();
-        String appSecret = syncOrganizationDTO.getAppSecret();
-        LarkBaseParamDTO larkBaseParamDTO = new LarkBaseParamDTO();
-        larkBaseParamDTO.setApp_id(agentId);
-        larkBaseParamDTO.setApp_secret(appSecret);
-        String body = qrCodeClient.postExchange(SyncSettingApiPaths.LARK_GET_TOKEN, null, null, larkBaseParamDTO, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
-        Map bodyMap = JSON.parseMap(body);
-        if (ObjectUtils.isNotEmpty(bodyMap.get("code")) && Integer.parseInt(bodyMap.get("code").toString()) > 0) {
-            throw new GenericException(Translator.get("sync.organization.test.error"));
-        }
-        return bodyMap.get("tenant_access_token").toString();
-    }
 
 
     /**

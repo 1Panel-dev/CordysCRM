@@ -86,6 +86,12 @@
         </foreach>
     </update>
 
+    <update id="updateUserPassword">
+        UPDATE sys_user
+        SET password = #{password}
+        WHERE id = #{id}
+    </update>
+
 
     <select id="getAllUserIds" resultType="io.cordys.crm.system.domain.User">
         select sys_user.id from sys_user

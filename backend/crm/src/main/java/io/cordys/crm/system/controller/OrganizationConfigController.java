@@ -40,33 +40,11 @@ public class OrganizationConfigController {
         organizationConfigService.editEmail(emailDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
-    //获取同步组织设置
-    @GetMapping("/synchronization")
-    @Operation(summary = "获取同步组织设置")
-    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
-    public List<SyncOrganizationDTO> getSynOrganization() {
-        return organizationConfigService.getSynOrganization(OrganizationContext.getOrganizationId());
-    }
-
-    @PostMapping("/edit/synchronization")
-    @Operation(summary = "编辑同步组织设置")
-    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_UPDATE)
-    public void editSynchronization(@Validated @RequestBody SyncOrganizationDTO syncOrganizationDTO) {
-        organizationConfigService.editSynchronization(syncOrganizationDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-    }
-
     @PostMapping("/test/email")
     @Operation(summary = "系统设置-系统-系统参数-基本设置-邮件设置-测试连接")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
     public void testEmailConnection(@Validated @RequestBody EmailDTO emailDTO) {
         organizationConfigService.testEmailConnection(emailDTO);
-    }
-
-    @PostMapping(value = "/test/sync")
-    @Operation(summary = "校验配置是否链接成功")
-    @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
-    public void validate(@RequestBody SyncOrganizationDTO syncOrganizationDTO) {
-        organizationConfigService.testSyncConnection(syncOrganizationDTO, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
 }
