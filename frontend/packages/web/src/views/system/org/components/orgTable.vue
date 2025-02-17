@@ -92,6 +92,7 @@
     batchResetUserPassword,
     batchToggleStatusUser,
     deleteUser,
+    deleteUserCheck,
     getUserList,
     importUserPreCheck,
     importUsers,
@@ -411,31 +412,40 @@
 
   // 删除员工
   async function deleteMember(row: MemberItem) {
-    // TODO 缺少校验接口
-    const hasNotMoved = false;
-    const title = hasNotMoved
-      ? t('org.deleteHasNotMovedTipContent')
-      : t('common.deleteConfirmTitle', { name: characterLimit(row.userName) });
-    const content = hasNotMoved ? '' : t('org.deleteMemberTipContent');
-    const positiveText = hasNotMoved ? '' : t('common.confirm');
+    try {
+      let hasNotMoved = false;
+      hasNotMoved = await deleteUserCheck(row.id);
 
-    openModal({
-      type: 'error',
-      title,
-      content,
-      positiveText,
-      negativeText: t('common.cancel'),
-      onPositiveClick: async () => {
-        try {
-          await deleteUser(row.id);
-          Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
-        }
-      },
-    });
+      const title = hasNotMoved
+        ? t('common.deleteConfirmTitle', { name: characterLimit(row.userName) })
+        : t('org.deleteHasNotMovedTipContent');
+
+      const content = hasNotMoved ? t('org.deleteMemberTipContent') : '';
+      const positiveText = hasNotMoved ? t('common.confirm') : '';
+
+      openModal({
+        type: 'error',
+        title,
+        content,
+        positiveText,
+        negativeText: t('common.cancel'),
+        onPositiveClick: async () => {
+          try {
+            if (hasNotMoved) {
+              await deleteUser(row.id);
+              Message.success(t('common.deleteSuccess'));
+              tableRefreshId.value += 1;
+            }
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+          }
+        },
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   /**

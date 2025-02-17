@@ -75,9 +75,18 @@
           </n-space>
         </n-radio-group>
       </n-form-item>
+      <CrmBatchForm
+        v-if="form.autoRecycle"
+        ref="batchFormRef"
+        :models="formItemModel"
+        :default-list="form.list"
+        :add-text="t('module.clue.addConditions')"
+        show-all-or
+      />
       <n-form-item
         require-mark-placement="left"
         label-placement="left"
+        class="mt-[16px]"
         path="expirationReminder"
         :label="t('opportunity.expirationReminder')"
       >
@@ -161,6 +170,9 @@
   } from 'naive-ui';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
+  import type { FormItemModel } from '@/components/business/crm-batch-form/types';
+  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
   import { getUserOptions } from '@/api/modules/system/org';
@@ -182,6 +194,21 @@
     reminderAdvance: [{ required: true, message: t('common.pleaseInput') }],
   };
 
+  const formItemModel: Ref<FormItemModel[]> = ref([
+    {
+      path: 'member',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      path: 'operator',
+      type: FieldTypeEnum.INPUT,
+    },
+    {
+      path: 'value',
+      type: FieldTypeEnum.INPUT,
+    },
+  ]);
+
   // TODO 类型
   const form = ref({
     id: '',
@@ -192,9 +219,11 @@
     expirationReminder: true,
     reminderAdvance: '1',
     autoRecycle: true,
+    list: [],
   });
 
   function cancelHandler() {
+    form.value.userId = null;
     visible.value = false;
   }
 

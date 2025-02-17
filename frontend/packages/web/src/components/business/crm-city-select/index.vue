@@ -24,6 +24,8 @@
 
   const { t } = useI18n();
 
+  export type DataItem<T = Record<string, any>> = CascaderOption & T;
+
   const emit = defineEmits<{
     (
       e: 'change',
@@ -38,7 +40,7 @@
     default: null,
   });
 
-  const workingCityOptions = ref(regionData);
+  const workingCityOptions = ref<DataItem[]>(regionData as DataItem[]);
 
   function handleChange(
     value: string | number | Array<string | number> | null,

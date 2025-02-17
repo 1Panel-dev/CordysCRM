@@ -15,12 +15,12 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NSelect, SelectOption } from 'naive-ui';
+  import { NSelect } from 'naive-ui';
   import { debounce } from 'lodash-es';
 
   import { useI18n } from '@/hooks/useI18n';
 
-  import { SelectBaseOption } from 'naive-ui/es/select/src/interface';
+  import { SelectBaseOption, SelectMixedOption } from 'naive-ui/es/select/src/interface';
 
   const { t } = useI18n();
 
@@ -31,7 +31,7 @@
       labelField?: string;
       valueField?: string;
       placeholder?: string;
-      options?: SelectOption[];
+      options?: SelectMixedOption[];
       fetchApi?: (params: Record<string, any>) => Promise<Record<string, any>[]>;
       params?: Record<string, any>;
     }>(),
@@ -50,16 +50,19 @@
     ): void;
   }>();
 
-  const innerValue = ref<string | number | Array<string | number> | null>(props.value ?? null);
+  const innerValue = defineModel<string | number | Array<string | number> | null>('value', {
+    required: true,
+    default: null,
+  });
 
-  const innerOptions = ref<SelectOption[]>([]);
+  const optionsList = ref<SelectMixedOption[]>([]);
 
   const loadUsers = async (keyword = '') => {
     if (props.mode !== 'remote' || !props.fetchApi) return;
 
     try {
       const res = await props.fetchApi({ keyword, ...props.params });
-      innerOptions.value = res.map((user) => ({
+      optionsList.value = res.map((user) => ({
         [props.labelField]: user[props.labelField],
         [props.valueField]: user[props.valueField],
       }));
@@ -83,26 +86,19 @@
     emit('change', value, option);
   }
 
-  const computedOptions = computed(() => {
+  const computedOptions = computed<SelectMixedOption[]>(() => {
     return props.mode === 'static'
       ? (props.options || []).map((item) => ({
           ...item,
           [props.labelField]: item[props.labelField],
           [props.valueField]: item[props.valueField],
         }))
-      : innerOptions.value;
+      : optionsList.value;
   });
 
   onMounted(() => {
     loadUsers();
   });
-
-  watch(
-    () => props.value,
-    (newValue) => {
-      innerValue.value = newValue;
-    }
-  );
 </script>
 
 <style scoped></style>

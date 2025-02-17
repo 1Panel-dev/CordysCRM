@@ -4,7 +4,7 @@
     size="small"
     :title="t('common.import')"
     :ok-loading="props.importLoading"
-    @close="handleCancel"
+    @cancel="handleCancel"
   >
     <div class="text-center">
       <CrmIcon :size="32" :type="getTipType?.icon" :class="`${getTipType?.color}`" />

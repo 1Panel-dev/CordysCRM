@@ -10,6 +10,7 @@ import {
   batchResetPasswordUrl,
   checkDeleteDepartmentUrl,
   deleteDepartmentUrl,
+  deleteUserCheckUrl,
   deleteUserUrl,
   getDepartmentTreeUrl,
   getRoleOptionsUrl,
@@ -133,4 +134,8 @@ export function importUsers(file: File) {
 // 用户(员工)-删除员工
 export function deleteUser(userId: string) {
   return CDR.get({ url: `${deleteUserUrl}/${userId}` });
+}
+// 用户(员工)-删除员工校验
+export function deleteUserCheck(userId: string) {
+  return CDR.get({ url: `${deleteUserCheckUrl}/${userId}` });
 }

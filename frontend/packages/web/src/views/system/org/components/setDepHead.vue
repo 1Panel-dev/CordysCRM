@@ -5,7 +5,7 @@
     :title="t('org.setDepartmentHead')"
     :ok-loading="loading"
     @confirm="confirmHandler"
-    @close="closeHandler"
+    @cancel="closeHandler"
   >
     <div>
       <n-form ref="formRef" :model="form" :rules="rules">

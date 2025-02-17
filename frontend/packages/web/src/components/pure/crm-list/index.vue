@@ -61,13 +61,12 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { NVirtualList } from 'naive-ui';
+  import { useDraggable } from 'vue-draggable-plus';
 
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 
   import useContainerShadow from '@/hooks/useContainerShadow';
-
-  import { useDraggable } from 'vue-draggable-plus';
 
   const props = withDefaults(
     defineProps<{

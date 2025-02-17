@@ -7,8 +7,7 @@
     :class="`crm-modal-${props.size || 'medium'}`"
     @positive-click="positiveClick"
     @negative-click="negativeClick"
-    @close="close"
-    @after-leave="handleAfterLeave"
+    @after-leave="emit('cancel')"
   >
     <template #header>
       <slot name="title">
@@ -100,18 +99,12 @@
     (e: 'confirm'): void;
     (e: 'cancel'): void;
     (e: 'continue'): void;
-    (e: 'close'): void;
   }>();
 
   const showModal = defineModel<boolean>('show', {
     required: true,
     default: false,
   });
-
-  function close() {
-    showModal.value = false;
-    emit('close');
-  }
 
   function negativeClick() {
     showModal.value = false;
@@ -125,10 +118,6 @@
   function handleContinue() {
     emit('continue');
   }
-
-  const handleAfterLeave = () => {
-    return props.afterLeave ? props.afterLeave() : true;
-  };
 </script>
 
 <style></style>

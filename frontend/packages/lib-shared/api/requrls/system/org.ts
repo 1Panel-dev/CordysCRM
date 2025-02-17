@@ -20,3 +20,4 @@ export const getUserOptionsUrl = '/user/option'; // 获取用户下拉
 export const getRoleOptionsUrl = '/user/role/option'; // 获取角色下拉
 export const importUserUrl = '/user/import'; // 用户(员工)-excel导入
 export const deleteUserUrl = '/user/delete'; // 用户(员工)-删除
+export const deleteUserCheckUrl = '/user/delete/check'; // 用户(员工)-删除校验
