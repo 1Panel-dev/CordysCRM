@@ -58,6 +58,35 @@
             "id": "SYSTEM_SETTING:UPDATE"
           }
         ]
+      },
+      {
+        "id": "SYSTEM_ORGANIZATION",
+        "name": "permission.system.organization.name",
+        "permissions": [
+          {
+            "id": "SYS_ORGANIZATION:READ"
+          },
+          {
+            "id": "SYS_ORGANIZATION:ADD"
+          },
+          {
+            "id": "SYS_ORGANIZATION:UPDATE"
+          },
+          {
+            "id": "SYS_ORGANIZATION:DELETE"
+          },
+          {
+            "id": "SYS_ORGANIZATION:IMPORT"
+          },
+          {
+            "id": "SYS_ORGANIZATION:SYNC",
+            "name": "permission.organization.sync"
+          },
+          {
+            "id": "SYS_ORGANIZATION_USER:RESET_PASSWORD",
+            "name": "permission.organization.user.reset_password"
+          }
+        ]
       }
     ]
   },

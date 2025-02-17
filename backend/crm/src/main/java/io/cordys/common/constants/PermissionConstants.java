@@ -29,13 +29,13 @@ public class PermissionConstants {
      /*------ end: SYSTEM_NOTICE_ROLE ------*/
 
     /*------ start: SYS_DEPARTMENT ------*/
-    public static final String SYS_DEPARTMENT_READ = "SYS_DEPARTMENT:READ";
-    public static final String SYS_DEPARTMENT_ADD = "SYS_DEPARTMENT:ADD";
-    public static final String SYS_DEPARTMENT_UPDATE = "SYS_DEPARTMENT:UPDATE";
-    public static final String SYS_DEPARTMENT_DELETE = "SYS_DEPARTMENT:DELETE";
-    public static final String SYS_DEPARTMENT_IMPORT = "SYS_DEPARTMENT:IMPORT";
-    public static final String SYS_DEPARTMENT_SYNC = "SYS_DEPARTMENT:SYNC";
-    public static final String SYS_DEPARTMENT_USER_RESET_PASSWORD = "SYS_DEPARTMENT_USER:RESET";
+    public static final String SYS_ORGANIZATION_READ = "SYS_ORGANIZATION:READ";
+    public static final String SYS_ORGANIZATION_ADD = "SYS_ORGANIZATION:ADD";
+    public static final String SYS_ORGANIZATION_UPDATE = "SYS_ORGANIZATION:UPDATE";
+    public static final String SYS_ORGANIZATION_DELETE = "SYS_ORGANIZATION:DELETE";
+    public static final String SYS_ORGANIZATION_IMPORT = "SYS_ORGANIZATION:IMPORT";
+    public static final String SYS_ORGANIZATION_SYNC = "SYS_ORGANIZATION:SYNC";
+    public static final String SYS_ORGANIZATION_USER_RESET_PASSWORD = "SYS_ORGANIZATION_USER:RESET_PASSWORD";
 
     /*------ end: SYS_DEPARTMENT ------*/
 
