@@ -105,7 +105,6 @@
     appSecret: '',
     enable: true,
     type: '',
-    id: '',
   });
 
   watch(

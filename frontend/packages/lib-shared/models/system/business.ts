@@ -10,21 +10,20 @@ export interface ConfigEmailParams {
   recipient: string; // 指定收件人
   ssl: string; // SSL 开关
   tsl: string; // TSL 开关
-  id?: string; // ID
 }
 
 // 同步组织设置
 export interface ConfigSynchronization {
   type: string; // 类型
-  corpId: string; // 企业ID
-  agentId: string; // 应用ID
-  appSecret: string; // 应用密钥
-  id: string; // ID
+  corpId?: string; // 企业ID
+  agentId?: string; // 应用ID
+  appSecret?: string; // 应用密钥
   enable: boolean; // 是否开启
 }
 
 // 同步组织和扫码卡片数据类型
 export interface IntegrationItem {
+  type: string; // 类型
   title: string;
   description: string;
   logo: string;

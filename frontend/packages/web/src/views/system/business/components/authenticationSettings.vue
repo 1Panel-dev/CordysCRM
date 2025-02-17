@@ -148,6 +148,7 @@
   const editAuthInfo = ref<AuthForm>(cloneDeep(defaultAuthForm));
 
   function handleAdd() {
+    editAuthInfo.value = cloneDeep(defaultAuthForm);
     showAddOrEditAuthDrawer.value = true;
   }
   async function handleEdit(record: AuthForm | AuthItem, isFromDetail = false) {

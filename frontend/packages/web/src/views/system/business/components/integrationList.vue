@@ -4,7 +4,7 @@
     <div v-if="integrationList.length" class="flex flex-wrap gap-[16px]">
       <div
         v-for="item of integrationList"
-        :key="item.response.type"
+        :key="item.type"
         class="flex h-[140px] w-[380px] flex-col justify-between rounded-[6px] bg-[var(--text-n9)] p-[24px]"
       >
         <div class="flex">
@@ -133,13 +133,13 @@
 
       const configMap = new Map(res.map((item) => [item.type, item]));
       integrationList.value = allIntegrations
-        .filter((item) => configMap.has(item.type))
+        .filter((item) => [CompanyTypeEnum.WECOM].includes(item.type))
         .map((item) => {
-          const config = configMap.get(item.type)!;
+          const config = configMap.get(item.type);
           return {
             ...item,
-            hasConfig: Boolean(config.appSecret),
-            response: config,
+            hasConfig: Boolean(config?.appSecret),
+            response: { enable: config?.enable ?? false, type: item.type, ...config },
           };
         });
     } catch (error) {

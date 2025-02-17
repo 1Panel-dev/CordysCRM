@@ -130,7 +130,6 @@
 
   const showSyncWeChatModal = ref<boolean>(false);
   const currentIntegration = ref<ConfigSynchronization>({
-    id: '',
     type: CompanyTypeEnum.WECOM,
     corpId: '',
     agentId: '',
@@ -141,7 +140,8 @@
   async function settingWeChat(e: MouseEvent) {
     e.stopPropagation();
     const res = await getConfigSynchronization();
-    [currentIntegration.value] = res;
+    const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
+    currentIntegration.value = { ...currentIntegration.value, ...weChatConfig };
     showSyncWeChatModal.value = true;
   }
 

@@ -1,9 +1,9 @@
 export const GetConfigEmailUrl = '/organization/config/email'; // 获取邮件设置
-export const UpdateConfigEmailUrl = '/organization/config/update/email'; // 更新邮件设置
+export const UpdateConfigEmailUrl = '/organization/config/edit/email'; // 更新邮件设置
 export const TestConfigEmailUrl = '/organization/config/test/email'; // 邮件设置-测试连接
 
 export const GetConfigSynchronizationUrl = '/organization/config/synchronization'; // 获取同步组织设置
-export const UpdateConfigSynchronizationUrl = '/organization/config/update/synchronization'; // 更新同步组织设置
+export const UpdateConfigSynchronizationUrl = '/organization/config/edit/synchronization'; // 更新同步组织设置
 export const TestConfigSynchronizationUrl = '/organization/config/test/sync'; // 同步组织设置-测试连接
 
 export const GetAuthsUrl = '/system/authsource/list'; //  认证设置-列表查询
