@@ -7,7 +7,6 @@ import io.cordys.crm.system.dto.response.ModuleFieldDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormService;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -17,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,18 +41,18 @@ public class ModuleFormControllerTests extends BaseTest{
 		request.setFormKey("none-key");
 		request.setFields(List.of());
 		request.setDeleteFieldIds(List.of());
-		request.setFormProp(StringUtils.EMPTY);
+		request.setFormProp(Map.of());
 		this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError());
 		request.setFormKey(FormKey.CUSTOMER.getKey());
 		request.setDeleteFieldIds(List.of("default-delete-id"));
 		ModuleFieldDTO field = new ModuleFieldDTO();
-		field.setFieldProp("{\"k\": \"v\"}");
+		field.setFieldProp(Map.of("k", "v"));
 		request.setFields(List.of(field));
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/module/form/save", request);
 		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
 		assert formConfig.getFields().size() > 1;
 		ModuleFieldDTO saveField = formConfig.getFields().getFirst();
-		saveField.setFieldProp("{\"k\": \"v1\"}");
+		saveField.setFieldProp(Map.of("k", "v1"));
 		request.setFields(List.of(saveField));
 		this.requestPostWithOk("/module/form/save", request);
 	}

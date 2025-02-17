@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class ModuleFormConfigDTO {
@@ -12,5 +13,5 @@ public class ModuleFormConfigDTO {
 	private List<ModuleFieldDTO> fields;
 
 	@Schema(description = "表单属性")
-	private String formProp;
+	private Map<String, Object> formProp;
 }

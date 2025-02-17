@@ -65,7 +65,7 @@ public class ModuleFormService {
 		}
 		ModuleForm form = forms.getFirst();
 		ModuleFormBlob formBlob = moduleFormBlobMapper.selectByPrimaryKey(form.getId());
-		formConfig.setFormProp(new String(formBlob.getProp()));
+		formConfig.setFormProp(JSON.parseMap(new String(formBlob.getProp())));
 		// set fields
 		formConfig.setFields(getAllFields(form.getId()));
 		return formConfig;
@@ -90,7 +90,7 @@ public class ModuleFormService {
 		moduleFormMapper.updateById(form);
 		ModuleFormBlob formBlob = new ModuleFormBlob();
 		formBlob.setId(form.getId());
-		formBlob.setProp(saveParam.getFormProp().getBytes());
+		formBlob.setProp(JSON.toJSONBytes(saveParam.getFormProp()));
 		moduleFormBlobMapper.updateById(formBlob);
 
 		// 处理字段
@@ -106,7 +106,7 @@ public class ModuleFormService {
 			saveParam.getFields().forEach(field -> {
 				field.setPos(pos.getAndIncrement());
 				ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
-				fieldBlob.setProp(field.getFieldProp().getBytes());
+				fieldBlob.setProp(JSON.toJSONBytes(field.getFieldProp()));
 				if (field.getId() == null) {
 					field.setId(IDGenerator.nextStr());
 					addFields.add(buildField(field, currentUserId, form.getId(), false));
@@ -176,7 +176,7 @@ public class ModuleFormService {
 			fields.forEach(field -> {
 				ModuleFieldDTO fieldDTO = new ModuleFieldDTO();
 				BeanUtils.copyBean(fieldDTO, field);
-				fieldDTO.setFieldProp(new String(fieldBlobMap.get(field.getId())));
+				fieldDTO.setFieldProp(JSON.parseMap(new String(fieldBlobMap.get(field.getId()))));
 				fieldDTOList.add(fieldDTO);
 			});
 		}

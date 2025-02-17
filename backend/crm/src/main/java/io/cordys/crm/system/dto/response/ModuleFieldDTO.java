@@ -3,6 +3,8 @@ package io.cordys.crm.system.dto.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.Map;
+
 @Data
 public class ModuleFieldDTO {
 
@@ -16,5 +18,5 @@ public class ModuleFieldDTO {
 	private Long pos;
 
 	@Schema(description = "字段属性")
-	private String fieldProp;
+	private Map<String, Object> fieldProp;
 }

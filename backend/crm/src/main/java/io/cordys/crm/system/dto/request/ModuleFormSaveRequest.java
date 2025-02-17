@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -26,7 +27,7 @@ public class ModuleFormSaveRequest {
 
 	@NonNull
 	@Schema(description = "表单属性")
-	private String formProp;
+	private Map<String, Object> formProp;
 
 	@Schema(description = "删除字段ID集合")
 	private List<String> deleteFieldIds;
