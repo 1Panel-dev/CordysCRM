@@ -42,14 +42,14 @@ public class CustomerPoolController {
     @Operation(summary = "保存公海池")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void save(@Validated @RequestBody CustomerPoolSaveRequest request) {
-        customerPoolService.save(request, SessionUtils.getUserId());
+        customerPoolService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @Operation(summary = "编辑线索池")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void update(@Validated @RequestBody CustomerPoolSaveRequest request) {
-        customerPoolService.save(request, SessionUtils.getUserId());
+        customerPoolService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")

@@ -8,6 +8,18 @@
         order by create_time desc
     </select>
 
+    <update id="updatePickRule" parameterType="io.cordys.crm.customer.domain.CustomerPoolPickRule">
+        update customer_pool_pick_rule set limit_on_number = #{rule.limitOnNumber}, pick_number = #{rule.pickNumber}, limit_pre_owner = #{rule.limitPreOwner},
+           pick_interval_days = #{rule.pickIntervalDays}, update_user = #{rule.updateUser}, update_time = #{rule.updateTime}
+        where pool_id = #{rule.poolId}
+    </update>
+
+    <update id="updateRecycleRule" parameterType="io.cordys.crm.customer.domain.CustomerPoolRecycleRule">
+        update customer_pool_recycle_rule set expire_notice = #{rule.expireNotice}, notice_days = #{rule.noticeDays},
+           operator = #{rule.operator}, `condition` = #{rule.condition}, update_user = #{rule.updateUser}, update_time = #{rule.updateTime}
+        where pool_id = #{rule.poolId}
+    </update>
+
     <sql id="filter">
         <if test="request.filter != null and request.filter.size() > 0">
             <foreach collection="request.filter.entrySet()" index="key" item="values">

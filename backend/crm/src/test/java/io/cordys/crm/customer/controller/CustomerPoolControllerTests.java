@@ -10,6 +10,8 @@ import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.domain.CustomerPoolRelation;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
 import io.cordys.crm.customer.dto.request.CustomerPoolPageRequest;
+import io.cordys.crm.customer.dto.request.CustomerPoolPickRuleSaveRequest;
+import io.cordys.crm.customer.dto.request.CustomerPoolRecycleRuleSaveRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolSaveRequest;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -51,8 +53,12 @@ public class CustomerPoolControllerTests extends BaseTest {
 		CustomerPool customerPool = createCustomerPool();
 		CustomerPoolSaveRequest request = new CustomerPoolSaveRequest();
 		BeanUtils.copyBean(request, customerPool);
-		request.setPickRule(createPickRule());
-		request.setRecycleRule(createRecycleRule());
+		CustomerPoolPickRuleSaveRequest pickRule = CustomerPoolPickRuleSaveRequest.builder()
+				.limitOnNumber(true).limitPreOwner(true).pickNumber(1).pickIntervalDays(1).build();
+		request.setPickRule(pickRule);
+		CustomerPoolRecycleRuleSaveRequest recycleRule = CustomerPoolRecycleRuleSaveRequest.builder()
+				.expireNotice(true).noticeDays(10).build();
+		request.setRecycleRule(recycleRule);
 		this.requestPostWithOk("/customer-pool/add", request);
 	}
 
@@ -74,11 +80,11 @@ public class CustomerPoolControllerTests extends BaseTest {
 		customerPool.setId(testCustomerPool.getId());
 		CustomerPoolSaveRequest request = new CustomerPoolSaveRequest();
 		BeanUtils.copyBean(request, customerPool);
-		CustomerPoolPickRule pickRule = createPickRule();
-		pickRule.setId("default-pick-rule");
+		CustomerPoolPickRuleSaveRequest pickRule = CustomerPoolPickRuleSaveRequest.builder()
+				.limitOnNumber(true).limitPreOwner(true).pickNumber(1).pickIntervalDays(1).build();
 		request.setPickRule(pickRule);
-		CustomerPoolRecycleRule recycleRule = createRecycleRule();
-		recycleRule.setId("default-recycle-rule");
+		CustomerPoolRecycleRuleSaveRequest recycleRule = CustomerPoolRecycleRuleSaveRequest.builder()
+				.expireNotice(true).noticeDays(10).build();
 		request.setRecycleRule(recycleRule);
 		MvcResult mvcResult = this.requestPost("/customer-pool/update", request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer_pool_access_fail"));
@@ -129,22 +135,6 @@ public class CustomerPoolControllerTests extends BaseTest {
 		customerPool.setEnable(true);
 		customerPool.setAuto(true);
 		return customerPool;
-	}
-
-	private CustomerPoolPickRule createPickRule() {
-		CustomerPoolPickRule pickRule = new CustomerPoolPickRule();
-		pickRule.setPickNumber(1);
-		pickRule.setLimitOnNumber(true);
-		pickRule.setLimitPreOwner(true);
-		pickRule.setPickIntervalDays(1);
-		return pickRule;
-	}
-
-	private CustomerPoolRecycleRule createRecycleRule() {
-		CustomerPoolRecycleRule recycleRule = new CustomerPoolRecycleRule();
-		recycleRule.setExpireNotice(true);
-		recycleRule.setNoticeDays(10);
-		return recycleRule;
 	}
 
 	private CustomerPoolRelation createCustomerPoolRelation() {
