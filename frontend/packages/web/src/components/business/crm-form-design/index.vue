@@ -3,16 +3,17 @@
     <div class="crm-form-design--left"><fieldComponents @select="handleFieldSelect" /></div>
     <div class="crm-form-design--center">
       <div class="crm-form-design--center-content">
-        <formComposition ref="formCompositionRef" v-model:list="list" :form-config="formConfig" />
+        <formComposition ref="formCompositionRef" v-model:list="list" v-model:field="field" :form-config="formConfig" />
       </div>
     </div>
-    <div class="crm-form-design--right">i am right</div>
+    <div class="crm-form-design--right"><attrConfig :field="field" :form-config="formConfig" /></div>
   </n-scrollbar>
 </template>
 
 <script setup lang="ts">
   import { NScrollbar } from 'naive-ui';
 
+  import attrConfig from './components/attrConfig.vue';
   import fieldComponents from './components/fieldComponents.vue';
   import formComposition from './components/formComposition.vue';
 
@@ -24,6 +25,7 @@
   const { t } = useI18n();
 
   const list = ref<FormCreateField[]>([]);
+  const field = ref<FormCreateField>();
   const formCompositionRef = ref<InstanceType<typeof formComposition>>();
 
   function handleFieldSelect(item: FormCreateField) {

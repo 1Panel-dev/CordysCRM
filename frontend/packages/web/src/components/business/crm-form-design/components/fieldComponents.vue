@@ -22,7 +22,15 @@
       </div>
     </VueDraggable>
     <div class="crm-form-design-field-title">{{ t('crmFormDesign.advancedField') }}</div>
-    <div class="crm-form-design-field-wrapper">
+    <VueDraggable
+      v-model="advancedFields"
+      :animation="150"
+      ghost-class="crm-form-design--composition-item-ghost"
+      :group="{ name: 'crmFormDesign', pull: 'clone', put: false }"
+      :clone="clone"
+      :sort="false"
+      class="crm-form-design-field-wrapper"
+    >
       <div
         v-for="field of advancedFields"
         :key="field.type"
@@ -33,7 +41,7 @@
         <CrmIcon :type="field.icon" />
         <div>{{ t(field.name) }}</div>
       </div>
-    </div>
+    </VueDraggable>
   </div>
 </template>
 

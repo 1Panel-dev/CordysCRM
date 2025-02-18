@@ -57,6 +57,7 @@
       <n-button type="primary">{{ formConfig.okText }}</n-button>
       <n-button type="primary" ghost>{{ formConfig.continueText }}</n-button>
       <n-button secondary>{{ formConfig.cancelText }}</n-button>
+      <div class="crm-form-design--composition-footer-mask"></div>
     </div>
   </n-form>
 </template>
@@ -85,7 +86,9 @@
   const list = defineModel<FormCreateField[]>('list', {
     required: true,
   });
-  const activeItem = ref<FormCreateField>();
+  const activeItem = defineModel<FormCreateField | null>('field', {
+    default: null,
+  });
 
   const disabled = ref(false);
 
@@ -99,25 +102,37 @@
 
   function getItemComponent(type: FieldTypeEnum) {
     if (type === FieldTypeEnum.INPUT) {
-      return CrmFormCreateComponents.singleText;
+      return CrmFormCreateComponents.basicComponents.singleText;
     }
     if (type === FieldTypeEnum.TEXTAREA) {
-      return CrmFormCreateComponents.textarea;
+      return CrmFormCreateComponents.basicComponents.textarea;
     }
     if (type === FieldTypeEnum.INPUT_NUMBER) {
-      return CrmFormCreateComponents.inputNumber;
+      return CrmFormCreateComponents.basicComponents.inputNumber;
     }
     if (type === FieldTypeEnum.DATE_TIME) {
-      return CrmFormCreateComponents.dateTime;
+      return CrmFormCreateComponents.basicComponents.dateTime;
     }
     if (type === FieldTypeEnum.RADIO) {
-      return CrmFormCreateComponents.radio;
+      return CrmFormCreateComponents.basicComponents.radio;
     }
     if (type === FieldTypeEnum.CHECKBOX) {
-      return CrmFormCreateComponents.checkbox;
+      return CrmFormCreateComponents.basicComponents.checkbox;
     }
     if ([FieldTypeEnum.SELECT_SINGLE, FieldTypeEnum.SELECT_MULTIPLE].includes(type)) {
-      return CrmFormCreateComponents.select;
+      return CrmFormCreateComponents.basicComponents.select;
+    }
+    if (type === FieldTypeEnum.DIVIDER) {
+      return CrmFormCreateComponents.basicComponents.divider;
+    }
+    if (type === FieldTypeEnum.PICTURE) {
+      return CrmFormCreateComponents.advancedComponents.upload;
+    }
+    if (type === FieldTypeEnum.LOCATION) {
+      return CrmFormCreateComponents.advancedComponents.location;
+    }
+    if (type === FieldTypeEnum.PHONE) {
+      return CrmFormCreateComponents.advancedComponents.phone;
     }
   }
 
@@ -198,6 +213,9 @@
 
   function deleteItem(item: FormCreateField) {
     list.value = list.value.filter((e) => e.id !== item.id);
+    if (activeItem.value?.id === item.id) {
+      activeItem.value = null;
+    }
   }
 
   defineExpose({
@@ -268,11 +286,14 @@
       }
     }
     .crm-form-design--composition-footer {
-      @apply flex w-full;
+      @apply relative flex w-full;
 
       padding: 12px 0;
       border-top: 1px solid var(--text-n8);
       gap: 8px;
+      .crm-form-design--composition-footer-mask {
+        @apply absolute bottom-0 left-0 right-0 top-0 z-10 bg-transparent;
+      }
     }
   }
   .crm-form-design--composition-item-tools-tip {

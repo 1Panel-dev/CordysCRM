@@ -1,17 +1,7 @@
-import checkbox from './checkbox.vue';
-import dateTime from './dateTime.vue';
-import inputNumber from './inputNumber.vue';
-import radio from './radio.vue';
-import select from './select.vue';
-import singleText from './singleText.vue';
-import textarea from './textarea.vue';
+import advancedComponents from './advanced';
+import basicComponents from './basic';
 
 export default {
-  dateTime,
-  inputNumber,
-  singleText,
-  textarea,
-  radio,
-  checkbox,
-  select,
+  basicComponents,
+  advancedComponents,
 };

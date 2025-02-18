@@ -27,7 +27,7 @@
 <script setup lang="ts">
   import { NFormItem, NInputNumber } from 'naive-ui';
 
-  import { FormCreateField } from '../types';
+  import { FormCreateField } from '../../types';
 
   const props = defineProps<{
     fieldConfig: FormCreateField;

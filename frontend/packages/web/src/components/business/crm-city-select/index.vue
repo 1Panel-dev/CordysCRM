@@ -1,7 +1,6 @@
 <template>
   <n-cascader
     v-model:value="innerValue"
-    :placeholder="t('common.pleaseSelect')"
     :options="workingCityOptions"
     clearable
     v-bind="{

@@ -31,5 +31,12 @@ export interface FormCreateField {
   datetype?: 'month' | 'date' | 'datetime';
   // radio属性
   direction?: 'horizontal' | 'vertical';
+  // divider属性
+  dividerClass?: string;
+  // 图片上传属性
+  uploadLimit?: number;
+  uploadSizeLimit?: number;
+  // 地址属性
+  hasDetail?: boolean;
   [key: string]: any;
 }

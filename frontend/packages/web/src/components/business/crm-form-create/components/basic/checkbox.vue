@@ -28,7 +28,7 @@
 
   import { useI18n } from '@/hooks/useI18n';
 
-  import { FormCreateField } from '../types';
+  import { FormCreateField } from '../../types';
 
   const props = defineProps<{
     fieldConfig: FormCreateField;

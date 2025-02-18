@@ -19,4 +19,7 @@ export default {
   'crmFormDesign.phone': '手机',
   'crmFormDesign.emptyTip': '从左侧 拖拽 或 点击 添加字段',
   'crmFormDesign.option': '选项 {i}',
+  'crmFormDesign.fieldConfig': '字段属性',
+  'crmFormDesign.fieldConfigEmptyTip': '选中字段后，可以配置字段属性',
+  'crmFormDesign.formConfig': '表单属性',
 };

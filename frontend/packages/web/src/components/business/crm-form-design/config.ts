@@ -205,6 +205,7 @@ export const pictureDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   rules: [],
+  uploadSizeLimit: 20,
 };
 
 export const locationDefaultFieldConfig: FormCreateField = {

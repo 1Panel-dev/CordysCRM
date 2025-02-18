@@ -6,26 +6,27 @@
     :rule="props.fieldConfig.rules"
   >
     <div v-if="props.fieldConfig.description" class="n-form-item-desc" v-html="props.fieldConfig.description"></div>
-    <n-select
+    <n-radio-group
       v-model:value="value"
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
-      :options="props.fieldConfig.options?.map((e, i) => ({ ...e, label: t(e.label, { i: i + 1 }) }))"
-      :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
-      :placeholder="props.fieldConfig.placeholder"
-      clearable
-    />
+      name="radiogroup"
+    >
+      <n-space :item-class="props.fieldConfig.direction === 'horizontal' ? '' : 'w-full'">
+        <n-radio v-for="(item, i) in props.fieldConfig.options" :key="item.value" :value="item.value">
+          {{ t(item.label, { i: i + 1 }) }}
+        </n-radio>
+      </n-space>
+    </n-radio-group>
   </n-form-item>
 </template>
 
 <script setup lang="ts">
-  import { NFormItem, NSelect } from 'naive-ui';
-
-  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
+  import { NFormItem, NRadio, NRadioGroup, NSpace } from 'naive-ui';
 
   import { useI18n } from '@/hooks/useI18n';
 
-  import { FormCreateField } from '../types';
+  import { FormCreateField } from '../../types';
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
@@ -34,8 +35,8 @@
 
   const { t } = useI18n();
 
-  const value = defineModel<(string | number)[]>('value', {
-    default: [],
+  const value = defineModel<string>('value', {
+    default: '',
   });
 </script>
 

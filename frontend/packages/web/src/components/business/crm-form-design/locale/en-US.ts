@@ -19,4 +19,7 @@ export default {
   'crmFormDesign.phone': 'Phone',
   'crmFormDesign.emptyTip': 'Drag from the left or click to add fields',
   'crmFormDesign.option': 'Option {i}',
+  'crmFormDesign.fieldConfig': 'Field Properties',
+  'crmFormDesign.fieldConfigEmptyTip': 'After selecting a field, you can configure its properties',
+  'crmFormDesign.formConfig': 'Form Properties',
 };
