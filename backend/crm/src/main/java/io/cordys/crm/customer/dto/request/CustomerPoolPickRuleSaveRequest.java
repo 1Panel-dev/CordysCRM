@@ -10,7 +10,7 @@ import lombok.NonNull;
 public class CustomerPoolPickRuleSaveRequest {
 
 	@NonNull
-	@Schema(description = "是否限制领取数量")
+	@Schema(description = "是否限制每日领取数量")
 	private Boolean limitOnNumber;
 
 	@Schema(description = "领取数量")

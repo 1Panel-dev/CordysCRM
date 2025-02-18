@@ -4,28 +4,46 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.domain.CustomerPoolRelation;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
-import io.cordys.crm.customer.dto.request.CustomerPoolPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolSaveRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
+import io.cordys.crm.system.constants.ScopeKey;
+import io.cordys.crm.system.domain.Department;
+import io.cordys.crm.system.domain.Role;
+import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.dto.ScopeNameDTO;
+import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class CustomerPoolService {
 
+	@Resource
+	private ExtUserMapper extUserMapper;
+	@Resource
+	private BaseMapper<User> userMapper;
+	@Resource
+	private BaseMapper<Role> roleMapper;
+	@Resource
+	private BaseMapper<Department> departmentMapper;
 	@Resource
 	private BaseMapper<CustomerPool> customerPoolMapper;
 	@Resource
@@ -43,7 +61,25 @@ public class CustomerPoolService {
 	 * @return 公海池列表
 	 */
 	public List<CustomerPoolDTO> page(BasePageRequest request, String organizationId) {
-		return extCustomerPoolMapper.list(request, organizationId);
+		List<CustomerPoolDTO> pools = extCustomerPoolMapper.list(request, organizationId);
+		if (CollectionUtils.isEmpty(pools)) {
+			return new ArrayList<>();
+		}
+		List<String> scopeIds = new ArrayList<>();
+		List<String> ownerIds = new ArrayList<>();
+		pools.forEach(pool -> {
+			scopeIds.addAll(JSON.parseArray(pool.getScopeId(), String.class));
+			ownerIds.addAll(JSON.parseArray(pool.getOwnerId(), String.class));
+		});
+		List<String> unionIds = ListUtils.union(scopeIds, ownerIds).stream().distinct().toList();
+		List<User> users = userMapper.selectByIds(unionIds.toArray(new String[0]));
+		List<Role> roles = roleMapper.selectByIds(unionIds.toArray(new String[0]));
+		List<Department> departments = departmentMapper.selectByIds(unionIds.toArray(new String[0]));
+		pools.forEach(pool -> {
+			pool.setMembers(getScope(users, roles, departments, JSON.parseArray(pool.getScopeId(), String.class)));
+			pool.setOwners(getScope(users, roles, departments, JSON.parseArray(pool.getOwnerId(), String.class)));
+		});
+		return pools;
 	}
 
 	/**
@@ -55,6 +91,8 @@ public class CustomerPoolService {
 		CustomerPool pool = new CustomerPool();
 		BeanUtils.copyBean(pool, request);
 		pool.setOrganizationId(organizationId);
+		pool.setOwnerId(JSON.toJSONString(request.getOwnerIds()));
+		pool.setScopeId(JSON.toJSONString(request.getScopeIds()));
 		pool.setUpdateTime(System.currentTimeMillis());
 		pool.setUpdateUser(currentUserId);
 		CustomerPoolPickRule pickRule = new CustomerPoolPickRule();
@@ -127,8 +165,8 @@ public class CustomerPoolService {
 
 	/**
 	 * 校验公海池是否存在
-	 * @param id 线索池ID
-	 * @return 线索池
+	 * @param id 公海池ID
+	 * @return 公海池
 	 */
 	private CustomerPool checkPoolExist(String id) {
 		CustomerPool pool = customerPoolMapper.selectByPrimaryKey(id);
@@ -140,14 +178,44 @@ public class CustomerPoolService {
 
 	/**
 	 * 校验是否公海池的管理员
-	 * @param pool 线索池
+	 * @param pool 公海池
 	 * @param accessUserId 访问用户ID
 	 */
 	private void checkPoolOwner(CustomerPool pool, String accessUserId) {
-		// TODO: split multiple owner by comma
-		List<String> ownerIds = List.of(pool.getOwnerId().split(","));
-		if (!ownerIds.contains(accessUserId)) {
+		List<String> ownerIds = JSON.parseArray(pool.getOwnerId(), String.class);
+		List<String> ownerUserIds = extUserMapper.getUserIdsByScope(ownerIds, pool.getOrganizationId());
+		if (!ownerUserIds.contains(accessUserId)) {
 			throw new GenericException(Translator.get("customer_pool_access_fail"));
 		}
+	}
+
+	/**
+	 * 获取成员范围集合
+	 * @param users 用户
+	 * @param roles 角色
+	 * @param departments 部门
+	 * @param scopeIds 范围ID集合
+	 * @return 范围集合
+	 */
+	private List<ScopeNameDTO> getScope(List<User> users, List<Role> roles, List<Department> departments, List<String> scopeIds) {
+		Map<String, String> userMap = users.stream().collect(Collectors.toMap(User::getId, User::getName));
+		Map<String, String> roleMap = roles.stream().collect(Collectors.toMap(Role::getId, Role::getName));
+		Map<String, String> departmentMap = departments.stream().collect(Collectors.toMap(Department::getId, Department::getName));
+		List<ScopeNameDTO> scopes = new ArrayList<>();
+		scopeIds.forEach(scopeId -> {
+			ScopeNameDTO scope = ScopeNameDTO.builder().id(scopeId).build();
+			if (userMap.containsKey(scopeId)) {
+				scope.setName(userMap.get(scopeId));
+				scope.setScope(ScopeKey.USER.name());
+			} else if (roleMap.containsKey(scopeId)) {
+				scope.setName(roleMap.get(scopeId));
+				scope.setScope(ScopeKey.ROLE.name());
+			} else if (departmentMap.containsKey(scopeId)) {
+				scope.setName(departmentMap.get(scopeId));
+				scope.setScope(ScopeKey.DEPARTMENT.name());
+			}
+			scopes.add(scope);
+		});
+		return scopes;
 	}
 }

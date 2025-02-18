@@ -8,7 +8,6 @@ import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
-import io.cordys.crm.customer.dto.request.CustomerPoolPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolSaveRequest;
 import io.cordys.crm.customer.service.CustomerPoolService;
 import io.cordys.security.SessionUtils;
@@ -47,21 +46,21 @@ public class CustomerPoolController {
     }
 
     @PostMapping("/update")
-    @Operation(summary = "编辑线索池")
+    @Operation(summary = "编辑公海池")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void update(@Validated @RequestBody CustomerPoolSaveRequest request) {
         customerPoolService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
-    @Operation(summary = "删除线索池")
+    @Operation(summary = "删除公海池")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void delete(@PathVariable String id) {
         customerPoolService.delete(id, SessionUtils.getUserId());
     }
 
     @GetMapping("/switch/{id}")
-    @Operation(summary = "启用/禁用线索池")
+    @Operation(summary = "启用/禁用公海池")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void switchStatus(@PathVariable String id) {
         customerPoolService.switchStatus(id, SessionUtils.getUserId());

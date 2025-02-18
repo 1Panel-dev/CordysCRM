@@ -3,6 +3,7 @@ package io.cordys.crm.customer.controller;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.CustomerPool;
@@ -51,6 +52,8 @@ public class CustomerPoolControllerTests extends BaseTest {
 		CustomerPool customerPool = createCustomerPool();
 		CustomerPoolSaveRequest request = new CustomerPoolSaveRequest();
 		BeanUtils.copyBean(request, customerPool);
+		request.setOwnerIds(List.of("cc"));
+		request.setScopeIds(List.of("cc"));
 		CustomerPoolPickRuleSaveRequest pickRule = CustomerPoolPickRuleSaveRequest.builder()
 				.limitOnNumber(true).limitPreOwner(true).pickNumber(1).pickIntervalDays(1).build();
 		request.setPickRule(pickRule);
@@ -78,6 +81,8 @@ public class CustomerPoolControllerTests extends BaseTest {
 		customerPool.setId(testCustomerPool.getId());
 		CustomerPoolSaveRequest request = new CustomerPoolSaveRequest();
 		BeanUtils.copyBean(request, customerPool);
+		request.setOwnerIds(List.of("cc"));
+		request.setScopeIds(List.of("cc"));
 		CustomerPoolPickRuleSaveRequest pickRule = CustomerPoolPickRuleSaveRequest.builder()
 				.limitOnNumber(true).limitPreOwner(true).pickNumber(1).pickIntervalDays(1).build();
 		request.setPickRule(pickRule);
@@ -87,9 +92,9 @@ public class CustomerPoolControllerTests extends BaseTest {
 		MvcResult mvcResult = this.requestPost("/customer-pool/update", request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer_pool_access_fail"));
 		// update owner id by sql
-		customerPool.setOwnerId("admin");
+		customerPool.setOwnerId(JSON.toJSONString(List.of("admin")));
 		customerPoolMapper.updateById(customerPool);
-		request.setOwnerId("admin");
+		request.setOwnerIds(List.of("admin"));
 		this.requestPostWithOk("/customer-pool/update", request);
 	}
 
@@ -127,9 +132,8 @@ public class CustomerPoolControllerTests extends BaseTest {
 	private CustomerPool createCustomerPool() {
 		CustomerPool customerPool = new CustomerPool();
 		customerPool.setName("default-ct-pool");
-		customerPool.setScopeId("default-dp");
+		customerPool.setScopeId(JSON.toJSONString(List.of("default-dp")));
 		customerPool.setOrganizationId(DEFAULT_ORGANIZATION_ID);
-		customerPool.setOwnerId("default-owner");
 		customerPool.setEnable(true);
 		customerPool.setAuto(true);
 		return customerPool;
