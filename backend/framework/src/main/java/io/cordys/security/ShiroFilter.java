@@ -54,6 +54,7 @@ public class ShiroFilter {
         filterChainDefinitionMap.put("/anonymous/**", "anon");
         filterChainDefinitionMap.put("/system/version/current", "anon");
         filterChainDefinitionMap.put("/sse/**", "anon");
+        filterChainDefinitionMap.put("/sso/callback/**", "anon");
 
         return filterChainDefinitionMap;
     }
