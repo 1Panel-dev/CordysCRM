@@ -30,7 +30,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author jianxing
  * @date 2025-01-13 17:33:23
  */
@@ -72,6 +71,10 @@ public class UserRoleService {
     }
 
     private Map<String, String> getUserAvatarMap(List<RoleUserListResponse> users) {
+        if (CollectionUtils.isEmpty(users)) {
+            return Map.of();
+        }
+
         List<String> userIds = users.stream().map(RoleUserListResponse::getUserId).toList();
         return userExtendMapper.selectByIds(userIds.toArray(new String[0]))
                 .stream()
@@ -79,8 +82,7 @@ public class UserRoleService {
     }
 
     private Map<String, String> getDeptNameMap(List<RoleUserListResponse> users) {
-        Set<String> deptIds = users.stream().map(RoleUserListResponse::getDepartmentId).collect(Collectors.toSet());
-        return departmentMapper.selectByIds(deptIds.toArray(new String[0]))
+        return departmentMapper.selectByIds(users.stream().map(RoleUserListResponse::getDepartmentId).distinct().toArray(String[]::new))
                 .stream()
                 .collect(Collectors.toMap(Department::getId, Department::getName));
     }
