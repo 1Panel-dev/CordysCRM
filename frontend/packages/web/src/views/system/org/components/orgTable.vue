@@ -31,7 +31,7 @@
       v-model:show="showSyncWeChatModal"
       :title="t('system.business.WE_COM')"
       :integration="currentIntegration"
-      @init-sync="updateConfig"
+      @init-sync="initIntegration()"
     />
     <MemberDetail
       v-model:show="showDetailModal"
@@ -127,7 +127,6 @@
   /**
    * 设置同步微信
    */
-
   const showSyncWeChatModal = ref<boolean>(false);
   const currentIntegration = ref<ConfigSynchronization>({
     type: CompanyTypeEnum.WECOM,
@@ -139,9 +138,6 @@
 
   async function settingWeChat(e: MouseEvent) {
     e.stopPropagation();
-    const res = await getConfigSynchronization();
-    const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
-    currentIntegration.value = { ...currentIntegration.value, ...weChatConfig };
     showSyncWeChatModal.value = true;
   }
 
@@ -200,6 +196,37 @@
           : null,
       ]
     );
+  }
+
+  const moreActions: ActionsItem[] = [
+    {
+      label: t('org.enterpriseWhatSync'),
+      key: 'sync',
+      render: renderSync(),
+    },
+    {
+      label: t('common.import'),
+      key: 'import',
+    },
+
+    {
+      label: t('common.export'),
+      key: 'export',
+    },
+  ];
+
+  // 初始化企业微信配置
+  async function initIntegration() {
+    try {
+      const res = await getConfigSynchronization();
+      const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
+      currentIntegration.value = { ...currentIntegration.value, ...weChatConfig };
+      isHasConfig.value = !!weChatConfig && weChatConfig.enable;
+      moreActions[0].render = renderSync();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   const tableRefreshId = ref(0);
@@ -322,29 +349,6 @@
       default:
         break;
     }
-  }
-
-  const moreActions: ActionsItem[] = [
-    {
-      label: t('org.enterpriseWhatSync'),
-      key: 'sync',
-      render: renderSync(),
-    },
-    {
-      label: t('common.import'),
-      key: 'import',
-    },
-
-    {
-      label: t('common.export'),
-      key: 'export',
-    },
-  ];
-
-  // 更新配置
-  function updateConfig() {
-    isHasConfig.value = true;
-    moreActions[0].render = renderSync();
   }
 
   const groupList = ref([
@@ -867,6 +871,10 @@
       importLoading.value = false;
     }
   }
+
+  onBeforeMount(() => {
+    initIntegration();
+  });
 
   watch(
     () => props.activeNode,

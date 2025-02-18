@@ -24,23 +24,21 @@
 
   const { t } = useI18n();
 
-  const props = withDefaults(
-    defineProps<{
-      value: string | number | Array<string | number> | null;
-      mode?: 'remote' | 'static';
-      labelField?: string;
-      valueField?: string;
-      placeholder?: string;
-      options?: SelectMixedOption[];
-      fetchApi?: (params: Record<string, any>) => Promise<Record<string, any>[]>;
-      params?: Record<string, any>;
-    }>(),
-    {
-      mode: 'static',
-      labelField: 'label',
-      valueField: 'value',
-    }
-  );
+  export interface CrmUserSelectProps {
+    mode?: 'remote' | 'static';
+    labelField?: string;
+    valueField?: string;
+    placeholder?: string;
+    options?: SelectMixedOption[];
+    fetchApi?: (params: Record<string, any>) => Promise<Record<string, any>[]>;
+    params?: Record<string, any>;
+  }
+
+  const props = withDefaults(defineProps<CrmUserSelectProps>(), {
+    mode: 'static',
+    labelField: 'label',
+    valueField: 'value',
+  });
 
   const emit = defineEmits<{
     (

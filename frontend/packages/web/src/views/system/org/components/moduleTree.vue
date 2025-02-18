@@ -29,6 +29,7 @@
     :keyword="keyword"
     :render-prefix="renderPrefixDom"
     :node-more-actions="nodeMoreOptions"
+    :filter-more-action-func="filterMoreActionFunc"
     :render-extra="renderExtraDom"
     :virtual-scroll-props="{ virtualScroll: false, virtualScrollHeight: 'calc(100vh - 176px)' }"
     :field-names="{
@@ -117,6 +118,10 @@
       danger: true,
     },
   ]);
+
+  function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
+    return node.parentId === 'NONE' ? items.filter((e) => e.key !== 'delete' && !e.type) : items;
+  }
 
   // 获取模块树
   async function initTree(isInit = false) {
