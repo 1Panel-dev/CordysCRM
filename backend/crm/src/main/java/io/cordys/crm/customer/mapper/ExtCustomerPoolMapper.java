@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.mapper;
 
+import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
@@ -16,7 +17,7 @@ public interface ExtCustomerPoolMapper {
 	 * @param orgId 组织ID
 	 * @return 公海池列表
 	 */
-	List<CustomerPoolDTO> list(@Param("request") CustomerPoolPageRequest request, @Param("orgId") String orgId);
+	List<CustomerPoolDTO> list(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 
 	/**
 	 * 更新公海池领取规则

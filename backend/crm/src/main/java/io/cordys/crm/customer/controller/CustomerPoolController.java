@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
 import io.cordys.crm.customer.dto.request.CustomerPoolPageRequest;
@@ -32,7 +33,7 @@ public class CustomerPoolController {
     @PostMapping("/page")
     @Operation(summary = "分页获取公海池")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-    public Pager<List<CustomerPoolDTO>> page(CustomerPoolPageRequest request) {
+    public Pager<List<CustomerPoolDTO>> page(BasePageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
                 StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
         return PageUtils.setPageInfo(page, customerPoolService.page(request, OrganizationContext.getOrganizationId()));

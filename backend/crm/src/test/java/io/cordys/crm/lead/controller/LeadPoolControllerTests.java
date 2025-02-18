@@ -1,6 +1,7 @@
 package io.cordys.crm.lead.controller;
 
 import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
@@ -9,7 +10,8 @@ import io.cordys.crm.lead.domain.LeadPoolPickRule;
 import io.cordys.crm.lead.domain.LeadPoolRecycleRule;
 import io.cordys.crm.lead.domain.LeadPoolRelation;
 import io.cordys.crm.lead.dto.LeadPoolDTO;
-import io.cordys.crm.lead.dto.request.LeadPoolPageRequest;
+import io.cordys.crm.lead.dto.request.LeadPoolPickRuleSaveRequest;
+import io.cordys.crm.lead.dto.request.LeadPoolRecycleRuleSaveRequest;
 import io.cordys.crm.lead.dto.request.LeadPoolSaveRequest;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -52,17 +54,20 @@ public class LeadPoolControllerTests extends BaseTest {
 		LeadPool leadPool = createLeadPool();
 		LeadPoolSaveRequest request = new LeadPoolSaveRequest();
 		BeanUtils.copyBean(request, leadPool);
-		request.setPickRule(createPickRule());
-		request.setRecycleRule(createRecycleRule());
+		LeadPoolPickRuleSaveRequest pickRule = LeadPoolPickRuleSaveRequest.builder()
+				.pickNumber(1).limitOnNumber(true).pickIntervalDays(1).limitPreOwner(true).build();
+		request.setPickRule(pickRule);
+		LeadPoolRecycleRuleSaveRequest recycleRule = LeadPoolRecycleRuleSaveRequest.builder().expireNotice(true).noticeDays(10).build();
+		request.setRecycleRule(recycleRule);
 		this.requestPostWithOk("/lead-pool/add", request);
 	}
 
 	@Test
 	@Order(3)
 	void page() throws Exception {
-		LeadPoolPageRequest pageRequest = createPageRequest();
-		pageRequest.setSort(Map.of("name", "desc"));
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/lead-pool/page", pageRequest);
+		BasePageRequest request = createPageRequest();
+		request.setSort(Map.of("name", "desc"));
+		MvcResult mvcResult = this.requestPostWithOkAndReturn("/lead-pool/page", request);
 		Pager<List<LeadPoolDTO>> result = getPageResult(mvcResult, LeadPoolDTO.class);
 		assert result.getList().size() == 1;
 		testLeadPool = result.getList().getFirst();
@@ -75,11 +80,10 @@ public class LeadPoolControllerTests extends BaseTest {
 		leadPool.setId(testLeadPool.getId());
 		LeadPoolSaveRequest request = new LeadPoolSaveRequest();
 		BeanUtils.copyBean(request, leadPool);
-		LeadPoolPickRule pickRule = createPickRule();
-		pickRule.setId("default-pick-rule");
+		LeadPoolPickRuleSaveRequest pickRule = LeadPoolPickRuleSaveRequest.builder()
+				.pickNumber(1).limitOnNumber(true).pickIntervalDays(1).limitPreOwner(true).build();
 		request.setPickRule(pickRule);
-		LeadPoolRecycleRule recycleRule = createRecycleRule();
-		recycleRule.setId("default-recycle-rule");
+		LeadPoolRecycleRuleSaveRequest recycleRule = LeadPoolRecycleRuleSaveRequest.builder().expireNotice(true).noticeDays(10).build();
 		request.setRecycleRule(recycleRule);
 		MvcResult mvcResult = this.requestPost("/lead-pool/update", request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("lead_pool_access_fail"));
@@ -114,8 +118,8 @@ public class LeadPoolControllerTests extends BaseTest {
 		this.requestGetWithOk("/lead-pool/delete/" + testLeadPool.getId());
 	}
 
-	private LeadPoolPageRequest createPageRequest() {
-		LeadPoolPageRequest request = new LeadPoolPageRequest();
+	private BasePageRequest createPageRequest() {
+		BasePageRequest request = new BasePageRequest();
 		request.setCurrent(1);
 		request.setPageSize(10);
 		return request;
@@ -130,22 +134,6 @@ public class LeadPoolControllerTests extends BaseTest {
 		leadPool.setEnable(true);
 		leadPool.setAuto(true);
 		return leadPool;
-	}
-
-	private LeadPoolPickRule createPickRule() {
-		LeadPoolPickRule pickRule = new LeadPoolPickRule();
-		pickRule.setPickNumber(1);
-		pickRule.setLimitOnNumber(true);
-		pickRule.setLimitPreOwner(true);
-		pickRule.setPickIntervalDays(1);
-		return pickRule;
-	}
-
-	private LeadPoolRecycleRule createRecycleRule() {
-		LeadPoolRecycleRule recycleRule = new LeadPoolRecycleRule();
-		recycleRule.setExpireNotice(true);
-		recycleRule.setNoticeDays(10);
-		return recycleRule;
 	}
 
 	private LeadPoolRelation createLeadPoolRelation() {

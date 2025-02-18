@@ -5,8 +5,9 @@ import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.lead.dto.LeadPoolDTO;
-import io.cordys.crm.lead.dto.request.LeadPoolPageRequest;
 import io.cordys.crm.lead.dto.request.LeadPoolSaveRequest;
 import io.cordys.crm.lead.service.LeadPoolService;
 import io.cordys.security.SessionUtils;
@@ -32,7 +33,7 @@ public class LeadPoolController {
 	@PostMapping("/page")
 	@Operation(summary = "分页获取线索池")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE}, logical = Logical.OR)
-	public Pager<List<LeadPoolDTO>> page(@Validated @RequestBody LeadPoolPageRequest request) {
+	public Pager<List<LeadPoolDTO>> page(@Validated @RequestBody BasePageRequest request) {
 		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
 				StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
 		return PageUtils.setPageInfo(page, leadPoolService.page(request));
@@ -42,14 +43,14 @@ public class LeadPoolController {
 	@Operation(summary = "新增线索池")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE}, logical = Logical.OR)
 	public void add(@Validated @RequestBody LeadPoolSaveRequest request) {
-		leadPoolService.save(request, SessionUtils.getUserId());
+		leadPoolService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/update")
 	@Operation(summary = "编辑线索池")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE}, logical = Logical.OR)
 	public void update(@Validated @RequestBody LeadPoolSaveRequest request) {
-		leadPoolService.save(request, SessionUtils.getUserId());
+		leadPoolService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
 	@GetMapping("/delete/{id}")

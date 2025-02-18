@@ -1,6 +1,7 @@
 package io.cordys.crm.customer.service;
 
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
@@ -41,7 +42,7 @@ public class CustomerPoolService {
 	 * @param request 分页参数
 	 * @return 公海池列表
 	 */
-	public List<CustomerPoolDTO> page(CustomerPoolPageRequest request, String organizationId) {
+	public List<CustomerPoolDTO> page(BasePageRequest request, String organizationId) {
 		return extCustomerPoolMapper.list(request, organizationId);
 	}
 

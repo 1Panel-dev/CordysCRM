@@ -1,6 +1,7 @@
 package io.cordys.crm.lead.service;
 
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
@@ -10,7 +11,6 @@ import io.cordys.crm.lead.domain.LeadPoolPickRule;
 import io.cordys.crm.lead.domain.LeadPoolRecycleRule;
 import io.cordys.crm.lead.domain.LeadPoolRelation;
 import io.cordys.crm.lead.dto.LeadPoolDTO;
-import io.cordys.crm.lead.dto.request.LeadPoolPageRequest;
 import io.cordys.crm.lead.dto.request.LeadPoolSaveRequest;
 import io.cordys.crm.lead.mapper.ExtLeadPoolMapper;
 import io.cordys.crm.system.domain.Department;
@@ -41,10 +41,6 @@ public class LeadPoolService {
 	@Resource
 	private BaseMapper<LeadPoolRelation> leadPoolRelationMapper;
 	@Resource
-	private BaseMapper<User> userMapper;
-	@Resource
-	private BaseMapper<Department> departmentMapper;
-	@Resource
 	private ExtLeadPoolMapper extLeadPoolMapper;
 
 	/**
@@ -52,38 +48,26 @@ public class LeadPoolService {
 	 * @param request 分页参数
 	 * @return 线索池列表
 	 */
-	public List<LeadPoolDTO> page(LeadPoolPageRequest request) {
-		List<LeadPoolDTO> leadPools = extLeadPoolMapper.list(request, OrganizationContext.getOrganizationId());
-		if (CollectionUtils.isEmpty(leadPools)) {
-			return new ArrayList<>();
-		}
-		List<String> ownerIds = leadPools.stream().map(LeadPoolDTO::getOwnerId).toList();
-		List<String> scopeIds = leadPools.stream().map(LeadPoolDTO::getScopeId).toList();
-		List<String> userIds = ListUtils.union(ownerIds, scopeIds).stream().distinct().toList();
-		List<User> users = userMapper.selectByIds(userIds.toArray(new String[0]));
-		Map<String, String> userMap = users.stream().collect(Collectors.toMap(User::getId, User::getName));
-		List<Department> departments = departmentMapper.selectByIds(scopeIds.toArray(new String[0]));
-		Map<String, String> departmentMap = departments.stream().collect(Collectors.toMap(Department::getId, Department::getName));
-		return leadPools.stream().peek(leadPool -> {
-			leadPool.setOwnerName(userMap.get(leadPool.getOwnerId()));
-			leadPool.setScopeName(departmentMap.containsKey(leadPool.getScopeId()) ?
-					departmentMap.get(leadPool.getScopeId()) : userMap.get(leadPool.getScopeId()));
-		}).toList();
+	public List<LeadPoolDTO> page(BasePageRequest request) {
+		return extLeadPoolMapper.list(request, OrganizationContext.getOrganizationId());
 	}
 
 	/**
 	 * 保存线索池
 	 * @param request 保存参数
 	 */
-	public void save(LeadPoolSaveRequest request, String currentUserId) {
+	public void save(LeadPoolSaveRequest request, String currentUserId, String currentOrgId) {
 		LeadPool pool = new LeadPool();
 		BeanUtils.copyBean(pool, request);
+		pool.setOrganizationId(currentOrgId);
 		pool.setUpdateTime(System.currentTimeMillis());
 		pool.setUpdateUser(currentUserId);
-		LeadPoolPickRule pickRule = request.getPickRule();
+		LeadPoolPickRule pickRule = new LeadPoolPickRule();
+		BeanUtils.copyBean(pickRule, request.getPickRule());
 		pickRule.setUpdateTime(System.currentTimeMillis());
 		pickRule.setUpdateUser(currentUserId);
-		LeadPoolRecycleRule recycleRule = request.getRecycleRule();
+		LeadPoolRecycleRule recycleRule = new LeadPoolRecycleRule();
+		BeanUtils.copyBean(recycleRule, request.getRecycleRule());
 		recycleRule.setUpdateTime(System.currentTimeMillis());
 		recycleRule.setUpdateUser(currentUserId);
 		if (pool.getId() == null) {
@@ -105,7 +89,9 @@ public class LeadPoolService {
 			LeadPool oldPool = checkPoolExist(pool.getId());
 			checkPoolOwner(oldPool, currentUserId);
 			leadPoolMapper.update(pool);
+			pickRule.setPoolId(pool.getId());
 			leadPoolPickRuleMapper.update(pickRule);
+			recycleRule.setPoolId(pool.getId());
 			leadPoolRecycleRuleMapper.update(recycleRule);
 		}
 	}

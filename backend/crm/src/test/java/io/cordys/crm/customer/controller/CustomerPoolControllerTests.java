@@ -1,15 +1,13 @@
 package io.cordys.crm.customer.controller;
 
 import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.CustomerPool;
-import io.cordys.crm.customer.domain.CustomerPoolPickRule;
-import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.domain.CustomerPoolRelation;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
-import io.cordys.crm.customer.dto.request.CustomerPoolPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolPickRuleSaveRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolRecycleRuleSaveRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolSaveRequest;
@@ -65,9 +63,9 @@ public class CustomerPoolControllerTests extends BaseTest {
 	@Test
 	@Order(3)
 	void page() throws Exception {
-		CustomerPoolPageRequest pageRequest = createPageRequest();
-		pageRequest.setSort(Map.of("name", "desc"));
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/customer-pool/page", pageRequest);
+		BasePageRequest request = createPageRequest();
+		request.setSort(Map.of("name", "desc"));
+		MvcResult mvcResult = this.requestPostWithOkAndReturn("/customer-pool/page", request);
 		Pager<List<CustomerPoolDTO>> result = getPageResult(mvcResult, CustomerPoolDTO.class);
 		assert result.getList().size() == 1;
 		testCustomerPool = result.getList().getFirst();
@@ -119,8 +117,8 @@ public class CustomerPoolControllerTests extends BaseTest {
 		this.requestGetWithOk("/customer-pool/delete/" + testCustomerPool.getId());
 	}
 
-	private CustomerPoolPageRequest createPageRequest() {
-		CustomerPoolPageRequest request = new CustomerPoolPageRequest();
+	private BasePageRequest createPageRequest() {
+		BasePageRequest request = new BasePageRequest();
 		request.setCurrent(1);
 		request.setPageSize(10);
 		return request;
