@@ -37,7 +37,10 @@ public class ShiroFilter {
         filterChainDefinitionMap.put("/fonts/**", "anon");
         filterChainDefinitionMap.put("/display/info", "anon");
         filterChainDefinitionMap.put("/file/preview/**", "anon");
+
+        // 暂定 favicon.ico 和 logo.png 为匿名访问
         filterChainDefinitionMap.put("/favicon.ico", "anon");
+        filterChainDefinitionMap.put("/logo.png", "anon");
         filterChainDefinitionMap.put("/base-display/**", "anon");
 
         // Swagger API 文档相关路径
