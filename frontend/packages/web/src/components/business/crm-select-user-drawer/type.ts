@@ -1,11 +1,13 @@
+import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+
 export interface Option {
   label: string;
   value: string;
   children?: Option[];
 }
 
-export interface SelectedUsersParams {
-  userIds: string[];
-  roleIds: string[];
-  deptIds: string[];
+export interface SelectedUsersItem {
+  id: string;
+  name: string;
+  type: MemberSelectTypeEnum;
 }

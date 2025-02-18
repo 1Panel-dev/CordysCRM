@@ -5,6 +5,8 @@ export enum FieldTypeEnum {
   DATE_TIME = 'dateTime',
   RADIO = 'radio',
   CHECKBOX = 'checkbox',
+  SELECT = 'select',
+  USER_TAG_SELECTOR = 'userTagSelector',
   SELECT_SINGLE = 'selectSingle',
   SELECT_MULTIPLE = 'selectMultiple',
   MEMBER_SINGLE = 'memberSingle',

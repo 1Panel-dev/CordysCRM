@@ -2,7 +2,7 @@
   <CrmDrawer
     v-model:show="visible"
     :width="800"
-    :title="t('module.businessManage.businessCloseRule')"
+    :title="props.title"
     :ok-text="t('common.save')"
     :loading="loading"
     @confirm="confirm"
@@ -29,6 +29,10 @@
 
   const { t } = useI18n();
 
+  const props = defineProps<{
+    title: string;
+  }>();
+
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
@@ -40,7 +44,7 @@
   const defaultForm = {
     list: [
       {
-        member: '22',
+        member: [],
         Maximum: 33,
       },
     ],
@@ -50,7 +54,7 @@
   const formItemModel: Ref<FormItemModel[]> = ref([
     {
       path: 'member',
-      type: FieldTypeEnum.INPUT,
+      type: FieldTypeEnum.USER_TAG_SELECTOR,
       label: t('module.capacitySet.departmentOrMember'),
       rule: [
         {
@@ -59,7 +63,6 @@
         },
         { notRepeat: true, message: t('module.capacitySet.repeatMsg') },
       ],
-      inputProps: {},
     },
     {
       path: 'Maximum',

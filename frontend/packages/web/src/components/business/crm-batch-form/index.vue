@@ -49,6 +49,17 @@
                 :placeholder="t('common.pleaseInput')"
                 v-bind="model.numberProps"
               />
+              <n-select
+                v-if="model.type === FieldTypeEnum.SELECT"
+                v-model:value="element[model.path]"
+                clearable
+                :placeholder="t('common.pleaseSelect')"
+                v-bind="model.selectProps"
+              />
+              <CrmUserTagSelector
+                v-if="model.type === FieldTypeEnum.USER_TAG_SELECTOR"
+                v-model:selected-list="element[model.path]"
+              />
             </n-form-item>
             <n-button
               :disabled="form.list.length === 1"
@@ -81,12 +92,24 @@
 </template>
 
 <script setup lang="ts">
-  import { FormInst, FormItemRule, NButton, NForm, NFormItem, NIcon, NInput, NInputNumber, NScrollbar } from 'naive-ui';
+  import {
+    FormInst,
+    FormItemRule,
+    NButton,
+    NForm,
+    NFormItem,
+    NIcon,
+    NInput,
+    NInputNumber,
+    NScrollbar,
+    NSelect,
+  } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
   import { cloneDeep } from 'lodash-es';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
+  import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 
@@ -116,10 +139,14 @@
   const form = ref<Record<string, any>>({ list: [], allOr: 'all' });
   const formItem: Record<string, any> = {};
 
+  function valueIsArray(listItem: FormItemModel) {
+    return listItem.selectProps?.multiple || listItem.type === FieldTypeEnum.USER_TAG_SELECTOR;
+  }
+
   // 初始化表单数据
   function initForm() {
     props.models.forEach((e) => {
-      formItem[e.path] = e.defaultValue ?? (e.type === FieldTypeEnum.INPUT_NUMBER ? undefined : '');
+      formItem[e.path] = valueIsArray(e) ? [] : undefined;
     });
     form.value.list = props.defaultList?.length ? cloneDeep(props.defaultList) : [{ ...formItem }];
   }
@@ -132,12 +159,16 @@
     form.value.allOr = form.value.allOr === 'all' ? 'or' : 'all';
   }
 
-  function fieldNotRepeat(value: string | undefined, index: number, field: string, msg?: string) {
+  function fieldNotRepeat(value: any[] | string | undefined, index: number, field: string, msg?: string) {
     if (value === '' || value === undefined) return;
+
+    const fieldConfig = props.models.find((model) => model.path === field);
     // 遍历其他同 path 名的输入框的值，检查是否与当前输入框的值重复
     for (let i = 0; i < form.value.list.length; i++) {
-      if (i !== index && form.value.list[i][field].trim() === value) {
-        return new Error(t(msg || ''));
+      if (i !== index) {
+        if (fieldConfig && !valueIsArray(fieldConfig) && form.value.list[i][field] === value) {
+          return new Error(t(msg || ''));
+        }
       }
     }
   }

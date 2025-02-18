@@ -39,7 +39,7 @@
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
-  import { Option, SelectedUsersParams } from '@/components/business/crm-select-user-drawer/type';
+  import { Option, SelectedUsersItem } from '@/components/business/crm-select-user-drawer/type';
   import roleTreeNodePrefix from './roleTreeNodePrefix.vue';
 
   import { useI18n } from '@/hooks/useI18n';
@@ -63,7 +63,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'confirm', params: SelectedUsersParams): void;
+    (e: 'confirm', params: SelectedUsersItem[]): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
@@ -87,15 +87,11 @@
   ];
 
   const addMembers = ref<string[]>([]);
-  const userIds = ref<string[]>([]);
-  const roleIds = ref<string[]>([]);
-  const deptIds = ref<string[]>([]);
+  const selectedNodes = ref<SelectedUsersItem[]>([]);
 
   function handleCancelAdd() {
     addMembers.value = [];
-    userIds.value = [];
-    roleIds.value = [];
-    deptIds.value = [];
+    selectedNodes.value = [];
     addMemberType.value = MemberSelectTypeEnum.ORG;
   }
 
@@ -138,12 +134,7 @@
   }
 
   async function handleAddConfirm() {
-    const params: SelectedUsersParams = {
-      userIds: userIds.value,
-      roleIds: roleIds.value,
-      deptIds: deptIds.value,
-    };
-    emit('confirm', params);
+    emit('confirm', selectedNodes.value);
   }
 
   const options = computed(() => {
@@ -196,19 +187,25 @@
       },
       onUpdateSelectedKeys: (selectedKeys: Array<string | number>, nodes) => {
         onCheck(selectedKeys);
-        userIds.value = [];
-        roleIds.value = [];
-        deptIds.value = [];
+        selectedNodes.value = [];
+
         nodes.forEach((node) => {
-          if (node) {
-            if (node.nodeType === DeptNodeTypeEnum.USER || addMemberType.value === 'member') {
-              userIds.value.push(node.value as string);
-            } else if (node.nodeType === DeptNodeTypeEnum.ROLE) {
-              roleIds.value.push(node.value as string);
-            } else if (node.nodeType === DeptNodeTypeEnum.ORG) {
-              deptIds.value.push(node.value as string);
-            }
+          if (!node) return;
+
+          let type: MemberSelectTypeEnum;
+          if (node.nodeType === DeptNodeTypeEnum.USER || addMemberType.value === MemberSelectTypeEnum.MEMBER) {
+            type = MemberSelectTypeEnum.MEMBER;
+          } else if (node.nodeType === DeptNodeTypeEnum.ROLE) {
+            type = MemberSelectTypeEnum.ROLE;
+          } else {
+            type = MemberSelectTypeEnum.ORG;
           }
+
+          selectedNodes.value.push({
+            id: node.value as string,
+            name: node.label as string,
+            type,
+          });
         });
       },
     });

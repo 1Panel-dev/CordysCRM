@@ -1,0 +1,78 @@
+<template>
+  <n-select
+    v-model:value="modelValue"
+    filterable
+    multiple
+    tag
+    :placeholder="t('common.pleaseSelect')"
+    :render-tag="renderTag"
+    :show-arrow="false"
+    :show="false"
+    @click="handleShowAddAdmin"
+  />
+  <!-- TODO MemberApiTypeEnum和params 联调 -->
+  <CrmSelectUserDrawer
+    ref="crmSelectUserDrawerRef"
+    v-model:visible="showSelectAdminDrawer"
+    :loading="false"
+    :title="t('role.addMember')"
+    :api-type-key="MemberApiTypeEnum.SYSTEM_ROLE"
+    :base-params="{ roleId: 'org_admin' }"
+    @confirm="handleAddAdminConfirm"
+  />
+</template>
+
+<script setup lang="ts">
+  import { NSelect, SelectOption } from 'naive-ui';
+
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmSelectUserDrawer from '@/components/business/crm-select-user-drawer/index.vue';
+  import type { SelectedUsersItem } from '@/components/business/crm-select-user-drawer/type';
+
+  import { useI18n } from '@/hooks/useI18n';
+
+  import { MemberApiTypeEnum } from '@lib/shared/enums/moduleEnum';
+
+  const { t } = useI18n();
+
+  const selectedList = defineModel<SelectedUsersItem[]>('selectedList', {
+    required: true,
+  });
+
+  const modelValue = ref<string[]>([]);
+
+  const showSelectAdminDrawer = ref(false);
+  const crmSelectUserDrawerRef = ref<InstanceType<typeof CrmSelectUserDrawer>>();
+  function handleShowAddAdmin() {
+    showSelectAdminDrawer.value = true;
+  }
+
+  function handleAddAdminConfirm(params: SelectedUsersItem[]) {
+    selectedList.value = [...selectedList.value, ...params];
+    showSelectAdminDrawer.value = false;
+  }
+  const renderTag = ({ option, handleClose }: { option: SelectOption; handleClose: () => void }) => {
+    return h(
+      CrmTag,
+      {
+        type: 'default',
+        theme: 'dark',
+        closable: true,
+        onClose: () => {
+          handleClose();
+          selectedList.value = selectedList.value.filter((item) => item.id !== option.value);
+        },
+      },
+      {
+        default: () => selectedList.value.find((item) => item.id === option.value)?.name,
+      }
+    );
+  };
+
+  watch(
+    () => selectedList.value,
+    (newVal) => {
+      modelValue.value = newVal.map((item) => item.id);
+    }
+  );
+</script>

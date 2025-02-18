@@ -25,19 +25,12 @@
       <div class="flex">
         <div class="flex-1">
           <n-form-item path="adminId" :label="t('opportunity.admin')">
-            <n-select v-model:value="form.adminId" :placeholder="t('common.pleaseSelect')" :options="adminOptions" />
+            <CrmUserTagSelector v-model:selected-list="form.adminId" />
           </n-form-item>
         </div>
         <div class="flex-1">
           <n-form-item path="userId" :label="t('role.member')">
-            <CrmUserSelect
-              v-model:value="form.userId"
-              value-field="id"
-              label-field="name"
-              mode="remote"
-              filterable
-              :fetch-api="getUserOptions"
-            />
+            <CrmUserTagSelector v-model:selected-list="form.userId" />
           </n-form-item>
         </div>
       </div>
@@ -137,7 +130,6 @@
     NInputNumber,
     NRadio,
     NRadioGroup,
-    NSelect,
     NSpace,
     useMessage,
   } from 'naive-ui';
@@ -146,9 +138,9 @@
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
-  import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
+  import { SelectedUsersItem } from '@/components/business/crm-select-user-drawer/type';
+  import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
-  import { getUserOptions } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
@@ -162,9 +154,6 @@
     (e: 'refresh'): void;
   }>();
 
-  // TODO 联调
-  const adminOptions = ref([]);
-
   const rules: FormRules = {
     name: [{ required: true, message: t('common.notNull', { value: `${t('module.clue.name')}` }) }],
     adminId: [{ required: true, message: t('common.pleaseSelect') }],
@@ -175,15 +164,19 @@
   };
 
   // TODO 类型和字段
-  const form = ref({
+  const form = ref<{
+    adminId: SelectedUsersItem[];
+    userId: SelectedUsersItem[];
+    [key: string]: any;
+  }>({
     id: '',
     name: '',
-    adminId: null,
-    userId: null,
-    ownerCollection: 'limit',
-    dailyCollection: 'limit',
-    autoRecycle: true,
-    expirationReminder: true,
+    adminId: [],
+    userId: [],
+    ownerCollection: 'noLimit',
+    dailyCollection: 'noLimit',
+    autoRecycle: false,
+    expirationReminder: false,
     reminderAdvance: 1,
     formerOwner: 2,
     limitQuantity: 2,
@@ -194,11 +187,17 @@
   const formItemModel: Ref<FormItemModel[]> = ref([
     {
       path: 'member',
-      type: FieldTypeEnum.INPUT,
+      type: FieldTypeEnum.SELECT,
+      selectProps: {
+        options: [],
+      },
     },
     {
       path: 'operator',
-      type: FieldTypeEnum.INPUT,
+      type: FieldTypeEnum.SELECT,
+      selectProps: {
+        options: [],
+      },
     },
     {
       path: 'value',

@@ -35,12 +35,12 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmSelectUserDrawer from '@/components/business/crm-select-user-drawer/index.vue';
-  import { SelectedUsersParams } from '@/components/business/crm-select-user-drawer/type';
+  import { SelectedUsersItem } from '@/components/business/crm-select-user-drawer/type';
 
   import { getRoleMember, relateRoleMember, removeRoleMember } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
 
-  import { MemberApiTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { RoleMemberItem } from '@lib/shared/models/system/role';
 
@@ -188,11 +188,34 @@
   }
 
   const addMemberLoading = ref(false);
-  async function handleAddConfirm(params: SelectedUsersParams) {
+  async function handleAddConfirm(params: SelectedUsersItem[]) {
     try {
       addMemberLoading.value = true;
+      const categorizedIds = params.reduce(
+        (acc, item) => {
+          switch (item.type) {
+            case MemberSelectTypeEnum.MEMBER:
+              acc.userIds.push(item.id);
+              break;
+            case MemberSelectTypeEnum.ROLE:
+              acc.roleIds.push(item.id);
+              break;
+            case MemberSelectTypeEnum.ORG:
+              acc.deptIds.push(item.id);
+              break;
+            default:
+              break;
+          }
+          return acc;
+        },
+        {
+          userIds: [] as string[],
+          roleIds: [] as string[],
+          deptIds: [] as string[],
+        }
+      );
       await relateRoleMember({
-        ...params,
+        ...categorizedIds,
         roleId: props.activeRoleId,
       });
       Message.success(t('common.addSuccess'));

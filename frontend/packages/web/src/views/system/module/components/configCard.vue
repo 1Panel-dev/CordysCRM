@@ -16,7 +16,14 @@
   </div>
   <customManagementFormDrawer v-model:visible="customerManagementFormVisible" />
   <OpportunityCloseRulesDrawer v-model:visible="businessManagementBusinessParamsSetVisible" />
-  <CapacitySetDrawer v-model:visible="customerManagementCapacitySetVisible" />
+  <CapacitySetDrawer
+    v-model:visible="capacitySetVisible"
+    :title="
+      selectKey === ModuleConfigEnum.CUSTOMER_MANAGEMENT
+        ? t('module.customer.capacitySet')
+        : t('module.clue.capacitySet')
+    "
+  />
   <CluePoolDrawer v-model:visible="clueManagementCluePoolVisible" />
 </template>
 
@@ -27,8 +34,8 @@
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CapacitySetDrawer from './capacitySetDrawer.vue';
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
-  import CapacitySetDrawer from './customManagement/capacitySetDrawer.vue';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
 
@@ -178,13 +185,13 @@
     });
   }
 
+  const selectKey = ref('');
   const customerManagementFormVisible = ref(false);
   const customerManagementOpenSeaVisible = ref(false);
-  const customerManagementCapacitySetVisible = ref(false);
+  const capacitySetVisible = ref(false);
 
   const clueManagementFormVisible = ref(false);
   const clueManagementCluePoolVisible = ref(false);
-  const clueManagementCapacitySetVisible = ref(false);
 
   const businessManagementFormVisible = ref(false);
   const businessManagementBusinessParamsSetVisible = ref(false);
@@ -192,6 +199,7 @@
   const productManagementFormVisible = ref(false);
 
   function handleSelect(key: string, item: ModuleConfigItem) {
+    selectKey.value = item.key;
     switch (item.key) {
       case ModuleConfigEnum.CUSTOMER_MANAGEMENT:
         if (key === 'newForm') {
@@ -199,7 +207,7 @@
         } else if (key === 'openSea') {
           customerManagementOpenSeaVisible.value = true;
         } else if (key === 'capacitySet') {
-          customerManagementCapacitySetVisible.value = true;
+          capacitySetVisible.value = true;
         }
         break;
       case ModuleConfigEnum.CLUE_MANAGEMENT:
@@ -208,7 +216,7 @@
         } else if (key === 'cluePool') {
           clueManagementCluePoolVisible.value = true;
         } else if (key === 'capacitySet') {
-          clueManagementCapacitySetVisible.value = true;
+          capacitySetVisible.value = true;
         }
         break;
       case ModuleConfigEnum.BUSINESS_MANAGEMENT:
