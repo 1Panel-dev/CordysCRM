@@ -15,6 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
@@ -34,6 +36,11 @@ public class PersonalCenterControllerTests extends BaseTest {
     @Resource
     private PersonalCenterService personalCenterService;
 
+
+    @Sql(scripts = {"/dml/init_department_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+
     @Test
     @Order(1)
     public void testGet() throws Exception {
@@ -42,7 +49,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         request.setPhone("12345678901");
         request.setGender(true);
         request.setEnable(true);
-        request.setEmail("33@Cordys.com");
+        request.setEmail("3Gyq3@Cordys.com");
         request.setDepartmentId("2222");
         request.setRoleIds(List.of("1", "2"));
         this.requestPost("/user/add", request).andExpect(status().isOk());
@@ -88,11 +95,11 @@ public class PersonalCenterControllerTests extends BaseTest {
         this.requestPost("/personal/center/info/reset?password=Gyq124", null).andExpect(status().is5xxServerError());
 
 
-       // personalCenterService.resetUserPassword("Gyq124",userId);
+       personalCenterService.resetUserPassword("Gyq124",userId);
 
         User user = userMapper.selectByPrimaryKey(userId);
 
-        Assertions.assertFalse(StringUtils.equalsIgnoreCase(CodingUtils.md5("Gyq124"), user.getPassword()));
+        Assertions.assertTrue(StringUtils.equalsIgnoreCase(CodingUtils.md5("Gyq124"), user.getPassword()));
     }
 
 }
