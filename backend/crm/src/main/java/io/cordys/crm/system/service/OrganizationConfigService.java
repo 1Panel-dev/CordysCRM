@@ -14,7 +14,7 @@ import io.cordys.crm.system.constants.OrganizationConfigConstants;
 import io.cordys.crm.system.domain.OrganizationConfig;
 import io.cordys.crm.system.domain.OrganizationConfigDetail;
 import io.cordys.crm.system.dto.response.EmailDTO;
-import io.cordys.crm.system.mail.sender.MailSender;
+import io.cordys.crm.system.utils.MailSender;
 import io.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
 import io.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import io.cordys.mybatis.BaseMapper;

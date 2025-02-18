@@ -1,4 +1,4 @@
-package io.cordys.crm.system.mail.sender;
+package io.cordys.crm.system.utils;
 
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;

@@ -9,7 +9,7 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.dto.response.UserResponse;
-import io.cordys.crm.system.mail.sender.MailSender;
+import io.cordys.crm.system.utils.MailSender;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.StringRedisTemplate;

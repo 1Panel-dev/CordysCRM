@@ -4,7 +4,7 @@ package io.cordys.crm.system.notice.sender.mail;
 import io.cordys.common.util.LogUtils;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.MessageDetailDTO;
-import io.cordys.crm.system.mail.sender.MailSender;
+import io.cordys.crm.system.utils.MailSender;
 import io.cordys.crm.system.notice.common.NoticeModel;
 import io.cordys.crm.system.notice.common.Receiver;
 import io.cordys.crm.system.notice.sender.AbstractNoticeSender;
