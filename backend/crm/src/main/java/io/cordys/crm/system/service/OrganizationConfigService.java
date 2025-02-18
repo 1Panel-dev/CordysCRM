@@ -27,7 +27,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Objects;
 
 @Service
 public class OrganizationConfigService {
@@ -113,66 +113,46 @@ public class OrganizationConfigService {
         return organizationConfigDetail;
     }
 
-    public void testEmailConnection(EmailDTO emailDTO) {
-        JavaMailSenderImpl javaMailSender = null;
+    public void verifyEmailConnection(EmailDTO emailDTO) {
         try {
-            javaMailSender = mailSender.getMailSender(emailDTO);
+            JavaMailSenderImpl javaMailSender = mailSender.getMailSender(emailDTO);
             javaMailSender.testConnection();
+
+            String recipient = emailDTO.getRecipient();
+            if (StringUtils.isBlank(recipient)) {
+                return; // Early exit if recipient is blank
+            }
+
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+            String username = javaMailSender.getUsername();
+            String email = StringUtils.isNotBlank(username) && username.contains("@")
+                    ? username
+                    : username + "@" + Objects.requireNonNull(javaMailSender.getHost()).substring(javaMailSender.getHost().indexOf(".") + 1);
+
+            InternetAddress from = new InternetAddress();
+            String smtpFrom = emailDTO.getFrom();
+            if (StringUtils.isBlank(smtpFrom)) {
+                from.setAddress(email);
+                from.setPersonal(username);
+            } else {
+                from.setAddress(smtpFrom.contains("@") ? smtpFrom : email);
+                from.setPersonal(smtpFrom);
+            }
+            helper.setFrom(from);
+            helper.setSubject("CORDYS CRM 测试邮件");
+
+            LogUtils.info("收件人地址: {}", recipient);
+            helper.setText("这是一封测试邮件，邮件发送成功", true);
+            helper.setTo(recipient);
+
+            javaMailSender.send(mimeMessage);
         } catch (Exception e) {
-            LogUtils.error(e.getMessage(), e);
+            LogUtils.error("邮件发送或连接测试失败: ", e);
             throw new GenericException(Translator.get("email.connection.failed"));
         }
-        String recipient = emailDTO.getRecipient();
-        if (!StringUtils.isBlank(recipient)) {
-            try {
-                MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-                String username = javaMailSender.getUsername();
-                String email;
-                if (username.contains("@")) {
-                    email = username;
-                } else {
-                    String mailHost = javaMailSender.getHost();
-                    String domainName = mailHost.substring(mailHost.indexOf(".") + 1);
-                    email = username + "@" + domainName;
-                }
-                InternetAddress from = new InternetAddress();
-
-                String smtpFrom = emailDTO.getFrom();
-                if (StringUtils.isBlank(smtpFrom)) {
-                    from.setAddress(email);
-                    from.setPersonal(username);
-                } else {
-                    // 指定发件人后，address 应该是邮件服务器验证过的发件人
-                    if (smtpFrom.contains("@")) {
-                        from.setAddress(smtpFrom);
-                    } else {
-                        from.setAddress(email);
-                    }
-                    from.setPersonal(smtpFrom);
-                }
-                helper.setFrom(from);
-
-                LogUtils.debug("发件人地址" + javaMailSender.getUsername());
-                LogUtils.debug("helper" + helper);
-                helper.setSubject("MeterSphere测试邮件");
-
-                LogUtils.info("收件人地址: {}", List.of(recipient));
-                helper.setText("这是一封测试邮件，邮件发送成功", true);
-                helper.setTo(recipient);
-                try {
-                    javaMailSender.send(mimeMessage);
-                } catch (Exception e) {
-                    LogUtils.error("发送邮件失败: ", e);
-                }
-            } catch (Exception e) {
-                LogUtils.error(e);
-                throw new GenericException(Translator.get("email.connection.failed"));
-            }
-        }
     }
-
-
 
 
     /**

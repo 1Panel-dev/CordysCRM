@@ -3,13 +3,10 @@ package io.cordys.crm.system.controller;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.response.EmailDTO;
-import io.cordys.crm.system.dto.response.SyncOrganizationDTO;
 import io.cordys.crm.system.service.OrganizationConfigService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-
-import java.util.List;
 
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
@@ -43,8 +40,8 @@ public class OrganizationConfigController {
     @PostMapping("/test/email")
     @Operation(summary = "系统设置-系统-系统参数-基本设置-邮件设置-测试连接")
     @RequiresPermissions(PermissionConstants.SYSTEM_SETTING_READ)
-    public void testEmailConnection(@Validated @RequestBody EmailDTO emailDTO) {
-        organizationConfigService.testEmailConnection(emailDTO);
+    public void verifyEmailConnection(@Validated @RequestBody EmailDTO emailDTO) {
+        organizationConfigService.verifyEmailConnection(emailDTO);
     }
 
 }
