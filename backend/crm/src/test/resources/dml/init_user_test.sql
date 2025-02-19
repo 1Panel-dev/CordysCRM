@@ -28,5 +28,4 @@ VALUES ('sur_1', 'r_1', '1', 1716175907000, 1716175907000, 'admin', 'admin');
 
 INSERT INTO `sys_department`(`id`, `name`, `organization_id`, `parent_id`, `pos`, `create_time`, `update_time`, `create_user`, `update_user`, `resource`, `resource_id`)
 VALUES
-    ('9', '部门9', '100001', '4', 6, 1736240043609, 1736240043609, 'admin', 'admin', 'INTERNAL', NULL),
-    ('222', '部门222', '100001', '4', 6, 1736240043609, 1736240043609, 'gyq', 'gyq', 'INTERNAL', NULL);
+    ('9', '部门9', '100001', '4', 6, 1736240043609, 1736240043609, 'admin', 'admin', 'INTERNAL', NULL);

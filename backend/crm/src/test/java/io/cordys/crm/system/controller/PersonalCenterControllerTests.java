@@ -2,6 +2,7 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.pager.Pager;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.UserAddRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
@@ -33,13 +34,25 @@ public class PersonalCenterControllerTests extends BaseTest {
 
     @Resource
     private PersonalCenterService personalCenterService;
+    @Resource
+    private BaseMapper<Department> departmentBaseMapper;
 
-    @Sql(scripts = {"/dml/init_user_test.sql"},
-            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
-            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     @Order(1)
     public void testGet() throws Exception {
+        Department department = new Department();
+        department.setId("221");
+        department.setName("部门222");
+        department.setOrganizationId("100001");
+        department.setParentId("4");
+        department.setPos(222L);
+        department.setCreateTime(1736240043609L);
+        department.setUpdateTime(1736240043609L);
+        department.setCreateUser("gyq");
+        department.setUpdateUser("gyq");
+        department.setResource("INTERNAL");
+        department.setResourceId(null);
+        departmentBaseMapper.insert(department);
         UserAddRequest request = new UserAddRequest();
         request.setName("testPassword");
         request.setPhone("12345678911");
@@ -90,7 +103,7 @@ public class PersonalCenterControllerTests extends BaseTest {
 
         this.requestPost("/personal/center/info/reset?password=Gyq124", null).andExpect(status().isOk());
 
-        personalCenterService.resetUserPassword("Gyq124",userId);
+        personalCenterService.resetUserPassword("Gyq124", userId);
 
 
     }
