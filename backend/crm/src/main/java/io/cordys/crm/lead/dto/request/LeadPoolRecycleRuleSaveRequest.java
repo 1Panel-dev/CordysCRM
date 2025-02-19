@@ -22,6 +22,6 @@ public class LeadPoolRecycleRuleSaveRequest {
 	@Schema(description = "操作符")
 	private String operator;
 
-	@Schema(description = "回收条件")
+	@Schema(description = "规则条件集合")
 	private List<RuleConditionDTO> conditions;
 }

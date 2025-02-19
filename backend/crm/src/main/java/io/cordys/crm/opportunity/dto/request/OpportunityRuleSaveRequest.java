@@ -2,10 +2,14 @@ package io.cordys.crm.opportunity.dto.request;
 
 import io.cordys.common.groups.Created;
 import io.cordys.common.groups.Updated;
+import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -23,15 +27,13 @@ public class OpportunityRuleSaveRequest {
 	@Schema(description = "规则名称")
 	private String name;
 
-	@NotBlank
-	@Size(max = 1000)
-	@Schema(description = "管理员ID")
-	private String ownerId;
+	@NotNull
+	@Schema(description = "范围ID集合")
+	private List<String> scopeIds;
 
-	@NotBlank
-	@Size(max = 1000)
-	@Schema(description = "范围ID")
-	private String scopeId;
+	@NotNull
+	@Schema(description = "管理员ID集合")
+	private List<String> ownerIds;
 
 	@NonNull
 	@Schema(description = "是否开启")
@@ -45,8 +47,8 @@ public class OpportunityRuleSaveRequest {
 	@Schema(description = "操作符")
 	private String operator;
 
-	@Schema(description = "回收条件")
-	private String condition;
+	@Schema(description = "规则条件集合")
+	private List<RuleConditionDTO> conditions;
 
 	@NonNull
 	@Schema(description = "到期提醒")
