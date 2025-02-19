@@ -23,6 +23,7 @@ import jodd.util.StringUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,9 +77,13 @@ public class UserRoleService {
         }
 
         List<String> userIds = users.stream().map(RoleUserListResponse::getUserId).toList();
-        return userExtendMapper.selectByIds(userIds.toArray(new String[0]))
+        return userExtendMapper.selectByIds(userIds.toArray(String[]::new))
                 .stream()
-                .collect(Collectors.toMap(UserExtend::getId, UserExtend::getAvatar));
+                .filter(userExtend -> userExtend != null && StringUtils.isNotBlank(userExtend.getId()))
+                .collect(Collectors.toMap(
+                        UserExtend::getId,
+                        userExtend -> StringUtils.defaultIfBlank(userExtend.getAvatar(), "")
+                ));
     }
 
     private Map<String, String> getDeptNameMap(List<RoleUserListResponse> users) {
