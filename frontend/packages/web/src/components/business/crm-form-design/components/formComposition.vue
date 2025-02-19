@@ -7,7 +7,10 @@
       ghost-class="crm-form-design--composition-item-ghost"
       group="crmFormDesign"
       class="crm-form-design--composition-drag-wrapper"
-      :class="[list.length > 0 ? '' : 'border border-dashed', `grid-cols-${props.formConfig.formCols}`]"
+      :class="[list.length > 0 ? '' : 'border border-dashed']"
+      :style="{
+        gridTemplateColumns: `repeat(${props.formConfig.layout}, 1fr)`,
+      }"
       @start="onStart"
     >
       <div
@@ -53,10 +56,16 @@
         {{ t('crmFormDesign.emptyTip') }}
       </div>
     </VueDraggable>
-    <div class="crm-form-design--composition-footer" :class="props.formConfig.footerDirectionClass">
-      <n-button type="primary">{{ formConfig.okText }}</n-button>
-      <n-button type="primary" ghost>{{ formConfig.continueText }}</n-button>
-      <n-button secondary>{{ formConfig.cancelText }}</n-button>
+    <div class="crm-form-design--composition-footer" :class="props.formConfig.optBtnPos">
+      <n-button v-if="formConfig.optBtnContent[0].enable" type="primary">
+        {{ formConfig.optBtnContent[0].text }}
+      </n-button>
+      <n-button v-if="formConfig.optBtnContent[1].enable" type="primary" ghost>
+        {{ formConfig.optBtnContent[1].text }}
+      </n-button>
+      <n-button v-if="formConfig.optBtnContent[2].enable" secondary>
+        {{ formConfig.optBtnContent[2].text }}
+      </n-button>
       <div class="crm-form-design--composition-footer-mask"></div>
     </div>
   </n-form>

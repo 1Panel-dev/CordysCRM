@@ -7,10 +7,14 @@ export interface FieldItem {
 }
 
 export type FormFooterDirection = 'flex-row' | 'flex-row-reverse' | 'justify-center';
+export interface FormActionButton {
+  text: string;
+  enable: boolean;
+}
 export interface FormConfig {
-  formCols: number;
-  okText: string;
-  continueText: string;
-  cancelText: string;
-  footerDirectionClass: FormFooterDirection;
+  layout: number;
+  labelPos: 'vertical' | 'horizontal';
+  inputWidth: 'custom' | 'full';
+  optBtnContent: FormActionButton[];
+  optBtnPos: FormFooterDirection;
 }

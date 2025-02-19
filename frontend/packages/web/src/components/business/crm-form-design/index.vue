@@ -6,15 +6,15 @@
         <formComposition ref="formCompositionRef" v-model:list="list" v-model:field="field" :form-config="formConfig" />
       </div>
     </div>
-    <div class="crm-form-design--right"><attrConfig :field="field" :form-config="formConfig" /></div>
+    <div class="crm-form-design--right"><formAttrConfig :field="field" :form-config="formConfig" /></div>
   </n-scrollbar>
 </template>
 
 <script setup lang="ts">
   import { NScrollbar } from 'naive-ui';
 
-  import attrConfig from './components/attrConfig.vue';
   import fieldComponents from './components/fieldComponents.vue';
+  import formAttrConfig from './components/formAttrConfig/index.vue';
   import formComposition from './components/formComposition.vue';
 
   import { useI18n } from '@/hooks/useI18n';
@@ -33,11 +33,24 @@
   }
 
   const formConfig = ref<FormConfig>({
-    formCols: 4,
-    okText: t('common.save'),
-    continueText: t('common.saveAndContinue'),
-    cancelText: t('common.cancel'),
-    footerDirectionClass: 'flex-row',
+    layout: 1,
+    labelPos: 'vertical',
+    inputWidth: 'custom',
+    optBtnContent: [
+      {
+        text: t('common.save'),
+        enable: true,
+      },
+      {
+        text: t('common.saveAndContinue'),
+        enable: false,
+      },
+      {
+        text: t('common.cancel'),
+        enable: true,
+      },
+    ],
+    optBtnPos: 'flex-row',
   });
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-  <n-tabs v-model:value="configTab" :bar-width="140" justify-content="space-around" animated>
+  <n-tabs v-model:value="configTab" :bar-width="140" justify-content="space-around" type="line" animated>
     <n-tab-pane name="field" :tab="t('crmFormDesign.fieldConfig')">
       <div class="p-[16px]">
         <div v-if="props.field"> field </div>
@@ -8,7 +8,9 @@
         </div>
       </div>
     </n-tab-pane>
-    <n-tab-pane name="form" :tab="t('crmFormDesign.formConfig')"> form </n-tab-pane>
+    <n-tab-pane name="form" :tab="t('crmFormDesign.formConfig')">
+      <formAttr :form-config="formConfig" />
+    </n-tab-pane>
   </n-tabs>
 </template>
 
@@ -16,17 +18,21 @@
   import { NTabPane, NTabs } from 'naive-ui';
 
   import { FormCreateField } from '@/components/business/crm-form-create/types';
+  import formAttr from './formAttr.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 
-  import { FormConfig } from '../types';
+  import { FormConfig } from '../../types';
 
   const props = defineProps<{
     field?: FormCreateField;
-    formConfig: FormConfig;
   }>();
 
   const { t } = useI18n();
+
+  const formConfig = defineModel<FormConfig>('formConfig', {
+    required: true,
+  });
 
   const configTab = ref('field');
 </script>
@@ -41,5 +47,8 @@
 
       padding: 8px 0;
     }
+  }
+  .n-tab-pane {
+    --n-pane-padding-top: 0;
   }
 </style>
