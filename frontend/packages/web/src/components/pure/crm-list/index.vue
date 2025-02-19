@@ -13,7 +13,7 @@
   >
     <template #default="{ item }">
       <div :key="item.key">
-        <slot :item="item">
+        <slot name="item" :item="item">
           <div
             :key="item[props.keyField]"
             :class="[
