@@ -40,7 +40,7 @@ public class PersonalCenterControllerTests extends BaseTest {
     public void testGet() throws Exception {
         UserAddRequest request = new UserAddRequest();
         request.setName("testPassword");
-        request.setPhone("12345678901");
+        request.setPhone("12345678911");
         request.setGender(true);
         request.setEnable(true);
         request.setEmail("3Gyq3@Cordys.com");
@@ -55,7 +55,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn("/user/list", pageRequest);
         Pager<List<UserPageResponse>> result = getPageResult(mvcResult, UserPageResponse.class);
         UserPageResponse first = result.getList().getFirst();
-        userId= first.getUserId();
+        userId = first.getUserId();
     }
 
     @Test
@@ -89,7 +89,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         this.requestPost("/personal/center/info/reset?password=Gyq124", null).andExpect(status().is5xxServerError());
 
 
-       //personalCenterService.resetUserPassword("Gyq124",userId);
+        //personalCenterService.resetUserPassword("Gyq124",userId);
 
         User user = userMapper.selectByPrimaryKey(userId);
 
