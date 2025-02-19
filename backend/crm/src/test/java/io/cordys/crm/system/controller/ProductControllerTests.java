@@ -74,6 +74,7 @@ class ProductControllerTests extends BaseTest {
     void testAdd() throws Exception {
         // 请求成功
         ProductEditRequest request = new ProductEditRequest();
+        request.setName("product");
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Product resultData = getResultData(mvcResult, Product.class);
         Product product = productBaseMapper.selectByPrimaryKey(resultData.getId());
@@ -89,6 +90,7 @@ class ProductControllerTests extends BaseTest {
     void testUpdate() throws Exception {
         // 请求成功
         ProductEditRequest request = new ProductEditRequest();
+        request.setName("product");
         request.setId(addProduct.getId());
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         // 校验权限

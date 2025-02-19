@@ -10,9 +10,7 @@ import java.util.List;
 
 
 /**
- *
- * @author jianxing
- * @date 2025-02-08 16:24:22
+ * @author guoyuqi
  */
 @Data
 public class ProductEditRequest {
@@ -20,6 +18,9 @@ public class ProductEditRequest {
     @Schema(description = "id")
     @Size(max = 32)
     private String id;
+
+    @Schema(description = "name")
+    private String name;
 
     @Schema(description = "自定义字段")
     private List<ModuleFieldValueDTO> moduleFields;

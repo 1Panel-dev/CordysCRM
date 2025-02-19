@@ -15,6 +15,9 @@ public class ProductListResponse {
     @Schema(description = "ID")
     private String id;
 
+    @Schema(description = "产品名称")
+    private String name;
+
     @Schema(description = "创建人")
     private String createUser;
 

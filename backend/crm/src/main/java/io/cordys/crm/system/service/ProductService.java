@@ -99,6 +99,7 @@ public class ProductService {
 
     public Product add(ProductEditRequest request, String userId, String orgId) {
         Product product = BeanUtils.copyBean(new Product(), request);
+        product.setName(request.getName());
         product.setCreateTime(System.currentTimeMillis());
         product.setUpdateTime(System.currentTimeMillis());
         product.setUpdateUser(userId);

@@ -17,6 +17,9 @@ public class ProductGetResponse {
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private String id;
 
+    @Schema(description = "产品名称")
+    private String name;
+
     @Schema(description = "创建人")
     private String createUser;
 
