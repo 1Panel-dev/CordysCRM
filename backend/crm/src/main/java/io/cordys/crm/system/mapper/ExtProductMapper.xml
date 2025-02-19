@@ -4,7 +4,7 @@
 <mapper namespace="io.cordys.crm.system.mapper.ExtProductMapper">
 
     <select id="list" resultType="io.cordys.crm.system.dto.response.ProductListResponse">
-        select id, create_time, update_time, create_user, update_user
+        select *
         from product
         where organization_id = #{orgId}
     </select>

@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 class ProductControllerTests extends BaseTest {
     private static final String BASE_PATH = "/product/";
 
-    protected static final String MODULE_FIELD = "module/field";
+    protected static final String MODULE_FORM = "module/form";
 
     private static Product addProduct;
 
@@ -44,21 +44,17 @@ class ProductControllerTests extends BaseTest {
         return BASE_PATH;
     }
 
-    // @Test
-    // @Order(0)
-    // void testModuleField() throws Exception {
-    //     MvcResult mvcResult = this.requestGetWithOkAndReturn(MODULE_FIELD);
-    //     List<ModuleFieldDTO> moduleFields = getResultDataArray(mvcResult, ModuleFieldDTO.class);
-    //     moduleFields.forEach(moduleField -> {
-    //         Assertions.assertEquals(moduleField.getModuleId(), ModuleKey.CUSTOMER);
-    //     });
-    //
-    //     // 校验权限
-    //     requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, MODULE_FIELD);
-    // }
-
     @Test
     @Order(0)
+    void testModuleField() throws Exception {
+        this.requestGetWithOkAndReturn(MODULE_FORM);
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, MODULE_FORM);
+    }
+
+    @Test
+    @Order(1)
     void testPageEmpty() throws Exception {
         ProductPageRequest request = new ProductPageRequest();
         request.setCurrent(1);
@@ -74,7 +70,7 @@ class ProductControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(1)
+    @Order(2)
     void testAdd() throws Exception {
         // 请求成功
         ProductEditRequest request = new ProductEditRequest();
@@ -89,7 +85,7 @@ class ProductControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(2)
+    @Order(3)
     void testUpdate() throws Exception {
         // 请求成功
         ProductEditRequest request = new ProductEditRequest();
@@ -100,7 +96,7 @@ class ProductControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     void testGet() throws Exception {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(DEFAULT_GET, addProduct.getId());
         ProductGetResponse getResponse = getResultData(mvcResult, ProductGetResponse.class);
@@ -116,7 +112,7 @@ class ProductControllerTests extends BaseTest {
 
 
     @Test
-    @Order(3)
+    @Order(5)
     void testPage() throws Exception {
         ProductPageRequest request = new ProductPageRequest();
         request.setCurrent(1);

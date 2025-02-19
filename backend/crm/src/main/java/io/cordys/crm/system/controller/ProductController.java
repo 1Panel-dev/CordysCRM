@@ -2,15 +2,18 @@ package io.cordys.crm.system.controller;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.dto.response.ProductListResponse;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
 import io.cordys.crm.system.dto.response.ProductGetResponse;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.crm.system.service.ModuleService;
 import io.cordys.crm.system.service.ProductService;
 import io.cordys.security.SessionUtils;
@@ -32,10 +35,19 @@ import java.util.List;
 public class ProductController {
 
     @Resource
-    private ModuleService moduleService;
+    private ModuleFormService moduleFormService;
 
     @Resource
     private ProductService productService;
+
+
+    @GetMapping("/module/form")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @Operation(summary = "获取表单配置")
+    public ModuleFormConfigDTO getModuleFormConfig(){
+        return moduleFormService.getConfig(FormKey.PRODUCT.getKey(), OrganizationContext.getOrganizationId());
+    }
+
 
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)

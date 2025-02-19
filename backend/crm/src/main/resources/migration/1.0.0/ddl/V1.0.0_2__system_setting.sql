@@ -535,6 +535,7 @@ CREATE TABLE sys_parameter
 CREATE TABLE product(
                         `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
                         `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织机构id' ,
+                        `name` VARCHAR(255) NOT NULL   COMMENT '产品名称' ,
                         `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
                         `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
                         `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
