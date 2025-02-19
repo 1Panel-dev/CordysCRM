@@ -1,6 +1,6 @@
 package io.cordys.crm.lead.mapper;
 
-import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.lead.dto.LeadPoolDTO;

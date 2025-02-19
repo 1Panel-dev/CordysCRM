@@ -5,7 +5,7 @@ import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
-import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.lead.dto.LeadPoolDTO;
 import io.cordys.crm.lead.dto.request.LeadPoolSaveRequest;

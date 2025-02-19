@@ -162,6 +162,20 @@
       "field_width": "50%",
       "options": null,
       "rules": null
+    },
+    {
+      "name": "customer.owner",
+      "key": "customerOwner",
+      "type": "member",
+      "show_label": true,
+      "placeholder": null,
+      "tooltip": null,
+      "default_value": null,
+      "readable": true,
+      "editable": true,
+      "field_width": "50%",
+      "options": null,
+      "rules": null
     }
   ]
 }

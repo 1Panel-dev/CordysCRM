@@ -12,5 +12,5 @@ public class ModuleFieldValueDTO {
     @Schema(description = "字段ID")
     private String id;
     @Schema(description = "字段值")
-    private String value;
+    private Object value;
 }

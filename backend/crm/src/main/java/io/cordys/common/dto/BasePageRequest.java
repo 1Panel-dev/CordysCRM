@@ -1,6 +1,7 @@
-package io.cordys.common.pager.condition;
+package io.cordys.common.dto;
 
 import com.google.common.base.CaseFormat;
+import io.cordys.common.dto.condition.BaseCondition;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;

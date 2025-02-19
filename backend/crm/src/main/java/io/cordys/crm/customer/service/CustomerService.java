@@ -1,10 +1,13 @@
 package io.cordys.crm.customer.service;
 
+import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.dto.condition.FilterCondition;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.request.ModuleFieldValueDTO;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.common.request.ModuleFieldValueDTO;
+import io.cordys.common.util.JSON;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerField;
@@ -14,6 +17,7 @@ import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -21,6 +25,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -42,22 +47,58 @@ public class CustomerService {
     private BaseMapper<CustomerField> customerFieldMapper;
 
     @Resource
+    private ModuleFormService moduleFormService;
+
+    @Resource
     private BaseService baseService;
 
     public List<CustomerListResponse> list(CustomerPageRequest request, String orgId) {
+        String nameFileId = moduleFormService.getFieldIdByInternalKey(BusinessModuleField.CUSTOMER_NAME.getKey());
+        String ownerFileId = moduleFormService.getFieldIdByInternalKey(BusinessModuleField.CUSTOMER_OWNER.getKey());
+        // 将表单中的业务字段ID,替换成业务字段名称
+        replaceConditionsBusinessName(request.getFilters(), nameFileId, ownerFileId);
+        replaceConditionsBusinessName(request.getCombineSearch().getConditions(), nameFileId, ownerFileId);
+
         List<CustomerListResponse> list = extCustomerMapper.list(request, orgId);
-        return buildListData(list);
+        return buildListData(list, nameFileId, ownerFileId);
     }
 
-    private List<CustomerListResponse> buildListData(List<CustomerListResponse> list) {
+
+    private void replaceConditionsBusinessName(List<FilterCondition> conditions, String nameFileId, String ownerFileId) {
+        if (CollectionUtils.isEmpty(conditions)) {
+            return;
+        }
+        conditions.forEach(condition -> {
+            if (nameFileId.equals(condition.getName())) {
+                condition.setName(BusinessModuleField.CUSTOMER_NAME.getKey());
+            }
+            if (ownerFileId.equals(condition.getName())) {
+                condition.setName(BusinessModuleField.CUSTOMER_OWNER.getKey());
+            }
+        });
+    }
+
+    private List<CustomerListResponse> buildListData(List<CustomerListResponse> list, String nameFileId, String ownerFileId) {
         List<String> customerIds = list.stream().map(CustomerListResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<CustomerField>> caseCustomFiledMap = getCaseCustomFiledMap(customerIds);
         list.forEach(customerListResponse -> {
             // 获取自定义字段
             List<CustomerField> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
+
+            // 补充表单的业务字段值
+            List<ModuleFieldValueDTO> moduleFieldValues = new ArrayList<>();
+            ModuleFieldValueDTO nameFieldValue = new ModuleFieldValueDTO();
+            nameFieldValue.setId(nameFileId);
+            nameFieldValue.setValue(customerListResponse.getName());
+            ModuleFieldValueDTO ownerFieldValue = new ModuleFieldValueDTO();
+            ownerFieldValue.setId(ownerFileId);
+            ownerFieldValue.setValue(customerListResponse.getOwner());
+            moduleFieldValues.add(nameFieldValue);
+            moduleFieldValues.add(ownerFieldValue);
+
             if (CollectionUtils.isNotEmpty(customerFields)) {
-                List<ModuleFieldValueDTO> moduleFieldValues = getModuleFieldValues(customerFields);
+                moduleFieldValues.addAll(getModuleFieldValues(customerFields));
                 customerListResponse.setModuleFields(moduleFieldValues);
 
                 // 将毫秒数转换为天数, 并向上取整
@@ -109,15 +150,23 @@ public class CustomerService {
         Customer customer = BeanUtils.copyBean(new Customer(), request);
         customer.setCreateTime(System.currentTimeMillis());
         customer.setUpdateTime(System.currentTimeMillis());
+        customer.setCollectionTime(customer.getCreateTime());
         customer.setUpdateUser(userId);
         customer.setCreateUser(userId);
         customer.setOrganizationId(orgId);
         customer.setId(IDGenerator.nextStr());
         customer.setInSharedPool(false);
 
-        customerMapper.insert(customer);
         // 校验名称重复 todo
 //        checkAddExist(customer);
+
+        // 获取表单的业务字段值,并移除该字段
+        String nameFileId = moduleFormService.getFieldIdByInternalKey(BusinessModuleField.CUSTOMER_NAME.getKey());
+        String ownerFileId = moduleFormService.getFieldIdByInternalKey(BusinessModuleField.CUSTOMER_OWNER.getKey());
+        customer.setName(baseService.getValueAndRemoveByFieldId(request.getModuleFields(), nameFileId));
+        customer.setOwner(baseService.getValueAndRemoveByFieldId(request.getModuleFields(), ownerFileId));
+        customerMapper.insert(customer);
+
 
         //保存自定义字段
         saveModuleField(customer.getId(), request.getModuleFields());
@@ -132,12 +181,14 @@ public class CustomerService {
         if (CollectionUtils.isEmpty(moduleFieldValues)) {
             return;
         }
+
         //  todo 字段的校验
         List<CustomerField> customerFields = moduleFieldValues.stream().map(custom -> {
             CustomerField customField = new CustomerField();
             customField.setCustomerId(customerId);
             customField.setFieldId(custom.getId());
-            customField.setFieldValue(custom.getValue());
+            String valueStr = custom.getValue() instanceof String ? (String) custom.getValue() : JSON.toJSONString(custom.getValue());
+            customField.setFieldValue(valueStr);
             customField.setId(IDGenerator.nextStr());
             return customField;
         }).toList();
@@ -151,6 +202,12 @@ public class CustomerService {
 
         // 校验名称重复 todo
 //        checkUpdateExist(customer);
+
+        // 获取表单的业务字段值,并移除该字段
+        String nameFileId = moduleFormService.getFieldIdByInternalKey(BusinessModuleField.CUSTOMER_NAME.getKey());
+        String ownerFileId = moduleFormService.getFieldIdByInternalKey(BusinessModuleField.CUSTOMER_OWNER.getKey());
+        customer.setName(baseService.getValueAndRemoveByFieldId(request.getModuleFields(), nameFileId));
+        customer.setOwner(baseService.getValueAndRemoveByFieldId(request.getModuleFields(), ownerFileId));
         customerMapper.update(customer);
 
         // 更新模块字段

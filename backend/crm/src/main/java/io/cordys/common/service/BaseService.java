@@ -2,9 +2,11 @@ package io.cordys.common.service;
 
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.request.ModuleFieldValueDTO;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,4 +93,18 @@ public class BaseService {
        return getUserNameMap(new ArrayList<>(userIds));
     }
 
+
+    public <T> T getValueAndRemoveByFieldId(List<ModuleFieldValueDTO> moduleFieldValues, String nameFileId) {
+        if (CollectionUtils.isEmpty(moduleFieldValues)) {
+            return null;
+        }
+        for (int i = 0; i < moduleFieldValues.size(); i++) {
+            ModuleFieldValueDTO moduleFieldValue = moduleFieldValues.get(i);
+            if (StringUtils.equals(moduleFieldValue.getId(), nameFileId)) {
+                moduleFieldValues.remove(i);
+                return moduleFieldValue.getValue() == null ? null : (T) moduleFieldValue.getValue();
+            }
+        }
+        return null;
+    }
 }

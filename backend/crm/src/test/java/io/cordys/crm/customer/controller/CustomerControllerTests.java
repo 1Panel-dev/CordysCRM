@@ -1,7 +1,9 @@
 package io.cordys.crm.customer.controller;
 
+import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.request.ModuleFieldValueDTO;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.Customer;
@@ -11,6 +13,7 @@ import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -39,6 +42,9 @@ class CustomerControllerTests extends BaseTest {
 
     @Resource
     private BaseMapper<CustomerField> customerFieldMapper;
+
+    @Resource
+    private ModuleFormService moduleFormService;
 
     @Override
     protected String getBasePath() {
@@ -75,11 +81,19 @@ class CustomerControllerTests extends BaseTest {
     void testAdd() throws Exception {
         // 请求成功
         CustomerAddRequest request = new CustomerAddRequest();
-        request.setTags(List.of("tag1"));
+        String nameFileId = moduleFormService.getFieldIdByInternalKey(BusinessModuleField.CUSTOMER_NAME.getKey());
+        String ownerFileId = moduleFormService.getFieldIdByInternalKey(BusinessModuleField.CUSTOMER_OWNER.getKey());
+        ModuleFieldValueDTO nameModuleValue = new ModuleFieldValueDTO();
+        nameModuleValue.setId(nameFileId);
+        nameModuleValue.setValue("aa");
+        ModuleFieldValueDTO ownerModuleValue = new ModuleFieldValueDTO();
+        ownerModuleValue.setId(ownerFileId);
+        ownerModuleValue.setValue("bb");
+        request.setModuleFields(List.of(nameModuleValue, ownerModuleValue));
+
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Customer resultData = getResultData(mvcResult, Customer.class);
         Customer customer = customerMapper.selectByPrimaryKey(resultData.getId());
-        Assertions.assertEquals(request.getTags(), customer.getTags());
 
         // 校验请求成功数据
         this.addCustomer = customer;
@@ -94,11 +108,9 @@ class CustomerControllerTests extends BaseTest {
         // 请求成功
         CustomerUpdateRequest request = new CustomerUpdateRequest();
         request.setId(addCustomer.getId());
-        request.setTags(List.of("tag2"));
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         // 校验请求成功数据
         Customer customerResult = customerMapper.selectByPrimaryKey(request.getId());
-        Assertions.assertEquals(request.getTags(), customerResult.getTags());
 
         // 不修改信息
         CustomerUpdateRequest emptyRequest = new CustomerUpdateRequest();
@@ -120,6 +132,9 @@ class CustomerControllerTests extends BaseTest {
         Customer responseCustomer = BeanUtils.copyBean(new Customer(), getResponse);
         responseCustomer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         responseCustomer.setInSharedPool(false);
+        responseCustomer.setName("aa");
+        responseCustomer.setOwner("bb");
+        responseCustomer.setCollectionTime(addCustomer.getCollectionTime());
         Assertions.assertEquals(responseCustomer, customer);
 
         // 校验权限
@@ -150,6 +165,7 @@ class CustomerControllerTests extends BaseTest {
             Customer responseCustomer = BeanUtils.copyBean(new Customer(), customerListResponse);
             responseCustomer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
             responseCustomer.setInSharedPool(false);
+            customer.setCollectionTime(null);
             Assertions.assertEquals(customer, responseCustomer);
         });
 

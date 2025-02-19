@@ -21,8 +21,8 @@ public class CustomerListResponse {
     @Schema(description = "客户名称")
     private String name;
 
-    @Schema(description = "标签")
-    private List<String> tags;
+    @Schema(description = "负责人")
+    private String owner;
 
     @Schema(description = "是否在公海池")
     private Boolean inSharedPool;

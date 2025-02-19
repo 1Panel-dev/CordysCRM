@@ -1,10 +1,9 @@
 package io.cordys.crm.customer.mapper;
 
-import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
-import io.cordys.crm.customer.dto.request.CustomerPoolPageRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

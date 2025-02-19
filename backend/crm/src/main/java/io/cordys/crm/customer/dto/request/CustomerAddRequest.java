@@ -2,7 +2,6 @@ package io.cordys.crm.customer.dto.request;
 
 import io.cordys.common.request.ModuleFieldValueDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.util.List;
@@ -15,10 +14,6 @@ import java.util.List;
  */
 @Data
 public class CustomerAddRequest {
-
-    @Schema(description = "标签")
-    private List<String> tags;
-
     @Schema(description = "自定义字段")
     private List<ModuleFieldValueDTO> moduleFields;
 }

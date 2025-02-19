@@ -1,6 +1,6 @@
 package io.cordys.crm.opportunity.mapper;
 
-import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;
 import org.apache.ibatis.annotations.Param;
 

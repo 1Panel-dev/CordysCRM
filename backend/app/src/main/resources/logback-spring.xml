@@ -169,4 +169,18 @@
         <appender-ref ref="infoAsyncAppender"/>
     </logger>
 
+
+    <!--  包名不支持通配符 * ，这里需要每个模块固定好mapper  -->
+    <logger name="io.cordys.crm.system.mapper" level="${logger.sql.level}">
+        <appender-ref ref="console"/>
+    </logger>
+    <logger name="io.cordys.crm.customer.mapper" level="${logger.sql.level}">
+        <appender-ref ref="console"/>
+    </logger>
+    <logger name="io.cordys.crm.lead.mapper" level="${logger.sql.level}">
+        <appender-ref ref="console"/>
+    </logger>
+    <logger name="io.cordys.crm.opportunity.mapper" level="${logger.sql.level}">
+        <appender-ref ref="console"/>
+    </logger>
 </configuration>

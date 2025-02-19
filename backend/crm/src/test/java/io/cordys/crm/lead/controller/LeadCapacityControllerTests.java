@@ -1,7 +1,7 @@
 package io.cordys.crm.lead.controller;
 
 import io.cordys.common.pager.Pager;
-import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.lead.domain.LeadCapacity;

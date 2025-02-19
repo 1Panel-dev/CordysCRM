@@ -1,8 +1,7 @@
 package io.cordys.crm.customer.controller;
 
 import io.cordys.common.pager.Pager;
-import io.cordys.common.pager.condition.BasePageRequest;
-import io.cordys.common.util.Translator;
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.CustomerCapacity;
 import io.cordys.crm.customer.dto.request.CustomerCapacitySaveRequest;
@@ -17,8 +16,6 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc

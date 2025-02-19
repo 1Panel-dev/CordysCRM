@@ -18,5 +18,5 @@ public class ProductField {
     private String fieldId;
 
     @Schema(description = "自定义属性值")
-    private String fieldValue;
+    private Object fieldValue;
 }

@@ -1,7 +1,7 @@
 package io.cordys.crm.lead.service;
 
 import io.cordys.common.exception.GenericException;
-import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;

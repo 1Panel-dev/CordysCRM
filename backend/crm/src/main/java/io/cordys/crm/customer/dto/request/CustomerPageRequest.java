@@ -1,6 +1,6 @@
 package io.cordys.crm.customer.dto.request;
 
-import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.common.dto.BasePageRequest;
 import lombok.Data;
 
 

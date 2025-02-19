@@ -21,9 +21,6 @@ public class CustomerUpdateRequest {
     @Size(max = 32)
     private String id;
 
-    @Schema(description = "标签")
-    private List<String> tags;
-
     @Schema(description = "自定义字段")
     private List<ModuleFieldValueDTO> moduleFields;
 }

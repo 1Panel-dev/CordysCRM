@@ -254,4 +254,11 @@ public class ModuleFormService {
 			throw new GenericException("表单字段初始化失败", e);
 		}
 	}
+
+	public String getFieldIdByInternalKey(String key) {
+		ModuleField moduleField = new ModuleField();
+		moduleField.setInternalKey(key);
+		ModuleField field = moduleFieldMapper.selectOne(moduleField);
+		return field == null ? null : field.getId();
+	}
 }

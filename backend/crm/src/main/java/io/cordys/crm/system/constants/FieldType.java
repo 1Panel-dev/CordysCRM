@@ -1,7 +1,6 @@
 package io.cordys.crm.system.constants;
 
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 
 @Getter
 public enum FieldType {

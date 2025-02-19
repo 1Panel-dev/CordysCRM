@@ -1,7 +1,7 @@
 package io.cordys.crm.customer.controller;
 
 import io.cordys.common.pager.Pager;
-import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;

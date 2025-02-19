@@ -1,4 +1,4 @@
-package io.cordys.common.pager.condition;
+package io.cordys.common.dto.condition;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -6,7 +6,6 @@ import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 表示 CRM 系统中的基础条件类，用于支持过滤和搜索操作。
@@ -17,15 +16,17 @@ public class BaseCondition {
     @Schema(description = "关键字，用于搜索匹配")
     private String keyword;
 
-    @Schema(description = "过滤字段，包含字段及其对应的过滤值")
-    private Map<String, List<String>> filter;
-
-    @Schema(description = "视图 ID，指定使用的视图")
-    private String viewId;
+    @Schema(description = "筛选条件列表，用于定义多个搜索条件")
+    @Valid
+    private List<FilterCondition> filters;
 
     @Schema(description = "高级搜索条件，支持组合搜索")
     @Valid
     private CombineSearch combineSearch;
+
+    public CombineSearch getCombineSearch() {
+        return combineSearch == null ? new CombineSearch() : combineSearch;
+    }
 
     /**
      * 转义关键字中的特殊字符。

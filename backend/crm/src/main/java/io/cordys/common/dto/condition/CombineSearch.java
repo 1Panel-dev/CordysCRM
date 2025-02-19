@@ -1,4 +1,4 @@
-package io.cordys.common.pager.condition;
+package io.cordys.common.dto.condition;
 
 import io.cordys.common.constants.EnumValue;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,7 +21,7 @@ public class CombineSearch {
 
     @Schema(description = "筛选条件列表，用于定义多个搜索条件")
     @Valid
-    private List<CombineCondition> conditions;
+    private List<FilterCondition> conditions;
 
     /**
      * 获取当前的匹配模式。如果未设置，则默认返回 "AND"。

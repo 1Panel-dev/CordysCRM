@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.cordys.common.mapper.CommonMapper">
+
+    <sql id="moduleFieldCondition">
+        <choose>
+            <when test="condition.multipleValue != null and condition.multipleValue">
+                <include refid="io.cordys.common.mapper.CommonMapper.arrayValueCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${column}"/>
+                </include>
+            </when>
+            <otherwise>
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${column}"/>
+                </include>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="arrayValueCondition">
+        <trim prefix="(" suffix=")">
+            <choose>
+                <when test="${condition}.operator == 'CONTAINS'">
+                    <foreach collection="${condition}.value" item="valueItem" separator="or" open="(" close=")">
+                        JSON_CONTAINS(${column}, JSON_ARRAY(#{valueItem}))
+                    </foreach>
+                </when>
+                <when test="${condition}.operator == 'NOT_CONTAINS'">
+                    !(
+                        <foreach collection="${condition}.value" item="valueItem" separator="or" open="(" close=")">
+                            JSON_CONTAINS(${column}, JSON_ARRAY(#{valueItem}))
+                        </foreach>
+                    )
+                </when>
+                <when test="${condition}.operator == 'IN'">
+                    <foreach collection="${condition}.value" item="tag" separator="or" open="(" close=")">
+                        JSON_CONTAINS(${column}, JSON_ARRAY(#{tag}))
+                    </foreach>
+                </when>
+                <when test="${condition}.operator == 'NOT_IN'">
+                    !(
+                        <foreach collection="${condition}.value" item="tag" separator="or" open="(" close=")">
+                            JSON_CONTAINS(${column}, JSON_ARRAY(#{tag}))
+                        </foreach>
+                    )
+                </when>
+                <when test="${condition}.operator == 'COUNT_GT'">
+                    JSON_LENGTH(${column}) &gt; #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'COUNT_LT'">
+                    <if test="${condition}.value == 0">
+                        false
+                    </if>
+                    <if test="${condition}.value != 0">
+                        ${column} is null or ${column} = '[]' or
+                        JSON_LENGTH(${column}) &lt; #{condition.value}
+                    </if>
+                </when>
+                <when test="${condition}.operator == 'EMPTY'">
+                    ${column} is null or ${column} = '[]'
+                </when>
+                <when test="${condition}.operator == 'NOT_EMPTY'">
+                    ${column} is not null and ${column} != '[]'
+                </when>
+            </choose>
+        </trim>
+    </sql>
+
+    <sql id="condition">
+        <trim prefix="(" suffix=")">
+            <choose>
+                <when test="${condition}.operator == 'CONTAINS'">
+                    <foreach collection="${condition}.value.split(' ')" item="item" separator="and">
+                        ${column} like CONCAT('%', #{item},'%')
+                    </foreach>
+                </when>
+                <when test="${condition}.operator == 'NOT_CONTAINS'">
+                    !(
+                        <foreach collection="${condition}.value.split(' ')" item="item" separator="and">
+                            ${column} like CONCAT('%', #{item},'%')
+                        </foreach>
+                    )
+                </when>
+                <when test="${condition}.operator == 'IN'">
+                    <if test="'${column}' == 'value'">
+                        `value`
+                    </if>
+                    <if test="'${column}' != 'value'">
+                        ${column}
+                    </if>
+                    in
+                    <foreach collection="${condition}.value" item="v" separator="," open="(" close=")">
+                        #{v}
+                    </foreach>
+                </when>
+                <when test="${condition}.operator == 'NOT_IN'">
+                    !(
+                        <if test="'${column}' == 'value'">
+                            `value`
+                        </if>
+                        <if test="'${column}' != 'value'">
+                            ${column}
+                        </if>
+                        in
+                        <foreach collection="${condition}.value" item="v" separator="," open="(" close=")">
+                            #{v}
+                        </foreach>
+                    )
+                </when>
+                <when test="${condition}.operator == 'BETWEEN'">
+                    ${column} between #{condition.value[0]} and #{condition.value[1]}
+                </when>
+                <when test="${condition}.operator == 'GT'">
+                    ${column} is not null and ${column} != '' and ${column} &gt; #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'LT'">
+                    ${column} is not null and ${column} != '' and ${column} &lt; #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'EMPTY'">
+                    ${column} is null or ${column} = ''
+                </when>
+                <when test="${condition}.operator == 'NOT_EMPTY'">
+                    ${column} is not null and ${column} != ''
+                </when>
+                <when test="${condition}.operator == 'EQUALS'">
+                    ${column} = #{condition.value}
+                </when>
+                <when test="${condition}.operator == 'NOT_EQUALS'">
+                    !(
+                        ${column} = #{condition.value}
+                    )
+                </when>
+            </choose>
+        </trim>
+    </sql>
+
+    <sql id="searchMode">
+        <choose>
+            <when test="${searchMode} == 'AND'">
+                AND
+            </when>
+            <when test="${searchMode} == 'OR'">
+                OR
+            </when>
+        </choose>
+    </sql>
+
+    <sql id="filterInWrapper">
+        <foreach collection="values" item="value" separator="," open="(" close=")">
+            #{value}
+        </foreach>
+    </sql>
+
+    <sql id="filterMultipleWrapper">
+        <foreach collection="values" item="value" separator="or" open="(" close=")">
+            JSON_CONTAINS(`value`, JSON_ARRAY(#{value}))
+        </foreach>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filter} != null and ${filter}.size() > 0">
+            <foreach collection="${filter}.entrySet()" index="key" item="values">
+                <if test="values != null and values.size() > 0 fields.contains(key)" >
+                    <where>
+                        ${table_name}.${key} in
+                        <foreach collection="values" item="value" separator="," open="(" close=")">
+                            #{value}
+                        </foreach>
+                    </where>
+                </if>
+            </foreach>
+        </if>
+    </sql>
+</mapper>
