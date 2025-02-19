@@ -2,7 +2,6 @@ package io.cordys.crm.system.notice.sse;
 
 import io.cordys.common.util.LogUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -61,7 +60,6 @@ public class SseService {
     /**
      * 每隔 5 秒向所有客户端广播一次事件
      */
-    @Scheduled(fixedRate = 5000) // 单位：毫秒
     public void broadcastPeriodically() {
         // 如果没有客户端连接，则不广播
         if (emitters.isEmpty()) {

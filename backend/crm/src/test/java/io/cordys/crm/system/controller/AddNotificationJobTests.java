@@ -6,7 +6,7 @@ import io.cordys.crm.system.domain.Announcement;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.AnnouncementReceiveTypeDTO;
 import io.cordys.crm.system.dto.response.NotificationDTO;
-import io.cordys.crm.system.job.AddAnnounceNoticeJob;
+import io.cordys.crm.system.job.AnnounceToNotifyJob;
 import io.cordys.crm.system.mapper.ExtNotificationMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -23,7 +23,7 @@ import java.util.List;
 public class AddNotificationJobTests {
 
     @Resource
-    private AddAnnounceNoticeJob addAnnounceNoticeJob;
+    private AnnounceToNotifyJob announceToNotifyJob;
 
     @Resource
     private BaseMapper<Announcement> announcementBaseMapper;
@@ -57,7 +57,7 @@ public class AddNotificationJobTests {
         saveNotice();
         List<Announcement> createTimeAsc = announcementBaseMapper.selectAll("create_time asc");
         Assertions.assertTrue(CollectionUtils.isNotEmpty(createTimeAsc));
-        addAnnounceNoticeJob.addNotification();
+        announceToNotifyJob.addNotification();
         Notification notification = new Notification();
         notification.setOrganizationId("100001");
         notification.setResourceId("SDDFDJJND");

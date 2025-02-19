@@ -16,13 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class AddAnnounceNoticeJob {
+public class AnnounceToNotifyJob {
     @Resource
     private ExtAnnouncementMapper extAnnouncementMapper;
-
     @Resource
     private AnnouncementService announcementService;
-
 
     /**
      * 将到期发布的公告转成通知  每天凌晨三点执行
@@ -43,13 +41,13 @@ public class AddAnnounceNoticeJob {
             return;
         }
         //将公告根据接收人生成相关的通知
-        List<String>ids = new ArrayList<>();
+        List<String> ids = new ArrayList<>();
         for (AnnouncementDTO announcementDTO : announcementDTOS) {
             List<String> userIds = JSON.parseArray(new String(announcementDTO.getReceiver()), String.class);
-            announcementService.convertNotification("admin",announcementDTO,userIds);
+            announcementService.convertNotification("admin", announcementDTO, userIds);
             ids.add(announcementDTO.getId());
         }
-        extAnnouncementMapper.updateNotice(ids,true,announcementDTOS.getFirst().getOrganizationId());
+        extAnnouncementMapper.updateNotice(ids, true, announcementDTOS.getFirst().getOrganizationId());
     }
 
 }
