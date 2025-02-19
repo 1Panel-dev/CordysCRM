@@ -5,8 +5,10 @@ import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.lead.domain.LeadCapacity;
-import io.cordys.crm.lead.dto.request.LeadCapacityPageRequest;
+import io.cordys.crm.lead.dto.LeadCapacityDTO;
 import io.cordys.crm.lead.dto.request.LeadCapacitySaveRequest;
 import io.cordys.crm.lead.service.LeadCapacityService;
 import io.cordys.security.SessionUtils;
@@ -31,30 +33,16 @@ public class LeadCapacityController {
 	@PostMapping("/page")
 	@Operation(summary = "分页获取线索库容规则")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public Pager<List<LeadCapacity>> page(@Validated @RequestBody LeadCapacityPageRequest request) {
+	public Pager<List<LeadCapacityDTO>> page(@Validated @RequestBody BasePageRequest request) {
 		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
 				StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
-		return PageUtils.setPageInfo(page, leadCapacityService.page(request));
+		return PageUtils.setPageInfo(page, leadCapacityService.page(OrganizationContext.getOrganizationId()));
 	}
 
-	@PostMapping("/add")
-	@Operation(summary = "新增线索库容规则")
+	@PostMapping("/save")
+	@Operation(summary = "保存线索库容规则")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void add(@Validated @RequestBody LeadCapacitySaveRequest request) {
-		leadCapacityService.save(request, SessionUtils.getUserId());
-	}
-
-	@PostMapping("/update")
-	@Operation(summary = "编辑线索库容规则")
-	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void update(@Validated @RequestBody LeadCapacitySaveRequest request) {
-		leadCapacityService.save(request, SessionUtils.getUserId());
-	}
-
-	@GetMapping("/delete/{id}")
-	@Operation(summary = "删除线索库容规则")
-	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void delete(@PathVariable String id) {
-		leadCapacityService.delete(id);
+	public void save(@Validated @RequestBody LeadCapacitySaveRequest request) {
+		leadCapacityService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 }

@@ -1,17 +1,22 @@
 package io.cordys.crm.lead.service;
 
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.Translator;
+import io.cordys.common.util.JSON;
 import io.cordys.crm.lead.domain.LeadCapacity;
-import io.cordys.crm.lead.dto.request.LeadCapacityPageRequest;
+import io.cordys.crm.lead.dto.LeadCapacityDTO;
 import io.cordys.crm.lead.dto.request.LeadCapacitySaveRequest;
+import io.cordys.crm.system.domain.Department;
+import io.cordys.crm.system.domain.Role;
+import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,58 +25,69 @@ public class LeadCapacityService {
 
 	@Resource
 	private BaseMapper<LeadCapacity> leadCapacityMapper;
+	@Resource
+	private BaseMapper<User> userMapper;
+	@Resource
+	private BaseMapper<Role> roleMapper;
+	@Resource
+	private BaseMapper<Department> departmentMapper;
+	@Resource
+	private UserExtendService userExtendService;
 
 	/**
 	 * 分页获取线索库容设置
-	 * @param request 请求参数
 	 * @return 线索库容设置列表
 	 */
-	public List<LeadCapacity> page(LeadCapacityPageRequest request) {
+	public List<LeadCapacityDTO> page(String currentOrgId) {
+		List<LeadCapacityDTO> capacityData = new ArrayList<>();
 		LambdaQueryWrapper<LeadCapacity> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(LeadCapacity::getOrganizationId, request.getOrganizationId());
-		return leadCapacityMapper.selectListByLambda(wrapper);
+		wrapper.eq(LeadCapacity::getOrganizationId, currentOrgId);
+		List<LeadCapacity> capacities = leadCapacityMapper.selectListByLambda(wrapper);
+		if (CollectionUtils.isEmpty(capacities)) {
+			return new ArrayList<>();
+		}
+		List<String> scopeIds = new ArrayList<>();
+		capacities.forEach(capacity -> scopeIds.addAll(JSON.parseArray(capacity.getScopeId(), String.class)));
+		List<User> users = userMapper.selectByIds(scopeIds.toArray(new String[0]));
+		List<Role> roles = roleMapper.selectByIds(scopeIds.toArray(new String[0]));
+		List<Department> departments = departmentMapper.selectByIds(scopeIds.toArray(new String[0]));
+		capacities.forEach(capacity -> {
+			LeadCapacityDTO capacityDTO = new LeadCapacityDTO();
+			capacityDTO.setId(capacity.getId());
+			capacityDTO.setCapacity(capacity.getCapacity());
+			capacityDTO.setMembers(userExtendService.getScope(users, roles, departments, JSON.parseArray(capacity.getScopeId(), String.class)));
+			capacityData.add(capacityDTO);
+		});
+		return capacityData;
 	}
 
 	/**
-	 * 保存线索库容规则
+	 * 保存客户库容规则
 	 * @param request 请求参数
 	 * @param currentUserId 当前用户ID
 	 */
-	public void save(LeadCapacitySaveRequest request, String currentUserId) {
-		LeadCapacity leadCapacity = new LeadCapacity();
-		BeanUtils.copyBean(leadCapacity, request);
-		if (leadCapacity.getId() == null) {
-			leadCapacity.setId(IDGenerator.nextStr());
-			leadCapacity.setCreateTime(System.currentTimeMillis());
-			leadCapacity.setCreateUser(currentUserId);
-			leadCapacity.setUpdateTime(System.currentTimeMillis());
-			leadCapacity.setUpdateUser(currentUserId);
-			leadCapacityMapper.insert(leadCapacity);
-		} else {
-			checkLeadCapacityExist(leadCapacity.getId());
-			leadCapacity.setUpdateUser(currentUserId);
-			leadCapacity.setUpdateTime(System.currentTimeMillis());
-			leadCapacityMapper.update(leadCapacity);
+	public void save(LeadCapacitySaveRequest request, String currentUserId, String currentOrgId) {
+		LambdaQueryWrapper<LeadCapacity> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(LeadCapacity::getOrganizationId, currentOrgId);
+		List<LeadCapacity> oldCapacities = leadCapacityMapper.selectListByLambda(wrapper);
+		if (CollectionUtils.isNotEmpty(oldCapacities)) {
+			LeadCapacity capacity = new LeadCapacity();
+			capacity.setOrganizationId(currentOrgId);
+			leadCapacityMapper.delete(capacity);
 		}
-	}
-
-	/**
-	 * 删除线索库容规则
-	 * @param id 线索库容规则ID
-	 */
-	public void delete(String id) {
-		checkLeadCapacityExist(id);
-		leadCapacityMapper.deleteByPrimaryKey(id);
-	}
-
-	/**
-	 * 校验线索库容规则是否存在
-	 * @param id 线索库容规则ID
-	 */
-	private void checkLeadCapacityExist(String id) {
-		LeadCapacity leadCapacity = leadCapacityMapper.selectByPrimaryKey(id);
-		if (leadCapacity == null) {
-			throw new RuntimeException(Translator.get("lead_capacity_not_exist"));
-		}
+		List<LeadCapacity> capacities = new ArrayList<>();
+		request.getCapacities().forEach(capacityRequest -> {
+			LeadCapacity capacity = new LeadCapacity();
+			capacity.setId(IDGenerator.nextStr());
+			capacity.setOrganizationId(currentOrgId);
+			capacity.setCapacity(capacityRequest.getCapacity());
+			capacity.setScopeId(JSON.toJSONString(capacityRequest.getScopeIds()));
+			capacity.setCreateTime(System.currentTimeMillis());
+			capacity.setCreateUser(currentUserId);
+			capacity.setUpdateTime(System.currentTimeMillis());
+			capacity.setUpdateUser(currentUserId);
+			capacities.add(capacity);
+		});
+		leadCapacityMapper.batchInsert(capacities);
 	}
 }

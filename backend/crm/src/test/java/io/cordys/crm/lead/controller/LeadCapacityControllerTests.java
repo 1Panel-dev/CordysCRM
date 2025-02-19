@@ -1,11 +1,12 @@
 package io.cordys.crm.lead.controller;
 
 import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.lead.domain.LeadCapacity;
-import io.cordys.crm.lead.dto.request.LeadCapacityPageRequest;
 import io.cordys.crm.lead.dto.request.LeadCapacitySaveRequest;
+import io.cordys.crm.system.dto.request.CapacityRequest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -24,27 +25,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class LeadCapacityControllerTests extends BaseTest {
 
-	private static LeadCapacity testData;
-
 	@Test
 	@Order(1)
 	void add() throws Exception {
-		LeadCapacitySaveRequest request = LeadCapacitySaveRequest.builder()
-				.organizationId("default-org").scopeId("default-scope").capacity(100).build();
-		this.requestPostWithOk("/lead-capacity/add", request);
+		LeadCapacitySaveRequest request = new LeadCapacitySaveRequest();
+		CapacityRequest capacity = new CapacityRequest();
+		capacity.setScopeIds(List.of("cc"));
+		capacity.setCapacity(10);
+		request.setCapacities(List.of(capacity));
+		this.requestPostWithOk("/lead-capacity/save", request);
 	}
 
 	@Test
 	@Order(2)
 	void page() throws Exception {
-		LeadCapacityPageRequest request = new LeadCapacityPageRequest();
+		BasePageRequest request = new BasePageRequest();
 		request.setCurrent(1);
 		request.setPageSize(10);
-		request.setOrganizationId("default-org");
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/lead-capacity/page", request);
 		Pager<List<LeadCapacity>> result = getPageResult(mvcResult, LeadCapacity.class);
 		assert result.getList().size() == 1;
-		testData = result.getList().getFirst();
 		request.setSort(Map.of("id", "desc"));
 		this.requestPostWithOk("/lead-capacity/page", request);
 	}
@@ -52,18 +52,11 @@ public class LeadCapacityControllerTests extends BaseTest {
 	@Test
 	@Order(3)
 	void update() throws Exception {
-		LeadCapacitySaveRequest request = LeadCapacitySaveRequest.builder()
-				.organizationId("default-org").scopeId("default-scope,default-user").capacity(200).build();
-		request.setId(testData.getId());
-		this.requestPostWithOk("/lead-capacity/update", request);
-		request.setId("not-exist");
-		MvcResult mvcResult = this.requestPost("/lead-capacity/update", request).andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("lead_capacity_not_exist"));
-	}
-
-	@Test
-	@Order(4)
-	void delete() throws Exception {
-		this.requestGetWithOk("/lead-capacity/delete/" + testData.getId());
+		LeadCapacitySaveRequest request = new LeadCapacitySaveRequest();
+		CapacityRequest capacity = new CapacityRequest();
+		capacity.setScopeIds(List.of("cc"));
+		capacity.setCapacity(100);
+		request.setCapacities(List.of(capacity));
+		this.requestPostWithOk("/lead-capacity/save", request);
 	}
 }
