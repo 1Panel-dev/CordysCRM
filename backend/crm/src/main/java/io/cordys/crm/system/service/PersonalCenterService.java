@@ -8,9 +8,11 @@ import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.utils.MailSender;
 import io.cordys.crm.system.mapper.ExtUserMapper;
+import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,9 @@ public class PersonalCenterService {
 
     @Resource
     private ExtUserMapper extUserMapper;
+
+    @Resource
+    private BaseMapper<User>userBaseMapper;
 
 
     private static final String PREFIX = "personal_email_code:";  // Redis 存储前缀
@@ -97,15 +102,7 @@ public class PersonalCenterService {
 
     @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.UPDATE, operator = "{#operatorId}")
     public void resetUserPassword(String password, String operatorId) {
-        UserResponse oldUser = getUserDetail(operatorId);
         extUserMapper.updateUserPassword(CodingUtils.md5(password),operatorId);
-        //添加日志上下文
-        OperationLogContext.setContext(LogContextInfo.builder()
-                .originalValue(oldUser)
-                .resourceName(oldUser.getUserName())
-                .modifiedValue(getUserDetail(operatorId))
-                .resourceId(oldUser.getId())
-                .build());
     }
 
 
