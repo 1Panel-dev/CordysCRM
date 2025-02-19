@@ -5,8 +5,9 @@ import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
-import io.cordys.crm.customer.domain.CustomerCapacity;
-import io.cordys.crm.customer.dto.request.CustomerCapacityPageRequest;
+import io.cordys.common.pager.condition.BasePageRequest;
+import io.cordys.context.OrganizationContext;
+import io.cordys.crm.customer.dto.CustomerCapacityDTO;
 import io.cordys.crm.customer.dto.request.CustomerCapacitySaveRequest;
 import io.cordys.crm.customer.service.CustomerCapacityService;
 import io.cordys.security.SessionUtils;
@@ -31,30 +32,16 @@ public class CustomerCapacityController {
     @PostMapping("/page")
     @Operation(summary = "分页获取客户库容规则")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-    public Pager<List<CustomerCapacity>> page(@Validated @RequestBody CustomerCapacityPageRequest request) {
+    public Pager<List<CustomerCapacityDTO>> page(@Validated @RequestBody BasePageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
                 StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
-        return PageUtils.setPageInfo(page, customerCapacityService.page());
+        return PageUtils.setPageInfo(page, customerCapacityService.page(OrganizationContext.getOrganizationId()));
     }
 
-    @PostMapping("/add")
-    @Operation(summary = "新增客户库容规则")
+    @PostMapping("/save")
+    @Operation(summary = "保存客户库容规则")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-    public void add(@Validated @RequestBody CustomerCapacitySaveRequest request) {
-        customerCapacityService.save(request, SessionUtils.getUserId());
-    }
-
-    @PostMapping("/update")
-    @Operation(summary = "编辑客户库容规则")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-    public void update(@Validated @RequestBody CustomerCapacitySaveRequest request) {
-        customerCapacityService.save(request, SessionUtils.getUserId());
-    }
-
-    @GetMapping("/delete/{id}")
-    @Operation(summary = "删除客户库容规则")
-    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-    public void delete(@PathVariable String id) {
-        customerCapacityService.delete(id);
+    public void save(@Validated @RequestBody CustomerCapacitySaveRequest request) {
+        customerCapacityService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
