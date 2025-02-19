@@ -18,6 +18,7 @@
     :title="t('role.addMember')"
     :api-type-key="MemberApiTypeEnum.SYSTEM_ROLE"
     :base-params="{ roleId: 'org_admin' }"
+    :disabled-list="modelValue"
     @confirm="handleAddAdminConfirm"
   />
 </template>
@@ -35,9 +36,16 @@
 
   const { t } = useI18n();
 
+  const props = defineProps<{
+    userErrorTagIds?: string[];
+  }>();
   const selectedList = defineModel<SelectedUsersItem[]>('selectedList', {
     required: true,
   });
+
+  const emit = defineEmits<{
+    (e: 'deleteTag'): void;
+  }>();
 
   const modelValue = ref<string[]>([]);
 
@@ -55,12 +63,13 @@
     return h(
       CrmTag,
       {
-        type: 'default',
-        theme: 'dark',
+        type: props.userErrorTagIds?.includes(option.value as string) ? 'error' : 'default',
+        theme: 'light',
         closable: true,
         onClose: () => {
           handleClose();
           selectedList.value = selectedList.value.filter((item) => item.id !== option.value);
+          emit('deleteTag');
         },
       },
       {

@@ -18,6 +18,15 @@
             <n-form-item
               v-for="model of props.models"
               :key="`${model.path}${index}`"
+              :ref="
+                (el) => {
+                  if (el) {
+                    formItemRefs.set(`${model.path}${index}`, el);
+                  } else {
+                    formItemRefs.delete(`${model.path}${index}`);
+                  }
+                }
+              "
               :label="index === 0 && model.label ? model.label : ''"
               :path="`list[${index}].${model.path}`"
               :rule="
@@ -59,6 +68,8 @@
               <CrmUserTagSelector
                 v-if="model.type === FieldTypeEnum.USER_TAG_SELECTOR"
                 v-model:selected-list="element[model.path]"
+                :user-error-tag-ids="userErrorTagIds"
+                @delete-tag="handleUserTagSelectValidate"
               />
             </n-form-item>
             <n-button
@@ -109,6 +120,7 @@
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
+  import type { SelectedUsersItem } from '@/components/business/crm-select-user-drawer/type';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';
@@ -137,7 +149,10 @@
 
   const formRef = ref<FormInst | null>(null);
   const form = ref<Record<string, any>>({ list: [], allOr: 'all' });
+  const formItemRefs = ref(new Map<string, any>());
   const formItem: Record<string, any> = {};
+
+  const userErrorTagIds = ref<string[]>([]); // 对于CrmUserTagSelector列，上下行里重复的id
 
   function valueIsArray(listItem: FormItemModel) {
     return listItem.selectProps?.multiple || listItem.type === FieldTypeEnum.USER_TAG_SELECTOR;
@@ -160,17 +175,51 @@
   }
 
   function fieldNotRepeat(value: any[] | string | undefined, index: number, field: string, msg?: string) {
-    if (value === '' || value === undefined) return;
+    if (!value || value === '') return;
 
     const fieldConfig = props.models.find((model) => model.path === field);
-    // 遍历其他同 path 名的输入框的值，检查是否与当前输入框的值重复
-    for (let i = 0; i < form.value.list.length; i++) {
-      if (i !== index) {
-        if (fieldConfig && !valueIsArray(fieldConfig) && form.value.list[i][field] === value) {
-          return new Error(t(msg || ''));
-        }
+    if (!fieldConfig) return;
+
+    const otherItems = form.value.list.filter((_: Record<string, any>, i: number) => i !== index);
+
+    // 非数组类型的重复检查
+    if (!valueIsArray(fieldConfig)) {
+      if (otherItems.some((item: Record<string, any>) => item[field] === value)) {
+        return new Error(t(msg || ''));
       }
+      return;
     }
+
+    // USER_TAG_SELECTOR 类型的重复检查
+    if (fieldConfig.type === FieldTypeEnum.USER_TAG_SELECTOR) {
+      const currentIds = (value as SelectedUsersItem[]).map((item) => item.id);
+
+      const duplicateIds: string[] = otherItems.reduce((duplicates: string[], item: Record<string, any>) => {
+        const compareIds = item[field].map((tagItem: any) => tagItem.id);
+        const newDuplicates = currentIds.filter((id) => compareIds.includes(id));
+        return [...duplicates, ...newDuplicates];
+      }, []);
+
+      if (duplicateIds.length > 0) {
+        userErrorTagIds.value = [...new Set(duplicateIds)]; // 去重
+        return new Error(t(msg || ''));
+      }
+      userErrorTagIds.value = [];
+    }
+  }
+
+  // 重新校验所有 USER_TAG_SELECTOR 类型的表单项
+  function handleUserTagSelectValidate() {
+    form.value.list.forEach((_: Record<string, any>, index: number) => {
+      props.models.forEach((model) => {
+        if (model.type === FieldTypeEnum.USER_TAG_SELECTOR) {
+          const userTagSelectItem = formItemRefs.value.get(`${model.path}${index}`);
+          if (userTagSelectItem) {
+            userTagSelectItem.validate();
+          }
+        }
+      });
+    });
   }
 
   function getFormResult() {

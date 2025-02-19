@@ -60,6 +60,7 @@
     fetchRoleParams?: Record<string, any>; // 角色入参
     fetchMemberParams?: Record<string, any>; // 成员入参
     baseParams?: Record<string, any>; // 基础公共入参
+    disabledList?: string[]; // 需要禁用掉的选项
   }>();
 
   const emit = defineEmits<{
@@ -143,7 +144,7 @@
         return {
           label: item.name,
           value: item.id,
-          disabled: !item.enabled,
+          disabled: !item.enabled || props.disabledList?.includes(item.id),
           ...item,
           children: item.children?.length ? item.children : undefined,
         };
@@ -154,7 +155,7 @@
         return {
           label: item.name,
           value: item.id,
-          disabled: !item.enabled,
+          disabled: !item.enabled || props.disabledList?.includes(item.id),
           ...item,
           children: item.children?.length ? item.children : undefined,
         };
@@ -164,7 +165,7 @@
       return {
         label: item.name,
         value: item.id,
-        disabled: !item.enabled,
+        disabled: !item.enabled || props.disabledList?.includes(item.id),
         ...item,
       };
     });
