@@ -101,6 +101,7 @@ public class CustomerPoolService {
 		pickRule.setUpdateTime(System.currentTimeMillis());
 		CustomerPoolRecycleRule recycleRule = new CustomerPoolRecycleRule();
 		BeanUtils.copyBean(recycleRule, request.getRecycleRule());
+		recycleRule.setCondition(JSON.toJSONString(request.getRecycleRule().getConditions()));
 		recycleRule.setUpdateUser(currentUserId);
 		recycleRule.setUpdateTime(System.currentTimeMillis());
 		if (pool.getId() == null) {

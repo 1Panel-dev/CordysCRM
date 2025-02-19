@@ -22,10 +22,10 @@ CREATE INDEX idx_organization_id ON customer (organization_id ASC);
 CREATE TABLE customer_pool
 (
     `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
-    `scope_id`        VARCHAR(1000) NOT NULL COMMENT '范围ID',
+    `scope_id`        TEXT NOT NULL COMMENT '范围ID',
     `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织ID',
     `name`            VARCHAR(255)  NOT NULL COMMENT '公海池名称',
-    `owner_id`        VARCHAR(1000) NOT NULL COMMENT '管理员ID',
+    `owner_id`        TEXT NOT NULL COMMENT '管理员ID',
     `enable`          BIT(1)        NOT NULL DEFAULT 1 COMMENT '启用/禁用',
     `auto`            BIT(1)      NOT NULL DEFAULT 0 COMMENT '自动回收',
     `create_time`     BIGINT        NOT NULL COMMENT '创建时间',

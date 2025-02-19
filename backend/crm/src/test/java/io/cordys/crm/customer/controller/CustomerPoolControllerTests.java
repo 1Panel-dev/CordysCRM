@@ -12,6 +12,7 @@ import io.cordys.crm.customer.dto.CustomerPoolDTO;
 import io.cordys.crm.customer.dto.request.CustomerPoolPickRuleSaveRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolRecycleRuleSaveRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolSaveRequest;
+import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
@@ -57,8 +58,12 @@ public class CustomerPoolControllerTests extends BaseTest {
 		CustomerPoolPickRuleSaveRequest pickRule = CustomerPoolPickRuleSaveRequest.builder()
 				.limitOnNumber(true).limitPreOwner(true).pickNumber(1).pickIntervalDays(1).build();
 		request.setPickRule(pickRule);
+		RuleConditionDTO condition = new RuleConditionDTO();
+		condition.setColumn("name");
+		condition.setOperator("=");
+		condition.setValues(List.of("cc"));
 		CustomerPoolRecycleRuleSaveRequest recycleRule = CustomerPoolRecycleRuleSaveRequest.builder()
-				.expireNotice(true).noticeDays(10).build();
+				.expireNotice(true).noticeDays(10).conditions(List.of(condition)).build();
 		request.setRecycleRule(recycleRule);
 		this.requestPostWithOk("/customer-pool/add", request);
 	}
