@@ -3,6 +3,7 @@ package io.cordys.crm.lead.controller;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.lead.domain.LeadPool;
@@ -13,6 +14,7 @@ import io.cordys.crm.lead.dto.LeadPoolDTO;
 import io.cordys.crm.lead.dto.request.LeadPoolPickRuleSaveRequest;
 import io.cordys.crm.lead.dto.request.LeadPoolRecycleRuleSaveRequest;
 import io.cordys.crm.lead.dto.request.LeadPoolSaveRequest;
+import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
@@ -54,10 +56,16 @@ public class LeadPoolControllerTests extends BaseTest {
 		LeadPool leadPool = createLeadPool();
 		LeadPoolSaveRequest request = new LeadPoolSaveRequest();
 		BeanUtils.copyBean(request, leadPool);
+		request.setOwnerIds(List.of("cc"));
+		request.setScopeIds(List.of("cc"));
 		LeadPoolPickRuleSaveRequest pickRule = LeadPoolPickRuleSaveRequest.builder()
 				.pickNumber(1).limitOnNumber(true).pickIntervalDays(1).limitPreOwner(true).build();
 		request.setPickRule(pickRule);
-		LeadPoolRecycleRuleSaveRequest recycleRule = LeadPoolRecycleRuleSaveRequest.builder().expireNotice(true).noticeDays(10).build();
+		RuleConditionDTO condition = new RuleConditionDTO();
+		condition.setColumn("name");
+		condition.setOperator("=");
+		condition.setValues(List.of("cc"));
+		LeadPoolRecycleRuleSaveRequest recycleRule = LeadPoolRecycleRuleSaveRequest.builder().expireNotice(true).noticeDays(10).conditions(List.of(condition)).build();
 		request.setRecycleRule(recycleRule);
 		this.requestPostWithOk("/lead-pool/add", request);
 	}
@@ -80,6 +88,8 @@ public class LeadPoolControllerTests extends BaseTest {
 		leadPool.setId(testLeadPool.getId());
 		LeadPoolSaveRequest request = new LeadPoolSaveRequest();
 		BeanUtils.copyBean(request, leadPool);
+		request.setOwnerIds(List.of("cc"));
+		request.setScopeIds(List.of("cc"));
 		LeadPoolPickRuleSaveRequest pickRule = LeadPoolPickRuleSaveRequest.builder()
 				.pickNumber(1).limitOnNumber(true).pickIntervalDays(1).limitPreOwner(true).build();
 		request.setPickRule(pickRule);
@@ -88,9 +98,9 @@ public class LeadPoolControllerTests extends BaseTest {
 		MvcResult mvcResult = this.requestPost("/lead-pool/update", request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("lead_pool_access_fail"));
 		// update owner id by sql
-		leadPool.setOwnerId("admin");
+		leadPool.setOwnerId(JSON.toJSONString(List.of("admin")));
 		leadPoolMapper.updateById(leadPool);
-		request.setOwnerId("admin");
+		request.setOwnerIds(List.of("admin"));
 		this.requestPostWithOk("/lead-pool/update", request);
 	}
 
@@ -128,9 +138,8 @@ public class LeadPoolControllerTests extends BaseTest {
 	private LeadPool createLeadPool() {
 		LeadPool leadPool = new LeadPool();
 		leadPool.setName("default-lead-pool");
-		leadPool.setScopeId("default-dp");
+		leadPool.setScopeId(JSON.toJSONString(List.of("default-dp")));
 		leadPool.setOrganizationId(DEFAULT_ORGANIZATION_ID);
-		leadPool.setOwnerId("default-owner");
 		leadPool.setEnable(true);
 		leadPool.setAuto(true);
 		return leadPool;

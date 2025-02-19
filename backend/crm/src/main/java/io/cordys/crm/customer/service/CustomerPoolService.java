@@ -13,12 +13,11 @@ import io.cordys.crm.customer.domain.CustomerPoolRelation;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
 import io.cordys.crm.customer.dto.request.CustomerPoolSaveRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
-import io.cordys.crm.system.constants.ScopeKey;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.User;
-import io.cordys.crm.system.dto.ScopeNameDTO;
 import io.cordys.crm.system.mapper.ExtUserMapper;
+import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -29,8 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -54,6 +51,8 @@ public class CustomerPoolService {
 	private BaseMapper<CustomerPoolRelation> customerPoolRelationMapper;
 	@Resource
 	private ExtCustomerPoolMapper extCustomerPoolMapper;
+	@Resource
+	private UserExtendService userExtendService;
 
 	/**
 	 * 分页获取公海池
@@ -76,8 +75,8 @@ public class CustomerPoolService {
 		List<Role> roles = roleMapper.selectByIds(unionIds.toArray(new String[0]));
 		List<Department> departments = departmentMapper.selectByIds(unionIds.toArray(new String[0]));
 		pools.forEach(pool -> {
-			pool.setMembers(getScope(users, roles, departments, JSON.parseArray(pool.getScopeId(), String.class)));
-			pool.setOwners(getScope(users, roles, departments, JSON.parseArray(pool.getOwnerId(), String.class)));
+			pool.setMembers(userExtendService.getScope(users, roles, departments, JSON.parseArray(pool.getScopeId(), String.class)));
+			pool.setOwners(userExtendService.getScope(users, roles, departments, JSON.parseArray(pool.getOwnerId(), String.class)));
 		});
 		return pools;
 	}
@@ -188,35 +187,5 @@ public class CustomerPoolService {
 		if (!ownerUserIds.contains(accessUserId)) {
 			throw new GenericException(Translator.get("customer_pool_access_fail"));
 		}
-	}
-
-	/**
-	 * 获取成员范围集合
-	 * @param users 用户
-	 * @param roles 角色
-	 * @param departments 部门
-	 * @param scopeIds 范围ID集合
-	 * @return 范围集合
-	 */
-	private List<ScopeNameDTO> getScope(List<User> users, List<Role> roles, List<Department> departments, List<String> scopeIds) {
-		Map<String, String> userMap = users.stream().collect(Collectors.toMap(User::getId, User::getName));
-		Map<String, String> roleMap = roles.stream().collect(Collectors.toMap(Role::getId, Role::getName));
-		Map<String, String> departmentMap = departments.stream().collect(Collectors.toMap(Department::getId, Department::getName));
-		List<ScopeNameDTO> scopes = new ArrayList<>();
-		scopeIds.forEach(scopeId -> {
-			ScopeNameDTO scope = ScopeNameDTO.builder().id(scopeId).build();
-			if (userMap.containsKey(scopeId)) {
-				scope.setName(userMap.get(scopeId));
-				scope.setScope(ScopeKey.USER.name());
-			} else if (roleMap.containsKey(scopeId)) {
-				scope.setName(roleMap.get(scopeId));
-				scope.setScope(ScopeKey.ROLE.name());
-			} else if (departmentMap.containsKey(scopeId)) {
-				scope.setName(departmentMap.get(scopeId));
-				scope.setScope(ScopeKey.DEPARTMENT.name());
-			}
-			scopes.add(scope);
-		});
-		return scopes;
 	}
 }

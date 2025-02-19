@@ -4,10 +4,13 @@ import io.cordys.common.groups.Created;
 import io.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -23,13 +26,13 @@ public class LeadPoolSaveRequest {
 	@Schema(description = "线索池名称")
 	private String name;
 
-	@NotBlank
-	@Schema(description = "成员ID")
-	private String scopeId;
+	@NotNull
+	@Schema(description = "范围ID集合")
+	private List<String> scopeIds;
 
-	@NotBlank
-	@Schema(description = "管理员ID")
-	private String ownerId;
+	@NotNull
+	@Schema(description = "管理员ID集合")
+	private List<String> ownerIds;
 
 	@NonNull
 	@Schema(description = "启用/禁用")

@@ -5,9 +5,9 @@ CREATE TABLE lead_pool
 (
     `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
     `name`            VARCHAR(255)  NOT NULL COMMENT '线索池名称',
-    `scope_id`        VARCHAR(1000) NOT NULL COMMENT '成员id',
+    `scope_id`        TEXT NOT NULL COMMENT '成员id',
     `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织架构id',
-    `owner_id`        VARCHAR(1000) NOT NULL COMMENT '管理员id',
+    `owner_id`        TEXT NOT NULL COMMENT '管理员id',
     `enable`          BIT(1)        NOT NULL DEFAULT 1 COMMENT '启用/禁用',
     `auto`            BIT(1)      NOT NULL DEFAULT 0 COMMENT '自动回收',
     `create_time`     BIGINT        NOT NULL COMMENT '创建时间',

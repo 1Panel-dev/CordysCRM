@@ -1,9 +1,12 @@
 package io.cordys.crm.lead.dto.request;
 
+import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -20,5 +23,5 @@ public class LeadPoolRecycleRuleSaveRequest {
 	private String operator;
 
 	@Schema(description = "回收条件")
-	private String condition;
+	private List<RuleConditionDTO> conditions;
 }
