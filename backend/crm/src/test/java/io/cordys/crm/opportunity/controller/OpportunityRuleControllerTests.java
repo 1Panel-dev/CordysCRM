@@ -3,6 +3,7 @@ package io.cordys.crm.opportunity.controller;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.condition.BasePageRequest;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
@@ -47,7 +48,7 @@ public class OpportunityRuleControllerTests extends BaseTest {
 	@Order(2)
 	void add() throws Exception {
 		OpportunityRuleSaveRequest request = OpportunityRuleSaveRequest.builder()
-				.name("rule").ownerId("cc").scopeId("admin")
+				.name("rule").ownerIds(List.of("cc")).scopeIds(List.of("cc"))
 				.enable(true).auto(false).expireNotice(false).build();
 		this.requestPostWithOk("/opportunity-rule/add", request);
 	}
@@ -69,12 +70,13 @@ public class OpportunityRuleControllerTests extends BaseTest {
 	void update() throws Exception {
 		OpportunityRuleSaveRequest request = new OpportunityRuleSaveRequest();
 		BeanUtils.copyBean(request, editRule);
+		request.setOwnerIds(List.of("admin"));
+		request.setScopeIds(List.of("admin"));
 		MvcResult mvcResult = this.requestPost("/opportunity-rule/update", request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("opportunity.access_fail"));
 		// update owner id by sql
-		editRule.setOwnerId("admin");
+		editRule.setOwnerId(JSON.toJSONString(List.of("admin")));
 		opportunityRuleMapper.updateById(editRule);
-		request.setOwnerId("admin");
 		this.requestPostWithOk("/opportunity-rule/update", request);
 	}
 
