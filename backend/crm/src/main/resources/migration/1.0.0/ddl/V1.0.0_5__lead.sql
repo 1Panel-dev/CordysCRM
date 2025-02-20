@@ -67,6 +67,8 @@ CREATE TABLE lead_pool_relation
     `id`          VARCHAR(32) NOT NULL COMMENT 'id',
     `pool_id`     VARCHAR(32) NOT NULL COMMENT '线索池id',
     `lead_id`     VARCHAR(32) NOT NULL COMMENT '线索id',
+    `last_pick_user_id` VARCHAR(32) NOT NULL   COMMENT '上一次领取人' ,
+    `last_pick_time` BIGINT NOT NULL   COMMENT '上一次领取时间' ,
     `create_time` BIGINT      NOT NULL COMMENT '创建时间',
     `update_time` BIGINT      NOT NULL COMMENT '更新时间',
     `create_user` VARCHAR(32) NOT NULL COMMENT '创建人',

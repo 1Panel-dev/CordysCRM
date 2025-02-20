@@ -149,6 +149,8 @@ public class LeadPoolControllerTests extends BaseTest {
 		LeadPoolRelation leadPoolRelation = new LeadPoolRelation();
 		leadPoolRelation.setId("default-lead-pool-relation");
 		leadPoolRelation.setLeadId("default-lead");
+		leadPoolRelation.setLastPickUserId("default-user");
+		leadPoolRelation.setLastPickTime(System.currentTimeMillis());
 		leadPoolRelation.setCreateTime(System.currentTimeMillis());
 		leadPoolRelation.setCreateUser("default-user");
 		leadPoolRelation.setUpdateTime(System.currentTimeMillis());

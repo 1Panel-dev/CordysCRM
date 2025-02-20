@@ -4,34 +4,6 @@
     <select id="list" parameterType="io.cordys.common.dto.BasePageRequest" resultType="io.cordys.crm.opportunity.dto.OpportunityRuleDTO">
         select * from opportunity_rule
         where organization_id = #{orgId}
-        <include refid="filter"/>
         order by create_time desc
     </select>
-
-    <sql id="filter">
-        <if test="request.filter != null and request.filter.size() > 0">
-            <foreach collection="request.filter.entrySet()" index="key" item="values">
-                <if test="values != null and values.size() > 0">
-                    <choose>
-                        <!-- 自动回收 -->
-                        <when test="key == 'recycled'">
-                            and opportunity_rule.auto in
-                            <include refid="filterInWrapper"/>
-                        </when>
-                        <!-- 状态 -->
-                        <when test="key == 'status'">
-                            and opportunity_rule.enable in
-                            <include refid="filterInWrapper"/>
-                        </when>
-                    </choose>
-                </if>
-            </foreach>
-        </if>
-    </sql>
-
-    <sql id="filterInWrapper">
-        <foreach collection="values" item="value" separator="," open="(" close=")">
-            #{value}
-        </foreach>
-    </sql>
 </mapper>

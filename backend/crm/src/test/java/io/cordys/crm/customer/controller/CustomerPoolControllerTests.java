@@ -148,6 +148,8 @@ public class CustomerPoolControllerTests extends BaseTest {
 		CustomerPoolRelation customerPoolRelation = new CustomerPoolRelation();
 		customerPoolRelation.setId("default-ct-pool-relation");
 		customerPoolRelation.setCustomerId("default-custom");
+		customerPoolRelation.setLastPickUserId("default-user");
+		customerPoolRelation.setLastPickTime(System.currentTimeMillis());
 		customerPoolRelation.setCreateTime(System.currentTimeMillis());
 		customerPoolRelation.setCreateUser("default-user");
 		customerPoolRelation.setUpdateTime(System.currentTimeMillis());

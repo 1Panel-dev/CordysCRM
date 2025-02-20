@@ -86,6 +86,8 @@ CREATE TABLE customer_pool_relation
     `id`          VARCHAR(32) NOT NULL COMMENT 'id',
     `customer_id` VARCHAR(32) NOT NULL COMMENT '客户id',
     `pool_id`     VARCHAR(32) NOT NULL COMMENT '公海id',
+    `last_pick_user_id` VARCHAR(32) NOT NULL   COMMENT '上一次领取人' ,
+    `last_pick_time` BIGINT(255) NOT NULL   COMMENT '上一次领取时间' ,
     `create_time` BIGINT      NOT NULL COMMENT '创建时间',
     `update_time` BIGINT      NOT NULL COMMENT '更新时间',
     `create_user` VARCHAR(32) NOT NULL COMMENT '创建人',
