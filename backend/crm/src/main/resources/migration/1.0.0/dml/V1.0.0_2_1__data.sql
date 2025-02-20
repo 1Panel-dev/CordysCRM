@@ -27,22 +27,23 @@ VALUES ('admin',
         '717345437786112',
         'admin');
 
+
+SET @internal_department_id = UUID_SHORT();
 -- 初始化用户基本信息
 INSERT INTO `sys_organization_user`(`id`, `organization_id`, `department_id`, `resource_user_id`, `user_id`, `enable`,
                                     `employee_id`, `position`, `employee_type`, `supervisor_id`, `work_city`,
                                     `create_user`, `update_user`, `create_time`, `update_time`)
-VALUES (UUID_SHORT(), '100001', '100001', '', 'admin', true, '', '', '', '', '', 'admin', 'admin', 1716175907000,
+VALUES (UUID_SHORT(), '100001', @internal_department_id, '', 'admin', true, '', '', '', '', '', 'admin', 'admin', 1716175907000,
         1716175907000);
+-- 初始化默认部门
+INSERT INTO `sys_department`(`id`, `name`, `organization_id`, `parent_id`, `pos`, `create_time`, `update_time`,
+                             `create_user`, `update_user`, `resource`, `resource_id`)
+VALUES (@internal_department_id, '公司名称', '100001', 'NONE', 100001, 1736240043609, 1736240043609, 'admin', 'admin', 'INTERNAL',
+        NULL);
 
 -- 初始化默认组织
 INSERT INTO `sys_organization`(`id`, `name`, `create_time`, `update_time`, `create_user`, `update_user`)
 VALUES ('100001', 'default', 1736152274610, 1736152274610, 'admin', 'admin');
-
--- 初始化默认部门
-INSERT INTO `sys_department`(`id`, `name`, `organization_id`, `parent_id`, `pos`, `create_time`, `update_time`,
-                             `create_user`, `update_user`, `resource`, `resource_id`)
-VALUES (UUID_SHORT(), '公司名称', '100001', 'NONE', 100001, 1736240043609, 1736240043609, 'admin', 'admin', 'INTERNAL',
-        NULL);
 
 -- 初始化组织管理员
 INSERT INTO sys_role(id, name, internal, data_scope, create_time, update_time, create_user, update_user, description,
