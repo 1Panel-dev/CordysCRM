@@ -139,7 +139,6 @@
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
-  import { SelectedUsersItem } from '@/components/business/crm-select-user-drawer/type';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { addOpportunityRule, updateOpportunityRule } from '@/api/modules/system/module';
@@ -148,6 +147,7 @@
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import type { ModuleConditionsItem, OpportunityDetail, OpportunityParams } from '@lib/shared/models/system/module';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   const { t } = useI18n();
   const Message = useMessage();

@@ -1,3 +1,5 @@
+import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+
 // 模块首页-导航模块列表
 export interface ModuleNavBaseInfoItem {
   id: string;
@@ -24,10 +26,10 @@ export interface ModuleSortParams {
   dragModuleId: string; // 拖拽模块ID
 }
 
-export interface ModuleUserScopedItem {
-  id: string;
-  scope: string;
-  name: string;
+export interface SelectedUsersItem {
+  id: string; // ID
+  scope: MemberSelectTypeEnum; // 范围
+  name: string; // 名称
 }
 
 export interface ModuleConditionsItem {
@@ -56,8 +58,8 @@ export interface OpportunityItem extends OpportunityBaseInfoItem {
   updateUser: string;
   createTime: number;
   updateTime: number;
-  members: ModuleUserScopedItem[]; // 成员集合
-  owners: ModuleUserScopedItem[]; // 管理员集合
+  members: SelectedUsersItem[]; // 成员集合
+  owners: SelectedUsersItem[]; // 管理员集合
 }
 
 // 模块商机详情
@@ -69,4 +71,81 @@ export interface OpportunityDetail extends OpportunityBaseInfoItem {
 export interface OpportunityParams extends OpportunityDetail {
   scopeIds: string[];
   ownerIds: string[];
+}
+
+// 线索池领取规则
+export interface LeadPoolPickRuleParams {
+  limitOnNumber: boolean; // 是否限制领取数量
+  pickNumber?: number; // 领取数量
+  limitPreOwner: boolean; // 是否限制前归属人领取
+  pickIntervalDays?: number; // 领取间隔天数
+}
+
+// 线索池回收规则
+export interface LeadPoolRecycleRuleParams {
+  expireNotice: boolean; // 到期提醒
+  noticeDays?: number; // 提前提醒天数
+  operator: string; // 操作符
+  conditions: ModuleConditionsItem[]; // 规则条件集合
+}
+
+// 编辑线索池请求参数
+export interface LeadPoolParams {
+  id?: string; // ID
+  name: string; // 线索池名称
+  scopeIds: string[]; // 范围ID集合
+  ownerIds: string[]; // 管理员ID集合
+  enable: boolean; // 启用/禁用
+  auto: boolean; // 自动回收
+  pickRule: LeadPoolPickRuleParams; // 领取规则
+  recycleRule: LeadPoolRecycleRuleParams; // 回收规则
+}
+
+export interface LeadPoolForm extends LeadPoolParams {
+  adminIds: SelectedUsersItem[];
+  userIds: SelectedUsersItem[]; // 成员ID
+}
+
+// 线索池列表项
+export interface LeadPoolItem {
+  id: string;
+  createUser: string;
+  updateUser: string;
+  updateUserName: string;
+  createTime: number;
+  updateTime: number;
+  name: string;
+  scopeId: string;
+  organizationId: string;
+  ownerId: string;
+  enable: boolean;
+  auto: boolean;
+  members: SelectedUsersItem[];
+  owners: SelectedUsersItem[];
+  pickRule: LeadPoolPickRuleParams; // 领取规则
+  recycleRule: LeadPoolRecycleRuleParams; // 回收规则
+}
+
+// 库容参数
+export interface CapacityParams {
+  scopeIds: string[]; // 范围ID集合
+  capacity: number; // 容量
+}
+
+// 保存线索库容规则请求参数
+export interface LeadCapacityParams {
+  capacities: CapacityParams[]; // 库容集合
+}
+
+// 线索库容列表项
+export interface LeadCapacityItem {
+  id: string;
+  createUser: string;
+  updateUser: string;
+  createTime: number;
+  updateTime: number;
+  organizationId: string;
+  scopeId: string;
+  capacity: number;
+  members: SelectedUsersItem[];
 }

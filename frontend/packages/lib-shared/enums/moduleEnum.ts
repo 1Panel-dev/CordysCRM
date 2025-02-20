@@ -28,7 +28,7 @@ export enum MemberApiTypeEnum {
 
 // 选择添加
 export enum MemberSelectTypeEnum {
-  ORG = 'org', // 组织架构
-  ROLE = 'role', // 角色
-  MEMBER = 'member', // 成员
+  ORG = 'DEPARTMENT', // 组织架构
+  ROLE = 'ROLE', // 角色
+  MEMBER = 'USER', // 成员
 }

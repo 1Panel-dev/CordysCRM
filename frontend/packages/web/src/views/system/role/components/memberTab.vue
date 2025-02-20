@@ -35,13 +35,13 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmSelectUserDrawer from '@/components/business/crm-select-user-drawer/index.vue';
-  import { SelectedUsersItem } from '@/components/business/crm-select-user-drawer/type';
 
   import { getRoleMember, relateRoleMember, removeRoleMember } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
   import { RoleMemberItem } from '@lib/shared/models/system/role';
 
   const props = defineProps<{
@@ -193,7 +193,7 @@
       addMemberLoading.value = true;
       const categorizedIds = params.reduce(
         (acc, item) => {
-          switch (item.type) {
+          switch (item.scope) {
             case MemberSelectTypeEnum.MEMBER:
               acc.userIds.push(item.id);
               break;

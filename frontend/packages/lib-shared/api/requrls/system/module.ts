@@ -9,3 +9,14 @@ export const addOpportunityRuleUrl = '/opportunity-rule/add'; // 模块-商机-�
 export const updateOpportunityRuleUrl = '/opportunity-rule/update'; // 模块-商机-更新商机规则
 export const switchOpportunityStatusUrl = '/opportunity-rule/switch'; // 模块-商机-更新商机规则状态
 export const deleteOpportunityUrl = '/opportunity-rule/delete'; // 模块-商机-删除商机规则
+
+// 模块-线索池
+export const GetLeadPoolPageUrl = '/lead-pool/page'; // 分页获取线索池
+export const AddLeadPoolUrl = '/lead-pool/add'; // 新增线索池
+export const UpdateLeadPoolUrl = '/lead-pool/update'; // 编辑线索池
+export const SwitchLeadPoolStatusUrl = '/lead-pool/switch'; // 启用/禁用线索池
+export const DeleteLeadPoolUrl = '/lead-pool/delete'; // 删除线索池
+
+// 模块-线索库容
+export const GetLeadCapacityPageUrl = '/lead-capacity/page'; // 分页获取线索库容规则
+export const SaveLeadCapacityUrl = '/lead-capacity/save'; // 保存线索库容规则

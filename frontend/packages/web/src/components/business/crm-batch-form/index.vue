@@ -18,15 +18,7 @@
             <n-form-item
               v-for="model of props.models"
               :key="`${model.path}${index}`"
-              :ref="
-                (el) => {
-                  if (el) {
-                    formItemRefs.set(`${model.path}${index}`, el);
-                  } else {
-                    formItemRefs.delete(`${model.path}${index}`);
-                  }
-                }
-              "
+              :ref="(el) => handleFormItemRef(el, model.path, index)"
               :label="index === 0 && model.label ? model.label : ''"
               :path="`list[${index}].${model.path}`"
               :rule="
@@ -120,13 +112,13 @@
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
-  import type { SelectedUsersItem } from '@/components/business/crm-select-user-drawer/type';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 
   import { FormItemModel } from './types';
   import { scrollIntoView } from '@lib/shared/method/dom';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   const { t } = useI18n();
 
@@ -148,9 +140,20 @@
   );
 
   const formRef = ref<FormInst | null>(null);
-  const form = ref<Record<string, any>>({ list: [], allOr: 'all' });
-  const formItemRefs = ref(new Map<string, any>());
+  const form = ref<Record<string, any>>({ list: [], allOr: 'AND' });
+  const formItemRefs = ref<Record<string, Map<string, any>>>({});
   const formItem: Record<string, any> = {};
+
+  const handleFormItemRef = (el: Element | ComponentPublicInstance | null, path: string, index: number) => {
+    if (!formItemRefs.value[path]) {
+      formItemRefs.value[path] = new Map();
+    }
+    if (el) {
+      formItemRefs.value[path].set(`${index}`, el);
+    } else {
+      formItemRefs.value[path].delete(`${index}`);
+    }
+  };
 
   const userErrorTagIds = ref<string[]>([]); // 对于CrmUserTagSelector列，上下行里重复的id
 
@@ -171,7 +174,7 @@
   });
 
   function changeAllOr() {
-    form.value.allOr = form.value.allOr === 'ALL' ? 'OR' : 'AND';
+    form.value.allOr = form.value.allOr === 'AND' ? 'OR' : 'AND';
   }
 
   function fieldNotRepeat(value: any[] | string | undefined, index: number, field: string, msg?: string) {
@@ -210,15 +213,12 @@
 
   // 重新校验所有 USER_TAG_SELECTOR 类型的表单项
   function handleUserTagSelectValidate() {
+    const userTagSelectorPath = props.models.find((item) => item.type === FieldTypeEnum.USER_TAG_SELECTOR)?.path ?? '';
     form.value.list.forEach((_: Record<string, any>, index: number) => {
-      props.models.forEach((model) => {
-        if (model.type === FieldTypeEnum.USER_TAG_SELECTOR) {
-          const userTagSelectItem = formItemRefs.value.get(`${model.path}${index}`);
-          if (userTagSelectItem) {
-            userTagSelectItem.validate();
-          }
-        }
-      });
+      const userTagSelectItem = formItemRefs.value[userTagSelectorPath].get(`${index}`);
+      if (userTagSelectItem) {
+        userTagSelectItem.validate();
+      }
     });
   }
 

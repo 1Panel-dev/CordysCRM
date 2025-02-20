@@ -39,7 +39,7 @@
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
-  import { Option, SelectedUsersItem } from '@/components/business/crm-select-user-drawer/type';
+  import { Option } from '@/components/business/crm-select-user-drawer/type';
   import roleTreeNodePrefix from './roleTreeNodePrefix.vue';
 
   import { useI18n } from '@/hooks/useI18n';
@@ -48,6 +48,7 @@
   import { getDataFunc } from './utils';
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
   import { DeptTreeNode, RoleItem } from '@lib/shared/models/system/role';
 
   const { t } = useI18n();
@@ -115,11 +116,11 @@
   async function loadData(value: MemberSelectTypeEnum) {
     let params = { ...props.baseParams };
     switch (value) {
-      case 'org':
+      case MemberSelectTypeEnum.ORG:
         params = { ...params, ...props.fetchOrgParams };
         departmentOptions.value = await getDataFunc(props.apiTypeKey, value, params);
         break;
-      case 'role':
+      case MemberSelectTypeEnum.ROLE:
         params = { ...params, ...props.fetchRoleParams };
         roleOptions.value = await getDataFunc(props.apiTypeKey, value, params);
         break;
@@ -139,7 +140,7 @@
   }
 
   const options = computed(() => {
-    if (addMemberType.value === 'org') {
+    if (addMemberType.value === MemberSelectTypeEnum.ORG) {
       return mapTree(departmentOptions.value, (item) => {
         return {
           label: item.name,
@@ -150,7 +151,7 @@
         };
       });
     }
-    if (addMemberType.value === 'role') {
+    if (addMemberType.value === MemberSelectTypeEnum.ROLE) {
       return mapTree(roleOptions.value, (item) => {
         return {
           label: item.name,
@@ -205,7 +206,7 @@
           selectedNodes.value.push({
             id: node.value as string,
             name: node.label as string,
-            type,
+            scope: type,
           });
         });
       },

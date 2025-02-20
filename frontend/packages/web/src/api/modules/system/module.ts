@@ -1,17 +1,28 @@
 import CDR from '@/api/http/index';
 
 import {
+  AddLeadPoolUrl,
   addOpportunityRuleUrl,
+  DeleteLeadPoolUrl,
   deleteOpportunityUrl,
+  GetLeadCapacityPageUrl,
+  GetLeadPoolPageUrl,
   getModuleNavConfigListUrl,
   getOpportunityListUrl,
   moduleNavListSortUrl,
+  SaveLeadCapacityUrl,
+  SwitchLeadPoolStatusUrl,
   switchOpportunityStatusUrl,
   toggleModuleNavStatusUrl,
+  UpdateLeadPoolUrl,
   updateOpportunityRuleUrl,
 } from '@lib/shared/api/requrls/system/module';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import type {
+  LeadCapacityItem,
+  LeadCapacityParams,
+  LeadPoolItem,
+  LeadPoolParams,
   ModuleNavBaseInfoItem,
   ModuleSortParams,
   OpportunityDetail,
@@ -56,4 +67,34 @@ export function switchOpportunityStatus(ruleId: string) {
 // 模块-商机-删除商机规则
 export function deleteOpportunity(ruleId: string) {
   return CDR.get({ url: `${deleteOpportunityUrl}/${ruleId}` });
+}
+
+// 线索池相关API
+export function getLeadPoolPage(data: TableQueryParams) {
+  return CDR.post<CommonList<LeadPoolItem>>({ url: GetLeadPoolPageUrl, data });
+}
+
+export function addLeadPool(data: LeadPoolParams) {
+  return CDR.post({ url: AddLeadPoolUrl, data });
+}
+
+export function updateLeadPool(data: LeadPoolParams) {
+  return CDR.post({ url: UpdateLeadPoolUrl, data });
+}
+
+export function switchLeadPoolStatus(id: string) {
+  return CDR.get({ url: `${SwitchLeadPoolStatusUrl}/${id}` });
+}
+
+export function deleteLeadPool(id: string) {
+  return CDR.get({ url: `${DeleteLeadPoolUrl}/${id}` });
+}
+
+// 线索库容相关API
+export function getLeadCapacityPage(data: TableQueryParams) {
+  return CDR.post<CommonList<LeadCapacityItem>>({ url: GetLeadCapacityPageUrl, data });
+}
+
+export function saveLeadCapacity(data: LeadCapacityParams) {
+  return CDR.post({ url: SaveLeadCapacityUrl, data });
 }
