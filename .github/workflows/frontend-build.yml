@@ -1,15 +1,9 @@
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "frontend/**"
   pull_request:
     branches:
       - main
     paths:
       - "frontend/**"
-    types: [opened, synchronize, reopened]
 
 name: Frontend Code Checking
 
