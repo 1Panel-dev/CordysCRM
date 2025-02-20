@@ -10,7 +10,7 @@
       v-model:value="value"
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
-      :options="props.fieldConfig.options?.map((e, i) => ({ ...e, label: t(e.label, { i: i + 1 }) }))"
+      :options="props.fieldConfig.options"
       :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
       :placeholder="props.fieldConfig.placeholder"
       clearable
@@ -23,8 +23,6 @@
 
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
 
-  import { useI18n } from '@/hooks/useI18n';
-
   import { FormCreateField } from '../../types';
 
   const props = defineProps<{
@@ -32,11 +30,16 @@
     path: string;
   }>();
 
-  const { t } = useI18n();
-
   const value = defineModel<(string | number)[]>('value', {
     default: [],
   });
+
+  watch(
+    () => props.fieldConfig.defaultValue,
+    (val) => {
+      value.value = val;
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>

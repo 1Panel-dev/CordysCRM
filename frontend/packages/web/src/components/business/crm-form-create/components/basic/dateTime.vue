@@ -31,6 +31,13 @@
   const value = defineModel<number>('value', {
     default: null,
   });
+
+  watch(
+    () => props.fieldConfig.defaultValue,
+    (val) => {
+      value.value = val;
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>

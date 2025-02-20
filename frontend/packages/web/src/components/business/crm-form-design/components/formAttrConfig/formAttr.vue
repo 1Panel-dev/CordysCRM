@@ -22,8 +22,8 @@
       <div class="flex gap-[8px]">
         <div
           class="crm-form-design-config-item-label-position"
-          :class="formConfig.labelPos === 'vertical' ? 'crm-form-design-config-item-label-position--active' : ''"
-          @click="() => (formConfig.labelPos = 'vertical')"
+          :class="formConfig.labelPos === 'top' ? 'crm-form-design-config-item-label-position--active' : ''"
+          @click="() => (formConfig.labelPos = 'top')"
         >
           <div class="crm-form-design-config-item-label-position-card">
             <div class="h-[15px] w-[40px] rounded-[var(--border-radius-mini)] bg-[var(--text-n7)]"></div>
@@ -33,8 +33,8 @@
         </div>
         <div
           class="crm-form-design-config-item-label-position"
-          :class="formConfig.labelPos === 'horizontal' ? 'crm-form-design-config-item-label-position--active' : ''"
-          @click="() => (formConfig.labelPos = 'horizontal')"
+          :class="formConfig.labelPos === 'left' ? 'crm-form-design-config-item-label-position--active' : ''"
+          @click="() => (formConfig.labelPos = 'left')"
         >
           <div class="crm-form-design-config-item-label-position-card">
             <div class="flex gap-[4px]">

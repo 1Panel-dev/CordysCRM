@@ -1,4 +1,5 @@
 import type { FieldTypeEnum } from '../crm-form-create/enum';
+import type { LabelPlacement } from 'naive-ui/es/form/src/interface';
 
 export interface FieldItem {
   type: FieldTypeEnum;
@@ -13,7 +14,7 @@ export interface FormActionButton {
 }
 export interface FormConfig {
   layout: number;
-  labelPos: 'vertical' | 'horizontal';
+  labelPos: LabelPlacement;
   inputWidth: 'custom' | 'full';
   optBtnContent: FormActionButton[];
   optBtnPos: FormFooterDirection;

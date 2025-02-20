@@ -7,7 +7,7 @@
   >
     <div v-if="props.fieldConfig.description" class="n-form-item-desc" v-html="props.fieldConfig.description"></div>
     <n-input-number
-      v-model="value"
+      v-model:value="value"
       :max="props.fieldConfig.max"
       :min="props.fieldConfig.min"
       :placeholder="props.fieldConfig.placeholder"
@@ -34,9 +34,16 @@
     path: string;
   }>();
 
-  const value = defineModel<string>('value', {
-    default: '',
+  const value = defineModel<number>('value', {
+    default: null,
   });
+
+  watch(
+    () => props.fieldConfig.defaultValue,
+    (val) => {
+      value.value = val;
+    }
+  );
 
   function parse(val: string) {
     const nums = val.replace(/,/g, '').trim();

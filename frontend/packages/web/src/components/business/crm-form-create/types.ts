@@ -1,11 +1,14 @@
-import type { FieldTypeEnum } from './enum';
+import type { FieldRuleEnum, FieldTypeEnum } from './enum';
 import type { FormItemRule } from 'naive-ui';
 import type { Option } from 'naive-ui/es/transfer/src/interface';
 
 export interface FormCreateFieldOption extends Option {
   [key: string]: any;
 }
-
+export interface FormCreateFieldRule extends FormItemRule {
+  key: FieldRuleEnum;
+  label: string;
+}
 export interface FormCreateField {
   // 基础属性
   id: string;
@@ -20,11 +23,12 @@ export interface FormCreateField {
   fieldWidth: number;
   options?: FormCreateFieldOption[];
   defaultValue?: any;
-  rules: FormItemRule | FormItemRule[];
+  rules: FormCreateFieldRule[];
   // 数字输入属性
   max?: number;
   min?: number;
   numberFormat?: 'number' | 'percent'; // 数字格式, number: 数字, percent: 百分比
+  decimalPlaces?: boolean; // 保留小数点位
   precision?: number; // 精度
   showThousandsSeparator?: boolean; // 是否显示千分位
   // 日期输入属性
@@ -38,5 +42,9 @@ export interface FormCreateField {
   uploadSizeLimit?: number;
   // 地址属性
   hasDetail?: boolean;
-  [key: string]: any;
+  // 选择器属性
+  multiple?: boolean;
+  // 前端渲染属性
+  icon: string;
+  showRules?: FieldRuleEnum[]; // 显示的校验规则
 }

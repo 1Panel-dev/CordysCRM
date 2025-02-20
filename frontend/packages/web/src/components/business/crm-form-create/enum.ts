@@ -20,4 +20,8 @@ export enum FieldTypeEnum {
   PHONE = 'phone',
 }
 
-export default FieldTypeEnum;
+export enum FieldRuleEnum {
+  REQUIRED = 'required',
+  UNIQUE = 'unique',
+  NUMBER_RANGE = 'numberRange',
+}

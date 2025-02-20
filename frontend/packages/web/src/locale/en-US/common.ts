@@ -225,6 +225,7 @@ export default {
   'common.checkDetail': 'View details',
   'common.operator': 'Operator',
   'common.nameExists': 'Name already exists',
+  'common.valueExists': '{value} already exists',
   'common.pleaseInputToEnter': 'Please input and press enter',
   'common.emailErrTip': 'Email format error, please reenter',
   'common.userPhoneErrTip': 'Please enter the 11 phone number',
@@ -244,4 +245,5 @@ export default {
   'common.ge': 'Greater than or equal to',
   'common.lt': 'Less than',
   'common.le': 'Less than or equal to',
+  'common.sort': 'Sort',
 };

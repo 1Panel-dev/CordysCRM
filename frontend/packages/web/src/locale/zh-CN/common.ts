@@ -225,6 +225,7 @@ export default {
   'common.checkDetail': '查看详情',
   'common.operator': '操作人',
   'common.nameExists': '名称已重复',
+  'common.valueExists': '{value}已重复',
   'common.pleaseInputToEnter': '请输入后回车',
   'common.emailErrTip': '邮箱格式错误，请重新输入',
   'common.userPhoneErrTip': '请输入 11 位手机号',
@@ -244,4 +245,5 @@ export default {
   'common.ge': '大于等于',
   'common.lt': '小于',
   'common.le': '小于等于',
+  'common.sort': '排序',
 };

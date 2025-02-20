@@ -7,7 +7,7 @@
   >
     <div v-if="props.fieldConfig.description" class="n-form-item-desc" v-html="props.fieldConfig.description"></div>
     <n-input
-      v-model="value"
+      v-model:value="value"
       :maxlength="255"
       :placeholder="props.fieldConfig.placeholder"
       :default-value="props.fieldConfig.defaultValue"
@@ -30,6 +30,13 @@
   const value = defineModel<string>('value', {
     default: '',
   });
+
+  watch(
+    () => props.fieldConfig.defaultValue,
+    (val) => {
+      value.value = val;
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>

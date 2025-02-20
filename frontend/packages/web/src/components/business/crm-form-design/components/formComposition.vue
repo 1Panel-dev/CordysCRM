@@ -1,61 +1,60 @@
 <template>
-  <n-form class="crm-form-design--composition">
-    <VueDraggable
-      v-model="list"
-      :disabled="disabled"
-      :animation="150"
-      ghost-class="crm-form-design--composition-item-ghost"
-      group="crmFormDesign"
-      class="crm-form-design--composition-drag-wrapper"
-      :class="[list.length > 0 ? '' : 'border border-dashed']"
-      :style="{
-        gridTemplateColumns: `repeat(${props.formConfig.layout}, 1fr)`,
-      }"
-      @start="onStart"
-    >
-      <div
-        v-for="item in list"
-        :key="item.id"
-        class="crm-form-design--composition-item"
-        :class="activeItem?.id === item.id ? 'crm-form-design--composition-item--active' : ''"
-        :style="{ gridColumn: `span ${item.fieldWidth}` }"
-        @click="() => handleItemClick(item)"
+  <n-form :label-placement="props.formConfig.labelPos" class="crm-form-design--composition">
+    <n-scrollbar content-class="h-full">
+      <VueDraggable
+        v-model="list"
+        :disabled="disabled"
+        :animation="150"
+        ghost-class="crm-form-design--composition-item-ghost"
+        group="crmFormDesign"
+        class="crm-form-design--composition-drag-wrapper"
+        :class="[list.length > 0 ? '' : 'border border-dashed']"
+        @start="onStart"
       >
-        <div class="crm-form-design--composition-item-tools">
-          <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
-            <template #trigger>
-              <CrmIcon
-                type="iconicon_file_copy"
-                :size="16"
-                class="cursor-pointer hover:text-[var(--primary-8)]"
-                @click.stop="copyItem(item)"
-              />
-            </template>
-            {{ t('common.copy') }}
-          </n-tooltip>
-          <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
-            <template #trigger>
-              <CrmIcon
-                type="iconicon_delete"
-                :size="16"
-                class="cursor-pointer hover:text-[var(--error-red)]"
-                @click.stop="deleteItem(item)"
-              />
-            </template>
-            {{ t('common.delete') }}
-          </n-tooltip>
+        <div
+          v-for="item in list"
+          :key="item.id"
+          class="crm-form-design--composition-item"
+          :class="activeItem?.id === item.id ? 'crm-form-design--composition-item--active' : ''"
+          :style="{ width: `${item.fieldWidth * 100}%` }"
+          @click="() => handleItemClick(item)"
+        >
+          <div class="crm-form-design--composition-item-tools">
+            <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+              <template #trigger>
+                <CrmIcon
+                  type="iconicon_file_copy"
+                  :size="16"
+                  class="cursor-pointer hover:text-[var(--primary-8)]"
+                  @click.stop="copyItem(item)"
+                />
+              </template>
+              {{ t('common.copy') }}
+            </n-tooltip>
+            <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+              <template #trigger>
+                <CrmIcon
+                  type="iconicon_delete"
+                  :size="16"
+                  class="cursor-pointer hover:text-[var(--error-red)]"
+                  @click.stop="deleteItem(item)"
+                />
+              </template>
+              {{ t('common.delete') }}
+            </n-tooltip>
+          </div>
+          <component :is="getItemComponent(item.type)" :field-config="item" :path="item.id" />
+          <div class="crm-form-design--composition-item-mask"></div>
         </div>
-        <component :is="getItemComponent(item.type)" :field-config="item" :path="item.id" />
-        <div class="crm-form-design--composition-item-mask"></div>
-      </div>
-      <div
-        v-if="list.length === 0"
-        class="absolute col-span-4 flex h-full w-full items-center justify-center text-[var(--text-n4)]"
-        draggable="false"
-      >
-        {{ t('crmFormDesign.emptyTip') }}
-      </div>
-    </VueDraggable>
+        <div
+          v-if="list.length === 0"
+          class="absolute col-span-4 flex h-full w-full items-center justify-center text-[var(--text-n4)]"
+          draggable="false"
+        >
+          {{ t('crmFormDesign.emptyTip') }}
+        </div>
+      </VueDraggable>
+    </n-scrollbar>
     <div class="crm-form-design--composition-footer" :class="props.formConfig.optBtnPos">
       <n-button v-if="formConfig.optBtnContent[0].enable" type="primary">
         {{ formConfig.optBtnContent[0].text }}
@@ -72,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NForm, NTooltip } from 'naive-ui';
+  import { NButton, NForm, NScrollbar, NTooltip } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
   import { VueDraggable } from 'vue-draggable-plus';
 
@@ -150,7 +149,6 @@
       ...item,
       id: getGenerateId(),
       name: t(item.name),
-      fieldWidth: 4,
     };
     if (
       [
@@ -166,15 +164,15 @@
     ) {
       res.options = [
         {
-          label: 'crmFormDesign.option',
+          label: t('crmFormDesign.option', { i: 1 }),
           value: getGenerateId(),
         },
         {
-          label: 'crmFormDesign.option',
+          label: t('crmFormDesign.option', { i: 2 }),
           value: getGenerateId(),
         },
         {
-          label: 'crmFormDesign.option',
+          label: t('crmFormDesign.option', { i: 3 }),
           value: getGenerateId(),
         },
       ];
@@ -203,15 +201,15 @@
     ) {
       res.options = [
         {
-          label: 'crmFormDesign.option',
+          label: t('crmFormDesign.option', { i: 1 }),
           value: getGenerateId(),
         },
         {
-          label: 'crmFormDesign.option',
+          label: t('crmFormDesign.option', { i: 2 }),
           value: getGenerateId(),
         },
         {
-          label: 'crmFormDesign.option',
+          label: t('crmFormDesign.option', { i: 3 }),
           value: getGenerateId(),
         },
       ];
@@ -238,15 +236,16 @@
 
     padding: 24px 24px 0;
     .crm-form-design--composition-drag-wrapper {
-      @apply relative grid w-full flex-1 auto-rows-min;
+      @apply relative flex h-full w-full flex-wrap content-start;
 
       border-radius: var(--border-radius-small);
       .crm-form-design--composition-item {
-        @apply relative cursor-move;
+        @apply relative cursor-move self-start;
 
         padding: 16px;
         border: 1px solid transparent;
         border-radius: var(--border-radius-small);
+        transition: width 0.3s;
         &:hover {
           background-color: var(--text-n9);
           .crm-form-design--composition-item-tools {
@@ -286,11 +285,11 @@
         @apply flex items-center;
 
         padding: 16px;
+        width: 100%;
         border: 1px solid var(--primary-8);
         border-radius: var(--border-radius-small);
         background-color: var(--primary-7);
         gap: 8px;
-        grid-column: span 4;
         line-height: 22px;
       }
     }

@@ -6,7 +6,7 @@
         <formComposition ref="formCompositionRef" v-model:list="list" v-model:field="field" :form-config="formConfig" />
       </div>
     </div>
-    <div class="crm-form-design--right"><formAttrConfig :field="field" :form-config="formConfig" /></div>
+    <div class="crm-form-design--right"><formAttrConfig v-model:field="field" :form-config="formConfig" /></div>
   </n-scrollbar>
 </template>
 
@@ -34,7 +34,7 @@
 
   const formConfig = ref<FormConfig>({
     layout: 1,
-    labelPos: 'vertical',
+    labelPos: 'top',
     inputWidth: 'custom',
     optBtnContent: [
       {
@@ -57,7 +57,7 @@
 <style lang="less" scoped>
   .crm-form-design--left,
   .crm-form-design--right {
-    @apply h-full;
+    @apply h-full overflow-hidden;
 
     width: 280px;
     background-color: var(--text-n10);

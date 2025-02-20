@@ -13,10 +13,10 @@
     >
       <n-space :item-class="props.fieldConfig.direction === 'horizontal' ? '' : 'w-full'">
         <n-checkbox
-          v-for="(item, i) in props.fieldConfig.options"
+          v-for="item in props.fieldConfig.options"
           :key="item.value"
           :value="item.value"
-          :label="t(item.label, { i: i + 1 })"
+          :label="item.label"
         />
       </n-space>
     </n-checkbox-group>
@@ -26,8 +26,6 @@
 <script setup lang="ts">
   import { NCheckbox, NCheckboxGroup, NFormItem, NSpace } from 'naive-ui';
 
-  import { useI18n } from '@/hooks/useI18n';
-
   import { FormCreateField } from '../../types';
 
   const props = defineProps<{
@@ -35,11 +33,16 @@
     path: string;
   }>();
 
-  const { t } = useI18n();
-
   const value = defineModel<(string | number)[]>('value', {
     default: [],
   });
+
+  watch(
+    () => props.fieldConfig.defaultValue,
+    (val) => {
+      value.value = val;
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>

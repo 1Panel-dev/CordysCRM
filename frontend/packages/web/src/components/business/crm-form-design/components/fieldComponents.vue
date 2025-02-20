@@ -49,9 +49,9 @@
   import { VueDraggable } from 'vue-draggable-plus';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import { advancedFields, basicFields } from '@/components/business/crm-form-create/config';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
-  import { advancedFields, basicFields } from '@/components/business/crm-form-design/config';
 
   import { useI18n } from '@/hooks/useI18n';
   import { getGenerateId } from '@/utils';
@@ -83,15 +83,15 @@
     ) {
       res.options = [
         {
-          label: 'crmFormDesign.option',
+          label: t('crmFormDesign.option', { i: 1 }),
           value: getGenerateId(),
         },
         {
-          label: 'crmFormDesign.option',
+          label: t('crmFormDesign.option', { i: 2 }),
           value: getGenerateId(),
         },
         {
-          label: 'crmFormDesign.option',
+          label: t('crmFormDesign.option', { i: 3 }),
           value: getGenerateId(),
         },
       ];
