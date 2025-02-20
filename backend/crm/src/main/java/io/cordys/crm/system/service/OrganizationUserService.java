@@ -27,10 +27,15 @@ import io.cordys.crm.system.excel.listener.UserImportEventListener;
 import io.cordys.crm.system.mapper.*;
 import io.cordys.excel.utils.EasyExcelExporter;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -76,6 +81,8 @@ public class OrganizationUserService {
     private BaseMapper<Department> departmentMapper;
     @Resource
     private DepartmentService departmentService;
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
 
     /**
      * 员工列表查询
@@ -488,6 +495,23 @@ public class OrganizationUserService {
 
 
     /**
+     * 更新同步信息
+     *
+     * @param updateUsers
+     * @param updateOrganizationUsers
+     */
+    public void update(List<User> updateUsers, List<OrganizationUser> updateOrganizationUsers) {
+        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+        ExtUserMapper extUserMapper = sqlSession.getMapper(ExtUserMapper.class);
+        ExtOrganizationUserMapper extOrganizationUserMapper = sqlSession.getMapper(ExtOrganizationUserMapper.class);
+        updateUsers.forEach(user -> extUserMapper.updateUser(user));
+        updateOrganizationUsers.forEach(organizationUser -> extOrganizationUserMapper.updateOrganizationUser(organizationUser));
+        sqlSession.flushStatements();
+        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+    }
+
+
+    /**
      * 批量编辑用户
      *
      * @param request
@@ -763,5 +787,38 @@ public class OrganizationUserService {
     public boolean deleteCheck(String id) {
         UserResponse user = extUserMapper.getUserDetail(id);
         return checkUserResource(user.getUserId());
+    }
+
+    public List<OrganizationUser> getUserByOrgId(String orgId) {
+        return extOrganizationUserMapper.getUserByOrgId(orgId);
+    }
+
+    public void deleteUsers(List<OrganizationUser> userList) {
+        if (CollectionUtils.isNotEmpty(userList)) {
+            List<String> userIds = userList.stream()
+                    .map(OrganizationUser::getUserId)
+                    .toList();
+            List<String> ids = userList.stream()
+                    .map(OrganizationUser::getId)
+                    .toList();
+            LambdaQueryWrapper<OrganizationUser> wrapper = new LambdaQueryWrapper<>();
+            wrapper.in(OrganizationUser::getUserId, userIds);
+            List<OrganizationUser> organizationUserList = organizationUserMapper.selectListByLambda(wrapper);
+            Map<String, Long> userCountMap = organizationUserList.stream()
+                    .collect(Collectors.groupingBy(OrganizationUser::getUserId, Collectors.counting()));
+
+            List<String> singleUserIds = userCountMap.entrySet().stream()
+                    .filter(entry -> entry.getValue() == 1)
+                    .map(Map.Entry::getKey)
+                    .toList();
+
+            extOrganizationUserMapper.deleteUserByIds(ids);
+
+            if (CollectionUtils.isNotEmpty(singleUserIds)) {
+                this.extUserMapper.deleteByIds(userIds);
+                this.extUserExtendMapper.deleteUser(userIds);
+            }
+
+        }
     }
 }

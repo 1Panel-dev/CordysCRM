@@ -1,8 +1,8 @@
 package io.cordys.crm.system.mapper;
 
+import io.cordys.crm.system.domain.OrganizationConfig;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import io.cordys.crm.system.domain.OrganizationConfig;
 
 @Mapper
 public interface ExtOrganizationConfigMapper {
@@ -11,4 +11,6 @@ public interface ExtOrganizationConfigMapper {
     void updateSyncFlag(@Param("orgId") String orgId, @Param("syncResource") String syncResource, @Param("type") String type);
 
     int getSyncFlag(@Param("organizationId") String organizationId);
+
+    OrganizationConfig getSyncStatus(@Param("organizationId") String organizationId, @Param("type") String type, @Param("syncResource") String syncResource);
 }

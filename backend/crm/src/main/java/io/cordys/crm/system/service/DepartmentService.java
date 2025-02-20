@@ -15,6 +15,7 @@ import io.cordys.common.util.NodeSortUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.DepartmentCommander;
+import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.dto.log.DepartmentSetCommanderLog;
 import io.cordys.crm.system.dto.request.DepartmentAddRequest;
 import io.cordys.crm.system.dto.request.DepartmentCommanderRequest;
@@ -26,6 +27,10 @@ import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +50,8 @@ public class DepartmentService extends MoveNodeService {
     private BaseMapper<DepartmentCommander> departmentCommanderMapper;
     @Resource
     private ExtOrganizationUserMapper extOrganizationUserMapper;
-
+    @Resource
+    private SqlSessionFactory sqlSessionFactory;
 
     /**
      * 获取部门树
@@ -229,7 +235,10 @@ public class DepartmentService extends MoveNodeService {
      * @return
      */
     public boolean deleteCheck(String id, String orgId) {
-        checkDepartment(id);
+        Department department = checkDepartment(id);
+        if (StringUtils.equalsAnyIgnoreCase(department.getResource(), DepartmentConstants.INTERNAL.name())) {
+            throw new GenericException(Translator.get("department.internal"));
+        }
         return extOrganizationUserMapper.countUserByDepartmentId(id, orgId) <= 0;
     }
 
@@ -410,5 +419,63 @@ public class DepartmentService extends MoveNodeService {
             departmentList.add(updateDepartment);
         }
         extDepartmentMapper.batchUpdate(departmentList);
+    }
+
+    public Department getInternalDepartment(String orgId, String resource) {
+        return extDepartmentMapper.getInternalDepartment(orgId, resource);
+    }
+
+    /**
+     * 更新部门信息
+     *
+     * @param departments
+     */
+    public void update(List<Department> departments) {
+        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+        ExtDepartmentMapper mapper = sqlSession.getMapper(ExtDepartmentMapper.class);
+        for (Department department : departments) {
+            mapper.updateDepartment(department);
+        }
+        sqlSession.flushStatements();
+        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+    }
+
+
+    /**
+     * 获取全部部门
+     *
+     * @param orgId
+     * @return
+     */
+    public List<Department> getDepartmentByOrgId(String orgId) {
+        return extDepartmentMapper.getDepartmentByOrgId(orgId);
+    }
+
+
+    /**
+     * 获取责任人
+     *
+     * @param userList
+     * @return
+     */
+    public List<DepartmentCommander> getDepartmentCommander(List<OrganizationUser> userList) {
+        if (CollectionUtils.isEmpty(userList)) {
+            return new ArrayList<>();
+        }
+        List<String> userIds = userList.stream()
+                .map(OrganizationUser::getUserId)
+                .toList();
+        return extDepartmentMapper.getDepartmentCommander(userIds);
+    }
+
+    public void deleteDepartments(List<Department> departmentList) {
+        if (CollectionUtils.isNotEmpty(departmentList)) {
+            List<String> ids = departmentList.stream()
+                    .filter(department -> !StringUtils.equalsAnyIgnoreCase(department.getResource(), DepartmentConstants.INTERNAL.name()))
+                    .map(Department::getId).toList();
+            if (CollectionUtils.isNotEmpty(ids)) {
+                extDepartmentMapper.deleteDepartmentByIds(ids);
+            }
+        }
     }
 }

@@ -15,7 +15,7 @@ public interface ExtUserMapper {
 
     List<OptionDTO> selectUserOptionByIds(@Param("userIds") List<String> userIds);
 
-    List<User> getOrgUserByUserIds(@Param("organizationId")String organizationId, @Param("userIds") List<String> userIds);
+    List<User> getOrgUserByUserIds(@Param("organizationId") String organizationId, @Param("userIds") List<String> userIds);
 
     List<UserRoleConvert> getUserRole(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 
@@ -33,15 +33,18 @@ public interface ExtUserMapper {
 
     int countByEmail(@Param("email") String email, @Param("id") String id);
 
-    int countByPhone(@Param("phone")String phone, @Param("id")String id);
+    int countByPhone(@Param("phone") String phone, @Param("id") String id);
 
     List<OptionDTO> selectUserOptionByOrgId(@Param("orgId") String orgId);
 
     /**
      * 查询范围下的用户ID集合
+     *
      * @param scopeIds 范围ID集合
-     * @param orgId 组织ID
+     * @param orgId    组织ID
      * @return 用户ID集合
      */
     List<String> getUserIdsByScope(@Param("ids") List<String> scopeIds, @Param("orgId") String orgId);
+
+    void updateUser(@Param("user") User user);
 }

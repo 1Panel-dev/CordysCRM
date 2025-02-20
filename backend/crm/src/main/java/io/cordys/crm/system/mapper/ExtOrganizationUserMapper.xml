@@ -129,4 +129,64 @@
                 #{name}
             </foreach>
     </select>
+
+    <select id="getUserByOrgId" resultType="io.cordys.crm.system.domain.OrganizationUser">
+        select * from sys_organization_user where organization_id = #{orgId} and user_id != 'admin'
+    </select>
+
+    <update id="updateOrganizationUser" parameterType="io.cordys.crm.system.domain.OrganizationUser">
+        update sys_organization_user
+        <set>
+            <if test="organizationUser.organizationId != null">
+                organization_id = #{organizationUser.organizationId},
+            </if>
+            <if test="organizationUser.departmentId != null">
+                department_id = #{organizationUser.departmentId},
+            </if>
+            <if test="organizationUser.resourceUserId != null">
+                resource_user_id = #{organizationUser.resourceUserId},
+            </if>
+            <if test="organizationUser.userId != null">
+                user_id = #{organizationUser.userId},
+            </if>
+            <if test="organizationUser.enable != null">
+                `enable` = #{organizationUser.enable},
+            </if>
+            <if test="organizationUser.employeeId != null">
+                employee_id = #{organizationUser.employeeId},
+            </if>
+            <if test="organizationUser.position != null">
+                `position` = #{organizationUser.position},
+            </if>
+            <if test="organizationUser.employeeType != null">
+                employee_type = #{organizationUser.employeeType},
+            </if>
+            <if test="organizationUser.supervisorId != null">
+                supervisor_id = #{organizationUser.supervisorId},
+            </if>
+            <if test="organizationUser.workCity != null">
+                work_city = #{organizationUser.workCity},
+            </if>
+            <if test="organizationUser.createTime != null">
+                create_time = #{organizationUser.createTime},
+            </if>
+            <if test="organizationUser.updateTime != null">
+                update_time = #{organizationUser.updateTime},
+            </if>
+            <if test="organizationUser.createUser != null">
+                create_user = #{organizationUser.createUser},
+            </if>
+            <if test="organizationUser.updateUser != null">
+                update_user = #{organizationUser.updateUser},
+            </if>
+        </set>
+        where id = #{organizationUser.id}
+    </update>
+
+    <delete id="deleteUserByIds">
+        DELETE FROM sys_organization_user WHERE id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>

@@ -2,6 +2,7 @@ package io.cordys.crm.system.mapper;
 
 import io.cordys.common.dto.*;
 import io.cordys.crm.system.domain.Department;
+import io.cordys.crm.system.domain.DepartmentCommander;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -34,4 +35,14 @@ public interface ExtDepartmentMapper {
     List<String> selectChildrenIds(@Param("parentId") String parentId);
 
     void batchUpdate(@Param("departmentList") List<Department> departmentList);
+
+    Department getInternalDepartment(@Param("orgId") String orgId, @Param("resource") String resource);
+
+    void updateDepartment(@Param("department") Department department);
+
+    List<Department> getDepartmentByOrgId(@Param("orgId") String orgId);
+
+    List<DepartmentCommander> getDepartmentCommander(@Param("userIds") List<String> userIds);
+
+    void deleteDepartmentByIds(@Param("ids") List<String> ids);
 }

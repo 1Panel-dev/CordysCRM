@@ -158,4 +158,45 @@
             #{id}
         </foreach>
     </select>
+
+
+    <update id="updateUser" parameterType="io.cordys.crm.system.domain.User">
+        update sys_user
+        <set>
+            <if test="user.name != null">
+                `name` = #{user.name},
+            </if>
+            <if test="user.phone != null">
+                phone = #{user.phone},
+            </if>
+            <if test="user.email != null">
+                email = #{user.email},
+            </if>
+            <if test="user.password != null">
+                `password` = #{user.password},
+            </if>
+            <if test="user.language != null">
+                `language` = #{user.language},
+            </if>
+            <if test="user.lastOrganizationId != null">
+                last_organization_id = #{user.lastOrganizationId},
+            </if>
+            <if test="user.gender != null">
+                gender = #{user.gender},
+            </if>
+            <if test="user.createTime != null">
+                create_time = #{user.createTime},
+            </if>
+            <if test="user.updateTime != null">
+                update_time = #{user.updateTime},
+            </if>
+            <if test="user.createUser != null">
+                create_user = #{user.createUser},
+            </if>
+            <if test="user.updateUser != null">
+                update_user = #{user.updateTime},
+            </if>
+        </set>
+        where id = #{user.id}
+    </update>
 </mapper>

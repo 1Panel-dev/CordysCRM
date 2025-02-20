@@ -1,6 +1,7 @@
 package io.cordys.crm.system.mapper;
 
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.UserBatchEditRequest;
 import io.cordys.crm.system.dto.request.UserBatchEnableRequest;
@@ -36,4 +37,10 @@ public interface ExtOrganizationUserMapper {
     void updateUserByIds(@Param("request") UserBatchEditRequest request, @Param("operatorId") String operatorId, @Param("orgId") String orgId);
 
     List<UserImportDTO> selectSupervisor(@Param("nameList") List<String> nameList, @Param("orgId") String orgId);
+
+    List<OrganizationUser> getUserByOrgId(@Param("orgId") String orgId);
+
+    void updateOrganizationUser(@Param("organizationUser") OrganizationUser organizationUser);
+
+    void deleteUserByIds(@Param("ids") List<String> ids);
 }

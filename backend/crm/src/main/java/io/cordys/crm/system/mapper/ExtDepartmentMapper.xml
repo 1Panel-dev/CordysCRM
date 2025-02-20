@@ -42,7 +42,7 @@
     </select>
 
     <delete id="deleteByOrgId">
-        DELETE FROM sys_department WHERE organization_id  = #{orgId}
+        DELETE FROM sys_department WHERE organization_id  = #{orgId} and resource != 'INTERNAL'
     </delete>
 
 
@@ -103,4 +103,70 @@
             #{department.id}
         </foreach>
     </update>
+
+
+    <select id="getInternalDepartment" resultType="io.cordys.crm.system.domain.Department">
+        SELECT * FROM sys_department WHERE organization_id = #{orgId} AND resource = #{resource}
+    </select>
+
+
+    <update id="updateDepartment" parameterType="io.cordys.crm.system.domain.Department">
+        update sys_department
+        <set>
+            <if test="department.name != null">
+                `name` = #{department.name},
+            </if>
+            <if test="department.organizationId != null">
+                organization_id = #{department.organizationId},
+            </if>
+            <if test="department.parentId != null">
+                parent_id = #{department.parentId},
+            </if>
+            <if test="department.pos != null">
+                pos = #{department.pos},
+            </if>
+            <if test="department.createTime != null">
+                create_time = #{department.createTime},
+            </if>
+            <if test="department.updateTime != null">
+                update_time = #{department.updateTime},
+            </if>
+            <if test="department.createUser != null">
+                create_user = #{department.createUser},
+            </if>
+            <if test="department.updateUser != null">
+                update_user = #{department.updateUser},
+            </if>
+            <if test="department.resource != null">
+                `resource` = #{department.resource},
+            </if>
+            <if test="department.resourceId != null">
+                resource_id = #{department.resourceId},
+            </if>
+        </set>
+        where id = #{department.id}
+    </update>
+
+
+    <select id="getDepartmentByOrgId" resultType="io.cordys.crm.system.domain.Department">
+        SELECT * FROM sys_department WHERE organization_id = #{orgId}
+    </select>
+
+
+    <select id="getDepartmentCommander" resultType="io.cordys.crm.system.domain.DepartmentCommander">
+        select id, user_id, department_id from sys_department_commander
+        where user_id in
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+
+
+    <delete id="deleteDepartmentByIds">
+        DELETE FROM sys_department WHERE id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
 </mapper>
