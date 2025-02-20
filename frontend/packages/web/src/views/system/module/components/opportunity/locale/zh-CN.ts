@@ -11,4 +11,6 @@ export default {
   'opportunity.gotIt': '知道了',
   'opportunity.goMove': '去转移',
   'opportunity.clueRecoveryRule': '线索回收规则',
+  'opportunity.belongDays': '归属天数',
+  'opportunity.opportunityStage': '商机阶段',
 };

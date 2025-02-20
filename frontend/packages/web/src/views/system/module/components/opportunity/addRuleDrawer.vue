@@ -3,7 +3,7 @@
     v-model:show="visible"
     :width="800"
     :title="t('module.businessManage.businessCloseRule')"
-    :show-continue="true"
+    :show-continue="!form.id"
     :loading="loading"
     @confirm="confirmHandler(false)"
     @continue="confirmHandler(true)"
@@ -22,10 +22,10 @@
         <n-form-item
           require-mark-placement="left"
           label-placement="left"
-          path="ruleName"
+          path="name"
           :label="t('opportunity.ruleName')"
         >
-          <n-input v-model:value="form.ruleName" type="text" :placeholder="t('common.pleaseInput')" />
+          <n-input v-model:value="form.name" type="text" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
       </div>
       <div class="flex">
@@ -33,10 +33,10 @@
           <n-form-item
             require-mark-placement="left"
             label-placement="left"
-            path="adminId"
+            path="ownerIds"
             :label="t('opportunity.admin')"
           >
-            <n-select v-model:value="form.adminId" :placeholder="t('common.pleaseSelect')" :options="adminOptions" />
+            <CrmUserTagSelector v-model:selected-list="form.ownerIds" />
           </n-form-item>
         </div>
         <div class="flex-1">
@@ -46,25 +46,22 @@
             path="userId"
             :label="t('opportunity.members')"
           >
-            <CrmUserSelect
-              v-model:value="form.userId"
-              value-field="id"
-              label-field="name"
-              mode="remote"
-              filterable
-              :fetch-api="getUserOptions"
-            />
+            <CrmUserTagSelector v-model:selected-list="form.scopeIds" />
           </n-form-item>
         </div>
       </div>
+
       <div class="crm-module-form-title"> {{ t('module.businessManage.businessCloseRule') }}</div>
+      <!-- 自动关闭 -->
       <n-form-item
+        v-if="!form.id"
         require-mark-placement="left"
         label-placement="left"
-        path="autoClose"
+        path="auto"
         :label="t('opportunity.autoClose')"
+        :show-feedback="false"
       >
-        <n-radio-group v-model:value="form.autoClose" name="radiogroup">
+        <n-radio-group v-model:value="form.auto" name="radiogroup">
           <n-space>
             <n-radio key="yes" :value="true">
               {{ t('common.yes') }}
@@ -76,21 +73,23 @@
         </n-radio-group>
       </n-form-item>
       <CrmBatchForm
-        v-if="form.autoRecycle"
+        v-if="form.auto"
         ref="batchFormRef"
+        class="mt-[16px]"
         :models="formItemModel"
-        :default-list="form.list"
+        :default-list="form.conditions"
         :add-text="t('module.clue.addConditions')"
+        :validate-when-add="true"
         show-all-or
       />
       <n-form-item
         require-mark-placement="left"
         label-placement="left"
         class="mt-[16px]"
-        path="expirationReminder"
+        path="expireNotice"
         :label="t('opportunity.expirationReminder')"
       >
-        <n-radio-group v-model:value="form.expirationReminder" name="radiogroup">
+        <n-radio-group v-model:value="form.expireNotice" name="radiogroup">
           <n-space>
             <n-radio key="yes" :value="true">
               {{ t('common.yes') }}
@@ -102,53 +101,18 @@
         </n-radio-group>
       </n-form-item>
       <n-form-item
+        v-if="form.expireNotice"
         require-mark-placement="left"
         label-placement="left"
-        path="reminderAdvance"
+        path="noticeDays"
         :label="t('module.reminderAdvance')"
       >
-        <n-input
-          v-model:value="form.reminderAdvance"
+        <n-input-number
+          v-model:value="form.noticeDays"
           class="crm-reminder-advance-input"
-          type="text"
           :placeholder="t('common.pleaseInput')"
         />
         <div class="flex flex-nowrap"> {{ t('module.reminderDays') }}</div>
-      </n-form-item>
-      <div class="crm-module-form-title"> {{ t('opportunity.clueRecoveryRule') }}</div>
-      <n-form-item
-        require-mark-placement="left"
-        label-placement="left"
-        path="expirationReminder"
-        :label="t('module.autoRecycle')"
-      >
-        <n-radio-group v-model:value="form.autoRecycle" name="radiogroup">
-          <n-space>
-            <n-radio key="yes" :value="true">
-              {{ t('common.yes') }}
-            </n-radio>
-            <n-radio key="no" :value="false">
-              {{ t('common.no') }}
-            </n-radio>
-          </n-space>
-        </n-radio-group>
-      </n-form-item>
-      <n-form-item
-        require-mark-placement="left"
-        label-placement="left"
-        path="expirationReminder"
-        :label="t('module.expirationReminder')"
-      >
-        <n-radio-group v-model:value="form.expirationReminder" name="radiogroup">
-          <n-space>
-            <n-radio key="yes" :value="true">
-              {{ t('common.yes') }}
-            </n-radio>
-            <n-radio key="no" :value="false">
-              {{ t('common.no') }}
-            </n-radio>
-          </n-space>
-        </n-radio-group>
       </n-form-item>
     </n-form>
   </CrmDrawer>
@@ -162,46 +126,98 @@
     NForm,
     NFormItem,
     NInput,
+    NInputNumber,
     NRadio,
     NRadioGroup,
-    NSelect,
     NSpace,
+    SelectOption,
     useMessage,
   } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
-  import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
+  import { SelectedUsersItem } from '@/components/business/crm-select-user-drawer/type';
+  import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
-  import { getUserOptions } from '@/api/modules/system/org';
+  import { addOpportunityRule, updateOpportunityRule } from '@/api/modules/system/module';
+  import { EQUAL, GE, GT, LE, LT, NOT_EQUAL } from '@/config/operator';
   import { useI18n } from '@/hooks/useI18n';
+
+  import { OperatorEnum } from '@lib/shared/enums/commonEnum';
+  import type { ModuleConditionsItem, OpportunityDetail, OpportunityParams } from '@lib/shared/models/system/module';
 
   const { t } = useI18n();
   const Message = useMessage();
+
+  export type OpportunityDetailType = {
+    ownerIds: SelectedUsersItem[];
+    scopeIds: SelectedUsersItem[];
+  } & OpportunityDetail;
+
+  const props = defineProps<{
+    rows?: OpportunityDetailType;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'loadList'): void;
+    (e: 'cancel'): void;
+  }>();
 
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
 
-  const adminOptions = ref([]);
-
   const rules: FormRules = {
-    ruleName: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }) }],
-    adminId: [{ required: true, message: t('common.pleaseSelect') }],
-    userId: [{ required: true, message: t('common.pleaseSelect') }],
-    reminderAdvance: [{ required: true, message: t('common.pleaseInput') }],
+    name: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }) }],
+    ownerIds: [{ required: true, message: t('common.pleaseSelect') }],
+    scopeIds: [{ required: true, message: t('common.pleaseSelect') }],
+    noticeDays: [{ required: true, message: t('common.pleaseInput') }],
   };
+
+  const closeAttrsOptions = ref<SelectOption[]>([
+    {
+      value: 'belongDays',
+      label: t('opportunity.belongDays'),
+    },
+    {
+      value: 'remainingDays',
+      label: t('module.remainingDays'),
+    },
+    {
+      value: 'opportunityStage',
+      label: t('opportunity.opportunityStage'),
+    },
+  ]);
 
   const formItemModel: Ref<FormItemModel[]> = ref([
     {
-      path: 'member',
-      type: FieldTypeEnum.INPUT,
+      path: 'column',
+      type: FieldTypeEnum.SELECT,
+      rule: [
+        {
+          required: true,
+          message: t('common.pleaseSelect'),
+        },
+      ],
+      selectProps: {
+        options: closeAttrsOptions.value,
+      },
     },
     {
       path: 'operator',
-      type: FieldTypeEnum.INPUT,
+      type: FieldTypeEnum.SELECT,
+      rule: [
+        {
+          required: true,
+          message: t('common.pleaseSelect'),
+        },
+      ],
+      selectProps: {
+        options: [EQUAL, NOT_EQUAL, GT, GE, LT, LE],
+      },
     },
     {
       path: 'value',
@@ -209,51 +225,100 @@
     },
   ]);
 
-  // TODO 类型
-  const form = ref({
-    id: '',
-    ruleName: '',
-    adminId: null,
-    userId: null,
-    autoClose: true,
-    expirationReminder: true,
-    reminderAdvance: '1',
-    autoRecycle: true,
-    list: [],
-  });
+  const initDefaultItem: ModuleConditionsItem = {
+    column: 'belongDays',
+    operator: OperatorEnum.EQ,
+    value: '',
+  };
+
+  const initRuleForm: OpportunityDetailType = {
+    name: '',
+    auto: false,
+    enable: true,
+    expireNotice: false,
+    noticeDays: 0,
+    conditions: [initDefaultItem],
+    operator: 'AND',
+    ownerIds: [],
+    scopeIds: [],
+  };
+
+  const form = ref<OpportunityDetailType>(cloneDeep(initRuleForm));
 
   function cancelHandler() {
-    form.value.userId = null;
+    form.value = cloneDeep(initRuleForm);
     visible.value = false;
   }
 
   const formRef = ref<FormInst | null>(null);
   const loading = ref<boolean>(false);
-  function confirmHandler(isContinue: boolean) {
-    formRef.value?.validate(async (error) => {
-      if (!error) {
-        try {
-          loading.value = true;
-          if (form.value.id) {
-            Message.success(t('common.updateSuccess'));
-          } else {
-            Message.success(t('common.addSuccess'));
-          }
 
-          if (isContinue) {
-            // TODO
-          } else {
-            cancelHandler();
-          }
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.log(e);
-        } finally {
-          loading.value = false;
-        }
+  const batchFormRef = ref<InstanceType<typeof CrmBatchForm>>();
+
+  function userFormValidate(cb: (_isContinue: boolean) => Promise<any>, isContinue: boolean) {
+    batchFormRef.value?.formValidate(async (batchForm?: Record<string, any>) => {
+      try {
+        loading.value = true;
+        form.value.conditions = batchForm?.list;
+        form.value.operator = batchForm?.allOr;
+        await cb(isContinue);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      } finally {
+        loading.value = false;
       }
     });
   }
+
+  async function handleSave(isContinue: boolean) {
+    try {
+      loading.value = true;
+      const { ownerIds, scopeIds } = form.value;
+      const params: OpportunityParams = {
+        ...form.value,
+        ownerIds: ownerIds.map((e) => e.id),
+        scopeIds: scopeIds.map((e) => e.id),
+      };
+
+      if (form.value.id) {
+        await updateOpportunityRule(params);
+        Message.success(t('common.updateSuccess'));
+      } else {
+        await addOpportunityRule(params);
+        Message.success(t('common.addSuccess'));
+      }
+      if (isContinue) {
+        form.value = cloneDeep(initRuleForm);
+      } else {
+        cancelHandler();
+      }
+      emit('loadList');
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  function confirmHandler(isContinue: boolean) {
+    formRef.value?.validate(async (error) => {
+      if (!error) {
+        userFormValidate(handleSave, isContinue);
+      }
+    });
+  }
+
+  watch(
+    () => props.rows,
+    (val) => {
+      if (val) {
+        // TODO 回显待联调
+        form.value = cloneDeep(val);
+      }
+    }
+  );
 </script>
 
 <style scoped lang="less"></style>

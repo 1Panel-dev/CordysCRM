@@ -12,4 +12,6 @@ export default {
   'opportunity.gotIt': 'Got it',
   'opportunity.goMove': 'To transfer',
   'opportunity.clueRecoveryRule': 'Clue Recovery Rule',
+  'opportunity.belongDays': 'Belong Days',
+  'opportunity.opportunityStage': 'Opportunity stage',
 };

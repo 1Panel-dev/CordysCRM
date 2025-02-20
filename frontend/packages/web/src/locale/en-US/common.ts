@@ -238,4 +238,10 @@ export default {
   'common.confirmEnableTitle': 'Are you sure to enable {name}?',
   'common.connectionSuccess': 'Connection success',
   'common.closed': 'Closed',
+  'common.equal': 'Equal',
+  'common.notEqual': 'Not equal',
+  'common.gt': 'Greater than',
+  'common.ge': 'Greater than or equal to',
+  'common.lt': 'Less than',
+  'common.le': 'Less than or equal to',
 };

@@ -10,7 +10,13 @@ import {
   toggleModuleNavStatusUrl,
   updateOpportunityRuleUrl,
 } from '@lib/shared/api/requrls/system/module';
-import type { ModuleNavBaseInfoItem, ModuleSortParams } from '@lib/shared/models/system/module';
+import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+import type {
+  ModuleNavBaseInfoItem,
+  ModuleSortParams,
+  OpportunityDetail,
+  OpportunityItem,
+} from '@lib/shared/models/system/module';
 
 // 模块首页-导航模块列表
 export function getModuleNavConfigList(data: { organizationId: string }) {
@@ -27,18 +33,18 @@ export function toggleModuleNavStatus(id: string) {
   return CDR.get({ url: `${toggleModuleNavStatusUrl}/${id}` });
 }
 
-// 模块-商机-商机规则列表 TODO 类型
-export function getOpportunityList(data: any) {
-  return CDR.post({ url: getOpportunityListUrl, data });
+// 模块-商机-商机规则列表
+export function getOpportunityList(data: TableQueryParams) {
+  return CDR.post<CommonList<OpportunityItem>>({ url: getOpportunityListUrl, data });
 }
 
-// 模块-商机-添加商机规则  TODO 类型
-export function addOpportunityRule(data: any) {
+// 模块-商机-添加商机规则
+export function addOpportunityRule(data: OpportunityDetail) {
   return CDR.post({ url: addOpportunityRuleUrl, data });
 }
 
-// 模块-商机-更新商机规则 TODO 类型
-export function updateOpportunityRule(data: any) {
+// 模块-商机-更新商机规则
+export function updateOpportunityRule(data: OpportunityDetail) {
   return CDR.post({ url: updateOpportunityRuleUrl, data });
 }
 

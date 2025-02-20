@@ -12,6 +12,7 @@ export default {
   'module.closeModuleTipContent': '关闭后，成员在主导航找不到该模块，请谨慎操作！',
   'module.openModuleTip': '确认开启模块 {name} 吗',
   'module.openModuleTipContent': '模块开启后，模块出现在主导航菜单',
+  'module.remainingDays': '剩余归属天数',
   'module.customer.openSea': '公海设置',
   'module.customer.capacitySet': '客户库容设置',
   'module.clue': '线索池',

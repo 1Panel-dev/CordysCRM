@@ -238,4 +238,10 @@ export default {
   'common.confirmEnableTitle': '确认启用 {name} 吗？',
   'common.connectionSuccess': '连接成功',
   'common.closed': '已关闭',
+  'common.equal': '等于',
+  'common.notEqual': '不等于',
+  'common.gt': '大于',
+  'common.ge': '大于等于',
+  'common.lt': '小于',
+  'common.le': '小于等于',
 };

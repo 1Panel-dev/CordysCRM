@@ -690,14 +690,14 @@
         tooltip: true,
       },
     },
-    {
-      title: t('org.userGroup'),
-      key: 'userGroup',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
+    // {
+    //   title: t('org.userGroup'),
+    //   key: 'userGroup',
+    //   width: 100,
+    //   ellipsis: {
+    //     tooltip: true,
+    //   },
+    // },
     {
       title: t('common.createTime'),
       key: 'createTime',
@@ -763,6 +763,8 @@
         position: row.position || '-',
         departmentName: row.departmentName || '-',
         workCity: getCityPath(row.workCity) || '-',
+        phone: row.phone || '-',
+        email: row.email || '-',
       };
     }
   );

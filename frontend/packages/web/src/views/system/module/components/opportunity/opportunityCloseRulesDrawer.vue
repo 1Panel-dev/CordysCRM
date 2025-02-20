@@ -9,9 +9,12 @@
   >
     <div class="business-close-rule">
       <div class="h-full bg-[var(--text-n10)] p-[16px]">
-        <n-button class="mb-[16px] mr-[12px]" type="primary" @click="addRule">
-          {{ t('module.businessManage.addRules') }}
-        </n-button>
+        <div class="mb-[16px] flex items-center justify-between">
+          <n-button class="mr-[12px]" type="primary" @click="addRule">
+            {{ t('module.businessManage.addRules') }}
+          </n-button>
+          <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+        </div>
         <CrmTable
           v-bind="propsRes"
           @page-change="propsEvent.pageChange"
@@ -20,7 +23,12 @@
           @filter-change="propsEvent.filterChange"
         />
       </div>
-      <AddRuleDrawer v-model:visible="showAddRuleDrawer" />
+      <AddRuleDrawer
+        v-model:visible="showAddRuleDrawer"
+        :rows="ruleRecord"
+        @load-list="initOpportunityList()"
+        @cancel="handleCancel"
+      />
     </div>
   </CrmDrawer>
 </template>
@@ -31,19 +39,20 @@
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
+  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import type { CrmTableDataItem } from '@/components/pure/crm-table/type';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddRuleDrawer from './addRuleDrawer.vue';
 
+  import { getOpportunityList } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
 
+  import type { OpportunityDetailType } from './addRuleDrawer.vue';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import type { CommonList } from '@lib/shared/models/common';
 
   const { openModal } = useModal();
   const Message = useMessage();
@@ -53,6 +62,8 @@
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
+
+  const keyword = ref<string>('');
 
   const groupList = ref([
     {
@@ -65,7 +76,9 @@
     },
   ]);
 
+  // TODO 等待联调
   function addOrEditRule(row: any) {}
+
   // 删除规则
   function deleteRule(row: any) {
     const hasData = false;
@@ -244,38 +257,7 @@
     },
   ];
 
-  function initData() {
-    const data: CommonList<CrmTableDataItem<any>> = {
-      total: 11,
-      pageSize: 10,
-      current: 1,
-      list: [
-        {
-          id: '11',
-          num: 'string',
-          title: 'string',
-          enable: false,
-          updateTime: null,
-          createTime: null,
-        },
-        {
-          id: '22',
-          num: '232324323',
-          title: '222',
-          enable: false,
-          updateTime: null,
-          createTime: null,
-        },
-      ],
-    };
-    return new Promise<CommonList<CrmTableDataItem<any>>>((resolve) => {
-      setTimeout(() => {
-        resolve(data);
-      }, 200);
-    });
-  }
-
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(initData, {
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getOpportunityList, {
     tableKey: TableKeyEnum.MODULE_OPPORTUNITY_RULE_TABLE,
     showSetting: true,
     columns,
@@ -283,8 +265,25 @@
   });
 
   const showAddRuleDrawer = ref<boolean>(false);
+  const ruleRecord = ref<OpportunityDetailType>();
   function addRule() {
     showAddRuleDrawer.value = true;
+  }
+
+  function handleCancel() {
+    ruleRecord.value = undefined;
+  }
+
+  function initOpportunityList() {
+    setLoadListParams({
+      keyword: keyword.value,
+    });
+    loadList();
+  }
+
+  function searchData(val: string) {
+    keyword.value = val;
+    initOpportunityList();
   }
 
   onBeforeMount(() => {

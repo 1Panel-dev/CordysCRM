@@ -8,7 +8,7 @@
         class="z-[1] w-[34px]"
         @click="changeAllOr"
       >
-        {{ form.allOr === 'all' ? 'all' : 'or' }}
+        {{ form.allOr === 'AND' ? 'all' : 'or' }}
       </CrmTag>
     </div>
     <div class="flex-1">
@@ -171,7 +171,7 @@
   });
 
   function changeAllOr() {
-    form.value.allOr = form.value.allOr === 'all' ? 'or' : 'all';
+    form.value.allOr = form.value.allOr === 'ALL' ? 'OR' : 'AND';
   }
 
   function fieldNotRepeat(value: any[] | string | undefined, index: number, field: string, msg?: string) {

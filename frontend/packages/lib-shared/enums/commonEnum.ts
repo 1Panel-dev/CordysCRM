@@ -5,4 +5,12 @@ export enum CompanyTypeEnum {
   INTERNAL = 'INTERNAL', // 国际飞书
 }
 
-export default {};
+// 操作符号
+export enum OperatorEnum {
+  EQ = 'EQ', // 等于
+  NE = 'NE', // 不等于
+  GT = 'GT', // 大于
+  GE = 'GE', // 大于等于
+  LT = 'LT', // 小于
+  LE = 'LE', // 小于等于
+}

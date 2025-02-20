@@ -10,7 +10,12 @@
   />
   <div v-else class="flex items-center gap-[8px]">
     <slot>{{ value }} </slot>
-    <CrmIcon class="cursor-pointer text-[var(--text-n4)]" type="iconicon_edit" :size="16" @click="enableEditMode" />
+    <CrmIcon
+      class="table-row-edit cursor-pointer text-[var(--text-n4)]"
+      type="iconicon_edit"
+      :size="16"
+      @click="enableEditMode"
+    />
   </div>
 </template>
 
@@ -55,3 +60,16 @@
     isEditing.value = false;
   }
 </script>
+
+<style lang="less">
+  .n-data-table {
+    .table-row-edit {
+      @apply invisible;
+    }
+    .n-data-table-tr:not(.n-data-table-tr--summary):hover {
+      .table-row-edit {
+        @apply visible;
+      }
+    }
+  }
+</style>
