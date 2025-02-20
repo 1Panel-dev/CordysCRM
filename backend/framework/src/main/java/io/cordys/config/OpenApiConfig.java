@@ -76,7 +76,7 @@ public class OpenApiConfig {
     public GroupedOpenApi xpackApi() {
         return GroupedOpenApi.builder()
                 .group("xpack")
-                .packagesToScan(prePackages + "xpack", "io.cordys.integration")
+                .packagesToScan( "io.cordys.xpack")
                 .build();
     }
 
