@@ -4,7 +4,14 @@
     <select id="list" parameterType="io.cordys.crm.customer.dto.request.CustomerPoolPageRequest" resultType="io.cordys.crm.customer.dto.CustomerPoolDTO">
         select * from customer_pool
         where organization_id = #{orgId}
-        order by create_time desc
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+        <include refid="io.cordys.common.mapper.CommonMapper.sort">
+            <property name="sort" value="request.sort"/>
+            <property name="prefix" value=""/>
+            <property name="defaultSort" value="create_time desc"/>
+        </include>
     </select>
 
     <update id="updatePickRule" parameterType="io.cordys.crm.customer.domain.CustomerPoolPickRule">
@@ -18,4 +25,25 @@
            operator = #{rule.operator}, `condition` = #{rule.condition}, update_user = #{rule.updateUser}, update_time = #{rule.updateTime}
         where pool_id = #{rule.poolId}
     </update>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <if test="condition.name == 'recycled'">
+                        <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="customer_pool.auto"/>
+                        </include>
+                    </if>
+                    <if test="condition.name == 'status'">
+                        <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="customer_pool.enable"/>
+                        </include>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
 </mapper>

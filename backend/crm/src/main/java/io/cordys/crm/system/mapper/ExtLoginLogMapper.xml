@@ -18,5 +18,10 @@
         <if test="request.startTime != null and request.endTime != null">
             AND sll.create_time BETWEEN #{request.startTime} AND #{request.endTime}
         </if>
+        <include refid="io.cordys.common.mapper.CommonMapper.sort">
+            <property name="sort" value="request.sort"/>
+            <property name="prefix" value="sll"/>
+            <property name="defaultSort" value="create_time desc"/>
+        </include>
     </select>
 </mapper> 

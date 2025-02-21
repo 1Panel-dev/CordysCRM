@@ -1,5 +1,6 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.common.dto.SortRequest;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.dto.request.LoginLogRequest;
 import org.junit.jupiter.api.MethodOrderer;
@@ -8,9 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,9 +34,7 @@ public class LoginLogControllerTest extends BaseTest {
         this.requestPost(LOGIN_LOG_LIST, request).andExpect(status().isOk());
         request.setStartTime(1735890402193l);
         request.setEndTime(1735808851000l);
-        Map<String, String> sort = new HashMap<>();
-        sort.put("id", "desc");
-        request.setSort(sort);
+        request.setSort(new SortRequest("id", "desc"));
         this.requestPost(LOGIN_LOG_LIST, request);
     }
 }

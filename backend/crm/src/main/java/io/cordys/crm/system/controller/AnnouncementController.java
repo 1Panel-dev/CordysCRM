@@ -14,7 +14,6 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -40,8 +39,7 @@ public class AnnouncementController {
     @Operation(summary = "公告列表分页查询")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public Pager<List<AnnouncementDTO>> getAnnouncementPage(@Validated @RequestBody AnnouncementPageRequest request) {
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
-                StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, announcementService.page(request));
     }
 

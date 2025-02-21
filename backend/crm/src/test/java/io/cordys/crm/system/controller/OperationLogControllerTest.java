@@ -1,5 +1,6 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.common.dto.SortRequest;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.dto.request.OperationLogRequest;
 import org.junit.jupiter.api.MethodOrderer;
@@ -11,8 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,9 +32,7 @@ public class OperationLogControllerTest extends BaseTest {
         this.requestPost(OPERATION_LOG_LIST, request).andExpect(status().isOk());
         request.setStartTime(1735890402193l);
         request.setEndTime(1735808851000l);
-        Map<String, String> sort = new HashMap<>();
-        sort.put("id", "desc");
-        request.setSort(sort);
+        request.setSort(new SortRequest("id", "desc"));
         this.requestPost(OPERATION_LOG_LIST, request);
     }
 

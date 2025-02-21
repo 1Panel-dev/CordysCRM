@@ -34,8 +34,7 @@ public class LoginLogController {
     @Operation(summary = "系统管理-登录日志-列表查询")
     @RequiresPermissions(PermissionConstants.OPERATION_LOG_READ)
     public Pager<List<LoginLogListResponse>> loginList(@Validated @RequestBody LoginLogRequest request) {
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
-                StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, sysLoginLogService.list(request, OrganizationContext.getOrganizationId()));
     }
 }

@@ -159,18 +159,34 @@
         </foreach>
     </sql>
 
-    <sql id="filters">
-        <if test="${filter} != null and ${filter}.size() > 0">
-            <foreach collection="${filter}.entrySet()" index="key" item="values">
-                <if test="values != null and values.size() > 0 fields.contains(key)" >
-                    <where>
-                        ${table_name}.${key} in
-                        <foreach collection="values" item="value" separator="," open="(" close=")">
-                            #{value}
-                        </foreach>
-                    </where>
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortName" value="${sort}.name"/>
+                <bind name="sortType" value="${sort}.type"/>
+                order by
+                <choose>
+                    <when test="'${prefix}' != null and '${prefix}' != ''">
+                        ${prefix}.${sortName} ${sortType}
+                    </when>
+                    <otherwise>
+                        ${sortName} ${sortType}
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                <if test="'${defaultSort}' != null and '${defaultSort}' != ''">
+                    order by
+                    <choose>
+                        <when test="'${prefix}' != null and '${prefix}' != ''">
+                            ${prefix}.${defaultSort}
+                        </when>
+                        <otherwise>
+                            ${defaultSort}
+                        </otherwise>
+                    </choose>
                 </if>
-            </foreach>
-        </if>
+            </otherwise>
+        </choose>
     </sql>
 </mapper>

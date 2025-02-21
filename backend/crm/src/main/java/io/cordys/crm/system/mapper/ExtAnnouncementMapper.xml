@@ -24,8 +24,11 @@
             and
             sys_announcement.subject like concat('%', #{keyword},'%')
         </if>
-        ORDER BY
-        sys_announcement.create_time DESC;
+        <include refid="io.cordys.common.mapper.CommonMapper.sort">
+            <property name="sort" value="sort"/>
+            <property name="prefix" value="sys_announcement"/>
+            <property name="defaultSort" value="create_time desc"/>
+        </include>
     </select>
 
     <select id="selectById" resultType="io.cordys.crm.system.dto.response.AnnouncementDTO">

@@ -1,7 +1,5 @@
 package io.cordys.crm.lead.controller;
 
-import io.cordys.common.dto.BasePageRequest;
-import io.cordys.common.pager.Pager;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.lead.domain.LeadCapacity;
 import io.cordys.crm.system.dto.request.CapacityRequest;
@@ -14,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
-import java.util.Map;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc

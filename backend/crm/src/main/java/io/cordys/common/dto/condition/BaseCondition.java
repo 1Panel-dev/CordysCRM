@@ -3,6 +3,7 @@ package io.cordys.common.dto.condition;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.Data;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -26,6 +27,15 @@ public class BaseCondition {
 
     public CombineSearch getCombineSearch() {
         return combineSearch == null ? new CombineSearch() : combineSearch;
+    }
+
+    public List<FilterCondition> getFilters() {
+        if (CollectionUtils.isEmpty(filters)) {
+            return List.of();
+        }
+        return filters.stream()
+                .filter(FilterCondition::valid)
+                .toList();
     }
 
     /**

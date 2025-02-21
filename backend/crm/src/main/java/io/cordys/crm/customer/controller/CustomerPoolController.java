@@ -14,7 +14,6 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -32,9 +31,8 @@ public class CustomerPoolController {
     @PostMapping("/page")
     @Operation(summary = "分页获取公海池")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-    public Pager<List<CustomerPoolDTO>> page(BasePageRequest request) {
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
-                StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
+    public Pager<List<CustomerPoolDTO>> page(@RequestBody BasePageRequest request) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, customerPoolService.page(request, OrganizationContext.getOrganizationId()));
     }
 

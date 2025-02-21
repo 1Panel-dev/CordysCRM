@@ -4,6 +4,7 @@ import io.cordys.common.constants.EnumValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.Data;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -22,6 +23,15 @@ public class CombineSearch {
     @Schema(description = "筛选条件列表，用于定义多个搜索条件")
     @Valid
     private List<FilterCondition> conditions;
+
+    public List<FilterCondition> getConditions() {
+        if (CollectionUtils.isEmpty(conditions)) {
+            return List.of();
+        }
+        return conditions.stream()
+                .filter(FilterCondition::valid)
+                .toList();
+    }
 
     /**
      * 获取当前的匹配模式。如果未设置，则默认返回 "AND"。

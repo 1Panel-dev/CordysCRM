@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.controller;
 
+import io.cordys.common.dto.SortRequest;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.crm.base.BaseTest;
@@ -15,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
-import java.util.Map;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -42,7 +42,7 @@ public class CustomerCapacityControllerTests extends BaseTest {
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/customer-capacity/page", request);
 		Pager<List<CustomerCapacity>> result = getPageResult(mvcResult, CustomerCapacity.class);
 		assert result.getList().size() == 1;
-		request.setSort(Map.of("id", "desc"));
+		request.setSort(new SortRequest("id", "desc"));
 		this.requestPostWithOk("/customer-capacity/page", request);
 	}
 

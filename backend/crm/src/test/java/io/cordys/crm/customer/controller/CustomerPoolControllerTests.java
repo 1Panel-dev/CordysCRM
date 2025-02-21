@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.controller;
 
+import io.cordys.common.dto.SortRequest;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.util.BeanUtils;
@@ -72,7 +73,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 	@Order(3)
 	void page() throws Exception {
 		BasePageRequest request = createPageRequest();
-		request.setSort(Map.of("name", "desc"));
+		request.setSort(new SortRequest("name", "desc"));
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/customer-pool/page", request);
 		Pager<List<CustomerPoolDTO>> result = getPageResult(mvcResult, CustomerPoolDTO.class);
 		assert result.getList().size() == 1;

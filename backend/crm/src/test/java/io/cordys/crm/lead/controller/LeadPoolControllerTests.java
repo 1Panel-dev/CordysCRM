@@ -1,5 +1,6 @@
 package io.cordys.crm.lead.controller;
 
+import io.cordys.common.dto.SortRequest;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.util.BeanUtils;
@@ -25,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -73,7 +73,7 @@ public class LeadPoolControllerTests extends BaseTest {
 	@Order(3)
 	void page() throws Exception {
 		BasePageRequest request = createPageRequest();
-		request.setSort(Map.of("name", "desc"));
+		request.setSort(new SortRequest("name", "desc"));
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/lead-pool/page", request);
 		Pager<List<LeadPoolDTO>> result = getPageResult(mvcResult, LeadPoolDTO.class);
 		assert result.getList().size() == 1;

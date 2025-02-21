@@ -1,5 +1,6 @@
 package io.cordys.crm.opportunity.controller;
 
+import io.cordys.common.dto.SortRequest;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.util.BeanUtils;
@@ -58,7 +59,7 @@ public class OpportunityRuleControllerTests extends BaseTest {
 	@Order(3)
 	void page() throws Exception {
 		BasePageRequest request = new BasePageRequest();
-		request.setSort(Map.of("name", "desc"));
+		request.setSort(new SortRequest("name", "desc"));
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/opportunity-rule/page", request);
 		Pager<List<OpportunityRuleDTO>> result = getPageResult(mvcResult, OpportunityRuleDTO.class);
 		assert result.getList().size() == 1;

@@ -14,7 +14,6 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -33,8 +32,7 @@ public class CustomerCapacityController {
     @Operation(summary = "分页获取客户库容规则")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public Pager<List<CustomerCapacityDTO>> page(@Validated @RequestBody BasePageRequest request) {
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
-                StringUtils.isNotBlank(request.getSortString()) ? request.getSortString() : "create_time desc");
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(), "create_time desc");
         return PageUtils.setPageInfo(page, customerCapacityService.page(OrganizationContext.getOrganizationId()));
     }
 
