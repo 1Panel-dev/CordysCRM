@@ -186,6 +186,8 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       borderColor: getLessVariableValue('--text-n8'),
       thColor: getLessVariableValue('--text-n10'),
       thTextColor: getLessVariableValue('--text-n4'),
+      thColorHoverModal: getLessVariableValue('--text-n10'),
+      thColorModal: getLessVariableValue('--text-n10'),
       thFontWeight: 500,
       tdColorHover: getLessVariableValue('--text-n9'),
       tdTextColor: getLessVariableValue('--text-n1'),
