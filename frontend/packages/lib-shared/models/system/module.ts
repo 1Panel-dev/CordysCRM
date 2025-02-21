@@ -134,11 +134,6 @@ export interface CapacityParams {
   capacity: number; // 容量
 }
 
-// 保存库容规则请求参数
-export interface SaveCapacityParams {
-  capacities: CapacityParams[]; // 库容集合
-}
-
 // 库容列表项
 export interface CapacityItem {
   id: string;

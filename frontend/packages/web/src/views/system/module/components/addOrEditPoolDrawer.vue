@@ -2,7 +2,7 @@
   <CrmDrawer
     v-model:show="visible"
     :width="800"
-    :title="!form.id ? t('module.clue.addCluePool') : t('module.clue.updateCluePool')"
+    :title="title"
     :show-continue="!form.id"
     :ok-text="form.id ? t('common.update') : undefined"
     :loading="loading"
@@ -20,7 +20,12 @@
     >
       <div class="crm-module-form-title">{{ t('common.baseInfo') }}</div>
       <div class="w-full">
-        <n-form-item path="name" :label="t('module.clue.name')">
+        <n-form-item
+          path="name"
+          :label="
+            props.type === ModuleConfigEnum.CLUE_MANAGEMENT ? t('module.clue.name') : t('module.customer.openSeaName')
+          "
+        >
           <n-input v-model:value="form.name" type="text" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
       </div>
@@ -157,14 +162,20 @@
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
-  import { addLeadPool, updateLeadPool } from '@/api/modules/system/module';
+  import { addCustomerPool, addLeadPool, updateCustomerPool, updateLeadPool } from '@/api/modules/system/module';
   import { EQUAL, GE, GT, LE, LT } from '@/config/operator';
   import { useI18n } from '@/hooks/useI18n';
 
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import type { LeadPoolForm, LeadPoolItem, LeadPoolParams } from '@lib/shared/models/system/module';
 
   const { t } = useI18n();
   const Message = useMessage();
+
+  const props = defineProps<{
+    type: ModuleConfigEnum;
+    closeAttrsOptions: SelectOption[];
+  }>();
 
   const visible = defineModel<boolean>('visible', {
     required: true,
@@ -209,16 +220,14 @@
 
   const form = ref<LeadPoolForm>(cloneDeep(initForm));
 
-  const closeAttrsOptions = ref<SelectOption[]>([
-    {
-      value: 'followUpDays',
-      label: t('module.clue.followUpDays'),
-    },
-    {
-      value: 'remainKeepDays',
-      label: t('module.clue.remainKeepDays'),
-    },
-  ]);
+  const title = computed(() => {
+    if (props.type === ModuleConfigEnum.CLUE_MANAGEMENT) {
+      return !form.value.id ? t('module.clue.addCluePool') : t('module.clue.updateCluePool');
+    }
+    if (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT) {
+      return !form.value.id ? t('module.customer.addOpenSea') : t('module.customer.updateOpenSea');
+    }
+  });
 
   const formItemModel: Ref<FormItemModel[]> = ref([
     {
@@ -231,7 +240,7 @@
         },
       ],
       selectProps: {
-        options: closeAttrsOptions.value,
+        options: props.closeAttrsOptions,
       },
     },
     {
@@ -290,10 +299,12 @@
         scopeIds: userIds.map((e) => e.id),
       };
       if (form.value.id) {
-        await updateLeadPool(params);
+        await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT
+          ? updateCustomerPool(params)
+          : updateLeadPool(params));
         Message.success(t('common.updateSuccess'));
       } else {
-        await addLeadPool(params);
+        await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT ? addCustomerPool(params) : addLeadPool(params));
         Message.success(t('common.addSuccess'));
       }
       if (isContinue) {

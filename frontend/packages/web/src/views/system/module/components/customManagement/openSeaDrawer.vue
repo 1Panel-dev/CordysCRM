@@ -2,7 +2,7 @@
   <CrmDrawer
     v-model:show="visible"
     width="100%"
-    :title="t('module.clue.cluePool')"
+    :title="t('module.customer.openSea')"
     :footer="false"
     no-padding
     :show-back="true"
@@ -10,7 +10,7 @@
     <div class="h-full w-full bg-[var(--text-n9)] p-[16px]">
       <div class="h-full bg-[var(--text-n10)] p-[16px]">
         <n-button class="mb-[16px]" type="primary" @click="handleAdd">
-          {{ t('module.clue.addCluePool') }}
+          {{ t('module.customer.addOpenSea') }}
         </n-button>
         <CrmTable
           v-bind="propsRes"
@@ -23,8 +23,8 @@
       <AddOrEditPoolDrawer
         v-model:visible="showAddOrEditDrawer"
         v-model:row="currentRow"
-        :type="ModuleConfigEnum.CLUE_MANAGEMENT"
         :close-attrs-options="closeAttrsOptions"
+        :type="ModuleConfigEnum.CUSTOMER_MANAGEMENT"
         @refresh="loadList"
       />
     </div>
@@ -42,7 +42,7 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddOrEditPoolDrawer from '../addOrEditPoolDrawer.vue';
 
-  import { deleteLeadPool, getLeadPoolPage, switchLeadPoolStatus } from '@/api/modules/system/module';
+  import { deleteCustomerPool, getCustomerPoolPage, switchCustomerPoolStatus } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
@@ -61,8 +61,8 @@
 
   const closeAttrsOptions = ref<SelectOption[]>([
     {
-      value: 'followUpDays',
-      label: t('module.clue.followUpDays'),
+      value: 'belongDays',
+      label: t('opportunity.belongDays'),
     },
     {
       value: 'remainKeepDays',
@@ -90,9 +90,9 @@
     // TODO lmy 判断是否存在未分配的线索
     const hasData = false;
     const title = hasData
-      ? t('module.clue.deleteRulesTitle')
+      ? t('module.customer.deleteRulesTitle')
       : t('common.deleteConfirmTitle', { name: characterLimit(row.name) });
-    const content = hasData ? '' : t('module.deleteTip', { name: t('module.clue') });
+    const content = hasData ? '' : t('module.deleteTip', { name: t('module.openSea') });
     const positiveText = t(hasData ? 'opportunity.gotIt' : 'common.confirm');
     const negativeText = t(hasData ? 'opportunity.goMove' : 'common.cancel');
 
@@ -104,7 +104,7 @@
       negativeText,
       onPositiveClick: async () => {
         try {
-          await deleteLeadPool(row.id);
+          await deleteCustomerPool(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {
@@ -137,12 +137,12 @@
       title: t(isEnabling ? 'common.confirmEnableTitle' : 'common.confirmDisabledTitle', {
         name: characterLimit(row.name),
       }),
-      content: t(isEnabling ? 'module.clue.enabledTipContent' : 'module.clue.disabledTipContent'),
+      content: t(isEnabling ? 'module.customer.enabledTipContent' : 'module.customer.disabledTipContent'),
       positiveText: t(isEnabling ? 'common.confirmEnable' : 'common.confirmDisable'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await switchLeadPoolStatus(row.id);
+          await switchCustomerPoolStatus(row.id);
           Message.success(t(isEnabling ? 'common.opened' : 'common.disabled'));
           tableRefreshId.value += 1;
         } catch (error) {
@@ -155,7 +155,7 @@
 
   const columns: CrmDataTableColumn[] = [
     {
-      title: t('module.clue.name'),
+      title: t('module.customer.openSeaName'),
       key: 'name',
       width: 200,
       sortOrder: false,
@@ -281,7 +281,7 @@
     },
   ];
 
-  const { propsRes, propsEvent, loadList } = useTable(getLeadPoolPage, {
+  const { propsRes, propsEvent, loadList } = useTable(getCustomerPoolPage, {
     tableKey: TableKeyEnum.MODULE_CLUE_POOL,
     showSetting: true,
     columns,

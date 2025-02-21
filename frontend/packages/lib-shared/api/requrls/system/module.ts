@@ -18,9 +18,16 @@ export const SwitchLeadPoolStatusUrl = '/lead-pool/switch'; // 启用/禁用线�
 export const DeleteLeadPoolUrl = '/lead-pool/delete'; // 删除线索池
 
 // 模块-线索库容
-export const GetLeadCapacityPageUrl = '/lead-capacity/list'; // 获取线索库容规则
+export const GetLeadCapacityPageUrl = '/lead-capacity/get'; // 获取线索库容规则
 export const SaveLeadCapacityUrl = '/lead-capacity/save'; // 保存线索库容规则
 
 // 模块-客户库容
-export const GetCustomerCapacityPageUrl = '/customer-capacity/list'; // 获取客户库容
+export const GetCustomerCapacityPageUrl = '/customer-capacity/get'; // 获取客户库容
 export const SaveCustomerCapacityUrl = '/customer-capacity/save'; // 保存客户库容
+
+// 模块-公海池
+export const GetCustomerPoolPageUrl = '/customer-pool/page'; // 分页获取公海池
+export const AddCustomerPoolUrl = '/customer-pool/add'; // 新增公海池
+export const UpdateCustomerPoolUrl = '/customer-pool/update'; // 编辑公海池
+export const SwitchCustomerPoolStatusUrl = '/customer-pool/switch'; // 启用/禁用公海池
+export const DeleteCustomerPoolUrl = '/customer-pool/delete'; // 删除公海池

@@ -26,6 +26,7 @@
     "
   />
   <CluePoolDrawer v-model:visible="clueManagementCluePoolVisible" />
+  <OpenSeaDrawer v-model:visible="customerManagementOpenSeaVisible" :type="selectKey" />
 </template>
 
 <script setup lang="ts">
@@ -38,6 +39,7 @@
   import CapacitySetDrawer from './capacitySetDrawer.vue';
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
+  import OpenSeaDrawer from './customManagement/openSeaDrawer.vue';
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
 
   import { toggleModuleNavStatus } from '@/api/modules/system/module';

@@ -1,11 +1,14 @@
 import CDR from '@/api/http/index';
 
 import {
+  AddCustomerPoolUrl,
   AddLeadPoolUrl,
   addOpportunityRuleUrl,
+  DeleteCustomerPoolUrl,
   DeleteLeadPoolUrl,
   deleteOpportunityUrl,
   GetCustomerCapacityPageUrl,
+  GetCustomerPoolPageUrl,
   GetLeadCapacityPageUrl,
   GetLeadPoolPageUrl,
   getModuleNavConfigListUrl,
@@ -13,9 +16,11 @@ import {
   moduleNavListSortUrl,
   SaveCustomerCapacityUrl,
   SaveLeadCapacityUrl,
+  SwitchCustomerPoolStatusUrl,
   SwitchLeadPoolStatusUrl,
   switchOpportunityStatusUrl,
   toggleModuleNavStatusUrl,
+  UpdateCustomerPoolUrl,
   UpdateLeadPoolUrl,
   updateOpportunityRuleUrl,
 } from '@lib/shared/api/requrls/system/module';
@@ -23,13 +28,13 @@ import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import type {
   CapacityItem,
+  CapacityParams,
   LeadPoolItem,
   LeadPoolParams,
   ModuleNavBaseInfoItem,
   ModuleSortParams,
   OpportunityItem,
   OpportunityParams,
-  SaveCapacityParams,
 } from '@lib/shared/models/system/module';
 
 // 模块首页-导航模块列表
@@ -100,9 +105,30 @@ export function getCapacityPage(type: ModuleConfigEnum) {
   });
 }
 
-export function saveCapacity(data: SaveCapacityParams, type: ModuleConfigEnum) {
+export function saveCapacity(data: CapacityParams[], type: ModuleConfigEnum) {
   return CDR.post({
     url: type === ModuleConfigEnum.CLUE_MANAGEMENT ? SaveLeadCapacityUrl : SaveCustomerCapacityUrl,
     data,
   });
+}
+
+// 公海相关API
+export function getCustomerPoolPage(data: TableQueryParams) {
+  return CDR.post<CommonList<LeadPoolItem>>({ url: GetCustomerPoolPageUrl, data });
+}
+
+export function addCustomerPool(data: LeadPoolParams) {
+  return CDR.post({ url: AddCustomerPoolUrl, data });
+}
+
+export function updateCustomerPool(data: LeadPoolParams) {
+  return CDR.post({ url: UpdateCustomerPoolUrl, data });
+}
+
+export function switchCustomerPoolStatus(id: string) {
+  return CDR.get({ url: `${SwitchCustomerPoolStatusUrl}/${id}` });
+}
+
+export function deleteCustomerPool(id: string) {
+  return CDR.get({ url: `${DeleteCustomerPoolUrl}/${id}` });
 }

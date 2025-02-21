@@ -103,7 +103,7 @@
           capacity: item.capacity,
         };
       });
-      await saveCapacity({ capacities }, props.type);
+      await saveCapacity(capacities, props.type);
       Message.success(t('common.saveSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
