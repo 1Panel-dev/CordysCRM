@@ -50,6 +50,7 @@ export default {
   'crmFormDesign.verticalSort': '纵向排列',
   'crmFormDesign.horizontalSort': '横向排列',
   'crmFormDesign.fieldConfigEmptyTip': '选中字段后，可以配置字段属性',
+  'crmFormDesign.selectMember': '选择成员',
   'crmFormDesign.formConfig': '表单属性',
   'crmFormDesign.formLayout': '表单布局',
   'crmFormDesign.formLayout1': '单列',

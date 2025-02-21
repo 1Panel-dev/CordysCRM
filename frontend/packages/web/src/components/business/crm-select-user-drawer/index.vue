@@ -5,11 +5,12 @@
     :width="800"
     :ok-disabled="addMembers.length === 0"
     :loading="props.loading"
+    :ok-text="props.okText"
     @cancel="handleCancelAdd"
     @confirm="handleAddConfirm"
   >
     <div class="flex h-full w-full flex-col gap-[16px]">
-      <div class="flex items-center gap-[16px]">
+      <div v-if="addMemberTypes.length > 0" class="flex items-center gap-[16px]">
         <div class="whitespace-nowrap">{{ t('role.addMemberType') }}</div>
         <n-tabs
           v-model:value="addMemberType"
@@ -34,7 +35,6 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, ref } from 'vue';
   import { NTabPane, NTabs, NTransfer, NTree, TransferRenderSourceList } from 'naive-ui';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -53,16 +53,24 @@
 
   const { t } = useI18n();
 
-  const props = defineProps<{
-    title?: string;
-    loading: boolean;
-    apiTypeKey: MemberApiTypeEnum; // 要配置对应的key
-    fetchOrgParams?: Record<string, any>; // 组织架构入参
-    fetchRoleParams?: Record<string, any>; // 角色入参
-    fetchMemberParams?: Record<string, any>; // 成员入参
-    baseParams?: Record<string, any>; // 基础公共入参
-    disabledList?: string[]; // 需要禁用掉的选项
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      title?: string;
+      loading: boolean;
+      apiTypeKey: MemberApiTypeEnum; // 要配置对应的key
+      fetchOrgParams?: Record<string, any>; // 组织架构入参
+      fetchRoleParams?: Record<string, any>; // 角色入参
+      fetchMemberParams?: Record<string, any>; // 成员入参
+      baseParams?: Record<string, any>; // 基础公共入参
+      disabledList?: string[]; // 需要禁用掉的选项
+      memberTypes?: Option[];
+      multiple?: boolean;
+      okText?: string;
+    }>(),
+    {
+      multiple: true,
+    }
+  );
 
   const emit = defineEmits<{
     (e: 'confirm', params: SelectedUsersItem[]): void;
@@ -73,20 +81,22 @@
   });
 
   const addMemberType = ref<MemberSelectTypeEnum>(MemberSelectTypeEnum.ORG);
-  const addMemberTypes = [
-    {
-      label: t('menu.settings.org'),
-      value: MemberSelectTypeEnum.ORG,
-    },
-    {
-      label: t('role.role'),
-      value: MemberSelectTypeEnum.ROLE,
-    },
-    {
-      label: t('role.member'),
-      value: MemberSelectTypeEnum.MEMBER,
-    },
-  ];
+  const addMemberTypes = ref(
+    props.memberTypes || [
+      {
+        label: t('menu.settings.org'),
+        value: MemberSelectTypeEnum.ORG,
+      },
+      {
+        label: t('role.role'),
+        value: MemberSelectTypeEnum.ROLE,
+      },
+      {
+        label: t('role.member'),
+        value: MemberSelectTypeEnum.MEMBER,
+      },
+    ]
+  );
 
   const addMembers = ref<string[]>([]);
   const selectedNodes = ref<SelectedUsersItem[]>([]);
@@ -176,7 +186,7 @@
     return h(NTree, {
       keyField: 'value',
       blockLine: true,
-      multiple: true,
+      multiple: props.multiple,
       selectable: true,
       data: options.value,
       pattern,
@@ -217,6 +227,7 @@
     () => visible.value,
     (val) => {
       if (val) {
+        // TODO: 别的接口
         loadData(MemberSelectTypeEnum.ORG);
       }
     }

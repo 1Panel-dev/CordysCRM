@@ -15,10 +15,13 @@
     ref="crmSelectUserDrawerRef"
     v-model:visible="showSelectAdminDrawer"
     :loading="false"
-    :title="t('role.addMember')"
+    :title="props.drawerTitle || t('role.addMember')"
     :api-type-key="MemberApiTypeEnum.SYSTEM_ROLE"
     :base-params="{ roleId: 'org_admin' }"
     :disabled-list="modelValue"
+    :multiple="props.multiple"
+    :ok-text="props.okText"
+    :member-types="props.memberTypes"
     @confirm="handleAddAdminConfirm"
   />
 </template>
@@ -28,6 +31,7 @@
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmSelectUserDrawer from '@/components/business/crm-select-user-drawer/index.vue';
+  import type { Option } from '@/components/business/crm-select-user-drawer/type';
 
   import { useI18n } from '@/hooks/useI18n';
 
@@ -36,9 +40,18 @@
 
   const { t } = useI18n();
 
-  const props = defineProps<{
-    userErrorTagIds?: string[];
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      userErrorTagIds?: string[];
+      multiple?: boolean;
+      drawerTitle?: string;
+      okText?: string;
+      memberTypes?: Option[];
+    }>(),
+    {
+      multiple: true,
+    }
+  );
   const selectedList = defineModel<SelectedUsersItem[]>('selectedList', {
     required: true,
   });
@@ -56,7 +69,11 @@
   }
 
   function handleAddAdminConfirm(params: SelectedUsersItem[]) {
-    selectedList.value = [...selectedList.value, ...params];
+    if (props.multiple) {
+      selectedList.value = [...selectedList.value, ...params];
+    } else {
+      selectedList.value = params;
+    }
     showSelectAdminDrawer.value = false;
   }
   const renderTag = ({ option, handleClose }: { option: SelectOption; handleClose: () => void }) => {

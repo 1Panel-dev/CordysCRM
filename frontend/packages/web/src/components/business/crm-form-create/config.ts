@@ -128,11 +128,12 @@ export const memberSingleDefaultFieldConfig: FormCreateField = {
   name: 'crmFormDesign.memberSingle',
   fieldWidth: 1,
   showLabel: true,
-  options: [],
   description: '',
   readable: true,
   editable: true,
   rules: [],
+  defaultValue: [],
+  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
 };
 
 export const memberMultipleDefaultFieldConfig: FormCreateField = {
@@ -142,11 +143,12 @@ export const memberMultipleDefaultFieldConfig: FormCreateField = {
   name: 'crmFormDesign.memberMultiple',
   fieldWidth: 1,
   showLabel: true,
-  options: [],
   description: '',
   readable: true,
   editable: true,
   rules: [],
+  defaultValue: [],
+  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const departmentSingleDefaultFieldConfig: FormCreateField = {
@@ -156,11 +158,12 @@ export const departmentSingleDefaultFieldConfig: FormCreateField = {
   name: 'crmFormDesign.departmentSingle',
   fieldWidth: 1,
   showLabel: true,
-  options: [],
   description: '',
   readable: true,
   editable: true,
   rules: [],
+  defaultValue: [],
+  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
 };
 
 export const departmentMultipleDefaultFieldConfig: FormCreateField = {
@@ -170,11 +173,12 @@ export const departmentMultipleDefaultFieldConfig: FormCreateField = {
   name: 'crmFormDesign.departmentMultiple',
   fieldWidth: 1,
   showLabel: true,
-  options: [],
   description: '',
   readable: true,
   editable: true,
   rules: [],
+  defaultValue: [],
+  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const dividerDefaultFieldConfig: FormCreateField = {

@@ -50,6 +50,7 @@ export default {
   'crmFormDesign.verticalSort': 'Vertical',
   'crmFormDesign.horizontalSort': 'Horizontal',
   'crmFormDesign.fieldConfigEmptyTip': 'After selecting a field, you can configure its properties',
+  'crmFormDesign.selectMember': 'Select Member',
   'crmFormDesign.formConfig': 'Form Properties',
   'crmFormDesign.formLayout': 'Form Layout',
   'crmFormDesign.formLayout1': 'Single Column',

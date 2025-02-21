@@ -36,7 +36,7 @@
           @click="() => handleRadioOptionClick(item.value)"
         />
         <n-checkbox v-else :value="item.value" />
-        <n-input v-model:value="item.label" clearable></n-input>
+        <n-input v-model:value="item.label" :maxlength="255" clearable></n-input>
         <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
           <template #trigger>
             <n-button

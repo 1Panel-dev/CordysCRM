@@ -12,7 +12,17 @@
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.desc') }}</div>
         <n-input v-model:value="fieldConfig.description" type="textarea" :maxlength="1000" clearable />
       </div>
-      <div class="crm-form-design-config-item">
+      <div
+        v-if="
+          ![
+            FieldTypeEnum.MEMBER_SINGLE,
+            FieldTypeEnum.MEMBER_MULTIPLE,
+            FieldTypeEnum.DEPARTMENT_SINGLE,
+            FieldTypeEnum.DEPARTMENT_MULTIPLE,
+          ].includes(fieldConfig.type)
+        "
+        class="crm-form-design-config-item"
+      >
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.placeholder') }}
           <n-tooltip trigger="hover">
@@ -99,6 +109,22 @@
           :type="fieldConfig.datetype"
           class="w-full"
         ></n-date-picker>
+        <CrmUserTagSelector
+          v-else-if="[FieldTypeEnum.MEMBER_SINGLE, FieldTypeEnum.MEMBER_MULTIPLE].includes(fieldConfig.type)"
+          v-model:selected-list="fieldConfig.defaultValue"
+          :multiple="fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE"
+          :drawer-title="t('crmFormDesign.selectMember')"
+          :ok-text="t('common.confirm')"
+          :member-types="[]"
+        />
+        <CrmUserTagSelector
+          v-else-if="[FieldTypeEnum.DEPARTMENT_SINGLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(fieldConfig.type)"
+          v-model:selected-list="fieldConfig.defaultValue"
+          :multiple="fieldConfig.type === FieldTypeEnum.DEPARTMENT_MULTIPLE"
+          :drawer-title="t('crmFormDesign.selectMember')"
+          :ok-text="t('common.confirm')"
+          :member-types="[]"
+        />
         <n-input v-else v-model:value="fieldConfig.defaultValue" :maxlength="255" clearable />
       </div>
       <div v-if="showRules.length > 0" class="crm-form-design-config-item">
@@ -162,6 +188,7 @@
   import { rules } from '@/components/business/crm-form-create/config';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
+  import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import optionConfig from './optionConfig.vue';
 
   import { useI18n } from '@/hooks/useI18n';

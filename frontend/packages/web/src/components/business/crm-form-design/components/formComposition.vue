@@ -130,6 +130,12 @@
     if ([FieldTypeEnum.SELECT_SINGLE, FieldTypeEnum.SELECT_MULTIPLE].includes(type)) {
       return CrmFormCreateComponents.basicComponents.select;
     }
+    if ([FieldTypeEnum.MEMBER_SINGLE, FieldTypeEnum.MEMBER_MULTIPLE].includes(type)) {
+      return CrmFormCreateComponents.basicComponents.memberSelect;
+    }
+    if ([FieldTypeEnum.DEPARTMENT_SINGLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(type)) {
+      return CrmFormCreateComponents.basicComponents.memberSelect;
+    }
     if (type === FieldTypeEnum.DIVIDER) {
       return CrmFormCreateComponents.basicComponents.divider;
     }
@@ -152,10 +158,6 @@
     };
     if (
       [
-        FieldTypeEnum.DEPARTMENT_MULTIPLE,
-        FieldTypeEnum.DEPARTMENT_SINGLE,
-        FieldTypeEnum.MEMBER_MULTIPLE,
-        FieldTypeEnum.MEMBER_SINGLE,
         FieldTypeEnum.CHECKBOX,
         FieldTypeEnum.RADIO,
         FieldTypeEnum.SELECT_SINGLE,
@@ -188,10 +190,6 @@
     };
     if (
       [
-        FieldTypeEnum.DEPARTMENT_MULTIPLE,
-        FieldTypeEnum.DEPARTMENT_SINGLE,
-        FieldTypeEnum.MEMBER_MULTIPLE,
-        FieldTypeEnum.MEMBER_SINGLE,
         FieldTypeEnum.CHECKBOX,
         FieldTypeEnum.RADIO,
         FieldTypeEnum.SELECT_SINGLE,
