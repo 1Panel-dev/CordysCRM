@@ -61,10 +61,9 @@ public class ApiKeyFilter extends AnonymousFilter {
      *
      * @param request  Servlet 请求
      * @param response Servlet 响应
-     * @throws Exception 可能抛出的异常
      */
     @Override
-    protected void postHandle(ServletRequest request, ServletResponse response) throws Exception {
+    protected void postHandle(ServletRequest request, ServletResponse response) {
         HttpServletRequest httpRequest = WebUtils.toHttp(request);
 
         // 如果是 API 密钥请求且用户已认证，则注销用户

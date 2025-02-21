@@ -115,11 +115,10 @@ public class RoleService {
     private List<String> getDeptIdsByRoleId(String roleId) {
         RoleScopeDept example = new RoleScopeDept();
         example.setRoleId(roleId);
-        List<String> deptIds = roleScopeDeptMapper.select(example)
+        return roleScopeDeptMapper.select(example)
                 .stream()
                 .map(RoleScopeDept::getDepartmentId)
                 .collect(Collectors.toList());
-        return deptIds;
     }
 
     @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.ADD, resourceName = "{#request.name}")

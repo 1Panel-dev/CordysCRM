@@ -33,10 +33,9 @@ public abstract class BaseScheduleJob implements Job {
      * 执行调度任务时调用，提取任务所需的信息并调用子类的业务执行方法。
      *
      * @param context 任务执行的上下文对象
-     * @throws JobExecutionException 如果任务执行失败，抛出此异常
      */
     @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public void execute(JobExecutionContext context) {
         // 从 JobDataMap 中获取任务所需的资源信息
         JobKey jobKey = context.getTrigger().getJobKey();
         JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();

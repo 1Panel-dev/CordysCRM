@@ -1,11 +1,15 @@
 package io.cordys.crm.system.domain;
 
-import io.cordys.common.groups.*;
+import io.cordys.common.groups.Created;
+import io.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
 import java.io.Serial;
 import java.io.Serializable;
-import lombok.Data;
 
 @Data
 public class UserKey implements Serializable {
@@ -40,7 +44,6 @@ public class UserKey implements Serializable {
     @Schema(description = "到期时间")
     private Long expireTime;
 
-    @Schema(description = "")
     private String description;
 
     @Serial

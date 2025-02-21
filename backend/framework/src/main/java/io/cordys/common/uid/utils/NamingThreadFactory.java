@@ -1,12 +1,15 @@
 
 package io.cordys.common.uid.utils;
 
+import io.cordys.common.util.LogUtils;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
@@ -16,20 +19,22 @@ import java.util.concurrent.atomic.AtomicLong;
  * will auto detect using the invoker classname instead.
  */
 public class NamingThreadFactory implements ThreadFactory {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NamingThreadFactory.class);
-
     /**
      * Thread name pre
+     * -- GETTER --
+     * Getters & Setters
      */
+    @Setter
+    @Getter
     private String name;
     /**
      * Is daemon thread
      */
-    private boolean daemon;
+    private final boolean daemon;
     /**
      * UncaughtExceptionHandler
      */
-    private UncaughtExceptionHandler uncaughtExceptionHandler;
+    private final UncaughtExceptionHandler uncaughtExceptionHandler;
     /**
      * Sequences for multi thread name prefix
      */
@@ -58,7 +63,7 @@ public class NamingThreadFactory implements ThreadFactory {
     }
 
     @Override
-    public Thread newThread(Runnable r) {
+    public Thread newThread(@NotNull Runnable r) {
         Thread thread = new Thread(r);
         thread.setDaemon(this.daemon);
 
@@ -66,20 +71,12 @@ public class NamingThreadFactory implements ThreadFactory {
         // Notice that auto detect may cause some performance overhead
         String prefix = this.name;
         if (StringUtils.isBlank(prefix)) {
-            prefix = getInvoker(2);
+            prefix = getInvoker();
         }
         thread.setName(prefix + "-" + getSequence(prefix));
 
         // no specified uncaughtExceptionHandler, just do logging.
-        if (this.uncaughtExceptionHandler != null) {
-            thread.setUncaughtExceptionHandler(this.uncaughtExceptionHandler);
-        } else {
-            thread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-                public void uncaughtException(Thread t, Throwable e) {
-                    LOGGER.error("unhandled exception in thread: " + t.getId() + ":" + t.getName(), e);
-                }
-            });
-        }
+        thread.setUncaughtExceptionHandler(Objects.requireNonNullElseGet(this.uncaughtExceptionHandler, () -> (t, e) -> LogUtils.error("unhandled exception in thread: " + t.getName(), e)));
 
         return thread;
     }
@@ -87,14 +84,13 @@ public class NamingThreadFactory implements ThreadFactory {
     /**
      * Get the method invoker's class name
      *
-     * @param depth
      * @return
      */
-    private String getInvoker(int depth) {
+    private String getInvoker() {
         Exception e = new Exception();
-        StackTraceElement[] stes = e.getStackTrace();
-        if (stes.length > depth) {
-            return ClassUtils.getShortClassName(stes[depth].getClassName());
+        StackTraceElement[] sites = e.getStackTrace();
+        if (sites.length > 2) {
+            return ClassUtils.getShortClassName(sites[2].getClassName());
         }
         return getClass().getSimpleName();
     }
@@ -116,33 +112,6 @@ public class NamingThreadFactory implements ThreadFactory {
         }
 
         return r.incrementAndGet();
-    }
-
-    /**
-     * Getters & Setters
-     */
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isDaemon() {
-        return daemon;
-    }
-
-    public void setDaemon(boolean daemon) {
-        this.daemon = daemon;
-    }
-
-    public UncaughtExceptionHandler getUncaughtExceptionHandler() {
-        return uncaughtExceptionHandler;
-    }
-
-    public void setUncaughtExceptionHandler(UncaughtExceptionHandler handler) {
-        this.uncaughtExceptionHandler = handler;
     }
 
 }

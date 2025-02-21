@@ -3,7 +3,7 @@ package io.cordys.common.uid.impl;
 
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.BitsAllocator;
-import io.cordys.common.uid.utils.TimeUtils;
+import io.cordys.common.uid.utils.TimeUtil;
 import io.cordys.common.uid.worker.WorkerIdAssigner;
 import io.cordys.common.util.LogUtils;
 import jakarta.annotation.Resource;
@@ -52,7 +52,7 @@ public class DefaultUidGenerator implements DisposableBean {
         this.setTimeBits(29);
         this.setWorkerBits(21);
         this.setSeqBits(13);
-        this.setEpochStr(TimeUtils.getDataStr(System.currentTimeMillis()));
+        this.setEpochStr(TimeUtil.getDataStr(System.currentTimeMillis()));
 
         // initialize bits allocator
         bitsAllocator = new BitsAllocator(timeBits, workerBits, seqBits);
@@ -88,7 +88,7 @@ public class DefaultUidGenerator implements DisposableBean {
         long deltaSeconds = uid >>> (workerIdBits + sequenceBits);
 
         Date thatTime = new Date(TimeUnit.SECONDS.toMillis(epochSeconds + deltaSeconds));
-        String thatTimeStr = TimeUtils.formatByDateTimePattern(thatTime);
+        String thatTimeStr = TimeUtil.formatByDateTimePattern(thatTime);
 
         // format as string
         return String.format("{\"UID\":\"%d\",\"timestamp\":\"%s\",\"workerId\":\"%d\",\"sequence\":\"%d\"}",
@@ -174,7 +174,7 @@ public class DefaultUidGenerator implements DisposableBean {
     public void setEpochStr(String epochStr) {
         if (StringUtils.isNotBlank(epochStr)) {
             this.epochStr = epochStr;
-            this.epochSeconds = TimeUnit.MILLISECONDS.toSeconds(TimeUtils.parseByDayPattern(epochStr).getTime());
+            this.epochSeconds = TimeUnit.MILLISECONDS.toSeconds(TimeUtil.parseByDayPattern(epochStr).getTime());
         }
     }
 

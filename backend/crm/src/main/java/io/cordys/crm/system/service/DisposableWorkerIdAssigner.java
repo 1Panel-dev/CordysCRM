@@ -57,7 +57,7 @@ public class DisposableWorkerIdAssigner implements WorkerIdAssigner {
         } else {
             workerNode.setType(WorkerNodeType.ACTUAL.value());
             workerNode.setHostName(NetUtils.getLocalAddress());
-            workerNode.setPort(System.currentTimeMillis() + "-" + RandomUtils.nextInt());
+            workerNode.setPort(System.currentTimeMillis() + "-" + RandomUtils.insecure().randomInt());
         }
         workerNode.setCreated(System.currentTimeMillis());
         workerNode.setModified(System.currentTimeMillis());

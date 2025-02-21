@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 @Aspect
@@ -36,9 +37,9 @@ public class SendNoticeAspect {
     @Resource
     private BatchNoticeSendService batchNoticeSendService;
 
-    private ExpressionParser parser = new SpelExpressionParser();
-    private StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();
-    private ThreadLocal<String> source = new ThreadLocal<>();
+    private final ExpressionParser parser = new SpelExpressionParser();
+    private final StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();
+    private final ThreadLocal<String> source = new ThreadLocal<>();
 
     private final static String ID = "id";
     private final static String CREATE_USER = "createUser";
@@ -69,7 +70,7 @@ public class SendNoticeAspect {
                 String[] params = discoverer.getParameterNames(method);
                 //将参数纳入Spring管理
                 EvaluationContext context = new StandardEvaluationContext();
-                for (int len = 0; len < params.length; len++) {
+                for (int len = 0; len < Objects.requireNonNull(params).length; len++) {
                     context.setVariable(params[len], args[len]);
                 }
                 context.setVariable("targetClass", CommonBeanFactory.getBean(sendNotice.targetClass()));
@@ -98,7 +99,7 @@ public class SendNoticeAspect {
             //获取操作
             SendNotice sendNotice = method.getAnnotation(SendNotice.class);
             EvaluationContext context = new StandardEvaluationContext();
-            for (int len = 0; len < params.length; len++) {
+            for (int len = 0; len < Objects.requireNonNull(params).length; len++) {
                 context.setVariable(params[len], args[len]);
             }
             // 再次从数据库查询一次内容，方便获取最新参数

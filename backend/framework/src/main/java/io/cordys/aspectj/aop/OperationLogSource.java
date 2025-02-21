@@ -114,14 +114,13 @@ public class OperationLogSource {
      * @return 日志记录构建器
      */
     private OperationLogBuilder parseLogRecordAnnotation(AnnotatedElement ae, OperationLog recordAnnotation) {
-        OperationLogBuilder recordOps = OperationLogBuilder.builder()
+        return OperationLogBuilder.builder()
                 .resourceName(recordAnnotation.resourceName())
                 .type(recordAnnotation.type())
                 .resourceId(recordAnnotation.resourceId())
                 .operatorId(recordAnnotation.operator())
                 .subType(recordAnnotation.module())
                 .build();
-        return recordOps;
     }
 
     /**
@@ -140,9 +139,7 @@ public class OperationLogSource {
         if (extra != null && StringUtils.isNotBlank(extra.getResourceId())) {
             resourceId = extra.getResourceId();
         }
-        if (StringUtils.isBlank(resourceName) || StringUtils.isBlank(resourceId)) {
-           return false;
-        }
-        return true;
+
+        return !StringUtils.isBlank(resourceName) && !StringUtils.isBlank(resourceId);
     }
 }

@@ -8,7 +8,6 @@ import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.domain.Announcement;
 import io.cordys.crm.system.dto.request.AnnouncementPageRequest;
 import io.cordys.crm.system.dto.request.AnnouncementRequest;
-import io.cordys.crm.system.dto.response.AnnouncementDTO;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.*;
@@ -61,7 +60,7 @@ public class AnnouncementControllerTests extends BaseTest {
         basePageRequest.setCurrent(1);
         basePageRequest.setOrganizationId("1");
         MvcResult mvcResult = this.requestPostWithOkAndReturn("/announcement/page", basePageRequest);
-        Pager<List<AnnouncementDTO>> tableData = JSON.parseObject(JSON.toJSONString(
+        var tableData = JSON.parseObject(JSON.toJSONString(
                         JSON.parseObject(mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8), ResultHolder.class).getData()),
                 Pager.class);
         LogUtils.info(tableData.getList().toString());

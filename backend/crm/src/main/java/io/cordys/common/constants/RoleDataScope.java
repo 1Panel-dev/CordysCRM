@@ -21,5 +21,5 @@ public enum RoleDataScope {
     /**
      * 仅本人数据权限
      */
-    SELF;
+    SELF
 }
