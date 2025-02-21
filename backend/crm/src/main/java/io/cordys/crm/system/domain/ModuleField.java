@@ -24,6 +24,9 @@ public class ModuleField extends BaseModel {
 	@Schema(description = "字段内置Key")
 	private String internalKey;
 
+	@Schema(description = "字段类型")
+	private String type;
+
 	@Schema(description = "排序")
 	private Long pos;
 }

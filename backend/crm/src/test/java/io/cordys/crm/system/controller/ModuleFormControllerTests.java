@@ -2,6 +2,9 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.FormKey;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.system.constants.FieldType;
+import io.cordys.crm.system.dto.field.SelectFieldProp;
+import io.cordys.crm.system.dto.form.FormProp;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -41,18 +44,20 @@ public class ModuleFormControllerTests extends BaseTest{
 		request.setFormKey("none-key");
 		request.setFields(List.of());
 		request.setDeleteFieldIds(List.of());
-		request.setFormProp(Map.of());
+		request.setFormProp(new FormProp());
 		this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError());
 		request.setFormKey(FormKey.CUSTOMER.getKey());
 		request.setDeleteFieldIds(List.of("default-delete-id"));
 		ModuleFieldDTO field = new ModuleFieldDTO();
-		field.setFieldProp(Map.of("k", "v"));
+		SelectFieldProp selectFieldProp = new SelectFieldProp();
+		selectFieldProp.setType(FieldType.SELECT.name());
+		field.setFieldProp(selectFieldProp);
 		request.setFields(List.of(field));
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/module/form/save", request);
 		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
 		assert formConfig.getFields().size() > 1;
 		ModuleFieldDTO saveField = formConfig.getFields().getFirst();
-		saveField.setFieldProp(Map.of("k", "v1"));
+		saveField.setFieldProp(selectFieldProp);
 		request.setFields(List.of(saveField));
 		this.requestPostWithOk("/module/form/save", request);
 	}

@@ -11,6 +11,8 @@ import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleFieldBlob;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.domain.ModuleFormBlob;
+import io.cordys.crm.system.dto.field.base.BaseFieldProp;
+import io.cordys.crm.system.dto.form.FormProp;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.BusinessModuleFieldDTO;
 import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
@@ -69,7 +71,7 @@ public class ModuleFormService {
 		}
 		ModuleForm form = forms.getFirst();
 		ModuleFormBlob formBlob = moduleFormBlobMapper.selectByPrimaryKey(form.getId());
-		formConfig.setFormProp(JSON.parseMap(new String(formBlob.getProp())));
+		formConfig.setFormProp(JSON.parseObject(new String(formBlob.getProp()), FormProp.class));
 		// set fields
 		formConfig.setFields(getAllFields(form.getId()));
 		return formConfig;
@@ -77,9 +79,9 @@ public class ModuleFormService {
 
 	/**
 	 * 获取业务表单配置
-	 * @param formKey
-	 * @param organizationId
-	 * @return
+	 * @param formKey 表单Key
+	 * @param organizationId 组织ID
+	 * @return 表单配置
 	 */
 	public BusinessModuleFormConfigDTO getBusinessFormConfig(String formKey, String organizationId) {
 		ModuleFormConfigDTO config = getConfig(formKey, organizationId);
@@ -183,6 +185,8 @@ public class ModuleFormService {
 		ModuleField moduleField = new ModuleField();
 		BeanUtils.copyBean(moduleField, field);
 		moduleField.setFormId(formId);
+		moduleField.setInternalKey(field.getFieldProp().getKey());
+		moduleField.setType(field.getFieldProp().getType());
 		if (!edited) {
 			moduleField.setCreateTime(System.currentTimeMillis());
 			moduleField.setCreateUser(currentUserId);
@@ -212,7 +216,7 @@ public class ModuleFormService {
 			fields.forEach(field -> {
 				ModuleFieldDTO fieldDTO = new ModuleFieldDTO();
 				BeanUtils.copyBean(fieldDTO, field);
-				fieldDTO.setFieldProp(JSON.parseMap(new String(fieldBlobMap.get(field.getId()))));
+				fieldDTO.setFieldProp(JSON.parseObject(new String(fieldBlobMap.get(field.getId())), BaseFieldProp.class));
 				fieldDTOList.add(fieldDTO);
 			});
 		}
@@ -272,6 +276,7 @@ public class ModuleFormService {
 					field.setId(IDGenerator.nextStr());
 					field.setFormId(formId);
 					field.setInternalKey(initField.get("key").toString());
+					field.setType(initField.get("type").toString());
 					field.setPos(pos.getAndIncrement());
 					field.setCreateTime(System.currentTimeMillis());
 					field.setCreateUser("admin");
@@ -289,12 +294,5 @@ public class ModuleFormService {
 		} catch (Exception e) {
 			throw new GenericException("表单字段初始化失败", e);
 		}
-	}
-
-	public String getFieldIdByInternalKey(String key) {
-		ModuleField moduleField = new ModuleField();
-		moduleField.setInternalKey(key);
-		ModuleField field = moduleFieldMapper.selectOne(moduleField);
-		return field == null ? null : field.getId();
 	}
 }

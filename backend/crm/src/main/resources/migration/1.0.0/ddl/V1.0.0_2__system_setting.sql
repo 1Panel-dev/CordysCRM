@@ -496,6 +496,7 @@ CREATE TABLE sys_module_field
     `id`           VARCHAR(32) NOT NULL COMMENT 'ID',
     `form_id`      VARCHAR(32) NOT NULL COMMENT '所属表单ID',
     `internal_key` VARCHAR(255) COMMENT '字段内置Key',
+    `type`         VARCHAR(20) NOT NULL COMMENT '类型' ,
     `pos`          BIGINT      NOT NULL COMMENT '排序',
     `create_user`  VARCHAR(32) NOT NULL COMMENT '创建人',
     `create_time`  BIGINT      NOT NULL COMMENT '创建时间',

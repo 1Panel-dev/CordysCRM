@@ -1,9 +1,8 @@
 package io.cordys.crm.system.dto.response;
 
+import io.cordys.crm.system.dto.field.base.BaseFieldProp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
-import java.util.Map;
 
 @Data
 public class ModuleFieldDTO {
@@ -14,9 +13,12 @@ public class ModuleFieldDTO {
 	@Schema(description = "字段内置Key")
 	private String internalKey;
 
+	@Schema(description = "类型")
+	private String type;
+
 	@Schema(description = "排序")
 	private Long pos;
 
 	@Schema(description = "字段属性")
-	private Map<String, Object> fieldProp;
+	private BaseFieldProp fieldProp;
 }

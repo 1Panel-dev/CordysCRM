@@ -1,10 +1,10 @@
 package io.cordys.crm.system.dto.response;
 
+import io.cordys.crm.system.dto.form.FormProp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 public class ModuleFormConfigDTO {
@@ -13,5 +13,5 @@ public class ModuleFormConfigDTO {
 	private List<ModuleFieldDTO> fields;
 
 	@Schema(description = "表单属性")
-	private Map<String, Object> formProp;
+	private FormProp formProp;
 }
