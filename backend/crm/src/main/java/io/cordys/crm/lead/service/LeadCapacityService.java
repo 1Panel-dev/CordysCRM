@@ -4,10 +4,10 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.lead.domain.LeadCapacity;
 import io.cordys.crm.lead.dto.LeadCapacityDTO;
-import io.cordys.crm.lead.dto.request.LeadCapacitySaveRequest;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.dto.request.CapacityRequest;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -38,7 +39,7 @@ public class LeadCapacityService {
 	 * 分页获取线索库容设置
 	 * @return 线索库容设置列表
 	 */
-	public List<LeadCapacityDTO> page(String currentOrgId) {
+	public List<LeadCapacityDTO> list(String currentOrgId) {
 		List<LeadCapacityDTO> capacityData = new ArrayList<>();
 		LambdaQueryWrapper<LeadCapacity> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(LeadCapacity::getOrganizationId, currentOrgId);
@@ -51,7 +52,7 @@ public class LeadCapacityService {
 		List<User> users = userMapper.selectByIds(scopeIds.toArray(new String[0]));
 		List<Role> roles = roleMapper.selectByIds(scopeIds.toArray(new String[0]));
 		List<Department> departments = departmentMapper.selectByIds(scopeIds.toArray(new String[0]));
-		capacities.forEach(capacity -> {
+		capacities.stream().sorted(Comparator.comparing(LeadCapacity::getCreateTime)).forEach(capacity -> {
 			LeadCapacityDTO capacityDTO = new LeadCapacityDTO();
 			capacityDTO.setId(capacity.getId());
 			capacityDTO.setCapacity(capacity.getCapacity());
@@ -62,11 +63,11 @@ public class LeadCapacityService {
 	}
 
 	/**
-	 * 保存客户库容规则
-	 * @param request 请求参数
+	 * 保存客户库容设置
+	 * @param capacities 库容容量集合
 	 * @param currentUserId 当前用户ID
 	 */
-	public void save(LeadCapacitySaveRequest request, String currentUserId, String currentOrgId) {
+	public void save(List<CapacityRequest> capacities, String currentUserId, String currentOrgId) {
 		LambdaQueryWrapper<LeadCapacity> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(LeadCapacity::getOrganizationId, currentOrgId);
 		List<LeadCapacity> oldCapacities = leadCapacityMapper.selectListByLambda(wrapper);
@@ -75,8 +76,8 @@ public class LeadCapacityService {
 			capacity.setOrganizationId(currentOrgId);
 			leadCapacityMapper.delete(capacity);
 		}
-		List<LeadCapacity> capacities = new ArrayList<>();
-		request.getCapacities().forEach(capacityRequest -> {
+		List<LeadCapacity> newCapacities = new ArrayList<>();
+		capacities.forEach(capacityRequest -> {
 			LeadCapacity capacity = new LeadCapacity();
 			capacity.setId(IDGenerator.nextStr());
 			capacity.setOrganizationId(currentOrgId);
@@ -86,8 +87,8 @@ public class LeadCapacityService {
 			capacity.setCreateUser(currentUserId);
 			capacity.setUpdateTime(System.currentTimeMillis());
 			capacity.setUpdateUser(currentUserId);
-			capacities.add(capacity);
+			newCapacities.add(capacity);
 		});
-		leadCapacityMapper.batchInsert(capacities);
+		leadCapacityMapper.batchInsert(newCapacities);
 	}
 }
