@@ -5,11 +5,13 @@ import {
   addOpportunityRuleUrl,
   DeleteLeadPoolUrl,
   deleteOpportunityUrl,
+  GetCustomerCapacityPageUrl,
   GetLeadCapacityPageUrl,
   GetLeadPoolPageUrl,
   getModuleNavConfigListUrl,
   getOpportunityListUrl,
   moduleNavListSortUrl,
+  SaveCustomerCapacityUrl,
   SaveLeadCapacityUrl,
   SwitchLeadPoolStatusUrl,
   switchOpportunityStatusUrl,
@@ -17,16 +19,17 @@ import {
   UpdateLeadPoolUrl,
   updateOpportunityRuleUrl,
 } from '@lib/shared/api/requrls/system/module';
+import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import type {
-  LeadCapacityItem,
-  LeadCapacityParams,
+  CapacityItem,
   LeadPoolItem,
   LeadPoolParams,
   ModuleNavBaseInfoItem,
   ModuleSortParams,
   OpportunityItem,
   OpportunityParams,
+  SaveCapacityParams,
 } from '@lib/shared/models/system/module';
 
 // 模块首页-导航模块列表
@@ -90,11 +93,16 @@ export function deleteLeadPool(id: string) {
   return CDR.get({ url: `${DeleteLeadPoolUrl}/${id}` });
 }
 
-// 线索库容相关API
-export function getLeadCapacityPage(data: TableQueryParams) {
-  return CDR.post<CommonList<LeadCapacityItem>>({ url: GetLeadCapacityPageUrl, data });
+// 库容相关API
+export function getCapacityPage(type: ModuleConfigEnum) {
+  return CDR.post<CapacityItem[]>({
+    url: type === ModuleConfigEnum.CLUE_MANAGEMENT ? GetLeadCapacityPageUrl : GetCustomerCapacityPageUrl,
+  });
 }
 
-export function saveLeadCapacity(data: LeadCapacityParams) {
-  return CDR.post({ url: SaveLeadCapacityUrl, data });
+export function saveCapacity(data: SaveCapacityParams, type: ModuleConfigEnum) {
+  return CDR.post({
+    url: type === ModuleConfigEnum.CLUE_MANAGEMENT ? SaveLeadCapacityUrl : SaveCustomerCapacityUrl,
+    data,
+  });
 }

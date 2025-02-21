@@ -127,7 +127,8 @@
       loading.value = true;
       let res: ConfigSynchronization[] = [];
       if (props.activeTab === 'syncOrganization') {
-        res = await getConfigSynchronization();
+        const configRes = await getConfigSynchronization();
+        res = configRes ?? res;
       }
 
       const configMap = new Map(res.map((item) => [item.type, item]));

@@ -18,19 +18,26 @@
 </template>
 
 <script setup lang="ts">
-  import { cloneDeep } from 'lodash-es';
+  import { useMessage } from 'naive-ui';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
 
+  import { getCapacityPage, saveCapacity } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
+
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
+
+  const Message = useMessage();
 
   const { t } = useI18n();
 
   const props = defineProps<{
     title: string;
+    type: ModuleConfigEnum;
   }>();
 
   const visible = defineModel<boolean>('visible', {
@@ -41,19 +48,11 @@
 
   const batchFormRef = ref<InstanceType<typeof CrmBatchForm>>();
 
-  const defaultForm = {
-    list: [
-      {
-        member: [],
-        Maximum: 33,
-      },
-    ],
-  };
-  const form = ref<any>(cloneDeep(defaultForm));
+  const form = ref<any>({ list: [] });
 
   const formItemModel: Ref<FormItemModel[]> = ref([
     {
-      path: 'member',
+      path: 'members',
       type: FieldTypeEnum.USER_TAG_SELECTOR,
       label: t('module.capacitySet.departmentOrMember'),
       rule: [
@@ -65,7 +64,7 @@
       ],
     },
     {
-      path: 'Maximum',
+      path: 'capacity',
       type: FieldTypeEnum.INPUT_NUMBER,
       label: t('module.capacitySet.Maximum'),
       rule: [
@@ -97,11 +96,41 @@
   }
 
   async function capacitySet() {
-    // eslint-disable-next-line no-console
-    console.log('🤔️ =>', form.value);
+    try {
+      const capacities = form.value.list.map((item: Record<string, any>) => {
+        return {
+          scopeIds: item.members.map((memberItem: SelectedUsersItem) => memberItem.id),
+          capacity: item.capacity,
+        };
+      });
+      await saveCapacity({ capacities }, props.type);
+      Message.success(t('common.saveSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   function confirm() {
     userFormValidate(capacitySet);
   }
+
+  watch(
+    () => visible.value,
+    async (newVal) => {
+      if (newVal) {
+        try {
+          loading.value = true;
+          form.value.list = await getCapacityPage(props.type);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        } finally {
+          loading.value = false;
+        }
+      } else {
+        form.value.list = [];
+      }
+    }
+  );
 </script>

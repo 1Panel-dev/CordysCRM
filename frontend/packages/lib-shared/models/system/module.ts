@@ -103,7 +103,7 @@ export interface LeadPoolParams {
   recycleRule: LeadPoolRecycleRuleParams; // 回收规则
 }
 
-export interface LeadPoolForm extends LeadPoolParams {
+export interface LeadPoolForm extends Omit<LeadPoolParams, 'scopeIds' | 'ownerIds'> {
   adminIds: SelectedUsersItem[];
   userIds: SelectedUsersItem[]; // 成员ID
 }
@@ -134,13 +134,13 @@ export interface CapacityParams {
   capacity: number; // 容量
 }
 
-// 保存线索库容规则请求参数
-export interface LeadCapacityParams {
+// 保存库容规则请求参数
+export interface SaveCapacityParams {
   capacities: CapacityParams[]; // 库容集合
 }
 
-// 线索库容列表项
-export interface LeadCapacityItem {
+// 库容列表项
+export interface CapacityItem {
   id: string;
   createUser: string;
   updateUser: string;

@@ -4,6 +4,7 @@
     :width="800"
     :title="!form.id ? t('module.clue.addCluePool') : t('module.clue.updateCluePool')"
     :show-continue="!form.id"
+    :ok-text="form.id ? t('common.update') : undefined"
     :loading="loading"
     @confirm="confirmHandler(false)"
     @continue="confirmHandler(true)"
@@ -25,12 +26,12 @@
       </div>
       <div class="flex">
         <div class="flex-1">
-          <n-form-item path="ownerIds" :label="t('opportunity.admin')">
+          <n-form-item path="adminIds" :label="t('opportunity.admin')">
             <CrmUserTagSelector v-model:selected-list="form.adminIds" />
           </n-form-item>
         </div>
         <div class="flex-1">
-          <n-form-item path="scopeIds" :label="t('role.member')">
+          <n-form-item path="userIds" :label="t('role.member')">
             <CrmUserTagSelector v-model:selected-list="form.userIds" />
           </n-form-item>
         </div>
@@ -179,8 +180,8 @@
 
   const rules: FormRules = {
     name: [{ required: true, message: t('common.notNull', { value: `${t('module.clue.name')}` }) }],
-    adminId: [{ required: true, message: t('common.pleaseSelect') }],
-    userId: [{ required: true, message: t('common.pleaseSelect') }],
+    adminIds: [{ required: true, message: t('common.pleaseSelect') }],
+    userIds: [{ required: true, message: t('common.pleaseSelect') }],
     [`recycleRule.noticeDays`]: [{ required: true, message: t('common.pleaseInput') }],
     [`pickRule.pickIntervalDays`]: [{ required: true, message: t('common.pleaseInput') }],
     [`pickRule.pickNumber`]: [{ required: true, message: t('common.pleaseInput') }],
@@ -190,8 +191,6 @@
     name: '',
     adminIds: [],
     userIds: [],
-    scopeIds: [],
-    ownerIds: [],
     enable: false,
     auto: false,
     pickRule: {
@@ -287,10 +286,9 @@
       const { userIds, adminIds, ...otherParams } = form.value;
       const params: LeadPoolParams = {
         ...otherParams,
-        ownerIds: userIds.map((e) => e.id),
-        scopeIds: adminIds.map((e) => e.id),
+        ownerIds: adminIds.map((e) => e.id),
+        scopeIds: userIds.map((e) => e.id),
       };
-
       if (form.value.id) {
         await updateLeadPool(params);
         Message.success(t('common.updateSuccess'));
@@ -315,7 +313,11 @@
   function confirmHandler(isContinue: boolean) {
     formRef.value?.validate(async (error) => {
       if (!error) {
-        userFormValidate(handleSave, isContinue);
+        if (batchFormRef.value) {
+          userFormValidate(handleSave, isContinue);
+        } else {
+          handleSave(isContinue);
+        }
       }
     });
   }
@@ -325,8 +327,12 @@
     (val?: LeadPoolItem) => {
       if (val) {
         form.value = {
-          ...cloneDeep(initForm),
-          ...val,
+          id: val.id,
+          name: val.name,
+          enable: val.enable,
+          auto: val.auto,
+          pickRule: val.pickRule ?? cloneDeep(initForm).pickRule,
+          recycleRule: val.recycleRule ?? cloneDeep(initForm).recycleRule,
           userIds: val.members,
           adminIds: val.owners,
         };

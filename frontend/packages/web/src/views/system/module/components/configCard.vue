@@ -18,6 +18,7 @@
   <OpportunityCloseRulesDrawer v-model:visible="businessManagementBusinessParamsSetVisible" />
   <CapacitySetDrawer
     v-model:visible="capacitySetVisible"
+    :type="selectKey"
     :title="
       selectKey === ModuleConfigEnum.CUSTOMER_MANAGEMENT
         ? t('module.customer.capacitySet')
@@ -185,7 +186,7 @@
     });
   }
 
-  const selectKey = ref('');
+  const selectKey = ref<ModuleConfigEnum>(ModuleConfigEnum.CUSTOMER_MANAGEMENT);
   const customerManagementFormVisible = ref(false);
   const customerManagementOpenSeaVisible = ref(false);
   const capacitySetVisible = ref(false);

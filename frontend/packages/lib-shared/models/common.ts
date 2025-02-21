@@ -1,3 +1,5 @@
+import { OperatorEnum } from '@lib/shared/enums/commonEnum';
+
 // 请求返回结构
 export default interface CommonResponse<T> {
   code: number;
@@ -27,4 +29,11 @@ export interface CommonList<T> {
   total: number;
   current: number;
   list: T[];
+}
+
+export interface FilterConditionItem {
+  name: string;
+  value: any; // 期望值，若操作符为 BETWEEN, IN, NOT_IN 时为数组，其他操作符为单个值
+  operator: OperatorEnum;
+  multipleValue: boolean;
 }

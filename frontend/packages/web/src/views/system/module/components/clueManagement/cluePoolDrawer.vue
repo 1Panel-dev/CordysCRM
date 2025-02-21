@@ -30,7 +30,6 @@
   import { NButton, NSwitch, useMessage } from 'naive-ui';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
@@ -70,8 +69,8 @@
 
   // 删除
   function handleDelete(row: LeadPoolItem) {
-    // TODO 判断是否存在未分配的线索
-    const hasData = true;
+    // TODO lmy 判断是否存在未分配的线索
+    const hasData = false;
     const title = hasData
       ? t('module.clue.deleteRulesTitle')
       : t('common.deleteConfirmTitle', { name: characterLimit(row.name) });
@@ -156,7 +155,7 @@
       filterOptions: [
         {
           label: t('common.enable'),
-          value: 1,
+          value: 1, // TODO lmy 类型是boolean
         },
         {
           label: t('common.disable'),
@@ -177,11 +176,6 @@
       title: t('opportunity.admin'),
       key: 'owners',
       width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      sortOrder: false,
-      sorter: true,
       isTag: true,
       tagGroupProps: {
         labelKey: 'name',
@@ -190,12 +184,7 @@
     {
       title: t('role.member'),
       key: 'members',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      sortOrder: false,
-      sorter: true,
+      width: 150,
       isTag: true,
       tagGroupProps: {
         labelKey: 'name',
@@ -210,7 +199,7 @@
       filterOptions: [
         {
           label: t('common.yes'),
-          value: 1,
+          value: 1, // TODO lmy 类型是boolean
         },
         {
           label: t('common.no'),
@@ -218,6 +207,9 @@
         },
       ],
       filter: true,
+      render: (row: LeadPoolItem) => {
+        return row.auto ? t('common.yes') : t('common.no');
+      },
     },
     {
       title: t('common.createTime'),
@@ -243,9 +235,6 @@
       title: t('common.updateUserName'),
       key: 'updateUser',
       width: 100,
-      render: (row: LeadPoolItem) => {
-        return h(CrmNameTooltip, { text: row.updateUserName });
-      },
     },
     {
       key: 'operation',

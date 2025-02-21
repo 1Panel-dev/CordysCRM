@@ -232,7 +232,7 @@
 
   const initDefaultItem: ModuleConditionsItem = {
     column: 'keepDays',
-    operator: OperatorEnum.EQ,
+    operator: OperatorEnum.EQUALS,
     value: '',
   };
 

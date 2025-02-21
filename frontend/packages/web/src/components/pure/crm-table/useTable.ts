@@ -6,7 +6,8 @@ import useTableStore from '@/hooks/useTableStore';
 import useAppStore from '@/store/modules/app';
 
 import type { CrmTableDataItem, CrmTableProps } from './type';
-import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+import { OperatorEnum } from '@lib/shared/enums/commonEnum';
+import type { CommonList, FilterConditionItem, TableQueryParams } from '@lib/shared/models/common';
 import type { DataTableFilterState, PaginationProps } from 'naive-ui';
 
 const tableStore = useTableStore();
@@ -85,7 +86,7 @@ export default function useTable<T>(
   const keyword = ref('');
   const sortItem = ref<Record<string, any>>({}); // 排序
 
-  const filterItem = ref<Record<string, any>>({}); // 筛选
+  const filterItem = ref<FilterConditionItem[]>([]); // 筛选
 
   function processRecordItem(item: CrmTableDataItem<T>): CrmTableDataItem<T> {
     if (item.updateTime) {
@@ -109,7 +110,7 @@ export default function useTable<T>(
         keyword: keyword.value,
         sort: sortItem.value,
         ...loadListParams.value,
-        filter: filterItem.value,
+        filters: filterItem.value,
       };
       const data = await loadListFunc(tableQueryParams.value);
       if (!propsRes.value.showPagination && Array.isArray(data)) {
@@ -156,7 +157,12 @@ export default function useTable<T>(
     },
     // 筛选触发
     filterChange: (filters: DataTableFilterState) => {
-      filterItem.value = { ...filters };
+      filterItem.value = Object.entries(filters).map(([key, value]) => ({
+        name: key,
+        value,
+        operator: OperatorEnum.IN,
+        multipleValue: Array.isArray(value),
+      }));
       loadList();
     },
   });
