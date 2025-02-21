@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -54,19 +56,26 @@ public class OpportunityRuleService {
 		if (CollectionUtils.isEmpty(rules)) {
 			return new ArrayList<>();
 		}
+		List<String> userIds = new ArrayList<>();
 		List<String> scopeIds = new ArrayList<>();
 		List<String> ownerIds = new ArrayList<>();
 		rules.forEach(rule -> {
-			scopeIds.addAll(List.of(rule.getScopeId().split(",")));
-			ownerIds.addAll(List.of(rule.getOwnerId().split(",")));
+			userIds.add(rule.getCreateUser());
+			userIds.add(rule.getUpdateUser());
+			scopeIds.addAll(JSON.parseArray(rule.getScopeId(), String.class));
+			ownerIds.addAll(JSON.parseArray(rule.getOwnerId(), String.class));
 		});
 		List<String> unionIds = ListUtils.union(scopeIds, ownerIds).stream().distinct().toList();
 		List<User> users = userMapper.selectByIds(unionIds.toArray(new String[0]));
 		List<Role> roles = roleMapper.selectByIds(unionIds.toArray(new String[0]));
 		List<Department> departments = departmentMapper.selectByIds(unionIds.toArray(new String[0]));
+		List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
+		Map<String, String> userMap = createOrUpdateUsers.stream().collect(Collectors.toMap(User::getId, User::getName));
 		rules.forEach(rule -> {
 			rule.setMembers(userExtendService.getScope(users, roles, departments, JSON.parseArray(rule.getScopeId(), String.class)));
 			rule.setOwners(userExtendService.getScope(users, roles, departments, JSON.parseArray(rule.getOwnerId(), String.class)));
+			rule.setCreateUserName(userMap.get(rule.getCreateUser()));
+			rule.setUpdateUserName(userMap.get(rule.getUpdateUser()));
 		});
 		return rules;
 	}

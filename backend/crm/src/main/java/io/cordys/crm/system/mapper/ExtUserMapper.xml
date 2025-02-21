@@ -159,7 +159,6 @@
         </foreach>
     </select>
 
-
     <update id="updateUser" parameterType="io.cordys.crm.system.domain.User">
         update sys_user
         <set>
