@@ -1,6 +1,5 @@
 package io.cordys.crm.customer.controller;
 
-import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.request.ModuleFieldValueDTO;
@@ -81,19 +80,15 @@ class CustomerControllerTests extends BaseTest {
     void testAdd() throws Exception {
         // 请求成功
         CustomerAddRequest request = new CustomerAddRequest();
-        String nameFileId = moduleFormService.getFieldIdByInternalKey(BusinessModuleField.CUSTOMER_NAME.getKey());
-        String ownerFileId = moduleFormService.getFieldIdByInternalKey(BusinessModuleField.CUSTOMER_OWNER.getKey());
-        ModuleFieldValueDTO nameModuleValue = new ModuleFieldValueDTO();
-        nameModuleValue.setId(nameFileId);
-        nameModuleValue.setValue("aa");
-        ModuleFieldValueDTO ownerModuleValue = new ModuleFieldValueDTO();
-        ownerModuleValue.setId(ownerFileId);
-        ownerModuleValue.setValue("bb");
-        request.setModuleFields(List.of(nameModuleValue, ownerModuleValue));
+        request.setName("aa");
+        request.setOwner("bb");
+        request.setModuleFields(List.of(new ModuleFieldValueDTO("id", "value")));
 
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Customer resultData = getResultData(mvcResult, Customer.class);
         Customer customer = customerMapper.selectByPrimaryKey(resultData.getId());
+        Assertions.assertEquals(request.getName(), customer.getName());
+        Assertions.assertEquals(request.getOwner(), customer.getOwner());
 
         // 校验请求成功数据
         this.addCustomer = customer;
@@ -108,9 +103,13 @@ class CustomerControllerTests extends BaseTest {
         // 请求成功
         CustomerUpdateRequest request = new CustomerUpdateRequest();
         request.setId(addCustomer.getId());
+        request.setName("aa11");
+        request.setOwner("bb22");
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         // 校验请求成功数据
         Customer customerResult = customerMapper.selectByPrimaryKey(request.getId());
+        Assertions.assertEquals(request.getName(), customerResult.getName());
+        Assertions.assertEquals(request.getOwner(), customerResult.getOwner());
 
         // 不修改信息
         CustomerUpdateRequest emptyRequest = new CustomerUpdateRequest();
@@ -132,8 +131,6 @@ class CustomerControllerTests extends BaseTest {
         Customer responseCustomer = BeanUtils.copyBean(new Customer(), getResponse);
         responseCustomer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         responseCustomer.setInSharedPool(false);
-        responseCustomer.setName("aa");
-        responseCustomer.setOwner("bb");
         responseCustomer.setCollectionTime(addCustomer.getCollectionTime());
         Assertions.assertEquals(responseCustomer, customer);
 

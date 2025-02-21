@@ -21,6 +21,10 @@
 
         where c.organization_id = #{orgId} and c.in_shared_pool is false
 
+        <if test="request.keyword != null and request.keyword != ''">
+            and c.name like concat('%', #{request.keyword},'%')
+        </if>
+
         <include refid="filters">
             <property name="filters" value="request.filters"/>
         </include>
@@ -40,10 +44,10 @@
                 <bind name="sortType" value="${sort}.type" />
                 order by
                 <choose>
-                    <when test="${sort}.name == 'customerName'">
+                    <when test="${sort}.name == 'name'">
                         c.`name` ${sortType}
                     </when>
-                    <when test="${sort}.name == 'customerOwner'">
+                    <when test="${sort}.name == 'owner'">
                         c.`owner` ${sortType}
                     </when>
                     <otherwise>
@@ -60,7 +64,7 @@
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'customerName' and condition.name != 'customerOwner'">
+                <if test="condition.name != 'name' and condition.name != 'owner'">
                     inner join customer_field ${tablePrefix}_${i}
                     on c.id = ${tablePrefix}_${i}.customer_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                 </if>
@@ -69,7 +73,7 @@
     </sql>
 
     <sql id="fieldSortJoin">
-        <if test="${sort} != null and ${sort}.name != 'customerName' and ${sort}.name != 'customerOwner'">
+        <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'owner'">
             <bind name="sortName" value="${sort}.name"/>
             left join customer_field sort_table
             on c.id = sort_table.customer_id and sort_table.field_id = #{sortName}
@@ -109,13 +113,13 @@
 
     <sql id="condition">
         <choose>
-            <when test="condition.name == 'customerName'">
+            <when test="condition.name == 'name'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="c.name"/>
                 </include>
             </when>
-            <when test="condition.name == 'customerOwner'">
+            <when test="condition.name == 'owner'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="c.owner"/>

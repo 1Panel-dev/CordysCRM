@@ -21,6 +21,14 @@ public class CustomerUpdateRequest {
     @Size(max = 32)
     private String id;
 
+    @Size(max = 255)
+    @Schema(description = "客户名称")
+    private String name;
+
+    @Size(max = 32)
+    @Schema(description = "负责人")
+    private String owner;
+
     @Schema(description = "自定义字段")
     private List<ModuleFieldValueDTO> moduleFields;
 }

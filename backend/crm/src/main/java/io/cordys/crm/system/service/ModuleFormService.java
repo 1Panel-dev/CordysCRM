@@ -1,5 +1,6 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
@@ -11,6 +12,8 @@ import io.cordys.crm.system.domain.ModuleFieldBlob;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.domain.ModuleFormBlob;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
+import io.cordys.crm.system.dto.response.BusinessModuleFieldDTO;
+import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
 import io.cordys.crm.system.dto.response.ModuleFieldDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
@@ -25,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,6 +73,38 @@ public class ModuleFormService {
 		// set fields
 		formConfig.setFields(getAllFields(form.getId()));
 		return formConfig;
+	}
+
+	/**
+	 * 获取业务表单配置
+	 * @param formKey
+	 * @param organizationId
+	 * @return
+	 */
+	public BusinessModuleFormConfigDTO getBusinessFormConfig(String formKey, String organizationId) {
+		ModuleFormConfigDTO config = getConfig(formKey, organizationId);
+		BusinessModuleFormConfigDTO businessModuleFormConfig = new BusinessModuleFormConfigDTO();
+		businessModuleFormConfig.setFormProp(config.getFormProp());
+
+		// 获取特殊的业务字段
+		Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
+				collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
+
+		businessModuleFormConfig.setFields(
+				config.getFields()
+						.stream()
+						.map(moduleFieldDTO -> {
+							BusinessModuleFieldDTO businessModuleField = BeanUtils.copyBean(new BusinessModuleFieldDTO(), moduleFieldDTO);
+							BusinessModuleField businessModuleFieldEnum = businessModuleFieldMap.get(businessModuleField.getInternalKey());
+							if (businessModuleFieldEnum != null) {
+								// 设置特殊的业务字段 key
+								businessModuleField.setBusinessKey(businessModuleFieldEnum.getBusinessKey());
+							}
+							return businessModuleField;
+						})
+						.toList()
+		);
+		return businessModuleFormConfig;
 	}
 
 	/**

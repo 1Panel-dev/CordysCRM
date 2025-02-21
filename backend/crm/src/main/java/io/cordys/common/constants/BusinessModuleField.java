@@ -12,15 +12,17 @@ public enum BusinessModuleField {
     /**
      * 客户名称
      */
-    CUSTOMER_NAME("customerName"),
+    CUSTOMER_NAME("customerName", "name"),
     /**
      * 负责人
      */
-    CUSTOMER_OWNER("customerOwner");
+    CUSTOMER_OWNER("customerOwner", "owner");
 
     private final String key;
+    private final String businessKey;
 
-    BusinessModuleField(String key) {
+    BusinessModuleField(String key, String businessKey) {
         this.key = key;
+        this.businessKey = businessKey;
     }
 }

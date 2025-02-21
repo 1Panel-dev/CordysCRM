@@ -14,7 +14,7 @@ import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
-import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,8 +42,8 @@ public class CustomerController {
     @GetMapping("/module/form")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
-    public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormService.getConfig(FormKey.CUSTOMER.getKey(), OrganizationContext.getOrganizationId());
+    public BusinessModuleFormConfigDTO getModuleFormConfig() {
+        return moduleFormService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
