@@ -13,5 +13,5 @@ public class RuleConditionDTO {
 	@Schema(description = "操作符")
 	private String operator;
 	@Schema(description = "值")
-	private List<String> values;
+	private String value;
 }

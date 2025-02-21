@@ -7,13 +7,12 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.lead.domain.LeadPool;
-import io.cordys.crm.lead.domain.LeadPoolPickRule;
-import io.cordys.crm.lead.domain.LeadPoolRecycleRule;
 import io.cordys.crm.lead.domain.LeadPoolRelation;
 import io.cordys.crm.lead.dto.LeadPoolDTO;
+import io.cordys.crm.lead.dto.request.LeadPoolAddRequest;
 import io.cordys.crm.lead.dto.request.LeadPoolPickRuleSaveRequest;
 import io.cordys.crm.lead.dto.request.LeadPoolRecycleRuleSaveRequest;
-import io.cordys.crm.lead.dto.request.LeadPoolSaveRequest;
+import io.cordys.crm.lead.dto.request.LeadPoolUpdateRequest;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -54,7 +53,7 @@ public class LeadPoolControllerTests extends BaseTest {
 	@Order(2)
 	void add() throws Exception {
 		LeadPool leadPool = createLeadPool();
-		LeadPoolSaveRequest request = new LeadPoolSaveRequest();
+		LeadPoolAddRequest request = new LeadPoolAddRequest();
 		BeanUtils.copyBean(request, leadPool);
 		request.setOwnerIds(List.of("cc"));
 		request.setScopeIds(List.of("cc"));
@@ -64,7 +63,7 @@ public class LeadPoolControllerTests extends BaseTest {
 		RuleConditionDTO condition = new RuleConditionDTO();
 		condition.setColumn("name");
 		condition.setOperator("=");
-		condition.setValues(List.of("cc"));
+		condition.setValue("cc");
 		LeadPoolRecycleRuleSaveRequest recycleRule = LeadPoolRecycleRuleSaveRequest.builder().expireNotice(true).noticeDays(10).conditions(List.of(condition)).build();
 		request.setRecycleRule(recycleRule);
 		this.requestPostWithOk("/lead-pool/add", request);
@@ -86,7 +85,7 @@ public class LeadPoolControllerTests extends BaseTest {
 	void update() throws Exception {
 		LeadPool leadPool = createLeadPool();
 		leadPool.setId(testLeadPool.getId());
-		LeadPoolSaveRequest request = new LeadPoolSaveRequest();
+		LeadPoolUpdateRequest request = new LeadPoolUpdateRequest();
 		BeanUtils.copyBean(request, leadPool);
 		request.setOwnerIds(List.of("cc"));
 		request.setScopeIds(List.of("cc"));
@@ -121,7 +120,7 @@ public class LeadPoolControllerTests extends BaseTest {
 		LeadPoolRelation leadPoolRelation = createLeadPoolRelation();
 		leadPoolRelation.setPoolId(testLeadPool.getId());
 		leadPoolRelationMapper.insert(leadPoolRelation);
-		MvcResult mvcResult1 = this.requestGet("/lead-pool/delete/" + testLeadPool.getId()).andExpect(status().is5xxServerError()).andReturn();
+		MvcResult mvcResult1 = this.requestGet("/lead-pool/check-pick/" + testLeadPool.getId()).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("lead_pool_related"));
 		// pick lead, delete the pool
 		leadPoolRelationMapper.deleteByPrimaryKey(leadPoolRelation.getId());
@@ -149,6 +148,7 @@ public class LeadPoolControllerTests extends BaseTest {
 		LeadPoolRelation leadPoolRelation = new LeadPoolRelation();
 		leadPoolRelation.setId("default-lead-pool-relation");
 		leadPoolRelation.setLeadId("default-lead");
+		leadPoolRelation.setPicked(false);
 		leadPoolRelation.setLastPickUserId("default-user");
 		leadPoolRelation.setLastPickTime(System.currentTimeMillis());
 		leadPoolRelation.setCreateTime(System.currentTimeMillis());

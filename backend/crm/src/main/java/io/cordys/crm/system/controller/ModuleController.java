@@ -1,10 +1,12 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.dto.RoleUserTreeNode;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.dto.request.ModuleRequest;
 import io.cordys.crm.system.dto.request.ModuleSortRequest;
-import io.cordys.crm.system.dto.response.ModuleDTO;
 import io.cordys.crm.system.service.ModuleService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,5 +45,19 @@ public class ModuleController {
 	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
 	public void sortModule(@Validated @RequestBody ModuleSortRequest request) {
 		moduleService.sort(request, SessionUtils.getUserId());
+	}
+
+	@GetMapping("/user/dept/tree")
+	@Operation(summary = "获取部门用户树")
+	@RequiresPermissions(PermissionConstants.MODULE_SETTING_READ)
+	public List<DeptUserTreeNode> getDeptUserTree() {
+		return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId());
+	}
+
+	@GetMapping("/role/tree")
+	@Operation(summary = "获取角色树")
+	@RequiresPermissions(PermissionConstants.MODULE_SETTING_READ)
+	public List<RoleUserTreeNode> getRoleTree() {
+		return moduleService.getRoleTree(OrganizationContext.getOrganizationId());
 	}
 }

@@ -1,23 +1,18 @@
 package io.cordys.crm.lead.dto.request;
 
-import io.cordys.common.groups.Created;
-import io.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-public class LeadPoolSaveRequest {
+public class LeadPoolUpdateRequest {
 
-	@NotBlank(groups = { Updated.class })
-	@Size(max = 32, groups = { Created.class, Updated.class })
+	@NotBlank
+	@Size(max = 32)
 	@Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String id;
 
@@ -34,11 +29,11 @@ public class LeadPoolSaveRequest {
 	@Schema(description = "管理员ID集合")
 	private List<String> ownerIds;
 
-	@NonNull
+	@NotNull
 	@Schema(description = "启用/禁用")
 	private Boolean enable;
 
-	@NonNull
+	@NotNull
 	@Schema(description = "自动回收")
 	private Boolean auto;
 

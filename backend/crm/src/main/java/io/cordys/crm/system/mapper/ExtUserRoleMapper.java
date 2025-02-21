@@ -19,6 +19,8 @@ public interface ExtUserRoleMapper {
 
     List<DeptUserTreeNode> selectUserDeptForRelevance(@Param("orgId") String orgId, @Param("roleId") String roleId);
 
+    List<DeptUserTreeNode> selectUserDeptForOrg(@Param("orgId") String orgId);
+
     List<RoleUserTreeNode> selectUserRoleForRelevance(@Param("orgId") String orgId, @Param("roleId") String roleId);
 
     void deleteUserRole(@Param("ids") List<String> ids);

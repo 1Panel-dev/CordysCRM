@@ -3,6 +3,8 @@ package io.cordys.crm.lead.mapper;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
+import io.cordys.crm.lead.domain.LeadPoolPickRule;
+import io.cordys.crm.lead.domain.LeadPoolRecycleRule;
 import io.cordys.crm.lead.dto.LeadPoolDTO;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,11 +24,11 @@ public interface ExtLeadPoolMapper {
 	 * 更新线索池领取规则
 	 * @param rule 领取规则
 	 */
-	void updatePickRule(@Param("rule") CustomerPoolPickRule rule);
+	void updatePickRule(@Param("rule") LeadPoolPickRule rule);
 
 	/**
 	 * 更新线索池回收规则
 	 * @param rule 回收规则
 	 */
-	void updateRecycleRule(@Param("rule") CustomerPoolRecycleRule rule);
+	void updateRecycleRule(@Param("rule") LeadPoolRecycleRule rule);
 }

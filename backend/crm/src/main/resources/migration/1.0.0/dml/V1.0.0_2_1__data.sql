@@ -63,17 +63,5 @@ INSERT INTO sys_role(id, name, internal, data_scope, create_time, update_time, c
 VALUES ('sales_staff', 'sales_staff', 1, 'SELF', UNIX_TIMESTAMP() * 1000 + 2, UNIX_TIMESTAMP() * 1000 + 2, 'admin',
         'admin', '', '100001');
 
--- 初始化默认组织菜单模块
-INSERT INTO sys_module (id, organization_id, `module_key`, enable, pos, create_user, create_time, update_user, update_time)
-VALUES (UUID_SHORT(), '100001', 'home', true, 1, 'admin', UNIX_TIMESTAMP() * 1000, 'admin', UNIX_TIMESTAMP() * 1000),
-       (UUID_SHORT(), '100001', 'customer', true, 2, 'admin', UNIX_TIMESTAMP() * 1000 + 1, 'admin',
-        UNIX_TIMESTAMP() * 1000 + 1),
-       (UUID_SHORT(), '100001', 'clue', true, 3, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin',
-        UNIX_TIMESTAMP() * 1000 + 2),
-       (UUID_SHORT(), '100001', 'business', true, 4, 'admin', UNIX_TIMESTAMP() * 1000 + 3, 'admin',
-        UNIX_TIMESTAMP() * 1000 + 3),
-       (UUID_SHORT(), '100001', 'product', true, 5, 'admin', UNIX_TIMESTAMP() * 1000 + 4, 'admin',
-        UNIX_TIMESTAMP() * 1000 + 4);
-
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

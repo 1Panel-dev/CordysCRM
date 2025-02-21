@@ -7,22 +7,30 @@ import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.ModuleKey;
+import io.cordys.common.dto.BaseTreeNode;
+import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.dto.RoleUserTreeNode;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.dto.request.ModuleRequest;
 import io.cordys.crm.system.dto.request.ModuleSortRequest;
+import io.cordys.crm.system.dto.response.RoleListResponse;
+import io.cordys.crm.system.mapper.ExtDepartmentMapper;
 import io.cordys.crm.system.mapper.ExtModuleMapper;
+import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -32,6 +40,12 @@ public class ModuleService {
 	private BaseMapper<Module> moduleMapper;
 	@Resource
 	private ExtModuleMapper extModuleMapper;
+	@Resource
+	private ExtDepartmentMapper extDepartmentMapper;
+	@Resource
+	private ExtUserRoleMapper extUserRoleMapper;
+	@Resource
+	private RoleService roleService;
 
 	private static final String DEFAULT_ORGANIZATION_ID = "100001";
 
@@ -112,6 +126,37 @@ public class ModuleService {
 				.modifiedValue(modifiedVal)
 				.resourceId(StringUtils.EMPTY)
 				.build());
+	}
+
+	/**
+	 * 获取带用户的信息的部门树
+	 *
+	 * @return List<DeptUserTreeNode>
+	 */
+	public List<DeptUserTreeNode> getDeptUserTree(String orgId) {
+		List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
+		List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForOrg(orgId);
+		treeNodes.addAll(userNodes);
+		return BaseTreeNode.buildTree(treeNodes);
+	}
+
+	/**
+	 * 获取角色树
+	 * @param orgId 组织ID
+	 * @return 角色树
+	 */
+	public List<RoleUserTreeNode> getRoleTree(String orgId) {
+		// 查询角色信息
+		List<RoleListResponse> list = roleService.list(orgId);
+		List<RoleUserTreeNode> treeNodes = list.stream().map((role) -> {
+			RoleUserTreeNode roleNode = new RoleUserTreeNode();
+			roleNode.setNodeType("ROLE");
+			roleNode.setInternal(BooleanUtils.isTrue(role.getInternal()));
+			roleNode.setId(role.getId());
+			roleNode.setName(role.getName());
+			return roleNode;
+		}).collect(Collectors.toList());
+		return BaseTreeNode.buildTree(treeNodes);
 	}
 
 	/**
