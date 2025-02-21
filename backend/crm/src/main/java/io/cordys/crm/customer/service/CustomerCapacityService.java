@@ -4,10 +4,10 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.customer.domain.CustomerCapacity;
 import io.cordys.crm.customer.dto.CustomerCapacityDTO;
-import io.cordys.crm.customer.dto.request.CustomerCapacitySaveRequest;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.dto.request.CapacityRequest;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -35,10 +35,10 @@ public class CustomerCapacityService {
 	private UserExtendService userExtendService;
 
 	/**
-	 * 分页获取客户库容设置
-	 * @return 客户库容设置列表
+	 * 获取客户库容设置
+	 * @return 客户库容设置集合
 	 */
-	public List<CustomerCapacityDTO> page(String currentOrgId) {
+	public List<CustomerCapacityDTO> list(String currentOrgId) {
 		List<CustomerCapacityDTO> capacityDTOS = new ArrayList<>();
 		LambdaQueryWrapper<CustomerCapacity> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(CustomerCapacity::getOrganizationId, currentOrgId);
@@ -62,11 +62,11 @@ public class CustomerCapacityService {
 	}
 
 	/**
-	 * 保存客户库容规则
-	 * @param request 请求参数
+	 * 保存客户库容设置
+	 * @param capacities 容量集合
 	 * @param currentUserId 当前用户ID
 	 */
-	public void save(CustomerCapacitySaveRequest request, String currentUserId, String currentOrgId) {
+	public void save(List<CapacityRequest> capacities, String currentUserId, String currentOrgId) {
 		LambdaQueryWrapper<CustomerCapacity> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(CustomerCapacity::getOrganizationId, currentOrgId);
 		List<CustomerCapacity> oldCapacities = customerCapacityMapper.selectListByLambda(wrapper);
@@ -75,8 +75,8 @@ public class CustomerCapacityService {
 			capacity.setOrganizationId(currentOrgId);
 			customerCapacityMapper.delete(capacity);
 		}
-		List<CustomerCapacity> capacities = new ArrayList<>();
-		request.getCapacities().forEach(capacityRequest -> {
+		List<CustomerCapacity> newCapacities = new ArrayList<>();
+		capacities.forEach(capacityRequest -> {
 			CustomerCapacity capacity = new CustomerCapacity();
 			capacity.setId(IDGenerator.nextStr());
 			capacity.setOrganizationId(currentOrgId);
@@ -86,8 +86,8 @@ public class CustomerCapacityService {
 			capacity.setCreateUser(currentUserId);
 			capacity.setUpdateTime(System.currentTimeMillis());
 			capacity.setUpdateUser(currentUserId);
-			capacities.add(capacity);
+			newCapacities.add(capacity);
 		});
-		customerCapacityMapper.batchInsert(capacities);
+		customerCapacityMapper.batchInsert(newCapacities);
 	}
 }

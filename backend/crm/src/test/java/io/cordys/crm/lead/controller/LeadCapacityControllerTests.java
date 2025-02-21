@@ -30,7 +30,7 @@ public class LeadCapacityControllerTests extends BaseTest {
 	@Test
 	@Order(2)
 	void page() throws Exception {
-		MvcResult mvcResult = this.requestGetWithOkAndReturn("/lead-capacity/list");
+		MvcResult mvcResult = this.requestGetWithOkAndReturn("/lead-capacity/get");
 		List<LeadCapacity> result = getResultDataArray(mvcResult, LeadCapacity.class);
 		assert result.size() == 1;
 	}

@@ -23,7 +23,7 @@ public class LeadCapacityController {
 	@Resource
 	private LeadCapacityService leadCapacityService;
 
-	@GetMapping("/list")
+	@GetMapping("/get")
 	@Operation(summary = "获取线索库容设置")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
 	public List<LeadCapacityDTO> list() {

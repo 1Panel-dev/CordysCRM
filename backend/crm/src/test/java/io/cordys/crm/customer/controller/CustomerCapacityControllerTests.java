@@ -5,7 +5,6 @@ import io.cordys.common.pager.Pager;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.CustomerCapacity;
-import io.cordys.crm.customer.dto.request.CustomerCapacitySaveRequest;
 import io.cordys.crm.system.dto.request.CapacityRequest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -25,35 +24,26 @@ public class CustomerCapacityControllerTests extends BaseTest {
 	@Test
 	@Order(1)
 	void add() throws Exception {
-		CustomerCapacitySaveRequest request = new CustomerCapacitySaveRequest();
 		CapacityRequest capacity = new CapacityRequest();
 		capacity.setScopeIds(List.of("cc"));
 		capacity.setCapacity(10);
-		request.setCapacities(List.of(capacity));
-		this.requestPostWithOk("/customer-capacity/save", request);
+		this.requestPostWithOk("/customer-capacity/save", List.of(capacity));
 	}
 
 	@Test
 	@Order(2)
 	void page() throws Exception {
-		BasePageRequest request = new BasePageRequest();
-		request.setCurrent(1);
-		request.setPageSize(10);
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/customer-capacity/page", request);
-		Pager<List<CustomerCapacity>> result = getPageResult(mvcResult, CustomerCapacity.class);
-		assert result.getList().size() == 1;
-		request.setSort(new SortRequest("id", "desc"));
-		this.requestPostWithOk("/customer-capacity/page", request);
+		MvcResult mvcResult = this.requestGetWithOkAndReturn("/customer-capacity/get");
+		List<CustomerCapacity> result = getResultDataArray(mvcResult, CustomerCapacity.class);
+		assert result.size() == 1;
 	}
 
 	@Test
 	@Order(3)
 	void update() throws Exception {
-		CustomerCapacitySaveRequest request = new CustomerCapacitySaveRequest();
 		CapacityRequest capacity = new CapacityRequest();
 		capacity.setScopeIds(List.of("cc"));
 		capacity.setCapacity(100);
-		request.setCapacities(List.of(capacity));
-		this.requestPostWithOk("/customer-capacity/save", request);
+		this.requestPostWithOk("/customer-capacity/save", List.of(capacity));
 	}
 }
