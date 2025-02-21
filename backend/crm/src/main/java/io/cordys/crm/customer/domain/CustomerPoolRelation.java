@@ -13,6 +13,8 @@ public class CustomerPoolRelation extends BaseModel {
 	private String poolId;
 	@Schema(description = "公海池ID")
 	private String customerId;
+	@Schema(description = "是否领取")
+	private Boolean picked;
 	@Schema(description = "上一次领取人")
 	private String lastPickUserId;
 	@Schema(description = "上一次领取时间")

@@ -2,9 +2,9 @@ package io.cordys.crm.customer.dto.request;
 
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 public class CustomerPoolRecycleRuleSaveRequest {
 
-	@NonNull
+	@NotNull
 	@Schema(description = "到期提醒")
 	private Boolean expireNotice;
 

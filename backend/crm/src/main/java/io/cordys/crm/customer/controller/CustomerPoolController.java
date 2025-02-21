@@ -8,7 +8,8 @@ import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
-import io.cordys.crm.customer.dto.request.CustomerPoolSaveRequest;
+import io.cordys.crm.customer.dto.request.CustomerPoolAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerPoolUpdateRequest;
 import io.cordys.crm.customer.service.CustomerPoolService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,15 +40,22 @@ public class CustomerPoolController {
     @PostMapping("/add")
     @Operation(summary = "保存公海池")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-    public void save(@Validated @RequestBody CustomerPoolSaveRequest request) {
-        customerPoolService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public void add(@Validated @RequestBody CustomerPoolAddRequest request) {
+        customerPoolService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update")
     @Operation(summary = "编辑公海池")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-    public void update(@Validated @RequestBody CustomerPoolSaveRequest request) {
-        customerPoolService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public void update(@Validated @RequestBody CustomerPoolUpdateRequest request) {
+        customerPoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/no-pick/{id}")
+    @Operation(summary = "公海池是否存在未领取线索")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public boolean checkNoPick(@PathVariable String id) {
+        return customerPoolService.checkNoPick(id);
     }
 
     @GetMapping("/delete/{id}")

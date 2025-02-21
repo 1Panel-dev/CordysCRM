@@ -1,22 +1,22 @@
 package io.cordys.crm.customer.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 
 @Data
 @Builder
 public class CustomerPoolPickRuleSaveRequest {
 
-	@NonNull
+	@NotNull
 	@Schema(description = "是否限制每日领取数量")
 	private Boolean limitOnNumber;
 
 	@Schema(description = "领取数量")
 	private Integer pickNumber;
 
-	@NonNull
+	@NotNull
 	@Schema(description = "是否限制前归属人领取")
 	private Boolean limitPreOwner;
 

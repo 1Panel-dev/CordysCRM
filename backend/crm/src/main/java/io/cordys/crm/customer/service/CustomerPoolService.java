@@ -11,11 +11,19 @@ import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.domain.CustomerPoolRelation;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
-import io.cordys.crm.customer.dto.request.CustomerPoolSaveRequest;
+import io.cordys.crm.customer.dto.CustomerPoolRuleDTO;
+import io.cordys.crm.customer.dto.request.CustomerPoolAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerPoolUpdateRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
+import io.cordys.crm.lead.domain.LeadPoolPickRule;
+import io.cordys.crm.lead.domain.LeadPoolRecycleRule;
+import io.cordys.crm.lead.domain.LeadPoolRelation;
+import io.cordys.crm.lead.dto.LeadPoolDTO;
+import io.cordys.crm.lead.dto.LeadPoolRuleDTO;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
@@ -28,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -64,29 +74,122 @@ public class CustomerPoolService {
 		if (CollectionUtils.isEmpty(pools)) {
 			return new ArrayList<>();
 		}
+		List<String> userIds = new ArrayList<>();
 		List<String> scopeIds = new ArrayList<>();
 		List<String> ownerIds = new ArrayList<>();
+
 		pools.forEach(pool -> {
+			userIds.add(pool.getCreateUser());
+			userIds.add(pool.getUpdateUser());
 			scopeIds.addAll(JSON.parseArray(pool.getScopeId(), String.class));
 			ownerIds.addAll(JSON.parseArray(pool.getOwnerId(), String.class));
 		});
-		List<String> unionIds = ListUtils.union(scopeIds, ownerIds).stream().distinct().toList();
+
+		List<String> unionIds = ListUtils.union(scopeIds, ownerIds)
+				.stream()
+				.distinct()
+				.toList();
+
 		List<User> users = userMapper.selectByIds(unionIds.toArray(new String[0]));
 		List<Role> roles = roleMapper.selectByIds(unionIds.toArray(new String[0]));
 		List<Department> departments = departmentMapper.selectByIds(unionIds.toArray(new String[0]));
+		List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
+
+		Map<String, String> userMap = createOrUpdateUsers.stream()
+				.collect(Collectors.toMap(User::getId, User::getName));
+
+		List<String> poolIds = pools.stream()
+				.map(CustomerPoolDTO::getId)
+				.toList();
+
+		LambdaQueryWrapper<CustomerPoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
+		pickRuleWrapper.in(CustomerPoolPickRule::getPoolId, poolIds);
+
+		List<CustomerPoolPickRule> pickRules = customerPoolPickRuleMapper.selectListByLambda(pickRuleWrapper);
+		Map<String, CustomerPoolPickRule> pickRuleMap = pickRules.stream()
+				.collect(Collectors.toMap(CustomerPoolPickRule::getPoolId, pickRule -> pickRule));
+
+		LambdaQueryWrapper<CustomerPoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
+		recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
+
+		List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper.selectListByLambda(recycleRuleWrapper);
+		Map<String, CustomerPoolRecycleRule> recycleRuleMap = recycleRules.stream()
+				.collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, recycleRule -> recycleRule));
+
 		pools.forEach(pool -> {
-			pool.setMembers(userExtendService.getScope(users, roles, departments, JSON.parseArray(pool.getScopeId(), String.class)));
-			pool.setOwners(userExtendService.getScope(users, roles, departments, JSON.parseArray(pool.getOwnerId(), String.class)));
+			pool.setMembers(userExtendService.getScope(users, roles, departments,
+					JSON.parseArray(pool.getScopeId(), String.class)));
+			pool.setOwners(userExtendService.getScope(users, roles, departments,
+					JSON.parseArray(pool.getOwnerId(), String.class)));
+			pool.setCreateUserName(userMap.get(pool.getCreateUser()));
+			pool.setUpdateUserName(userMap.get(pool.getUpdateUser()));
+
+			CustomerPoolPickRule pickRule = pickRuleMap.get(pool.getId());
+			CustomerPoolRecycleRule recycleRule = recycleRuleMap.get(pool.getId());
+
+			CustomerPoolRuleDTO rule = CustomerPoolRuleDTO.builder()
+					.limitOnNumber(pickRule.getLimitOnNumber())
+					.pickNumber(pickRule.getPickNumber())
+					.limitPreOwner(pickRule.getLimitPreOwner())
+					.pickIntervalDays(pickRule.getPickIntervalDays())
+					.expireNotice(recycleRule.getExpireNotice())
+					.noticeDays(recycleRule.getNoticeDays())
+					.operator(recycleRule.getOperator())
+					.conditions(JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class))
+					.build();
+
+			pool.setRule(rule);
 		});
+
 		return pools;
 	}
 
 	/**
-	 * 保存公海池
+	 * 新增公海池
 	 * @param request 请求参数
 	 * @param currentUserId 当前用户ID
 	 */
-	public void save(CustomerPoolSaveRequest request, String currentUserId, String organizationId) {
+	public void add(CustomerPoolAddRequest request, String currentUserId, String organizationId) {
+		CustomerPool pool = new CustomerPool();
+		BeanUtils.copyBean(pool, request);
+		pool.setId(IDGenerator.nextStr());
+		pool.setOrganizationId(organizationId);
+		pool.setOwnerId(JSON.toJSONString(request.getOwnerIds()));
+		pool.setScopeId(JSON.toJSONString(request.getScopeIds()));
+		pool.setCreateTime(System.currentTimeMillis());
+		pool.setCreateUser(currentUserId);
+		pool.setUpdateTime(System.currentTimeMillis());
+		pool.setUpdateUser(currentUserId);
+		customerPoolMapper.insert(pool);
+		CustomerPoolPickRule pickRule = new CustomerPoolPickRule();
+		BeanUtils.copyBean(pickRule, request.getPickRule());
+		pickRule.setId(IDGenerator.nextStr());
+		pickRule.setPoolId(pool.getId());
+		pickRule.setCreateUser(currentUserId);
+		pickRule.setCreateTime(System.currentTimeMillis());
+		pickRule.setUpdateUser(currentUserId);
+		pickRule.setUpdateTime(System.currentTimeMillis());
+		customerPoolPickRuleMapper.insert(pickRule);
+		CustomerPoolRecycleRule recycleRule = new CustomerPoolRecycleRule();
+		BeanUtils.copyBean(recycleRule, request.getRecycleRule());
+		recycleRule.setId(IDGenerator.nextStr());
+		recycleRule.setCondition(JSON.toJSONString(request.getRecycleRule().getConditions()));
+		recycleRule.setPoolId(pool.getId());
+		recycleRule.setCreateUser(currentUserId);
+		recycleRule.setCreateTime(System.currentTimeMillis());
+		recycleRule.setUpdateUser(currentUserId);
+		recycleRule.setUpdateTime(System.currentTimeMillis());
+		customerPoolRecycleRuleMapper.insert(recycleRule);
+	}
+
+	/**
+	 * 修改公海池
+	 * @param request 请求参数
+	 * @param currentUserId 当前用户ID
+	 */
+	public void update(CustomerPoolUpdateRequest request, String currentUserId, String organizationId) {
+		CustomerPool oldPool = checkPoolExist(request.getId());
+		checkPoolOwner(oldPool, currentUserId);
 		CustomerPool pool = new CustomerPool();
 		BeanUtils.copyBean(pool, request);
 		pool.setOrganizationId(organizationId);
@@ -94,39 +197,33 @@ public class CustomerPoolService {
 		pool.setScopeId(JSON.toJSONString(request.getScopeIds()));
 		pool.setUpdateTime(System.currentTimeMillis());
 		pool.setUpdateUser(currentUserId);
+		customerPoolMapper.update(pool);
 		CustomerPoolPickRule pickRule = new CustomerPoolPickRule();
 		BeanUtils.copyBean(pickRule, request.getPickRule());
+		pickRule.setPoolId(pool.getId());
 		pickRule.setUpdateUser(currentUserId);
 		pickRule.setUpdateTime(System.currentTimeMillis());
+		extCustomerPoolMapper.updatePickRule(pickRule);
 		CustomerPoolRecycleRule recycleRule = new CustomerPoolRecycleRule();
 		BeanUtils.copyBean(recycleRule, request.getRecycleRule());
+		recycleRule.setPoolId(pool.getId());
 		recycleRule.setCondition(JSON.toJSONString(request.getRecycleRule().getConditions()));
 		recycleRule.setUpdateUser(currentUserId);
 		recycleRule.setUpdateTime(System.currentTimeMillis());
-		if (pool.getId() == null) {
-			pool.setId(IDGenerator.nextStr());
-			pool.setCreateTime(System.currentTimeMillis());
-			pool.setCreateUser(currentUserId);
-			customerPoolMapper.insert(pool);
-			pickRule.setId(IDGenerator.nextStr());
-			pickRule.setPoolId(pool.getId());
-			pickRule.setCreateUser(currentUserId);
-			pickRule.setCreateTime(System.currentTimeMillis());
-			customerPoolPickRuleMapper.insert(pickRule);
-			recycleRule.setId(IDGenerator.nextStr());
-			recycleRule.setPoolId(pool.getId());
-			recycleRule.setCreateUser(currentUserId);
-			recycleRule.setCreateTime(System.currentTimeMillis());
-			customerPoolRecycleRuleMapper.insert(recycleRule);
-		} else {
-			CustomerPool oldPool = checkPoolExist(pool.getId());
-			checkPoolOwner(oldPool, currentUserId);
-			customerPoolMapper.update(pool);
-			pickRule.setPoolId(pool.getId());
-			extCustomerPoolMapper.updatePickRule(pickRule);
-			recycleRule.setPoolId(pool.getId());
-			extCustomerPoolMapper.updateRecycleRule(recycleRule);
-		}
+		extCustomerPoolMapper.updateRecycleRule(recycleRule);
+	}
+
+	/**
+	 * 公海池是否存在未领取线索
+	 *
+	 * @param id 线索池ID
+	 */
+	public boolean checkNoPick(String id) {
+		LambdaQueryWrapper<CustomerPoolRelation> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(CustomerPoolRelation::getPoolId, id)
+				.eq(CustomerPoolRelation::getPicked, false);
+		List<CustomerPoolRelation> relations = customerPoolRelationMapper.selectListByLambda(wrapper);
+		return CollectionUtils.isNotEmpty(relations);
 	}
 
 	/**
@@ -135,12 +232,6 @@ public class CustomerPoolService {
 	public void delete(String id, String currentUserId) {
 		CustomerPool pool = checkPoolExist(id);
 		checkPoolOwner(pool, currentUserId);
-		LambdaQueryWrapper<CustomerPoolRelation> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(CustomerPoolRelation::getPoolId, id);
-		List<CustomerPoolRelation> customerPoolRelations = customerPoolRelationMapper.selectListByLambda(wrapper);
-		if (CollectionUtils.isNotEmpty(customerPoolRelations)) {
-			throw new GenericException(Translator.get("customer_pool_related"));
-		}
 		customerPoolMapper.deleteByPrimaryKey(id);
 		CustomerPoolPickRule pickRule = new CustomerPoolPickRule();
 		pickRule.setPoolId(id);

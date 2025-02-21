@@ -227,15 +227,12 @@ public class LeadPoolService {
      *
      * @param id 线索池ID
      */
-    public void checkPick(String id) {
+    public boolean checkNoPick(String id) {
         LambdaQueryWrapper<LeadPoolRelation> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(LeadPoolRelation::getPoolId, id)
                 .eq(LeadPoolRelation::getPicked, false);
-
         List<LeadPoolRelation> leadPoolRelations = leadPoolRelationMapper.selectListByLambda(wrapper);
-        if (CollectionUtils.isNotEmpty(leadPoolRelations)) {
-            throw new GenericException(Translator.get("lead_pool_related"));
-        }
+        return CollectionUtils.isNotEmpty(leadPoolRelations);
     }
 
     /**

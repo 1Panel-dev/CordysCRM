@@ -1,6 +1,7 @@
 package io.cordys.crm.customer.dto;
 
 import io.cordys.crm.customer.domain.CustomerPool;
+import io.cordys.crm.lead.dto.LeadPoolRuleDTO;
 import io.cordys.crm.system.dto.ScopeNameDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -14,4 +15,10 @@ public class CustomerPoolDTO extends CustomerPool {
 	private List<ScopeNameDTO> members;
 	@Schema(description = "管理员集合")
 	private List<ScopeNameDTO> owners;
+	@Schema(description = "创建人名称")
+	private String createUserName;
+	@Schema(description = "更新人名称")
+	private String updateUserName;
+	@Schema(description = "规则")
+	private CustomerPoolRuleDTO rule;
 }

@@ -10,9 +10,10 @@ import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolRelation;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
+import io.cordys.crm.customer.dto.request.CustomerPoolAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolPickRuleSaveRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolRecycleRuleSaveRequest;
-import io.cordys.crm.customer.dto.request.CustomerPoolSaveRequest;
+import io.cordys.crm.customer.dto.request.CustomerPoolUpdateRequest;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -52,7 +53,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 	@Order(2)
 	void add() throws Exception {
 		CustomerPool customerPool = createCustomerPool();
-		CustomerPoolSaveRequest request = new CustomerPoolSaveRequest();
+		CustomerPoolAddRequest request = new CustomerPoolAddRequest();
 		BeanUtils.copyBean(request, customerPool);
 		request.setOwnerIds(List.of("cc"));
 		request.setScopeIds(List.of("cc"));
@@ -85,7 +86,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 	void update() throws Exception {
 		CustomerPool customerPool = createCustomerPool();
 		customerPool.setId(testCustomerPool.getId());
-		CustomerPoolSaveRequest request = new CustomerPoolSaveRequest();
+		CustomerPoolUpdateRequest request = new CustomerPoolUpdateRequest();
 		BeanUtils.copyBean(request, customerPool);
 		request.setOwnerIds(List.of("cc"));
 		request.setScopeIds(List.of("cc"));
@@ -121,8 +122,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 		CustomerPoolRelation customerPoolRelation = createCustomerPoolRelation();
 		customerPoolRelation.setPoolId(testCustomerPool.getId());
 		customerPoolRelationMapper.insert(customerPoolRelation);
-		MvcResult mvcResult1 = this.requestGet("/customer-pool/delete/" + testCustomerPool.getId()).andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("customer_pool_related"));
+		this.requestGet("/customer-pool/no-pick/" + testCustomerPool.getId());
 		// pick customer, delete the pool
 		customerPoolRelationMapper.deleteByPrimaryKey(customerPoolRelation.getId());
 		this.requestGetWithOk("/customer-pool/delete/" + testCustomerPool.getId());
@@ -149,6 +149,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 		CustomerPoolRelation customerPoolRelation = new CustomerPoolRelation();
 		customerPoolRelation.setId("default-ct-pool-relation");
 		customerPoolRelation.setCustomerId("default-custom");
+		customerPoolRelation.setPicked(false);
 		customerPoolRelation.setLastPickUserId("default-user");
 		customerPoolRelation.setLastPickTime(System.currentTimeMillis());
 		customerPoolRelation.setCreateTime(System.currentTimeMillis());

@@ -51,11 +51,11 @@ public class LeadPoolController {
 		leadPoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
-	@GetMapping("/check-pick/{id}")
+	@GetMapping("/no-pick/{id}")
 	@Operation(summary = "线索池是否存在未领取线索")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void checkPick(@PathVariable String id) {
-		leadPoolService.checkPick(id);
+	public boolean checkNoPick(@PathVariable String id) {
+		return leadPoolService.checkNoPick(id);
 	}
 
 	@GetMapping("/delete/{id}")

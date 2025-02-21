@@ -88,6 +88,7 @@ CREATE TABLE customer_pool_relation
     `pool_id`     VARCHAR(32) NOT NULL COMMENT '公海id',
     `last_pick_user_id` VARCHAR(32) NOT NULL   COMMENT '上一次领取人' ,
     `last_pick_time` BIGINT(255) NOT NULL   COMMENT '上一次领取时间' ,
+    `picked`            BIT(1) NOT NULL   COMMENT '是否领取' ,
     `create_time` BIGINT      NOT NULL COMMENT '创建时间',
     `update_time` BIGINT      NOT NULL COMMENT '更新时间',
     `create_user` VARCHAR(32) NOT NULL COMMENT '创建人',
@@ -105,7 +106,7 @@ CREATE TABLE customer_capacity
 (
     `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
     `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织架构ID',
-    `scope_id`        VARCHAR(1000) NOT NULL COMMENT '范围ID',
+    `scope_id`        TEXT NOT NULL COMMENT '范围ID',
     `capacity`        INT(255)      NOT NULL DEFAULT 0 COMMENT '库容;0:不限制',
     `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
