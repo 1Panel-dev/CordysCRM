@@ -23,14 +23,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/lead-capacity")
-@Tag(name = "线索库容规则")
+@Tag(name = "线索库容设置")
 public class LeadCapacityController {
 
 	@Resource
 	private LeadCapacityService leadCapacityService;
 
 	@PostMapping("/page")
-	@Operation(summary = "分页获取线索库容规则")
+	@Operation(summary = "分页获取线索库容设置")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
 	public Pager<List<LeadCapacityDTO>> page(@Validated @RequestBody BasePageRequest request) {
 		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize(),
@@ -39,7 +39,7 @@ public class LeadCapacityController {
 	}
 
 	@PostMapping("/save")
-	@Operation(summary = "保存线索库容规则")
+	@Operation(summary = "保存线索库容设置")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
 	public void save(@Validated @RequestBody LeadCapacitySaveRequest request) {
 		leadCapacityService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

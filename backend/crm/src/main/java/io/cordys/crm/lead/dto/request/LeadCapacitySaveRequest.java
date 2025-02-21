@@ -2,9 +2,9 @@ package io.cordys.crm.lead.dto.request;
 
 import io.cordys.crm.system.dto.request.CapacityRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 public class LeadCapacitySaveRequest {
 
-	@NonNull
+	@NotNull
 	@Schema(description = "库容集合")
 	List<CapacityRequest> capacities;
 }
