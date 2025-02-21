@@ -11,21 +11,29 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * OpenAPI 配置类，配置 Swagger UI 和 API 文档生成。
+ */
 @OpenAPIDefinition(
         info = @Info(
                 title = "${spring.application.name}",
-                version = "3.0"
+                version = "1.0.0"
         ),
         servers = @Server(url = "/")
 )
 @Configuration
+@ConditionalOnProperty(name = {"springdoc.swagger-ui.enabled", "springdoc.api-docs.enabled"}, havingValue = "true")
 public class OpenApiConfig {
-    private static final String prePackages = "io.cordys.crm.";
 
+    private static final String PRE_PACKAGES = "io.cordys.crm.";
+
+    /**
+     * 自定义 API 操作，增加 CSRF 和 HEADER token 参数。
+     */
     @Bean
-    @ConditionalOnProperty(name = {"springdoc.swagger-ui.enabled", "springdoc.api-docs.enabled"}, havingValue = "true")
     public OperationCustomizer customize() {
         return (operation, handlerMethod) -> {
+            // 排除登录接口，不添加 CSRF 和 HEADER token 参数
             if (!"login".equals(handlerMethod.getMethod().getName())) {
                 return operation
                         .addParametersItem(new Parameter().in("header").required(true).name(SessionConstants.CSRF_TOKEN))
@@ -35,49 +43,57 @@ public class OpenApiConfig {
         };
     }
 
+    /**
+     * 根据模块名称创建 GroupedOpenApi 配置。
+     *
+     * @param group         API 分组名称
+     * @param packagePrefix 扫描的包前缀
+     * @return GroupedOpenApi
+     */
+    private GroupedOpenApi createApi(String group, String packagePrefix) {
+        return GroupedOpenApi.builder()
+                .group(group)
+                .packagesToScan(packagePrefix)
+                .build();
+    }
+
+    /**
+     * 配置系统 API 文档。
+     */
     @Bean
-    @ConditionalOnProperty(name = {"springdoc.swagger-ui.enabled", "springdoc.api-docs.enabled"}, havingValue = "true")
     public GroupedOpenApi systemApi() {
-        return GroupedOpenApi.builder()
-                .group("system")
-                .packagesToScan(prePackages + "system")
-                .build();
+        return createApi("system", PRE_PACKAGES + "system");
     }
 
+    /**
+     * 配置客户 API 文档。
+     */
     @Bean
-    @ConditionalOnProperty(name = {"springdoc.swagger-ui.enabled", "springdoc.api-docs.enabled"}, havingValue = "true")
     public GroupedOpenApi customerApi() {
-        return GroupedOpenApi.builder()
-                .group("customer")
-                .packagesToScan(prePackages + "customer")
-                .build();
+        return createApi("customer", PRE_PACKAGES + "customer");
     }
 
+    /**
+     * 配置潜在客户 API 文档。
+     */
     @Bean
-    @ConditionalOnProperty(name = {"springdoc.swagger-ui.enabled", "springdoc.api-docs.enabled"}, havingValue = "true")
     public GroupedOpenApi leadApi() {
-        return GroupedOpenApi.builder()
-                .group("lead")
-                .packagesToScan(prePackages + "lead")
-                .build();
+        return createApi("lead", PRE_PACKAGES + "lead");
     }
 
+    /**
+     * 配置机会 API 文档。
+     */
     @Bean
-    @ConditionalOnProperty(name = {"springdoc.swagger-ui.enabled", "springdoc.api-docs.enabled"}, havingValue = "true")
     public GroupedOpenApi opportunityApi() {
-        return GroupedOpenApi.builder()
-                .group("opportunity")
-                .packagesToScan(prePackages + "opportunity")
-                .build();
+        return createApi("opportunity", PRE_PACKAGES + "opportunity");
     }
 
+    /**
+     * 配置 XPack API 文档。
+     */
     @Bean
-    @ConditionalOnProperty(name = {"springdoc.swagger-ui.enabled", "springdoc.api-docs.enabled"}, havingValue = "true")
     public GroupedOpenApi xpackApi() {
-        return GroupedOpenApi.builder()
-                .group("xpack")
-                .packagesToScan( "io.cordys.xpack")
-                .build();
+        return createApi("xpack", "io.cordys.xpack");
     }
-
 }
