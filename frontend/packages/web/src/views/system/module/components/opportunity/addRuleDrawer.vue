@@ -2,7 +2,8 @@
   <CrmDrawer
     v-model:show="visible"
     :width="800"
-    :title="t('module.businessManage.businessCloseRule')"
+    :title="form.id ? t('opportunity.updateRules') : t('opportunity.addRules')"
+    :ok-text="form.id ? t('common.update') : t('common.add')"
     :show-continue="!form.id"
     :loading="loading"
     @confirm="confirmHandler(false)"
@@ -54,7 +55,6 @@
       <div class="crm-module-form-title"> {{ t('module.businessManage.businessCloseRule') }}</div>
       <!-- 自动关闭 -->
       <n-form-item
-        v-if="!form.id"
         require-mark-placement="left"
         label-placement="left"
         path="auto"
@@ -146,7 +146,12 @@
   import { useI18n } from '@/hooks/useI18n';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
-  import type { ModuleConditionsItem, OpportunityDetail, OpportunityParams } from '@lib/shared/models/system/module';
+  import type {
+    ModuleConditionsItem,
+    OpportunityDetail,
+    OpportunityItem,
+    OpportunityParams,
+  } from '@lib/shared/models/system/module';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   const { t } = useI18n();
@@ -158,7 +163,7 @@
   } & OpportunityDetail;
 
   const props = defineProps<{
-    rows?: OpportunityDetailType;
+    rows?: OpportunityItem;
   }>();
 
   const emit = defineEmits<{
@@ -171,19 +176,19 @@
   });
 
   const rules: FormRules = {
-    name: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }) }],
+    name: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }), trigger: ['blur'] }],
     ownerIds: [{ required: true, message: t('common.pleaseSelect') }],
     scopeIds: [{ required: true, message: t('common.pleaseSelect') }],
-    noticeDays: [{ required: true, message: t('common.pleaseInput') }],
+    noticeDays: [{ required: true, message: t('common.pleaseInput'), trigger: ['blur'] }],
   };
 
   const closeAttrsOptions = ref<SelectOption[]>([
     {
-      value: 'belongDays',
+      value: 'keepDays',
       label: t('opportunity.belongDays'),
     },
     {
-      value: 'remainingDays',
+      value: 'remainKeepDays',
       label: t('module.remainingDays'),
     },
     {
@@ -226,7 +231,7 @@
   ]);
 
   const initDefaultItem: ModuleConditionsItem = {
-    column: 'belongDays',
+    column: 'keepDays',
     operator: OperatorEnum.EQ,
     value: '',
   };
@@ -274,11 +279,12 @@
   async function handleSave(isContinue: boolean) {
     try {
       loading.value = true;
-      const { ownerIds, scopeIds } = form.value;
+      const { ownerIds, scopeIds, conditions, auto } = form.value;
       const params: OpportunityParams = {
         ...form.value,
         ownerIds: ownerIds.map((e) => e.id),
         scopeIds: scopeIds.map((e) => e.id),
+        conditions: auto ? conditions : [],
       };
 
       if (form.value.id) {
@@ -305,17 +311,25 @@
   function confirmHandler(isContinue: boolean) {
     formRef.value?.validate(async (error) => {
       if (!error) {
-        userFormValidate(handleSave, isContinue);
+        if (form.value.auto) {
+          userFormValidate(handleSave, isContinue);
+        } else {
+          handleSave(isContinue);
+        }
       }
     });
   }
 
   watch(
     () => props.rows,
-    (val) => {
+    (val?: OpportunityItem) => {
       if (val) {
-        // TODO 回显待联调
-        form.value = cloneDeep(val);
+        form.value = {
+          ...val,
+          ownerIds: val.owners,
+          scopeIds: val.members,
+          conditions: JSON.parse(val.condition),
+        };
       }
     }
   );

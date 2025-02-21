@@ -37,6 +37,7 @@
     NButton,
     NDropdown,
     NIcon,
+    NTooltip,
     PopoverTrigger,
   } from 'naive-ui';
 
@@ -114,7 +115,22 @@
                 })
               );
             }
-            content.push(h('div', { class: 'flex-1' }, option.label as string));
+            content.push(
+              h(
+                NTooltip,
+                {
+                  delay: 300,
+                  flip: true,
+                  disabled: !option.tooltipContent,
+                },
+                {
+                  trigger: () => {
+                    return h('div', { class: 'flex-1' }, option.label as string);
+                  },
+                  default: () => option.tooltipContent,
+                }
+              )
+            );
           }
 
           return content;

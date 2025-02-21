@@ -39,6 +39,7 @@ export default {
   'module.clue.updateConfirmContent': 'After updating, the new recycling rules will only apply to newly created data.',
   'module.clue.followUpDays': 'Number of days not followed up',
   'module.clue.remainKeepDays': 'Remaining ownership days',
+  'module.clue.deleteRulesTitle': 'There are unassigned clues, please delete after xx',
   'module.businessManage.businessCloseRule': 'Business close rules',
   'module.businessManage.addRules': 'Add Rules',
   'module.businessManage.mainNavConfig': 'Main navigation configuration',

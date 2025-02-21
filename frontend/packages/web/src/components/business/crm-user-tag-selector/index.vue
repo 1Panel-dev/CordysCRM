@@ -82,6 +82,9 @@
     () => selectedList.value,
     (newVal) => {
       modelValue.value = newVal.map((item) => item.id);
+    },
+    {
+      immediate: true,
     }
   );
 </script>

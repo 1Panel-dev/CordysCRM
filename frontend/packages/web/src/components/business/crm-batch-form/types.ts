@@ -7,6 +7,10 @@ export interface CustomValidator {
   notRepeat?: boolean;
 }
 
+export interface customSelectedProps {
+  filterRepeat?: boolean;
+}
+
 export interface FormItemModel {
   path: string;
   label?: string;
@@ -16,5 +20,5 @@ export interface FormItemModel {
   defaultValue?: string | string[] | number | number[] | boolean; // 默认值
   inputProps?: Partial<InputProps>;
   numberProps?: Partial<InputNumberProps>;
-  selectProps?: Partial<SelectProps>;
+  selectProps?: Partial<SelectProps & customSelectedProps>;
 }

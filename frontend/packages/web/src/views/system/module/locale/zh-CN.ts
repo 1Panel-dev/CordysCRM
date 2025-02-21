@@ -38,6 +38,7 @@ export default {
   'module.clue.updateConfirmContent': '更新后，更新的回收规则仅对新产生的数据生效',
   'module.clue.followUpDays': '未跟进天数',
   'module.clue.remainKeepDays': '剩余归属天数',
+  'module.clue.deleteRulesTitle': '存在未分配的线索，请xx后再删除',
   'module.businessManage.businessCloseRule': '商机关闭规则',
   'module.businessManage.addRules': '添加规则',
   'module.businessManage.mainNavConfig': '主导航配置',

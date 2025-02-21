@@ -13,6 +13,7 @@ export type ActionsItem = {
   isDivider?: boolean; // 是否分割线
   popShow?: boolean;
   popConfirmProps?: CrmPopConfirmProps;
+  tooltipContent?: string;
 } & DropdownOption;
 
 export type SelectedValue = string | number | Record<string, any> | undefined;

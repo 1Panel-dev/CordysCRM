@@ -12,7 +12,19 @@
     >
       <template #actionLeft>
         <div class="flex">
-          <n-button class="mr-[12px]" type="primary" @click="addOrEditMember(false)">{{ t('org.addStaff') }}</n-button>
+          <n-tooltip trigger="hover" :disabled="!isSyncFromThirdChecked">
+            <template #trigger>
+              <n-button
+                :disabled="isSyncFromThirdChecked"
+                class="mr-[12px]"
+                type="primary"
+                @click="addOrEditMember(false)"
+              >
+                {{ t('org.addStaff') }}
+              </n-button>
+            </template>
+            {{ t('org.checkSyncUserHoverTip') }}
+          </n-tooltip>
           <CrmMoreAction :options="moreActions" trigger="click" @select="selectMoreActions">
             <n-button type="default" class="outline--secondary">
               {{ t('common.more') }}
@@ -65,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, RendererElement } from 'vue';
   import { DataTableRowKey, NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -91,6 +103,7 @@
   import {
     batchResetUserPassword,
     batchToggleStatusUser,
+    checkSyncUserFromThird,
     deleteUser,
     deleteUserCheck,
     getUserList,
@@ -198,31 +211,48 @@
     );
   }
 
-  const moreActions: ActionsItem[] = [
-    {
-      label: t('org.enterpriseWhatSync'),
-      key: 'sync',
-      render: renderSync(),
-    },
-    {
-      label: t('common.import'),
-      key: 'import',
-    },
+  const renderSyncResult = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
 
-    {
-      label: t('common.export'),
-      key: 'export',
-    },
-  ];
+  const isSyncFromThirdChecked = ref(false);
+
+  const moreActions = computed(() => {
+    return [
+      {
+        label: t('org.enterpriseWhatSync'),
+        key: 'sync',
+        render: renderSyncResult.value,
+      },
+      {
+        label: t('common.import'),
+        key: 'import',
+        tooltipContent: isSyncFromThirdChecked.value ? t('org.checkSyncUserHoverTip') : '',
+        disabled: isSyncFromThirdChecked.value,
+      },
+      {
+        label: t('common.export'),
+        key: 'export',
+      },
+    ];
+  });
+
+  async function initCheckSyncType() {
+    try {
+      isSyncFromThirdChecked.value = await checkSyncUserFromThird();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
 
   // 初始化企业微信配置
   async function initIntegration() {
     try {
       const res = await getConfigSynchronization();
-      const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
-      currentIntegration.value = { ...currentIntegration.value, ...weChatConfig };
-      isHasConfig.value = !!weChatConfig && weChatConfig.enable;
-      moreActions[0].render = renderSync();
+      if (res) {
+        const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
+        currentIntegration.value = { ...currentIntegration.value, ...weChatConfig };
+        isHasConfig.value = !!weChatConfig && weChatConfig.enable;
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -876,6 +906,11 @@
 
   onBeforeMount(() => {
     initIntegration();
+    initCheckSyncType();
+  });
+
+  onMounted(() => {
+    renderSyncResult.value = renderSync(); // 在组件挂载后执行渲染函数
   });
 
   watch(

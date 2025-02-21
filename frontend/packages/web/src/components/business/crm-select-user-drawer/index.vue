@@ -213,9 +213,14 @@
     });
   };
 
-  onMounted(() => {
-    loadData(MemberSelectTypeEnum.ORG);
-  });
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        loadData(MemberSelectTypeEnum.ORG);
+      }
+    }
+  );
 </script>
 
 <style scoped></style>

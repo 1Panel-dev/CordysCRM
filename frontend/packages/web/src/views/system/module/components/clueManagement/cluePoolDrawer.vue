@@ -73,7 +73,7 @@
     // TODO 判断是否存在未分配的线索
     const hasData = true;
     const title = hasData
-      ? t('opportunity.deleteRulesTitle')
+      ? t('module.clue.deleteRulesTitle')
       : t('common.deleteConfirmTitle', { name: characterLimit(row.name) });
     const content = hasData ? '' : t('module.deleteTip', { name: t('module.clue') });
     const positiveText = t(hasData ? 'opportunity.gotIt' : 'common.confirm');

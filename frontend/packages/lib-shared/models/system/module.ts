@@ -60,6 +60,8 @@ export interface OpportunityItem extends OpportunityBaseInfoItem {
   updateTime: number;
   members: SelectedUsersItem[]; // 成员集合
   owners: SelectedUsersItem[]; // 管理员集合
+  createUserName: string;
+  updateUserName: string;
 }
 
 // 模块商机详情

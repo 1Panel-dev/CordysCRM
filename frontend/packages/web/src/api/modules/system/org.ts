@@ -9,6 +9,7 @@ import {
   batchEnableUserUrl,
   batchResetPasswordUrl,
   checkDeleteDepartmentUrl,
+  checkSyncUserFromThirdUrl,
   deleteDepartmentUrl,
   deleteUserCheckUrl,
   deleteUserUrl,
@@ -138,4 +139,8 @@ export function deleteUser(userId: string) {
 // 用户(员工)-删除员工校验
 export function deleteUserCheck(userId: string) {
   return CDR.get({ url: `${deleteUserCheckUrl}/${userId}` });
+}
+// 用户(员工)-是否同步三方校验
+export function checkSyncUserFromThird() {
+  return CDR.get({ url: checkSyncUserFromThirdUrl });
 }

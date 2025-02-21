@@ -67,4 +67,6 @@ export default {
   'org.batchResetPsdTip': 'Confirm reset password for {number} employees?',
   'org.batchToggleStatusTip': 'Confirm {enable} {number} employees?',
   'org.batchDeleteUserTip': 'Confirm delete {number} employees?',
+  'org.checkSyncUserHoverTip':
+    'The organization structure is enterprise WeChat synchronization data, please add members through "Synchronize organization structure"!',
 };

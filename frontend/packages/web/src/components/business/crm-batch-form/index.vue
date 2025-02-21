@@ -222,6 +222,24 @@
     });
   }
 
+  // 排除已选项， 目前没有区间不限制, 后边会用到 TODO xxw
+  // function getSelectOptions(element: Record<string, any>, model: FormItemModel) {
+  //   if (model.selectProps?.filterRepeat) {
+  //     const selectedValues = new Set<string>();
+
+  //     form.value.list.forEach((item: any) => {
+  //       if (item[model.path] && item !== element) {
+  //         selectedValues.add(item[model.path]);
+  //       }
+  //     });
+
+  //     const valueField = model.selectProps?.valueField || 'value';
+  //     return (model.selectProps?.options || []).filter((item: any) => !selectedValues.has(item[valueField]));
+  //   }
+
+  //   return model.selectProps?.options || [];
+  // }
+
   function getFormResult() {
     return unref(form.value);
   }

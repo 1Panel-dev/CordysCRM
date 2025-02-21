@@ -36,6 +36,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { NButton, NSwitch, useMessage } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
@@ -46,13 +47,13 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddRuleDrawer from './addRuleDrawer.vue';
 
-  import { getOpportunityList } from '@/api/modules/system/module';
+  import { deleteOpportunity, getOpportunityList, switchOpportunityStatus } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
 
-  import type { OpportunityDetailType } from './addRuleDrawer.vue';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import type { OpportunityItem } from '@lib/shared/models/system/module';
 
   const { openModal } = useModal();
   const Message = useMessage();
@@ -65,42 +66,20 @@
 
   const keyword = ref<string>('');
 
-  const groupList = ref([
-    {
-      label: t('common.edit'),
-      key: 'edit',
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-    },
-  ]);
-
-  // TODO 等待联调
-  function addOrEditRule(row: any) {}
+  const tableRefreshId = ref(0);
 
   // 删除规则
-  function deleteRule(row: any) {
-    const hasData = false;
-
-    const title = hasData
-      ? t('opportunity.deleteRulesTitle')
-      : t('common.deleteConfirmTitle', { name: characterLimit(row.userName) });
-
-    const content = hasData ? '' : t('org.deleteMemberTipContent');
-
-    const positiveText = t(hasData ? 'opportunity.gotIt' : 'common.confirm');
-
-    const negativeText = t(hasData ? 'opportunity.goMove' : 'common.cancel');
-
+  function deleteRule(row: OpportunityItem) {
     openModal({
       type: 'error',
-      title,
-      content,
-      positiveText,
-      negativeText,
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
+      content: t('opportunity.deleteRuleContent'),
+      positiveText: t('common.confirm'),
+      negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
+          await deleteOpportunity(row.id);
+          tableRefreshId.value += 1;
           Message.success(t('common.deleteSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -110,10 +89,21 @@
     });
   }
 
-  function handleActionSelect(row: any, actionKey: string) {
+  const showAddRuleDrawer = ref<boolean>(false);
+  const ruleRecord = ref<OpportunityItem>();
+  function addRule() {
+    showAddRuleDrawer.value = true;
+  }
+
+  function handleEdit(row: OpportunityItem) {
+    ruleRecord.value = cloneDeep(row);
+    showAddRuleDrawer.value = true;
+  }
+
+  function handleActionSelect(row: OpportunityItem, actionKey: string) {
     switch (actionKey) {
-      case 'edit':
-        addOrEditRule(row);
+      case 'pop-edit':
+        handleEdit(row);
         break;
       case 'delete':
         deleteRule(row);
@@ -124,10 +114,10 @@
   }
 
   // 切换规则状态
-  function handleToggleRuleStatus(row: any) {
+  function handleToggleRuleStatus(row: OpportunityItem) {
     const isEnabling = !row.enable;
     const title = t(isEnabling ? 'common.confirmEnableTitle' : 'common.confirmDisabledTitle', {
-      name: characterLimit(row.userName),
+      name: characterLimit(row.name),
     });
 
     const content = t(isEnabling ? 'opportunity.enabledRuleTipContent' : 'opportunity.disabledRuleTipContent');
@@ -142,6 +132,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
+          await switchOpportunityStatus(row.id);
           Message.success(t(isEnabling ? 'common.opened' : 'common.disabled'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -154,7 +145,7 @@
   const columns: CrmDataTableColumn[] = [
     {
       title: t('opportunity.ruleName'),
-      key: 'userName',
+      key: 'name',
       width: 200,
       sortOrder: false,
       sorter: true,
@@ -180,8 +171,7 @@
         },
       ],
       filter: true,
-      // TODO 类型
-      render: (row: any) => {
+      render: (row: OpportunityItem) => {
         return h(NSwitch, {
           value: row.enable,
           onClick: () => {
@@ -192,17 +182,32 @@
     },
     {
       title: t('opportunity.admin'),
-      key: 'admin',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
+      key: 'owners',
+      width: 150,
+      isTag: true,
+      tagGroupProps: {
+        labelKey: 'name',
+      },
+    },
+    {
+      title: t('role.member'),
+      key: 'members',
+      width: 150,
+      sortOrder: false,
+      sorter: true,
+      isTag: true,
+      tagGroupProps: {
+        labelKey: 'name',
       },
     },
     {
       title: t('opportunity.autoClose'),
-      key: 'autoClose',
+      key: 'auto',
       ellipsis: {
         tooltip: true,
+      },
+      render: (row: OpportunityItem) => {
+        return row.auto ? t('common.yes') : t('common.no');
       },
       width: 100,
     },
@@ -221,7 +226,7 @@
       ellipsis: {
         tooltip: true,
       },
-      render: (row: any) => {
+      render: (row: OpportunityItem) => {
         return h(CrmNameTooltip, { text: row.createUserName });
       },
     },
@@ -248,10 +253,24 @@
       key: 'operation',
       width: 100,
       fixed: 'right',
-      // TODO 类型
-      render: (row: any) =>
+      render: (row: OpportunityItem) =>
         h(CrmOperationButton, {
-          groupList: groupList.value,
+          groupList: [
+            {
+              label: t('common.edit'),
+              key: 'edit',
+              popConfirmProps: {
+                loading: false,
+                title: t('common.updateConfirmTitle'),
+                content: t('opportunity.updateRuleContentTip'),
+                positiveText: t('common.updateConfirm'),
+              },
+            },
+            {
+              label: t('common.delete'),
+              key: 'delete',
+            },
+          ],
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
@@ -263,12 +282,6 @@
     columns,
     scrollX: 1600,
   });
-
-  const showAddRuleDrawer = ref<boolean>(false);
-  const ruleRecord = ref<OpportunityDetailType>();
-  function addRule() {
-    showAddRuleDrawer.value = true;
-  }
 
   function handleCancel() {
     ruleRecord.value = undefined;
@@ -289,6 +302,15 @@
   onBeforeMount(() => {
     loadList();
   });
+
+  watch(
+    () => tableRefreshId.value,
+    (val) => {
+      if (val) {
+        initOpportunityList();
+      }
+    }
+  );
 </script>
 
 <style scoped lang="less">

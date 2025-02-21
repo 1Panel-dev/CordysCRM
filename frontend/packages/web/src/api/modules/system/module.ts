@@ -25,8 +25,8 @@ import type {
   LeadPoolParams,
   ModuleNavBaseInfoItem,
   ModuleSortParams,
-  OpportunityDetail,
   OpportunityItem,
+  OpportunityParams,
 } from '@lib/shared/models/system/module';
 
 // 模块首页-导航模块列表
@@ -50,12 +50,12 @@ export function getOpportunityList(data: TableQueryParams) {
 }
 
 // 模块-商机-添加商机规则
-export function addOpportunityRule(data: OpportunityDetail) {
+export function addOpportunityRule(data: OpportunityParams) {
   return CDR.post({ url: addOpportunityRuleUrl, data });
 }
 
 // 模块-商机-更新商机规则
-export function updateOpportunityRule(data: OpportunityDetail) {
+export function updateOpportunityRule(data: OpportunityParams) {
   return CDR.post({ url: updateOpportunityRuleUrl, data });
 }
 
