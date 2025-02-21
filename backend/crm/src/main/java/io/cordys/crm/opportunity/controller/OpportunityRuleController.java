@@ -3,12 +3,15 @@ package io.cordys.crm.opportunity.controller;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.groups.Created;
+import io.cordys.common.groups.Updated;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;
-import io.cordys.crm.opportunity.dto.request.OpportunityRuleSaveRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityRuleAddRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityRuleUpdateRequest;
 import io.cordys.crm.opportunity.service.OpportunityRuleService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,15 +44,15 @@ public class OpportunityRuleController {
 	@PostMapping("/add")
 	@Operation(summary = "添加商机规则")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void save(@Validated @RequestBody OpportunityRuleSaveRequest request) {
-		opportunityRuleService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	public void save(@Validated @RequestBody OpportunityRuleAddRequest request) {
+		opportunityRuleService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/update")
 	@Operation(summary = "修改商机规则")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void update(@Validated @RequestBody OpportunityRuleSaveRequest request) {
-		opportunityRuleService.save(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	public void update(@Validated @RequestBody OpportunityRuleUpdateRequest request) {
+		opportunityRuleService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
 	@GetMapping("/delete/{id}")

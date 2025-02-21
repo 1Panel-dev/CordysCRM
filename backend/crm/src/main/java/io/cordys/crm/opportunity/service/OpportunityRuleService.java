@@ -8,7 +8,8 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;
-import io.cordys.crm.opportunity.dto.request.OpportunityRuleSaveRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityRuleAddRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityRuleUpdateRequest;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityRuleMapper;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.Role;
@@ -81,12 +82,35 @@ public class OpportunityRuleService {
 	}
 
 	/**
-	 * 保存商机规则
+	 * 新增商机规则
 	 * @param request 请求参数
 	 * @param currentUserId 当前用户ID
 	 * @param organizationId 当前组织ID
 	 */
-	public void save(OpportunityRuleSaveRequest request, String currentUserId, String organizationId) {
+	public void add(OpportunityRuleAddRequest request, String currentUserId, String organizationId) {
+		OpportunityRule rule = new OpportunityRule();
+		BeanUtils.copyBean(rule, request);
+		rule.setId(IDGenerator.nextStr());
+		rule.setOrganizationId(organizationId);
+		rule.setOwnerId(JSON.toJSONString(request.getOwnerIds()));
+		rule.setScopeId(JSON.toJSONString(request.getScopeIds()));
+		rule.setCondition(JSON.toJSONString(request.getConditions()));
+		rule.setCreateTime(System.currentTimeMillis());
+		rule.setCreateUser(currentUserId);
+		rule.setUpdateTime(System.currentTimeMillis());
+		rule.setUpdateUser(currentUserId);
+		opportunityRuleMapper.insert(rule);
+	}
+
+	/**
+	 * 修改商机规则
+	 * @param request 请求参数
+	 * @param currentUserId 当前用户ID
+	 * @param organizationId 当前组织ID
+	 */
+	public void update(OpportunityRuleUpdateRequest request, String currentUserId, String organizationId) {
+		OpportunityRule oldRule = checkRuleExit(request.getId());
+		checkRuleOwner(oldRule, currentUserId);
 		OpportunityRule rule = new OpportunityRule();
 		BeanUtils.copyBean(rule, request);
 		rule.setOrganizationId(organizationId);
@@ -95,16 +119,7 @@ public class OpportunityRuleService {
 		rule.setCondition(JSON.toJSONString(request.getConditions()));
 		rule.setUpdateTime(System.currentTimeMillis());
 		rule.setUpdateUser(currentUserId);
-		if (request.getId() == null) {
-			rule.setId(IDGenerator.nextStr());
-			rule.setCreateTime(System.currentTimeMillis());
-			rule.setCreateUser(currentUserId);
-			opportunityRuleMapper.insert(rule);
-		} else {
-			OpportunityRule oldRule = checkRuleExit(request.getId());
-			checkRuleOwner(oldRule, currentUserId);
-			opportunityRuleMapper.updateById(rule);
-		}
+		opportunityRuleMapper.updateById(rule);
 	}
 
 	/**

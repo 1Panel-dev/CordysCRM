@@ -8,7 +8,8 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;
-import io.cordys.crm.opportunity.dto.request.OpportunityRuleSaveRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityRuleAddRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityRuleUpdateRequest;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
@@ -47,7 +48,7 @@ public class OpportunityRuleControllerTests extends BaseTest {
 	@Test
 	@Order(2)
 	void add() throws Exception {
-		OpportunityRuleSaveRequest request = OpportunityRuleSaveRequest.builder()
+		OpportunityRuleAddRequest request = OpportunityRuleAddRequest.builder()
 				.name("rule").ownerIds(List.of("cc")).scopeIds(List.of("cc"))
 				.enable(true).auto(false).expireNotice(false).build();
 		this.requestPostWithOk("/opportunity-rule/add", request);
@@ -68,7 +69,7 @@ public class OpportunityRuleControllerTests extends BaseTest {
 	@Test
 	@Order(4)
 	void update() throws Exception {
-		OpportunityRuleSaveRequest request = new OpportunityRuleSaveRequest();
+		OpportunityRuleUpdateRequest request = new OpportunityRuleUpdateRequest();
 		BeanUtils.copyBean(request, editRule);
 		request.setOwnerIds(List.of("admin"));
 		request.setScopeIds(List.of("admin"));
