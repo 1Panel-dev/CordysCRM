@@ -265,8 +265,8 @@
 
   const rules: FormRules = {
     name: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }) }],
-    phone: [{ validator: validateUserPhone, trigger: ['input', 'blur'] }],
-    email: [{ validator: validateUserEmail, trigger: ['input', 'blur'] }],
+    phone: [{ required: true, validator: validateUserPhone, trigger: ['input', 'blur'] }],
+    email: [{ required: true, validator: validateUserEmail, trigger: ['input', 'blur'] }],
     departmentId: [{ required: true, message: t('common.pleaseSelect') }],
   };
 
