@@ -1,7 +1,7 @@
 package io.cordys.crm.customer.dto.response;
 
+import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.request.ModuleFieldValueDTO;
 import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -60,9 +60,12 @@ public class CustomerListResponse {
     @Schema(description = "最近跟进时间")
     private Long latestFollowUpTime;
 
+    @Schema(description = "创建时间")
+    private Long collectionTime;
+
     @Schema(description = "剩余归属天数")
     private Integer reservedDays;
 
     @Schema(description = "自定义字段集合")
-    private List<ModuleFieldValueDTO> moduleFields;
+    private List<? extends BaseModuleFieldValue> moduleFields;
 }

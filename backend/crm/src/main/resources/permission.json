@@ -123,6 +123,24 @@
             "id": "CUSTOMER_MANAGEMENT:DELETE"
           }
         ]
+      },
+      {
+        "id": "CUSTOMER_MANAGEMENT_CONTACT",
+        "name": "permission.customer.customer_contact.name",
+        "permissions": [
+          {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:READ"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:ADD"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:UPDATE"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_CONTACT:DELETE"
+          }
+        ]
       }
     ]
   }

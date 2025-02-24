@@ -1,8 +1,7 @@
 package io.cordys.crm.system.dto.request;
 
-import io.cordys.common.request.ModuleFieldValueDTO;
+import io.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -23,5 +22,5 @@ public class ProductEditRequest {
     private String name;
 
     @Schema(description = "自定义字段")
-    private List<ModuleFieldValueDTO> moduleFields;
+    private List<BaseModuleFieldValue> moduleFields;
 }

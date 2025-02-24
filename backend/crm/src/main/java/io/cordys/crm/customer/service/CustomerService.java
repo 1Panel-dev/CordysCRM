@@ -1,7 +1,8 @@
 package io.cordys.crm.customer.service;
 
+import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.exception.GenericException;
-import io.cordys.common.request.ModuleFieldValueDTO;
+import io.cordys.common.service.BaseModuleFieldValueService;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -16,7 +17,6 @@ import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -42,6 +42,8 @@ public class CustomerService {
     private BaseMapper<CustomerField> customerFieldMapper;
     @Resource
     private BaseService baseService;
+    @Resource
+    private BaseModuleFieldValueService baseModuleFieldValueService;
 
     public List<CustomerListResponse> list(CustomerPageRequest request, String orgId) {
         List<CustomerListResponse> list = extCustomerMapper.list(request, orgId);
@@ -51,14 +53,16 @@ public class CustomerService {
     private List<CustomerListResponse> buildListData(List<CustomerListResponse> list) {
         List<String> customerIds = list.stream().map(CustomerListResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<CustomerField>> caseCustomFiledMap = getCaseCustomFiledMap(customerIds);
+        Map<String, List<CustomerField>> caseCustomFiledMap = baseModuleFieldValueService.getResourceFiledMap(customerIds,
+                CustomerField::getCustomerId, customerFieldMapper);
         list.forEach(customerListResponse -> {
             // 获取自定义字段
             List<CustomerField> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
+            customerListResponse.setModuleFields(customerFields);
 
-            if (CollectionUtils.isNotEmpty(customerFields)) {
+            if (customerListResponse.getCollectionTime() != null) {
                 // 将毫秒数转换为天数, 并向上取整
-                int days = (int) Math.ceil(customerListResponse.getCreateTime() * 1.0 / 86400000);
+                int days = (int) Math.ceil(customerListResponse.getCollectionTime() * 1.0 / 86400000);
                 customerListResponse.setReservedDays(days);
             }
         });
@@ -66,39 +70,14 @@ public class CustomerService {
         return baseService.setCreateAndUpdateUserName(list);
     }
 
-    private List<ModuleFieldValueDTO> getModuleFieldValues(List<CustomerField> customerFields) {
-        List<ModuleFieldValueDTO> moduleFieldValues = customerFields.stream().map(customerField -> {
-            ModuleFieldValueDTO moduleFieldValue = new ModuleFieldValueDTO();
-            moduleFieldValue.setId(customerField.getFieldId());
-            moduleFieldValue.setValue(customerField.getFieldValue());
-            return moduleFieldValue;
-        }).collect(Collectors.toList());
-        return moduleFieldValues;
-    }
-
-    public Map<String, List<CustomerField>> getCaseCustomFiledMap(List<String> customerIds) {
-        if (CollectionUtils.isEmpty(customerIds)) {
-            return Map.of();
-        }
-        List<CustomerField> customerFields = getCustomerFieldsByCustomerIds(customerIds);
-        return customerFields.stream().collect(Collectors.groupingBy(CustomerField::getCustomerId));
-    }
-
-    private List<CustomerField> getCustomerFieldsByCustomerIds(List<String> customerIds) {
-        LambdaQueryWrapper<CustomerField> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(CustomerField::getCustomerId, customerIds);
-        List<CustomerField> customerFields = customerFieldMapper.selectListByLambda(wrapper);
-        return customerFields;
-    }
-
     public CustomerGetResponse get(String id) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
         CustomerGetResponse customerGetResponse = BeanUtils.copyBean(new CustomerGetResponse(), customer);
 
         // 获取模块字段
-        List<CustomerField> customerFields = getCustomerFieldsByCustomerIds(List.of(id));
-        List<ModuleFieldValueDTO> moduleFieldValues = getModuleFieldValues(customerFields);
-        customerGetResponse.setModuleFields(moduleFieldValues);
+        List<CustomerField> customerFields = baseModuleFieldValueService.getModuleFieldValuesByResourceIds(List.of(id),
+                CustomerField::getCustomerId, customerFieldMapper);
+        customerGetResponse.setModuleFields(customerFields);
         return baseService.setCreateAndUpdateUserName(customerGetResponse);
     }
 
@@ -126,7 +105,7 @@ public class CustomerService {
     /**
      * @param moduleFieldValues
      */
-    public void saveModuleField(String customerId, List<ModuleFieldValueDTO> moduleFieldValues) {
+    public void saveModuleField(String customerId, List<BaseModuleFieldValue> moduleFieldValues) {
         if (CollectionUtils.isEmpty(moduleFieldValues)) {
             return;
         }
@@ -135,8 +114,8 @@ public class CustomerService {
         List<CustomerField> customerFields = moduleFieldValues.stream().map(custom -> {
             CustomerField customField = new CustomerField();
             customField.setCustomerId(customerId);
-            customField.setFieldId(custom.getId());
-            String valueStr = custom.getValue() instanceof String ? (String) custom.getValue() : JSON.toJSONString(custom.getValue());
+            customField.setFieldId(custom.getFieldId());
+            String valueStr = custom.getFieldValue() instanceof String ? custom.getFieldValue() : JSON.toJSONString(custom.getFieldValue());
             customField.setFieldValue(valueStr);
             customField.setId(IDGenerator.nextStr());
             return customField;
@@ -159,7 +138,7 @@ public class CustomerService {
         return customerMapper.selectByPrimaryKey(customer.getId());
     }
 
-    private void updateModuleField(String customerId, List<ModuleFieldValueDTO> moduleFields) {
+    private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;

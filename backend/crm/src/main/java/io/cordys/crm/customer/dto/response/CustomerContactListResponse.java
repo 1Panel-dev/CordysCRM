@@ -1,0 +1,29 @@
+package io.cordys.crm.customer.dto.response;
+
+import io.cordys.common.domain.BaseModuleFieldValue;
+import lombok.Data;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.cordys.crm.customer.domain.CustomerContact;
+
+import java.util.List;
+
+
+/**
+ *
+ * @author jianxing
+ * @date 2025-02-24 11:06:10
+ */
+@Data
+public class CustomerContactListResponse extends CustomerContact {
+    @Schema(description = "客户名称")
+    private String customerName;
+
+    @Schema(description = "创建人名称")
+    private String createUserName;
+
+    @Schema(description = "更新人名称")
+    private String updateUserName;
+
+    @Schema(description = "自定义字段集合")
+    private List<? extends BaseModuleFieldValue> moduleFields;
+}

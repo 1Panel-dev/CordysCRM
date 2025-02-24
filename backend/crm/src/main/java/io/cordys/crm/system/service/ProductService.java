@@ -1,18 +1,18 @@
 package io.cordys.crm.system.service;
 
-import io.cordys.common.request.ModuleFieldValueDTO;
+import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.service.BaseModuleFieldValueService;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.domain.ProductField;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
-import io.cordys.crm.system.dto.response.ProductListResponse;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
 import io.cordys.crm.system.dto.response.ProductGetResponse;
+import io.cordys.crm.system.dto.response.ProductListResponse;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -40,6 +40,8 @@ public class ProductService {
 
     @Resource
     private BaseService baseService;
+    @Resource
+    private BaseModuleFieldValueService baseModuleFieldValueService;
 
     public List<ProductListResponse> list(ProductPageRequest request, String orgId) {
         List<ProductListResponse> list = extProductMapper.list(request, orgId);
@@ -49,41 +51,15 @@ public class ProductService {
     private List<ProductListResponse> buildListData(List<ProductListResponse> list) {
         List<String> productIds = list.stream().map(ProductListResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<ProductField>> productFiledMap = getProductFiledMap(productIds);
+        Map<String, List<ProductField>> productFiledMap = baseModuleFieldValueService.getResourceFiledMap(productIds,
+                ProductField::getProductId, productFieldBaseMapper);
         list.forEach(productListResponse -> {
             // 获取自定义字段
             List<ProductField> productFields = productFiledMap.get(productListResponse.getId());
-            if (CollectionUtils.isNotEmpty(productFields)) {
-                List<ModuleFieldValueDTO> moduleFieldValues = getModuleFieldValues(productFields);
-                productListResponse.setModuleFields(moduleFieldValues);
-            }
+            productListResponse.setModuleFields(productFields);
         });
 
         return baseService.setCreateAndUpdateUserName(list);
-    }
-
-    private List<ModuleFieldValueDTO> getModuleFieldValues(List<ProductField> productFields) {
-        List<ModuleFieldValueDTO> moduleFieldValues = productFields.stream().map(productField -> {
-            ModuleFieldValueDTO moduleFieldValue = new ModuleFieldValueDTO();
-            moduleFieldValue.setId(productField.getFieldId());
-            moduleFieldValue.setValue(productField.getFieldValue());
-            return moduleFieldValue;
-        }).collect(Collectors.toList());
-        return moduleFieldValues;
-    }
-
-    public Map<String, List<ProductField>> getProductFiledMap(List<String> productIds) {
-        if (CollectionUtils.isEmpty(productIds)) {
-            return Map.of();
-        }
-        List<ProductField> productFields = getProductFieldsByProductIds(productIds);
-        return productFields.stream().collect(Collectors.groupingBy(ProductField::getProductId));
-    }
-
-    private List<ProductField> getProductFieldsByProductIds(List<String> productIds) {
-        LambdaQueryWrapper<ProductField> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(ProductField::getProductId, productIds);
-        return productFieldBaseMapper.selectListByLambda(wrapper);
     }
 
     public ProductGetResponse get(String id) {
@@ -91,9 +67,9 @@ public class ProductService {
         ProductGetResponse productGetResponse = BeanUtils.copyBean(new ProductGetResponse(), product);
 
         // 获取模块字段
-        List<ProductField> productFields = getProductFieldsByProductIds(List.of(id));
-        List<ModuleFieldValueDTO> moduleFieldValues = getModuleFieldValues(productFields);
-        productGetResponse.setModuleFields(moduleFieldValues);
+        List<ProductField> productFields = baseModuleFieldValueService.getModuleFieldValuesByResourceIds(List.of(id),
+                ProductField::getProductId, productFieldBaseMapper);
+        productGetResponse.setModuleFields(productFields);
         return baseService.setCreateAndUpdateUserName(productGetResponse);
     }
 
@@ -119,7 +95,7 @@ public class ProductService {
      *
      * @param moduleFieldValues
      */
-    public void saveModuleField(String productId, List<ModuleFieldValueDTO> moduleFieldValues) {
+    public void saveModuleField(String productId, List<BaseModuleFieldValue> moduleFieldValues) {
         if (CollectionUtils.isEmpty(moduleFieldValues)) {
             return;
         }
@@ -127,8 +103,8 @@ public class ProductService {
         List<ProductField> customerFields = moduleFieldValues.stream().map(custom -> {
             ProductField productField = new ProductField();
             productField.setProductId(productId);
-            productField.setFieldId(custom.getId());
-            productField.setFieldValue(custom.getValue());
+            productField.setFieldId(custom.getFieldId());
+            productField.setFieldValue(custom.getFieldValue());
             productField.setId(IDGenerator.nextStr());
             return productField;
         }).toList();
@@ -149,7 +125,7 @@ public class ProductService {
         return productBaseMapper.selectByPrimaryKey(product.getId());
     }
 
-    private void updateModuleField(String productId, List<ModuleFieldValueDTO> moduleFields) {
+    private void updateModuleField(String productId, List<BaseModuleFieldValue> moduleFields) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="io.cordys.crm.customer.mapper.ExtCustomerMapper">
+<mapper namespace="io.cordys.crm.customer.mapper.ExtCustomerContactMapper">
 
-    <select id="list" resultType="io.cordys.crm.customer.dto.response.CustomerListResponse">
-        select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time
-        from customer c
+    <select id="list" resultType="io.cordys.crm.customer.dto.response.CustomerContactListResponse">
+        select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user, cc.enable
 
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
@@ -19,10 +18,11 @@
             <property name="sort" value="request.sort"/>
         </include>
 
-        where c.organization_id = #{orgId} and c.in_shared_pool is false
+        from customer_contact cc
+        where cc.organization_id = #{orgId}
 
         <if test="request.keyword != null and request.keyword != ''">
-            and c.name like concat('%', #{request.keyword},'%')
+            and cc.name like concat('%', #{request.keyword},'%')
         </if>
 
         <include refid="filters">
@@ -38,6 +38,7 @@
         </include>
     </select>
 
+
     <sql id="sort">
         <choose>
             <when test="${sort} != null and ${sort}.valid()">
@@ -45,10 +46,10 @@
                 order by
                 <choose>
                     <when test="${sort}.name == 'name'">
-                        c.`name` ${sortType}
+                        cc.`name` ${sortType}
                     </when>
-                    <when test="${sort}.name == 'owner'">
-                        c.`owner` ${sortType}
+                    <when test="${sort}.name == 'customerId'">
+                        cc.`customer_id` ${sortType}
                     </when>
                     <otherwise>
                         sort_table.field_value ${sortType}
@@ -56,7 +57,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by c.create_time desc
+                order by cc.create_time desc
             </otherwise>
         </choose>
     </sql>
@@ -66,7 +67,7 @@
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name != 'name' and condition.name != 'owner'">
                     inner join customer_field ${tablePrefix}_${i}
-                    on c.id = ${tablePrefix}_${i}.customer_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    on cc.id = ${tablePrefix}_${i}.customer_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                 </if>
             </foreach>
         </if>
@@ -76,7 +77,7 @@
         <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'owner'">
             <bind name="sortName" value="${sort}.name"/>
             left join customer_field sort_table
-            on c.id = sort_table.customer_id and sort_table.field_id = #{sortName}
+            on cc.id = sort_table.customer_id and sort_table.field_id = #{sortName}
         </if>
     </sql>
 
@@ -116,13 +117,13 @@
             <when test="condition.name == 'name'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.name"/>
+                    <property name="column" value="cc.name"/>
                 </include>
             </when>
-            <when test="condition.name == 'owner'">
+            <when test="condition.name == 'customerId'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.owner"/>
+                    <property name="column" value="cc.customer_id"/>
                 </include>
             </when>
             <otherwise>
@@ -136,17 +137,17 @@
 
     <select id="checkAddExist" resultType="java.lang.Boolean">
         select count(1)
-        from customer
-        where name = #{customer.name} and organization_id = #{customer.organizationId} limit 1
+        from customer_contact
+        where name = #{customerContact.name} and organization_id = #{customerContact.organizationId} limit 1
     </select>
 
     <select id="checkUpdateExist" resultType="java.lang.Boolean">
         select count(1)
-        from customer
-        where name = #{customer.name}
+        from customer_contact
+        where name = #{customerContact.name}
         and organization_id = (
-            select organization_id from customer where id = #{customer.id}
+            select organization_id from customer_contact where id = #{customerContact.id}
         )
-        and id != #{customer.id} limit 1
+        and id != #{customerContact.id} limit 1
     </select>
 </mapper>

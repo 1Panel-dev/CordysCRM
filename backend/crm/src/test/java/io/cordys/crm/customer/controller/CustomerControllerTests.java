@@ -1,8 +1,8 @@
 package io.cordys.crm.customer.controller;
 
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.pager.Pager;
-import io.cordys.common.request.ModuleFieldValueDTO;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.Customer;
@@ -82,7 +82,7 @@ class CustomerControllerTests extends BaseTest {
         CustomerAddRequest request = new CustomerAddRequest();
         request.setName("aa");
         request.setOwner("bb");
-        request.setModuleFields(List.of(new ModuleFieldValueDTO("id", "value")));
+        request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
 
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Customer resultData = getResultData(mvcResult, Customer.class);
@@ -162,7 +162,6 @@ class CustomerControllerTests extends BaseTest {
             Customer responseCustomer = BeanUtils.copyBean(new Customer(), customerListResponse);
             responseCustomer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
             responseCustomer.setInSharedPool(false);
-            customer.setCollectionTime(null);
             Assertions.assertEquals(customer, responseCustomer);
         });
 

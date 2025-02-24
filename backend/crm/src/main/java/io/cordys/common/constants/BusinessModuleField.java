@@ -9,6 +9,8 @@ import lombok.Getter;
  */
 @Getter
 public enum BusinessModuleField {
+
+    /*------ start: CUSTOMER ------*/
     /**
      * 客户名称
      */
@@ -16,7 +18,20 @@ public enum BusinessModuleField {
     /**
      * 负责人
      */
-    CUSTOMER_OWNER("customerOwner", "owner");
+    CUSTOMER_OWNER("customerOwner", "owner"),
+    /*------ end: CUSTOMER ------*/
+    
+    
+    /*------ start: CUSTOMER_MANAGEMENT_CONTACT ------*/
+    /**
+     * 负责人
+     */
+    CUSTOMER_CONTACT_CUSTOMER("customerContactCustomer", "customerId"),
+    /**
+     * 负责人
+     */
+    CUSTOMER_CONTACT_NAME("customerContactName", "name");
+    /*------ end: CUSTOMER_MANAGEMENT_CONTACT ------*/
 
     private final String key;
     private final String businessKey;
