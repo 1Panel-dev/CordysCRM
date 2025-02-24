@@ -19,7 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
  *
  * <p>支持的消息转换器类型为：MappingJackson2HttpMessageConverter 和 StringHttpMessageConverter。</p>
  */
-@RestControllerAdvice(value = {"io.cordys.crm"})
+@RestControllerAdvice(value = {"io.cordys"})
 public class ResultResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
     /**
