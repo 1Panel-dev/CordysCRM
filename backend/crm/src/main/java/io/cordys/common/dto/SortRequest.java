@@ -18,7 +18,6 @@ import java.util.regex.Matcher;
 @AllArgsConstructor
 public class SortRequest {
 
-    @NotBlank
     @Pattern(regexp = "^[A-Za-z]+$")
     @Schema(description = "排序字段")
     private String name;

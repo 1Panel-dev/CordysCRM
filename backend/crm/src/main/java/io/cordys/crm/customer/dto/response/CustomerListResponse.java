@@ -60,9 +60,6 @@ public class CustomerListResponse {
     @Schema(description = "最近跟进时间")
     private Long latestFollowUpTime;
 
-    @Schema(description = "最长归属天数")
-    private Integer reservedMaxDays = 180;
-
     @Schema(description = "剩余归属天数")
     private Integer reservedDays;
 
