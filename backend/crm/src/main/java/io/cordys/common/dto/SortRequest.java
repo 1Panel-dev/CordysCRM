@@ -34,7 +34,7 @@ public class SortRequest {
 
     public String getType() {
         if (StringUtils.equalsIgnoreCase(type, "asc")) {
-            return "ase";
+            return "asc";
         } else {
             return "desc";
         }

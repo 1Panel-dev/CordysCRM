@@ -41,12 +41,32 @@
             or su.phone like concat('%', #{request.keyword},'%')
             )
         </if>
-        <include refid="io.cordys.common.mapper.CommonMapper.sort">
+        <include refid="sorts">
             <property name="sort" value="request.sort"/>
-            <property name="prefix" value="sou"/>
-            <property name="defaultSort" value="create_time desc"/>
         </include>
     </select>
+
+    <sql id="sorts">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid() > 0">
+                <bind name="sortName" value="${sort}.name"/>
+                <bind name="sortType" value="${sort}.type"/>
+                order by
+                <choose>
+                    <when test="sortName == 'user_name'">
+                        su.name ${sortType}
+                    </when>
+                    <otherwise>
+                        sou.${sortName} ${sortType}
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by
+                sou.create_time desc
+            </otherwise>
+        </choose>
+    </sql>
 
     <update id="enable">
         update sys_organization_user
