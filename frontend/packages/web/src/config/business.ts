@@ -159,7 +159,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
       subTip: t('system.business.authenticationSettings.loginUrlTip'),
     },
   ],
-  OAUTH2: [
+  GITHUB_OAUTH2: [
     {
       label: t('system.business.authenticationSettings.authUrl'),
       key: 'authUrl',
@@ -253,6 +253,60 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
       label: t('system.business.authenticationSettings.linkRange'),
       key: 'scope',
       placeholder: 'openid profile email',
+    },
+  ],
+  WE_COM_OAUTH2:[
+    {
+      label: t('system.business.corpId'),
+      key: 'corpId',
+      rule: [
+        {
+          required: true,
+          message: t('common.notNull', { value: t('system.business.corpId') }),
+        },
+      ],
+      placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
+        url: 'Cordys',
+      }),
+    },
+    {
+      label: t('system.business.appSecret'),
+      key: 'appSecret',
+      rule: [
+        {
+          required: true,
+          message: t('common.notNull', { value: t('system.business.appSecret') }),
+        },
+      ],
+      placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
+        url: 'Cordys',
+      }),
+    },
+    {
+      label: t('system.business.agentId'),
+      key: 'agentId',
+      rule: [
+        {
+          required: true,
+          message: t('common.notNull', { value: t('system.business.agentId') }),
+        },
+      ],
+      placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
+        url: 'Cordys',
+      }),
+    },
+    {
+      label: t('system.business.authenticationSettings.callbackUrl'),
+      key: 'redirectUrl',
+      rule: [
+        {
+          required: true,
+          message: t('common.notNull', { value: t('system.business.authenticationSettings.callbackUrl') }),
+        },
+      ],
+      placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
+        url: 'http://<metersphere-endpoint>/sso/callback or http://<metersphere-endpoint>/sso/callback/authld',
+      }),
     },
   ],
   LDAP: [

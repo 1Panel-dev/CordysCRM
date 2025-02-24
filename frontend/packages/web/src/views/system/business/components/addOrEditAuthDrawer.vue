@@ -40,8 +40,8 @@
         <CrmTab v-model:active-tab="form.type" :tab-list="tabList" type="segment" />
       </n-form-item> -->
 
-      <!-- 根据类型展示不同的表单 目前只有 OAUTH2 -->
-      <template v-for="item of authTypeFieldMap['OAUTH2']" :key="item.key">
+      <!-- 根据类型展示不同的表单 目前只有 OAUTH2 OAUTH2有多种，当前只展示企业微信的OAUTH2-->
+      <template v-for="item of authTypeFieldMap['WE_COM_OAUTH2']" :key="item.key">
         <n-form-item :label="item.label" :path="`configuration.${item.key}`" :rule="item.rule">
           <n-input
             v-model:value="form.configuration[item.key]"
