@@ -72,9 +72,7 @@ public class LeadCapacityService {
 		wrapper.eq(LeadCapacity::getOrganizationId, currentOrgId);
 		List<LeadCapacity> oldCapacities = leadCapacityMapper.selectListByLambda(wrapper);
 		if (CollectionUtils.isNotEmpty(oldCapacities)) {
-			LeadCapacity capacity = new LeadCapacity();
-			capacity.setOrganizationId(currentOrgId);
-			leadCapacityMapper.delete(capacity);
+			oldCapacities.forEach(capacity -> leadCapacityMapper.deleteByPrimaryKey(capacity.getId()));
 		}
 		List<LeadCapacity> newCapacities = new ArrayList<>();
 		capacities.forEach(capacityRequest -> {

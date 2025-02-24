@@ -71,9 +71,7 @@ public class CustomerCapacityService {
 		wrapper.eq(CustomerCapacity::getOrganizationId, currentOrgId);
 		List<CustomerCapacity> oldCapacities = customerCapacityMapper.selectListByLambda(wrapper);
 		if (CollectionUtils.isNotEmpty(oldCapacities)) {
-			CustomerCapacity capacity = new CustomerCapacity();
-			capacity.setOrganizationId(currentOrgId);
-			customerCapacityMapper.delete(capacity);
+			oldCapacities.forEach(capacity -> customerCapacityMapper.deleteByPrimaryKey(capacity.getId()));
 		}
 		List<CustomerCapacity> newCapacities = new ArrayList<>();
 		capacities.forEach(capacityRequest -> {

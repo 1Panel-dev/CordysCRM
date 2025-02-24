@@ -1,11 +1,14 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.constants.InternalRole;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.ScopeKey;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.ScopeNameDTO;
 import io.cordys.crm.system.dto.response.RoleUserOptionResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -33,7 +36,14 @@ public class UserExtendService {
 				scope.setName(userMap.get(scopeId));
 				scope.setScope(ScopeKey.USER.name());
 			} else if (roleMap.containsKey(scopeId)) {
-				scope.setName(roleMap.get(scopeId));
+				if (StringUtils.equalsAny(scopeId,
+						InternalRole.ORG_ADMIN.getValue(),
+						InternalRole.SALES_MANAGER.getValue(),
+						InternalRole.SALES_STAFF.getValue())) {
+					scope.setName(Translator.get("role." + scopeId));
+				} else {
+					scope.setName(roleMap.get(scopeId));
+				}
 				scope.setScope(ScopeKey.ROLE.name());
 			} else if (departmentMap.containsKey(scopeId)) {
 				scope.setName(departmentMap.get(scopeId));
