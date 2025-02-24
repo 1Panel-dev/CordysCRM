@@ -30,13 +30,13 @@
         <if test="${filters} != null and ${filters}.size() > 0">
             <trim prefix="and">
                 <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
-                    <if test="condition.name == 'recycled'">
+                    <if test="condition.name == 'auto'">
                         <include refid="io.cordys.common.mapper.CommonMapper.condition">
                             <property name="condition" value="condition"/>
                             <property name="column" value="lead_pool.lead_pool"/>
                         </include>
                     </if>
-                    <if test="condition.name == 'status'">
+                    <if test="condition.name == 'enable'">
                         <include refid="io.cordys.common.mapper.CommonMapper.condition">
                             <property name="condition" value="condition"/>
                             <property name="column" value="ead_pool.enable"/>
