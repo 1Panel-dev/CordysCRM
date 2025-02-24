@@ -11,15 +11,11 @@ import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.domain.CustomerPoolRelation;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
-import io.cordys.crm.customer.dto.CustomerPoolRuleDTO;
 import io.cordys.crm.customer.dto.request.CustomerPoolAddRequest;
+import io.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
+import io.cordys.crm.customer.dto.CustomerPoolRecycleRuleDTO;
 import io.cordys.crm.customer.dto.request.CustomerPoolUpdateRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
-import io.cordys.crm.lead.domain.LeadPoolPickRule;
-import io.cordys.crm.lead.domain.LeadPoolRecycleRule;
-import io.cordys.crm.lead.domain.LeadPoolRelation;
-import io.cordys.crm.lead.dto.LeadPoolDTO;
-import io.cordys.crm.lead.dto.LeadPoolRuleDTO;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.User;
@@ -124,21 +120,15 @@ public class CustomerPoolService {
 			pool.setCreateUserName(userMap.get(pool.getCreateUser()));
 			pool.setUpdateUserName(userMap.get(pool.getUpdateUser()));
 
-			CustomerPoolPickRule pickRule = pickRuleMap.get(pool.getId());
-			CustomerPoolRecycleRule recycleRule = recycleRuleMap.get(pool.getId());
+			CustomerPoolPickRuleDTO pickRule = new CustomerPoolPickRuleDTO();
+			BeanUtils.copyBean(pickRule, pickRuleMap.get(pool.getId()));
+			CustomerPoolRecycleRuleDTO recycleRule = new CustomerPoolRecycleRuleDTO();
+			CustomerPoolRecycleRule customerPoolRecycleRule = recycleRuleMap.get(pool.getId());
+			BeanUtils.copyBean(recycleRule, customerPoolRecycleRule);
+			recycleRule.setConditions(JSON.parseArray(customerPoolRecycleRule.getCondition(), RuleConditionDTO.class));
 
-			CustomerPoolRuleDTO rule = CustomerPoolRuleDTO.builder()
-					.limitOnNumber(pickRule.getLimitOnNumber())
-					.pickNumber(pickRule.getPickNumber())
-					.limitPreOwner(pickRule.getLimitPreOwner())
-					.pickIntervalDays(pickRule.getPickIntervalDays())
-					.expireNotice(recycleRule.getExpireNotice())
-					.noticeDays(recycleRule.getNoticeDays())
-					.operator(recycleRule.getOperator())
-					.conditions(JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class))
-					.build();
-
-			pool.setRule(rule);
+			pool.setPickRule(pickRule);
+			pool.setRecycleRule(recycleRule);
 		});
 
 		return pools;

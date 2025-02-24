@@ -10,9 +10,9 @@ import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.lead.domain.LeadPool;
 import io.cordys.crm.lead.domain.LeadPoolRelation;
 import io.cordys.crm.lead.dto.LeadPoolDTO;
+import io.cordys.crm.lead.dto.LeadPoolPickRuleDTO;
+import io.cordys.crm.lead.dto.LeadPoolRecycleRuleDTO;
 import io.cordys.crm.lead.dto.request.LeadPoolAddRequest;
-import io.cordys.crm.lead.dto.request.LeadPoolPickRuleSaveRequest;
-import io.cordys.crm.lead.dto.request.LeadPoolRecycleRuleSaveRequest;
 import io.cordys.crm.lead.dto.request.LeadPoolUpdateRequest;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.mybatis.BaseMapper;
@@ -57,14 +57,14 @@ public class LeadPoolControllerTests extends BaseTest {
 		BeanUtils.copyBean(request, leadPool);
 		request.setOwnerIds(List.of("cc"));
 		request.setScopeIds(List.of("cc"));
-		LeadPoolPickRuleSaveRequest pickRule = LeadPoolPickRuleSaveRequest.builder()
+		LeadPoolPickRuleDTO pickRule = LeadPoolPickRuleDTO.builder()
 				.pickNumber(1).limitOnNumber(true).pickIntervalDays(1).limitPreOwner(true).build();
 		request.setPickRule(pickRule);
 		RuleConditionDTO condition = new RuleConditionDTO();
 		condition.setColumn("name");
 		condition.setOperator("=");
 		condition.setValue("cc");
-		LeadPoolRecycleRuleSaveRequest recycleRule = LeadPoolRecycleRuleSaveRequest.builder().expireNotice(true).noticeDays(10).conditions(List.of(condition)).build();
+		LeadPoolRecycleRuleDTO recycleRule = LeadPoolRecycleRuleDTO.builder().expireNotice(true).noticeDays(10).conditions(List.of(condition)).build();
 		request.setRecycleRule(recycleRule);
 		this.requestPostWithOk("/lead-pool/add", request);
 	}
@@ -89,10 +89,10 @@ public class LeadPoolControllerTests extends BaseTest {
 		BeanUtils.copyBean(request, leadPool);
 		request.setOwnerIds(List.of("cc"));
 		request.setScopeIds(List.of("cc"));
-		LeadPoolPickRuleSaveRequest pickRule = LeadPoolPickRuleSaveRequest.builder()
+		LeadPoolPickRuleDTO pickRule = LeadPoolPickRuleDTO.builder()
 				.pickNumber(1).limitOnNumber(true).pickIntervalDays(1).limitPreOwner(true).build();
 		request.setPickRule(pickRule);
-		LeadPoolRecycleRuleSaveRequest recycleRule = LeadPoolRecycleRuleSaveRequest.builder().expireNotice(true).noticeDays(10).build();
+		LeadPoolRecycleRuleDTO recycleRule = LeadPoolRecycleRuleDTO.builder().expireNotice(true).noticeDays(10).build();
 		request.setRecycleRule(recycleRule);
 		MvcResult mvcResult = this.requestPost("/lead-pool/update", request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("lead_pool_access_fail"));

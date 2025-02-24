@@ -1,16 +1,20 @@
-package io.cordys.crm.lead.dto.request;
+package io.cordys.crm.lead.dto;
 
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
 @Builder
-public class LeadPoolRecycleRuleSaveRequest {
+@NoArgsConstructor
+@AllArgsConstructor
+public class LeadPoolRecycleRuleDTO {
 
 	@NotNull
 	@Schema(description = "到期提醒")

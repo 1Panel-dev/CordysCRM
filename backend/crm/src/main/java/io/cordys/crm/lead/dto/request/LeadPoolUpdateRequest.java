@@ -1,5 +1,7 @@
 package io.cordys.crm.lead.dto.request;
 
+import io.cordys.crm.lead.dto.LeadPoolPickRuleDTO;
+import io.cordys.crm.lead.dto.LeadPoolRecycleRuleDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -38,8 +40,8 @@ public class LeadPoolUpdateRequest {
 	private Boolean auto;
 
 	@Schema(description = "领取规则")
-	private LeadPoolPickRuleSaveRequest pickRule;
+	private LeadPoolPickRuleDTO pickRule;
 
 	@Schema(description = "回收规则")
-	private LeadPoolRecycleRuleSaveRequest recycleRule;
+	private LeadPoolRecycleRuleDTO recycleRule;
 }

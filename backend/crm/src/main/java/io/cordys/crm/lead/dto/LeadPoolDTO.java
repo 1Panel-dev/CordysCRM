@@ -1,8 +1,6 @@
 package io.cordys.crm.lead.dto;
 
 import io.cordys.crm.lead.domain.LeadPool;
-import io.cordys.crm.lead.dto.request.LeadPoolPickRuleSaveRequest;
-import io.cordys.crm.lead.dto.request.LeadPoolRecycleRuleSaveRequest;
 import io.cordys.crm.system.dto.ScopeNameDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -20,6 +18,8 @@ public class LeadPoolDTO extends LeadPool {
 	private String createUserName;
 	@Schema(description = "更新人名称")
 	private String updateUserName;
-	@Schema(description = "规则")
-	private LeadPoolRuleDTO rule;
+	@Schema(description = "领取规则")
+	private LeadPoolPickRuleDTO pickRule;
+	@Schema(description = "回收规则")
+	private LeadPoolRecycleRuleDTO recycleRule;
 }

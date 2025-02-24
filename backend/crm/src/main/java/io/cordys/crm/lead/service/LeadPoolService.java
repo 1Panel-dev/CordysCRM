@@ -12,7 +12,8 @@ import io.cordys.crm.lead.domain.LeadPoolPickRule;
 import io.cordys.crm.lead.domain.LeadPoolRecycleRule;
 import io.cordys.crm.lead.domain.LeadPoolRelation;
 import io.cordys.crm.lead.dto.LeadPoolDTO;
-import io.cordys.crm.lead.dto.LeadPoolRuleDTO;
+import io.cordys.crm.lead.dto.LeadPoolPickRuleDTO;
+import io.cordys.crm.lead.dto.LeadPoolRecycleRuleDTO;
 import io.cordys.crm.lead.dto.request.LeadPoolAddRequest;
 import io.cordys.crm.lead.dto.request.LeadPoolUpdateRequest;
 import io.cordys.crm.lead.mapper.ExtLeadPoolMapper;
@@ -122,21 +123,15 @@ public class LeadPoolService {
             pool.setCreateUserName(userMap.get(pool.getCreateUser()));
             pool.setUpdateUserName(userMap.get(pool.getUpdateUser()));
 
-            LeadPoolPickRule pickRule = pickRuleMap.get(pool.getId());
-            LeadPoolRecycleRule recycleRule = recycleRuleMap.get(pool.getId());
+            LeadPoolPickRuleDTO pickRule = new LeadPoolPickRuleDTO();
+            BeanUtils.copyBean(pickRule, pickRuleMap.get(pool.getId()));
+            LeadPoolRecycleRuleDTO recycleRule = new LeadPoolRecycleRuleDTO();
+            LeadPoolRecycleRule leadPoolRecycleRule = recycleRuleMap.get(pool.getId());
+            BeanUtils.copyBean(recycleRule, leadPoolRecycleRule);
+            recycleRule.setConditions(JSON.parseArray(leadPoolRecycleRule.getCondition(), RuleConditionDTO.class));
 
-            LeadPoolRuleDTO rule = LeadPoolRuleDTO.builder()
-                    .limitOnNumber(pickRule.getLimitOnNumber())
-                    .pickNumber(pickRule.getPickNumber())
-                    .limitPreOwner(pickRule.getLimitPreOwner())
-                    .pickIntervalDays(pickRule.getPickIntervalDays())
-                    .expireNotice(recycleRule.getExpireNotice())
-                    .noticeDays(recycleRule.getNoticeDays())
-                    .operator(recycleRule.getOperator())
-                    .conditions(JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class))
-                    .build();
-
-            pool.setRule(rule);
+            pool.setPickRule(pickRule);
+            pool.setRecycleRule(recycleRule);
         });
 
         return pools;

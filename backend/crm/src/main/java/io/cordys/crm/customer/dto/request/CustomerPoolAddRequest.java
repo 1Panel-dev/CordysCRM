@@ -1,5 +1,7 @@
 package io.cordys.crm.customer.dto.request;
 
+import io.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
+import io.cordys.crm.customer.dto.CustomerPoolRecycleRuleDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -33,8 +35,8 @@ public class CustomerPoolAddRequest {
 	private Boolean auto;
 
 	@Schema(description = "领取规则")
-	private CustomerPoolPickRuleSaveRequest pickRule;
+	private CustomerPoolPickRuleDTO pickRule;
 
 	@Schema(description = "回收规则")
-	private CustomerPoolRecycleRuleSaveRequest recycleRule;
+	private CustomerPoolRecycleRuleDTO recycleRule;
 }
