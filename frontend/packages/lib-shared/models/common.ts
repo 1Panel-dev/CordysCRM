@@ -8,6 +8,11 @@ export default interface CommonResponse<T> {
   data: T;
 }
 
+export interface SortParams {
+  name?: string;
+  type?: string; // asc或desc
+}
+
 // 表格查询
 export interface TableQueryParams {
   // 当前页
@@ -15,7 +20,7 @@ export interface TableQueryParams {
   // 每页条数
   pageSize?: number;
   // 排序仅针对单个字段
-  sort?: object;
+  sort?: SortParams;
   // 表头筛选
   filter?: object;
   // 查询条件

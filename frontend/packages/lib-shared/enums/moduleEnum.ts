@@ -24,6 +24,7 @@ export enum ModuleConfigEnum {
 // 添加员工API
 export enum MemberApiTypeEnum {
   SYSTEM_ROLE = 'SYSTEM_ROLE',
+  MODULE_ROLE = 'MODULE_ROLE',
 }
 
 // 选择添加

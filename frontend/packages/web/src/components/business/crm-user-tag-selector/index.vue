@@ -10,14 +10,12 @@
     :show="false"
     @click="handleShowAddAdmin"
   />
-  <!-- TODO lmy MemberApiTypeEnum和params 联调 -->
   <CrmSelectUserDrawer
     ref="crmSelectUserDrawerRef"
     v-model:visible="showSelectAdminDrawer"
     :loading="false"
     :title="props.drawerTitle || t('role.addMember')"
-    :api-type-key="MemberApiTypeEnum.SYSTEM_ROLE"
-    :base-params="{ roleId: 'org_admin' }"
+    :api-type-key="MemberApiTypeEnum.MODULE_ROLE"
     :disabled-list="modelValue"
     :multiple="props.multiple"
     :ok-text="props.okText"
@@ -40,18 +38,16 @@
 
   const { t } = useI18n();
 
-  const props = withDefaults(
-    defineProps<{
-      userErrorTagIds?: string[];
-      multiple?: boolean;
-      drawerTitle?: string;
-      okText?: string;
-      memberTypes?: Option[];
-    }>(),
-    {
-      multiple: true,
-    }
-  );
+  export type UserTagSelectorProps = {
+    userErrorTagIds?: string[];
+    multiple?: boolean;
+    drawerTitle?: string;
+    okText?: string;
+    memberTypes?: Option[];
+  };
+  const props = withDefaults(defineProps<UserTagSelectorProps>(), {
+    multiple: true,
+  });
   const selectedList = defineModel<SelectedUsersItem[]>('selectedList', {
     required: true,
   });

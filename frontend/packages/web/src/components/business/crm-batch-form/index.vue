@@ -61,6 +61,7 @@
                 v-if="model.type === FieldTypeEnum.USER_TAG_SELECTOR"
                 v-model:selected-list="element[model.path]"
                 :user-error-tag-ids="userErrorTagIds"
+                v-bind="model.userTagSelectorProps"
                 @delete-tag="handleUserTagSelectValidate"
               />
             </n-form-item>

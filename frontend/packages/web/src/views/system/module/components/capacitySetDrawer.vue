@@ -28,7 +28,7 @@
   import { getCapacityPage, saveCapacity } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
 
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { MemberSelectTypeEnum, ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   const Message = useMessage();
@@ -62,6 +62,18 @@
         },
         { notRepeat: true, message: t('module.capacitySet.repeatMsg') },
       ],
+      userTagSelectorProps: {
+        memberTypes: [
+          {
+            label: t('menu.settings.org'),
+            value: MemberSelectTypeEnum.ORG,
+          },
+          {
+            label: t('role.role'),
+            value: MemberSelectTypeEnum.ROLE,
+          },
+        ],
+      },
     },
     {
       path: 'capacity',
@@ -105,6 +117,7 @@
       });
       await saveCapacity(capacities, props.type);
       Message.success(t('common.saveSuccess'));
+      visible.value = false;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

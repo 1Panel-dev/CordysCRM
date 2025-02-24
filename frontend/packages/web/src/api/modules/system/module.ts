@@ -14,6 +14,10 @@ import {
   getModuleNavConfigListUrl,
   getOpportunityListUrl,
   moduleNavListSortUrl,
+  ModuleRoleTreeUrl,
+  ModuleUserDeptTreeUrl,
+  NoPickCustomerPoolUrl,
+  NoPickLeadPoolUrl,
   SaveCustomerCapacityUrl,
   SaveLeadCapacityUrl,
   SwitchCustomerPoolStatusUrl,
@@ -36,6 +40,7 @@ import type {
   OpportunityItem,
   OpportunityParams,
 } from '@lib/shared/models/system/module';
+import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
 // 模块首页-导航模块列表
 export function getModuleNavConfigList(data: { organizationId: string }) {
@@ -50,6 +55,15 @@ export function moduleNavListSort(data: ModuleSortParams) {
 // 模块首页-导航模块状态切换
 export function toggleModuleNavStatus(id: string) {
   return CDR.get({ url: `${toggleModuleNavStatusUrl}/${id}` });
+}
+
+// 获取部门用户树
+export function getModuleUserDeptTree() {
+  return CDR.get<DeptUserTreeNode[]>({ url: ModuleUserDeptTreeUrl });
+}
+// 获取角色树
+export function getModuleRoleTree() {
+  return CDR.get<DeptUserTreeNode[]>({ url: ModuleRoleTreeUrl });
 }
 
 // 模块-商机-商机规则列表
@@ -98,9 +112,13 @@ export function deleteLeadPool(id: string) {
   return CDR.get({ url: `${DeleteLeadPoolUrl}/${id}` });
 }
 
+export function noPickLeadPool(id: string) {
+  return CDR.get({ url: `${NoPickLeadPoolUrl}/${id}` });
+}
+
 // 库容相关API
 export function getCapacityPage(type: ModuleConfigEnum) {
-  return CDR.post<CapacityItem[]>({
+  return CDR.get<CapacityItem[]>({
     url: type === ModuleConfigEnum.CLUE_MANAGEMENT ? GetLeadCapacityPageUrl : GetCustomerCapacityPageUrl,
   });
 }
@@ -131,4 +149,8 @@ export function switchCustomerPoolStatus(id: string) {
 
 export function deleteCustomerPool(id: string) {
   return CDR.get({ url: `${DeleteCustomerPoolUrl}/${id}` });
+}
+
+export function noPickCustomerPool(id: string) {
+  return CDR.get({ url: `${NoPickCustomerPoolUrl}/${id}` });
 }

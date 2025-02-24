@@ -42,7 +42,7 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddOrEditPoolDrawer from '../addOrEditPoolDrawer.vue';
 
-  import { deleteLeadPool, getLeadPoolPage, switchLeadPoolStatus } from '@/api/modules/system/module';
+  import { deleteLeadPool, getLeadPoolPage, noPickLeadPool, switchLeadPoolStatus } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
@@ -85,10 +85,19 @@
 
   const tableRefreshId = ref(0);
 
+  async function noPick(id: string) {
+    try {
+      return await noPickLeadPool(id);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   // 删除
-  function handleDelete(row: LeadPoolItem) {
-    // TODO lmy 判断是否存在未分配的线索
-    const hasData = false;
+  async function handleDelete(row: LeadPoolItem) {
+    // 判断是否存在未分配的线索
+    const hasData = await noPick(row.id);
     const title = hasData
       ? t('module.clue.deleteRulesTitle')
       : t('common.deleteConfirmTitle', { name: characterLimit(row.name) });

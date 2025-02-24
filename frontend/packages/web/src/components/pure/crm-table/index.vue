@@ -58,6 +58,7 @@
 
   import { BatchActionConfig } from './type';
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import type { SortParams } from '@lib/shared/models/common';
   import type { DataTableFilterState, DataTableRowKey, DataTableSortState } from 'naive-ui';
 
   const props = defineProps<{
@@ -68,9 +69,9 @@
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;
     (e: 'pageSizeChange', value: number): void;
-    (e: 'sorterChange', value: { [key: string]: string }): void;
     (e: 'filterChange', value: DataTableFilterState): void;
     (e: 'batchAction', value: ActionsItem): void;
+    (e: 'sorterChange', value: SortParams): void;
   }>();
   const attrs = useAttrs();
   const { t } = useI18n();
@@ -220,7 +221,7 @@
     } else if (sorter.order === 'descend') {
       sortOrder = 'desc';
     }
-    emit('sorterChange', !sorter.order ? {} : { [sorter.columnKey]: sortOrder });
+    emit('sorterChange', !sorter.order ? {} : { name: sorter.columnKey as string, type: sortOrder });
   }
 
   function handleFiltersChange(filters: DataTableFilterState) {

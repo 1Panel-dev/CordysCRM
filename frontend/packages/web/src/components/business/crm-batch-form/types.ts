@@ -1,6 +1,7 @@
 import { FormItemRule, InputNumberProps, InputProps, SelectProps } from 'naive-ui';
 
 import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
+import { UserTagSelectorProps } from '@/components/business/crm-user-tag-selector/index.vue';
 
 // 自定义检验器，为了传入动态渲染的表单项下标
 export interface CustomValidator {
@@ -21,4 +22,5 @@ export interface FormItemModel {
   inputProps?: Partial<InputProps>;
   numberProps?: Partial<InputNumberProps>;
   selectProps?: Partial<SelectProps & customSelectedProps>;
+  userTagSelectorProps?: Partial<UserTagSelectorProps>;
 }

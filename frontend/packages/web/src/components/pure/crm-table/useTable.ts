@@ -7,7 +7,7 @@ import useAppStore from '@/store/modules/app';
 
 import type { CrmTableDataItem, CrmTableProps } from './type';
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
-import type { CommonList, FilterConditionItem, TableQueryParams } from '@lib/shared/models/common';
+import type { CommonList, FilterConditionItem, SortParams, TableQueryParams } from '@lib/shared/models/common';
 import type { DataTableFilterState, PaginationProps } from 'naive-ui';
 
 const tableStore = useTableStore();
@@ -84,7 +84,7 @@ export default function useTable<T>(
 
   const tableQueryParams = ref<TableQueryParams>({}); // 表格请求参数集合
   const keyword = ref('');
-  const sortItem = ref<Record<string, any>>({}); // 排序
+  const sortItem = ref<SortParams>(); // 排序
 
   const filterItem = ref<FilterConditionItem[]>([]); // 筛选
 
@@ -151,7 +151,7 @@ export default function useTable<T>(
       loadList();
     },
     // 排序触发
-    sorterChange: (sortObj: { [key: string]: string }) => {
+    sorterChange: (sortObj: SortParams) => {
       sortItem.value = sortObj;
       loadList();
     },
