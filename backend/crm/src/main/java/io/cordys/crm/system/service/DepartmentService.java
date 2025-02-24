@@ -422,6 +422,13 @@ public class DepartmentService extends MoveNodeService {
         extDepartmentMapper.batchUpdate(departmentList);
     }
 
+    /**
+     * 获取内部部门 (XPack 中使用)
+     *
+     * @param orgId
+     * @param resource
+     * @return
+     */
     public Department getInternalDepartment(String orgId, String resource) {
         return extDepartmentMapper.getInternalDepartment(orgId, resource);
     }

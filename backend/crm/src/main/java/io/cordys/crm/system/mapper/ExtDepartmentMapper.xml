@@ -106,7 +106,7 @@
 
 
     <select id="getInternalDepartment" resultType="io.cordys.crm.system.domain.Department">
-        SELECT * FROM sys_department WHERE organization_id = #{orgId} AND resource = #{resource}
+        SELECT * FROM sys_department WHERE organization_id = #{orgId} AND resource = #{resource} AND parent_id = 'NONE'
     </select>
 
 
