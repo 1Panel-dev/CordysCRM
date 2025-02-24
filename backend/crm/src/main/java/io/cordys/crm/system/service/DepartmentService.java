@@ -356,12 +356,12 @@ public class DepartmentService extends MoveNodeService {
         }
     }
 
-    private String insertNode(String departmentName, String praentId, String orgId, String operatorId) {
+    private String insertNode(String departmentName, String parentId, String orgId, String operatorId) {
         String id = IDGenerator.nextStr();
         Department department = new Department();
         department.setId(id);
         department.setName(departmentName);
-        department.setParentId(praentId);
+        department.setParentId(parentId);
         department.setOrganizationId(orgId);
         department.setPos(getNextPos(orgId));
         department.setCreateTime(System.currentTimeMillis());
