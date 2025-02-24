@@ -37,7 +37,7 @@
             path="ownerIds"
             :label="t('opportunity.admin')"
           >
-            <CrmUserTagSelector v-model:selected-list="form.ownerIds" />
+            <CrmUserTagSelector v-model:selected-list="form.ownerIds" :member-types="memberTypes" />
           </n-form-item>
         </div>
         <div class="flex-1">
@@ -47,7 +47,7 @@
             path="userId"
             :label="t('opportunity.members')"
           >
-            <CrmUserTagSelector v-model:selected-list="form.scopeIds" />
+            <CrmUserTagSelector v-model:selected-list="form.scopeIds" :member-types="memberTypes" />
           </n-form-item>
         </div>
       </div>
@@ -139,6 +139,7 @@
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
+  import type { Option } from '@/components/business/crm-select-user-drawer/type';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { addOpportunityRule, updateOpportunityRule } from '@/api/modules/system/module';
@@ -146,6 +147,7 @@
   import { useI18n } from '@/hooks/useI18n';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
+  import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import type {
     ModuleConditionsItem,
     OpportunityDetail,
@@ -174,6 +176,17 @@
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
+
+  const memberTypes: Option[] = [
+    {
+      label: t('menu.settings.org'),
+      value: MemberSelectTypeEnum.ORG,
+    },
+    {
+      label: t('role.role'),
+      value: MemberSelectTypeEnum.ROLE,
+    },
+  ];
 
   const rules: FormRules = {
     name: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }), trigger: ['blur'] }],

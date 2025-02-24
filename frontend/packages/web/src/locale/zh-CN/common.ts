@@ -246,4 +246,5 @@ export default {
   'common.lt': '小于',
   'common.le': '小于等于',
   'common.sort': '排序',
+  'common.tabConfig': 'tab配置',
 };

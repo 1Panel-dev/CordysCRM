@@ -246,4 +246,5 @@ export default {
   'common.lt': 'Less than',
   'common.le': 'Less than or equal to',
   'common.sort': 'Sort',
+  'common.tabConfig': 'Tab config',
 };
