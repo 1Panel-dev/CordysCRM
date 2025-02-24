@@ -19,6 +19,8 @@
             FieldTypeEnum.MEMBER_MULTIPLE,
             FieldTypeEnum.DEPARTMENT_SINGLE,
             FieldTypeEnum.DEPARTMENT_MULTIPLE,
+            FieldTypeEnum.DIVIDER,
+            FieldTypeEnum.PICTURE,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -79,6 +81,49 @@
         <optionConfig v-model:field="fieldConfig" />
       </div>
       <!-- options End -->
+      <!-- 分割线属性 -->
+      <div v-if="fieldConfig.type === FieldTypeEnum.DIVIDER" class="crm-form-design-config-item">
+        <div class="crm-form-design-config-item-title">
+          {{ t('crmFormDesign.style') }}
+        </div>
+        <n-popover
+          v-model:show="dividerStyleShow"
+          trigger="click"
+          placement="bottom"
+          width="trigger"
+          :show-arrow="false"
+          style="max-height: 360px"
+          scrollable
+        >
+          <template #trigger>
+            <div class="crm-form-design-divider-wrapper crm-form-design-divider-wrapper--active">
+              <Divider
+                :field-config="{
+                  ...fieldConfig,
+                  description: t('crmFormDesign.dividerDescDemo'),
+                }"
+              />
+            </div>
+          </template>
+          <div
+            v-for="option in dividerOptions"
+            :key="option.value"
+            class="crm-form-design-divider-wrapper mb-[6px]"
+            :class="fieldConfig.dividerClass === option.value ? 'crm-form-design-divider-wrapper--active' : ''"
+            @click="handleDividerStyleClick(option.value as string)"
+          >
+            <Divider
+              :field-config="{
+                  ...fieldConfig,
+                  dividerClass: option.value as string,
+                  description: t('crmFormDesign.dividerDescDemo'),
+                }"
+            />
+          </div>
+        </n-popover>
+      </div>
+      <!-- 分割线属性 End -->
+      <!-- 单选/复选框排列属性 -->
       <div
         v-if="[FieldTypeEnum.RADIO, FieldTypeEnum.CHECKBOX].includes(fieldConfig.type)"
         class="crm-form-design-config-item"
@@ -95,7 +140,131 @@
           </n-radio-button>
         </n-radio-group>
       </div>
-      <div v-if="!fieldConfig.options || fieldConfig.options.length === 0" class="crm-form-design-config-item">
+      <!-- 单选/复选框排列属性 End -->
+      <!-- 图片属性 -->
+      <template v-if="fieldConfig.type === FieldTypeEnum.PICTURE">
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.pictureShowType') }}</div>
+          <div class="flex items-center gap-[8px]">
+            <div
+              class="crm-form-design-config-item-label-picture"
+              :class="fieldConfig.pictureShowType === 'card' ? 'crm-form-design-config-item-label-picture--active' : ''"
+              @click="() => (fieldConfig.pictureShowType = 'card')"
+            >
+              <div class="crm-form-design-config-item-label-picture-card !flex-row justify-between">
+                <div class="crm-form-design-config-item-label-picture-card-first flex flex-col">
+                  <div class="crm-form-design-config-item-label-picture-card-heavy mb-[4px] h-[16px] w-[21px]"></div>
+                  <div class="crm-form-design-config-item-label-picture-card-heavy mb-[2px] h-[3px] w-[21px]"></div>
+                  <div class="crm-form-design-config-item-label-picture-card-light mb-[2px] h-[3px] w-[21px]"></div>
+                  <div class="crm-form-design-config-item-label-picture-card-light h-[3px] w-[11px]"></div>
+                </div>
+                <div class="flex flex-col">
+                  <div class="crm-form-design-config-item-label-picture-card-light mb-[4px] h-[16px] w-[21px]"></div>
+                  <div class="crm-form-design-config-item-label-picture-card-light mb-[2px] h-[3px] w-[21px]"></div>
+                  <div class="crm-form-design-config-item-label-picture-card-light mb-[2px] h-[3px] w-[21px]"></div>
+                  <div class="crm-form-design-config-item-label-picture-card-light h-[3px] w-[11px]"></div>
+                </div>
+                <div class="flex flex-col">
+                  <div class="crm-form-design-config-item-label-picture-card-light mb-[4px] h-[16px] w-[21px]"></div>
+                  <div class="crm-form-design-config-item-label-picture-card-light mb-[2px] h-[3px] w-[21px]"></div>
+                  <div class="crm-form-design-config-item-label-picture-card-light mb-[2px] h-[3px] w-[21px]"></div>
+                  <div class="crm-form-design-config-item-label-picture-card-light h-[3px] w-[11px]"></div>
+                </div>
+              </div>
+              {{ t('crmFormDesign.card') }}
+            </div>
+            <div
+              class="crm-form-design-config-item-label-picture"
+              :class="fieldConfig.pictureShowType === 'list' ? 'crm-form-design-config-item-label-picture--active' : ''"
+              @click="() => (fieldConfig.pictureShowType = 'list')"
+            >
+              <div class="crm-form-design-config-item-label-picture-card">
+                <div class="crm-form-design-config-item-label-picture-card-first flex items-center gap-[4px]">
+                  <div class="crm-form-design-config-item-label-picture-card-heavy h-[16px] w-[21px]"></div>
+                  <div class="flex flex-1 flex-col gap-[4px]">
+                    <div class="crm-form-design-config-item-label-picture-card-light h-[3px]"></div>
+                    <div class="crm-form-design-config-item-label-picture-card-light h-[3px] w-[50%]"></div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-[4px]">
+                  <div class="crm-form-design-config-item-label-picture-card-heavy h-[16px] w-[21px]"></div>
+                  <div class="flex flex-1 flex-col gap-[4px]">
+                    <div class="crm-form-design-config-item-label-picture-card-light h-[3px]"></div>
+                    <div class="crm-form-design-config-item-label-picture-card-light h-[3px] w-[50%]"></div>
+                  </div>
+                </div>
+              </div>
+              {{ t('crmFormDesign.list') }}
+            </div>
+          </div>
+        </div>
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.pictureLimit') }}
+            <n-tooltip trigger="hover">
+              <template #trigger>
+                <CrmIcon type="iconicon_help_circle" class="cursor-pointer hover:text-[var(--primary-1)]" />
+              </template>
+              {{ t('crmFormDesign.pictureLimitDesc') }}
+            </n-tooltip>
+          </div>
+          <div class="flex flex-col gap-[8px]">
+            <n-checkbox v-model:checked="fieldConfig.uploadLimitEnable" @change="() => (fieldConfig.uploadLimit = 10)">
+              {{ t('crmFormDesign.pictureNumLimit') }}
+            </n-checkbox>
+            <n-input-number
+              v-if="fieldConfig.uploadLimitEnable"
+              v-model:value="fieldConfig.uploadLimit"
+              :step="1"
+              :min="1"
+              :max="10"
+              class="w-[130px]"
+              button-placement="both"
+            >
+              <template #suffix>
+                <div class="text-[var(--text-n4)]">{{ t('crmFormDesign.pictureNumUnit') }}</div>
+              </template>
+            </n-input-number>
+          </div>
+          <div class="flex flex-col gap-[8px]">
+            <n-checkbox
+              v-model:checked="fieldConfig.uploadSizeLimitEnable"
+              @change="() => (fieldConfig.uploadSizeLimit = 20)"
+            >
+              <div class="flex items-center gap-[4px]">
+                {{ t('crmFormDesign.pictureSizeLimit') }}
+                <n-tooltip trigger="hover">
+                  <template #trigger>
+                    <CrmIcon type="iconicon_help_circle" class="cursor-pointer hover:text-[var(--primary-1)]" />
+                  </template>
+                  {{ t('crmFormDesign.pictureSizeLimitTip') }}
+                </n-tooltip>
+              </div>
+            </n-checkbox>
+            <n-input-number
+              v-if="fieldConfig.uploadSizeLimitEnable"
+              v-model:value="fieldConfig.uploadSizeLimit"
+              :step="1"
+              :min="0"
+              :max="20"
+              class="w-[130px]"
+              button-placement="both"
+            >
+              <template #suffix>
+                <div class="text-[var(--text-n4)]">MB</div>
+              </template>
+            </n-input-number>
+          </div>
+        </div>
+      </template>
+      <!-- 图片属性 End -->
+      <div
+        v-if="
+          (!fieldConfig.options || fieldConfig.options.length === 0) &&
+          ![FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE].includes(fieldConfig.type)
+        "
+        class="crm-form-design-config-item"
+      >
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.defaultValue') }}</div>
         <n-input-number
           v-if="fieldConfig.type === FieldTypeEnum.INPUT_NUMBER"
@@ -144,7 +313,7 @@
         <n-checkbox v-model:checked="fieldConfig.readable">
           {{ t('crmFormDesign.readable') }}
         </n-checkbox>
-        <n-checkbox v-model:checked="fieldConfig.editable">
+        <n-checkbox v-if="![FieldTypeEnum.DIVIDER].includes(fieldConfig.type)" v-model:checked="fieldConfig.editable">
           {{ t('crmFormDesign.editable') }}
         </n-checkbox>
       </div>
@@ -177,6 +346,7 @@
     NDatePicker,
     NInput,
     NInputNumber,
+    NPopover,
     NRadioButton,
     NRadioGroup,
     NSelect,
@@ -185,6 +355,7 @@
   } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import { rules } from '@/components/business/crm-form-create/config';
   import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
@@ -192,6 +363,8 @@
   import optionConfig from './optionConfig.vue';
 
   import { useI18n } from '@/hooks/useI18n';
+
+  import { SelectOption } from 'naive-ui/es/select/src/interface';
 
   const { t } = useI18n();
 
@@ -251,20 +424,73 @@
       value: 'datetime',
     },
   ];
+
+  const dividerOptions: SelectOption[] = [
+    {
+      value: 'divider--hidden',
+    },
+    {
+      value: 'divider--dashed',
+    },
+    {
+      value: 'divider--normal',
+    },
+    {
+      value: 'divider--double',
+    },
+  ];
+
+  const dividerStyleShow = ref(false);
+  function handleDividerStyleClick(value: string) {
+    fieldConfig.value.dividerClass = value;
+    dividerStyleShow.value = false;
+  }
 </script>
 
 <style lang="less" scoped>
-  .crm-form-design-config-item {
-    @apply flex flex-col;
-
-    gap: 8px;
-    &:not(:first-child) {
-      margin-top: 24px;
+  .crm-form-design-divider-wrapper {
+    padding: 16px;
+    border: 1px solid var(--text-n7);
+    cursor: pointer;
+    border-radius: 4px;
+    &--active {
+      border-color: var(--primary-8);
+      background-color: var(--primary-7);
     }
-    .crm-form-design-config-item-title {
-      @apply flex items-center font-semibold;
+  }
+  .crm-form-design-config-item-label-picture {
+    @apply flex flex-1 cursor-pointer flex-col items-center;
 
+    gap: 4px;
+    .crm-form-design-config-item-label-picture-card {
+      @apply flex w-full flex-col;
+
+      padding: 8px;
+      border: 1px solid var(--text-n7);
+      border-radius: var(--border-radius-small);
       gap: 4px;
+      .crm-form-design-config-item-label-picture-card-heavy {
+        border-radius: var(--border-radius-mini);
+        background-color: var(--text-n7);
+      }
+      .crm-form-design-config-item-label-picture-card-light {
+        border-radius: var(--border-radius-mini);
+        background-color: var(--text-n8);
+      }
+    }
+    &--active {
+      color: var(--primary-8);
+      .crm-form-design-config-item-label-picture-card {
+        border-color: var(--primary-8);
+        .crm-form-design-config-item-label-picture-card-first {
+          .crm-form-design-config-item-label-picture-card-heavy {
+            background-color: var(--primary-4);
+          }
+          .crm-form-design-config-item-label-picture-card-light {
+            background-color: var(--primary-6);
+          }
+        }
+      }
     }
   }
 </style>

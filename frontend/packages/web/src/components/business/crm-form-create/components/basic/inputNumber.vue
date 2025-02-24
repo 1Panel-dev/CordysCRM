@@ -16,6 +16,7 @@
       :parse="parse"
       :format="format"
       :show-button="false"
+      button-placement="both"
       clearable
       class="w-full"
     >

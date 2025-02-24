@@ -8,7 +8,7 @@
     <div v-if="props.fieldConfig.description" class="n-form-item-desc" v-html="props.fieldConfig.description"></div>
     <n-upload
       v-model:file-list="fileList"
-      :max="props.fieldConfig.uploadLimit"
+      :max="props.fieldConfig.uploadLimit || 10"
       :accept="props.fieldConfig.type === FieldTypeEnum.PICTURE ? 'image/*' : '*/*'"
       multiple
       directory-dnd

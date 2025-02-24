@@ -37,9 +37,14 @@ export interface FormCreateField {
   direction?: 'horizontal' | 'vertical';
   // divider属性
   dividerClass?: string;
+  dividerColor?: string;
+  titleColor?: string;
   // 图片上传属性
+  pictureShowType?: 'card' | 'list';
   uploadLimit?: number;
+  uploadLimitEnable?: boolean;
   uploadSizeLimit?: number;
+  uploadSizeLimitEnable?: boolean;
   // 地址属性
   hasDetail?: boolean;
   // 选择器属性

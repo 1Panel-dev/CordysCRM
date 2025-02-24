@@ -133,41 +133,23 @@
 </script>
 
 <style lang="less" scoped>
-  .crm-form-design-config-item {
-    @apply flex flex-col;
+  .crm-form-design-config-item-label-position {
+    @apply flex flex-1 cursor-pointer flex-col items-center;
 
-    gap: 8px;
-    &:not(:first-child) {
-      margin-top: 24px;
-    }
-    .crm-form-design-config-item-title {
-      @apply flex items-center font-semibold;
+    gap: 4px;
+    .crm-form-design-config-item-label-position-card {
+      @apply flex w-full flex-col;
 
+      padding: 8px;
+      border: 1px solid var(--text-n7);
+      border-radius: var(--border-radius-small);
       gap: 4px;
     }
-    .crm-form-design-config-item-label-position {
-      @apply flex flex-1 cursor-pointer flex-col items-center;
-
-      gap: 4px;
-      .crm-form-design-config-item-label-position-card {
-        @apply flex w-full flex-col;
-
-        padding: 8px;
-        border: 1px solid var(--text-n7);
-        border-radius: var(--border-radius-small);
-        gap: 4px;
-      }
-    }
-    .crm-form-design-config-item-label-position--active {
-      color: var(--primary-8);
-      .crm-form-design-config-item-label-position-card {
-        border-color: var(--primary-8);
-      }
-    }
-    .crm-form-design-config-item-input {
-      @apply flex items-center;
-
-      gap: 8px;
+  }
+  .crm-form-design-config-item-label-position--active {
+    color: var(--primary-8);
+    .crm-form-design-config-item-label-position-card {
+      border-color: var(--primary-8);
     }
   }
 </style>

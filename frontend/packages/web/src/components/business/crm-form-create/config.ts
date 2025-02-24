@@ -192,6 +192,7 @@ export const dividerDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   rules: [],
+  dividerClass: 'divider--normal',
 };
 
 export const basicFields: FormCreateField[] = [
@@ -221,7 +222,12 @@ export const pictureDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   rules: [],
+  uploadLimit: 10,
   uploadSizeLimit: 20,
+  pictureShowType: 'card',
+  uploadLimitEnable: false,
+  uploadSizeLimitEnable: false,
+  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const locationDefaultFieldConfig: FormCreateField = {

@@ -37,6 +37,27 @@
   const configTab = ref('field');
 </script>
 
+<style lang="less">
+  .crm-form-design-config-item {
+    @apply flex flex-col;
+
+    gap: 8px;
+    &:not(:first-child) {
+      margin-top: 24px;
+    }
+    .crm-form-design-config-item-title {
+      @apply flex items-center font-semibold;
+
+      gap: 4px;
+    }
+    .crm-form-design-config-item-input {
+      @apply flex items-center;
+
+      gap: 8px;
+    }
+  }
+</style>
+
 <style lang="less" scoped>
   .n-tabs {
     @apply h-full overflow-hidden;
