@@ -42,7 +42,7 @@
     </select>
 
     <delete id="deleteByOrgId">
-        DELETE FROM sys_department WHERE organization_id  = #{orgId} and resource != 'INTERNAL'
+        DELETE FROM sys_department WHERE organization_id  = #{orgId} and resource != 'INTERNAL' and parent_id != 'NONE'
     </delete>
 
 

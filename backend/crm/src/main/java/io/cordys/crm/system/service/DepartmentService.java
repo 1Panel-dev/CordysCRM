@@ -236,7 +236,8 @@ public class DepartmentService extends MoveNodeService {
      */
     public boolean deleteCheck(String id, String orgId) {
         Department department = checkDepartment(id);
-        if (StringUtils.equalsAnyIgnoreCase(department.getResource(), DepartmentConstants.INTERNAL.name())) {
+        if (StringUtils.equalsAnyIgnoreCase(department.getResource(), DepartmentConstants.INTERNAL.name())
+                && StringUtils.equalsAnyIgnoreCase(department.getParentId(), "NONE")) {
             throw new GenericException(Translator.get("department.internal"));
         }
         return extOrganizationUserMapper.countUserByDepartmentId(id, orgId) <= 0;
@@ -471,7 +472,8 @@ public class DepartmentService extends MoveNodeService {
     public void deleteDepartments(List<Department> departmentList) {
         if (CollectionUtils.isNotEmpty(departmentList)) {
             List<String> ids = departmentList.stream()
-                    .filter(department -> !StringUtils.equalsAnyIgnoreCase(department.getResource(), DepartmentConstants.INTERNAL.name()))
+                    .filter(department -> !StringUtils.equalsAnyIgnoreCase(department.getResource(), DepartmentConstants.INTERNAL.name())
+                            && !StringUtils.equalsAnyIgnoreCase(department.getParentId(), "NONE"))
                     .map(Department::getId).toList();
             if (CollectionUtils.isNotEmpty(ids)) {
                 extDepartmentMapper.deleteDepartmentByIds(ids);
