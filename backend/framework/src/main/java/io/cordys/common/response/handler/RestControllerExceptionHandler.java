@@ -3,6 +3,7 @@ package io.cordys.common.response.handler;
 import io.cordys.common.exception.IResultCode;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.response.result.CrmHttpResultCode;
+import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.common.util.ServiceUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -184,6 +185,7 @@ public class RestControllerExceptionHandler {
     public static String getStackTraceAsString(Exception e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw, true));
+        LogUtils.error(sw.toString());
         return sw.toString();
     }
 }
