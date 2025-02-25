@@ -132,7 +132,7 @@ ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_customer_id_field_id_field_value ON customer_field(customer_id ASC,field_id ASC,field_value ASC);
+CREATE INDEX idx_customer_id_field_id_field_value ON customer_field(customer_id, field_id, field_value);
 
 CREATE TABLE customer_contact(
      `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
@@ -161,7 +161,7 @@ ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_customer_contact_id_field_id_field_value ON customer_contact_field(customer_contact_id ASC,field_id ASC,field_value ASC);
+CREATE INDEX idx_customer_contact_id_field_id_field_value ON customer_contact_field(customer_contact_id, field_id, field_value);
 
 CREATE TABLE customer_contact_blob(
   `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,

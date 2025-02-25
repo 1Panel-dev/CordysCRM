@@ -25,5 +25,42 @@ CREATE TABLE opportunity_rule(
 
 CREATE INDEX idx_organization_id ON opportunity_rule(organization_id ASC);
 
+
+CREATE TABLE opportunity(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `customer_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
+    `name` VARCHAR(255) NOT NULL   COMMENT '商机名称' ,
+    `amount` DECIMAL(10,2) NOT NULL   COMMENT '金额' ,
+    `possible` DECIMAL(10,4) NOT NULL   COMMENT '可能性' ,
+    `products` VARCHAR(1000) NOT NULL   COMMENT '意向产品' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '商机'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_customer_id ON opportunity(customer_id ASC);
+CREATE INDEX idx_organization_id ON opportunity(organization_id ASC);
+
+
+CREATE TABLE opportunity_field(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `opportunity_id` VARCHAR(32) NOT NULL   COMMENT '商机id' ,
+    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
+    `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
+    PRIMARY KEY (id)
+)  COMMENT = '商机自定义属性'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_opportunity_id ON opportunity_field(opportunity_id ASC);
+CREATE INDEX idx_opportunity_id_field_id ON opportunity_field(opportunity_id, field_id);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

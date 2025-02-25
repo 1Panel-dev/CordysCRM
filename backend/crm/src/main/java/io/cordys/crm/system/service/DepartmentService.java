@@ -479,8 +479,7 @@ public class DepartmentService extends MoveNodeService {
     public void deleteDepartments(List<Department> departmentList) {
         if (CollectionUtils.isNotEmpty(departmentList)) {
             List<String> ids = departmentList.stream()
-                    .filter(department -> !StringUtils.equalsAnyIgnoreCase(department.getResource(), DepartmentConstants.INTERNAL.name())
-                            && !StringUtils.equalsAnyIgnoreCase(department.getParentId(), "NONE"))
+                    .filter(department -> !StringUtils.equalsAnyIgnoreCase(department.getParentId(), "NONE"))
                     .map(Department::getId).toList();
             if (CollectionUtils.isNotEmpty(ids)) {
                 extDepartmentMapper.deleteDepartmentByIds(ids);

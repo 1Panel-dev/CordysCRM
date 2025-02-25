@@ -71,4 +71,9 @@ public class PermissionConstants {
     public static final String PRODUCT_MANAGEMENT_UPDATE = "PRODUCT_MANAGEMENT:UPDATE";
     public static final String PRODUCT_MANAGEMENT_DELETE = "PRODUCT_MANAGEMENT:DELETE";
     /*------ end: PRODUCT_MANAGEMENT ------*/
+
+    /*------ start: OPPORTUNITY_MANAGEMENT ------*/
+    public static final String OPPORTUNITY_MANAGEMENT_READ = "OPPORTUNITY_MANAGEMENT:READ";
+    /*------ end: OPPORTUNITY_MANAGEMENT ------*/
+
 }
