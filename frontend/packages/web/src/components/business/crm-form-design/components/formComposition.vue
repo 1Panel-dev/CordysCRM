@@ -1,5 +1,9 @@
 <template>
-  <n-form :label-placement="props.formConfig.labelPos" class="crm-form-design--composition">
+  <n-form
+    :label-placement="props.formConfig.labelPos"
+    :require-mark-placement="props.formConfig.labelPos === 'left' ? 'left' : 'right'"
+    class="crm-form-design--composition"
+  >
     <n-scrollbar content-class="h-full">
       <VueDraggable
         v-model="list"
@@ -127,13 +131,13 @@
     if (type === FieldTypeEnum.CHECKBOX) {
       return CrmFormCreateComponents.basicComponents.checkbox;
     }
-    if ([FieldTypeEnum.SELECT_SINGLE, FieldTypeEnum.SELECT_MULTIPLE].includes(type)) {
+    if (type === FieldTypeEnum.SELECT) {
       return CrmFormCreateComponents.basicComponents.select;
     }
-    if ([FieldTypeEnum.MEMBER_SINGLE, FieldTypeEnum.MEMBER_MULTIPLE].includes(type)) {
+    if (type === FieldTypeEnum.MEMBER) {
       return CrmFormCreateComponents.basicComponents.memberSelect;
     }
-    if ([FieldTypeEnum.DEPARTMENT_SINGLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(type)) {
+    if (type === FieldTypeEnum.DEPARTMENT) {
       return CrmFormCreateComponents.basicComponents.memberSelect;
     }
     if (type === FieldTypeEnum.DIVIDER) {
@@ -148,6 +152,9 @@
     if (type === FieldTypeEnum.PHONE) {
       return CrmFormCreateComponents.advancedComponents.phone;
     }
+    if (type === FieldTypeEnum.DATA_SOURCE) {
+      return CrmFormCreateComponents.advancedComponents.dataSource;
+    }
   }
 
   function addItem(item: FormCreateField) {
@@ -156,14 +163,7 @@
       id: getGenerateId(),
       name: t(item.name),
     };
-    if (
-      [
-        FieldTypeEnum.CHECKBOX,
-        FieldTypeEnum.RADIO,
-        FieldTypeEnum.SELECT_SINGLE,
-        FieldTypeEnum.SELECT_MULTIPLE,
-      ].includes(item.type)
-    ) {
+    if ([FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT].includes(item.type)) {
       res.options = [
         {
           label: t('crmFormDesign.option', { i: 1 }),
@@ -189,12 +189,7 @@
       id: getGenerateId(),
     };
     if (
-      [
-        FieldTypeEnum.CHECKBOX,
-        FieldTypeEnum.RADIO,
-        FieldTypeEnum.SELECT_SINGLE,
-        FieldTypeEnum.SELECT_MULTIPLE,
-      ].includes(item.type) &&
+      [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT].includes(item.type) &&
       item.options?.length === 0
     ) {
       res.options = [

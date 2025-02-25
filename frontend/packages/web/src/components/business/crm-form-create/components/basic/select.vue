@@ -5,13 +5,17 @@
     :path="props.path"
     :rule="props.fieldConfig.rules"
   >
-    <div v-if="props.fieldConfig.description" class="n-form-item-desc" v-html="props.fieldConfig.description"></div>
+    <div
+      v-if="props.fieldConfig.description"
+      class="crm-form-create-item-desc"
+      v-html="props.fieldConfig.description"
+    ></div>
     <n-select
       v-model:value="value"
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
       :options="props.fieldConfig.options"
-      :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
+      :multiple="props.fieldConfig.multiple"
       :placeholder="props.fieldConfig.placeholder"
       clearable
     />
@@ -20,8 +24,6 @@
 
 <script setup lang="ts">
   import { NFormItem, NSelect } from 'naive-ui';
-
-  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
 
   import { FormCreateField } from '../../types';
 

@@ -15,12 +15,13 @@
       <div
         v-if="
           ![
-            FieldTypeEnum.MEMBER_SINGLE,
-            FieldTypeEnum.MEMBER_MULTIPLE,
-            FieldTypeEnum.DEPARTMENT_SINGLE,
-            FieldTypeEnum.DEPARTMENT_MULTIPLE,
+            FieldTypeEnum.MEMBER,
+            FieldTypeEnum.DEPARTMENT,
             FieldTypeEnum.DIVIDER,
             FieldTypeEnum.PICTURE,
+            FieldTypeEnum.LOCATION,
+            FieldTypeEnum.PHONE,
+            FieldTypeEnum.DATA_SOURCE,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -73,14 +74,40 @@
         <n-select v-model:value="fieldConfig.datetype" :options="dateTypeOptions" />
       </div>
       <!-- date End -->
+      <!-- 数据源属性 -->
+      <div v-if="fieldConfig.type === FieldTypeEnum.DATA_SOURCE" class="crm-form-design-config-item">
+        <div class="crm-form-design-config-item-title">
+          {{ t('common.type') }}
+        </div>
+        <n-select v-model:value="fieldConfig.dataSourceType" :options="dataSourceOptions" />
+      </div>
+      <!-- 数据源属性 End -->
       <!-- 选项属性 -->
+      <div class="crm-form-design-config-item">
+        <div class="crm-form-design-config-item-title">
+          {{ t('crmFormDesign.selectType') }}
+        </div>
+        <n-radio-group
+          v-model:value="fieldConfig.multiple"
+          name="radiogroup"
+          class="flex"
+          @update-value="handleMultipleChange"
+        >
+          <n-radio-button :value="false" class="flex-1 text-center">
+            {{ t('crmFormDesign.single') }}
+          </n-radio-button>
+          <n-radio-button :value="true" class="flex-1 text-center">
+            {{ t('crmFormDesign.multiple') }}
+          </n-radio-button>
+        </n-radio-group>
+      </div>
       <div v-if="fieldConfig.options" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.option') }}
         </div>
         <optionConfig v-model:field="fieldConfig" />
       </div>
-      <!-- options End -->
+      <!-- 选项属性 End -->
       <!-- 分割线属性 -->
       <div v-if="fieldConfig.type === FieldTypeEnum.DIVIDER" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
@@ -209,7 +236,10 @@
             </n-tooltip>
           </div>
           <div class="flex flex-col gap-[8px]">
-            <n-checkbox v-model:checked="fieldConfig.uploadLimitEnable" @change="() => (fieldConfig.uploadLimit = 10)">
+            <n-checkbox
+              v-model:checked="fieldConfig.uploadLimitEnable"
+              @update-checked="() => (fieldConfig.uploadLimit = 10)"
+            >
               {{ t('crmFormDesign.pictureNumLimit') }}
             </n-checkbox>
             <n-input-number
@@ -229,7 +259,7 @@
           <div class="flex flex-col gap-[8px]">
             <n-checkbox
               v-model:checked="fieldConfig.uploadSizeLimitEnable"
-              @change="() => (fieldConfig.uploadSizeLimit = 20)"
+              @update-checked="() => (fieldConfig.uploadSizeLimit = 20)"
             >
               <div class="flex items-center gap-[4px]">
                 {{ t('crmFormDesign.pictureSizeLimit') }}
@@ -258,14 +288,44 @@
         </div>
       </template>
       <!-- 图片属性 End -->
+      <!-- 地址属性 -->
+      <div v-if="fieldConfig.type === FieldTypeEnum.LOCATION" class="crm-form-design-config-item">
+        <div class="crm-form-design-config-item-title">
+          {{ t('common.type') }}
+        </div>
+        <n-select
+          v-model:value="fieldConfig.locationType"
+          :options="[
+            {
+              label: t('crmFormDesign.PCD'),
+              value: 'PCD',
+            },
+            {
+              label: t('crmFormDesign.PCDDetail'),
+              value: 'detail',
+            },
+          ]"
+        />
+      </div>
+      <!-- 地址属性 End -->
       <div
         v-if="
           (!fieldConfig.options || fieldConfig.options.length === 0) &&
-          ![FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE].includes(fieldConfig.type)
+          ![FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE, FieldTypeEnum.LOCATION, FieldTypeEnum.PHONE].includes(
+            fieldConfig.type
+          )
         "
         class="crm-form-design-config-item"
       >
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.defaultValue') }}</div>
+        <div v-if="fieldConfig.type === FieldTypeEnum.MEMBER" class="flex items-center gap-[8px]">
+          <n-switch v-model:value="fieldConfig.hasCurrentUser" @update-value="handleHasCurrentChange" />
+          {{ t('crmFormDesign.loginUser') }}
+        </div>
+        <div v-else-if="fieldConfig.type === FieldTypeEnum.DEPARTMENT" class="flex items-center gap-[8px]">
+          <n-switch v-model:value="fieldConfig.hasCurrentUserDept" @update-value="handleHasCurrentChange" />
+          {{ t('crmFormDesign.loginUserDept') }}
+        </div>
         <n-input-number
           v-if="fieldConfig.type === FieldTypeEnum.INPUT_NUMBER"
           v-model:value="fieldConfig.defaultValue"
@@ -279,25 +339,35 @@
           class="w-full"
         ></n-date-picker>
         <CrmUserTagSelector
-          v-else-if="[FieldTypeEnum.MEMBER_SINGLE, FieldTypeEnum.MEMBER_MULTIPLE].includes(fieldConfig.type)"
+          v-else-if="fieldConfig.type === FieldTypeEnum.MEMBER"
+          v-show="fieldConfig.multiple || !fieldConfig.hasCurrentUser"
           v-model:selected-list="fieldConfig.defaultValue"
-          :multiple="fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE"
+          :multiple="fieldConfig.multiple"
           :drawer-title="t('crmFormDesign.selectMember')"
           :ok-text="t('common.confirm')"
           :member-types="[]"
         />
         <CrmUserTagSelector
-          v-else-if="[FieldTypeEnum.DEPARTMENT_SINGLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(fieldConfig.type)"
+          v-else-if="fieldConfig.type === FieldTypeEnum.DEPARTMENT"
+          v-show="fieldConfig.multiple || !fieldConfig.hasCurrentUserDept"
           v-model:selected-list="fieldConfig.defaultValue"
-          :multiple="fieldConfig.type === FieldTypeEnum.DEPARTMENT_MULTIPLE"
+          :multiple="fieldConfig.multiple"
           :drawer-title="t('crmFormDesign.selectMember')"
           :ok-text="t('common.confirm')"
           :member-types="[]"
+        />
+        <CrmDataSource
+          v-else-if="fieldConfig.type === FieldTypeEnum.DATA_SOURCE"
+          v-model:value="fieldConfig.defaultValue"
+          v-model:rows="fieldConfig.dataSourceSelectedRows"
+          :multiple="fieldConfig.multiple"
+          :data-source-type="fieldConfig.dataSourceType"
         />
         <n-input v-else v-model:value="fieldConfig.defaultValue" :maxlength="255" clearable />
       </div>
       <div v-if="showRules.length > 0" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.validator') }}</div>
+
         <n-checkbox-group v-model:value="checkedRules">
           <n-space item-class="w-full">
             <n-checkbox v-for="rule of showRules" :key="rule.key" :value="rule.key">
@@ -310,9 +380,11 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldPermission') }}
         </div>
+
         <n-checkbox v-model:checked="fieldConfig.readable">
           {{ t('crmFormDesign.readable') }}
         </n-checkbox>
+
         <n-checkbox v-if="![FieldTypeEnum.DIVIDER].includes(fieldConfig.type)" v-model:checked="fieldConfig.editable">
           {{ t('crmFormDesign.editable') }}
         </n-checkbox>
@@ -321,6 +393,7 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldWidth') }}
         </div>
+
         <n-radio-group v-model:value="fieldConfig.fieldWidth" name="radiogroup" class="flex">
           <n-radio-button :value="1 / 4" class="!px-[8px]"> 1/4 </n-radio-button>
           <n-radio-button :value="1 / 3" class="!px-[8px]"> 1/3 </n-radio-button>
@@ -351,13 +424,15 @@
     NRadioGroup,
     NSelect,
     NSpace,
+    NSwitch,
     NTooltip,
   } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import { rules } from '@/components/business/crm-form-create/config';
-  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
+  import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import optionConfig from './optionConfig.vue';
@@ -373,7 +448,13 @@
   });
 
   const showRules = computed(() => {
-    return rules.filter((rule) => rule.key && fieldConfig.value.showRules?.includes(rule.key));
+    return rules.filter((rule) => {
+      if (fieldConfig.value.multiple) {
+        // 多选时不显示唯一性校验
+        return rule.key && fieldConfig.value.showRules?.includes(rule.key) && rule.key !== FieldRuleEnum.UNIQUE;
+      }
+      return rule.key && fieldConfig.value.showRules?.includes(rule.key);
+    });
   });
 
   const checkedRules = ref<string[]>([]);
@@ -389,6 +470,20 @@
         }));
     }
   );
+
+  function handleMultipleChange(val: boolean) {
+    if (val || [FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(fieldConfig.value.type)) {
+      fieldConfig.value.defaultValue = [];
+    } else {
+      fieldConfig.value.defaultValue = null;
+    }
+  }
+
+  function handleHasCurrentChange(val: boolean) {
+    if (val && !fieldConfig.value.multiple) {
+      fieldConfig.value.defaultValue = [];
+    }
+  }
 
   const numberPreview = computed(() => {
     const tempVal = 9999;
@@ -445,6 +540,25 @@
     fieldConfig.value.dividerClass = value;
     dividerStyleShow.value = false;
   }
+
+  const dataSourceOptions: SelectOption[] = [
+    {
+      label: t('crmFormDesign.customer'),
+      value: FieldDataSourceTypeEnum.CUSTOMER,
+    },
+    {
+      label: t('crmFormDesign.contract'),
+      value: FieldDataSourceTypeEnum.CONTACT,
+    },
+    {
+      label: t('crmFormDesign.business'),
+      value: FieldDataSourceTypeEnum.BUSINESS,
+    },
+    {
+      label: t('crmFormDesign.product'),
+      value: FieldDataSourceTypeEnum.PRODUCT,
+    },
+  ];
 </script>
 
 <style lang="less" scoped>

@@ -19,6 +19,7 @@
           </template>
           {{ props.title }}
         </n-tooltip>
+        <slot name="titleRight"></slot>
       </slot>
     </template>
     <div>

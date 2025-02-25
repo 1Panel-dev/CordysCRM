@@ -60,6 +60,7 @@
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import type { SortParams } from '@lib/shared/models/common';
   import type { DataTableFilterState, DataTableRowKey, DataTableSortState } from 'naive-ui';
+  import type { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 
   const props = defineProps<{
     columns: CrmDataTableColumn[];
@@ -72,6 +73,7 @@
     (e: 'filterChange', value: DataTableFilterState): void;
     (e: 'batchAction', value: ActionsItem): void;
     (e: 'sorterChange', value: SortParams): void;
+    (e: 'rowKeyChange', keys: DataTableRowKey[], rows: InternalRowData[]): void;
   }>();
   const attrs = useAttrs();
   const { t } = useI18n();
@@ -236,8 +238,8 @@
     emit('batchAction', item);
   };
 
-  function handleCheck(rowKeys: DataTableRowKey[]) {
-    console.log('🤔️ => handleCheck', rowKeys);
+  function handleCheck(rowKeys: DataTableRowKey[], rows: InternalRowData[]) {
+    emit('rowKeyChange', rowKeys, rows);
   }
 </script>
 

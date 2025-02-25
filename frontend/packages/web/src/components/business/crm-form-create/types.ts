@@ -1,14 +1,17 @@
-import type { FieldRuleEnum, FieldTypeEnum } from './enum';
+import type { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from './enum';
 import type { FormItemRule } from 'naive-ui';
+import type { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 import type { Option } from 'naive-ui/es/transfer/src/interface';
 
 export interface FormCreateFieldOption extends Option {
   [key: string]: any;
 }
+
 export interface FormCreateFieldRule extends FormItemRule {
   key: FieldRuleEnum;
   label: string;
 }
+
 export interface FormCreateField {
   // 基础属性
   id: string;
@@ -21,7 +24,6 @@ export interface FormCreateField {
   readable: boolean;
   editable: boolean;
   fieldWidth: number;
-  options?: FormCreateFieldOption[];
   defaultValue?: any;
   rules: FormCreateFieldRule[];
   // 数字输入属性
@@ -46,10 +48,18 @@ export interface FormCreateField {
   uploadSizeLimit?: number;
   uploadSizeLimitEnable?: boolean;
   // 地址属性
-  hasDetail?: boolean;
+  locationType?: 'PCD' | 'detail'; // PCD: 省市区, detail: 省市区+详细地址
   // 选择器属性
   multiple?: boolean;
+  options?: FormCreateFieldOption[];
+  // dataSource属性
+  dataSourceType?: FieldDataSourceTypeEnum;
+  // 成员属性
+  hasCurrentUser?: boolean;
+  // 部门属性
+  hasCurrentUserDept?: boolean;
   // 前端渲染属性
   icon: string;
   showRules?: FieldRuleEnum[]; // 显示的校验规则
+  dataSourceSelectedRows?: InternalRowData[]; // 数据源选中的行，回显用
 }

@@ -1,27 +1,29 @@
 <template>
-  <n-select
-    v-model:value="modelValue"
-    filterable
-    multiple
-    tag
-    :placeholder="t('common.pleaseSelect')"
-    :render-tag="renderTag"
-    :show-arrow="false"
-    :show="false"
-    @click="handleShowAddAdmin"
-  />
-  <CrmSelectUserDrawer
-    ref="crmSelectUserDrawerRef"
-    v-model:visible="showSelectAdminDrawer"
-    :loading="false"
-    :title="props.drawerTitle || t('role.addMember')"
-    :api-type-key="MemberApiTypeEnum.MODULE_ROLE"
-    :disabled-list="modelValue"
-    :multiple="props.multiple"
-    :ok-text="props.okText"
-    :member-types="props.memberTypes"
-    @confirm="handleAddAdminConfirm"
-  />
+  <div class="w-full">
+    <n-select
+      v-model:value="modelValue"
+      filterable
+      multiple
+      tag
+      :placeholder="t('common.pleaseSelect')"
+      :render-tag="renderTag"
+      :show-arrow="false"
+      :show="false"
+      @click="handleShowAddAdmin"
+    />
+    <CrmSelectUserDrawer
+      ref="crmSelectUserDrawerRef"
+      v-model:visible="showSelectAdminDrawer"
+      :loading="false"
+      :title="props.drawerTitle || t('role.addMember')"
+      :api-type-key="MemberApiTypeEnum.MODULE_ROLE"
+      :disabled-list="modelValue"
+      :multiple="props.multiple"
+      :ok-text="props.okText"
+      :member-types="props.memberTypes"
+      @confirm="handleAddAdminConfirm"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">

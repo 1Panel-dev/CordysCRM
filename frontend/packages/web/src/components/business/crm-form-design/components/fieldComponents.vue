@@ -70,14 +70,11 @@
     };
     if (
       [
-        FieldTypeEnum.DEPARTMENT_MULTIPLE,
-        FieldTypeEnum.DEPARTMENT_SINGLE,
-        FieldTypeEnum.MEMBER_MULTIPLE,
-        FieldTypeEnum.MEMBER_SINGLE,
+        FieldTypeEnum.DEPARTMENT,
+        FieldTypeEnum.MEMBER,
         FieldTypeEnum.CHECKBOX,
         FieldTypeEnum.RADIO,
-        FieldTypeEnum.SELECT_SINGLE,
-        FieldTypeEnum.SELECT_MULTIPLE,
+        FieldTypeEnum.SELECT,
       ].includes(e.type) &&
       e.options?.length === 0
     ) {

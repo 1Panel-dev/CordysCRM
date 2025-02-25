@@ -5,7 +5,11 @@
     :path="props.path"
     :rule="props.fieldConfig.rules"
   >
-    <div v-if="props.fieldConfig.description" class="n-form-item-desc" v-html="props.fieldConfig.description"></div>
+    <div
+      v-if="props.fieldConfig.description"
+      class="crm-form-create-item-desc"
+      v-html="props.fieldConfig.description"
+    ></div>
     <CrmCitySelect
       v-model:value="city"
       :placeholder="t('crmFormCreate.advanced.selectLocation')"
@@ -15,7 +19,7 @@
       @change="handleCityAndDetailChange"
     />
     <n-input
-      v-if="props.fieldConfig.hasDetail"
+      v-if="props.fieldConfig.locationType === 'detail'"
       v-model:value="detail"
       :maxlength="1000"
       :placeholder="t('crmFormCreate.advanced.inputLocationDetail')"
@@ -49,16 +53,16 @@
     default: '',
   });
 
-  const city = ref('');
+  const city = ref<string | null>('');
   const detail = ref('');
 
   function handleCityAndDetailChange() {
-    value.value = `${city.value}&${detail.value}`;
+    value.value = `${city.value}-${detail.value}`;
   }
 
   onBeforeMount(() => {
-    const [cityValue, detailValue] = value.value.split('&');
-    city.value = cityValue;
+    const [cityValue, detailValue] = value.value.split('-');
+    city.value = cityValue || null;
     detail.value = detailValue;
   });
 </script>

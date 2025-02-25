@@ -1,4 +1,4 @@
-import { FieldRuleEnum, FieldTypeEnum } from './enum';
+import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from './enum';
 import type { FormCreateField, FormCreateFieldRule } from './types';
 
 export const inputDefaultFieldConfig: FormCreateField = {
@@ -91,13 +91,14 @@ export const checkboxDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   direction: 'vertical',
+  showRules: [FieldRuleEnum.REQUIRED],
 };
 
-export const selectSingleDefaultFieldConfig: FormCreateField = {
+export const selectDefaultFieldConfig: FormCreateField = {
   id: '',
-  type: FieldTypeEnum.SELECT_SINGLE,
+  type: FieldTypeEnum.SELECT,
   icon: 'iconicon_pull_down_single_choice',
-  name: 'crmFormDesign.selectSingle',
+  name: 'crmFormDesign.select',
   fieldWidth: 1,
   showLabel: true,
   options: [],
@@ -105,27 +106,15 @@ export const selectSingleDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   rules: [],
+  multiple: false,
+  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
 };
 
-export const selectMultipleDefaultFieldConfig: FormCreateField = {
+export const memberDefaultFieldConfig: FormCreateField = {
   id: '',
-  type: FieldTypeEnum.SELECT_MULTIPLE,
-  icon: 'iconicon_pull_down_multiple_selection',
-  name: 'crmFormDesign.selectMultiple',
-  fieldWidth: 1,
-  showLabel: true,
-  options: [],
-  description: '',
-  readable: true,
-  editable: true,
-  rules: [],
-};
-
-export const memberSingleDefaultFieldConfig: FormCreateField = {
-  id: '',
-  type: FieldTypeEnum.MEMBER_SINGLE,
+  type: FieldTypeEnum.MEMBER,
   icon: 'iconicon_member_single_choice',
-  name: 'crmFormDesign.memberSingle',
+  name: 'crmFormDesign.memberSelect',
   fieldWidth: 1,
   showLabel: true,
   description: '',
@@ -133,29 +122,15 @@ export const memberSingleDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   defaultValue: [],
+  multiple: false,
   showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
 };
 
-export const memberMultipleDefaultFieldConfig: FormCreateField = {
+export const departmentDefaultFieldConfig: FormCreateField = {
   id: '',
-  type: FieldTypeEnum.MEMBER_MULTIPLE,
-  icon: 'iconicon_multiple_choice_of_members',
-  name: 'crmFormDesign.memberMultiple',
-  fieldWidth: 1,
-  showLabel: true,
-  description: '',
-  readable: true,
-  editable: true,
-  rules: [],
-  defaultValue: [],
-  showRules: [FieldRuleEnum.REQUIRED],
-};
-
-export const departmentSingleDefaultFieldConfig: FormCreateField = {
-  id: '',
-  type: FieldTypeEnum.DEPARTMENT_SINGLE,
+  type: FieldTypeEnum.DEPARTMENT,
   icon: 'iconicon_department_single_choice',
-  name: 'crmFormDesign.departmentSingle',
+  name: 'crmFormDesign.departmentSelect',
   fieldWidth: 1,
   showLabel: true,
   description: '',
@@ -163,22 +138,8 @@ export const departmentSingleDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   defaultValue: [],
+  multiple: false,
   showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
-};
-
-export const departmentMultipleDefaultFieldConfig: FormCreateField = {
-  id: '',
-  type: FieldTypeEnum.DEPARTMENT_MULTIPLE,
-  icon: 'icona-icon_multiple_selection_of_departments',
-  name: 'crmFormDesign.departmentMultiple',
-  fieldWidth: 1,
-  showLabel: true,
-  description: '',
-  readable: true,
-  editable: true,
-  rules: [],
-  defaultValue: [],
-  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const dividerDefaultFieldConfig: FormCreateField = {
@@ -202,12 +163,9 @@ export const basicFields: FormCreateField[] = [
   dateTimeDefaultFieldConfig,
   radioDefaultFieldConfig,
   checkboxDefaultFieldConfig,
-  selectSingleDefaultFieldConfig,
-  selectMultipleDefaultFieldConfig,
-  memberSingleDefaultFieldConfig,
-  memberMultipleDefaultFieldConfig,
-  departmentSingleDefaultFieldConfig,
-  departmentMultipleDefaultFieldConfig,
+  selectDefaultFieldConfig,
+  memberDefaultFieldConfig,
+  departmentDefaultFieldConfig,
   dividerDefaultFieldConfig,
 ];
 
@@ -241,6 +199,8 @@ export const locationDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   rules: [],
+  locationType: 'PCD',
+  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const phoneDefaultFieldConfig: FormCreateField = {
@@ -254,12 +214,32 @@ export const phoneDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   rules: [],
+  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+};
+
+export const dataSourceDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.DATA_SOURCE,
+  icon: 'iconicon_select_data',
+  name: 'crmFormDesign.dataSource',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  readable: true,
+  editable: true,
+  rules: [],
+  multiple: false,
+  defaultValue: [],
+  dataSourceSelectedRows: [],
+  dataSourceType: FieldDataSourceTypeEnum.CUSTOMER,
+  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
 };
 
 export const advancedFields: FormCreateField[] = [
   pictureDefaultFieldConfig,
   locationDefaultFieldConfig,
   phoneDefaultFieldConfig,
+  dataSourceDefaultFieldConfig,
 ];
 
 export const rules: FormCreateFieldRule[] = [

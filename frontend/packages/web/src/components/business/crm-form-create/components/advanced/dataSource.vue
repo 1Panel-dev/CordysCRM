@@ -10,24 +10,28 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
-    <CrmUserTagSelector v-model:selected-list="value" :multiple="fieldConfig.multiple" />
+    <CrmDataSource
+      v-model:value="value"
+      :rows="props.fieldConfig.dataSourceSelectedRows"
+      :multiple="fieldConfig.multiple"
+      :data-source-type="props.fieldConfig.dataSourceType"
+    />
   </n-form-item>
 </template>
 
 <script setup lang="ts">
   import { NFormItem } from 'naive-ui';
 
-  import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
+  import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
 
   import { FormCreateField } from '../../types';
-  import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
     path: string;
   }>();
 
-  const value = defineModel<SelectedUsersItem[]>('value', {
+  const value = defineModel<(string | number)[]>('value', {
     default: [],
   });
 

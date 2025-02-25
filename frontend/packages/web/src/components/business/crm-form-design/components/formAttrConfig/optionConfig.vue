@@ -29,13 +29,13 @@
           </template>
           {{ t('common.sort') }}
         </n-tooltip>
+        <n-checkbox v-if="isMultiple" :value="item.value" />
         <n-radio
-          v-if="[FieldTypeEnum.RADIO, FieldTypeEnum.SELECT_SINGLE].includes(fieldConfig.type)"
+          v-else
           :value="item.value"
           class="flex items-center"
           @click="() => handleRadioOptionClick(item.value)"
         />
-        <n-checkbox v-else :value="item.value" />
         <n-input v-model:value="item.label" :maxlength="255" clearable></n-input>
         <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
           <template #trigger>
@@ -121,13 +121,13 @@
     default: null,
   });
 
+  const isMultiple = computed(() => fieldConfig.value.type === FieldTypeEnum.CHECKBOX || fieldConfig.value.multiple);
+
   const getComponent = computed(() => {
-    if ([FieldTypeEnum.RADIO, FieldTypeEnum.SELECT_SINGLE].includes(fieldConfig.value.type)) {
-      return NRadioGroup;
-    }
-    if ([FieldTypeEnum.CHECKBOX, FieldTypeEnum.SELECT_MULTIPLE].includes(fieldConfig.value.type)) {
+    if (isMultiple.value) {
       return NCheckboxGroup;
     }
+    return NRadioGroup;
   });
 
   function handleRadioOptionClick(val: string | number) {
@@ -147,14 +147,12 @@
   }
 
   function setDefaultValue() {
-    if (fieldConfig.value.type === FieldTypeEnum.SELECT_SINGLE || fieldConfig.value.type === FieldTypeEnum.RADIO) {
-      if (fieldConfig.value.options?.every((e) => e.value !== fieldConfig.value.defaultValue)) {
-        fieldConfig.value.defaultValue = '';
-      }
-    } else {
+    if (isMultiple.value) {
       fieldConfig.value.defaultValue = fieldConfig.value.defaultValue?.filter((e: any) =>
         fieldConfig.value.options?.some((item) => item.value === e)
       );
+    } else if (fieldConfig.value.options?.every((e) => e.value !== fieldConfig.value.defaultValue)) {
+      fieldConfig.value.defaultValue = '';
     }
   }
 

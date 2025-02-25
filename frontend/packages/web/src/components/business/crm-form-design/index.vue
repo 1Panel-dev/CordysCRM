@@ -52,6 +52,15 @@
     ],
     optBtnPos: 'flex-row',
   });
+
+  watch(
+    () => formConfig.value.layout,
+    (layout) => {
+      list.value.forEach((item) => {
+        item.fieldWidth = 1 / layout;
+      });
+    }
+  );
 </script>
 
 <style lang="less" scoped>

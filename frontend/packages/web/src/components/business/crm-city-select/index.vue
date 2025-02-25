@@ -9,6 +9,7 @@
       checkStrategy: 'child',
       ...$attrs,
     }"
+    :placeholder="props.placeholder"
     @update:value="handleChange"
   />
 </template>
@@ -17,13 +18,13 @@
   import { ref } from 'vue';
   import { CascaderOption, NCascader } from 'naive-ui';
 
-  import { useI18n } from '@/hooks/useI18n';
-
   import { regionData } from 'element-china-area-data';
 
-  const { t } = useI18n();
-
   export type DataItem<T = Record<string, any>> = CascaderOption & T;
+
+  const props = defineProps<{
+    placeholder?: string;
+  }>();
 
   const emit = defineEmits<{
     (

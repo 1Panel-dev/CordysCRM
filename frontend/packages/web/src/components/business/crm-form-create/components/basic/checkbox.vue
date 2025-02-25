@@ -5,7 +5,11 @@
     :path="props.path"
     :rule="props.fieldConfig.rules"
   >
-    <div v-if="props.fieldConfig.description" class="n-form-item-desc" v-html="props.fieldConfig.description"></div>
+    <div
+      v-if="props.fieldConfig.description"
+      class="crm-form-create-item-desc"
+      v-html="props.fieldConfig.description"
+    ></div>
     <n-checkbox-group
       v-model:value="value"
       :default-value="props.fieldConfig.defaultValue"
