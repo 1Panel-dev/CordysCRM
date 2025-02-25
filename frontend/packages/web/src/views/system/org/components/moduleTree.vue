@@ -65,7 +65,7 @@
   } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
-  import { characterLimit } from '@/utils';
+  import { characterLimit, getNextAvailableName } from '@/utils';
 
   const { openModal } = useModal();
 
@@ -161,9 +161,14 @@
   async function addNode(parent: CrmTreeNodeData | null) {
     currentParentId.value = parent ? parent.id : orgModuleTree.value[0].id;
 
+    const children = parent ? parent.children ?? [] : orgModuleTree.value[0].children ?? [];
+
+    const existingNames = children.map((child: CrmTreeNodeData) => child.name);
+
+    const nextAddName = getNextAvailableName(existingNames, t('common.unNamed'));
     try {
       const data = await addDepartment({
-        name: t('common.unNamed'),
+        name: nextAddName,
         parentId: currentParentId.value,
       });
 

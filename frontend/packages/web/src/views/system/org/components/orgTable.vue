@@ -252,6 +252,7 @@
         const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
         currentIntegration.value = { ...currentIntegration.value, ...weChatConfig };
         isHasConfig.value = !!weChatConfig && weChatConfig.enable;
+        renderSyncResult.value = renderSync();
       }
     } catch (error) {
       // eslint-disable-next-line no-console

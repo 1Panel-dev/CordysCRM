@@ -317,3 +317,26 @@ export function getCityPath(cityId: string | null): string {
   const nodePathName = (nodePathObject?.treePath || []).map((item: any) => item.label);
   return nodePathName.length === 1 ? nodePathName[0] : nodePathName.join('/');
 }
+
+/**
+ * 返回添加节点下一个有效未命名name
+ * @param existingNames 已存在名称列表
+ * @param baseName 基础名称
+ */
+export function getNextAvailableName(existingNames: string[], baseName: string): string {
+  const baseNamePattern = new RegExp(`^${baseName}(\\d+)$`);
+
+  const existingSuffixes = existingNames.reduce((suffixes: number[], name: string) => {
+    const match = baseNamePattern.exec(name);
+    if (match) {
+      suffixes.push(parseInt(match[1], 10));
+    }
+    return suffixes;
+  }, []);
+
+  if (existingSuffixes.length === 0) {
+    return existingNames.includes(baseName) ? `${baseName}1` : baseName;
+  }
+
+  return `${baseName}${Math.max(...existingSuffixes) + 1}`;
+}
