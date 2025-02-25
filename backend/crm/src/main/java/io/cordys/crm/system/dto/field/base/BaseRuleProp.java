@@ -7,8 +7,11 @@ import lombok.Data;
  * 校验规则属性
  */
 @Data
-public class RuleProp {
+public class BaseRuleProp {
 
 	@Schema(description = "规则类型")
 	private String type;
+
+	@Schema(description = "是否勾选")
+	private Boolean enable;
 }

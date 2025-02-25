@@ -46,5 +46,5 @@ public abstract class BaseFieldProp {
 	@Schema(description = "字段宽度")
 	private String fieldWidth;
 	@Schema(description = "校验规则")
-	private List<RuleProp> rules;
+	private List<BaseRuleProp> rules;
 }
