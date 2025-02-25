@@ -42,8 +42,8 @@ public class UserLoginService {
     @Resource
     private BaseMapper<LoginLog> loginLogMapper;
 
-    public UserDTO getUserDTO(String userId) {
-        UserDTO userDTO = extUserMapper.selectById(userId);
+    public UserDTO authenticateUser(String userId) {
+        UserDTO userDTO = extUserMapper.selectByPhoneOrEmail(userId);
         if (userDTO == null) {
             return null;
         }

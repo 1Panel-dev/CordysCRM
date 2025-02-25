@@ -130,7 +130,7 @@ public class MessageTemplateUtils {
                 try {
                     String value = v.toString();
                     assert userMapper != null;
-                    UserDTO user = userMapper.selectById(value);
+                    UserDTO user = userMapper.selectByPhoneOrEmail(value);
                     context.put(k, user.getName());
                 } catch (Exception ignore) {
                 }

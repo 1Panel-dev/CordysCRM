@@ -112,7 +112,7 @@ public class UserKeyService {
      * 校验用户是否存在
      */
     private void validateUserExistence(String userId) {
-        if (userLoginService.getUserDTO(userId) == null) {
+        if (userLoginService.authenticateUser(userId) == null) {
             throw new GenericException(Translator.get("user_not_exist") + userId);
         }
     }

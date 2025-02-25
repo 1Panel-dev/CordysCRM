@@ -43,7 +43,7 @@ public class LoginController {
     public SessionUser isLogin() {
         SessionUser user = SessionUtils.getUser();
         if (user != null) {
-            UserDTO userDTO = userLoginService.getUserDTO(user.getId());
+            UserDTO userDTO = userLoginService.authenticateUser(user.getId());
             SessionUser sessionUser = SessionUser.fromUser(userDTO, SessionUtils.getSessionId());
             SessionUtils.putUser(sessionUser);
             return sessionUser;

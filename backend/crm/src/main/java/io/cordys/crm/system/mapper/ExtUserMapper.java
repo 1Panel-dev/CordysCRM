@@ -11,7 +11,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface ExtUserMapper {
-    UserDTO selectById(String id);
+
+    UserDTO selectByPhoneOrEmail(String id);
 
     List<OptionDTO> selectUserOptionByIds(@Param("userIds") List<String> userIds);
 
