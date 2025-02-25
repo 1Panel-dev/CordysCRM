@@ -66,7 +66,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         UserPageRequest pageRequest = new UserPageRequest();
         pageRequest.setCurrent(1);
         pageRequest.setPageSize(10);
-        pageRequest.setDepartmentId("222");
+        pageRequest.setDepartmentIds(List.of("222"));
         MvcResult mvcResult = this.requestPostWithOkAndReturn("/user/list", pageRequest);
         Pager<List<UserPageResponse>> result = getPageResult(mvcResult, UserPageResponse.class);
         UserPageResponse first = result.getList().getFirst();

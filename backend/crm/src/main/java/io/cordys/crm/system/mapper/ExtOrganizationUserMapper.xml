@@ -34,7 +34,10 @@
         FROM
             sys_organization_user sou
                 INNER JOIN sys_user su ON sou.user_id = su.id
-        where sou.department_id = #{request.departmentId}
+        where sou.department_id in
+        <foreach collection="request.departmentIds" item="departmentId" open="(" separator="," close=")">
+            #{departmentId}
+        </foreach>
         <if test="request.keyword != null and request.keyword != ''">
             and (
             su.name like concat('%', #{request.keyword},'%')

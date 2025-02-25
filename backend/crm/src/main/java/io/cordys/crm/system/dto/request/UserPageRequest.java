@@ -5,12 +5,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.util.List;
+
 
 @Data
 public class UserPageRequest extends BasePageRequest {
 
-    @NotBlank
     @Schema(description = "部门id")
-    private String departmentId;
+    private List<@NotBlank String> departmentIds;
 
 }

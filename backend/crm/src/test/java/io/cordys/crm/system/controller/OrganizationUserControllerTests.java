@@ -53,7 +53,7 @@ public class OrganizationUserControllerTests extends BaseTest {
         UserPageRequest request = new UserPageRequest();
         request.setCurrent(1);
         request.setPageSize(10);
-        request.setDepartmentId("8");
+        request.setDepartmentIds(List.of("8"));
         this.requestPost(USER_LIST, request).andExpect(status().isOk());
     }
 
