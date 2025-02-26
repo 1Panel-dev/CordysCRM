@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.service;
 
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseModuleFieldValueService;
 import io.cordys.common.service.BaseService;
@@ -54,8 +55,11 @@ public class CustomerContactService {
         List<String> customerIds = list.stream().map(CustomerContactListResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<CustomerContactField>> caseCustomFiledMap =
-                baseModuleFieldValueService.getResourceFiledMap(customerIds,
-                        CustomerContactField::getCustomerContactId, customerContactFieldMapper);
+                baseModuleFieldValueService.getResourceFiledMap(
+                        FormKey.CONTACT.getKey(),
+                        customerIds,
+                        CustomerContactField::getCustomerContactId,
+                        customerContactFieldMapper);
         list.forEach(customerListResponse -> {
             // 获取自定义字段
             List<CustomerContactField> customerFields = caseCustomFiledMap.get(customerListResponse.getId());

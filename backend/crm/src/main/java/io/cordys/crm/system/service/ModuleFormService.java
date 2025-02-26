@@ -2,6 +2,7 @@ package io.cordys.crm.system.service;
 
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -11,12 +12,11 @@ import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleFieldBlob;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.domain.ModuleFormBlob;
-import io.cordys.crm.system.dto.field.base.BaseFieldProp;
+import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.form.FormProp;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.BusinessModuleFieldDTO;
 import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
-import io.cordys.crm.system.dto.response.ModuleFieldDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import io.cordys.mybatis.BaseMapper;
@@ -144,7 +144,7 @@ public class ModuleFormService {
 			saveParam.getFields().forEach(field -> {
 				field.setPos(pos.getAndIncrement());
 				ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
-				fieldBlob.setProp(JSON.toJSONBytes(field.getFieldProp()));
+				fieldBlob.setProp(JSON.toJSONBytes(field));
 				if (field.getId() == null) {
 					field.setId(IDGenerator.nextStr());
 					addFields.add(buildField(field, currentUserId, form.getId(), false));
@@ -181,12 +181,9 @@ public class ModuleFormService {
 	 * @param edited 是否修改
 	 * @return 模块字段
 	 */
-	public ModuleField buildField(ModuleFieldDTO field, String currentUserId, String formId, boolean edited) {
-		ModuleField moduleField = new ModuleField();
-		BeanUtils.copyBean(moduleField, field);
+	public ModuleField buildField(BaseField field, String currentUserId, String formId, boolean edited) {
+		ModuleField moduleField = BeanUtils.copyBean(new ModuleField(), field);
 		moduleField.setFormId(formId);
-		moduleField.setInternalKey(field.getFieldProp().getKey());
-		moduleField.setType(field.getFieldProp().getType());
 		if (!edited) {
 			moduleField.setCreateTime(System.currentTimeMillis());
 			moduleField.setCreateUser(currentUserId);
@@ -196,14 +193,22 @@ public class ModuleFormService {
 		return moduleField;
 	}
 
+	public List<BaseField> getAllFields(String formKey, String orgId) {
+		ModuleForm example = new ModuleForm();
+		example.setFormKey(formKey);
+		example.setOrganizationId(orgId);
+		ModuleForm moduleForm = moduleFormMapper.selectOne(example);
+		return getAllFields(moduleForm.getId());
+	}
+
 	/**
 	 * 获取表单所有字段及其属性集合
 	 * @param formId 表单ID
 	 * @return 字段集合
 	 */
-	public List<ModuleFieldDTO> getAllFields(String formId) {
+	public List<BaseField> getAllFields(String formId) {
 		// set field
-		List<ModuleFieldDTO> fieldDTOList = new ArrayList<>();
+		List<BaseField> fieldDTOList = new ArrayList<>();
 		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
 		fieldWrapper.eq(ModuleField::getFormId, formId);
 		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
@@ -214,10 +219,8 @@ public class ModuleFormService {
 			List<ModuleFieldBlob> fieldBlobs = moduleFieldBlobMapper.selectListByLambda(blobWrapper);
 			Map<String, byte[]> fieldBlobMap = fieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
 			fields.forEach(field -> {
-				ModuleFieldDTO fieldDTO = new ModuleFieldDTO();
-				BeanUtils.copyBean(fieldDTO, field);
-				fieldDTO.setFieldProp(JSON.parseObject(new String(fieldBlobMap.get(field.getId())), BaseFieldProp.class));
-				fieldDTOList.add(fieldDTO);
+				BaseField baseField = JSON.parseObject(new String(fieldBlobMap.get(field.getId())), BaseField.class);
+				fieldDTOList.add(baseField);
 			});
 		}
 		return fieldDTOList;
@@ -275,13 +278,14 @@ public class ModuleFormService {
 					ModuleField field = new ModuleField();
 					field.setId(IDGenerator.nextStr());
 					field.setFormId(formId);
-					field.setInternalKey(initField.get("key").toString());
+					field.setInternalKey(initField.get("internalKey").toString());
 					field.setType(initField.get("type").toString());
 					field.setPos(pos.getAndIncrement());
 					field.setCreateTime(System.currentTimeMillis());
-					field.setCreateUser("admin");
+					field.setCreateUser(InternalUser.ADMIN.getValue());
 					field.setUpdateTime(System.currentTimeMillis());
-					field.setUpdateUser("admin");
+					field.setUpdateUser(InternalUser.ADMIN.getValue());
+					initField.put("id", field.getId());
 					fields.add(field);
 					ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
 					fieldBlob.setId(field.getId());

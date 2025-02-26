@@ -1,14 +1,14 @@
 package io.cordys.crm.system.dto.field;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import io.cordys.crm.system.dto.field.base.BaseFieldProp;
+import io.cordys.crm.system.dto.field.base.BaseField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@JsonTypeName(value = "USER_TAG_SELECTOR")
+@JsonTypeName(value = "DEPARTMENT")
 @EqualsAndHashCode(callSuper = true)
-public class UserSelectTagFieldProp extends BaseFieldProp {
+public class DepartmentField extends BaseField {
 
 
 }

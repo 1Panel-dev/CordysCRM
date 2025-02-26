@@ -1,9 +1,10 @@
 package io.cordys.crm.follow.service;
 
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.service.BaseModuleFieldValueService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.JSON;
 import io.cordys.crm.follow.domain.FollowUpField;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
@@ -22,6 +23,8 @@ public class FollowUpRecordService {
     private BaseMapper<FollowUpRecord> followUpRecordMapper;
     @Resource
     private BaseMapper<FollowUpField> followUpFieldMapper;
+    @Resource
+    private BaseModuleFieldValueService baseModuleFieldValueService;
 
 
     /**
@@ -52,20 +55,13 @@ public class FollowUpRecordService {
      * @param moduleFields
      */
     private void saveModuleField(String id, List<BaseModuleFieldValue> moduleFields) {
-        if (CollectionUtils.isEmpty(moduleFields)) {
-            return;
-        }
-
-        //  todo 字段的校验
-        List<FollowUpField> customerFields = moduleFields.stream().map(field -> {
-            FollowUpField followUpField = new FollowUpField();
-            followUpField.setFollowUpId(id);
-            followUpField.setFieldId(field.getFieldId());
-            String valueStr = field.getFieldValue() instanceof String ? field.getFieldValue() : JSON.toJSONString(field.getFieldValue());
-            followUpField.setFieldValue(valueStr);
+        List<FollowUpField> followUpFields = baseModuleFieldValueService.getCustomerFields(FormKey.FOLLOW_RECORD.getKey(), moduleFields, FollowUpField.class);
+        followUpFields.forEach(followUpField -> {
             followUpField.setId(IDGenerator.nextStr());
-            return followUpField;
-        }).toList();
-        followUpFieldMapper.batchInsert(customerFields);
+            followUpField.setFollowUpId(id);
+        });
+        if (CollectionUtils.isNotEmpty(followUpFields)) {
+            followUpFieldMapper.batchInsert(followUpFields);
+        }
     }
 }

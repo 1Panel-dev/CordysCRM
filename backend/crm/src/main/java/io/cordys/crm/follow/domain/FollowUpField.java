@@ -1,7 +1,7 @@
 package io.cordys.crm.follow.domain;
 
+import io.cordys.common.domain.BaseModuleFieldValue;
 import jakarta.persistence.Table;
-import io.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -9,14 +9,11 @@ import lombok.Data;
 
 @Data
 @Table(name = "follow_up_field")
-public class FollowUpField extends BaseModel {
+public class FollowUpField extends BaseModuleFieldValue {
+
+	@Schema(description = "ID")
+	private String id;
 
 	@Schema(description = "跟进记录id")
 	private String followUpId;
-
-	@Schema(description = "自定义属性id")
-	private String fieldId;
-
-	@Schema(description = "自定义属性值")
-	private String fieldValue;
 }

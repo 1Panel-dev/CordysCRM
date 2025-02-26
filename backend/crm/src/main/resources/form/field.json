@@ -2,7 +2,7 @@
   "customer": [
     {
       "name": "customer.name",
-      "key": "customerName",
+      "internalKey": "customerName",
       "type": "INPUT",
       "showLabel": true,
       "placeholder": null,
@@ -16,7 +16,7 @@
     },
     {
       "name": "customer.industry",
-      "key": "customerIndustry",
+      "internalKey": "customerIndustry",
       "type": "SELECT",
       "showLabel": true,
       "placeholder": null,
@@ -32,7 +32,7 @@
     },
     {
       "name": "customer.level",
-      "key": "customerLevel",
+      "internalKey": "customerLevel",
       "type": "SELECT",
       "showLabel": true,
       "placeholder": null,
@@ -48,7 +48,7 @@
     },
     {
       "name": "customer.type",
-      "key": "customerType",
+      "internalKey": "customerType",
       "type": "SELECT",
       "showLabel": true,
       "placeholder": null,
@@ -64,7 +64,7 @@
     },
     {
       "name": "customer.source",
-      "key": "customerSource",
+      "internalKey": "customerSource",
       "type": "SELECT",
       "showLabel": true,
       "placeholder": null,
@@ -81,7 +81,7 @@
     },
     {
       "name": "customer.online.source",
-      "key": "customerOnlineSource",
+      "internalKey": "customerOnlineSource",
       "type": "SELECT",
       "showLabel": true,
       "placeholder": null,
@@ -97,8 +97,8 @@
     },
     {
       "name": "customer.tag",
-      "key": "customerTag",
-      "type": "USER_TAG_SELECTOR",
+      "internalKey": "customerTag",
+      "type": "MULTIPLE_INPUT",
       "showLabel": true,
       "placeholder": null,
       "description": null,
@@ -111,7 +111,7 @@
     },
     {
       "name": "customer.address.info",
-      "key": "customerAddressInfo",
+      "internalKey": "customerAddressInfo",
       "type": "DIVIDER",
       "showLabel": true,
       "placeholder": null,
@@ -125,7 +125,7 @@
     },
     {
       "name": "customer.address.detail",
-      "key": "customerAddressDetail",
+      "internalKey": "customerAddressDetail",
       "type": "TEXTAREA",
       "showLabel": true,
       "placeholder": null,
@@ -139,7 +139,7 @@
     },
     {
       "name": "customer.area",
-      "key": "customerArea",
+      "internalKey": "customerArea",
       "type": "LOCATION",
       "showLabel": true,
       "placeholder": null,
@@ -153,7 +153,7 @@
     },
     {
       "name": "customer.owner",
-      "key": "customerOwner",
+      "internalKey": "customerOwner",
       "type": "MEMBER",
       "showLabel": true,
       "placeholder": null,

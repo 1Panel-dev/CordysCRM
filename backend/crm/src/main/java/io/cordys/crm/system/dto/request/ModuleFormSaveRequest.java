@@ -1,7 +1,7 @@
 package io.cordys.crm.system.dto.request;
 
+import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.form.FormProp;
-import io.cordys.crm.system.dto.response.ModuleFieldDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,7 +23,7 @@ public class ModuleFormSaveRequest {
 	private String formKey;
 
 	@Schema(description = "保存字段集合")
-	private List<ModuleFieldDTO> fields;
+	private List<BaseField> fields;
 
 	@NotNull
 	@Schema(description = "表单属性")

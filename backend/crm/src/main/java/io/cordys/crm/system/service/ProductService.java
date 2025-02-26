@@ -1,5 +1,6 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.service.BaseModuleFieldValueService;
 import io.cordys.common.service.BaseService;
@@ -51,8 +52,12 @@ public class ProductService {
     private List<ProductListResponse> buildListData(List<ProductListResponse> list) {
         List<String> productIds = list.stream().map(ProductListResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<ProductField>> productFiledMap = baseModuleFieldValueService.getResourceFiledMap(productIds,
+
+        Map<String, List<ProductField>> productFiledMap = baseModuleFieldValueService.getResourceFiledMap(
+                FormKey.PRODUCT.getKey(),
+                productIds,
                 ProductField::getProductId, productFieldBaseMapper);
+
         list.forEach(productListResponse -> {
             // 获取自定义字段
             List<ProductField> productFields = productFiledMap.get(productListResponse.getId());
@@ -67,8 +72,12 @@ public class ProductService {
         ProductGetResponse productGetResponse = BeanUtils.copyBean(new ProductGetResponse(), product);
 
         // 获取模块字段
-        List<ProductField> productFields = baseModuleFieldValueService.getModuleFieldValuesByResourceIds(List.of(id),
-                ProductField::getProductId, productFieldBaseMapper);
+        List<ProductField> productFields = baseModuleFieldValueService.getModuleFieldValuesByResourceIds(
+                FormKey.PRODUCT.getKey(),
+                List.of(id),
+                ProductField::getProductId,
+                productFieldBaseMapper);
+
         productGetResponse.setModuleFields(productFields);
         return baseService.setCreateAndUpdateUserName(productGetResponse);
     }
@@ -96,19 +105,14 @@ public class ProductService {
      * @param moduleFieldValues
      */
     public void saveModuleField(String productId, List<BaseModuleFieldValue> moduleFieldValues) {
-        if (CollectionUtils.isEmpty(moduleFieldValues)) {
-            return;
-        }
-        //  todo 字段的校验
-        List<ProductField> customerFields = moduleFieldValues.stream().map(custom -> {
-            ProductField productField = new ProductField();
-            productField.setProductId(productId);
-            productField.setFieldId(custom.getFieldId());
-            productField.setFieldValue(custom.getFieldValue());
+        List<ProductField> productFields = baseModuleFieldValueService.getCustomerFields(FormKey.PRODUCT.getKey(), moduleFieldValues, ProductField.class);
+        productFields.forEach(productField -> {
             productField.setId(IDGenerator.nextStr());
-            return productField;
-        }).toList();
-        productFieldBaseMapper.batchInsert(customerFields);
+            productField.setProductId(productId);
+        });
+        if (CollectionUtils.isEmpty(productFields)) {
+            productFieldBaseMapper.batchInsert(productFields);
+        }
     }
 
     public Product update(ProductEditRequest request, String userId) {

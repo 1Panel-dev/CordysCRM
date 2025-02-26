@@ -1,10 +1,13 @@
 package io.cordys.crm.customer.controller;
 
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerField;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
@@ -12,7 +15,8 @@ import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
-import io.cordys.crm.system.service.ModuleFormService;
+import io.cordys.crm.system.domain.ModuleField;
+import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -20,6 +24,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -35,6 +40,7 @@ class CustomerControllerTests extends BaseTest {
     protected static final String MODULE_FORM = "module/form";
 
     private static Customer addCustomer;
+    private static Customer anotherCustomer;
 
     @Resource
     private BaseMapper<Customer> customerMapper;
@@ -43,7 +49,9 @@ class CustomerControllerTests extends BaseTest {
     private BaseMapper<CustomerField> customerFieldMapper;
 
     @Resource
-    private ModuleFormService moduleFormService;
+    private BaseMapper<ModuleField> moduleFieldMapper;
+    @Resource
+    private BaseMapper<ModuleForm> moduleFormMapper;
 
     @Override
     protected String getBasePath() {
@@ -78,11 +86,20 @@ class CustomerControllerTests extends BaseTest {
     @Test
     @Order(1)
     void testAdd() throws Exception {
+        ModuleForm moduleForm = getModuleForm();
+
+        ModuleField example = new ModuleField();
+        example.setFormId(moduleForm.getId());
+        ModuleField moduleField = moduleFieldMapper.select(example)
+                .stream()
+                .filter(field -> StringUtils.equals(field.getInternalKey(), "customerTag"))
+                .findFirst().orElse(null);
+
         // 请求成功
         CustomerAddRequest request = new CustomerAddRequest();
         request.setName("aa");
         request.setOwner("bb");
-        request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleField.getId(), List.of("value"))));
 
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Customer resultData = getResultData(mvcResult, Customer.class);
@@ -90,11 +107,37 @@ class CustomerControllerTests extends BaseTest {
         Assertions.assertEquals(request.getName(), customer.getName());
         Assertions.assertEquals(request.getOwner(), customer.getOwner());
 
+        // 校验字段
+        List<BaseModuleFieldValue> fieldValues = getCustomerFields(customer.getId())
+                .stream().map(customerField -> {
+                    BaseModuleFieldValue baseModuleFieldValue = BeanUtils.copyBean(new BaseModuleFieldValue(), customerField);
+                    baseModuleFieldValue.setFieldValue(JSON.parseArray(customerField.getFieldValue().toString(), String.class));
+                    return baseModuleFieldValue;
+                })
+                .toList();
+        Assertions.assertEquals(request.getModuleFields(), fieldValues);
+
+        // 校验重名异常
+        assertErrorCode(this.requestPost(DEFAULT_ADD, request), CustomerResultCode.CUSTOMER_EXIST);
+
+        // 创建另一个客户
+        request.setName("another");
+        mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
+        resultData = getResultData(mvcResult, Customer.class);
+        anotherCustomer = customerMapper.selectByPrimaryKey(resultData.getId());
+
         // 校验请求成功数据
         this.addCustomer = customer;
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_ADD, DEFAULT_ADD, request);
+    }
+
+    private ModuleForm getModuleForm() {
+        ModuleForm example = new ModuleForm();
+        example.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        example.setFormKey(FormKey.CUSTOMER.getKey());
+        return moduleFormMapper.selectOne(example);
     }
 
     @Test
@@ -115,6 +158,11 @@ class CustomerControllerTests extends BaseTest {
         CustomerUpdateRequest emptyRequest = new CustomerUpdateRequest();
         emptyRequest.setId(addCustomer.getId());
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
+
+        // 校验重名异常
+        request.setId(addCustomer.getId());
+        request.setName(anotherCustomer.getName());
+        assertErrorCode(this.requestPost(DEFAULT_UPDATE, request), CustomerResultCode.CUSTOMER_EXIST);
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);
@@ -176,12 +224,16 @@ class CustomerControllerTests extends BaseTest {
         this.requestGetWithOk(DEFAULT_DELETE, addCustomer.getId());
         Assertions.assertNull(customerMapper.selectByPrimaryKey(addCustomer.getId()));
 
-        CustomerField example = new CustomerField();
-        example.setCustomerId(addCustomer.getId());
-        List<CustomerField> fields = customerFieldMapper.select(example);
+        List<CustomerField> fields = getCustomerFields(addCustomer.getId());
         Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DEFAULT_DELETE, addCustomer.getId());
+    }
+
+    private List<CustomerField> getCustomerFields(String customerId) {
+        CustomerField example = new CustomerField();
+        example.setCustomerId(customerId);
+        return customerFieldMapper.select(example);
     }
 }

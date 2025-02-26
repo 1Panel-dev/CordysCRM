@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public enum FieldType {
-
 	/**
 	 * 单行输入
 	 */
@@ -48,5 +47,9 @@ public enum FieldType {
 	/**
 	 * 数据源
 	 */
-	DATA_SOURCE
+	DATA_SOURCE,
+	/**
+	 * 多选输入
+	 */
+	MULTIPLE_INPUT
 }

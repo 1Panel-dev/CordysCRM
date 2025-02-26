@@ -1,12 +1,12 @@
 package io.cordys.crm.customer.service;
 
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseModuleFieldValueService;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.JSON;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerField;
@@ -53,8 +53,13 @@ public class CustomerService {
     private List<CustomerListResponse> buildListData(List<CustomerListResponse> list) {
         List<String> customerIds = list.stream().map(CustomerListResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<CustomerField>> caseCustomFiledMap = baseModuleFieldValueService.getResourceFiledMap(customerIds,
-                CustomerField::getCustomerId, customerFieldMapper);
+
+        Map<String, List<CustomerField>> caseCustomFiledMap = baseModuleFieldValueService.getResourceFiledMap(
+                FormKey.CUSTOMER.getKey(),
+                customerIds,
+                CustomerField::getCustomerId,
+                customerFieldMapper);
+
         list.forEach(customerListResponse -> {
             // 获取自定义字段
             List<CustomerField> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
@@ -75,8 +80,12 @@ public class CustomerService {
         CustomerGetResponse customerGetResponse = BeanUtils.copyBean(new CustomerGetResponse(), customer);
 
         // 获取模块字段
-        List<CustomerField> customerFields = baseModuleFieldValueService.getModuleFieldValuesByResourceIds(List.of(id),
-                CustomerField::getCustomerId, customerFieldMapper);
+        List<CustomerField> customerFields = baseModuleFieldValueService.getModuleFieldValuesByResourceIds(
+                FormKey.CUSTOMER.getKey(),
+                List.of(id),
+                CustomerField::getCustomerId,
+                customerFieldMapper);
+
         customerGetResponse.setModuleFields(customerFields);
         return baseService.setCreateAndUpdateUserName(customerGetResponse);
     }
@@ -92,8 +101,8 @@ public class CustomerService {
         customer.setId(IDGenerator.nextStr());
         customer.setInSharedPool(false);
 
-        // 校验名称重复 todo
-//        checkAddExist(customer);
+        // 校验名称重复
+        checkAddExist(customer);
 
         customerMapper.insert(customer);
 
@@ -106,21 +115,14 @@ public class CustomerService {
      * @param moduleFieldValues
      */
     public void saveModuleField(String customerId, List<BaseModuleFieldValue> moduleFieldValues) {
-        if (CollectionUtils.isEmpty(moduleFieldValues)) {
-            return;
+        List<CustomerField> customerFields = baseModuleFieldValueService.getCustomerFields(FormKey.CUSTOMER.getKey(), moduleFieldValues, CustomerField.class);
+        customerFields.forEach(customerField -> {
+            customerField.setId(IDGenerator.nextStr());
+            customerField.setCustomerId(customerId);
+        });
+        if (CollectionUtils.isNotEmpty(customerFields)) {
+            customerFieldMapper.batchInsert(customerFields);
         }
-
-        //  todo 字段的校验
-        List<CustomerField> customerFields = moduleFieldValues.stream().map(custom -> {
-            CustomerField customField = new CustomerField();
-            customField.setCustomerId(customerId);
-            customField.setFieldId(custom.getFieldId());
-            String valueStr = custom.getFieldValue() instanceof String ? custom.getFieldValue() : JSON.toJSONString(custom.getFieldValue());
-            customField.setFieldValue(valueStr);
-            customField.setId(IDGenerator.nextStr());
-            return customField;
-        }).toList();
-        customerFieldMapper.batchInsert(customerFields);
     }
 
     public Customer update(CustomerUpdateRequest request, String userId) {
@@ -128,8 +130,8 @@ public class CustomerService {
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setUpdateUser(userId);
 
-        // 校验名称重复 todo
-//        checkUpdateExist(customer);
+        // 校验名称重复
+        checkUpdateExist(customer);
 
         customerMapper.update(customer);
 
