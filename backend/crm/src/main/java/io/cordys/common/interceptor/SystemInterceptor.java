@@ -2,6 +2,7 @@ package io.cordys.common.interceptor;
 
 import io.cordys.common.util.CompressUtils;
 import io.cordys.config.MybatisInterceptorConfig;
+import io.cordys.crm.follow.domain.FollowUpFieldBlob;
 import io.cordys.crm.system.domain.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,8 @@ public class SystemInterceptor {
         configList.add(new MybatisInterceptorConfig(OperationLogBlob.class, "originalValue", CompressUtils.class, "zip", "unzip"));
         configList.add(new MybatisInterceptorConfig(ModuleFormBlob.class, "prop", CompressUtils.class, "zip", "unzip"));
         configList.add(new MybatisInterceptorConfig(ModuleFieldBlob.class, "prop", CompressUtils.class, "zip", "unzip"));
+
+        configList.add(new MybatisInterceptorConfig(FollowUpFieldBlob.class, "fieldValue", CompressUtils.class, "zip", "unzip"));
 
         // 添加自定义拦截器配置，例如压缩和解压缩功能
         // configList.add(new MybatisInterceptorConfig(TestResourcePoolBlob.class, "configuration", CompressUtils.class, "zip", "unzip"));

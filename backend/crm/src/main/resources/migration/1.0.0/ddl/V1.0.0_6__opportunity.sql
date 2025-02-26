@@ -62,5 +62,60 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_opportunity_id ON opportunity_field(opportunity_id ASC);
 CREATE INDEX idx_opportunity_id_field_id ON opportunity_field(opportunity_id, field_id);
 
+
+CREATE TABLE follow_up_record(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `customer_id` VARCHAR(32)    COMMENT '客户id' ,
+    `opportunity_id` VARCHAR(32)    COMMENT '商机id' ,
+    `type` VARCHAR(32) NOT NULL   COMMENT '类型' ,
+    `lead_id` VARCHAR(32)    COMMENT '线索id' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
+    `owner` VARCHAR(32) NOT NULL   COMMENT '负责人' ,
+    `contact_id` VARCHAR(32) NOT NULL   COMMENT '联系人id' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '跟进记录'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_customer_id ON follow_up_record(customer_id ASC);
+CREATE INDEX idx_organization_id ON follow_up_record(organization_id ASC);
+CREATE INDEX idx_opportunity_id ON follow_up_record(opportunity_id ASC);
+CREATE INDEX idx_lead_id ON follow_up_record(lead_id ASC);
+CREATE INDEX idx_owner ON follow_up_record(owner ASC);
+CREATE INDEX idx_contact_id ON follow_up_record(contact_id ASC);
+
+
+CREATE TABLE follow_up_field(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `follow_up_id` VARCHAR(32) NOT NULL   COMMENT '跟进记录id' ,
+    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
+    `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
+    PRIMARY KEY (id)
+)  COMMENT = '跟进记录自定义属性'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_follow_up_id_field_id_field_value ON follow_up_field(follow_up_id, field_id, field_value);
+
+
+CREATE TABLE follow_up_field_blob(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `follow_up_id` VARCHAR(32) NOT NULL   COMMENT '跟进记录id' ,
+    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
+    `field_value` BLOB(255) NOT NULL   COMMENT '自定义属性值' ,
+    PRIMARY KEY (id)
+)  COMMENT = '跟进记录自定义属性大文本'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_follow_up_id_field_id ON follow_up_field_blob(follow_up_id, field_id);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

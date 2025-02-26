@@ -74,6 +74,13 @@ public class PermissionConstants {
 
     /*------ start: OPPORTUNITY_MANAGEMENT ------*/
     public static final String OPPORTUNITY_MANAGEMENT_READ = "OPPORTUNITY_MANAGEMENT:READ";
+    public static final String OPPORTUNITY_MANAGEMENT_ADD = "OPPORTUNITY_MANAGEMENT:ADD";
     /*------ end: OPPORTUNITY_MANAGEMENT ------*/
+
+
+    /*------ start: LEAD_MANAGEMENT ------*/
+    public static final String LEAD_MANAGEMENT_READ = "LEAD_MANAGEMENT:READ";
+    public static final String LEAD_MANAGEMENT_ADD = "LEAD_MANAGEMENT:ADD";
+    /*------ end: LEAD_MANAGEMENT ------*/
 
 }

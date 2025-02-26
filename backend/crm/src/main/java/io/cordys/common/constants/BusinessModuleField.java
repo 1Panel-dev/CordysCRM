@@ -30,8 +30,32 @@ public enum BusinessModuleField {
     /**
      * 负责人
      */
-    CUSTOMER_CONTACT_NAME("customerContactName", "name");
+    CUSTOMER_CONTACT_NAME("customerContactName", "name"),
     /*------ end: CUSTOMER_MANAGEMENT_CONTACT ------*/
+
+
+    /*------ start: FOLLOW_UP_RECORD ------*/
+    /**
+     * 客户id
+     */
+    FOLLOW_RECORD_CUSTOMER("followRecordCustomerId", "customerId"),
+    /**
+     * 商机id
+     */
+    FOLLOW_RECORD_OPPORTUNITY("followRecordOpportunityId", "opportunityId"),
+    /**
+     * 线索id
+     */
+    FOLLOW_RECORD_LEAD("followRecordLeadId", "leadId"),
+    /**
+     * 责任人id
+     */
+    FOLLOW_RECORD_OWNER("followRecordOwner", "owner"),
+    /**
+     * 联系人id
+     */
+    FOLLOW_RECORD_CONTACTID("followRecordContactId", "contactId");
+    /*------ end: FOLLOW_UP_RECOED ------*/
 
     private final String key;
     private final String businessKey;
