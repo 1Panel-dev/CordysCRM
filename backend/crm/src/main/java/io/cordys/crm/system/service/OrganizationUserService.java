@@ -362,8 +362,8 @@ public class OrganizationUserService {
      * @param userId
      */
     private void updateUserBaseData(UserUpdateRequest request, String operatorId, String userId) {
-        User user = userMapper.selectByPrimaryKey(userId);
-        User updateUser = BeanUtils.copyBean(user, request);
+        User updateUser = BeanUtils.copyBean(new User(), request);
+        updateUser.setId(userId);
         updateUser.setUpdateTime(System.currentTimeMillis());
         updateUser.setUpdateUser(operatorId);
         userMapper.updateById(updateUser);
