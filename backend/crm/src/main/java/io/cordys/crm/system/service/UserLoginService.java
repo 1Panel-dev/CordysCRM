@@ -1,6 +1,5 @@
 package io.cordys.crm.system.service;
 
-import io.cordys.common.constants.UserSource;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.request.LoginRequest;
 import io.cordys.common.uid.IDGenerator;
@@ -66,12 +65,8 @@ public class UserLoginService {
     }
 
     public SessionUser login(LoginRequest request) {
-        String login = (String) SecurityUtils.getSubject().getSession().getAttribute("authenticate");
         String username = StringUtils.trim(request.getUsername());
-        String password = StringUtils.EMPTY;
-        if (!StringUtils.equals(login, UserSource.LDAP.name())) {
-            password = StringUtils.trim(request.getPassword());
-        }
+        String password = StringUtils.trim(request.getPassword());
         UsernamePasswordToken token = new UsernamePasswordToken(username, password);
         Subject subject = SecurityUtils.getSubject();
         try {

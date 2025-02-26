@@ -22,7 +22,7 @@ public class PageUtils {
      * @return 包含分页信息的自定义分页对象 {@link Pager}
      * @throws RuntimeException 如果设置分页信息时发生错误，抛出运行时异常
      */
-    public static <T> Pager<T> setPageInfo(Page page, T list) {
+    public static <T> Pager<T> setPageInfo(Page<?> page, T list) {
         try {
             Pager<T> pager = new Pager<>();
             pager.setList(list);
