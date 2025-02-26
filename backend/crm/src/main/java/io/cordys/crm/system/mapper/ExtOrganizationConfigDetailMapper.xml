@@ -28,7 +28,10 @@
         <if test="name != null">
             and name like concat('%', #{name},'%')
         </if>
-        and type = #{type}
+        and type in
+        <foreach collection="types" item="type" open="(" close=")" separator=",">
+            #{type}
+        </foreach>
     </select>
 
     <select id="getRepeatDetails" parameterType="io.cordys.crm.system.domain.OrganizationConfigDetail" resultType="java.lang.Integer">

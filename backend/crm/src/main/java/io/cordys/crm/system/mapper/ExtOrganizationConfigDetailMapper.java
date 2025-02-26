@@ -14,7 +14,7 @@ public interface ExtOrganizationConfigDetailMapper {
 
     int getOrganizationConfigDetailCount(@Param("configId") String configId, @Param("name") String name, @Param("type") String type);
 
-    List<OrganizationConfigDetail> getOrgConfigDetailByType(@Param("configId") String configId, @Param("name") String name, @Param("type") String type);
+    List<OrganizationConfigDetail> getOrgConfigDetailByType(@Param("configId") String configId, @Param("name") String name, @Param("types") List<String> types);
 
     int getRepeatDetails(@Param("id") String id, @Param("name") String name);
 

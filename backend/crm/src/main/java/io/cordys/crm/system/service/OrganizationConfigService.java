@@ -172,7 +172,7 @@ public class OrganizationConfigService {
      * @param syncResource
      */
     public void updateSyncFlag(String orgId, String syncResource) {
-        extOrganizationConfigMapper.updateSyncFlag(orgId, syncResource, OrganizationConfigConstants.ConfigType.SYNCHRONIZATION.name());
+        extOrganizationConfigMapper.updateSyncFlag(orgId, syncResource, OrganizationConfigConstants.ConfigType.THIRD.name());
     }
 }
 
