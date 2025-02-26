@@ -7,6 +7,7 @@ import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.dto.request.ModuleFieldRequest;
 import io.cordys.crm.system.dto.request.ModuleSourceDataRequest;
 import io.cordys.crm.system.service.ModuleFieldService;
@@ -32,21 +33,21 @@ public class ModuleFieldController {
 	@PostMapping("/dept/tree")
 	@Operation(summary = "获取部门树")
 	public List<DeptUserTreeNode> getDeptTree(@Valid @RequestBody ModuleFieldRequest request) {
-		moduleFieldService.checkFormField(request.getFormKey(), request.getFieldId(), OrganizationContext.getOrganizationId());
+		moduleFieldService.isMatchType(request.getFieldId(), FieldType.DEPARTMENT.name());
 		return moduleFieldService.getDeptTree(OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/user/dept/tree")
 	@Operation(summary = "获取部门用户树")
 	public List<DeptUserTreeNode> getDeptUserTree(@Valid @RequestBody ModuleFieldRequest request) {
-		moduleFieldService.checkFormField(request.getFormKey(), request.getFieldId(), OrganizationContext.getOrganizationId());
+		moduleFieldService.isMatchType(request.getFieldId(), FieldType.MEMBER.name());
 		return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/source/data")
 	@Operation(summary = "分页获取数据源数据")
-	public Pager<List<? extends BaseModel>> getSourceData(@Valid @RequestBody ModuleSourceDataRequest request) {
-		moduleFieldService.checkFormField(request.getFormKey(), request.getFieldId(), OrganizationContext.getOrganizationId());
+	public Pager<List<? extends BaseModel>> sourceDataPage(@Valid @RequestBody ModuleSourceDataRequest request) {
+		moduleFieldService.isMatchType(request.getFieldId(), FieldType.DATA_SOURCE.name());
 		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
 		return PageUtils.setPageInfo(page, moduleFieldService.getSourceData(request, OrganizationContext.getOrganizationId()));
 	}

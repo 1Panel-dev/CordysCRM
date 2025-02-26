@@ -1,12 +1,11 @@
 package io.cordys.crm.system.service;
 
+import com.alibaba.excel.util.StringUtils;
 import io.cordys.common.domain.BaseModel;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.ModuleField;
-import io.cordys.crm.system.domain.ModuleForm;
-import io.cordys.crm.system.dto.request.ModuleFieldRequest;
 import io.cordys.crm.system.dto.request.ModuleSourceDataRequest;
 import io.cordys.crm.system.mapper.ExtDepartmentMapper;
 import io.cordys.mybatis.BaseMapper;
@@ -19,8 +18,6 @@ import java.util.List;
 @Service
 public class ModuleFieldService {
 
-	@Resource
-	private BaseMapper<ModuleForm> moduleFormMapper;
 	@Resource
 	private BaseMapper<ModuleField> moduleFieldMapper;
 	@Resource
@@ -42,26 +39,19 @@ public class ModuleFieldService {
 	}
 
 	/**
-	 * 表单字段是否存在
-	 * @param formKey 表单Key
+	 * 表单字段类型是否匹配
 	 * @param fieldId 字段ID
-	 * @param orgId 组织ID
 	 */
-	public void checkFormField(String formKey, String fieldId, String orgId) {
-		LambdaQueryWrapper<ModuleForm> formWrapper = new LambdaQueryWrapper<>();
-		formWrapper.eq(ModuleForm::getFormKey, formKey)
-				.eq(ModuleForm::getOrganizationId, orgId);
-		List<ModuleForm> forms = moduleFormMapper.selectListByLambda(formWrapper);
-		if (forms.isEmpty()) {
-			throw new ArithmeticException(Translator.get("module.field.not_exist"));
-		}
-		ModuleForm form = forms.getFirst();
+	public void isMatchType(String fieldId, String type) {
 		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
-		fieldWrapper.eq(ModuleField::getFormId, form.getId())
-				.eq(ModuleField::getId, fieldId);
+		fieldWrapper.eq(ModuleField::getId, fieldId);
 		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
 		if (fields.isEmpty()) {
 			throw new ArithmeticException(Translator.get("module.field.not_exist"));
+		}
+		ModuleField field = fields.getFirst();
+		if (!StringUtils.equals(type, field.getType())) {
+			throw new ArithmeticException(Translator.get("module.field.not_match_type"));
 		}
 	}
 }

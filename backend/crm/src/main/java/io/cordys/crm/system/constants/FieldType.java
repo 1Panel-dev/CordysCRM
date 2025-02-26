@@ -34,27 +34,19 @@ public enum FieldType {
 	 */
 	SELECT,
 	/**
-	 * 多选下拉
-	 */
-	MULTI_SELECT,
-	/**
-	 * 单选成员
+	 * 成员
 	 */
 	MEMBER,
 	/**
-	 * 多选成员
-	 */
-	MULTI_MEMBER,
-	/**
-	 * 单选部门
+	 * 部门
 	 */
 	DEPARTMENT,
 	/**
-	 * 多选部门
-	 */
-	MULTI_DEPARTMENT,
-	/**
 	 * 分割线
 	 */
-	DIVIDER
+	DIVIDER,
+	/**
+	 * 数据源
+	 */
+	DATA_SOURCE
 }
