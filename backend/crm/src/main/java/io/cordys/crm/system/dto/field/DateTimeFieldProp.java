@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@JsonTypeName(value = "TEXTAREA")
+@JsonTypeName(value = "DATE_TIME")
 @EqualsAndHashCode(callSuper = true)
 public class DateTimeFieldProp extends BaseFieldProp {
 

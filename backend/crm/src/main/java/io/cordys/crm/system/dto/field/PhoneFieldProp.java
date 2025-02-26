@@ -6,9 +6,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@JsonTypeName(value = "TAG")
+@JsonTypeName(value = "PHONE")
 @EqualsAndHashCode(callSuper = true)
-public class TagFieldProp extends BaseFieldProp {
+public class PhoneFieldProp extends BaseFieldProp {
 
 
 }

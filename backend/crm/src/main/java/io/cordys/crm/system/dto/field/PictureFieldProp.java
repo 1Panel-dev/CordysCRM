@@ -6,9 +6,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@JsonTypeName(value = "LOCATION")
+@JsonTypeName(value = "PICTURE")
 @EqualsAndHashCode(callSuper = true)
-public class LocationFieldProp extends BaseFieldProp {
+public class PictureFieldProp extends BaseFieldProp {
 
 
 }

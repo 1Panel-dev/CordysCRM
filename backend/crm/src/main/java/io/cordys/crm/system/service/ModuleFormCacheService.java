@@ -19,7 +19,7 @@ public class ModuleFormCacheService {
 	 * @param currentUserId 当前用户ID
 	 * @return 表单配置
 	 */
-	@CachePut(value = "formCache", key = "#saveParam.formKey", unless = "#result == null")
+	@CachePut(value = "formCache", key = "#currentOrgId + ':' + #saveParam.formKey", unless = "#result == null")
 	public ModuleFormConfigDTO save(ModuleFormSaveRequest saveParam, String currentUserId, String currentOrgId) {
 		return moduleFormService.save(saveParam, currentUserId, currentOrgId);
 	}
@@ -30,7 +30,7 @@ public class ModuleFormCacheService {
 	 * @param currentOrgId 当前组织ID
 	 * @return 表单配置
 	 */
-	@Cacheable(value = "formCache", key = "#formKey", unless = "#result == null")
+	@Cacheable(value = "formCache", key = "#currentOrgId + ':' + #formKey", unless = "#result == null")
 	public ModuleFormConfigDTO getConfig(String formKey, String currentOrgId) {
 		return moduleFormService.getConfig(formKey, currentOrgId);
 	}

@@ -6,9 +6,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@JsonTypeName(value = "LOCATION")
+@JsonTypeName(value = "DATA_SOURCE")
 @EqualsAndHashCode(callSuper = true)
-public class LocationFieldProp extends BaseFieldProp {
+public class DatasourceFieldProp extends BaseFieldProp {
 
 
 }
