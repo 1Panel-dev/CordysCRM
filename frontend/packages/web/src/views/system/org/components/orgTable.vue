@@ -131,6 +131,7 @@
 
   const props = defineProps<{
     activeNode: string | number;
+    offspringIds: string[];
   }>();
 
   const emit = defineEmits<{
@@ -803,7 +804,7 @@
   const keyword = ref('');
 
   function initOrgList() {
-    setLoadListParams({ keyword: keyword.value, departmentId: props.activeNode });
+    setLoadListParams({ keyword: keyword.value, departmentIds: [props.activeNode, ...props.offspringIds] });
     loadList();
   }
 

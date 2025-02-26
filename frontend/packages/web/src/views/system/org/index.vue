@@ -7,7 +7,7 @@
         </div>
       </template>
       <template #2>
-        <OrgTable :active-node="activeNodeId" @add-success="addSuccess" />
+        <OrgTable :active-node="activeNodeId" :offspring-ids="offspringIds" @add-success="addSuccess" />
       </template>
     </CrmSplitPanel>
   </CrmCard>
@@ -20,9 +20,11 @@
   import OrgTable from '@/views/system/org/components/orgTable.vue';
 
   const activeNodeId = ref<string | number>('');
+  const offspringIds = ref<string[]>([]);
 
-  function selectNode(_selectedKey: string | number) {
-    activeNodeId.value = _selectedKey;
+  function selectNode(_selectedKeys: Array<string | number>, _offspringIds: string[]) {
+    [activeNodeId.value] = _selectedKeys;
+    offspringIds.value = _offspringIds;
   }
 
   const orgModuleTreeRef = ref<InstanceType<typeof OrgModuleTree>>();

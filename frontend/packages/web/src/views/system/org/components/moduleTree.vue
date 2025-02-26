@@ -41,6 +41,7 @@
     }"
     :rename-api="renameHandler"
     @drop="handleDrag"
+    @select="handleNodeSelect"
     @more-action-select="handleFolderMoreSelect"
   />
   <SetDepHeadModal v-model:show="showSetHeadModal" :department-id="departmentId" @close="closeSetCommanderId" />
@@ -65,7 +66,7 @@
   } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
-  import { characterLimit, getNextAvailableName } from '@/utils';
+  import { characterLimit, getNextAvailableName, mapTree } from '@/utils';
 
   const { openModal } = useModal();
 
@@ -74,7 +75,7 @@
   const { t } = useI18n();
 
   const emit = defineEmits<{
-    (e: 'selectNode', nodeId: string | number): void;
+    (e: 'selectNode', _selectedKeys: Array<string | number>, offspringIds: string[]): void;
   }>();
 
   const orgModuleTree = ref<CrmTreeNodeData[]>([]);
@@ -86,8 +87,6 @@
   const keyword = ref<string>('');
 
   const expandAll = ref<boolean>(true);
-
-  const activeNodeId = computed(() => selectedKeys.value[0]);
 
   function renderPrefixDom(infoProps: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     const { option } = infoProps;
@@ -119,6 +118,24 @@
     },
   ]);
 
+  function getSpringIds(children: CrmTreeNodeData[] | undefined): string[] {
+    const offspringIds: string[] = [];
+    mapTree(children || [], (e) => {
+      offspringIds.push(e.id);
+      return e;
+    });
+    return offspringIds;
+  }
+
+  function handleNodeSelect(
+    _selectedKeys: Array<string | number>,
+    option: Array<CrmTreeNodeData | null> | CrmTreeNodeData,
+    _meta: { node: CrmTreeNodeData | null; action: 'select' | 'unselect' }
+  ) {
+    const offspringIds = getSpringIds((option as CrmTreeNodeData).children);
+    emit('selectNode', _selectedKeys, offspringIds);
+  }
+
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
     return node.parentId === 'NONE' ? items.filter((e) => e.key !== 'delete' && !e.type) : items;
   }
@@ -130,6 +147,9 @@
 
       if (isInit) {
         selectedKeys.value = orgModuleTree.value[0] ? [orgModuleTree.value[0].id] : [];
+        const offspringIds = getSpringIds(orgModuleTree.value);
+
+        emit('selectNode', selectedKeys.value, offspringIds);
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -308,13 +328,6 @@
         break;
     }
   }
-
-  watch(
-    () => activeNodeId.value,
-    (val) => {
-      emit('selectNode', val);
-    }
-  );
 
   onBeforeMount(() => {
     initTree(true);
