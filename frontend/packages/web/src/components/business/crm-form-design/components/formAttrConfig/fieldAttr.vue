@@ -83,7 +83,14 @@
       </div>
       <!-- 数据源属性 End -->
       <!-- 选项属性 -->
-      <div class="crm-form-design-config-item">
+      <div
+        v-if="
+          [FieldTypeEnum.SELECT, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE].includes(
+            fieldConfig.type
+          )
+        "
+        class="crm-form-design-config-item"
+      >
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.selectType') }}
         </div>
@@ -123,7 +130,7 @@
           scrollable
         >
           <template #trigger>
-            <div class="crm-form-design-divider-wrapper crm-form-design-divider-wrapper--active">
+            <div class="crm-form-design-divider-wrapper">
               <Divider
                 :field-config="{
                   ...fieldConfig,
@@ -148,6 +155,34 @@
             />
           </div>
         </n-popover>
+        <div class="flex items-center justify-end gap-[8px]">
+          <div class="flex-1 text-left">{{ t('crmFormDesign.dividerColor') }}</div>
+          <n-popover trigger="click" placement="bottom" class="!p-0" :show-arrow="false">
+            <template #trigger>
+              <div class="crm-form-design-color-select-wrapper">
+                <div class="crm-form-design-color-select" :style="{ backgroundColor: fieldConfig.dividerColor }"></div>
+              </div>
+            </template>
+            <CrmColorSelect v-model:pure-color="fieldConfig.dividerColor" />
+          </n-popover>
+          <n-button class="px-[9px]" @click="() => (fieldConfig.dividerColor = '#edf0f1')">
+            <CrmIcon type="iconicon_refresh" />
+          </n-button>
+        </div>
+        <div class="flex items-center justify-end gap-[8px]">
+          <div class="flex-1 text-left">{{ t('crmFormDesign.titleColor') }}</div>
+          <n-popover trigger="click" placement="bottom" class="!p-0" :show-arrow="false">
+            <template #trigger>
+              <div class="crm-form-design-color-select-wrapper">
+                <div class="crm-form-design-color-select" :style="{ backgroundColor: fieldConfig.titleColor }"></div>
+              </div>
+            </template>
+            <CrmColorSelect v-model:pure-color="fieldConfig.titleColor" />
+          </n-popover>
+          <n-button class="px-[9px]" @click="() => (fieldConfig.titleColor = '#323535')">
+            <CrmIcon type="iconicon_refresh" />
+          </n-button>
+        </div>
       </div>
       <!-- 分割线属性 End -->
       <!-- 单选/复选框排列属性 -->
@@ -367,7 +402,6 @@
       </div>
       <div v-if="showRules.length > 0" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.validator') }}</div>
-
         <n-checkbox-group v-model:value="checkedRules">
           <n-space item-class="w-full">
             <n-checkbox v-for="rule of showRules" :key="rule.key" :value="rule.key">
@@ -380,11 +414,9 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldPermission') }}
         </div>
-
         <n-checkbox v-model:checked="fieldConfig.readable">
           {{ t('crmFormDesign.readable') }}
         </n-checkbox>
-
         <n-checkbox v-if="![FieldTypeEnum.DIVIDER].includes(fieldConfig.type)" v-model:checked="fieldConfig.editable">
           {{ t('crmFormDesign.editable') }}
         </n-checkbox>
@@ -393,7 +425,6 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldWidth') }}
         </div>
-
         <n-radio-group v-model:value="fieldConfig.fieldWidth" name="radiogroup" class="flex">
           <n-radio-button :value="1 / 4" class="!px-[8px]"> 1/4 </n-radio-button>
           <n-radio-button :value="1 / 3" class="!px-[8px]"> 1/3 </n-radio-button>
@@ -414,6 +445,7 @@
 
 <script setup lang="ts">
   import {
+    NButton,
     NCheckbox,
     NCheckboxGroup,
     NDatePicker,
@@ -428,6 +460,7 @@
     NTooltip,
   } from 'naive-ui';
 
+  import CrmColorSelect from '@/components/pure/crm-color-select/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
@@ -605,6 +638,18 @@
           }
         }
       }
+    }
+  }
+  .crm-form-design-color-select-wrapper {
+    @apply cursor-pointer;
+
+    padding: 4px;
+    width: 130px;
+    height: 32px;
+    border: 1px solid var(--text-n7);
+    border-radius: var(--border-radius-small);
+    .crm-form-design-color-select {
+      @apply h-full w-full;
     }
   }
 </style>

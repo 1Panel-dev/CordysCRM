@@ -1,6 +1,12 @@
 <template>
   <div>
-    <div v-if="props.fieldConfig.showLabel" class="mb-[8px]" :class="fieldConfig.titleColor">
+    <div
+      v-if="props.fieldConfig.showLabel"
+      class="mb-[8px]"
+      :style="{
+        color: fieldConfig.titleColor,
+      }"
+    >
       {{ props.fieldConfig.name }}
     </div>
     <n-divider
@@ -22,6 +28,11 @@
   const props = defineProps<{
     fieldConfig: FormCreateField;
   }>();
+
+  // v-bind内必须全小写
+  const dividercolor = computed(() => {
+    return props.fieldConfig.dividerColor || 'var(--text-n4)';
+  });
 </script>
 
 <style lang="less" scoped>
@@ -32,5 +43,8 @@
     :deep(.n-divider__line) {
       height: 2px;
     }
+  }
+  :deep(.n-divider__line) {
+    background-color: v-bind(dividercolor) !important;
   }
 </style>

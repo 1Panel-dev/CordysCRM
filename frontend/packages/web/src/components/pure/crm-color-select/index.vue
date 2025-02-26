@@ -3,35 +3,12 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch } from 'vue';
-
   import 'vue3-colorpicker/style.css';
   import { ColorPicker } from 'vue3-colorpicker';
 
-  const props = defineProps<{
-    pureColor: string;
-  }>();
-
-  const emit = defineEmits(['update:pureColor']);
-
-  const innerPureColor = ref(props.pureColor || '#CF00FF');
-
-  watch(
-    () => props.pureColor,
-    (val) => {
-      innerPureColor.value = val;
-    },
-    {
-      immediate: true,
-    }
-  );
-
-  watch(
-    () => innerPureColor.value,
-    (val) => {
-      emit('update:pureColor', val);
-    }
-  );
+  const innerPureColor = defineModel<string>('pureColor', {
+    default: '#CF00FF',
+  });
 </script>
 
 <style lang="less">
