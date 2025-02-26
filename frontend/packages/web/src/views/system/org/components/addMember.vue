@@ -188,6 +188,8 @@
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import type { MemberParams } from '@lib/shared/models/system/org';
+
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import CrmCitySelect from '@/components/business/crm-city-select/index.vue';
@@ -204,8 +206,6 @@
   } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import { validateEmail, validatePhone } from '@/utils/validate';
-
-  import type { MemberParams } from '@lib/shared/models/system/org';
 
   const Message = useMessage();
   const { t } = useI18n();

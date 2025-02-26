@@ -44,11 +44,12 @@
   import { ref } from 'vue';
   import { NButton, NPopover, NScrollbar, NSwitch } from 'naive-ui';
 
+  import { isArraysEqualWithOrder } from '@lib/shared/method/equal';
+
   import { useI18n } from '@/hooks/useI18n';
   import useLocalForage from '@/hooks/useLocalForage';
 
   import type { ContentTabsMap, TabContentItem } from './type';
-  import { isArraysEqualWithOrder } from '@lib/shared/method/equal';
 
   const { t } = useI18n();
 

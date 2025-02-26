@@ -36,6 +36,9 @@
   import { NSwitch, useMessage } from 'naive-ui';
   import { VueDraggable } from 'vue-draggable-plus';
 
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import type { ModuleNavItem } from '@lib/shared/models/system/module';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import ConfigCard from './components/configCard.vue';
@@ -43,9 +46,6 @@
   import { moduleNavListSort } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
   import useAppStore from '@/store/modules/app';
-
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
-  import type { ModuleNavItem } from '@lib/shared/models/system/module';
 
   const { t } = useI18n();
   const appStore = useAppStore();

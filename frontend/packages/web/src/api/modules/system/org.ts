@@ -1,7 +1,3 @@
-import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
-
-import CDR from '@/api/http/index';
-
 import {
   addDepartmentUrl,
   addUserUrl,
@@ -36,6 +32,10 @@ import type {
   UserTableQueryParams,
   ValidateInfo,
 } from '@lib/shared/models/system/org';
+
+import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
+
+import CDR from '@/api/http/index';
 
 // 组织架构-部门树查询
 export function getDepartmentTree() {

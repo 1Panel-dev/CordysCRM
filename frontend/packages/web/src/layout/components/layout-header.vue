@@ -44,12 +44,12 @@
 <script setup lang="ts">
   import { NButton, NLayoutHeader, NPopselect, NTooltip } from 'naive-ui';
 
+  import { LocaleType } from '@lib/shared/types/global';
+
   import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
 
   import { LOCALE_OPTIONS } from '@/locale/index';
   import useLocale from '@/locale/useLocale';
-
-  import { LocaleType } from '@lib/shared/types/global';
 
   const props = defineProps<{
     logo?: string;

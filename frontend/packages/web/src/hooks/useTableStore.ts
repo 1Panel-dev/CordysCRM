@@ -1,12 +1,13 @@
 import { cloneDeep } from 'lodash-es';
 
+import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
+import { isArraysEqualWithOrder } from '@lib/shared/method/equal';
+
 import type { CrmDataTableColumn, TableStorageConfigItem } from '@/components/pure/crm-table/type';
 
 import useAppStore from '@/store/modules/app';
 
 import useLocalForage from './useLocalForage';
-import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
-import { isArraysEqualWithOrder } from '@lib/shared/method/equal';
 
 export default function useTableStore() {
   const { getItem, setItem } = useLocalForage();

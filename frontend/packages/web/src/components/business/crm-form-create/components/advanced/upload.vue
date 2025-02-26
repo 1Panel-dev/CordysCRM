@@ -33,8 +33,9 @@
 <script setup lang="ts">
   import { NFormItem, NUpload, NUploadDragger, UploadFileInfo, UploadSettledFileInfo, useMessage } from 'naive-ui';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
 
   import { useI18n } from '@/hooks/useI18n';
 

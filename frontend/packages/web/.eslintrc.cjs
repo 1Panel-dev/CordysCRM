@@ -108,6 +108,7 @@ module.exports = {
             '^vue-draggable-plus$',
           ], // node依赖
           ['.*/assets/.*', '^@/assets$'], // 项目静态资源
+          ['^@lib/shared/.*'], // 共享库
           ['^@/components/pure/.*', '^@/components/business/.*', '.*\\.vue$'], // 组件
           [
             '^@/api($|/.*)',

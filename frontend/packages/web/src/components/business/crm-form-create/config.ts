@@ -1,4 +1,5 @@
-import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from './enum';
+import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+
 import type { FormCreateField, FormCreateFieldRule } from './types';
 
 export const inputDefaultFieldConfig: FormCreateField = {

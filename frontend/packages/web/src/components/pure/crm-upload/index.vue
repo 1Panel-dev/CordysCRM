@@ -69,13 +69,14 @@
 <script setup lang="ts">
   import { NTooltip, NUpload, NUploadDragger, UploadFileInfo, useMessage } from 'naive-ui';
 
+  import { UploadAcceptEnum, UploadStatus } from '@lib/shared/enums/uploadEnum';
+
   import { FileIconMap, getFileEnum, getFileIcon } from '@/components/pure/crm-upload/iconMap';
 
   import { useI18n } from '@/hooks/useI18n';
   import { formatFileSize } from '@/utils';
 
   import type { CrmFileItem, UploadType } from './types';
-  import { UploadAcceptEnum, UploadStatus } from '@lib/shared/enums/uploadEnum';
 
   const Message = useMessage();
 

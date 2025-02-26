@@ -61,6 +61,8 @@
   import { NButton, NIcon, NTooltip, TabPaneProps, useMessage } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
 
+  import type { RoleItem } from '@lib/shared/models/system/role';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -76,8 +78,6 @@
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { getGenerateId } from '@/utils';
-
-  import type { RoleItem } from '@lib/shared/models/system/role';
 
   const { t } = useI18n();
   const { openModal } = useModal();

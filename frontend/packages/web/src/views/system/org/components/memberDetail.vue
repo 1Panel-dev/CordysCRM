@@ -29,14 +29,14 @@
   import { NButton } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import type { MemberParams } from '@lib/shared/models/system/org';
+
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
   import { getUserDetail } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
-
-  import type { MemberParams } from '@lib/shared/models/system/org';
 
   const { t } = useI18n();
 

@@ -38,6 +38,9 @@
   import { NButton, NSwitch, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import type { OpportunityItem } from '@lib/shared/models/system/module';
+
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -51,9 +54,6 @@
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
-
-  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import type { OpportunityItem } from '@lib/shared/models/system/module';
 
   const { openModal } = useModal();
   const Message = useMessage();

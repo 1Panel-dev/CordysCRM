@@ -111,15 +111,16 @@
   import { Add } from '@vicons/ionicons5';
   import { cloneDeep } from 'lodash-es';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { scrollIntoView } from '@lib/shared/method/dom';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
+
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 
   import { FormItemModel } from './types';
-  import { scrollIntoView } from '@lib/shared/method/dom';
-  import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   const { t } = useI18n();
 

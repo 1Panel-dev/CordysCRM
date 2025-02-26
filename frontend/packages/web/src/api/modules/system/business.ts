@@ -1,5 +1,3 @@
-import CDR from '@/api/http/index';
-
 import {
   CreateAuthUrl,
   DeleteAuthUrl,
@@ -24,6 +22,8 @@ import type {
   ConfigEmailParams,
   ConfigSynchronization,
 } from '@lib/shared/models/system/business';
+
+import CDR from '@/api/http/index';
 
 // 获取邮件设置
 export function getConfigEmail() {

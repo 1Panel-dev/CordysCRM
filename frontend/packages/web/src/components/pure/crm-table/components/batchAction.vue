@@ -51,13 +51,14 @@
   import { ref } from 'vue';
   import { NButton } from 'naive-ui';
 
+  import { getNodeWidth } from '@lib/shared/method/dom';
+
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
 
   import { useI18n } from '@/hooks/useI18n';
 
   import { BatchActionConfig } from '../type';
-  import { getNodeWidth } from '@lib/shared/method/dom';
 
   const { t } = useI18n();
 

@@ -460,12 +460,13 @@
     NTooltip,
   } from 'naive-ui';
 
+  import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+
   import CrmColorSelect from '@/components/pure/crm-color-select/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import { rules } from '@/components/business/crm-form-create/config';
-  import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import optionConfig from './optionConfig.vue';

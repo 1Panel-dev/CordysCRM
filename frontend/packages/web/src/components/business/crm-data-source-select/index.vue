@@ -32,13 +32,14 @@
 <script setup lang="ts">
   import { DataTableRowKey, NSelect, SelectOption } from 'naive-ui';
 
+  import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
+
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import dataSourceTable from './dataSourceTable.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 
-  import { FieldDataSourceTypeEnum } from '../crm-form-create/enum';
   import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 
   const { t } = useI18n();

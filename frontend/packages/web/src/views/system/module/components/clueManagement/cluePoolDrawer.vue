@@ -35,6 +35,10 @@
   import { ref } from 'vue';
   import { NButton, NSwitch, SelectOption, useMessage } from 'naive-ui';
 
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import type { LeadPoolItem } from '@lib/shared/models/system/module';
+
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -46,10 +50,6 @@
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
-
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
-  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import type { LeadPoolItem } from '@lib/shared/models/system/module';
 
   const { openModal } = useModal();
   const Message = useMessage();

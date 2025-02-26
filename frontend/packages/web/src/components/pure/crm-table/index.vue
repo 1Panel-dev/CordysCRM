@@ -45,6 +45,9 @@
   import { NDataTable } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import type { SortParams } from '@lib/shared/models/common';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmPagination from '@/components/pure/crm-pagination/index.vue';
@@ -57,8 +60,6 @@
   import useTableStore from '@/hooks/useTableStore';
 
   import { BatchActionConfig } from './type';
-  import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import type { SortParams } from '@lib/shared/models/common';
   import type { DataTableFilterState, DataTableRowKey, DataTableSortState } from 'naive-ui';
   import type { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 

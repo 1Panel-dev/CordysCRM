@@ -1,6 +1,7 @@
 import { UploadFileInfo } from 'naive-ui';
 
 import type { ModuleNavBaseInfoItem } from '@lib/shared/models/system/module';
+
 import type { GlobalThemeOverrides } from 'naive-ui';
 
 // 平台风格

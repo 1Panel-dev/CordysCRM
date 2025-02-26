@@ -1,5 +1,3 @@
-import CDR from '@/api/http/index';
-
 import {
   AddCustomerPoolUrl,
   AddLeadPoolUrl,
@@ -41,6 +39,8 @@ import type {
   OpportunityParams,
 } from '@lib/shared/models/system/module';
 import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
+
+import CDR from '@/api/http/index';
 
 // 模块首页-导航模块列表
 export function getModuleNavConfigList(data: { organizationId: string }) {

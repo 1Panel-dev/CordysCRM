@@ -29,14 +29,14 @@
 <script setup lang="ts">
   import { NSelect, SelectOption } from 'naive-ui';
 
+  import { MemberApiTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
+
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmSelectUserDrawer from '@/components/business/crm-select-user-drawer/index.vue';
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
 
   import { useI18n } from '@/hooks/useI18n';
-
-  import { MemberApiTypeEnum } from '@lib/shared/enums/moduleEnum';
-  import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   const { t } = useI18n();
 

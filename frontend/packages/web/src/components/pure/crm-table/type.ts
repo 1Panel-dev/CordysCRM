@@ -1,9 +1,10 @@
 import { VNodeChild } from 'vue';
 
+import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+
 import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 import type { CrmTagGroupProps } from '@/components/pure/crm-tag-group/index.vue';
 
-import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import type {
   DataTableColumn,
   DataTableColumnKey,

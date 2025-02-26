@@ -1,7 +1,8 @@
 import { createI18n } from 'vue-i18n';
 
-import { setLoadLocalePool } from './helper';
 import type { LocaleType } from '@lib/shared/types/global';
+
+import { setLoadLocalePool } from './helper';
 import type { App } from 'vue';
 import type { I18nOptions } from 'vue-i18n';
 

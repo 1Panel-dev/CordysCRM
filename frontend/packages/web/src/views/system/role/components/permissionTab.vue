@@ -67,10 +67,10 @@
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { DeptTreeNode, PermissionTreeNode, RoleDetail, RolePermissionItem } from '@lib/shared/models/system/role';
+
   import { createRole, getPermissions, getRoleDeptTree, getRoleDetail, updateRole } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
-
-  import { DeptTreeNode, PermissionTreeNode, RoleDetail, RolePermissionItem } from '@lib/shared/models/system/role';
 
   const props = defineProps<{
     activeRoleId: string;

@@ -1,3 +1,13 @@
+export enum FormDesignKeyEnum {
+  LEAD = 'lead', // 线索
+  CUSTOMER = 'customer', // 客户
+  CONTACT = 'contact', // 联系人
+  FOLLOW_RECORD = 'record', // 跟进记录
+  FOLLOW_PLAN = 'plan', // 跟进计划
+  BUSINESS = 'business', // 商机
+  PRODUCT = 'product', // 产品
+}
+
 export enum FieldTypeEnum {
   INPUT = 'INPUT',
   TEXTAREA = 'TEXTAREA',

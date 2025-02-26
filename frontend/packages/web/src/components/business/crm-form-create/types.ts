@@ -1,4 +1,5 @@
-import type { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from './enum';
+import type { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+
 import type { FormItemRule } from 'naive-ui';
 import type { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 import type { Option } from 'naive-ui/es/transfer/src/interface';

@@ -29,6 +29,11 @@
 <script setup lang="ts">
   import { NButton, NScrollbar, NSwitch, useMessage } from 'naive-ui';
 
+  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
+  import { RoleMemberItem } from '@lib/shared/models/system/role';
+
   import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
@@ -38,11 +43,6 @@
 
   import { getRoleMember, relateRoleMember, removeRoleMember } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
-
-  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
-  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import { SelectedUsersItem } from '@lib/shared/models/system/module';
-  import { RoleMemberItem } from '@lib/shared/models/system/role';
 
   const props = defineProps<{
     activeRoleId: string;

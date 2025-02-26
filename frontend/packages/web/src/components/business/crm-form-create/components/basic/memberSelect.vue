@@ -17,10 +17,11 @@
 <script setup lang="ts">
   import { NFormItem } from 'naive-ui';
 
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
+
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { FormCreateField } from '../../types';
-  import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   const props = defineProps<{
     fieldConfig: FormCreateField;

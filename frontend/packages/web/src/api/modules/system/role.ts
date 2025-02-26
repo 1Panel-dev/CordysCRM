@@ -1,5 +1,3 @@
-import CDR from '@/api/http/index';
-
 import {
   BatchRemoveRoleMemberUrl,
   CreateRoleUrl,
@@ -29,6 +27,8 @@ import type {
   RoleMemberTableQueryParams,
   RoleUpdateParams,
 } from '@lib/shared/models/system/role';
+
+import CDR from '@/api/http/index';
 
 // 角色关联用户
 export function relateRoleMember(data: RelateRoleMemberParams) {

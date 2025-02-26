@@ -45,12 +45,12 @@
   import { NButton, NPopover, NScrollbar, NSwitch } from 'naive-ui';
   import { VueDraggable } from 'vue-draggable-plus';
 
+  import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 
   import { useI18n } from '@/hooks/useI18n';
   import useTableStore from '@/hooks/useTableStore';
-
-  import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 
   const props = defineProps<{
     tableKey: TableKeyEnum;

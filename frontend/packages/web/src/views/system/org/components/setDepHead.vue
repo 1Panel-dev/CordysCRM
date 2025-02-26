@@ -31,14 +31,14 @@
   import { ref } from 'vue';
   import { FormInst, FormRules, NForm, NFormItem, NTooltip, SelectOption, useMessage } from 'naive-ui';
 
+  import type { SetCommanderParams } from '@lib/shared/models/system/org';
+
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
   import { getUserOptions, setCommander } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
-
-  import type { SetCommanderParams } from '@lib/shared/models/system/org';
 
   const { t } = useI18n();
   const Message = useMessage();

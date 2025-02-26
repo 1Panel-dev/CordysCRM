@@ -156,18 +156,18 @@
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import type { LeadPoolForm, LeadPoolItem, LeadPoolParams } from '@lib/shared/models/system/module';
+
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
-  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { addCustomerPool, addLeadPool, updateCustomerPool, updateLeadPool } from '@/api/modules/system/module';
   import { EQUAL, GE, GT, LE, LT } from '@/config/operator';
   import { useI18n } from '@/hooks/useI18n';
-
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
-  import type { LeadPoolForm, LeadPoolItem, LeadPoolParams } from '@lib/shared/models/system/module';
 
   const { t } = useI18n();
   const Message = useMessage();

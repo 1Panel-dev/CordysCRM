@@ -69,6 +69,9 @@
   import { NButton, NSwitch, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import type { AuthForm, AuthItem } from '@lib/shared/models/system/business';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -92,9 +95,6 @@
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { desensitize } from '@/utils';
-
-  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import type { AuthForm, AuthItem } from '@lib/shared/models/system/business';
 
   const { t } = useI18n();
   const { openModal } = useModal();

@@ -37,6 +37,11 @@
 <script setup lang="ts">
   import { NTabPane, NTabs, NTransfer, NTree, TransferRenderSourceList } from 'naive-ui';
 
+  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
+  import { DeptTreeNode, RoleItem } from '@lib/shared/models/system/role';
+
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import { Option } from '@/components/business/crm-select-user-drawer/type';
@@ -46,10 +51,6 @@
   import { mapTree } from '@/utils';
 
   import { getDataFunc } from './utils';
-  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
-  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
-  import { SelectedUsersItem } from '@lib/shared/models/system/module';
-  import { DeptTreeNode, RoleItem } from '@lib/shared/models/system/role';
 
   const { t } = useI18n();
 

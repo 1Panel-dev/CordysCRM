@@ -71,6 +71,9 @@
   import { useI18n } from 'vue-i18n';
   import { NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
+  import type { ConfigSynchronization, IntegrationItem } from '@lib/shared/models/system/business';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import EditIntegrationModal from './editIntegrationModal.vue';
@@ -80,9 +83,6 @@
     testConfigSynchronization,
     updateConfigSynchronization,
   } from '@/api/modules/system/business';
-
-  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
-  import type { ConfigSynchronization, IntegrationItem } from '@lib/shared/models/system/business';
 
   const { t } = useI18n();
   const Message = useMessage();

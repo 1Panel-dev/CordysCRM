@@ -1,4 +1,5 @@
-import type { FieldTypeEnum } from '../crm-form-create/enum';
+import type { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+
 import type { LabelPlacement } from 'naive-ui/es/form/src/interface';
 
 export interface FieldItem {

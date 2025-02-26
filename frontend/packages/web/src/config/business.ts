@@ -255,7 +255,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
       placeholder: 'openid profile email',
     },
   ],
-  WE_COM_OAUTH2:[
+  WE_COM_OAUTH2: [
     {
       label: t('system.business.corpId'),
       key: 'corpId',

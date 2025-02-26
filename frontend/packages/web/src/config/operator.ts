@@ -1,6 +1,6 @@
-import { useI18n } from '@/hooks/useI18n';
-
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
+
+import { useI18n } from '@/hooks/useI18n';
 
 const { t } = useI18n();
 

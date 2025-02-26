@@ -80,6 +80,11 @@
   import { ref, RendererElement } from 'vue';
   import { DataTableRowKey, NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
+  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import type { ConfigSynchronization } from '@lib/shared/models/system/business';
+  import type { MemberItem, ValidateInfo } from '@lib/shared/models/system/org';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -117,11 +122,6 @@
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
   import { characterLimit, getCityPath } from '@/utils';
-
-  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
-  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import type { ConfigSynchronization } from '@lib/shared/models/system/business';
-  import type { MemberItem, ValidateInfo } from '@lib/shared/models/system/org';
 
   const Message = useMessage();
 

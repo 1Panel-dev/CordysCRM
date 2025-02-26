@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia';
 
+import { setLocalStorage } from '@lib/shared/method/local-storage';
+
 import { getKey } from '@/api/modules/system/login';
 import { getModuleNavConfigList } from '@/api/modules/system/module';
 import { useI18n } from '@/hooks/useI18n';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
 import type { AppState, PageConfig, Style, Theme } from './types';
-import { setLocalStorage } from '@lib/shared/method/local-storage';
 
 const defaultThemeConfig = {
   style: 'default' as Style,

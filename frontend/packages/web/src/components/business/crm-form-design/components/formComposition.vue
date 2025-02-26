@@ -79,9 +79,10 @@
   import { cloneDeep } from 'lodash-es';
   import { VueDraggable } from 'vue-draggable-plus';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
-  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
 
   import { useI18n } from '@/hooks/useI18n';

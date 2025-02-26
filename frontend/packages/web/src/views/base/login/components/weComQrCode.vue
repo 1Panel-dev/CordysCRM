@@ -6,12 +6,13 @@
   import { useRouter } from 'vue-router';
   import { useMessage } from 'naive-ui';
 
+  import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
+
   // import { getWeComCallback, getWeComInfo } from '@/api/modules/user';
   import { useI18n } from '@/hooks/useI18n';
   import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
   import useUserStore from '@/store/modules/user';
 
-  import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import * as ww from '@wecom/jssdk';
   import { WWLoginErrorResp, WWLoginPanelSizeType, WWLoginRedirectType, WWLoginType } from '@wecom/jssdk';
 

@@ -107,9 +107,10 @@
   import { NButton, NCheckbox, NCheckboxGroup, NDivider, NInput, NRadio, NRadioGroup, NTooltip } from 'naive-ui';
   import { VueDraggable } from 'vue-draggable-plus';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
-  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
 
   import { useI18n } from '@/hooks/useI18n';

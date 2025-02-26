@@ -75,12 +75,12 @@
   import { ref } from 'vue';
   import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, NSwitch, useMessage } from 'naive-ui';
 
+  import type { ConfigSynchronization } from '@lib/shared/models/system/business';
+
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
   import { testConfigSynchronization, updateConfigSynchronization } from '@/api/modules/system/business';
   import { useI18n } from '@/hooks/useI18n';
-
-  import type { ConfigSynchronization } from '@lib/shared/models/system/business';
 
   const { t } = useI18n();
   const Message = useMessage();

@@ -1,8 +1,8 @@
-import CDR from '@/api/http/index';
-
 import { getKeyUrl, isLoginUrl, loginUrl, signoutUrl } from '@lib/shared/api/requrls/system/login';
 import type { LoginParams } from '@lib/shared/models/system/login';
 import type { UserInfo } from '@lib/shared/models/user';
+
+import CDR from '@/api/http/index';
 
 // 登录
 export function login(data: LoginParams) {

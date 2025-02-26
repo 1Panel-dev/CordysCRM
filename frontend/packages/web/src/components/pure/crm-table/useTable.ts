@@ -2,12 +2,13 @@ import { UnwrapRef } from 'vue';
 import { cloneDeep } from 'lodash-es';
 import dayjs from 'dayjs';
 
+import { OperatorEnum } from '@lib/shared/enums/commonEnum';
+import type { CommonList, FilterConditionItem, SortParams, TableQueryParams } from '@lib/shared/models/common';
+
 import useTableStore from '@/hooks/useTableStore';
 import useAppStore from '@/store/modules/app';
 
 import type { CrmTableDataItem, CrmTableProps } from './type';
-import { OperatorEnum } from '@lib/shared/enums/commonEnum';
-import type { CommonList, FilterConditionItem, SortParams, TableQueryParams } from '@lib/shared/models/common';
 import type { DataTableFilterState, PaginationProps } from 'naive-ui';
 
 const tableStore = useTableStore();

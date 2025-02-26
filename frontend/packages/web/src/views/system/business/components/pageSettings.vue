@@ -190,6 +190,9 @@
 <script setup lang="ts">
   import { FormInst, NButton, NForm, NFormItem, NInput, NLayout, useMessage } from 'naive-ui';
 
+  import { scrollIntoView } from '@lib/shared/method/dom';
+  import { sleep } from '@lib/shared/method/index';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmColorSelect from '@/components/pure/crm-color-select/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
@@ -203,9 +206,6 @@
   import { useI18n } from '@/hooks/useI18n';
   import useAppStore from '@/store/modules/app';
   import { setCustomTheme, setPlatformColor, watchStyle, watchTheme } from '@/utils/theme';
-
-  import { scrollIntoView } from '@lib/shared/method/dom';
-  import { sleep } from '@lib/shared/method/index';
 
   const { t } = useI18n();
   const appStore = useAppStore();

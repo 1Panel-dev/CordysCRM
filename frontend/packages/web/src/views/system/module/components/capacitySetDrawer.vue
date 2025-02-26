@@ -20,16 +20,16 @@
 <script setup lang="ts">
   import { useMessage } from 'naive-ui';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { MemberSelectTypeEnum, ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
+
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
-  import { FieldTypeEnum } from '@/components/business/crm-form-create/enum';
 
   import { getCapacityPage, saveCapacity } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
-
-  import { MemberSelectTypeEnum, ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
-  import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   const Message = useMessage();
 

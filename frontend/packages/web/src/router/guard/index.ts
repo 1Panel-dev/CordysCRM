@@ -1,6 +1,7 @@
-import setupPermissionGuard from './permission';
 import { AxiosCanceler } from '@lib/shared/api/http/axiosCancel';
 import { setRouteEmitter } from '@lib/shared/method/route-listener';
+
+import setupPermissionGuard from './permission';
 import type { Router } from 'vue-router';
 
 function setupPageGuard(router: Router) {

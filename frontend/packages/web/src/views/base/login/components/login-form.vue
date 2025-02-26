@@ -124,6 +124,9 @@
   import { useStorage } from '@vueuse/core';
   import { FormInst, NButton, NDivider, NForm, NFormItem, NInput, NSpin, useMessage } from 'naive-ui';
 
+  import { getLoginType, setLoginExpires, setLoginType } from '@lib/shared/method/auth';
+  import { encrypted } from '@lib/shared/method/index';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import TabQrCode from './tabQrCode.vue';
@@ -139,8 +142,6 @@
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
-  import { getLoginType, setLoginExpires, setLoginType } from '@lib/shared/method/auth';
-  import { encrypted } from '@lib/shared/method/index';
   import { Option } from 'naive-ui/es/legacy-transfer/src/interface';
 
   const router = useRouter();
