@@ -154,6 +154,8 @@ export const dividerDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   dividerClass: 'divider--normal',
+  dividerColor: '#edf0f1',
+  titleColor: '#323535',
 };
 
 export const basicFields: FormCreateField[] = [
