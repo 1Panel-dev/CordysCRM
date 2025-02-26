@@ -31,7 +31,7 @@
     :node-more-actions="nodeMoreOptions"
     :filter-more-action-func="filterMoreActionFunc"
     :render-extra="renderExtraDom"
-    :virtual-scroll-props="{ virtualScroll: false, virtualScrollHeight: 'calc(100vh - 176px)' }"
+    :virtual-scroll-props="{ virtualScroll: true, virtualScrollHeight: 'calc(100vh - 176px)' }"
     :field-names="{
       keyField: 'id',
       labelField: 'name',
@@ -150,6 +150,9 @@
         const offspringIds = getSpringIds(orgModuleTree.value);
 
         emit('selectNode', selectedKeys.value, offspringIds);
+        nextTick(() => {
+          expandedKeys.value = [orgModuleTree.value[0].id];
+        });
       }
     } catch (error) {
       // eslint-disable-next-line no-console

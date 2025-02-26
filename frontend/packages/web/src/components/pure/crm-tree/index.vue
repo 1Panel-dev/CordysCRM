@@ -1,43 +1,41 @@
 <template>
-  <div ref="treeContainerRef" :class="['crm-tree-container', containerStatusClass]">
-    <n-tree
-      ref="crmTreeRef"
-      v-model:checked-keys="checkedKeys"
-      v-model:selected-keys="selectedKeys"
-      v-model:expanded-keys="expandedKeys"
-      v-model:indeterminate-keys="indeterminateKeys"
-      :virtual-scroll="props.virtualScrollProps?.virtualScroll"
-      :style="{
-        height: `${props.virtualScrollProps?.virtualScrollHeight}`,
-      }"
-      :class="`crm-tree h-[${props.virtualScrollProps?.virtualScrollHeight}]`"
-      v-bind="{ ...props, ...props.fieldNames }"
-      :data="filterTreeData"
-      :node-props="nodeProps"
-      :allow-drop="handleAllowDrop"
-      :render-label="renderLabelDom"
-      :render-prefix="renderPrefixDom"
-      :render-suffix="renderSuffixDom"
-      :render-switcher-icon="renderSwitcherIconDom"
-      @update:selected-keys="select"
-      @update:expanded-keys="expanded"
-      @update:checked-keys="checkNode"
-      @drag-start="onDragStart"
-      @drag-end="onDragEnd"
-      @drop="onDrop"
-    >
-      <template #empty>
-        <slot>
-          <div
-            v-show="filterTreeData.length === 0"
-            class="mt-[16px] rounded-[var(--border-radius-small)] p-[8px] text-center text-[12px] leading-[16px] text-[var(--text-n4)]"
-          >
-            {{ props.emptyText || t('common.noData') }}
-          </div>
-        </slot>
-      </template>
-    </n-tree>
-  </div>
+  <n-tree
+    ref="crmTreeRef"
+    v-model:checked-keys="checkedKeys"
+    v-model:selected-keys="selectedKeys"
+    v-model:expanded-keys="expandedKeys"
+    v-model:indeterminate-keys="indeterminateKeys"
+    :virtual-scroll="props.virtualScrollProps?.virtualScroll"
+    :style="{
+      height: `${props.virtualScrollProps?.virtualScrollHeight}`,
+    }"
+    :class="['crm-tree', containerStatusClass]"
+    v-bind="{ ...props, ...props.fieldNames }"
+    :data="filterTreeData"
+    :node-props="nodeProps"
+    :allow-drop="handleAllowDrop"
+    :render-label="renderLabelDom"
+    :render-prefix="renderPrefixDom"
+    :render-suffix="renderSuffixDom"
+    :render-switcher-icon="renderSwitcherIconDom"
+    @update:selected-keys="select"
+    @update:expanded-keys="expanded"
+    @update:checked-keys="checkNode"
+    @drag-start="onDragStart"
+    @drag-end="onDragEnd"
+    @drop="onDrop"
+  >
+    <template #empty>
+      <slot>
+        <div
+          v-show="filterTreeData.length === 0"
+          class="mt-[16px] rounded-[var(--border-radius-small)] p-[8px] text-center text-[12px] leading-[16px] text-[var(--text-n4)]"
+        >
+          {{ props.emptyText || t('common.noData') }}
+        </div>
+      </slot>
+    </template>
+  </n-tree>
 </template>
 
 <script setup lang="ts">
@@ -509,28 +507,11 @@
     filterTreeData.value = data.value;
   });
 
-  const treeContainerRef: Ref = ref(null);
+  // TODO 未生效xxw
   const crmTreeRef = ref<InstanceType<typeof NTree>>();
-  const { isInitListener, containerStatusClass, setContainer, initScrollListener } = useContainerShadow({
-    overHeight: 32,
-    containerClassName: 'crm-tree-container',
-  });
-
-  function init(isFirstInit = false) {
-    if (isFirstInit) {
-      if (!isInitListener.value && crmTreeRef.value) {
-        setContainer(
-          props.virtualScrollProps?.virtualScrollHeight
-            ? (crmTreeRef.value.$el.querySelector('.n-tree') as HTMLElement)
-            : crmTreeRef.value.$el
-        );
-        initScrollListener();
-      }
-    }
-  }
-
-  onMounted(() => {
-    init(true);
+  const { containerStatusClass } = useContainerShadow({
+    overHeight: 34,
+    containerClassName: 'crm-tree',
   });
 
   watch(
@@ -546,15 +527,12 @@
 </script>
 
 <style lang="less">
-  .crm-tree-container {
-    .crm-container--shadow-y();
-    @apply h-full;
-  }
   .crm-tree {
-    .crm-scroll-bar();
-    @apply h-full overflow-auto;
+    .crm-container--shadow-y();
+    .v-vl-visible-items {
+      padding-right: 10px;
+    }
     &.n-tree {
-      @apply h-full w-full overflow-auto;
       .n-tree-node-wrapper {
         .n-tree-node {
           height: 34px !important;
