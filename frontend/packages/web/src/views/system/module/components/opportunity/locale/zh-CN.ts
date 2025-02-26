@@ -15,4 +15,5 @@ export default {
   'opportunity.opportunityStage': '商机阶段',
   'opportunity.updateRuleContentTip': '更新后，更新的关闭规则仅对新产生的数据生效',
   'opportunity.deleteRuleContent': '删除后，成员无法查到该规则，请谨慎操作！',
+  'opportunity.newOpportunity': '新建商机',
 };

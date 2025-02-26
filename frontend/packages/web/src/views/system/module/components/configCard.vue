@@ -16,6 +16,7 @@
   </div>
   <customManagementFormDrawer v-model:visible="customerManagementFormVisible" />
   <OpportunityCloseRulesDrawer v-model:visible="businessManagementBusinessParamsSetVisible" />
+  <OpportunityFormDrawer v-model:visible="businessManagementFormVisible" />
   <CapacitySetDrawer
     v-model:visible="capacitySetVisible"
     :type="selectKey"
@@ -26,7 +27,9 @@
     "
   />
   <CluePoolDrawer v-model:visible="clueManagementCluePoolVisible" />
+  <clueFormDrawer v-model:visible="clueManagementFormVisible" />
   <OpenSeaDrawer v-model:visible="customerManagementOpenSeaVisible" :type="selectKey" />
+  <ProductFromDrawer v-model:visible="productManagementFormVisible" />
 </template>
 
 <script setup lang="ts">
@@ -38,9 +41,12 @@
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CapacitySetDrawer from './capacitySetDrawer.vue';
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
+  import clueFormDrawer from './clueManagement/formDrawer.vue';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
   import OpenSeaDrawer from './customManagement/openSeaDrawer.vue';
+  import OpportunityFormDrawer from './opportunity/formDrawer.vue';
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
+  import ProductFromDrawer from './productManagement/formDrawer.vue';
 
   import { toggleModuleNavStatus } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
@@ -75,12 +81,7 @@
       label: t('module.workbenchHome'),
       key: ModuleConfigEnum.HOME,
       icon: 'iconicon_home',
-      groupList: [
-        {
-          label: t('module.newForm'),
-          key: 'newForm',
-        },
-      ],
+      groupList: [],
       enable: true,
     },
     {

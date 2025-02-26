@@ -17,4 +17,5 @@ export default {
   'opportunity.updateRuleContentTip': 'After updating, the updated closing rules will only take effect for new data.',
   'opportunity.deleteRuleContent':
     'After deleting, the member will no longer be able to find this rule, please be careful!',
+  'opportunity.newOpportunity': 'New Opportunity',
 };
