@@ -32,7 +32,15 @@ public class LoginControllerTests {
         // 1. 正常登录
         String login = "/login";
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(login)
-                        .content(String.format("{\"username\":\"%s\",\"password\":\"%s\",\"platform\":\"%s\"}", "admin", "CordysCRM", "mobile"))
+                        .content("""
+                                {
+                                  "username": "test.login@cordys.io",
+                                  "password": "test.login",
+                                  "authenticate": "LOCAL",
+                                  "loginAddress": "LOCAL",
+                                  "platform": "LOCAL"
+                                }
+                                """)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
