@@ -41,7 +41,7 @@ export function getRoleMember(data: RoleMemberTableQueryParams) {
 }
 
 // 批量移除角色关联用户
-export function batchRemoveRoleMember(data: string[]) {
+export function batchRemoveRoleMember(data: (string | number)[]) {
   return CDR.post({ url: BatchRemoveRoleMemberUrl, data });
 }
 

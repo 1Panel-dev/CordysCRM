@@ -383,7 +383,7 @@
     }
   }
 
-  const groupList = ref([
+  const groupList: ActionsItem[] = [
     {
       label: t('common.edit'),
       key: 'edit',
@@ -397,15 +397,15 @@
       key: 'more',
       slotName: 'more',
     },
-  ]);
+  ];
 
-  const moreOperationList = ref<ActionsItem[]>([
+  const moreOperationList: ActionsItem[] = [
     {
       label: t('common.delete'),
       key: 'delete',
       danger: true,
     },
-  ]);
+  ];
 
   /**
    * 添加&编辑用户
@@ -774,8 +774,8 @@
       fixed: 'right',
       render: (row: MemberItem) =>
         h(CrmOperationButton, {
-          groupList: groupList.value,
-          moreList: moreOperationList.value,
+          groupList,
+          moreList: moreOperationList,
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },

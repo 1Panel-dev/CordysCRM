@@ -14,7 +14,7 @@ import type { CrmInfoNode, CrmTreeFieldNames, CrmTreeNodeData, FieldConfig } fro
  */
 export default function useRenameNode(
   renameApi?: (node: CrmTreeNodeData) => Promise<boolean>,
-  renameStatic?: boolean,
+  renameStatic?: Ref<boolean>,
   fieldNames: CrmTreeFieldNames = { keyField: 'key', labelField: 'label', childrenField: 'children' }
 ) {
   const { t } = useI18n();
@@ -37,7 +37,7 @@ export default function useRenameNode(
   /** 处理重命名逻辑 */
   const loading = ref<boolean>(false);
   async function handleRenameMode(node: CrmTreeNodeData) {
-    if (!renameApi) return;
+    if (!renameApi || renameStatic) return;
 
     loading.value = true;
     try {
@@ -59,7 +59,7 @@ export default function useRenameNode(
   function handleEdit(node: CrmTreeNodeData, newLabel: string, notChange: boolean) {
     const key = node[keyField];
     // 有改变且为重命名
-    if (!notChange && getEditingMode(key) === 'rename' && !renameStatic) {
+    if (!notChange && getEditingMode(key) === 'rename') {
       node[labelField] = newLabel;
       handleRenameMode(node);
       // 否则切换预览模式

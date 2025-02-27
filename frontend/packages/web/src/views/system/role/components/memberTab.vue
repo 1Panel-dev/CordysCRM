@@ -1,19 +1,25 @@
 <template>
   <div class="relative h-full">
     <n-scrollbar x-scrollable :content-style="{ 'min-width': '600px', 'width': '100%', 'padding': '0 24px' }">
-      <div class="mb-[16px] mt-[4px] flex items-center justify-between">
-        <n-button type="primary" @click="handleCreate">
-          {{ t('role.addMember') }}
-        </n-button>
-        <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
-      </div>
-      <crm-table
+      <CrmTable
+        v-model:checked-row-keys="checkedRowKeys"
         v-bind="propsRes"
+        :action-config="actionConfig"
         @page-change="propsEvent.pageChange"
         @page-size-change="propsEvent.pageSizeChange"
         @sorter-change="propsEvent.sorterChange"
         @filter-change="propsEvent.filterChange"
-      />
+        @batch-action="handleBatchAction"
+      >
+        <template #actionLeft>
+          <n-button type="primary" @click="handleCreate">
+            {{ t('role.addMember') }}
+          </n-button>
+        </template>
+        <template #actionRight>
+          <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+        </template>
+      </CrmTable>
     </n-scrollbar>
   </div>
   <CrmSelectUserDrawer
@@ -34,15 +40,17 @@
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
   import { RoleMemberItem } from '@lib/shared/models/system/role';
 
+  import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
+  import { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmSelectUserDrawer from '@/components/business/crm-select-user-drawer/index.vue';
 
-  import { getRoleMember, relateRoleMember, removeRoleMember } from '@/api/modules/system/role';
+  import { batchRemoveRoleMember, getRoleMember, relateRoleMember, removeRoleMember } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
+  import useModal from '@/hooks/useModal';
 
   const props = defineProps<{
     activeRoleId: string;
@@ -50,6 +58,7 @@
 
   const { t } = useI18n();
   const Message = useMessage();
+  const { openModal } = useModal();
 
   const tableRefreshId = ref(0);
   const removeLoading = ref(false);
@@ -169,10 +178,52 @@
     }
   );
 
+  const actionConfig: BatchActionConfig = {
+    baseAction: [
+      {
+        label: t('role.batchRemove'),
+        key: 'batchRemove',
+      },
+    ],
+  };
+
   const keyword = ref('');
   function searchData() {
     setLoadListParams({ keyword: keyword.value, roleId: props.activeRoleId });
     loadList();
+  }
+
+  const checkedRowKeys = ref<(string | number)[]>([]);
+
+  function batchRemoveMember() {
+    openModal({
+      type: 'warning',
+      title: t('role.batchRemoveTip', { count: checkedRowKeys.value.length }),
+      content: t('role.removeMemberTip'),
+      positiveText: t('role.batchRemoveConfirm'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await batchRemoveRoleMember(checkedRowKeys.value);
+          checkedRowKeys.value = [];
+          searchData();
+          Message.success(t('common.removeSuccess'));
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
+      },
+    });
+  }
+
+  function handleBatchAction(item: ActionsItem) {
+    switch (item.key) {
+      case 'batchRemove':
+        batchRemoveMember();
+        break;
+      default:
+        break;
+    }
   }
 
   watch(

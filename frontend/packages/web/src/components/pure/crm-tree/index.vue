@@ -184,7 +184,7 @@
 
   const filterTreeData = ref<CrmTreeNodeData[]>([]); // 初始化时全量的树数据或在非搜索情况下更新后的全量树数据
 
-  const { toggleEdit, createEditInput } = useRenameNode(props.renameApi, props.renameStatic, props.fieldNames);
+  const { toggleEdit, createEditInput } = useRenameNode(props.renameApi, toRef(props.renameStatic), props.fieldNames);
 
   /**
    * 选中节点事件

@@ -22,4 +22,7 @@ export default {
   'role.role': '角色',
   'role.removeMemberTip': '移除后，成员将不再拥有该角色权限',
   'role.saveFirst': '当前查看的角色尚未保存，请先保存后再进行操作',
+  'role.batchRemove': '批量移除',
+  'role.batchRemoveTip': '确认移除 {count} 名成员吗？',
+  'role.batchRemoveConfirm': '确认移除',
 };

@@ -124,8 +124,16 @@
   ];
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
-    if (node.internal || node.isNew) {
+    if (node.internal) {
       return [];
+    }
+    if (node.isNew) {
+      return [
+        {
+          key: 'rename',
+          label: t('common.rename'),
+        },
+      ];
     }
     return items;
   }
@@ -184,11 +192,14 @@
   const activeRole = computed(() => roles.value.find((e) => e.id === selectedKeys.value[0]));
   const renameStatic = computed(() => activeRole.value?.isNew);
 
+  const activeTab = ref('permission');
+
   function addRole() {
     if (!roleTreeSelectable.value) {
       message.warning(t('role.saveFirst'));
       return;
     }
+    activeTab.value = 'permission';
     const id = getGenerateId();
     roles.value.push({
       id,
@@ -204,7 +215,6 @@
     });
   }
 
-  const activeTab = ref('permission');
   const tabList = computed<TabPaneProps[]>(() => {
     if (activeRole.value?.isNew) {
       return [
@@ -239,8 +249,7 @@
     }
   }
 
-  function handleCreated(id: string) {
-    selectedKeys.value = [id];
+  function handleCreated() {
     if (activeRole.value) {
       activeRole.value.isNew = false;
     }
