@@ -1,6 +1,6 @@
 <template>
   <!-- 按钮组 -->
-  <CrmButtonGroup :list="props.groupList" @select="handleSelect">
+  <CrmButtonGroup :list="props.groupList" @select="handleSelect" @cancel="emit('cancel')">
     <template v-if="props.moreList?.length" #more>
       <!-- 更多操作 -->
       <CrmMoreAction :options="props.moreList" @select="handleMoreSelect">
@@ -10,6 +10,10 @@
           </div>
         </template>
       </CrmMoreAction>
+    </template>
+    <!-- pop内容插槽 -->
+    <template v-for="group in hasPopContentSlot" :key="group.key" #[group.popSlotContent]="{ key }">
+      <slot :key="key" :name="group.popSlotContent"></slot>
     </template>
   </CrmButtonGroup>
 </template>
@@ -26,6 +30,7 @@
 
   const emit = defineEmits<{
     (e: 'select', key: string): void;
+    (e: 'cancel'): void;
   }>();
 
   function handleSelect(key: string) {
@@ -35,4 +40,8 @@
   function handleMoreSelect(item: ActionsItem) {
     emit('select', item.key as string);
   }
+
+  const hasPopContentSlot = computed(() => {
+    return props.groupList.filter((e) => e.popSlotContent) as ActionsItem & { popSlotContent: string; key: string }[];
+  });
 </script>

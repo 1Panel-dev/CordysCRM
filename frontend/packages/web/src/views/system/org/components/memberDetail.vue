@@ -75,7 +75,7 @@
 
   const initDescriptions = [
     {
-      label: t('org.phoneNumber'),
+      label: t('common.phoneNumber'),
       value: 'phone',
     },
     { label: t('org.gender'), value: 'gender', slotName: 'gender' },

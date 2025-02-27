@@ -7,6 +7,12 @@ export enum SystemRouteEnum {
   SYSTEM_LOG = 'systemLog',
 }
 
+export enum OpportunityRouteEnum {
+  OPPORTUNITY = 'opportunity',
+  OPPORTUNITY_OPT = 'opportunityOpt',
+}
+
 export const AppRouteEnum = {
   ...SystemRouteEnum,
+  ...OpportunityRouteEnum,
 };

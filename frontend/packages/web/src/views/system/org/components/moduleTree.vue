@@ -199,7 +199,6 @@
         id: data.id,
         name: data.name,
         children: undefined,
-        hideMoreAction: true,
       };
 
       if (parent) {

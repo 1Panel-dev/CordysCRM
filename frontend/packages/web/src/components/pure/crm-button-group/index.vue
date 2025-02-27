@@ -8,10 +8,14 @@
             placement="bottom-end"
             v-bind="item.popConfirmProps"
             @confirm="emit('select', `pop-${item.key}` as string)"
+            @cancel="emit('cancel')"
           >
             <n-button v-bind="item" type="primary" text class="!p-0" @click="() => (item.popShow = true)">
               {{ item.label }}
             </n-button>
+            <template #content>
+              <slot :key="item.key" :name="item.popSlotContent"></slot>
+            </template>
           </CrmPopConfirm>
         </template>
         <template v-else>
@@ -37,6 +41,7 @@
 
   const emit = defineEmits<{
     (e: 'select', key: string): void;
+    (e: 'cancel'): void;
   }>();
 </script>
 

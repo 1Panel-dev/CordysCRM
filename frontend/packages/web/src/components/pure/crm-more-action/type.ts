@@ -14,6 +14,7 @@ export type ActionsItem = {
   popShow?: boolean;
   popConfirmProps?: CrmPopConfirmProps;
   tooltipContent?: string;
+  popSlotContent?: string; // 气泡内容插槽
 } & DropdownOption;
 
 export type SelectedValue = string | number | Record<string, any> | undefined;

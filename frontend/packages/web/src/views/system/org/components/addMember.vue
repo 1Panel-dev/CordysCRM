@@ -30,7 +30,7 @@
             </n-space>
           </n-radio-group>
         </n-form-item>
-        <n-form-item require-mark-placement="left" label-placement="left" path="phone" :label="t('org.phoneNumber')">
+        <n-form-item require-mark-placement="left" label-placement="left" path="phone" :label="t('common.phoneNumber')">
           <n-input v-model:value="form.phone" type="text" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
         <n-form-item require-mark-placement="left" label-placement="left" path="email" :label="t('org.userEmail')">
@@ -255,7 +255,7 @@
 
   function validateUserPhone(rule: FormItemRule, value: string) {
     if (!value) {
-      return new Error(t('common.notNull', { value: `${t('org.phoneNumber')}` }));
+      return new Error(t('common.notNull', { value: `${t('common.phoneNumber')}` }));
     }
     if (!validatePhone(value)) {
       return new Error(t('common.userPhoneErrTip'));

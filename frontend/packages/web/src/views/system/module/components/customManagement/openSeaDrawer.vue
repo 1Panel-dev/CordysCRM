@@ -302,14 +302,19 @@
     scrollX: 1600,
   });
 
-  onBeforeMount(() => {
-    loadList();
-  });
-
   watch(
     () => tableRefreshId.value,
     () => {
       loadList();
+    }
+  );
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        loadList();
+      }
     }
   );
 </script>

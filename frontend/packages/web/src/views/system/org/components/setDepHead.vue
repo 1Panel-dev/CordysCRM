@@ -9,7 +9,7 @@
   >
     <div>
       <n-form ref="formRef" :model="form" :rules="rules">
-        <n-form-item require-mark-placement="left" label-placement="left" path="commanderId" :label="t('org.head')">
+        <n-form-item require-mark-placement="left" label-placement="left" path="commanderId" :label="t('common.head')">
           <CrmUserSelect
             v-model:value="form.commanderId"
             :placeholder="t('org.selectHeadPlaceholder')"

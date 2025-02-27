@@ -299,15 +299,20 @@
     initOpportunityList();
   }
 
-  onBeforeMount(() => {
-    loadList();
-  });
-
   watch(
     () => tableRefreshId.value,
     (val) => {
       if (val) {
         initOpportunityList();
+      }
+    }
+  );
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        loadList();
       }
     }
   );

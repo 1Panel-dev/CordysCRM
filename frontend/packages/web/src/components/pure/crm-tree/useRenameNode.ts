@@ -115,5 +115,5 @@ export default function useRenameNode(
     );
   }
 
-  return { toggleEdit, createEditInput };
+  return { toggleEdit, createEditInput, editingKey };
 }

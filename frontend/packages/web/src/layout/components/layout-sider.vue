@@ -87,6 +87,11 @@
 
   const menuOptions = [
     {
+      label: t('menu.opportunity'),
+      key: AppRouteEnum.OPPORTUNITY_OPT,
+      icon: renderIcon('iconicon_business_opportunity'),
+    },
+    {
       label: t('menu.settings'),
       key: 'a-wild-sheep-chase',
       icon: renderIcon('iconicon_set_up'),

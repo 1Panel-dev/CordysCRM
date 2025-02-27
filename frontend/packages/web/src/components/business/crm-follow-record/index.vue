@@ -1,8 +1,4 @@
 <template>
-  <div class="mb-[16px] flex items-center justify-between">
-    <div class="font-medium text-[var(--text-n1)]">{{ t('crmFollowRecord.followRecord') }}</div>
-    <CrmSearchInput v-model:value="keyword" class="!w-[240px]" />
-  </div>
   <CrmList
     v-if="filteredData.length"
     v-model:data="filteredData"
@@ -53,7 +49,6 @@
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
-  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';
@@ -67,6 +62,7 @@
     id?: string;
     customerName: string; // 客户姓名
     followTime: string; // 跟进时间
+    followUser: string; // 跟进人
     methodName: string; // 跟进方法
     contactsUser: string; // 联系人
     followContent: string; // 跟进内容
@@ -82,17 +78,21 @@
     default: [],
   });
 
-  const { keyword, highlightContent, resetHighlight } = useHighlight([
+  const innerKeyWord = defineModel<string>('keyword', {
+    default: '',
+  });
+
+  const { searchKeyword, highlightContent, resetHighlight } = useHighlight([
     '.crm-follow-record-content',
     '.crm-follow-record-method',
   ]);
 
   const filteredData = computed(() => {
-    if (!keyword.value) return listData.value;
+    if (!searchKeyword.value) return listData.value;
     return listData.value.filter((item) => {
       return Object.values(item).some((value) => {
         if (typeof value === 'string') {
-          return value.toLowerCase().includes(keyword.value.toLowerCase());
+          return value.toLowerCase().includes(searchKeyword.value.toLowerCase());
         }
         return false;
       });
@@ -100,7 +100,14 @@
   });
 
   watch(
-    () => keyword.value,
+    () => innerKeyWord.value,
+    (val) => {
+      searchKeyword.value = val;
+    }
+  );
+
+  watch(
+    () => searchKeyword.value,
     (val) => {
       if (val) {
         highlightContent();

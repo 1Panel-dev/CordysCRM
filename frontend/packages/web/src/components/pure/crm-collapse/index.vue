@@ -21,7 +21,8 @@
       </template>
       <slot></slot>
       <template #header-extra="{ collapsed }">
-        <div class="flex items-center justify-center">
+        <div class="flex items-center justify-center gap-[8px]">
+          <slot name="headerExtraLeft" :collapsed="collapsed"></slot>
           <n-button quaternary class="text-btn-secondary !p-0 !text-[var(--text-n4)]">
             <CrmIcon
               class="text-[var(--text-n4)]"

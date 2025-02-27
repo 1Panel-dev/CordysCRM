@@ -641,7 +641,7 @@
       },
     },
     {
-      title: t('org.phoneNumber'),
+      title: t('common.phoneNumber'),
       key: 'phone',
       ellipsis: {
         tooltip: true,
