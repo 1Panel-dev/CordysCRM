@@ -3,6 +3,7 @@ import { UploadFileInfo } from 'naive-ui';
 import type { ModuleNavBaseInfoItem } from '@lib/shared/models/system/module';
 
 import type { GlobalThemeOverrides } from 'naive-ui';
+import type { RouteRecordRaw } from 'vue-router';
 
 // 平台风格
 export type Style = 'default' | 'custom' | 'follow';
@@ -53,4 +54,6 @@ export interface AppState {
   themeOverridesConfig: GlobalThemeOverrides;
   orgId: string;
   moduleConfigList: ModuleNavBaseInfoItem[]; // 模块配置列表
+  topMenus: RouteRecordRaw[];
+  currentTopMenu: RouteRecordRaw;
 }

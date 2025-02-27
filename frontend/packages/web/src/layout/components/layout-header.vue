@@ -12,6 +12,7 @@
       </n-tooltip>
     </div>
     <div class="flex flex-1 items-center justify-between px-[16px]">
+      <CrmTopMenu />
       <!-- <n-breadcrumb>
         <n-breadcrumb-item>
           <div class="text-[14px] leading-[22px]">一级页面</div>
@@ -47,6 +48,7 @@
   import { LocaleType } from '@lib/shared/types/global';
 
   import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
+  import CrmTopMenu from '@/components/business/crm-top-menu/index.vue';
 
   import { LOCALE_OPTIONS } from '@/locale/index';
   import useLocale from '@/locale/useLocale';

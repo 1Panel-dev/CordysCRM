@@ -12,7 +12,14 @@ export enum OpportunityRouteEnum {
   OPPORTUNITY_OPT = 'opportunityOpt',
 }
 
+export enum ClueRouteEnum {
+  CLUE_MANAGEMENT = 'clueManagement',
+  CLUE_MANAGEMENT_CLUE = 'clueManagementClue',
+  CLUE_MANAGEMENT_POOL = 'clueManagementPool',
+}
+
 export const AppRouteEnum = {
   ...SystemRouteEnum,
   ...OpportunityRouteEnum,
+  ...ClueRouteEnum,
 };

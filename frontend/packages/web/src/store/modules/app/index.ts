@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { cloneDeep } from 'lodash-es';
 
 import { setLocalStorage } from '@lib/shared/method/local-storage';
 
@@ -8,6 +9,7 @@ import { useI18n } from '@/hooks/useI18n';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
 import type { AppState, PageConfig, Style, Theme } from './types';
+import type { RouteRecordRaw } from 'vue-router';
 
 const defaultThemeConfig = {
   style: 'default' as Style,
@@ -50,6 +52,8 @@ const useAppStore = defineStore('app', {
     },
     orgId: '',
     moduleConfigList: [],
+    currentTopMenu: {} as RouteRecordRaw,
+    topMenus: [],
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -67,6 +71,12 @@ const useAppStore = defineStore('app', {
     },
     getOrgId(state: AppState) {
       return state.orgId;
+    },
+    getTopMenus(state: AppState): RouteRecordRaw[] {
+      return state.topMenus;
+    },
+    getCurrentTopMenu(state: AppState): RouteRecordRaw {
+      return state.currentTopMenu;
     },
   },
   actions: {
@@ -117,6 +127,18 @@ const useAppStore = defineStore('app', {
         // eslint-disable-next-line no-console
         console.log(error);
       }
+    },
+    /**
+     * 设置顶部菜单组
+     */
+    setTopMenus(menus: RouteRecordRaw[] | undefined) {
+      this.topMenus = menus ? [...menus] : [];
+    },
+    /**
+     * 设置激活的顶部菜单
+     */
+    setCurrentTopMenu(menu: RouteRecordRaw) {
+      this.currentTopMenu = cloneDeep(menu);
     },
   },
   persist: {
