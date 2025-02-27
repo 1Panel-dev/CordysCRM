@@ -4,6 +4,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
+import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.crm.follow.service.FollowUpRecordService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,5 +30,12 @@ public class OpportunityFollowRecordController {
     @Operation(summary = "添加商机跟进记录")
     public FollowUpRecord add(@Validated @RequestBody FollowUpRecordAddRequest request) {
         return followUpRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/update")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
+    @Operation(summary = "更新商机跟进记录")
+    public FollowUpRecord update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
+        return followUpRecordService.update(request, SessionUtils.getUserId());
     }
 }
