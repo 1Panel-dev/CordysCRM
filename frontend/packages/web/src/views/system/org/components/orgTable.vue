@@ -147,7 +147,8 @@
     corpId: '',
     agentId: '',
     appSecret: '',
-    enable: true,
+    syncEnable: true,
+    qrcodeEnable: true,
   });
 
   async function settingWeChat(e: MouseEvent) {
@@ -252,7 +253,7 @@
       if (res) {
         const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
         currentIntegration.value = { ...currentIntegration.value, ...weChatConfig };
-        isHasConfig.value = !!weChatConfig && weChatConfig.enable;
+        isHasConfig.value = !!weChatConfig && weChatConfig.syncEnable;
         renderSyncResult.value = renderSync();
       }
     } catch (error) {

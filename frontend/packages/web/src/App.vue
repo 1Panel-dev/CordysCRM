@@ -13,15 +13,17 @@
 </template>
 
 <script setup lang="ts">
-  import { useRoute } from 'vue-router';
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
+  import { setLoginExpires, setToken } from '@lib/shared/method/auth';
+  import { getQueryVariable } from '@lib/shared/method/index';
+
   import useLocale from '@/locale/useLocale';
+  import { WHITE_LIST } from '@/router/constants';
   import useAppStore from '@/store/modules/app';
 
   import useUserStore from './store/modules/user';
 
-  const route = useRoute();
   const userStore = useUserStore();
   const { currentLocale } = useLocale();
   const appStore = useAppStore();
@@ -34,9 +36,20 @@
     return currentLocale.value === 'zh-CN' ? dateZhCN : dateEnUS;
   });
 
-  onBeforeMount(() => {
-    if (route.meta.requiresAuth !== false) {
-      userStore.isLogin();
+  async function handleOauthRedirect() {
+    if (!WHITE_LIST.find((el) => window.location.hash.split('#')[1].includes(el.path))) {
+      const TOKEN = getQueryVariable('_token');
+      const CSRF = getQueryVariable('_csrf');
+      if (TOKEN && CSRF) {
+        setToken(window.atob(TOKEN), CSRF);
+        setLoginExpires();
+      }
+      await userStore.checkIsLogin();
+      appStore.setLoginLoading(false);
     }
+  }
+
+  onBeforeMount(() => {
+    handleOauthRedirect();
   });
 </script>

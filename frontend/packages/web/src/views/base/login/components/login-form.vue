@@ -4,7 +4,7 @@
     class="login-form"
     :style="props.isPreview ? 'height: inherit' : 'height: 100vh'"
   >
-    <n-spin :loading="preheat" :tip="t('login.form.loading')"> </n-spin>
+    <n-spin :loading="preheat" :description="t('login.form.loading')"> </n-spin>
   </div>
   <div v-else class="login-form" :style="props.isPreview ? 'height: inherit' : 'height: 100vh'">
     <div class="title">

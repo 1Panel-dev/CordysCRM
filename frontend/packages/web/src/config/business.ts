@@ -1,4 +1,4 @@
-import { FormItemRule } from 'naive-ui';
+import { FormItemRule, InputProps } from 'naive-ui';
 
 import { useI18n } from '@/hooks/useI18n';
 
@@ -10,6 +10,7 @@ interface AuthField {
   placeholder?: string;
   rule?: FormItemRule[];
   subTip?: string;
+  inputProps?: Partial<InputProps>;
 }
 
 export const authTypeFieldMap: Record<string, AuthField[]> = {
@@ -278,6 +279,11 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
           message: t('common.notNull', { value: t('system.business.appSecret') }),
         },
       ],
+      inputProps: {
+        type: 'password',
+        showPasswordOn: 'click',
+        inputProps: { autocomplete: 'new-password' },
+      },
       placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
         url: 'Cordys',
       }),

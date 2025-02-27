@@ -125,7 +125,7 @@
       ...(authTypeFieldMap[activeAuthDetail.value?.type as string]?.map(({ label, key }) => ({
         label,
         value: activeAuthDetail.value.configuration[key as string],
-        slotName: key === 'password' ? 'password' : undefined,
+        slotName: ['password', 'appSecret'].includes(key) ? 'password' : undefined,
       })) || []),
     ];
   }

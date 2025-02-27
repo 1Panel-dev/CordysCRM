@@ -7,6 +7,10 @@ import type { UserInfo } from '@lib/shared/models/user';
 
 import { isLogin, login, signout } from '@/api/modules/system/login';
 import { useI18n } from '@/hooks/useI18n';
+import useUser from '@/hooks/useUser';
+import router from '@/router';
+
+import { AppRouteEnum } from '@/enums/routeEnum';
 
 import useAppStore from '../app';
 
@@ -93,7 +97,9 @@ const useUserStore = defineStore('user', {
         console.log(error);
       }
     },
-    qrCodeLogin(params: any) {},
+    qrCodeLogin(params: any) {
+      console.log(params);
+    },
     async isLogin() {
       try {
         const res = await isLogin();
@@ -107,7 +113,18 @@ const useUserStore = defineStore('user', {
         appStore.setOrgId(lastOrganizationId);
         return true;
       } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log(err);
         return false;
+      }
+    },
+    async checkIsLogin() {
+      const { isLoginPage } = useUser();
+      const isLoginStatus = await this.isLogin();
+      if (isLoginPage() && isLoginStatus) {
+        // 当前页面为登录页面，且已经登录，跳转到首页
+        // TODO lmy 跳转到有权限的第一个路由名
+        await router.push({ name: AppRouteEnum.SYSTEM });
       }
     },
   },

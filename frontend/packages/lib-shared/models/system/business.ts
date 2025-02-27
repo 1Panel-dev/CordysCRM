@@ -18,7 +18,9 @@ export interface ConfigSynchronization {
   corpId?: string; // 企业ID
   agentId?: string; // 应用ID
   appSecret?: string; // 应用密钥
-  enable: boolean; // 是否开启
+  syncEnable: boolean; // 同步组织架构是否开启
+  qrcodeEnable: boolean; // 扫码登录是否开启
+  verify?: boolean; // 是否验证通过
 }
 
 // 同步组织和扫码卡片数据类型

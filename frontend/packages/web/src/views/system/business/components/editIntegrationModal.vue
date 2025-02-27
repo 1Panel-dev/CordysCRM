@@ -45,27 +45,22 @@
       </n-form-item>
     </n-form>
     <template #footer>
-      <div class="flex w-full items-center justify-between">
-        <div class="ml-[4px] flex items-center gap-[8px]">
-          <n-switch v-model:value="form.enable" /> {{ t('common.status') }}
-        </div>
-        <div>
-          <n-button :disabled="loading" secondary @click="cancel">
-            {{ t('common.cancel') }}
-          </n-button>
-          <n-button
-            :loading="linkLoading"
-            type="primary"
-            ghost
-            class="n-btn-outline-primary mx-[12px]"
-            @click="continueLink"
-          >
-            {{ t('org.testConnection') }}
-          </n-button>
-          <n-button :loading="loading" type="primary" @click="confirmHandler">
-            {{ t('common.confirm') }}
-          </n-button>
-        </div>
+      <div class="flex w-full items-center justify-end">
+        <n-button :disabled="loading" secondary @click="cancel">
+          {{ t('common.cancel') }}
+        </n-button>
+        <n-button
+          :loading="linkLoading"
+          type="primary"
+          ghost
+          class="n-btn-outline-primary mx-[12px]"
+          @click="continueLink"
+        >
+          {{ t('org.testConnection') }}
+        </n-button>
+        <n-button :loading="loading" type="primary" @click="confirmHandler">
+          {{ t('common.confirm') }}
+        </n-button>
       </div>
     </template>
   </CrmModal>
@@ -73,7 +68,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, NSwitch, useMessage } from 'naive-ui';
+  import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, useMessage } from 'naive-ui';
 
   import type { ConfigSynchronization } from '@lib/shared/models/system/business';
 
@@ -103,7 +98,8 @@
     corpId: '',
     agentId: '',
     appSecret: '',
-    enable: true,
+    syncEnable: true,
+    qrcodeEnable: true,
     type: '',
   });
 

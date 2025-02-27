@@ -9,7 +9,7 @@
     <PageSettings v-if="activeTab === 'pageSettings'" />
     <AuthenticationSettings v-if="activeTab === 'authenticationSettings'" />
     <MailSettings v-if="activeTab === 'mailSettings'" />
-    <IntegrationList v-if="['scanLogin', 'syncOrganization'].includes(activeTab)" :active-tab="activeTab" />
+    <IntegrationList v-if="activeTab === 'syncOrganization'" />
   </n-scrollbar>
 </template>
 
@@ -18,22 +18,21 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
-  import MailSettings from './components/mailSettings.vue';
+  import IntegrationList from './components/integrationList.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 
   const AuthenticationSettings = defineAsyncComponent(() => import('./components/authenticationSettings.vue'));
   const PageSettings = defineAsyncComponent(() => import('./components/pageSettings.vue'));
-  const IntegrationList = defineAsyncComponent(() => import('./components/integrationList.vue'));
+  const MailSettings = defineAsyncComponent(() => import('./components/mailSettings.vue'));
   const { t } = useI18n();
 
-  const activeTab = ref('mailSettings');
+  const activeTab = ref('syncOrganization');
   const tabList = ref([
     // { name: 'pageSettings', tab: t('system.business.tab.interfaceSettings') }, // 第一版先不上
-    // { name: 'scanLogin', tab: t('system.business.tab.scanLogin') }, // 第一版先不上
+    { name: 'syncOrganization', tab: t('system.business.tab.third') },
     { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
     { name: 'authenticationSettings', tab: t('system.business.tab.authenticationSettings') },
-    { name: 'syncOrganization', tab: t('system.business.tab.syncOrganization') },
   ]);
 </script>
 

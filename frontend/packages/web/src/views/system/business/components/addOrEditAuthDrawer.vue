@@ -48,6 +48,7 @@
             allow-clear
             :max-length="255"
             :placeholder="item.placeholder ?? t('common.pleaseInput')"
+            v-bind="item.inputProps"
           />
           <div v-if="item.subTip" class="text-[12px] text-[var(--text-n4)]">{{ item.subTip }}</div>
         </n-form-item>
