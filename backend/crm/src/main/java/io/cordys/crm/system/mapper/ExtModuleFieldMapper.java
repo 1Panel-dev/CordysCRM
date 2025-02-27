@@ -11,4 +11,10 @@ public interface ExtModuleFieldMapper {
 	 * @param ids ID集合
 	 */
 	void deleteByIds(@Param("ids") List<String> ids);
+
+	/**
+	 * 根据ID集合批量删除字段属性
+	 * @param ids ID集合
+	 */
+	void deletePropByIds(@Param("ids") List<String> ids);
 }

@@ -106,8 +106,7 @@
       "readable": true,
       "editable": true,
       "fieldWidth": "50%",
-      "options": null,
-      "rules": null
+      "options": null
     },
     {
       "name": "customer.address.info",
@@ -120,8 +119,7 @@
       "readable": true,
       "editable": true,
       "fieldWidth": "50%",
-      "options": null,
-      "rules": null
+      "options": null
     },
     {
       "name": "customer.address.detail",
@@ -134,8 +132,7 @@
       "readable": true,
       "editable": true,
       "fieldWidth": "50%",
-      "options": null,
-      "rules": null
+      "options": null
     },
     {
       "name": "customer.area",
@@ -148,8 +145,7 @@
       "readable": true,
       "editable": true,
       "fieldWidth": "50%",
-      "options": null,
-      "rules": null
+      "options": null
     },
     {
       "name": "customer.owner",
@@ -163,7 +159,23 @@
       "editable": true,
       "fieldWidth": "50%",
       "options": null,
-      "rules": null
+      "multiple": false
+    }
+  ],
+  "lead": [
+    {
+      "name": "customer.name",
+      "internalKey": "leadName",
+      "type": "INPUT",
+      "showLabel": true,
+      "placeholder": null,
+      "description": null,
+      "defaultValue": null,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": "50%",
+      "options": null,
+      "require": true
     }
   ]
 }

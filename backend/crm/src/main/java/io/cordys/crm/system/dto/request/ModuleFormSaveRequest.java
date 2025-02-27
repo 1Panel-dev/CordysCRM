@@ -28,7 +28,4 @@ public class ModuleFormSaveRequest {
 	@NotNull
 	@Schema(description = "表单属性")
 	private FormProp formProp;
-
-	@Schema(description = "删除字段ID集合")
-	private List<String> deleteFieldIds;
 }

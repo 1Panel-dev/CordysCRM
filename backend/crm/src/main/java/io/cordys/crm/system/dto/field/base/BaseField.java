@@ -12,14 +12,18 @@ import lombok.Data;
 		@JsonSubTypes.Type(value = InputField.class, name = "INPUT"),
 		@JsonSubTypes.Type(value = TextAreaField.class, name = "TEXTAREA"),
 		@JsonSubTypes.Type(value = InputNumberField.class, name = "INPUT_NUMBER"),
-		@JsonSubTypes.Type(value = DateTimeField.class, name = "DATETIME"),
+		@JsonSubTypes.Type(value = DateTimeField.class, name = "DATE_TIME"),
 		@JsonSubTypes.Type(value = RadioField.class, name = "RADIO"),
 		@JsonSubTypes.Type(value = CheckBoxField.class, name = "CHECKBOX"),
 		@JsonSubTypes.Type(value = SelectField.class, name = "SELECT"),
 		@JsonSubTypes.Type(value = MultipleInputField.class, name = "MULTIPLE_INPUT"),
-		@JsonSubTypes.Type(value = LocationField.class, name = "LOCATION"),
 		@JsonSubTypes.Type(value = MemberField.class, name = "MEMBER"),
+		@JsonSubTypes.Type(value = DepartmentField.class, name = "MEMBER"),
 		@JsonSubTypes.Type(value = DividerField.class, name = "DIVIDER"),
+		@JsonSubTypes.Type(value = PictureField.class, name = "PICTURE"),
+		@JsonSubTypes.Type(value = LocationField.class, name = "LOCATION"),
+		@JsonSubTypes.Type(value = PhoneField.class, name = "PHONE"),
+		@JsonSubTypes.Type(value = DatasourceField.class, name = "DATA_SOURCE"),
 })
 public abstract class BaseField {
 	@Schema(description = "ID")

@@ -25,11 +25,11 @@ public class ModuleFieldResolverFactory {
 
         resolverMap.put(FieldType.MULTIPLE_INPUT.name(), new MultipleTextResolver());
 
-        resolverMap.put(FieldType.DATETIME.name(), new DateTimeResolver());
+        resolverMap.put(FieldType.DATE_TIME.name(), new DateTimeResolver());
 
         resolverMap.put(FieldType.MEMBER.name(), new MemberResolver());
 
-        resolverMap.put(FieldType.NUMBER.name(), new NumberResolver());
+        resolverMap.put(FieldType.INPUT_NUMBER.name(), new NumberResolver());
 
         resolverMap.put(MULTI_SELECT, new MultipleSelectResolver());
     }

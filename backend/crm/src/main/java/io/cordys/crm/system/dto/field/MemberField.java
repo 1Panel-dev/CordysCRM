@@ -10,6 +10,7 @@ import lombok.EqualsAndHashCode;
 @JsonTypeName(value = "MEMBER")
 @EqualsAndHashCode(callSuper = true)
 public class MemberField extends BaseField {
+
     @Schema(description = "是否是多选")
     private Boolean multiple = false;
 }

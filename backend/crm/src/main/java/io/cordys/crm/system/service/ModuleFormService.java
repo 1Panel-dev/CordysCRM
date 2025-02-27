@@ -132,65 +132,45 @@ public class ModuleFormService {
 		moduleFormBlobMapper.updateById(formBlob);
 
 		// 处理字段
-		if (CollectionUtils.isNotEmpty(saveParam.getDeleteFieldIds())) {
-			extModuleFieldMapper.deleteByIds(saveParam.getDeleteFieldIds());
+		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
+		fieldWrapper.eq(ModuleField::getFormId, form.getId());
+		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
+		if (CollectionUtils.isNotEmpty(fields)) {
+			List<String> fieldIds = fields.stream().map(ModuleField::getId).toList();
+			extModuleFieldMapper.deleteByIds(fieldIds);
+			extModuleFieldMapper.deletePropByIds(fieldIds);
 		}
 		if (CollectionUtils.isNotEmpty(saveParam.getFields())) {
 			List<ModuleField> addFields = new ArrayList<>();
-			List<ModuleField> updateFields = new ArrayList<>();
 			List<ModuleFieldBlob> addFieldBlobs = new ArrayList<>();
-			List<ModuleFieldBlob> updateFieldBlobs = new ArrayList<>();
 			AtomicLong pos = new AtomicLong(1);
 			saveParam.getFields().forEach(field -> {
-				field.setPos(pos.getAndIncrement());
+				ModuleField moduleField = new ModuleField();
+				moduleField.setId(field.getId());
+				moduleField.setFormId(form.getId());
+				moduleField.setInternalKey(field.getInternalKey());
+				moduleField.setType(field.getType());
+				moduleField.setPos(pos.getAndIncrement());
+				moduleField.setCreateTime(System.currentTimeMillis());
+				moduleField.setCreateUser(currentUserId);
+				moduleField.setUpdateTime(System.currentTimeMillis());
+				moduleField.setUpdateUser(currentUserId);
+				addFields.add(moduleField);
 				ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
+				fieldBlob.setId(field.getId());
 				fieldBlob.setProp(JSON.toJSONBytes(field));
-				if (field.getId() == null) {
-					field.setId(IDGenerator.nextStr());
-					addFields.add(buildField(field, currentUserId, form.getId(), false));
-					fieldBlob.setId(field.getId());
-					addFieldBlobs.add(fieldBlob);
-				} else {
-					updateFields.add(buildField(field, currentUserId, form.getId(), true));
-					fieldBlob.setId(field.getId());
-					updateFieldBlobs.add(fieldBlob);
-				}
+				addFieldBlobs.add(fieldBlob);
 			});
 			if (CollectionUtils.isNotEmpty(addFields)) {
 				moduleFieldMapper.batchInsert(addFields);
 			}
-			if (CollectionUtils.isNotEmpty(updateFields)) {
-				updateFields.forEach(field -> moduleFieldMapper.update(field));
-			}
 			if (CollectionUtils.isNotEmpty(addFieldBlobs)) {
 				moduleFieldBlobMapper.batchInsert(addFieldBlobs);
-			}
-			if (CollectionUtils.isNotEmpty(updateFieldBlobs)) {
-				updateFieldBlobs.forEach(fieldBlob -> moduleFieldBlobMapper.updateById(fieldBlob));
 			}
 		}
 
 		// 返回表单整体配置
 		return getConfig(form.getFormKey(), currentOrgId);
-	}
-
-	/**
-	 * 生成字段
-	 * @param field 字段DTO
-	 * @param currentUserId 当前用户
-	 * @param edited 是否修改
-	 * @return 模块字段
-	 */
-	public ModuleField buildField(BaseField field, String currentUserId, String formId, boolean edited) {
-		ModuleField moduleField = BeanUtils.copyBean(new ModuleField(), field);
-		moduleField.setFormId(formId);
-		if (!edited) {
-			moduleField.setCreateTime(System.currentTimeMillis());
-			moduleField.setCreateUser(currentUserId);
-		}
-		moduleField.setUpdateTime(System.currentTimeMillis());
-		moduleField.setUpdateUser(currentUserId);
-		return moduleField;
 	}
 
 	public List<BaseField> getAllFields(String formKey, String orgId) {
@@ -248,7 +228,7 @@ public class ModuleFormService {
 			ModuleFormBlob formBlob = new ModuleFormBlob();
 			formBlob.setId(form.getId());
 			try {
-				Object formProp = JSON.parseObject(formResource.getInputStream(), Object.class);
+				FormProp formProp = JSON.parseObject(formResource.getInputStream(), FormProp.class);
 				formBlob.setProp(JSON.toJSONBytes(formProp));
 			} catch (IOException e) {
 				throw new GenericException("表单属性初始化失败", e);

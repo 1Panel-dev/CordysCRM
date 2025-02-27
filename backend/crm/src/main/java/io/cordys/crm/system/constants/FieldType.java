@@ -15,11 +15,11 @@ public enum FieldType {
 	/**
 	 * 数字
 	 */
-	NUMBER,
+	INPUT_NUMBER,
 	/**
 	 * 日期时间
 	 */
-	DATETIME,
+	DATE_TIME,
 	/**
 	 * 单选
 	 */
@@ -33,6 +33,10 @@ public enum FieldType {
 	 */
 	SELECT,
 	/**
+	 * 多值输入
+	 */
+	MULTIPLE_INPUT,
+	/**
 	 * 成员
 	 */
 	MEMBER,
@@ -45,11 +49,19 @@ public enum FieldType {
 	 */
 	DIVIDER,
 	/**
+	 * 图片
+	 */
+	PICTURE,
+	/**
+	 * 地址
+	 */
+	LOCATION,
+	/**
+	 * 电话
+	 */
+	PHONE,
+	/**
 	 * 数据源
 	 */
 	DATA_SOURCE,
-	/**
-	 * 多选输入
-	 */
-	MULTIPLE_INPUT
 }

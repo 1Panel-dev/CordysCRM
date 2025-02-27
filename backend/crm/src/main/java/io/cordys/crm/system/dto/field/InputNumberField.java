@@ -11,6 +11,15 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class InputNumberField extends BaseField {
 
-	@Schema(description = "格式")
+	@Schema(description = "格式", allowableValues = {"percent", "number"})
 	private String format;
+
+	@Schema(description = "保留小数点位数")
+	private Boolean keepPrecision;
+
+	@Schema(description = "位数")
+	private int precision;
+
+	@Schema(description = "显示千分位")
+	private Boolean formatWithComma;
 }

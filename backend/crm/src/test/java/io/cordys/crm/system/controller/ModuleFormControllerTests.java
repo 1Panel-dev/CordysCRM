@@ -31,17 +31,16 @@ public class ModuleFormControllerTests extends BaseTest{
 		ModuleFormSaveRequest request = new ModuleFormSaveRequest();
 		request.setFormKey("none-key");
 		request.setFields(List.of());
-		request.setDeleteFieldIds(List.of());
 		request.setFormProp(new FormProp());
 		this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError());
-		request.setFormKey(FormKey.CUSTOMER.getKey());
-		request.setDeleteFieldIds(List.of("default-delete-id"));
+		request.setFormKey(FormKey.LEAD.getKey());
 		BaseField field = new SelectField();
+		field.setId("select-id");
 		field.setType(FieldType.SELECT.name());
 		request.setFields(List.of(field));
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/module/form/save", request);
 		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
-		assert formConfig.getFields().size() > 1;
+		assert formConfig.getFields().size() == 1;
 		BaseField saveField = formConfig.getFields().getFirst();
 		field.setType(FieldType.SELECT.name());
 		request.setFields(List.of(saveField));
@@ -51,8 +50,8 @@ public class ModuleFormControllerTests extends BaseTest{
 	@Test
 	@Order(2)
 	void testGetFieldList() throws Exception {
-		MvcResult mvcResult = this.requestGetWithOkAndReturn("/module/form/config/" + FormKey.CUSTOMER.getKey());
+		MvcResult mvcResult = this.requestGetWithOkAndReturn("/module/form/config/" + FormKey.LEAD.getKey());
 		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
-		assert formConfig.getFields().size() > 1;
+		assert formConfig.getFields().size() == 1;
 	}
 }

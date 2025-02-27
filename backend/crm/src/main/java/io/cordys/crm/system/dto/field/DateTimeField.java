@@ -11,6 +11,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class DateTimeField extends BaseField {
 
-	@Schema(description = "格式")
+	@Schema(description = "日期类型|格式")
 	private String format;
 }
