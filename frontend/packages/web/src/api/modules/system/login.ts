@@ -1,4 +1,4 @@
-import { getKeyUrl, isLoginUrl, loginUrl, signoutUrl } from '@lib/shared/api/requrls/system/login';
+import {getKeyUrl, isLoginUrl, loginUrl, signoutUrl, weComCallbackUrl} from '@lib/shared/api/requrls/system/login';
 import type { LoginParams } from '@lib/shared/models/system/login';
 import type { UserInfo } from '@lib/shared/models/user';
 
@@ -22,4 +22,9 @@ export function isLogin() {
 // 获取登录密钥
 export function getKey() {
   return CDR.get<string>({ url: getKeyUrl });
+}
+
+// 企业微信二维码登录
+export function getWeComCallback(code: string) {
+  return CDR.get<UserInfo>({ url: weComCallbackUrl,  params: { code } });
 }

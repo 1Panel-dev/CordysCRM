@@ -97,8 +97,22 @@ const useUserStore = defineStore('user', {
         console.log(error);
       }
     },
-    qrCodeLogin(params: any) {
-      console.log(params);
+    qrCodeLogin(res: UserInfo) {
+      try {
+        if (!res) {
+          return false;
+        }
+        setToken(res.sessionId, res.csrfToken);
+        this.setInfo(res);
+        const appStore = useAppStore();
+        const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
+        appStore.setOrgId(lastOrganizationId);
+        return true;
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log(err);
+        return false;
+      }
     },
     async isLogin() {
       try {

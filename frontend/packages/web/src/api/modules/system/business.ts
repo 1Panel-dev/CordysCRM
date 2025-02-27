@@ -5,6 +5,8 @@ import {
   GetAuthsUrl,
   GetConfigEmailUrl,
   GetConfigSynchronizationUrl,
+  GetThirdConfigByTypeUrl,
+  GetThirdTypeListUrl,
   TestConfigEmailUrl,
   TestConfigSynchronizationUrl,
   UpdateAuthNameUrl,
@@ -24,6 +26,7 @@ import type {
 } from '@lib/shared/models/system/business';
 
 import CDR from '@/api/http/index';
+import {OptionDTO} from "@lib/shared/models/system/business";
 
 // 获取邮件设置
 export function getConfigEmail() {
@@ -53,6 +56,16 @@ export function getConfigSynchronization() {
 // 更新同步组织设置
 export function updateConfigSynchronization(data: ConfigSynchronization) {
   return CDR.post({ url: UpdateConfigSynchronizationUrl, data });
+}
+
+// 根据类型获取开启的三方扫码设置
+export function getThirdConfigByType(type: string) {
+  return CDR.get<ConfigSynchronization>({ url: `${GetThirdConfigByTypeUrl}/${type}` });
+}
+
+// 获取三方应用扫码类型集合
+export function getThirdTypeList() {
+  return CDR.get<OptionDTO[]>({ url: GetThirdTypeListUrl });
 }
 
 // 获取认证设置列表

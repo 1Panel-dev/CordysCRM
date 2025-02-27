@@ -49,7 +49,7 @@
         const dingCallback = new Promise((resolve) => {
           resolve(authCode);
         });
-        userStore.qrCodeLogin(await dingCallback);
+        // TODO: userStore.qrCodeLogin(await dingCallback);
         setLoginType('DING_TALK');
         Message.success(t('login.form.login.success'));
         const { redirect, ...othersQuery } = router.currentRoute.value.query;

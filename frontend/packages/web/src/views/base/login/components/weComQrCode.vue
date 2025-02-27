@@ -8,13 +8,14 @@
 
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
-  // import { getWeComCallback, getWeComInfo } from '@/api/modules/user';
   import { useI18n } from '@/hooks/useI18n';
   import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
   import useUserStore from '@/store/modules/user';
 
   import * as ww from '@wecom/jssdk';
   import { WWLoginErrorResp, WWLoginPanelSizeType, WWLoginRedirectType, WWLoginType } from '@wecom/jssdk';
+  import {getThirdConfigByType} from "@/api/modules/system/business";
+  import {getWeComCallback} from "@/api/modules/system/login";
 
   const { t } = useI18n();
 
@@ -29,12 +30,7 @@
   });
 
   const init = async () => {
-    // const data = await getWeComInfo();
-    // TODO:
-    const data = {
-      corpId: 'wwd1b1c1b1b1b1b1b1',
-      agentId: '1000002',
-    };
+    const data = await getThirdConfigByType('WECOM');
     wwLogin.value = ww.createWWLoginPanel({
       el: '#wecom-qr',
       params: {
@@ -48,11 +44,7 @@
       },
       onCheckWeComLogin: obj.value,
       async onLoginSuccess({ code }: any) {
-        // const weComCallback = getWeComCallback(code);
-        // TODO:
-        const weComCallback = new Promise((resolve) => {
-          resolve('123');
-        });
+        const weComCallback = getWeComCallback(code);
         userStore.qrCodeLogin(await weComCallback);
         setLoginType('WE_COM');
         Message.success(t('login.form.login.success'));

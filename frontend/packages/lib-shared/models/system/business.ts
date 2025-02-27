@@ -33,6 +33,12 @@ export interface IntegrationItem {
   response: ConfigSynchronization;
 }
 
+// 三方类型集合设置
+export interface OptionDTO {
+  id: string; // key
+  name: string; // value
+}
+
 // 认证设置
 export interface Auth {
   description: string; // 描述

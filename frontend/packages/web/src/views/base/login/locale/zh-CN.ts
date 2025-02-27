@@ -19,4 +19,8 @@ export default {
   'login.form.username': '用户名',
   'login.form.password': '密码',
   'login.form.loading': '登录中',
+  'login.form.WE_COM': '企业微信',
+  'login.form.DING_TALK': '钉钉',
+  'login.form.LARK': '飞书',
+
 };

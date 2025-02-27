@@ -5,6 +5,10 @@ export const TestConfigEmailUrl = '/organization/config/test/email'; // 邮件�
 export const GetConfigSynchronizationUrl = '/organization/config/third'; // 获取三方设置
 export const UpdateConfigSynchronizationUrl = '/organization/config/edit/third'; // 更新三方设置
 export const TestConfigSynchronizationUrl = '/organization/config/test'; // 三方设置-测试连接
+export const GetThirdConfigByTypeUrl='/organization/config/third/by' //根据类型获取开启的三方扫码设置
+export const GetThirdTypeListUrl='/organization/config/third/type/list'//获取三方应用扫码类型集合
+
+
 
 export const GetAuthsUrl = '/system/authsource/list'; //  认证设置-列表查询
 export const GetAuthDetailUrl = '/system/authsource/get'; // 认证设置-详情

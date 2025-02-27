@@ -1,20 +1,20 @@
 <template>
-  <a-radio-group v-if="activeName != ''" v-model="activeName" type="button" class="tabPlatform" @change="handleClick">
-    <a-radio
+  <n-radio-group v-if="activeName != ''" v-model="activeName" type="button" class="tabPlatform" @change="handleClick">
+    <n-radio-button
       v-for="item of orgOptions"
       :key="item.value"
       :value="item.value"
       :v-show="item.label"
       class="radioOneButton"
     >
-      {{ t('project.messageManagement.' + item.value) }}
-    </a-radio>
+      {{ t('login.form.' + item.value) }}
+    </n-radio-button>
     <!--    <a-tab-pane key="lark" :title="t('project.messageManagement.LARK')"></a-tab-pane>
     <a-tab-pane key="larksuite" :title="t('project.messageManagement.LARK_SUITE')"></a-tab-pane>-->
-  </a-radio-group>
+  </n-radio-group>
   <div v-if="activeName === 'WE_COM'" class="login-qrcode">
     <div class="qrcode">
-      <wecom-qr v-if="activeName === 'WE_COM'" />
+      <wecom-qr v-if="activeName === 'WE_COM'"/>
     </div>
   </div>
   <div v-if="activeName === 'DING_TALK'" class="login-qrcode">
@@ -55,6 +55,7 @@
   import LarkQrCode from './larkQrCode.vue';
   import LarkSuiteQrCode from './larkSuiteQrCode.vue';
   import WecomQr from './weComQrCode.vue';
+  import {getThirdTypeList} from "@/api/modules/system/business";
 
   // import { getPlatformParamUrl } from '@/api/modules/user';
 
@@ -89,26 +90,7 @@
   };
   async function initPlatformInfo() {
     try {
-      // const res = await getPlatformParamUrl();
-      // TODO:
-      const res = [
-        {
-          id: 'WE_COM',
-          name: 'WE_COM',
-        },
-        {
-          id: 'DING_TALK',
-          name: 'DING_TALK',
-        },
-        {
-          id: 'LARK',
-          name: 'LARK',
-        },
-        {
-          id: 'LARK_SUITE',
-          name: 'LARK_SUITE',
-        },
-      ];
+       const res = await getThirdTypeList();
       orgOptions.value = res.map((e) => ({
         label: e.name,
         value: e.id,

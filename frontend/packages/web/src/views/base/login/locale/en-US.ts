@@ -19,4 +19,8 @@ export default {
   'login.form.username': 'Username',
   'login.form.password': 'Password',
   'login.form.loading': 'Logging in',
+  'login.form.WE_COM': 'WE_COM',
+  'login.form.DING_TALK': 'DING_TALK',
+  'login.form.LARK': 'LARK',
+
 };
