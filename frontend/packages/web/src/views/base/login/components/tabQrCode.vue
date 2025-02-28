@@ -12,18 +12,18 @@
     <!--    <a-tab-pane key="lark" :title="t('project.messageManagement.LARK')"></a-tab-pane>
     <a-tab-pane key="larksuite" :title="t('project.messageManagement.LARK_SUITE')"></a-tab-pane>-->
   </n-radio-group>
-  <div v-if="activeName === 'WE_COM'" class="login-qrcode">
+  <div v-if="activeName === 'WECOM'" class="login-qrcode">
     <div class="qrcode">
-      <wecom-qr v-if="activeName === 'WE_COM'"/>
+      <wecom-qr v-if="activeName === 'WECOM'" />
     </div>
   </div>
-  <div v-if="activeName === 'DING_TALK'" class="login-qrcode">
+  <div v-if="activeName === 'DINGTALK'" class="login-qrcode">
     <div class="qrcode">
       <div class="title">
         <CrmIcon type="icon-logo_dingtalk" :size="24"></CrmIcon>
         钉钉登录
       </div>
-      <ding-talk-qr v-if="activeName === 'DING_TALK'" />
+      <ding-talk-qr v-if="activeName === 'DINGTALK'" />
     </div>
   </div>
   <div v-if="activeName === 'LARK'" class="login-qrcode">
@@ -55,7 +55,8 @@
   import LarkQrCode from './larkQrCode.vue';
   import LarkSuiteQrCode from './larkSuiteQrCode.vue';
   import WecomQr from './weComQrCode.vue';
-  import {getThirdTypeList} from "@/api/modules/system/business";
+
+  import { getThirdTypeList } from '@/api/modules/system/business';
 
   // import { getPlatformParamUrl } from '@/api/modules/user';
 
@@ -90,7 +91,7 @@
   };
   async function initPlatformInfo() {
     try {
-       const res = await getThirdTypeList();
+      const res = await getThirdTypeList();
       orgOptions.value = res.map((e) => ({
         label: e.name,
         value: e.id,

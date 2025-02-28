@@ -8,14 +8,14 @@
 
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
+  import { getThirdConfigByType } from '@/api/modules/system/business';
+  import { getWeComCallback } from '@/api/modules/system/login';
   import { useI18n } from '@/hooks/useI18n';
   import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
   import useUserStore from '@/store/modules/user';
 
   import * as ww from '@wecom/jssdk';
   import { WWLoginErrorResp, WWLoginPanelSizeType, WWLoginRedirectType, WWLoginType } from '@wecom/jssdk';
-  import {getThirdConfigByType} from "@/api/modules/system/business";
-  import {getWeComCallback} from "@/api/modules/system/login";
 
   const { t } = useI18n();
 

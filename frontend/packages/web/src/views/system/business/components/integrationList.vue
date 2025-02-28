@@ -55,9 +55,9 @@
               <template #trigger>
                 <n-switch
                   size="small"
-                  :value="item.response.syncEnable"
+                  :value="item.response.qrcodeEnable"
                   :disabled="!item.hasConfig && !item.response.verify"
-                  @update:value="handleChangeEnable(item, 'syncEnable')"
+                  @update:value="handleChangeEnable(item, 'qrcodeEnable')"
                 />
               </template>
               {{ t('system.business.notConfiguredTip') }}
@@ -70,9 +70,9 @@
               <template #trigger>
                 <n-switch
                   size="small"
-                  :value="item.response.qrcodeEnable"
+                  :value="item.response.syncEnable"
                   :disabled="!item.hasConfig"
-                  @update:value="handleChangeEnable(item, 'qrcodeEnable')"
+                  @update:value="handleChangeEnable(item, 'syncEnable')"
                 />
               </template>
               {{ t('system.business.notConfiguredTip') }}

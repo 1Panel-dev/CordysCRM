@@ -134,6 +134,7 @@
   // import { getAuthDetailByType } from '@/api/modules/setting/config';
   // import { getPlatformParamUrl } from '@/api/modules/user';
   // import { GetLoginLogoUrl } from '@/api/requrls/setting/config';
+  import { getThirdTypeList } from '@/api/modules/system/business';
   import { useI18n } from '@/hooks/useI18n';
   import useLoading from '@/hooks/useLoading';
   import useAppStore from '@/store/modules/app';
@@ -270,8 +271,7 @@
 
   async function initPlatformInfo() {
     try {
-      // const res = await getPlatformParamUrl();
-      const res: any[] = []; // TODO: getPlatformParamUrl();
+      const res = await getThirdTypeList();
       if (getLoginType() && getLoginType() !== 'LOCAL' && getLoginType() !== 'LDAP') {
         showQrCodeTab.value = true;
         activeName.value = getLoginType() || 'WE_COM';
