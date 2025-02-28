@@ -26,6 +26,7 @@ import lombok.Data;
 		@JsonSubTypes.Type(value = DatasourceField.class, name = "DATA_SOURCE"),
 })
 public abstract class BaseField {
+
 	@Schema(description = "ID")
 	private String id;
 
@@ -49,9 +50,6 @@ public abstract class BaseField {
 
 	@Schema(description = "描述")
 	private String description;
-
-	@Schema(description = "默认值")
-	private String defaultValue;
 
 	@Schema(description = "是否可读")
 	private Boolean readable;

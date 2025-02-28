@@ -15,7 +15,7 @@ import java.util.List;
 public class SelectField extends BaseField {
 
 	@Schema(description = "是否是多选")
-	private Boolean multiple = false;
+	private Boolean multiple;
 
 	@Schema(description = "选项值")
 	private List<OptionProp> options;

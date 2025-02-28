@@ -12,5 +12,8 @@ import lombok.EqualsAndHashCode;
 public class DepartmentField extends BaseField {
 
 	@Schema(description = "是否是多选")
-	private Boolean multiple = false;
+	private Boolean multiple;
+
+	@Schema(description = "是否当前部门")
+	private Boolean hasCurrentUserDept;
 }

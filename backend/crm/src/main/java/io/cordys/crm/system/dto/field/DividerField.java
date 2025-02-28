@@ -11,8 +11,10 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class DividerField extends BaseField {
 
+	@Schema(description = "分隔线样式")
+	private String dividerClass;
 	@Schema(description = "分隔线颜色")
-	private String splitColor;
+	private String dividerColor;
 	@Schema(description = "标题颜色")
-	private String labelColor;
+	private String titleColor;
 }

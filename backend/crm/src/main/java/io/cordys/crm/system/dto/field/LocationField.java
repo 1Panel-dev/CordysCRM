@@ -12,5 +12,5 @@ import lombok.EqualsAndHashCode;
 public class LocationField extends BaseField {
 
 	@Schema(description = "地址类型|格式")
-	private String type;
+	private String locationType;
 }

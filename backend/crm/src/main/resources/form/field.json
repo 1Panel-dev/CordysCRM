@@ -1,181 +1,161 @@
 {
   "customer": [
     {
-      "name": "customer.name",
+      "name": "基本信息",
+      "internalKey": "customerBasicInfo",
+      "type": "DIVIDER",
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": "1",
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "客户名称",
       "internalKey": "customerName",
       "type": "INPUT",
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
-      "defaultValue": null,
       "readable": true,
       "editable": true,
-      "fieldWidth": "50%",
-      "options": null,
-      "require": true
+      "fieldWidth": "1/2"
     },
     {
-      "name": "customer.industry",
+      "name": "客户行业",
       "internalKey": "customerIndustry",
       "type": "SELECT",
+      "multiple": false,
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
-      "defaultValue": null,
       "readable": true,
       "editable": true,
-      "fieldWidth": "50%",
+      "fieldWidth": "1/2",
       "options": [
         {"label": "互联网", "value":  "1"}, {"label": "金融", "value":  "2"}, {"label": "制造业", "value":  "3"}
-      ],
-      "require": true
+      ]
     },
     {
-      "name": "customer.level",
+      "name": "客户等级",
       "internalKey": "customerLevel",
       "type": "SELECT",
+      "multiple": false,
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
       "defaultValue": "1",
       "readable": true,
       "editable": true,
-      "fieldWidth": "50%",
+      "fieldWidth": "1/2",
       "options": [
         {"label": "重要客户", "value":  "1"}, {"label": "一般客户", "value":  "2"}, {"label": "战略客户", "value":  "3"}
-      ],
-      "require": true
+      ]
     },
     {
-      "name": "customer.type",
+      "name": "客户类型",
       "internalKey": "customerType",
       "type": "SELECT",
+      "multiple": false,
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
-      "defaultValue": null,
       "readable": true,
       "editable": true,
-      "field_width": "50%",
+      "field_width": "1/2",
       "options": [
         {"label": "无", "value":  "1"}, {"label": "最终客户", "value":  "2"}, {"label": "代理商", "value":  "3"}
-      ],
-      "require": true
+      ]
     },
     {
-      "name": "customer.source",
+      "name": "客户来源",
       "internalKey": "customerSource",
       "type": "SELECT",
+      "multiple": false,
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
-      "defaultValue": null,
       "readable": true,
       "editable": true,
-      "field_width": "50%",
+      "field_width": "1/2",
       "options": [
         {"label": "线上", "value":  "1"}, {"label": "线下", "value":  "2"}, {"label": "维保", "value":  "3"},
         {"label": "续约", "value":  "4"}, {"label": "扩容", "value":  "5"}, {"label": "增购", "value":  "6"}
-      ],
-      "require": true
+      ]
     },
     {
-      "name": "customer.online.source",
+      "name": "线上来源详情",
       "internalKey": "customerOnlineSource",
       "type": "SELECT",
+      "multiple": false,
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
-      "defaultValue": null,
       "readable": true,
       "editable": true,
-      "fieldWidth": "50%",
+      "fieldWidth": "1/2",
       "options": [
         {"label": "400电话", "value":  "1"}, {"label": "官网咨询", "value":  "2"}, {"label": "社区用户", "value":  "3"}
-      ],
-      "require": true
+      ]
     },
     {
-      "name": "customer.tag",
+      "name": "客户标签",
       "internalKey": "customerTag",
       "type": "MULTIPLE_INPUT",
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
-      "defaultValue": null,
       "readable": true,
       "editable": true,
-      "fieldWidth": "50%",
-      "options": null
+      "fieldWidth": "1/2"
     },
     {
-      "name": "customer.address.info",
+      "name": "地址信息",
       "internalKey": "customerAddressInfo",
       "type": "DIVIDER",
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
-      "defaultValue": null,
       "readable": true,
-      "editable": true,
-      "fieldWidth": "50%",
-      "options": null
+      "fieldWidth": "1",
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
     },
     {
-      "name": "customer.address.detail",
+      "name": "详情地址",
       "internalKey": "customerAddressDetail",
       "type": "TEXTAREA",
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
-      "defaultValue": null,
       "readable": true,
       "editable": true,
-      "fieldWidth": "50%",
-      "options": null
+      "fieldWidth": "1/2"
     },
     {
-      "name": "customer.area",
+      "name": "地区",
       "internalKey": "customerArea",
       "type": "LOCATION",
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
-      "defaultValue": null,
       "readable": true,
       "editable": true,
-      "fieldWidth": "50%",
-      "options": null
+      "fieldWidth": "1/2"
     },
     {
-      "name": "customer.owner",
+      "name": "负责人",
       "internalKey": "customerOwner",
-      "type": "MEMBER",
+      "type": "DIVIDER",
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
-      "defaultValue": null,
       "readable": true,
-      "editable": true,
-      "fieldWidth": "50%",
-      "options": null,
-      "multiple": false
+      "fieldWidth": "1",
+      "dividerClass": "divider--normal",
+      "dividerColor": "#edf0f1",
+      "titleColor": "#323535"
+    },
+    {
+      "name": "负责人姓名",
+      "internalKey": "customerOwnerName",
+      "type": "MEMBER",
+      "multiple": false,
+      "hasCurrentUser": false,
+      "showLabel": true,
+      "readable": true,
+      "fieldWidth": "1/2"
     }
   ],
   "lead": [
     {
-      "name": "customer.name",
+      "name": "客户名称",
       "internalKey": "leadName",
       "type": "INPUT",
       "showLabel": true,
-      "placeholder": null,
-      "description": null,
-      "defaultValue": null,
       "readable": true,
       "editable": true,
-      "fieldWidth": "50%",
-      "options": null,
-      "require": true
+      "fieldWidth": "1/2"
     }
   ]
 }

@@ -18,7 +18,7 @@ public class RadioField extends BaseField {
 	@Schema(description = "选项值")
 	private List<OptionProp> options;
 
-	@Schema(description = "分布方式")
-	private String position;
+	@Schema(description = "分布方式", allowableValues = {"horizontal", "vertical"})
+	private String direction;
 
 }

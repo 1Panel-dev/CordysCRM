@@ -11,14 +11,14 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class PictureField extends BaseField {
 
-	@Schema(description = "图片显示")
-	private String layout;
+	@Schema(description = "图片显示", allowableValues = {"card", "list"})
+	private String pictureShowType;
 	@Schema(description = "图片上传数量限制")
-	private Boolean limitNumber;
+	private Boolean uploadLimitEnable;
 	@Schema(description = "数量")
-	private Long number;
+	private Long uploadLimit;
 	@Schema(description = "设置单个图片大小限制")
-	private Boolean singleSizeLimit;
+	private Boolean uploadSizeLimitEnable;
 	@Schema(description = "单个图片大小")
-	private Long size;
+	private Long uploadSizeLimit;
 }
