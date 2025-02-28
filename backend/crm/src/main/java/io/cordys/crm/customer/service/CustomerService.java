@@ -1,6 +1,7 @@
 package io.cordys.crm.customer.service;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
@@ -41,14 +42,21 @@ public class CustomerService {
 
     public List<CustomerListResponse> list(CustomerPageRequest request, String orgId) {
         List<CustomerListResponse> list = extCustomerMapper.list(request, orgId);
-        return buildListData(list);
+        return buildListData(list, orgId);
     }
 
-    private List<CustomerListResponse> buildListData(List<CustomerListResponse> list) {
+    private List<CustomerListResponse> buildListData(List<CustomerListResponse> list, String orgId) {
         List<String> customerIds = list.stream().map(CustomerListResponse::getId)
                 .collect(Collectors.toList());
 
         Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService.getResourceFiledMap(customerIds);
+
+        List<String> ownerIds = list.stream()
+                .map(CustomerListResponse::getOwner)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
         list.forEach(customerListResponse -> {
             // 获取自定义字段
@@ -59,6 +67,11 @@ public class CustomerService {
                 // 将毫秒数转换为天数, 并向上取整
                 int days = (int) Math.ceil(customerListResponse.getCollectionTime() * 1.0 / 86400000);
                 customerListResponse.setReservedDays(days);
+            }
+            UserDeptDTO userDeptDTO = userDeptMap.get(customerListResponse.getOwner());
+            if (userDeptDTO != null) {
+                customerListResponse.setDepartmentId(userDeptDTO.getDeptId());
+                customerListResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
         });
 

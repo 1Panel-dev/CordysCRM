@@ -2,6 +2,7 @@ package io.cordys.crm.system.mapper;
 
 
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.response.UserResponse;
@@ -48,4 +49,6 @@ public interface ExtUserMapper {
     List<String> getUserIdsByScope(@Param("ids") List<String> scopeIds, @Param("orgId") String orgId);
 
     void updateUser(@Param("user") User user);
+
+    List<UserDeptDTO> getUserDeptByUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 }

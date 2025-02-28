@@ -19,6 +19,9 @@ public class CustomerContact extends BaseModel {
 	@Schema(description = "客户id")
 	private String customerId;
 
+	@Schema(description = "责任人")
+	private String owner;
+
 	@Schema(description = "联系人姓名")
 	private String name;
 

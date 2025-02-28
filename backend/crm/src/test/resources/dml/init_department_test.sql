@@ -11,6 +11,6 @@ VALUES
 
 
 
-
+-- admin 已经在默认组织初始化了,这里用admin1
 INSERT INTO `sys_organization_user`(`id`, `organization_id`, `department_id`, `resource_user_id`, `user_id`, `enable`, `employee_id`, `position`, `employee_type`, `supervisor_id`, `work_city`, `create_user`, `update_user`, `create_time`, `update_time`)
-VALUES ('1', '100001', '8', '', 'admin', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000);
+VALUES ('1', '100001', '8', '', 'admin1', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000);

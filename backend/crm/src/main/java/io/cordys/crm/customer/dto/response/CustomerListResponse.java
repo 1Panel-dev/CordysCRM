@@ -1,9 +1,8 @@
 package io.cordys.crm.customer.dto.response;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
-import io.cordys.common.dto.OptionDTO;
-import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
 import java.util.List;
 
@@ -48,13 +47,11 @@ public class CustomerListResponse {
     @Schema(description = "更新人名称")
     private String updateUserName;
 
-    // todo
-    @Schema(description = "归属销售")
-    private List<OptionDTO> owners;
-
-    // todo
     @Schema(description = "归属部门")
-    private List<OptionDTO> departments;
+    private String departmentId;
+
+    @Schema(description = "归属部门名称")
+    private String departmentName;
 
     // todo
     @Schema(description = "最近跟进时间")
@@ -67,5 +64,5 @@ public class CustomerListResponse {
     private Integer reservedDays;
 
     @Schema(description = "自定义字段集合")
-    private List<? extends BaseModuleFieldValue> moduleFields;
+    private List<BaseModuleFieldValue> moduleFields;
 }

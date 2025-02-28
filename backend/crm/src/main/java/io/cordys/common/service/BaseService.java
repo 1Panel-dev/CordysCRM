@@ -1,6 +1,7 @@
 package io.cordys.common.service;
 
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import jakarta.annotation.Resource;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -89,5 +91,14 @@ public class BaseService {
      */
     public Map<String, String> getUserNameMap(Set<String> userIds) {
        return getUserNameMap(new ArrayList<>(userIds));
+    }
+
+    public Map<String, UserDeptDTO> getUserDeptMapByUserIds(List<String> ownerIds, String orgId) {
+        if (CollectionUtils.isEmpty(ownerIds)) {
+            return Collections.emptyMap();
+        }
+        return extUserMapper.getUserDeptByUserIds(ownerIds, orgId)
+                .stream()
+                .collect(Collectors.toMap(UserDeptDTO::getUserId, Function.identity()));
     }
 }

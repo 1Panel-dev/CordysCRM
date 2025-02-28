@@ -15,6 +15,13 @@ import java.util.List;
  */
 @Data
 public class CustomerContactListResponse extends CustomerContact {
+
+    @Schema(description = "归属部门")
+    private String departmentId;
+
+    @Schema(description = "归属部门名称")
+    private String departmentName;
+
     @Schema(description = "客户名称")
     private String customerName;
 
@@ -25,5 +32,5 @@ public class CustomerContactListResponse extends CustomerContact {
     private String updateUserName;
 
     @Schema(description = "自定义字段集合")
-    private List<? extends BaseModuleFieldValue> moduleFields;
+    private List<BaseModuleFieldValue> moduleFields;
 }

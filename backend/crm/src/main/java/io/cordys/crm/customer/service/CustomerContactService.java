@@ -1,25 +1,27 @@
 package io.cordys.crm.customer.service;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.customer.domain.CustomerContact;
-import io.cordys.crm.customer.domain.CustomerContactField;
 import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
+import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.cordys.crm.customer.constants.CustomerResultCode.CUSTOMER_CONTACT_EXIST;
@@ -35,7 +37,7 @@ public class CustomerContactService {
     @Resource
     private BaseMapper<CustomerContact> customerContactMapper;
     @Resource
-    private BaseMapper<CustomerContactField> customerContactFieldMapper;
+    private ExtCustomerMapper extCustomerMapper;
     @Resource
     private ExtCustomerContactMapper extCustomerContactMapper;
     @Resource
@@ -45,18 +47,43 @@ public class CustomerContactService {
 
     public List<CustomerContactListResponse> list(CustomerContactPageRequest request, String orgId) {
         List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, orgId);
-        return buildListData(list);
+        return buildListData(list, orgId);
     }
 
-    private List<CustomerContactListResponse> buildListData(List<CustomerContactListResponse> list) {
+    private List<CustomerContactListResponse> buildListData(List<CustomerContactListResponse> list, String orgId) {
+        if (CollectionUtils.isEmpty(list)) {
+            return List.of();
+        }
+
         List<String> customerIds = list.stream().map(CustomerContactListResponse::getId)
+                .distinct()
                 .collect(Collectors.toList());
+
         Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService.getResourceFiledMap(customerIds);
+
+        Map<String, String> customNameMap = extCustomerMapper.selectOptionByIds(customerIds)
+                .stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+
+        List<String> ownerIds = list.stream()
+                .map(CustomerContactListResponse::getOwner)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
         list.forEach(customerListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
             customerListResponse.setModuleFields(customerFields);
+
+            UserDeptDTO userDeptDTO = userDeptMap.get(customerListResponse.getOwner());
+            if (userDeptDTO != null) {
+                customerListResponse.setDepartmentId(userDeptDTO.getDeptId());
+                customerListResponse.setDepartmentName(userDeptDTO.getDeptName());
+            }
+
+            customerListResponse.setCustomerName(customNameMap.get(customerListResponse.getCustomerId()));
         });
 
         return baseService.setCreateAndUpdateUserName(list);
@@ -81,6 +108,9 @@ public class CustomerContactService {
         // 校验名称重复
         checkAddExist(customerContact);
         customerContactMapper.insert(customerContact);
+
+        //保存自定义字段
+        customerContactFieldService.saveModuleField(customerContact.getId(), request.getModuleFields());
         return customerContact;
     }
 
@@ -91,7 +121,21 @@ public class CustomerContactService {
         // 校验名称重复
         checkUpdateExist(customerContact);
         customerContactMapper.update(customerContact);
+
+        // 更新模块字段
+        updateModuleField(request.getId(), request.getModuleFields());
         return customerContactMapper.selectByPrimaryKey(customerContact.getId());
+    }
+
+    private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields) {
+        if (moduleFields == null) {
+            // 如果为 null，则不更新
+            return;
+        }
+        // 先删除
+        customerContactFieldService.deleteByResourceId(customerId);
+        // 再保存
+        customerContactFieldService.saveModuleField(customerId, moduleFields);
     }
 
     private void checkAddExist(CustomerContact customerContact) {

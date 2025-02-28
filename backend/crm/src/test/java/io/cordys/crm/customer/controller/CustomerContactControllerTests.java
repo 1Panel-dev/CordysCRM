@@ -1,9 +1,11 @@
 package io.cordys.crm.customer.controller;
 
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.CustomerContact;
 import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
@@ -70,6 +72,7 @@ class CustomerContactControllerTests extends BaseTest {
         CustomerContactAddRequest request = new CustomerContactAddRequest();
         request.setName("test");
         request.setCustomerId("customerId");
+        request.setOwner(InternalUser.ADMIN.getValue());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         CustomerContact resultData = getResultData(mvcResult, CustomerContact.class);
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(resultData.getId());
@@ -77,6 +80,10 @@ class CustomerContactControllerTests extends BaseTest {
         // 校验请求成功数据
         this.addCustomerContact = customerContact;
         Assertions.assertEquals(request.getName(), customerContact.getName());
+        Assertions.assertEquals(request.getOwner(), customerContact.getOwner());
+
+        // 校验重名异常
+        assertErrorCode(this.requestPost(DEFAULT_ADD, request), CustomerResultCode.CUSTOMER_CONTACT_EXIST);
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_ADD, DEFAULT_ADD, request);
@@ -128,7 +135,14 @@ class CustomerContactControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<CustomerContactListResponse>> pageResult = getPageResult(mvcResult, CustomerContactListResponse.class);
         List<CustomerContactListResponse> customerContactList = pageResult.getList();
-        // todo
+        customerContactList.forEach(customerContactListResponse -> {
+            CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(customerContactListResponse.getId());
+            CustomerContact result = BeanUtils.copyBean(new CustomerContact(), customerContactListResponse);
+            result.setOrganizationId(customerContact.getOrganizationId());
+            Assertions.assertEquals(customerContact, result);
+            Assertions.assertNotNull(customerContactListResponse.getUpdateUserName());
+            Assertions.assertNotNull(customerContactListResponse.getDepartmentName());
+        });
         
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, DEFAULT_PAGE, request);

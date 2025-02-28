@@ -14,7 +14,6 @@ import io.cordys.security.SessionUser;
 import io.cordys.security.SessionUtils;
 import io.cordys.security.UserDTO;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
@@ -47,9 +46,6 @@ public class UserLoginService {
             throw new AuthenticationException(Translator.get("user_not_exist"));
         }
 
-        if (BooleanUtils.isFalse(userDTO.getEnable())) {
-            throw new DisabledAccountException(Translator.get("user_has_been_disabled"));
-        }
         // 设置权限
         userDTO.setPermissionIds(roleService.getPermissionIdsByUserId(userId));
         // 设置组织ID

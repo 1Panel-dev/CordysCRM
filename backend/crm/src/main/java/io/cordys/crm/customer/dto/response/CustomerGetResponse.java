@@ -42,5 +42,5 @@ public class CustomerGetResponse {
     private String updateUserName;
 
     @Schema(description = "自定义字段")
-    private List<? extends BaseModuleFieldValue> moduleFields;
+    private List<BaseModuleFieldValue> moduleFields;
 }

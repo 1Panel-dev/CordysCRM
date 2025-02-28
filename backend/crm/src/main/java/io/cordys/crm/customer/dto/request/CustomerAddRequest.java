@@ -27,6 +27,6 @@ public class CustomerAddRequest {
     @Schema(description = "负责人")
     private String owner;
 
-    @Schema(description = "自定义字段")
+    @Schema(description = "模块字段值")
     private List<BaseModuleFieldValue> moduleFields;
 }
