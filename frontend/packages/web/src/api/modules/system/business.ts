@@ -24,9 +24,9 @@ import type {
   ConfigEmailParams,
   ConfigSynchronization,
 } from '@lib/shared/models/system/business';
+import { OptionDTO } from '@lib/shared/models/system/business';
 
 import CDR from '@/api/http/index';
-import {OptionDTO} from "@lib/shared/models/system/business";
 
 // 获取邮件设置
 export function getConfigEmail() {

@@ -37,7 +37,7 @@ export default function useRenameNode(
   /** 处理重命名逻辑 */
   const loading = ref<boolean>(false);
   async function handleRenameMode(node: CrmTreeNodeData) {
-    if (!renameApi || renameStatic) return;
+    if (!renameApi || renameStatic?.value) return;
 
     loading.value = true;
     try {
