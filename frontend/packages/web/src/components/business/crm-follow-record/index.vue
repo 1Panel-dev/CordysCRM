@@ -5,6 +5,7 @@
     :virtual-scroll-height="props.virtualScrollHeight"
     :key-field="props.keyField"
     :item-height="100"
+    @reach-bottom="emit('reachBottom')"
   >
     <template #item="{ item }">
       <div class="crm-follow-record-item mr-[8px]">
@@ -72,6 +73,10 @@
     keyField: string;
     description: Description[];
     virtualScrollHeight: string;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'reachBottom'): void;
   }>();
 
   const listData = defineModel<FollowRecordItem[]>('data', {

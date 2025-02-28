@@ -496,7 +496,7 @@
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
     getUserList,
     {
-      tableKey: TableKeyEnum.SYSTEM_ORG_TABLE,
+      tableKey: TableKeyEnum.OPPORTUNITY_LIST,
       showSetting: true,
       columns,
       scrollX: 2000,
@@ -511,6 +511,7 @@
   );
 
   function initData() {
+    // TODO 等待联调
     setLoadListParams({
       departmentIds: ['101256012006162432'],
     });

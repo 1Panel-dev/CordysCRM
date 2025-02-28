@@ -259,4 +259,6 @@ export default {
   'common.headRecord': '负责人记录',
   'common.followFailed': '跟进失败',
   'common.updateToCurrentProgress': '更新为当前进度',
+  'common.canceled': '已取消',
+  'common.cancelPlan': '取消计划',
 };

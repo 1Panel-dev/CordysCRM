@@ -2,7 +2,7 @@
   <CrmModal
     v-model:show="showModal"
     size="small"
-    :title="t('common.batchTransfer')"
+    :title="props.isBatch ? t('common.batchTransfer') : t('common.transfer')"
     :ok-loading="loading"
     :positive-text="t('common.transfer')"
     @confirm="confirmHandler"
@@ -28,10 +28,15 @@
   const { t } = useI18n();
   const Message = useMessage();
 
-  const props = defineProps<{
+  interface TransferModalProps {
     optIds: DataTableRowKey[];
+    isBatch?: boolean;
     moduleType: ModuleConfigEnum;
-  }>();
+  }
+
+  const props = withDefaults(defineProps<TransferModalProps>(), {
+    isBatch: true,
+  });
 
   const emit = defineEmits<{
     (e: 'loadList'): void;
@@ -55,6 +60,7 @@
 
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
 
+  // TODO 等待联调
   function confirmHandler() {
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {

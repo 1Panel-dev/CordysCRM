@@ -21,4 +21,8 @@ export default {
   'opportunity.headInfo': '负责人信息',
   'opportunity.current': '当前',
   'opportunity.contactInfo': '联系人信息',
+  'opportunity.belongStatus': '归属状态',
+  'opportunity.belongStartTime': '归属开始时间',
+  'opportunity.belongEndTime': '归属结束时间',
+  'opportunity.headRecordPage': '负责人记录列表',
 };

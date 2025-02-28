@@ -1,9 +1,5 @@
 <template>
-  <n-collapse
-    class="crm-collapse"
-    :default-expanded-names="props.defaultExpand ? props.nameKey : ''"
-    @update:expanded-names="updateExpanded"
-  >
+  <n-collapse v-model:expanded-names="expandedNames" class="crm-collapse" @update:expanded-names="updateExpanded">
     <n-collapse-item :title="props.title" :name="props.nameKey">
       <template #header="{ collapsed }">
         <slot name="header" :collapsed="collapsed">
@@ -23,7 +19,7 @@
       <template #header-extra="{ collapsed }">
         <div class="flex items-center justify-center gap-[8px]">
           <slot name="headerExtraLeft" :collapsed="collapsed"></slot>
-          <n-button quaternary class="text-btn-secondary !p-0 !text-[var(--text-n4)]">
+          <n-button v-if="props.showExpandBtn" quaternary class="text-btn-secondary !p-0 !text-[var(--text-n4)]">
             <CrmIcon
               class="text-[var(--text-n4)]"
               :type="`${collapsed ? 'iconicon_chevron_down' : 'iconicon_chevron_right'}`"
@@ -39,16 +35,17 @@
 <script setup lang="ts">
   import { NButton, NCollapse, NCollapseItem, NTooltip } from 'naive-ui';
 
-  const props = withDefaults(
-    defineProps<{
-      nameKey: string;
-      title?: string;
-      defaultExpand?: boolean;
-    }>(),
-    {
-      defaultExpand: false,
-    }
-  );
+  interface CollapseProps {
+    nameKey: string;
+    title?: string;
+    defaultExpand?: boolean;
+    showExpandBtn?: boolean;
+  }
+
+  const props = withDefaults(defineProps<CollapseProps>(), {
+    defaultExpand: false, // 默认展开
+    showExpandBtn: true, // 显示折叠按钮
+  });
 
   const emit = defineEmits<{
     (e: 'expand', expandedNames: Array<string | number> | string | number | null): void;
@@ -57,6 +54,22 @@
   function updateExpanded(expandedNames: Array<string | number> | string | number | null) {
     emit('expand', expandedNames);
   }
+
+  const expandedNames = ref<string[]>([]);
+
+  watch(
+    () => props.defaultExpand,
+    (val) => {
+      if (val && !expandedNames.value.includes(props.nameKey)) {
+        expandedNames.value.push(props.nameKey);
+      } else {
+        expandedNames.value = [];
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less">

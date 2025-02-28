@@ -259,4 +259,6 @@ export default {
   'common.headRecord': 'Head record',
   'common.followFailed': 'Follow failed',
   'common.updateToCurrentProgress': 'Update to current progress',
+  'common.canceled': 'Canceled',
+  'common.cancelPlan': 'Cancel plan',
 };

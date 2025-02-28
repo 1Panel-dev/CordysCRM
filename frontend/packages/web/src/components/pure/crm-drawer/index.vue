@@ -17,17 +17,19 @@
       <template #header>
         <slot name="header">
           <div class="flex w-full items-center justify-between gap-[8px] overflow-hidden">
+            <div v-if="props.showBack" @click="handleCancel">
+              <CrmIcon class="cursor-pointer" type="iconicon_chevron_left" :size="16" />
+            </div>
             <div class="one-line-text flex flex-1 items-center gap-[8px]">
               <slot name="titleLeft"></slot>
-              <div v-if="props.showBack" @click="handleCancel">
-                <CrmIcon class="cursor-pointer" type="iconicon_chevron_left" :size="16" />
-              </div>
-              <n-tooltip trigger="hover" :delay="300" :disabled="!props.title">
-                <template #trigger>
-                  <span class="one-line-text">{{ props.title }}</span>
-                </template>
-                {{ props.title }}
-              </n-tooltip>
+              <slot name="title">
+                <n-tooltip trigger="hover" :delay="300" :disabled="!props.title">
+                  <template #trigger>
+                    <span class="one-line-text">{{ props.title }}</span>
+                  </template>
+                  {{ props.title }}
+                </n-tooltip>
+              </slot>
             </div>
             <div class="flex flex-shrink-0 justify-end">
               <slot name="titleRight"></slot>

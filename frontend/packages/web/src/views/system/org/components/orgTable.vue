@@ -253,7 +253,7 @@
       if (res) {
         const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
         currentIntegration.value = { ...currentIntegration.value, ...weChatConfig };
-        isHasConfig.value = !!weChatConfig && weChatConfig.syncEnable;
+        isHasConfig.value = !!weChatConfig && weChatConfig.syncEnable && !!weChatConfig.verify;
         renderSyncResult.value = renderSync();
       }
     } catch (error) {

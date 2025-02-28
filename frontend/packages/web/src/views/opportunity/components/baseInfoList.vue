@@ -3,7 +3,8 @@
     <div
       v-for="item of props.list"
       :key="item.id"
-      :class="`flex w-[calc(100%/${props.list.length})]  flex-col gap-[8px]`"
+      :class="`flex flex-col gap-[8px]`"
+      :style="{ width: `calc(100% / ${props.list.length})` }"
     >
       <div class="font-medium text-[var(--text-n4)]">{{ item.name }}</div>
       <div v-for="ele of item.children" :key="ele.id" class="flex flex-nowrap items-center text-[var(--text-n1)]">

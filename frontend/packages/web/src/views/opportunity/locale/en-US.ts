@@ -21,4 +21,8 @@ export default {
   'opportunity.headInfo': 'Head info',
   'opportunity.current': 'Current',
   'opportunity.contactInfo': 'Contact info',
+  'opportunity.belongStatus': 'Belong status',
+  'opportunity.belongStartTime': 'Belong start time',
+  'opportunity.belongEndTime': 'Belong end time',
+  'opportunity.headRecordPage': 'Head record list',
 };
