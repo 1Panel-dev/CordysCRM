@@ -3,10 +3,17 @@
 <mapper namespace="io.cordys.crm.system.mapper.ExtUserMapper">
 
     <select id="selectByPhoneOrEmail" resultType="io.cordys.security.UserDTO">
-        SELECT *
-        FROM sys_user
-                 LEFT JOIN sys_user_extend ON sys_user.id = sys_user_extend.id
-        WHERE sys_user.id = #{id} OR sys_user.phone = #{id} OR sys_user.email = #{id}
+        SELECT
+            sys_user.*,
+            sys_user_extend.avatar,
+            sys_user_extend.platform_info,
+            sys_organization_user.ENABLE
+        FROM
+            sys_user
+                LEFT JOIN sys_user_extend ON sys_user.id = sys_user_extend.id
+                LEFT JOIN sys_organization_user ON sys_user.id = sys_organization_user.user_id
+        WHERE
+            sys_user.id = #{id} OR sys_user.phone = #{id} OR sys_user.email = #{id}
     </select>
 
     <select id="selectUserOptionByIds" resultType="io.cordys.common.dto.OptionDTO">

@@ -44,10 +44,11 @@ public class UserLoginService {
     public UserDTO authenticateUser(String userId) {
         UserDTO userDTO = extUserMapper.selectByPhoneOrEmail(userId);
         if (userDTO == null) {
-            return null;
+            throw new AuthenticationException(Translator.get("user_not_exist"));
         }
+
         if (BooleanUtils.isFalse(userDTO.getEnable())) {
-            throw new DisabledAccountException();
+            throw new DisabledAccountException(Translator.get("user_has_been_disabled"));
         }
         // 设置权限
         userDTO.setPermissionIds(roleService.getPermissionIdsByUserId(userId));
