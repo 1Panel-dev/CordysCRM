@@ -108,7 +108,7 @@ CREATE TABLE follow_up_field_blob(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
     `follow_up_id` VARCHAR(32) NOT NULL   COMMENT '跟进记录id' ,
     `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
-    `field_value` BLOB(255) NOT NULL   COMMENT '自定义属性值' ,
+    `field_value` BLOB NOT NULL   COMMENT '自定义属性值' ,
     PRIMARY KEY (id)
 )  COMMENT = '跟进记录自定义属性大文本'
 ENGINE = InnoDB
