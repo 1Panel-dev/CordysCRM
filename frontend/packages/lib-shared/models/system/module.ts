@@ -1,3 +1,5 @@
+import type { FormDesignKeyEnum } from '../../enums/formDesignEnum';
+import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
 
 // 模块首页-导航模块列表
@@ -145,4 +147,29 @@ export interface CapacityItem {
   scopeId: string;
   capacity: number;
   members: SelectedUsersItem[];
+}
+
+// 表单设计保存参数
+export type FormFooterDirection = 'flex-row' | 'flex-row-reverse' | 'justify-center';
+export interface FormActionButton {
+  text: string;
+  enable: boolean;
+}
+export interface FormConfig {
+  layout: number;
+  labelPos: 'left' | 'top';
+  inputWidth: 'custom' | 'full';
+  optBtnContent: FormActionButton[];
+  optBtnPos: FormFooterDirection;
+}
+
+export interface SaveFormDesignConfigParams {
+  formKey: FormDesignKeyEnum;
+  fields: FormCreateField[];
+  formProp: FormConfig;
+}
+
+export interface FormDesignConfigDetailParams {
+  fields: FormCreateField[];
+  formProp: FormConfig;
 }

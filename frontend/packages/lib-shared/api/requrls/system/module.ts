@@ -35,3 +35,7 @@ export const UpdateCustomerPoolUrl = '/customer-pool/update'; // 编辑公海池
 export const SwitchCustomerPoolStatusUrl = '/customer-pool/switch'; // 启用/禁用公海池
 export const DeleteCustomerPoolUrl = '/customer-pool/delete'; // 删除公海池
 export const NoPickCustomerPoolUrl = '/customer-pool/no-pick'; // 未领取线索
+
+// 模块-表单设计
+export const GetFormDesignConfigUrl = '/module/form/config'; // 获取表单设计配置
+export const SaveFormDesignConfigUrl = '/module/form/save'; // 保存表单设计配置

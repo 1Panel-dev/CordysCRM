@@ -60,7 +60,7 @@ module.exports = {
     'import/no-unresolved': [
       'error',
       {
-        ignore: ['^@lib/shared'],
+        ignore: ['^@lib/shared', '^@web/'],
       },
     ],
     'import/extensions': [

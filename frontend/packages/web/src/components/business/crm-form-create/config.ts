@@ -159,6 +159,21 @@ export const dividerDefaultFieldConfig: FormCreateField = {
   titleColor: '#323535',
 };
 
+export const tagInputDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.MULTIPLE_INPUT,
+  icon: 'iconicon_books',
+  name: 'common.tag',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  readable: true,
+  editable: true,
+  rules: [],
+  defaultValue: [],
+  showRules: [FieldRuleEnum.REQUIRED],
+};
+
 export const basicFields: FormCreateField[] = [
   inputDefaultFieldConfig,
   textareaDefaultFieldConfig,
@@ -170,6 +185,7 @@ export const basicFields: FormCreateField[] = [
   memberDefaultFieldConfig,
   departmentDefaultFieldConfig,
   dividerDefaultFieldConfig,
+  tagInputDefaultFieldConfig,
 ];
 
 export const pictureDefaultFieldConfig: FormCreateField = {

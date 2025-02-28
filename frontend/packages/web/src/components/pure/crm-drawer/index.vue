@@ -5,6 +5,7 @@
     :width="props.width"
     :show-mask="props.showMask"
     :placement="props.placement"
+    class="crm-drawer"
     @after-leave="emit('cancel')"
   >
     <n-drawer-content
@@ -34,7 +35,9 @@
           </div>
         </slot>
       </template>
-      <slot />
+      <n-spin :show="props.loading" class="h-full">
+        <slot />
+      </n-spin>
       <template v-if="footer" #footer>
         <slot name="footer">
           <div class="flex items-center justify-between">
@@ -66,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NDrawer, NDrawerContent, NTooltip } from 'naive-ui';
+  import { NButton, NDrawer, NDrawerContent, NSpin, NTooltip } from 'naive-ui';
 
   import { useI18n } from '@/hooks/useI18n';
 
@@ -126,6 +129,11 @@
 </script>
 
 <style lang="less">
+  .crm-drawer {
+    .n-spin-content {
+      @apply h-full;
+    }
+  }
   .crm-drawer-header-class {
     .n-drawer-header__main {
       max-width: calc(100% - 28px);

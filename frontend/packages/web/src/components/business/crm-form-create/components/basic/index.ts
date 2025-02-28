@@ -6,6 +6,7 @@ import memberSelect from './memberSelect.vue';
 import radio from './radio.vue';
 import select from './select.vue';
 import singleText from './singleText.vue';
+import tagInput from './tagInput.vue';
 import textarea from './textarea.vue';
 
 export default {
@@ -18,4 +19,5 @@ export default {
   select,
   divider,
   memberSelect,
+  tagInput,
 };

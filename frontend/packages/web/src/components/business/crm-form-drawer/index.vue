@@ -4,6 +4,7 @@
     width="100%"
     :footer="false"
     :closable="false"
+    :loading="loading"
     header-class="crm-form-drawer-header"
     body-content-class="!p-0"
   >
@@ -15,7 +16,8 @@
               <ChevronBackOutline />
             </n-icon>
           </n-button>
-          <n-input
+          <div class="text-[14px] font-normal"> {{ props.title }}</div>
+          <!-- <n-input
             v-model:value="name"
             type="text"
             :placeholder="t('common.pleaseInput')"
@@ -25,44 +27,149 @@
             autosize
             :status="name.trim() === '' ? 'error' : undefined"
             :maxlength="255"
-          ></n-input>
+          ></n-input> -->
         </div>
-        <n-button type="primary" @click="handleSave">{{ t('common.save') }}</n-button>
+        <n-button type="primary" :loading="loading" @click="handleSave">{{ t('common.save') }}</n-button>
       </div>
     </template>
-    <CrmFormDesign v-if="visible" />
+    <CrmFormDesign v-if="visible" v-model:form-config="formConfig" v-model:field-list="fieldList" />
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
-  import { NButton, NIcon, NInput } from 'naive-ui';
+  import { NButton, NIcon, useMessage } from 'naive-ui';
   import { ChevronBackOutline } from '@vicons/ionicons5';
+
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
+  import { getFormDesignConfig, saveFormDesignConfig } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
+  import useModal from '@/hooks/useModal';
+
+  import { FormCreateField } from '../crm-form-create/types';
 
   const CrmFormDesign = defineAsyncComponent(() => import('@/components/business/crm-form-design/index.vue'));
 
   const props = defineProps<{
     title: string;
+    formKey: FormDesignKeyEnum;
   }>();
 
   const { t } = useI18n();
+  const Message = useMessage();
+  const { openModal } = useModal();
 
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
 
-  const name = ref(props.title);
+  const loading = ref(false);
+  const fieldList = ref<FormCreateField[]>([]);
+  const formConfig = ref<FormConfig>({
+    layout: 1,
+    labelPos: 'top',
+    inputWidth: 'custom',
+    optBtnContent: [
+      {
+        text: t('common.save'),
+        enable: true,
+      },
+      {
+        text: t('common.saveAndContinue'),
+        enable: false,
+      },
+      {
+        text: t('common.cancel'),
+        enable: true,
+      },
+    ],
+    optBtnPos: 'flex-row',
+  });
+  const unsaved = ref(false);
+
+  watch(
+    () => [fieldList.value, formConfig.value],
+    () => {
+      unsaved.value = true;
+    },
+    {
+      deep: true,
+    }
+  );
+
+  function showUnsavedLeaveTip() {
+    openModal({
+      title: t('common.unSaveLeaveTitle'),
+      content: t('common.editUnsavedLeave'),
+      onPositiveClick: async () => {
+        visible.value = false;
+      },
+    });
+  }
 
   function handleBack() {
-    visible.value = false;
+    if (!loading.value) {
+      if (unsaved.value) {
+        showUnsavedLeaveTip();
+      } else {
+        visible.value = false;
+      }
+    }
   }
 
   async function handleSave() {
-    console.log(name.value);
+    try {
+      loading.value = true;
+      await saveFormDesignConfig({
+        formKey: props.formKey,
+        formProp: formConfig.value,
+        fields: fieldList.value,
+      });
+      Message.success(t('common.saveSuccess'));
+      visible.value = false;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
   }
+
+  async function initFormConfig() {
+    try {
+      loading.value = true;
+      const res = await getFormDesignConfig(props.formKey);
+      fieldList.value = res.fields.map((item) => ({
+        ...item,
+        id: item.id,
+        internalKey: item.internalKey,
+        type: item.type,
+        name: t(item.name),
+        placeholder: t(item.placeholder || ''),
+      }));
+      formConfig.value = res.formProp;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        initFormConfig();
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less">

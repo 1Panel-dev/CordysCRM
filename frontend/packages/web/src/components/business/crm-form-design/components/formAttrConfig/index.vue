@@ -16,13 +16,13 @@
 <script setup lang="ts">
   import { NScrollbar, NTabPane, NTabs } from 'naive-ui';
 
+  import { FormConfig } from '@lib/shared/models/system/module';
+
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import fieldAttr from './fieldAttr.vue';
   import formAttr from './formAttr.vue';
 
   import { useI18n } from '@/hooks/useI18n';
-
-  import { FormConfig } from '../../types';
 
   const { t } = useI18n();
 

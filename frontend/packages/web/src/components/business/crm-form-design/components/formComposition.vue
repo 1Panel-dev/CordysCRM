@@ -20,7 +20,7 @@
           :key="item.id"
           class="crm-form-design--composition-item"
           :class="activeItem?.id === item.id ? 'crm-form-design--composition-item--active' : ''"
-          :style="{ width: `${item.fieldWidth * 100}%` }"
+          :style="{ width: `${Number(item.fieldWidth) * 100}%` }"
           @click="() => handleItemClick(item)"
         >
           <div class="crm-form-design--composition-item-tools">
@@ -80,6 +80,7 @@
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
@@ -87,8 +88,6 @@
 
   import { useI18n } from '@/hooks/useI18n';
   import { getGenerateId } from '@/utils';
-
-  import { FormConfig } from '../types';
 
   const props = defineProps<{
     formConfig: FormConfig;
@@ -143,6 +142,9 @@
     }
     if (type === FieldTypeEnum.DIVIDER) {
       return CrmFormCreateComponents.basicComponents.divider;
+    }
+    if (type === FieldTypeEnum.MULTIPLE_INPUT) {
+      return CrmFormCreateComponents.basicComponents.tagInput;
     }
     if (type === FieldTypeEnum.PICTURE) {
       return CrmFormCreateComponents.advancedComponents.upload;

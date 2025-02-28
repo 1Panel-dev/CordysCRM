@@ -7,6 +7,7 @@ import {
   deleteOpportunityUrl,
   GetCustomerCapacityPageUrl,
   GetCustomerPoolPageUrl,
+  GetFormDesignConfigUrl,
   GetLeadCapacityPageUrl,
   GetLeadPoolPageUrl,
   getModuleNavConfigListUrl,
@@ -17,6 +18,7 @@ import {
   NoPickCustomerPoolUrl,
   NoPickLeadPoolUrl,
   SaveCustomerCapacityUrl,
+  SaveFormDesignConfigUrl,
   SaveLeadCapacityUrl,
   SwitchCustomerPoolStatusUrl,
   SwitchLeadPoolStatusUrl,
@@ -31,12 +33,14 @@ import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import type {
   CapacityItem,
   CapacityParams,
+  FormDesignConfigDetailParams,
   LeadPoolItem,
   LeadPoolParams,
   ModuleNavBaseInfoItem,
   ModuleSortParams,
   OpportunityItem,
   OpportunityParams,
+  SaveFormDesignConfigParams,
 } from '@lib/shared/models/system/module';
 import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
@@ -153,4 +157,13 @@ export function deleteCustomerPool(id: string) {
 
 export function noPickCustomerPool(id: string) {
   return CDR.get({ url: `${NoPickCustomerPoolUrl}/${id}` });
+}
+
+// 表单设计
+export function saveFormDesignConfig(data: SaveFormDesignConfigParams) {
+  return CDR.post({ url: SaveFormDesignConfigUrl, data });
+}
+
+export function getFormDesignConfig(id: string) {
+  return CDR.get<FormDesignConfigDetailParams>({ url: `${GetFormDesignConfigUrl}/${id}` });
 }

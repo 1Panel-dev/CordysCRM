@@ -13,45 +13,27 @@
 <script setup lang="ts">
   import { NScrollbar } from 'naive-ui';
 
+  import { FormConfig } from '@lib/shared/models/system/module';
+
   import fieldComponents from './components/fieldComponents.vue';
   import formAttrConfig from './components/formAttrConfig/index.vue';
   import formComposition from './components/formComposition.vue';
 
-  import { useI18n } from '@/hooks/useI18n';
-
   import { FormCreateField } from '../crm-form-create/types';
-  import { FormConfig } from './types';
 
-  const { t } = useI18n();
+  const list = defineModel<FormCreateField[]>('fieldList', {
+    required: true,
+  });
+  const formConfig = defineModel<FormConfig>('formConfig', {
+    required: true,
+  });
 
-  const list = ref<FormCreateField[]>([]);
   const field = ref<FormCreateField>();
   const formCompositionRef = ref<InstanceType<typeof formComposition>>();
 
   function handleFieldSelect(item: FormCreateField) {
     formCompositionRef.value?.addItem(item);
   }
-
-  const formConfig = ref<FormConfig>({
-    layout: 1,
-    labelPos: 'top',
-    inputWidth: 'custom',
-    optBtnContent: [
-      {
-        text: t('common.save'),
-        enable: true,
-      },
-      {
-        text: t('common.saveAndContinue'),
-        enable: false,
-      },
-      {
-        text: t('common.cancel'),
-        enable: true,
-      },
-    ],
-    optBtnPos: 'flex-row',
-  });
 
   watch(
     () => formConfig.value.layout,

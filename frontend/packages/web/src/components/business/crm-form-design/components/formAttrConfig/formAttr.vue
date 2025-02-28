@@ -119,11 +119,11 @@
 <script setup lang="ts">
   import { NInput, NRadioButton, NRadioGroup, NSwitch, NTooltip } from 'naive-ui';
 
+  import { FormConfig } from '@lib/shared/models/system/module';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';
-
-  import { FormConfig } from '../../types';
 
   const { t } = useI18n();
 

@@ -346,9 +346,13 @@
       <div
         v-if="
           (!fieldConfig.options || fieldConfig.options.length === 0) &&
-          ![FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE, FieldTypeEnum.LOCATION, FieldTypeEnum.PHONE].includes(
-            fieldConfig.type
-          )
+          ![
+            FieldTypeEnum.DIVIDER,
+            FieldTypeEnum.PICTURE,
+            FieldTypeEnum.LOCATION,
+            FieldTypeEnum.PHONE,
+            FieldTypeEnum.MULTIPLE_INPUT,
+          ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
       >

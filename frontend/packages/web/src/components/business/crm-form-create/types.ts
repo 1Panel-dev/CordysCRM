@@ -18,6 +18,7 @@ export interface FormCreateField {
   id: string;
   name: string;
   type: FieldTypeEnum;
+  internalKey?: string;
   key?: string;
   showLabel: boolean;
   placeholder?: string;
