@@ -13,7 +13,7 @@ import java.util.List;
 public class FormProp {
 
 	@Schema(description = "布局")
-	private String layout;
+	private int layout;
 	@Schema(description = "标题位置")
 	private String labelPos;
 	@Schema(description = "输入框宽度")

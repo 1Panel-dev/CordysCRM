@@ -14,6 +14,9 @@ public class DepartmentField extends BaseField {
 	@Schema(description = "是否是多选")
 	private Boolean multiple;
 
+	@Schema(description = "默认值")
+	private String defaultValue;
+
 	@Schema(description = "是否当前部门")
 	private Boolean hasCurrentUserDept;
 }
