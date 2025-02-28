@@ -15,7 +15,7 @@ public class MultipleSelectResolver extends AbstractModuleFieldResolver<SelectFi
     @Override
     public void validate(SelectField selectField, Object value) {
         // 校验必填
-        validateArrayRequired(selectField, value);
+        validateRequired(selectField, value);
 
         // 校验值类型
         validateArray(selectField.getName(), value);

@@ -8,7 +8,7 @@ public class MultipleTextResolver extends AbstractModuleFieldResolver<MultipleIn
 
     @Override
     public void validate(MultipleInputField multipleInputField, Object value) {
-        validateArrayRequired(multipleInputField, value);
+        validateRequired(multipleInputField, value);
         validateArray(multipleInputField.getName(), value);
     }
 

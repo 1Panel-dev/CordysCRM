@@ -11,7 +11,7 @@ public class MultipleMemberResolver extends MemberResolver {
 
     @Override
     public void validate(MemberField memberField, Object value) {
-        validateArrayRequired(memberField, value);
+        validateRequired(memberField, value);
         validateArray(memberField.getName(), value);
     }
 

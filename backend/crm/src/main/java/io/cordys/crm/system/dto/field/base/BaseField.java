@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
 @JsonSubTypes({
@@ -63,8 +65,8 @@ public abstract class BaseField {
 	@Schema(description = "字段宽度")
 	private String fieldWidth;
 
-	@Schema(description = "是否必填")
-	private Boolean required;
+	@Schema(description = "规则")
+	private List<RuleProp> showRules;
 
 	@JsonIgnore
 	public boolean isTextArea() {

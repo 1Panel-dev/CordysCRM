@@ -1,11 +1,13 @@
 package io.cordys.common.resolver.field;
 
 
+import io.cordys.common.constants.RuleValidatorConstants;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.field.base.OptionProp;
+import io.cordys.crm.system.dto.field.base.RuleProp;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,21 +55,12 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
     }
 
     protected void validateRequired(T customField, Object value) {
-        if (!BooleanUtils.isTrue(customField.getRequired())) {
+        if (!hasValidatorKey(customField.getShowRules(), RuleValidatorConstants.REQUIRED)) {
             return;
         }
         if (value == null
                 || (value instanceof String && StringUtils.isBlank(value.toString()))
                 || (value instanceof List listValue && CollectionUtils.isEmpty((listValue)))) {
-            throwValidateException(customField.getName());
-        }
-    }
-
-    protected void validateArrayRequired(T customField, Object value) {
-        if (!BooleanUtils.isTrue(customField.getRequired())) {
-            return;
-        }
-        if (value == null || (value instanceof List && CollectionUtils.isEmpty((List) value))) {
             throwValidateException(customField.getName());
         }
     }
@@ -110,5 +103,12 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
 
     protected Object parse2Array(String value) {
         return value == null ? null : JSON.parseArray(value);
+    }
+
+    private boolean hasValidatorKey(List<RuleProp> rules, String validatorKey) {
+        if (CollectionUtils.isEmpty(rules)) {
+            return false;
+        }
+        return rules.stream().anyMatch(rule -> StringUtils.equals(rule.getKey(), validatorKey));
     }
 }
