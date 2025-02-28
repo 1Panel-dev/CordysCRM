@@ -22,6 +22,9 @@ public class FollowUpRecord extends BaseModel {
 	@Schema(description = "线索id")
 	private String leadId;
 
+	@Schema(description = "跟进内容")
+	private String content;
+
 	@Schema(description = "组织id")
 	private String organizationId;
 

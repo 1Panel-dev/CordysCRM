@@ -43,6 +43,7 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
         request.setOwner("admin");
         request.setContactId("123456");
         request.setType("CUSTOMER");
+        request.setContent("跟进一下");
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         FollowUpRecord resultData = getResultData(mvcResult, FollowUpRecord.class);
@@ -61,6 +62,7 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
         request.setOwner("admin");
         request.setContactId("1234567");
         request.setType("CUSTOMER");
+        request.setContent("跟进两下");
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
         this.requestPost(DEFAULT_UPDATE, request);
 

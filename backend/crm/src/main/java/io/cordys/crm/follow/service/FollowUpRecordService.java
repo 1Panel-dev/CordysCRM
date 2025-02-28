@@ -86,6 +86,7 @@ public class FollowUpRecordService {
         record.setLeadId(request.getLeadId());
         record.setOwner(request.getOwner());
         record.setContactId(request.getContactId());
+        record.setContent(request.getContent());
         record.setUpdateTime(System.currentTimeMillis());
         record.setUpdateUser(userId);
         followUpRecordMapper.update(record);

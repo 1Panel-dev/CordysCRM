@@ -28,6 +28,9 @@ public class FollowUpRecordAddRequest {
     @Schema(description = "线索id")
     private String leadId;
 
+    @Size(max = 1000)
+    @Schema(description = "跟进内容", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String content;
 
     @Size(max = 32)
     @NotBlank
