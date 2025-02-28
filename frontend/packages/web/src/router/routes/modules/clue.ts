@@ -12,8 +12,7 @@ const clue: AppRouteRecordRaw = {
     {
       path: 'clue',
       name: ClueRouteEnum.CLUE_MANAGEMENT_CLUE,
-      // TODO 更换页面
-      component: () => import('@/views/opportunity/index.vue'),
+      component: () => import('@/views/clueManagement/clue/index.vue'),
       meta: {
         locale: 'menu.clue',
         isTopMenu: true,
@@ -22,10 +21,9 @@ const clue: AppRouteRecordRaw = {
     {
       path: 'cluePool',
       name: ClueRouteEnum.CLUE_MANAGEMENT_POOL,
-      // TODO 更换页面
-      component: () => import('@/views/system/module/index.vue'),
+      component: () => import('@/views/clueManagement/cluePool/index.vue'),
       meta: {
-        locale: 'menu.cluePool',
+        locale: 'module.cluePool',
         isTopMenu: true,
       },
     },

@@ -101,7 +101,7 @@
     const title = hasData
       ? t('module.clue.deleteRulesTitle')
       : t('common.deleteConfirmTitle', { name: characterLimit(row.name) });
-    const content = hasData ? '' : t('module.deleteTip', { name: t('module.clue') });
+    const content = hasData ? '' : t('module.deleteTip', { name: t('module.cluePool') });
     const positiveText = t(hasData ? 'opportunity.gotIt' : 'common.confirm');
     const negativeText = t(hasData ? 'opportunity.goMove' : 'common.cancel');
 

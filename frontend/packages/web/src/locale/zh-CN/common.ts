@@ -54,6 +54,8 @@ export default {
   'common.confirmEnd': '确认结束',
   'common.confirmStart': '确认开启',
   'common.enableSuccess': '启用成功',
+  'common.confirmMoveIn': '确认移入',
+  'common.moveInSuccess': '移入成功',
   'common.disableSuccess': '禁用成功',
   'common.enableFailed': '启用失败',
   'common.closeSuccess': '关闭成功',

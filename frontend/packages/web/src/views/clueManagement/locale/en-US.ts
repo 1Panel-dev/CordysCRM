@@ -1,0 +1,20 @@
+export default {
+  'clue.moveIntoCluePool': 'Move to clue pool',
+  'clue.allClues': 'All clues',
+  'clue.myClues': 'My clues',
+  'clue.departmentClues': 'Department clues',
+  'clue.convertedTo': 'Converted',
+  'clue.convertedToCustomer': 'Converted to customer',
+  'clue.convertedToOpportunity': 'Converted to opportunity',
+  'clue.clueProgress': 'Clue progress',
+  'clue.clueSource': 'Clue source',
+  'clue.batchDeleteTitleTip': 'Are you sure you want to delete {number} clues?',
+  'clue.batchDeleteContentTip':
+    'After deletion, members will not be able to access these clues. Please proceed with caution!',
+  'clue.batchMoveIntoCluePoolTitleTip': 'Are you sure you want to move {number} customers to the clue pool?',
+  'clue.batchMoveIntoCluePoolContentTip': 'After moving, the customers will no longer have an assigned owner.',
+  'clue.convertToCustomer': 'Convert to customer',
+  'clue.convertToOpportunity': 'Convert to opportunity',
+  'clue.belongToPublicPool': 'Belongs to public pool',
+  'clue.remainingDays': 'Remaining days',
+};

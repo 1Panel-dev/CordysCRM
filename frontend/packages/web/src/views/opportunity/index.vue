@@ -24,7 +24,11 @@
         <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
       </template>
     </CrmTable>
-    <TransferModal v-model:show="showTransferModal" :opt-ids="checkedRowKeys" />
+    <TransferModal
+      v-model:show="showTransferModal"
+      :opt-ids="checkedRowKeys"
+      :module-type="ModuleConfigEnum.BUSINESS_MANAGEMENT"
+    />
     <DetailDrawer v-model:show="showDetailModal" />
   </CrmCard>
 </template>
@@ -33,6 +37,7 @@
   import { ref } from 'vue';
   import { DataTableRowKey, NButton, NSwitch, useMessage } from 'naive-ui';
 
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -480,6 +485,7 @@
                 class: 'w-[320px] mt-[16px]',
                 form: form.value,
                 ref: transferFormRef,
+                moduleType: ModuleConfigEnum.BUSINESS_MANAGEMENT,
               });
             },
           }

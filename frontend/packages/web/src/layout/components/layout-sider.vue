@@ -87,9 +87,9 @@
 
   const menuOptions = [
     {
-      label: t('menu.clueManagement'),
+      label: t('module.clueManagement'),
       key: AppRouteEnum.CLUE_MANAGEMENT_CLUE,
-      icon: renderIcon('iconicon_business_opportunity'),
+      icon: renderIcon('iconicon_clue'),
     },
     {
       label: t('menu.opportunity'),

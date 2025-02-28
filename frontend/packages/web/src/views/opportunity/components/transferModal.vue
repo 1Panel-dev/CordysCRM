@@ -9,7 +9,7 @@
     @cancel="closeHandler"
   >
     <div>
-      <TransForm ref="transferFormRef" v-model:form="form" />
+      <TransferForm ref="transferFormRef" v-model:form="form" :module-type="moduleType" />
     </div>
   </CrmModal>
 </template>
@@ -17,9 +17,12 @@
 <script lang="ts" setup>
   import { DataTableRowKey, useMessage } from 'naive-ui';
 
-  import CrmModal from '@/components/pure/crm-modal/index.vue';
-  import TransForm from './transferForm.vue';
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 
+  import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import TransferForm from './transferForm.vue';
+
+  import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
@@ -27,6 +30,7 @@
 
   const props = defineProps<{
     optIds: DataTableRowKey[];
+    moduleType: ModuleConfigEnum;
   }>();
 
   const emit = defineEmits<{
@@ -40,22 +44,24 @@
 
   // TODO 类型
   const form = ref<any>({
-    head: null,
+    ...defaultTransferForm,
   });
 
   function closeHandler() {
-    form.value.commanderId = null;
+    form.value = { ...defaultTransferForm };
   }
 
   const loading = ref<boolean>(false);
 
-  const transferFormRef = ref<InstanceType<typeof TransForm>>();
+  const transferFormRef = ref<InstanceType<typeof TransferForm>>();
 
   function confirmHandler() {
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
         try {
           loading.value = true;
+          // TODO lmy 联调
+          console.log('🤔️ =>', props.optIds);
           closeHandler();
           emit('loadList');
           Message.success(t('common.transferSuccess'));

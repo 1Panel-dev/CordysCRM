@@ -351,6 +351,8 @@
       try {
         preheat.value = await userStore.isLogin();
       } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(e);
         preheat.value = false;
       }
     }
