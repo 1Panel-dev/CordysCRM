@@ -3,17 +3,17 @@ SET SESSION innodb_lock_wait_timeout = 7200;
 
 CREATE TABLE lead_pool
 (
-    `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
-    `name`            VARCHAR(255)  NOT NULL COMMENT '线索池名称',
-    `scope_id`        TEXT NOT NULL COMMENT '成员id',
-    `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织架构id',
-    `owner_id`        TEXT NOT NULL COMMENT '管理员id',
-    `enable`          BIT(1)        NOT NULL DEFAULT 1 COMMENT '启用/禁用',
-    `auto`            BIT(1)      NOT NULL DEFAULT 0 COMMENT '自动回收',
-    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
-    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
-    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
-    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '线索池名称',
+    `scope_id`        TEXT         NOT NULL COMMENT '成员id',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织架构id',
+    `owner_id`        TEXT         NOT NULL COMMENT '管理员id',
+    `enable`          BIT(1)       NOT NULL DEFAULT 1 COMMENT '启用/禁用',
+    `auto`            BIT(1)       NOT NULL DEFAULT 0 COMMENT '自动回收',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
 ) COMMENT = '线索池'
     ENGINE = InnoDB
@@ -62,19 +62,20 @@ CREATE TABLE lead_pool_recycle_rule
 
 CREATE INDEX idx_pool_id ON lead_pool_recycle_rule (pool_id ASC);
 
-CREATE TABLE lead_pool_relation(
-    `id`        VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `lead_id`   VARCHAR(32) NOT NULL   COMMENT '线索id' ,
-    `pool_id`   VARCHAR(32) NOT NULL   COMMENT '线索池id' ,
-    `last_pick_user_id` VARCHAR(32) NOT NULL   COMMENT '上一次领取人' ,
-    `last_pick_time`    BIGINT(255) NOT NULL   COMMENT '上一次领取时间' ,
-    `picked`            BIT(1) NOT NULL   COMMENT '是否领取' ,
-    `create_time`       BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time`       BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user`       VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user`       VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+CREATE TABLE lead_pool_relation
+(
+    `id`                VARCHAR(32) NOT NULL COMMENT 'id',
+    `lead_id`           VARCHAR(32) NOT NULL COMMENT '线索id',
+    `pool_id`           VARCHAR(32) NOT NULL COMMENT '线索池id',
+    `last_pick_user_id` VARCHAR(32) NOT NULL COMMENT '上一次领取人',
+    `last_pick_time`    BIGINT(255) NOT NULL COMMENT '上一次领取时间',
+    `picked`            BIT(1)      NOT NULL COMMENT '是否领取',
+    `create_time`       BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`       BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`       VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`       VARCHAR(32) NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '线索池中的线索'
+) COMMENT = '线索池中的线索'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
@@ -84,14 +85,14 @@ CREATE INDEX idx_pool_id ON lead_pool_relation (pool_id ASC);
 
 CREATE TABLE lead_capacity
 (
-    `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
-    `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织架构ID',
-    `scope_id`        TEXT NOT NULL COMMENT '范围ID',
-    `capacity`        INT      NOT NULL DEFAULT 0 COMMENT '库容;0:不限制',
-    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
-    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
-    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
-    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
+    `id`              VARCHAR(32) NOT NULL COMMENT 'id',
+    `organization_id` VARCHAR(32) NOT NULL COMMENT '组织架构ID',
+    `scope_id`        TEXT        NOT NULL COMMENT '范围ID',
+    `capacity`        INT         NOT NULL DEFAULT 0 COMMENT '库容;0:不限制',
+    `create_time`     BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32) NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
 ) COMMENT = '线索池库容设置'
     ENGINE = InnoDB

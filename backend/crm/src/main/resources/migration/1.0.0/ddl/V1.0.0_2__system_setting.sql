@@ -3,18 +3,18 @@ SET SESSION innodb_lock_wait_timeout = 7200;
 
 CREATE TABLE sys_user
 (
-    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
-    `name`        VARCHAR(255) NOT NULL COMMENT '名称',
-    `phone`       VARCHAR(11) COMMENT '手机号',
-    `email`       VARCHAR(255) COMMENT '邮箱',
-    `password`    VARCHAR(255) NOT NULL COMMENT '密码',
-    `language`    VARCHAR(32) COMMENT '语言',
+    `id`                   VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`                 VARCHAR(255) NOT NULL COMMENT '名称',
+    `phone`                VARCHAR(11) COMMENT '手机号',
+    `email`                VARCHAR(255) COMMENT '邮箱',
+    `password`             VARCHAR(255) NOT NULL COMMENT '密码',
+    `language`             VARCHAR(32) COMMENT '语言',
     `last_organization_id` VARCHAR(50) COMMENT '当前组织ID',
-    `gender`      BIT(1)       NOT NULL DEFAULT 0 COMMENT '性别(0-男/1-女)',
-    `create_time` BIGINT       NOT NULL COMMENT '创建时间',
-    `update_time` BIGINT       NOT NULL COMMENT '更新时间',
-    `create_user` VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `update_user` VARCHAR(32)  NOT NULL COMMENT '更新人',
+    `gender`               BIT(1)       NOT NULL DEFAULT 0 COMMENT '性别(0-男/1-女)',
+    `create_time`          BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`          BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`          VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`          VARCHAR(32)  NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
 ) COMMENT = '用户(员工)'
     ENGINE = InnoDB
@@ -496,7 +496,7 @@ CREATE TABLE sys_module_field
     `id`           VARCHAR(32) NOT NULL COMMENT 'ID',
     `form_id`      VARCHAR(32) NOT NULL COMMENT '所属表单ID',
     `internal_key` VARCHAR(255) COMMENT '字段内置Key',
-    `type`         VARCHAR(20) NOT NULL COMMENT '类型' ,
+    `type`         VARCHAR(20) NOT NULL COMMENT '类型',
     `pos`          BIGINT      NOT NULL COMMENT '排序',
     `create_user`  VARCHAR(32) NOT NULL COMMENT '创建人',
     `create_time`  BIGINT      NOT NULL COMMENT '创建时间',
@@ -531,49 +531,50 @@ CREATE TABLE sys_parameter
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-
-
-CREATE TABLE product(
-                        `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-                        `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织机构id' ,
-                        `name` VARCHAR(255) NOT NULL   COMMENT '产品名称' ,
-                        `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-                        `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-                        `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-                        `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-                        PRIMARY KEY (id)
-)  COMMENT = '产品'
+CREATE TABLE product
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织机构id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '产品名称',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '产品'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_organization_id ON product(organization_id ASC);
+CREATE INDEX idx_organization_id ON product (organization_id ASC);
 
-CREATE TABLE product_field(
-  `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-  `resource_id` VARCHAR(32) NOT NULL   COMMENT '产品id' ,
-  `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
-  `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
-  PRIMARY KEY (id)
-)  COMMENT = '产品自定义属性'
+CREATE TABLE product_field
+(
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32)  NOT NULL COMMENT '产品id',
+    `field_id`    VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
+    `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '产品自定义属性'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id_field_id_field_value ON product_field(resource_id,field_id,field_value);
+CREATE INDEX idx_resource_id_field_id_field_value ON product_field (resource_id, field_id, field_value);
 
-CREATE TABLE product_field_blob(
-   `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-   `resource_id` VARCHAR(32) NOT NULL   COMMENT '产品id' ,
-   `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
-   `field_value` BLOB NOT NULL   COMMENT '自定义属性值' ,
-   PRIMARY KEY (id)
-)  COMMENT = '客户自定义属性大文本'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+CREATE TABLE product_field_blob
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32) NOT NULL COMMENT '产品id',
+    `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
+    `field_value` BLOB        NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '客户自定义属性大文本'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id ON product_field_blob(resource_id);
+CREATE INDEX idx_resource_id ON product_field_blob (resource_id);
 
 
 -- set innodb lock wait timeout to default
