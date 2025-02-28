@@ -550,17 +550,30 @@ CREATE TABLE product(
 CREATE INDEX idx_organization_id ON product(organization_id ASC);
 
 CREATE TABLE product_field(
-                              `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-                              `product_id` VARCHAR(32) NOT NULL   COMMENT '产品id' ,
-                              `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
-                              `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
-                              PRIMARY KEY (id)
+  `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+  `resource_id` VARCHAR(32) NOT NULL   COMMENT '产品id' ,
+  `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
+  `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
+  PRIMARY KEY (id)
 )  COMMENT = '产品自定义属性'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_product_id ON product_field(product_id ASC);
+CREATE INDEX idx_resource_id_field_id_field_value ON product_field(resource_id,field_id,field_value);
+
+CREATE TABLE product_field_blob(
+   `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+   `resource_id` VARCHAR(32) NOT NULL   COMMENT '产品id' ,
+   `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
+   `field_value` BLOB NOT NULL   COMMENT '自定义属性值' ,
+   PRIMARY KEY (id)
+)  COMMENT = '客户自定义属性大文本'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON product_field_blob(resource_id);
 
 
 -- set innodb lock wait timeout to default

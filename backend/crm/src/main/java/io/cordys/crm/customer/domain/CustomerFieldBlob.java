@@ -6,12 +6,12 @@ import lombok.Data;
 
 
 /**
- * 客户自定义属性
+ * 客户自定义属性大文本
  * 
  * @author jianxing
- * @date 2025-02-10 18:12:46
+ * @date 2025-02-27 14:43:46
  */
 @Data
-@Table(name = "customer_field")
-public class CustomerField extends BaseResourceField {
+@Table(name = "customer_field_blob")
+public class CustomerFieldBlob extends BaseResourceField {
 }

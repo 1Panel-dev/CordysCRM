@@ -149,7 +149,7 @@ class ProductControllerTests extends BaseTest {
         Assertions.assertNull(productBaseMapper.selectByPrimaryKey(addProduct.getId()));
 
         ProductField example = new ProductField();
-        example.setProductId(addProduct.getId());
+        example.setResourceId(addProduct.getId());
         List<ProductField> fields = productFieldBaseMapper.select(example);
         Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
 

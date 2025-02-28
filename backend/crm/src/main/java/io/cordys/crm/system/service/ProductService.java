@@ -1,8 +1,6 @@
 package io.cordys.crm.system.service;
 
-import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
-import io.cordys.common.service.BaseModuleFieldValueService;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -15,7 +13,6 @@ import io.cordys.crm.system.dto.response.ProductListResponse;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +39,7 @@ public class ProductService {
     @Resource
     private BaseService baseService;
     @Resource
-    private BaseModuleFieldValueService baseModuleFieldValueService;
+    private ProductFieldService productFieldService;
 
     public List<ProductListResponse> list(ProductPageRequest request, String orgId) {
         List<ProductListResponse> list = extProductMapper.list(request, orgId);
@@ -53,14 +50,11 @@ public class ProductService {
         List<String> productIds = list.stream().map(ProductListResponse::getId)
                 .collect(Collectors.toList());
 
-        Map<String, List<ProductField>> productFiledMap = baseModuleFieldValueService.getResourceFiledMap(
-                FormKey.PRODUCT.getKey(),
-                productIds,
-                ProductField::getProductId, productFieldBaseMapper);
+        Map<String, List<BaseModuleFieldValue>> productFiledMap = productFieldService.getResourceFiledMap(productIds);
 
         list.forEach(productListResponse -> {
             // 获取自定义字段
-            List<ProductField> productFields = productFiledMap.get(productListResponse.getId());
+            List<BaseModuleFieldValue> productFields = productFiledMap.get(productListResponse.getId());
             productListResponse.setModuleFields(productFields);
         });
 
@@ -72,11 +66,7 @@ public class ProductService {
         ProductGetResponse productGetResponse = BeanUtils.copyBean(new ProductGetResponse(), product);
 
         // 获取模块字段
-        List<ProductField> productFields = baseModuleFieldValueService.getModuleFieldValuesByResourceIds(
-                FormKey.PRODUCT.getKey(),
-                List.of(id),
-                ProductField::getProductId,
-                productFieldBaseMapper);
+        List<BaseModuleFieldValue> productFields = productFieldService.getModuleFieldValuesByResourceId(id);
 
         productGetResponse.setModuleFields(productFields);
         return baseService.setCreateAndUpdateUserName(productGetResponse);
@@ -96,23 +86,8 @@ public class ProductService {
 //        checkAddExist(customer);
 
         //保存自定义字段
-        saveModuleField(product.getId(), request.getModuleFields());
+        productFieldService.saveModuleField(product.getId(), request.getModuleFields());
         return product;
-    }
-
-    /**
-     *
-     * @param moduleFieldValues
-     */
-    public void saveModuleField(String productId, List<BaseModuleFieldValue> moduleFieldValues) {
-        List<ProductField> productFields = baseModuleFieldValueService.getCustomerFields(FormKey.PRODUCT.getKey(), moduleFieldValues, ProductField.class);
-        productFields.forEach(productField -> {
-            productField.setId(IDGenerator.nextStr());
-            productField.setProductId(productId);
-        });
-        if (CollectionUtils.isEmpty(productFields)) {
-            productFieldBaseMapper.batchInsert(productFields);
-        }
     }
 
     public Product update(ProductEditRequest request, String userId) {
@@ -137,20 +112,19 @@ public class ProductService {
         // 先删除
         deleteProductFieldByProductId(productId);
         // 再保存
-        saveModuleField(productId, moduleFields);
+        productFieldService.saveModuleField(productId, moduleFields);
     }
 
     private void deleteProductFieldByProductId(String productId) {
         ProductField example = new ProductField();
-        example.setProductId(productId);
+        example.setResourceId(productId);
         productFieldBaseMapper.delete(example);
     }
-
 
     public void delete(String id) {
         // 删除产品
         productBaseMapper.deleteByPrimaryKey(id);
         // 删除产品模块字段
-        deleteProductFieldByProductId(id);
+        productFieldService.deleteByResourceId(id);
     }
 }

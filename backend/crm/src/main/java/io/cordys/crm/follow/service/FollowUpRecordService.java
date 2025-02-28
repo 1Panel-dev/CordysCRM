@@ -1,20 +1,14 @@
 package io.cordys.crm.follow.service;
 
-import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.exception.GenericException;
-import io.cordys.common.service.BaseModuleFieldValueService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.follow.domain.FollowUpField;
-import io.cordys.crm.follow.domain.FollowUpFieldBlob;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,11 +21,7 @@ public class FollowUpRecordService {
     @Resource
     private BaseMapper<FollowUpRecord> followUpRecordMapper;
     @Resource
-    private BaseMapper<FollowUpField> followUpFieldMapper;
-    @Resource
-    private BaseMapper<FollowUpFieldBlob> followUpFieldBlobMapper;
-    @Resource
-    private BaseModuleFieldValueService baseModuleFieldValueService;
+    private FollowUpRecordFieldService followUpRecordFieldService;
 
 
     /**
@@ -53,25 +43,8 @@ public class FollowUpRecordService {
         followUpRecordMapper.insert(followUpRecord);
 
         //保存自定义字段
-        saveModuleField(followUpRecord.getId(), request.getModuleFields());
+        followUpRecordFieldService.saveModuleField(followUpRecord.getId(), request.getModuleFields());
         return followUpRecord;
-    }
-
-    /**
-     * 保存自定义字段
-     *
-     * @param id
-     * @param moduleFields
-     */
-    private void saveModuleField(String id, List<BaseModuleFieldValue> moduleFields) {
-        List<FollowUpField> followUpFields = baseModuleFieldValueService.getCustomerFields(FormKey.FOLLOW_RECORD.getKey(), moduleFields, FollowUpField.class);
-        followUpFields.forEach(followUpField -> {
-            followUpField.setId(IDGenerator.nextStr());
-            followUpField.setFollowUpId(id);
-        });
-        if (CollectionUtils.isNotEmpty(followUpFields)) {
-            followUpFieldMapper.batchInsert(followUpFields);
-        }
     }
 
     /**
@@ -100,19 +73,11 @@ public class FollowUpRecordService {
             return;
         }
         // 先删除
-        deleteFollowUpFieldByFollowUpId(followUpId);
+        followUpRecordFieldService.deleteByResourceId(followUpId);
         // 再保存
-        saveModuleField(followUpId, moduleFields);
+        followUpRecordFieldService.saveModuleField(followUpId, moduleFields);
     }
 
-    private void deleteFollowUpFieldByFollowUpId(String followUpId) {
-        FollowUpField followUpField = new FollowUpField();
-        followUpField.setFollowUpId(followUpId);
-        followUpFieldMapper.delete(followUpField);
-        FollowUpFieldBlob followUpFieldBlob = new FollowUpFieldBlob();
-        followUpFieldBlob.setFollowUpId(followUpId);
-        followUpFieldBlobMapper.delete(followUpFieldBlob);
-    }
 
     private void updateRecord(FollowUpRecord record, FollowUpRecordUpdateRequest request, String userId) {
         record.setCustomerId(request.getCustomerId());

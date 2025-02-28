@@ -50,7 +50,7 @@ CREATE INDEX idx_organization_id ON opportunity(organization_id ASC);
 
 CREATE TABLE opportunity_field(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `opportunity_id` VARCHAR(32) NOT NULL   COMMENT '商机id' ,
+    `resource_id` VARCHAR(32) NOT NULL   COMMENT '商机id' ,
     `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
     `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
     PRIMARY KEY (id)
@@ -59,9 +59,20 @@ ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_opportunity_id ON opportunity_field(opportunity_id ASC);
-CREATE INDEX idx_opportunity_id_field_id ON opportunity_field(opportunity_id, field_id);
+CREATE INDEX idx_resource_id_field_id_field_value ON opportunity_field(resource_id, field_id, field_value);
 
+CREATE TABLE opportunity_field_blob(
+   `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+   `resource_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
+   `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
+   `field_value` BLOB NOT NULL   COMMENT '自定义属性值' ,
+   PRIMARY KEY (id)
+)  COMMENT = '商机自定义属性大文本'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON opportunity_field_blob(resource_id);
 
 CREATE TABLE follow_up_record(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
@@ -92,7 +103,7 @@ CREATE INDEX idx_contact_id ON follow_up_record(contact_id ASC);
 
 CREATE TABLE follow_up_field(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `follow_up_id` VARCHAR(32) NOT NULL   COMMENT '跟进记录id' ,
+    `resource_id` VARCHAR(32) NOT NULL   COMMENT '跟进记录id' ,
     `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
     `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
     PRIMARY KEY (id)
@@ -101,12 +112,11 @@ ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_follow_up_id_field_id_field_value ON follow_up_field(follow_up_id, field_id, field_value);
-
+CREATE INDEX idx_resource_id_field_id_field_value ON follow_up_field(resource_id,field_id,field_value);
 
 CREATE TABLE follow_up_field_blob(
     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `follow_up_id` VARCHAR(32) NOT NULL   COMMENT '跟进记录id' ,
+    `resource_id` VARCHAR(32) NOT NULL   COMMENT '跟进记录id' ,
     `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
     `field_value` BLOB NOT NULL   COMMENT '自定义属性值' ,
     PRIMARY KEY (id)
@@ -115,7 +125,7 @@ ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_follow_up_id_field_id ON follow_up_field_blob(follow_up_id, field_id);
+CREATE INDEX idx_resource_id ON follow_up_field_blob(resource_id);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

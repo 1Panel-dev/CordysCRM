@@ -123,7 +123,7 @@ CREATE INDEX idx_organization_id ON customer_capacity (organization_id ASC);
 CREATE TABLE customer_field
 (
     `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
-    `customer_id`     VARCHAR(32)  NOT NULL COMMENT '客户id',
+    `resource_id`     VARCHAR(32)  NOT NULL COMMENT '客户id',
     `field_id`        VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
     `field_value`     VARCHAR(255) NOT NULL COMMENT '自定义属性值',
     PRIMARY KEY (id)
@@ -132,7 +132,20 @@ ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_customer_id_field_id_field_value ON customer_field(customer_id, field_id, field_value);
+CREATE INDEX idx_resource_id_field_id_field_value ON customer_field(resource_id, field_id, field_value);
+
+CREATE TABLE customer_field_blob(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `resource_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
+    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
+    `field_value` BLOB NOT NULL   COMMENT '自定义属性值' ,
+    PRIMARY KEY (id)
+)  COMMENT = '客户自定义属性大文本'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON customer_field_blob(resource_id);
 
 CREATE TABLE customer_contact(
      `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
@@ -152,7 +165,7 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE customer_contact_field(
    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-   `customer_contact_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
+   `resource_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
    `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
    PRIMARY KEY (id)
@@ -161,18 +174,20 @@ ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_customer_contact_id_field_id_field_value ON customer_contact_field(customer_contact_id, field_id, field_value);
+CREATE INDEX idx_resource_id_field_id_field_value ON customer_contact_field(resource_id,field_id,field_value);
 
-CREATE TABLE customer_contact_blob(
-  `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-  `customer_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
-  `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
-  `field_value` BLOB NOT NULL   COMMENT '自定义属性值' ,
-  PRIMARY KEY (id)
+CREATE TABLE customer_contact_field_blob(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `resource_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
+    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
+    `field_value` BLOB NOT NULL   COMMENT '自定义属性值' ,
+PRIMARY KEY (id)
 )  COMMENT = '客户联系人自定义属性大文本'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON customer_contact_field_blob(resource_id ASC);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

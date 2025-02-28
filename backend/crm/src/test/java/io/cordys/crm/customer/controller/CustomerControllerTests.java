@@ -233,7 +233,7 @@ class CustomerControllerTests extends BaseTest {
 
     private List<CustomerField> getCustomerFields(String customerId) {
         CustomerField example = new CustomerField();
-        example.setCustomerId(customerId);
+        example.setResourceId(customerId);
         return customerFieldMapper.select(example);
     }
 }

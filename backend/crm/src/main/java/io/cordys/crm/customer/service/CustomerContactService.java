@@ -1,8 +1,7 @@
 package io.cordys.crm.customer.service;
 
-import io.cordys.common.constants.FormKey;
+import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.exception.GenericException;
-import io.cordys.common.service.BaseModuleFieldValueService;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -42,27 +41,21 @@ public class CustomerContactService {
     @Resource
     private BaseService baseService;
     @Resource
-    private BaseModuleFieldValueService baseModuleFieldValueService;
+    private CustomerContactFieldService customerContactFieldService;
 
     public List<CustomerContactListResponse> list(CustomerContactPageRequest request, String orgId) {
         List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, orgId);
-        // do something...
-
         return buildListData(list);
     }
 
     private List<CustomerContactListResponse> buildListData(List<CustomerContactListResponse> list) {
         List<String> customerIds = list.stream().map(CustomerContactListResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<CustomerContactField>> caseCustomFiledMap =
-                baseModuleFieldValueService.getResourceFiledMap(
-                        FormKey.CONTACT.getKey(),
-                        customerIds,
-                        CustomerContactField::getCustomerContactId,
-                        customerContactFieldMapper);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService.getResourceFiledMap(customerIds);
+
         list.forEach(customerListResponse -> {
             // 获取自定义字段
-            List<CustomerContactField> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
+            List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
             customerListResponse.setModuleFields(customerFields);
         });
 

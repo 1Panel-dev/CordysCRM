@@ -1,15 +1,12 @@
 package io.cordys.crm.customer.service;
 
-import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.exception.GenericException;
-import io.cordys.common.service.BaseModuleFieldValueService;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.domain.CustomerField;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
@@ -18,7 +15,6 @@ import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,11 +35,9 @@ public class CustomerService {
     @Resource
     private ExtCustomerMapper extCustomerMapper;
     @Resource
-    private BaseMapper<CustomerField> customerFieldMapper;
-    @Resource
     private BaseService baseService;
     @Resource
-    private BaseModuleFieldValueService baseModuleFieldValueService;
+    private CustomerFieldService customerFieldService;
 
     public List<CustomerListResponse> list(CustomerPageRequest request, String orgId) {
         List<CustomerListResponse> list = extCustomerMapper.list(request, orgId);
@@ -54,15 +48,11 @@ public class CustomerService {
         List<String> customerIds = list.stream().map(CustomerListResponse::getId)
                 .collect(Collectors.toList());
 
-        Map<String, List<CustomerField>> caseCustomFiledMap = baseModuleFieldValueService.getResourceFiledMap(
-                FormKey.CUSTOMER.getKey(),
-                customerIds,
-                CustomerField::getCustomerId,
-                customerFieldMapper);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService.getResourceFiledMap(customerIds);
 
         list.forEach(customerListResponse -> {
             // 获取自定义字段
-            List<CustomerField> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
+            List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
             customerListResponse.setModuleFields(customerFields);
 
             if (customerListResponse.getCollectionTime() != null) {
@@ -80,11 +70,7 @@ public class CustomerService {
         CustomerGetResponse customerGetResponse = BeanUtils.copyBean(new CustomerGetResponse(), customer);
 
         // 获取模块字段
-        List<CustomerField> customerFields = baseModuleFieldValueService.getModuleFieldValuesByResourceIds(
-                FormKey.CUSTOMER.getKey(),
-                List.of(id),
-                CustomerField::getCustomerId,
-                customerFieldMapper);
+        List<BaseModuleFieldValue> customerFields = customerFieldService.getModuleFieldValuesByResourceId(id);
 
         customerGetResponse.setModuleFields(customerFields);
         return baseService.setCreateAndUpdateUserName(customerGetResponse);
@@ -107,22 +93,8 @@ public class CustomerService {
         customerMapper.insert(customer);
 
         //保存自定义字段
-        saveModuleField(customer.getId(), request.getModuleFields());
+        customerFieldService.saveModuleField(customer.getId(), request.getModuleFields());
         return customer;
-    }
-
-    /**
-     * @param moduleFieldValues
-     */
-    public void saveModuleField(String customerId, List<BaseModuleFieldValue> moduleFieldValues) {
-        List<CustomerField> customerFields = baseModuleFieldValueService.getCustomerFields(FormKey.CUSTOMER.getKey(), moduleFieldValues, CustomerField.class);
-        customerFields.forEach(customerField -> {
-            customerField.setId(IDGenerator.nextStr());
-            customerField.setCustomerId(customerId);
-        });
-        if (CollectionUtils.isNotEmpty(customerFields)) {
-            customerFieldMapper.batchInsert(customerFields);
-        }
     }
 
     public Customer update(CustomerUpdateRequest request, String userId) {
@@ -146,15 +118,9 @@ public class CustomerService {
             return;
         }
         // 先删除
-        deleteCustomerFieldByCustomerId(customerId);
+        customerFieldService.deleteByResourceId(customerId);
         // 再保存
-        saveModuleField(customerId, moduleFields);
-    }
-
-    private void deleteCustomerFieldByCustomerId(String customerId) {
-        CustomerField example = new CustomerField();
-        example.setCustomerId(customerId);
-        customerFieldMapper.delete(example);
+        customerFieldService.saveModuleField(customerId, moduleFields);
     }
 
     private void checkAddExist(Customer customer) {
@@ -173,6 +139,6 @@ public class CustomerService {
         // 删除客户
         customerMapper.deleteByPrimaryKey(id);
         // 删除客户模块字段
-        deleteCustomerFieldByCustomerId(id);
+        customerFieldService.deleteByResourceId(id);
     }
 }

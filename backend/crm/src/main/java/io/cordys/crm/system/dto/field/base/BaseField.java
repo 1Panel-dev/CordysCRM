@@ -1,10 +1,13 @@
 package io.cordys.crm.system.dto.field.base;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.dto.field.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
@@ -62,4 +65,9 @@ public abstract class BaseField {
 
 	@Schema(description = "是否必填")
 	private Boolean required;
+
+	@JsonIgnore
+	public boolean isTextArea() {
+		return StringUtils.equals(type, FieldType.TEXTAREA.name());
+	}
 }

@@ -1,8 +1,5 @@
 package io.cordys.crm.customer.controller;
 
-import io.cordys.common.dto.SortRequest;
-import io.cordys.common.pager.Pager;
-import io.cordys.common.dto.BasePageRequest;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.CustomerCapacity;
 import io.cordys.crm.system.dto.request.CapacityRequest;
