@@ -29,9 +29,14 @@ public enum UserSource {
     OIDC,
 
     /**
-     * OAUTH2 用户来源，表示用户通过 OAUTH2 授权框架认证。
+     * OAUTH2 用户来源，表示用户通过 企业微信OAUTH2 授权框架认证。
      */
-    OAUTH2,
+    WE_COM_OAUTH2,
+
+    /**
+     * OAUTH2 用户来源，表示用户通过 GitHub OAUTH2 授权框架认证。
+     */
+    GITHUB_OAUTH2,
 
     /**
      * 二维码用户来源，表示用户通过扫描二维码登录。
