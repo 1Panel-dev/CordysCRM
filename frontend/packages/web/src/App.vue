@@ -18,6 +18,7 @@
   import { setLoginExpires, setToken } from '@lib/shared/method/auth';
   import { getQueryVariable } from '@lib/shared/method/index';
 
+  import { getWeComOauthCallback } from '@/api/modules/system/login';
   import useLocale from '@/locale/useLocale';
   import { WHITE_LIST } from '@/router/constants';
   import useAppStore from '@/store/modules/app';
@@ -36,7 +37,7 @@
     return currentLocale.value === 'zh-CN' ? dateZhCN : dateEnUS;
   });
 
-  async function handleOauthRedirect() {
+   function handleOauthRedirect() {
     if (!WHITE_LIST.find((el) => window.location.hash.split('#')[1].includes(el.path))) {
       const TOKEN = getQueryVariable('_token');
       const CSRF = getQueryVariable('_csrf');
@@ -44,12 +45,18 @@
         setToken(window.atob(TOKEN), CSRF);
         setLoginExpires();
       }
-      await userStore.checkIsLogin();
+      userStore.checkIsLogin();
       appStore.setLoginLoading(false);
     }
   }
 
-  onBeforeMount(() => {
+  async function handleOauthLogin() {
+    const code = getQueryVariable('code');
+    await getWeComOauthCallback(code || '');
     handleOauthRedirect();
+  }
+
+  onBeforeMount(() => {
+    handleOauthLogin();
   });
 </script>
