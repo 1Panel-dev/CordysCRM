@@ -10,6 +10,7 @@ import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import io.cordys.security.SessionUser;
 import io.cordys.security.SessionUtils;
 import io.cordys.security.UserDTO;
@@ -39,13 +40,25 @@ public class UserLoginService {
     private RoleService roleService;
     @Resource
     private BaseMapper<LoginLog> loginLogMapper;
+    @Resource
+    private BaseMapper<OrganizationUser> organizationUserBaseMapper;
 
     public UserDTO authenticateUser(String userId) {
         UserDTO userDTO = extUserMapper.selectByPhoneOrEmail(userId);
         if (userDTO == null) {
             throw new AuthenticationException(Translator.get("user_not_exist"));
         }
+        // 检查用户是否被禁用
+        if (StringUtils.isNotBlank(userDTO.getLastOrganizationId())) {
+            var userLambdaQueryWrapper = new LambdaQueryWrapper<OrganizationUser>()
+                    .eq(OrganizationUser::getUserId, userId)
+                    .eq(OrganizationUser::getOrganizationId, userDTO.getLastOrganizationId())
+                    .eq(OrganizationUser::getEnable, true);
 
+            if (organizationUserBaseMapper.selectListByLambda(userLambdaQueryWrapper).isEmpty()) {
+                throw new DisabledAccountException(Translator.get("user_has_been_disabled"));
+            }
+        }
         // 设置权限
         userDTO.setPermissionIds(roleService.getPermissionIdsByUserId(userId));
         // 设置组织ID

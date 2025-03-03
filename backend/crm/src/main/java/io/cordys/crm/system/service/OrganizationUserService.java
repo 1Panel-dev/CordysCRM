@@ -178,6 +178,7 @@ public class OrganizationUserService {
         checkEmailAndPhone(request.getEmail(), request.getPhone(), id);
         //add user base
         User user = addUserBaseData(request, operatorId, id);
+        user.setLastOrganizationId(organizationId);
         //add user info
         addUserInfo(request, organizationId, operatorId, user.getId());
         //add user role
@@ -504,8 +505,8 @@ public class OrganizationUserService {
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtUserMapper extUserMapper = sqlSession.getMapper(ExtUserMapper.class);
         ExtOrganizationUserMapper extOrganizationUserMapper = sqlSession.getMapper(ExtOrganizationUserMapper.class);
-        updateUsers.forEach(user -> extUserMapper.updateUser(user));
-        updateOrganizationUsers.forEach(organizationUser -> extOrganizationUserMapper.updateOrganizationUser(organizationUser));
+        updateUsers.forEach(extUserMapper::updateUser);
+        updateOrganizationUsers.forEach(extOrganizationUserMapper::updateOrganizationUser);
         sqlSession.flushStatements();
         SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
     }
@@ -574,7 +575,7 @@ public class OrganizationUserService {
     private void checkImportExcel(UserImportResponse response, MultipartFile file, String orgId) {
         try {
             //根据本地语言环境选择用哪种数据对象进行存放读取的数据
-            Class clazz = new UserExcelDataFactory().getExcelDataByLocal();
+            Class<?> clazz = new UserExcelDataFactory().getExcelDataByLocal();
             UserCheckEventListener eventListener = new UserCheckEventListener(clazz, orgId);
             EasyExcelFactory.read(file.getInputStream(), eventListener).sheet().doRead();
             response.setErrorMessages(eventListener.getErrList());
@@ -602,7 +603,7 @@ public class OrganizationUserService {
         try {
             UserImportResponse response = new UserImportResponse();
             //根据本地语言环境选择用哪种数据对象进行存放读取的数据
-            Class clazz = new UserExcelDataFactory().getExcelDataByLocal();
+            Class<?> clazz = new UserExcelDataFactory().getExcelDataByLocal();
             UserImportEventListener eventListener = new UserImportEventListener(clazz, operatorId, orgId);
             EasyExcelFactory.read(file.getInputStream(), eventListener).sheet().doRead();
             response.setErrorMessages(eventListener.getErrList());

@@ -1,6 +1,8 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.common.util.LogUtils;
+import io.cordys.crm.system.domain.OrganizationUser;
+import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class LoginControllerTests {
     @Resource
     private MockMvc mockMvc;
+    @Resource
+    private BaseMapper<OrganizationUser> organizationUserMapper;
 
     @Test
     @Sql(scripts = {"/dml/init_user_login_test.sql"},

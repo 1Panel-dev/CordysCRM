@@ -12,7 +12,7 @@ INSERT INTO `sys_user` (`id`,
                         `update_time`,
                         `create_user`,
                         `update_user`)
-VALUES ('test.login',
+VALUES ("test.login@cordys.io",
         'test.loginistrator',
         'test.login@cordys.io',
         MD5('test.login'),
@@ -25,7 +25,6 @@ VALUES ('test.login',
         '717345437786112',
         'test.login');
 
-
 INSERT INTO `sys_organization_user`(`id`, `organization_id`, `department_id`, `resource_user_id`, `user_id`, `enable`, `employee_id`, `position`, `employee_type`, `supervisor_id`, `work_city`, `create_user`, `update_user`, `create_time`, `update_time`)
-VALUES ('test', '100001', '100001', '', 'admin', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000);
+VALUES ("test-sys_organization_user-0001", '100001', '100001', 'test.login@cordys.io', 'test.login@cordys.io', true, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000);
 
