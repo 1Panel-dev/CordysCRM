@@ -1,0 +1,21 @@
+export default {
+  'crmImportButton.validateTemplate': 'Validate template',
+  'crmImportButton.downloadTemplate': 'Download template',
+  'crmImportButton.importAlertDesc':
+    'Please edit the content according to the format in the Excel template before uploading',
+  'crmImportButton.importInProgress': 'Importing',
+  'crmImportButton.validateInProgress': 'Validating template',
+  'crmImportButton.successfulCheck': 'Validation successful',
+  'crmImportButton.countNumber': 'items',
+  'crmImportButton.failCheck': 'Validation failed',
+  'crmImportButton.viewErrorDetail': 'View error details',
+  'crmImportButton.partialVerificationFailed': 'Partial validation failed;',
+  'crmImportButton.someUsersImportFailed': 'Some data import failed',
+  'crmImportButton.afterFailingToModify': 'Modify failed data in Excel and re-import',
+  'crmImportButton.backList': 'Back to list',
+  'crmImportButton.backToUploadPage': 'Back to upload page',
+  'crmImportButton.ignoreErrorContinueImporting': 'Ignore errors and continue importing',
+  'crmImportButton.successImportActionTip': 'Click Import to enter into system',
+  'crmImportButton.importErrorData': 'Import failed data',
+  'crmImportButton.formExcelImport': 'Import from Excel file',
+};
