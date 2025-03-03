@@ -63,7 +63,7 @@ public abstract class BaseField {
 	private Boolean editable;
 
 	@Schema(description = "字段宽度")
-	private String fieldWidth;
+	private Float fieldWidth;
 
 	@Schema(description = "规则")
 	private List<RuleProp> showRules;
