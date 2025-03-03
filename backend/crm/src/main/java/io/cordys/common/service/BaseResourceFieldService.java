@@ -71,7 +71,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @return
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
-        return getResourceFiledMap(List.of(resourceId)).get(resourceId);
+        return getResourceFieldMap(List.of(resourceId)).get(resourceId);
     }
 
     /**
@@ -155,7 +155,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param resourceIds
      * @return
      */
-    public Map<String, List<BaseModuleFieldValue>> getResourceFiledMap(List<String> resourceIds) {
+    public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds) {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return Map.of();
         }

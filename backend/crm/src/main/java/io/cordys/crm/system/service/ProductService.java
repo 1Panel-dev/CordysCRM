@@ -50,7 +50,7 @@ public class ProductService {
         List<String> productIds = list.stream().map(ProductListResponse::getId)
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> productFiledMap = productFieldService.getResourceFiledMap(productIds);
+        Map<String, List<BaseModuleFieldValue>> productFiledMap = productFieldService.getResourceFieldMap(productIds);
 
         list.forEach(productListResponse -> {
             // 获取自定义字段

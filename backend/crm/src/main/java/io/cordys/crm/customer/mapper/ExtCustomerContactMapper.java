@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.mapper;
 
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.*;
 import org.apache.ibatis.annotations.Param;
@@ -19,4 +20,6 @@ public interface ExtCustomerContactMapper {
     boolean checkAddExist(@Param("customerContact") CustomerContact customerContact);
 
     boolean checkUpdateExist(@Param("customerContact") CustomerContact CustomerContact);
+
+    List<OptionDTO> selectContactOptionByIds(List<String> contactIds);
 }

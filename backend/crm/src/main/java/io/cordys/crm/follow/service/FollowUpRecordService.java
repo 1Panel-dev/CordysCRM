@@ -1,19 +1,29 @@
 package io.cordys.crm.follow.service;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
+import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
+import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
+import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -22,7 +32,12 @@ public class FollowUpRecordService {
     private BaseMapper<FollowUpRecord> followUpRecordMapper;
     @Resource
     private FollowUpRecordFieldService followUpRecordFieldService;
-
+    @Resource
+    private ExtFollowUpRecordMapper extFollowUpRecordMapper;
+    @Resource
+    private BaseService baseService;
+    @Resource
+    private ExtCustomerContactMapper extCustomerContactMapper;
 
     /**
      * 添加跟进记录
@@ -49,6 +64,7 @@ public class FollowUpRecordService {
 
     /**
      * 更新跟进记录
+     *
      * @param request
      * @param userId
      * @return
@@ -57,7 +73,7 @@ public class FollowUpRecordService {
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(followUpRecord).ifPresentOrElse(record -> {
             //更新跟进记录
-            updateRecord(record,request, userId);
+            updateRecord(record, request, userId);
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields());
         }, () -> {
@@ -90,5 +106,55 @@ public class FollowUpRecordService {
         record.setUpdateTime(System.currentTimeMillis());
         record.setUpdateUser(userId);
         followUpRecordMapper.update(record);
+    }
+
+
+    /**
+     * 跟进记录列表查询
+     *
+     * @param request
+     * @param orgId
+     * @param resourceType
+     * @param type
+     * @return
+     */
+    public List<FollowUpRecordListResponse> list(FollowUpRecordPageRequest request, String orgId, String resourceType, String type) {
+        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, orgId, resourceType, type);
+        return buildListData(list);
+    }
+
+    private List<FollowUpRecordListResponse> buildListData(List<FollowUpRecordListResponse> list) {
+        List<String> ids = list.stream().map(FollowUpRecordListResponse::getId).toList();
+        Map<String, List<BaseModuleFieldValue>> recordCustomFieldMap = followUpRecordFieldService.getResourceFieldMap(ids);
+
+        List<String> createUserIds = list.stream().map(FollowUpRecordListResponse::getCreateUser).toList();
+        List<String> updateUserIds = list.stream().map(FollowUpRecordListResponse::getUpdateUser).toList();
+        List<String> ownerIds = list.stream().map(FollowUpRecordListResponse::getOwner).toList();
+        List<String> userIds = Stream.of(createUserIds, updateUserIds, ownerIds)
+                .flatMap(Collection::stream)
+                .distinct()
+                .toList();
+        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+
+        List<String> contactIds = list.stream().map(FollowUpRecordListResponse::getContactId).toList();
+        Map<String, String> contactMap = getContactMap(contactIds);
+
+        list.forEach(recordListResponse -> {
+            // 获取自定义字段
+            List<BaseModuleFieldValue> customerFields = recordCustomFieldMap.get(recordListResponse.getId());
+            recordListResponse.setModuleFields(customerFields);
+
+            recordListResponse.setCreateUserName(userNameMap.get(recordListResponse.getCreateUser()));
+            recordListResponse.setUpdateUserName(userNameMap.get(recordListResponse.getUpdateUser()));
+            recordListResponse.setOwnerName(userNameMap.get(recordListResponse.getOwner()));
+            recordListResponse.setContactName(contactMap.get(recordListResponse.getContactId()));
+        });
+        return list;
+    }
+
+    private Map<String, String> getContactMap(List<String> contactIds) {
+        return extCustomerContactMapper.selectContactOptionByIds(contactIds)
+                .stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
     }
 }

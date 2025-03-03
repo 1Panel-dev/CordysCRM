@@ -59,7 +59,7 @@ public class CustomerContactService {
                 .distinct()
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService.getResourceFiledMap(customerIds);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService.getResourceFieldMap(customerIds);
 
         Map<String, String> customNameMap = extCustomerMapper.selectOptionByIds(customerIds)
                 .stream()

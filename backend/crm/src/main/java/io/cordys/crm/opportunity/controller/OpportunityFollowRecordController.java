@@ -1,10 +1,16 @@
 package io.cordys.crm.opportunity.controller;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
+import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
+import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.service.FollowUpRecordService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +22,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @Tag(name = "商机跟进记录")
 @RestController
@@ -37,5 +45,13 @@ public class OpportunityFollowRecordController {
     @Operation(summary = "更新商机跟进记录")
     public FollowUpRecord update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
         return followUpRecordService.update(request, SessionUtils.getUserId());
+    }
+
+    @PostMapping("/page")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD)
+    @Operation(summary = "商机跟进记录列表")
+    public Pager<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        return PageUtils.setPageInfo(page, followUpRecordService.list(request, OrganizationContext.getOrganizationId(),"OPPORTUNITY","CUSTOMER"));
     }
 }

@@ -21,7 +21,7 @@ public class FollowUpRecordAddRequest {
 
     @Size(max = 32)
     @NotBlank
-    @Schema(description = "类型", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "类型:CUSTOMER/LEAD", requiredMode = Schema.RequiredMode.REQUIRED)
     private String type;
 
     @Size(max = 32)

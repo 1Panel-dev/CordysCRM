@@ -150,4 +150,14 @@
         )
         and id != #{customerContact.id} limit 1
     </select>
+
+    <select id="selectContactOptionByIds" resultType="io.cordys.common.dto.OptionDTO">
+        SELECT id, name
+        FROM customer_contact
+        WHERE id IN
+        <foreach collection="contactIds" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

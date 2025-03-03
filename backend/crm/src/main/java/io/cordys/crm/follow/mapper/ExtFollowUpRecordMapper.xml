@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper">
+
+    <select id="selectList" resultType="io.cordys.crm.follow.dto.response.FollowUpRecordListResponse">
+        SELECT
+            id,
+            customer_id,
+            opportunity_id,
+            type,
+            lead_id,
+            content,
+            owner,
+            contact_id,
+            create_time,
+            update_time,
+            create_user,
+            update_user,
+        FROM
+            follow_up_record
+        WHERE
+            organization_id =#{orgId}
+          and type = #{type}
+        <if test="resourceType == 'CUSTOMER'">
+            AND customer_id = #{request.sourceId}
+        </if>
+        <if test="resourceType == 'LEAD'">
+            AND lead_id = #{request.sourceId}
+        </if>
+        <if test="resourceType == 'OPPORTUNITY'">
+            AND opportunity_id = #{request.sourceId}
+        </if>
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND organization_id = #{orgId}
+        </if>
+        <if test="request.keyword != null and request.keyword != ''">
+            AND content like concat('%', #{request.keyword},'%')
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>

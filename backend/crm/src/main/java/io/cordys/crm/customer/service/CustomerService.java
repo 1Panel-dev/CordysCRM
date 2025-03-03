@@ -49,7 +49,7 @@ public class CustomerService {
         List<String> customerIds = list.stream().map(CustomerListResponse::getId)
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService.getResourceFiledMap(customerIds);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerFieldService.getResourceFieldMap(customerIds);
 
         List<String> ownerIds = list.stream()
                 .map(CustomerListResponse::getOwner)

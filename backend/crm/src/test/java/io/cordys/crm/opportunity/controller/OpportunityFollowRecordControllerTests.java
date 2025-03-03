@@ -5,6 +5,7 @@ import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
+import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -68,5 +69,13 @@ public class OpportunityFollowRecordControllerTests extends BaseTest {
 
         request.setId(addFollowUpRecord.getId());
         this.requestPostWithOk(DEFAULT_UPDATE, request);
+    }
+
+    @Test
+    @Order(3)
+    void testList() throws Exception {
+        FollowUpRecordPageRequest request = new FollowUpRecordPageRequest();
+        request.setSourceId("12345");
+        this.requestPost(DEFAULT_PAGE, request);
     }
 }

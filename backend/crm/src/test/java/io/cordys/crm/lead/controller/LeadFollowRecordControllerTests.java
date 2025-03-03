@@ -5,6 +5,7 @@ import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
+import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -40,6 +41,7 @@ public class LeadFollowRecordControllerTests extends BaseTest {
         FollowUpRecordAddRequest request = new FollowUpRecordAddRequest();
         request.setCustomerId("123");
         request.setOpportunityId("12345");
+        request.setLeadId("123456");
         request.setOwner("admin");
         request.setContactId("123456");
         request.setType("CUSTOMER");
@@ -59,6 +61,7 @@ public class LeadFollowRecordControllerTests extends BaseTest {
         request.setId("1234");
         request.setCustomerId("123");
         request.setOpportunityId("12345");
+        request.setLeadId("123456");
         request.setOwner("admin");
         request.setContactId("1234567");
         request.setType("CUSTOMER");
@@ -69,4 +72,13 @@ public class LeadFollowRecordControllerTests extends BaseTest {
         request.setId(addFollowUpRecord.getId());
         this.requestPostWithOk(DEFAULT_UPDATE, request);
     }
+
+    @Test
+    @Order(3)
+    void testList() throws Exception {
+        FollowUpRecordPageRequest request = new FollowUpRecordPageRequest();
+        request.setSourceId("123456");
+        this.requestPost(DEFAULT_PAGE, request);
+    }
+
 }
