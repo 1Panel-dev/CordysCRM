@@ -17,7 +17,7 @@
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
-  import { getQueryVariable } from '@lib/shared/method/index';
+  import {getQueryVariable, getUrlParameterWidthRegExp} from '@lib/shared/method/index';
 
   import { getWeComOauthCallback } from '@/api/modules/system/login';
   import useLocale from '@/locale/useLocale';
@@ -41,17 +41,31 @@
 
   async function handleOauthLogin() {
     const code = getQueryVariable('code');
-    const weComCallback = getWeComOauthCallback(code || '');
-    userStore.qrCodeLogin(await weComCallback);
-    setLoginType('WE_COM');
-    const { redirect, ...othersQuery } = router.currentRoute.value.query;
-    setLoginExpires();
-    router.push({
-      name: (redirect as string) || NO_RESOURCE_ROUTE_NAME,
-      query: {
-        ...othersQuery,
-      },
-    });
+    if (code) {
+      const weComCallback = getWeComOauthCallback(code);
+      userStore.qrCodeLogin(await weComCallback);
+      setLoginType('WE_COM');
+      const { redirect, ...othersQuery } = router.currentRoute.value.query;
+      setLoginExpires();
+      router.push({
+        name: (redirect as string) || NO_RESOURCE_ROUTE_NAME,
+        query: {
+          ...othersQuery,
+        },
+      });
+    }
+    if (code && getQueryVariable('state')) {
+      const currentUrl = window.location.href;
+      const url = new URL(currentUrl);
+      getUrlParameterWidthRegExp('code');
+      getUrlParameterWidthRegExp('state');
+      url.searchParams.delete('code');
+      url.searchParams.delete('state');
+      const newUrl = url.toString();
+      // 或者在不刷新页面的情况下更新URL（比如使用 History API）
+      window.history.replaceState({}, document.title, newUrl);
+    }
+
   }
 
   onBeforeMount(() => {
