@@ -45,7 +45,7 @@ public class CustomerFollowRecordController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "更新客户跟进记录")
     public FollowUpRecord update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
-        return followUpRecordService.update(request, SessionUtils.getUserId());
+        return followUpRecordService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
@@ -54,6 +54,6 @@ public class CustomerFollowRecordController {
     @Operation(summary = "客户跟进记录列表")
     public Pager<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, followUpRecordService.list(request, OrganizationContext.getOrganizationId(),"CUSTOMER","CUSTOMER"));
+        return PageUtils.setPageInfo(page, followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER"));
     }
 }

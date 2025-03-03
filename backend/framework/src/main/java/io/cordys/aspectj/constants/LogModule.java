@@ -45,5 +45,14 @@ public class LogModule {
      */
     public static final String MODULE_SETTING = "MODULE_SETTING";
 
+
+    //TODO  start  暂定跟进记录模块常量
+    /**
+     * 客户模块
+     */
+    public static final String FOLLOW_UP_RECORD = "FOLLOW_UP_RECORD";
+
+    //todo end
+
     // 可以根据需要扩展其他模块常量
 }

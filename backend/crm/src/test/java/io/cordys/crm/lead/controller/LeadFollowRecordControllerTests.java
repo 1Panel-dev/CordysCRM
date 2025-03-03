@@ -78,6 +78,8 @@ public class LeadFollowRecordControllerTests extends BaseTest {
     void testList() throws Exception {
         FollowUpRecordPageRequest request = new FollowUpRecordPageRequest();
         request.setSourceId("123456");
+        request.setCurrent(1);
+        request.setPageSize(10);
         this.requestPost(DEFAULT_PAGE, request);
     }
 

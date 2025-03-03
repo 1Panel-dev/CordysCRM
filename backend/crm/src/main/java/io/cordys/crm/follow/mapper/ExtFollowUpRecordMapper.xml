@@ -27,6 +27,7 @@
         </if>
         <if test="resourceType == 'LEAD'">
             AND lead_id = #{request.sourceId}
+            AND create_user = #{userId}
         </if>
         <if test="resourceType == 'OPPORTUNITY'">
             AND opportunity_id = #{request.sourceId}

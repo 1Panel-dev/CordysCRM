@@ -1,11 +1,15 @@
 package io.cordys.crm.follow.service;
 
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
@@ -13,6 +17,7 @@ import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
+import io.cordys.crm.system.service.LogService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -38,6 +43,8 @@ public class FollowUpRecordService {
     private BaseService baseService;
     @Resource
     private ExtCustomerContactMapper extCustomerContactMapper;
+    @Resource
+    private LogService logService;
 
     /**
      * 添加跟进记录
@@ -69,13 +76,17 @@ public class FollowUpRecordService {
      * @param userId
      * @return
      */
-    public FollowUpRecord update(FollowUpRecordUpdateRequest request, String userId) {
+    public FollowUpRecord update(FollowUpRecordUpdateRequest request, String userId, String orgId) {
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(followUpRecord).ifPresentOrElse(record -> {
+            LogDTO logDTO = new LogDTO(orgId, followUpRecord.getId(), userId, LogType.UPDATE, LogModule.FOLLOW_UP_RECORD, Translator.get("update_follow_up_record"));
+            logDTO.setOriginalValue(record);
             //更新跟进记录
             updateRecord(record, request, userId);
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields());
+            logDTO.setModifiedValue(record);
+            logService.add(logDTO);
         }, () -> {
             throw new GenericException("record_not_found");
         });
@@ -113,13 +124,14 @@ public class FollowUpRecordService {
      * 跟进记录列表查询
      *
      * @param request
+     * @param userId
      * @param orgId
      * @param resourceType
      * @param type
      * @return
      */
-    public List<FollowUpRecordListResponse> list(FollowUpRecordPageRequest request, String orgId, String resourceType, String type) {
-        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, orgId, resourceType, type);
+    public List<FollowUpRecordListResponse> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
+        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type);
         return buildListData(list);
     }
 
