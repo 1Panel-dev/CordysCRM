@@ -13,18 +13,20 @@
 </template>
 
 <script setup lang="ts">
+  import { useRouter } from 'vue-router';
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
-  import { setLoginExpires, setToken } from '@lib/shared/method/auth';
+  import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import { getQueryVariable } from '@lib/shared/method/index';
 
   import { getWeComOauthCallback } from '@/api/modules/system/login';
   import useLocale from '@/locale/useLocale';
-  import { WHITE_LIST } from '@/router/constants';
+  import { NO_RESOURCE_ROUTE_NAME, WHITE_LIST } from '@/router/constants';
   import useAppStore from '@/store/modules/app';
 
   import useUserStore from './store/modules/user';
 
+  const router = useRouter();
   const userStore = useUserStore();
   const { currentLocale } = useLocale();
   const appStore = useAppStore();
@@ -37,23 +39,19 @@
     return currentLocale.value === 'zh-CN' ? dateZhCN : dateEnUS;
   });
 
-   function handleOauthRedirect() {
-    if (!WHITE_LIST.find((el) => window.location.hash.split('#')[1].includes(el.path))) {
-      const TOKEN = getQueryVariable('_token');
-      const CSRF = getQueryVariable('_csrf');
-      if (TOKEN && CSRF) {
-        setToken(window.atob(TOKEN), CSRF);
-        setLoginExpires();
-      }
-      userStore.checkIsLogin();
-      appStore.setLoginLoading(false);
-    }
-  }
-
   async function handleOauthLogin() {
     const code = getQueryVariable('code');
-    await getWeComOauthCallback(code || '');
-    handleOauthRedirect();
+    const weComCallback = getWeComOauthCallback(code || '');
+    userStore.qrCodeLogin(await weComCallback);
+    setLoginType('WE_COM');
+    const { redirect, ...othersQuery } = router.currentRoute.value.query;
+    setLoginExpires();
+    router.push({
+      name: (redirect as string) || NO_RESOURCE_ROUTE_NAME,
+      query: {
+        ...othersQuery,
+      },
+    });
   }
 
   onBeforeMount(() => {

@@ -38,5 +38,5 @@ export function getWeComCallback(code: string) {
 
 // 企业微信oauth2登录
 export function getWeComOauthCallback(code: string) {
-  return CDR.get({ url: weComOauthCallbackUrl, params: { code } });
+  return CDR.get<UserInfo>({ url: weComOauthCallbackUrl, params: { code } }, { ignoreCancelToken: true });
 }
