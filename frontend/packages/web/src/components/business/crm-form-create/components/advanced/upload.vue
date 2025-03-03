@@ -17,6 +17,7 @@
       multiple
       directory-dnd
       @before-upload="beforeUpload"
+      @update-file-list="() => emit('change', fileList)"
     >
       <n-upload-dragger>
         <div class="flex items-center gap-[8px] px-[8px] py-[4px]">
@@ -44,6 +45,9 @@
   const props = defineProps<{
     fieldConfig: FormCreateField;
     path: string;
+  }>();
+  const emit = defineEmits<{
+    (e: 'change', value: UploadFileInfo[]): void;
   }>();
 
   const { t } = useI18n();

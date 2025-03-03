@@ -6,7 +6,9 @@
         <formComposition ref="formCompositionRef" v-model:list="list" v-model:field="field" :form-config="formConfig" />
       </div>
     </div>
-    <div class="crm-form-design--right"><formAttrConfig v-model:field="field" :form-config="formConfig" /></div>
+    <div class="crm-form-design--right">
+      <formAttrConfig v-model:field="field" :list="list" :form-config="formConfig" />
+    </div>
   </n-scrollbar>
 </template>
 

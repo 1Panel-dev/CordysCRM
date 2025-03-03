@@ -6,6 +6,7 @@ export default {
   'module.dataManagement': 'Data management',
   'module.productManagement': 'Product management',
   'module.newForm': 'New form settings',
+  'module.newContactForm': 'Contact form settings',
   'module.autoRecycle': 'Auto recycle',
   'module.expirationReminder': 'Expiration reminder',
   'module.closeModuleTip': 'Confirm to close module {name}?',

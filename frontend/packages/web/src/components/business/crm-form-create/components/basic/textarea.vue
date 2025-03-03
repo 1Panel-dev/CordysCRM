@@ -18,6 +18,7 @@
       :disabled="props.fieldConfig.editable === false"
       type="textarea"
       clearable
+      @update-value="($event) => emit('change', $event)"
     />
   </n-form-item>
 </template>
@@ -30,6 +31,9 @@
   const props = defineProps<{
     fieldConfig: FormCreateField;
     path: string;
+  }>();
+  const emit = defineEmits<{
+    (e: 'change', value: (string | number)[]): void;
   }>();
 
   const value = defineModel<string>('value', {

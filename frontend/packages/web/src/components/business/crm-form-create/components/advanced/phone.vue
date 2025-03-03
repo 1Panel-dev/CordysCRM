@@ -18,6 +18,7 @@
       :disabled="props.fieldConfig.editable === false"
       :allow-input="onlyAllowNumber"
       clearable
+      @update-value="($event) => emit('change', $event)"
     >
       <template #prefix>
         <CrmIcon type="iconicon_phone" />
@@ -36,6 +37,9 @@
   const props = defineProps<{
     fieldConfig: FormCreateField;
     path: string;
+  }>();
+  const emit = defineEmits<{
+    (e: 'change', value: string): void;
   }>();
 
   const value = defineModel<string>('value', {

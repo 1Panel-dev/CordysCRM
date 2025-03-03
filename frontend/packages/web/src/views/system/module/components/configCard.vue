@@ -15,6 +15,7 @@
     </div>
   </div>
   <customManagementFormDrawer v-model:visible="customerManagementFormVisible" />
+  <customManagementContactFormDrawer v-model:visible="customerManagementContactFormVisible" />
   <OpportunityCloseRulesDrawer v-model:visible="businessManagementBusinessParamsSetVisible" />
   <OpportunityFormDrawer v-model:visible="businessManagementFormVisible" />
   <CapacitySetDrawer
@@ -45,6 +46,7 @@
   import CapacitySetDrawer from './capacitySetDrawer.vue';
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
   import clueFormDrawer from './clueManagement/formDrawer.vue';
+  import customManagementContactFormDrawer from './customManagement/contactFormDrawer.vue';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
   import OpenSeaDrawer from './customManagement/openSeaDrawer.vue';
   import OpportunityFormDrawer from './opportunity/formDrawer.vue';
@@ -92,6 +94,10 @@
         {
           label: t('module.newForm'),
           key: 'newForm',
+        },
+        {
+          label: t('module.newContactForm'),
+          key: 'newContactForm',
         },
         {
           label: t('module.customer.openSea'),
@@ -191,6 +197,7 @@
 
   const selectKey = ref<ModuleConfigEnum>(ModuleConfigEnum.CUSTOMER_MANAGEMENT);
   const customerManagementFormVisible = ref(false);
+  const customerManagementContactFormVisible = ref(false);
   const customerManagementOpenSeaVisible = ref(false);
   const capacitySetVisible = ref(false);
 
@@ -208,6 +215,8 @@
       case ModuleConfigEnum.CUSTOMER_MANAGEMENT:
         if (key === 'newForm') {
           customerManagementFormVisible.value = true;
+        } else if (key === 'newContactForm') {
+          customerManagementContactFormVisible.value = true;
         } else if (key === 'openSea') {
           customerManagementOpenSeaVisible.value = true;
         } else if (key === 'capacitySet') {

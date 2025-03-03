@@ -116,6 +116,14 @@
       </div>
       <!-- 选项属性 End -->
       <!-- 分割线属性 -->
+      <!-- 显隐规则 -->
+      <div v-if="isShowRuleField" class="crm-form-design-config-item">
+        <div class="crm-form-design-config-item-title">
+          {{ t('crmFormDesign.showRule') }}
+        </div>
+        <n-button @click="showRuleConfig">{{ t('common.setting') }}</n-button>
+      </div>
+      <!-- 显隐规则 End -->
       <div v-if="fieldConfig.type === FieldTypeEnum.DIVIDER" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.style') }}
@@ -445,6 +453,48 @@
       {{ t('crmFormDesign.fieldConfigEmptyTip') }}
     </div>
   </div>
+  <CrmModal
+    v-model:show="showRuleConfigVisible"
+    :title="t('crmFormDesign.showRuleSetting')"
+    :positive-text="t('common.save')"
+    @confirm="handleShowRuleConfigConfirm"
+  >
+    <div class="flex flex-col items-start gap-[12px]">
+      <div v-for="rule in tempShowRules" :key="rule.value" class="flex w-full items-center gap-[8px]">
+        <div>{{ t('crmFormDesign.choice') }}</div>
+        <n-select
+          v-model:value="rule.value"
+          :options="getShowRuleOptions(rule)"
+          :disabled="props.disabled"
+          class="w-[150px]"
+        />
+        <div>{{ t('crmFormDesign.show') }}</div>
+        <n-select
+          v-model:value="rule.fieldIds"
+          :options="showRuleFields"
+          :disabled="props.disabled || !rule.value"
+          class="w-[350px]"
+          max-tag-count="responsive"
+          multiple
+          clearable
+        />
+        <n-button :disabled="props.disabled" @click="deleteShowRule(rule)">
+          <CrmIcon type="iconicon_minus_circle1" />
+        </n-button>
+      </div>
+      <n-button
+        text
+        type="primary"
+        :disabled="props.disabled || tempShowRules.length === fieldConfig.options?.length"
+        @click="addShowRule"
+      >
+        <div class="flex items-center gap-[8px]">
+          <CrmIcon type="iconicon_add" />
+          {{ t('crmFormDesign.addRule') }}
+        </div>
+      </n-button>
+    </div>
+  </CrmModal>
 </template>
 
 <script setup lang="ts">
@@ -463,21 +513,28 @@
     NSwitch,
     NTooltip,
   } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
   import CrmColorSelect from '@/components/pure/crm-color-select/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import { rules } from '@/components/business/crm-form-create/config';
-  import { FormCreateField } from '@/components/business/crm-form-create/types';
+  import { FormCreateField, FormCreateFieldShowControlRule } from '@/components/business/crm-form-create/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import optionConfig from './optionConfig.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 
   import { SelectOption } from 'naive-ui/es/select/src/interface';
+
+  const props = defineProps<{
+    list: FormCreateField[];
+    disabled?: boolean;
+  }>();
 
   const { t } = useI18n();
 
@@ -495,7 +552,7 @@
     });
   });
 
-  const checkedRules = ref<string[]>([]);
+  const checkedRules = ref<(string | number)[]>([]);
 
   watch(
     () => checkedRules.value,
@@ -597,6 +654,47 @@
       value: FieldDataSourceTypeEnum.PRODUCT,
     },
   ];
+
+  const showRuleConfigVisible = ref(false);
+  const tempShowRules = ref<FormCreateFieldShowControlRule[]>([]);
+  const isShowRuleField = computed(() => {
+    return (
+      fieldConfig.value.type === FieldTypeEnum.RADIO ||
+      (fieldConfig.value.type === FieldTypeEnum.SELECT && !fieldConfig.value.multiple)
+    );
+  });
+  // 显隐规则可选字段
+  const showRuleFields = computed(() => {
+    if (isShowRuleField.value) {
+      return props.list.filter((item) => item.id !== fieldConfig.value.id).map((e) => ({ label: e.name, value: e.id }));
+    }
+    return [];
+  });
+
+  // 显隐规则可选选项
+  function getShowRuleOptions(rule: FormCreateFieldShowControlRule) {
+    return (fieldConfig.value.options || []).filter(
+      (e) => tempShowRules.value.every((item) => item.value !== e.value) || e.value === rule.value
+    );
+  }
+
+  function showRuleConfig() {
+    tempShowRules.value = fieldConfig.value.showControlRules || [];
+    showRuleConfigVisible.value = true;
+  }
+
+  function deleteShowRule(rule: FormCreateFieldShowControlRule) {
+    tempShowRules.value = tempShowRules.value.filter((item) => item !== rule);
+  }
+
+  function addShowRule() {
+    tempShowRules.value.push({ value: undefined, fieldIds: [] });
+  }
+
+  function handleShowRuleConfigConfirm() {
+    showRuleConfigVisible.value = false;
+    fieldConfig.value.showControlRules = cloneDeep(tempShowRules.value);
+  }
 </script>
 
 <style lang="less" scoped>

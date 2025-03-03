@@ -2,7 +2,7 @@
   <n-tabs v-model:value="configTab" :bar-width="140" justify-content="space-around" type="line" animated>
     <n-tab-pane name="field" :tab="t('crmFormDesign.fieldConfig')">
       <n-scrollbar>
-        <fieldAttr :field="fieldConfig" />
+        <fieldAttr :field="fieldConfig" :list="props.list" />
       </n-scrollbar>
     </n-tab-pane>
     <n-tab-pane name="form" :tab="t('crmFormDesign.formConfig')">
@@ -23,6 +23,10 @@
   import formAttr from './formAttr.vue';
 
   import { useI18n } from '@/hooks/useI18n';
+
+  const props = defineProps<{
+    list: FormCreateField[];
+  }>();
 
   const { t } = useI18n();
 

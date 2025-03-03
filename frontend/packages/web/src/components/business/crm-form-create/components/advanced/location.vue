@@ -46,6 +46,9 @@
     fieldConfig: FormCreateField;
     path: string;
   }>();
+  const emit = defineEmits<{
+    (e: 'change', value: string): void;
+  }>();
 
   const { t } = useI18n();
 
@@ -58,6 +61,7 @@
 
   function handleCityAndDetailChange() {
     value.value = `${city.value}-${detail.value}`;
+    emit('change', value.value);
   }
 
   onBeforeMount(() => {

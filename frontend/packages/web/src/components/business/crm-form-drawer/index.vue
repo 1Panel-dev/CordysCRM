@@ -4,6 +4,7 @@
     width="100%"
     :footer="false"
     :closable="false"
+    :close-on-esc="false"
     :loading="loading"
     header-class="crm-form-drawer-header"
     body-content-class="!p-0"
@@ -102,8 +103,11 @@
 
   function showUnsavedLeaveTip() {
     openModal({
+      type: 'warning',
       title: t('common.unSaveLeaveTitle'),
       content: t('common.editUnsavedLeave'),
+      positiveText: t('common.confirm'),
+      negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         visible.value = false;
       },
@@ -138,6 +142,19 @@
     }
   }
 
+  // 分步处理分数表达式
+  function safeFractionConvert(str: string | number) {
+    if (!str) {
+      return 1;
+    }
+    if (typeof str === 'number') {
+      return str;
+    }
+    const parts = str.split('/').map(Number); // 分割分子分母
+    if (parts.length !== 2 || parts.some((e) => Number.isNaN(e))) return 1;
+    return parts[0] / parts[1];
+  }
+
   async function initFormConfig() {
     try {
       loading.value = true;
@@ -149,8 +166,12 @@
         type: item.type,
         name: t(item.name),
         placeholder: t(item.placeholder || ''),
+        fieldWidth: safeFractionConvert(item.fieldWidth),
       }));
       formConfig.value = res.formProp;
+      nextTick(() => {
+        unsaved.value = false;
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

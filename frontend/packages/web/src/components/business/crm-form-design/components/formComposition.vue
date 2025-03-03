@@ -4,10 +4,9 @@
     :require-mark-placement="props.formConfig.labelPos === 'left' ? 'left' : 'right'"
     class="crm-form-design--composition"
   >
-    <n-scrollbar content-class="h-full">
+    <n-scrollbar>
       <VueDraggable
         v-model="list"
-        :disabled="disabled"
         :animation="150"
         ghost-class="crm-form-design--composition-item-ghost"
         group="crmFormDesign"
@@ -15,41 +14,47 @@
         :class="[list.length > 0 ? '' : 'border border-dashed']"
         @start="onStart"
       >
-        <div
-          v-for="item in list"
-          :key="item.id"
-          class="crm-form-design--composition-item"
-          :class="activeItem?.id === item.id ? 'crm-form-design--composition-item--active' : ''"
-          :style="{ width: `${Number(item.fieldWidth) * 100}%` }"
-          @click="() => handleItemClick(item)"
-        >
-          <div class="crm-form-design--composition-item-tools">
-            <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
-              <template #trigger>
-                <CrmIcon
-                  type="iconicon_file_copy"
-                  :size="16"
-                  class="cursor-pointer hover:text-[var(--primary-8)]"
-                  @click.stop="copyItem(item)"
-                />
-              </template>
-              {{ t('common.copy') }}
-            </n-tooltip>
-            <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
-              <template #trigger>
-                <CrmIcon
-                  type="iconicon_delete"
-                  :size="16"
-                  class="cursor-pointer hover:text-[var(--error-red)]"
-                  @click.stop="deleteItem(item)"
-                />
-              </template>
-              {{ t('common.delete') }}
-            </n-tooltip>
+        <template v-for="item in list" :key="item.id">
+          <div
+            v-if="item.show !== false"
+            class="crm-form-design--composition-item"
+            :class="activeItem?.id === item.id ? 'crm-form-design--composition-item--active' : ''"
+            :style="{ width: `${item.fieldWidth * 100}%` }"
+            @click="() => handleItemClick(item)"
+          >
+            <div class="crm-form-design--composition-item-tools">
+              <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+                <template #trigger>
+                  <CrmIcon
+                    type="iconicon_file_copy"
+                    :size="16"
+                    class="cursor-pointer hover:text-[var(--primary-8)]"
+                    @click.stop="copyItem(item)"
+                  />
+                </template>
+                {{ t('common.copy') }}
+              </n-tooltip>
+              <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+                <template #trigger>
+                  <CrmIcon
+                    type="iconicon_delete"
+                    :size="16"
+                    class="cursor-pointer hover:text-[var(--error-red)]"
+                    @click.stop="deleteItem(item)"
+                  />
+                </template>
+                {{ t('common.delete') }}
+              </n-tooltip>
+            </div>
+            <component
+              :is="getItemComponent(item.type)"
+              :field-config="item"
+              :path="item.id"
+              @change="($event: any) => handleFieldChange($event, item)"
+            />
+            <div class="crm-form-design--composition-item-mask"></div>
           </div>
-          <component :is="getItemComponent(item.type)" :field-config="item" :path="item.id" />
-          <div class="crm-form-design--composition-item-mask"></div>
-        </div>
+        </template>
         <div
           v-if="list.length === 0"
           class="absolute col-span-4 flex h-full w-full items-center justify-center text-[var(--text-n4)]"
@@ -101,8 +106,6 @@
   const activeItem = defineModel<FormCreateField | null>('field', {
     default: null,
   });
-
-  const disabled = ref(false);
 
   function onStart(e: any) {
     activeItem.value = e.data as FormCreateField;
@@ -218,6 +221,21 @@
     list.value = list.value.filter((e) => e.id !== item.id);
     if (activeItem.value?.id === item.id) {
       activeItem.value = null;
+    }
+  }
+
+  function handleFieldChange(value: any, item: FormCreateField) {
+    // 控制显示规则
+    if (item.showControlRules?.length) {
+      item.showControlRules.forEach((rule) => {
+        // 若配置了该值的显示规则
+        if (rule.value === value) {
+          list.value.forEach((e) => {
+            // 若该字段在显示规则中，则根据规则显示或隐藏
+            e.show = rule.fieldIds.includes(e.id);
+          });
+        }
+      });
     }
   }
 

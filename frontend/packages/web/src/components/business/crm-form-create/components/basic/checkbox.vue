@@ -14,6 +14,7 @@
       v-model:value="value"
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
+      @update-value="($event) => emit('change', $event)"
     >
       <n-space :item-class="props.fieldConfig.direction === 'horizontal' ? '' : 'w-full'">
         <n-checkbox
@@ -36,6 +37,9 @@
     fieldConfig: FormCreateField;
     path: string;
   }>();
+  const emit = defineEmits<{
+    (e: 'change', value: (string | number)[]): void;
+  }>();
 
   const value = defineModel<(string | number)[]>('value', {
     default: [],
@@ -45,6 +49,9 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       value.value = val;
+    },
+    {
+      immediate: true,
     }
   );
 </script>

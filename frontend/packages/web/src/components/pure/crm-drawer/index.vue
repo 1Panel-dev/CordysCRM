@@ -7,6 +7,7 @@
     :placement="props.placement"
     class="crm-drawer"
     @after-leave="emit('cancel')"
+    @esc="emit('esc')"
   >
     <n-drawer-content
       :title="props.title"
@@ -109,6 +110,7 @@
     (e: 'continue'): void;
     (e: 'confirm'): void;
     (e: 'cancel'): void;
+    (e: 'esc'): void;
   }>();
 
   const show = defineModel<boolean>('show', {

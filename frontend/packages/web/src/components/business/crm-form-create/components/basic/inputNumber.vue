@@ -23,6 +23,7 @@
       button-placement="both"
       clearable
       class="w-full"
+      @update-value="($event) => emit('change', $event)"
     >
       <template v-if="props.fieldConfig.numberFormat === 'percent'" #suffix> % </template>
     </n-input-number>
@@ -38,6 +39,9 @@
     fieldConfig: FormCreateField;
     path: string;
   }>();
+  const emit = defineEmits<{
+    (e: 'change', value: number | null): void;
+  }>();
 
   const value = defineModel<number>('value', {
     default: null,
@@ -47,6 +51,9 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       value.value = val;
+    },
+    {
+      immediate: true,
     }
   );
 

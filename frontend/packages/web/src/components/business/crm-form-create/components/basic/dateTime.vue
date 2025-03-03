@@ -17,6 +17,7 @@
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
       class="w-full"
+      @update-value="($event) => emit('change', $event)"
     >
     </n-date-picker>
   </n-form-item>
@@ -31,6 +32,9 @@
     fieldConfig: FormCreateField;
     path: string;
   }>();
+  const emit = defineEmits<{
+    (e: 'change', value: (string | number)[]): void;
+  }>();
 
   const value = defineModel<number>('value', {
     default: null,
@@ -40,6 +44,9 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       value.value = val;
+    },
+    {
+      immediate: true,
     }
   );
 </script>

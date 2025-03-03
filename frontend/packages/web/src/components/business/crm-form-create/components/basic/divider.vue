@@ -2,7 +2,7 @@
   <div>
     <div
       v-if="props.fieldConfig.showLabel"
-      class="mb-[8px]"
+      class="mb-[8px] font-semibold"
       :style="{
         color: fieldConfig.titleColor,
       }"

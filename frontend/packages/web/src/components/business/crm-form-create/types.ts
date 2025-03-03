@@ -11,6 +11,12 @@ export interface FormCreateFieldOption extends Option {
 export interface FormCreateFieldRule extends FormItemRule {
   key: FieldRuleEnum;
   label: string;
+  regex?: string;
+}
+
+export interface FormCreateFieldShowControlRule {
+  value?: string | number; // 当前 option 的 value
+  fieldIds: string[]; // 控制的字段id集合
 }
 
 export interface FormCreateField {
@@ -27,13 +33,14 @@ export interface FormCreateField {
   editable: boolean;
   fieldWidth: number;
   defaultValue?: any;
+  showRules?: FieldRuleEnum[]; // 显示的校验规则
   rules: FormCreateFieldRule[];
   // 数字输入属性
   max?: number;
   min?: number;
   numberFormat?: 'number' | 'percent'; // 数字格式, number: 数字, percent: 百分比
   decimalPlaces?: boolean; // 保留小数点位
-  precision?: number; // 精度
+  precision?: number | null; // 精度
   showThousandsSeparator?: boolean; // 是否显示千分位
   // 日期输入属性
   datetype?: 'month' | 'date' | 'datetime';
@@ -45,9 +52,9 @@ export interface FormCreateField {
   titleColor?: string;
   // 图片上传属性
   pictureShowType?: 'card' | 'list';
-  uploadLimit?: number;
+  uploadLimit?: number | null;
   uploadLimitEnable?: boolean;
-  uploadSizeLimit?: number;
+  uploadSizeLimit?: number | null;
   uploadSizeLimitEnable?: boolean;
   // 地址属性
   locationType?: 'PCD' | 'detail'; // PCD: 省市区, detail: 省市区+详细地址
@@ -60,8 +67,10 @@ export interface FormCreateField {
   hasCurrentUser?: boolean;
   // 部门属性
   hasCurrentUserDept?: boolean;
+  // 显隐控制属性(该属性是或运算，满足一个值即显示)
+  showControlRules?: FormCreateFieldShowControlRule[];
   // 前端渲染属性
   icon: string;
-  showRules?: FieldRuleEnum[]; // 显示的校验规则
   dataSourceSelectedRows?: InternalRowData[]; // 数据源选中的行，回显用
+  show?: boolean; // 是否显示，受控于别的字段的showControlRules
 }

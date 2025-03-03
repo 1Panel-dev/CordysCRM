@@ -27,6 +27,9 @@
     fieldConfig: FormCreateField;
     path: string;
   }>();
+  const emit = defineEmits<{
+    (e: 'change', value: (string | number)[]): void;
+  }>();
 
   const value = defineModel<SelectedUsersItem[]>('value', {
     default: [],
@@ -35,7 +38,23 @@
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
-      value.value = val;
+      value.value = val || [];
+    },
+    {
+      immediate: true,
+    }
+  );
+
+  watch(
+    () => value.value,
+    (val) => {
+      emit(
+        'change',
+        val.map((item) => item.id)
+      );
+    },
+    {
+      deep: true,
     }
   );
 </script>

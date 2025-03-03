@@ -2,11 +2,13 @@ import { AxiosCanceler } from '@lib/shared/api/http/axiosCancel';
 import { setRouteEmitter } from '@lib/shared/method/route-listener';
 
 import setupPermissionGuard from './permission';
+import NProgress from 'nprogress';
 import type { Router } from 'vue-router';
 
 function setupPageGuard(router: Router) {
   const axiosCanceler = new AxiosCanceler();
   router.beforeEach((to, from, next) => {
+    NProgress.start();
     // 监听路由变化
     setRouteEmitter(to);
     // 取消上个路由未完成的请求（不包含设置了ignoreCancelToken的请求）

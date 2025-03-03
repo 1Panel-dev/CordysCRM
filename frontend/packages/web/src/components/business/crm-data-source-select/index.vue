@@ -9,6 +9,7 @@
     :show-arrow="false"
     :show="false"
     @click="showDataSourcesModal"
+    @update-value="($event) => emit('change', $event)"
   />
   <CrmModal
     v-model:show="dataSourcesModalVisible"
@@ -53,6 +54,9 @@
       multiple: true,
     }
   );
+  const emit = defineEmits<{
+    (e: 'change', value: (string | number)[]): void;
+  }>();
 
   const typeLocaleMap = {
     [FieldDataSourceTypeEnum.CUSTOMER]: 'crmFormDesign.customer',

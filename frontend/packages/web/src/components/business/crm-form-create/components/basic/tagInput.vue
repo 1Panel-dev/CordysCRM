@@ -21,6 +21,7 @@
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
       clearable
+      @update-value="($event) => emit('change', $event)"
     />
   </n-form-item>
 </template>
@@ -36,6 +37,9 @@
     fieldConfig: FormCreateField;
     path: string;
   }>();
+  const emit = defineEmits<{
+    (e: 'change', value: (string | number)[]): void;
+  }>();
 
   const { t } = useI18n();
 
@@ -47,6 +51,9 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       value.value = val;
+    },
+    {
+      immediate: true,
     }
   );
 </script>

@@ -15,6 +15,7 @@
       :rows="props.fieldConfig.dataSourceSelectedRows"
       :multiple="fieldConfig.multiple"
       :data-source-type="props.fieldConfig.dataSourceType"
+      @change="($event) => emit('change', $event)"
     />
   </n-form-item>
 </template>
@@ -30,17 +31,13 @@
     fieldConfig: FormCreateField;
     path: string;
   }>();
+  const emit = defineEmits<{
+    (e: 'change', value: (string | number)[]): void;
+  }>();
 
   const value = defineModel<(string | number)[]>('value', {
     default: [],
   });
-
-  watch(
-    () => props.fieldConfig.defaultValue,
-    (val) => {
-      value.value = val;
-    }
-  );
 </script>
 
 <style lang="less" scoped></style>

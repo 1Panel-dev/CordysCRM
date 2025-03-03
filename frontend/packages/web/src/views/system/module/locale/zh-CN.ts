@@ -6,6 +6,7 @@ export default {
   'module.dataManagement': '数据管理',
   'module.productManagement': '产品管理',
   'module.newForm': '新建表单设置',
+  'module.newContactForm': '联系人表单设置',
   'module.autoRecycle': '自动回收',
   'module.expirationReminder': '到期提醒',
   'module.closeModuleTip': '确认关闭模块 {name} 吗',

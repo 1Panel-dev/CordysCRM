@@ -18,6 +18,7 @@
       :multiple="props.fieldConfig.multiple"
       :placeholder="props.fieldConfig.placeholder"
       clearable
+      @update-value="emit('change', $event)"
     />
   </n-form-item>
 </template>
@@ -31,6 +32,9 @@
     fieldConfig: FormCreateField;
     path: string;
   }>();
+  const emit = defineEmits<{
+    (e: 'change', value: (string | number)[]): void;
+  }>();
 
   const value = defineModel<(string | number)[]>('value', {
     default: [],
@@ -40,6 +44,9 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       value.value = val;
+    },
+    {
+      immediate: true,
     }
   );
 </script>
