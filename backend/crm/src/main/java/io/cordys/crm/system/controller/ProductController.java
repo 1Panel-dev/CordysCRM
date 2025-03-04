@@ -9,13 +9,11 @@ import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
-import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
-import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import io.cordys.crm.system.dto.response.ProductListResponse;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
+import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
 import io.cordys.crm.system.dto.response.ProductGetResponse;
-import io.cordys.crm.system.service.ModuleFormService;
-import io.cordys.crm.system.service.ModuleService;
+import io.cordys.crm.system.dto.response.ProductListResponse;
+import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ProductService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,7 +34,7 @@ import java.util.List;
 public class ProductController {
 
     @Resource
-    private ModuleFormService moduleFormService;
+    private ModuleFormCacheService moduleFormCacheService;
 
     @Resource
     private ProductService productService;
@@ -46,7 +44,7 @@ public class ProductController {
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
     public BusinessModuleFormConfigDTO getModuleFormConfig(){
-        return moduleFormService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), OrganizationContext.getOrganizationId());
     }
 
 

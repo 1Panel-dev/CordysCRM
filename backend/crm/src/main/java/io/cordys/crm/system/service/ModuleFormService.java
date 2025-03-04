@@ -6,6 +6,7 @@ import io.cordys.common.constants.InternalUser;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.ModuleField;
@@ -75,38 +76,6 @@ public class ModuleFormService {
 		// set fields
 		formConfig.setFields(getAllFields(form.getId()));
 		return formConfig;
-	}
-
-	/**
-	 * 获取业务表单配置
-	 * @param formKey 表单Key
-	 * @param organizationId 组织ID
-	 * @return 表单配置
-	 */
-	public BusinessModuleFormConfigDTO getBusinessFormConfig(String formKey, String organizationId) {
-		ModuleFormConfigDTO config = getConfig(formKey, organizationId);
-		BusinessModuleFormConfigDTO businessModuleFormConfig = new BusinessModuleFormConfigDTO();
-		businessModuleFormConfig.setFormProp(config.getFormProp());
-
-		// 获取特殊的业务字段
-		Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
-				collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
-
-		businessModuleFormConfig.setFields(
-				config.getFields()
-						.stream()
-						.map(moduleFieldDTO -> {
-							BusinessModuleFieldDTO businessModuleField = BeanUtils.copyBean(new BusinessModuleFieldDTO(), moduleFieldDTO);
-							BusinessModuleField businessModuleFieldEnum = businessModuleFieldMap.get(businessModuleField.getInternalKey());
-							if (businessModuleFieldEnum != null) {
-								// 设置特殊的业务字段 key
-								businessModuleField.setBusinessKey(businessModuleFieldEnum.getBusinessKey());
-							}
-							return businessModuleField;
-						})
-						.toList()
-		);
-		return businessModuleFormConfig;
 	}
 
 	/**

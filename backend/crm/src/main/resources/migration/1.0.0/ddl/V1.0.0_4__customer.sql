@@ -194,5 +194,22 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_resource_id ON customer_contact_field_blob(resource_id);
 
+CREATE TABLE customer_collaboration(
+   `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+   `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+   `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+   `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+   `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+   `user_id` VARCHAR(32) NOT NULL   COMMENT '协作人id' ,
+   `customer_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
+   `collaboration_type` VARCHAR(50) NOT NULL   COMMENT '协作类型(共享/协作)' ,
+   PRIMARY KEY (id)
+)  COMMENT = '客户协作人'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_customer_id ON customer_collaboration(customer_id);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

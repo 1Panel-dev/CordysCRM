@@ -152,5 +152,6 @@ public class CustomerContactService {
 
     public void delete(String id) {
         customerContactMapper.deleteByPrimaryKey(id);
+        customerContactFieldService.deleteByResourceId(id);
     }
 }

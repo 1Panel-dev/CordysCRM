@@ -26,6 +26,7 @@ import io.cordys.crm.system.dto.response.RoleGetResponse;
 import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.crm.system.mapper.ExtRoleMapper;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -118,6 +119,19 @@ public class RoleService {
         return roleScopeDeptMapper.select(example)
                 .stream()
                 .map(RoleScopeDept::getDepartmentId)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getDeptIdsByRoleIds(List<String> roleIds) {
+        if (CollectionUtils.isEmpty(roleIds)) {
+            return List.of();
+        }
+        LambdaQueryWrapper<RoleScopeDept> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(RoleScopeDept::getRoleId, roleIds);
+        return roleScopeDeptMapper.selectListByLambda(wrapper)
+                .stream()
+                .map(RoleScopeDept::getDepartmentId)
+                .distinct()
                 .collect(Collectors.toList());
     }
 
@@ -399,7 +413,7 @@ public class RoleService {
         return rolePermissionMapper.selectByColumn("role_id", roleIds.toArray(new String[0]));
     }
 
-    private List<UserRole> getUserRolesByUserId(String userId) {
+    public List<UserRole> getUserRolesByUserId(String userId) {
         UserRole example = new UserRole();
         example.setUserId(userId);
         return userRoleMapper.select(example);
@@ -436,5 +450,12 @@ public class RoleService {
                 rolePermissionMapper.insert(rolePermission);
             }
         });
+    }
+
+    public List<Role> getByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return List.of();
+        }
+        return roleMapper.selectByIds(ids.toArray(new String[0]));
     }
 }

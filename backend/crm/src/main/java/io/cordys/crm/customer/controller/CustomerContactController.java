@@ -4,7 +4,8 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.FormKey;
 import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
-import io.cordys.crm.system.service.ModuleFormService;
+import io.cordys.crm.system.service.ModuleFormCacheService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -36,13 +37,13 @@ public class CustomerContactController {
     @Resource
     private CustomerContactService customerContactService;
     @Resource
-    private ModuleFormService moduleFormService;
+    private ModuleFormCacheService moduleFormCacheService;
 
     @GetMapping("/module/form")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
     public BusinessModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormService.getBusinessFormConfig(FormKey.CONTACT.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")

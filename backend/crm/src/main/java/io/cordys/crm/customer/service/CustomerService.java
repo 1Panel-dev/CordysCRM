@@ -1,6 +1,7 @@
 package io.cordys.crm.customer.service;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
@@ -40,8 +41,9 @@ public class CustomerService {
     @Resource
     private CustomerFieldService customerFieldService;
 
-    public List<CustomerListResponse> list(CustomerPageRequest request, String orgId) {
-        List<CustomerListResponse> list = extCustomerMapper.list(request, orgId);
+    public List<CustomerListResponse> list(CustomerPageRequest request, String userId, String orgId,
+                                           DeptDataPermissionDTO deptDataPermission) {
+        List<CustomerListResponse> list = extCustomerMapper.list(request, orgId, userId, deptDataPermission);
         return buildListData(list, orgId);
     }
 

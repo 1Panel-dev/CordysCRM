@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.mapper;
 
+import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.*;
@@ -15,7 +16,8 @@ import java.util.List;
  */
 public interface ExtCustomerMapper {
 
-    List<CustomerListResponse> list(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId);
+    List<CustomerListResponse> list(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId,
+                                    @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     boolean checkAddExist(@Param("customer") Customer customer);
 

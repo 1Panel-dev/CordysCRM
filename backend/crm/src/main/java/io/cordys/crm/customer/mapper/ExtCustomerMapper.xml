@@ -19,7 +19,24 @@
             <property name="sort" value="request.sort"/>
         </include>
 
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on c.owner = sou.user_id
+            and sou.dept_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+        </if>
+
+        <if test="dataPermission != null and dataPermission.visible">
+            join customer_collaboration cc on c.id = cc.customer_id
+            and cc.user_id = #{userId}
+        </if>
+
         where c.organization_id = #{orgId} and c.in_shared_pool is false
+
+        <if test="dataPermission != null and dataPermission.self">
+          and c.owner = #{userId}
+        </if>
 
         <if test="request.keyword != null and request.keyword != ''">
             and c.name like concat('%', #{request.keyword},'%')

@@ -4,8 +4,10 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
@@ -15,6 +17,7 @@ import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,21 +40,25 @@ public class CustomerController {
     @Resource
     private CustomerService customerService;
     @Resource
-    private ModuleFormService moduleFormService;
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private DataScopeService dataScopeService;
 
     @GetMapping("/module/form")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
     public BusinessModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户列表")
     public Pager<List<CustomerListResponse>> list(@Validated @RequestBody CustomerPageRequest request) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), request.getSearchType());
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, customerService.list(request, OrganizationContext.getOrganizationId()));
+        return PageUtils.setPageInfo(page, customerService.list(request, SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), deptDataPermission));
     }
 
     @GetMapping("/get/{id}")
