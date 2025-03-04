@@ -45,8 +45,7 @@
 
   async function handleOauthLogin() {
     const code = getQueryVariable('code');
-    console.log(code);
-    if (code && code !== '') {
+    if (code) {
       const weComCallback = getWeComOauthCallback(code);
       const boolean = userStore.qrCodeLogin(await weComCallback);
       if (boolean) {
@@ -73,6 +72,8 @@
       const newUrl = url.toString();
       // 或者在不刷新页面的情况下更新URL（比如使用 History API）
       window.history.replaceState({}, document.title, newUrl);
+    } else {
+      userStore.checkIsLogin();
     }
   }
 
