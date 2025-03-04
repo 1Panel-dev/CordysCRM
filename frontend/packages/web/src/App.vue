@@ -17,14 +17,18 @@
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
-  import {getQueryVariable, getUrlParameterWidthRegExp} from '@lib/shared/method/index';
+  import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method/index';
 
   import { getWeComOauthCallback } from '@/api/modules/system/login';
+  import useLoading from '@/hooks/useLoading';
   import useLocale from '@/locale/useLocale';
-  import { NO_RESOURCE_ROUTE_NAME, WHITE_LIST } from '@/router/constants';
   import useAppStore from '@/store/modules/app';
 
+  import { AppRouteEnum } from '@/enums/routeEnum';
+
   import useUserStore from './store/modules/user';
+
+  const { setLoading } = useLoading();
 
   const router = useRouter();
   const userStore = useUserStore();
@@ -41,18 +45,23 @@
 
   async function handleOauthLogin() {
     const code = getQueryVariable('code');
-    if (code) {
+    console.log(code);
+    if (code && code !== '') {
       const weComCallback = getWeComOauthCallback(code);
-      userStore.qrCodeLogin(await weComCallback);
-      setLoginType('WE_COM');
-      const { redirect, ...othersQuery } = router.currentRoute.value.query;
-      setLoginExpires();
-      router.push({
-        name: (redirect as string) || NO_RESOURCE_ROUTE_NAME,
-        query: {
-          ...othersQuery,
-        },
-      });
+      const boolean = userStore.qrCodeLogin(await weComCallback);
+      if (boolean) {
+        setLoginExpires();
+        setLoginType('WE_COM_OAUTH2');
+        const { redirect, ...othersQuery } = router.currentRoute.value.query;
+        router.push({
+          name: (redirect as string) || AppRouteEnum.SYSTEM,
+          query: {
+            ...othersQuery,
+          },
+        });
+      }
+      setLoading(false);
+      userStore.getAuthentication();
     }
     if (code && getQueryVariable('state')) {
       const currentUrl = window.location.href;
@@ -65,7 +74,6 @@
       // 或者在不刷新页面的情况下更新URL（比如使用 History API）
       window.history.replaceState({}, document.title, newUrl);
     }
-
   }
 
   onBeforeMount(() => {

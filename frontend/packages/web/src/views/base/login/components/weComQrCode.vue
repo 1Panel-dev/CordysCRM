@@ -11,13 +11,16 @@
   import { getThirdConfigByType } from '@/api/modules/system/business';
   import { getWeComCallback } from '@/api/modules/system/login';
   import { useI18n } from '@/hooks/useI18n';
-  import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
+  import useLoading from '@/hooks/useLoading';
   import useUserStore from '@/store/modules/user';
+
+  import { AppRouteEnum } from '@/enums/routeEnum';
 
   import * as ww from '@wecom/jssdk';
   import { WWLoginErrorResp, WWLoginPanelSizeType, WWLoginRedirectType, WWLoginType } from '@wecom/jssdk';
 
   const { t } = useI18n();
+  const { setLoading } = useLoading();
 
   const userStore = useUserStore();
   const router = useRouter();
@@ -45,17 +48,21 @@
       onCheckWeComLogin: obj.value,
       async onLoginSuccess({ code }: any) {
         const weComCallback = getWeComCallback(code);
-        userStore.qrCodeLogin(await weComCallback);
-        setLoginType('WE_COM');
-        Message.success(t('login.form.login.success'));
-        const { redirect, ...othersQuery } = router.currentRoute.value.query;
-        setLoginExpires();
-        router.push({
-          name: (redirect as string) || NO_RESOURCE_ROUTE_NAME,
-          query: {
-            ...othersQuery,
-          },
-        });
+        const boolean = userStore.qrCodeLogin(await weComCallback);
+        if (boolean) {
+          setLoginExpires();
+          setLoginType('QR_CODE');
+          Message.success(t('login.form.login.success'));
+          const { redirect, ...othersQuery } = router.currentRoute.value.query;
+          router.push({
+            name: (redirect as string) || AppRouteEnum.SYSTEM,
+            query: {
+              ...othersQuery,
+            },
+          });
+        }
+        setLoading(false);
+        userStore.getAuthentication();
       },
       onLoginFail(err: WWLoginErrorResp) {
         Message.error(`errorMsg of errorCbk: ${err.errMsg}`);

@@ -111,6 +111,7 @@ const useUserStore = defineStore('user', {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log(err);
+        clearToken();
         return false;
       }
     },
