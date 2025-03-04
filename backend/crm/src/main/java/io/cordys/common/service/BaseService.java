@@ -3,6 +3,7 @@ package io.cordys.common.service;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
 public class BaseService {
     @Resource
     private ExtUserMapper extUserMapper;
+    @Resource
+    private ExtCustomerContactMapper extCustomerContactMapper;
 
 
     /**
@@ -100,5 +103,17 @@ public class BaseService {
         return extUserMapper.getUserDeptByUserIds(ownerIds, orgId)
                 .stream()
                 .collect(Collectors.toMap(UserDeptDTO::getUserId, Function.identity()));
+    }
+
+
+    /**
+     * 获取联系人ID和名称的映射
+     * @param contactIds
+     * @return
+     */
+    public Map<String, String> getContactMap(List<String> contactIds) {
+        return extCustomerContactMapper.selectContactOptionByIds(contactIds)
+                .stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
     }
 }

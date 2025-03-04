@@ -49,7 +49,7 @@ public class OpportunityFollowRecordController {
     }
 
     @PostMapping("/page")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD)
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机跟进记录列表")
     public Pager<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());

@@ -149,7 +149,7 @@ public class FollowUpRecordService {
         Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
 
         List<String> contactIds = list.stream().map(FollowUpRecordListResponse::getContactId).toList();
-        Map<String, String> contactMap = getContactMap(contactIds);
+        Map<String, String> contactMap = baseService.getContactMap(contactIds);
 
         list.forEach(recordListResponse -> {
             // 获取自定义字段
@@ -164,9 +164,5 @@ public class FollowUpRecordService {
         return list;
     }
 
-    private Map<String, String> getContactMap(List<String> contactIds) {
-        return extCustomerContactMapper.selectContactOptionByIds(contactIds)
-                .stream()
-                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
-    }
+
 }

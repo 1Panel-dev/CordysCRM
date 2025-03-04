@@ -6,12 +6,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class FollowUpRecordUpdateRequest extends FollowUpPlanAddRequest {
+public class FollowUpPlanUpdateRequest extends FollowUpPlanAddRequest {
 
     @NotBlank
     @Schema(description = "id", requiredMode = Schema.RequiredMode.REQUIRED)
     @Size(max = 32)
     private String id;
-
-
 }

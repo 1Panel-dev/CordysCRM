@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class FollowUpRecordListResponse {
+public class FollowUpPlanListResponse {
 
     @Schema(description = "ID")
     private String id;
@@ -24,7 +24,7 @@ public class FollowUpRecordListResponse {
     @Schema(description = "线索id")
     private String leadId;
 
-    @Schema(description = "跟进内容")
+    @Schema(description = "计划内容")
     private String content;
 
     @Schema(description = "组织id")
@@ -60,7 +60,11 @@ public class FollowUpRecordListResponse {
     @Schema(description = "更新时间")
     private Long updateTime;
 
+    @Schema(description = "计划开始时间")
+    private Long estimatedTime;
 
+    @Schema(description = "状态")
+    private String status;
 
     @Schema(description = "自定义字段集合")
     private List<? extends BaseModuleFieldValue> moduleFields;

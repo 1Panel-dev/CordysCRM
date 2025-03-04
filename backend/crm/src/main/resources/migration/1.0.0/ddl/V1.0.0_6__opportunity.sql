@@ -135,5 +135,68 @@ CREATE TABLE follow_up_field_blob
 
 CREATE INDEX idx_resource_id ON follow_up_field_blob (resource_id);
 
+
+
+CREATE TABLE follow_up_plan
+(
+    `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
+    `customer_id`     VARCHAR(32) COMMENT '客户id',
+    `opportunity_id`  VARCHAR(32) COMMENT '商机id',
+    `type`            VARCHAR(32)   NOT NULL COMMENT '类型',
+    `lead_id`         VARCHAR(32) COMMENT '线索id',
+    `content`         VARCHAR(1000) NOT NULL COMMENT '预计沟通内容',
+    `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
+    `owner`           VARCHAR(32)   NOT NULL COMMENT '负责人',
+    `contact_id`      VARCHAR(32)   NOT NULL COMMENT '联系人',
+    `estimated_time`  BIGINT(255)   NOT NULL COMMENT '预计开始时间',
+    `status`          VARCHAR(64) COMMENT '状态',
+    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '跟进计划'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_customer_id ON follow_up_plan (customer_id ASC);
+CREATE INDEX idx_organization_id ON follow_up_plan (organization_id ASC);
+CREATE INDEX idx_opportunity_id ON follow_up_plan (opportunity_id ASC);
+CREATE INDEX idx_lead_id ON follow_up_plan (lead_id ASC);
+CREATE INDEX idx_owner ON follow_up_plan (owner ASC);
+CREATE INDEX idx_contact_id ON follow_up_plan (contact_id ASC);
+
+
+CREATE TABLE follow_up_plan_field
+(
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32)  NOT NULL COMMENT '跟进计划id',
+    `field_id`    VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
+    `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '跟进计划自定义属性'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id_field_id_field_value ON follow_up_plan_field (resource_id, field_id, field_value);
+
+
+CREATE TABLE follow_up_plan_field_blob
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32) NOT NULL COMMENT '跟进计划id',
+    `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
+    `field_value` BLOB(255) NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '跟进计划自定义属性大文本'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_resource_id ON follow_up_plan_field_blob (resource_id ASC);
+
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

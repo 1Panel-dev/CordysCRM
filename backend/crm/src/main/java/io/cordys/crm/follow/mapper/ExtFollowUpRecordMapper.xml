@@ -16,7 +16,7 @@
             create_time,
             update_time,
             create_user,
-            update_user,
+            update_user
         FROM
             follow_up_record
         WHERE

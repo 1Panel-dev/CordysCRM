@@ -48,9 +48,14 @@ public class LogModule {
 
     //TODO  start  暂定跟进记录模块常量
     /**
-     * 客户模块
+     * 跟进记录
      */
     public static final String FOLLOW_UP_RECORD = "FOLLOW_UP_RECORD";
+
+    /**
+     * 跟进计划
+     */
+    public static final String FOLLOW_UP_PLAN = "FOLLOW_UP_PLAN";
 
     //todo end
 
