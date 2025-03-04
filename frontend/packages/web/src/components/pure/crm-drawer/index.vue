@@ -12,7 +12,9 @@
     <n-drawer-content
       :title="props.title"
       :closable="props.closable"
-      :header-class="`${props.headerClass} crm-drawer-header-class`"
+      :header-class="`${props.headerClass} crm-drawer-header-class ${
+        !props.closable ? 'crm-drawer-header-class-no-close' : ''
+      }`"
       :body-content-class="`${props.noPadding ? 'crm-no-padding-drawer' : ''} ${props.bodyContentClass || ''}`"
     >
       <template #header>
@@ -141,6 +143,11 @@
   .crm-drawer-header-class {
     .n-drawer-header__main {
       max-width: calc(100% - 28px);
+    }
+    &-no-close {
+      .n-drawer-header__main {
+        max-width: 100%;
+      }
     }
   }
   .crm-no-padding-drawer {

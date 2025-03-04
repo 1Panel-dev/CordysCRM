@@ -19,12 +19,18 @@
           </CrmPopConfirm>
         </template>
         <template v-else>
-          <n-button v-bind="item" type="primary" text class="!p-0" @click="() => emit('select', item.key as string)">
+          <n-button
+            text
+            v-bind="item"
+            :class="item.text === false ? '' : '!p-0'"
+            type="primary"
+            @click="() => emit('select', item.key as string)"
+          >
             {{ item.label }}
           </n-button>
         </template>
       </slot>
-      <n-divider v-if="list[index + 1]" class="!mx-[8px]" vertical />
+      <n-divider v-if="list[index + 1] && !props.notShowDivider" class="!mx-[8px]" vertical />
     </div>
   </div>
 </template>
@@ -37,6 +43,7 @@
 
   const props = defineProps<{
     list: ActionsItem[]; // 按钮组
+    notShowDivider?: boolean; // 不显示分割线
   }>();
 
   const emit = defineEmits<{
