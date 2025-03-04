@@ -340,3 +340,19 @@ export function getNextAvailableName(existingNames: string[], baseName: string):
 
   return `${baseName}${Math.max(...existingSuffixes) + 1}`;
 }
+
+/**
+ * 分步处理分数表达式
+ * @param str 分数表达式
+ */
+export function safeFractionConvert(str: string | number) {
+  if (!str) {
+    return 1;
+  }
+  if (typeof str === 'number') {
+    return str;
+  }
+  const parts = str.split('/').map(Number); // 分割分子分母
+  if (parts.length !== 2 || parts.some((e) => Number.isNaN(e))) return 1;
+  return parts[0] / parts[1];
+}

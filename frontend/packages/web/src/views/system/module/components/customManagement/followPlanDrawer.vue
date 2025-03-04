@@ -1,5 +1,5 @@
 <template>
-  <CrmFormDrawer v-model:visible="visible" :title="title" :form-key="FormDesignKeyEnum.PRODUCT"> </CrmFormDrawer>
+  <CrmFormDrawer v-model:visible="visible" :title="title" :form-key="FormDesignKeyEnum.FOLLOW_PLAN"> </CrmFormDrawer>
 </template>
 
 <script setup lang="ts">
@@ -15,7 +15,7 @@
     required: true,
   });
 
-  const title = ref(t('productManagement.newProduct'));
+  const title = ref(t('module.customer.followPlan'));
 </script>
 
 <style lang="less" scoped></style>

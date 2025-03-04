@@ -17,6 +17,8 @@ export default {
   'module.remainingDays': 'Remaining ownership days',
   'module.openSea': 'Open Sea',
   'module.customer.openSea': 'Open Sea Settings',
+  'module.customer.followRecord': 'Follow-up record',
+  'module.customer.followPlan': 'Follow-up plan',
   'module.customer.capacitySet': 'Customer Capacity Settings',
   'module.customer.addOpenSea': 'Add Open Sea',
   'module.customer.updateOpenSea': 'Update Open Sea',

@@ -11,7 +11,6 @@
         ghost-class="crm-form-design--composition-item-ghost"
         group="crmFormDesign"
         class="crm-form-design--composition-drag-wrapper"
-        :class="[list.length > 0 ? '' : 'border border-dashed']"
         @start="onStart"
       >
         <template v-for="item in list" :key="item.id">
@@ -57,7 +56,7 @@
         </template>
         <div
           v-if="list.length === 0"
-          class="absolute col-span-4 flex h-full w-full items-center justify-center text-[var(--text-n4)]"
+          class="absolute col-span-4 flex h-full w-full items-center justify-center border border-dashed text-[var(--text-n4)]"
           draggable="false"
         >
           {{ t('crmFormDesign.emptyTip') }}
@@ -250,7 +249,7 @@
 
     padding: 24px 24px 0;
     .crm-form-design--composition-drag-wrapper {
-      @apply relative flex h-full w-full flex-wrap content-start;
+      @apply flex h-full w-full flex-wrap content-start;
 
       border-radius: var(--border-radius-small);
       .crm-form-design--composition-item {

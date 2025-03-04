@@ -5,7 +5,7 @@
 <script setup lang="ts">
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 
-  import CrmFormDrawer from '@/components/business/crm-form-drawer/index.vue';
+  import CrmFormDrawer from '@/components/business/crm-form-design-drawer/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';
 

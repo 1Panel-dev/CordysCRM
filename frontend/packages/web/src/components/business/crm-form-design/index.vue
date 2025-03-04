@@ -21,7 +21,8 @@
   import formAttrConfig from './components/formAttrConfig/index.vue';
   import formComposition from './components/formComposition.vue';
 
-  import { FormCreateField } from '../crm-form-create/types';
+  import { rules } from '../crm-form-create/config';
+  import { FormCreateField, FormCreateFieldRule } from '../crm-form-create/types';
 
   const list = defineModel<FormCreateField[]>('fieldList', {
     required: true,
@@ -45,6 +46,21 @@
       });
     }
   );
+
+  onBeforeMount(() => {
+    list.value.forEach((item) => {
+      const fullRules: FormCreateFieldRule[] = [];
+      rules.forEach((rule) => {
+        // 遍历规则集合，将全量的规则配置载入
+        const staticRule = item.rules.find((e) => e.key === rule.key);
+        if (staticRule) {
+          staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
+          fullRules.push(staticRule);
+        }
+      });
+      item.rules = fullRules;
+    });
+  });
 </script>
 
 <style lang="less" scoped>

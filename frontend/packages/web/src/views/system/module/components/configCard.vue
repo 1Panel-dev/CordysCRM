@@ -8,7 +8,13 @@
         <div>{{ item.label }}</div>
       </div>
       <div class="nav-config-item-action">
-        <CrmButtonGroup :list="item.groupList" @select="(key) => handleSelect(key, item)" />
+        <CrmButtonGroup :list="item.groupList" @select="(key) => handleSelect(key, item)">
+          <template #more>
+            <n-dropdown trigger="hover" :options="moreOptions" @select="handleMoreSelect">
+              <n-button type="primary" text :keyboard="false">{{ t('common.more') }}</n-button>
+            </n-dropdown>
+          </template>
+        </CrmButtonGroup>
         <n-divider v-if="item.groupList.length" class="!mx-[4px]" vertical />
         <NSwitch :value="item.enable" @update:value="(value:boolean)=>toggleModule(value,item)" />
       </div>
@@ -16,6 +22,8 @@
   </div>
   <customManagementFormDrawer v-model:visible="customerManagementFormVisible" />
   <customManagementContactFormDrawer v-model:visible="customerManagementContactFormVisible" />
+  <followRecordDrawer v-model:visible="customerManagementFollowRecordVisible" />
+  <followPlanDrawer v-model:visible="customerManagementFollowPlanVisible" />
   <OpportunityCloseRulesDrawer v-model:visible="businessManagementBusinessParamsSetVisible" />
   <OpportunityFormDrawer v-model:visible="businessManagementFormVisible" />
   <CapacitySetDrawer
@@ -34,8 +42,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
-  import { NDivider, NSwitch, useMessage } from 'naive-ui';
+  import { NButton, NDivider, NDropdown, NSwitch, useMessage } from 'naive-ui';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import type { ModuleNavItem } from '@lib/shared/models/system/module';
@@ -47,6 +54,8 @@
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
   import clueFormDrawer from './clueManagement/formDrawer.vue';
   import customManagementContactFormDrawer from './customManagement/contactFormDrawer.vue';
+  import followPlanDrawer from './customManagement/followPlanDrawer.vue';
+  import followRecordDrawer from './customManagement/followRecordDrawer.vue';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
   import OpenSeaDrawer from './customManagement/openSeaDrawer.vue';
   import OpportunityFormDrawer from './opportunity/formDrawer.vue';
@@ -104,8 +113,8 @@
           key: 'openSea',
         },
         {
-          label: t('module.customer.capacitySet'),
-          key: 'capacitySet',
+          label: t('common.more'),
+          slotName: 'more',
         },
       ],
       enable: true,
@@ -168,6 +177,21 @@
     },
   ]);
 
+  const moreOptions = [
+    {
+      key: 'followRecord',
+      label: t('module.customer.followRecord'),
+    },
+    {
+      key: 'followPlan',
+      label: t('module.customer.followPlan'),
+    },
+    {
+      key: 'capacitySet',
+      label: t('module.customer.capacitySet'),
+    },
+  ];
+
   // 切换模块状态
   async function toggleModule(enable: boolean, item: ModuleConfigItem) {
     const title = enable ? t('module.openModuleTip') : t('module.closeModuleTip');
@@ -199,6 +223,8 @@
   const customerManagementFormVisible = ref(false);
   const customerManagementContactFormVisible = ref(false);
   const customerManagementOpenSeaVisible = ref(false);
+  const customerManagementFollowRecordVisible = ref(false);
+  const customerManagementFollowPlanVisible = ref(false);
   const capacitySetVisible = ref(false);
 
   const clueManagementFormVisible = ref(false);
@@ -243,6 +269,22 @@
         if (key === 'newForm') {
           productManagementFormVisible.value = true;
         }
+        break;
+      default:
+        break;
+    }
+  }
+
+  function handleMoreSelect(key: string) {
+    switch (key) {
+      case 'followRecord':
+        customerManagementFollowRecordVisible.value = true;
+        break;
+      case 'followPlan':
+        customerManagementFollowPlanVisible.value = true;
+        break;
+      case 'capacitySet':
+        capacitySetVisible.value = true;
         break;
       default:
         break;

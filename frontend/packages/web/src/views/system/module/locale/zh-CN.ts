@@ -16,6 +16,8 @@ export default {
   'module.remainingDays': '剩余归属天数',
   'module.openSea': '公海',
   'module.customer.openSea': '公海设置',
+  'module.customer.followRecord': '跟进记录',
+  'module.customer.followPlan': '跟进计划',
   'module.customer.capacitySet': '客户库容设置',
   'module.customer.addOpenSea': '添加公海',
   'module.customer.updateOpenSea': '更新公海',
