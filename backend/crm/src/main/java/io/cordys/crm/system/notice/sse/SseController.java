@@ -27,7 +27,7 @@ public class SseController {
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "客户端订阅 SSE 事件流")
     public SseEmitter subscribe(@RequestParam String clientId) {
-        return sseService.addEmitter(clientId, SessionUtils.getUserId());
+        return sseService.addEmitter(SessionUtils.getUserId(), clientId);
     }
 
     /**
@@ -36,6 +36,6 @@ public class SseController {
     @GetMapping("/close")
     @Operation(summary = "主动断开客户端连接")
     public void close(@RequestParam String clientId) {
-        sseService.removeEmitter(clientId, SessionUtils.getUserId());
+        sseService.removeEmitter(SessionUtils.getUserId(), clientId);
     }
 }

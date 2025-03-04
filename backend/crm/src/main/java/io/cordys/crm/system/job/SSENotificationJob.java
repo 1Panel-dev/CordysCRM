@@ -1,8 +1,8 @@
 package io.cordys.crm.system.job;
 
-import com.fit2cloud.quartz.anno.QuartzScheduled;
 import io.cordys.crm.system.notice.sse.SseService;
 import jakarta.annotation.Resource;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,9 +12,9 @@ public class SSENotificationJob {
     private SseService sseService;
 
     /**
-     * 每 5 秒向对应客户端推送一次消息
+     * 集群中每个节点都触发，Session 建立在某节点，就由某个节点推送消息
      */
-    @QuartzScheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 5000)
     public void broadcastPeriodically() {
         sseService.broadcastPeriodically();
     }
