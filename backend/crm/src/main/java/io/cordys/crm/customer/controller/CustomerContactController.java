@@ -32,7 +32,7 @@ import java.util.List;
  */
 @Tag(name = "客户联系人")
 @RestController
-@RequestMapping("/customer_contact")
+@RequestMapping("/customer/contact")
 public class CustomerContactController {
     @Resource
     private CustomerContactService customerContactService;
@@ -73,6 +73,20 @@ public class CustomerContactController {
     @Operation(summary = "更新客户联系人")
     public CustomerContact update(@Validated @RequestBody CustomerContactUpdateRequest request) {
         return customerContactService.update(request, SessionUtils.getUserId());
+    }
+
+    @GetMapping("/enable/{id}")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE)
+    @Operation(summary = "启用联系人")
+    public void enable(@PathVariable String id){
+        customerContactService.enable(id);
+    }
+
+    @PostMapping("/disable/{id}")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE)
+    @Operation(summary = "禁用联系人")
+    public void disable(@PathVariable String id, @RequestBody CustomerContactDisableRequest request){
+        customerContactService.disable(id, request);
     }
 
     @GetMapping("/delete/{id}")

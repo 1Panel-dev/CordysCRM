@@ -4,7 +4,8 @@
 <mapper namespace="io.cordys.crm.customer.mapper.ExtCustomerContactMapper">
 
     <select id="list" resultType="io.cordys.crm.customer.dto.response.CustomerContactListResponse">
-        select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user, cc.enable, cc.owner
+        select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user,
+               cc.enable, cc.owner, cc.disable_reason
 
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>

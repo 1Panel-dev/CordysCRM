@@ -28,6 +28,9 @@ public class CustomerContact extends BaseModel {
 	@Schema(description = "是否停用")
 	private Boolean enable;
 
+	@Schema(description = "停用原因")
+	private String disableReason;
+
 	@Schema(description = "组织id")
 	private String organizationId;
 }

@@ -159,6 +159,7 @@ CREATE TABLE customer_contact(
      `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
      `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
      `enable` BIT(1) NOT NULL  DEFAULT 0 COMMENT '是否停用' ,
+     `disable_reason` VARCHAR(255)    COMMENT '停用原因' ,
      `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
      PRIMARY KEY (id)
 )  COMMENT = '客户联系人'

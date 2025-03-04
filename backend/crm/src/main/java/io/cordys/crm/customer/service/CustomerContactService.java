@@ -9,6 +9,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.customer.domain.CustomerContact;
 import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerContactDisableRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactGetResponse;
@@ -18,6 +19,7 @@ import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -153,5 +155,21 @@ public class CustomerContactService {
     public void delete(String id) {
         customerContactMapper.deleteByPrimaryKey(id);
         customerContactFieldService.deleteByResourceId(id);
+    }
+
+    public void enable(String id) {
+        CustomerContact customerContact = new CustomerContact();
+        customerContact.setEnable(true);
+        customerContact.setId(id);
+        customerContact.setDisableReason(StringUtils.EMPTY);
+        customerContactMapper.updateById(customerContact);
+    }
+
+    public void disable(String id, CustomerContactDisableRequest request) {
+        CustomerContact customerContact = new CustomerContact();
+        customerContact.setEnable(false);
+        customerContact.setId(id);
+        customerContact.setDisableReason(request.getReason());
+        customerContactMapper.updateById(customerContact);
     }
 }

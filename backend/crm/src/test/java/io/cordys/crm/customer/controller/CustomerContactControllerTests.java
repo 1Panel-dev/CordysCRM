@@ -8,6 +8,7 @@ import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.CustomerContact;
 import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerContactDisableRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactGetResponse;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -26,9 +28,10 @@ import java.util.List;
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CustomerContactControllerTests extends BaseTest {
-    private static final String BASE_PATH = "/customer_contact/";
-
+    private static final String BASE_PATH = "/customer/contact/";
     protected static final String MODULE_FORM = "module/form";
+    protected static final String DISABLE = "disable/{0}";
+    protected static final String ENABLE = "enable/{0}";
 
     private static CustomerContact addCustomerContact;
 
@@ -146,6 +149,41 @@ class CustomerContactControllerTests extends BaseTest {
         
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, DEFAULT_PAGE, request);
+    }
+
+    @Test
+    @Order(5)
+    void testDisable() throws Exception {
+        CustomerContactDisableRequest request = new CustomerContactDisableRequest();
+        request.setReason("reason");
+
+        // 请求成功
+        this.requestPostWithOk(DISABLE, request, addCustomerContact.getId());
+
+        CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(addCustomerContact.getId());
+        Assertions.assertEquals(customerContact.getDisableReason(), request.getReason());
+        Assertions.assertFalse(customerContact.getEnable());
+
+        request.setReason(null);
+        // 请求成功
+        this.requestPostWithOk(DISABLE, request, addCustomerContact.getId());
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, DISABLE, request, addCustomerContact.getId());
+    }
+
+    @Test
+    @Order(6)
+    void testEnable() throws Exception {
+        // 请求成功
+        this.requestGet(ENABLE, addCustomerContact.getId());
+
+        CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(addCustomerContact.getId());
+        Assertions.assertEquals(customerContact.getDisableReason(), StringUtils.EMPTY);
+        Assertions.assertTrue(customerContact.getEnable());
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, ENABLE, addCustomerContact.getId());
     }
 
     @Test
