@@ -51,7 +51,7 @@ public class UserLoginService {
         // 检查用户是否被禁用
         if (StringUtils.isNotBlank(userDTO.getLastOrganizationId())) {
             var userLambdaQueryWrapper = new LambdaQueryWrapper<OrganizationUser>()
-                    .eq(OrganizationUser::getUserId, userId)
+                    .eq(OrganizationUser::getUserId, userDTO.getId())
                     .eq(OrganizationUser::getOrganizationId, userDTO.getLastOrganizationId())
                     .eq(OrganizationUser::getEnable, true);
 
