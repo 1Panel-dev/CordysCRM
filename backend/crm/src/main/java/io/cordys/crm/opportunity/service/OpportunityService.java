@@ -62,7 +62,6 @@ public class OpportunityService {
     private List<OpportunityField> getOpportunityFieldsByOpportunityIds(List<String> opportunityIds) {
         LambdaQueryWrapper<OpportunityField> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(OpportunityField::getOpportunityId, opportunityIds);
-        List<OpportunityField> opportunityFields = opportunityFieldMapper.selectListByLambda(wrapper);
-        return opportunityFields;
+        return opportunityFieldMapper.selectListByLambda(wrapper);
     }
 }

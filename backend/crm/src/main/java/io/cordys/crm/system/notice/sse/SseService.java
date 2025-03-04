@@ -7,71 +7,86 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class SseService {
 
-    // 使用线程安全的 Map 存储所有客户端的 SseEmitter
-    private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+    // 线程安全的 Map，按 userId 存储该用户的所有客户端
+    private final Map<String, Map<String, SseEmitter>> userEmitters = new ConcurrentHashMap<>();
 
     /**
      * 添加一个新的客户端 SseEmitter
      */
-    public SseEmitter addEmitter(String clientId) {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE); // 设置超时时间为无限
-        emitters.put(clientId, emitter);
+    public SseEmitter addEmitter(String userId, String clientId) {
+        if (StringUtils.isAnyBlank(userId, clientId)) {
+            throw new IllegalArgumentException("userId 和 clientId 不能为空");
+        }
+
+        var emitter = new SseEmitter(Long.MAX_VALUE);
+        userEmitters
+                .computeIfAbsent(userId, k -> new ConcurrentHashMap<>())
+                .put(clientId, emitter);
 
         // 监听客户端断开连接
-        emitter.onCompletion(() -> emitters.remove(clientId));
-        emitter.onTimeout(() -> emitters.remove(clientId));
-        emitter.onError((e) -> emitters.remove(clientId));
+        emitter.onCompletion(() -> removeEmitter(userId, clientId));
+        emitter.onTimeout(() -> removeEmitter(userId, clientId));
+        emitter.onError(e -> removeEmitter(userId, clientId));
 
         return emitter;
     }
 
     /**
-     * 向所有客户端广播事件
+     * 按用户 ID 发送事件（所有客户端接收）
      */
-    public void broadcastEvent(String eventName, Object data) {
-        emitters.forEach((clientId, emitter) -> {
-            try {
-                emitter.send(SseEmitter.event()
-                        .name(eventName) // 事件名称
-                        .data(data)); // 事件数据
-            } catch (IOException e) {
-                // 发送失败时移除该客户端
-                emitters.remove(clientId);
-            }
-        });
+    public void sendToUser(String userId, String eventName, Object data) {
+        Optional.ofNullable(userEmitters.get(userId))
+                .ifPresent(emitters -> emitters.forEach((clientId, emitter) -> sendToEmitter(userId, clientId, emitter, eventName, data)));
     }
 
+    /**
+     * 按具体客户端发送事件
+     */
+    public void sendToClient(String userId, String clientId, String eventName, Object data) {
+        Optional.ofNullable(userEmitters.get(userId))
+                .map(emitters -> emitters.get(clientId))
+                .ifPresent(emitter -> sendToEmitter(userId, clientId, emitter, eventName, data));
+    }
+
+    /**
+     * 发送数据并处理异常
+     */
+    private void sendToEmitter(String userId, String clientId, SseEmitter emitter, String eventName, Object data) {
+        try {
+            emitter.send(SseEmitter.event()
+                    .name(eventName)
+                    .data(data));
+        } catch (IOException e) {
+            removeEmitter(userId, clientId);
+        }
+    }
 
     /**
      * 移除指定客户端的 SseEmitter
      */
-    public void removeEmitter(String clientId) {
-        if (StringUtils.isNotBlank(clientId)) {
-            emitters.remove(clientId);
-        }
-    }
+    public void removeEmitter(String userId, String clientId) {
+        if (StringUtils.isAnyBlank(userId, clientId)) return;
 
+        userEmitters.computeIfPresent(userId, (k, emitters) -> {
+            emitters.remove(clientId);
+            return emitters.isEmpty() ? null : emitters;
+        });
+    }
 
     /**
-     * 每隔 5 秒向所有客户端广播一次事件
+     * 每隔 5 秒向所有用户推送一次数据，数据内容根据用户决定
      */
     public void broadcastPeriodically() {
-        // 如果没有客户端连接，则不广播
-        if (emitters.isEmpty()) {
-            return;
-        }
-
-        // TODO 业务逻辑,具体需要广播的数据
-        String message = "Server time: " + System.currentTimeMillis();
-
-        this.broadcastEvent("message", message);
-
-        LogUtils.info("Broadcast: " + message);
+        userEmitters.forEach((userId, emitters) -> {
+            var message = "User " + userId + " time: " + System.currentTimeMillis();
+            sendToUser(userId, "message", message);
+            LogUtils.info("Broadcast to user {}: {}", userId, message);
+        });
     }
-
 }

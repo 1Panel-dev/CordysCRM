@@ -1,5 +1,6 @@
 package io.cordys.crm.system.notice.sse;
 
+import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
@@ -26,17 +27,7 @@ public class SseController {
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "客户端订阅 SSE 事件流")
     public SseEmitter subscribe(@RequestParam String clientId) {
-        return sseService.addEmitter(clientId);
-    }
-
-    /**
-     * 模拟向所有客户端广播事件-(测试使用)
-     */
-    @GetMapping("/broadcast")
-    @Operation(summary = "模拟向所有客户端广播事件-(测试使用)")
-    public String broadcast(@RequestParam String message) {
-        sseService.broadcastEvent("message", message);
-        return "Broadcast: " + message;
+        return sseService.addEmitter(clientId, SessionUtils.getUserId());
     }
 
     /**
@@ -45,6 +36,6 @@ public class SseController {
     @GetMapping("/close")
     @Operation(summary = "主动断开客户端连接")
     public void close(@RequestParam String clientId) {
-        sseService.removeEmitter(clientId);
+        sseService.removeEmitter(clientId, SessionUtils.getUserId());
     }
 }
