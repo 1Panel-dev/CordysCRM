@@ -20,6 +20,7 @@ export interface UserState {
 }
 
 const useUserStore = defineStore('user', {
+  persist: true,
   state: (): UserState => ({
     loginType: [],
     userInfo: {
@@ -46,7 +47,11 @@ const useUserStore = defineStore('user', {
     },
   }),
 
-  getters: {},
+  getters: {
+    isAdmin(state: UserState) {
+      return state.userInfo.id === 'admin';
+    },
+  },
   actions: {
     // 设置用户信息
     setInfo(info: UserInfo) {

@@ -67,7 +67,13 @@
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { DeptTreeNode, PermissionTreeNode, RoleDetail, RolePermissionItem } from '@lib/shared/models/system/role';
+  import {
+    DeptTreeNode,
+    PermissionItem,
+    PermissionTreeNode,
+    RoleDetail,
+    RolePermissionItem,
+  } from '@lib/shared/models/system/role';
 
   import { createRole, getPermissions, getRoleDeptTree, getRoleDetail, updateRole } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
@@ -191,7 +197,7 @@
       key: 'permission',
       render: (rowData) => {
         const children: VNodeChild[] = [];
-        ((rowData.permissions as []) || []).forEach((item: any) => {
+        ((rowData.permissions as PermissionItem[]) || []).forEach((item: PermissionItem) => {
           children.push(
             h(
               NCheckbox,
@@ -201,8 +207,22 @@
                 onUpdateChecked: (value: boolean) => {
                   unsave.value = true;
                   item.enable = value;
-                  // 判断当前功能对象所有的权限是否全部选中/取消选中，并设置当前行的选中状态
-                  if (((rowData.permissions as []) || []).every((permission: any) => permission.enable)) {
+                  if (item.id.includes('READ') && !value) {
+                    // 取消查看权限，则取消其他所有操作权限
+                    ((rowData.permissions as PermissionItem[]) || []).forEach((permission: any) => {
+                      permission.enable = value;
+                    });
+                    rowData.enable = false;
+                    rowData.indeterminate = false;
+                  } else if (!item.id.includes('READ') && value) {
+                    // 勾选操作权限，则必须带上查看权限
+                    ((rowData.permissions as PermissionItem[]) || []).forEach((permission: any) => {
+                      if (permission.id.includes('READ')) {
+                        permission.enable = value;
+                      }
+                    });
+                  } else if (((rowData.permissions as []) || []).every((permission: any) => permission.enable)) {
+                    // 判断当前功能对象所有的权限是否全部选中/取消选中，并设置当前行的选中状态
                     rowData.enable = true;
                     rowData.indeterminate = false;
                   } else {

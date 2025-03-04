@@ -8,6 +8,9 @@ const clue: AppRouteRecordRaw = {
   name: ClueRouteEnum.CLUE_MANAGEMENT,
   redirect: '/clueManagement/clue',
   component: DEFAULT_LAYOUT,
+  meta: {
+    permissions: [],
+  },
   children: [
     {
       path: 'clue',
@@ -16,6 +19,7 @@ const clue: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.clue',
         isTopMenu: true,
+        permissions: [],
       },
     },
     {
@@ -25,6 +29,7 @@ const clue: AppRouteRecordRaw = {
       meta: {
         locale: 'module.cluePool',
         isTopMenu: true,
+        permissions: [],
       },
     },
   ],

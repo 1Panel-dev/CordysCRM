@@ -9,6 +9,7 @@ import App from './App.vue';
 
 // eslint-disable-next-line import/no-unresolved
 import 'virtual:svg-icons-register';
+import directive from './directive/index';
 import { setupI18n } from './locale';
 import useLocale from './locale/useLocale';
 import router from './router';
@@ -42,6 +43,7 @@ async function setupApp() {
     storeName: 'crmTable', // 存储空间名称
   });
 
+  app.use(directive);
   app.mount('#app');
 }
 

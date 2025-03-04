@@ -8,11 +8,17 @@ const system: AppRouteRecordRaw = {
   name: OpportunityRouteEnum.OPPORTUNITY,
   redirect: '/opportunity/opt',
   component: DEFAULT_LAYOUT,
+  meta: {
+    permissions: [],
+  },
   children: [
     {
       path: 'opt',
       name: OpportunityRouteEnum.OPPORTUNITY_OPT,
       component: () => import('@/views/opportunity/index.vue'),
+      meta: {
+        permissions: [],
+      },
     },
   ],
 };

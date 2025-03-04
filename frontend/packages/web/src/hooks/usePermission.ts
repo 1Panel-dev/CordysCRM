@@ -1,10 +1,16 @@
 import { RouteLocationNormalized, RouteRecordRaw } from 'vue-router';
 
+import useAppStore from '@/store/modules/app';
+import { hasAnyPermission, topLevelMenuHasPermission } from '@/utils/permission';
+
 /**
  * 用户权限
  * @returns 调用方法
  */
 export default function usePermission() {
+  const appStore = useAppStore();
+  const firstLevelMenu = appStore.moduleConfigList.map((item) => item.moduleKey);
+
   return {
     /**
      * 是否为允许访问的路由
@@ -12,13 +18,15 @@ export default function usePermission() {
      * @returns 是否
      */
     accessRouter(route: RouteLocationNormalized | RouteRecordRaw) {
-      // TODO 判断当前一级菜单是否有权限
-      // 常规权限检测
+      if (firstLevelMenu.includes(route.name as string)) {
+        // 一级菜单: 创建项目时 被勾选的模块
+        return topLevelMenuHasPermission(route);
+      }
       return (
-        route.meta?.requiresAuth === false || // 不需要认证
-        !route.meta?.roles || // 没有角色限制
-        (Array.isArray(route.meta?.roles) && route.meta?.roles?.includes('*')) // 所有人可访问
-        // TODO 匹配权限列表
+        route.meta?.requiresAuth === false ||
+        !route.meta?.permissions ||
+        route.meta?.permissions.includes('*') ||
+        hasAnyPermission(route.meta?.permissions || [])
       );
     },
   };

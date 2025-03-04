@@ -26,6 +26,7 @@
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
+  import { WHITE_LIST } from './router/constants';
   import useUserStore from './store/modules/user';
 
   const { setLoading } = useLoading();
@@ -72,12 +73,14 @@
       const newUrl = url.toString();
       // 或者在不刷新页面的情况下更新URL（比如使用 History API）
       window.history.replaceState({}, document.title, newUrl);
-    } else {
-      userStore.checkIsLogin();
     }
   }
 
-  onBeforeMount(() => {
+  onBeforeMount(async () => {
+    if (WHITE_LIST.find((el) => window.location.hash.split('#')[1].includes(el.path)) === undefined) {
+      await userStore.checkIsLogin();
+      appStore.setLoginLoading(false);
+    }
     handleOauthLogin();
   });
 </script>

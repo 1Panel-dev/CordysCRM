@@ -19,10 +19,12 @@
   import { listenerRouteChange } from '@lib/shared/method/route-listener';
 
   import { useI18n } from '@/hooks/useI18n';
+  import usePermission from '@/hooks/usePermission';
   import appClientMenus from '@/router/app-menus';
   import useAppStore from '@/store/modules/app';
 
   const { t } = useI18n();
+  const permission = usePermission();
 
   const copyRouters = cloneDeep(appClientMenus) as RouteRecordRaw[];
 
@@ -92,22 +94,24 @@
     const { name } = newRoute;
     for (let i = 0; i < copyRouters.length; i++) {
       const firstRoute = copyRouters[i];
-      // TODO 权限&版本未加
-      if (name && firstRoute?.name && (name as string).includes(firstRoute.name as string)) {
-        let currentParent = firstRoute?.children?.some((item) => item.meta?.isTopMenu)
-          ? (firstRoute as RouteRecordRaw)
-          : undefined;
+      // 权限校验通过
+      if (permission.accessRouter(firstRoute)) {
+        if (name && firstRoute?.name && (name as string).includes(firstRoute.name as string)) {
+          let currentParent = firstRoute?.children?.some((item) => item.meta?.isTopMenu)
+            ? (firstRoute as RouteRecordRaw)
+            : undefined;
 
-        if (!currentParent) {
-          // 二级菜单非顶部菜单，则判断三级菜单是否有顶部菜单
-          currentParent = firstRoute?.children?.find(
-            (item) => name && item?.name && (name as string).includes(item.name as string)
-          );
+          if (!currentParent) {
+            // 二级菜单非顶部菜单，则判断三级菜单是否有顶部菜单
+            currentParent = firstRoute?.children?.find(
+              (item) => name && item?.name && (name as string).includes(item.name as string)
+            );
+          }
+          const filterMenuTopRouter = currentParent?.children?.filter((item: any) => item.meta?.isTopMenu) || [];
+          appStore.setTopMenus(filterMenuTopRouter);
+          setCurrentTopMenu(name as string);
+          return;
         }
-        const filterMenuTopRouter = currentParent?.children?.filter((item: any) => item.meta?.isTopMenu) || [];
-        appStore.setTopMenus(filterMenuTopRouter);
-        setCurrentTopMenu(name as string);
-        return;
       }
     }
     appStore.setTopMenus([]);
