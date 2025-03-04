@@ -55,7 +55,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
     }
 
     protected void validateRequired(T customField, Object value) {
-        if (!hasValidatorKey(customField.getShowRules(), RuleValidatorConstants.REQUIRED)) {
+        if (!hasValidatorKey(customField.getRules(), RuleValidatorConstants.REQUIRED)) {
             return;
         }
         if (value == null

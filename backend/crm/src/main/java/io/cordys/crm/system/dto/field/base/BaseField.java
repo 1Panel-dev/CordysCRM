@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -65,8 +66,11 @@ public abstract class BaseField {
 	@Schema(description = "字段宽度")
 	private Float fieldWidth;
 
-	@Schema(description = "规则")
-	private List<RuleProp> showRules;
+	@Schema(description = "显示的校验规则")
+	private List<String> showRules;
+
+	@Schema(description = "规则详情")
+	private List<RuleProp> rules;
 
 	@JsonIgnore
 	public boolean isTextArea() {

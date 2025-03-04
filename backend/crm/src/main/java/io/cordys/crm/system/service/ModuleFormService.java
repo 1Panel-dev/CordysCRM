@@ -162,6 +162,7 @@ public class ModuleFormService {
 		fieldWrapper.eq(ModuleField::getFormId, formId);
 		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
 		if (CollectionUtils.isNotEmpty(fields)) {
+			fields.sort(Comparator.comparing(ModuleField::getPos));
 			List<String> fieldIds = fields.stream().map(ModuleField::getId).toList();
 			LambdaQueryWrapper<ModuleFieldBlob> blobWrapper = new LambdaQueryWrapper<>();
 			blobWrapper.in(ModuleFieldBlob::getId, fieldIds);
