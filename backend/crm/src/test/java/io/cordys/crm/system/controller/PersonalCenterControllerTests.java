@@ -3,22 +3,23 @@ package io.cordys.crm.system.controller;
 import io.cordys.common.pager.Pager;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.domain.Department;
-import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.dto.request.PersonalInfoRequest;
+import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
 import io.cordys.crm.system.dto.request.UserAddRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
 import io.cordys.crm.system.dto.response.EmailDTO;
 import io.cordys.crm.system.dto.response.UserPageResponse;
-import io.cordys.crm.system.service.PersonalCenterService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.SqlConfig;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,14 +29,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class PersonalCenterControllerTests extends BaseTest {
 
     @Resource
-    private BaseMapper<User> userMapper;
-
-    private static String userId = "";
-
-    @Resource
-    private PersonalCenterService personalCenterService;
+    private StringRedisTemplate stringRedisTemplate;
     @Resource
     private BaseMapper<Department> departmentBaseMapper;
+
 
     @Test
     @Order(1)
@@ -70,7 +67,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn("/user/list", pageRequest);
         Pager<List<UserPageResponse>> result = getPageResult(mvcResult, UserPageResponse.class);
         UserPageResponse first = result.getList().getFirst();
-        userId = first.getUserId();
+        Assertions.assertTrue(StringUtils.isNotBlank(first.getUserId()));
     }
 
     @Test
@@ -92,20 +89,26 @@ public class PersonalCenterControllerTests extends BaseTest {
 
     @Test
     @Order(3)
-    public void testVerify() throws Exception {
-        this.requestPost("/personal/center/verifyCode?email=test@qq.com&code=3434323", null).andExpect(status().isOk());
+    public void testUpdateUser() throws Exception {
+        PersonalInfoRequest personalInfoRequest = new PersonalInfoRequest();
+        personalInfoRequest.setPhone("12345678912");
+        personalInfoRequest.setEmail("3Gyq3@Cordys.com");
+
+        this.requestPost("/personal/center/update", personalInfoRequest).andExpect(status().is5xxServerError());
+
 
     }
 
     @Test
     @Order(4)
     public void changePassword() throws Exception {
-
-        this.requestPost("/personal/center/info/reset?password=Gyq124", null).andExpect(status().isOk());
-
-        personalCenterService.resetUserPassword("Gyq124", userId);
-
-
+        String PREFIX = "personal_email_code:";  // Redis 存储前缀
+        stringRedisTemplate.opsForValue().set(PREFIX + "3Gyq3@Cordys.com", "253574", 10, TimeUnit.MINUTES);
+        PersonalPasswordRequest personalPasswordRequest  = new PersonalPasswordRequest();
+        personalPasswordRequest.setPassword("Gyq124");
+        personalPasswordRequest.setEmail("3Gyq3@Cordys.com");
+        personalPasswordRequest.setCode("253574");
+        this.requestPost("/personal/center/info/reset", personalPasswordRequest).andExpect(status().isOk());
     }
 
 }

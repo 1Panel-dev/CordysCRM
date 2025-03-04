@@ -9,6 +9,8 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.dto.request.PersonalInfoRequest;
+import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.utils.MailSender;
 import io.cordys.crm.system.mapper.ExtUserMapper;
@@ -81,30 +83,52 @@ public class PersonalCenterService {
         return String.valueOf(100000 + new Random().nextInt(900000));
     }
 
-
     /**
      * 验证码校验成功后删除
      * @param email email
      * @param code code
      * @return message
      */
-    public String verifyCode(String email, String code) {
-        boolean isValid = false;
+    public boolean verifyCode(String email, String code) {
+        boolean isVerify = false;
         String key = PREFIX + email;
         String correctCode = stringRedisTemplate.opsForValue().get(key);
         if (code != null && code.equals(correctCode)) {
             stringRedisTemplate.delete(key); // 验证通过后删除验证码
-            isValid = true;
+            isVerify = true;
         }
-        return isValid ? Translator.get("email_setting_verify_success") : Translator.get("email_setting_verify_error");
+        return isVerify;
 
     }
 
-    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.UPDATE, operator = "{#operatorId}")
-    public void resetUserPassword(String password, String operatorId) {
-        extUserMapper.updateUserPassword(CodingUtils.md5(password),operatorId);
+    public void resetUserPassword(PersonalPasswordRequest personalPasswordRequest, String operatorId) {
+        boolean verify = verifyCode(personalPasswordRequest.getEmail(), personalPasswordRequest.getCode());
+        if (verify) {
+            extUserMapper.updateUserPassword(CodingUtils.md5(personalPasswordRequest.getPassword()),operatorId);
+        } else {
+            throw new GenericException(Translator.get("email_setting_verify_error"));
+        }
     }
 
 
+    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.UPDATE, operator = "{#userId}")
+    public UserResponse updateInfo(PersonalInfoRequest personalInfoRequest, String userId) {
+        User oldUser = userBaseMapper.selectByPrimaryKey(userId);
+        User user = new User();
+        user.setId(userId);
+        user.setPhone(personalInfoRequest.getPhone());
+        user.setEmail(personalInfoRequest.getEmail());
+        userBaseMapper.update(user);
 
+        UserResponse userDetail = organizationUserService.getUserDetail(userId);
+        //添加日志上下文
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .originalValue(oldUser)
+                .resourceName(oldUser.getName())
+                .modifiedValue(userDetail)
+                .resourceId(userId)
+                .build());
+
+        return userDetail;
+    }
 }
