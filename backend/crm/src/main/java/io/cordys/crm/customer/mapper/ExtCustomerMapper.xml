@@ -66,7 +66,7 @@
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name != 'name' and condition.name != 'owner'">
                     inner join customer_field ${tablePrefix}_${i}
-                    on c.id = ${tablePrefix}_${i}.customer_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                 </if>
             </foreach>
         </if>
@@ -76,7 +76,7 @@
         <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'owner'">
             <bind name="sortName" value="${sort}.name"/>
             left join customer_field sort_table
-            on c.id = sort_table.customer_id and sort_table.field_id = #{sortName}
+            on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
         </if>
     </sql>
 

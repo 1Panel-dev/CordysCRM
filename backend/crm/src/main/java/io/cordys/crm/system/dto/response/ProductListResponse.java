@@ -37,5 +37,5 @@ public class ProductListResponse {
     private String updateUserName;
 
     @Schema(description = "自定义字段集合")
-    private List<? extends BaseModuleFieldValue> moduleFields;
+    private List<BaseModuleFieldValue> moduleFields;
 }

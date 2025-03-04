@@ -5,8 +5,119 @@
 
     <select id="list" resultType="io.cordys.crm.system.dto.response.ProductListResponse">
         select *
+        from product p
+        where p.organization_id = #{orgId}
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and p.name like concat('%', #{request.keyword},'%')
+        </if>
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+
+    <sql id="fieldConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <if test="condition.name != 'name' and condition.name != 'owner'">
+                    inner join product_field ${tablePrefix}_${i}
+                    on p.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="fieldSortJoin">
+        <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'owner'">
+            <bind name="sortName" value="${sort}.name"/>
+            left join product_field sort_table
+            on p.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+        </if>
+    </sql>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type" />
+                order by
+                <choose>
+                    <when test="${sort}.name == 'name'">
+                        p.`name` ${sortType}
+                    </when>
+                    <otherwise>
+                        sort_table.field_value ${sortType}
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by p.create_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                        <property name="fieldTable" value="filter_${i}.field_value"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.name == 'name'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.name"/>
+                </include>
+            </when>
+            <when test="condition.name == 'owner'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.owner"/>
+                </include>
+            </when>
+            <otherwise>
+                <include refid="io.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${fieldTable}"/>
+                </include>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="checkAddExist" resultType="java.lang.Boolean">
+        select count(1)
         from product
-        where organization_id = #{orgId}
+        where name = #{product.name} and organization_id = #{product.organizationId} limit 1
+    </select>
+    <select id="checkUpdateExist" resultType="java.lang.Boolean">
+        select count(1)
+        from product
+        where name = #{product.name}
+          and organization_id = (
+            select organization_id from product where id = #{product.id}
+        )
+          and id != #{product.id} limit 1
     </select>
 
 </mapper>

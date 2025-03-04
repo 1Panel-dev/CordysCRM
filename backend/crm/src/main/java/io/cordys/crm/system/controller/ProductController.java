@@ -9,6 +9,7 @@ import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
+import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.dto.response.ProductListResponse;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
@@ -44,8 +45,8 @@ public class ProductController {
     @GetMapping("/module/form")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
-    public ModuleFormConfigDTO getModuleFormConfig(){
-        return moduleFormService.getConfig(FormKey.PRODUCT.getKey(), OrganizationContext.getOrganizationId());
+    public BusinessModuleFormConfigDTO getModuleFormConfig(){
+        return moduleFormService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), OrganizationContext.getOrganizationId());
     }
 
 

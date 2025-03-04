@@ -1,11 +1,12 @@
 package io.cordys.crm.system.service;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Product;
-import io.cordys.crm.system.domain.ProductField;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
 import io.cordys.crm.system.dto.response.ProductGetResponse;
@@ -22,8 +23,7 @@ import java.util.stream.Collectors;
 
 /**
  *
- * @author jianxing
- * @date 2025-02-08 16:24:22
+ * @author guoyuqi
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -33,9 +33,6 @@ public class ProductService {
     private BaseMapper<Product> productBaseMapper;
     @Resource
     private ExtProductMapper extProductMapper;
-    @Resource
-    private BaseMapper<ProductField> productFieldBaseMapper;
-
     @Resource
     private BaseService baseService;
     @Resource
@@ -81,9 +78,12 @@ public class ProductService {
         product.setCreateUser(userId);
         product.setOrganizationId(orgId);
         product.setId(IDGenerator.nextStr());
+
+        // 校验名称重复
+        checkAddExist(product);
+
         productBaseMapper.insert(product);
-        // 校验名称重复 todo
-//        checkAddExist(customer);
+
 
         //保存自定义字段
         productFieldService.saveModuleField(product.getId(), request.getModuleFields());
@@ -95,8 +95,8 @@ public class ProductService {
         product.setUpdateTime(System.currentTimeMillis());
         product.setUpdateUser(userId);
 
-        // 校验名称重复 todo
-//        checkUpdateExist(customer);
+        // 校验名称重复
+        checkUpdateExist(product);
         productBaseMapper.update(product);
 
         // 更新模块字段
@@ -104,21 +104,27 @@ public class ProductService {
         return productBaseMapper.selectByPrimaryKey(product.getId());
     }
 
-    private void updateModuleField(String productId, List<BaseModuleFieldValue> moduleFields) {
+    private void checkAddExist(Product product) {
+        if (extProductMapper.checkAddExist(product)) {
+            throw new GenericException(Translator.get("product.exist"));
+        }
+    }
+
+    private void checkUpdateExist(Product product) {
+        if (extProductMapper.checkUpdateExist(product)) {
+            throw new GenericException(Translator.get("product.exist"));
+        }
+    }
+
+    private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
         }
         // 先删除
-        deleteProductFieldByProductId(productId);
+        productFieldService.deleteByResourceId(customerId);
         // 再保存
-        productFieldService.saveModuleField(productId, moduleFields);
-    }
-
-    private void deleteProductFieldByProductId(String productId) {
-        ProductField example = new ProductField();
-        example.setResourceId(productId);
-        productFieldBaseMapper.delete(example);
+        productFieldService.saveModuleField(customerId, moduleFields);
     }
 
     public void delete(String id) {
