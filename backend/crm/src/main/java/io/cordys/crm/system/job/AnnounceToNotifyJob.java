@@ -8,6 +8,7 @@ import io.cordys.crm.system.mapper.ExtAnnouncementMapper;
 import io.cordys.crm.system.service.AnnouncementService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,10 @@ public class AnnounceToNotifyJob {
     private ExtAnnouncementMapper extAnnouncementMapper;
     @Resource
     private AnnouncementService announcementService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
 
     /**
      * 将到期发布的公告转成通知  每天凌晨三点执行
@@ -48,6 +53,18 @@ public class AnnounceToNotifyJob {
             ids.add(announcementDTO.getId());
         }
         extAnnouncementMapper.updateNotice(ids, true, announcementDTOS.getFirst().getOrganizationId());
+        //删除已过期公告的推送
+        LocalDateTime dateTime = LocalDateTime.now();
+        long expiredStamp = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        LocalDateTime startTime = LocalDateTime.now().minusDays(1l);
+        long startStamp = startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        List<String> expiredIds = extAnnouncementMapper.selectFixTimeExpiredIds(startStamp, expiredStamp);
+        if (CollectionUtils.isNotEmpty(expiredIds)){
+            for (String expiredId : expiredIds) {
+                stringRedisTemplate.delete(ANNOUNCE_PREFIX+expiredId);
+            }
+        }
     }
 
 }

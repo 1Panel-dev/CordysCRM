@@ -46,4 +46,12 @@
           and notice = false
     </select>
 
+    <select id="selectFixTimeExpiredIds" resultType="java.lang.String">
+        SELECT id
+        FROM sys_announcement
+        WHERE end_time <![CDATA[ < ]]> #{endTime}
+        and end_time <![CDATA[ > ]]> #{startTime}
+    </select>
+
+
 </mapper> 

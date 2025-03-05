@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +51,13 @@ public class AnnouncementService {
     private ExtNotificationMapper notificationMapper;
     @Resource
     private ExtUserMapper userMapper;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+
+    private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
+    private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
+    private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
 
     @Transactional(rollbackFor = Exception.class)
     @OperationLog(module = LogModule.SYSTEM_ANNOUNCEMENT, type = LogType.ADD)
@@ -134,11 +142,13 @@ public class AnnouncementService {
         announcement.setOrganizationId(request.getOrganizationId());
         announcement.setUpdateTime(System.currentTimeMillis());
         announcement.setUpdateUser(userId);
-        announcement.setNotice(true);
+        announcement.setNotice(originalAnnouncement.getNotice());
         announcementMapper.updateById(announcement);
-        //删除旧的notice，根据接收人生成新的未读的notice
-        notificationMapper.deleteByResourceId(announcement.getId());
-        convertNotification(userId, announcement, userIds);
+        if (originalAnnouncement.getNotice()) {
+            //删除旧的notice，根据接收人生成新的未读的notice
+            notificationMapper.deleteByResourceId(announcement.getId());
+            convertNotification(userId, announcement, userIds);
+        }
         // 添加日志上下文
         String resourceName = Optional.ofNullable(announcement.getSubject()).orElse(originalAnnouncement.getSubject());
         OperationLogContext.setContext(
@@ -162,7 +172,8 @@ public class AnnouncementService {
         SubListUtils.dealForSubList(userIds, 50, (subUserIds) -> {
             for (String subUserId : subUserIds) {
                 Notification notification = new Notification();
-                notification.setId(IDGenerator.nextStr());
+                String id = IDGenerator.nextStr();
+                notification.setId(id);
                 notification.setType(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name());
                 notification.setReceiver(subUserId);
                 notification.setSubject(announcement.getSubject());
@@ -179,6 +190,11 @@ public class AnnouncementService {
                 notification.setCreateTime(System.currentTimeMillis());
                 notification.setUpdateTime(System.currentTimeMillis());
                 notifications.add(notification);
+                String messageText = JSON.toJSONString(notification);
+                stringRedisTemplate.opsForZSet().add(USER_ANNOUNCE_PREFIX+subUserId, id, System.currentTimeMillis());
+                stringRedisTemplate.opsForValue().set(ANNOUNCE_PREFIX + id, messageText);
+                //更新用户的已读全部消息状态 0 为未读，1为已读
+                stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + subUserId, "0");
             }
             notificationBaseMapper.batchInsert(notifications);
         });

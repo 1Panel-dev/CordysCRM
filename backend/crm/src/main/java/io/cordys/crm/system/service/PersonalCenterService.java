@@ -70,7 +70,7 @@ public class PersonalCenterService {
     }
 
     /**
-     * 存储验证码到 Redis，设置有效期 5 分钟
+     * 存储验证码到 Redis，设置有效期 10 分钟
      */
     private void saveCode(String email, String code) {
         stringRedisTemplate.opsForValue().set(PREFIX + email, code, 10, TimeUnit.MINUTES);

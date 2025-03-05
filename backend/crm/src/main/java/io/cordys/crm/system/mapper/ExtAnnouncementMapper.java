@@ -14,6 +14,8 @@ public interface ExtAnnouncementMapper {
 
     List<AnnouncementDTO> selectInEffectUnConvertData(@Param("timestamp") long timestamp);
 
+    List<String> selectFixTimeExpiredIds(@Param("startTime") long startTime, @Param("endTime") long endTime);
+
     int updateNotice(@Param("ids") List<String> ids, @Param("notice") Boolean notice, @Param("organizationId") String organizationId);
 
 }

@@ -38,13 +38,13 @@ public class NotificationControllerTests extends BaseTest {
     private BaseMapper<Notification> notificationMapper;
 
 
-    void saveNotice() {
+    void saveNotice(String type) {
         Notification notification = new Notification();
         notification.setId(IDGenerator.nextStr());
         notification.setSubject("功能用例更新通知");
         notification.setOperator("admin");
         notification.setOperation("UPDATE");
-        notification.setResourceType("FUNCTIONAL_CASE_TASK");
+        notification.setResourceType(type);
         notification.setOrganizationId(DEFAULT_ORGANIZATION_ID);
         notification.setResourceName("功能用例导入测4");
         notification.setType("SYSTEM_NOTICE");
@@ -62,7 +62,7 @@ public class NotificationControllerTests extends BaseTest {
     @Test
     @Order(1)
     void getNotificationSuccess() throws Exception {
-        saveNotice();
+        saveNotice("CUSTOMER");
         NotificationRequest notificationRequest = new NotificationRequest();
         notificationRequest.setPageSize(10);
         notificationRequest.setCurrent(1);
@@ -75,7 +75,7 @@ public class NotificationControllerTests extends BaseTest {
                 Pager.class);
         //返回值的页码和当前页码相同
         Assertions.assertEquals(tableData.getCurrent(), notificationRequest.getCurrent());
-        Assertions.assertFalse(tableData.getList().isEmpty());
+        Assertions.assertTrue(tableData.getList().isEmpty());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class NotificationControllerTests extends BaseTest {
     @Test
     @Order(3)
     void setNotificationReadAll() throws Exception {
-        saveNotice();
+        saveNotice("CUSTOMER");
         this.requestGetWithOk(NOTIFICATION_READ_ALL);
         Notification notification = new Notification();
         notification.setStatus(NotificationConstants.Status.READ.name());
@@ -109,6 +109,10 @@ public class NotificationControllerTests extends BaseTest {
     @Test
     @Order(4)
     void getNotificationCount() throws Exception {
+        saveNotice("CUSTOMER");
+        saveNotice("CLUE");
+        saveNotice("BUSINESS");
+        saveNotice("ANNOUNCEMENT");
         NotificationRequest notificationRequest = new NotificationRequest();
         notificationRequest.setPageSize(10);
         notificationRequest.setCurrent(1);

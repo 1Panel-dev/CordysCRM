@@ -43,14 +43,14 @@ public class NotificationController {
     @Operation(summary = "消息中心-将消息设置为已读")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
     public Integer read(@PathVariable String id) {
-        return notificationService.read(id, SessionUtils.getUserId());
+        return notificationService.read(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping(value = "/read/all")
     @Operation(summary = "消息中心-将消息中心所有信息设置为已读消息")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
-    public Integer readAll(@RequestParam(value = "organizationId", required = false) String organizationId) {
-        return notificationService.readAll(organizationId, SessionUtils.getUserId());
+    public Integer readAll() {
+        return notificationService.readAll(OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @GetMapping(value = "/un-read")
