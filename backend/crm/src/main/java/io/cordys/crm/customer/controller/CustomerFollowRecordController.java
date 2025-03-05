@@ -10,6 +10,7 @@ import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
+import io.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.service.FollowUpRecordService;
 import io.cordys.security.SessionUtils;
@@ -18,10 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -55,5 +53,13 @@ public class CustomerFollowRecordController {
     public Pager<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER"));
+    }
+
+
+    @GetMapping("/get/{id}")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @Operation(summary = "客户跟进记录详情")
+    public FollowUpRecordDetailResponse get(@PathVariable String id) {
+        return followUpRecordService.get(id);
     }
 }

@@ -83,4 +83,9 @@ public class LeadFollowRecordControllerTests extends BaseTest {
         this.requestPost(DEFAULT_PAGE, request);
     }
 
+    @Test
+    @Order(4)
+    void testGet() throws Exception {
+        this.requestGetWithOk(DEFAULT_GET, addFollowUpRecord.getId());
+    }
 }

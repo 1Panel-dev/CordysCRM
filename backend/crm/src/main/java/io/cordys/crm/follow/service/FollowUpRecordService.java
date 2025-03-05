@@ -15,6 +15,7 @@ import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
+import io.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import io.cordys.crm.system.service.LogService;
@@ -132,10 +133,11 @@ public class FollowUpRecordService {
      */
     public List<FollowUpRecordListResponse> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
         List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type);
-        return buildListData(list);
+         buildListData(list);
+        return list;
     }
 
-    private List<FollowUpRecordListResponse> buildListData(List<FollowUpRecordListResponse> list) {
+    private void buildListData(List<FollowUpRecordListResponse> list) {
         List<String> ids = list.stream().map(FollowUpRecordListResponse::getId).toList();
         Map<String, List<BaseModuleFieldValue>> recordCustomFieldMap = followUpRecordFieldService.getResourceFieldMap(ids);
 
@@ -161,8 +163,20 @@ public class FollowUpRecordService {
             recordListResponse.setOwnerName(userNameMap.get(recordListResponse.getOwner()));
             recordListResponse.setContactName(contactMap.get(recordListResponse.getContactId()));
         });
-        return list;
     }
 
 
+    /**
+     * 获取跟进记录详情
+     * @param id
+     * @return
+     */
+    public FollowUpRecordDetailResponse get(String id) {
+        FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(id);
+        FollowUpRecordDetailResponse response = BeanUtils.copyBean(new FollowUpRecordDetailResponse(), followUpRecord);
+        List<BaseModuleFieldValue> fieldValueList = followUpRecordFieldService.getModuleFieldValuesByResourceId(id);
+        response.setModuleFields(fieldValueList);
+        buildListData(List.of(response));
+        return response;
+    }
 }
