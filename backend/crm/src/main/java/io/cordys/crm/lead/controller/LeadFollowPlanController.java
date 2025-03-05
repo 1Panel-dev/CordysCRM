@@ -10,6 +10,7 @@ import io.cordys.crm.follow.domain.FollowUpPlan;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
+import io.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import io.cordys.crm.follow.service.FollowUpPlanService;
 import io.cordys.security.SessionUtils;
@@ -18,10 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -55,5 +53,21 @@ public class LeadFollowPlanController {
     public Pager<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "LEAD", "LEAD"));
+    }
+
+
+    @GetMapping("/get/{id}")
+    @RequiresPermissions(PermissionConstants.LEAD_MANAGEMENT_READ)
+    @Operation(summary = "线索跟进计划详情")
+    public FollowUpPlanDetailResponse get(@PathVariable String id) {
+        return followUpPlanService.get(id);
+    }
+
+
+    @GetMapping("/cancel/{id}")
+    @RequiresPermissions(PermissionConstants.LEAD_MANAGEMENT_UPDATE)
+    @Operation(summary = "取消线索跟进计划")
+    public void cancelPlan(@PathVariable String id) {
+        followUpPlanService.cancelPlan(id);
     }
 }

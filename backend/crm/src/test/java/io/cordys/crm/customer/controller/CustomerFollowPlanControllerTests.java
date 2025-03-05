@@ -7,7 +7,6 @@ import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
-import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
@@ -26,6 +25,8 @@ import java.util.List;
 public class CustomerFollowPlanControllerTests extends BaseTest {
 
     private static final String BASE_PATH = "/customer/follow/plan/";
+
+    private static final String CANCEL_PLAN = "cancel/{0}";
 
     @Override
     protected String getBasePath() {
@@ -84,5 +85,17 @@ public class CustomerFollowPlanControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
         this.requestPost(DEFAULT_PAGE, request);
+    }
+
+    @Test
+    @Order(4)
+    void testGet() throws Exception {
+        this.requestGetWithOk(DEFAULT_GET, addFollowUpPlan.getId());
+    }
+
+    @Test
+    @Order(5)
+    void testCancelPlan() throws Exception {
+        this.requestGetWithOk(CANCEL_PLAN, addFollowUpPlan.getId());
     }
 }

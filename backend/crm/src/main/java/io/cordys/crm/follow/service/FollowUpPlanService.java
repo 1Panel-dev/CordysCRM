@@ -10,12 +10,11 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.follow.domain.FollowUpPlan;
-import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
+import io.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
-import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.mybatis.BaseMapper;
@@ -130,7 +129,7 @@ public class FollowUpPlanService {
      * @return
      */
     public List<FollowUpPlanListResponse> list(FollowUpPlanPageRequest request, String userId, String orgId, String resourceType, String type) {
-        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request,userId,orgId,resourceType,type);
+        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, orgId, resourceType, type);
         return buildListData(list);
     }
 
@@ -150,7 +149,7 @@ public class FollowUpPlanService {
         List<String> contactIds = list.stream().map(FollowUpPlanListResponse::getContactId).toList();
         Map<String, String> contactMap = baseService.getContactMap(contactIds);
 
-        list.forEach(planResponse ->{
+        list.forEach(planResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> planCustomerFields = resourceFieldMap.get(planResponse.getId());
             planResponse.setModuleFields(planCustomerFields);
@@ -160,5 +159,38 @@ public class FollowUpPlanService {
             planResponse.setContactName(contactMap.get(planResponse.getContactId()));
         });
         return list;
+    }
+
+
+    /**
+     * 跟进计划详情
+     *
+     * @param id
+     * @return
+     */
+    public FollowUpPlanDetailResponse get(String id) {
+        FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
+        FollowUpPlanDetailResponse response = BeanUtils.copyBean(new FollowUpPlanDetailResponse(), followUpPlan);
+        List<BaseModuleFieldValue> fieldValueList = followUpPlanFieldService.getModuleFieldValuesByResourceId(id);
+        response.setModuleFields(fieldValueList);
+        buildListData(List.of(response));
+        return response;
+    }
+
+
+    /**
+     * 取消跟进计划
+     *
+     * @param id
+     */
+    public void cancelPlan(String id) {
+        FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
+        if (followUpPlan == null) {
+            throw new GenericException("plan_not_found");
+        }
+        FollowUpPlan plan = new FollowUpPlan();
+        plan.setId(followUpPlan.getId());
+        plan.setStatus("CANCELLED");
+        followUpPlanMapper.updateById(plan);
     }
 }
