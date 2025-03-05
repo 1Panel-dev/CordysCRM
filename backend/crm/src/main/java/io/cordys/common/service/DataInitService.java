@@ -9,10 +9,13 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -28,10 +31,18 @@ public class DataInitService {
     private ModuleFormService moduleFormService;
     @Resource
     private BaseMapper<Parameter> parameterMapper;
+    @Resource
+    private Redisson redisson;
 
     public void initOneTime() {
-        initOneTime(moduleService::initDefaultOrgModule, "init.module");
-        initOneTime(moduleFormService::initForm, "init.form");
+        RLock lock = redisson.getLock("init_data_lock");
+        lock.lock();
+        try {
+            initOneTime(moduleService::initDefaultOrgModule, "init.module");
+            initOneTime(moduleFormService::initForm, "init.form");
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void initOneTime(OnceInterface onceFunc, final String key) {

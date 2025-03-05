@@ -14,4 +14,6 @@ public class RuleConditionDTO {
 	private String operator;
 	@Schema(description = "值")
 	private String value;
+	@Schema(description = "范围")
+	private String scope;
 }
