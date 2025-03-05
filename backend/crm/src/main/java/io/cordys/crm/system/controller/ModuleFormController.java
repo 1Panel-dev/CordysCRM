@@ -3,6 +3,7 @@ package io.cordys.crm.system.controller;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
+import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.security.SessionUtils;
@@ -31,7 +32,7 @@ public class ModuleFormController {
 	@GetMapping("/config/{formKey}")
 	@Operation(summary = "获取表单配置")
 	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
-	public ModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
-		return moduleFormCacheService.getConfig(formKey, OrganizationContext.getOrganizationId());
+	public BusinessModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
+		return moduleFormCacheService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
 	}
 }

@@ -69,6 +69,7 @@ public class ModuleFormCacheService {
 							if (businessModuleFieldEnum != null) {
 								// 设置特殊的业务字段 key
 								businessModuleField.setBusinessKey(businessModuleFieldEnum.getBusinessKey());
+								businessModuleField.setDisabledProps(businessModuleFieldEnum.getDisabledProps());
 							}
 							return businessModuleField;
 						})
