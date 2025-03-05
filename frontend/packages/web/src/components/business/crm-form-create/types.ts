@@ -1,7 +1,6 @@
 import type { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
 import type { FormItemRule } from 'naive-ui';
-import type { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 import type { Option } from 'naive-ui/es/transfer/src/interface';
 
 export interface FormCreateFieldOption extends Option {
@@ -24,6 +23,8 @@ export interface FormCreateField {
   id: string;
   name: string;
   type: FieldTypeEnum;
+  businessKey?: string; // 业务标准字段，不能删除
+  disabledProps?: string[]; // 禁用的属性集合
   internalKey?: string;
   key?: string;
   showLabel: boolean;
@@ -33,7 +34,6 @@ export interface FormCreateField {
   editable: boolean;
   fieldWidth: number;
   defaultValue?: any;
-  showRules?: FieldRuleEnum[]; // 显示的校验规则
   rules: FormCreateFieldRule[];
   // 数字输入属性
   max?: number;
@@ -61,6 +61,7 @@ export interface FormCreateField {
   // 选择器属性
   multiple?: boolean;
   options?: FormCreateFieldOption[];
+  initialOptions?: { id: string; name: string }[]; // 用于回显(成员、部门、数据源选择)
   // dataSource属性
   dataSourceType?: FieldDataSourceTypeEnum;
   // 成员属性
@@ -71,6 +72,5 @@ export interface FormCreateField {
   showControlRules?: FormCreateFieldShowControlRule[];
   // 前端渲染属性
   icon: string;
-  dataSourceSelectedRows?: InternalRowData[]; // 数据源选中的行，回显用
   show?: boolean; // 是否显示，受控于别的字段的showControlRules
 }

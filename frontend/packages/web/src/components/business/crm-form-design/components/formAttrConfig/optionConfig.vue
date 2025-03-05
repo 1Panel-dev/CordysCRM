@@ -34,16 +34,17 @@
           v-else
           :value="item.value"
           class="flex items-center"
+          :disabled="props.disabled"
           @click="() => handleRadioOptionClick(item.value)"
         />
-        <n-input v-model:value="item.label" :maxlength="255" clearable></n-input>
+        <n-input v-model:value="item.label" :maxlength="255" :disabled="props.disabled" clearable></n-input>
         <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
           <template #trigger>
             <n-button
               quaternary
               type="error"
               size="small"
-              :disabled="fieldConfig.options?.length === 1"
+              :disabled="props.disabled || fieldConfig.options?.length === 1"
               class="text-btn-error p-[4px] text-[var(--text-n1)]"
               @click="handleOptionDelete(i)"
             >
@@ -58,20 +59,15 @@
   <div class="flex items-center justify-center gap-[8px]">
     <div
       class="cursor-pointer text-[var(--primary-8)]"
-      @click="
-        () =>
-          fieldConfig.options?.push({
-            label: t('crmFormDesign.option', { i: fieldConfig.options.length + 1 }),
-            value: getGenerateId(),
-          })
-      "
+      :class="props.disabled ? 'text-[var(--primary-4)]' : ''"
+      @click="handleAddOption"
     >
       {{ t('crmFormDesign.addOption') }}
     </div>
     <n-divider vertical class="!m-0" />
     <div
       :class="
-        fieldConfig.options?.some((item) => item.value === 'other')
+        props.disabled || fieldConfig.options?.some((item) => item.value === 'other')
           ? 'cursor-not-allowed text-[var(--primary-4)]'
           : 'cursor-pointer text-[var(--primary-8)]'
       "
@@ -80,7 +76,11 @@
       {{ t('crmFormDesign.addOptionOther') }}
     </div>
     <n-divider vertical class="!m-0" />
-    <div class="cursor-pointer text-[var(--primary-8)]" @click="handleShowBatchEditModal">
+    <div
+      class="cursor-pointer text-[var(--primary-8)]"
+      :class="props.disabled ? 'text-[var(--primary-4)]' : ''"
+      @click="handleShowBatchEditModal"
+    >
       {{ t('crmFormDesign.batchEdit') }}
     </div>
   </div>
@@ -116,6 +116,10 @@
   import { useI18n } from '@/hooks/useI18n';
   import { getGenerateId } from '@/utils';
 
+  const props = defineProps<{
+    disabled?: boolean;
+  }>();
+
   const { t } = useI18n();
 
   const fieldConfig = defineModel<FormCreateField>('field', {
@@ -137,8 +141,18 @@
     }
   }
 
+  function handleAddOption() {
+    if (props.disabled) {
+      return;
+    }
+    fieldConfig.value.options?.push({
+      label: t('crmFormDesign.option', { i: fieldConfig.value.options.length + 1 }),
+      value: getGenerateId(),
+    });
+  }
+
   function handleAddOtherOption() {
-    if (fieldConfig.value.options?.some((e) => e.value === 'other')) {
+    if (props.disabled || fieldConfig.value.options?.some((e) => e.value === 'other')) {
       return;
     }
     fieldConfig.value.options?.push({
@@ -166,6 +180,9 @@
   const batchEditValue = ref('');
 
   function handleShowBatchEditModal() {
+    if (props.disabled) {
+      return;
+    }
     showModal.value = true;
     batchEditValue.value = fieldConfig.value.options?.map((e) => e.label).join('\n') || '';
   }

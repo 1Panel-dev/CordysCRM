@@ -51,6 +51,9 @@
     list.value.forEach((item) => {
       const fullRules: FormCreateFieldRule[] = [];
       rules.forEach((rule) => {
+        if (!item.rules) {
+          item.rules = [];
+        }
         // 遍历规则集合，将全量的规则配置载入
         const staticRule = item.rules.find((e) => e.key === rule.key);
         if (staticRule) {

@@ -3,14 +3,29 @@
     <div v-if="fieldConfig">
       <div class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.fieldTitle') }}</div>
-        <n-input v-model:value="fieldConfig.name" :maxlength="255" :placeholder="t('common.placeholder')" clearable />
-        <n-checkbox v-model:checked="fieldConfig.showLabel">
+        <n-input
+          v-model:value="fieldConfig.name"
+          :disabled="fieldConfig.disabledProps?.includes('name')"
+          :maxlength="255"
+          :placeholder="t('common.placeholder')"
+          clearable
+        />
+        <n-checkbox
+          v-model:checked="fieldConfig.showLabel"
+          :disabled="fieldConfig.disabledProps?.includes('showLabel')"
+        >
           {{ t('crmFormDesign.showTitle') }}
         </n-checkbox>
       </div>
       <div class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.desc') }}</div>
-        <n-input v-model:value="fieldConfig.description" type="textarea" :maxlength="1000" clearable />
+        <n-input
+          v-model:value="fieldConfig.description"
+          :disabled="fieldConfig.disabledProps?.includes('description')"
+          type="textarea"
+          :maxlength="1000"
+          clearable
+        />
       </div>
       <div
         v-if="
@@ -35,26 +50,46 @@
             {{ t('crmFormDesign.placeholderTip') }}
           </n-tooltip>
         </div>
-        <n-input v-model:value="fieldConfig.placeholder" :maxlength="56" clearable />
+        <n-input
+          v-model:value="fieldConfig.placeholder"
+          :disabled="fieldConfig.disabledProps?.includes('placeholder')"
+          :maxlength="56"
+          clearable
+        />
       </div>
       <!-- inputNumber数字输入属性 -->
       <div v-if="fieldConfig.type === FieldTypeEnum.INPUT_NUMBER" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.format') }}</div>
-        <n-radio-group v-model:value="fieldConfig.numberFormat" name="radiogroup" class="flex">
+        <n-radio-group
+          v-model:value="fieldConfig.numberFormat"
+          :disabled="fieldConfig.disabledProps?.includes('numberFormat')"
+          name="radiogroup"
+          class="flex"
+        >
           <n-radio-button value="number" class="flex-1 text-center">{{ t('crmFormDesign.number') }}</n-radio-button>
           <n-radio-button value="percent" class="flex-1 text-center">{{ t('crmFormDesign.percent') }}</n-radio-button>
         </n-radio-group>
-        <n-checkbox v-model:checked="fieldConfig.decimalPlaces" @update-checked="() => (fieldConfig.precision = 0)">
+        <n-checkbox
+          v-model:checked="fieldConfig.decimalPlaces"
+          :disabled="fieldConfig.disabledProps?.includes('decimalPlaces')"
+          @update-checked="() => (fieldConfig.precision = 0)"
+        >
           {{ t('crmFormDesign.saveFloat') }}
         </n-checkbox>
-        <n-checkbox v-if="fieldConfig.numberFormat === 'number'" v-model:checked="fieldConfig.showThousandsSeparator">
+        <n-checkbox
+          v-if="fieldConfig.numberFormat === 'number'"
+          v-model:checked="fieldConfig.showThousandsSeparator"
+          :disabled="fieldConfig.disabledProps?.includes('showThousandsSeparator')"
+        >
           {{ t('crmFormDesign.showThousandSeparator') }}
         </n-checkbox>
         <div v-if="fieldConfig.decimalPlaces || fieldConfig.showThousandsSeparator" class="flex items-center gap-[8px]">
           <n-input-number
             v-if="fieldConfig.decimalPlaces"
             v-model:value="fieldConfig.precision"
+            :disabled="fieldConfig.disabledProps?.includes('precision')"
             :min="0"
+            :max="10"
             class="flex-1"
           />
           <div
@@ -71,7 +106,11 @@
         <div class="crm-form-design-config-item-title">
           {{ t('common.type') }}
         </div>
-        <n-select v-model:value="fieldConfig.datetype" :options="dateTypeOptions" />
+        <n-select
+          v-model:value="fieldConfig.datetype"
+          :options="dateTypeOptions"
+          :disabled="fieldConfig.disabledProps?.includes('datetype')"
+        />
       </div>
       <!-- date End -->
       <!-- 数据源属性 -->
@@ -79,7 +118,11 @@
         <div class="crm-form-design-config-item-title">
           {{ t('common.type') }}
         </div>
-        <n-select v-model:value="fieldConfig.dataSourceType" :options="dataSourceOptions" />
+        <n-select
+          v-model:value="fieldConfig.dataSourceType"
+          :options="dataSourceOptions"
+          :disabled="fieldConfig.disabledProps?.includes('dataSourceType')"
+        />
       </div>
       <!-- 数据源属性 End -->
       <!-- 选项属性 -->
@@ -98,6 +141,7 @@
           v-model:value="fieldConfig.multiple"
           name="radiogroup"
           class="flex"
+          :disabled="fieldConfig.disabledProps?.includes('multiple')"
           @update-value="handleMultipleChange"
         >
           <n-radio-button :value="false" class="flex-1 text-center">
@@ -112,7 +156,7 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.option') }}
         </div>
-        <optionConfig v-model:field="fieldConfig" />
+        <optionConfig v-model:field="fieldConfig" :disabled="fieldConfig.disabledProps?.includes('options')" />
       </div>
       <!-- 选项属性 End -->
       <!-- 分割线属性 -->
@@ -121,7 +165,9 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.showRule') }}
         </div>
-        <n-button @click="showRuleConfig">{{ t('common.setting') }}</n-button>
+        <n-button :disabled="fieldConfig.disabledProps?.includes('showControlRules')" @click="showRuleConfig">
+          {{ t('common.setting') }}
+        </n-button>
       </div>
       <!-- 显隐规则 End -->
       <div v-if="fieldConfig.type === FieldTypeEnum.DIVIDER" class="crm-form-design-config-item">
@@ -135,6 +181,7 @@
           width="trigger"
           :show-arrow="false"
           style="max-height: 360px"
+          :disabled="fieldConfig.disabledProps?.includes('dividerClass')"
           scrollable
         >
           <template #trigger>
@@ -165,29 +212,66 @@
         </n-popover>
         <div class="flex items-center justify-end gap-[8px]">
           <div class="flex-1 text-left">{{ t('crmFormDesign.dividerColor') }}</div>
-          <n-popover trigger="click" placement="bottom" class="!p-0" :show-arrow="false">
+          <n-popover
+            trigger="click"
+            placement="bottom"
+            class="!p-0"
+            :show-arrow="false"
+            :disabled="fieldConfig.disabledProps?.includes('dividerColor')"
+          >
             <template #trigger>
               <div class="crm-form-design-color-select-wrapper">
                 <div class="crm-form-design-color-select" :style="{ backgroundColor: fieldConfig.dividerColor }"></div>
               </div>
             </template>
-            <CrmColorSelect v-model:pure-color="fieldConfig.dividerColor" />
+            <CrmColorSelect
+              v-model:pure-color="fieldConfig.dividerColor"
+              :disabled="fieldConfig.disabledProps?.includes('dividerColor')"
+            />
           </n-popover>
-          <n-button class="px-[9px]" @click="() => (fieldConfig.dividerColor = '#edf0f1')">
+          <n-button
+            class="px-[9px]"
+            :disabled="fieldConfig.disabledProps?.includes('dividerColor')"
+            @click="
+              () => {
+                if (!fieldConfig.disabledProps?.includes('dividerColor')) {
+                  fieldConfig.dividerColor = '#edf0f1';
+                }
+              }
+            "
+          >
             <CrmIcon type="iconicon_refresh" />
           </n-button>
         </div>
         <div class="flex items-center justify-end gap-[8px]">
           <div class="flex-1 text-left">{{ t('crmFormDesign.titleColor') }}</div>
-          <n-popover trigger="click" placement="bottom" class="!p-0" :show-arrow="false">
+          <n-popover
+            trigger="click"
+            placement="bottom"
+            class="!p-0"
+            :show-arrow="false"
+            :disabled="fieldConfig.disabledProps?.includes('titleColor')"
+          >
             <template #trigger>
               <div class="crm-form-design-color-select-wrapper">
                 <div class="crm-form-design-color-select" :style="{ backgroundColor: fieldConfig.titleColor }"></div>
               </div>
             </template>
-            <CrmColorSelect v-model:pure-color="fieldConfig.titleColor" />
+            <CrmColorSelect
+              v-model:pure-color="fieldConfig.titleColor"
+              :disabled="fieldConfig.disabledProps?.includes('titleColor')"
+            />
           </n-popover>
-          <n-button class="px-[9px]" @click="() => (fieldConfig.titleColor = '#323535')">
+          <n-button
+            class="px-[9px]"
+            @click="
+              () => {
+                if (!fieldConfig.disabledProps?.includes('titleColor')) {
+                  fieldConfig.titleColor = '#323535';
+                }
+              }
+            "
+          >
             <CrmIcon type="iconicon_refresh" />
           </n-button>
         </div>
@@ -201,7 +285,12 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.direction') }}
         </div>
-        <n-radio-group v-model:value="fieldConfig.direction" name="radiogroup" class="flex">
+        <n-radio-group
+          v-model:value="fieldConfig.direction"
+          name="radiogroup"
+          class="flex"
+          :disabled="fieldConfig.disabledProps?.includes('direction')"
+        >
           <n-radio-button value="vertical" class="flex-1 text-center">
             {{ t('crmFormDesign.verticalSort') }}
           </n-radio-button>
@@ -219,7 +308,13 @@
             <div
               class="crm-form-design-config-item-label-picture"
               :class="fieldConfig.pictureShowType === 'card' ? 'crm-form-design-config-item-label-picture--active' : ''"
-              @click="() => (fieldConfig.pictureShowType = 'card')"
+              @click="
+                () => {
+                  if (!fieldConfig.disabledProps?.includes('pictureShowType')) {
+                    fieldConfig.pictureShowType = 'card';
+                  }
+                }
+              "
             >
               <div class="crm-form-design-config-item-label-picture-card !flex-row justify-between">
                 <div class="crm-form-design-config-item-label-picture-card-first flex flex-col">
@@ -246,7 +341,13 @@
             <div
               class="crm-form-design-config-item-label-picture"
               :class="fieldConfig.pictureShowType === 'list' ? 'crm-form-design-config-item-label-picture--active' : ''"
-              @click="() => (fieldConfig.pictureShowType = 'list')"
+              @click="
+                () => {
+                  if (!fieldConfig.disabledProps?.includes('pictureShowType')) {
+                    fieldConfig.pictureShowType = 'list';
+                  }
+                }
+              "
             >
               <div class="crm-form-design-config-item-label-picture-card">
                 <div class="crm-form-design-config-item-label-picture-card-first flex items-center gap-[4px]">
@@ -348,6 +449,7 @@
               value: 'detail',
             },
           ]"
+          :disabled="fieldConfig.disabledProps?.includes('locationType')"
         />
       </div>
       <!-- 地址属性 End -->
@@ -366,11 +468,19 @@
       >
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.defaultValue') }}</div>
         <div v-if="fieldConfig.type === FieldTypeEnum.MEMBER" class="flex items-center gap-[8px]">
-          <n-switch v-model:value="fieldConfig.hasCurrentUser" @update-value="handleHasCurrentChange" />
+          <n-switch
+            v-model:value="fieldConfig.hasCurrentUser"
+            :disabled="fieldConfig.disabledProps?.includes('hasCurrentUser')"
+            @update-value="handleHasCurrentChange"
+          />
           {{ t('crmFormDesign.loginUser') }}
         </div>
         <div v-else-if="fieldConfig.type === FieldTypeEnum.DEPARTMENT" class="flex items-center gap-[8px]">
-          <n-switch v-model:value="fieldConfig.hasCurrentUserDept" @update-value="handleHasCurrentChange" />
+          <n-switch
+            v-model:value="fieldConfig.hasCurrentUserDept"
+            :disabled="fieldConfig.disabledProps?.includes('hasCurrentUserDept')"
+            @update-value="handleHasCurrentChange"
+          />
           {{ t('crmFormDesign.loginUserDept') }}
         </div>
         <n-input-number
@@ -378,11 +488,13 @@
           v-model:value="fieldConfig.defaultValue"
           :show-button="false"
           :min="0"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
         />
         <n-date-picker
           v-else-if="fieldConfig.type === FieldTypeEnum.DATE_TIME"
           v-model:value="fieldConfig.defaultValue"
           :type="fieldConfig.datetype"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
           class="w-full"
         ></n-date-picker>
         <CrmUserTagSelector
@@ -393,6 +505,7 @@
           :drawer-title="t('crmFormDesign.selectMember')"
           :ok-text="t('common.confirm')"
           :member-types="[]"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
         />
         <CrmUserTagSelector
           v-else-if="fieldConfig.type === FieldTypeEnum.DEPARTMENT"
@@ -402,19 +515,27 @@
           :drawer-title="t('crmFormDesign.selectMember')"
           :ok-text="t('common.confirm')"
           :member-types="[]"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
         />
         <CrmDataSource
           v-else-if="fieldConfig.type === FieldTypeEnum.DATA_SOURCE"
           v-model:value="fieldConfig.defaultValue"
-          v-model:rows="fieldConfig.dataSourceSelectedRows"
+          v-model:rows="fieldConfig.initialOptions"
           :multiple="fieldConfig.multiple"
           :data-source-type="fieldConfig.dataSourceType"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
         />
-        <n-input v-else v-model:value="fieldConfig.defaultValue" :maxlength="255" clearable />
+        <n-input
+          v-else
+          v-model:value="fieldConfig.defaultValue"
+          :maxlength="255"
+          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+          clearable
+        />
       </div>
       <div v-if="showRules.length > 0" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.validator') }}</div>
-        <n-checkbox-group v-model:value="checkedRules">
+        <n-checkbox-group v-model:value="checkedRules" :disabled="fieldConfig.disabledProps?.includes('rules')">
           <n-space item-class="w-full">
             <n-checkbox v-for="rule of showRules" :key="rule.key" :value="rule.key">
               {{ t(rule.label, { value: t(fieldConfig.name) }) }}
@@ -426,10 +547,14 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldPermission') }}
         </div>
-        <n-checkbox v-model:checked="fieldConfig.readable">
+        <n-checkbox v-model:checked="fieldConfig.readable" :disabled="fieldConfig.disabledProps?.includes('readable')">
           {{ t('crmFormDesign.readable') }}
         </n-checkbox>
-        <n-checkbox v-if="![FieldTypeEnum.DIVIDER].includes(fieldConfig.type)" v-model:checked="fieldConfig.editable">
+        <n-checkbox
+          v-if="![FieldTypeEnum.DIVIDER].includes(fieldConfig.type)"
+          v-model:checked="fieldConfig.editable"
+          :disabled="fieldConfig.disabledProps?.includes('editable')"
+        >
           {{ t('crmFormDesign.editable') }}
         </n-checkbox>
       </div>
@@ -437,7 +562,12 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldWidth') }}
         </div>
-        <n-radio-group v-model:value="fieldConfig.fieldWidth" name="radiogroup" class="flex">
+        <n-radio-group
+          v-model:value="fieldConfig.fieldWidth"
+          name="radiogroup"
+          class="flex"
+          :disabled="fieldConfig.disabledProps?.includes('fieldWidth')"
+        >
           <n-radio-button :value="1 / 4" class="!px-[8px]"> 1/4 </n-radio-button>
           <n-radio-button :value="1 / 3" class="!px-[8px]"> 1/3 </n-radio-button>
           <n-radio-button :value="1 / 2" class="!px-[8px]"> 1/2 </n-radio-button>
@@ -522,7 +652,7 @@
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
-  import { rules } from '@/components/business/crm-form-create/config';
+  import { rules, showRulesMap } from '@/components/business/crm-form-create/config';
   import { FormCreateField, FormCreateFieldShowControlRule } from '@/components/business/crm-form-create/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import optionConfig from './optionConfig.vue';
@@ -546,9 +676,9 @@
     return rules.filter((rule) => {
       if (fieldConfig.value.multiple) {
         // 多选时不显示唯一性校验
-        return rule.key && fieldConfig.value.showRules?.includes(rule.key) && rule.key !== FieldRuleEnum.UNIQUE;
+        return rule.key && showRulesMap[fieldConfig.value.type].includes(rule.key) && rule.key !== FieldRuleEnum.UNIQUE;
       }
-      return rule.key && fieldConfig.value.showRules?.includes(rule.key);
+      return rule.key && showRulesMap[fieldConfig.value.type].includes(rule.key);
     });
   });
 

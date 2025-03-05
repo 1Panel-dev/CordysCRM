@@ -30,7 +30,7 @@ export interface ModuleSortParams {
 
 export interface SelectedUsersItem {
   id: string; // ID
-  scope: MemberSelectTypeEnum; // 范围
+  scope?: MemberSelectTypeEnum; // 范围
   name: string; // 名称
 }
 

@@ -9,6 +9,7 @@
       :render-tag="renderTag"
       :show-arrow="false"
       :show="false"
+      :disabled="props.disabled"
       @click="handleShowAddAdmin"
     />
     <CrmSelectUserDrawer
@@ -46,6 +47,7 @@
     drawerTitle?: string;
     okText?: string;
     memberTypes?: Option[];
+    disabled?: boolean;
   };
   const props = withDefaults(defineProps<UserTagSelectorProps>(), {
     multiple: true,

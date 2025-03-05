@@ -10,7 +10,7 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
-    <CrmUserTagSelector v-model:selected-list="value" :multiple="fieldConfig.multiple" />
+    <CrmUserTagSelector v-model:selected-list="selectedUsers" :multiple="fieldConfig.multiple" />
   </n-form-item>
 </template>
 
@@ -31,9 +31,10 @@
     (e: 'change', value: (string | number)[]): void;
   }>();
 
-  const value = defineModel<SelectedUsersItem[]>('value', {
+  const value = defineModel<string[]>('value', {
     default: [],
   });
+  const selectedUsers = ref<SelectedUsersItem[]>(props.fieldConfig.initialOptions || []);
 
   watch(
     () => props.fieldConfig.defaultValue,
@@ -46,12 +47,11 @@
   );
 
   watch(
-    () => value.value,
+    () => selectedUsers.value,
     (val) => {
-      emit(
-        'change',
-        val.map((item) => item.id)
-      );
+      const ids = val.map((item) => item.id);
+      value.value = ids;
+      emit('change', ids);
     },
     {
       deep: true,

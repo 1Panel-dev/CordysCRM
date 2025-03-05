@@ -12,7 +12,7 @@
     ></div>
     <CrmDataSource
       v-model:value="value"
-      :rows="props.fieldConfig.dataSourceSelectedRows"
+      :rows="props.fieldConfig.initialOptions"
       :multiple="fieldConfig.multiple"
       :data-source-type="props.fieldConfig.dataSourceType"
       @change="($event) => emit('change', $event)"

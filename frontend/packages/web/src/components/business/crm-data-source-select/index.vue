@@ -8,6 +8,7 @@
     :render-tag="renderTag"
     :show-arrow="false"
     :show="false"
+    :disabled="props.disabled"
     @click="showDataSourcesModal"
     @update-value="($event) => emit('change', $event)"
   />
@@ -49,6 +50,7 @@
     defineProps<{
       dataSourceType?: FieldDataSourceTypeEnum;
       multiple?: boolean;
+      disabled?: boolean;
     }>(),
     {
       multiple: true,

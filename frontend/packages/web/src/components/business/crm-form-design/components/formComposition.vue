@@ -45,12 +45,7 @@
                 {{ t('common.delete') }}
               </n-tooltip>
             </div>
-            <component
-              :is="getItemComponent(item.type)"
-              :field-config="item"
-              :path="item.id"
-              @change="($event: any) => handleFieldChange($event, item)"
-            />
+            <component :is="getItemComponent(item.type)" :field-config="item" :path="item.id" />
             <div class="crm-form-design--composition-item-mask"></div>
           </div>
         </template>
@@ -220,21 +215,6 @@
     list.value = list.value.filter((e) => e.id !== item.id);
     if (activeItem.value?.id === item.id) {
       activeItem.value = null;
-    }
-  }
-
-  function handleFieldChange(value: any, item: FormCreateField) {
-    // 控制显示规则
-    if (item.showControlRules?.length) {
-      item.showControlRules.forEach((rule) => {
-        // 若配置了该值的显示规则
-        if (rule.value === value) {
-          list.value.forEach((e) => {
-            // 若该字段在显示规则中，则根据规则显示或隐藏
-            e.show = rule.fieldIds.includes(e.id);
-          });
-        }
-      });
     }
   }
 

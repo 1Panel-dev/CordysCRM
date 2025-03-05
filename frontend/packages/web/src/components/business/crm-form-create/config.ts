@@ -14,7 +14,6 @@ export const inputDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   rules: [],
-  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
 };
 
 export const textareaDefaultFieldConfig: FormCreateField = {
@@ -29,7 +28,6 @@ export const textareaDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   rules: [],
-  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const inputNumberDefaultFieldConfig: FormCreateField = {
@@ -48,7 +46,6 @@ export const inputNumberDefaultFieldConfig: FormCreateField = {
   decimalPlaces: false,
   precision: 0,
   showThousandsSeparator: false,
-  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const dateTimeDefaultFieldConfig: FormCreateField = {
@@ -64,7 +61,6 @@ export const dateTimeDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   datetype: 'datetime',
-  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const radioDefaultFieldConfig: FormCreateField = {
@@ -80,7 +76,6 @@ export const radioDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   rules: [],
-  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
   direction: 'vertical',
 };
 
@@ -98,7 +93,6 @@ export const checkboxDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   direction: 'vertical',
-  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const selectDefaultFieldConfig: FormCreateField = {
@@ -115,7 +109,6 @@ export const selectDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   multiple: false,
-  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
 };
 
 export const memberDefaultFieldConfig: FormCreateField = {
@@ -130,8 +123,8 @@ export const memberDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   defaultValue: [],
+  initialOptions: [],
   multiple: false,
-  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
 };
 
 export const departmentDefaultFieldConfig: FormCreateField = {
@@ -146,8 +139,8 @@ export const departmentDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   defaultValue: [],
+  initialOptions: [],
   multiple: false,
-  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
 };
 
 export const dividerDefaultFieldConfig: FormCreateField = {
@@ -178,7 +171,6 @@ export const tagInputDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   defaultValue: [],
-  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const basicFields: FormCreateField[] = [
@@ -212,7 +204,6 @@ export const pictureDefaultFieldConfig: FormCreateField = {
   pictureShowType: 'card',
   uploadLimitEnable: false,
   uploadSizeLimitEnable: false,
-  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const locationDefaultFieldConfig: FormCreateField = {
@@ -228,7 +219,6 @@ export const locationDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   locationType: 'PCD',
-  showRules: [FieldRuleEnum.REQUIRED],
 };
 
 export const phoneDefaultFieldConfig: FormCreateField = {
@@ -243,7 +233,6 @@ export const phoneDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   rules: [],
-  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
 };
 
 export const dataSourceDefaultFieldConfig: FormCreateField = {
@@ -259,9 +248,8 @@ export const dataSourceDefaultFieldConfig: FormCreateField = {
   rules: [],
   multiple: false,
   defaultValue: [],
-  dataSourceSelectedRows: [],
+  initialOptions: [],
   dataSourceType: FieldDataSourceTypeEnum.CUSTOMER,
-  showRules: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
 };
 
 export const advancedFields: FormCreateField[] = [
@@ -284,3 +272,22 @@ export const rules: FormCreateFieldRule[] = [
     label: 'crmFormDesign.onlyOne',
   },
 ];
+
+export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
+  [FieldTypeEnum.INPUT]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+  [FieldTypeEnum.TEXTAREA]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.INPUT_NUMBER]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.DATE_TIME]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.RADIO]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+  [FieldTypeEnum.CHECKBOX]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.SELECT]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+  [FieldTypeEnum.MEMBER]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+  [FieldTypeEnum.DEPARTMENT]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+  [FieldTypeEnum.DIVIDER]: [],
+  [FieldTypeEnum.USER_TAG_SELECTOR]: [],
+  [FieldTypeEnum.MULTIPLE_INPUT]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.PICTURE]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.LOCATION]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.PHONE]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+  [FieldTypeEnum.DATA_SOURCE]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+};

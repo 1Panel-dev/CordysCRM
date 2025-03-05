@@ -26,11 +26,20 @@
   import { Close } from '@vicons/ionicons5';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { FormConfig } from '@lib/shared/models/system/module';
+  import { FormConfig, FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
-  import { getFormDesignConfig } from '@/api/modules/system/module';
+  import {
+    addCustomer,
+    addCustomerContact,
+    addCustomerFollowPlan,
+    addCustomerFollowRecord,
+    getCustomerContactFormConfig,
+    getCustomerFollowPlanFormConfig,
+    getCustomerFollowRecordFormConfig,
+    getCustomerFormConfig,
+  } from '@/api/modules/customer/index';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { safeFractionConvert } from '@/utils';
@@ -109,9 +118,44 @@
     }
   }
 
+  const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {
+    [FormDesignKeyEnum.CUSTOMER]: getCustomerFormConfig,
+    [FormDesignKeyEnum.BUSINESS]: getCustomerFormConfig, // TODO:
+    [FormDesignKeyEnum.CONTACT]: getCustomerContactFormConfig,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: getCustomerFollowPlanFormConfig,
+    [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecordFormConfig,
+    [FormDesignKeyEnum.LEAD]: getCustomerFormConfig, // TODO:
+    [FormDesignKeyEnum.PRODUCT]: getCustomerFormConfig, // TODO:
+  };
+
+  const saveFormConfigApiMap: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
+    [FormDesignKeyEnum.CUSTOMER]: addCustomer,
+    [FormDesignKeyEnum.BUSINESS]: addCustomer, // TODO:
+    [FormDesignKeyEnum.CONTACT]: addCustomerContact,
+    [FormDesignKeyEnum.FOLLOW_PLAN]: addCustomerFollowPlan,
+    [FormDesignKeyEnum.FOLLOW_RECORD]: addCustomerFollowRecord,
+    [FormDesignKeyEnum.LEAD]: addCustomer, // TODO:
+    [FormDesignKeyEnum.PRODUCT]: addCustomer, // TODO:
+  };
+
   async function handleSave(form: Record<string, any>, isContinue: boolean) {
     try {
       loading.value = true;
+      const params: Record<string, any> = {
+        moduleFields: [],
+      };
+      fieldList.value.forEach((item) => {
+        if (item.businessKey) {
+          // 存在业务字段，则按照业务字段的key存储
+          params[item.businessKey] = form[item.id];
+        } else {
+          params.moduleFields.push({
+            fieldId: item.id,
+            fieldValue: form[item.id],
+          });
+        }
+      });
+      await saveFormConfigApiMap[props.formKey](params);
       Message.success(t('common.saveSuccess'));
       if (!isContinue) {
         visible.value = false;
@@ -127,7 +171,7 @@
   async function initFormConfig() {
     try {
       loading.value = true;
-      const res = await getFormDesignConfig(props.formKey);
+      const res = await getFormConfigApiMap[props.formKey]();
       fieldList.value = res.fields.map((item) => ({
         ...item,
         id: item.id,
