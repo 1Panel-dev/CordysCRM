@@ -1,12 +1,9 @@
 package io.cordys.crm.system.service;
 
-import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.ModuleField;
@@ -16,8 +13,6 @@ import io.cordys.crm.system.domain.ModuleFormBlob;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.form.FormProp;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
-import io.cordys.crm.system.dto.response.BusinessModuleFieldDTO;
-import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
 import io.cordys.mybatis.BaseMapper;
@@ -31,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service

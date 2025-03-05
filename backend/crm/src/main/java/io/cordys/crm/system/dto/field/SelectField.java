@@ -18,7 +18,7 @@ public class SelectField extends BaseField {
 	private Boolean multiple;
 
 	@Schema(description = "默认值")
-	private String defaultValue;
+	private Object defaultValue;
 
 	@Schema(description = "选项值")
 	private List<OptionProp> options;

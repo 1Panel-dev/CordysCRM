@@ -3,7 +3,7 @@ package io.cordys.crm.customer.controller;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.FormKey;
-import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,7 +42,7 @@ public class CustomerContactController {
     @GetMapping("/module/form")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
-    public BusinessModuleFormConfigDTO getModuleFormConfig() {
+    public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), OrganizationContext.getOrganizationId());
     }
 

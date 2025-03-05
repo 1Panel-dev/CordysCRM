@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 public class InputNumberField extends BaseField {
 
 	@Schema(description = "默认值")
-	private String defaultValue;
+	private Double defaultValue;
 
 	@Schema(description = "最小值范围")
 	private int min;

@@ -7,6 +7,10 @@ public enum FieldSourceType {
 	 */
 	CUSTOMER,
 	/**
+	 * 线索
+	 */
+	LEAD,
+	/**
 	 * 联系人来源
 	 */
 	CONTACT,

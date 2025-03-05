@@ -19,7 +19,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"},
         {"key":  "unique"}
@@ -37,7 +36,6 @@
       "options": [
         {"label": "互联网", "value":  "1"}, {"label": "金融", "value":  "2"}, {"label": "制造业", "value":  "3"}
       ],
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -55,7 +53,6 @@
       "options": [
         {"label": "重要客户", "value":  "1"}, {"label": "一般客户", "value":  "2"}, {"label": "战略客户", "value":  "3"}
       ],
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -72,7 +69,6 @@
       "options": [
         {"label": "无", "value":  "1"}, {"label": "最终客户", "value":  "2"}, {"label": "代理商", "value":  "3"}
       ],
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -90,7 +86,6 @@
         {"label": "线上", "value":  "1"}, {"label": "线下", "value":  "2"}, {"label": "维保", "value":  "3"},
         {"label": "续约", "value":  "4"}, {"label": "扩容", "value":  "5"}, {"label": "增购", "value":  "6"}
       ],
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ],
@@ -110,7 +105,6 @@
       "options": [
         {"label": "400电话", "value":  "1"}, {"label": "官网咨询", "value":  "2"}, {"label": "社区用户", "value":  "3"}
       ],
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -122,9 +116,7 @@
       "showLabel": true,
       "readable": true,
       "editable": true,
-      "fieldWidth": 0.5,
-      "showRules": [],
-      "rules": []
+      "fieldWidth": 0.5
     },
     {
       "name": "地址信息",
@@ -138,28 +130,14 @@
       "titleColor": "#323535"
     },
     {
-      "name": "详情地址",
-      "internalKey": "customerAddressDetail",
-      "type": "TEXTAREA",
-      "showLabel": true,
-      "readable": true,
-      "editable": true,
-      "fieldWidth": 0.5,
-      "showRules": ["required"],
-      "rules": [
-        {"key":  "required"}
-      ]
-    },
-    {
       "name": "地区",
       "internalKey": "customerArea",
       "type": "LOCATION",
+      "locationType": "detail",
       "showLabel": true,
       "readable": true,
       "editable": true,
-      "fieldWidth": 0.5,
-      "showRules": [],
-      "rules": []
+      "fieldWidth": 0.5
     },
     {
       "name": "负责人信息",
@@ -180,8 +158,8 @@
       "hasCurrentUser": false,
       "showLabel": true,
       "readable": true,
+      "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -207,7 +185,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -224,7 +201,6 @@
       "options": [
         {"label": "初步意向", "value":  "1"}, {"label": "强烈意愿", "value":  "2"}
       ],
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -243,7 +219,6 @@
         {"label": "线下活动", "value":  "4"}, {"label": "社区用户", "value":  "5"}, {"label": "GitHub", "value":  "6"},
         {"label": "维保，续约，增购", "value":  "7"}, {"label": "其他", "value":  "8"}
       ],
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ],
@@ -263,7 +238,6 @@
       "options": [
         {"label": "400电话", "value":  "1"}, {"label": "官网咨询", "value":  "2"}, {"label": "社区用户", "value":  "3"}
       ],
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -276,7 +250,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required"],
       "rules": [
         {"key":  "required"}
       ]
@@ -293,28 +266,14 @@
       "titleColor": "#323535"
     },
     {
-      "name": "详情地址",
-      "internalKey": "leadAddressDetail",
-      "type": "TEXTAREA",
-      "showLabel": true,
-      "readable": true,
-      "editable": true,
-      "fieldWidth": 0.5,
-      "showRules": ["required"],
-      "rules": [
-        {"key":  "required"}
-      ]
-    },
-    {
       "name": "地区",
       "internalKey": "leadArea",
       "type": "LOCATION",
+      "locationType": "detail",
       "showLabel": true,
       "readable": true,
       "editable": true,
-      "fieldWidth": 0.5,
-      "showRules": [],
-      "rules": []
+      "fieldWidth": 0.5
     },
     {
       "name": "负责人信息",
@@ -335,8 +294,8 @@
       "hasCurrentUser": false,
       "showLabel": true,
       "readable": true,
+      "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -362,7 +321,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -377,7 +335,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -396,25 +353,6 @@
         {"label": "社区用户", "value":  "4"}, {"label": "Github", "value":  "5"}, {"label": "维保，续约，增购", "value":  "6"},
         {"label": "其他", "value":  "7"}
       ],
-      "showRules": ["required", "unique"],
-      "rules": [
-        {"key":  "required"}
-      ]
-    },
-    {
-      "name": "商机阶段",
-      "internalKey": "businessProgress",
-      "type": "SELECT",
-      "multiple": false,
-      "showLabel": true,
-      "readable": true,
-      "editable": true,
-      "fieldWidth": 0.5,
-      "options": [
-        {"label": "需求明确", "value":  "1"}, {"label": "方案验证", "value":  "2"},
-        {"label": "立项汇报", "value":  "3"}, {"label": "商务采购", "value":  "4"}
-      ],
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -429,7 +367,6 @@
       "fieldWidth": 0.5,
       "numberFormat": "number",
       "showThousandsSeparator": true,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -444,7 +381,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -458,7 +394,6 @@
       "editable": true,
       "fieldWidth": 0.5,
       "datetype": "date",
-      "showRules": ["required"],
       "rules": [
         {"key":  "required"}
       ]
@@ -473,7 +408,6 @@
       "fieldWidth": 0.5,
       "numberFormat": "percent",
       "showThousandsSeparator": true,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -488,7 +422,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -500,9 +433,7 @@
       "showLabel": true,
       "readable": true,
       "editable": true,
-      "fieldWidth": 0.5,
-      "showRules": [],
-      "rules": []
+      "fieldWidth": 0.5
     },
     {
       "name": "备注信息",
@@ -512,7 +443,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required"],
       "rules": []
     },
     {
@@ -527,28 +457,14 @@
       "titleColor": "#323535"
     },
     {
-      "name": "详情地址",
-      "internalKey": "businessAddressDetail",
-      "type": "TEXTAREA",
-      "showLabel": true,
-      "readable": true,
-      "editable": true,
-      "fieldWidth": 0.5,
-      "showRules": ["required"],
-      "rules": [
-        {"key":  "required"}
-      ]
-    },
-    {
       "name": "地区",
       "internalKey": "businessArea",
       "type": "LOCATION",
+      "locationType": "detail",
       "showLabel": true,
       "readable": true,
       "editable": true,
-      "fieldWidth": 0.5,
-      "showRules": [],
-      "rules": []
+      "fieldWidth": 0.5
     },
     {
       "name": "负责人信息",
@@ -569,8 +485,8 @@
       "hasCurrentUser": false,
       "showLabel": true,
       "readable": true,
+      "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -596,7 +512,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"},
         {"key":  "unique"}
@@ -612,7 +527,6 @@
       "fieldWidth": 0.5,
       "numberFormat": "number",
       "showThousandsSeparator": true,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -630,7 +544,6 @@
       "options": [
         {"label": "上架", "value":  "1"}, {"label": "下架", "value":  "2"}
       ],
-      "showRules": ["required"],
       "rules": [
         {"key":  "required"}
       ]
@@ -643,7 +556,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required"],
       "rules": [
         {"key":  "required"}
       ]
@@ -670,7 +582,356 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required"],
+      "rules": [
+        {"key":  "required"}
+      ]
+    }
+  ],
+  "contact": [
+    {
+      "name": "客户名称",
+      "internalKey": "contactCustomerName",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CUSTOMER",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "showRules": ["required", "unique"],
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "姓名",
+      "internalKey": "contactName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "showRules": ["required", "unique"],
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "邮箱",
+      "internalKey": "contactEmail",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "showRules": ["required", "unique"],
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "手机号",
+      "internalKey": "contactPhone",
+      "type": "PHONE",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "showRules": ["required", "unique"],
+      "rules": [
+        {"key":  "required"}
+      ]
+    }
+  ],
+  "record": [
+    {
+      "name": "跟进类型",
+      "internalKey": "recordType",
+      "type": "SELECT",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "options": [
+        {"label": "客户", "value":  "1"}, {"label": "线索", "value":  "2"}
+      ],
+      "rules": [
+        {"key":  "required"}
+      ],
+      "showControlRules": [
+          {"value": "1", "fieldIds": ["recordCustomerName", "recordBusiness"]},
+          {"value": "2", "fieldIds": ["recordLeadName"]}
+      ]
+    },
+    {
+      "name": "客户名称",
+      "internalKey": "recordCustomerName",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CUSTOMER",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "线索名称",
+      "internalKey": "recordLeadName",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "LEAD",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "商机",
+      "internalKey": "recordBusiness",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "BUSINESS",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "联系人",
+      "internalKey": "recordBusiness",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTACT",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "跟进方式",
+      "internalKey": "recordMethod",
+      "type": "SELECT",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "options": [
+        {"label": "到访", "value":  "1"}, {"label": "电话", "value":  "2"}
+      ],
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "跟进时间",
+      "internalKey": "recordTime",
+      "type": "DATE_TIME",
+      "datetype": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "负责人",
+      "internalKey": "recordOwnerName",
+      "type": "MEMBER",
+      "multiple": false,
+      "hasCurrentUser": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "意向产品",
+      "internalKey": "recordProduct",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "PRODUCT",
+      "multiple": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "跟进内容",
+      "internalKey": "recordDescription",
+      "type": "TEXTAREA",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    }
+  ],
+  "plan": [
+    {
+      "name": "跟进类型",
+      "internalKey": "planType",
+      "type": "SELECT",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "options": [
+        {"label": "客户", "value":  "1"}, {"label": "线索", "value":  "2"}
+      ],
+      "rules": [
+        {"key":  "required"}
+      ],
+      "showControlRules": [
+        {"value": "1", "fieldIds": ["recordCustomerName", "recordBusiness"]},
+        {"value": "2", "fieldIds": ["recordLeadName"]}
+      ]
+    },
+    {
+      "name": "客户名称",
+      "internalKey": "planCustomerName",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CUSTOMER",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "线索名称",
+      "internalKey": "planLeadName",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "LEAD",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "商机",
+      "internalKey": "planBusiness",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "BUSINESS",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "联系人",
+      "internalKey": "planContact",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "CONTACT",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "预计开始时间",
+      "internalKey": "planStartTime",
+      "type": "DATE_TIME",
+      "datetype": "date",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "跟进方式",
+      "internalKey": "planMethod",
+      "type": "SELECT",
+      "multiple": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "options": [
+        {"label": "到访", "value":  "1"}, {"label": "电话", "value":  "2"}
+      ],
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "负责人",
+      "internalKey": "planOwnerName",
+      "type": "MEMBER",
+      "multiple": false,
+      "hasCurrentUser": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "意向产品",
+      "internalKey": "planProduct",
+      "type": "DATA_SOURCE",
+      "dataSourceType": "PRODUCT",
+      "multiple": true,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
+    },
+    {
+      "name": "预计沟通内容",
+      "internalKey": "planContent",
+      "type": "TEXTAREA",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
       ]

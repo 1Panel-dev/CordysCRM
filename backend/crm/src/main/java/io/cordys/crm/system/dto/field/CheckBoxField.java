@@ -18,7 +18,7 @@ public class CheckBoxField extends BaseField {
 	private List<OptionProp> options;
 
 	@Schema(description = "默认值")
-	private String defaultValue;
+	private List<String> defaultValue;
 
 	@Schema(description = "分布方式", allowableValues = {"horizontal", "vertical"})
 	private String direction;

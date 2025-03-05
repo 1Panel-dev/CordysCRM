@@ -3,7 +3,7 @@ package io.cordys.crm.follow.controller;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +26,7 @@ public class FollowUpPlanController {
     @GetMapping("/module/form")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.LEAD_MANAGEMENT_READ}, logical = Logical.OR)
     @Operation(summary = "获取表单配置")
-    public BusinessModuleFormConfigDTO getModuleFormConfig() {
+    public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), OrganizationContext.getOrganizationId());
     }
 

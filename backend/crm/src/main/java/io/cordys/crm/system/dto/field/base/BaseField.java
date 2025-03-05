@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
@@ -23,7 +25,7 @@ import java.util.List;
 		@JsonSubTypes.Type(value = SelectField.class, name = "SELECT"),
 		@JsonSubTypes.Type(value = MultipleInputField.class, name = "MULTIPLE_INPUT"),
 		@JsonSubTypes.Type(value = MemberField.class, name = "MEMBER"),
-		@JsonSubTypes.Type(value = DepartmentField.class, name = "MEMBER"),
+		@JsonSubTypes.Type(value = DepartmentField.class, name = "DEPARTMENT"),
 		@JsonSubTypes.Type(value = DividerField.class, name = "DIVIDER"),
 		@JsonSubTypes.Type(value = PictureField.class, name = "PICTURE"),
 		@JsonSubTypes.Type(value = LocationField.class, name = "LOCATION"),
@@ -66,7 +68,16 @@ public abstract class BaseField {
 	private Float fieldWidth;
 
 	@Schema(description = "规则详情")
-	private List<RuleProp> rules;
+	private List<String> showRules = new ArrayList<>();
+
+	@Schema(description = "规则详情")
+	private List<RuleProp> rules = new ArrayList<>();
+
+	@Schema(description = "业务模块字段（定义在主表中，有特定业务含义）")
+	private String businessKey;
+
+	@Schema(description = "禁止修改的参数")
+	private Set<String> disabledProps;
 
 	@JsonIgnore
 	public boolean isTextArea() {

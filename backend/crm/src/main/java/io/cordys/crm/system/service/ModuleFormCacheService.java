@@ -1,11 +1,8 @@
 package io.cordys.crm.system.service;
 
 import io.cordys.common.constants.BusinessModuleField;
-import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
-import io.cordys.crm.system.dto.response.BusinessModuleFieldDTO;
-import io.cordys.crm.system.dto.response.BusinessModuleFormConfigDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import jakarta.annotation.Resource;
 import org.springframework.cache.annotation.CachePut;
@@ -51,9 +48,9 @@ public class ModuleFormCacheService {
 	 * @param organizationId 组织ID
 	 * @return 表单配置
 	 */
-	public BusinessModuleFormConfigDTO getBusinessFormConfig(String formKey, String organizationId) {
+	public ModuleFormConfigDTO getBusinessFormConfig(String formKey, String organizationId) {
 		ModuleFormConfigDTO config = CommonBeanFactory.getBean(this.getClass()).getConfig(formKey, organizationId);
-		BusinessModuleFormConfigDTO businessModuleFormConfig = new BusinessModuleFormConfigDTO();
+		ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
 		businessModuleFormConfig.setFormProp(config.getFormProp());
 
 		// 获取特殊的业务字段
@@ -64,14 +61,13 @@ public class ModuleFormCacheService {
 				config.getFields()
 						.stream()
 						.map(moduleFieldDTO -> {
-							BusinessModuleFieldDTO businessModuleField = BeanUtils.copyBean(new BusinessModuleFieldDTO(), moduleFieldDTO);
-							BusinessModuleField businessModuleFieldEnum = businessModuleFieldMap.get(businessModuleField.getInternalKey());
+							BusinessModuleField businessModuleFieldEnum = businessModuleFieldMap.get(moduleFieldDTO.getInternalKey());
 							if (businessModuleFieldEnum != null) {
 								// 设置特殊的业务字段 key
-								businessModuleField.setBusinessKey(businessModuleFieldEnum.getBusinessKey());
-								businessModuleField.setDisabledProps(businessModuleFieldEnum.getDisabledProps());
+								moduleFieldDTO.setBusinessKey(businessModuleFieldEnum.getBusinessKey());
+								moduleFieldDTO.setDisabledProps(businessModuleFieldEnum.getDisabledProps());
 							}
-							return businessModuleField;
+							return moduleFieldDTO;
 						})
 						.toList()
 		);

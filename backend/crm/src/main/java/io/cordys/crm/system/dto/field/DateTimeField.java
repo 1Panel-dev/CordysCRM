@@ -13,4 +13,7 @@ public class DateTimeField extends BaseField {
 
 	@Schema(description = "日期类型|格式", allowableValues = {"month", "date", "datetime"})
 	private String datetype;
+
+	@Schema(description = "默认值")
+	private Long defaultValue;
 }
