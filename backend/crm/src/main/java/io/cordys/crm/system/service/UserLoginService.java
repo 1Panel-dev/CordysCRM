@@ -60,9 +60,9 @@ public class UserLoginService {
             }
         }
         // 设置权限
-        userDTO.setPermissionIds(roleService.getPermissionIdsByUserId(userId));
+        userDTO.setPermissionIds(roleService.getPermissionIdsByUserId(userDTO.getId()));
         // 设置组织ID
-        userDTO.setOrganizationIds(getOrgIdsByUserId(userId));
+        userDTO.setOrganizationIds(getOrgIdsByUserId(userDTO.getId()));
         return userDTO;
     }
 

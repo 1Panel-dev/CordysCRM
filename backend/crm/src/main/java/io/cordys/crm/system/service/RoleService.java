@@ -15,10 +15,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.domain.Role;
-import io.cordys.crm.system.domain.RolePermission;
-import io.cordys.crm.system.domain.RoleScopeDept;
-import io.cordys.crm.system.domain.UserRole;
+import io.cordys.crm.system.domain.*;
 import io.cordys.crm.system.dto.request.PermissionUpdateRequest;
 import io.cordys.crm.system.dto.request.RoleAddRequest;
 import io.cordys.crm.system.dto.request.RoleUpdateRequest;
@@ -288,6 +285,7 @@ public class RoleService {
 
     /**
      * 获取空的权限配置
+     *
      * @return
      */
     public List<PermissionDefinitionItem> getPermissionSetting() {
@@ -409,8 +407,14 @@ public class RoleService {
 
     public List<RolePermission> getPermissionsByUserId(String userId) {
         List<UserRole> userRoles = getUserRolesByUserId(userId);
-        List<String> roleIds = userRoles.stream().map(UserRole::getRoleId).collect(Collectors.toList());
-        return rolePermissionMapper.selectByColumn("role_id", roleIds.toArray(new String[0]));
+        if (CollectionUtils.isEmpty(userRoles)) {
+            return List.of();
+        }
+
+        List<String> roleIds = userRoles.stream().map(UserRole::getRoleId).toList();
+        var userLambdaQueryWrapper = new LambdaQueryWrapper<RolePermission>()
+                .in(RolePermission::getRoleId, roleIds);
+        return rolePermissionMapper.selectListByLambda(userLambdaQueryWrapper);
     }
 
     public List<UserRole> getUserRolesByUserId(String userId) {

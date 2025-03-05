@@ -17,7 +17,7 @@
         FROM sys_user_role
         WHERE id in
         <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
-            id
+            #{id}
         </foreach>
     </delete>
 
