@@ -26,25 +26,16 @@
   import { Close } from '@vicons/ionicons5';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { FormConfig, FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+  import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import { FormCreateField } from '@/components/business/crm-form-create/types';
 
-  import {
-    addCustomer,
-    addCustomerContact,
-    addCustomerFollowPlan,
-    addCustomerFollowRecord,
-    getCustomerContactFormConfig,
-    getCustomerFollowPlanFormConfig,
-    getCustomerFollowRecordFormConfig,
-    getCustomerFormConfig,
-  } from '@/api/modules/customer/index';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { safeFractionConvert } from '@/utils';
 
-  import { FormCreateField } from '../crm-form-create/types';
+  import { getFormConfigApiMap, saveFormConfigApiMap } from '../crm-form-create/config';
 
   const CrmFormCreate = defineAsyncComponent(() => import('@/components/business/crm-form-create/index.vue'));
 
@@ -117,26 +108,6 @@
       }
     }
   }
-
-  const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {
-    [FormDesignKeyEnum.CUSTOMER]: getCustomerFormConfig,
-    [FormDesignKeyEnum.BUSINESS]: getCustomerFormConfig, // TODO:
-    [FormDesignKeyEnum.CONTACT]: getCustomerContactFormConfig,
-    [FormDesignKeyEnum.FOLLOW_PLAN]: getCustomerFollowPlanFormConfig,
-    [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecordFormConfig,
-    [FormDesignKeyEnum.LEAD]: getCustomerFormConfig, // TODO:
-    [FormDesignKeyEnum.PRODUCT]: getCustomerFormConfig, // TODO:
-  };
-
-  const saveFormConfigApiMap: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
-    [FormDesignKeyEnum.CUSTOMER]: addCustomer,
-    [FormDesignKeyEnum.BUSINESS]: addCustomer, // TODO:
-    [FormDesignKeyEnum.CONTACT]: addCustomerContact,
-    [FormDesignKeyEnum.FOLLOW_PLAN]: addCustomerFollowPlan,
-    [FormDesignKeyEnum.FOLLOW_RECORD]: addCustomerFollowRecord,
-    [FormDesignKeyEnum.LEAD]: addCustomer, // TODO:
-    [FormDesignKeyEnum.PRODUCT]: addCustomer, // TODO:
-  };
 
   async function handleSave(form: Record<string, any>, isContinue: boolean) {
     try {

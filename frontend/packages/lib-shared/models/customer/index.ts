@@ -3,7 +3,7 @@ import type { TableQueryParams } from '../common';
 
 export interface ModuleField {
   fieldId: string;
-  fieldValue: string | number | boolean | (string | number)[];
+  fieldValue: string | number | (string | number)[];
 }
 
 export interface SaveCustomerParams {

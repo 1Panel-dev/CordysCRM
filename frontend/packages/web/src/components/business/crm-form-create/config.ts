@@ -1,4 +1,21 @@
-import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+import {
+  FieldDataSourceTypeEnum,
+  FieldRuleEnum,
+  FieldTypeEnum,
+  FormDesignKeyEnum,
+} from '@lib/shared/enums/formDesignEnum';
+import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+
+import {
+  addCustomer,
+  addCustomerContact,
+  addCustomerFollowPlan,
+  addCustomerFollowRecord,
+  getCustomerContactFormConfig,
+  getCustomerFollowPlanFormConfig,
+  getCustomerFollowRecordFormConfig,
+  getCustomerFormConfig,
+} from '@/api/modules/customer';
 
 import type { FormCreateField, FormCreateFieldRule } from './types';
 
@@ -290,4 +307,24 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.LOCATION]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.PHONE]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
   [FieldTypeEnum.DATA_SOURCE]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+};
+
+export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {
+  [FormDesignKeyEnum.CUSTOMER]: getCustomerFormConfig,
+  [FormDesignKeyEnum.BUSINESS]: getCustomerFormConfig, // TODO:
+  [FormDesignKeyEnum.CONTACT]: getCustomerContactFormConfig,
+  [FormDesignKeyEnum.FOLLOW_PLAN]: getCustomerFollowPlanFormConfig,
+  [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecordFormConfig,
+  [FormDesignKeyEnum.LEAD]: getCustomerFormConfig, // TODO:
+  [FormDesignKeyEnum.PRODUCT]: getCustomerFormConfig, // TODO:
+};
+
+export const saveFormConfigApiMap: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
+  [FormDesignKeyEnum.CUSTOMER]: addCustomer,
+  [FormDesignKeyEnum.BUSINESS]: addCustomer, // TODO:
+  [FormDesignKeyEnum.CONTACT]: addCustomerContact,
+  [FormDesignKeyEnum.FOLLOW_PLAN]: addCustomerFollowPlan,
+  [FormDesignKeyEnum.FOLLOW_RECORD]: addCustomerFollowRecord,
+  [FormDesignKeyEnum.LEAD]: addCustomer, // TODO:
+  [FormDesignKeyEnum.PRODUCT]: addCustomer, // TODO:
 };
