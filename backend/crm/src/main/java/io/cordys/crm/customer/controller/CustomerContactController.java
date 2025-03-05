@@ -40,7 +40,7 @@ public class CustomerContactController {
     private ModuleFormCacheService moduleFormCacheService;
 
     @GetMapping("/module/form")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), OrganizationContext.getOrganizationId());

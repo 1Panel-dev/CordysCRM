@@ -49,7 +49,7 @@ class CustomerContactControllerTests extends BaseTest {
         this.requestGetWithOkAndReturn(MODULE_FORM);
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, MODULE_FORM);
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, MODULE_FORM);
     }
 
     @Test

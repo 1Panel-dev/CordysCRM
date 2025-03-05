@@ -57,7 +57,7 @@ public enum BusinessModuleField {
      * 联系人id
      */
     FOLLOW_RECORD_CONTACT("followRecordContactId", "contactId");
-    /*------ end: FOLLOW_UP_RECOED ------*/
+    /*------ end: FOLLOW_UP_RECORD ------*/
 
     /**
      * 字段 key

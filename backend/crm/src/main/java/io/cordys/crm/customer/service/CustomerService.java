@@ -40,6 +40,8 @@ public class CustomerService {
     private BaseService baseService;
     @Resource
     private CustomerFieldService customerFieldService;
+    @Resource
+    private CustomerCollaborationService customerCollaborationService;
 
     public List<CustomerListResponse> list(CustomerPageRequest request, String userId, String orgId,
                                            DeptDataPermissionDTO deptDataPermission) {
@@ -155,5 +157,7 @@ public class CustomerService {
         customerMapper.deleteByPrimaryKey(id);
         // 删除客户模块字段
         customerFieldService.deleteByResourceId(id);
+        // 删除客户协作人
+        customerCollaborationService.deleteByCustomerId(id);
     }
 }
