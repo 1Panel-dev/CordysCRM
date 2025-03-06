@@ -1,0 +1,182 @@
+import { useMessage } from 'naive-ui';
+
+import type { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import type { FormConfig } from '@lib/shared/models/system/module';
+
+import type { Description } from '@/components/pure/crm-description/index.vue';
+import {
+  createFormApi,
+  getFormConfigApiMap,
+  getFormDetailApiMap,
+  updateFormApi,
+} from '@/components/business/crm-form-create/config';
+import type { FormCreateField } from '@/components/business/crm-form-create/types';
+
+import { safeFractionConvert } from '@/utils';
+
+import { useI18n } from './useI18n';
+
+export interface FormCreateApiProps {
+  sourceId?: string;
+  formKey: FormDesignKeyEnum;
+}
+
+export default function useFormCreateApi(props: FormCreateApiProps) {
+  const { t } = useI18n();
+  const Message = useMessage();
+
+  const descriptions = ref<Description[]>([]); // 表单详情描述列表
+  const fieldList = ref<FormCreateField[]>([]); // 表单字段列表
+  const loading = ref(false);
+  const unsaved = ref(false);
+  const formConfig = ref<FormConfig>({
+    layout: 1,
+    labelPos: 'top',
+    inputWidth: 'custom',
+    optBtnContent: [
+      {
+        text: t('common.save'),
+        enable: true,
+      },
+      {
+        text: t('common.saveAndContinue'),
+        enable: false,
+      },
+      {
+        text: t('common.cancel'),
+        enable: true,
+      },
+    ],
+    optBtnPos: 'flex-row',
+  }); // 表单属性配置
+  const formDetail = ref<Record<string, any>>({});
+
+  async function initFormDescription() {
+    try {
+      const asyncApi = getFormDetailApiMap[props.formKey];
+      if (!asyncApi || !props.sourceId) return;
+      const form = await asyncApi(props.sourceId);
+      fieldList.value.forEach((item) => {
+        if (item.businessKey) {
+          // 业务标准字段读取最外层
+          descriptions.value.push({
+            label: item.name,
+            value: form[item.businessKey],
+          });
+        } else {
+          // 其他的字段读取moduleFields TODO: 等接口字段
+          // const field = form.moduleFields.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
+          // if (item.type === FieldTypeEnum.DIVIDER) {
+          //   descriptions.value.push({
+          //     label: item.name,
+          //     value: field?.fieldValue || [],
+          //     slotName: 'divider',
+          //     fieldInfo: item,
+          //   });
+          // } else {
+          //   descriptions.value.push({
+          //     label: item.name,
+          //     value: field?.fieldValue || [],
+          //   });
+          // }
+        }
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function initFormDetail() {
+    try {
+      const asyncApi = getFormDetailApiMap[props.formKey];
+      if (!asyncApi || !props.sourceId) return;
+      const res = await asyncApi(props.sourceId);
+      fieldList.value.forEach((item) => {
+        if (item.businessKey) {
+          // 业务标准字段读取最外层
+          formDetail.value[item.businessKey] = res[item.businessKey];
+        } else {
+          formDetail.value[item.id] = res.moduleFields.find(
+            (moduleField) => moduleField.fieldId === item.id
+          )?.fieldValue;
+        }
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function initFormConfig() {
+    try {
+      loading.value = true;
+      const res = await getFormConfigApiMap[props.formKey]();
+      fieldList.value = res.fields.map((item) => ({
+        ...item,
+        fieldWidth: safeFractionConvert(item.fieldWidth),
+      }));
+      formConfig.value = res.formProp;
+      nextTick(() => {
+        unsaved.value = false;
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function saveForm(form: Record<string, any>, isContinue: boolean, callback?: (_isContinue: boolean) => void) {
+    try {
+      loading.value = true;
+      const params: Record<string, any> = {
+        moduleFields: [],
+      };
+      fieldList.value.forEach((item) => {
+        if (item.businessKey) {
+          // 存在业务字段，则按照业务字段的key存储
+          params[item.businessKey] = form[item.id];
+        } else {
+          params.moduleFields.push({
+            fieldId: item.id,
+            fieldValue: form[item.id],
+          });
+        }
+      });
+      if (props.sourceId) {
+        await updateFormApi[props.formKey](params);
+        Message.success(t('common.updateSuccess'));
+      } else {
+        await createFormApi[props.formKey](params);
+        Message.success(t('common.createSuccess'));
+      }
+      if (callback) {
+        callback(isContinue);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return {
+    descriptions,
+    fieldList,
+    loading,
+    unsaved,
+    formConfig,
+    formDetail,
+    initFormDescription,
+    initFormConfig,
+    initFormDetail,
+    saveForm,
+  };
+}

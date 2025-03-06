@@ -78,7 +78,7 @@
       label: t('common.phoneNumber'),
       value: 'phone',
     },
-    { label: t('org.gender'), value: 'gender', slotName: 'gender' },
+    { label: t('org.gender'), value: 'gender', valueSlotName: 'gender' },
     { label: t('org.userEmail'), value: 'email' },
     { label: t('org.department'), value: 'department' },
     { label: t('org.employeeNumber'), value: 'employeeId' },

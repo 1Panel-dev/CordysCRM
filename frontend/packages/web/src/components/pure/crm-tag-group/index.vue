@@ -4,7 +4,7 @@
     <div v-if="innerTags.length > 0" ref="measureRef" class="crm-measure-tag-item">
       <template v-for="(item, index) in tags" :key="`crm-measure-tag-item-${index}`">
         <CrmTag :size="props.size" :type="props.type" :theme="props.theme">
-          {{ props.isStringTags ? item : item[props.labelKey] }}
+          {{ typeof item === 'string' ? item : item[props.labelKey] }}
         </CrmTag>
       </template>
     </div>
@@ -16,7 +16,7 @@
       :type="props.type"
       :theme="props.theme"
     >
-      {{ props.isStringTags ? item : item[props.labelKey] }}
+      {{ typeof item === 'string' ? item : item[props.labelKey] }}
     </CrmTag>
     <!-- 显示 "+n" -->
     <n-tooltip trigger="hover" :disabled="hiddenItemsCount < 1" flip :delay="300" :placement="props.placement">
@@ -45,11 +45,10 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
   export interface CrmTagGroupProps {
-    tags: Record<string, any>[] | null; // 标签组
+    tags: string[] | Record<string, any>[] | null; // 标签组
     size?: 'small' | 'medium' | 'large';
     type?: 'default' | 'primary' | 'info' | 'success' | 'warning' | 'error';
     theme?: 'dark' | 'light' | 'outline' | 'lightOutLine' | 'default';
-    isStringTags?: boolean; // 是否是字符串标签 注: table使用时候不要打开table的省略属性，否则容器宽度会被限制导致无法自适应table单元格宽度
     labelKey?: string;
     placement?:
       | 'top-start'
@@ -70,13 +69,12 @@
     type: 'default',
     theme: 'default',
     labelKey: 'label',
-    isStringTags: false,
     placement: 'top',
   });
 
   const container = ref<HTMLElement | null>(null);
   const measureRef = ref<HTMLElement | null>(null);
-  const visibleItems = ref<Record<string, any>[]>([]);
+  const visibleItems = ref<string[] | Record<string, any>[]>([]);
   const hiddenItemsCount = ref<number>(0); // 隐藏数量
   const tagsTotalWidth = ref<number>(0); // 标签总宽度
   const defaultTagGap = 4; // 默认标签间距
@@ -123,7 +121,7 @@
   });
 
   const tagsTooltip = computed(() => {
-    return filterTagList.value.map((e: any) => (props.isStringTags ? e : e[props.labelKey])).join('，');
+    return filterTagList.value.map((e: any) => (typeof e === 'string' ? e : e[props.labelKey])).join('，');
   });
 
   const onResize = () => {

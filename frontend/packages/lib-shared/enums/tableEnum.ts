@@ -6,6 +6,13 @@ export enum TableKeyEnum {
   MODULE_CLUE_POOL = 'moduleCluePool',
   OPPORTUNITY_LIST = 'opportunityList',
   OPPORTUNITY_HEAD_LIST = 'opportunityHeadList',
+  CUSTOMER = 'customer',
+  CUSTOMER_CONTRACT = 'customerContract',
+  CUSTOMER_FOLLOW_RECORD = 'customerFollowRecord',
+  CUSTOMER_FOLLOW_PLAN = 'customerFollowPlan',
+  LEAD = 'lead',
+  PRODUCT = 'product',
+  BUSINESS = 'business',
 }
 
 // 具有特殊功能的列

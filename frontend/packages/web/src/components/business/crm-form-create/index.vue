@@ -43,6 +43,7 @@
 
   const props = defineProps<{
     formConfig: FormConfig;
+    formDetail?: Record<string, any>;
   }>();
   const emit = defineEmits<{
     (e: 'cancel'): void;
@@ -54,7 +55,7 @@
   });
 
   const formRef = ref<FormInst>();
-  const form = ref<Record<string, any>>({});
+  const form = ref<Record<string, any>>(props.formDetail || {});
 
   function getItemComponent(type: FieldTypeEnum) {
     if (type === FieldTypeEnum.INPUT) {
@@ -129,7 +130,9 @@
 
   onBeforeMount(() => {
     list.value.forEach((item) => {
-      form.value[item.id] = item.defaultValue;
+      if (!form.value[item.id]) {
+        form.value[item.id] = item.defaultValue;
+      }
       const fullRules: FormCreateFieldRule[] = [];
       rules.forEach((rule) => {
         // 遍历规则集合，将全量的规则配置载入

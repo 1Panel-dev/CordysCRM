@@ -673,6 +673,9 @@
   });
 
   const showRules = computed(() => {
+    if (!fieldConfig.value) {
+      return [];
+    }
     return rules.filter((rule) => {
       if (fieldConfig.value.multiple) {
         // 多选时不显示唯一性校验
@@ -685,14 +688,9 @@
   const checkedRules = ref<(string | number)[]>([]);
 
   watch(
-    () => checkedRules.value,
-    (value) => {
-      fieldConfig.value.rules = showRules.value
-        .filter((rule) => rule.key && value.includes(rule.key))
-        .map((rule) => ({
-          ...rule,
-          label: t(rule.label, { value: t(fieldConfig.value.name) }),
-        }));
+    () => fieldConfig.value?.rules,
+    (arr) => {
+      checkedRules.value = arr.map((e) => e.key);
     }
   );
 

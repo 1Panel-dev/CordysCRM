@@ -17,64 +17,48 @@
         </n-button>
       </div>
     </template>
-    <CrmFormCreate v-model:list="fieldList" :form-config="formConfig" @cancel="handleBack" @save="handleSave" />
+    <CrmFormCreate
+      v-model:list="fieldList"
+      :form-detail="formDetail"
+      :form-config="formConfig"
+      @cancel="handleBack"
+      @save="saveForm"
+    />
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
-  import { NButton, useMessage } from 'naive-ui';
+  import { NButton } from 'naive-ui';
   import { Close } from '@vicons/ionicons5';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import { FormCreateField } from '@/components/business/crm-form-create/types';
 
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
-  import { safeFractionConvert } from '@/utils';
-
-  import { getFormConfigApiMap, saveFormConfigApiMap } from '../crm-form-create/config';
 
   const CrmFormCreate = defineAsyncComponent(() => import('@/components/business/crm-form-create/index.vue'));
 
   const props = defineProps<{
+    sourceId?: string;
     title: string;
     formKey: FormDesignKeyEnum;
   }>();
 
   const { t } = useI18n();
-  const Message = useMessage();
   const { openModal } = useModal();
 
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
 
-  const loading = ref(false);
-  const fieldList = ref<FormCreateField[]>([]);
-  const formConfig = ref<FormConfig>({
-    layout: 1,
-    labelPos: 'top',
-    inputWidth: 'custom',
-    optBtnContent: [
-      {
-        text: t('common.save'),
-        enable: true,
-      },
-      {
-        text: t('common.saveAndContinue'),
-        enable: false,
-      },
-      {
-        text: t('common.cancel'),
-        enable: true,
-      },
-    ],
-    optBtnPos: 'flex-row',
-  });
-  const unsaved = ref(false);
+  const { fieldList, formConfig, formDetail, unsaved, loading, initFormConfig, initFormDetail, saveForm } =
+    useFormCreateApi({
+      sourceId: props.sourceId,
+      formKey: props.formKey,
+    });
 
   watch(
     () => [fieldList.value, formConfig.value],
@@ -109,66 +93,14 @@
     }
   }
 
-  async function handleSave(form: Record<string, any>, isContinue: boolean) {
-    try {
-      loading.value = true;
-      const params: Record<string, any> = {
-        moduleFields: [],
-      };
-      fieldList.value.forEach((item) => {
-        if (item.businessKey) {
-          // 存在业务字段，则按照业务字段的key存储
-          params[item.businessKey] = form[item.id];
-        } else {
-          params.moduleFields.push({
-            fieldId: item.id,
-            fieldValue: form[item.id],
-          });
-        }
-      });
-      await saveFormConfigApiMap[props.formKey](params);
-      Message.success(t('common.saveSuccess'));
-      if (!isContinue) {
-        visible.value = false;
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    } finally {
-      loading.value = false;
-    }
-  }
-
-  async function initFormConfig() {
-    try {
-      loading.value = true;
-      const res = await getFormConfigApiMap[props.formKey]();
-      fieldList.value = res.fields.map((item) => ({
-        ...item,
-        id: item.id,
-        internalKey: item.internalKey,
-        type: item.type,
-        name: t(item.name),
-        placeholder: t(item.placeholder || ''),
-        fieldWidth: safeFractionConvert(item.fieldWidth),
-      }));
-      formConfig.value = res.formProp;
-      nextTick(() => {
-        unsaved.value = false;
-      });
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    } finally {
-      loading.value = false;
-    }
-  }
-
   watch(
     () => visible.value,
-    (val) => {
+    async (val) => {
       if (val) {
-        initFormConfig();
+        await initFormConfig();
+        if (props.sourceId) {
+          initFormDetail();
+        }
       }
     },
     {

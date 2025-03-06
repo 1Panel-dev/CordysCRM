@@ -201,11 +201,11 @@
         { label: t('system.business.mailSettings.smtpHost'), value: res.host },
         { label: t('system.business.mailSettings.smtpPort'), value: res.port },
         { label: t('system.business.mailSettings.smtpAccount'), value: res.account },
-        { label: t('system.business.mailSettings.smtpPassword'), value: res.password, slotName: 'password' },
+        { label: t('system.business.mailSettings.smtpPassword'), value: res.password, valueSlotName: 'password' },
         { label: t('system.business.mailSettings.from'), value: res.from },
         { label: t('system.business.mailSettings.recipient'), value: res.recipient },
-        { label: t('system.business.mailSettings.ssl'), value: res.ssl, slotName: 'ssl' },
-        { label: t('system.business.mailSettings.tsl'), value: res.tsl, slotName: 'ssl' },
+        { label: t('system.business.mailSettings.ssl'), value: res.ssl, valueSlotName: 'ssl' },
+        { label: t('system.business.mailSettings.tsl'), value: res.tsl, valueSlotName: 'ssl' },
       ];
     } catch (error) {
       // eslint-disable-next-line no-console

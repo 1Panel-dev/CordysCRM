@@ -1,4 +1,5 @@
 import type { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+import type { ModuleField } from '@lib/shared/models/customer';
 
 import type { FormItemRule } from 'naive-ui';
 import type { Option } from 'naive-ui/es/transfer/src/interface';
@@ -73,4 +74,9 @@ export interface FormCreateField {
   // 前端渲染属性
   icon: string;
   show?: boolean; // 是否显示，受控于别的字段的showControlRules
+}
+
+export interface FormDetail {
+  moduleFields: ModuleField[];
+  [key: string]: any;
 }
