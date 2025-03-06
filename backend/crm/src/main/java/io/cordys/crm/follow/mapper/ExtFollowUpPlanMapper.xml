@@ -47,6 +47,9 @@
         <if test="request.keyword != null and request.keyword != ''">
             AND content like concat('%', #{request.keyword},'%')
         </if>
+        <if test="request.myPlan">
+            AND owner = #{userId}
+        </if>
         (
         #{request.status} = 'ALL'
         OR ( #{request.status} = 'CANCELLED' AND STATUS = 'CANCELLED' )

@@ -12,4 +12,7 @@ public class FollowUpPlanPageRequest extends BasePageRequest {
 
     @Schema(description = "状态: ALL/PREPARED/UNDERWAY/COMPLETED/CANCELLED", requiredMode = Schema.RequiredMode.REQUIRED)
     private String status;
+
+    @Schema(description = "是否是为我的计划(默认false,个人中心查询时传入true)")
+    private boolean myPlan = false;
 }
