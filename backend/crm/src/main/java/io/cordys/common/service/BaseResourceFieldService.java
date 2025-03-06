@@ -71,7 +71,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @return
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
-        return getResourceFieldMap(List.of(resourceId)).get(resourceId);
+        return getResourceFieldMap(List.of(resourceId), true).get(resourceId);
     }
 
     /**
@@ -109,14 +109,14 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         resourceField.setId(IDGenerator.nextStr());
                         resourceField.setResourceId(resourceId);
                         resourceField.setFieldId(fieldValue.getFieldId());
-                        resourceField.setFieldValue(strValue);
+                        resourceField.setFieldValue(strValue.getBytes());
                         customerFieldBlobs.add(resourceField);
                     } else {
                         T resourceField = newResourceField();
                         resourceField.setId(IDGenerator.nextStr());
                         resourceField.setResourceId(resourceId);
                         resourceField.setFieldId(fieldValue.getFieldId());
-                        resourceField.setFieldValue(strValue.getBytes());
+                        resourceField.setFieldValue(strValue);
                         customerFields.add(resourceField);
                     }
 
@@ -156,6 +156,16 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @return
      */
     public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds) {
+        return getResourceFieldMap(resourceIds, false);
+    }
+
+    /**
+     * 查询指定资源的模块字段值
+     *
+     * @param resourceIds
+     * @return
+     */
+    private Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return Map.of();
         }
@@ -184,6 +194,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                 resourceMap.get(resourceId).add(new BaseModuleFieldValue(resourceField.getFieldId(), objectValue));
             }
         });
+
+        if (!withBlob) {
+            return resourceMap;
+        }
 
         List<V> resourceFieldBlobs = getResourceFieldBlob(resourceIds);
         resourceFieldBlobs.forEach(resourceFieldBlob -> {

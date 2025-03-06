@@ -11,6 +11,8 @@ public class ModuleFieldResolverFactory {
 
     private static final HashMap<String, AbstractModuleFieldResolver> resolverMap = new HashMap<>();
 
+    private static final DefaultModuleFieldResolver defaultModuleFieldResolver = new DefaultModuleFieldResolver();
+
     public static final String MULTI_SELECT = "MULTI_SELECT";
     public static final String MULTI_MEMBER = "MULTI_MEMBER";
 
@@ -35,6 +37,7 @@ public class ModuleFieldResolverFactory {
     }
 
     public static AbstractModuleFieldResolver getResolver(String type) {
-        return resolverMap.get(type);
+        AbstractModuleFieldResolver moduleFieldResolver = resolverMap.get(type);
+        return moduleFieldResolver == null ? defaultModuleFieldResolver : moduleFieldResolver;
     }
 }
