@@ -5,7 +5,7 @@
       <div class="whitespace-nowrap text-[var(--text-n4)]">
         {{ item.label }}
       </div>
-      <slot :name="item.key" :value="item.value">
+      <slot :item="item" :name="item.key">
         <n-tooltip trigger="hover" :delay="300" :disabled="isEmpty(item.value)" :placement="item.placement">
           <template #trigger>
             <div class="text-ov max-w-[300px] overflow-hidden overflow-ellipsis whitespace-nowrap">
@@ -26,7 +26,7 @@
   export interface Description {
     key: string;
     label: string;
-    value: string | string[];
+    value: string;
     width?: string;
     placement?:
       | 'top-start'

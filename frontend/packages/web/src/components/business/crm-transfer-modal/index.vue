@@ -8,9 +8,7 @@
     @confirm="confirmHandler"
     @cancel="closeHandler"
   >
-    <div>
-      <TransferForm ref="transferFormRef" v-model:form="form" :module-type="moduleType" />
-    </div>
+    <TransferForm ref="transferFormRef" v-model:form="form" :module-type="moduleType" />
   </CrmModal>
 </template>
 
@@ -29,9 +27,11 @@
   const Message = useMessage();
 
   interface TransferModalProps {
-    optIds: DataTableRowKey[];
+    sourceIds: DataTableRowKey[];
     isBatch?: boolean;
     moduleType: ModuleConfigEnum;
+    // TODO ts 类型
+    saveApi?: (params: Record<string, any>) => Promise<any>;
   }
 
   const props = withDefaults(defineProps<TransferModalProps>(), {
@@ -64,16 +64,19 @@
   function confirmHandler() {
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
-        try {
-          loading.value = true;
-          // TODO lmy 联调
-          console.log('🤔️ =>', props.optIds);
-          closeHandler();
-          emit('loadList');
-          Message.success(t('common.transferSuccess'));
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.log(e);
+        if (props.saveApi) {
+          try {
+            loading.value = true;
+            // TODO lmy 联调
+            console.log('🤔️ =>', props.sourceIds);
+            props.saveApi(form.value);
+            closeHandler();
+            emit('loadList');
+            Message.success(t('common.transferSuccess'));
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.log(e);
+          }
         }
       }
     });

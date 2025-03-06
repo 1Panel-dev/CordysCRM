@@ -15,9 +15,14 @@
           <n-button class="mr-[12px]" type="primary">
             {{ t('opportunity.createOpportunity') }}
           </n-button>
-          <n-button type="primary" ghost class="n-btn-outline-primary">
-            {{ t('opportunity.importOpportunity') }}
-          </n-button>
+          <!-- TODO 等待联调 -->
+          <CrmImportButton
+            :validate-api="importUserPreCheck"
+            :import-save-api="importUsers"
+            :title="t('opportunity.importOpportunity')"
+            :button-text="t('opportunity.importOpportunity')"
+            @import-success="initData()"
+          />
         </div>
       </template>
       <template #actionRight>
@@ -26,10 +31,10 @@
     </CrmTable>
     <TransferModal
       v-model:show="showTransferModal"
-      :opt-ids="checkedRowKeys"
+      :source-ids="checkedRowKeys"
       :module-type="ModuleConfigEnum.BUSINESS_MANAGEMENT"
     />
-    <DetailDrawer v-model:show="showDetailModal" />
+    <OptOverviewDrawer v-model:show="showDetailModal" />
   </CrmCard>
 </template>
 
@@ -39,6 +44,7 @@
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -48,12 +54,14 @@
   import { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
-  import DetailDrawer from './components/detailDrawer.vue';
-  import TransForm from './components/transferForm.vue';
-  import TransferModal from './components/transferModal.vue';
+  import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
+  import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
+  import OptOverviewDrawer from './components/optOverviewDrawer.vue';
 
-  import { getUserList } from '@/api/modules/system/org';
+  import { getOpportunityList } from '@/api/modules/opportunity';
+  import { importUserPreCheck, importUsers } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
@@ -121,7 +129,7 @@
     }
   }
   // TODO 等待联调
-  async function updateOpportunityName(row: any, newVal: string) {
+  async function updateOpportunityName(row: OpportunityItem, newVal: string) {
     try {
       return Promise.resolve(true);
     } catch (error) {
@@ -138,10 +146,10 @@
   function showCustomerDetail(id: string) {}
 
   // TODO 等待联调
-  async function handleDisable(row: any) {
+  async function handleDisable(row: OpportunityItem) {
     openModal({
       type: 'warning',
-      title: t('common.confirmDisabledTitle', { name: characterLimit(row.name) }),
+      title: t('common.confirmDisabledTitle', { name: characterLimit(row.opportunityName) }),
       content: t('opportunity.disabledContentTip'),
       positiveText: t('common.confirmDisable'),
       negativeText: t('common.cancel'),
@@ -157,7 +165,7 @@
     });
   }
   // TODO 等待联调
-  function handleEnable(row: any) {
+  function handleEnable(row: OpportunityItem) {
     try {
       Message.success(t('common.opened'));
     } catch (error) {
@@ -170,13 +178,13 @@
   function handleEdit() {}
 
   // 跟进
-  function handleFollowUp(row: any) {}
+  function handleFollowUp(row: OpportunityItem) {}
 
   // 删除
-  function handleDelete(row: any) {
+  function handleDelete(row: OpportunityItem) {
     openModal({
       type: 'error',
-      title: t('common.deleteConfirmTitle', { name: characterLimit(row.userName) }),
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.opportunityName) }),
       content: t('opportunity.batchDeleteContentTip'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
@@ -197,11 +205,11 @@
     head: null,
   });
 
-  const transferFormRef = ref<InstanceType<typeof TransForm>>();
+  const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   const transferLoading = ref(false);
 
   // 转移
-  function handleTransfer(row: any) {
+  function handleTransfer(row: OpportunityItem) {
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
         try {
@@ -216,7 +224,7 @@
     });
   }
   // TODO 等待联调
-  function handleActionSelect(row: any, actionKey: string) {
+  function handleActionSelect(row: OpportunityItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
         handleEdit();
@@ -241,18 +249,18 @@
     },
     {
       title: t('opportunity.name'),
-      key: 'name',
+      key: 'opportunityName',
       width: 200,
       sortOrder: false,
       sorter: true,
-      render: (row: any) => {
+      render: (row: OpportunityItem) => {
         return h(
           CrmEditableText,
           {
-            value: row.userName,
+            value: row.opportunityName,
             onHandleEdit: (val: string) => {
               updateOpportunityName(row, val);
-              row.name = val;
+              row.opportunityName = val;
             },
           },
           {
@@ -264,7 +272,7 @@
                   type: 'primary',
                   onClick: () => showDetail(row.id),
                 },
-                { default: () => row.userName }
+                { default: () => row.opportunityName }
               );
             },
           }
@@ -277,7 +285,7 @@
       width: 200,
       sortOrder: false,
       sorter: true,
-      render: (row: any) => {
+      render: (row: OpportunityItem) => {
         return h(
           NButton,
           {
@@ -285,7 +293,7 @@
             type: 'primary',
             onClick: () => showCustomerDetail(row.customerId),
           },
-          { default: () => row.name }
+          { default: () => row.customerName }
         );
       },
     },
@@ -322,66 +330,6 @@
         });
       },
     },
-    // TODO 自定义
-    // {
-    //   title: t('opportunity.stage'),
-    //   key: 'stage',
-    //   ellipsis: {
-    //     tooltip: true,
-    //   },
-    //   width: 100,
-    //   showInTable: false,
-    // },
-    // {
-    //   title: t('opportunity.source'),
-    //   key: 'source',
-    //   ellipsis: {
-    //     tooltip: true,
-    //   },
-    //   width: 100,
-    // },
-    {
-      title: t('opportunity.contact'),
-      key: 'source',
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 100,
-    },
-    {
-      title: t('common.phoneNumber'),
-      key: 'source',
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 100,
-    },
-    {
-      title: t('common.head'),
-      key: 'head',
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 100,
-    },
-    {
-      title: t('opportunity.department'),
-      key: 'departmentName',
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 100,
-    },
-
-    // TODO 自定义
-    // {
-    //   title: t('opportunity.region'),
-    //   key: 'region',
-    //   ellipsis: {
-    //     tooltip: true,
-    //   },
-    //   width: 100,
-    // },
     {
       title: t('opportunity.belongDays'),
       key: 'belongDays',
@@ -392,7 +340,7 @@
     },
     {
       title: t('opportunity.remainingBelong'),
-      key: 'remainingBelong',
+      key: 'reservedDays',
       ellipsis: {
         tooltip: true,
       },
@@ -481,7 +429,7 @@
           },
           {
             transferPopContent: () => {
-              return h(TransForm, {
+              return h(TransferForm, {
                 class: 'w-[320px] mt-[16px]',
                 form: form.value,
                 ref: transferFormRef,
@@ -494,7 +442,7 @@
   ];
 
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
-    getUserList,
+    getOpportunityList,
     {
       tableKey: TableKeyEnum.OPPORTUNITY_LIST,
       showSetting: true,

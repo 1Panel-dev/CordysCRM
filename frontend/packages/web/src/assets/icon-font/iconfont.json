@@ -6,6 +6,41 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "43356063",
+      "name": "icon_general",
+      "font_class": "icon_general",
+      "unicode": "e6ea",
+      "unicode_decimal": 59114
+    },
+    {
+      "icon_id": "43356062",
+      "name": "icon_serious",
+      "font_class": "icon_serious",
+      "unicode": "e6ef",
+      "unicode_decimal": 59119
+    },
+    {
+      "icon_id": "32853333",
+      "name": "icon_succeed_filled",
+      "font_class": "icon_succeed_filled",
+      "unicode": "e6ba",
+      "unicode_decimal": 59066
+    },
+    {
+      "icon_id": "34061213",
+      "name": "icon_block_filled",
+      "font_class": "icon_block_filled",
+      "unicode": "e6ec",
+      "unicode_decimal": 59116
+    },
+    {
+      "icon_id": "36193154",
+      "name": "icon_testing",
+      "font_class": "icon_testing",
+      "unicode": "e624",
+      "unicode_decimal": 58916
+    },
+    {
       "icon_id": "36193894",
       "name": "icon_off_screen",
       "font_class": "icon_off_screen",
@@ -27,23 +62,16 @@
       "unicode_decimal": 58977
     },
     {
-      "icon_id": "43201081",
-      "name": "icon_control_platform",
-      "font_class": "icon_control_platform1",
-      "unicode": "e6ea",
-      "unicode_decimal": 59114
-    },
-    {
       "icon_id": "36196448",
       "name": "icon_file- compressed_colorful_ash 2",
-      "font_class": "a-icon_file-compressed_colorful_ash2",
+      "font_class": "a-icon_file-compressed_colorful_ash",
       "unicode": "e63f",
       "unicode_decimal": 58943
     },
     {
       "icon_id": "36196449",
       "name": "icon_file- compressed_colorful 2",
-      "font_class": "a-icon_file-compressed_colorful2",
+      "font_class": "a-icon_file-compressed_colorful",
       "unicode": "e640",
       "unicode_decimal": 58944
     },
@@ -69,16 +97,9 @@
       "unicode_decimal": 58948
     },
     {
-      "icon_id": "36196454",
-      "name": "icon_file- compressed_colorful",
-      "font_class": "a-icon_file-compressed_colorful1",
-      "unicode": "e645",
-      "unicode_decimal": 58949
-    },
-    {
       "icon_id": "36196455",
       "name": "icon_file-image_colorful",
-      "font_class": "icon_file-image_colorful1",
+      "font_class": "icon_file-image_colorful",
       "unicode": "e646",
       "unicode_decimal": 58950
     },
@@ -92,14 +113,14 @@
     {
       "icon_id": "36196457",
       "name": "icon_file-sketch_colorful",
-      "font_class": "icon_file-sketch_colorful1",
+      "font_class": "icon_file-sketch_colorful",
       "unicode": "e648",
       "unicode_decimal": 58952
     },
     {
       "icon_id": "36196458",
       "name": "icon_file-ppt_colorful",
-      "font_class": "icon_file-ppt_colorful1",
+      "font_class": "icon_file-ppt_colorful",
       "unicode": "e649",
       "unicode_decimal": 58953
     },
@@ -113,21 +134,21 @@
     {
       "icon_id": "36196461",
       "name": "icon_file-excel_colorful",
-      "font_class": "icon_file-excel_colorful1",
+      "font_class": "icon_file-excel_colorful",
       "unicode": "e64d",
       "unicode_decimal": 58957
     },
     {
       "icon_id": "36196462",
       "name": "icon_file-pdf_colorful",
-      "font_class": "icon_file-pdf_colorful1",
+      "font_class": "icon_file-pdf_colorful",
       "unicode": "e64e",
       "unicode_decimal": 58958
     },
     {
       "icon_id": "36196463",
       "name": "icon_file-vedio_colorful",
-      "font_class": "icon_file-vedio_colorful1",
+      "font_class": "icon_file-vedio_colorful",
       "unicode": "e64f",
       "unicode_decimal": 58959
     },
@@ -148,7 +169,7 @@
     {
       "icon_id": "36196466",
       "name": "icon_file-CSV_colorful",
-      "font_class": "icon_file-CSV_colorful1",
+      "font_class": "icon_file-CSV_colorful",
       "unicode": "e652",
       "unicode_decimal": 58962
     },
@@ -162,28 +183,28 @@
     {
       "icon_id": "36196468",
       "name": "icon_file-text_colorful",
-      "font_class": "icon_file-text_colorful1",
+      "font_class": "icon_file-text_colorful",
       "unicode": "e654",
       "unicode_decimal": 58964
     },
     {
       "icon_id": "36196469",
       "name": "icon_file-word_colorful",
-      "font_class": "icon_file-word_colorful1",
+      "font_class": "icon_file-word_colorful",
       "unicode": "e655",
       "unicode_decimal": 58965
     },
     {
       "icon_id": "36196470",
       "name": "icon_file-xmind_colorful",
-      "font_class": "icon_file-xmind_colorful1",
+      "font_class": "icon_file-xmind_colorful",
       "unicode": "e656",
       "unicode_decimal": 58966
     },
     {
       "icon_id": "36196471",
       "name": "icon_file-sql_colorful",
-      "font_class": "icon_file-sql_colorful1",
+      "font_class": "icon_file-sql_colorful",
       "unicode": "e657",
       "unicode_decimal": 58967
     },
@@ -204,7 +225,7 @@
     {
       "icon_id": "36196937",
       "name": "icon_file-unknow_colorful",
-      "font_class": "icon_file-unknow_colorful1",
+      "font_class": "icon_file-unknow_colorful",
       "unicode": "e660",
       "unicode_decimal": 58976
     },
@@ -260,14 +281,14 @@
     {
       "icon_id": "43095419",
       "name": "icon_filter_clear",
-      "font_class": "icon_filter_clear1",
+      "font_class": "icon_filter_clear",
       "unicode": "e7cf",
       "unicode_decimal": 59343
     },
     {
       "icon_id": "43095418",
       "name": "icon_filter",
-      "font_class": "icon_filter1",
+      "font_class": "icon_filter",
       "unicode": "e7d0",
       "unicode_decimal": 59344
     },
@@ -1280,13 +1301,6 @@
       "unicode_decimal": 59164
     },
     {
-      "icon_id": "42996021",
-      "name": "icon_filter",
-      "font_class": "icon_filter",
-      "unicode": "e71d",
-      "unicode_decimal": 59165
-    },
-    {
       "icon_id": "42996022",
       "name": "icon_fork",
       "font_class": "icon_fork",
@@ -1425,13 +1439,6 @@
       "font_class": "icon_history",
       "unicode": "e731",
       "unicode_decimal": 59185
-    },
-    {
-      "icon_id": "42996042",
-      "name": "icon_filter_clear",
-      "font_class": "icon_filter_clear",
-      "unicode": "e732",
-      "unicode_decimal": 59186
     },
     {
       "icon_id": "42996043",
@@ -1768,13 +1775,6 @@
       "font_class": "icon_ellipsis",
       "unicode": "e713",
       "unicode_decimal": 59155
-    },
-    {
-      "icon_id": "42995867",
-      "name": "icon_edit_1",
-      "font_class": "icon_edit_1",
-      "unicode": "e714",
-      "unicode_decimal": 59156
     },
     {
       "icon_id": "42995868",

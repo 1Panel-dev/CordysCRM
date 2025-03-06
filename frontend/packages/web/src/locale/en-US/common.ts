@@ -261,4 +261,8 @@ export default {
   'common.updateToCurrentProgress': 'Update to current progress',
   'common.canceled': 'Canceled',
   'common.cancelPlan': 'Cancel plan',
+  'common.byKeywordSearch': 'Search by keyword',
+  'common.complete': 'Complete',
+  'common.result': 'Result',
+  'common.contact': 'Contact',
 };

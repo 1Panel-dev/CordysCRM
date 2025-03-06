@@ -45,7 +45,6 @@
 
   const { t } = useI18n();
 
-  // TODO lmy 联调
   const form = defineModel<{ head: string | null; belongToPublicPool?: string | null }>('form', {
     required: true,
     default: {

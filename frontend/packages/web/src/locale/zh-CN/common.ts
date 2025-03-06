@@ -261,4 +261,8 @@ export default {
   'common.updateToCurrentProgress': '更新为当前进度',
   'common.canceled': '已取消',
   'common.cancelPlan': '取消计划',
+  'common.byKeywordSearch': '通过关键字检索',
+  'common.complete': '完结',
+  'common.result': '结果',
+  'common.contact': '联系人',
 };

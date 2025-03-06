@@ -16,8 +16,8 @@
         <div class="mb-4 flex w-full flex-col gap-[16px]">
           <div class="crm-follow-record-title">
             <div class="flex items-center gap-[16px]">
-              <!-- TODO 标签状态不确定有入口 xxw -->
-              <div class="text-[var(--text-n1)]">{{ dayjs(item.followTime).format('YYYY-MM-DD HH:mm:ss') }}</div>
+              <StatusTag v-if="item.status" :status="item.status" />
+              <div class="text-[var(--text-n1)]">{{ getShowTime(item) }}</div>
               <div class="crm-follow-record-method">{{ item.methodName }}</div>
             </div>
 
@@ -25,61 +25,53 @@
           </div>
 
           <div class="crm-follow-record-base-info">
-            <CrmDetailCard :description="description">
+            <CrmDetailCard :description="props.getDescriptionFun(item)">
               <template #prefix>
-                <div class="flex items-center gap-[8px]"> <CrmAvatar :size="24" /> {{ item.customerName }}</div>
+                <div class="flex items-center gap-[8px]">
+                  <CrmAvatar :size="24" />
+                  {{ item.ownerName }}
+                </div>
               </template>
-              <template v-for="ele in description" :key="ele.key" #[ele.key]="{ value }">
-                <slot :name="ele.key" :value="value"></slot>
+              <template v-for="ele in props.getDescriptionFun(item)" :key="ele.key" #[ele.key]="{ item: descItem }">
+                <slot :name="ele.key" :desc-item="descItem" :item="item"></slot>
               </template>
             </CrmDetailCard>
           </div>
-          <div class="crm-follow-record-content">{{ item.followContent }}</div>
+          <div class="crm-follow-record-content">{{ item.content }}</div>
         </div>
       </div>
     </template>
   </CrmList>
-  <div v-else class="w-full bg-[var(--text-n9)] p-[16px] text-[var(--text-n4)]">
-    {{ t('crmFollowRecord.noFollowRecord') }}
+  <div v-else class="w-full p-[16px] text-center text-[var(--text-n4)]">
+    {{ props.emptyText }}
   </div>
 </template>
 
 <script setup lang="ts">
   import dayjs from 'dayjs';
 
+  import type { FollowDetailItem } from '@lib/shared/models/customer';
+
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
-
-  import { useI18n } from '@/hooks/useI18n';
+  import StatusTag from './statusTag.vue';
 
   import useHighlight from './useHighlight';
 
-  const { t } = useI18n();
-
-  // TODO 类型
-  export interface FollowRecordItem {
-    id?: string;
-    customerName: string; // 客户姓名
-    followTime: string; // 跟进时间
-    followUser: string; // 跟进人
-    methodName: string; // 跟进方法
-    contactsUser: string; // 联系人
-    followContent: string; // 跟进内容
-  }
-
   const props = defineProps<{
     keyField: string;
-    description: Description[];
+    getDescriptionFun: (item: FollowDetailItem) => Description[];
     virtualScrollHeight: string;
+    emptyText?: string;
   }>();
 
   const emit = defineEmits<{
     (e: 'reachBottom'): void;
   }>();
 
-  const listData = defineModel<FollowRecordItem[]>('data', {
+  const listData = defineModel<FollowDetailItem[]>('data', {
     default: [],
   });
 
@@ -94,14 +86,10 @@
 
   const filteredData = computed(() => {
     if (!searchKeyword.value) return listData.value;
-    return listData.value.filter((item) => {
-      return Object.values(item).some((value) => {
-        if (typeof value === 'string') {
-          return value.toLowerCase().includes(searchKeyword.value.toLowerCase());
-        }
-        return false;
-      });
-    });
+    const keyword = searchKeyword.value.toLowerCase();
+    return listData.value.filter((item) =>
+      Object.values(item).some((value) => typeof value === 'string' && value.toLowerCase().includes(keyword))
+    );
   });
 
   watch(
@@ -122,11 +110,14 @@
     }
   );
 
-  function getFutureClass(item: FollowRecordItem) {
-    const currentTime = new Date();
-    const followDate = new Date(item.followTime);
-    const isFuture = followDate.getTime() > currentTime.getTime();
-    return isFuture ? 'crm-follow-dot-future' : '';
+  function getFutureClass(item: FollowDetailItem) {
+    return new Date(item.createTime).valueOf() > Date.now() ? 'crm-follow-dot-future' : '';
+  }
+
+  function getShowTime(item: FollowDetailItem) {
+    // TODO
+    const time = 'estimatedTime' in item ? item.estimatedTime : item.createTime;
+    return dayjs(time).format('YYYY-MM-DD HH:mm:ss');
   }
 </script>
 

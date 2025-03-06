@@ -206,3 +206,8 @@ export interface CustomerOpenSeaListItem {
   pickRule: PickRule;
   recycleRule: RecycleRule;
 }
+
+export type FollowDetailItemType<T> = T;
+
+// 跟进详情(跟进记录|跟进计划)
+export type FollowDetailItem = FollowDetailItemType<CustomerFollowRecordListItem | CustomerFollowPlanListItem>;

@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer class="mt-[16px]">
+  <CrmCard hide-footer :special-height="64">
     <div class="mb-[16px] flex items-center justify-between">
       <div class="font-medium text-[var(--text-n1)]"> {{ t('opportunity.headRecordPage') }} </div>
       <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
@@ -18,6 +18,7 @@
   import { ref } from 'vue';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
@@ -26,10 +27,14 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
 
-  import { getUserList } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
+
+  const props = defineProps<{
+    sourceId: string; // 资源id
+    loadListApi: (params: TableQueryParams) => Promise<CommonList<any>>;
+  }>();
 
   const columns: CrmDataTableColumn[] = [
     {
@@ -110,27 +115,17 @@
     },
   ];
 
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
-    getUserList,
-    {
-      tableKey: TableKeyEnum.OPPORTUNITY_HEAD_LIST,
-      showSetting: true,
-      columns,
-    },
-    // TODO 类型
-    (row: any) => {
-      return {
-        ...row,
-        departmentName: row.departmentName || '-',
-      };
-    }
-  );
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(props.loadListApi, {
+    tableKey: TableKeyEnum.OPPORTUNITY_HEAD_LIST,
+    showSetting: true,
+    columns,
+  });
   const keyword = ref('');
 
   function initData() {
-    // TODO 等待联调
     setLoadListParams({
-      departmentIds: ['101256012006162432'],
+      sourceId: props.sourceId,
+      keyword: keyword.value,
     });
     loadList();
   }

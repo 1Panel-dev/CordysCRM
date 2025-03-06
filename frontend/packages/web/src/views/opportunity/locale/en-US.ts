@@ -8,7 +8,6 @@ export default {
   'opportunity.region': 'Region',
   'opportunity.disabledContentTip': 'Disabled, members cannot find this opportunity',
   'opportunity.intendedProducts': 'Intended products',
-  'opportunity.contact': 'Contact',
   'opportunity.belongDays': 'Belong days',
   'opportunity.remainingBelong': 'Remaining belong',
   'opportunity.followUp': 'Follow up',

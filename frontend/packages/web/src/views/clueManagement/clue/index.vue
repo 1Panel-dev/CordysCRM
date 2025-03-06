@@ -27,7 +27,7 @@
     </CrmTable>
     <TransferModal
       v-model:show="showTransferModal"
-      :opt-ids="checkedRowKeys"
+      :source-ids="checkedRowKeys"
       :module-type="ModuleConfigEnum.CLUE_MANAGEMENT"
     />
     <ClueOverviewDrawer v-model:show="showOverviewDrawer" />
@@ -50,9 +50,9 @@
   import { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
+  import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import ClueOverviewDrawer from './components/clueOverviewDrawer.vue';
-  import TransferForm from '@/views/opportunity/components/transferForm.vue';
-  import TransferModal from '@/views/opportunity/components/transferModal.vue';
 
   import { getLeadPoolPage } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';

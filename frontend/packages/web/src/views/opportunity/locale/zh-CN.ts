@@ -8,7 +8,6 @@ export default {
   'opportunity.region': '区域',
   'opportunity.disabledContentTip': '禁用后，成员无法查到该商机',
   'opportunity.intendedProducts': '意向产品',
-  'opportunity.contact': '联系人',
   'opportunity.belongDays': '归属天数',
   'opportunity.remainingBelong': '剩余归属',
   'opportunity.followUp': '跟进',
