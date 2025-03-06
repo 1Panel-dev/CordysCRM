@@ -6,10 +6,10 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
-import io.cordys.crm.customer.domain.CustomerPoolRelation;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
 import io.cordys.crm.customer.dto.request.CustomerPoolAddRequest;
 import io.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
@@ -46,6 +46,8 @@ public class CustomerPoolService {
 	@Resource
 	private BaseMapper<Role> roleMapper;
 	@Resource
+	private BaseMapper<Customer> customerMapper;
+	@Resource
 	private BaseMapper<Department> departmentMapper;
 	@Resource
 	private BaseMapper<CustomerPool> customerPoolMapper;
@@ -53,8 +55,6 @@ public class CustomerPoolService {
 	private BaseMapper<CustomerPoolPickRule> customerPoolPickRuleMapper;
 	@Resource
 	private BaseMapper<CustomerPoolRecycleRule> customerPoolRecycleRuleMapper;
-	@Resource
-	private BaseMapper<CustomerPoolRelation> customerPoolRelationMapper;
 	@Resource
 	private ExtCustomerPoolMapper extCustomerPoolMapper;
 	@Resource
@@ -209,10 +209,10 @@ public class CustomerPoolService {
 	 * @param id 线索池ID
 	 */
 	public boolean checkNoPick(String id) {
-		LambdaQueryWrapper<CustomerPoolRelation> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(CustomerPoolRelation::getPoolId, id)
-				.eq(CustomerPoolRelation::getPicked, false);
-		List<CustomerPoolRelation> relations = customerPoolRelationMapper.selectListByLambda(wrapper);
+		LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(Customer::getPoolId, id)
+				.eq(Customer::getInSharedPool, true);
+		List<Customer> relations = customerMapper.selectListByLambda(wrapper);
 		return CollectionUtils.isNotEmpty(relations);
 	}
 

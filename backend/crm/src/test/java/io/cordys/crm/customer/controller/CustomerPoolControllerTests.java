@@ -7,8 +7,8 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
-import io.cordys.crm.customer.domain.CustomerPoolRelation;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
 import io.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
 import io.cordys.crm.customer.dto.CustomerPoolRecycleRuleDTO;
@@ -38,7 +38,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 	@Resource
 	private BaseMapper<CustomerPool> customerPoolMapper;
 	@Resource
-	private BaseMapper<CustomerPoolRelation> customerPoolRelationMapper;
+	private BaseMapper<Customer> customerMapper;
 
 	@Test
 	@Order(1)
@@ -118,12 +118,12 @@ public class CustomerPoolControllerTests extends BaseTest {
 		MvcResult mvcResult = this.requestGet("/customer-pool/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer_pool_not_exist"));
 		// insert free customer on the pool, then delete it
-		CustomerPoolRelation customerPoolRelation = createCustomerPoolRelation();
-		customerPoolRelation.setPoolId(testCustomerPool.getId());
-		customerPoolRelationMapper.insert(customerPoolRelation);
+		Customer freeCustomer = createFreeCustomer();
+		freeCustomer.setPoolId(testCustomerPool.getId());
+		customerMapper.insert(freeCustomer);
 		this.requestGet("/customer-pool/no-pick/" + testCustomerPool.getId());
 		// pick customer, delete the pool
-		customerPoolRelationMapper.deleteByPrimaryKey(customerPoolRelation.getId());
+		customerMapper.deleteByPrimaryKey(freeCustomer.getId());
 		this.requestGetWithOk("/customer-pool/delete/" + testCustomerPool.getId());
 	}
 
@@ -144,17 +144,18 @@ public class CustomerPoolControllerTests extends BaseTest {
 		return customerPool;
 	}
 
-	private CustomerPoolRelation createCustomerPoolRelation() {
-		CustomerPoolRelation customerPoolRelation = new CustomerPoolRelation();
-		customerPoolRelation.setId("default-ct-pool-relation");
-		customerPoolRelation.setCustomerId("default-custom");
-		customerPoolRelation.setPicked(false);
-		customerPoolRelation.setLastPickUserId("default-user");
-		customerPoolRelation.setLastPickTime(System.currentTimeMillis());
-		customerPoolRelation.setCreateTime(System.currentTimeMillis());
-		customerPoolRelation.setCreateUser("default-user");
-		customerPoolRelation.setUpdateTime(System.currentTimeMillis());
-		customerPoolRelation.setUpdateUser("default-user");
-		return customerPoolRelation;
+	private Customer createFreeCustomer() {
+		Customer customer = new Customer();
+		customer.setId("default-ct-id");
+		customer.setName("default-ct");
+		customer.setInSharedPool(true);
+		customer.setOwner("admin");
+		customer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+		customer.setCollectionTime(System.currentTimeMillis());
+		customer.setCreateTime(System.currentTimeMillis());
+		customer.setCreateUser("default-user");
+		customer.setUpdateTime(System.currentTimeMillis());
+		customer.setUpdateUser("default-user");
+		return customer;
 	}
 }

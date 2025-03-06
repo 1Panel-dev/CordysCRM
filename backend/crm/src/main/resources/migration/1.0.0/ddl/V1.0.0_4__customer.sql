@@ -7,6 +7,7 @@ CREATE TABLE customer
     `name`            VARCHAR(255) NOT NULL COMMENT '客户名称',
     `owner`           VARCHAR(32) COMMENT '负责人',
     `collection_time` BIGINT(255) COMMENT '领取时间',
+    `pool_id` VARCHAR(32)    COMMENT '公海ID' ,
     `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
@@ -20,6 +21,7 @@ CREATE TABLE customer
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_organization_id ON customer (organization_id ASC);
+CREATE INDEX idx_pool_id ON customer(pool_id ASC);
 
 CREATE TABLE customer_pool
 (
@@ -81,27 +83,6 @@ CREATE TABLE customer_pool_recycle_rule
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_pool_id ON customer_pool_recycle_rule (pool_id ASC);
-
-CREATE TABLE customer_pool_relation
-(
-    `id`                VARCHAR(32) NOT NULL COMMENT 'id',
-    `customer_id`       VARCHAR(32) NOT NULL COMMENT '客户id',
-    `pool_id`           VARCHAR(32) NOT NULL COMMENT '公海id',
-    `last_pick_user_id` VARCHAR(32) NOT NULL COMMENT '上一次领取人',
-    `last_pick_time`    BIGINT(255) NOT NULL COMMENT '上一次领取时间',
-    `picked`            BIT(1)      NOT NULL COMMENT '是否领取',
-    `create_time`       BIGINT      NOT NULL COMMENT '创建时间',
-    `update_time`       BIGINT      NOT NULL COMMENT '更新时间',
-    `create_user`       VARCHAR(32) NOT NULL COMMENT '创建人',
-    `update_user`       VARCHAR(32) NOT NULL COMMENT '更新人',
-    PRIMARY KEY (id)
-) COMMENT = '公海客户'
-    ENGINE = InnoDB
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_general_ci;
-
-CREATE INDEX idx_customer_id ON customer_pool_relation (customer_id ASC);
-CREATE INDEX idx_pool_id ON customer_pool_relation (pool_id ASC);
 
 CREATE TABLE customer_capacity
 (

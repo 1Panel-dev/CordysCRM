@@ -10,7 +10,6 @@ import io.cordys.crm.system.dto.request.ModuleFieldRequest;
 import io.cordys.crm.system.dto.request.ModuleSourceDataRequest;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-import org.junit.BeforeClass;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;

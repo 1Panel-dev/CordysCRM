@@ -19,4 +19,6 @@ public class CustomerPageRequest extends BasePageRequest {
     @Schema(description = "搜索类型(ALL/SELF/DEPARTMENT/VISIBLE)")
     private String searchType ;
 
+    @Schema(description = "公海ID{公海客户列表时传参}")
+    private String poolId;
 }

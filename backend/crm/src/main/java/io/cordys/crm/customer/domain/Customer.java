@@ -25,6 +25,9 @@ public class Customer extends BaseModel {
 	@Schema(description = "创建时间")
 	private Long collectionTime;
 
+	@Schema(description = "公海ID")
+	private String poolId;
+
 	@Schema(description = "是否在公海池")
 	private Boolean inSharedPool;
 
