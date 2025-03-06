@@ -32,4 +32,6 @@ public interface ExtUserRoleMapper {
     List<RoleUserOptionResponse> selectUserOptionByRoleId(@Param("orgId") String orgId, @Param("roleId") String roleId);
 
     List<String> selectUserRole(@Param("userId") String userId, @Param("orgId") String orgId);
+
+    List<String> selectPermissionsByUserId(@Param("userId") String userId);
 }

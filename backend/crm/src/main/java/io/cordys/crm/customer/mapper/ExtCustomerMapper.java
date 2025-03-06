@@ -26,4 +26,7 @@ public interface ExtCustomerMapper {
     List<OptionDTO> selectOptionByIds(@Param("ids") List<String> ids);
 
     void batchTransfer(@Param("request") CustomerBatchTransferRequest request);
+
+    Customer checkRepeatCustomerByName(@Param("name") String name, @Param("orgId") String orgId);
+
 }

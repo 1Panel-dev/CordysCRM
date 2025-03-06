@@ -5,13 +5,20 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
+import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.PersonalInfoRequest;
 import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
+import io.cordys.crm.system.dto.response.RepeatCustomerResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
+import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.crm.system.utils.MailSender;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
@@ -19,6 +26,7 @@ import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -39,6 +47,12 @@ public class PersonalCenterService {
 
     @Resource
     private BaseMapper<User>userBaseMapper;
+
+    @Resource
+    private ExtUserRoleMapper extUserRoleMapper;
+
+    @Resource
+    private ExtCustomerMapper extCustomerMapper;
 
 
     private static final String PREFIX = "personal_email_code:";  // Redis 存储前缀
@@ -130,5 +144,32 @@ public class PersonalCenterService {
                 .build());
 
         return userDetail;
+    }
+
+    public RepeatCustomerResponse getRepeatCustomer(String organizationId, String userId, String name) {
+        RepeatCustomerResponse repeatCustomerResponse = new RepeatCustomerResponse();
+        //1.查询当前用户权限
+        List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
+        //2.根据权限查询客户，线索，商机数据
+        if (permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ)>0) {
+            Customer customer = extCustomerMapper.checkRepeatCustomerByName(name, organizationId);
+            if (customer != null) {
+                CustomerRepeatResponse customerRepeatResponse = new CustomerRepeatResponse();
+                BeanUtils.copyBean(customerRepeatResponse, customer);
+                UserResponse userDetail = organizationUserService.getUserDetail(customer.getOwner());
+                customerRepeatResponse.setOwnerName(userDetail.getUserName());
+                customerRepeatResponse.setOwnerDepartmentId(userDetail.getDepartmentId());
+                customerRepeatResponse.setOwnerDepartmentName(userDetail.getDepartmentName());
+                repeatCustomerResponse.setCustomerData(customerRepeatResponse);
+            }
+        }
+        //TODO:查线索
+        //查商机
+        if (permissions.indexOf(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)>0) {
+
+
+        }
+
+       return  repeatCustomerResponse;
     }
 }

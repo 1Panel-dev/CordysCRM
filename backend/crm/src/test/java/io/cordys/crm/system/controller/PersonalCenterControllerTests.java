@@ -111,4 +111,11 @@ public class PersonalCenterControllerTests extends BaseTest {
         this.requestPost("/personal/center/info/reset", personalPasswordRequest).andExpect(status().isOk());
     }
 
+    @Test
+    @Order(5)
+    public void getRepeatCustomer() throws Exception {
+
+        this.requestGet("/personal/center/repeat/customer?name=kehu").andExpect(status().isOk());
+    }
+
 }

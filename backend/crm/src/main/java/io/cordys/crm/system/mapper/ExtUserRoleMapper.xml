@@ -94,4 +94,13 @@
         where sys_user_role.user_id = #{userId}
           and sys_role.organization_id = #{orgId}
     </select>
+
+    <select id="selectPermissionsByUserId" resultType="java.lang.String">
+        SELECT sys_role_permission.permission_id
+        from sys_role_permission
+        where sys_role_permission.role_id in (SELECT sys_user_role.role_id
+                                              from sys_user_role
+                                              where sys_user_role.user_id = #{userId})
+    </select>
+
 </mapper>

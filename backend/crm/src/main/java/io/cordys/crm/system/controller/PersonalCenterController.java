@@ -1,16 +1,21 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.request.PersonalInfoRequest;
 import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
+import io.cordys.crm.system.dto.response.RepeatCustomerResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.service.PersonalCenterService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/personal/center")
@@ -20,21 +25,14 @@ public class PersonalCenterController {
     @Resource
     private PersonalCenterService personalCenterService;
 
-    //接口一
-    /**
-     * 根据时间查询当前登录销售的线索，商机，客户跟进计划；
-     *  根据计划日期，创建计划并有相应跟进记录的，显示绿点， 状态一
-     *  有计划没有跟进记录的显示红点； 状态二
-     *  如果是当天，有计划但没有跟进记录的显示黄点； 状态三
-     */
 
+    @GetMapping("/repeat/customer")
+    @Operation(summary = "获取重复客户相关数据")
+    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.LEAD_MANAGEMENT_READ}, logical = Logical.OR)
+    public RepeatCustomerResponse getRepeatCustomer(@RequestParam(value = "name") String name) {
+        return personalCenterService.getRepeatCustomer(OrganizationContext.getOrganizationId(),SessionUtils.getUserId(),name);
+    }
 
-//接口二
-    /**
-     *重复客户查询
-     * 重复 ： 展示重复的线索和商机
-     * 不重复 ：直接返回
-     */
 
     @GetMapping("/info")
     @Operation(summary = "当前用户详情")
@@ -55,7 +53,6 @@ public class PersonalCenterController {
     public void sendCode(@RequestParam(value = "email") String email) {
         personalCenterService.sendCode(email, OrganizationContext.getOrganizationId());
     }
-
 
     /**
      * 更新密码
