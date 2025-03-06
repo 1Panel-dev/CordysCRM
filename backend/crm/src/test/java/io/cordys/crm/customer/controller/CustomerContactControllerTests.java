@@ -123,6 +123,9 @@ class CustomerContactControllerTests extends BaseTest {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(addCustomerContact.getId());
         CustomerContact responseCustomerContact = BeanUtils.copyBean(new CustomerContact(), getResponse);
         Assertions.assertEquals(responseCustomerContact, customerContact);
+        Assertions.assertNotNull(getResponse.getCreateUserName());
+        Assertions.assertNotNull(getResponse.getUpdateUserName());
+        Assertions.assertNotNull(getResponse.getDepartmentName());
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, DEFAULT_GET, addCustomerContact.getId());
@@ -190,7 +193,8 @@ class CustomerContactControllerTests extends BaseTest {
     @Order(10)
     void delete() throws Exception {
         this.requestGetWithOk(DEFAULT_DELETE, addCustomerContact.getId());
-        // todo
+        CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(addCustomerContact.getId());
+        Assertions.assertNull(customerContact);
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE, DEFAULT_DELETE, addCustomerContact.getId());
     }

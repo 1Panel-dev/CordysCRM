@@ -91,10 +91,21 @@ public class CustomerContactService {
         return baseService.setCreateAndUpdateUserName(list);
     }
 
-    public CustomerContactGetResponse get(String id) {
+    public CustomerContactGetResponse get(String id, String orgId) {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(id);
         CustomerContactGetResponse customerContactGetResponse = BeanUtils.copyBean(new CustomerContactGetResponse(), customerContact);
-        // do something...
+
+        List<OptionDTO> customers = extCustomerMapper.selectOptionByIds(List.of(customerContact.getCustomerId()));
+        if (CollectionUtils.isNotEmpty(customers)) {
+            customerContactGetResponse.setCustomerName(customers.getFirst().getName());
+        }
+
+        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(List.of(customerContact.getOwner()), orgId);
+        UserDeptDTO userDeptDTO = userDeptMap.get(customerContactGetResponse.getOwner());
+        if (userDeptDTO != null) {
+            customerContactGetResponse.setDepartmentId(userDeptDTO.getDeptId());
+            customerContactGetResponse.setDepartmentName(userDeptDTO.getDeptName());
+        }
         return baseService.setCreateAndUpdateUserName(customerContactGetResponse);
     }
 

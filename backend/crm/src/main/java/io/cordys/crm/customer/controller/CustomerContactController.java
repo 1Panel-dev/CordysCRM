@@ -58,7 +58,7 @@ public class CustomerContactController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
     @Operation(summary = "客户联系人详情")
     public CustomerContactGetResponse get(@PathVariable String id){
-        return customerContactService.get(id);
+        return customerContactService.get(id, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")

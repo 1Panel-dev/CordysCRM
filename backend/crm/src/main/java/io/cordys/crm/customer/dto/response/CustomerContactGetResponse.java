@@ -11,6 +11,15 @@ import io.cordys.crm.customer.domain.CustomerContact;
  */
 @Data
 public class CustomerContactGetResponse extends CustomerContact {
+    @Schema(description = "归属部门")
+    private String departmentId;
+
+    @Schema(description = "归属部门名称")
+    private String departmentName;
+
+    @Schema(description = "客户名称")
+    private String customerName;
+
     @Schema(description = "创建人名称")
     private String createUserName;
 
