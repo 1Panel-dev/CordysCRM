@@ -29,17 +29,22 @@ CREATE INDEX idx_organization_id ON opportunity_rule (organization_id ASC);
 
 CREATE TABLE opportunity
 (
-    `id`              VARCHAR(32)    NOT NULL COMMENT 'id',
-    `customer_id`     VARCHAR(32)    NOT NULL COMMENT '客户id',
-    `name`            VARCHAR(255)   NOT NULL COMMENT '商机名称',
-    `amount`          DECIMAL(10, 2) NOT NULL COMMENT '金额',
-    `possible`        DECIMAL(10, 4) NOT NULL COMMENT '可能性',
-    `products`        VARCHAR(1000)  NOT NULL COMMENT '意向产品',
-    `organization_id` VARCHAR(32)    NOT NULL COMMENT '组织id',
-    `update_user`     VARCHAR(32)    NOT NULL COMMENT '更新人',
-    `create_time`     BIGINT         NOT NULL COMMENT '创建时间',
-    `update_time`     BIGINT         NOT NULL COMMENT '更新时间',
-    `create_user`     VARCHAR(32)    NOT NULL COMMENT '创建人',
+    `id`              VARCHAR(32)     NOT NULL COMMENT 'id',
+    `customer_id`     VARCHAR(32)     NOT NULL COMMENT '客户id',
+    `name`            VARCHAR(255)    NOT NULL COMMENT '商机名称',
+    `amount`          DECIMAL(20, 10) NOT NULL COMMENT '金额',
+    `possible`        DECIMAL(20, 10) NOT NULL COMMENT '可能性',
+    `product_id`      VARCHAR(32)     NOT NULL COMMENT '意向产品',
+    `organization_id` VARCHAR(32)     NOT NULL COMMENT '组织id',
+    `stage`           VARCHAR(32)     NOT NULL COMMENT '商机阶段',
+    `status`          BIT(1)          NOT NULL DEFAULT 1 COMMENT '状态',
+    `contact_id`      VARCHAR(32)     NOT NULL COMMENT '联系人id',
+    `owner`           VARCHAR(32)     NOT NULL   COMMENT '负责人' ,
+    `reserve_date`    VARCHAR(32) COMMENT '剩余归属天数',
+    `update_user`     VARCHAR(32)     NOT NULL COMMENT '更新人',
+    `create_time`     BIGINT          NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT          NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)     NOT NULL COMMENT '创建人',
     PRIMARY KEY (id)
 ) COMMENT = '商机'
     ENGINE = InnoDB
@@ -48,6 +53,7 @@ CREATE TABLE opportunity
 
 CREATE INDEX idx_customer_id ON opportunity (customer_id ASC);
 CREATE INDEX idx_organization_id ON opportunity (organization_id ASC);
+CREATE INDEX idx_status ON opportunity(status ASC);
 
 
 CREATE TABLE opportunity_field
@@ -148,7 +154,7 @@ CREATE TABLE follow_up_plan
     `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
     `owner`           VARCHAR(32)   NOT NULL COMMENT '负责人',
     `contact_id`      VARCHAR(32)   NOT NULL COMMENT '联系人',
-    `estimated_time`  BIGINT(255)   NOT NULL COMMENT '预计开始时间',
+    `estimated_time`  BIGINT(255) NOT NULL COMMENT '预计开始时间',
     `status`          VARCHAR(64) COMMENT '状态',
     `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
