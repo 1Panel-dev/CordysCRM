@@ -12,6 +12,7 @@ import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerField;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
@@ -39,6 +40,8 @@ class CustomerControllerTests extends BaseTest {
     private static final String BASE_PATH = "/customer/";
 
     protected static final String MODULE_FORM = "module/form";
+
+    protected static final String BATCH_TRANSFER = "batch/transfer";
 
     private static Customer addCustomer;
     private static Customer anotherCustomer;
@@ -229,8 +232,26 @@ class CustomerControllerTests extends BaseTest {
     }
 
     @Test
+    @Order(4)
+    void testTransfer() throws Exception {
+        CustomerBatchTransferRequest request = new CustomerBatchTransferRequest();
+        request.setIds(List.of(addCustomer.getId()));
+        request.setOwner(PERMISSION_USER_NAME);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(BATCH_TRANSFER, request);
+
+        getResultData(mvcResult, CustomerGetResponse.class);
+
+        // 校验请求成功数据
+        Customer customer = customerMapper.selectByPrimaryKey(addCustomer.getId());
+        Assertions.assertEquals(PERMISSION_USER_NAME, customer.getOwner());
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, BATCH_TRANSFER, request);
+    }
+
+    @Test
     @Order(10)
-    void delete() throws Exception {
+    void testDelete() throws Exception {
         this.requestGetWithOk(DEFAULT_DELETE, addCustomer.getId());
         Assertions.assertNull(customerMapper.selectByPrimaryKey(addCustomer.getId()));
 
@@ -239,6 +260,19 @@ class CustomerControllerTests extends BaseTest {
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DEFAULT_DELETE, addCustomer.getId());
+    }
+
+    @Test
+    @Order(11)
+    void testBatchDelete() throws Exception {
+        this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of(anotherCustomer.getId()));
+        Assertions.assertNull(customerMapper.selectByPrimaryKey(anotherCustomer.getId()));
+
+        List<CustomerField> fields = getCustomerFields(anotherCustomer.getId());
+        Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DEFAULT_BATCH_DELETE, List.of(anotherCustomer.getId()));
     }
 
     private List<CustomerField> getCustomerFields(String customerId) {

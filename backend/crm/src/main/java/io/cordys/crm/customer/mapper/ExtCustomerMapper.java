@@ -24,4 +24,6 @@ public interface ExtCustomerMapper {
     boolean checkUpdateExist(@Param("customer") Customer Customer);
 
     List<OptionDTO> selectOptionByIds(@Param("ids") List<String> ids);
+
+    void batchTransfer(@Param("request") CustomerBatchTransferRequest request);
 }

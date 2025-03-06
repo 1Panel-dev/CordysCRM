@@ -58,6 +58,7 @@ public abstract class BaseTest {
     protected static final String DEFAULT_ADD = "add";
     protected static final String DEFAULT_UPDATE = "update";
     protected static final String DEFAULT_DELETE = "delete/{0}";
+    protected static final String DEFAULT_BATCH_DELETE = "batch/delete";
     public static final String DEFAULT_ORGANIZATION_ID = "100001";
     public static String PERMISSION_USER_NAME = "permission_test";
 

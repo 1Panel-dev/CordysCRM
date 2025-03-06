@@ -11,6 +11,7 @@ import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
@@ -22,6 +23,7 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -86,5 +88,19 @@ public class CustomerController {
     @Operation(summary = "删除客户")
     public void delete(@PathVariable String id) {
         customerService.delete(id);
+    }
+
+    @PostMapping("/batch/transfer")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @Operation(summary = "批量转移客户")
+    public void batchTransfer(@RequestBody CustomerBatchTransferRequest request) {
+        customerService.batchTransfer(request);
+    }
+
+    @PostMapping("/batch/delete")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE)
+    @Operation(summary = "批量删除客户")
+    public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
+        customerService.batchDelete(ids);
     }
 }

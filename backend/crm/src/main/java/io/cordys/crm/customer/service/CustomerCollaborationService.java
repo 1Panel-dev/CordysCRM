@@ -9,6 +9,7 @@ import io.cordys.crm.customer.dto.request.CustomerCollaborationAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerCollaborationUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerCollaborationListResponse;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -104,5 +105,11 @@ public class CustomerCollaborationService {
         CustomerCollaboration example = new CustomerCollaboration();
         example.setCustomerId(customerId);
         customerCollaborationMapper.delete(example);
+    }
+
+    public void deleteByCustomerIds(List<String> customerIds) {
+        LambdaQueryWrapper<CustomerCollaboration> wrapper = new LambdaQueryWrapper();
+        wrapper.in(CustomerCollaboration::getCustomerId, customerIds);
+        customerCollaborationMapper.deleteByLambda(wrapper);
     }
 }

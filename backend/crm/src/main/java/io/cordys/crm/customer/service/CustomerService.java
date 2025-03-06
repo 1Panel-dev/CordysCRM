@@ -10,6 +10,7 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
@@ -159,5 +160,18 @@ public class CustomerService {
         customerFieldService.deleteByResourceId(id);
         // 删除客户协作人
         customerCollaborationService.deleteByCustomerId(id);
+    }
+
+    public void batchTransfer(CustomerBatchTransferRequest request) {
+        extCustomerMapper.batchTransfer(request);
+    }
+
+    public void batchDelete(List<String> ids) {
+        // 删除客户
+        customerMapper.deleteByIds(ids);
+        // 删除客户模块字段
+        customerFieldService.deleteByResourceIds(ids);
+        // 删除客户协作人
+        customerCollaborationService.deleteByCustomerIds(ids);
     }
 }

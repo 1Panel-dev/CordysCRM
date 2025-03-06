@@ -277,4 +277,18 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         blobExample.setResourceId(resourceId);
         getResourceFieldBlobMapper().delete(blobExample);
     }
+
+    /**
+     * 删除指定资源的模块字段值
+     * @param resourceIds
+     */
+    public void deleteByResourceIds(List<String> resourceIds) {
+        LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper();
+        wrapper.in(BaseResourceField::getResourceId, resourceIds);
+        getResourceFieldMapper().deleteByLambda(wrapper);
+
+        LambdaQueryWrapper<V> blobWrapper = new LambdaQueryWrapper();
+        wrapper.in(BaseResourceField::getResourceId, resourceIds);
+        getResourceFieldBlobMapper().deleteByLambda(blobWrapper);
+    }
 }
