@@ -168,7 +168,7 @@
   "lead": [
     {
       "name": "基本信息",
-      "internalKey": "customerBasicInfo",
+      "internalKey": "leadBasicInfo",
       "type": "DIVIDER",
       "showLabel": true,
       "readable": true,
@@ -598,7 +598,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -611,7 +610,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -624,7 +622,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -637,7 +634,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "showRules": ["required", "unique"],
       "rules": [
         {"key":  "required"}
       ]
@@ -807,8 +803,8 @@
         {"key":  "required"}
       ],
       "showControlRules": [
-        {"value": "1", "fieldIds": ["recordCustomerName", "recordBusiness"]},
-        {"value": "2", "fieldIds": ["recordLeadName"]}
+        {"value": "1", "fieldIds": ["planCustomerName", "planBusiness"]},
+        {"value": "2", "fieldIds": ["planLeadName"]}
       ]
     },
     {

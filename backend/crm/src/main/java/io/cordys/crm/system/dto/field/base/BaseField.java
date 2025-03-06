@@ -67,11 +67,11 @@ public abstract class BaseField {
 	@Schema(description = "字段宽度")
 	private Float fieldWidth;
 
-	@Schema(description = "规则详情")
-	private List<String> showRules = new ArrayList<>();
-
-	@Schema(description = "规则详情")
+	@Schema(description = "校验规则详情")
 	private List<RuleProp> rules = new ArrayList<>();
+
+	@Schema(description = "显隐规则")
+	private List<ControlRuleProp> showControlRules;
 
 	@Schema(description = "业务模块字段（定义在主表中，有特定业务含义）")
 	private String businessKey;

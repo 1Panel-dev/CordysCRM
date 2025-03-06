@@ -11,6 +11,7 @@ import io.cordys.crm.system.domain.ModuleFieldBlob;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.domain.ModuleFormBlob;
 import io.cordys.crm.system.dto.field.base.BaseField;
+import io.cordys.crm.system.dto.field.base.ControlRuleProp;
 import io.cordys.crm.system.dto.form.FormProp;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -48,6 +49,8 @@ public class ModuleFormService {
 	private ExtModuleFieldMapper extModuleFieldMapper;
 
 	private static final String DEFAULT_ORGANIZATION_ID = "100001";
+
+	private static final String CONTROL_RULES_KEY = "showControlRules";
 
 	/**
 	 * 获取模块表单配置
@@ -209,20 +212,23 @@ public class ModuleFormService {
 	 * 字段初始化
 	 * @param formKeyMap 表单Key映射
 	 */
+	@SuppressWarnings("unchecked")
 	public void initFormFields(Map<String, String> formKeyMap) {
 		List<ModuleField> fields = new ArrayList<>();
 		List<ModuleFieldBlob> fieldBlobs = new ArrayList<>();
 		try {
-			Map<String, List<Map>> fieldMap = JSON.parseObject(fieldResource.getInputStream(), Map.class);
+			Map<String, List<Map<String, Object>>> fieldMap = JSON.parseObject(fieldResource.getInputStream(), Map.class);
 			fieldMap.keySet().forEach(key -> {
 				String formId = formKeyMap.get(key);
-				List<Map> initFields = fieldMap.get(key);
+				List<Map<String, Object>> initFields = fieldMap.get(key);
 				AtomicLong pos = new AtomicLong(1L);
+				// 显隐规则Key-ID映射
+				Map<String, String> controlKeyPreMap = new HashMap<>(2);
 				initFields.forEach(initField -> {
 					ModuleField field = new ModuleField();
-					field.setId(IDGenerator.nextStr());
 					field.setFormId(formId);
 					field.setInternalKey(initField.get("internalKey").toString());
+					field.setId(controlKeyPreMap.containsKey(field.getInternalKey()) ? controlKeyPreMap.get(field.getInternalKey()) : IDGenerator.nextStr());
 					field.setType(initField.get("type").toString());
 					field.setPos(pos.getAndIncrement());
 					field.setCreateTime(System.currentTimeMillis());
@@ -231,6 +237,20 @@ public class ModuleFormService {
 					field.setUpdateUser(InternalUser.ADMIN.getValue());
 					initField.put("id", field.getId());
 					fields.add(field);
+					if (initField.containsKey(CONTROL_RULES_KEY)) {
+						List<ControlRuleProp> controlRules = JSON.parseArray(JSON.toJSONString(initField.get(CONTROL_RULES_KEY)), ControlRuleProp.class);
+						controlRules.forEach(controlRule -> {
+							List<String> showFieldIds = new ArrayList<>();
+							controlRule.getFieldIds().forEach(fieldKey -> {
+								if (!controlKeyPreMap.containsKey(fieldKey)) {
+									controlKeyPreMap.put(fieldKey, IDGenerator.nextStr());
+								}
+								showFieldIds.add(controlKeyPreMap.get(fieldKey));
+							});
+							controlRule.setFieldIds(showFieldIds);
+						});
+						initField.put(CONTROL_RULES_KEY, controlRules);
+					}
 					ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
 					fieldBlob.setId(field.getId());
 					fieldBlob.setProp(JSON.toJSONBytes(initField));
