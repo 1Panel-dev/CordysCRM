@@ -38,6 +38,7 @@ export interface ModuleConditionsItem {
   column: string;
   operator: string;
   value: string;
+  scope?: string[];
 }
 
 export interface OpportunityBaseInfoItem {

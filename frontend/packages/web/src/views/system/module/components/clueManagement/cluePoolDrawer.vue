@@ -24,7 +24,6 @@
         v-model:visible="showAddOrEditDrawer"
         v-model:row="currentRow"
         :type="ModuleConfigEnum.CLUE_MANAGEMENT"
-        :close-attrs-options="closeAttrsOptions"
         @refresh="loadList"
       />
     </div>
@@ -33,7 +32,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NButton, NSwitch, SelectOption, useMessage } from 'naive-ui';
+  import { NButton, NSwitch, useMessage } from 'naive-ui';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
@@ -58,17 +57,6 @@
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
-
-  const closeAttrsOptions = ref<SelectOption[]>([
-    {
-      value: 'followUpDays',
-      label: t('module.clue.followUpDays'),
-    },
-    {
-      value: 'remainKeepDays',
-      label: t('module.remainingDays'),
-    },
-  ]);
 
   const showAddOrEditDrawer = ref<boolean>(false);
   // 增加

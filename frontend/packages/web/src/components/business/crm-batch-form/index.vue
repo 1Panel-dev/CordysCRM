@@ -34,6 +34,11 @@
               class="block flex-1"
               :class="model.formItemClass"
             >
+              <CrmTimeRangePicker
+                v-if="model.type === FieldTypeEnum.TIME_RANGE_PICKER"
+                v-model:value="element[model.path]"
+                :time-range-type="element[model.crmTimeRangePickerProps?.typePath as string]"
+              />
               <n-input
                 v-if="model.type === FieldTypeEnum.INPUT"
                 v-model:value="element[model.path]"
@@ -56,6 +61,7 @@
                 clearable
                 :placeholder="t('common.pleaseSelect')"
                 v-bind="model.selectProps"
+                :options="getSelectOptions(element, model)"
               />
               <CrmUserTagSelector
                 v-if="model.type === FieldTypeEnum.USER_TAG_SELECTOR"
@@ -116,6 +122,7 @@
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmTimeRangePicker from '@/components/business/crm-time-range-picker/index.vue';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';
@@ -166,7 +173,11 @@
   // 初始化表单数据
   function initForm() {
     props.models.forEach((e) => {
-      formItem[e.path] = valueIsArray(e) ? [] : undefined;
+      if (e.defaultValue) {
+        formItem[e.path] = e.defaultValue;
+      } else {
+        formItem[e.path] = valueIsArray(e) ? [] : undefined;
+      }
     });
     form.value.list = props.defaultList?.length ? cloneDeep(props.defaultList) : [{ ...formItem }];
   }
@@ -224,23 +235,23 @@
     });
   }
 
-  // 排除已选项， 目前没有区间不限制, 后边会用到 TODO xxw
-  // function getSelectOptions(element: Record<string, any>, model: FormItemModel) {
-  //   if (model.selectProps?.filterRepeat) {
-  //     const selectedValues = new Set<string>();
+  // 排除已选择的
+  function getSelectOptions(element: Record<string, any>, model: FormItemModel) {
+    if (model.selectProps?.filterRepeat) {
+      const selectedValues = new Set<string>();
 
-  //     form.value.list.forEach((item: any) => {
-  //       if (item[model.path] && item !== element) {
-  //         selectedValues.add(item[model.path]);
-  //       }
-  //     });
+      form.value.list.forEach((item: any) => {
+        if (item[model.path] && item !== element) {
+          selectedValues.add(item[model.path]);
+        }
+      });
 
-  //     const valueField = model.selectProps?.valueField || 'value';
-  //     return (model.selectProps?.options || []).filter((item: any) => !selectedValues.has(item[valueField]));
-  //   }
+      const valueField = model.selectProps?.valueField || 'value';
+      return (model.selectProps?.options || []).filter((item: any) => !selectedValues.has(item[valueField]));
+    }
 
-  //   return model.selectProps?.options || [];
-  // }
+    return model.selectProps?.options || [];
+  }
 
   function getFormResult() {
     return unref(form.value);

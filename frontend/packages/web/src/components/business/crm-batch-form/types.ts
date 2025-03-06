@@ -24,4 +24,5 @@ export interface FormItemModel {
   numberProps?: Partial<InputNumberProps>;
   selectProps?: Partial<SelectProps & customSelectedProps>;
   userTagSelectorProps?: Partial<UserTagSelectorProps>;
+  crmTimeRangePickerProps?: { typePath: string };
 }

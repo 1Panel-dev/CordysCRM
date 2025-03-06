@@ -147,13 +147,13 @@
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import { EQUAL, GE, GT, LE, LT, NOT_EQUAL } from '@/components/business/crm-batch-form/config';
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { addOpportunityRule, updateOpportunityRule } from '@/api/modules/system/module';
-  import { EQUAL, GE, GT, LE, LT, NOT_EQUAL } from '@/config/operator';
   import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();

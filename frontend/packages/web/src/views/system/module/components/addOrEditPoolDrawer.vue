@@ -151,22 +151,22 @@
     NRadio,
     NRadioGroup,
     NSpace,
-    SelectOption,
     useMessage,
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import type { LeadPoolForm, LeadPoolItem, LeadPoolParams } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import { timeFormItem } from '@/components/business/crm-batch-form/config';
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { addCustomerPool, addLeadPool, updateCustomerPool, updateLeadPool } from '@/api/modules/system/module';
-  import { EQUAL, GE, GT, LE, LT } from '@/config/operator';
   import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
@@ -174,7 +174,6 @@
 
   const props = defineProps<{
     type: ModuleConfigEnum;
-    closeAttrsOptions: SelectOption[];
   }>();
 
   const visible = defineModel<boolean>('visible', {
@@ -214,7 +213,9 @@
       expireNotice: false,
       noticeDays: undefined,
       operator: 'all',
-      conditions: [],
+      conditions: [
+        { column: 'storageTime', operator: OperatorEnum.DYNAMICS, value: '6,month', scope: ['Created', 'Picked'] },
+      ],
     },
   };
 
@@ -229,6 +230,17 @@
     }
   });
 
+  const conditionsColumnOptions = [
+    {
+      value: 'storageTime',
+      label: t('module.clue.storageTime'),
+    },
+    {
+      value: 'followUpTime',
+      label: t('module.clue.followUpTime'),
+    },
+  ];
+
   const formItemModel: Ref<FormItemModel[]> = ref([
     {
       path: 'column',
@@ -240,26 +252,12 @@
         },
       ],
       selectProps: {
-        options: props.closeAttrsOptions,
+        options: conditionsColumnOptions,
+        clearable: false,
+        filterRepeat: true,
       },
     },
-    {
-      path: 'operator',
-      type: FieldTypeEnum.SELECT,
-      rule: [
-        {
-          required: true,
-          message: t('common.pleaseSelect'),
-        },
-      ],
-      selectProps: {
-        options: [EQUAL, GT, GE, LT, LE],
-      },
-    },
-    {
-      path: 'value',
-      type: FieldTypeEnum.INPUT,
-    },
+    ...timeFormItem,
   ]);
 
   function cancelHandler() {

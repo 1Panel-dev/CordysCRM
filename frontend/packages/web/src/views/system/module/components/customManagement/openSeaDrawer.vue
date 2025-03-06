@@ -23,7 +23,6 @@
       <AddOrEditPoolDrawer
         v-model:visible="showAddOrEditDrawer"
         v-model:row="currentRow"
-        :close-attrs-options="closeAttrsOptions"
         :type="ModuleConfigEnum.CUSTOMER_MANAGEMENT"
         @refresh="loadList"
       />
@@ -33,7 +32,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NButton, NSwitch, SelectOption, useMessage } from 'naive-ui';
+  import { NButton, NSwitch, useMessage } from 'naive-ui';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
@@ -63,17 +62,6 @@
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
-
-  const closeAttrsOptions = ref<SelectOption[]>([
-    {
-      value: 'belongDays',
-      label: t('opportunity.belongDays'),
-    },
-    {
-      value: 'remainKeepDays',
-      label: t('module.remainingDays'),
-    },
-  ]);
 
   const showAddOrEditDrawer = ref<boolean>(false);
   // 增加

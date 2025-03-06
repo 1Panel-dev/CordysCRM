@@ -9,6 +9,7 @@ export enum FormDesignKeyEnum {
 }
 
 export enum FieldTypeEnum {
+  TIME_RANGE_PICKER = 'TIME_RANGE_PICKER',
   INPUT = 'INPUT',
   TEXTAREA = 'TEXTAREA',
   INPUT_NUMBER = 'INPUT_NUMBER',

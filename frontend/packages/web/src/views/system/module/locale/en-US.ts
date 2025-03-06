@@ -24,6 +24,8 @@ export default {
   'module.customer.updateOpenSea': 'Update Open Sea',
   'module.customer.openSeaName': 'Open Sea Name',
   'module.customer.deleteRulesTitle': 'There are unassigned customers, please xx before deleting',
+  'module.clue.storageTime': 'Storage time',
+  'module.clue.followUpTime': 'Follow up time',
   'module.customer.enabledTipContent': 'When enabled, customers will be recycled according to the configured rules',
   'module.customer.disabledTipContent':
     'When disabled, customers will no longer be recycled according to the configured rules',

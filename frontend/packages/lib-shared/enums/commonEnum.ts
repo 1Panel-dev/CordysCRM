@@ -23,4 +23,7 @@ export enum OperatorEnum {
   NOT_CONTAINS = 'NOT_CONTAINS', // 不包含
   EMPTY = 'EMPTY', // 为空
   NOT_EMPTY = 'NOT_EMPTY', // 不为空
+
+  DYNAMICS = 'DYNAMICS',
+  FIXED = 'FIXED',
 }
