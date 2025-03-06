@@ -8,7 +8,6 @@ import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.notice.dto.SseMessageDTO;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -102,17 +101,18 @@ public class SseService {
      */
     public void broadcastPeriodically() {
         if (userEmitters.isEmpty()) return;
+
         //返回最新的5条信息，加是否有未读信息, 公告
         userEmitters.forEach((userId, emitters) -> {
             //获取系统通知
             SseMessageDTO sseMessageDTO = new SseMessageDTO();
-            Set<String> sysValues = stringRedisTemplate.opsForZSet().range(USER_PREFIX+userId, 0, -1);
+            Set<String> sysValues = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
             if (CollectionUtils.isNotEmpty(sysValues)) {
                 List<NotificationDTO> notificationDTOList = buildDTOList(sysValues, MSG_PREFIX);
                 sseMessageDTO.setNotificationDTOList(notificationDTOList);
             }
             //获取公告
-            Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX+userId, 0, -1);
+            Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX + userId, 0, -1);
             if (CollectionUtils.isNotEmpty(values)) {
                 List<NotificationDTO> announcementDTOList = buildDTOList(values, ANNOUNCE_PREFIX);
                 sseMessageDTO.setAnnouncementDTOList(announcementDTOList);
@@ -139,7 +139,7 @@ public class SseService {
             }
             Notification notification = JSON.parseObject(announceNotification, Notification.class);
             NotificationDTO notificationDTO = new NotificationDTO();
-            BeanUtils.copyBean(notificationDTO,notification);
+            BeanUtils.copyBean(notificationDTO, notification);
             notificationDTO.setContentText(new String(notification.getContent()));
             notificationDTOList.add(notificationDTO);
         }

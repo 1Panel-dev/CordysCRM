@@ -202,6 +202,22 @@ public class DataAccessLayer implements ApplicationContextAware {
         }
 
         @Override
+        public void deleteByLambda(LambdaQueryWrapper<E> wrapper) {
+            String sql = new BaseMapper.DeleteByLambdaSqlProvider().buildSql(wrapper, this.table);
+            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            sqlSession.delete(msId, wrapper);
+        }
+
+        @Override
+        public void deleteByIds(List<String> array) {
+            String sql = new BaseMapper.DeleteByIdsSqlProvider().buildSql(array, this.table);
+            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            Map<String,List<String>> map = new HashMap<>();
+            map.put("array",array);
+            sqlSession.delete(msId, map);
+        }
+
+        @Override
         public Integer deleteByPrimaryKey(Serializable criteria) {
             String sql = new BaseMapper.DeleteSqlProvider().buildSql(criteria, this.table);
             String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);

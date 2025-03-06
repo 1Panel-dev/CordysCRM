@@ -1,6 +1,7 @@
 package io.cordys.mybatis;
 
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.jdbc.AbstractSQL;
@@ -74,6 +75,22 @@ public interface BaseMapper<E> {
      */
     @DeleteProvider(type = DeleteByCriteriaSqlProvider.class, method = "invoke")
     Integer delete(E criteria);
+
+    /**
+     * 使用 LambdaQueryWrapper 批量删除。
+     *
+     * @param wrapper LambdaQueryWrapper 删除条件
+     */
+    @DeleteProvider(type = DeleteByLambdaSqlProvider.class, method = "invoke")
+    void deleteByLambda(@Param("wrapper") LambdaQueryWrapper<E> wrapper);
+
+    /**
+     * 批量删除。
+     *
+     * @param ids List 删除条件
+     */
+    @DeleteProvider(type = DeleteByIdsSqlProvider.class, method = "invoke")
+    void deleteByIds(@Param("ids") List<String> ids);
 
     /**
      * 根据主键查询记录。
@@ -243,6 +260,40 @@ public interface BaseMapper<E> {
         }
     }
 
+    class DeleteByLambdaSqlProvider extends AbstractSqlProviderSupport implements WriteType {
+        @Override
+        public SQL sql(Object criteria) {
+            LambdaQueryWrapper<?> wrapper = (LambdaQueryWrapper<?>) criteria;
+
+            SQL sql = new SQL().DELETE_FROM(table.getTableName());
+
+            // 将 LambdaQueryWrapper 的条件解析为 WHERE 子句
+            String whereClause = wrapper.getWhereClause();
+            if (StringUtils.isNotBlank(whereClause)) {
+                sql.WHERE(whereClause);
+            }
+
+            return sql;
+        }
+    }
+
+    @SuppressWarnings("all")
+    class DeleteByIdsSqlProvider extends AbstractSqlProviderSupport implements WriteType {
+        @Override
+        public SQL sql(Object entities) {
+            List<String> array = (List<String>) entities;
+            if (CollectionUtils.isEmpty(array)) {
+                throw new IllegalArgumentException("ids can not be empty");
+            }
+            String idStr = " <foreach item='item' collection='array' open='(' separator=',' close=')'>#{item}</foreach> ";
+            String where = ("id IN " + idStr);
+
+            return new SQL()
+                    .DELETE_FROM(table.getTableName())
+                    .WHERE(where);
+        }
+    }
+
     class SelectByIdSqlProvider extends AbstractSqlProviderSupport {
         @Override
         public SQL sql(Object criteria) {
@@ -333,7 +384,6 @@ public interface BaseMapper<E> {
             return sql;
         }
     }
-
 
     class CountByCriteriaSqlProvider extends AbstractSqlProviderSupport {
         @Override
