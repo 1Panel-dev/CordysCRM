@@ -17,7 +17,7 @@
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
-  import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method/index';
+  import { getQueryVariable } from '@lib/shared/method/index';
 
   import { getWeComOauthCallback } from '@/api/modules/system/login';
   import useLoading from '@/hooks/useLoading';
@@ -53,27 +53,16 @@
         setLoginExpires();
         setLoginType('WE_COM_OAUTH2');
         const { redirect, ...othersQuery } = router.currentRoute.value.query;
-        router.push({
+        await router.push({
           name: (redirect as string) || AppRouteEnum.SYSTEM,
-          query: {
-            ...othersQuery,
-          },
-        });
-      }
+            query: {
+          ...othersQuery,
+        },
+      })
       setLoading(false);
-      userStore.getAuthentication();
+      await userStore.getAuthentication();
     }
-    if (code && getQueryVariable('state')) {
-      const currentUrl = window.location.href;
-      const url = new URL(currentUrl);
-      getUrlParameterWidthRegExp('code');
-      getUrlParameterWidthRegExp('state');
-      url.searchParams.delete('code');
-      url.searchParams.delete('state');
-      const newUrl = url.toString();
-      // 或者在不刷新页面的情况下更新URL（比如使用 History API）
-      window.history.replaceState({}, document.title, newUrl);
-    }
+  }
   }
 
   onBeforeMount(async () => {
@@ -81,6 +70,6 @@
       await userStore.checkIsLogin();
       appStore.setLoginLoading(false);
     }
-    handleOauthLogin();
+    await handleOauthLogin();
   });
 </script>
