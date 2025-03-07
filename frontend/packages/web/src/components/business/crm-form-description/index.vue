@@ -24,8 +24,8 @@
   }>();
 
   const { descriptions, loading, initFormConfig, initFormDescription } = useFormCreateApi({
-    sourceId: props.sourceId,
-    formKey: props.formKey,
+    formKey: toRefs(props).formKey,
+    sourceId: toRefs(props).sourceId,
   });
 
   onBeforeMount(async () => {

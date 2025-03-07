@@ -21,7 +21,7 @@ export enum ClueRouteEnum {
 export enum CustomerRouteEnum {
   CUSTOMER = 'customer',
   CUSTOMER_INDEX = 'customerIndex',
-  CUSTOMER_CONTRACT = 'customerContract',
+  CUSTOMER_CONTACT = 'customerContact',
   CUSTOMER_OPEN_SEA = 'customerOpenSea',
 }
 

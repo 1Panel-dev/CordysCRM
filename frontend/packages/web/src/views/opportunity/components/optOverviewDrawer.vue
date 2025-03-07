@@ -7,6 +7,7 @@
     :button-list="buttonList"
     :title="detail.name"
     :subtitle="detail.customerName"
+    :form-key="FormDesignKeyEnum.BUSINESS"
     @button-select="handleSelect"
   >
     <template #right>
@@ -73,6 +74,7 @@
   import { useMessage } from 'naive-ui';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import type { FollowDetailItem } from '@lib/shared/models/customer';
   import type { WorkflowStepItem } from '@lib/shared/models/opportunity';

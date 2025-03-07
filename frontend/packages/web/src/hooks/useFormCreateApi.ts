@@ -17,8 +17,8 @@ import { safeFractionConvert } from '@/utils';
 import { useI18n } from './useI18n';
 
 export interface FormCreateApiProps {
-  sourceId?: string;
-  formKey: FormDesignKeyEnum;
+  sourceId?: Ref<string | undefined>;
+  formKey: Ref<FormDesignKeyEnum>;
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -53,9 +53,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
   async function initFormDescription() {
     try {
-      const asyncApi = getFormDetailApiMap[props.formKey];
-      if (!asyncApi || !props.sourceId) return;
-      const form = await asyncApi(props.sourceId);
+      const asyncApi = getFormDetailApiMap[props.formKey.value];
+      if (!asyncApi || !props.sourceId?.value) return;
+      const form = await asyncApi(props.sourceId?.value);
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
           // 业务标准字段读取最外层
@@ -91,9 +91,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
   async function initFormDetail() {
     try {
-      const asyncApi = getFormDetailApiMap[props.formKey];
-      if (!asyncApi || !props.sourceId) return;
-      const res = await asyncApi(props.sourceId);
+      const asyncApi = getFormDetailApiMap[props.formKey.value];
+      if (!asyncApi || !props.sourceId?.value) return;
+      const res = await asyncApi(props.sourceId?.value);
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
           // 业务标准字段读取最外层
@@ -115,7 +115,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   async function initFormConfig() {
     try {
       loading.value = true;
-      const res = await getFormConfigApiMap[props.formKey]();
+      const res = await getFormConfigApiMap[props.formKey.value]();
       fieldList.value = res.fields.map((item) => ({
         ...item,
         fieldWidth: safeFractionConvert(item.fieldWidth),
@@ -149,11 +149,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           });
         }
       });
-      if (props.sourceId) {
-        await updateFormApi[props.formKey](params);
+      if (props.sourceId?.value) {
+        await updateFormApi[props.formKey.value](params);
         Message.success(t('common.updateSuccess'));
       } else {
-        await createFormApi[props.formKey](params);
+        await createFormApi[props.formKey.value](params);
         Message.success(t('common.createSuccess'));
       }
       if (callback) {
@@ -167,6 +167,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
+  const formCreateTitle = computed(() => {
+    const prefix = props.sourceId?.value ? t('common.edit') : t('common.add');
+    return `${prefix}${t(`crmFormCreate.drawer.${props.formKey.value}`)}`;
+  });
+
   return {
     descriptions,
     fieldList,
@@ -174,6 +179,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     unsaved,
     formConfig,
     formDetail,
+    formCreateTitle,
     initFormDescription,
     initFormConfig,
     initFormDetail,

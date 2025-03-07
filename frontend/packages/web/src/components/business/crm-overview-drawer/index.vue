@@ -16,7 +16,7 @@
       </n-tooltip>
     </template>
     <template #titleRight>
-      <CrmButtonGroup :list="props.buttonList" not-show-divider @select="(key) => emit('buttonSelect', key)" />
+      <CrmButtonGroup :list="props.buttonList" not-show-divider @select="handleButtonClick" />
     </template>
     <div class="h-full w-full overflow-hidden">
       <CrmSplitPanel :max="0.5" :min="0.2" :default-size="0.2" disabled>
@@ -43,16 +43,20 @@
       </CrmSplitPanel>
     </div>
   </CrmDrawer>
+  <CrmFormCreateDrawer v-model:visible="formDrawerVisible" :form-key="realFormKey" :source-id="realSourceId" />
 </template>
 
 <script lang="ts" setup>
   import { NScrollbar, NTooltip, TabPaneProps } from 'naive-ui';
+
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmTabSetting from '@/components/business/crm-tab-setting/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
 
@@ -61,6 +65,12 @@
     subtitle?: string;
     tabList: TabContentItem[];
     buttonList: ActionsItem[];
+    formKey: FormDesignKeyEnum;
+    sourceId?: string;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'buttonSelect', key: string): void;
   }>();
 
   const showDrawer = defineModel<boolean>('show', {
@@ -75,10 +85,6 @@
     required: true,
   });
 
-  const emit = defineEmits<{
-    (e: 'buttonSelect', key: string): void;
-  }>();
-
   const showTabList = computed(() => {
     return cachedList.value.reduce((acc: TabPaneProps[], e: TabContentItem) => {
       if (e.enable) {
@@ -87,6 +93,35 @@
       return acc;
     }, []);
   });
+
+  const formDrawerVisible = ref(false);
+  const realFormKey = ref<FormDesignKeyEnum>(props.formKey);
+  const realSourceId = ref<string | undefined>(''); // 编辑时传入
+
+  function handleButtonClick(key: string) {
+    switch (key) {
+      case 'addContract':
+        realFormKey.value = FormDesignKeyEnum.CONTACT;
+        formDrawerVisible.value = true;
+        return;
+      case 'followRecord':
+        realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD;
+        formDrawerVisible.value = true;
+        return;
+      case 'followPlan':
+        realFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN;
+        formDrawerVisible.value = true;
+        return;
+      case 'edit':
+        realFormKey.value = props.formKey;
+        realSourceId.value = props.sourceId;
+        formDrawerVisible.value = true;
+        return;
+      default:
+        break;
+    }
+    emit('buttonSelect', key);
+  }
 </script>
 
 <style lang="less" scoped>

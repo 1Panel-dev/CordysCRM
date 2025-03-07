@@ -11,13 +11,14 @@
   >
     <template #header>
       <div class="flex items-center justify-between">
-        {{ props.title }}
+        {{ formCreateTitle }}
         <n-button class="p-[8px]" quaternary @click="handleBack">
           <CrmIcon type="iconicon_close" :size="18" />
         </n-button>
       </div>
     </template>
     <CrmFormCreate
+      v-if="visible"
       v-model:list="fieldList"
       :form-detail="formDetail"
       :form-config="formConfig"
@@ -43,7 +44,6 @@
 
   const props = defineProps<{
     sourceId?: string;
-    title: string;
     formKey: FormDesignKeyEnum;
   }>();
 
@@ -54,11 +54,20 @@
     required: true,
   });
 
-  const { fieldList, formConfig, formDetail, unsaved, loading, initFormConfig, initFormDetail, saveForm } =
-    useFormCreateApi({
-      sourceId: props.sourceId,
-      formKey: props.formKey,
-    });
+  const {
+    fieldList,
+    formConfig,
+    formDetail,
+    unsaved,
+    loading,
+    formCreateTitle,
+    initFormConfig,
+    initFormDetail,
+    saveForm,
+  } = useFormCreateApi({
+    formKey: toRefs(props).formKey,
+    sourceId: toRefs(props).sourceId,
+  });
 
   watch(
     () => [fieldList.value, formConfig.value],

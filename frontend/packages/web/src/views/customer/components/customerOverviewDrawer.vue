@@ -7,19 +7,31 @@
     :button-list="buttonList"
     title="1"
     subtitle="2"
+    :form-key="FormDesignKeyEnum.CUSTOMER"
+    :source-id="props.sourceId"
   >
+    <template #left>
+      <CrmFormDescription :form-key="FormDesignKeyEnum.CUSTOMER" :source-id="props.sourceId" />
+    </template>
     <template #right>
-      <div v-if="activeTab === 'overview'" class="h-[1000px] bg-[var(--text-n10)]"></div>
+      <div v-if="activeTab === 'overview'" class="mt-[16px] h-[100px] bg-[var(--text-n10)]"></div>
     </template>
   </CrmOverviewDrawer>
 </template>
 
 <script setup lang="ts">
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
 
   import { useI18n } from '@/hooks/useI18n';
+
+  const props = defineProps<{
+    sourceId: string;
+  }>();
 
   const { t } = useI18n();
 
@@ -36,8 +48,29 @@
       class: 'n-btn-outline-primary',
     },
     {
-      label: t('org.resetPassWord'),
-      key: 'resetPassWord',
+      label: t('overviewDrawer.addContract'),
+      key: 'addContract',
+      text: false,
+      ghost: true,
+      class: 'n-btn-outline-primary',
+    },
+    {
+      label: t('overviewDrawer.followRecord'),
+      key: 'followRecord',
+      text: false,
+      ghost: true,
+      class: 'n-btn-outline-primary',
+    },
+    {
+      label: t('overviewDrawer.followPlan'),
+      key: 'followPlan',
+      text: false,
+      ghost: true,
+      class: 'n-btn-outline-primary',
+    },
+    {
+      label: t('common.delete'),
+      key: 'delete',
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',

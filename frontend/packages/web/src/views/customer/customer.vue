@@ -31,10 +31,9 @@
     :source-ids="checkedRowKeys"
     :module-type="ModuleConfigEnum.CLUE_MANAGEMENT"
   />
-  <customerOverviewDrawer v-model:show="showOverviewDrawer" />
+  <customerOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeCustomerId" />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
-    :title="t('customer.new')"
     :form-key="FormDesignKeyEnum.CUSTOMER"
     :source-id="activeCustomerId"
   />

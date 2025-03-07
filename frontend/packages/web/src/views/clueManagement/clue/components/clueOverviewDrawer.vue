@@ -7,6 +7,7 @@
     :button-list="buttonList"
     title="111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
     subtitle="啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊"
+    :form-key="FormDesignKeyEnum.LEAD"
   >
     <template #right>
       <div v-if="activeTab === 'overview'" class="h-[1000px] bg-[var(--text-n10)]"></div>
@@ -15,6 +16,8 @@
 </template>
 
 <script setup lang="ts">
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';

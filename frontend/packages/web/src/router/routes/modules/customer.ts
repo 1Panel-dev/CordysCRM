@@ -23,11 +23,11 @@ const customer: AppRouteRecordRaw = {
       },
     },
     {
-      path: 'contract',
-      name: CustomerRouteEnum.CUSTOMER_CONTRACT,
-      component: () => import('@/views/customer/contract.vue'),
+      path: 'contact',
+      name: CustomerRouteEnum.CUSTOMER_CONTACT,
+      component: () => import('@/views/customer/contact.vue'),
       meta: {
-        locale: 'menu.contract',
+        locale: 'menu.contact',
         isTopMenu: true,
         permissions: [],
       },

@@ -23,7 +23,7 @@ export default {
     'menu.opportunity': '商机管理',
     'menu.clue': '线索',
     'menu.customer': '客户',
-    'menu.contract': '联系人',
+    'menu.contact': '联系人',
     'menu.settings.org': '组织架构',
     'menu.settings.permission': '角色权限',
     'menu.settings.moduleSetting': '模块设置',
