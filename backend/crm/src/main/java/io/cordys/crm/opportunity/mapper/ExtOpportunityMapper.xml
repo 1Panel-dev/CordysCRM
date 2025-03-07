@@ -18,4 +18,19 @@
                 INNER JOIN customer c ON o.customer_id = c.id
         where o.organization_id = #{orgId}
     </select>
+
+
+
+    <select id="selectByProducts" resultType="java.lang.String">
+        SELECT
+            products
+        FROM
+            opportunity
+        WHERE
+        <foreach collection="request.products" item="product" separator="or" open="(" close=")">
+            JSON_CONTAINS(products, JSON_ARRAY(#{product}))
+        </foreach>
+          AND organization_id = #{orgId}
+          AND customer_id = #{request.customerId}
+    </select>
 </mapper>

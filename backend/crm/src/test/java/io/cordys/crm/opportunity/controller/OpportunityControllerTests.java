@@ -1,23 +1,21 @@
 package io.cordys.crm.opportunity.controller;
 
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.pager.Pager;
-import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
-import io.cordys.crm.customer.dto.response.CustomerListResponse;
-import io.cordys.crm.opportunity.domain.Opportunity;
-import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
-import org.junit.jupiter.api.*;
+import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -44,7 +42,7 @@ public class OpportunityControllerTests extends BaseTest {
 
 
     @Test
-    @Order(1)
+    @Order(2)
     void testPage() throws Exception {
         CustomerPageRequest request = new CustomerPageRequest();
         request.setCurrent(1);
@@ -53,6 +51,23 @@ public class OpportunityControllerTests extends BaseTest {
     }
 
 
+    @Sql(scripts = {"/dml/init_opportunity_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Test
+    @Order(1)
+    void testAdd() throws Exception {
+        OpportunityAddRequest request = new OpportunityAddRequest();
+        request.setName("商机1");
+        request.setCustomerId("123");
+        request.setAmount(BigDecimal.valueOf(1.1));
+        request.setProducts(List.of("11"));
+        request.setPossible(BigDecimal.valueOf(1.2));
+        request.setContactId("12345");
+        request.setOwner("admin");
+        this.requestPostWithOk(DEFAULT_ADD, request);
 
-
+        request.setProducts(List.of("11", "22"));
+        this.requestPost(DEFAULT_ADD, request);
+    }
 }

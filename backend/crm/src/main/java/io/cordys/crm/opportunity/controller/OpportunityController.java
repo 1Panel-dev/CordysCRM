@@ -7,12 +7,13 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.service.OpportunityService;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormService;
+import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -36,7 +37,7 @@ public class OpportunityController {
     @GetMapping("/module/form")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
-    public ModuleFormConfigDTO getModuleFormConfig(){
+    public ModuleFormConfigDTO getModuleFormConfig() {
         return moduleFormService.getConfig(FormKey.BUSINESS.getKey(), OrganizationContext.getOrganizationId());
     }
 
@@ -44,9 +45,17 @@ public class OpportunityController {
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机列表")
-    public Pager<List<OpportunityListResponse>> list(@Validated @RequestBody OpportunityPageRequest request){
+    public Pager<List<OpportunityListResponse>> list(@Validated @RequestBody OpportunityPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, opportunityService.list(request, OrganizationContext.getOrganizationId()));
+    }
+
+
+    @PostMapping("/add")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD)
+    @Operation(summary = "添加商机")
+    public void add(@Validated @RequestBody OpportunityAddRequest request) {
+        opportunityService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 }

@@ -3,11 +3,10 @@ package io.cordys.crm.opportunity.domain;
 import jakarta.persistence.Table;
 import io.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 
 @Data
@@ -17,7 +16,7 @@ public class Opportunity extends BaseModel {
 	@Schema(description = "客户id")
 	private String customerId;
 
-	@Schema(description = "客户名称")
+	@Schema(description = "商机名称")
 	private String name;
 
 	@Schema(description = "金额")
@@ -27,7 +26,7 @@ public class Opportunity extends BaseModel {
 	private BigDecimal possible;
 
 	@Schema(description = "意向产品id")
-	private String productId;
+	private List<String> products;
 
 	@Schema(description = "组织id")
 	private String organizationId;
@@ -41,7 +40,7 @@ public class Opportunity extends BaseModel {
 	@Schema(description = "联系人")
 	private String contactId;
 
-	@Schema(description = "联系人")
+	@Schema(description = "责任人")
 	private String owner;
 
 	@Schema(description = "剩余归属天数")

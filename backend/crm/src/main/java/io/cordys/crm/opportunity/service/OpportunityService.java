@@ -1,10 +1,22 @@
 package io.cordys.crm.opportunity.service;
 
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
+import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.JSON;
+import io.cordys.common.util.Translator;
+import io.cordys.crm.opportunity.constants.StageType;
+import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityField;
+import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import io.cordys.crm.system.domain.Product;
+import io.cordys.crm.system.service.LogService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -26,6 +38,15 @@ public class OpportunityService {
     private BaseService baseService;
     @Resource
     private BaseMapper<OpportunityField> opportunityFieldMapper;
+    @Resource
+    private OpportunityFieldService opportunityFieldService;
+    @Resource
+    private LogService logService;
+    @Resource
+    private BaseMapper<Opportunity> opportunityMapper;
+    @Resource
+    private BaseMapper<Product> productMapper;
+
 
     public List<OpportunityListResponse> list(OpportunityPageRequest request, String orgId) {
         List<OpportunityListResponse> list = extOpportunityMapper.list(request, orgId);
@@ -55,13 +76,74 @@ public class OpportunityService {
             return Map.of();
         }
         List<OpportunityField> opportunityFields = getOpportunityFieldsByOpportunityIds(opportunityIds);
-        return opportunityFields.stream().collect(Collectors.groupingBy(OpportunityField::getOpportunityId));
+        return opportunityFields.stream().collect(Collectors.groupingBy(OpportunityField::getResourceId));
     }
 
 
     private List<OpportunityField> getOpportunityFieldsByOpportunityIds(List<String> opportunityIds) {
         LambdaQueryWrapper<OpportunityField> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(OpportunityField::getOpportunityId, opportunityIds);
+        wrapper.in(OpportunityField::getResourceId, opportunityIds);
         return opportunityFieldMapper.selectListByLambda(wrapper);
+    }
+
+
+    /**
+     * 新建商机
+     *
+     * @param request
+     * @param operatorId
+     * @param orgId
+     * @return
+     */
+    public void add(OpportunityAddRequest request, String operatorId, String orgId) {
+        checkOpportunity(request, orgId);
+        Opportunity opportunity = new Opportunity();
+        String id = IDGenerator.nextStr();
+        opportunity.setId(id);
+        opportunity.setName(request.getName());
+        opportunity.setCustomerId(request.getCustomerId());
+        opportunity.setAmount(request.getAmount());
+        opportunity.setPossible(request.getPossible());
+        opportunity.setProducts(request.getProducts());
+        opportunity.setOrganizationId(orgId);
+        opportunity.setStage(StageType.CREATE.name());
+        opportunity.setContactId(request.getContactId());
+        opportunity.setOwner(request.getOwner());
+        opportunity.setCreateTime(System.currentTimeMillis());
+        opportunity.setCreateUser(operatorId);
+        opportunity.setUpdateTime(System.currentTimeMillis());
+        opportunity.setUpdateUser(operatorId);
+        opportunity.setStatus(true);
+        //TODO 商机规则 计算归属日期
+        opportunityMapper.insert(opportunity);
+
+        //自定义字段
+        opportunityFieldService.saveModuleField(id, request.getModuleFields());
+        //日志
+        LogDTO logDTO = new LogDTO(orgId, id, operatorId, LogType.ADD, LogModule.OPPORTUNITY, request.getName());
+        logDTO.setOriginalValue(null);
+        logDTO.setModifiedValue(opportunity);
+        logService.add(logDTO);
+
+    }
+
+
+    /**
+     * 校验商机
+     *
+     * @param request
+     * @param orgId
+     */
+    private void checkOpportunity(OpportunityAddRequest request, String orgId) {
+        List<String> products = extOpportunityMapper.selectByProducts(request, orgId);
+        if (CollectionUtils.isNotEmpty(products)) {
+            List<String> ids = JSON.parseArray(products.getFirst(), String.class);
+            String projectId = request.getProducts().stream()
+                    .filter(ids::contains)
+                    .toList().getFirst();
+            Product product = productMapper.selectByPrimaryKey(projectId);
+
+            throw new GenericException(String.format(Translator.get("opportunity_exist"), product.getName()));
+        }
     }
 }

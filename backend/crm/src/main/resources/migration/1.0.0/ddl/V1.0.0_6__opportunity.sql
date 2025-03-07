@@ -34,7 +34,7 @@ CREATE TABLE opportunity
     `name`            VARCHAR(255)    NOT NULL COMMENT '商机名称',
     `amount`          DECIMAL(20, 10) NOT NULL COMMENT '金额',
     `possible`        DECIMAL(20, 10) NOT NULL COMMENT '可能性',
-    `product_id`      VARCHAR(32)     NOT NULL COMMENT '意向产品',
+    `products`        VARCHAR(1000)   NOT NULL COMMENT '意向产品',
     `organization_id` VARCHAR(32)     NOT NULL COMMENT '组织id',
     `stage`           VARCHAR(32)     NOT NULL COMMENT '商机阶段',
     `status`          BIT(1)          NOT NULL DEFAULT 1 COMMENT '状态',
@@ -73,7 +73,7 @@ CREATE INDEX idx_resource_id_field_id_field_value ON opportunity_field (resource
 CREATE TABLE opportunity_field_blob
 (
     `id`          VARCHAR(32) NOT NULL COMMENT 'id',
-    `resource_id` VARCHAR(32) NOT NULL COMMENT '客户id',
+    `resource_id` VARCHAR(32) NOT NULL COMMENT '商机id',
     `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
     `field_value` BLOB        NOT NULL COMMENT '自定义属性值',
     PRIMARY KEY (id)

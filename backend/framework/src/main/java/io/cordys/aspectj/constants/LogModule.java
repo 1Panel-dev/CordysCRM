@@ -56,6 +56,10 @@ public class LogModule {
      * 跟进计划
      */
     public static final String FOLLOW_UP_PLAN = "FOLLOW_UP_PLAN";
+    /**
+     * 商机
+     */
+    public static final String OPPORTUNITY = "OPPORTUNITY";
 
     //todo end
 

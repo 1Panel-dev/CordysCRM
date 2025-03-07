@@ -5,6 +5,6 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
-@Table(name = "opportunity_field")
-public class OpportunityField extends BaseResourceField {
+@Table(name = "opportunity_field_blob")
+public class OpportunityFieldBlob extends BaseResourceField {
 }
