@@ -17,7 +17,7 @@
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
-  import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method/index';
+  import { getQueryVariable } from '@lib/shared/method/index';
 
   import { getWeComOauthCallback } from '@/api/modules/system/login';
   import useLoading from '@/hooks/useLoading';
