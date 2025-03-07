@@ -187,6 +187,8 @@
     const res: FormCreateField = {
       ...item,
       id: getGenerateId(),
+      internalKey: undefined,
+      businessKey: undefined,
     };
     if (
       [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT].includes(item.type) &&

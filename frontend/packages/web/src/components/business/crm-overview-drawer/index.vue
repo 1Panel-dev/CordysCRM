@@ -19,7 +19,7 @@
       <CrmButtonGroup :list="props.buttonList" not-show-divider @select="(key) => emit('buttonSelect', key)" />
     </template>
     <div class="h-full w-full overflow-hidden">
-      <CrmSplitPanel :max="0.5" :min="0.2" :default-size="0.2">
+      <CrmSplitPanel :max="0.5" :min="0.2" :default-size="0.2" disabled>
         <template #1>
           <slot name="left" />
         </template>

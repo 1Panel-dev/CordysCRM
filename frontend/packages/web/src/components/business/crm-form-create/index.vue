@@ -6,16 +6,18 @@
     :require-mark-placement="props.formConfig.labelPos === 'left' ? 'left' : 'right'"
     class="crm-form-create"
   >
-    <template v-for="item in list" :key="item.id">
-      <div v-if="item.show !== false" class="crm-form-create-item" :style="{ width: `${item.fieldWidth * 100}%` }">
-        <component
-          :is="getItemComponent(item.type)"
-          :field-config="item"
-          :path="item.id"
-          @change="($event: any) => handleFieldChange($event, item)"
-        />
-      </div>
-    </template>
+    <n-scrollbar>
+      <template v-for="item in list" :key="item.id">
+        <div v-if="item.show !== false" class="crm-form-create-item" :style="{ width: `${item.fieldWidth * 100}%` }">
+          <component
+            :is="getItemComponent(item.type)"
+            :field-config="item"
+            :path="item.id"
+            @change="($event: any) => handleFieldChange($event, item)"
+          />
+        </div>
+      </template>
+    </n-scrollbar>
     <div class="crm-form-create-footer" :class="props.formConfig.optBtnPos">
       <n-button v-if="formConfig.optBtnContent[0].enable" type="primary" @click="handleSave(false)">
         {{ formConfig.optBtnContent[0].text }}
@@ -31,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-  import { FormInst, NButton, NForm } from 'naive-ui';
+  import { FormInst, NButton, NForm, NScrollbar } from 'naive-ui';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { FormConfig } from '@lib/shared/models/system/module';
@@ -128,32 +130,34 @@
     });
   }
 
-  onBeforeMount(() => {
-    list.value.forEach((item) => {
-      if (!form.value[item.id]) {
-        form.value[item.id] = item.defaultValue;
-      }
-      const fullRules: FormCreateFieldRule[] = [];
-      rules.forEach((rule) => {
-        // 遍历规则集合，将全量的规则配置载入
-        const staticRule = item.rules.find((e) => e.key === rule.key);
-        if (staticRule) {
-          staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
-          fullRules.push(staticRule);
+  watch(
+    () => list.value,
+    () => {
+      list.value.forEach((item) => {
+        if (!form.value[item.id]) {
+          form.value[item.id] = item.defaultValue;
         }
+        const fullRules: FormCreateFieldRule[] = [];
+        rules.forEach((rule) => {
+          // 遍历规则集合，将全量的规则配置载入
+          const staticRule = rules.find((e) => e.key === rule.key);
+          if (staticRule) {
+            staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
+            fullRules.push(staticRule);
+          }
+        });
+        item.rules = fullRules;
       });
-      item.rules = fullRules;
-    });
-  });
+    },
+    { immediate: true }
+  );
 </script>
 
 <style lang="less">
   .crm-form-create {
     @apply relative flex h-full flex-col;
-
-    padding: 24px 24px 0;
     .crm-form-create-item {
-      @apply relative cursor-move self-start;
+      @apply relative self-start;
 
       padding: 16px;
       border-radius: var(--border-radius-small);
@@ -168,7 +172,7 @@
     .crm-form-create-footer {
       @apply relative flex w-full;
 
-      padding: 12px 0;
+      padding: 12px 16px;
       border-top: 1px solid var(--text-n8);
       gap: 8px;
     }

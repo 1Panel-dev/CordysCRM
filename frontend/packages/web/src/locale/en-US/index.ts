@@ -26,6 +26,8 @@ export default {
     'menu.settings.moduleSetting': 'Module',
     'menu.opportunity': 'Opportunity',
     'menu.clue': 'Clue',
+    'menu.customer': 'Customer',
+    'menu.contract': 'Contract',
     'menu.settings.businessSetting': 'Enterprise',
     'menu.settings.log': 'Log',
     'navbar.action.locale': 'Switch to English',

@@ -168,7 +168,7 @@
         ? {
             renderFilterIcon: (options: { active: boolean; show: boolean }) => {
               return h(CrmIcon, {
-                type: 'iconicon_filter1',
+                type: 'iconicon_filter',
                 size: 16,
                 color: options.active ? 'var( --primary-8)' : 'var(--text-n2)',
               });

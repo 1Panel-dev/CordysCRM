@@ -18,8 +18,16 @@ export enum ClueRouteEnum {
   CLUE_MANAGEMENT_POOL = 'clueManagementPool',
 }
 
+export enum CustomerRouteEnum {
+  CUSTOMER = 'customer',
+  CUSTOMER_INDEX = 'customerIndex',
+  CUSTOMER_CONTRACT = 'customerContract',
+  CUSTOMER_OPEN_SEA = 'customerOpenSea',
+}
+
 export const AppRouteEnum = {
   ...SystemRouteEnum,
   ...OpportunityRouteEnum,
   ...ClueRouteEnum,
+  ...CustomerRouteEnum,
 };

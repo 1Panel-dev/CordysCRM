@@ -42,7 +42,7 @@
         </div>
         <n-divider />
         <div class="ml-[8px] w-full cursor-pointer px-[8px]" @click="() => appStore.setMenuCollapsed(!collapsed)">
-          <CrmIconFont :type="collapsed ? 'iconicon_menu_fold1' : 'iconicon_menu_unfold1'" :size="16" />
+          <CrmIcon :type="collapsed ? 'iconicon_menu_fold1' : 'iconicon_menu_unfold1'" :size="16" />
         </div>
       </div>
     </div>
@@ -54,7 +54,6 @@
   import { NDivider, NLayoutSider, NMenu, NTag } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';
@@ -86,6 +85,11 @@
   }
 
   const menuOptions = [
+    {
+      label: t('module.customerManagement'),
+      key: AppRouteEnum.CUSTOMER,
+      icon: renderIcon('iconicon_multiple_choice_of_members'),
+    },
     {
       label: t('module.clueManagement'),
       key: AppRouteEnum.CLUE_MANAGEMENT_CLUE,
@@ -130,7 +134,11 @@
   }
 
   onBeforeMount(() => {
-    menuValue.value = router.currentRoute.value.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+    if (router.currentRoute.value.meta.isTopMenu) {
+      menuValue.value = router.currentRoute.value.matched[0].name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+    } else {
+      menuValue.value = router.currentRoute.value.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+    }
   });
 </script>
 

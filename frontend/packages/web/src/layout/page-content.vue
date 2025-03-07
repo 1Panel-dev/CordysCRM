@@ -5,9 +5,11 @@
       <div class="h-full w-full overflow-hidden">
         <n-scrollbar content-style="min-height: 500px;height: 100%;width: 100%">
           <div class="page-content">
-            <keep-alive :include="[]">
-              <component :is="Component" :key="route.name" />
-            </keep-alive>
+            <Suspense>
+              <keep-alive :include="[]">
+                <component :is="Component" :key="route.name" />
+              </keep-alive>
+            </Suspense>
           </div>
         </n-scrollbar>
       </div>

@@ -5,6 +5,7 @@
     :max="props.max"
     :min="props.min"
     :class="isExpandAnimating ? 'n-split-panel--animating' : ''"
+    :disabled="props.disabled"
   >
     <template #1><slot name="1"></slot></template>
     <template #2>
@@ -25,6 +26,7 @@
     defaultSize: number | string;
     max: number | string;
     min: number | string;
+    disabled?: boolean;
   }>();
 
   const size = defineModel<number | string>('size', {

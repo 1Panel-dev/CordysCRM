@@ -235,4 +235,11 @@
   );
 </script>
 
-<style scoped></style>
+<style lang="less" scoped>
+  .addMemberTransfer {
+    @apply flex-1;
+    :deep(.n-transfer-list) {
+      @apply h-full;
+    }
+  }
+</style>

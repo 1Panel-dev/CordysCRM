@@ -8,6 +8,8 @@ import { getFormConfigApiMap, getFormListApiMap } from '@/components/business/cr
 
 export interface FormCreateTableProps {
   formKey: FormDesignKeyEnum;
+  operationColumn?: CrmDataTableColumn;
+  specialRender?: Record<string, (row: any) => void>;
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
@@ -27,37 +29,57 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     try {
       loading.value = true;
       const res = await getFormConfigApiMap[props.formKey]();
-      columns = res.fields.map((field) => {
-        if (
-          [
-            FieldTypeEnum.RADIO,
-            FieldTypeEnum.CHECKBOX,
-            FieldTypeEnum.SELECT,
-            FieldTypeEnum.MEMBER,
-            FieldTypeEnum.DEPARTMENT,
-          ].includes(field.type)
-        ) {
-          // 带筛选的列
+      columns = res.fields
+        .filter((e) => e.type !== FieldTypeEnum.DIVIDER)
+        .map((field) => {
+          if (
+            [
+              FieldTypeEnum.RADIO,
+              FieldTypeEnum.CHECKBOX,
+              FieldTypeEnum.SELECT,
+              FieldTypeEnum.MEMBER,
+              FieldTypeEnum.DEPARTMENT,
+            ].includes(field.type)
+          ) {
+            // 带筛选的列
+            return {
+              title: field.name,
+              width: 150,
+              key: field.businessKey || field.id,
+              ellipsis: {
+                tooltip: true,
+              },
+              filterOptions: field.options,
+              filter: true,
+            };
+          }
+          if (field.businessKey === 'name') {
+            return {
+              title: field.name,
+              width: 150,
+              key: field.businessKey,
+              ellipsis: {
+                tooltip: true,
+              },
+              sortOrder: false,
+              sorter: true,
+              render: props.specialRender?.[field.businessKey],
+            };
+          }
           return {
             title: field.name,
+            width: 120,
             key: field.businessKey || field.id,
             ellipsis: {
               tooltip: true,
             },
-            filterOptions: field.options,
-            filter: true,
+            sortOrder: false,
+            sorter: true,
           };
-        }
-        return {
-          title: field.name,
-          key: field.businessKey || field.id,
-          ellipsis: {
-            tooltip: true,
-          },
-          sortOrder: false,
-          sorter: true,
-        };
-      });
+        });
+      if (props.operationColumn) {
+        columns.push(props.operationColumn);
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

@@ -33,7 +33,7 @@
         >
           <n-button class="p-[8px]" quaternary>
             <template #icon>
-              <CrmIconFont type="icon-icon_translation" :size="14" class="text-[var(--text-n4)]" />
+              <LanguageOutline />
             </template>
           </n-button>
         </n-popselect>
@@ -44,10 +44,10 @@
 
 <script setup lang="ts">
   import { NButton, NLayoutHeader, NPopselect, NTooltip } from 'naive-ui';
+  import { LanguageOutline } from '@vicons/ionicons5';
 
   import { LocaleType } from '@lib/shared/types/global';
 
-  import CrmIconFont from '@/components/pure/crm-icon-font/index.vue';
   import CrmTopMenu from '@/components/business/crm-top-menu/index.vue';
 
   import { LOCALE_OPTIONS } from '@/locale/index';

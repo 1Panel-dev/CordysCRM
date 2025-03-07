@@ -292,11 +292,4 @@
   });
 </script>
 
-<style lang="less">
-  .addMemberTransfer {
-    @apply flex-1;
-    .n-transfer-list {
-      @apply h-full;
-    }
-  }
-</style>
+<style lang="less"></style>

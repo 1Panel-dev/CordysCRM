@@ -6,14 +6,14 @@
     :closable="false"
     :close-on-esc="false"
     :loading="loading"
-    :title="props.title"
     header-class="crm-form-drawer-header"
     body-content-class="!p-0"
   >
     <template #header>
-      <div class="flex items-center justify-end">
-        <n-button type="primary" @click="handleBack">
-          <Close />
+      <div class="flex items-center justify-between">
+        {{ props.title }}
+        <n-button class="p-[8px]" quaternary @click="handleBack">
+          <CrmIcon type="iconicon_close" :size="18" />
         </n-button>
       </div>
     </template>
@@ -29,11 +29,11 @@
 
 <script setup lang="ts">
   import { NButton } from 'naive-ui';
-  import { Close } from '@vicons/ionicons5';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { useI18n } from '@/hooks/useI18n';
