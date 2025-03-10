@@ -1,0 +1,20 @@
+package io.cordys.crm.clue.domain;
+
+import io.cordys.common.domain.BaseModel;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Table;
+import lombok.Data;
+
+@Data
+@Table(name = "clue_capacity")
+public class ClueCapacity extends BaseModel {
+
+	@Schema(description = "组织ID")
+	private String organizationId;
+
+	@Schema(description = "范围ID")
+	private String scopeId;
+
+	@Schema(description = "库容")
+	private int capacity;
+}

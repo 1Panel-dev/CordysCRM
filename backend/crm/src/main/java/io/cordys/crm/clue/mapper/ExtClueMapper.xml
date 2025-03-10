@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.cordys.crm.clue.mapper.ExtClueMapper">
+    <update id="batchTransfer">
+        update `clue`
+        set owner = #{request.owner}
+        where id in
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="list" resultType="io.cordys.crm.clue.dto.response.ClueListResponse">
+        select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user,
+               c.update_user, c.collection_time, c.contact, c.phone
+        from `clue` c
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on c.owner = sou.user_id
+            and sou.dept_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+        </if>
+
+        where c.organization_id = #{orgId} and c.in_shared_pool is false
+
+        <if test="dataPermission != null and dataPermission.self">
+          and c.owner = #{userId}
+        </if>
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and c.name like concat('%', #{request.keyword},'%')
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type" />
+                order by
+                <choose>
+                    <when test="${sort}.name == 'name'">
+                        c.`name` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'owner'">
+                        c.`owner` ${sortType}
+                    </when>
+                    <otherwise>
+                        sort_table.field_value ${sortType}
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by c.create_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="fieldConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <if test="condition.name != 'name' and condition.name != 'owner'">
+                    inner join clue_field ${tablePrefix}_${i}
+                    on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="fieldSortJoin">
+        <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'owner'">
+            <bind name="sortName" value="${sort}.name"/>
+            left join clue_field sort_table
+            on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+        </if>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                        <property name="fieldTable" value="filter_${i}.field_value"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="combine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="combine_${i}.field_value"/>
+                        </include>
+                        <include refid="io.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.name == 'name'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.name"/>
+                </include>
+            </when>
+            <when test="condition.name == 'owner'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.owner"/>
+                </include>
+            </when>
+            <otherwise>
+                <include refid="io.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${fieldTable}"/>
+                </include>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="checkAddExist" resultType="java.lang.Boolean">
+        select count(1)
+        from `clue`
+        where name = #{clue.name} and organization_id = #{clue.organizationId} limit 1
+    </select>
+
+    <select id="checkUpdateExist" resultType="java.lang.Boolean">
+        select count(1)
+        from `clue`
+        where name = #{clue.name}
+        and organization_id = (
+            select organization_id from clue where id = #{clue.id}
+        )
+        and id != #{clue.id} limit 1
+    </select>
+
+    <select id="selectOptionByIds" resultType="io.cordys.common.dto.OptionDTO">
+        select id, name
+        from `clue`
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+</mapper>

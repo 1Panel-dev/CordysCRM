@@ -8,7 +8,7 @@ public enum FormKey {
 	/**
 	 * 线索
 	 */
-	LEAD("lead"),
+	CLUE("clue"),
 	/**
 	 * 客户
 	 */

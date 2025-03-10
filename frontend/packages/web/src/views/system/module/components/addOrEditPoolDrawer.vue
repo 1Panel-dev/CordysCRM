@@ -158,7 +158,7 @@
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
-  import type { LeadPoolForm, LeadPoolItem, LeadPoolParams } from '@lib/shared/models/system/module';
+  import type { CluePoolForm, CluePoolItem, CluePoolParams } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import { timeFormItem } from '@/components/business/crm-batch-form/config';
@@ -166,7 +166,7 @@
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
-  import { addCustomerPool, addLeadPool, updateCustomerPool, updateLeadPool } from '@/api/modules/system/module';
+  import { addCustomerPool, addCluePool, updateCustomerPool, updateCluePool } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
@@ -180,7 +180,7 @@
     required: true,
   });
 
-  const row = defineModel<LeadPoolItem>('row', {
+  const row = defineModel<CluePoolItem>('row', {
     required: false,
   });
 
@@ -197,7 +197,7 @@
     [`pickRule.pickNumber`]: [{ required: true, message: t('common.pleaseInput') }],
   };
 
-  const initForm: LeadPoolForm = {
+  const initForm: CluePoolForm = {
     name: '',
     adminIds: [],
     userIds: [],
@@ -219,7 +219,7 @@
     },
   };
 
-  const form = ref<LeadPoolForm>(cloneDeep(initForm));
+  const form = ref<CluePoolForm>(cloneDeep(initForm));
 
   const title = computed(() => {
     if (props.type === ModuleConfigEnum.CLUE_MANAGEMENT) {
@@ -291,7 +291,7 @@
     try {
       loading.value = true;
       const { userIds, adminIds, ...otherParams } = form.value;
-      const params: LeadPoolParams = {
+      const params: CluePoolParams = {
         ...otherParams,
         ownerIds: adminIds.map((e) => e.id),
         scopeIds: userIds.map((e) => e.id),
@@ -299,10 +299,10 @@
       if (form.value.id) {
         await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT
           ? updateCustomerPool(params)
-          : updateLeadPool(params));
+          : updateCluePool(params));
         Message.success(t('common.updateSuccess'));
       } else {
-        await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT ? addCustomerPool(params) : addLeadPool(params));
+        await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT ? addCustomerPool(params) : addCluePool(params));
         Message.success(t('common.addSuccess'));
       }
       if (isContinue) {
@@ -333,7 +333,7 @@
 
   watch(
     () => row.value,
-    (val?: LeadPoolItem) => {
+    (val?: CluePoolItem) => {
       if (val) {
         form.value = {
           id: val.id,

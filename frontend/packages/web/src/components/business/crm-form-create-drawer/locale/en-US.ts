@@ -1,5 +1,5 @@
 export default {
-  'crmFormCreate.drawer.lead': 'Lead',
+  'crmFormCreate.drawer.clue': 'Clue',
   'crmFormCreate.drawer.customer': 'Customer',
   'crmFormCreate.drawer.contact': 'Contact',
   'crmFormCreate.drawer.record': 'Follow-up Record',

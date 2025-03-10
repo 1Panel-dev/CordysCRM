@@ -107,7 +107,7 @@ public class FollowUpPlanService {
         plan.setCustomerId(request.getCustomerId());
         plan.setOpportunityId(request.getOpportunityId());
         plan.setType(request.getType());
-        plan.setLeadId(request.getLeadId());
+        plan.setClueId(request.getClueId());
         plan.setOwner(request.getOwner());
         plan.setContactId(request.getContactId());
         plan.setContent(request.getContent());

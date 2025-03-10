@@ -1,31 +1,31 @@
 import {
+  AddCluePoolUrl,
   AddCustomerPoolUrl,
-  AddLeadPoolUrl,
   addOpportunityRuleUrl,
+  DeleteCluePoolUrl,
   DeleteCustomerPoolUrl,
-  DeleteLeadPoolUrl,
   deleteOpportunityUrl,
+  GetClueCapacityPageUrl,
+  GetCluePoolPageUrl,
   GetCustomerCapacityPageUrl,
   GetCustomerPoolPageUrl,
   GetFormDesignConfigUrl,
-  GetLeadCapacityPageUrl,
-  GetLeadPoolPageUrl,
   getModuleNavConfigListUrl,
   getOpportunityListUrl,
   moduleNavListSortUrl,
   ModuleRoleTreeUrl,
   ModuleUserDeptTreeUrl,
+  NoPickCluePoolUrl,
   NoPickCustomerPoolUrl,
-  NoPickLeadPoolUrl,
+  SaveClueCapacityUrl,
   SaveCustomerCapacityUrl,
   SaveFormDesignConfigUrl,
-  SaveLeadCapacityUrl,
+  SwitchCluePoolStatusUrl,
   SwitchCustomerPoolStatusUrl,
-  SwitchLeadPoolStatusUrl,
   switchOpportunityStatusUrl,
   toggleModuleNavStatusUrl,
+  UpdateCluePoolUrl,
   UpdateCustomerPoolUrl,
-  UpdateLeadPoolUrl,
   updateOpportunityRuleUrl,
 } from '@lib/shared/api/requrls/system/module';
 import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
@@ -33,9 +33,9 @@ import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import type {
   CapacityItem,
   CapacityParams,
+  CluePoolItem,
+  CluePoolParams,
   FormDesignConfigDetailParams,
-  LeadPoolItem,
-  LeadPoolParams,
   ModuleNavBaseInfoItem,
   ModuleSortParams,
   OpportunityItem,
@@ -96,54 +96,54 @@ export function deleteOpportunity(ruleId: string) {
 }
 
 // 线索池相关API
-export function getLeadPoolPage(data: TableQueryParams) {
-  return CDR.post<CommonList<LeadPoolItem>>({ url: GetLeadPoolPageUrl, data });
+export function getCluePoolPage(data: TableQueryParams) {
+  return CDR.post<CommonList<CluePoolItem>>({ url: GetCluePoolPageUrl, data });
 }
 
-export function addLeadPool(data: LeadPoolParams) {
-  return CDR.post({ url: AddLeadPoolUrl, data });
+export function addCluePool(data: CluePoolParams) {
+  return CDR.post({ url: AddCluePoolUrl, data });
 }
 
-export function updateLeadPool(data: LeadPoolParams) {
-  return CDR.post({ url: UpdateLeadPoolUrl, data });
+export function updateCluePool(data: CluePoolParams) {
+  return CDR.post({ url: UpdateCluePoolUrl, data });
 }
 
-export function switchLeadPoolStatus(id: string) {
-  return CDR.get({ url: `${SwitchLeadPoolStatusUrl}/${id}` });
+export function switchCluePoolStatus(id: string) {
+  return CDR.get({ url: `${SwitchCluePoolStatusUrl}/${id}` });
 }
 
-export function deleteLeadPool(id: string) {
-  return CDR.get({ url: `${DeleteLeadPoolUrl}/${id}` });
+export function deleteCluePool(id: string) {
+  return CDR.get({ url: `${DeleteCluePoolUrl}/${id}` });
 }
 
-export function noPickLeadPool(id: string) {
-  return CDR.get({ url: `${NoPickLeadPoolUrl}/${id}` });
+export function noPickCluePool(id: string) {
+  return CDR.get({ url: `${NoPickCluePoolUrl}/${id}` });
 }
 
 // 库容相关API
 export function getCapacityPage(type: ModuleConfigEnum) {
   return CDR.get<CapacityItem[]>({
-    url: type === ModuleConfigEnum.CLUE_MANAGEMENT ? GetLeadCapacityPageUrl : GetCustomerCapacityPageUrl,
+    url: type === ModuleConfigEnum.CLUE_MANAGEMENT ? GetClueCapacityPageUrl : GetCustomerCapacityPageUrl,
   });
 }
 
 export function saveCapacity(data: CapacityParams[], type: ModuleConfigEnum) {
   return CDR.post({
-    url: type === ModuleConfigEnum.CLUE_MANAGEMENT ? SaveLeadCapacityUrl : SaveCustomerCapacityUrl,
+    url: type === ModuleConfigEnum.CLUE_MANAGEMENT ? SaveClueCapacityUrl : SaveCustomerCapacityUrl,
     data,
   });
 }
 
 // 公海相关API
 export function getCustomerPoolPage(data: TableQueryParams) {
-  return CDR.post<CommonList<LeadPoolItem>>({ url: GetCustomerPoolPageUrl, data });
+  return CDR.post<CommonList<CluePoolItem>>({ url: GetCustomerPoolPageUrl, data });
 }
 
-export function addCustomerPool(data: LeadPoolParams) {
+export function addCustomerPool(data: CluePoolParams) {
   return CDR.post({ url: AddCustomerPoolUrl, data });
 }
 
-export function updateCustomerPool(data: LeadPoolParams) {
+export function updateCustomerPool(data: CluePoolParams) {
   return CDR.post({ url: UpdateCustomerPoolUrl, data });
 }
 

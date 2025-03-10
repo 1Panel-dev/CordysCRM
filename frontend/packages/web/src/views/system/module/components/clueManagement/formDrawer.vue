@@ -1,5 +1,5 @@
 <template>
-  <CrmFormDrawer v-model:visible="visible" :title="title" :form-key="FormDesignKeyEnum.LEAD"> </CrmFormDrawer>
+  <CrmFormDrawer v-model:visible="visible" :title="title" :form-key="FormDesignKeyEnum.CLUE"> </CrmFormDrawer>
 </template>
 
 <script setup lang="ts">

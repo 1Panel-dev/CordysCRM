@@ -9,7 +9,7 @@ export enum TableKeyEnum {
   CUSTOMER_CONTRACT = 'customerContract',
   CUSTOMER_FOLLOW_RECORD = 'customerFollowRecord',
   CUSTOMER_FOLLOW_PLAN = 'customerFollowPlan',
-  LEAD = 'lead',
+  CLUE = 'clue',
   PRODUCT = 'product',
   BUSINESS = 'business',
 }

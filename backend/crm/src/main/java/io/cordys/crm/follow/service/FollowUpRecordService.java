@@ -111,7 +111,7 @@ public class FollowUpRecordService {
         record.setCustomerId(request.getCustomerId());
         record.setOpportunityId(request.getOpportunityId());
         record.setType(request.getType());
-        record.setLeadId(request.getLeadId());
+        record.setClueId(request.getClueId());
         record.setOwner(request.getOwner());
         record.setContactId(request.getContactId());
         record.setContent(request.getContent());

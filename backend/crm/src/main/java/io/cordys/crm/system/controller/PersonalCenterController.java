@@ -28,7 +28,7 @@ public class PersonalCenterController {
 
     @GetMapping("/repeat/customer")
     @Operation(summary = "获取重复客户相关数据")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.LEAD_MANAGEMENT_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_READ}, logical = Logical.OR)
     public RepeatCustomerResponse getRepeatCustomer(@RequestParam(value = "name") String name) {
         return personalCenterService.getRepeatCustomer(OrganizationContext.getOrganizationId(),SessionUtils.getUserId(),name);
     }

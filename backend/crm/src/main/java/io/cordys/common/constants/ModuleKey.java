@@ -16,7 +16,7 @@ public enum ModuleKey {
 	/**
 	 * 线索管理
 	 */
-	LEAD("lead"),
+	CLUE("clue"),
 	/**
 	 * 商机管理
 	 */

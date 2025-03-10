@@ -1,5 +1,5 @@
 export default {
-  'crmFormCreate.drawer.lead': '线索',
+  'crmFormCreate.drawer.clue': '线索',
   'crmFormCreate.drawer.customer': '客户',
   'crmFormCreate.drawer.contact': '联系人',
   'crmFormCreate.drawer.record': '跟进记录',

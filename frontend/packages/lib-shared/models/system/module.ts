@@ -79,7 +79,7 @@ export interface OpportunityParams extends OpportunityDetail {
 }
 
 // 线索池领取规则
-export interface LeadPoolPickRuleParams {
+export interface CluePoolPickRuleParams {
   limitOnNumber: boolean; // 是否限制领取数量
   pickNumber?: number; // 领取数量
   limitPreOwner: boolean; // 是否限制前归属人领取
@@ -87,7 +87,7 @@ export interface LeadPoolPickRuleParams {
 }
 
 // 线索池回收规则
-export interface LeadPoolRecycleRuleParams {
+export interface CluePoolRecycleRuleParams {
   expireNotice: boolean; // 到期提醒
   noticeDays?: number; // 提前提醒天数
   operator: string; // 操作符
@@ -95,24 +95,24 @@ export interface LeadPoolRecycleRuleParams {
 }
 
 // 编辑线索池请求参数
-export interface LeadPoolParams {
+export interface CluePoolParams {
   id?: string; // ID
   name: string; // 线索池名称
   scopeIds: string[]; // 范围ID集合
   ownerIds: string[]; // 管理员ID集合
   enable: boolean; // 启用/禁用
   auto: boolean; // 自动回收
-  pickRule: LeadPoolPickRuleParams; // 领取规则
-  recycleRule: LeadPoolRecycleRuleParams; // 回收规则
+  pickRule: CluePoolPickRuleParams; // 领取规则
+  recycleRule: CluePoolRecycleRuleParams; // 回收规则
 }
 
-export interface LeadPoolForm extends Omit<LeadPoolParams, 'scopeIds' | 'ownerIds'> {
+export interface CluePoolForm extends Omit<CluePoolParams, 'scopeIds' | 'ownerIds'> {
   adminIds: SelectedUsersItem[];
   userIds: SelectedUsersItem[]; // 成员ID
 }
 
 // 线索池列表项
-export interface LeadPoolItem {
+export interface CluePoolItem {
   id: string;
   createUser: string;
   updateUser: string;
@@ -127,8 +127,8 @@ export interface LeadPoolItem {
   auto: boolean;
   members: SelectedUsersItem[];
   owners: SelectedUsersItem[];
-  pickRule: LeadPoolPickRuleParams; // 领取规则
-  recycleRule: LeadPoolRecycleRuleParams; // 回收规则
+  pickRule: CluePoolPickRuleParams; // 领取规则
+  recycleRule: CluePoolRecycleRuleParams; // 回收规则
 }
 
 // 库容参数

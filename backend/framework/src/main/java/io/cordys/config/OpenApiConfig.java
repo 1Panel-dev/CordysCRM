@@ -77,8 +77,8 @@ public class OpenApiConfig {
      * 配置潜在客户 API 文档。
      */
     @Bean
-    public GroupedOpenApi leadApi() {
-        return createApi("lead", PRE_PACKAGES + "lead");
+    public GroupedOpenApi clueApi() {
+        return createApi("clue", PRE_PACKAGES + "clue");
     }
 
     /**

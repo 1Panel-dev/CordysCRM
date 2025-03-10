@@ -90,7 +90,7 @@ CREATE TABLE follow_up_record
     `customer_id`     VARCHAR(32) COMMENT '客户id',
     `opportunity_id`  VARCHAR(32) COMMENT '商机id',
     `type`            VARCHAR(32) NOT NULL COMMENT '类型',
-    `lead_id`         VARCHAR(32) COMMENT '线索id',
+    `clue_id`         VARCHAR(32) COMMENT '线索id',
     `content`         VARCHAR(1000) NOT NULL   COMMENT '跟进内容' ,
     `organization_id` VARCHAR(32) NOT NULL COMMENT '组织id',
     `owner`           VARCHAR(32) NOT NULL COMMENT '负责人',
@@ -108,7 +108,7 @@ CREATE TABLE follow_up_record
 CREATE INDEX idx_customer_id ON follow_up_record (customer_id ASC);
 CREATE INDEX idx_organization_id ON follow_up_record (organization_id ASC);
 CREATE INDEX idx_opportunity_id ON follow_up_record (opportunity_id ASC);
-CREATE INDEX idx_lead_id ON follow_up_record (lead_id ASC);
+CREATE INDEX idx_clue_id ON follow_up_record (clue_id ASC);
 CREATE INDEX idx_owner ON follow_up_record (owner ASC);
 CREATE INDEX idx_contact_id ON follow_up_record (contact_id ASC);
 
@@ -149,7 +149,7 @@ CREATE TABLE follow_up_plan
     `customer_id`     VARCHAR(32) COMMENT '客户id',
     `opportunity_id`  VARCHAR(32) COMMENT '商机id',
     `type`            VARCHAR(32)   NOT NULL COMMENT '类型',
-    `lead_id`         VARCHAR(32) COMMENT '线索id',
+    `clue_id`         VARCHAR(32) COMMENT '线索id',
     `content`         VARCHAR(1000) NOT NULL COMMENT '预计沟通内容',
     `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
     `owner`           VARCHAR(32)   NOT NULL COMMENT '负责人',
@@ -169,7 +169,7 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_customer_id ON follow_up_plan (customer_id ASC);
 CREATE INDEX idx_organization_id ON follow_up_plan (organization_id ASC);
 CREATE INDEX idx_opportunity_id ON follow_up_plan (opportunity_id ASC);
-CREATE INDEX idx_lead_id ON follow_up_plan (lead_id ASC);
+CREATE INDEX idx_clue_id ON follow_up_plan (clue_id ASC);
 CREATE INDEX idx_owner ON follow_up_plan (owner ASC);
 CREATE INDEX idx_contact_id ON follow_up_plan (contact_id ASC);
 

@@ -1,5 +1,5 @@
 export enum FormDesignKeyEnum {
-  LEAD = 'lead', // 线索
+  CLUE = 'clue', // 线索
   CUSTOMER = 'customer', // 客户
   CONTACT = 'contact', // 联系人
   FOLLOW_RECORD = 'record', // 跟进记录
@@ -40,5 +40,5 @@ export enum FieldDataSourceTypeEnum {
   CONTACT = 'CONTACT', // 联系人
   BUSINESS = 'BUSINESS', // 商机
   PRODUCT = 'PRODUCT', // 产品
-  LEAD = 'LEAD', // 线索
+  CLUE = 'CLUE', // 线索
 }

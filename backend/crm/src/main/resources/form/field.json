@@ -165,10 +165,10 @@
       ]
     }
   ],
-  "lead": [
+  "clue": [
     {
       "name": "基本信息",
-      "internalKey": "leadBasicInfo",
+      "internalKey": "clueBasicInfo",
       "type": "DIVIDER",
       "showLabel": true,
       "readable": true,
@@ -179,7 +179,7 @@
     },
     {
       "name": "客户名称",
-      "internalKey": "leadName",
+      "internalKey": "clueName",
       "type": "INPUT",
       "showLabel": true,
       "readable": true,
@@ -191,7 +191,7 @@
     },
     {
       "name": "线索进度",
-      "internalKey": "leadProgress",
+      "internalKey": "clueProgress",
       "type": "SELECT",
       "multiple": false,
       "showLabel": true,
@@ -207,7 +207,7 @@
     },
     {
       "name": "线索来源",
-      "internalKey": "leadSource",
+      "internalKey": "clueSource",
       "type": "SELECT",
       "multiple": false,
       "showLabel": true,
@@ -223,12 +223,12 @@
         {"key":  "required"}
       ],
       "showControlRules": [
-        {"value": "1", "fieldIds": ["leadOnlineSource"]}
+        {"value": "1", "fieldIds": ["clueOnlineSource"]}
       ]
     },
     {
       "name": "线上来源详情",
-      "internalKey": "leadOnlineSource",
+      "internalKey": "clueOnlineSource",
       "type": "SELECT",
       "multiple": false,
       "showLabel": true,
@@ -244,7 +244,7 @@
     },
     {
       "name": "客户需求",
-      "internalKey": "leadDemand",
+      "internalKey": "clueDemand",
       "type": "TEXTAREA",
       "showLabel": true,
       "readable": true,
@@ -256,7 +256,7 @@
     },
     {
       "name": "地址信息",
-      "internalKey": "leadAddressInfo",
+      "internalKey": "clueAddressInfo",
       "type": "DIVIDER",
       "showLabel": true,
       "readable": true,
@@ -267,7 +267,7 @@
     },
     {
       "name": "地区",
-      "internalKey": "leadArea",
+      "internalKey": "clueArea",
       "type": "LOCATION",
       "locationType": "detail",
       "showLabel": true,
@@ -277,7 +277,7 @@
     },
     {
       "name": "负责人信息",
-      "internalKey": "leadOwner",
+      "internalKey": "clueOwner",
       "type": "DIVIDER",
       "showLabel": true,
       "readable": true,
@@ -288,7 +288,7 @@
     },
     {
       "name": "负责人",
-      "internalKey": "leadOwnerName",
+      "internalKey": "clueOwnerName",
       "type": "MEMBER",
       "multiple": false,
       "hasCurrentUser": false,
@@ -657,7 +657,7 @@
       ],
       "showControlRules": [
           {"value": "1", "fieldIds": ["recordCustomerName", "recordBusiness"]},
-          {"value": "2", "fieldIds": ["recordLeadName"]}
+          {"value": "2", "fieldIds": ["recordClueName"]}
       ]
     },
     {
@@ -676,9 +676,9 @@
     },
     {
       "name": "线索名称",
-      "internalKey": "recordLeadName",
+      "internalKey": "recordClueName",
       "type": "DATA_SOURCE",
-      "dataSourceType": "LEAD",
+      "dataSourceType": "CLUE",
       "multiple": false,
       "showLabel": true,
       "readable": true,
@@ -704,7 +704,7 @@
     },
     {
       "name": "联系人",
-      "internalKey": "recordBusiness",
+      "internalKey": "recordContact",
       "type": "DATA_SOURCE",
       "dataSourceType": "CONTACT",
       "multiple": false,
@@ -804,7 +804,7 @@
       ],
       "showControlRules": [
         {"value": "1", "fieldIds": ["planCustomerName", "planBusiness"]},
-        {"value": "2", "fieldIds": ["planLeadName"]}
+        {"value": "2", "fieldIds": ["planClueName"]}
       ]
     },
     {
@@ -823,9 +823,9 @@
     },
     {
       "name": "线索名称",
-      "internalKey": "planLeadName",
+      "internalKey": "planClueName",
       "type": "DATA_SOURCE",
-      "dataSourceType": "LEAD",
+      "dataSourceType": "CLUE",
       "multiple": false,
       "showLabel": true,
       "readable": true,

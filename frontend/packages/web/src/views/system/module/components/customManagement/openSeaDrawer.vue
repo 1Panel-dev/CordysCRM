@@ -36,7 +36,7 @@
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import type { LeadPoolItem } from '@lib/shared/models/system/module';
+  import type { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
@@ -70,8 +70,8 @@
   }
 
   // 编辑
-  const currentRow = ref<LeadPoolItem>();
-  async function handleEdit(row: LeadPoolItem) {
+  const currentRow = ref<CluePoolItem>();
+  async function handleEdit(row: CluePoolItem) {
     currentRow.value = row;
     showAddOrEditDrawer.value = true;
   }
@@ -88,7 +88,7 @@
   }
 
   // 删除
-  async function handleDelete(row: LeadPoolItem) {
+  async function handleDelete(row: CluePoolItem) {
     // 判断是否存在未分配的
     const hasData = await noPick(row.id);
     const title = hasData
@@ -117,7 +117,7 @@
     });
   }
 
-  function handleActionSelect(row: LeadPoolItem, actionKey: string) {
+  function handleActionSelect(row: CluePoolItem, actionKey: string) {
     switch (actionKey) {
       case 'pop-edit':
         handleEdit(row);
@@ -131,7 +131,7 @@
   }
 
   // 切换状态
-  async function handleToggleStatus(row: LeadPoolItem) {
+  async function handleToggleStatus(row: CluePoolItem) {
     const isEnabling = !row.enable;
 
     openModal({
@@ -183,7 +183,7 @@
         },
       ],
       filter: true,
-      render: (row: LeadPoolItem) => {
+      render: (row: CluePoolItem) => {
         return h(NSwitch, {
           value: row.enable,
           onClick: () => {
@@ -227,7 +227,7 @@
         },
       ],
       filter: true,
-      render: (row: LeadPoolItem) => {
+      render: (row: CluePoolItem) => {
         return row.auto ? t('common.yes') : t('common.no');
       },
     },
@@ -260,7 +260,7 @@
       key: 'operation',
       width: 80,
       fixed: 'right',
-      render: (row: LeadPoolItem) =>
+      render: (row: CluePoolItem) =>
         h(CrmOperationButton, {
           groupList: [
             {

@@ -21,12 +21,12 @@ public class FollowUpPlanAddRequest {
 
     @Size(max = 32)
     @NotBlank
-    @Schema(description = "类型:CUSTOMER/LEAD", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "类型:CUSTOMER/CLUE", requiredMode = Schema.RequiredMode.REQUIRED)
     private String type;
 
     @Size(max = 32)
     @Schema(description = "线索id")
-    private String leadId;
+    private String clueId;
 
     @Size(max = 1000)
     @Schema(description = "预计沟通内容", requiredMode = Schema.RequiredMode.REQUIRED)

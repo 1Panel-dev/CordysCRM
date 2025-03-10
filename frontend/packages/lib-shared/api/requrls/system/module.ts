@@ -13,16 +13,16 @@ export const switchOpportunityStatusUrl = '/opportunity-rule/switch'; // 模块-
 export const deleteOpportunityUrl = '/opportunity-rule/delete'; // 模块-商机-删除商机规则
 
 // 模块-线索池
-export const GetLeadPoolPageUrl = '/lead-pool/page'; // 分页获取线索池
-export const AddLeadPoolUrl = '/lead-pool/add'; // 新增线索池
-export const UpdateLeadPoolUrl = '/lead-pool/update'; // 编辑线索池
-export const SwitchLeadPoolStatusUrl = '/lead-pool/switch'; // 启用/禁用线索池
-export const DeleteLeadPoolUrl = '/lead-pool/delete'; // 删除线索池
-export const NoPickLeadPoolUrl = '/lead-pool/no-pick'; // 未领取线索
+export const GetCluePoolPageUrl = '/clue-pool/page'; // 分页获取线索池
+export const AddCluePoolUrl = '/clue-pool/add'; // 新增线索池
+export const UpdateCluePoolUrl = '/clue-pool/update'; // 编辑线索池
+export const SwitchCluePoolStatusUrl = '/clue-pool/switch'; // 启用/禁用线索池
+export const DeleteCluePoolUrl = '/clue-pool/delete'; // 删除线索池
+export const NoPickCluePoolUrl = '/clue-pool/no-pick'; // 未领取线索
 
 // 模块-线索库容
-export const GetLeadCapacityPageUrl = '/lead-capacity/get'; // 获取线索库容规则
-export const SaveLeadCapacityUrl = '/lead-capacity/save'; // 保存线索库容规则
+export const GetClueCapacityPageUrl = '/clue-capacity/get'; // 获取线索库容规则
+export const SaveClueCapacityUrl = '/clue-capacity/save'; // 保存线索库容规则
 
 // 模块-客户库容
 export const GetCustomerCapacityPageUrl = '/customer-capacity/get'; // 获取客户库容

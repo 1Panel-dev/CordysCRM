@@ -1,7 +1,6 @@
 package io.cordys.common.resolver.field;
 
 
-import io.cordys.common.util.JSON;
 import io.cordys.crm.system.dto.field.SelectField;
 import org.apache.commons.lang3.BooleanUtils;
 
@@ -33,7 +32,7 @@ public class SelectResolver extends AbstractModuleFieldResolver<SelectField> {
             return ModuleFieldResolverFactory.getResolver(ModuleFieldResolverFactory.MULTI_SELECT)
                     .parse2String(selectField, value);
         }
-        return JSON.toJSONString(value);
+        return getStringValue(value);
     }
 
     @Override
@@ -42,6 +41,6 @@ public class SelectResolver extends AbstractModuleFieldResolver<SelectField> {
             return ModuleFieldResolverFactory.getResolver(ModuleFieldResolverFactory.MULTI_SELECT)
                     .parse2Value(selectField, value);
         }
-        return parse2Array(value);
+        return value;
     }
 }

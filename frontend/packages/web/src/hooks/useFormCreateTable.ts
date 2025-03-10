@@ -21,7 +21,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.BUSINESS]: TableKeyEnum.BUSINESS,
     [FormDesignKeyEnum.FOLLOW_PLAN]: TableKeyEnum.CUSTOMER_FOLLOW_PLAN,
     [FormDesignKeyEnum.FOLLOW_RECORD]: TableKeyEnum.CUSTOMER_FOLLOW_RECORD,
-    [FormDesignKeyEnum.LEAD]: TableKeyEnum.LEAD,
+    [FormDesignKeyEnum.CLUE]: TableKeyEnum.CLUE,
     [FormDesignKeyEnum.PRODUCT]: TableKeyEnum.PRODUCT,
   };
 

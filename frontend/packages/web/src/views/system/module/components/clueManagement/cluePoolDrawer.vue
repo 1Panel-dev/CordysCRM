@@ -36,7 +36,7 @@
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import type { LeadPoolItem } from '@lib/shared/models/system/module';
+  import type { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
@@ -45,7 +45,7 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddOrEditPoolDrawer from '../addOrEditPoolDrawer.vue';
 
-  import { deleteLeadPool, getLeadPoolPage, noPickLeadPool, switchLeadPoolStatus } from '@/api/modules/system/module';
+  import { deleteCluePool, getCluePoolPage, noPickCluePool, switchCluePoolStatus } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
@@ -65,8 +65,8 @@
   }
 
   // 编辑
-  const currentRow = ref<LeadPoolItem>();
-  async function handleEdit(row: LeadPoolItem) {
+  const currentRow = ref<CluePoolItem>();
+  async function handleEdit(row: CluePoolItem) {
     currentRow.value = row;
     showAddOrEditDrawer.value = true;
   }
@@ -75,7 +75,7 @@
 
   async function noPick(id: string) {
     try {
-      return await noPickLeadPool(id);
+      return await noPickCluePool(id);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -83,7 +83,7 @@
   }
 
   // 删除
-  async function handleDelete(row: LeadPoolItem) {
+  async function handleDelete(row: CluePoolItem) {
     // 判断是否存在未分配的线索
     const hasData = await noPick(row.id);
     const title = hasData
@@ -101,7 +101,7 @@
       negativeText,
       onPositiveClick: async () => {
         try {
-          await deleteLeadPool(row.id);
+          await deleteCluePool(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {
@@ -112,7 +112,7 @@
     });
   }
 
-  function handleActionSelect(row: LeadPoolItem, actionKey: string) {
+  function handleActionSelect(row: CluePoolItem, actionKey: string) {
     switch (actionKey) {
       case 'pop-edit':
         handleEdit(row);
@@ -126,7 +126,7 @@
   }
 
   // 切换状态
-  async function handleToggleStatus(row: LeadPoolItem) {
+  async function handleToggleStatus(row: CluePoolItem) {
     const isEnabling = !row.enable;
 
     openModal({
@@ -139,7 +139,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await switchLeadPoolStatus(row.id);
+          await switchCluePoolStatus(row.id);
           Message.success(t(isEnabling ? 'common.opened' : 'common.disabled'));
           tableRefreshId.value += 1;
         } catch (error) {
@@ -178,7 +178,7 @@
         },
       ],
       filter: true,
-      render: (row: LeadPoolItem) => {
+      render: (row: CluePoolItem) => {
         return h(NSwitch, {
           value: row.enable,
           onClick: () => {
@@ -222,7 +222,7 @@
         },
       ],
       filter: true,
-      render: (row: LeadPoolItem) => {
+      render: (row: CluePoolItem) => {
         return row.auto ? t('common.yes') : t('common.no');
       },
     },
@@ -255,7 +255,7 @@
       key: 'operation',
       width: 80,
       fixed: 'right',
-      render: (row: LeadPoolItem) =>
+      render: (row: CluePoolItem) =>
         h(CrmOperationButton, {
           groupList: [
             {
@@ -278,7 +278,7 @@
     },
   ];
 
-  const { propsRes, propsEvent, loadList } = useTable(getLeadPoolPage, {
+  const { propsRes, propsEvent, loadList } = useTable(getCluePoolPage, {
     tableKey: TableKeyEnum.MODULE_CLUE_POOL,
     showSetting: true,
     columns,

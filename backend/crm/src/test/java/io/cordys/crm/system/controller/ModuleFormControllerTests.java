@@ -33,7 +33,7 @@ public class ModuleFormControllerTests extends BaseTest{
 		request.setFields(List.of());
 		request.setFormProp(new FormProp());
 		this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError());
-		request.setFormKey(FormKey.LEAD.getKey());
+		request.setFormKey(FormKey.CLUE.getKey());
 		BaseField field = new SelectField();
 		field.setId("select-id");
 		field.setType(FieldType.SELECT.name());
@@ -50,7 +50,7 @@ public class ModuleFormControllerTests extends BaseTest{
 	@Test
 	@Order(2)
 	void testGetFieldList() throws Exception {
-		MvcResult mvcResult = this.requestGetWithOkAndReturn("/module/form/config/" + FormKey.LEAD.getKey());
+		MvcResult mvcResult = this.requestGetWithOkAndReturn("/module/form/config/" + FormKey.CLUE.getKey());
 		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
 		assert formConfig.getFields().size() == 1;
 	}

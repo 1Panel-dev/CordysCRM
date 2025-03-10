@@ -9,7 +9,7 @@ public enum FieldSourceType {
 	/**
 	 * 线索
 	 */
-	LEAD,
+	CLUE,
 	/**
 	 * 联系人来源
 	 */

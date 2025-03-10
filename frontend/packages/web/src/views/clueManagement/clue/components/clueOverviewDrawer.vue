@@ -7,7 +7,7 @@
     :button-list="buttonList"
     title="111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
     subtitle="啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊"
-    :form-key="FormDesignKeyEnum.LEAD"
+    :form-key="FormDesignKeyEnum.CLUE"
   >
     <template #right>
       <div v-if="activeTab === 'overview'" class="h-[1000px] bg-[var(--text-n10)]"></div>

@@ -1,7 +1,7 @@
 package io.cordys.crm.system.dto.response;
 
+import io.cordys.crm.clue.dto.ClueRepeatDTO;
 import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
-import io.cordys.crm.lead.dto.LeadRepeatDTO;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -15,7 +15,7 @@ public class RepeatCustomerResponse {
     private CustomerRepeatResponse customerData;
 
     @Schema(description = "线索重复数据")
-    private List<LeadRepeatDTO>leadList;
+    private List<ClueRepeatDTO>clueList;
 
     @Schema(description = "商机重复数据")
     private List<OpportunityListResponse>opportunityList;

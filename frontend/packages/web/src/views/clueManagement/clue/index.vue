@@ -54,7 +54,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import ClueOverviewDrawer from './components/clueOverviewDrawer.vue';
 
-  import { getLeadPoolPage } from '@/api/modules/system/module';
+  import { getCluePoolPage } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
@@ -408,7 +408,7 @@
   ];
 
   // TODO 联调
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getLeadPoolPage, {
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getCluePoolPage, {
     tableKey: TableKeyEnum.AUTH,
     showSetting: true,
     columns,

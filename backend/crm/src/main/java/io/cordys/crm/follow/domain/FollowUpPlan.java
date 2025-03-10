@@ -20,7 +20,7 @@ public class FollowUpPlan extends BaseModel {
 	private String type;
 
 	@Schema(description = "线索id")
-	private String leadId;
+	private String clueId;
 
 	@Schema(description = "预计沟通内容")
 	private String content;

@@ -48,7 +48,7 @@ public enum BusinessModuleField {
     /**
      * 线索id
      */
-    FOLLOW_RECORD_LEAD("followRecordLeadId", "leadId"),
+    FOLLOW_RECORD_CLUE("followRecordClueId", "clueId"),
     /**
      * 责任人id
      */

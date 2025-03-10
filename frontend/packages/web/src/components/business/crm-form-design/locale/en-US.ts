@@ -75,7 +75,7 @@ export default {
   'crmFormDesign.contract': 'Contact',
   'crmFormDesign.business': 'Business',
   'crmFormDesign.product': 'Product',
-  'crmFormDesign.lead': 'Lead',
+  'crmFormDesign.clue': 'Clue',
   'crmFormDesign.showRule': 'Show/Hide Rule',
   'crmFormDesign.showRuleSetting': 'Set Show/Hide Rule',
   'crmFormDesign.choice': 'Select',

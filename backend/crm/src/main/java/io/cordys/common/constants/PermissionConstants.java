@@ -79,10 +79,11 @@ public class PermissionConstants {
     /*------ end: OPPORTUNITY_MANAGEMENT ------*/
 
 
-    /*------ start: LEAD_MANAGEMENT ------*/
-    public static final String LEAD_MANAGEMENT_READ = "LEAD_MANAGEMENT:READ";
-    public static final String LEAD_MANAGEMENT_ADD = "LEAD_MANAGEMENT:ADD";
-    public static final String LEAD_MANAGEMENT_UPDATE = "LEAD_MANAGEMENT:UPDATE";
-    /*------ end: LEAD_MANAGEMENT ------*/
+    /*------ start: CLUE_MANAGEMENT ------*/
+    public static final String CLUE_MANAGEMENT_READ = "CLUE_MANAGEMENT:READ";
+    public static final String CLUE_MANAGEMENT_ADD = "CLUE_MANAGEMENT:ADD";
+    public static final String CLUE_MANAGEMENT_UPDATE = "CLUE_MANAGEMENT:UPDATE";
+    public static final String CLUE_MANAGEMENT_DELETE = "CLUE_MANAGEMENT:DELETE";
+    /*------ end: CLUE_MANAGEMENT ------*/
 
 }

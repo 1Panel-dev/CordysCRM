@@ -65,7 +65,7 @@
     [FieldDataSourceTypeEnum.CONTACT]: 'crmFormDesign.contract',
     [FieldDataSourceTypeEnum.BUSINESS]: 'crmFormDesign.business',
     [FieldDataSourceTypeEnum.PRODUCT]: 'crmFormDesign.product',
-    [FieldDataSourceTypeEnum.LEAD]: 'crmFormDesign.lead',
+    [FieldDataSourceTypeEnum.CLUE]: 'crmFormDesign.clue',
   };
 
   const value = defineModel<DataTableRowKey[]>('value', {

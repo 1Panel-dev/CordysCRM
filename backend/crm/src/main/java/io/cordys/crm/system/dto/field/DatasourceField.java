@@ -19,7 +19,7 @@ public class DatasourceField extends BaseField {
 	@Schema(description = "是否是多选")
 	private Boolean multiple;
 
-	@Schema(description = "数据源类型", allowableValues = {"CUSTOMER", "CONTACT", "BUSINESS", "PRODUCT", "LEAD"})
+	@Schema(description = "数据源类型", allowableValues = {"CUSTOMER", "CONTACT", "BUSINESS", "PRODUCT", "CLUE"})
 	private String dataSourceType;
 
 	@Schema(description = "默认值")

@@ -57,7 +57,7 @@ export interface SaveCustomerFollowRecordParams {
   customerId: string;
   opportunityId: string;
   type: string;
-  leadId: string;
+  clueId: string;
   content: string;
   owner: string;
   contactId: string;
@@ -77,7 +77,7 @@ export interface CustomerFollowRecordListItem {
   customerId: string;
   opportunityId: string;
   type: string;
-  leadId: string;
+  clueId: string;
   content: string; // 跟进内容
   organizationId: string;
   owner: string;

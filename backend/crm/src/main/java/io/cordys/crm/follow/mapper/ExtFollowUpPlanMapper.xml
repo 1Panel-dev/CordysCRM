@@ -9,7 +9,7 @@
         customer_id,
         opportunity_id,
         type,
-        lead_id,
+        clue_id,
         content,
         owner,
         contact_id,
@@ -31,8 +31,8 @@
         <if test="resourceType == 'CUSTOMER'">
             AND customer_id = #{request.sourceId}
         </if>
-        <if test="resourceType == 'LEAD'">
-            AND lead_id = #{request.sourceId}
+        <if test="resourceType == 'CLUE'">
+            AND clue_id = #{request.sourceId}
             AND create_user = #{userId}
         </if>
         <if test="resourceType == 'OPPORTUNITY'">

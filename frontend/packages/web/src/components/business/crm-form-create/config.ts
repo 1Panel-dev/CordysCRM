@@ -330,7 +330,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.CONTACT]: getCustomerContactFormConfig,
   [FormDesignKeyEnum.FOLLOW_PLAN]: getCustomerFollowPlanFormConfig,
   [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecordFormConfig,
-  [FormDesignKeyEnum.LEAD]: getCustomerFormConfig, // TODO:
+  [FormDesignKeyEnum.CLUE]: getCustomerFormConfig, // TODO:
   [FormDesignKeyEnum.PRODUCT]: getProductFormConfig,
 };
 
@@ -340,7 +340,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.CONTACT]: addCustomerContact,
   [FormDesignKeyEnum.FOLLOW_PLAN]: addCustomerFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD]: addCustomerFollowRecord,
-  [FormDesignKeyEnum.LEAD]: addCustomer, // TODO:
+  [FormDesignKeyEnum.CLUE]: addCustomer, // TODO:
   [FormDesignKeyEnum.PRODUCT]: addProduct,
 };
 
@@ -350,7 +350,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.CONTACT]: updateCustomerContact,
   [FormDesignKeyEnum.FOLLOW_PLAN]: updateCustomerFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD]: updateCustomerFollowRecord,
-  [FormDesignKeyEnum.LEAD]: updateCustomer, // TODO:
+  [FormDesignKeyEnum.CLUE]: updateCustomer, // TODO:
   [FormDesignKeyEnum.PRODUCT]: updateProduct,
 };
 
@@ -359,7 +359,7 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.BUSINESS]: getCustomer, // TODO:
   [FormDesignKeyEnum.CONTACT]: getCustomerContact,
   [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecord,
-  [FormDesignKeyEnum.LEAD]: getCustomer, // TODO:
+  [FormDesignKeyEnum.CLUE]: getCustomer, // TODO:
   [FormDesignKeyEnum.PRODUCT]: getProduct,
 };
 
@@ -369,6 +369,6 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.CONTACT]: getCustomerContactList,
   [FormDesignKeyEnum.FOLLOW_PLAN]: getCustomerFollowPlanList,
   [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecordList,
-  [FormDesignKeyEnum.LEAD]: getCustomerList, // TODO:
+  [FormDesignKeyEnum.CLUE]: getCustomerList, // TODO:
   [FormDesignKeyEnum.PRODUCT]: getProductList,
 };
