@@ -28,4 +28,8 @@ public class DeptDataPermissionDTO {
      * 可查看的部门Id
      */
     private Set<String> deptIds = new HashSet<>();
+    /**
+     * 成交商机
+     */
+    private Boolean deal = false;
 }

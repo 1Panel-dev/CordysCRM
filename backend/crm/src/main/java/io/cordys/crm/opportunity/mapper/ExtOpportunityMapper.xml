@@ -16,9 +16,192 @@
         FROM
             opportunity o
                 INNER JOIN customer c ON o.customer_id = c.id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on c.owner = sou.user_id
+            and sou.dept_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+        </if>
+
         where o.organization_id = #{orgId}
+
+        <if test="dataPermission != null and dataPermission.self">
+            and o.owner = #{userId}
+        </if>
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and c.name like concat('%', #{request.keyword},'%')
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
     </select>
 
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type" />
+                order by
+                <choose>
+                    <when test="${sort}.name == 'name'">
+                        o.`name` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'customerName'">
+                        c.`name` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'owner'">
+                        o.`owner` ${sortType}
+                    </when>
+                    <otherwise>
+                        sort_table.field_value ${sortType}
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by o.create_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="fieldConditionJoin">
+        <if test="${conditions} != null and ${conditions}.size() > 0">
+            <foreach collection="${conditions}" item="condition" index="i">
+                <if test="condition.name != 'name'
+                and condition.name != 'owner'
+                and condition.name != 'customerId'
+                and condition.name != 'stage'
+                and condition.name != 'amount'
+                and condition.name != 'possible'
+                and condition.name != 'products'
+                and condition.name != 'contactId'">
+                    inner join opportunity_field ${tablePrefix}_${i}
+                    on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="fieldSortJoin">
+        <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'owner'">
+            <bind name="sortName" value="${sort}.name"/>
+            left join opportunity_field sort_table
+            on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+        </if>
+    </sql>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <include refid="condition">
+                        <property name="condition" value="condition"/>
+                        <property name="fieldTable" value="filter_${i}.field_value"/>
+                    </include>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="combine">
+        <if test="${combineSearch} != null and ${combineSearch}.conditions != null and ${combineSearch}.conditions.size() > 0">
+            <trim prefix="and">
+                <trim prefix="(" suffix=")" suffixOverrides="and|or">
+                    <foreach collection="${combineSearch}.conditions" index="i" item="condition">
+                        <include refid="condition">
+                            <property name="condition" value="condition"/>
+                            <property name="fieldTable" value="combine_${i}.field_value"/>
+                        </include>
+                        <include refid="io.cordys.common.mapper.CommonMapper.searchMode">
+                            <property name="searchMode" value="${combineSearch}.searchMode"/>
+                        </include>
+                    </foreach>
+                </trim>
+            </trim>
+        </if>
+    </sql>
+
+
+    <sql id="condition">
+        <choose>
+            <when test="condition.name == 'name'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.name"/>
+                </include>
+            </when>
+            <when test="condition.name == 'customerId'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.customer_id"/>
+                </include>
+            </when>
+            <when test="condition.name == 'stage'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.stage"/>
+                </include>
+            </when>
+            <when test="condition.name == 'amount'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.amount"/>
+                </include>
+            </when>
+            <when test="condition.name == 'possible'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.possible"/>
+                </include>
+            </when>
+            <when test="condition.name == 'products'">
+                <include refid="io.cordys.common.mapper.CommonMapper.arrayValueCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.products"/>
+                </include>
+            </when>
+            <when test="condition.name == 'contactId'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.contact_id"/>
+                </include>
+            </when>
+            <when test="condition.name == 'owner'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.owner"/>
+                </include>
+            </when>
+            <otherwise>
+                <include refid="io.cordys.common.mapper.CommonMapper.moduleFieldCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="${fieldTable}"/>
+                </include>
+            </otherwise>
+        </choose>
+    </sql>
 
 
     <select id="selectByProducts" resultType="java.lang.String">

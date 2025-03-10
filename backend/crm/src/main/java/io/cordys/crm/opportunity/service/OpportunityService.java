@@ -6,6 +6,7 @@ import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
@@ -54,8 +55,9 @@ public class OpportunityService {
     private BaseMapper<Product> productMapper;
 
 
-    public List<OpportunityListResponse> list(OpportunityPageRequest request, String orgId) {
-        List<OpportunityListResponse> list = extOpportunityMapper.list(request, orgId);
+    public List<OpportunityListResponse> list(OpportunityPageRequest request, String userId, String orgId,
+                                              DeptDataPermissionDTO deptDataPermission) {
+        List<OpportunityListResponse> list = extOpportunityMapper.list(request, orgId, userId, deptDataPermission);
         return buildListData(list);
     }
 

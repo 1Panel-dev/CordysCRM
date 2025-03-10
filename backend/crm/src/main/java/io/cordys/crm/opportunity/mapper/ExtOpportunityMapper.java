@@ -1,6 +1,7 @@
 package io.cordys.crm.opportunity.mapper;
 
 
+import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
@@ -13,7 +14,8 @@ import java.util.List;
 public interface ExtOpportunityMapper {
 
 
-    List<OpportunityListResponse> list(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId);
+    List<OpportunityListResponse> list(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId,
+                                       @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
     List<String> selectByProducts(@Param("request") OpportunityAddRequest request, @Param("orgId") String orgId, @Param("id") String id);
 
