@@ -10,6 +10,7 @@ import io.cordys.context.OrganizationContext;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.service.OpportunityService;
@@ -19,6 +20,7 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -68,4 +70,34 @@ public class OpportunityController {
         return opportunityService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+
+    @GetMapping("/delete/{id}")
+    @Operation(summary = "删除商机")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE)
+    public void deleteOpportunity(@PathVariable String id) {
+        opportunityService.delete(id);
+    }
+
+    @PostMapping("/transfer")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @Operation(summary = "转移商机")
+    public void transfer(@RequestBody OpportunityTransferRequest request) {
+        opportunityService.transfer(request);
+    }
+
+
+    @PostMapping("/batch/transfer")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @Operation(summary = "批量转移商机")
+    public void batchTransfer(@RequestBody OpportunityTransferRequest request) {
+        opportunityService.transfer(request);
+    }
+
+
+    @PostMapping("/batch/delete")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE)
+    @Operation(summary = "批量删除商机")
+    public void delete(@RequestBody @NotEmpty List<String> ids) {
+        opportunityService.batchDelete(ids);
+    }
 }

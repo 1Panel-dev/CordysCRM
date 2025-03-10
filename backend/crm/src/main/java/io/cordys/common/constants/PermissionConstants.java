@@ -1,7 +1,6 @@
 package io.cordys.common.constants;
 
 /**
- *
  * @author jianxing
  * @date 2025-01-03 11:31:40
  */
@@ -21,12 +20,12 @@ public class PermissionConstants {
     public static final String OPERATION_LOG_READ = "OPERATION_LOG:READ";
     /*------ end: OPERATION_LOG ------*/
 
-     /*------ start: SYSTEM_NOTICE_ROLE ------*/
-     public static final String SYSTEM_NOTICE_READ = "SYSTEM_NOTICE:READ";
-     public static final String SYSTEM_NOTICE_ADD = "SYSTEM_NOTICE:ADD";
-     public static final String SYSTEM_NOTICE_UPDATE = "SYSTEM_NOTICE:UPDATE";
-     public static final String SYSTEM_NOTICE_DELETE = "SYSTEM_NOTICE:DELETE";
-     /*------ end: SYSTEM_NOTICE_ROLE ------*/
+    /*------ start: SYSTEM_NOTICE_ROLE ------*/
+    public static final String SYSTEM_NOTICE_READ = "SYSTEM_NOTICE:READ";
+    public static final String SYSTEM_NOTICE_ADD = "SYSTEM_NOTICE:ADD";
+    public static final String SYSTEM_NOTICE_UPDATE = "SYSTEM_NOTICE:UPDATE";
+    public static final String SYSTEM_NOTICE_DELETE = "SYSTEM_NOTICE:DELETE";
+    /*------ end: SYSTEM_NOTICE_ROLE ------*/
 
     /*------ start: SYS_DEPARTMENT ------*/
     public static final String SYS_ORGANIZATION_READ = "SYS_ORGANIZATION:READ";
@@ -76,6 +75,7 @@ public class PermissionConstants {
     public static final String OPPORTUNITY_MANAGEMENT_READ = "OPPORTUNITY_MANAGEMENT:READ";
     public static final String OPPORTUNITY_MANAGEMENT_ADD = "OPPORTUNITY_MANAGEMENT:ADD";
     public static final String OPPORTUNITY_MANAGEMENT_UPDATE = "OPPORTUNITY_MANAGEMENT:UPDATE";
+    public static final String OPPORTUNITY_MANAGEMENT_DELETE = "OPPORTUNITY_MANAGEMENT:DELETE";
     /*------ end: OPPORTUNITY_MANAGEMENT ------*/
 
 

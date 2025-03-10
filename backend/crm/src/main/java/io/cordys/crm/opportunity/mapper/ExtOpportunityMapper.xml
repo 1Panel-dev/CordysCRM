@@ -32,5 +32,17 @@
         </foreach>
           AND organization_id = #{orgId}
           AND customer_id = #{request.customerId}
+        <if test="id != null and id != ''">
+            AND id != #{id}
+        </if>
     </select>
+
+    <update id="batchTransfer">
+        update opportunity
+        set owner = #{request.owner}
+        where id in
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
 </mapper>

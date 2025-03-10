@@ -6,6 +6,7 @@ import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -29,6 +30,8 @@ public class OpportunityControllerTests extends BaseTest {
 
     private static final String BASE_PATH = "/opportunity/";
     protected static final String MODULE_FORM = "module/form";
+    protected static final String TRANSFER = "transfer";
+    protected static final String BATCH_TRANSFER = "batch/transfer";
 
     private static Opportunity addOpportunity;
     @Resource
@@ -93,6 +96,7 @@ public class OpportunityControllerTests extends BaseTest {
         request.setCustomerId("123");
         request.setContactId("1234567");
         request.setOwner("admin");
+        request.setProducts(List.of("22"));
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
         this.requestPost(DEFAULT_UPDATE, request);
 
@@ -100,4 +104,37 @@ public class OpportunityControllerTests extends BaseTest {
         this.requestPostWithOk(DEFAULT_UPDATE, request);
     }
 
+
+    @Test
+    @Order(4)
+    void testTransfer() throws Exception {
+        OpportunityTransferRequest request = new OpportunityTransferRequest();
+        request.setIds(List.of("1234"));
+        request.setOwner("12345");
+        this.requestPostWithOk(TRANSFER, request);
+    }
+
+    @Test
+    @Order(4)
+    void testBatchTransfer() throws Exception {
+        OpportunityTransferRequest request = new OpportunityTransferRequest();
+        request.setIds(List.of("1234"));
+        request.setOwner("12345");
+        this.requestPostWithOk(BATCH_TRANSFER, request);
+    }
+
+
+    @Test
+    @Order(5)
+    void testDelete() throws Exception {
+        this.requestGet(DEFAULT_DELETE, "123456");
+        this.requestGetWithOk(DEFAULT_DELETE, addOpportunity.getId());
+    }
+
+
+    @Test
+    @Order(6)
+    void testBatchDelete() throws Exception {
+        this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of("123"));
+    }
 }

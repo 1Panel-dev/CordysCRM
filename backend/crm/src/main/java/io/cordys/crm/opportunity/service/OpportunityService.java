@@ -1,7 +1,9 @@
 package io.cordys.crm.opportunity.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.exception.GenericException;
@@ -14,6 +16,7 @@ import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityField;
 import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
@@ -99,7 +102,7 @@ public class OpportunityService {
      * @return
      */
     public Opportunity add(OpportunityAddRequest request, String operatorId, String orgId) {
-        checkOpportunity(request, orgId);
+        checkOpportunity(request, orgId, null);
         Opportunity opportunity = new Opportunity();
         String id = IDGenerator.nextStr();
         opportunity.setId(id);
@@ -137,9 +140,10 @@ public class OpportunityService {
      *
      * @param request
      * @param orgId
+     * @param id
      */
-    private void checkOpportunity(OpportunityAddRequest request, String orgId) {
-        List<String> products = extOpportunityMapper.selectByProducts(request, orgId);
+    private void checkOpportunity(OpportunityAddRequest request, String orgId, String id) {
+        List<String> products = extOpportunityMapper.selectByProducts(request, orgId, id);
         if (CollectionUtils.isNotEmpty(products)) {
             List<String> ids = JSON.parseArray(products.getFirst(), String.class);
             String projectId = request.getProducts().stream()
@@ -162,6 +166,7 @@ public class OpportunityService {
     public Opportunity update(OpportunityUpdateRequest request, String userId, String orgId) {
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(opportunity).ifPresentOrElse(item -> {
+            checkOpportunity(request, orgId, request.getId());
             LogDTO logDTO = new LogDTO(orgId, item.getId(), userId, LogType.UPDATE, LogModule.OPPORTUNITY, Translator.get("update_opportunity"));
             logDTO.setOriginalValue(opportunity);
             //更新跟进计划
@@ -200,5 +205,44 @@ public class OpportunityService {
         opportunityFieldService.deleteByResourceId(id);
         // 再保存
         opportunityFieldService.saveModuleField(id, moduleFields);
+    }
+
+
+    /**
+     * 删除商机
+     *
+     * @param id
+     */
+    @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.DELETE, resourceId = "{#id}")
+    public void delete(String id) {
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(id);
+        Optional.ofNullable(opportunity).ifPresentOrElse(item -> {
+            opportunityMapper.deleteByPrimaryKey(opportunity.getId());
+            opportunityFieldService.deleteByResourceId(opportunity.getId());
+        }, () -> {
+            throw new GenericException("opportunity_not_found");
+        });
+        // 添加日志上下文
+        OperationLogContext.setResourceName(opportunity.getName());
+    }
+
+
+    /**
+     * 商机转移
+     *
+     * @param request
+     */
+    public void transfer(OpportunityTransferRequest request) {
+        extOpportunityMapper.batchTransfer(request);
+    }
+
+    /**
+     * 批量删除商机
+     *
+     * @param ids
+     */
+    public void batchDelete(List<String> ids) {
+        opportunityMapper.deleteByIds(ids);
+        opportunityFieldService.deleteByResourceIds(ids);
     }
 }
