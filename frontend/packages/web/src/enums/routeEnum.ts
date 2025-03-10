@@ -25,9 +25,15 @@ export enum CustomerRouteEnum {
   CUSTOMER_OPEN_SEA = 'customerOpenSea',
 }
 
+export enum ProductRouteEnum {
+  PRODUCT = 'product',
+  PRODUCT_PRO = 'productPro',
+}
+
 export const AppRouteEnum = {
   ...SystemRouteEnum,
   ...OpportunityRouteEnum,
   ...ClueRouteEnum,
   ...CustomerRouteEnum,
+  ...ProductRouteEnum,
 };

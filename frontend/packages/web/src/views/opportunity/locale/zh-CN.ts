@@ -24,4 +24,5 @@ export default {
   'opportunity.belongStartTime': '归属开始时间',
   'opportunity.belongEndTime': '归属结束时间',
   'opportunity.headRecordPage': '负责人记录列表',
+  'opportunity.new': '新建商机',
 };

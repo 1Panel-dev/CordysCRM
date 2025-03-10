@@ -260,21 +260,6 @@
     loadFollowList();
   }
 
-  // 编辑
-  function handleEdit() {}
-
-  // 跟进计划
-  const showFollowPlanDrawer = ref<boolean>(false);
-  function handleFollowPlan() {
-    showFollowPlanDrawer.value = true;
-  }
-
-  // 跟进记录
-  const showFollowRecordDrawer = ref(false);
-  function handleFollowRecord() {
-    showFollowRecordDrawer.value = true;
-  }
-
   // 转移
   const showTransferModal = ref<boolean>(false);
   const isBatchTransfer = ref<boolean>(true);
@@ -305,15 +290,6 @@
 
   function handleSelect(key: string) {
     switch (key) {
-      case 'edit':
-        handleEdit();
-        break;
-      case 'followPlan':
-        handleFollowPlan();
-        break;
-      case 'followRecord':
-        handleFollowRecord();
-        break;
       case 'transfer':
         handleTransfer();
         break;

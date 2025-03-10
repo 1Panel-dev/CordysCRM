@@ -28,6 +28,8 @@ import {
   updateCustomerFollowPlan,
   updateCustomerFollowRecord,
 } from '@/api/modules/customer';
+import { addOpportunity, getOpportunityList, getOptFormConfig } from '@/api/modules/opportunity';
+import { addProduct, getProduct, getProductFormConfig, getProductList, updateProduct } from '@/api/modules/product';
 
 import type { FormCreateField, FormCreateFieldRule, FormDetail } from './types';
 
@@ -324,22 +326,22 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
 
 export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {
   [FormDesignKeyEnum.CUSTOMER]: getCustomerFormConfig,
-  [FormDesignKeyEnum.BUSINESS]: getCustomerFormConfig, // TODO:
+  [FormDesignKeyEnum.BUSINESS]: getOptFormConfig,
   [FormDesignKeyEnum.CONTACT]: getCustomerContactFormConfig,
   [FormDesignKeyEnum.FOLLOW_PLAN]: getCustomerFollowPlanFormConfig,
   [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecordFormConfig,
   [FormDesignKeyEnum.LEAD]: getCustomerFormConfig, // TODO:
-  [FormDesignKeyEnum.PRODUCT]: getCustomerFormConfig, // TODO:
+  [FormDesignKeyEnum.PRODUCT]: getProductFormConfig,
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
   [FormDesignKeyEnum.CUSTOMER]: addCustomer,
-  [FormDesignKeyEnum.BUSINESS]: addCustomer, // TODO:
+  [FormDesignKeyEnum.BUSINESS]: addOpportunity,
   [FormDesignKeyEnum.CONTACT]: addCustomerContact,
   [FormDesignKeyEnum.FOLLOW_PLAN]: addCustomerFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD]: addCustomerFollowRecord,
   [FormDesignKeyEnum.LEAD]: addCustomer, // TODO:
-  [FormDesignKeyEnum.PRODUCT]: addCustomer, // TODO:
+  [FormDesignKeyEnum.PRODUCT]: addProduct,
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -349,7 +351,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.FOLLOW_PLAN]: updateCustomerFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD]: updateCustomerFollowRecord,
   [FormDesignKeyEnum.LEAD]: updateCustomer, // TODO:
-  [FormDesignKeyEnum.PRODUCT]: updateCustomer, // TODO:
+  [FormDesignKeyEnum.PRODUCT]: updateProduct,
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {
@@ -358,15 +360,15 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.CONTACT]: getCustomerContact,
   [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecord,
   [FormDesignKeyEnum.LEAD]: getCustomer, // TODO:
-  [FormDesignKeyEnum.PRODUCT]: getCustomer, // TODO:
+  [FormDesignKeyEnum.PRODUCT]: getProduct,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {
   [FormDesignKeyEnum.CUSTOMER]: getCustomerList,
-  [FormDesignKeyEnum.BUSINESS]: getCustomerList, // TODO:
+  [FormDesignKeyEnum.BUSINESS]: getOpportunityList,
   [FormDesignKeyEnum.CONTACT]: getCustomerContactList,
   [FormDesignKeyEnum.FOLLOW_PLAN]: getCustomerFollowPlanList,
   [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecordList,
   [FormDesignKeyEnum.LEAD]: getCustomerList, // TODO:
-  [FormDesignKeyEnum.PRODUCT]: getCustomerList, // TODO:
+  [FormDesignKeyEnum.PRODUCT]: getProductList,
 };

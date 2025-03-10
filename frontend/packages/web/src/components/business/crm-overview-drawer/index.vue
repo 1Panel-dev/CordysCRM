@@ -27,7 +27,13 @@
           <div class="h-full w-full bg-[var(--text-n9)]">
             <n-scrollbar class="p-[16px]">
               <div class="relative bg-[var(--text-n10)]">
-                <CrmTab v-model:active-tab="activeTab" no-content :tab-list="showTabList" type="line" />
+                <CrmTab
+                  v-if="showTabList.length"
+                  v-model:active-tab="activeTab"
+                  no-content
+                  :tab-list="showTabList"
+                  type="line"
+                />
                 <div class="absolute right-4 top-2">
                   <CrmTabSetting
                     v-model:cached-list="cachedList"
@@ -122,6 +128,19 @@
     }
     emit('buttonSelect', key);
   }
+
+  watch(
+    () => showTabList.value,
+    (val: TabPaneProps[]) => {
+      // 避免已选中关闭后激活展示错误
+      if (!val.some((tab) => tab.name === activeTab.value)) {
+        activeTab.value = (val[0]?.name ?? '') as string;
+      }
+    },
+    {
+      deep: true,
+    }
+  );
 </script>
 
 <style lang="less" scoped>

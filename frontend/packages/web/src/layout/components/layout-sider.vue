@@ -101,6 +101,11 @@
       icon: renderIcon('iconicon_business_opportunity'),
     },
     {
+      label: t('module.productManagement'),
+      key: AppRouteEnum.PRODUCT_PRO,
+      icon: renderIcon('iconicon_product'),
+    },
+    {
       label: t('menu.settings'),
       key: 'a-wild-sheep-chase',
       icon: renderIcon('iconicon_set_up'),

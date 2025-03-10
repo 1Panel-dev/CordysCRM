@@ -24,4 +24,5 @@ export default {
   'opportunity.belongStartTime': 'Belong start time',
   'opportunity.belongEndTime': 'Belong end time',
   'opportunity.headRecordPage': 'Head record list',
+  'opportunity.new': 'New opportunity',
 };

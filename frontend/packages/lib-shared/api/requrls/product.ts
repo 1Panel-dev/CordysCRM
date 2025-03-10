@@ -1,0 +1,6 @@
+export const GetProductFormConfigUrl = '/product/module/form'; // 获取产品表单配置
+export const UpdateProductUrl = '/product/update'; // 更新产品
+export const GetProductListUrl = '/product/page'; // 产品列表
+export const AddProductUrl = '/product/add'; // 添加产品
+export const GetProductUrl = '/product/get'; // 获取产品详情
+export const DeleteProductUrl = '/product/delete'; // 删除产品

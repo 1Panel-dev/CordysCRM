@@ -15,6 +15,17 @@ export interface OpportunityItem {
   moduleFields: ModuleField[]; // 自定义字段
 }
 
+export interface SaveOpportunityParams {
+  name: string;
+  customerId: string; // 客户id
+  amount: number; // 金额
+  products: string[]; // 意向产品
+  possible: number; // 可能性
+  contactId: string; // 联系人ID
+  owner: string; // 负责人
+  moduleFields: ModuleField[]; // 自定义字段
+}
+
 // TODO ts 类型字段等待补充 工作流详情
 export interface WorkflowStepItem {
   value: string;

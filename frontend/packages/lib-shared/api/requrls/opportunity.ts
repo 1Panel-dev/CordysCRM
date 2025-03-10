@@ -1,3 +1,11 @@
 export const OptPageUrl = '/opportunity/page'; // 商机列表
-export const OptFollowRecordListUrl = '/opportunity/follow/record/page'; // 跟进记录列表
-export const OptFollowPlanPageUrl = '/opportunity/follow/plan/page'; // 跟进计划列表
+export const OptAddUrl = '/opportunity/add'; // 添加商机
+export const GetOptFormConfigUrl = '/opportunity/module/form'; // 商机表单配置
+export const OptFollowRecordListUrl = '/opportunity/follow/record/page'; // 商机跟进记录列表
+export const OptFollowPlanPageUrl = '/opportunity/follow/plan/page'; // 商机跟进计划列表
+export const UpdateOptFollowRecordUrl = '/opportunity/follow/record/update'; // 更新商机跟进记录
+export const AddOptFollowRecordUrl = '/opportunity/follow/record/add'; // 添加商机跟进记录
+export const UpdateOptFollowPlanUrl = '/opportunity/follow/plan/update'; // 更新商机跟进计划
+export const AddOptFollowPlanUrl = '/opportunity/follow/plan/add'; // 添加商机跟进计划
+export const GetOptFollowRecordUrl = '/opportunity/follow/record/get'; // 商机跟进记录详情
+export const GetOptFollowPlanUrl = '/opportunity/follow/plan/get'; // 商机跟进计划详情

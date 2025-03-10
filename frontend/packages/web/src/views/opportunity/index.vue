@@ -12,7 +12,7 @@
     >
       <template #actionLeft>
         <div class="flex items-center">
-          <n-button class="mr-[12px]" type="primary">
+          <n-button class="mr-[12px]" type="primary" @click="formCreateDrawerVisible = true">
             {{ t('opportunity.createOpportunity') }}
           </n-button>
           <!-- TODO 等待联调 -->
@@ -21,7 +21,7 @@
             :import-save-api="importUsers"
             :title="t('opportunity.importOpportunity')"
             :button-text="t('opportunity.importOpportunity')"
-            @import-success="initData()"
+            @import-success="() => searchData()"
           />
         </div>
       </template>
@@ -34,34 +34,38 @@
       :source-ids="checkedRowKeys"
       :module-type="ModuleConfigEnum.BUSINESS_MANAGEMENT"
     />
-    <OptOverviewDrawer v-model:show="showDetailModal" />
+    <OptOverviewDrawer v-model:show="showOverviewDrawer" />
+    <CrmFormCreateDrawer
+      v-model:visible="formCreateDrawerVisible"
+      :title="t('opportunity.new')"
+      :form-key="FormDesignKeyEnum.BUSINESS"
+      :source-id="activeOpportunityId"
+    />
   </CrmCard>
 </template>
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { DataTableRowKey, NButton, NSwitch, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
-  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
-  import useTable from '@/components/pure/crm-table/useTable';
-  import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
+  import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import OptOverviewDrawer from './components/optOverviewDrawer.vue';
 
-  import { getOpportunityList } from '@/api/modules/opportunity';
   import { importUserPreCheck, importUsers } from '@/api/modules/system/org';
+  import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
@@ -128,50 +132,14 @@
         break;
     }
   }
-  // TODO 等待联调
-  async function updateOpportunityName(row: OpportunityItem, newVal: string) {
-    try {
-      return Promise.resolve(true);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-      return Promise.resolve(false);
-    }
-  }
-  const showDetailModal = ref<boolean>(false);
-  function showDetail(id: string) {
-    showDetailModal.value = true;
-  }
 
-  function showCustomerDetail(id: string) {}
+  const showOverviewDrawer = ref<boolean>(false);
+  const activeOpportunityId = ref('');
+  const formCreateDrawerVisible = ref(false);
 
-  // TODO 等待联调
-  async function handleDisable(row: OpportunityItem) {
-    openModal({
-      type: 'warning',
-      title: t('common.confirmDisabledTitle', { name: characterLimit(row.opportunityName) }),
-      content: t('opportunity.disabledContentTip'),
-      positiveText: t('common.confirmDisable'),
-      negativeText: t('common.cancel'),
-      onPositiveClick: async () => {
-        try {
-          tableRefreshId.value += 1;
-          Message.success(t('common.disabled'));
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
-        }
-      },
-    });
-  }
-  // TODO 等待联调
-  function handleEnable(row: OpportunityItem) {
-    try {
-      Message.success(t('common.opened'));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
+  // TODO
+  function showCustomerDetail(id: string) {
+    activeOpportunityId.value = id;
   }
 
   // 编辑
@@ -201,7 +169,7 @@
   }
 
   // TODO 类型
-  const form = ref<any>({
+  const transferForm = ref<any>({
     head: null,
   });
 
@@ -215,7 +183,7 @@
         try {
           transferLoading.value = true;
           Message.success(t('common.transferSuccess'));
-          form.value.head = null;
+          transferForm.value.head = null;
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -223,6 +191,7 @@
       }
     });
   }
+
   // TODO 等待联调
   function handleActionSelect(row: OpportunityItem, actionKey: string) {
     switch (actionKey) {
@@ -242,196 +211,57 @@
         break;
     }
   }
+  // TODO :
+  const operationGroupList = computed<ActionsItem[]>(() => {
+    return [
+      {
+        label: t('common.edit'),
+        key: 'edit',
+      },
+      {
+        label: t('opportunity.followUp'),
+        key: 'followUp',
+      },
+      {
+        label: t('common.transfer'),
+        key: 'transfer',
+        popConfirmProps: {
+          loading: transferLoading.value,
+          title: t('common.transfer'),
+          positiveText: t('common.confirm'),
+          iconType: 'primary',
+        },
+        popSlotName: 'transferPopTitle',
+        popSlotContent: 'transferPopContent',
+      },
+      {
+        label: t('common.delete'),
+        key: 'delete',
+      },
+    ];
+  });
 
-  const columns: CrmDataTableColumn[] = [
-    {
-      type: 'selection',
-    },
-    {
-      title: t('opportunity.name'),
-      key: 'opportunityName',
-      width: 200,
-      sortOrder: false,
-      sorter: true,
-      render: (row: OpportunityItem) => {
-        return h(
-          CrmEditableText,
-          {
-            value: row.opportunityName,
-            onHandleEdit: (val: string) => {
-              updateOpportunityName(row, val);
-              row.opportunityName = val;
-            },
-          },
-          {
-            default: () => {
-              return h(
-                NButton,
-                {
-                  text: true,
-                  type: 'primary',
-                  onClick: () => showDetail(row.id),
-                },
-                { default: () => row.opportunityName }
-              );
-            },
-          }
-        );
-      },
-    },
-    {
-      title: t('opportunity.customerName'),
-      key: 'customerName',
-      width: 200,
-      sortOrder: false,
-      sorter: true,
-      render: (row: OpportunityItem) => {
-        return h(
-          NButton,
-          {
-            text: true,
-            type: 'primary',
-            onClick: () => showCustomerDetail(row.customerId),
-          },
-          { default: () => row.customerName }
-        );
-      },
-    },
-    {
-      title: t('common.status'),
-      key: 'enable',
-      width: 120,
-      ellipsis: {
-        tooltip: true,
-      },
-      sortOrder: false,
-      sorter: true,
-      filterOptions: [
-        {
-          label: t('common.enable'),
-          value: 1,
-        },
-        {
-          label: t('common.disable'),
-          value: 0,
-        },
-      ],
-      filter: true,
-      render: (row: any) => {
-        return h(NSwitch, {
-          value: row.enable,
-          onClick: () => {
-            if (row.enable) {
-              handleDisable(row);
-            } else {
-              handleEnable(row);
-            }
-          },
-        });
-      },
-    },
-    {
-      title: t('opportunity.belongDays'),
-      key: 'belongDays',
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 100,
-    },
-    {
-      title: t('opportunity.remainingBelong'),
-      key: 'reservedDays',
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 100,
-      showInTable: false,
-    },
-    {
-      title: t('common.createTime'),
-      key: 'createTime',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      showInTable: false,
-    },
-    {
-      title: t('common.creator'),
-      key: 'createUser',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => {
-        return h(CrmNameTooltip, { text: row.createUserName });
-      },
-      showInTable: false,
-    },
-    {
-      title: t('common.updateTime'),
-      key: 'updateTime',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      showInTable: false,
-    },
-    {
-      title: t('common.updateUserName'),
-      key: 'updateUser',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row: any) => {
-        return h(CrmNameTooltip, { text: row.updateUserName });
-      },
-    },
-    {
+  const { useTableRes } = await useFormCreateTable({
+    formKey: FormDesignKeyEnum.BUSINESS,
+    operationColumn: {
       key: 'operation',
-      width: 180,
+      width: 200,
       fixed: 'right',
-      render: (row: any) =>
+      render: (row: OpportunityItem) =>
         h(
           CrmOperationButton,
           {
-            groupList: [
-              {
-                label: t('common.edit'),
-                key: 'edit',
-              },
-              {
-                label: t('opportunity.followUp'),
-                key: 'followUp',
-              },
-              {
-                label: t('common.transfer'),
-                key: 'transfer',
-                popConfirmProps: {
-                  loading: transferLoading.value,
-                  title: t('common.transfer'),
-                  positiveText: t('common.confirm'),
-                  iconType: 'primary',
-                },
-                popSlotName: 'transferPopTitle',
-                popSlotContent: 'transferPopContent',
-              },
-              {
-                label: t('common.delete'),
-                key: 'delete',
-              },
-            ],
+            groupList: operationGroupList.value,
             onSelect: (key: string) => handleActionSelect(row, key),
             onCancel: () => {
-              form.value.head = null;
+              transferForm.value.head = null;
             },
           },
           {
             transferPopContent: () => {
               return h(TransferForm, {
                 class: 'w-[320px] mt-[16px]',
-                form: form.value,
+                form: transferForm.value,
                 ref: transferFormRef,
                 moduleType: ModuleConfigEnum.BUSINESS_MANAGEMENT,
               });
@@ -439,40 +269,52 @@
           }
         ),
     },
-  ];
-
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
-    getOpportunityList,
-    {
-      tableKey: TableKeyEnum.OPPORTUNITY_LIST,
-      showSetting: true,
-      columns,
-      scrollX: 2000,
+    specialRender: {
+      name: (row: OpportunityItem) => {
+        return h(
+          NButton,
+          {
+            text: true,
+            type: 'primary',
+            onClick: () => {
+              activeOpportunityId.value = row.id;
+              showOverviewDrawer.value = true;
+            },
+          },
+          { default: () => row.opportunityName }
+        );
+      },
+      customerName: (row: OpportunityItem) => {
+        return h(
+          NButton,
+          {
+            text: true,
+            type: 'primary',
+            onClick: () => showCustomerDetail(row.id),
+          },
+          { default: () => row.customerName }
+        );
+      },
     },
-    (row: any) => {
-      return {
-        ...row,
-        departmentName: row.departmentName || '-',
-        phone: row.phone || '-',
-      };
-    }
-  );
+  });
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
 
-  function initData() {
-    // TODO 等待联调
+  function searchData() {
     setLoadListParams({
-      departmentIds: ['101256012006162432'],
+      keyword: keyword.value,
     });
     loadList();
   }
 
-  function searchData(val: string) {
-    keyword.value = val;
-    initData();
-  }
+  watch(
+    () => tableRefreshId.value,
+    () => {
+      searchData();
+    }
+  );
 
   onBeforeMount(() => {
-    initData();
+    searchData();
   });
 </script>
 
