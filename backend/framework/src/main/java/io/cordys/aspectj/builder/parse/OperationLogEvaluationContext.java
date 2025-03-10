@@ -17,11 +17,11 @@ public class OperationLogEvaluationContext extends MethodBasedEvaluationContext 
     /**
      * 构造方法，初始化日志记录表达式上下文。
      *
-     * @param method                    被调用的方法
-     * @param arguments                 方法参数
-     * @param parameterNameDiscoverer   参数名称发现器
-     * @param ret                       方法返回值
-     * @param errorMsg                 错误信息
+     * @param method                  被调用的方法
+     * @param arguments               方法参数
+     * @param parameterNameDiscoverer 参数名称发现器
+     * @param ret                     方法返回值
+     * @param errorMsg                错误信息
      */
     public OperationLogEvaluationContext(Method method, Object[] arguments,
                                          ParameterNameDiscoverer parameterNameDiscoverer, Object ret, String errorMsg) {
@@ -33,12 +33,10 @@ public class OperationLogEvaluationContext extends MethodBasedEvaluationContext 
         Map<String, Object> globalVariables = OperationLogContext.getGlobalVariableMap();
 
         // 设置当前上下文中的变量
-        if (variables != null) {
-            setVariables(variables);
-        }
+        setVariables(variables);
 
         // 如果全局变量不为空，将其添加到上下文中
-        if (globalVariables != null && !globalVariables.isEmpty()) {
+        if (!globalVariables.isEmpty()) {
             for (Map.Entry<String, Object> entry : globalVariables.entrySet()) {
                 // 如果当前上下文中没有该变量，则设置该变量
                 if (lookupVariable(entry.getKey()) == null) {
