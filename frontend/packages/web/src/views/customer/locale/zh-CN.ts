@@ -11,4 +11,6 @@ export default {
   'customer.batchMoveContentTip': '移入后，客户将无负责人',
   'customer.confirmMove': '确认移入',
   'customer.moveSuccess': '移入成功',
+  'customer.contact.deleteContentTip': '删除后，将无法查询到该联系人且不可恢复，请谨慎操作！',
+  'customer.contact.deleteTitle': '存在未分配商机，请xx后再删除',
 };

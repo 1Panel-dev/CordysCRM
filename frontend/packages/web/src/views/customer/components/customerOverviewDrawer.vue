@@ -14,7 +14,10 @@
       <CrmFormDescription :form-key="FormDesignKeyEnum.CUSTOMER" :source-id="props.sourceId" />
     </template>
     <template #right>
-      <div v-if="activeTab === 'overview'" class="mt-[16px] h-[100px] bg-[var(--text-n10)]"></div>
+      <div class="mt-[16px]">
+        <div v-if="activeTab === 'overview'" class="mt-[16px] h-[100px] bg-[var(--text-n10)]"></div>
+        <ContactTable v-if="activeTab === 'contact'" class="h-[calc(100vh-161px)]" is-overview />
+      </div>
     </template>
   </CrmOverviewDrawer>
 </template>
@@ -23,6 +26,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
@@ -85,6 +89,12 @@
       tab: t('common.overview'),
       enable: true,
       allowClose: false,
+    },
+    {
+      name: 'contact',
+      tab: t('opportunity.contactInfo'),
+      enable: true,
+      allowClose: true,
     },
     {
       name: 'followRecord',

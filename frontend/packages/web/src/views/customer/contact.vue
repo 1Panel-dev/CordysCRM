@@ -1,7 +1,7 @@
 <template>
-  <div> </div>
+  <ContactTable />
 </template>
 
-<script setup lang="ts"></script>
-
-<style lang="less" scoped></style>
+<script setup lang="ts">
+  import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
+</script>

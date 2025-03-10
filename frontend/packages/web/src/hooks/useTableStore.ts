@@ -51,12 +51,6 @@ export default function useTableStore() {
         // 比较页面上定义的 column 和 浏览器备份的column 是否相同
         const isEqual = isArraysEqualWithOrder(oldColumn, column);
         if (!isEqual) {
-          column.forEach((col) => {
-            const storedCol = tableColumnsMap.column.find((sc) => sc.key === col.key);
-            if (storedCol) {
-              col.width = storedCol.width; // 使用上一次拖拽存储的宽度，避免组件里边使用时候初始化到最初的列宽
-            }
-          });
           // 如果不相等，说明有变动将新的column存入indexDB
           setTableColumnsMap(tableKey, {
             column,
