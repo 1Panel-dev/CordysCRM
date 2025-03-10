@@ -1,9 +1,14 @@
 package io.cordys.crm.opportunity.controller;
 
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
+import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
+import io.cordys.mybatis.BaseMapper;
+import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -24,6 +29,10 @@ public class OpportunityControllerTests extends BaseTest {
 
     private static final String BASE_PATH = "/opportunity/";
     protected static final String MODULE_FORM = "module/form";
+
+    private static Opportunity addOpportunity;
+    @Resource
+    private BaseMapper<Opportunity> opportunityMapper;
 
 
     @Override
@@ -65,9 +74,30 @@ public class OpportunityControllerTests extends BaseTest {
         request.setPossible(BigDecimal.valueOf(1.2));
         request.setContactId("12345");
         request.setOwner("admin");
-        this.requestPostWithOk(DEFAULT_ADD, request);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
+        Opportunity resultData = getResultData(mvcResult, Opportunity.class);
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(resultData.getId());
+        this.addOpportunity = opportunity;
 
         request.setProducts(List.of("11", "22"));
         this.requestPost(DEFAULT_ADD, request);
     }
+
+
+    @Test
+    @Order(3)
+    void testUpdate() throws Exception {
+        OpportunityUpdateRequest request = new OpportunityUpdateRequest();
+        request.setId("1234");
+        request.setName("商机2");
+        request.setCustomerId("123");
+        request.setContactId("1234567");
+        request.setOwner("admin");
+        request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
+        this.requestPost(DEFAULT_UPDATE, request);
+
+        request.setId(addOpportunity.getId());
+        this.requestPostWithOk(DEFAULT_UPDATE, request);
+    }
+
 }

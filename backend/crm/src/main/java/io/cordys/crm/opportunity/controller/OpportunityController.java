@@ -7,8 +7,10 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.service.OpportunityService;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -54,8 +56,16 @@ public class OpportunityController {
     @PostMapping("/add")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD)
     @Operation(summary = "添加商机")
-    public void add(@Validated @RequestBody OpportunityAddRequest request) {
-        opportunityService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public Opportunity add(@Validated @RequestBody OpportunityAddRequest request) {
+        return opportunityService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+
+    @PostMapping("/update")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
+    @Operation(summary = "更新商机")
+    public Opportunity update(@Validated @RequestBody OpportunityUpdateRequest request) {
+        return opportunityService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 }

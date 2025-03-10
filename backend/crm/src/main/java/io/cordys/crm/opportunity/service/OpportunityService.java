@@ -3,6 +3,7 @@ package io.cordys.crm.opportunity.service;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
@@ -13,6 +14,7 @@ import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityField;
 import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.system.domain.Product;
@@ -26,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -95,7 +98,7 @@ public class OpportunityService {
      * @param orgId
      * @return
      */
-    public void add(OpportunityAddRequest request, String operatorId, String orgId) {
+    public Opportunity add(OpportunityAddRequest request, String operatorId, String orgId) {
         checkOpportunity(request, orgId);
         Opportunity opportunity = new Opportunity();
         String id = IDGenerator.nextStr();
@@ -125,6 +128,7 @@ public class OpportunityService {
         logDTO.setModifiedValue(opportunity);
         logService.add(logDTO);
 
+        return opportunity;
     }
 
 
@@ -145,5 +149,56 @@ public class OpportunityService {
 
             throw new GenericException(String.format(Translator.get("opportunity_exist"), product.getName()));
         }
+    }
+
+
+    /**
+     * 更新商机
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     */
+    public Opportunity update(OpportunityUpdateRequest request, String userId, String orgId) {
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getId());
+        Optional.ofNullable(opportunity).ifPresentOrElse(item -> {
+            LogDTO logDTO = new LogDTO(orgId, item.getId(), userId, LogType.UPDATE, LogModule.OPPORTUNITY, Translator.get("update_opportunity"));
+            logDTO.setOriginalValue(opportunity);
+            //更新跟进计划
+            updateOpportunity(item, request, userId);
+            //更新模块字段
+            updateModuleField(request.getId(), request.getModuleFields());
+            logDTO.setModifiedValue(item);
+            logService.add(logDTO);
+        }, () -> {
+            throw new GenericException("opportunity_not_found");
+        });
+        return opportunity;
+    }
+
+
+    private void updateOpportunity(Opportunity item, OpportunityUpdateRequest request, String userId) {
+        item.setName(request.getName());
+        item.setCustomerId(request.getCustomerId());
+        item.setAmount(request.getAmount());
+        item.setPossible(request.getPossible());
+        item.setProducts(request.getProducts());
+        item.setContactId(request.getContactId());
+        item.setOwner(request.getOwner());
+        item.setUpdateTime(System.currentTimeMillis());
+        item.setUpdateUser(userId);
+        opportunityMapper.update(item);
+    }
+
+
+    private void updateModuleField(String id, List<BaseModuleFieldValue> moduleFields) {
+        if (moduleFields == null) {
+            // 如果为 null，则不更新
+            return;
+        }
+        // 先删除
+        opportunityFieldService.deleteByResourceId(id);
+        // 再保存
+        opportunityFieldService.saveModuleField(id, moduleFields);
     }
 }
