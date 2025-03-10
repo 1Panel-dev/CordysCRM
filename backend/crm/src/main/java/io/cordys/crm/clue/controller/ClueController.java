@@ -62,7 +62,7 @@ public class ClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索详情")
     public ClueGetResponse get(@PathVariable String id) {
-        return clueService.get(id);
+        return clueService.get(id, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")

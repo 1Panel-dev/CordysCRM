@@ -126,6 +126,9 @@ class CustomerContactControllerTests extends BaseTest {
         Assertions.assertNotNull(getResponse.getCreateUserName());
         Assertions.assertNotNull(getResponse.getUpdateUserName());
         Assertions.assertNotNull(getResponse.getDepartmentName());
+        Assertions.assertNotNull(getResponse.getOwnerName());
+        Assertions.assertNotNull(getResponse.getDepartmentId());
+        Assertions.assertNotNull(getResponse.getDepartmentName());
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, DEFAULT_GET, addCustomerContact.getId());
@@ -147,6 +150,9 @@ class CustomerContactControllerTests extends BaseTest {
             result.setOrganizationId(customerContact.getOrganizationId());
             Assertions.assertEquals(customerContact, result);
             Assertions.assertNotNull(customerContactListResponse.getUpdateUserName());
+            Assertions.assertNotNull(customerContactListResponse.getDepartmentName());
+            Assertions.assertNotNull(customerContactListResponse.getOwnerName());
+            Assertions.assertNotNull(customerContactListResponse.getDepartmentId());
             Assertions.assertNotNull(customerContactListResponse.getDepartmentName());
         });
         

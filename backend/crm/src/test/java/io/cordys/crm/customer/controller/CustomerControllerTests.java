@@ -2,6 +2,7 @@ package io.cordys.crm.customer.controller;
 
 import io.cordys.common.constants.BusinessSearchType;
 import io.cordys.common.constants.FormKey;
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.pager.Pager;
@@ -126,6 +127,7 @@ class CustomerControllerTests extends BaseTest {
 
         // 创建另一个客户
         request.setName("another");
+        request.setOwner(InternalUser.ADMIN.getValue());
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         resultData = getResultData(mvcResult, Customer.class);
         anotherCustomer = customerMapper.selectByPrimaryKey(resultData.getId());
@@ -151,7 +153,7 @@ class CustomerControllerTests extends BaseTest {
         CustomerUpdateRequest request = new CustomerUpdateRequest();
         request.setId(addCustomer.getId());
         request.setName("aa11");
-        request.setOwner("bb22");
+        request.setOwner(InternalUser.ADMIN.getValue());
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         // 校验请求成功数据
         Customer customerResult = customerMapper.selectByPrimaryKey(request.getId());
@@ -185,6 +187,9 @@ class CustomerControllerTests extends BaseTest {
         responseCustomer.setInSharedPool(false);
         responseCustomer.setCollectionTime(addCustomer.getCollectionTime());
         Assertions.assertEquals(responseCustomer, customer);
+        Assertions.assertNotNull(getResponse.getOwnerName());
+        Assertions.assertNotNull(getResponse.getDepartmentId());
+        Assertions.assertNotNull(getResponse.getDepartmentName());
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, DEFAULT_GET, addCustomer.getId());
@@ -216,6 +221,9 @@ class CustomerControllerTests extends BaseTest {
             responseCustomer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
             responseCustomer.setInSharedPool(false);
             Assertions.assertEquals(customer, responseCustomer);
+            Assertions.assertNotNull(customerListResponse.getOwnerName());
+            Assertions.assertNotNull(customerListResponse.getDepartmentId());
+            Assertions.assertNotNull(customerListResponse.getDepartmentName());
         });
 
         request.setSearchType(BusinessSearchType.SELF.name());

@@ -23,7 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static io.cordys.crm.customer.constants.CustomerResultCode.CUSTOMER_CONTACT_EXIST;
@@ -70,7 +71,7 @@ public class CustomerContactService {
         List<String> ownerIds = list.stream()
                 .map(CustomerContactListResponse::getOwner)
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
@@ -88,7 +89,7 @@ public class CustomerContactService {
             customerListResponse.setCustomerName(customNameMap.get(customerListResponse.getCustomerId()));
         });
 
-        return baseService.setCreateAndUpdateUserName(list);
+        return baseService.setCreateUpdateOwnerUserName(list);
     }
 
     public CustomerContactGetResponse get(String id, String orgId) {
@@ -100,13 +101,13 @@ public class CustomerContactService {
             customerContactGetResponse.setCustomerName(customers.getFirst().getName());
         }
 
-        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(List.of(customerContact.getOwner()), orgId);
-        UserDeptDTO userDeptDTO = userDeptMap.get(customerContactGetResponse.getOwner());
+        UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerContact.getOwner(), orgId);
         if (userDeptDTO != null) {
             customerContactGetResponse.setDepartmentId(userDeptDTO.getDeptId());
             customerContactGetResponse.setDepartmentName(userDeptDTO.getDeptName());
         }
-        return baseService.setCreateAndUpdateUserName(customerContactGetResponse);
+
+        return baseService.setCreateUpdateOwnerUserName(customerContactGetResponse);
     }
 
     public CustomerContact add(CustomerContactAddRequest request, String userId, String orgId) {

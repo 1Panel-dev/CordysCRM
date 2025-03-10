@@ -59,7 +59,7 @@ public class CustomerService {
         List<String> ownerIds = list.stream()
                 .map(CustomerListResponse::getOwner)
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
@@ -80,18 +80,24 @@ public class CustomerService {
             }
         });
 
-        return baseService.setCreateAndUpdateUserName(list);
+        return baseService.setCreateUpdateOwnerUserName(list);
     }
 
-    public CustomerGetResponse get(String id) {
+    public CustomerGetResponse get(String id, String orgId) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
         CustomerGetResponse customerGetResponse = BeanUtils.copyBean(new CustomerGetResponse(), customer);
 
         // 获取模块字段
         List<BaseModuleFieldValue> customerFields = customerFieldService.getModuleFieldValuesByResourceId(id);
-
         customerGetResponse.setModuleFields(customerFields);
-        return baseService.setCreateAndUpdateUserName(customerGetResponse);
+
+        UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerGetResponse.getOwner(), orgId);
+        if (userDeptDTO != null) {
+            customerGetResponse.setDepartmentId(userDeptDTO.getDeptId());
+            customerGetResponse.setDepartmentName(userDeptDTO.getDeptName());
+        }
+
+        return baseService.setCreateUpdateOwnerUserName(customerGetResponse);
     }
 
     public Customer add(CustomerAddRequest request, String userId, String orgId) {

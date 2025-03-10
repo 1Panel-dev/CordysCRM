@@ -17,11 +17,14 @@ public class ClueListResponse {
     @Schema(description = "ID")
     private String id;
 
-    @Schema(description = "客户名称")
+    @Schema(description = "线索名称")
     private String name;
 
     @Schema(description = "负责人")
     private String owner;
+
+    @Schema(description = "负责人名称")
+    private String ownerName;
 
     @Schema(description = "联系人名称")
     private String contact;

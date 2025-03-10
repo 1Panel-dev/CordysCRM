@@ -66,7 +66,7 @@ public class CustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户详情")
     public CustomerGetResponse get(@PathVariable String id) {
-        return customerService.get(id);
+        return customerService.get(id, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")

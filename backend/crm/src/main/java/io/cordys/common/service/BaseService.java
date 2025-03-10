@@ -46,24 +46,76 @@ public class BaseService {
      * @param <T>
      */
     public <T> List<T> setCreateAndUpdateUserName(List<T> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return list;
+        }
         try {
+
+            Class<?> clazz = list.getFirst().getClass();
+            Method setCreateUserName = clazz.getMethod("setCreateUserName", String.class);
+            Method setUpdateUserName = clazz.getMethod("setUpdateUserName", String.class);
+            Method getCreateUser = clazz.getMethod("getCreateUser");
+            Method getUpdateUser = clazz.getMethod("getUpdateUser");
+
             Set<String> userIds = new HashSet<>();
             for (T role : list) {
-                Method getCreateUser = role.getClass().getMethod("getCreateUser");
-                Method getUpdateUser = role.getClass().getMethod("getUpdateUser");
                 userIds.add((String) getCreateUser.invoke(role));
                 userIds.add((String) getUpdateUser.invoke(role));
             }
 
             Map<String, String> userNameMap = getUserNameMap(userIds);
+            for (T item : list) {
+                setCreateUserName.invoke(item, userNameMap.get(getCreateUser.invoke(item)));
+                setUpdateUserName.invoke(item, userNameMap.get(getUpdateUser.invoke(item)));
+            }
+        } catch (Exception e) {
+            throw new GenericException(e);
+        }
+        return list;
+    }
 
+    /**
+     * 设置创建人、更新人和责任人名称
+     * @param object
+     * @return
+     * @param <T>
+     */
+    public <T> T setCreateUpdateOwnerUserName(T object) {
+        return setCreateUpdateOwnerUserName(List.of(object)).get(0);
+    }
+
+    /**
+     * 设置创建人、更新人和责任人名称
+     * @param list
+     * @return
+     * @param <T>
+     */
+    public <T> List<T> setCreateUpdateOwnerUserName(List<T> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return list;
+        }
+        try {
+
+            Class<?> clazz = list.getFirst().getClass();
+            Method setCreateUserName = clazz.getMethod("setCreateUserName", String.class);
+            Method setUpdateUserName = clazz.getMethod("setUpdateUserName", String.class);
+            Method setOwnerName = clazz.getMethod("setOwnerName", String.class);
+            Method getCreateUser = clazz.getMethod("getCreateUser");
+            Method getUpdateUser = clazz.getMethod("getUpdateUser");
+            Method getOwner = clazz.getMethod("getOwner");
+
+            Set<String> userIds = new HashSet<>();
             for (T role : list) {
-                Method setCreateUserName = role.getClass().getMethod("setCreateUserName", String.class);
-                Method setUpdateUserName = role.getClass().getMethod("setUpdateUserName", String.class);
-                Method getCreateUser = role.getClass().getMethod("getCreateUser");
-                Method getUpdateUser = role.getClass().getMethod("getUpdateUser");
-                setCreateUserName.invoke(role, userNameMap.get(getCreateUser.invoke(role)));
-                setUpdateUserName.invoke(role, userNameMap.get(getUpdateUser.invoke(role)));
+                userIds.add((String) getCreateUser.invoke(role));
+                userIds.add((String) getUpdateUser.invoke(role));
+                userIds.add((String) getOwner.invoke(role));
+            }
+
+            Map<String, String> userNameMap = getUserNameMap(userIds);
+            for (T item : list) {
+                setCreateUserName.invoke(item, userNameMap.get(getCreateUser.invoke(item)));
+                setUpdateUserName.invoke(item, userNameMap.get(getUpdateUser.invoke(item)));
+                setOwnerName.invoke(item, userNameMap.get(getOwner.invoke(item)));
             }
         } catch (Exception e) {
             throw new GenericException(e);
@@ -96,6 +148,15 @@ public class BaseService {
        return getUserNameMap(new ArrayList<>(userIds));
     }
 
+    public Map<String, UserDeptDTO> getUserDeptMapByUserIds(Set<String> ownerIds, String orgId) {
+        return getUserDeptMapByUserIds(new ArrayList<>(ownerIds), orgId);
+    }
+
+    public UserDeptDTO getUserDeptMapByUserId(String ownerId, String orgId) {
+        List<UserDeptDTO> userDeptList = extUserMapper.getUserDeptByUserIds(List.of(ownerId), orgId);
+        return CollectionUtils.isEmpty(userDeptList) ? null : userDeptList.getFirst();
+    }
+    
     public Map<String, UserDeptDTO> getUserDeptMapByUserIds(List<String> ownerIds, String orgId) {
         if (CollectionUtils.isEmpty(ownerIds)) {
             return Collections.emptyMap();

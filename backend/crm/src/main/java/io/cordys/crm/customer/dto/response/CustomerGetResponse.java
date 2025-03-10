@@ -23,6 +23,9 @@ public class CustomerGetResponse {
     @Schema(description = "负责人")
     private String owner;
 
+    @Schema(description = "负责人名称")
+    private String ownerName;
+
     @Schema(description = "创建人")
     private String createUser;
 
@@ -40,6 +43,12 @@ public class CustomerGetResponse {
 
     @Schema(description = "更新人名称")
     private String updateUserName;
+
+    @Schema(description = "归属部门")
+    private String departmentId;
+
+    @Schema(description = "归属部门名称")
+    private String departmentName;
 
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;

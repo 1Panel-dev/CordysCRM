@@ -23,11 +23,20 @@ public class ClueGetResponse {
     @Schema(description = "负责人")
     private String owner;
 
+    @Schema(description = "负责人姓名")
+    private String ownerName;
+
     @Schema(description = "联系人名称")
     private String contact;
 
     @Schema(description = "联系人电话")
     private String phone;
+
+    @Schema(description = "归属部门")
+    private String departmentId;
+
+    @Schema(description = "归属部门名称")
+    private String departmentName;
 
     @Schema(description = "创建人")
     private String createUser;

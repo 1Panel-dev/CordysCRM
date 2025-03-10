@@ -2,11 +2,10 @@ package io.cordys.crm.clue.controller;
 
 import io.cordys.common.constants.BusinessSearchType;
 import io.cordys.common.constants.FormKey;
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.JSON;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.clue.constants.ClueResultCode;
 import io.cordys.crm.clue.domain.Clue;
@@ -26,7 +25,6 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -128,6 +126,7 @@ class ClueControllerTests extends BaseTest {
 
         // 创建另一个客户
         request.setName("another");
+        request.setOwner(InternalUser.ADMIN.getValue());
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         resultData = getResultData(mvcResult, Clue.class);
         anotherClue = clueMapper.selectByPrimaryKey(resultData.getId());
@@ -153,7 +152,7 @@ class ClueControllerTests extends BaseTest {
         ClueUpdateRequest request = new ClueUpdateRequest();
         request.setId(addClue.getId());
         request.setName("aa11");
-        request.setOwner("bb22");
+        request.setOwner(InternalUser.ADMIN.getValue());
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         // 校验请求成功数据
         Clue clueResult = clueMapper.selectByPrimaryKey(request.getId());
@@ -187,6 +186,9 @@ class ClueControllerTests extends BaseTest {
         responseClue.setInSharedPool(false);
         responseClue.setCollectionTime(addClue.getCollectionTime());
         Assertions.assertEquals(responseClue, clue);
+        Assertions.assertNotNull(getResponse.getOwnerName());
+        Assertions.assertNotNull(getResponse.getDepartmentId());
+        Assertions.assertNotNull(getResponse.getDepartmentName());
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, DEFAULT_GET, addClue.getId());
@@ -218,6 +220,9 @@ class ClueControllerTests extends BaseTest {
             responseClue.setOrganizationId(DEFAULT_ORGANIZATION_ID);
             responseClue.setInSharedPool(false);
             Assertions.assertEquals(clue, responseClue);
+            Assertions.assertNotNull(clueListResponse.getOwnerName());
+            Assertions.assertNotNull(clueListResponse.getDepartmentId());
+            Assertions.assertNotNull(clueListResponse.getDepartmentName());
         });
 
         request.setSearchType(BusinessSearchType.SELF.name());

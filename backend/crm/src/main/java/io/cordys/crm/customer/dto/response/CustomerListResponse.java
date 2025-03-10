@@ -23,6 +23,9 @@ public class CustomerListResponse {
     @Schema(description = "负责人")
     private String owner;
 
+    @Schema(description = "负责人名称")
+    private String ownerName;
+
     @Schema(description = "是否在公海池")
     private Boolean inSharedPool;
 

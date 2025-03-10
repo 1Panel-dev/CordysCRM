@@ -57,7 +57,7 @@ public class ClueService {
         List<String> ownerIds = list.stream()
                 .map(ClueListResponse::getOwner)
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
@@ -78,18 +78,24 @@ public class ClueService {
             }
         });
 
-        return baseService.setCreateAndUpdateUserName(list);
+        return baseService.setCreateUpdateOwnerUserName(list);
     }
 
-    public ClueGetResponse get(String id) {
+    public ClueGetResponse get(String id, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
         ClueGetResponse clueGetResponse = BeanUtils.copyBean(new ClueGetResponse(), clue);
 
         // 获取模块字段
         List<BaseModuleFieldValue> clueFields = clueFieldService.getModuleFieldValuesByResourceId(id);
-
         clueGetResponse.setModuleFields(clueFields);
-        return baseService.setCreateAndUpdateUserName(clueGetResponse);
+
+        UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(clueGetResponse.getOwner(), orgId);
+        if (userDeptDTO != null) {
+            clueGetResponse.setDepartmentId(userDeptDTO.getDeptId());
+            clueGetResponse.setDepartmentName(userDeptDTO.getDeptName());
+        }
+
+        return baseService.setCreateUpdateOwnerUserName(clueGetResponse);
     }
 
     public Clue add(ClueAddRequest request, String userId, String orgId) {

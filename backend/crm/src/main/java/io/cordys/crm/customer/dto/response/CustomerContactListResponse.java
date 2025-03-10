@@ -16,6 +16,9 @@ import java.util.List;
 @Data
 public class CustomerContactListResponse extends CustomerContact {
 
+    @Schema(description = "负责人名称")
+    private String ownerName;
+
     @Schema(description = "归属部门")
     private String departmentId;
 
