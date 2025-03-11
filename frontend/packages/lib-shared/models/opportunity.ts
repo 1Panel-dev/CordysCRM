@@ -26,6 +26,10 @@ export interface SaveOpportunityParams {
   moduleFields: ModuleField[]; // 自定义字段
 }
 
+export interface UpdateOpportunityParams extends SaveOpportunityParams {
+  id: string;
+}
+
 // TODO ts 类型字段等待补充 工作流详情
 export interface WorkflowStepItem {
   value: string;

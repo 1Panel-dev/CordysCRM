@@ -8,14 +8,14 @@
     @confirm="confirmHandler"
     @cancel="closeHandler"
   >
-    <TransferForm ref="transferFormRef" v-model:form="form" :module-type="moduleType" />
+    <TransferForm ref="transferFormRef" v-model:form="form" />
   </CrmModal>
 </template>
 
 <script lang="ts" setup>
   import { DataTableRowKey, useMessage } from 'naive-ui';
 
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import type { TransferParams } from '@lib/shared/models/customer/index';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import TransferForm from './transferForm.vue';
@@ -30,9 +30,7 @@
     title?: string;
     sourceIds: DataTableRowKey[];
     isBatch?: boolean;
-    moduleType?: ModuleConfigEnum;
-    // TODO ts 类型
-    saveApi?: (params: Record<string, any>) => Promise<any>;
+    saveApi?: (params: TransferParams) => Promise<any>;
   }
 
   const props = withDefaults(defineProps<TransferModalProps>(), {
@@ -55,8 +53,7 @@
     return props.isBatch ? t('common.batchTransfer') : t('common.transfer');
   });
 
-  // TODO 类型
-  const form = ref<any>({
+  const form = ref<TransferParams>({
     ...defaultTransferForm,
   });
 
@@ -68,16 +65,16 @@
 
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
 
-  // TODO 等待联调
   function confirmHandler() {
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
         if (props.saveApi) {
           try {
             loading.value = true;
-            // TODO lmy 联调
-            console.log('🤔️ =>', props.sourceIds);
-            props.saveApi(form.value);
+            props.saveApi({
+              ...form.value,
+              ids: props.sourceIds,
+            });
             closeHandler();
             emit('loadList');
             Message.success(t('common.transferSuccess'));

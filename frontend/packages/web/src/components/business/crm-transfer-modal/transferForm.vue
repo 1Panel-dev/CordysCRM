@@ -8,9 +8,9 @@
     require-mark-placement="left"
     class="min-w-[350px]"
   >
-    <n-form-item path="head" :label="t('opportunity.receiver')">
+    <n-form-item path="owner" :label="t('opportunity.receiver')">
       <CrmUserSelect
-        v-model:value="form.head"
+        v-model:value="form.owner"
         :placeholder="t('opportunity.selectReceiverPlaceholder')"
         value-field="id"
         label-field="name"
@@ -19,23 +19,13 @@
         max-tag-count="responsive"
       />
     </n-form-item>
-    <n-form-item
-      v-if="
-        props.moduleType &&
-        [ModuleConfigEnum.CLUE_MANAGEMENT, ModuleConfigEnum.CUSTOMER_MANAGEMENT].includes(props.moduleType)
-      "
-      path="belongToPublicPool"
-      :label="t('clue.belongToPublicPool')"
-    >
-      <n-select v-model:value="form.belongToPublicPool" :options="[]" />
-    </n-form-item>
   </n-form>
 </template>
 
 <script lang="ts" setup>
-  import { FormInst, FormRules, NForm, NFormItem, NSelect } from 'naive-ui';
+  import { FormInst, FormRules, NForm, NFormItem } from 'naive-ui';
 
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import type { TransferParams } from '@lib/shared/models/customer/index';
 
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
@@ -43,13 +33,9 @@
   import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
 
-  const props = defineProps<{
-    moduleType?: ModuleConfigEnum;
-  }>();
-
   const { t } = useI18n();
 
-  const form = defineModel<{ head: string | null; belongToPublicPool?: string | null }>('form', {
+  const form = defineModel<TransferParams>('form', {
     required: true,
     default: {
       ...defaultTransferForm,
@@ -59,8 +45,7 @@
   const formRef = ref<FormInst | null>(null);
 
   const rules: FormRules = {
-    head: [{ required: true, message: t('opportunity.selectReceiverPlaceholder') }],
-    belongToPublicPool: [{ required: true, message: t('clue.belongToPublicPool') }],
+    owner: [{ required: true, message: t('opportunity.selectReceiverPlaceholder') }],
   };
 
   defineExpose({

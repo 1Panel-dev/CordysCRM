@@ -10,6 +10,9 @@
     :form-key="FormDesignKeyEnum.BUSINESS"
     @button-select="handleSelect"
   >
+    <template #left>
+      <CrmFormDescription :form-key="FormDesignKeyEnum.BUSINESS" :source-id="props.sourceId" />
+    </template>
     <template #right>
       <CrmWorkflowCard
         v-if="activeTab === 'overview'"
@@ -51,6 +54,8 @@
         virtual-scroll-height="calc(100vh - 194px)"
         @reach-bottom="handleReachBottom"
         @search="() => loadFollowList()"
+        @cancel-plan="handleCancelPlan"
+        @handle-edit="handleEditFollow"
       />
 
       <HeaderTable
@@ -60,12 +65,15 @@
         :load-list-api="getUserList"
       />
 
-      <TransferModal
-        v-model:show="showTransferModal"
-        :module-type="ModuleConfigEnum.BUSINESS_MANAGEMENT"
-        :is-batch="isBatchTransfer"
-        :source-ids="[detail.id]"
+      <CrmFormCreateDrawer
+        v-model:visible="formDrawerVisible"
+        :form-key="realFormKey"
+        :source-id="realFollowSourceId"
       />
+    </template>
+
+    <template #transferPopContent>
+      <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
     </template>
   </CrmOverviewDrawer>
 </template>
@@ -75,22 +83,30 @@
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
-  import type { FollowDetailItem } from '@lib/shared/models/customer';
+  import type { FollowDetailItem, TransferParams } from '@lib/shared/models/customer';
   import type { WorkflowStepItem } from '@lib/shared/models/opportunity';
 
   import CrmCollapse from '@/components/pure/crm-collapse/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import HeaderTable from '@/components/business/crm-form-create-table/headerTable.vue';
+  import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
-  import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
+  import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import { getOptFollowPlanList, getOptFollowRecordList } from '@/api/modules/opportunity';
+  import {
+    cancelOptFollowPlan,
+    deleteOpt,
+    getOptFollowPlanList,
+    getOptFollowRecordList,
+    transferOpt,
+  } from '@/api/modules/opportunity';
   import { getUserList } from '@/api/modules/system/org';
+  import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
@@ -99,6 +115,10 @@
 
   const { t } = useI18n();
   const Message = useMessage();
+
+  const props = defineProps<{
+    sourceId: string;
+  }>();
 
   const showOptOverviewDrawer = defineModel<boolean>('show', {
     required: true,
@@ -110,6 +130,13 @@
     name: '商机名称',
     customerName: '客户名称',
   });
+
+  const transferForm = ref<TransferParams>({
+    owner: null,
+    ids: [],
+  });
+
+  const transferLoading = ref(false);
 
   const buttonList: ActionsItem[] = [
     {
@@ -139,10 +166,18 @@
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
+      popConfirmProps: {
+        loading: transferLoading.value,
+        title: t('common.transfer'),
+        positiveText: t('common.confirm'),
+        iconType: 'primary',
+      },
+      popSlotName: 'transferPopTitle',
+      popSlotContent: 'transferPopContent',
     },
     {
       label: t('common.delete'),
-      key: 'transfer',
+      key: 'delete',
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
@@ -260,12 +295,50 @@
     loadFollowList();
   }
 
+  const formDrawerVisible = ref(false);
+  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD);
+
+  // 取消计划
+  async function handleCancelPlan(item: FollowDetailItem) {
+    try {
+      await cancelOptFollowPlan(item.id);
+      Message.success(t('common.cancelSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  // 编辑跟进内容
+  const realFollowSourceId = ref<string | undefined>('');
+  function handleEditFollow(item: FollowDetailItem) {
+    realFormKey.value =
+      activeTab.value === 'followRecord' ? FormDesignKeyEnum.FOLLOW_RECORD : FormDesignKeyEnum.FOLLOW_PLAN;
+    realFollowSourceId.value = item.id;
+    formDrawerVisible.value = true;
+  }
+
   // 转移
-  const showTransferModal = ref<boolean>(false);
-  const isBatchTransfer = ref<boolean>(true);
+  const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   function handleTransfer() {
-    isBatchTransfer.value = false;
-    showTransferModal.value = true;
+    transferFormRef.value?.formRef?.validate(async (error) => {
+      if (!error) {
+        try {
+          transferLoading.value = true;
+          await transferOpt({
+            ...transferForm.value,
+            ids: [props.sourceId],
+          });
+          Message.success(t('common.transferSuccess'));
+          transferForm.value = { ...defaultTransferForm };
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(e);
+        } finally {
+          transferLoading.value = false;
+        }
+      }
+    });
   }
 
   // 删除
@@ -278,7 +351,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO
+          await deleteOpt(detail.value.id);
           Message.success(t('common.deleteSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -290,7 +363,7 @@
 
   function handleSelect(key: string) {
     switch (key) {
-      case 'transfer':
+      case 'pop-transfer':
         handleTransfer();
         break;
       case 'delete':
@@ -305,7 +378,7 @@
     () => activeTab.value,
     (val) => {
       if (['followPlan', 'followRecord'].includes(val)) {
-        // loadFollowList();
+        loadFollowList();
       }
     }
   );
@@ -314,7 +387,7 @@
     () => showOptOverviewDrawer.value,
     (val) => {
       if (val) {
-        // loadFollowList();
+        loadFollowList();
       }
     }
   );

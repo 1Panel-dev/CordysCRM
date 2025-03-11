@@ -163,11 +163,11 @@
       filterOptions: [
         {
           label: t('common.enable'),
-          value: 1,
+          value: true,
         },
         {
           label: t('common.disable'),
-          value: 0,
+          value: false,
         },
       ],
       filter: true,

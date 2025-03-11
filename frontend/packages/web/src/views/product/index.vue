@@ -23,9 +23,8 @@
     </CrmTable>
     <CrmFormCreateDrawer
       v-model:visible="formCreateDrawerVisible"
-      :title="t('product.new')"
       :form-key="FormDesignKeyEnum.PRODUCT"
-      :source-id="activeProjectId"
+      :source-id="activeProductId"
     />
   </CrmCard>
 </template>
@@ -58,7 +57,7 @@
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const keyword = ref('');
   const formCreateDrawerVisible = ref(false);
-  const activeProjectId = ref('');
+  const activeProductId = ref('');
   const tableRefreshId = ref(0);
 
   const actionConfig: BatchActionConfig = {
@@ -147,9 +146,16 @@
     });
   }
 
+  // 编辑
+  function handleEdit(productId: string) {
+    activeProductId.value = productId;
+    formCreateDrawerVisible.value = true;
+  }
+
   function handleActionSelect(row: ProductListItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
+        handleEdit(row.id);
         break;
       case 'delete':
         handleDelete(row);

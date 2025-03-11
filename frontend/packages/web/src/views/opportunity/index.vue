@@ -1,4 +1,7 @@
 <template>
+  <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+  </CrmCard>
   <CrmCard hide-footer>
     <CrmTable
       v-model:checked-row-keys="checkedRowKeys"
@@ -31,14 +34,14 @@
     </CrmTable>
     <TransferModal
       v-model:show="showTransferModal"
+      :is-batch="true"
       :source-ids="checkedRowKeys"
-      :module-type="ModuleConfigEnum.BUSINESS_MANAGEMENT"
+      :save-api="transferOpt"
     />
-    <OptOverviewDrawer v-model:show="showOverviewDrawer" />
+    <OptOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeOpportunityId" />
     <CrmFormCreateDrawer
       v-model:visible="formCreateDrawerVisible"
-      :title="t('opportunity.new')"
-      :form-key="FormDesignKeyEnum.BUSINESS"
+      :form-key="realFormKey"
       :source-id="activeOpportunityId"
     />
   </CrmCard>
@@ -46,15 +49,16 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
@@ -64,7 +68,9 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import OptOverviewDrawer from './components/optOverviewDrawer.vue';
 
+  import { batchDeleteOpt, deleteOpt, transferOpt } from '@/api/modules/opportunity';
   import { importUserPreCheck, importUsers } from '@/api/modules/system/org';
+  import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -93,6 +99,29 @@
   };
 
   const tableRefreshId = ref(0);
+  const activeTab = ref('all');
+
+  const tabList = computed<TabPaneProps[]>(() => {
+    // TODO 根据不同的用户展示tab
+    return [
+      {
+        name: 'all',
+        tab: t('opportunity.allOpportunities'),
+      },
+      {
+        name: 'my',
+        tab: t('opportunity.myOpportunities'),
+      },
+      {
+        name: 'department',
+        tab: t('opportunity.departmentOpportunities'),
+      },
+      {
+        name: 'converted',
+        tab: t('opportunity.convertedOpportunities'),
+      },
+    ];
+  });
 
   // 批量转移
   const showTransferModal = ref<boolean>(false);
@@ -110,8 +139,9 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          tableRefreshId.value += 1;
+          await batchDeleteOpt(checkedRowKeys.value);
           Message.success(t('common.deleteSuccess'));
+          tableRefreshId.value += 1;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -136,6 +166,7 @@
   const showOverviewDrawer = ref<boolean>(false);
   const activeOpportunityId = ref('');
   const formCreateDrawerVisible = ref(false);
+  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.BUSINESS);
 
   // TODO
   function showCustomerDetail(id: string) {
@@ -143,10 +174,18 @@
   }
 
   // 编辑
-  function handleEdit() {}
+  function handleEdit(id: string) {
+    activeOpportunityId.value = id;
+    realFormKey.value = FormDesignKeyEnum.BUSINESS;
+    formCreateDrawerVisible.value = true;
+  }
 
   // 跟进
-  function handleFollowUp(row: OpportunityItem) {}
+  function handleFollowUp() {
+    activeOpportunityId.value = '';
+    realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD;
+    formCreateDrawerVisible.value = true;
+  }
 
   // 删除
   function handleDelete(row: OpportunityItem) {
@@ -158,8 +197,9 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          tableRefreshId.value += 1;
+          await deleteOpt(row.id);
           Message.success(t('common.deleteSuccess'));
+          tableRefreshId.value += 1;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -168,9 +208,9 @@
     });
   }
 
-  // TODO 类型
-  const transferForm = ref<any>({
-    head: null,
+  const transferForm = ref<TransferParams>({
+    owner: null,
+    ids: [],
   });
 
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
@@ -182,24 +222,29 @@
       if (!error) {
         try {
           transferLoading.value = true;
+          await transferOpt({
+            ...transferForm.value,
+            ids: [row.id],
+          });
           Message.success(t('common.transferSuccess'));
-          transferForm.value.head = null;
+          transferForm.value = { ...defaultTransferForm };
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
+        } finally {
+          transferLoading.value = false;
         }
       }
     });
   }
 
-  // TODO 等待联调
   function handleActionSelect(row: OpportunityItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
-        handleEdit();
+        handleEdit(row.id);
         break;
       case 'followUp':
-        handleFollowUp(row);
+        handleFollowUp();
         break;
       case 'pop-transfer':
         handleTransfer(row);
@@ -211,6 +256,7 @@
         break;
     }
   }
+
   // TODO :
   const operationGroupList = computed<ActionsItem[]>(() => {
     return [
@@ -231,7 +277,6 @@
           positiveText: t('common.confirm'),
           iconType: 'primary',
         },
-        popSlotName: 'transferPopTitle',
         popSlotContent: 'transferPopContent',
       },
       {
@@ -254,7 +299,7 @@
             groupList: operationGroupList.value,
             onSelect: (key: string) => handleActionSelect(row, key),
             onCancel: () => {
-              transferForm.value.head = null;
+              transferForm.value = { ...defaultTransferForm };
             },
           },
           {
@@ -263,7 +308,6 @@
                 class: 'w-[320px] mt-[16px]',
                 form: transferForm.value,
                 ref: transferFormRef,
-                moduleType: ModuleConfigEnum.BUSINESS_MANAGEMENT,
               });
             },
           }

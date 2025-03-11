@@ -1,13 +1,18 @@
 import {
   AddOptFollowPlanUrl,
   AddOptFollowRecordUrl,
+  CancelOptFollowPlanUrl,
   GetOptFollowPlanUrl,
   GetOptFollowRecordUrl,
   GetOptFormConfigUrl,
   OptAddUrl,
+  OptBatchDeleteUrl,
+  OptBatchTransferUrl,
+  OptDeleteUrl,
   OptFollowPlanPageUrl,
   OptFollowRecordListUrl,
   OptPageUrl,
+  OptUpdateUrl,
   UpdateOptFollowPlanUrl,
   UpdateOptFollowRecordUrl,
 } from '@lib/shared/api/requrls/opportunity';
@@ -18,10 +23,11 @@ import type {
   FollowDetailItem,
   SaveCustomerFollowPlanParams,
   SaveCustomerFollowRecordParams,
+  TransferParams,
   UpdateCustomerFollowPlanParams,
   UpdateCustomerFollowRecordParams,
 } from '@lib/shared/models/customer';
-import type { OpportunityItem, SaveOpportunityParams } from '@lib/shared/models/opportunity';
+import type { OpportunityItem, SaveOpportunityParams, UpdateOpportunityParams } from '@lib/shared/models/opportunity';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import CDR from '@/api/http/index';
@@ -34,6 +40,11 @@ export function getOpportunityList(data: TableQueryParams) {
 // 添加商机
 export function addOpportunity(data: SaveOpportunityParams) {
   return CDR.post({ url: OptAddUrl, data });
+}
+
+// 更新商机
+export function updateOpportunity(data: UpdateOpportunityParams) {
+  return CDR.post({ url: OptUpdateUrl, data });
 }
 
 // 获取商机表单配置
@@ -79,4 +90,24 @@ export function updateOptFollowPlan(data: UpdateCustomerFollowPlanParams) {
 // 获取商机跟进计划详情
 export function getOptFollowPlan(id: string) {
   return CDR.get<FollowDetailItem>({ url: `${GetOptFollowPlanUrl}/${id}` });
+}
+
+// 取消商机跟进计划
+export function cancelOptFollowPlan(id: string) {
+  return CDR.get({ url: `${CancelOptFollowPlanUrl}/${id}` });
+}
+
+// 批量转移商机
+export function transferOpt(data: TransferParams) {
+  return CDR.post({ url: OptBatchTransferUrl, data });
+}
+
+// 批量删除商机
+export function batchDeleteOpt(data: (string | number)[]) {
+  return CDR.post({ url: OptBatchDeleteUrl, data });
+}
+
+// 删除商机
+export function deleteOpt(id: string) {
+  return CDR.post({ url: `${OptDeleteUrl}/${id}` });
 }

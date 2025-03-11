@@ -26,11 +26,7 @@
       </template>
     </CrmTable>
   </CrmCard>
-  <TransferModal
-    v-model:show="showTransferModal"
-    :source-ids="checkedRowKeys"
-    :module-type="ModuleConfigEnum.CLUE_MANAGEMENT"
-  />
+  <TransferModal v-model:show="showTransferModal" :source-ids="checkedRowKeys" />
   <customerOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeCustomerId" />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"

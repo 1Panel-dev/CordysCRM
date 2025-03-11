@@ -211,3 +211,8 @@ export type FollowDetailItemType<T> = T;
 
 // 跟进详情(跟进记录|跟进计划)
 export type FollowDetailItem = FollowDetailItemType<CustomerFollowRecordListItem | CustomerFollowPlanListItem>;
+
+export interface TransferParams {
+  ids: (string | number)[];
+  owner: string | null; // 负责人
+}

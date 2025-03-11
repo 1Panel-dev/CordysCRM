@@ -28,7 +28,7 @@ import {
   updateCustomerFollowPlan,
   updateCustomerFollowRecord,
 } from '@/api/modules/customer';
-import { addOpportunity, getOpportunityList, getOptFormConfig } from '@/api/modules/opportunity';
+import { addOpportunity, getOpportunityList, getOptFormConfig, updateOpportunity } from '@/api/modules/opportunity';
 import { addProduct, getProduct, getProductFormConfig, getProductList, updateProduct } from '@/api/modules/product';
 
 import type { FormCreateField, FormCreateFieldRule, FormDetail } from './types';
@@ -346,7 +346,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
   [FormDesignKeyEnum.CUSTOMER]: updateCustomer,
-  [FormDesignKeyEnum.BUSINESS]: updateCustomer, // TODO:
+  [FormDesignKeyEnum.BUSINESS]: updateOpportunity,
   [FormDesignKeyEnum.CONTACT]: updateCustomerContact,
   [FormDesignKeyEnum.FOLLOW_PLAN]: updateCustomerFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD]: updateCustomerFollowRecord,

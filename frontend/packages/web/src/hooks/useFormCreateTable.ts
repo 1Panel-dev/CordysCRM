@@ -125,7 +125,58 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         sorter: true,
       },
     ],
-    [FormDesignKeyEnum.BUSINESS]: [],
+    [FormDesignKeyEnum.BUSINESS]: [
+      {
+        title: t('customer.lastFollowUps'),
+        width: 150,
+        key: 'lastFollowUps',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+      {
+        title: t('customer.lastFollowUpDate'),
+        width: 160,
+        key: 'lastFollowUpDate',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+      {
+        title: t('customer.remainingVesting'),
+        width: 120,
+        key: 'remainingVesting',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+      {
+        title: t('common.status'),
+        width: 120,
+        key: 'status',
+        ellipsis: {
+          tooltip: true,
+        },
+        filterOptions: [
+          {
+            label: t('common.enable'),
+            value: true,
+          },
+          {
+            label: t('common.disable'),
+            value: false,
+          },
+        ],
+        sortOrder: false,
+        sorter: true,
+      },
+    ],
     [FormDesignKeyEnum.FOLLOW_PLAN]: [],
     [FormDesignKeyEnum.FOLLOW_RECORD]: [],
     [FormDesignKeyEnum.CLUE]: [

@@ -25,4 +25,8 @@ export default {
   'opportunity.belongEndTime': 'Belong end time',
   'opportunity.headRecordPage': 'Head record list',
   'opportunity.new': 'New opportunity',
+  'opportunity.allOpportunities': 'All opportunities',
+  'opportunity.myOpportunities': 'My opportunities',
+  'opportunity.departmentOpportunities': 'Department opportunities',
+  'opportunity.convertedOpportunities': 'Converted opportunities',
 };

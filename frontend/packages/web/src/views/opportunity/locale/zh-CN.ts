@@ -25,4 +25,8 @@ export default {
   'opportunity.belongEndTime': '归属结束时间',
   'opportunity.headRecordPage': '负责人记录列表',
   'opportunity.new': '新建商机',
+  'opportunity.allOpportunities': '全部商机',
+  'opportunity.myOpportunities': '我的商机',
+  'opportunity.departmentOpportunities': '部门商机',
+  'opportunity.convertedOpportunities': '成交商机',
 };

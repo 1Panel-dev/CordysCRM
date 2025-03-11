@@ -602,11 +602,11 @@
       filterOptions: [
         {
           label: t('common.enable'),
-          value: 1,
+          value: true,
         },
         {
           label: t('common.disable'),
-          value: 0,
+          value: false,
         },
       ],
       filter: true,
@@ -629,11 +629,11 @@
       filterOptions: [
         {
           label: t('org.male'),
-          value: 0,
+          value: false,
         },
         {
           label: t('org.female'),
-          value: 1,
+          value: true,
         },
       ],
       filter: 'default',

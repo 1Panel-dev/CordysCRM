@@ -25,11 +25,7 @@
         <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
       </template>
     </CrmTable>
-    <TransferModal
-      v-model:show="showTransferModal"
-      :source-ids="checkedRowKeys"
-      :module-type="ModuleConfigEnum.CLUE_MANAGEMENT"
-    />
+    <TransferModal v-model:show="showTransferModal" :source-ids="checkedRowKeys" />
     <ClueOverviewDrawer v-model:show="showOverviewDrawer" />
   </CrmCard>
 </template>
