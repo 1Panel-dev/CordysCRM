@@ -1,10 +1,8 @@
 package io.cordys.crm.clue.domain;
 
-import jakarta.persistence.Table;
 import io.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.Table;
 import lombok.Data;
 
 
@@ -23,6 +21,9 @@ public class Clue extends BaseModel {
 
 	@Schema(description = "负责人")
 	private String owner;
+
+	@Schema(description = "状态")
+	private String status;
 
 	@Schema(description = "联系人名称")
 	private String contact;

@@ -29,9 +29,6 @@ public class CustomerListResponse {
     @Schema(description = "是否在公海池")
     private Boolean inSharedPool;
 
-    @Schema(description = "最终成交状态")
-    private String dealStatus;
-
     @Schema(description = "创建人")
     private String createUser;
 

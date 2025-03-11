@@ -1,7 +1,5 @@
 package io.cordys.crm.clue.dto.request;
 
-import io.cordys.common.constants.BusinessSearchType;
-import io.cordys.common.constants.EnumValue;
 import io.cordys.common.dto.BasePageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -15,8 +13,7 @@ import lombok.Data;
 @Data
 public class CluePageRequest extends BasePageRequest {
 
-    @EnumValue(enumClass = BusinessSearchType.class)
-    @Schema(description = "搜索类型(ALL/SELF/DEPARTMENT/VISIBLE)")
+    @Schema(description = "搜索类型(ALL/SELF/DEPARTMENT/VISIBLE/CUSTOMER_TRANSITION/OPPORTUNITY_TRANSITION)")
     private String searchType ;
 
 }

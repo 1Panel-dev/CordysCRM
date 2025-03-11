@@ -8,11 +8,9 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.clue.constants.ClueResultCode;
+import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.clue.domain.Clue;
-import io.cordys.crm.clue.dto.request.ClueAddRequest;
-import io.cordys.crm.clue.dto.request.ClueBatchTransferRequest;
-import io.cordys.crm.clue.dto.request.CluePageRequest;
-import io.cordys.crm.clue.dto.request.ClueUpdateRequest;
+import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
@@ -107,6 +105,7 @@ public class ClueService {
         clue.setCreateUser(userId);
         clue.setOrganizationId(orgId);
         clue.setId(IDGenerator.nextStr());
+        clue.setStatus(ClueStatus.NEW.name());
         clue.setInSharedPool(false);
 
         // 校验名称重复
@@ -132,6 +131,13 @@ public class ClueService {
         // 更新模块字段
         updateModuleField(request.getId(), request.getModuleFields());
         return clueMapper.selectByPrimaryKey(clue.getId());
+    }
+
+    public void updateStatus(ClueStatusUpdateRequest request, String userId) {
+        Clue clue = BeanUtils.copyBean(new Clue(), request);
+        clue.setUpdateTime(System.currentTimeMillis());
+        clue.setUpdateUser(userId);
+        clueMapper.update(clue);
     }
 
     private void updateModuleField(String clueId, List<BaseModuleFieldValue> moduleFields) {

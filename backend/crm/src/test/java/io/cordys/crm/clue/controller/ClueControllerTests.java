@@ -8,12 +8,10 @@ import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.clue.constants.ClueResultCode;
+import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.clue.domain.ClueField;
-import io.cordys.crm.clue.dto.request.ClueAddRequest;
-import io.cordys.crm.clue.dto.request.ClueBatchTransferRequest;
-import io.cordys.crm.clue.dto.request.CluePageRequest;
-import io.cordys.crm.clue.dto.request.ClueUpdateRequest;
+import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.system.domain.ModuleField;
@@ -36,9 +34,8 @@ import java.util.stream.Collectors;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ClueControllerTests extends BaseTest {
     private static final String BASE_PATH = "/clue/";
-
     protected static final String MODULE_FORM = "module/form";
-
+    protected static final String STATUS_UPDATE = "status/update";
     protected static final String BATCH_TRANSFER = "batch/transfer";
 
     private static Clue addClue;
@@ -171,6 +168,22 @@ class ClueControllerTests extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);
+    }
+
+    @Test
+    @Order(2)
+    void testUpdateStatus() throws Exception {
+        // 请求成功
+        ClueStatusUpdateRequest request = new ClueStatusUpdateRequest();
+        request.setId(addClue.getId());
+        request.setStatus(ClueStatus.INTERESTED.name());
+        this.requestPostWithOk(STATUS_UPDATE, request);
+        // 校验请求成功数据
+        Clue clueResult = clueMapper.selectByPrimaryKey(request.getId());
+        Assertions.assertEquals(request.getStatus(), clueResult.getStatus());
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_UPDATE, STATUS_UPDATE, request);
     }
 
     @Test

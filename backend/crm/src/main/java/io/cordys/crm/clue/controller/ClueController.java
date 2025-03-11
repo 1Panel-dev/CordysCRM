@@ -10,10 +10,7 @@ import io.cordys.common.pager.Pager;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.domain.Clue;
-import io.cordys.crm.clue.dto.request.ClueAddRequest;
-import io.cordys.crm.clue.dto.request.ClueBatchTransferRequest;
-import io.cordys.crm.clue.dto.request.CluePageRequest;
-import io.cordys.crm.clue.dto.request.ClueUpdateRequest;
+import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.service.ClueService;
@@ -77,6 +74,13 @@ public class ClueController {
     @Operation(summary = "更新线索")
     public Clue update(@Validated @RequestBody ClueUpdateRequest request) {
         return clueService.update(request, SessionUtils.getUserId());
+    }
+
+    @PostMapping("/status/update")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
+    @Operation(summary = "更新线索状态")
+    public void updateStatus(@Validated @RequestBody ClueStatusUpdateRequest request) {
+        clueService.updateStatus(request, SessionUtils.getUserId());
     }
 
     @GetMapping("/delete/{id}")

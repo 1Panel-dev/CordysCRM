@@ -23,6 +23,9 @@ public class ClueListResponse {
     @Schema(description = "负责人")
     private String owner;
 
+    @Schema(description = "线索状态")
+    private String status;
+
     @Schema(description = "负责人名称")
     private String ownerName;
 
@@ -34,9 +37,6 @@ public class ClueListResponse {
 
     @Schema(description = "是否在线索池")
     private Boolean inSharedPool;
-
-    @Schema(description = "最终成交状态")
-    private String dealStatus;
 
     @Schema(description = "创建人")
     private String createUser;

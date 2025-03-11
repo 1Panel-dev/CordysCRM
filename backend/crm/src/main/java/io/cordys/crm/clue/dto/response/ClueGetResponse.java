@@ -23,6 +23,9 @@ public class ClueGetResponse {
     @Schema(description = "负责人")
     private String owner;
 
+    @Schema(description = "线索状态")
+    private String status;
+
     @Schema(description = "负责人姓名")
     private String ownerName;
 
