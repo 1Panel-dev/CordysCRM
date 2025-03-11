@@ -43,6 +43,4 @@ public class Opportunity extends BaseModel {
 	@Schema(description = "责任人")
 	private String owner;
 
-	@Schema(description = "剩余归属天数")
-	private String reserveDate;
 }

@@ -30,7 +30,6 @@ public class OpportunityControllerTests extends BaseTest {
 
     private static final String BASE_PATH = "/opportunity/";
     protected static final String MODULE_FORM = "module/form";
-    protected static final String TRANSFER = "transfer";
     protected static final String BATCH_TRANSFER = "batch/transfer";
 
     private static Opportunity addOpportunity;
@@ -104,16 +103,6 @@ public class OpportunityControllerTests extends BaseTest {
         this.requestPostWithOk(DEFAULT_UPDATE, request);
     }
 
-
-    @Test
-    @Order(4)
-    void testTransfer() throws Exception {
-        OpportunityTransferRequest request = new OpportunityTransferRequest();
-        request.setIds(List.of("1234"));
-        request.setOwner("12345");
-        this.requestPostWithOk(TRANSFER, request);
-    }
-
     @Test
     @Order(4)
     void testBatchTransfer() throws Exception {
@@ -136,5 +125,12 @@ public class OpportunityControllerTests extends BaseTest {
     @Order(6)
     void testBatchDelete() throws Exception {
         this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of("123"));
+    }
+
+
+    @Test
+    @Order(2)
+    void testGetDetail() throws Exception {
+        this.requestGetWithOk(DEFAULT_GET, addOpportunity.getId());
     }
 }

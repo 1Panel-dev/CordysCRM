@@ -233,4 +233,26 @@
             #{id}
         </foreach>
     </update>
+
+    <select id="getDetail" resultType="io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse">
+        SELECT
+            o.id,
+            o.NAME,
+            o.customer_id,
+            c.NAME AS customerName,
+            o.amount,
+            o.possible,
+            o.products,
+            o.contact_id,
+            o.stage,
+            o.owner,
+            o.status,
+            o.create_time,
+            o.update_time,
+            o.create_user,
+            o.update_user
+        FROM
+            opportunity o
+                INNER JOIN customer c ON o.customer_id = c.id
+    </select>
 </mapper>

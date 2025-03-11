@@ -14,6 +14,7 @@ import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
+import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.service.OpportunityService;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -84,13 +85,6 @@ public class OpportunityController {
         opportunityService.delete(id);
     }
 
-    @PostMapping("/transfer")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
-    @Operation(summary = "转移商机")
-    public void transfer(@RequestBody OpportunityTransferRequest request) {
-        opportunityService.transfer(request);
-    }
-
 
     @PostMapping("/batch/transfer")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
@@ -105,5 +99,12 @@ public class OpportunityController {
     @Operation(summary = "批量删除商机")
     public void delete(@RequestBody @NotEmpty List<String> ids) {
         opportunityService.batchDelete(ids);
+    }
+
+    @GetMapping("/get/{id}")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @Operation(summary = "商机详情")
+    public OpportunityDetailResponse get(@PathVariable String id) {
+        return opportunityService.get(id);
     }
 }

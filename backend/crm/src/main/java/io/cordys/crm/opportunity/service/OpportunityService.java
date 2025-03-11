@@ -19,6 +19,7 @@ import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
+import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.system.domain.Product;
@@ -30,10 +31,12 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -246,5 +249,30 @@ public class OpportunityService {
     public void batchDelete(List<String> ids) {
         opportunityMapper.deleteByIds(ids);
         opportunityFieldService.deleteByResourceIds(ids);
+    }
+
+
+    /**
+     * 商机详情
+     *
+     * @param id
+     * @return
+     */
+    public OpportunityDetailResponse get(String id) {
+        OpportunityDetailResponse response = extOpportunityMapper.getDetail(id);
+        List<BaseModuleFieldValue> fieldValueList = opportunityFieldService.getModuleFieldValuesByResourceId(id);
+        response.setModuleFields(fieldValueList);
+        List<String> userIds = Stream.of(List.of(response.getCreateUser(), response.getUpdateUser(), response.getOwner()))
+                .flatMap(Collection::stream)
+                .distinct()
+                .toList();
+        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+        Map<String, String> contactMap = baseService.getContactMap(List.of(response.getContactId()));
+
+        response.setCreateUserName(userNameMap.get(response.getCreateUser()));
+        response.setUpdateUserName(userNameMap.get(response.getUpdateUser()));
+        response.setOwnerName(userNameMap.get(response.getOwner()));
+        response.setContactName(contactMap.get(response.getContactId()));
+        return response;
     }
 }

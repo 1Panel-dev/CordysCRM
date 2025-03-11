@@ -40,7 +40,6 @@ CREATE TABLE opportunity
     `status`          BIT(1)          NOT NULL DEFAULT 1 COMMENT '状态',
     `contact_id`      VARCHAR(32)     NOT NULL COMMENT '联系人id',
     `owner`           VARCHAR(32)     NOT NULL   COMMENT '负责人' ,
-    `reserve_date`    VARCHAR(32) COMMENT '剩余归属天数',
     `update_user`     VARCHAR(32)     NOT NULL COMMENT '更新人',
     `create_time`     BIGINT          NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT          NOT NULL COMMENT '更新时间',
