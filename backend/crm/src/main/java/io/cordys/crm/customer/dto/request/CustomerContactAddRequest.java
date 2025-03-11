@@ -31,6 +31,10 @@ public class CustomerContactAddRequest {
     @Schema(description = "联系人姓名", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
+    @Size(max = 30)
+    @Schema(description = "联系人电话")
+    private String phone;
+
     @Schema(description = "模块字段值")
     private List<BaseModuleFieldValue> moduleFields;
 }

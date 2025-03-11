@@ -30,9 +30,13 @@ public enum BusinessModuleField {
      */
     CUSTOMER_CONTACT_CUSTOMER("customerContactCustomer", "customerId"),
     /**
-     * 联系人客户名称
+     * 联系人名称
      */
     CUSTOMER_CONTACT_NAME("customerContactName", "name", Set.of("rules")),
+    /**
+     * 联系人电话
+     */
+    CUSTOMER_CONTACT_PHONE("customerContactPhone", "phone"),
     /*------ end: CUSTOMER_MANAGEMENT_CONTACT ------*/
 
 

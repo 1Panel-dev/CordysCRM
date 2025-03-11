@@ -133,8 +133,9 @@ CREATE INDEX idx_resource_id ON customer_field_blob (resource_id);
 CREATE TABLE customer_contact(
      `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
      `customer_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
-     `owner` VARCHAR(255) NOT NULL   COMMENT '责任人' ,
      `name` VARCHAR(255) NOT NULL   COMMENT '联系人姓名' ,
+     `phone` VARCHAR(30)    COMMENT '联系人电话' ,
+     `owner` VARCHAR(255) NOT NULL   COMMENT '责任人' ,
      `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
      `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
      `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
