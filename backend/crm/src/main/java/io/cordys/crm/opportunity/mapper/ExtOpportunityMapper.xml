@@ -46,6 +46,11 @@
             and c.name like concat('%', #{request.keyword},'%')
         </if>
 
+        <if test="request.searchType != null and request.searchType != '' and request.searchType == 'DEAL'">
+            and o.owner = #{userId}
+            and o.stage = 'SUCCESS'
+        </if>
+
         <include refid="filters">
             <property name="filters" value="request.filters"/>
         </include>

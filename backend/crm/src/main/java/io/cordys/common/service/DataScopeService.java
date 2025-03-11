@@ -184,34 +184,4 @@ public class DataScopeService {
         }
         return childDeptIds;
     }
-
-
-    /**
-     * 商机数据查询范围
-     * @param userId
-     * @param orgId
-     * @param searchType
-     * @return
-     */
-    public DeptDataPermissionDTO getOpportunityDataScope(String userId, String orgId, String searchType) {
-        DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
-
-        if (BusinessSearchType.isSelf(searchType)) {
-            // 我的商机
-            deptDataPermission.setSelf(true);
-            return deptDataPermission;
-        } else if (BusinessSearchType.isDeal(searchType)) {
-            // 成交商机
-            deptDataPermission.setDeal(true);
-            return deptDataPermission;
-        } else {
-            deptDataPermission = getDeptDataPermission(userId, orgId);
-            if (deptDataPermission.getAll() && BusinessSearchType.isDepartment(searchType)) {
-                // 数据权限是全部,但是查询条件是部门,则按照部门查询
-                return getDeptDataPermissionForDeptSearchType(userId, orgId);
-            }
-        }
-
-        return deptDataPermission;
-    }
 }

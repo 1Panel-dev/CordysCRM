@@ -54,7 +54,7 @@ public class OpportunityController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机列表")
     public Pager<List<OpportunityListResponse>> list(@Validated @RequestBody OpportunityPageRequest request) {
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getOpportunityDataScope(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), request.getSearchType());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), request.getSearchType());
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, opportunityService.list(request, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), deptDataPermission));

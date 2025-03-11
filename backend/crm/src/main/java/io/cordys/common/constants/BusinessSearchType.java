@@ -23,12 +23,7 @@ public enum  BusinessSearchType {
     /**
      * 被设置为当前用户可见的数据
      */
-    VISIBLE,
-
-    /**
-     * 成交商机数据
-     */
-    DEAL;
+    VISIBLE;
 
     public static boolean isAll(String searchType) {
         return StringUtils.equals(ALL.name(), searchType);
@@ -44,9 +39,5 @@ public enum  BusinessSearchType {
 
     public static boolean isVisible(String searchType) {
         return StringUtils.equals(VISIBLE.name(), searchType);
-    }
-
-    public static boolean isDeal(String searchType) {
-        return StringUtils.equals(DEAL.name(), searchType);
     }
 }
