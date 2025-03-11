@@ -1,9 +1,12 @@
 package io.cordys.common.service;
 
+import io.cordys.common.dto.FollowUpRecordDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
+import io.cordys.crm.follow.domain.FollowUpRecord;
+import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -16,7 +19,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author jianxing
  * @date 2025-01-03 12:01:54
  */
@@ -27,13 +29,16 @@ public class BaseService {
     private ExtUserMapper extUserMapper;
     @Resource
     private ExtCustomerContactMapper extCustomerContactMapper;
+    @Resource
+    private ExtFollowUpRecordMapper extFollowUpRecordMapper;
 
 
     /**
      * 设置创建人和更新人名称
+     *
      * @param object
-     * @return
      * @param <T>
+     * @return
      */
     public <T> T setCreateAndUpdateUserName(T object) {
         return setCreateAndUpdateUserName(List.of(object)).get(0);
@@ -41,9 +46,10 @@ public class BaseService {
 
     /**
      * 设置创建人和更新人名称
+     *
      * @param list
-     * @return
      * @param <T>
+     * @return
      */
     public <T> List<T> setCreateAndUpdateUserName(List<T> list) {
         if (CollectionUtils.isEmpty(list)) {
@@ -76,9 +82,10 @@ public class BaseService {
 
     /**
      * 设置创建人、更新人和责任人名称
+     *
      * @param object
-     * @return
      * @param <T>
+     * @return
      */
     public <T> T setCreateUpdateOwnerUserName(T object) {
         return setCreateUpdateOwnerUserName(List.of(object)).get(0);
@@ -86,9 +93,10 @@ public class BaseService {
 
     /**
      * 设置创建人、更新人和责任人名称
+     *
      * @param list
-     * @return
      * @param <T>
+     * @return
      */
     public <T> List<T> setCreateUpdateOwnerUserName(List<T> list) {
         if (CollectionUtils.isEmpty(list)) {
@@ -145,7 +153,7 @@ public class BaseService {
      * @return
      */
     public Map<String, String> getUserNameMap(Set<String> userIds) {
-       return getUserNameMap(new ArrayList<>(userIds));
+        return getUserNameMap(new ArrayList<>(userIds));
     }
 
     public Map<String, UserDeptDTO> getUserDeptMapByUserIds(Set<String> ownerIds, String orgId) {
@@ -156,7 +164,7 @@ public class BaseService {
         List<UserDeptDTO> userDeptList = extUserMapper.getUserDeptByUserIds(List.of(ownerId), orgId);
         return CollectionUtils.isEmpty(userDeptList) ? null : userDeptList.getFirst();
     }
-    
+
     public Map<String, UserDeptDTO> getUserDeptMapByUserIds(List<String> ownerIds, String orgId) {
         if (CollectionUtils.isEmpty(ownerIds)) {
             return Collections.emptyMap();
@@ -169,6 +177,7 @@ public class BaseService {
 
     /**
      * 获取联系人ID和名称的映射
+     *
      * @param contactIds
      * @return
      */
@@ -176,5 +185,24 @@ public class BaseService {
         return extCustomerContactMapper.selectContactOptionByIds(contactIds)
                 .stream()
                 .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+    }
+
+
+    /**
+     * 获取最新跟进记录
+     *
+     * @param sourceIds
+     * @param resourceType
+     * @param type
+     * @return
+     */
+    public Map<String, FollowUpRecordDTO> getOpportunityFollowRecord(List<String> sourceIds, String resourceType, String type) {
+        List<FollowUpRecordDTO> recodes = extFollowUpRecordMapper.selectRecodes(sourceIds, resourceType, type);
+        Map<String, FollowUpRecordDTO> recordMap = recodes.stream()
+                .collect(Collectors.groupingBy(FollowUpRecordDTO::getSourceId,
+                        Collectors.maxBy(Comparator.comparingLong(FollowUpRecordDTO::getFollowTime))))
+                .entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get()));
+        return recordMap;
     }
 }

@@ -2,6 +2,7 @@ package io.cordys.crm.clue.service;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.FollowUpRecordDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
@@ -16,6 +17,7 @@ import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,12 +43,15 @@ public class ClueService {
     private ClueFieldService clueFieldService;
 
     public List<ClueListResponse> list(CluePageRequest request, String userId, String orgId,
-                                           DeptDataPermissionDTO deptDataPermission) {
+                                       DeptDataPermissionDTO deptDataPermission) {
         List<ClueListResponse> list = extClueMapper.list(request, orgId, userId, deptDataPermission);
         return buildListData(list, orgId);
     }
 
     private List<ClueListResponse> buildListData(List<ClueListResponse> list, String orgId) {
+        if(CollectionUtils.isEmpty(list)){
+            return list;
+        }
         List<String> clueIds = list.stream().map(ClueListResponse::getId)
                 .collect(Collectors.toList());
 
@@ -58,7 +63,7 @@ public class ClueService {
                 .toList();
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
-
+        Map<String, FollowUpRecordDTO> recordMap = baseService.getOpportunityFollowRecord(clueIds, "CLUE", "CLUE");
         list.forEach(clueListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> clueFields = caseCustomFiledMap.get(clueListResponse.getId());
@@ -73,6 +78,12 @@ public class ClueService {
             if (userDeptDTO != null) {
                 clueListResponse.setDepartmentId(userDeptDTO.getDeptId());
                 clueListResponse.setDepartmentName(userDeptDTO.getDeptName());
+            }
+            if (recordMap.containsKey(clueListResponse.getId())) {
+                FollowUpRecordDTO followUpRecordDTO = recordMap.get(clueListResponse.getId());
+                clueListResponse.setLastFollower(followUpRecordDTO.getFollower());
+                clueListResponse.setLastFollowerName(followUpRecordDTO.getFollowerName());
+                clueListResponse.setLastFollowTime(followUpRecordDTO.getFollowTime());
             }
         });
 

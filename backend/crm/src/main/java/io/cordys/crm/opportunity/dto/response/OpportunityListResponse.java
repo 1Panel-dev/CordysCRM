@@ -39,6 +39,15 @@ public class OpportunityListResponse {
     @Schema(description = "剩余归属天数")
     private Integer reservedDays;
 
+    @Schema(description = "最新跟进人")
+    private String lastFollower;
+
+    @Schema(description = "最新跟进人名称")
+    private String lastFollowerName;
+
+    @Schema(description = "最新跟进日期")
+    private Long lastFollowTime;
+
     @Schema(description = "自定义字段集合")
     private List<? extends BaseModuleFieldValue> moduleFields;
 }

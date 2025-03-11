@@ -2,6 +2,7 @@ package io.cordys.crm.customer.service;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.FollowUpRecordDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
@@ -18,6 +19,7 @@ import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,9 @@ public class CustomerService {
     }
 
     private List<CustomerListResponse> buildListData(List<CustomerListResponse> list, String orgId) {
+        if(CollectionUtils.isEmpty(list)){
+            return list;
+        }
         List<String> customerIds = list.stream().map(CustomerListResponse::getId)
                 .collect(Collectors.toList());
 
@@ -62,7 +67,7 @@ public class CustomerService {
                 .toList();
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
-
+        Map<String, FollowUpRecordDTO> recordMap = baseService.getOpportunityFollowRecord(customerIds, "CUSTOMER", "CUSTOMER");
         list.forEach(customerListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
@@ -77,6 +82,13 @@ public class CustomerService {
             if (userDeptDTO != null) {
                 customerListResponse.setDepartmentId(userDeptDTO.getDeptId());
                 customerListResponse.setDepartmentName(userDeptDTO.getDeptName());
+            }
+
+            if (recordMap.containsKey(customerListResponse.getId())) {
+                FollowUpRecordDTO followUpRecordDTO = recordMap.get(customerListResponse.getId());
+                customerListResponse.setLastFollower(followUpRecordDTO.getFollower());
+                customerListResponse.setLastFollowerName(followUpRecordDTO.getFollowerName());
+                customerListResponse.setLastFollowTime(followUpRecordDTO.getFollowTime());
             }
         });
 

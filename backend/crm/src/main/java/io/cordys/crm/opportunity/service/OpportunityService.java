@@ -7,6 +7,7 @@ import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.FollowUpRecordDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
@@ -65,9 +66,14 @@ public class OpportunityService {
     }
 
     private List<OpportunityListResponse> buildListData(List<OpportunityListResponse> list) {
+        if(CollectionUtils.isEmpty(list)){
+            return list;
+        }
         List<String> opportunityIds = list.stream().map(OpportunityListResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<OpportunityField>> opportunityFiledMap = getOpportunityFiledMap(opportunityIds);
+        Map<String, FollowUpRecordDTO> recordMap = baseService.getOpportunityFollowRecord(opportunityIds, "OPPORTUNITY", "CUSTOMER");
+
         list.forEach(opportunityListResponse -> {
             // 获取自定义字段
             List<OpportunityField> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
@@ -77,6 +83,13 @@ public class OpportunityService {
                 int days = (int) Math.ceil(opportunityListResponse.getCreateTime() * 1.0 / 86400000);
                 opportunityListResponse.setReservedDays(days);
             }
+            if (recordMap.containsKey(opportunityListResponse.getId())) {
+                FollowUpRecordDTO followUpRecordDTO = recordMap.get(opportunityListResponse.getId());
+                opportunityListResponse.setLastFollower(followUpRecordDTO.getFollower());
+                opportunityListResponse.setLastFollowerName(followUpRecordDTO.getFollowerName());
+                opportunityListResponse.setLastFollowTime(followUpRecordDTO.getFollowTime());
+            }
+
         });
         return baseService.setCreateAndUpdateUserName(list);
     }
@@ -125,7 +138,6 @@ public class OpportunityService {
         opportunity.setUpdateTime(System.currentTimeMillis());
         opportunity.setUpdateUser(operatorId);
         opportunity.setStatus(true);
-        //TODO 商机规则 计算归属日期
         opportunityMapper.insert(opportunity);
 
         //自定义字段
