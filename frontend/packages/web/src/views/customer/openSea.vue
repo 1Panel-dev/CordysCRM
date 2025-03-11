@@ -57,6 +57,22 @@
     {
       label: 'GGBOND',
       value: '1',
+      id: '1',
+      createUser: '1',
+      updateUser: 'string;',
+      updateUserName: 'string;',
+      createTime: 'number;',
+      updateTime: 'number;',
+      name: 'string;',
+      scopeId: ' string;',
+      organizationId: 'string;',
+      ownerId: 'string;',
+      enable: 'boolean;',
+      auto: 'boolean;',
+      members: [],
+      owners: [],
+      pickRule: {}, // 领取规则
+      recycleRule: {}, // 回收规则
     },
   ]);
   const keyword = ref('');
@@ -73,6 +89,8 @@
         class: 'cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-8)]',
         onClick: (e: Event) => {
           e.stopPropagation();
+          openSeaRow.value = option;
+          drawerVisible.value = true;
         },
       })
     );

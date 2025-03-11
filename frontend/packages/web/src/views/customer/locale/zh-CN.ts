@@ -22,4 +22,15 @@ export default {
   'customer.claimTip': '确定领取该客户吗？',
   'customer.batchClaimTip': '确定领取 {count} 个客户吗？',
   'customer.claimTipContent': '领取后，180天后未跟进/成交，将自动放回公海',
+  'customer.relation': '客户关系',
+  'customer.selectCustomer': '选择客户',
+  'customer.group': '集团',
+  'customer.subsidiary': '子公司',
+  'customer.collaborator': '协作成员',
+  'customer.readOnly': '只读',
+  'customer.cooperation': '协作',
+  'customer.cooperationTip':
+    '只读:支持查看客户基础信息与负责人的相关数据;协作:支持查看客户基础信息与创建编辑客户相关数据',
+  'customer.deleteMemberTip': '删除后，成员将不再拥有该客户权限',
+  'customer.batchDeleteMemberTip': '确认删除 {count} 个成员吗？',
 };

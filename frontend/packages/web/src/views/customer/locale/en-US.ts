@@ -24,4 +24,15 @@ export default {
   'customer.batchClaimTip': 'Are you sure to claim {count} customers?',
   'customer.claimTipContent':
     'After claiming, if there is no follow-up/deal within 180 days, it will be automatically returned to the high seas',
+  'customer.relation': 'Relationship',
+  'customer.selectCustomer': 'Select Customer',
+  'customer.group': 'Group',
+  'customer.subsidiary': 'Subsidiary',
+  'customer.collaborator': 'Collaborator',
+  'customer.readOnly': 'Read Only',
+  'customer.cooperation': 'Cooperation',
+  'customer.cooperationTip':
+    'Read Only: Support viewing customer basic information and responsible person-related data; Cooperation: Support viewing customer basic information and creating and editing customer-related data',
+  'customer.deleteMemberTip': 'After deletion, the member will no longer have the customer permission',
+  'customer.batchDeleteMemberTip': 'Are you sure to delete {count} members?',
 };
