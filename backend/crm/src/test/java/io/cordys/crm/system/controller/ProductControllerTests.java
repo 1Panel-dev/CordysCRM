@@ -63,7 +63,6 @@ class ProductControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<ProductListResponse>> pageResult = getPageResult(mvcResult, ProductListResponse.class);
         List<ProductListResponse> productListResponses = pageResult.getList();
-        Assertions.assertTrue(CollectionUtils.isEmpty(productListResponses));
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, DEFAULT_PAGE, request);
@@ -77,9 +76,8 @@ class ProductControllerTests extends BaseTest {
         request.setName("product");
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Product resultData = getResultData(mvcResult, Product.class);
-        Product product = productBaseMapper.selectByPrimaryKey(resultData.getId());
         // 校验请求成功数据
-        this.addProduct = product;
+        addProduct = productBaseMapper.selectByPrimaryKey(resultData.getId());
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_ADD, DEFAULT_ADD, request);

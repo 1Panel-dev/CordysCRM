@@ -1,4 +1,4 @@
-package io.cordys.common.uid.utils;
+package io.cordys.common.util;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -10,7 +10,7 @@ import java.util.Date;
 /**
  * DateUtils provides date formatting, parsing
  */
-public abstract class TimeUtil extends DateUtils {
+public abstract class TimeUtils extends DateUtils {
     /**
      * Patterns
      */

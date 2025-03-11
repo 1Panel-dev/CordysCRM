@@ -1,7 +1,7 @@
 package io.cordys.crm.customer.service;
 
 import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.uid.utils.TimeUtil;
+import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.Customer;
@@ -172,7 +172,7 @@ public class PoolCustomerService {
 			customerWrapper
 					.eq(Customer::getOwner, ownUserId)
 					.eq(Customer::getInSharedPool, false)
-					.between(Customer::getCollectionTime, TimeUtil.getTodayStart(), TimeUtil.getTodayStart() + DAY_MILLIS);
+					.between(Customer::getCollectionTime, TimeUtils.getTodayStart(), TimeUtils.getTodayStart() + DAY_MILLIS);
 			List<Customer> customers = customerMapper.selectListByLambda(customerWrapper);
 			int pickedCount = customers.size();
 			if (pickingCount + pickedCount > pickRule.getPickNumber()) {
