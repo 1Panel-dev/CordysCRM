@@ -55,6 +55,8 @@ public class PermissionConstants {
     public static final String CUSTOMER_MANAGEMENT_ADD = "CUSTOMER_MANAGEMENT:ADD";
     public static final String CUSTOMER_MANAGEMENT_UPDATE = "CUSTOMER_MANAGEMENT:UPDATE";
     public static final String CUSTOMER_MANAGEMENT_DELETE = "CUSTOMER_MANAGEMENT:DELETE";
+    public static final String CUSTOMER_MANAGEMENT_PICK = "CUSTOMER_MANAGEMENT:PICK";
+    public static final String CUSTOMER_MANAGEMENT_ASSIGN = "CUSTOMER_MANAGEMENT:ASSIGN";
     /*------ end: CUSTOMER_MANAGEMENT_ROLE ------*/
 
     /*------ start: CUSTOMER_MANAGEMENT_CONTACT_ROLE ------*/
