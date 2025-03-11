@@ -29,12 +29,13 @@ public class CustomerContactUpdateRequest {
     @Schema(description = "联系人姓名")
     private String name;
 
+    @Size(max = 30)
+    @Schema(description = "联系人电话")
+    private String phone;
+
     @Size(max = 32)
     @Schema(description = "负责人")
     private String owner;
-
-    @Schema(description = "是否停用")
-    private Boolean enable;
 
     @Schema(description = "模块字段值")
     private List<BaseModuleFieldValue> moduleFields;

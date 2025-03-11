@@ -25,6 +25,9 @@ public class CustomerContact extends BaseModel {
 	@Schema(description = "联系人姓名")
 	private String name;
 
+	@Schema(description = "联系人电话")
+	private String phone;
+
 	@Schema(description = "是否停用")
 	private Boolean enable;
 

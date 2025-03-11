@@ -76,6 +76,7 @@ class CustomerContactControllerTests extends BaseTest {
         request.setName("test");
         request.setCustomerId("customerId");
         request.setOwner(InternalUser.ADMIN.getValue());
+        request.setPhone("15451644454");
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         CustomerContact resultData = getResultData(mvcResult, CustomerContact.class);
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(resultData.getId());
@@ -84,6 +85,7 @@ class CustomerContactControllerTests extends BaseTest {
         this.addCustomerContact = customerContact;
         Assertions.assertEquals(request.getName(), customerContact.getName());
         Assertions.assertEquals(request.getOwner(), customerContact.getOwner());
+        Assertions.assertEquals(request.getPhone(), customerContact.getPhone());
 
         // 校验重名异常
         assertErrorCode(this.requestPost(DEFAULT_ADD, request), CustomerResultCode.CUSTOMER_CONTACT_EXIST);
@@ -99,10 +101,12 @@ class CustomerContactControllerTests extends BaseTest {
         CustomerContactUpdateRequest request = new CustomerContactUpdateRequest();
         request.setId(addCustomerContact.getId());
         request.setName("test update");
+        request.setPhone("161161616");
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         // 校验请求成功数据
         CustomerContact userCustomerContactResult = customerContactMapper.selectByPrimaryKey(request.getId());
         Assertions.assertEquals(request.getName(), userCustomerContactResult.getName());
+        Assertions.assertEquals(request.getPhone(), userCustomerContactResult.getPhone());
 
         // 不修改信息
         CustomerContactUpdateRequest emptyRequest = new CustomerContactUpdateRequest();
