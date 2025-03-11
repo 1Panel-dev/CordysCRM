@@ -5,11 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class PoolCustomerAssignRequest {
-
-	@NotBlank
-	@Schema(description = "客户ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String customerId;
+public class PoolCustomerBatchAssignRequest extends PoolCustomerBatchRequest {
 
 	@NotBlank
 	@Schema(description = "分配用户ID", requiredMode = Schema.RequiredMode.REQUIRED)

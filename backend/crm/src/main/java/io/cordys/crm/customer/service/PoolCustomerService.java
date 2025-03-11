@@ -1,17 +1,24 @@
 package io.cordys.crm.customer.service;
 
-import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.uid.utils.TimeUtil;
 import io.cordys.common.util.JSON;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
-import io.cordys.crm.customer.dto.request.CustomerPageRequest;
-import io.cordys.crm.customer.dto.request.PoolCustomerAssignRequest;
-import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.customer.domain.CustomerPoolPickRule;
+import io.cordys.crm.customer.dto.request.PoolCustomerBatchAssignRequest;
+import io.cordys.crm.customer.dto.request.PoolCustomerBatchRequest;
+import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
+import io.cordys.crm.customer.mapper.ExtCustomerCapacityMapper;
+import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.mapper.ExtUserMapper;
+import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,7 +32,17 @@ public class PoolCustomerService {
 	@Resource
 	private BaseMapper<CustomerPool> poolMapper;
 	@Resource
+	private BaseMapper<CustomerPoolPickRule> pickRuleMapper;
+	@Resource
 	private ExtUserMapper extUserMapper;
+	@Resource
+	private UserExtendService userExtendService;
+	@Resource
+	private BaseMapper<UserRole> userRoleMapper;
+	@Resource
+	private ExtCustomerCapacityMapper extCustomerCapacityMapper;
+
+	public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
 
 	/**
 	 * 获取当前用户公海选项
@@ -52,6 +69,32 @@ public class PoolCustomerService {
 	}
 
 	/**
+	 * 领取客户
+	 * @param request 请求参数
+	 * @param currentUser 当前用户ID
+	 * @param currentOrgId 当前组织ID
+	 */
+	public void pick(PoolCustomerPickRequest request, String currentUser, String currentOrgId) {
+		validateCapacity(1, currentUser, currentOrgId);
+		LambdaQueryWrapper<CustomerPoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
+		pickRuleWrapper.eq(CustomerPoolPickRule::getPoolId, request.getPoolId());
+		List<CustomerPoolPickRule> customerPoolPickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
+		CustomerPoolPickRule pickRule = customerPoolPickRules.getFirst();
+		validateDailyPickNum(1, currentUser, pickRule);
+		ownCustomer(request.getCustomerId(), currentUser, pickRule);
+	}
+
+	/**
+	 * 分配客户
+	 * @param id 客户ID
+	 * @param assignUserId 分配用户ID
+	 */
+	public void assign(String id, String assignUserId, String currentOrgId) {
+		validateCapacity(1, assignUserId, currentOrgId);
+		ownCustomer(id, assignUserId, null);
+	}
+
+	/**
 	 * 删除客户
 	 * @param id 客户ID
 	 */
@@ -62,20 +105,90 @@ public class PoolCustomerService {
 	}
 
 	/**
-	 * 分配客户
+	 * 批量领取客户
 	 * @param request 请求参数
+	 * @param currentUser 当前用户ID
+	 * @param currentOrgId 当前组织ID
 	 */
-	public void assign(PoolCustomerAssignRequest request) {
-		ownCustomer(request.getCustomerId(), request.getAssignUserId() );
+	public void batchPick(PoolCustomerBatchRequest request, String currentUser, String currentOrgId) {
+		validateCapacity(request.getBatchIds().size(), currentUser, currentOrgId);
+		LambdaQueryWrapper<CustomerPoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
+		pickRuleWrapper.eq(CustomerPoolPickRule::getPoolId, request.getPoolId());
+		List<CustomerPoolPickRule> customerPoolPickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
+		CustomerPoolPickRule pickRule = customerPoolPickRules.getFirst();
+		validateDailyPickNum(request.getBatchIds().size(), currentUser, pickRule);
+		request.getBatchIds().forEach(id -> ownCustomer(id, currentUser, pickRule));
 	}
 
 	/**
-	 * 领取客户
-	 * @param id 客户ID
-	 * @param currentUser 当前用户ID
+	 * 批量分配客户
+	 * @param request 请求参数
+	 * @param assignUserId 分配用户ID
+	 * @param currentOrgId 当前组织ID
 	 */
-	public void pick(String id, String currentUser) {
-		ownCustomer(id, currentUser);
+	public void batchAssign(PoolCustomerBatchAssignRequest request, String assignUserId, String currentOrgId) {
+		validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
+		request.getBatchIds().forEach(id -> ownCustomer(id, assignUserId, null));
+	}
+
+	/**
+	 * 批量删除客户
+	 * @param ids 客户ID集合
+	 */
+	public void batchDelete(List<String> ids) {
+		LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
+		customerWrapper.in(Customer::getId, ids);
+		customerMapper.deleteByLambda(customerWrapper);
+	}
+
+	/**
+	 * 校验库容
+	 * @param processCount 处理数量
+	 * @param ownUserId 负责人用户ID
+	 * @param currentOrgId 当前组织ID
+	 */
+	public void validateCapacity(int processCount, String ownUserId, String currentOrgId) {
+		// 实际可处理条数 = 负责人库容容量 - 所领取的数量 < 处理数量, 提示库容不足.
+		Integer capacity = getUserCapacity(ownUserId, currentOrgId);
+		LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
+		customerWrapper.eq(Customer::getOwner, ownUserId).eq(Customer::getInSharedPool, false);
+		List<Customer> customers = customerMapper.selectListByLambda(customerWrapper);
+		int ownCount = customers.size();
+		if (capacity != null && capacity - ownCount < processCount) {
+			throw new ArithmeticException(Translator.get("customer.capacity.over"));
+		}
+	}
+
+	/**
+	 * 校验每日领取数量
+	 *
+	 * @param pickingCount 领取数量
+	 * @param ownUserId 负责人用户ID
+	 * @param pickRule 领取规则
+	 */
+	public void validateDailyPickNum(int pickingCount, String ownUserId, CustomerPoolPickRule pickRule) {
+		if (pickRule.getLimitOnNumber()) {
+			LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
+			customerWrapper
+					.eq(Customer::getOwner, ownUserId)
+					.eq(Customer::getInSharedPool, false)
+					.between(Customer::getCollectionTime, TimeUtil.getTodayStart(), TimeUtil.getTodayStart() + DAY_MILLIS);
+			List<Customer> customers = customerMapper.selectListByLambda(customerWrapper);
+			int pickedCount = customers.size();
+			if (pickingCount + pickedCount > pickRule.getPickNumber()) {
+				throw new ArithmeticException(Translator.get("customer.daily.pick.over"));
+			}
+		}
+	}
+
+	public Integer getUserCapacity(String userId, String organizationId) {
+		List<String> departmentIds = userExtendService.getParentDepartmentIds(userId, organizationId);
+		departmentIds.add(userId);
+		LambdaQueryWrapper<UserRole> userRoleWrapper = new LambdaQueryWrapper<>();
+		userRoleWrapper.eq(UserRole::getUserId, userId);
+		List<UserRole> roles = userRoleMapper.selectListByLambda(userRoleWrapper);
+		List<String> roleIds = roles.stream().map(UserRole::getRoleId).toList();
+		return extCustomerCapacityMapper.getCapacityByScopeIds(ListUtils.union(departmentIds, roleIds), organizationId);
 	}
 
 	/**
@@ -83,8 +196,16 @@ public class PoolCustomerService {
 	 * @param customerId 客户ID
 	 * @param ownerId 拥有人ID
 	 */
-	private void ownCustomer(String customerId, String ownerId) {
+	private void ownCustomer(String customerId, String ownerId, CustomerPoolPickRule pickRule) {
 		Customer customer = customerMapper.selectByPrimaryKey(customerId);
+		if (customer == null) {
+			throw new IllegalArgumentException(Translator.get("customer.not.exist"));
+		}
+		if (pickRule != null && pickRule.getLimitPreOwner() && StringUtils.equals(customer.getOwner(), ownerId)) {
+			if (System.currentTimeMillis() - customer.getCollectionTime() < pickRule.getPickIntervalDays() * DAY_MILLIS) {
+				throw new ArithmeticException(Translator.get("customer.pre_owner.pick.limit"));
+			}
+		}
 		customer.setInSharedPool(false);
 		customer.setOwner(ownerId);
 		customer.setCollectionTime(System.currentTimeMillis());

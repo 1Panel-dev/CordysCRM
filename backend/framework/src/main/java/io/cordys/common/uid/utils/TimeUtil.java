@@ -51,4 +51,9 @@ public abstract class TimeUtil extends DateUtils {
         SimpleDateFormat dateFormat = new SimpleDateFormat(DAY_PATTERN);
         return dateFormat.format(timeStamp);
     }
+
+    public static Long getTodayStart() {
+        Date startDate = parseDate(DateFormatUtils.format(new Date(), DAY_PATTERN) + " 00:00:00", DATETIME_PATTERN);
+        return startDate.getTime();
+    }
 }

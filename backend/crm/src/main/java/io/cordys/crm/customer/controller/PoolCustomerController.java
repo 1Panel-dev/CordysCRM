@@ -2,14 +2,11 @@ package io.cordys.crm.customer.controller;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
-import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.customer.dto.request.CustomerPageRequest;
-import io.cordys.crm.customer.dto.request.PoolCustomerAssignRequest;
+import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.customer.service.PoolCustomerService;
@@ -45,21 +42,39 @@ public class PoolCustomerController {
 		return PageUtils.setPageInfo(page, customerService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null));
 	}
 
+	@PostMapping("/pick")
+	@Operation(summary = "领取客户")
+	public void pick(@Validated @RequestBody PoolCustomerPickRequest request) {
+		poolCustomerService.pick(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
+
+	@PostMapping("/assign")
+	@Operation(summary = "分配客户")
+	public void assign(@Validated @RequestBody PoolCustomerAssignRequest request) {
+		poolCustomerService.assign(request.getCustomerId(), request.getAssignUserId(), OrganizationContext.getOrganizationId());
+	}
+
 	@GetMapping("/delete/{id}")
 	@Operation(summary = "删除客户")
 	public void delete(@PathVariable String id) {
 		poolCustomerService.delete(id);
 	}
 
-	@PostMapping("/assign")
-	@Operation(summary = "分配客户")
-	public void assign(@Validated @RequestBody PoolCustomerAssignRequest request) {
-		poolCustomerService.assign(request);
+	@PostMapping("/batch-pick")
+	@Operation(summary = "批量领取客户")
+	public void batchPick(@Validated @RequestBody PoolCustomerBatchRequest request) {
+		poolCustomerService.batchPick(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
-	@GetMapping("/pick/{id}")
-	@Operation(summary = "领取客户")
-	public void pick(@PathVariable String id) {
-		poolCustomerService.pick(id, SessionUtils.getUserId());
+	@PostMapping("/batch-assign")
+	@Operation(summary = "批量分配客户")
+	public void batchAssign(@Validated @RequestBody PoolCustomerBatchAssignRequest request) {
+		poolCustomerService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId());
+	}
+
+	@PostMapping("/batch-delete")
+	@Operation(summary = "批量删除客户")
+	public void batchDelete(@Validated @RequestBody PoolCustomerBatchRequest request) {
+		poolCustomerService.batchDelete(request.getBatchIds());
 	}
 }
