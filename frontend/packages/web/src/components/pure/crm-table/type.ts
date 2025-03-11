@@ -5,15 +5,14 @@ import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 import type { CrmTagGroupProps } from '@/components/pure/crm-tag-group/index.vue';
 
+import type { DataTableColumnKey, DataTableProps, DataTableRowData, DataTableRowKey, PaginationProps } from 'naive-ui';
 import type {
-  DataTableColumn,
-  DataTableColumnKey,
-  DataTableProps,
-  DataTableRowData,
-  DataTableRowKey,
-  PaginationProps,
-} from 'naive-ui';
-import type { RenderFilterMenu } from 'naive-ui/es/data-table/src/interface';
+  RenderFilterMenu,
+  TableBaseColumn,
+  TableColumnGroup,
+  TableExpandColumn,
+  TableSelectionColumn,
+} from 'naive-ui/es/data-table/src/interface';
 
 export type CrmTableDataItem<T> = {
   updateTime?: string | number | null;
@@ -22,7 +21,12 @@ export type CrmTableDataItem<T> = {
 } & DataTableRowData &
   T;
 
-export type CrmDataTableColumn<T = any> = DataTableColumn<T> & {
+export type CrmDataTableColumn<T = any> = (
+  | Omit<TableBaseColumn<T>, 'filterOptions'>
+  | TableColumnGroup<T>
+  | TableSelectionColumn<T>
+  | TableExpandColumn<T>
+) & {
   showInTable?: boolean; // 是否展示在表格上
   key?: DataTableColumnKey; // 这一列的 key，不可重复
   title?: string | (() => VNodeChild);
@@ -33,9 +37,13 @@ export type CrmDataTableColumn<T = any> = DataTableColumn<T> & {
   renderFilterMenu?: RenderFilterMenu;
   isTag?: boolean; // 标签列
   tagGroupProps?: Omit<CrmTagGroupProps, 'tags'>; // 标签列属性
+  filterOptions?: {
+    value: string | number | boolean;
+    label: string;
+  }[];
 };
 
-export interface CrmTableProps<T> extends DataTableProps {
+export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
   'columns': CrmDataTableColumn[];
   'tableKey'?: TableKeyEnum; // 表格key, 用于存储表格列配置,pageSize等
   'tableRowKey'?: string; // 表格行的key
@@ -44,7 +52,7 @@ export interface CrmTableProps<T> extends DataTableProps {
   'showPagination'?: boolean; // 是否显示分页
   'crmPagination'?: PaginationProps; // 分页配置
   'onUpdate:checkedRowKeys'?: (key: DataTableRowKey[]) => void; // 覆写类型防止报错
-}
+};
 
 // 表格存储
 export interface TableStorageConfigItem {

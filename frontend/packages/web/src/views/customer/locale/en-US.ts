@@ -4,6 +4,7 @@ export default {
   'customer.deptCustomer': 'Department Customers',
   'customer.cooperationCustomer': 'Cooperation Customers',
   'customer.new': 'New Customer',
+  'customer.deleteTitleTip': 'Are you sure to delete this customer?',
   'customer.batchDeleteTitleTip': 'Are you sure to delete {number} customers?',
   'customer.batchDeleteContentTip': 'After deletion, members cannot find this customer, please operate with caution!',
   'customer.moveToOpenSea': 'Move to Open Sea',
@@ -14,4 +15,13 @@ export default {
   'customer. contact. deleteContentTip':
     'After deletion, the contact cannot be queried and cannot be recovered. Please proceed with caution!',
   'customer. contact. deleteTitle': 'There are unallocated business opportunities, please delete them after xx',
+  'customer.recycleOpenSea': 'Recycle Open Sea',
+  'customer.remainingVesting': 'Remaining vesting',
+  'customer.lastFollowUps': 'Last follow-up personnel',
+  'customer.lastFollowUpDate': 'Last follow-up date',
+  'customer.disableReason': 'Disable reason',
+  'customer.claimTip': 'Are you sure to claim this customer?',
+  'customer.batchClaimTip': 'Are you sure to claim {count} customers?',
+  'customer.claimTipContent':
+    'After claiming, if there is no follow-up/deal within 180 days, it will be automatically returned to the high seas',
 };

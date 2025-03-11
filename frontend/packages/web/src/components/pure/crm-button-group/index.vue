@@ -10,7 +10,13 @@
             @confirm="emit('select', `pop-${item.key}` as string)"
             @cancel="emit('cancel')"
           >
-            <n-button v-bind="item" type="primary" text class="!p-0" @click="() => (item.popShow = true)">
+            <n-button
+              text
+              v-bind="item"
+              type="primary"
+              :class="item.text === false ? '' : '!p-0'"
+              @click="() => (item.popShow = true)"
+            >
               {{ item.label }}
             </n-button>
             <template #content>

@@ -29,6 +29,8 @@ export default {
   'module.customer.enabledTipContent': 'When enabled, customers will be recycled according to the configured rules',
   'module.customer.disabledTipContent':
     'When disabled, customers will no longer be recycled according to the configured rules',
+  'module.customer.customerCollectionRules': 'Customer collection rules',
+  'module.customer.customerRecycleRule': 'Customer recycle rules',
   'module.cluePool': 'Clue Pool',
   'module.clue.cluePool': 'Clue pool settings',
   'module.clue.addCluePool': 'Add clue pool',

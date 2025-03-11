@@ -17,7 +17,7 @@
   <n-data-table
     v-bind="{ ...$attrs }"
     v-model:checked-row-keys="checkedRowKeys"
-    :columns="currentColumns"
+    :columns="currentColumns as TableColumns"
     :row-key="getRowKey"
     @update:sorter="handleSorterChange"
     @update:filters="handleFiltersChange"
@@ -61,7 +61,7 @@
 
   import { BatchActionConfig } from './type';
   import type { DataTableFilterState, DataTableRowKey, DataTableSortState } from 'naive-ui';
-  import type { InternalRowData } from 'naive-ui/es/data-table/src/interface';
+  import type { InternalRowData, TableColumns } from 'naive-ui/es/data-table/src/interface';
 
   const props = defineProps<{
     columns: CrmDataTableColumn[];

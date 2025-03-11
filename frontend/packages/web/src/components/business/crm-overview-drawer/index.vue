@@ -16,7 +16,11 @@
       </n-tooltip>
     </template>
     <template #titleRight>
-      <CrmButtonGroup :list="props.buttonList" not-show-divider @select="handleButtonClick" />
+      <CrmButtonGroup :list="props.buttonList" not-show-divider @select="handleButtonClick">
+        <template v-for="item in props.buttonList" #[item.popSlotContent]>
+          <slot :name="item.popSlotContent"></slot>
+        </template>
+      </CrmButtonGroup>
     </template>
     <div class="h-full w-full overflow-hidden">
       <CrmSplitPanel :max="0.5" :min="0.2" :default-size="0.2" disabled>
@@ -34,7 +38,7 @@
                   :tab-list="showTabList"
                   type="line"
                 />
-                <div class="absolute right-4 top-2">
+                <div v-if="props.showTabSetting" class="absolute right-4 top-2">
                   <CrmTabSetting
                     v-model:cached-list="cachedList"
                     :tab-list="props.tabList"
@@ -73,6 +77,7 @@
     buttonList: ActionsItem[];
     formKey: FormDesignKeyEnum;
     sourceId?: string;
+    showTabSetting?: boolean;
   }>();
 
   const emit = defineEmits<{

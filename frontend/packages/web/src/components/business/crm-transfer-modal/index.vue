@@ -2,7 +2,7 @@
   <CrmModal
     v-model:show="showModal"
     size="small"
-    :title="props.isBatch ? t('common.batchTransfer') : t('common.transfer')"
+    :title="title"
     :ok-loading="loading"
     :positive-text="t('common.transfer')"
     @confirm="confirmHandler"
@@ -27,9 +27,10 @@
   const Message = useMessage();
 
   interface TransferModalProps {
+    title?: string;
     sourceIds: DataTableRowKey[];
     isBatch?: boolean;
-    moduleType: ModuleConfigEnum;
+    moduleType?: ModuleConfigEnum;
     // TODO ts 类型
     saveApi?: (params: Record<string, any>) => Promise<any>;
   }
@@ -45,6 +46,13 @@
   const showModal = defineModel<boolean>('show', {
     required: true,
     default: false,
+  });
+
+  const title = computed(() => {
+    if (props.title) {
+      return props.title;
+    }
+    return props.isBatch ? t('common.batchTransfer') : t('common.transfer');
   });
 
   // TODO 类型

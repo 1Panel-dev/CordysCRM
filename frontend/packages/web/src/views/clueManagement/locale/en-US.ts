@@ -17,4 +17,5 @@ export default {
   'clue.convertToOpportunity': 'Convert to opportunity',
   'clue.belongToPublicPool': 'Belongs to public pool',
   'clue.remainingDays': 'Remaining days',
+  'clue.recyclePool': 'Recycle clue pool',
 };

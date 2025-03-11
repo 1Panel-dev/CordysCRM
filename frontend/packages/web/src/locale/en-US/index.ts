@@ -27,7 +27,7 @@ export default {
     'menu.opportunity': 'Opportunity',
     'menu.clue': 'Clue',
     'menu.customer': 'Customer',
-    'menu.contact': 'Contract',
+    'menu.contact': 'Contact',
     'menu.settings.businessSetting': 'Enterprise',
     'menu.settings.log': 'Log',
     'navbar.action.locale': 'Switch to English',

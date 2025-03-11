@@ -6,6 +6,8 @@ import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 import useTable from '@/components/pure/crm-table/useTable';
 import { getFormConfigApiMap, getFormListApiMap } from '@/components/business/crm-form-create/config';
 
+import { useI18n } from './useI18n';
+
 export interface FormCreateTableProps {
   formKey: FormDesignKeyEnum;
   operationColumn?: CrmDataTableColumn;
@@ -13,6 +15,8 @@ export interface FormCreateTableProps {
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
+  const { t } = useI18n();
+
   const loading = ref(false);
   let columns: CrmDataTableColumn[] = [];
   const tableKeyMap = {
@@ -24,6 +28,192 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CLUE]: TableKeyEnum.CLUE,
     [FormDesignKeyEnum.PRODUCT]: TableKeyEnum.PRODUCT,
   };
+
+  const internalColumnMap: Record<FormDesignKeyEnum, CrmDataTableColumn[]> = {
+    [FormDesignKeyEnum.CUSTOMER]: [
+      {
+        title: t('customer.recycleOpenSea'),
+        width: 120,
+        key: 'recycleOpenSea',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+      {
+        title: t('customer.remainingVesting'),
+        width: 120,
+        key: 'remainingVesting',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+      {
+        title: t('customer.lastFollowUps'),
+        width: 150,
+        key: 'lastFollowUps',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+      {
+        title: t('customer.lastFollowUpDate'),
+        width: 160,
+        key: 'lastFollowUpDate',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+    ],
+    [FormDesignKeyEnum.CONTACT]: [
+      {
+        title: t('common.status'),
+        width: 120,
+        key: 'status',
+        ellipsis: {
+          tooltip: true,
+        },
+        filterOptions: [
+          {
+            label: t('common.enable'),
+            value: true,
+          },
+          {
+            label: t('common.disable'),
+            value: false,
+          },
+        ],
+        sortOrder: false,
+        sorter: true,
+        render: props.specialRender?.status,
+      },
+      {
+        title: t('customer.disableReason'),
+        width: 120,
+        key: 'disableReason',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+      {
+        title: t('common.head'),
+        width: 120,
+        key: 'head',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+      {
+        title: t('org.department'),
+        width: 120,
+        key: 'department',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+    ],
+    [FormDesignKeyEnum.BUSINESS]: [],
+    [FormDesignKeyEnum.FOLLOW_PLAN]: [],
+    [FormDesignKeyEnum.FOLLOW_RECORD]: [],
+    [FormDesignKeyEnum.CLUE]: [
+      {
+        title: t('clue.recyclePool'),
+        width: 120,
+        key: 'recyclePool',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+      {
+        title: t('customer.remainingVesting'),
+        width: 120,
+        key: 'remainingVesting',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+      {
+        title: t('customer.lastFollowUps'),
+        width: 120,
+        key: 'lastFollowUps',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+      {
+        title: t('customer.lastFollowUpDate'),
+        width: 120,
+        key: 'lastFollowUpDate',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+      },
+    ],
+    [FormDesignKeyEnum.PRODUCT]: [],
+  };
+  const staticColumns: CrmDataTableColumn[] = [
+    {
+      title: t('common.creator'),
+      key: 'createUser',
+      width: 120,
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+    },
+    {
+      title: t('common.createTime'),
+      key: 'createTime',
+      width: 160,
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+    },
+    {
+      title: t('common.updateUserName'),
+      key: 'updateUser',
+      width: 120,
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+    },
+    {
+      title: t('common.updateTime'),
+      key: 'updateTime',
+      width: 160,
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+    },
+  ];
 
   async function initFormConfig() {
     try {
@@ -49,7 +239,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               ellipsis: {
                 tooltip: true,
               },
-              filterOptions: field.options,
+              filterOptions: field.options || field.initialOptions?.map((e) => ({ label: e.name, value: e.id })),
               filter: true,
             };
           }
@@ -68,7 +258,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           }
           return {
             title: field.name,
-            width: 120,
+            width: 150,
             key: field.businessKey || field.id,
             ellipsis: {
               tooltip: true,
@@ -77,6 +267,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             sorter: true,
           };
         });
+      columns = [...columns, ...internalColumnMap[props.formKey], ...staticColumns];
       if (props.operationColumn) {
         columns.push(props.operationColumn);
       }

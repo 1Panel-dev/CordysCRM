@@ -25,6 +25,8 @@ export default {
   'module.customer.deleteRulesTitle': '存在未分配的客户，请xx后再删除',
   'module.customer.enabledTipContent': '启用后，会根据配置规则回收客户',
   'module.customer.disabledTipContent': '禁用后，不再根据配置规则回收客户',
+  'module.customer.customerCollectionRules': '客户领取规则',
+  'module.customer.customerRecycleRule': '客户回收规则',
   'module.cluePool': '线索池',
   'module.clue.cluePool': '线索池设置',
   'module.clue.addCluePool': '添加线索池',

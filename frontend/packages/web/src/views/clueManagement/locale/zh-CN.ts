@@ -16,4 +16,5 @@ export default {
   'clue.convertToOpportunity': '转为商机',
   'clue.belongToPublicPool': '所属公海',
   'clue.remainingDays': '剩余天数',
+  'clue.recyclePool': '回收线索池',
 };

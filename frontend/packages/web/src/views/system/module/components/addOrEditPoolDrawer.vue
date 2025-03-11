@@ -41,7 +41,13 @@
           </n-form-item>
         </div>
       </div>
-      <div class="crm-module-form-title"> {{ t('module.clue.clueCollectionRules') }}</div>
+      <div class="crm-module-form-title">
+        {{
+          props.type === ModuleConfigEnum.CLUE_MANAGEMENT
+            ? t('module.clue.clueCollectionRules')
+            : t('module.customer.customerCollectionRules')
+        }}
+      </div>
       <n-form-item path="pickRule.limitOnNumber" :label="t('module.clue.dailyCollection')">
         <n-radio-group v-model:value="form.pickRule.limitOnNumber" name="radiogroup">
           <n-space>
@@ -89,7 +95,13 @@
         />
         <div class="flex flex-nowrap"> {{ t('module.clue.receiveDay') }}</div>
       </n-form-item>
-      <div class="crm-module-form-title"> {{ t('module.clue.clueRecycleRule') }}</div>
+      <div class="crm-module-form-title">
+        {{
+          props.type === ModuleConfigEnum.CLUE_MANAGEMENT
+            ? t('module.clue.clueRecycleRule')
+            : t('module.customer.customerRecycleRule')
+        }}
+      </div>
       <n-form-item path="auto" :label="t('module.clue.autoRecycle')">
         <n-radio-group v-model:value="form.auto" name="radiogroup">
           <n-space>
@@ -166,7 +178,7 @@
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
-  import { addCustomerPool, addCluePool, updateCustomerPool, updateCluePool } from '@/api/modules/system/module';
+  import { addCluePool, addCustomerPool, updateCluePool, updateCustomerPool } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();

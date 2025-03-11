@@ -6,6 +6,7 @@
     label-placement="left"
     label-width="auto"
     require-mark-placement="left"
+    class="min-w-[350px]"
   >
     <n-form-item path="head" :label="t('opportunity.receiver')">
       <CrmUserSelect
@@ -19,7 +20,10 @@
       />
     </n-form-item>
     <n-form-item
-      v-if="[ModuleConfigEnum.CLUE_MANAGEMENT, ModuleConfigEnum.CUSTOMER_MANAGEMENT].includes(props.moduleType)"
+      v-if="
+        props.moduleType &&
+        [ModuleConfigEnum.CLUE_MANAGEMENT, ModuleConfigEnum.CUSTOMER_MANAGEMENT].includes(props.moduleType)
+      "
       path="belongToPublicPool"
       :label="t('clue.belongToPublicPool')"
     >
@@ -40,7 +44,7 @@
   import { useI18n } from '@/hooks/useI18n';
 
   const props = defineProps<{
-    moduleType: ModuleConfigEnum;
+    moduleType?: ModuleConfigEnum;
   }>();
 
   const { t } = useI18n();
