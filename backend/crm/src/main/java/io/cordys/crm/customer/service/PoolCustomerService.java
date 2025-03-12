@@ -41,6 +41,8 @@ public class PoolCustomerService {
 	private BaseMapper<UserRole> userRoleMapper;
 	@Resource
 	private ExtCustomerCapacityMapper extCustomerCapacityMapper;
+	@Resource
+	private CustomerPoolService customerPoolService;
 
 	public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
 
@@ -181,14 +183,15 @@ public class PoolCustomerService {
 		}
 	}
 
+	/**
+	 * 获取用户库容
+	 * @param userId 用户ID
+	 * @param organizationId 组织ID
+	 * @return 库容
+	 */
 	public Integer getUserCapacity(String userId, String organizationId) {
-		List<String> departmentIds = userExtendService.getParentDepartmentIds(userId, organizationId);
-		departmentIds.add(userId);
-		LambdaQueryWrapper<UserRole> userRoleWrapper = new LambdaQueryWrapper<>();
-		userRoleWrapper.eq(UserRole::getUserId, userId);
-		List<UserRole> roles = userRoleMapper.selectListByLambda(userRoleWrapper);
-		List<String> roleIds = roles.stream().map(UserRole::getRoleId).toList();
-		return extCustomerCapacityMapper.getCapacityByScopeIds(ListUtils.union(departmentIds, roleIds), organizationId);
+		List<String> scopeIds = customerPoolService.getUserScopeIds(userId, organizationId);
+		return extCustomerCapacityMapper.getCapacityByScopeIds(scopeIds, organizationId);
 	}
 
 	/**

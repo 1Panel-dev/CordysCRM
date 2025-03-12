@@ -10,6 +10,8 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerPool;
+import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -18,8 +20,10 @@ import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +52,10 @@ public class CustomerService {
     private CustomerCollaborationService customerCollaborationService;
     @Resource
     private CustomerOwnerHistoryService customerOwnerHistoryService;
+    @Resource
+    private CustomerPoolService customerPoolService;
+    @Resource
+    private BaseMapper<CustomerPoolRecycleRule> customerPoolRecycleRuleMapper;
 
     public List<CustomerListResponse> list(CustomerPageRequest request, String userId, String orgId,
                                            DeptDataPermissionDTO deptDataPermission) {
@@ -71,16 +79,41 @@ public class CustomerService {
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
         Map<String, FollowUpRecordDTO> recordMap = baseService.getOpportunityFollowRecord(customerIds, "CUSTOMER", "CUSTOMER");
+
+        // 获取公海&&回收信息
+        List<String> poolIds = list.stream().map(CustomerListResponse::getPoolId).distinct().toList();
+        List<CustomerPool> pools = customerPoolService.getPoolsByIds(poolIds);
+        Map<String, CustomerPool> poolMap = pools.stream().collect(Collectors.toMap(CustomerPool::getId, pool -> pool));
+        Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+        List<String> allPoolIds = ListUtils.union(poolMap.values().stream().map(CustomerPool::getId).toList(),
+                ownersDefaultPoolMap.values().stream().map(CustomerPool::getId).toList()).stream().distinct().toList();
+        Map<String, CustomerPoolRecycleRule> recycleRuleMap;
+        if (CollectionUtils.isEmpty(allPoolIds)) {
+            recycleRuleMap = Map.of();
+        } else {
+            LambdaQueryWrapper<CustomerPoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
+            recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, allPoolIds);
+            List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper.selectListByLambda(recycleRuleWrapper);
+            recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
+        }
+
         list.forEach(customerListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
             customerListResponse.setModuleFields(customerFields);
-
-            if (customerListResponse.getCollectionTime() != null) {
-                // 将毫秒数转换为天数, 并向上取整
-                int days = (int) Math.ceil(customerListResponse.getCollectionTime() * 1.0 / 86400000);
-                customerListResponse.setReservedDays(days);
+            // 设置回收公海
+            CustomerPool reservePool = null;
+            if (poolMap.containsKey(customerListResponse.getPoolId())) {
+                reservePool = poolMap.get(customerListResponse.getPoolId());
+            } else {
+                reservePool = ownersDefaultPoolMap.get(customerListResponse.getOwner());
             }
+            customerListResponse.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
+            // 计算剩余归属天数
+            customerListResponse.setReservedDays(customerPoolService.calcReservedDay(reservePool,
+                    reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
+                    customerListResponse));
+
             UserDeptDTO userDeptDTO = userDeptMap.get(customerListResponse.getOwner());
             if (userDeptDTO != null) {
                 customerListResponse.setDepartmentId(userDeptDTO.getDeptId());

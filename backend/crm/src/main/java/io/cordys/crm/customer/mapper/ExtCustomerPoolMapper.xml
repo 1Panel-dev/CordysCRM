@@ -26,6 +26,14 @@
         where pool_id = #{rule.poolId}
     </update>
 
+    <select id="getPoolByScopeIds" resultType="io.cordys.crm.customer.domain.CustomerPool">
+        select * from customer_pool where organization_id = #{orgId} and enable = true and
+        <foreach collection="ids" item="id" open="(" close=")" separator="or">
+            scope_id like concat('%', #{id}, '%')
+        </foreach>
+        order by create_time desc
+    </select>
+
     <sql id="filters">
         <if test="${filters} != null and ${filters}.size() > 0">
             <trim prefix="and">

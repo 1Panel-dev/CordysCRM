@@ -1,6 +1,7 @@
 package io.cordys.crm.customer.mapper;
 
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
@@ -29,4 +30,12 @@ public interface ExtCustomerPoolMapper {
 	 * @param rule 回收规则
 	 */
 	void updateRecycleRule(@Param("rule") CustomerPoolRecycleRule rule);
+
+	/**
+	 * 获取公海池集合
+	 * @param scopeIds 范围ID集合
+	 * @param orgId 组织ID
+	 * @return 公海池集合
+	 */
+	List<CustomerPool> getPoolByScopeIds(@Param("ids") List<String> scopeIds, @Param("orgId") String orgId);
 }

@@ -11,7 +11,7 @@ import java.util.List;
 public class PoolCustomerBatchRequest {
 
 	@NotNull
-	@Schema(description = "客户ID集合列表")
+	@Schema(description = "批量ID集合")
 	private List<String> batchIds;
 
 	@NotBlank

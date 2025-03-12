@@ -12,6 +12,8 @@ import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerField;
+import io.cordys.crm.customer.domain.CustomerPool;
+import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -26,6 +28,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
@@ -57,6 +61,10 @@ class CustomerControllerTests extends BaseTest {
     private BaseMapper<ModuleField> moduleFieldMapper;
     @Resource
     private BaseMapper<ModuleForm> moduleFormMapper;
+    @Resource
+    private BaseMapper<CustomerPool> customerPoolMapper;
+    @Resource
+    private BaseMapper<CustomerPoolPickRule> pickRuleMapper;
 
     @Override
     protected String getBasePath() {
@@ -278,6 +286,26 @@ class CustomerControllerTests extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DEFAULT_BATCH_DELETE, List.of(anotherCustomer.getId()));
+    }
+
+    @Test
+    @Order(12)
+    @Sql(scripts = {"/dml/init_customer_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/dml/cleanup_customer_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void testPageReservedDay() throws Exception {
+        CustomerAddRequest addRequest = new CustomerAddRequest();
+        addRequest.setName("aa");
+        addRequest.setOwner("admin");
+        this.requestPostWithOk(DEFAULT_ADD, addRequest);
+        CustomerPageRequest request = new CustomerPageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setSearchType(BusinessSearchType.ALL.name());
+        this.requestPostWithOk(DEFAULT_PAGE, request);
     }
 
     private List<CustomerField> getCustomerFields(String customerId) {
