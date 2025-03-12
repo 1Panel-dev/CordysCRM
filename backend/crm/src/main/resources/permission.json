@@ -173,5 +173,29 @@
         ]
       }
     ]
+  },
+  {
+    "id": "OPPORTUNITY_MANAGEMENT",
+    "name": "permission.opportunity_management.name",
+    "children": [
+      {
+        "id": "OPPORTUNITY_MANAGEMENT_OPPORTUNITY",
+        "name": "permission.opportunity_management.opportunity.name",
+        "permissions": [
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:READ"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:ADD"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:UPDATE"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:DELETE"
+          }
+        ]
+      }
+    ]
   }
 ]
