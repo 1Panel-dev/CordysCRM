@@ -13,6 +13,7 @@ export const UpdateCustomerFollowPlanUrl = '/customer/follow/plan/update'; // �
 export const GetCustomerFollowPlanListUrl = '/customer/follow/plan/page'; // 获取跟进计划列表
 export const AddCustomerFollowPlanUrl = '/customer/follow/plan/add'; // 添加跟进计划
 export const GetCustomerFollowPlanFormConfigUrl = '/follow/plan/module/form'; // 获取跟进计划表单配置
+export const GetCustomerFollowPlanUrl = '/customer/follow/plan/get'; // 获取跟进记录详情
 export const UpdateCustomerContactUrl = '/customer/contact/update'; // 更新客户联系人
 export const GetCustomerContactListUrl = '/customer/contact/page'; // 获取客户联系人列表
 export const DisableCustomerContactUrl = '/customer/contact/disable'; // 禁用客户联系人

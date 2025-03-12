@@ -30,6 +30,7 @@
         <template #2>
           <div class="h-full w-full bg-[var(--text-n9)]">
             <n-scrollbar class="p-[16px]">
+              <slot name="rightTop" />
               <div class="relative bg-[var(--text-n10)]">
                 <CrmTab
                   v-if="showTabList.length"
@@ -116,11 +117,23 @@
         formDrawerVisible.value = true;
         return;
       case 'followRecord':
-        realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD;
+        if (props.formKey === FormDesignKeyEnum.CLUE) {
+          realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CLUE;
+        } else if (props.formKey === FormDesignKeyEnum.CUSTOMER) {
+          realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER;
+        } else {
+          realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
+        }
         formDrawerVisible.value = true;
         return;
       case 'followPlan':
-        realFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN;
+        if (props.formKey === FormDesignKeyEnum.CLUE) {
+          realFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN_CLUE;
+        } else if (props.formKey === FormDesignKeyEnum.CUSTOMER) {
+          realFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER;
+        } else {
+          realFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS;
+        }
         formDrawerVisible.value = true;
         return;
       case 'edit':

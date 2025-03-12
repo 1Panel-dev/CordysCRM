@@ -8,6 +8,19 @@ import type { CommonList } from '@lib/shared/models/common';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import {
+  addClue,
+  addClueFollowPlan,
+  addClueFollowRecord,
+  getClue,
+  getClueFollowPlan,
+  getClueFollowRecord,
+  getClueFormConfig,
+  getClueList,
+  updateClue,
+  updateClueFollowPlan,
+  updateClueFollowRecord,
+} from '@/api/modules/clue';
+import {
   addCustomer,
   addCustomerContact,
   addCustomerFollowPlan,
@@ -16,11 +29,10 @@ import {
   getCustomerContact,
   getCustomerContactFormConfig,
   getCustomerContactList,
+  getCustomerFollowPlan,
   getCustomerFollowPlanFormConfig,
-  getCustomerFollowPlanList,
   getCustomerFollowRecord,
   getCustomerFollowRecordFormConfig,
-  getCustomerFollowRecordList,
   getCustomerFormConfig,
   getCustomerList,
   updateCustomer,
@@ -28,7 +40,18 @@ import {
   updateCustomerFollowPlan,
   updateCustomerFollowRecord,
 } from '@/api/modules/customer';
-import { addOpportunity, getOpportunityList, getOptFormConfig, updateOpportunity } from '@/api/modules/opportunity';
+import {
+  addOpportunity,
+  addOptFollowPlan,
+  addOptFollowRecord,
+  getOpportunityList,
+  getOptFollowPlan,
+  getOptFollowRecord,
+  getOptFormConfig,
+  updateOpportunity,
+  updateOptFollowPlan,
+  updateOptFollowRecord,
+} from '@/api/modules/opportunity';
 import { addProduct, getProduct, getProductFormConfig, getProductList, updateProduct } from '@/api/modules/product';
 
 import type { FormCreateField, FormCreateFieldRule, FormDetail } from './types';
@@ -328,9 +351,13 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.CUSTOMER]: getCustomerFormConfig,
   [FormDesignKeyEnum.BUSINESS]: getOptFormConfig,
   [FormDesignKeyEnum.CONTACT]: getCustomerContactFormConfig,
-  [FormDesignKeyEnum.FOLLOW_PLAN]: getCustomerFollowPlanFormConfig,
-  [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecordFormConfig,
-  [FormDesignKeyEnum.CLUE]: getCustomerFormConfig, // TODO:
+  [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: getCustomerFollowPlanFormConfig,
+  [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: getCustomerFollowRecordFormConfig,
+  [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: getCustomerFollowPlanFormConfig,
+  [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: getCustomerFollowRecordFormConfig,
+  [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: getCustomerFollowPlanFormConfig,
+  [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: getCustomerFollowRecordFormConfig,
+  [FormDesignKeyEnum.CLUE]: getClueFormConfig,
   [FormDesignKeyEnum.PRODUCT]: getProductFormConfig,
 };
 
@@ -338,9 +365,13 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.CUSTOMER]: addCustomer,
   [FormDesignKeyEnum.BUSINESS]: addOpportunity,
   [FormDesignKeyEnum.CONTACT]: addCustomerContact,
-  [FormDesignKeyEnum.FOLLOW_PLAN]: addCustomerFollowPlan,
-  [FormDesignKeyEnum.FOLLOW_RECORD]: addCustomerFollowRecord,
-  [FormDesignKeyEnum.CLUE]: addCustomer, // TODO:
+  [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: addCustomerFollowPlan,
+  [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: addCustomerFollowRecord,
+  [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: addClueFollowPlan,
+  [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: addClueFollowRecord,
+  [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: addOptFollowPlan,
+  [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: addOptFollowRecord,
+  [FormDesignKeyEnum.CLUE]: addClue,
   [FormDesignKeyEnum.PRODUCT]: addProduct,
 };
 
@@ -348,9 +379,13 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.CUSTOMER]: updateCustomer,
   [FormDesignKeyEnum.BUSINESS]: updateOpportunity,
   [FormDesignKeyEnum.CONTACT]: updateCustomerContact,
-  [FormDesignKeyEnum.FOLLOW_PLAN]: updateCustomerFollowPlan,
-  [FormDesignKeyEnum.FOLLOW_RECORD]: updateCustomerFollowRecord,
-  [FormDesignKeyEnum.CLUE]: updateCustomer, // TODO:
+  [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: updateCustomerFollowPlan,
+  [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: updateCustomerFollowRecord,
+  [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: updateClueFollowPlan,
+  [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: updateClueFollowRecord,
+  [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: updateOptFollowPlan,
+  [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: updateOptFollowRecord,
+  [FormDesignKeyEnum.CLUE]: updateClue,
   [FormDesignKeyEnum.PRODUCT]: updateProduct,
 };
 
@@ -358,8 +393,13 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.CUSTOMER]: getCustomer,
   [FormDesignKeyEnum.BUSINESS]: getCustomer, // TODO:
   [FormDesignKeyEnum.CONTACT]: getCustomerContact,
-  [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecord,
-  [FormDesignKeyEnum.CLUE]: getCustomer, // TODO:
+  [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: getCustomerFollowPlan,
+  [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: getCustomerFollowRecord,
+  [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: getClueFollowPlan,
+  [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: getClueFollowRecord,
+  [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: getOptFollowPlan,
+  [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: getOptFollowRecord,
+  [FormDesignKeyEnum.CLUE]: getClue,
   [FormDesignKeyEnum.PRODUCT]: getProduct,
 };
 
@@ -367,8 +407,6 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.CUSTOMER]: getCustomerList,
   [FormDesignKeyEnum.BUSINESS]: getOpportunityList,
   [FormDesignKeyEnum.CONTACT]: getCustomerContactList,
-  [FormDesignKeyEnum.FOLLOW_PLAN]: getCustomerFollowPlanList,
-  [FormDesignKeyEnum.FOLLOW_RECORD]: getCustomerFollowRecordList,
-  [FormDesignKeyEnum.CLUE]: getCustomerList, // TODO:
+  [FormDesignKeyEnum.CLUE]: getClueList,
   [FormDesignKeyEnum.PRODUCT]: getProductList,
 };

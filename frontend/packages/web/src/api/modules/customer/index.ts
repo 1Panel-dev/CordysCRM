@@ -14,6 +14,7 @@ import {
   GetCustomerContactUrl,
   GetCustomerFollowPlanFormConfigUrl,
   GetCustomerFollowPlanListUrl,
+  GetCustomerFollowPlanUrl,
   GetCustomerFollowRecordFormConfigUrl,
   GetCustomerFollowRecordListUrl,
   GetCustomerFollowRecordUrl,
@@ -41,6 +42,7 @@ import type {
   CustomerListItem,
   CustomerOpenSeaListItem,
   CustomerTableParams,
+  FollowDetailItem,
   SaveCustomerContractParams,
   SaveCustomerFollowPlanParams,
   SaveCustomerFollowRecordParams,
@@ -129,6 +131,11 @@ export function getCustomerFollowPlanList(data: CustomerFollowPlanTableParams) {
 // 获取客户跟进计划表单配置
 export function getCustomerFollowPlanFormConfig() {
   return CDR.get<FormDesignConfigDetailParams>({ url: GetCustomerFollowPlanFormConfigUrl });
+}
+
+// 获取客户跟进计划详情
+export function getCustomerFollowPlan(id: string) {
+  return CDR.get<FollowDetailItem>({ url: `${GetCustomerFollowPlanUrl}/${id}` });
 }
 
 // 添加客户联系人

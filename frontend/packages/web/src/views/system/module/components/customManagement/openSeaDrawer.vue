@@ -175,11 +175,11 @@
       filterOptions: [
         {
           label: t('common.enable'),
-          value: 1, // TODO lmy 类型是boolean
+          value: true,
         },
         {
           label: t('common.disable'),
-          value: 0,
+          value: false,
         },
       ],
       filter: true,
@@ -219,11 +219,11 @@
       filterOptions: [
         {
           label: t('common.yes'),
-          value: 1, // TODO lmy 类型是boolean
+          value: true,
         },
         {
           label: t('common.no'),
-          value: 0,
+          value: false,
         },
       ],
       filter: true,

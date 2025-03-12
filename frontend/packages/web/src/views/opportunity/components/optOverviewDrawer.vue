@@ -13,35 +13,16 @@
     <template #left>
       <CrmFormDescription :form-key="FormDesignKeyEnum.BUSINESS" :source-id="props.sourceId" />
     </template>
-    <template #right>
+    <template #rightTop>
       <CrmWorkflowCard
-        v-if="activeTab === 'overview'"
         v-model:status="currentStatus"
         :show-confirm-status="true"
+        class="mb-[16px]"
         :workflow-list="workflowList"
         :source-id="detail.id"
       />
-
-      <CrmCollapse
-        v-if="activeTab === 'overview'"
-        class="my-[16px]"
-        name-key="followRecord"
-        :title="t('crmFollowRecord.followRecord')"
-      >
-        <template #headerExtraLeft="{ collapsed }">
-          <CrmSearchInput v-if="!collapsed" v-model:value="followRecordKeyword" class="!w-[240px]" @click.stop />
-        </template>
-        <FollowDetail
-          v-model:data="followList"
-          v-model:active-status="activeStatus"
-          v-model:keyword="followRecordKeyword"
-          :no-padding="true"
-          :show-search-input="false"
-          :type="activeTab"
-          :loading="followLoading"
-        />
-      </CrmCollapse>
-
+    </template>
+    <template #right>
       <FollowDetail
         v-if="['followRecord', 'followPlan'].includes(activeTab)"
         v-model:data="followList"
@@ -86,9 +67,7 @@
   import type { FollowDetailItem, TransferParams } from '@lib/shared/models/customer';
   import type { WorkflowStepItem } from '@lib/shared/models/opportunity';
 
-  import CrmCollapse from '@/components/pure/crm-collapse/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import HeaderTable from '@/components/business/crm-form-create-table/headerTable.vue';
@@ -184,15 +163,9 @@
     },
   ];
 
-  const activeTab = ref('overview');
+  const activeTab = ref('followRecord');
   const cachedList = ref([]);
   const tabList: TabContentItem[] = [
-    {
-      name: 'overview',
-      tab: t('common.overview'),
-      enable: true,
-      allowClose: false,
-    },
     {
       name: 'followRecord',
       tab: t('crmFollowRecord.followRecord'),
@@ -253,7 +226,6 @@
     current: 1,
   });
 
-  const followRecordKeyword = ref<string>('');
   const followList = ref<FollowDetailItem[]>([]);
   const activeStatus = ref(CustomerFollowPlanStatusEnum.ALL);
   const followLoading = ref<boolean>(false);
@@ -296,7 +268,7 @@
   }
 
   const formDrawerVisible = ref(false);
-  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD);
+  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS);
 
   // 取消计划
   async function handleCancelPlan(item: FollowDetailItem) {
@@ -313,7 +285,9 @@
   const realFollowSourceId = ref<string | undefined>('');
   function handleEditFollow(item: FollowDetailItem) {
     realFormKey.value =
-      activeTab.value === 'followRecord' ? FormDesignKeyEnum.FOLLOW_RECORD : FormDesignKeyEnum.FOLLOW_PLAN;
+      activeTab.value === 'followRecord'
+        ? FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS
+        : FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS;
     realFollowSourceId.value = item.id;
     formDrawerVisible.value = true;
   }

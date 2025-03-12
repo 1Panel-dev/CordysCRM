@@ -183,7 +183,7 @@
   // 跟进
   function handleFollowUp() {
     activeOpportunityId.value = '';
-    realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD;
+    realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
     formCreateDrawerVisible.value = true;
   }
 

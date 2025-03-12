@@ -3,7 +3,7 @@
     <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
   </CrmCard>
 
-  <CrmCard hide-footer>
+  <CrmCard hide-footer :special-height="64">
     <CrmTable
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
@@ -16,7 +16,7 @@
     >
       <template #actionLeft>
         <div class="flex items-center">
-          <n-button class="mr-[12px]" type="primary">
+          <n-button class="mr-[12px]" type="primary" @click="handleAddOrEdit">
             {{ t('clueManagement.newClue') }}
           </n-button>
         </div>
@@ -25,8 +25,14 @@
         <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
       </template>
     </CrmTable>
-    <TransferModal v-model:show="showTransferModal" :source-ids="checkedRowKeys" />
-    <ClueOverviewDrawer v-model:show="showOverviewDrawer" />
+    <TransferModal
+      v-model:show="showTransferModal"
+      :source-ids="checkedRowKeys"
+      :save-api="batchTransferClue"
+      @load-list="handleRefresh"
+    />
+    <ClueOverviewDrawer v-model:show="showOverviewDrawer" :detail="activeClue" @refresh="handleRefresh" />
+    <CrmFormCreateDrawer v-model:visible="formCreateDrawerVisible" :form-key="formKey" :source-id="activeClueId" />
   </CrmCard>
 </template>
 
@@ -34,23 +40,25 @@
   import { ref } from 'vue';
   import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
 
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
-  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import type { ClueListItem } from '@lib/shared/models/clue';
+  import type { TransferParams } from '@lib/shared/models/customer/index';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
-  import useTable from '@/components/pure/crm-table/useTable';
+  import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import ClueOverviewDrawer from './components/clueOverviewDrawer.vue';
 
-  import { getCluePoolPage } from '@/api/modules/system/module';
+  import { batchDeleteClue, batchTransferClue, deleteClue } from '@/api/modules/clue';
+  import { defaultTransferForm } from '@/config/opportunity';
+  import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
@@ -87,6 +95,10 @@
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const keyword = ref('');
+  const activeClueId = ref('');
+  const activeClue = ref<ClueListItem>();
+  const formKey = ref(FormDesignKeyEnum.CLUE);
+  const formCreateDrawerVisible = ref(false);
 
   const actionConfig: BatchActionConfig = {
     baseAction: [
@@ -107,6 +119,11 @@
 
   const tableRefreshId = ref(0);
 
+  function handleRefresh() {
+    checkedRowKeys.value = [];
+    tableRefreshId.value += 1;
+  }
+
   // 批量移入线索池
   function handleBatchMoveIntoCluePool() {
     openModal({
@@ -118,7 +135,7 @@
       onPositiveClick: async () => {
         try {
           // TODO lmy 联调
-          tableRefreshId.value += 1;
+          handleRefresh();
           Message.success(t('common.moveInSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -138,8 +155,8 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO lmy 联调
-          tableRefreshId.value += 1;
+          await batchDeleteClue(checkedRowKeys.value as string[]);
+          handleRefresh();
           Message.success(t('common.deleteSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -169,7 +186,7 @@
   }
 
   // 删除
-  function handleDelete(row: any) {
+  function handleDelete(row: ClueListItem) {
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: row.name }),
@@ -178,7 +195,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO lmy 联调
+          await deleteClue(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {
@@ -192,23 +209,59 @@
   // 转移
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   const transferLoading = ref(false);
-  const transferForm = ref<any>({
-    head: null, // TODO lmy 字段
-    belongToPublicPool: null,
+  const transferForm = ref<TransferParams>({
+    ...defaultTransferForm,
   });
 
-  function handleActionSelect(row: any, actionKey: string) {
-    // TODO lmy
+  function handleTransfer(row: ClueListItem) {
+    transferFormRef.value?.formRef?.validate(async (error) => {
+      if (!error) {
+        try {
+          transferLoading.value = true;
+          await batchTransferClue({
+            ...transferForm.value,
+            ids: [row.id],
+          });
+          Message.success(t('common.transferSuccess'));
+          transferForm.value = { ...defaultTransferForm };
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(e);
+        } finally {
+          transferLoading.value = false;
+        }
+      }
+    });
+  }
+
+  // 新增
+  function handleAddOrEdit() {
+    formKey.value = FormDesignKeyEnum.CLUE;
+    formCreateDrawerVisible.value = true;
+  }
+
+  function handleActionSelect(row: ClueListItem, actionKey: string) {
+    activeClueId.value = row.id;
     switch (actionKey) {
       case 'edit':
+        handleAddOrEdit();
         break;
       case 'followUp':
+        // TODO 怎么穿参数
+        formKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CLUE;
+        formCreateDrawerVisible.value = true;
         break;
       case 'pop-transfer':
+        handleTransfer(row);
         break;
       case 'convertToCustomer':
+        // TODO 调整一下
+        formKey.value = FormDesignKeyEnum.CUSTOMER;
+        formCreateDrawerVisible.value = true;
         break;
       case 'convertToOpportunity':
+        formKey.value = FormDesignKeyEnum.BUSINESS;
+        formCreateDrawerVisible.value = true;
         break;
       case 'delete':
         handleDelete(row);
@@ -237,7 +290,6 @@
           positiveText: t('common.confirm'),
           iconType: 'primary',
         },
-        popSlotName: 'transferPopTitle',
         popSlotContent: 'transferPopContent',
       },
       {
@@ -260,123 +312,15 @@
   });
 
   // 概览
-  const showOverviewDrawer = ref(true);
+  const showOverviewDrawer = ref(false);
 
-  const columns: CrmDataTableColumn[] = [
-    {
-      type: 'selection',
-      // TODO lmy 已转【客户】【商机】复选框为禁用态
-      disabled(row: any) {
-        return ['客户', '商机'].includes(row.convertedTo);
-      },
-    },
-    {
-      title: t('opportunity.customerName'),
-      key: 'name',
-      width: 100,
-      sortOrder: false,
-      sorter: true,
-      render: (row: any) => {
-        return h(
-          NButton,
-          {
-            text: true,
-            type: 'primary',
-            onClick: () => {
-              // TODO lmy 概览
-            },
-          },
-          { default: () => row.name }
-        );
-      },
-    },
-    // TODO lmy 有是自定义字段
-    {
-      title: t('clue.clueProgress'),
-      key: 'clueProgress',
-      width: 100,
-      filterOptions: [],
-      filter: true,
-    },
-    {
-      title: t('clue.convertedTo'),
-      key: 'convertedTo',
-      width: 100,
-      filterOptions: [],
-      filter: true,
-    },
-    {
-      title: t('clue.clueSource'),
-      key: 'clueSource',
-      width: 100,
-      filterOptions: [],
-      filter: true,
-    },
-    {
-      title: t('common.head'),
-      key: 'head',
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 100,
-      filterOptions: [],
-      filter: true,
-    },
-    {
-      title: t('role.department'),
-      key: 'departmentName',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      filterOptions: [],
-      filter: true,
-    },
-    {
-      title: t('opportunity.region'),
-      key: 'region',
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 100,
-      filterOptions: [],
-      filter: true,
-    },
-    {
-      title: t('clue.remainingDays'),
-      key: 'remainingDays',
-      width: 100,
-      sortOrder: false,
-      sorter: true,
-    },
-    {
-      title: t('common.updateUserName'),
-      key: 'updateUser',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      filterOptions: [],
-      filter: true,
-      render: (row: any) => {
-        return h(CrmNameTooltip, { text: row.updateUserName });
-      },
-    },
-    {
-      title: t('common.updateTime'),
-      key: 'updateTime',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-      sortOrder: false,
-      sorter: true,
-    },
-    {
+  const { useTableRes } = await useFormCreateTable({
+    formKey: FormDesignKeyEnum.CLUE,
+    operationColumn: {
       key: 'operation',
       width: 200,
       fixed: 'right',
-      render: (row: any) =>
+      render: (row: ClueListItem) =>
         ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value)
           ? '-'
           : h(
@@ -385,8 +329,7 @@
                 groupList: operationGroupList.value,
                 onSelect: (key: string) => handleActionSelect(row, key),
                 onCancel: () => {
-                  transferForm.value.head = null; // TODO lmy 字段
-                  transferForm.value.belongToPublicPool = null;
+                  transferForm.value = { ...defaultTransferForm };
                 },
               },
               {
@@ -395,21 +338,29 @@
                     class: 'w-[320px] mt-[16px]',
                     form: transferForm.value,
                     ref: transferFormRef,
-                    moduleType: ModuleConfigEnum.CLUE_MANAGEMENT,
                   });
                 },
               }
             ),
     },
-  ];
-
-  // TODO 联调
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getCluePoolPage, {
-    tableKey: TableKeyEnum.AUTH,
-    showSetting: true,
-    columns,
-    scrollX: 2000,
+    specialRender: {
+      name: (row: ClueListItem) => {
+        return h(
+          NButton,
+          {
+            text: true,
+            type: 'primary',
+            onClick: () => {
+              activeClue.value = row;
+              showOverviewDrawer.value = true;
+            },
+          },
+          { default: () => row.name }
+        );
+      },
+    },
   });
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
 
   function searchData() {
     setLoadListParams({ keyword: keyword.value });

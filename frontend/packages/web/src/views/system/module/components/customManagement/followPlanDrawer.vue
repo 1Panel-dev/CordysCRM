@@ -1,5 +1,6 @@
 <template>
-  <CrmFormDrawer v-model:visible="visible" :title="title" :form-key="FormDesignKeyEnum.FOLLOW_PLAN"> </CrmFormDrawer>
+  <CrmFormDrawer v-model:visible="visible" :title="title" :form-key="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER">
+  </CrmFormDrawer>
 </template>
 
 <script setup lang="ts">

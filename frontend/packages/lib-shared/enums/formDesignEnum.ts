@@ -1,10 +1,14 @@
 export enum FormDesignKeyEnum {
   CLUE = 'clue', // 线索
+  FOLLOW_PLAN_CLUE = 'planClue', // 线索跟进计划
+  FOLLOW_RECORD_CLUE = 'recordClue', // 线索跟进记录
   CUSTOMER = 'customer', // 客户
   CONTACT = 'contact', // 联系人
-  FOLLOW_RECORD = 'record', // 跟进记录
-  FOLLOW_PLAN = 'plan', // 跟进计划
+  FOLLOW_RECORD_CUSTOMER = 'recordCustomer', // 客户跟进记录
+  FOLLOW_PLAN_CUSTOMER = 'planCustomer', // 客户跟进计划
   BUSINESS = 'business', // 商机
+  FOLLOW_RECORD_BUSINESS = 'recordBusiness', // 商机跟进记录
+  FOLLOW_PLAN_BUSINESS = 'planBusiness', // 商机跟进计划
   PRODUCT = 'product', // 产品
 }
 

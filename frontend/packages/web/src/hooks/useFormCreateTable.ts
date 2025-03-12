@@ -8,8 +8,15 @@ import { getFormConfigApiMap, getFormListApiMap } from '@/components/business/cr
 
 import { useI18n } from './useI18n';
 
+type FormKey =
+  | FormDesignKeyEnum.CUSTOMER
+  | FormDesignKeyEnum.CONTACT
+  | FormDesignKeyEnum.BUSINESS
+  | FormDesignKeyEnum.CLUE
+  | FormDesignKeyEnum.PRODUCT;
+
 export interface FormCreateTableProps {
-  formKey: FormDesignKeyEnum;
+  formKey: FormKey;
   operationColumn?: CrmDataTableColumn;
   specialRender?: Record<string, (row: any) => void>;
 }
@@ -23,13 +30,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CUSTOMER]: TableKeyEnum.CUSTOMER,
     [FormDesignKeyEnum.CONTACT]: TableKeyEnum.CUSTOMER_CONTRACT,
     [FormDesignKeyEnum.BUSINESS]: TableKeyEnum.BUSINESS,
-    [FormDesignKeyEnum.FOLLOW_PLAN]: TableKeyEnum.CUSTOMER_FOLLOW_PLAN,
-    [FormDesignKeyEnum.FOLLOW_RECORD]: TableKeyEnum.CUSTOMER_FOLLOW_RECORD,
     [FormDesignKeyEnum.CLUE]: TableKeyEnum.CLUE,
     [FormDesignKeyEnum.PRODUCT]: TableKeyEnum.PRODUCT,
   };
 
-  const internalColumnMap: Record<FormDesignKeyEnum, CrmDataTableColumn[]> = {
+  const internalColumnMap: Record<FormKey, CrmDataTableColumn[]> = {
     [FormDesignKeyEnum.CUSTOMER]: [
       {
         title: t('customer.recycleOpenSea'),
@@ -177,8 +182,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         sorter: true,
       },
     ],
-    [FormDesignKeyEnum.FOLLOW_PLAN]: [],
-    [FormDesignKeyEnum.FOLLOW_RECORD]: [],
     [FormDesignKeyEnum.CLUE]: [
       {
         title: t('clue.recyclePool'),
@@ -318,7 +321,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             sorter: true,
           };
         });
-      columns = [...columns, ...internalColumnMap[props.formKey], ...staticColumns];
+      columns = [...columns, ...(internalColumnMap[props.formKey] || []), ...staticColumns];
       if (props.operationColumn) {
         columns.push(props.operationColumn);
       }

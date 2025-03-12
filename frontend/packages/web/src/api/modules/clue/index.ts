@@ -1,0 +1,120 @@
+import {
+  AddClueFollowPlanUrl,
+  AddClueFollowRecordUrl,
+  AddClueUrl,
+  BatchDeleteClueUrl,
+  BatchTransferClueUrl,
+  CancelClueFollowPlanUrl,
+  DeleteClueUrl,
+  GetClueFollowPlanListUrl,
+  GetClueFollowPlanUrl,
+  GetClueFollowRecordListUrl,
+  GetClueFollowRecordUrl,
+  GetClueFormConfigUrl,
+  GetClueListUrl,
+  GetClueUrl,
+  UpdateClueFollowPlanUrl,
+  UpdateClueFollowRecordUrl,
+  UpdateClueUrl,
+} from '@lib/shared/api/requrls/clue';
+import type { ClueDetail, ClueListItem, SaveClueParams, UpdateClueParams } from '@lib/shared/models/clue';
+import type { CommonList } from '@lib/shared/models/common';
+import type {
+  CustomerFollowPlanTableParams,
+  CustomerFollowRecordTableParams,
+  CustomerTableParams,
+  FollowDetailItem,
+  SaveCustomerFollowPlanParams,
+  SaveCustomerFollowRecordParams,
+  TransferParams,
+  UpdateCustomerFollowPlanParams,
+  UpdateCustomerFollowRecordParams,
+} from '@lib/shared/models/customer';
+import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+
+import CDR from '@/api/http/index';
+
+// 添加线索
+export function addClue(data: SaveClueParams) {
+  return CDR.post({ url: AddClueUrl, data });
+}
+
+// 更新线索
+export function updateClue(data: UpdateClueParams) {
+  return CDR.post({ url: UpdateClueUrl, data });
+}
+
+// 获取线索列表
+export function getClueList(data: CustomerTableParams) {
+  return CDR.post<CommonList<ClueListItem>>({ url: GetClueListUrl, data });
+}
+
+// 批量转移线索
+export function batchTransferClue(data: TransferParams) {
+  return CDR.post({ url: BatchTransferClueUrl, data });
+}
+
+// 批量删除线索
+export function batchDeleteClue(data: string[]) {
+  return CDR.post({ url: BatchDeleteClueUrl, data });
+}
+
+// 获取线索表单配置
+export function getClueFormConfig() {
+  return CDR.get<FormDesignConfigDetailParams>({ url: GetClueFormConfigUrl });
+}
+
+// 获取线索详情
+export function getClue(id: string) {
+  return CDR.get<ClueDetail>({ url: `${GetClueUrl}/${id}` });
+}
+
+// 删除线索
+export function deleteClue(id: string) {
+  return CDR.get({ url: `${DeleteClueUrl}/${id}` });
+}
+
+// 添加线索跟进记录
+export function addClueFollowRecord(data: SaveCustomerFollowRecordParams) {
+  return CDR.post({ url: AddClueFollowRecordUrl, data });
+}
+
+// 更新线索跟进记录
+export function updateClueFollowRecord(data: UpdateCustomerFollowRecordParams) {
+  return CDR.post({ url: UpdateClueFollowRecordUrl, data });
+}
+
+// 获取线索跟进记录列表
+export function getClueFollowRecordList(data: CustomerFollowRecordTableParams) {
+  return CDR.post<CommonList<FollowDetailItem>>({ url: GetClueFollowRecordListUrl, data });
+}
+
+// 获取线索跟进记录详情
+export function getClueFollowRecord(id: string) {
+  return CDR.get<FollowDetailItem>({ url: `${GetClueFollowRecordUrl}/${id}` });
+}
+
+// 添加线索跟进计划
+export function addClueFollowPlan(data: SaveCustomerFollowPlanParams) {
+  return CDR.post({ url: AddClueFollowPlanUrl, data });
+}
+
+// 更新线索跟进计划
+export function updateClueFollowPlan(data: UpdateCustomerFollowPlanParams) {
+  return CDR.post({ url: UpdateClueFollowPlanUrl, data });
+}
+
+// 获取线索跟进计划列表
+export function getClueFollowPlanList(data: CustomerFollowPlanTableParams) {
+  return CDR.post<CommonList<FollowDetailItem>>({ url: GetClueFollowPlanListUrl, data });
+}
+
+// 获取线索跟进计划详情
+export function getClueFollowPlan(id: string) {
+  return CDR.get<FollowDetailItem>({ url: `${GetClueFollowPlanUrl}/${id}` });
+}
+
+// 取消跟进计划
+export function cancelClueFollowPlan(id: string) {
+  return CDR.get({ url: `${CancelClueFollowPlanUrl}/${id}` });
+}
