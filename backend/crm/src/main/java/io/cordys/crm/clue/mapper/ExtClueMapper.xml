@@ -5,7 +5,7 @@
     <update id="batchTransfer">
         update `clue`
         set owner = #{request.owner}
-        where id in
+        where owner != #{request.owner} and id in
         <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>

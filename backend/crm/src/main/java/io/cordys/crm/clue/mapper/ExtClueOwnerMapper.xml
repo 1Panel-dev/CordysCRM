@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.cordys.crm.clue.mapper.ExtClueOwnerMapper">
+
+    <update id="batchAdd">
+        insert into clue_owner (id, owner, operator, clue_id, collection_time, end_time)
+        select UUID_SHORT() as id, clue.owner, clue.id as clue_id, '${userId}' as operator, clue.collection_time, UNIX_TIMESTAMP() * 1000 as end_time
+        from clue
+        where clue.owner != #{request.owner} and id in
+        <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+</mapper>

@@ -18,6 +18,7 @@ import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +42,8 @@ public class ClueService {
     private BaseService baseService;
     @Resource
     private ClueFieldService clueFieldService;
+    @Resource
+    private ClueOwnerHistoryService clueOwnerHistoryService;
 
     public List<ClueListResponse> list(CluePageRequest request, String userId, String orgId,
                                        DeptDataPermissionDTO deptDataPermission) {
@@ -137,6 +140,14 @@ public class ClueService {
         // 校验名称重复
         checkUpdateExist(clue);
 
+        if (StringUtils.isNotBlank(request.getOwner())) {
+            Clue originCustomer = clueMapper.selectByPrimaryKey(request.getId());
+            if (!StringUtils.equals(request.getOwner(), originCustomer.getOwner())) {
+                // 如果责任人有修改，则添加责任人历史
+                clueOwnerHistoryService.add(originCustomer, userId);
+            }
+        }
+
         clueMapper.update(clue);
 
         // 更新模块字段
@@ -179,6 +190,8 @@ public class ClueService {
         clueMapper.deleteByPrimaryKey(id);
         // 删除客户模块字段
         clueFieldService.deleteByResourceId(id);
+        // 删除责任人历史
+        clueOwnerHistoryService.deleteByClueIds(List.of(id));
     }
 
     public void batchTransfer(ClueBatchTransferRequest request) {
@@ -190,5 +203,7 @@ public class ClueService {
         clueMapper.deleteByIds(ids);
         // 删除客户模块字段
         clueFieldService.deleteByResourceIds(ids);
+        // 删除责任人历史
+        clueOwnerHistoryService.deleteByClueIds(ids);
     }
 }

@@ -150,7 +150,23 @@ ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX resource_id ON clue_field_blob(resource_id ASC);
+CREATE INDEX idx_resource_id ON clue_field_blob(resource_id ASC);
+
+
+CREATE TABLE clue_owner(
+   `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+   `clue_id` VARCHAR(32) NOT NULL   COMMENT '线索id' ,
+   `owner` VARCHAR(32) NOT NULL   COMMENT '责任人' ,
+   `collection_time` BIGINT NOT NULL   COMMENT '领取时间' ,
+   `end_time` BIGINT NOT NULL   COMMENT '结束时间' ,
+   `operator` VARCHAR(32) NOT NULL   COMMENT '操作人' ,
+   PRIMARY KEY (id)
+)  COMMENT = '线索历史责任人'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_clue_id ON clue_owner(clue_id ASC);
 
 
 -- set innodb lock wait timeout to default

@@ -1,0 +1,35 @@
+package io.cordys.crm.clue.controller;
+
+import io.cordys.common.constants.PermissionConstants;
+import io.cordys.context.OrganizationContext;
+import io.cordys.crm.clue.dto.response.ClueOwnerListResponse;
+import io.cordys.crm.clue.service.ClueOwnerHistoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+/**
+ * @author jianxing
+ * @date 2025-02-08 17:42:41
+ */
+@Tag(name = "线索责任人历史")
+@RestController
+@RequestMapping("/clue/owner/history")
+public class ClueOwnerHistoryController {
+    @Resource
+    private ClueOwnerHistoryService clueOwnerHistoryService;
+
+    @GetMapping("/list/{clueId}")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @Operation(summary = "线索责任人历史列表")
+    public List<ClueOwnerListResponse> list(@PathVariable String clueId) {
+        return clueOwnerHistoryService.list(clueId, OrganizationContext.getOrganizationId());
+    }
+}

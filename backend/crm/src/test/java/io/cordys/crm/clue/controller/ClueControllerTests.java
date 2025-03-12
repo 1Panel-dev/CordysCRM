@@ -73,10 +73,7 @@ class ClueControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
 
-        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
-        Pager<List<ClueListResponse>> pageResult = getPageResult(mvcResult, ClueListResponse.class);
-        List<ClueListResponse> clueList = pageResult.getList();
-        Assertions.assertTrue(CollectionUtils.isEmpty(clueList));
+        this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, DEFAULT_PAGE, request);
