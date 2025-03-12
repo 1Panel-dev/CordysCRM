@@ -6,6 +6,7 @@ import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityStageRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
 import io.cordys.mybatis.BaseMapper;
@@ -31,6 +32,7 @@ public class OpportunityControllerTests extends BaseTest {
     private static final String BASE_PATH = "/opportunity/";
     protected static final String MODULE_FORM = "module/form";
     protected static final String BATCH_TRANSFER = "batch/transfer";
+    protected static final String UPDATE_STAGE = "update/stage";
 
     private static Opportunity addOpportunity;
     @Resource
@@ -132,5 +134,14 @@ public class OpportunityControllerTests extends BaseTest {
     @Order(2)
     void testGetDetail() throws Exception {
         this.requestGetWithOk(DEFAULT_GET, addOpportunity.getId());
+    }
+
+    @Test
+    @Order(3)
+    void testUpdateStage() throws Exception {
+        OpportunityStageRequest request = new OpportunityStageRequest();
+        request.setId(addOpportunity.getId());
+        request.setStage("SUCCESS");
+        this.requestPostWithOk(UPDATE_STAGE, request);
     }
 }

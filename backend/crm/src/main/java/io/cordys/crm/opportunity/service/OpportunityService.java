@@ -4,6 +4,7 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
@@ -16,10 +17,7 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityField;
-import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
-import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
-import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
-import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
+import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
@@ -29,13 +27,11 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -66,7 +62,7 @@ public class OpportunityService {
     }
 
     private List<OpportunityListResponse> buildListData(List<OpportunityListResponse> list) {
-        if(CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return list;
         }
         List<String> opportunityIds = list.stream().map(OpportunityListResponse::getId)
@@ -257,10 +253,21 @@ public class OpportunityService {
      * 批量删除商机
      *
      * @param ids
+     * @param userId
      */
-    public void batchDelete(List<String> ids) {
+    public void batchDelete(List<String> ids, String userId) {
+        LambdaQueryWrapper<Opportunity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Opportunity::getId, ids);
+        List<Opportunity> opportunityList = opportunityMapper.selectListByLambda(wrapper);
         opportunityMapper.deleteByIds(ids);
         opportunityFieldService.deleteByResourceIds(ids);
+        List<LogDTO> logDTOS = new ArrayList<>();
+        opportunityList.forEach(opportunity -> {
+            LogDTO logDTO = new LogDTO(opportunity.getOrganizationId(), opportunity.getId(), userId, LogType.DELETE, LogModule.OPPORTUNITY, opportunity.getName());
+            logDTO.setOriginalValue(opportunity);
+            logDTOS.add(logDTO);
+        });
+        logService.batchAdd(logDTOS);
     }
 
 
@@ -286,5 +293,30 @@ public class OpportunityService {
         response.setOwnerName(userNameMap.get(response.getOwner()));
         response.setContactName(contactMap.get(response.getContactId()));
         return response;
+    }
+
+
+    /**
+     * 标记商机阶段
+     *
+     * @param request
+     */
+    @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.UPDATE, resourceId = "{#request.id}")
+    public void updateStage(OpportunityStageRequest request) {
+        Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
+        Opportunity newOpportunity = new Opportunity();
+        if (StringUtils.equalsAnyIgnoreCase(request.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name())) {
+            newOpportunity.setStatus(false);
+        }
+        newOpportunity.setId(request.getId());
+        newOpportunity.setStage(request.getStage());
+        opportunityMapper.update(newOpportunity);
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(oldOpportunity.getName())
+                        .originalValue(oldOpportunity)
+                        .modifiedValue(opportunityMapper.selectByPrimaryKey(request.getId()))
+                        .build()
+        );
     }
 }

@@ -10,10 +10,7 @@ import io.cordys.common.pager.Pager;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.opportunity.domain.Opportunity;
-import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
-import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
-import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
-import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
+import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.service.OpportunityService;
@@ -98,7 +95,7 @@ public class OpportunityController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE)
     @Operation(summary = "批量删除商机")
     public void delete(@RequestBody @NotEmpty List<String> ids) {
-        opportunityService.batchDelete(ids);
+        opportunityService.batchDelete(ids, SessionUtils.getUserId());
     }
 
     @GetMapping("/get/{id}")
@@ -106,5 +103,12 @@ public class OpportunityController {
     @Operation(summary = "商机详情")
     public OpportunityDetailResponse get(@PathVariable String id) {
         return opportunityService.get(id);
+    }
+
+    @PostMapping("/update/stage")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @Operation(summary = "更新商机阶段")
+    public void updateStage(@RequestBody OpportunityStageRequest request) {
+        opportunityService.updateStage(request);
     }
 }
