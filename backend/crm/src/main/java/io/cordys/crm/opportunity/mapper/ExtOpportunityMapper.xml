@@ -256,4 +256,19 @@
                 INNER JOIN customer c ON o.customer_id = c.id
         where o.id = #{id}
     </select>
+    <select id="getRepeatList" resultType="io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse">
+        SELECT
+            o.id,
+            o.NAME,
+            o.customer_id,
+            o.products,
+            o.stage,
+            o.owner,
+            u.NAME AS ownerName,
+            o.status
+        FROM
+            opportunity o
+                INNER JOIN sys_user u ON o.owner = u.id
+        WHERE o.status = 1 AND o.customer_id = #{customerId}
+    </select>
 </mapper>

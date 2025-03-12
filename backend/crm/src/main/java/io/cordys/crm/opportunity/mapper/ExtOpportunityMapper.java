@@ -7,6 +7,7 @@ import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
+import io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -23,4 +24,6 @@ public interface ExtOpportunityMapper {
     void batchTransfer(@Param("request") OpportunityTransferRequest request);
 
     OpportunityDetailResponse getDetail(@Param("id") String id);
+
+    List<OpportunityRepeatResponse> getRepeatList(@Param("customerId") String customerId);
 }

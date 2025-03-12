@@ -1,7 +1,7 @@
 package io.cordys.crm.system.mapper;
 
 import io.cordys.crm.system.domain.Product;
-import io.cordys.crm.system.dto.response.ProductListResponse;
+import io.cordys.crm.system.dto.response.product.ProductListResponse;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,5 +19,7 @@ public interface ExtProductMapper {
     boolean checkAddExist(@Param("product") Product product);
 
     boolean checkUpdateExist(@Param("product") Product product);
+
+    List<Product> listByIds(@Param("ids") List<String> ids);
 
 }

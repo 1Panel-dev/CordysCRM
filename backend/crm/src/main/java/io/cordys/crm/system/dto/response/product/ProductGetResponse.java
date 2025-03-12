@@ -1,4 +1,4 @@
-package io.cordys.crm.system.dto.response;
+package io.cordys.crm.system.dto.response.product;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -6,13 +6,15 @@ import lombok.Data;
 
 import java.util.List;
 
-
 /**
- * @author guoyuqi
+ *
+ * @author jianxing
+ * @date 2025-02-08 16:24:22
  */
 @Data
-public class ProductListResponse {
-    @Schema(description = "ID")
+public class ProductGetResponse {
+
+    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private String id;
 
     @Schema(description = "产品名称")
@@ -36,6 +38,6 @@ public class ProductListResponse {
     @Schema(description = "更新人名称")
     private String updateUserName;
 
-    @Schema(description = "自定义字段集合")
-    private List<BaseModuleFieldValue> moduleFields;
+    @Schema(description = "自定义字段")
+    private List<? extends BaseModuleFieldValue> moduleFields;
 }

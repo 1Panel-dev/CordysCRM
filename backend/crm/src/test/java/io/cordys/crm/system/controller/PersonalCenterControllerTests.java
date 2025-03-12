@@ -1,14 +1,23 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.common.pager.Pager;
+import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.opportunity.constants.StageType;
+import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.system.domain.Department;
+import io.cordys.crm.system.domain.OrganizationUser;
+import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.PersonalInfoRequest;
 import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
 import io.cordys.crm.system.dto.request.UserAddRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
 import io.cordys.crm.system.dto.response.EmailDTO;
 import io.cordys.crm.system.dto.response.UserPageResponse;
+import io.cordys.crm.system.dto.response.UserResponse;
+import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
@@ -17,8 +26,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.shaded.com.trilead.ssh2.crypto.digest.MD5;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,6 +45,20 @@ public class PersonalCenterControllerTests extends BaseTest {
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private BaseMapper<Department> departmentBaseMapper;
+    @Resource
+    private BaseMapper<Customer>customerBaseMapper;
+    @Resource
+    private BaseMapper<User>userBaseMapper;
+
+    @Resource
+    private ExtUserMapper extUserMapper;
+    @Resource
+    private BaseMapper<OrganizationUser> organizationUserMapper;
+
+    @Resource
+    private BaseMapper<Opportunity> opportunityBaseMapper;
+
+    private static String userId = "";
 
 
     @Test
@@ -56,18 +83,47 @@ public class PersonalCenterControllerTests extends BaseTest {
         request.setGender(true);
         request.setEnable(true);
         request.setEmail("3Gyq3@Cordys.com");
-        request.setDepartmentId("222");
+        request.setDepartmentId("221");
         request.setRoleIds(List.of("1", "2"));
-        this.requestPost("/user/add", request).andExpect(status().isOk());
+        this.requestPostWithOkAndReturn("/user/add", request);
 
         UserPageRequest pageRequest = new UserPageRequest();
         pageRequest.setCurrent(1);
         pageRequest.setPageSize(10);
-        pageRequest.setDepartmentIds(List.of("222"));
+        pageRequest.setDepartmentIds(List.of("221"));
         MvcResult mvcResult = this.requestPostWithOkAndReturn("/user/list", pageRequest);
         Pager<List<UserPageResponse>> result = getPageResult(mvcResult, UserPageResponse.class);
         UserPageResponse first = result.getList().getFirst();
         Assertions.assertTrue(StringUtils.isNotBlank(first.getUserId()));
+        userId = first.getId();
+
+        User user = new User();
+        user.setId(userId);
+        user.setName("fff");
+        user.setPhone("12345678911");
+        user.setPassword("############");
+        user.setEmail("4545@qq.com");
+        user.setGender(true);
+        user.setCreateTime(System.currentTimeMillis());
+        user.setCreateUser("admin");
+        user.setUpdateTime(System.currentTimeMillis());
+        user.setUpdateUser("admin");
+        userBaseMapper.insert(user);
+        OrganizationUser orgUser = new OrganizationUser();
+        orgUser.setDepartmentId("221");
+        orgUser.setEnable(true);
+        orgUser.setId(IDGenerator.nextStr());
+        orgUser.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        orgUser.setUserId(userId);
+        orgUser.setCreateTime(System.currentTimeMillis());
+        orgUser.setCreateUser("admin");
+        orgUser.setUpdateTime(System.currentTimeMillis());
+        orgUser.setUpdateUser("admin");
+        organizationUserMapper.insert(orgUser);
+
+        UserResponse userDetail = extUserMapper.getUserDetail(first.getId());
+        Assertions.assertNotNull(userDetail);
+
     }
 
     @Test
@@ -114,7 +170,36 @@ public class PersonalCenterControllerTests extends BaseTest {
     @Test
     @Order(5)
     public void getRepeatCustomer() throws Exception {
+        String s = IDGenerator.nextStr();
+        Opportunity opportunity = new Opportunity();
+        opportunity.setCustomerId(s);
+        opportunity.setOwner(userId);
+        opportunity.setName("商机一");
+        opportunity.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        opportunity.setAmount(BigDecimal.ONE);
+        opportunity.setPossible(BigDecimal.TEN);
+        opportunity.setStatus(true);
+        opportunity.setStage(StageType.CREATE.name());
+        opportunity.setProducts(List.of("1","2"));
+        opportunity.setContactId("admin");
+        opportunity.setId(IDGenerator.nextStr());
+        opportunity.setCreateTime(System.currentTimeMillis());
+        opportunity.setCreateUser("admin");
+        opportunity.setUpdateTime(System.currentTimeMillis());
+        opportunity.setUpdateUser("admin");
+        opportunityBaseMapper.insert(opportunity);
 
+        Customer customer = new Customer();
+        customer.setId(s);
+        customer.setName("kehu");
+        customer.setOwner(userId);
+        customer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        customer.setCreateTime(System.currentTimeMillis());
+        customer.setCreateUser("admin");
+        customer.setUpdateTime(System.currentTimeMillis());
+        customer.setUpdateUser("admin");
+        customer.setInSharedPool(false);
+        customerBaseMapper.insert(customer);
         this.requestGet("/personal/center/repeat/customer?name=kehu").andExpect(status().isOk());
     }
 
