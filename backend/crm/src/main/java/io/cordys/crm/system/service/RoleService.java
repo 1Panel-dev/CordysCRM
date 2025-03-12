@@ -179,6 +179,10 @@ public class RoleService {
     @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Role update(RoleUpdateRequest request, String userId) {
         Role originRole = roleMapper.selectByPrimaryKey(request.getId());
+        if (originRole == null) {
+            throw new GenericException(Translator.get("role.not_exist"));
+        }
+
         Role role = BeanUtils.copyBean(new Role(), request);
         // 校验名称重复
         checkUpdateExist(role);
@@ -256,6 +260,9 @@ public class RoleService {
     @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         Role role = roleMapper.selectByPrimaryKey(id);
+        if (role == null) {
+            throw new GenericException(Translator.get("role.not_exist"));
+        }
         // 内置角色不能删除
         checkInternalRole(role.getId());
         // 删除角色

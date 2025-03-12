@@ -24,9 +24,9 @@ public class DefaultUidGenerator implements DisposableBean {
     protected int seqBits = 13;
 
     /**
-     * Customer epoch, unit as second. For example 2023-09-01 (ms: 1693548784)
+     * Customer epoch, unit as second. For example 2025-01-01 (ms: 1735689600000)
      */
-    protected String epochStr = "2024-11-11";
+    protected String epochStr = "2025-01-01";
     protected long epochSeconds = TimeUnit.MILLISECONDS.toSeconds(1693548784);
 
     /**

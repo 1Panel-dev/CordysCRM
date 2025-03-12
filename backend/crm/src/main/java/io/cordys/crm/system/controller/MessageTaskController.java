@@ -17,7 +17,6 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 
 @Tag(name = "消息设置")
@@ -36,7 +35,7 @@ public class MessageTaskController {
 
     @GetMapping("get")
     @Operation(summary = "项目管理-消息管理-消息设置-获取消息设置")
-    public List<MessageTaskDTO> getMessageList() throws IOException {
+    public List<MessageTaskDTO> getMessageList() {
         return messageTaskService.getMessageList(OrganizationContext.getOrganizationId());
     }
 

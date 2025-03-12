@@ -56,7 +56,7 @@ public class AnnounceToNotifyJob {
         //删除已过期公告的推送
         LocalDateTime dateTime = LocalDateTime.now();
         long expiredStamp = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-        LocalDateTime startTime = LocalDateTime.now().minusDays(1l);
+        LocalDateTime startTime = LocalDateTime.now().minusDays(1L);
         long startStamp = startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
         List<String> expiredIds = extAnnouncementMapper.selectFixTimeExpiredIds(startStamp, expiredStamp);
