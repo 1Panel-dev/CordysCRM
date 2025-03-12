@@ -20,6 +20,7 @@ import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +46,8 @@ public class CustomerService {
     private CustomerFieldService customerFieldService;
     @Resource
     private CustomerCollaborationService customerCollaborationService;
+    @Resource
+    private CustomerOwnerHistoryService customerOwnerHistoryService;
 
     public List<CustomerListResponse> list(CustomerPageRequest request, String userId, String orgId,
                                            DeptDataPermissionDTO deptDataPermission) {
@@ -141,6 +144,14 @@ public class CustomerService {
         // 校验名称重复
         checkUpdateExist(customer);
 
+        if (StringUtils.isNotBlank(request.getOwner())) {
+            Customer originCustomer = customerMapper.selectByPrimaryKey(request.getId());
+            if (!StringUtils.equals(request.getOwner(), originCustomer.getOwner())) {
+                // 如果责任人有修改，则添加责任人历史
+                customerOwnerHistoryService.add(originCustomer, userId);
+            }
+        }
+
         customerMapper.update(customer);
 
         // 更新模块字段
@@ -178,10 +189,14 @@ public class CustomerService {
         customerFieldService.deleteByResourceId(id);
         // 删除客户协作人
         customerCollaborationService.deleteByCustomerId(id);
+        // 删除责任人历史
+        customerOwnerHistoryService.deleteByCustomerIds(List.of(id));
     }
 
-    public void batchTransfer(CustomerBatchTransferRequest request) {
+    public void batchTransfer(CustomerBatchTransferRequest request, String userId) {
         extCustomerMapper.batchTransfer(request);
+        // 添加责任人历史
+        customerOwnerHistoryService.batchAdd(request, userId);
     }
 
     public void batchDelete(List<String> ids) {
@@ -191,5 +206,7 @@ public class CustomerService {
         customerFieldService.deleteByResourceIds(ids);
         // 删除客户协作人
         customerCollaborationService.deleteByCustomerIds(ids);
+        // 删除责任人历史
+        customerOwnerHistoryService.deleteByCustomerIds(ids);
     }
 }
