@@ -18,4 +18,7 @@ export default {
   'clue.belongToPublicPool': 'Belongs to public pool',
   'clue.remainingDays': 'Remaining days',
   'clue.recyclePool': 'Recycle clue pool',
+  'club.importClues': ' Import clues',
+  'club.batchClaimTip': 'Are you sure you want to collect {count} leads?',
+  'clue.claimTip': 'Are you sure you want to claim {count}?',
 };

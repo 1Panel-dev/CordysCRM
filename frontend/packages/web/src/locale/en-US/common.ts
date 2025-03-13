@@ -27,6 +27,7 @@ export default {
   'common.confirmClaim': 'Confirm claim',
   'common.claimSuccess': 'Claim success',
   'common.distribute': 'Distribute',
+  'common.distributeSuccess': 'Distribute success',
   'common.batchDistribute': 'Batch distribute',
   'common.update': 'Update',
   'common.all': 'All',

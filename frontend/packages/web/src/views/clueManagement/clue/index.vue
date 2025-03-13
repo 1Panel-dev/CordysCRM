@@ -224,6 +224,7 @@
           });
           Message.success(t('common.transferSuccess'));
           transferForm.value = { ...defaultTransferForm };
+          tableRefreshId.value += 1;
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);

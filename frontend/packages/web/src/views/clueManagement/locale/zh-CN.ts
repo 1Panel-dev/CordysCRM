@@ -17,4 +17,7 @@ export default {
   'clue.belongToPublicPool': '所属公海',
   'clue.remainingDays': '剩余天数',
   'clue.recyclePool': '回收线索池',
+  'clue.importClues': '导入线索',
+  'clue.batchClaimTip': '确定领取 {count} 个线索吗？',
+  'clue.claimTip': '确定领取 {count} 吗？',
 };
