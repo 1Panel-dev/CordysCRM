@@ -3,7 +3,7 @@
     <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
   </CrmCard>
 
-  <CrmCard hide-footer>
+  <CrmCard :special-height="64" hide-footer>
     <CrmTable
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
@@ -16,7 +16,7 @@
     >
       <template #actionLeft>
         <div class="flex items-center">
-          <n-button class="mr-[12px]" type="primary" @click="formCreateDrawerVisible = true">
+          <n-button class="mr-[12px]" type="primary" @click="handleNewClick">
             {{ t('customer.new') }}
           </n-button>
         </div>
@@ -26,12 +26,19 @@
       </template>
     </CrmTable>
   </CrmCard>
-  <TransferModal v-model:show="showTransferModal" :source-ids="checkedRowKeys" />
-  <customerOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeCustomerId" />
+  <TransferModal
+    v-model:show="showTransferModal"
+    :source-ids="checkedRowKeys"
+    :save-api="batchTransferCustomer"
+    @load-list="loadList"
+  />
+  <customerOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeSourceId" />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
-    :form-key="FormDesignKeyEnum.CUSTOMER"
-    :source-id="activeCustomerId"
+    :form-key="activeFormKey"
+    :source-id="activeSourceId"
+    :other-save-params="otherFollowRecordSaveParams"
+    @saved="loadList"
   />
 </template>
 
@@ -53,6 +60,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import customerOverviewDrawer from './components/customerOverviewDrawer.vue';
 
+  import { batchDeleteCustomer, batchTransferCustomer, deleteCustomer, updateCustomer } from '@/api/modules/customer';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -86,7 +94,18 @@
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const keyword = ref('');
   const formCreateDrawerVisible = ref(false);
-  const activeCustomerId = ref('');
+  const activeSourceId = ref('');
+  const activeFormKey = ref(FormDesignKeyEnum.CUSTOMER);
+  const otherFollowRecordSaveParams = ref({
+    type: 'CUSTOMER',
+    customerId: '',
+    id: '',
+  });
+
+  function handleNewClick() {
+    activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
+    formCreateDrawerVisible.value = true;
+  }
 
   const actionConfig: BatchActionConfig = {
     baseAction: [
@@ -117,29 +136,9 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO  联调
+          await batchDeleteCustomer(checkedRowKeys.value);
           tableRefreshId.value += 1;
           Message.success(t('common.deleteSuccess'));
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(error);
-        }
-      },
-    });
-  }
-
-  // 批量移入公海
-  function handleBatchMove() {
-    openModal({
-      type: 'warning',
-      title: t('customer.batchMoveTitleTip', { number: checkedRowKeys.value.length }),
-      content: t('customer.batchMoveContentTip'),
-      positiveText: t('customer.confirmMove'),
-      negativeText: t('common.cancel'),
-      onPositiveClick: async () => {
-        try {
-          tableRefreshId.value += 1;
-          Message.success(t('customer.moveSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -155,9 +154,6 @@
     switch (item.key) {
       case 'batchTransfer':
         showTransferModal.value = true;
-        break;
-      case 'moveToOpenSea':
-        handleBatchMove();
         break;
       case 'batchDelete':
         handleBatchDelete();
@@ -177,7 +173,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO  联调
+          await deleteCustomer(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {
@@ -192,18 +188,42 @@
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   const transferLoading = ref(false);
   const transferForm = ref<any>({
-    head: null, // TODO  字段
-    belongToPublicPool: null,
+    owner: null,
   });
 
+  async function transferCustomer() {
+    try {
+      transferLoading.value = true;
+      await updateCustomer({
+        id: activeSourceId.value,
+        owner: transferForm.value.owner,
+      });
+      Message.success(t('common.transferSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      transferLoading.value = false;
+    }
+  }
+
   function handleActionSelect(row: any, actionKey: string) {
-    // TODO
     switch (actionKey) {
       case 'edit':
+        activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
+        activeSourceId.value = row.id;
+        otherFollowRecordSaveParams.value.id = row.id;
+        formCreateDrawerVisible.value = true;
         break;
       case 'followUp':
+        activeFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER;
+        activeSourceId.value = '';
+        otherFollowRecordSaveParams.value.customerId = row.id;
+        formCreateDrawerVisible.value = true;
         break;
       case 'pop-transfer':
+        activeSourceId.value = row.id;
+        transferCustomer();
         break;
       case 'delete':
         handleDelete(row);
@@ -247,7 +267,7 @@
   });
 
   // 概览
-  const showOverviewDrawer = ref(true);
+  const showOverviewDrawer = ref(false);
 
   const { useTableRes } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER,
@@ -264,8 +284,7 @@
                 groupList: operationGroupList.value,
                 onSelect: (key: string) => handleActionSelect(row, key),
                 onCancel: () => {
-                  transferForm.value.head = null; // TODO lmy 字段
-                  transferForm.value.belongToPublicPool = null;
+                  transferForm.value.owner = null; // TODO lmy 字段
                 },
               },
               {
@@ -288,7 +307,8 @@
             text: true,
             type: 'primary',
             onClick: () => {
-              activeCustomerId.value = row.id;
+              activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
+              activeSourceId.value = row.id;
               showOverviewDrawer.value = true;
             },
           },

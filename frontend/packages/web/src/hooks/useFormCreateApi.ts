@@ -1,6 +1,7 @@
 import { useMessage } from 'naive-ui';
 
-import type { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { FieldTypeEnum, type FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import type { ModuleField } from '@lib/shared/models/customer';
 import type { FormConfig } from '@lib/shared/models/system/module';
 
 import type { Description } from '@/components/pure/crm-description/index.vue';
@@ -12,13 +13,14 @@ import {
 } from '@/components/business/crm-form-create/config';
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
-import { safeFractionConvert } from '@/utils';
+import { getCityPath, safeFractionConvert } from '@/utils';
 
 import { useI18n } from './useI18n';
 
 export interface FormCreateApiProps {
   sourceId?: Ref<string | undefined>;
   formKey: Ref<FormDesignKeyEnum>;
+  otherSaveParams?: Ref<Record<string, any> | undefined>;
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -65,20 +67,23 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           });
         } else {
           // 其他的字段读取moduleFields TODO: 等接口字段
-          // const field = form.moduleFields.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
-          // if (item.type === FieldTypeEnum.DIVIDER) {
-          //   descriptions.value.push({
-          //     label: item.name,
-          //     value: field?.fieldValue || [],
-          //     slotName: 'divider',
-          //     fieldInfo: item,
-          //   });
-          // } else {
-          //   descriptions.value.push({
-          //     label: item.name,
-          //     value: field?.fieldValue || [],
-          //   });
-          // }
+          const field = form.moduleFields.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
+          if (item.type === FieldTypeEnum.DIVIDER) {
+            descriptions.value.push({
+              label: item.name,
+              value: field?.fieldValue || [],
+              slotName: 'divider',
+              fieldInfo: item,
+            });
+          } else {
+            descriptions.value.push({
+              label: item.name,
+              value:
+                item.type === FieldTypeEnum.LOCATION
+                  ? getCityPath((field?.fieldValue as string).split('-')[0])
+                  : field?.fieldValue || [],
+            });
+          }
         }
       });
     } catch (error) {
@@ -95,11 +100,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (!asyncApi || !props.sourceId?.value) return;
       const res = await asyncApi(props.sourceId?.value);
       fieldList.value.forEach((item) => {
+        // TODO: options字段
         if (item.businessKey) {
           // 业务标准字段读取最外层
-          formDetail.value[item.businessKey] = res[item.businessKey];
+          formDetail.value[item.id] = res[item.businessKey];
         } else {
-          formDetail.value[item.id] = res.moduleFields.find(
+          formDetail.value[item.id] = res.moduleFields?.find(
             (moduleField) => moduleField.fieldId === item.id
           )?.fieldValue;
         }
@@ -136,6 +142,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     try {
       loading.value = true;
       const params: Record<string, any> = {
+        ...props.otherSaveParams?.value,
         moduleFields: [],
       };
       fieldList.value.forEach((item) => {

@@ -4,6 +4,8 @@ import {
   AddCustomerFollowRecordUrl,
   AddCustomerOpenSeaUrl,
   AddCustomerUrl,
+  BatchDeleteCustomerUrl,
+  BatchTransferCustomerUrl,
   DeleteCustomerContactUrl,
   DeleteCustomerOpenSeaUrl,
   DeleteCustomerUrl,
@@ -48,6 +50,7 @@ import type {
   SaveCustomerFollowRecordParams,
   SaveCustomerOpenSeaParams,
   SaveCustomerParams,
+  TransferParams,
   UpdateCustomerContractParams,
   UpdateCustomerFollowPlanParams,
   UpdateCustomerFollowRecordParams,
@@ -86,6 +89,16 @@ export function getCustomer(id: string) {
 // 删除客户
 export function deleteCustomer(id: string) {
   return CDR.get({ url: `${DeleteCustomerUrl}/${id}` });
+}
+
+// 批量删除客户
+export function batchDeleteCustomer(batchIds: (string | number)[]) {
+  return CDR.post({ url: BatchDeleteCustomerUrl, data: batchIds });
+}
+
+// 批量转移客户
+export function batchTransferCustomer(data: TransferParams) {
+  return CDR.post({ url: BatchTransferCustomerUrl, data });
 }
 
 // 添加客户跟进记录

@@ -20,7 +20,9 @@
       />
     </template>
     <template #left>
-      <CrmFormDescription :form-key="FormDesignKeyEnum.CUSTOMER" :source-id="props.sourceId" />
+      <div class="p-[16px_24px]">
+        <CrmFormDescription :form-key="FormDesignKeyEnum.CUSTOMER" :source-id="props.sourceId" />
+      </div>
     </template>
     <template #right>
       <div class="mt-[16px]">
@@ -172,7 +174,7 @@
 
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   const transferForm = ref<any>({
-    head: null,
+    owner: null,
     belongToPublicPool: null,
   });
 

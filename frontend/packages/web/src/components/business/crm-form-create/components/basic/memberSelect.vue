@@ -28,10 +28,10 @@
     path: string;
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: (string | number)[]): void;
+    (e: 'change', value: string | number | (string | number)[]): void;
   }>();
 
-  const value = defineModel<string[]>('value', {
+  const value = defineModel<string | number | (string | number)[]>('value', {
     default: [],
   });
   const selectedUsers = ref<SelectedUsersItem[]>(props.fieldConfig.initialOptions || []);
@@ -50,7 +50,7 @@
     () => selectedUsers.value,
     (val) => {
       const ids = val.map((item) => item.id);
-      value.value = ids;
+      value.value = props.fieldConfig.multiple ? ids : ids[0];
       emit('change', ids);
     },
     {

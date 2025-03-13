@@ -11,6 +11,7 @@
         <div v-if="item.show !== false" class="crm-form-create-item" :style="{ width: `${item.fieldWidth * 100}%` }">
           <component
             :is="getItemComponent(item.type)"
+            v-model:value="form[item.id]"
             :field-config="item"
             :path="item.id"
             @change="($event: any) => handleFieldChange($event, item)"
@@ -34,12 +35,15 @@
 
 <script setup lang="ts">
   import { FormInst, NButton, NForm, NScrollbar } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
   import { FormCreateField, FormCreateFieldRule } from '@/components/business/crm-form-create/types';
+
+  import { useI18n } from '@/hooks/useI18n';
 
   import { rules } from './config';
 
@@ -51,6 +55,8 @@
     (e: 'cancel'): void;
     (e: 'save', form: Record<string, any>, isContinue: boolean): void;
   }>();
+
+  const { t } = useI18n();
 
   const list = defineModel<FormCreateField[]>('list', {
     required: true,
@@ -111,13 +117,15 @@
     // 控制显示规则
     if (item.showControlRules?.length) {
       item.showControlRules.forEach((rule) => {
-        // 若配置了该值的显示规则
-        if (rule.value === value) {
-          list.value.forEach((e) => {
-            // 若该字段在显示规则中，则根据规则显示或隐藏
-            e.show = rule.fieldIds.includes(e.id);
-          });
-        }
+        list.value.forEach((e) => {
+          // 若配置了该值的显示规则，且该字段在显示规则中，则显示
+          if (rule.value === value && rule.fieldIds.includes(e.id)) {
+            e.show = true;
+          } else if (rule.fieldIds.includes(e.id)) {
+            // 若该字段在显示规则中，但值不符合，则隐藏该字段
+            e.show = false;
+          }
+        });
       });
     }
   }
@@ -130,6 +138,26 @@
     });
   }
 
+  function getRuleType(item: FormCreateField) {
+    if (
+      (item.type === FieldTypeEnum.SELECT && item.multiple) ||
+      item.type === FieldTypeEnum.CHECKBOX ||
+      item.type === FieldTypeEnum.MULTIPLE_INPUT ||
+      (item.type === FieldTypeEnum.MEMBER && item.multiple) ||
+      (item.type === FieldTypeEnum.DEPARTMENT && item.multiple) ||
+      item.type === FieldTypeEnum.DATA_SOURCE
+    ) {
+      return 'array';
+    }
+    if (item.type === FieldTypeEnum.DATE_TIME) {
+      return 'date';
+    }
+    if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+      return 'number';
+    }
+    return 'string';
+  }
+
   watch(
     () => list.value,
     () => {
@@ -137,12 +165,15 @@
         if (!form.value[item.id]) {
           form.value[item.id] = item.defaultValue;
         }
+        handleFieldChange(form.value[item.id], item); // 初始化时，根据字段值控制显示
         const fullRules: FormCreateFieldRule[] = [];
         rules.forEach((rule) => {
           // 遍历规则集合，将全量的规则配置载入
-          const staticRule = rules.find((e) => e.key === rule.key);
+          const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
           if (staticRule) {
             staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
+            staticRule.message = t(rule.message as string, { value: t(item.name) });
+            staticRule.type = getRuleType(item);
             fullRules.push(staticRule);
           }
         });
@@ -159,14 +190,11 @@
     .crm-form-create-item {
       @apply relative self-start;
 
-      padding: 16px;
+      padding: 0 16px;
       border-radius: var(--border-radius-small);
       .n-form-item-label {
         margin-bottom: 4px;
         padding-bottom: 0;
-      }
-      .n-form-item-feedback-wrapper {
-        @apply hidden;
       }
     }
     .crm-form-create-footer {

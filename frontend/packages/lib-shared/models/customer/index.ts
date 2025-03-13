@@ -3,13 +3,13 @@ import type { TableQueryParams } from '../common';
 
 export interface ModuleField {
   fieldId: string;
-  fieldValue: string | number | (string | number)[];
+  fieldValue: string | string[];
 }
 
 export interface SaveCustomerParams {
-  name: string;
+  name?: string;
   owner: string; // 负责人
-  moduleFields: ModuleField[];
+  moduleFields?: ModuleField[];
 }
 
 export interface UpdateCustomerParams extends SaveCustomerParams {

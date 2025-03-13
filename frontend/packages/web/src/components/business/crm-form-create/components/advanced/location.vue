@@ -28,7 +28,7 @@
       type="textarea"
       clearable
       class="mt-[4px]"
-      @update-value="handleCityAndDetailChange"
+      @change="handleCityAndDetailChange"
     />
   </n-form-item>
 </template>
@@ -64,11 +64,15 @@
     emit('change', value.value);
   }
 
-  onBeforeMount(() => {
-    const [cityValue, detailValue] = value.value.split('-');
-    city.value = cityValue || null;
-    detail.value = detailValue;
-  });
+  watch(
+    () => value.value,
+    () => {
+      const [cityValue, detailValue] = value.value.split('-');
+      city.value = cityValue || null;
+      detail.value = detailValue || '';
+    },
+    { immediate: true }
+  );
 </script>
 
 <style lang="less" scoped></style>

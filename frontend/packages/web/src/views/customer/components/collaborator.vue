@@ -48,7 +48,7 @@
             {{ t('customer.cooperationTip') }}
           </n-tooltip>
         </template>
-        <n-tabs v-model:value="form.permission" type="segment">
+        <n-tabs v-model:value="form.permission" type="segment" class="collaborator-tabs">
           <n-tab-pane name="readOnly" :tab="t('customer.readOnly')"></n-tab-pane>
           <n-tab-pane name="cooperation" :tab="t('customer.cooperation')"></n-tab-pane>
         </n-tabs>
@@ -313,7 +313,9 @@
 </script>
 
 <style lang="less">
-  .n-tab-pane {
-    @apply hidden;
+  .collaborator-tabs {
+    .n-tab-pane {
+      @apply hidden;
+    }
   }
 </style>

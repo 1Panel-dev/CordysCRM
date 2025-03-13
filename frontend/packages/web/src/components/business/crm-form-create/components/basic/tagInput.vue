@@ -43,8 +43,8 @@
 
   const { t } = useI18n();
 
-  const value = defineModel<string>('value', {
-    default: '',
+  const value = defineModel<(string | number)[]>('value', {
+    default: [],
   });
 
   watch(

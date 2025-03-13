@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mb-[24px] mt-[8px]">
     <div
       v-if="props.fieldConfig.showLabel"
       class="mb-[8px] font-semibold"

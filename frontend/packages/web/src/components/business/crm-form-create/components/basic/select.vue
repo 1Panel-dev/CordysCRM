@@ -33,10 +33,10 @@
     path: string;
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: (string | number)[]): void;
+    (e: 'change', value: string | number | (string | number)[]): void;
   }>();
 
-  const value = defineModel<(string | number)[]>('value', {
+  const value = defineModel<string | number | (string | number)[]>('value', {
     default: [],
   });
 

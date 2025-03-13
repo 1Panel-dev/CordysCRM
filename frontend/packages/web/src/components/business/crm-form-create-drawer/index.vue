@@ -22,8 +22,9 @@
       v-model:list="fieldList"
       :form-detail="formDetail"
       :form-config="formConfig"
+      class="pt-[16px]"
       @cancel="handleBack"
-      @save="saveForm"
+      @save="handleSave"
     />
   </CrmDrawer>
 </template>
@@ -45,6 +46,10 @@
   const props = defineProps<{
     sourceId?: string;
     formKey: FormDesignKeyEnum;
+    otherSaveParams?: Record<string, any>;
+  }>();
+  const emit = defineEmits<{
+    (e: 'saved'): void;
   }>();
 
   const { t } = useI18n();
@@ -67,6 +72,7 @@
   } = useFormCreateApi({
     formKey: toRefs(props).formKey,
     sourceId: toRefs(props).sourceId,
+    otherSaveParams: toRefs(props).otherSaveParams,
   });
 
   watch(
@@ -116,6 +122,13 @@
       immediate: true,
     }
   );
+
+  function handleSave(form: Record<string, any>, isContinue: boolean) {
+    saveForm(form, isContinue, () => {
+      visible.value = false;
+      emit('saved');
+    });
+  }
 </script>
 
 <style lang="less">

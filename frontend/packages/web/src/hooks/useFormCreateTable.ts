@@ -321,7 +321,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             sorter: true,
           };
         });
-      columns = [...columns, ...(internalColumnMap[props.formKey] || []), ...staticColumns];
+      columns = [
+        {
+          type: 'selection',
+        },
+        ...columns,
+        ...(internalColumnMap[props.formKey] || []),
+        ...staticColumns,
+      ];
       if (props.operationColumn) {
         columns.push(props.operationColumn);
       }
@@ -341,11 +348,12 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       tableKey: tableKeyMap[props.formKey],
       showSetting: true,
       columns,
-      scrollX: 1000,
+      scrollX: columns.reduce((prev, curr) => prev + (curr.width as number), 0),
+      maxHeight: 600,
     },
     (item) => {
       const customFieldAttr: Record<string, any> = {};
-      item.moduleFields.forEach((field: ModuleField) => {
+      item.moduleFields?.forEach((field: ModuleField) => {
         customFieldAttr[field.fieldId] = field.fieldValue; // TODO:多值字段处理
       });
       return {

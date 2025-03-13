@@ -22,16 +22,16 @@
               {{ item.label }}
             </n-tooltip>
           </div>
-          <div :class="getValueClass()">
+          <div :class="getValueClass()" :style="{ textAlign: props.valueAlign }">
             <slot :name="item.valueSlotName" :item="item">
-              <CrmTagGroup v-if="Array.isArray(item.value)" :tags="item.value" />
+              <CrmTagGroup v-if="Array.isArray(item.value)" :tags="item.value" :class="`justify-${props.valueAlign}`" />
               <n-tooltip
                 v-else
                 :disabled="item.value === undefined || item.value === null || item.value?.toString() === ''"
                 :placement="item.tooltipPosition ?? 'top-start'"
               >
                 <template #trigger>
-                  <div class="w-[fit-content]">
+                  <div>
                     {{
                       item.value === undefined || item.value === null || item.value?.toString() === ''
                         ? '-'
@@ -85,6 +85,7 @@
       labelWidth?: string;
       lineGap?: number;
       labelAlign?: 'center' | 'start' | 'end'; // label 对齐方式
+      valueAlign?: 'center' | 'start' | 'end'; // value 对齐方式
       oneLineValue?: boolean; // value 是否单行显示
       oneLineLabel?: boolean; // label 是否单行显示
     }>(),
@@ -92,6 +93,7 @@
       column: 1,
       lineGap: 16,
       labelAlign: 'start',
+      valueAlign: 'start',
       oneLineLabel: true,
     }
   );
@@ -122,7 +124,6 @@
     .crm-description-item-value {
       @apply relative flex-1 overflow-hidden break-all align-top;
 
-      display: box;
       text-overflow: ellipsis;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;

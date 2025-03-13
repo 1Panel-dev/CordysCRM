@@ -1,8 +1,8 @@
 <template>
   <n-spin :show="loading">
-    <CrmDescription :descriptions="descriptions">
+    <CrmDescription :descriptions="descriptions" value-align="end">
       <template #divider="{ item }">
-        <CrmFormCreateDivider :field-config="item.fieldInfo" />
+        <CrmFormCreateDivider :field-config="item.fieldInfo" class="!m-0 w-full" />
       </template>
     </CrmDescription>
   </n-spin>

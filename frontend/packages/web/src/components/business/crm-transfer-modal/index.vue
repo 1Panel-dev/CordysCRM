@@ -71,11 +71,11 @@
         if (props.saveApi) {
           try {
             loading.value = true;
-            props.saveApi({
+            await props.saveApi({
               ...form.value,
               ids: props.sourceIds,
             });
-            closeHandler();
+            showModal.value = false;
             emit('loadList');
             Message.success(t('common.transferSuccess'));
           } catch (e) {
