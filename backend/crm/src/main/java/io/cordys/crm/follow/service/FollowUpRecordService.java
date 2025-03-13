@@ -4,13 +4,13 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.domain.BaseModuleFieldValue;
-import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
+import io.cordys.crm.clue.domain.Clue;
+import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
@@ -18,9 +18,11 @@ import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
+import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +30,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -43,9 +44,13 @@ public class FollowUpRecordService {
     @Resource
     private BaseService baseService;
     @Resource
-    private ExtCustomerContactMapper extCustomerContactMapper;
-    @Resource
     private LogService logService;
+    @Resource
+    private BaseMapper<Customer> customerMapper;
+    @Resource
+    private BaseMapper<Opportunity> opportunityMapper;
+    @Resource
+    private BaseMapper<Clue> clueMapper;
 
     /**
      * 添加跟进记录
@@ -57,8 +62,9 @@ public class FollowUpRecordService {
      */
     public FollowUpRecord add(FollowUpRecordAddRequest request, String userId, String orgId) {
         FollowUpRecord followUpRecord = BeanUtils.copyBean(new FollowUpRecord(), request);
-        followUpRecord.setCreateTime(System.currentTimeMillis());
-        followUpRecord.setUpdateTime(System.currentTimeMillis());
+        long time = System.currentTimeMillis();
+        followUpRecord.setCreateTime(time);
+        followUpRecord.setUpdateTime(time);
         followUpRecord.setUpdateUser(userId);
         followUpRecord.setCreateUser(userId);
         followUpRecord.setId(IDGenerator.nextStr());
@@ -67,6 +73,31 @@ public class FollowUpRecordService {
 
         //保存自定义字段
         followUpRecordFieldService.saveModuleField(followUpRecord.getId(), request.getModuleFields());
+
+        if (StringUtils.isNotBlank(request.getCustomerId())) {
+            Customer customer = new Customer();
+            customer.setId(request.getCustomerId());
+            customer.setFollowTime(time);
+            customer.setFollower(request.getOwner());
+            customerMapper.update(customer);
+        }
+
+        if (StringUtils.isNotBlank(request.getOpportunityId())) {
+            Opportunity opportunity = new Opportunity();
+            opportunity.setId(request.getCustomerId());
+            opportunity.setFollowTime(time);
+            opportunity.setFollower(request.getOwner());
+            opportunityMapper.update(opportunity);
+        }
+
+        if (StringUtils.isNotBlank(request.getClueId())) {
+            Clue clue = new Clue();
+            clue.setId(request.getCustomerId());
+            clue.setFollowTime(time);
+            clue.setFollower(request.getOwner());
+            clueMapper.update(clue);
+        }
+
         return followUpRecord;
     }
 
@@ -133,7 +164,7 @@ public class FollowUpRecordService {
      */
     public List<FollowUpRecordListResponse> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
         List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type);
-         buildListData(list);
+        buildListData(list);
         return list;
     }
 
@@ -168,6 +199,7 @@ public class FollowUpRecordService {
 
     /**
      * 获取跟进记录详情
+     *
      * @param id
      * @return
      */

@@ -41,6 +41,40 @@ public enum BusinessModuleField {
     /*------ end: CUSTOMER_MANAGEMENT_CONTACT ------*/
 
 
+    /*------ start: OPPORTUNITY ------*/
+    /**
+     * 商机名称
+     */
+    OPPORTUNITY_NAME("opportunityName", "name", Set.of("rules")),
+    /**
+     * 客户名称
+     */
+    OPPORTUNITY_CUSTOMER_NAME("opportunityCustomer", "customerId", Set.of("rules")),
+    /**
+     * 商机金额
+     */
+    OPPORTUNITY_AMOUNT("opportunityPrice", "amount", Set.of("rules")),
+    /**
+     * 可能性
+     */
+    OPPORTUNITY_POSSIBLE("opportunityWinRate", "possible", Set.of("rules")),
+    /**
+     * 意向产品
+     */
+    OPPORTUNITY_PRODUCTS("opportunityProduct", "products", Set.of("rules")),
+    /**
+     * 联系人
+     */
+    OPPORTUNITY_CONTACT("opportunityContract", "contractId",Set.of("rules")),
+
+    /**
+     * 负责人
+     */
+    OPPORTUNITY_OWNER("opportunityOwner", "owner", Set.of("rules")),
+    /*------ end: OPPORTUNITY ------*/
+
+
+
     /*------ start: FOLLOW_UP_RECORD ------*/
     /**
      * 客户id
@@ -57,20 +91,20 @@ public enum BusinessModuleField {
     /**
      * 责任人id
      */
-    FOLLOW_RECORD_OWNER("recordOwner", "owner"),
+    FOLLOW_RECORD_OWNER("recordOwner", "owner", Set.of("rules")),
     /**
      * 联系人id
      */
-    FOLLOW_RECORD_CONTACT("recordContact", "contactId"),
+    FOLLOW_RECORD_CONTACT("recordContact", "contactId", Set.of("rules")),
 
     /**
      * 意向产品
      */
-    FOLLOW_RECORD_PRODUCTS("recordProduct", "products"),
+    FOLLOW_RECORD_PRODUCTS("recordProduct", "products", Set.of("rules")),
     /**
      * 跟进内容
      */
-    FOLLOW_RECORD_CONTENT("recordDescription", "content"),
+    FOLLOW_RECORD_CONTENT("recordDescription", "content", Set.of("rules")),
     /*------ end: FOLLOW_UP_RECORD ------*/
 
 
@@ -90,19 +124,19 @@ public enum BusinessModuleField {
     /**
      * 责任人id
      */
-    FOLLOW_PLAN_OWNER("planOwner", "owner"),
+    FOLLOW_PLAN_OWNER("planOwner", "owner", Set.of("rules")),
     /**
      * 联系人id
      */
-    FOLLOW_PLAN_CONTACT("planContact", "contactId"),
+    FOLLOW_PLAN_CONTACT("planContact", "contactId", Set.of("rules")),
     /**
      * 预计开始时间
      */
-    FOLLOW_PLAN_ESTIMATED_TIME("planStartTime", "estimatedTime"),
+    FOLLOW_PLAN_ESTIMATED_TIME("planStartTime", "estimatedTime", Set.of("rules")),
     /**
      * 预计沟通内容
      */
-    FOLLOW_PLAN_CONTENT("planContent", "content");
+    FOLLOW_PLAN_CONTENT("planContent", "content", Set.of("rules"));
 
 
     /*------ end: FOLLOW_UP_PLAN ------*/
