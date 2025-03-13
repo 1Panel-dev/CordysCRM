@@ -28,7 +28,7 @@ public enum FormKey {
 	/**
 	 * 商机
 	 */
-	BUSINESS("business"),
+	OPPORTUNITY("opportunity"),
 	/**
 	 * 产品
 	 */

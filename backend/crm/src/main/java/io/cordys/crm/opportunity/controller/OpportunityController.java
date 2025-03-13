@@ -44,7 +44,7 @@ public class OpportunityController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormService.getConfig(FormKey.BUSINESS.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormService.getConfig(FormKey.OPPORTUNITY.getKey(), OrganizationContext.getOrganizationId());
     }
 
 

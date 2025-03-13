@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.util.Set;
 
 /**
- * 业务模块字段（定义在主表中，有特定业务含义）
+ * 业务模块字段（定义在主表中，有特定业务含义）(标准字段)
  * @Author: jianxing
  * @CreateTime: 2025-02-18  17:27
  */
@@ -28,15 +28,15 @@ public enum BusinessModuleField {
     /**
      * 联系人客户id
      */
-    CUSTOMER_CONTACT_CUSTOMER("customerContactCustomer", "customerId"),
+    CUSTOMER_CONTACT_CUSTOMER("contactCustomer", "customerId"),
     /**
      * 联系人名称
      */
-    CUSTOMER_CONTACT_NAME("customerContactName", "name", Set.of("rules")),
+    CUSTOMER_CONTACT_NAME("contactName", "name", Set.of("rules")),
     /**
      * 联系人电话
      */
-    CUSTOMER_CONTACT_PHONE("customerContactPhone", "phone"),
+    CUSTOMER_CONTACT_PHONE("contactPhone", "phone"),
     /*------ end: CUSTOMER_MANAGEMENT_CONTACT ------*/
 
 
@@ -44,27 +44,27 @@ public enum BusinessModuleField {
     /**
      * 客户id
      */
-    FOLLOW_RECORD_CUSTOMER("followRecordCustomerId", "customerId"),
+    FOLLOW_RECORD_CUSTOMER("recordCustomer", "customerId"),
     /**
      * 商机id
      */
-    FOLLOW_RECORD_OPPORTUNITY("followRecordOpportunityId", "opportunityId"),
+    FOLLOW_RECORD_OPPORTUNITY("recordOpportunity", "opportunityId"),
     /**
      * 线索id
      */
-    FOLLOW_RECORD_CLUE("followRecordClueId", "clueId"),
+    FOLLOW_RECORD_CLUE("recordClue", "clueId"),
     /**
      * 责任人id
      */
-    FOLLOW_RECORD_OWNER("followRecordOwner", "owner"),
+    FOLLOW_RECORD_OWNER("recordOwner", "owner"),
     /**
      * 联系人id
      */
-    FOLLOW_RECORD_CONTACT("followRecordContactId", "contactId");
+    FOLLOW_RECORD_CONTACT("recordContact", "contactId");
     /*------ end: FOLLOW_UP_RECORD ------*/
 
     /**
-     * 字段 key
+     * 字段 key，field.json 中的 internalKey
      */
     private final String key;
     /**

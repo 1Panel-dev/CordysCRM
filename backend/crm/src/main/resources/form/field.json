@@ -141,7 +141,7 @@
     },
     {
       "name": "负责人信息",
-      "internalKey": "customerOwner",
+      "internalKey": "customerOwnerInfo",
       "type": "DIVIDER",
       "showLabel": true,
       "readable": true,
@@ -152,7 +152,7 @@
     },
     {
       "name": "负责人",
-      "internalKey": "customerOwnerName",
+      "internalKey": "customerOwner",
       "type": "MEMBER",
       "multiple": false,
       "hasCurrentUser": false,
@@ -277,7 +277,7 @@
     },
     {
       "name": "负责人信息",
-      "internalKey": "clueOwner",
+      "internalKey": "clueOwnerInfo",
       "type": "DIVIDER",
       "showLabel": true,
       "readable": true,
@@ -288,7 +288,7 @@
     },
     {
       "name": "负责人",
-      "internalKey": "clueOwnerName",
+      "internalKey": "clueOwner",
       "type": "MEMBER",
       "multiple": false,
       "hasCurrentUser": false,
@@ -301,10 +301,10 @@
       ]
     }
   ],
-  "business": [
+  "opportunity": [
     {
       "name": "基本信息",
-      "internalKey": "businessBasicInfo",
+      "internalKey": "opportunityBasicInfo",
       "type": "DIVIDER",
       "showLabel": true,
       "readable": true,
@@ -315,7 +315,7 @@
     },
     {
       "name": "商机名称",
-      "internalKey": "businessName",
+      "internalKey": "opportunityName",
       "type": "INPUT",
       "showLabel": true,
       "readable": true,
@@ -327,7 +327,7 @@
     },
     {
       "name": "客户名称",
-      "internalKey": "businessCustomerName",
+      "internalKey": "opportunityCustomer",
       "type": "DATA_SOURCE",
       "dataSourceType": "CUSTOMER",
       "multiple": false,
@@ -341,7 +341,7 @@
     },
     {
       "name": "商机来源",
-      "internalKey": "businessSource",
+      "internalKey": "opportunitySource",
       "type": "SELECT",
       "multiple": false,
       "showLabel": true,
@@ -359,7 +359,7 @@
     },
     {
       "name": "金额",
-      "internalKey": "businessPrice",
+      "internalKey": "opportunityPrice",
       "type": "INPUT_NUMBER",
       "showLabel": true,
       "readable": true,
@@ -373,7 +373,7 @@
     },
     {
       "name": "意向产品",
-      "internalKey": "businessProduct",
+      "internalKey": "opportunityProduct",
       "type": "DATA_SOURCE",
       "dataSourceType": "PRODUCT",
       "multiple": true,
@@ -387,7 +387,7 @@
     },
     {
       "name": "预计结束",
-      "internalKey": "businessEndTime",
+      "internalKey": "opportunityEndTime",
       "type": "DATE_TIME",
       "showLabel": true,
       "readable": true,
@@ -400,7 +400,7 @@
     },
     {
       "name": "可能性",
-      "internalKey": "businessWinRate",
+      "internalKey": "opportunityWinRate",
       "type": "INPUT_NUMBER",
       "showLabel": true,
       "readable": true,
@@ -414,7 +414,7 @@
     },
     {
       "name": "联系人",
-      "internalKey": "businessContract",
+      "internalKey": "opportunityContract",
       "type": "DATA_SOURCE",
       "dataSourceType": "CONTACT",
       "multiple": false,
@@ -428,7 +428,7 @@
     },
     {
       "name": "客户标签",
-      "internalKey": "businessCustomerTag",
+      "internalKey": "opportunityCustomerTag",
       "type": "MULTIPLE_INPUT",
       "showLabel": true,
       "readable": true,
@@ -437,7 +437,7 @@
     },
     {
       "name": "备注信息",
-      "internalKey": "businessRemark",
+      "internalKey": "opportunityRemark",
       "type": "TEXTAREA",
       "showLabel": true,
       "readable": true,
@@ -447,7 +447,7 @@
     },
     {
       "name": "地址信息",
-      "internalKey": "businessAddressInfo",
+      "internalKey": "opportunityAddressInfo",
       "type": "DIVIDER",
       "showLabel": true,
       "readable": true,
@@ -458,7 +458,7 @@
     },
     {
       "name": "地区",
-      "internalKey": "businessArea",
+      "internalKey": "opportunityArea",
       "type": "LOCATION",
       "locationType": "detail",
       "showLabel": true,
@@ -468,7 +468,7 @@
     },
     {
       "name": "负责人信息",
-      "internalKey": "businessOwner",
+      "internalKey": "opportunityOwnerInfo",
       "type": "DIVIDER",
       "showLabel": true,
       "readable": true,
@@ -479,7 +479,7 @@
     },
     {
       "name": "负责人",
-      "internalKey": "businessOwnerName",
+      "internalKey": "opportunityOwner",
       "type": "MEMBER",
       "multiple": false,
       "hasCurrentUser": false,
@@ -533,7 +533,7 @@
     },
     {
       "name": "状态",
-      "internalKey": "productName",
+      "internalKey": "productStatus",
       "type": "RADIO",
       "direction": "horizontal",
       "defaultValue": "1",
@@ -590,7 +590,7 @@
   "contact": [
     {
       "name": "客户名称",
-      "internalKey": "contactCustomerName",
+      "internalKey": "contactCustomer",
       "type": "DATA_SOURCE",
       "dataSourceType": "CUSTOMER",
       "multiple": false,
@@ -656,13 +656,13 @@
         {"key":  "required"}
       ],
       "showControlRules": [
-          {"value": "1", "fieldIds": ["recordCustomerName", "recordBusiness"]},
-          {"value": "2", "fieldIds": ["recordClueName"]}
+          {"value": "1", "fieldIds": ["recordCustomer", "recordOpportunity"]},
+          {"value": "2", "fieldIds": ["recordClue"]}
       ]
     },
     {
       "name": "客户名称",
-      "internalKey": "recordCustomerName",
+      "internalKey": "recordCustomer",
       "type": "DATA_SOURCE",
       "dataSourceType": "CUSTOMER",
       "multiple": false,
@@ -676,7 +676,7 @@
     },
     {
       "name": "线索名称",
-      "internalKey": "recordClueName",
+      "internalKey": "recordClue",
       "type": "DATA_SOURCE",
       "dataSourceType": "CLUE",
       "multiple": false,
@@ -690,7 +690,7 @@
     },
     {
       "name": "商机",
-      "internalKey": "recordBusiness",
+      "internalKey": "recordOpportunity",
       "type": "DATA_SOURCE",
       "dataSourceType": "BUSINESS",
       "multiple": false,
@@ -747,7 +747,7 @@
     },
     {
       "name": "负责人",
-      "internalKey": "recordOwnerName",
+      "internalKey": "recordOwner",
       "type": "MEMBER",
       "multiple": false,
       "hasCurrentUser": false,
@@ -803,13 +803,13 @@
         {"key":  "required"}
       ],
       "showControlRules": [
-        {"value": "1", "fieldIds": ["planCustomerName", "planBusiness"]},
-        {"value": "2", "fieldIds": ["planClueName"]}
+        {"value": "1", "fieldIds": ["planCustomer", "planOpportunity"]},
+        {"value": "2", "fieldIds": ["planClue"]}
       ]
     },
     {
       "name": "客户名称",
-      "internalKey": "planCustomerName",
+      "internalKey": "planCustomer",
       "type": "DATA_SOURCE",
       "dataSourceType": "CUSTOMER",
       "multiple": false,
@@ -823,7 +823,7 @@
     },
     {
       "name": "线索名称",
-      "internalKey": "planClueName",
+      "internalKey": "planClue",
       "type": "DATA_SOURCE",
       "dataSourceType": "CLUE",
       "multiple": false,
@@ -837,9 +837,9 @@
     },
     {
       "name": "商机",
-      "internalKey": "planBusiness",
+      "internalKey": "planOpportunity",
       "type": "DATA_SOURCE",
-      "dataSourceType": "BUSINESS",
+      "dataSourceType": "OPPORTUNITY",
       "multiple": false,
       "showLabel": true,
       "readable": true,
@@ -894,7 +894,7 @@
     },
     {
       "name": "负责人",
-      "internalKey": "planOwnerName",
+      "internalKey": "planOwner",
       "type": "MEMBER",
       "multiple": false,
       "hasCurrentUser": false,

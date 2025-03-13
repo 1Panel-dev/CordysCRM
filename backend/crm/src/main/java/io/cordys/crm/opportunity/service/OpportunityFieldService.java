@@ -20,7 +20,7 @@ public class OpportunityFieldService extends BaseResourceFieldService<Opportunit
 
     @Override
     protected String getFormKey() {
-        return FormKey.BUSINESS.getKey();
+        return FormKey.OPPORTUNITY.getKey();
     }
 
     @Override
