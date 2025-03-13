@@ -15,6 +15,7 @@ import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.service.OpportunityService;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +36,7 @@ public class OpportunityController {
     @Resource
     private OpportunityService opportunityService;
     @Resource
-    private ModuleFormService moduleFormService;
+    private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private DataScopeService dataScopeService;
 
@@ -44,7 +45,7 @@ public class OpportunityController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
     public ModuleFormConfigDTO getModuleFormConfig() {
-        return moduleFormService.getConfig(FormKey.OPPORTUNITY.getKey(), OrganizationContext.getOrganizationId());
+        return moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), OrganizationContext.getOrganizationId());
     }
 
 
