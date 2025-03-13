@@ -6,6 +6,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.common.utils.RecycleConditionUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.clue.domain.CluePoolPickRule;
@@ -16,6 +17,7 @@ import io.cordys.crm.clue.dto.CluePoolPickRuleDTO;
 import io.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import io.cordys.crm.clue.dto.request.CluePoolAddRequest;
 import io.cordys.crm.clue.dto.request.CluePoolUpdateRequest;
+import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtCluePoolMapper;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.Role;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -269,6 +272,43 @@ public class CluePoolService {
     }
 
     /**
+     * 获取负责人默认线索池ID
+     * @param ownerIds 负责人ID集合
+     * @param organizationId 组织ID
+     * @return 默认线索池
+     */
+    public Map<String, CluePool> getOwnersDefaultPoolMap(List<String> ownerIds, String organizationId) {
+        Map<String, CluePool> poolMap = new HashMap<>(4);
+        ownerIds.forEach(ownerId -> {
+            List<String> scopeIds = userExtendService.getUserScopeIds(ownerId, organizationId);
+            List<CluePool> pools = extCluePoolMapper.getPoolByScopeIds(scopeIds, organizationId);
+            if (CollectionUtils.isEmpty(pools)) {
+                return;
+            }
+            poolMap.put(ownerId, pools.getFirst());
+        });
+
+        return poolMap;
+    }
+
+    /**
+     * 计算剩余归属天数
+     *
+     * @param pool 线索池
+     * @param clue 线索
+     * @return 剩余归属天数
+     */
+    public Integer calcReservedDay(CluePool pool, CluePoolRecycleRule recycleRule, ClueListResponse clue) {
+        if (pool == null || !pool.getAuto() || recycleRule == null) {
+            return null;
+        }
+
+        // 判断线索池是否存在入库条件
+        List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
+        return RecycleConditionUtils.calcMinRecycleDays(conditions, clue.getCreateTime(), clue.getCollectionTime());
+    }
+
+    /**
      * 校验线索池是否存在
      *
      * @param id 线索池ID
@@ -295,5 +335,14 @@ public class CluePoolService {
         if (!ownerUserIds.contains(accessUserId)) {
             throw new GenericException(Translator.get("clue_pool_access_fail"));
         }
+    }
+
+    /**
+     * 根据ID集合获取线索池
+     * @param poolIds ID集合
+     * @return 线索池集合
+     */
+    public List<CluePool> getPoolsByIds(List<String> poolIds) {
+        return cluePoolMapper.selectByIds(poolIds.toArray(new String[0]));
     }
 }

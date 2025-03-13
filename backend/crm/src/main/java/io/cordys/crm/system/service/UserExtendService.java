@@ -4,14 +4,12 @@ import io.cordys.common.constants.InternalRole;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.ScopeKey;
-import io.cordys.crm.system.domain.Department;
-import io.cordys.crm.system.domain.OrganizationUser;
-import io.cordys.crm.system.domain.Role;
-import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.domain.*;
 import io.cordys.crm.system.dto.ScopeNameDTO;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -28,6 +26,9 @@ public class UserExtendService {
 	private BaseMapper<OrganizationUser> organizationUserMapper;
 	@Resource
 	private DepartmentService departmentService;
+	@Resource
+	private BaseMapper<UserRole> userRoleMapper;
+
 	/**
 	 * 获取成员范围集合
 	 * @param users 用户
@@ -63,6 +64,22 @@ public class UserExtendService {
 			scopes.add(scope);
 		});
 		return scopes;
+	}
+
+	/**
+	 * 获取负责人范围ID集合
+	 * @param ownerId 负责人ID
+	 * @param organizationId 组织ID
+	 * @return 范围ID集合
+	 */
+	public List<String> getUserScopeIds(String ownerId, String organizationId) {
+		List<String> departmentIds = getParentDepartmentIds(ownerId, organizationId);
+		departmentIds.add(ownerId);
+		LambdaQueryWrapper<UserRole> userRoleWrapper = new LambdaQueryWrapper<>();
+		userRoleWrapper.eq(UserRole::getUserId, ownerId);
+		List<UserRole> roles = userRoleMapper.selectListByLambda(userRoleWrapper);
+		List<String> roleIds = roles.stream().map(UserRole::getRoleId).toList();
+		return ListUtils.union(departmentIds, roleIds);
 	}
 
 	/**

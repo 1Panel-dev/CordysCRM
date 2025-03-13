@@ -6,9 +6,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.customer.constants.RecycleConditionColumnKey;
-import io.cordys.crm.customer.constants.RecycleConditionScopeKey;
-import io.cordys.crm.customer.constants.RecycleConditionTimeOperator;
+import io.cordys.common.utils.RecycleConditionUtils;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
@@ -23,7 +21,6 @@ import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.User;
-import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.service.UserExtendService;
@@ -32,14 +29,9 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,10 +62,6 @@ public class CustomerPoolService {
 	private ExtCustomerPoolMapper extCustomerPoolMapper;
 	@Resource
 	private UserExtendService userExtendService;
-	@Resource
-	private BaseMapper<UserRole> userRoleMapper;
-
-	public static final int MAX_CONDITION_SCOPE_SIZE = 2;
 
 	/**
 	 * 分页获取公海池
@@ -294,7 +282,7 @@ public class CustomerPoolService {
 	public Map<String, CustomerPool> getOwnersDefaultPoolMap(List<String> ownerIds, String organizationId) {
 		Map<String, CustomerPool> poolMap = new HashMap<>(4);
 		ownerIds.forEach(ownerId -> {
-			List<String> scopeIds = getUserScopeIds(ownerId, organizationId);
+			List<String> scopeIds = userExtendService.getUserScopeIds(ownerId, organizationId);
 			List<CustomerPool> pools = extCustomerPoolMapper.getPoolByScopeIds(scopeIds, organizationId);
 			if (CollectionUtils.isEmpty(pools)) {
 				return;
@@ -303,22 +291,6 @@ public class CustomerPoolService {
 		});
 
 		return poolMap;
-	}
-
-	/**
-	 * 获取负责人范围ID集合
-	 * @param ownerId 负责人ID
-	 * @param organizationId 组织ID
-	 * @return 范围ID集合
-	 */
-	public List<String> getUserScopeIds(String ownerId, String organizationId) {
-		List<String> departmentIds = userExtendService.getParentDepartmentIds(ownerId, organizationId);
-		departmentIds.add(ownerId);
-		LambdaQueryWrapper<UserRole> userRoleWrapper = new LambdaQueryWrapper<>();
-		userRoleWrapper.eq(UserRole::getUserId, ownerId);
-		List<UserRole> roles = userRoleMapper.selectListByLambda(userRoleWrapper);
-		List<String> roleIds = roles.stream().map(UserRole::getRoleId).toList();
-		return ListUtils.union(departmentIds, roleIds);
 	}
 
 	/**
@@ -335,49 +307,7 @@ public class CustomerPoolService {
 
 		// 判断公海是否存在入库条件
 		List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
-		List<RuleConditionDTO> reservedConditions = conditions.stream().filter(condition -> RecycleConditionColumnKey.matchReserved(condition.getColumn())).toList();
-		if (CollectionUtils.isEmpty(reservedConditions)) {
-			return null;
-		}
-		RuleConditionDTO condition = reservedConditions.getFirst();
-		if (StringUtils.equals(condition.getOperator(), RecycleConditionTimeOperator.FIXED.name())) {
-			return null;
-		}
-		LocalDateTime fixedTime = getFixedTime(condition);
-		if (fixedTime == null) {
-			return null;
-		}
-		LocalDateTime minPickedTime;
-		if (condition.getScope().size() == MAX_CONDITION_SCOPE_SIZE) {
-			minPickedTime = Instant.ofEpochMilli(Math.min(customer.getCreateTime(), customer.getCollectionTime())).atZone(ZoneId.systemDefault()).toLocalDateTime();
-		} else if (condition.getScope().contains(RecycleConditionScopeKey.CREATED)) {
-			minPickedTime = Instant.ofEpochMilli(customer.getCreateTime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
-		} else if (condition.getScope().contains(RecycleConditionScopeKey.PICKED)) {
-			minPickedTime = Instant.ofEpochMilli(customer.getCollectionTime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
-		} else {
-			return null;
-		}
-		long betweenDays = ChronoUnit.DAYS.between(fixedTime, minPickedTime);
-		if (!minPickedTime.toLocalTime().equals(LocalDateTime.MIN.toLocalTime())) {
-			betweenDays++;
-		}
-		return (int) betweenDays;
-	}
-
-	/**
-	 * 获取固定时间
-	 * @param condition 回收条件
-	 * @return 固定时间
-	 */
-	private LocalDateTime getFixedTime(RuleConditionDTO condition) {
-		LocalDateTime now = LocalDateTime.now();
-		String[] timeArr = condition.getValue().split(",");
-		return switch (timeArr[1]) {
-			case "month" -> now.minusMonths(Long.parseLong(timeArr[0]));
-			case "week" -> now.minusWeeks(Long.parseLong(timeArr[0]));
-			case "day" -> now.minusDays(Long.parseLong(timeArr[0]));
-			default -> null;
-		};
+		return RecycleConditionUtils.calcMinRecycleDays(conditions, customer.getCreateTime(), customer.getCollectionTime());
 	}
 
 	/**

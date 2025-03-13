@@ -61,7 +61,6 @@ public class ClueListResponse {
     @Schema(description = "归属部门名称")
     private String departmentName;
 
-    // todo
     @Schema(description = "最近跟进时间")
     private Long latestFollowUpTime;
 
@@ -79,6 +78,12 @@ public class ClueListResponse {
 
     @Schema(description = "最新跟进日期")
     private Long lastFollowTime;
+
+    @Schema(description = "线索池ID")
+    private String poolId;
+
+    @Schema(description = "默认回收公海名称")
+    private String recyclePoolName;
 
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;

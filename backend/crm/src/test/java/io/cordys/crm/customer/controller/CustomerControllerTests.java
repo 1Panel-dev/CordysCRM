@@ -12,8 +12,6 @@ import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerField;
-import io.cordys.crm.customer.domain.CustomerPool;
-import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -61,10 +59,6 @@ class CustomerControllerTests extends BaseTest {
     private BaseMapper<ModuleField> moduleFieldMapper;
     @Resource
     private BaseMapper<ModuleForm> moduleFormMapper;
-    @Resource
-    private BaseMapper<CustomerPool> customerPoolMapper;
-    @Resource
-    private BaseMapper<CustomerPoolPickRule> pickRuleMapper;
 
     @Override
     protected String getBasePath() {

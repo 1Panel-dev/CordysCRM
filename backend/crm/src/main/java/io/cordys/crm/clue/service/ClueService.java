@@ -11,13 +11,17 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.clue.constants.ClueResultCode;
 import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.clue.domain.Clue;
+import io.cordys.crm.clue.domain.CluePool;
+import io.cordys.crm.clue.domain.CluePoolRecycleRule;
 import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +47,10 @@ public class ClueService {
     @Resource
     private ClueFieldService clueFieldService;
     @Resource
+    private CluePoolService cluePoolService;
+    @Resource
+    private BaseMapper<CluePoolRecycleRule> recycleRuleMapper;
+    @Resource
     private ClueOwnerHistoryService clueOwnerHistoryService;
 
     public List<ClueListResponse> list(CluePageRequest request, String userId, String orgId,
@@ -65,6 +73,23 @@ public class ClueService {
                 .distinct()
                 .toList();
 
+        // 获取线索池信息
+        List<String> poolIds = list.stream().map(ClueListResponse::getPoolId).distinct().toList();
+        List<CluePool> pools = cluePoolService.getPoolsByIds(poolIds);
+        Map<String, CluePool> poolMap = pools.stream().collect(Collectors.toMap(CluePool::getId, pool -> pool));
+        Map<String, CluePool> ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+        List<String> allPoolIds = ListUtils.union(poolMap.values().stream().map(CluePool::getId).toList(),
+                ownersDefaultPoolMap.values().stream().map(CluePool::getId).toList()).stream().distinct().toList();
+        Map<String, CluePoolRecycleRule> recycleRuleMap;
+        if (CollectionUtils.isEmpty(allPoolIds)) {
+            recycleRuleMap = Map.of();
+        } else {
+            LambdaQueryWrapper<CluePoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
+            recycleRuleWrapper.in(CluePoolRecycleRule::getPoolId, allPoolIds);
+            List<CluePoolRecycleRule> recycleRules = recycleRuleMapper.selectListByLambda(recycleRuleWrapper);
+            recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, rule -> rule));
+        }
+
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
         Map<String, FollowUpRecordDTO> recordMap = baseService.getOpportunityFollowRecord(clueIds, "CLUE", "CLUE");
         list.forEach(clueListResponse -> {
@@ -72,11 +97,19 @@ public class ClueService {
             List<BaseModuleFieldValue> clueFields = caseCustomFiledMap.get(clueListResponse.getId());
             clueListResponse.setModuleFields(clueFields);
 
-            if (clueListResponse.getCollectionTime() != null) {
-                // 将毫秒数转换为天数, 并向上取整
-                int days = (int) Math.ceil(clueListResponse.getCollectionTime() * 1.0 / 86400000);
-                clueListResponse.setReservedDays(days);
+            // 设置回收公海
+            CluePool reservePool;
+            if (poolMap.containsKey(clueListResponse.getPoolId())) {
+                reservePool = poolMap.get(clueListResponse.getPoolId());
+            } else {
+                reservePool = ownersDefaultPoolMap.get(clueListResponse.getOwner());
             }
+            clueListResponse.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
+            // 计算剩余归属天数
+            clueListResponse.setReservedDays(cluePoolService.calcReservedDay(reservePool,
+                    reservePool != null ? recycleRuleMap.get(reservePool.getId()) : null,
+                    clueListResponse));
+
             UserDeptDTO userDeptDTO = userDeptMap.get(clueListResponse.getOwner());
             if (userDeptDTO != null) {
                 clueListResponse.setDepartmentId(userDeptDTO.getDeptId());

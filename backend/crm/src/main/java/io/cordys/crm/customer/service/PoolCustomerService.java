@@ -1,8 +1,8 @@
 package io.cordys.crm.customer.service;
 
 import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.JSON;
+import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
@@ -11,13 +11,11 @@ import io.cordys.crm.customer.dto.request.PoolCustomerBatchAssignRequest;
 import io.cordys.crm.customer.dto.request.PoolCustomerBatchRequest;
 import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerCapacityMapper;
-import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -36,13 +34,9 @@ public class PoolCustomerService {
 	@Resource
 	private ExtUserMapper extUserMapper;
 	@Resource
-	private UserExtendService userExtendService;
-	@Resource
-	private BaseMapper<UserRole> userRoleMapper;
-	@Resource
 	private ExtCustomerCapacityMapper extCustomerCapacityMapper;
 	@Resource
-	private CustomerPoolService customerPoolService;
+	private UserExtendService userExtendService;
 
 	public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
 
@@ -190,7 +184,7 @@ public class PoolCustomerService {
 	 * @return 库容
 	 */
 	public Integer getUserCapacity(String userId, String organizationId) {
-		List<String> scopeIds = customerPoolService.getUserScopeIds(userId, organizationId);
+		List<String> scopeIds = userExtendService.getUserScopeIds(userId, organizationId);
 		return extCustomerCapacityMapper.getCapacityByScopeIds(scopeIds, organizationId);
 	}
 

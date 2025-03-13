@@ -1,9 +1,11 @@
 package io.cordys.crm.clue.mapper;
 
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.clue.domain.CluePoolPickRule;
 import io.cordys.crm.clue.domain.CluePoolRecycleRule;
 import io.cordys.crm.clue.dto.CluePoolDTO;
+import io.cordys.crm.customer.domain.CustomerPool;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -29,4 +31,12 @@ public interface ExtCluePoolMapper {
 	 * @param rule 回收规则
 	 */
 	void updateRecycleRule(@Param("rule") CluePoolRecycleRule rule);
+
+	/**
+	 * 获取公海池集合
+	 * @param scopeIds 范围ID集合
+	 * @param orgId 组织ID
+	 * @return 公海池集合
+	 */
+	List<CluePool> getPoolByScopeIds(@Param("ids") List<String> scopeIds, @Param("orgId") String orgId);
 }

@@ -13,7 +13,7 @@
 
     <select id="list" resultType="io.cordys.crm.clue.dto.response.ClueListResponse">
         select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user,
-               c.update_user, c.collection_time, c.contact, c.phone, c.status
+               c.update_user, c.collection_time, c.contact, c.phone, c.status, c.pool_id
         from `clue` c
 
         <include refid="fieldConditionJoin">

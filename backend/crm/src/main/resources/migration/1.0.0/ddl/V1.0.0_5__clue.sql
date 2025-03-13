@@ -107,6 +107,7 @@ CREATE TABLE clue(
      `owner` VARCHAR(32)    COMMENT '负责人' ,
      `status` VARCHAR(30) NOT NULL   COMMENT '线索状态' ,
      `collection_time` BIGINT    COMMENT '领取时间' ,
+     `pool_id` VARCHAR(32)    COMMENT '线索池ID' ,
      `contact` VARCHAR(255)    COMMENT '联系人名称' ,
      `phone` VARCHAR(20)    COMMENT '联系人电话' ,
      `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
@@ -124,6 +125,7 @@ DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_organization_id ON `clue`(organization_id ASC);
+CREATE INDEX idx_pool_id ON `clue`(pool_id ASC);
 
 CREATE TABLE clue_field(
    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,

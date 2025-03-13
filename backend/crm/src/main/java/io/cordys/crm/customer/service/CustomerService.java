@@ -102,7 +102,7 @@ public class CustomerService {
             List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
             customerListResponse.setModuleFields(customerFields);
             // 设置回收公海
-            CustomerPool reservePool = null;
+            CustomerPool reservePool;
             if (poolMap.containsKey(customerListResponse.getPoolId())) {
                 reservePool = poolMap.get(customerListResponse.getPoolId());
             } else {

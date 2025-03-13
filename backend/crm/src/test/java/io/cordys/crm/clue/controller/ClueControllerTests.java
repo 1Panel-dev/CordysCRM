@@ -22,6 +22,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
@@ -47,8 +49,6 @@ class ClueControllerTests extends BaseTest {
     @Resource
     private BaseMapper<ClueField> clueFieldMapper;
 
-    @Resource
-    private BaseMapper<ModuleField> moduleFieldMapper;
     @Resource
     private BaseMapper<ModuleForm> moduleFormMapper;
 
@@ -288,6 +288,28 @@ class ClueControllerTests extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_DELETE, DEFAULT_BATCH_DELETE, List.of(anotherClue.getId()));
+    }
+
+    @Test
+    @Order(12)
+    @Sql(scripts = {"/dml/init_clue_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/dml/cleanup_clue_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void testPageReservedDay() throws Exception {
+        ClueAddRequest addRequest = new ClueAddRequest();
+        addRequest.setName("aa");
+        addRequest.setOwner("admin");
+        addRequest.setContact("test");
+        addRequest.setPhone("18750920048");
+        this.requestPostWithOk(DEFAULT_ADD, addRequest);
+        CluePageRequest request = new CluePageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setSearchType(BusinessSearchType.ALL.name());
+        this.requestPostWithOk(DEFAULT_PAGE, request);
     }
 
     private List<ClueField> getClueFields(String clueId) {
