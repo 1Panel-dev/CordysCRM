@@ -7,7 +7,6 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
@@ -58,6 +57,8 @@ public class CustomerService {
     private CustomerPoolService customerPoolService;
     @Resource
     private BaseMapper<CustomerPoolRecycleRule> customerPoolRecycleRuleMapper;
+    @Resource
+    private CustomerRelationService customerRelationService;
 
     public List<CustomerListResponse> list(CustomerPageRequest request, String userId, String orgId,
                                            DeptDataPermissionDTO deptDataPermission) {
@@ -241,6 +242,8 @@ public class CustomerService {
         customerCollaborationService.deleteByCustomerId(id);
         // 删除责任人历史
         customerOwnerHistoryService.deleteByCustomerIds(List.of(id));
+        // 删除客户关系
+        customerRelationService.deleteByCustomerId(id);
     }
 
     public void batchTransfer(CustomerBatchTransferRequest request, String userId) {
@@ -258,5 +261,7 @@ public class CustomerService {
         customerCollaborationService.deleteByCustomerIds(ids);
         // 删除责任人历史
         customerOwnerHistoryService.deleteByCustomerIds(ids);
+        // 删除客户关系
+        customerRelationService.deleteByCustomerIds(ids);
     }
 }

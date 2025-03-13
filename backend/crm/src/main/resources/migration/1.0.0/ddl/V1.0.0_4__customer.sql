@@ -219,6 +219,16 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_customer_id ON customer_owner (customer_id ASC);
 
+CREATE TABLE customer_relation(
+  `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+  `source_customer_id` VARCHAR(32) NOT NULL   COMMENT '客户ID(集团)' ,
+  `target_customer_id` VARCHAR(32) NOT NULL   COMMENT '客户ID(子公司)' ,
+  `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+  PRIMARY KEY (id)
+)  COMMENT = '客户关系'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

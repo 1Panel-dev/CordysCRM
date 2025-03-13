@@ -12,9 +12,6 @@ import lombok.Data;
  */
 @Data
 public class CustomerOwnerListResponse extends CustomerOwner {
-    @Schema(description = "ID")
-    private String id;
-
     @Schema(description = "操作人名称")
     private String operatorName;
 

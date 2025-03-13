@@ -12,9 +12,6 @@ import lombok.Data;
  */
 @Data
 public class CustomerCollaborationListResponse extends CustomerCollaboration {
-    @Schema(description = "ID")
-    private String id;
-
     @Schema(description = "用户名称")
     private String userName;
 

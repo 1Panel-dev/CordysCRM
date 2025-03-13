@@ -24,7 +24,7 @@ public abstract class LambdaMeta {
     }
 
     String toSnakeCase(String methodName) {
-        String fieldName = methodName.replaceAll("get|set", "");
+        String fieldName = methodName.replaceAll("^get|set", "");
         // 使用正则将大写字母转换为小写并加上下划线
         String result = fieldName.replaceAll("([a-z])([A-Z])", "$1_$2");
         return result.toLowerCase();
