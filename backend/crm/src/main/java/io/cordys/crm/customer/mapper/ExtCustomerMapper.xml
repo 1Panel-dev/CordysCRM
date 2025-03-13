@@ -12,7 +12,8 @@
     </update>
 
     <select id="list" resultType="io.cordys.crm.customer.dto.response.CustomerListResponse">
-        select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id
+        select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
+               c.follower, c.follow_time
         from customer c
 
         <include refid="fieldConditionJoin">
@@ -156,6 +157,18 @@
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="c.owner"/>
+                </include>
+            </when>
+            <when test="condition.name == 'follower'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.follower"/>
+                </include>
+            </when>
+            <when test="condition.name == 'followTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.follow_time"/>
                 </include>
             </when>
             <otherwise>

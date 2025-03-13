@@ -8,7 +8,6 @@ import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
-import io.cordys.common.dto.FollowUpRecordDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
@@ -68,7 +67,35 @@ public class OpportunityService {
         List<String> opportunityIds = list.stream().map(OpportunityListResponse::getId)
                 .collect(Collectors.toList());
         Map<String, List<OpportunityField>> opportunityFiledMap = getOpportunityFiledMap(opportunityIds);
-        Map<String, FollowUpRecordDTO> recordMap = baseService.getOpportunityFollowRecord(opportunityIds, "OPPORTUNITY", "CUSTOMER");
+
+        List<String> ownerIds = list.stream()
+                .map(OpportunityListResponse::getOwner)
+                .distinct()
+                .toList();
+
+        List<String> followerIds = list.stream()
+                .map(OpportunityListResponse::getFollower)
+                .distinct()
+                .toList();
+        List<String> createUserIds = list.stream()
+                .map(OpportunityListResponse::getCreateUser)
+                .distinct()
+                .toList();
+        List<String> updateUserIds = list.stream()
+                .map(OpportunityListResponse::getUpdateUser)
+                .distinct()
+                .toList();
+        List<String> userIds = Stream.of(ownerIds, followerIds, createUserIds, updateUserIds)
+                .flatMap(Collection::stream)
+                .distinct()
+                .toList();
+        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+
+        List<String> contactIds = list.stream()
+                .map(OpportunityListResponse::getContactId)
+                .distinct()
+                .toList();
+        Map<String, String> contactMap = baseService.getContactMap(contactIds);
 
         list.forEach(opportunityListResponse -> {
             // 获取自定义字段
@@ -79,12 +106,12 @@ public class OpportunityService {
                 int days = (int) Math.ceil(opportunityListResponse.getCreateTime() * 1.0 / 86400000);
                 opportunityListResponse.setReservedDays(days);
             }
-            if (recordMap.containsKey(opportunityListResponse.getId())) {
-                FollowUpRecordDTO followUpRecordDTO = recordMap.get(opportunityListResponse.getId());
-                opportunityListResponse.setLastFollower(followUpRecordDTO.getFollower());
-                opportunityListResponse.setLastFollowerName(followUpRecordDTO.getFollowerName());
-                opportunityListResponse.setLastFollowTime(followUpRecordDTO.getFollowTime());
-            }
+
+            opportunityListResponse.setFollowerName(userNameMap.get(opportunityListResponse.getFollower()));
+            opportunityListResponse.setCreateUserName(userNameMap.get(opportunityListResponse.getCreateUser()));
+            opportunityListResponse.setUpdateUserName(userNameMap.get(opportunityListResponse.getUpdateUser()));
+            opportunityListResponse.setOwnerName(userNameMap.get(opportunityListResponse.getOwner()));
+            opportunityListResponse.setContactName(contactMap.get(opportunityListResponse.getContactId()));
 
         });
         return baseService.setCreateAndUpdateUserName(list);

@@ -39,11 +39,13 @@ CREATE TABLE opportunity
     `stage`           VARCHAR(32)     NOT NULL COMMENT '商机阶段',
     `status`          BIT(1)          NOT NULL DEFAULT 1 COMMENT '状态',
     `contact_id`      VARCHAR(32)     NOT NULL COMMENT '联系人id',
-    `owner`           VARCHAR(32)     NOT NULL   COMMENT '负责人' ,
+    `owner`           VARCHAR(32)     NOT NULL COMMENT '负责人',
     `update_user`     VARCHAR(32)     NOT NULL COMMENT '更新人',
     `create_time`     BIGINT          NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT          NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32)     NOT NULL COMMENT '创建人',
+    `follower`        VARCHAR(32) COMMENT '最新跟进人',
+    `follow_time`     BIGINT COMMENT '最新跟进时间',
     PRIMARY KEY (id)
 ) COMMENT = '商机'
     ENGINE = InnoDB
@@ -52,7 +54,9 @@ CREATE TABLE opportunity
 
 CREATE INDEX idx_customer_id ON opportunity (customer_id ASC);
 CREATE INDEX idx_organization_id ON opportunity (organization_id ASC);
-CREATE INDEX idx_status ON opportunity(status ASC);
+CREATE INDEX idx_status ON opportunity (status ASC);
+CREATE INDEX idx_follower ON opportunity (follower ASC);
+CREATE INDEX idx_follow_time ON opportunity (follow_time ASC);
 
 
 CREATE TABLE opportunity_field
@@ -85,19 +89,19 @@ CREATE INDEX idx_resource_id ON opportunity_field_blob (resource_id);
 
 CREATE TABLE follow_up_record
 (
-    `id`              VARCHAR(32) NOT NULL COMMENT 'id',
+    `id`              VARCHAR(32)   NOT NULL COMMENT 'id',
     `customer_id`     VARCHAR(32) COMMENT '客户id',
     `opportunity_id`  VARCHAR(32) COMMENT '商机id',
-    `type`            VARCHAR(32) NOT NULL COMMENT '类型',
+    `type`            VARCHAR(32)   NOT NULL COMMENT '类型',
     `clue_id`         VARCHAR(32) COMMENT '线索id',
-    `content`         VARCHAR(1000) NOT NULL   COMMENT '跟进内容' ,
-    `organization_id` VARCHAR(32) NOT NULL COMMENT '组织id',
-    `owner`           VARCHAR(32) NOT NULL COMMENT '负责人',
-    `contact_id`      VARCHAR(32) NOT NULL COMMENT '联系人id',
-    `create_time`     BIGINT      NOT NULL COMMENT '创建时间',
-    `update_time`     BIGINT      NOT NULL COMMENT '更新时间',
-    `create_user`     VARCHAR(32) NOT NULL COMMENT '创建人',
-    `update_user`     VARCHAR(32) NOT NULL COMMENT '更新人',
+    `content`         VARCHAR(1000) NOT NULL COMMENT '跟进内容',
+    `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
+    `owner`           VARCHAR(32)   NOT NULL COMMENT '负责人',
+    `contact_id`      VARCHAR(32)   NOT NULL COMMENT '联系人id',
+    `create_time`     BIGINT        NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT        NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)   NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)   NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
 ) COMMENT = '跟进记录'
     ENGINE = InnoDB

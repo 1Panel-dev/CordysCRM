@@ -1,11 +1,9 @@
 package io.cordys.common.service;
 
-import io.cordys.common.dto.FollowUpRecordDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
-import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import jakarta.annotation.Resource;
@@ -191,21 +189,4 @@ public class BaseService {
     }
 
 
-    /**
-     * 获取最新跟进记录
-     *
-     * @param sourceIds
-     * @param resourceType
-     * @param type
-     * @return
-     */
-    public Map<String, FollowUpRecordDTO> getOpportunityFollowRecord(List<String> sourceIds, String resourceType, String type) {
-        List<FollowUpRecordDTO> recodes = extFollowUpRecordMapper.selectRecodes(sourceIds, resourceType, type);
-        Map<String, FollowUpRecordDTO> recordMap = recodes.stream()
-                .collect(Collectors.groupingBy(FollowUpRecordDTO::getSourceId,
-                        Collectors.maxBy(Comparator.comparingLong(FollowUpRecordDTO::getFollowTime))))
-                .entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get()));
-        return recordMap;
-    }
 }

@@ -2,7 +2,6 @@ package io.cordys.crm.clue.service;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
-import io.cordys.common.dto.FollowUpRecordDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
@@ -26,9 +25,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author jianxing
@@ -73,6 +74,24 @@ public class ClueService {
                 .distinct()
                 .toList();
 
+        List<String> followerIds = list.stream()
+                .map(ClueListResponse::getFollower)
+                .distinct()
+                .toList();
+        List<String> createUserIds = list.stream()
+                .map(ClueListResponse::getCreateUser)
+                .distinct()
+                .toList();
+        List<String> updateUserIds = list.stream()
+                .map(ClueListResponse::getUpdateUser)
+                .distinct()
+                .toList();
+        List<String> userIds = Stream.of(ownerIds, followerIds, createUserIds, updateUserIds)
+                .flatMap(Collection::stream)
+                .distinct()
+                .toList();
+        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+
         // 获取线索池信息
         List<String> poolIds = list.stream().map(ClueListResponse::getPoolId).distinct().toList();
         List<CluePool> pools = cluePoolService.getPoolsByIds(poolIds);
@@ -91,7 +110,6 @@ public class ClueService {
         }
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
-        Map<String, FollowUpRecordDTO> recordMap = baseService.getOpportunityFollowRecord(clueIds, "CLUE", "CLUE");
         list.forEach(clueListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> clueFields = caseCustomFiledMap.get(clueListResponse.getId());
@@ -115,15 +133,13 @@ public class ClueService {
                 clueListResponse.setDepartmentId(userDeptDTO.getDeptId());
                 clueListResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
-            if (recordMap.containsKey(clueListResponse.getId())) {
-                FollowUpRecordDTO followUpRecordDTO = recordMap.get(clueListResponse.getId());
-                clueListResponse.setLastFollower(followUpRecordDTO.getFollower());
-                clueListResponse.setLastFollowerName(followUpRecordDTO.getFollowerName());
-                clueListResponse.setLastFollowTime(followUpRecordDTO.getFollowTime());
-            }
+            clueListResponse.setFollowerName(userNameMap.get(clueListResponse.getFollower()));
+            clueListResponse.setCreateUserName(userNameMap.get(clueListResponse.getCreateUser()));
+            clueListResponse.setUpdateUserName(userNameMap.get(clueListResponse.getUpdateUser()));
+            clueListResponse.setOwnerName(userNameMap.get(clueListResponse.getOwner()));
         });
 
-        return baseService.setCreateUpdateOwnerUserName(list);
+        return list;
     }
 
     public ClueGetResponse get(String id, String orgId) {

@@ -45,39 +45,4 @@
     </select>
 
 
-
-    <select id="selectRecodes" resultType="io.cordys.common.dto.FollowUpRecordDTO">
-        SELECT
-        follow_up_record.`owner` AS follower,
-        follow_up_record.create_time AS followTime,
-        sys_user.name AS followerName,
-        CASE
-        WHEN #{resourceType} = 'CUSTOMER' THEN customer_id
-        WHEN #{resourceType} = 'CLUE' THEN clue_id
-        WHEN #{resourceType} = 'OPPORTUNITY' THEN opportunity_id
-        END AS sourceId
-        FROM
-            follow_up_record
-            inner join sys_user on follow_up_record.owner = sys_user.id
-        WHERE
-            type = #{type}
-        <if test="resourceType == 'CUSTOMER'">
-            AND customer_id in
-            <foreach collection="sourceIds" item="sourceId" open="(" separator="," close=")">
-                #{sourceId}
-            </foreach>
-        </if>
-        <if test="resourceType == 'CLUE'">
-            AND clue_id in
-            <foreach collection="sourceIds" item="sourceId" open="(" separator="," close=")">
-                #{sourceId}
-            </foreach>
-        </if>
-        <if test="resourceType == 'OPPORTUNITY'">
-            AND opportunity_id in
-            <foreach collection="sourceIds" item="sourceId" open="(" separator="," close=")">
-                #{sourceId}
-            </foreach>
-        </if>
-    </select>
 </mapper>

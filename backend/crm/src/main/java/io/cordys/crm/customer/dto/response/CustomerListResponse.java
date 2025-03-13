@@ -62,13 +62,13 @@ public class CustomerListResponse {
     private Integer reservedDays;
 
     @Schema(description = "最新跟进人")
-    private String lastFollower;
+    private String follower;
 
     @Schema(description = "最新跟进人名称")
-    private String lastFollowerName;
+    private String followerName;
 
     @Schema(description = "最新跟进日期")
-    private Long lastFollowTime;
+    private Long followTime;
 
     @Schema(description = "公海ID")
     private String poolId;

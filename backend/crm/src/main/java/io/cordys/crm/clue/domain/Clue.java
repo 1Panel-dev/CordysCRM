@@ -45,4 +45,10 @@ public class Clue extends BaseModel {
 
 	@Schema(description = "客户id或者线索id")
 	private String transitionId;
+
+	@Schema(description = "最新跟进人")
+	private String follower;
+
+	@Schema(description = "最新跟进时间")
+	private Long followTime;
 }

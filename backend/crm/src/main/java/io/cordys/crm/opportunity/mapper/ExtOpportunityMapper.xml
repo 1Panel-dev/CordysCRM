@@ -12,10 +12,23 @@
             o.create_time,
             o.update_time,
             o.create_user,
-            o.update_user
+            o.update_user,
+            o.owner,
+            o.follower,
+            o.follow_time,
+            o.amount,
+            o.possible,
+            o.products,
+            o.stage,
+            o.status,
+            o.contact_id,
+            sys_organization_user.department_id,
+            sys_department.name as departmentName
         FROM
             opportunity o
                 INNER JOIN customer c ON o.customer_id = c.id
+        inner join sys_organization_user on o.owner = sys_organization_user.id
+        inner join sys_department on sys_department.id = sys_organization_user.department_id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -29,7 +42,6 @@
         </include>
 
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
-            join sys_organization_user sou on c.owner = sou.user_id
             and sou.dept_id in
             <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                 #{deptId}
@@ -43,7 +55,7 @@
         </if>
 
         <if test="request.keyword != null and request.keyword != ''">
-            and c.name like concat('%', #{request.keyword},'%')
+            and o.name like concat('%', #{request.keyword},'%')
         </if>
 
         <if test="request.searchType != null and request.searchType != '' and request.searchType == 'DEAL'">
@@ -101,9 +113,11 @@
                 and condition.name != 'amount'
                 and condition.name != 'possible'
                 and condition.name != 'products'
-                and condition.name != 'contactId'">
+                and condition.name != 'contactId'
+                and condition.name != 'followTime'
+                and condition.name != 'departmentId'">
                     inner join opportunity_field ${tablePrefix}_${i}
-                    on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                 </if>
             </foreach>
         </if>
@@ -154,49 +168,67 @@
             <when test="condition.name == 'name'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.name"/>
+                    <property name="column" value="o.name"/>
                 </include>
             </when>
             <when test="condition.name == 'customerId'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.customer_id"/>
+                    <property name="column" value="o.customer_id"/>
                 </include>
             </when>
             <when test="condition.name == 'stage'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.stage"/>
+                    <property name="column" value="o.stage"/>
                 </include>
             </when>
             <when test="condition.name == 'amount'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.amount"/>
+                    <property name="column" value="o.amount"/>
                 </include>
             </when>
             <when test="condition.name == 'possible'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.possible"/>
+                    <property name="column" value="o.possible"/>
                 </include>
             </when>
             <when test="condition.name == 'products'">
                 <include refid="io.cordys.common.mapper.CommonMapper.arrayValueCondition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.products"/>
+                    <property name="column" value="o.products"/>
                 </include>
             </when>
             <when test="condition.name == 'contactId'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.contact_id"/>
+                    <property name="column" value="o.contact_id"/>
                 </include>
             </when>
             <when test="condition.name == 'owner'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.owner"/>
+                    <property name="column" value="o.owner"/>
+                </include>
+            </when>
+            <when test="condition.name == 'follower'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.follower"/>
+                </include>
+            </when>
+            <when test="condition.name == 'followTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.follow_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'departmentId'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="sys_organization_user.department_id"/>
                 </include>
             </when>
             <otherwise>

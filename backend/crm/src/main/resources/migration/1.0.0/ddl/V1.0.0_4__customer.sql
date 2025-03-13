@@ -7,13 +7,15 @@ CREATE TABLE customer
     `name`            VARCHAR(255) NOT NULL COMMENT '客户名称',
     `owner`           VARCHAR(32) COMMENT '负责人',
     `collection_time` BIGINT(255) COMMENT '领取时间',
-    `pool_id` VARCHAR(32)    COMMENT '公海ID' ,
+    `pool_id`         VARCHAR(32) COMMENT '公海ID',
     `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
     `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
     `in_shared_pool`  BIT(1)       NOT NULL DEFAULT 0 COMMENT '是否在公海池',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `follower`        VARCHAR(32) COMMENT '最新跟进人',
+    `follow_time`     BIGINT COMMENT '最新跟进时间',
     PRIMARY KEY (id)
 ) COMMENT = '客户'
     ENGINE = InnoDB
@@ -21,7 +23,9 @@ CREATE TABLE customer
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_organization_id ON customer (organization_id ASC);
-CREATE INDEX idx_pool_id ON customer(pool_id ASC);
+CREATE INDEX idx_pool_id ON customer (pool_id ASC);
+CREATE INDEX idx_follower ON customer (follower ASC);
+CREATE INDEX idx_follow_time ON customer (follow_time ASC);
 
 CREATE TABLE customer_pool
 (
@@ -89,7 +93,7 @@ CREATE TABLE customer_capacity
     `id`              VARCHAR(32) NOT NULL COMMENT 'id',
     `organization_id` VARCHAR(32) NOT NULL COMMENT '组织架构ID',
     `scope_id`        TEXT        NOT NULL COMMENT '范围ID',
-    `capacity`        INT(255)    NOT NULL DEFAULT 0 COMMENT '库容;0:不限制',
+    `capacity`        INT(255) NOT NULL DEFAULT 0 COMMENT '库容;0:不限制',
     `create_time`     BIGINT      NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT      NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32) NOT NULL COMMENT '创建人',
@@ -130,85 +134,90 @@ CREATE TABLE customer_field_blob
 
 CREATE INDEX idx_resource_id ON customer_field_blob (resource_id);
 
-CREATE TABLE customer_contact(
-     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-     `customer_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
-     `name` VARCHAR(255) NOT NULL   COMMENT '联系人姓名' ,
-     `phone` VARCHAR(30)    COMMENT '联系人电话' ,
-     `owner` VARCHAR(255) NOT NULL   COMMENT '责任人' ,
-     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-     `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-     `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-     `enable` BIT(1) NOT NULL  DEFAULT 0 COMMENT '是否停用' ,
-     `disable_reason` VARCHAR(255)    COMMENT '停用原因' ,
-     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
-     PRIMARY KEY (id)
-)  COMMENT = '客户联系人'
+CREATE TABLE customer_contact
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `customer_id`     VARCHAR(32)  NOT NULL COMMENT '客户id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '联系人姓名',
+    `phone`           VARCHAR(30) COMMENT '联系人电话',
+    `owner`           VARCHAR(255) NOT NULL COMMENT '责任人',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
+    `enable`          BIT(1)       NOT NULL DEFAULT 0 COMMENT '是否停用',
+    `disable_reason`  VARCHAR(255) COMMENT '停用原因',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    PRIMARY KEY (id)
+) COMMENT = '客户联系人'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_customer_id ON customer_contact(customer_id);
+CREATE INDEX idx_customer_id ON customer_contact (customer_id);
 
-CREATE TABLE customer_contact_field(
-   `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-   `resource_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
-   `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
-   `field_value` VARCHAR(255) NOT NULL   COMMENT '自定义属性值' ,
-   PRIMARY KEY (id)
-)  COMMENT = '客户联系人自定义属性'
+CREATE TABLE customer_contact_field
+(
+    `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32)  NOT NULL COMMENT '客户id',
+    `field_id`    VARCHAR(32)  NOT NULL COMMENT '自定义属性id',
+    `field_value` VARCHAR(255) NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '客户联系人自定义属性'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id_field_id_field_value ON customer_contact_field(resource_id,field_id,field_value);
+CREATE INDEX idx_resource_id_field_id_field_value ON customer_contact_field (resource_id, field_id, field_value);
 
-CREATE TABLE customer_contact_field_blob(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `resource_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
-    `field_id` VARCHAR(32) NOT NULL   COMMENT '自定义属性id' ,
-    `field_value` BLOB NOT NULL   COMMENT '自定义属性值' ,
-PRIMARY KEY (id)
-)  COMMENT = '客户联系人自定义属性大文本'
+CREATE TABLE customer_contact_field_blob
+(
+    `id`          VARCHAR(32) NOT NULL COMMENT 'id',
+    `resource_id` VARCHAR(32) NOT NULL COMMENT '客户id',
+    `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
+    `field_value` BLOB        NOT NULL COMMENT '自定义属性值',
+    PRIMARY KEY (id)
+) COMMENT = '客户联系人自定义属性大文本'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id ON customer_contact_field_blob(resource_id);
+CREATE INDEX idx_resource_id ON customer_contact_field_blob (resource_id);
 
-CREATE TABLE customer_collaboration(
-   `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-   `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-   `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-   `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-   `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-   `user_id` VARCHAR(32) NOT NULL   COMMENT '协作人id' ,
-   `customer_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
-   `collaboration_type` VARCHAR(50) NOT NULL   COMMENT '协作类型(共享/协作)' ,
-   PRIMARY KEY (id)
-)  COMMENT = '客户协作人'
+CREATE TABLE customer_collaboration
+(
+    `id`                 VARCHAR(32) NOT NULL COMMENT 'id',
+    `create_time`        BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`        BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`        VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`        VARCHAR(32) NOT NULL COMMENT '更新人',
+    `user_id`            VARCHAR(32) NOT NULL COMMENT '协作人id',
+    `customer_id`        VARCHAR(32) NOT NULL COMMENT '客户id',
+    `collaboration_type` VARCHAR(50) NOT NULL COMMENT '协作类型(共享/协作)',
+    PRIMARY KEY (id)
+) COMMENT = '客户协作人'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_customer_id ON customer_collaboration(customer_id);
+CREATE INDEX idx_customer_id ON customer_collaboration (customer_id);
 
 
-CREATE TABLE customer_owner(
-   `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-   `customer_id` VARCHAR(32) NOT NULL   COMMENT '客户id' ,
-   `owner` VARCHAR(32) NOT NULL   COMMENT '责任人' ,
-   `collection_time` BIGINT NOT NULL   COMMENT '领取时间' ,
-   `end_time` BIGINT NOT NULL   COMMENT '结束时间' ,
-   `operator` VARCHAR(32) NOT NULL   COMMENT '操作人' ,
-   PRIMARY KEY (id)
-)  COMMENT = '客户历史责任人'
+CREATE TABLE customer_owner
+(
+    `id`              VARCHAR(32) NOT NULL COMMENT 'id',
+    `customer_id`     VARCHAR(32) NOT NULL COMMENT '客户id',
+    `owner`           VARCHAR(32) NOT NULL COMMENT '责任人',
+    `collection_time` BIGINT      NOT NULL COMMENT '领取时间',
+    `end_time`        BIGINT      NOT NULL COMMENT '结束时间',
+    `operator`        VARCHAR(32) NOT NULL COMMENT '操作人',
+    PRIMARY KEY (id)
+) COMMENT = '客户历史责任人'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_customer_id ON customer_owner(customer_id ASC);
+CREATE INDEX idx_customer_id ON customer_owner (customer_id ASC);
 
 
 -- set innodb lock wait timeout to default

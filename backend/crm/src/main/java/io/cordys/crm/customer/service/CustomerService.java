@@ -2,12 +2,12 @@ package io.cordys.crm.customer.service;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
-import io.cordys.common.dto.FollowUpRecordDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
@@ -28,9 +28,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author jianxing
@@ -64,7 +66,7 @@ public class CustomerService {
     }
 
     private List<CustomerListResponse> buildListData(List<CustomerListResponse> list, String orgId) {
-        if(CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return list;
         }
         List<String> customerIds = list.stream().map(CustomerListResponse::getId)
@@ -77,8 +79,25 @@ public class CustomerService {
                 .distinct()
                 .toList();
 
+        List<String> followerIds = list.stream()
+                .map(CustomerListResponse::getFollower)
+                .distinct()
+                .toList();
+        List<String> createUserIds = list.stream()
+                .map(CustomerListResponse::getCreateUser)
+                .distinct()
+                .toList();
+        List<String> updateUserIds = list.stream()
+                .map(CustomerListResponse::getUpdateUser)
+                .distinct()
+                .toList();
+        List<String> userIds = Stream.of(ownerIds, followerIds, createUserIds, updateUserIds)
+                .flatMap(Collection::stream)
+                .distinct()
+                .toList();
+        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
-        Map<String, FollowUpRecordDTO> recordMap = baseService.getOpportunityFollowRecord(customerIds, "CUSTOMER", "CUSTOMER");
 
         // 获取公海&&回收信息
         List<String> poolIds = list.stream().map(CustomerListResponse::getPoolId).distinct().toList();
@@ -120,15 +139,13 @@ public class CustomerService {
                 customerListResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
 
-            if (recordMap.containsKey(customerListResponse.getId())) {
-                FollowUpRecordDTO followUpRecordDTO = recordMap.get(customerListResponse.getId());
-                customerListResponse.setLastFollower(followUpRecordDTO.getFollower());
-                customerListResponse.setLastFollowerName(followUpRecordDTO.getFollowerName());
-                customerListResponse.setLastFollowTime(followUpRecordDTO.getFollowTime());
-            }
+            customerListResponse.setFollowerName(userNameMap.get(customerListResponse.getFollower()));
+            customerListResponse.setCreateUserName(userNameMap.get(customerListResponse.getCreateUser()));
+            customerListResponse.setUpdateUserName(userNameMap.get(customerListResponse.getUpdateUser()));
+            customerListResponse.setOwnerName(userNameMap.get(customerListResponse.getOwner()));
         });
 
-        return baseService.setCreateUpdateOwnerUserName(list);
+        return list;
     }
 
     public CustomerGetResponse get(String id, String orgId) {

@@ -33,4 +33,10 @@ public class Customer extends BaseModel {
 
 	@Schema(description = "组织id")
 	private String organizationId;
+
+	@Schema(description = "最新跟进人")
+	private String follower;
+
+	@Schema(description = "最新跟进时间")
+	private Long followTime;
 }

@@ -43,4 +43,10 @@ public class Opportunity extends BaseModel {
 	@Schema(description = "责任人")
 	private String owner;
 
+	@Schema(description = "最新跟进人")
+	private String follower;
+
+	@Schema(description = "最新跟进时间")
+	private Long followTime;
+
 }
