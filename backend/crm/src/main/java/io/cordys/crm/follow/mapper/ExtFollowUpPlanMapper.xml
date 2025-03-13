@@ -27,7 +27,6 @@
         follow_up_plan
         WHERE
         organization_id =#{orgId}
-        and type = #{type}
         <if test="resourceType == 'CUSTOMER'">
             AND customer_id = #{request.sourceId}
         </if>
@@ -50,6 +49,7 @@
         <if test="request.myPlan">
             AND owner = #{userId}
         </if>
+        AND
         (
         #{request.status} = 'ALL'
         OR ( #{request.status} = 'CANCELLED' AND STATUS = 'CANCELLED' )

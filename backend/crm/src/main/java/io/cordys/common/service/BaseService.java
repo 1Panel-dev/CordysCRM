@@ -182,6 +182,9 @@ public class BaseService {
      * @return
      */
     public Map<String, String> getContactMap(List<String> contactIds) {
+        if (CollectionUtils.isEmpty(contactIds)) {
+            return Collections.emptyMap();
+        }
         return extCustomerContactMapper.selectContactOptionByIds(contactIds)
                 .stream()
                 .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));

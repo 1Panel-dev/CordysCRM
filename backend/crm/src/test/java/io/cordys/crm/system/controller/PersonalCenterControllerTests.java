@@ -2,9 +2,10 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.pager.Pager;
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
+import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.system.domain.Department;
@@ -26,12 +27,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.shaded.com.trilead.ssh2.crypto.digest.MD5;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -201,6 +199,19 @@ public class PersonalCenterControllerTests extends BaseTest {
         customer.setInSharedPool(false);
         customerBaseMapper.insert(customer);
         this.requestGet("/personal/center/repeat/customer?name=kehu").andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(6)
+    void testFollowPlanList() throws Exception {
+        FollowUpPlanPageRequest request = new FollowUpPlanPageRequest();
+        request.setSourceId("NULL");
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setStatus("ALL");
+        MvcResult mvcResult = this.requestPostWithOkAndReturn("/personal/center/follow/plan/list", request);
+        Pager<List<FollowUpPlanListResponse>> result = getPageResult(mvcResult, FollowUpPlanListResponse.class);
+        Assertions.assertNotNull(result.getList());
     }
 
 }
