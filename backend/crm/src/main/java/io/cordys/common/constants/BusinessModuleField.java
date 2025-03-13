@@ -6,6 +6,7 @@ import java.util.Set;
 
 /**
  * 业务模块字段（定义在主表中，有特定业务含义）(标准字段)
+ *
  * @Author: jianxing
  * @CreateTime: 2025-02-18  17:27
  */
@@ -22,8 +23,8 @@ public enum BusinessModuleField {
      */
     CUSTOMER_OWNER("customerOwner", "owner", Set.of("rules")),
     /*------ end: CUSTOMER ------*/
-    
-    
+
+
     /*------ start: CUSTOMER_MANAGEMENT_CONTACT ------*/
     /**
      * 联系人客户id
@@ -60,8 +61,51 @@ public enum BusinessModuleField {
     /**
      * 联系人id
      */
-    FOLLOW_RECORD_CONTACT("recordContact", "contactId");
+    FOLLOW_RECORD_CONTACT("recordContact", "contactId"),
+
+    /**
+     * 意向产品
+     */
+    FOLLOW_RECORD_PRODUCTS("recordProduct", "products"),
+    /**
+     * 跟进内容
+     */
+    FOLLOW_RECORD_CONTENT("recordDescription", "content"),
     /*------ end: FOLLOW_UP_RECORD ------*/
+
+
+    /*------ start: FOLLOW_UP_PLAN ------*/
+    /**
+     * 客户id
+     */
+    FOLLOW_PLAN_CUSTOMER("planCustomer", "customerId"),
+    /**
+     * 商机id
+     */
+    FOLLOW_PLAN_OPPORTUNITY("planOpportunity", "opportunityId"),
+    /**
+     * 线索id
+     */
+    FOLLOW_PLAN_CLUE("planClue", "clueId"),
+    /**
+     * 责任人id
+     */
+    FOLLOW_PLAN_OWNER("planOwner", "owner"),
+    /**
+     * 联系人id
+     */
+    FOLLOW_PLAN_CONTACT("planContact", "contactId"),
+    /**
+     * 预计开始时间
+     */
+    FOLLOW_PLAN_ESTIMATED_TIME("planStartTime", "estimatedTime"),
+    /**
+     * 预计沟通内容
+     */
+    FOLLOW_PLAN_CONTENT("planContent", "content");
+
+
+    /*------ end: FOLLOW_UP_PLAN ------*/
 
     /**
      * 字段 key，field.json 中的 internalKey
