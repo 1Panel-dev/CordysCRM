@@ -65,7 +65,7 @@ public enum BusinessModuleField {
     /**
      * 联系人
      */
-    OPPORTUNITY_CONTACT("opportunityContract", "contractId",Set.of("rules")),
+    OPPORTUNITY_CONTACT("opportunityContact", "contactId",Set.of("rules")),
 
     /**
      * 负责人

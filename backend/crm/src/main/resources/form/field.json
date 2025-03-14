@@ -414,7 +414,7 @@
     },
     {
       "name": "联系人",
-      "internalKey": "opportunityContract",
+      "internalKey": "opportunityContact",
       "type": "DATA_SOURCE",
       "dataSourceType": "CONTACT",
       "multiple": false,
