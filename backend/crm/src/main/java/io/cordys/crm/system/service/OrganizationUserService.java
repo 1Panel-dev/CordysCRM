@@ -7,6 +7,7 @@ import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
@@ -50,6 +51,8 @@ import java.util.stream.Collectors;
 @Service("organizationUserService")
 @Transactional(rollbackFor = Exception.class)
 public class OrganizationUserService {
+
+    private static final String DEFAULT_USER_PASSWORD = "CordysCRM";
 
     @Resource
     private ExtOrganizationUserMapper extOrganizationUserMapper;
@@ -380,8 +383,8 @@ public class OrganizationUserService {
     public void resetPassword(String userId, String operatorId) {
         User user = userMapper.selectByPrimaryKey(userId);
         user.setPassword(
-                userId.equals("admin")
-                        ? CodingUtils.md5("CordysCRM")
+                userId.equals(InternalUser.ADMIN.getValue())
+                        ? CodingUtils.md5(DEFAULT_USER_PASSWORD)
                         : CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6))
         );
         user.setUpdateTime(System.currentTimeMillis());
@@ -445,7 +448,11 @@ public class OrganizationUserService {
         User newPasswdUser = new User();
         newPasswdUser.setPassword("************");
         userList.forEach(user -> {
-            user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
+            user.setPassword(
+                    user.getId().equals(InternalUser.ADMIN.getValue())
+                            ? CodingUtils.md5(DEFAULT_USER_PASSWORD)
+                            : CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6))
+            );
             user.setUpdateTime(System.currentTimeMillis());
             user.setUpdateUser(operatorId);
             LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_DEPARTMENT_USER, user.getName());
