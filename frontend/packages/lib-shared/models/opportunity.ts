@@ -29,10 +29,3 @@ export interface SaveOpportunityParams {
 export interface UpdateOpportunityParams extends SaveOpportunityParams {
   id: string;
 }
-
-// TODO ts 类型字段等待补充 工作流详情
-export interface WorkflowStepItem {
-  value: string;
-  label: string;
-  isError: boolean;
-}

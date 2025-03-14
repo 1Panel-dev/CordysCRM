@@ -5,6 +5,8 @@ import dayjs from 'dayjs';
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import type { CommonList, FilterConditionItem, SortParams, TableQueryParams } from '@lib/shared/models/common';
 
+import { FilterResult } from '@/components/pure/crm-advance-filter/type';
+
 import useTableStore from '@/hooks/useTableStore';
 import useAppStore from '@/store/modules/app';
 
@@ -39,6 +41,13 @@ export default function useTable<T>(
 
   const propsRes = ref<CrmTableProps<T>>(cloneDeep(defaultProps));
 
+  const filterItem = ref<FilterConditionItem[]>([]); // 筛选
+
+  const keyword = ref('');
+
+  // 高级筛选
+  const advanceFilter = reactive<FilterResult>({ searchMode: 'AND', conditions: [] });
+
   // 如果表格设置了tableKey，设置缓存的分页大小
   if (propsRes.value.showPagination && propsRes.value.tableKey) {
     tableStore.getPageSize(propsRes.value.tableKey).then((res) => {
@@ -69,6 +78,22 @@ export default function useTable<T>(
     return { current: page, pageSize };
   }
 
+  // 重置表头筛选
+  function resetFilterParams() {
+    filterItem.value = [];
+  }
+
+  // 设置 advanceFilter
+  function setAdvanceFilter(v: FilterResult) {
+    advanceFilter.searchMode = v.searchMode;
+    advanceFilter.conditions = v.conditions;
+
+    // 基础筛选都清空
+    loadListParams.value.filter = {};
+    keyword.value = '';
+    resetFilterParams();
+  }
+
   /**
    * 分页设置
    * @param page 当前页
@@ -84,10 +109,8 @@ export default function useTable<T>(
   }
 
   const tableQueryParams = ref<TableQueryParams>({}); // 表格请求参数集合
-  const keyword = ref('');
-  const sortItem = ref<SortParams>(); // 排序
 
-  const filterItem = ref<FilterConditionItem[]>([]); // 筛选
+  const sortItem = ref<SortParams>(); // 排序
 
   function processRecordItem(item: CrmTableDataItem<T>): CrmTableDataItem<T> {
     if (item.updateTime) {
@@ -110,6 +133,7 @@ export default function useTable<T>(
         ...(!propsRes.value.showPagination ? {} : await getPaginationParams()),
         keyword: keyword.value,
         sort: sortItem.value,
+        combineSearch: advanceFilter,
         ...loadListParams.value,
         filters: filterItem.value,
       };
@@ -175,5 +199,7 @@ export default function useTable<T>(
     setLoadListParams,
     loadList,
     setPagination,
+    advanceFilter,
+    setAdvanceFilter,
   };
 }

@@ -5,13 +5,14 @@
     v-model:cached-list="cachedList"
     :tab-list="tabList"
     :button-list="buttonList"
-    :title="detail.name"
-    :subtitle="detail.customerName"
+    :title="props.detail?.opportunityName"
+    :subtitle="props.detail?.customerName"
     :form-key="FormDesignKeyEnum.BUSINESS"
+    :show-tab-setting="true"
     @button-select="handleSelect"
   >
     <template #left>
-      <CrmFormDescription :form-key="FormDesignKeyEnum.BUSINESS" :source-id="props.sourceId" />
+      <CrmFormDescription :form-key="FormDesignKeyEnum.BUSINESS" :source-id="sourceId" />
     </template>
     <template #rightTop>
       <CrmWorkflowCard
@@ -19,7 +20,9 @@
         :show-confirm-status="true"
         class="mb-[16px]"
         :workflow-list="workflowList"
-        :source-id="detail.id"
+        :source-id="sourceId"
+        :save-api="updateOptStage"
+        @load-detail="loadStageDetail"
       />
     </template>
     <template #right>
@@ -42,7 +45,7 @@
       <HeaderTable
         v-if="activeTab === 'headRecord'"
         class="mt-[16px] h-[calc(100vh-161px)]"
-        :source-id="detail.id"
+        :source-id="sourceId"
         :load-list-api="getUserList"
       />
 
@@ -60,12 +63,13 @@
 </template>
 
 <script setup lang="ts">
-  import { useMessage } from 'naive-ui';
+  import { SelectOption, useMessage } from 'naive-ui';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import type { FollowDetailItem, TransferParams } from '@lib/shared/models/customer';
-  import type { WorkflowStepItem } from '@lib/shared/models/opportunity';
+  import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
@@ -82,7 +86,9 @@
     deleteOpt,
     getOptFollowPlanList,
     getOptFollowRecordList,
+    getOptStageDetail,
     transferOpt,
+    updateOptStage,
   } from '@/api/modules/opportunity';
   import { getUserList } from '@/api/modules/system/org';
   import { defaultTransferForm } from '@/config/opportunity';
@@ -96,24 +102,24 @@
   const Message = useMessage();
 
   const props = defineProps<{
-    sourceId: string;
+    baseSteps: SelectOption[];
+    detail?: OpportunityItem;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'refresh'): void;
   }>();
 
   const showOptOverviewDrawer = defineModel<boolean>('show', {
     required: true,
   });
 
-  // TODO ts类型
-  const detail = ref<any>({
-    id: '101001',
-    name: '商机名称',
-    customerName: '客户名称',
-  });
-
   const transferForm = ref<TransferParams>({
     owner: null,
     ids: [],
   });
+
+  const sourceId = computed(() => props.detail?.id ?? '');
 
   const transferLoading = ref(false);
 
@@ -170,7 +176,7 @@
       name: 'followRecord',
       tab: t('crmFollowRecord.followRecord'),
       enable: true,
-      allowClose: true,
+      allowClose: false,
     },
     {
       name: 'followPlan',
@@ -186,39 +192,34 @@
     },
   ];
 
-  const currentStatus = ref<string>('purchasing');
-  const workflowList = ref<WorkflowStepItem[]>([
-    {
-      value: 'new',
-      label: '新建',
-      isError: false,
-    },
-    {
-      value: 'demandConfirm',
-      label: '需求明确',
-      isError: false,
-    },
-    {
-      value: 'Solution',
-      label: '方案验证',
-      isError: false,
-    },
-    {
-      value: 'report',
-      label: '立项汇报',
-      isError: false,
-    },
-    {
-      value: 'purchasing',
-      label: '商务采购',
-      isError: false,
-    },
-    {
-      value: 'end',
-      label: '完结',
-      isError: false,
-    },
-  ]);
+  const currentStatus = ref<string>(OpportunityStatusEnum.CREATE);
+
+  const endStage = computed<SelectOption>(() => {
+    const status = currentStatus.value;
+
+    if (status === StageResultEnum.SUCCESS) {
+      return {
+        value: StageResultEnum.SUCCESS,
+        label: t('common.success'),
+      };
+    }
+
+    if (status === StageResultEnum.FAIL) {
+      return {
+        value: StageResultEnum.FAIL,
+        label: t('common.fail'),
+      };
+    }
+
+    return {
+      value: OpportunityStatusEnum.END,
+      label: t('opportunity.end'),
+    };
+  });
+
+  const workflowList = computed<SelectOption[]>(() => {
+    return [...props.baseSteps, endStage.value];
+  });
 
   const pageNation = ref({
     total: 0,
@@ -234,7 +235,7 @@
     try {
       followLoading.value = true;
       const params = {
-        sourceId: detail.value.id,
+        sourceId: sourceId.value,
         current: pageNation.value.current || 1,
         pageSize: pageNation.value.pageSize,
       };
@@ -301,10 +302,12 @@
           transferLoading.value = true;
           await transferOpt({
             ...transferForm.value,
-            ids: [props.sourceId],
+            ids: [sourceId.value],
           });
           Message.success(t('common.transferSuccess'));
           transferForm.value = { ...defaultTransferForm };
+          showOptOverviewDrawer.value = false;
+          emit('refresh');
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -319,20 +322,31 @@
   function handleDelete() {
     openModal({
       type: 'error',
-      title: t('common.deleteConfirmTitle', { name: characterLimit(detail.value.name) }),
+      title: t('common.deleteConfirmTitle', { name: characterLimit(props.detail?.opportunityName) }),
       content: t('opportunity.batchDeleteContentTip'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await deleteOpt(detail.value.id);
+          await deleteOpt(sourceId.value);
           Message.success(t('common.deleteSuccess'));
+          showOptOverviewDrawer.value = false;
+          emit('refresh');
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
         }
       },
     });
+  }
+
+  async function loadStageDetail() {
+    try {
+      currentStatus.value = await getOptStageDetail(sourceId.value);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   function handleSelect(key: string) {
@@ -362,6 +376,7 @@
     (val) => {
       if (val) {
         loadFollowList();
+        loadStageDetail();
       }
     }
   );

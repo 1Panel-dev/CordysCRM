@@ -62,13 +62,12 @@
 </template>
 
 <script setup lang="ts">
-  import { useMessage } from 'naive-ui';
+  import { SelectOption, useMessage } from 'naive-ui';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import type { ClueListItem } from '@lib/shared/models/clue';
   import type { FollowDetailItem, TransferParams } from '@lib/shared/models/customer';
-  import type { WorkflowStepItem } from '@lib/shared/models/opportunity';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
@@ -250,7 +249,7 @@
 
   // 进度条 TODO 从后端获取数据
   const currentStatus = ref<string>('purchasing');
-  const workflowList = ref<WorkflowStepItem[]>([]);
+  const workflowList = ref<SelectOption[]>([]);
 
   // tab
   const activeTab = ref('followRecord');

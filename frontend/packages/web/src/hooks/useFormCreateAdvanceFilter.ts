@@ -1,0 +1,55 @@
+import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+
+import type { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
+
+import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
+
+const internalFilterKeyMap: Record<FormDesignKeyEnum, string[]> = {
+  [FormDesignKeyEnum.BUSINESS]: ['opportunityName', 'opportunityCustomer', 'opportunitySource'],
+  [FormDesignKeyEnum.CLUE]: [],
+  [FormDesignKeyEnum.CONTACT]: [],
+  [FormDesignKeyEnum.CUSTOMER]: [],
+  [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: [],
+  [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: [],
+  [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: [],
+  [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: [],
+  [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: [],
+  [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: [],
+  [FormDesignKeyEnum.PRODUCT]: [],
+};
+
+export default function useFormCreateFilter(formKey: FormDesignKeyEnum) {
+  const customFieldsFilterConfig = ref<FilterFormItem[]>([]);
+  // 获取配置属性
+  function getFilterListConfig(res: FormDesignConfigDetailParams) {
+    const getConfigProps = (field: FormCreateField) => {
+      if (field.type === FieldTypeEnum.SELECT) {
+        return {
+          selectProps: {
+            options: field.options,
+            multiple: field.multiple,
+          },
+        };
+      }
+      // TODO: 其他类型
+      return {};
+    };
+    return (res.fields || []).reduce((acc: FilterFormItem[], field: FormCreateField) => {
+      if (internalFilterKeyMap[formKey].includes(field.internalKey ?? '')) {
+        acc.push({
+          title: field.name,
+          dataIndex: field.businessKey ?? field.id,
+          type: field.type,
+          ...getConfigProps(field),
+        });
+      }
+      return acc;
+    }, []);
+  }
+
+  return {
+    getFilterListConfig,
+    customFieldsFilterConfig,
+  };
+}

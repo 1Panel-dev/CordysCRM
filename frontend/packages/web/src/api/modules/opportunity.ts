@@ -5,6 +5,7 @@ import {
   GetOptFollowPlanUrl,
   GetOptFollowRecordUrl,
   GetOptFormConfigUrl,
+  GetOptStageDetailUrl,
   OptAddUrl,
   OptBatchDeleteUrl,
   OptBatchTransferUrl,
@@ -12,6 +13,7 @@ import {
   OptFollowPlanPageUrl,
   OptFollowRecordListUrl,
   OptPageUrl,
+  OptUpdateStageUrl,
   OptUpdateUrl,
   UpdateOptFollowPlanUrl,
   UpdateOptFollowRecordUrl,
@@ -109,5 +111,15 @@ export function batchDeleteOpt(data: (string | number)[]) {
 
 // 删除商机
 export function deleteOpt(id: string) {
-  return CDR.post({ url: `${OptDeleteUrl}/${id}` });
+  return CDR.get({ url: `${OptDeleteUrl}/${id}` });
+}
+
+// 更新商机阶段
+export function updateOptStage(data: { id: string; stage: string }) {
+  return CDR.post({ url: OptUpdateStageUrl, data });
+}
+
+// 获取商机阶段详情 TODO ts类型
+export function getOptStageDetail(id: string) {
+  return CDR.get<any>({ url: `${GetOptStageDetailUrl}/${id}` });
 }

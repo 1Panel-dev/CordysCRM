@@ -14,3 +14,5 @@ export const CancelOptFollowPlanUrl = '/opportunity/follow/plan/cancel'; // 取�
 export const OptBatchTransferUrl = '/opportunity/batch/transfer'; // 批量转移商机
 export const OptBatchDeleteUrl = '/opportunity/batch/delete'; // 批量删除商机
 export const OptDeleteUrl = '/opportunity/delete'; // 删除商机
+export const OptUpdateStageUrl = '/opportunity/update/stage'; // 更新商机阶段
+export const GetOptStageDetailUrl = 'opportunity/get'; // 获取商机阶段详情

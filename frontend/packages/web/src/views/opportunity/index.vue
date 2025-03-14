@@ -29,7 +29,19 @@
         </div>
       </template>
       <template #actionRight>
-        <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+        <CrmSearchInput
+          v-model:value="keyword"
+          class="!w-[240px]"
+          :placeholder="t('opportunity.searchPlaceholder')"
+          @search="searchData"
+        />
+        <CrmAdvanceFilter
+          ref="msAdvanceFilterRef"
+          v-model:keyword="keyword"
+          :custom-fields-config-list="filterConfigList"
+          :filter-config-list="customFieldsFilterConfig"
+          @adv-search="handleAdvSearch"
+        />
       </template>
     </CrmTable>
     <TransferModal
@@ -37,30 +49,42 @@
       :is-batch="true"
       :source-ids="checkedRowKeys"
       :save-api="transferOpt"
+      @load-list="handleRefresh"
     />
-    <OptOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeOpportunityId" />
+    <OptOverviewDrawer
+      v-model:show="showOverviewDrawer"
+      :base-steps="baseSteps"
+      :detail="activeOpportunity"
+      @refresh="handleRefresh"
+    />
     <CrmFormCreateDrawer
       v-model:visible="formCreateDrawerVisible"
       :form-key="realFormKey"
-      :source-id="activeOpportunityId"
+      :other-save-params="otherFollowRecordSaveParams"
+      :source-id="activeSourceId"
+      @saved="searchData"
     />
   </CrmCard>
 </template>
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, SelectOption, TabPaneProps, useMessage } from 'naive-ui';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
+  import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
+  import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -69,7 +93,7 @@
   import OptOverviewDrawer from './components/optOverviewDrawer.vue';
 
   import { batchDeleteOpt, deleteOpt, transferOpt } from '@/api/modules/opportunity';
-  import { importUserPreCheck, importUsers } from '@/api/modules/system/org';
+  import { getDepartmentTree, importUserPreCheck, importUsers } from '@/api/modules/system/org';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
@@ -78,7 +102,6 @@
 
   const Message = useMessage();
   const { openModal } = useModal();
-
   const { t } = useI18n();
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
@@ -123,6 +146,11 @@
     ];
   });
 
+  function handleRefresh() {
+    checkedRowKeys.value = [];
+    tableRefreshId.value += 1;
+  }
+
   // 批量转移
   const showTransferModal = ref<boolean>(false);
   function handleBatchTransfer() {
@@ -141,7 +169,7 @@
         try {
           await batchDeleteOpt(checkedRowKeys.value);
           Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
+          handleRefresh();
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -163,27 +191,31 @@
     }
   }
 
-  const showOverviewDrawer = ref<boolean>(false);
-  const activeOpportunityId = ref('');
+  const showOverviewDrawer = ref<boolean>(true);
+  const activeSourceId = ref('');
+  const activeOpportunity = ref<OpportunityItem>();
   const formCreateDrawerVisible = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.BUSINESS);
 
-  // TODO
-  function showCustomerDetail(id: string) {
-    activeOpportunityId.value = id;
-  }
+  const otherFollowRecordSaveParams = ref({
+    type: 'BUSINESS',
+    id: '',
+    opportunityId: '',
+  });
 
   // 编辑
   function handleEdit(id: string) {
-    activeOpportunityId.value = id;
+    activeSourceId.value = id;
     realFormKey.value = FormDesignKeyEnum.BUSINESS;
+    otherFollowRecordSaveParams.value.id = id;
     formCreateDrawerVisible.value = true;
   }
 
   // 跟进
-  function handleFollowUp() {
-    activeOpportunityId.value = '';
+  function handleFollowUp(id: string) {
+    activeSourceId.value = '';
     realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
+    otherFollowRecordSaveParams.value.opportunityId = id;
     formCreateDrawerVisible.value = true;
   }
 
@@ -228,6 +260,7 @@
           });
           Message.success(t('common.transferSuccess'));
           transferForm.value = { ...defaultTransferForm };
+          tableRefreshId.value += 1;
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -244,7 +277,7 @@
         handleEdit(row.id);
         break;
       case 'followUp':
-        handleFollowUp();
+        handleFollowUp(row.id);
         break;
       case 'pop-transfer':
         handleTransfer(row);
@@ -286,7 +319,7 @@
     ];
   });
 
-  const { useTableRes } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.BUSINESS,
     operationColumn: {
       key: 'operation',
@@ -321,7 +354,9 @@
             text: true,
             type: 'primary',
             onClick: () => {
-              activeOpportunityId.value = row.id;
+              activeSourceId.value = row.id;
+              activeOpportunity.value = row;
+              realFormKey.value = FormDesignKeyEnum.BUSINESS;
               showOverviewDrawer.value = true;
             },
           },
@@ -334,14 +369,94 @@
           {
             text: true,
             type: 'primary',
-            onClick: () => showCustomerDetail(row.id),
+            onClick: () => {
+              activeSourceId.value = row.customerId;
+              realFormKey.value = FormDesignKeyEnum.CUSTOMER;
+            },
           },
           { default: () => row.customerName }
         );
       },
     },
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
+  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  function handleAdvSearch(filter: FilterResult, _isAdvancedSearchMode: boolean) {
+    keyword.value = '';
+    setAdvanceFilter(filter);
+    loadList();
+  }
+
+  const department = ref<CrmTreeNodeData[]>([]);
+
+  const baseSteps: SelectOption[] = [
+    {
+      value: OpportunityStatusEnum.CREATE,
+      label: t('common.newCreate'),
+    },
+    {
+      value: OpportunityStatusEnum.CLEAR_REQUIREMENTS,
+      label: t('opportunity.clearRequirements'),
+    },
+    {
+      value: OpportunityStatusEnum.SCHEME_VALIDATION,
+      label: t('opportunity.schemeValidation'),
+    },
+    {
+      value: OpportunityStatusEnum.PROJECT_PROPOSAL_REPORT,
+      label: t('opportunity.projectProposalReport'),
+    },
+    {
+      value: OpportunityStatusEnum.BUSINESS_PROCUREMENT,
+      label: t('opportunity.businessProcurement'),
+    },
+  ];
+
+  const filterConfigList = computed<FilterFormItem[]>(() => {
+    return [
+      {
+        title: t('opportunity.opportunityStage'),
+        dataIndex: 'stage',
+        type: FieldTypeEnum.SELECT,
+        selectProps: {
+          options: [
+            ...baseSteps,
+            {
+              value: StageResultEnum.SUCCESS,
+              label: t('common.success'),
+            },
+            {
+              value: StageResultEnum.FAIL,
+              label: t('common.fail'),
+            },
+          ],
+        },
+      },
+      {
+        title: t('opportunity.department'),
+        dataIndex: 'departmentId',
+        type: FieldTypeEnum.TREE_SELECT,
+        treeSelectProps: {
+          labelField: 'name',
+          keyField: 'id',
+          multiple: true,
+          clearFilterAfterSelect: false,
+          options: department.value,
+          checkable: true,
+        },
+      },
+      {
+        title: t('common.createTime'),
+        dataIndex: 'createTime',
+        type: FieldTypeEnum.DATE_TIME,
+      },
+      {
+        title: t('customer.lastFollowUpDate'),
+        dataIndex: 'lastFollowUpDate',
+        type: FieldTypeEnum.DATE_TIME,
+      },
+    ];
+  });
 
   function searchData() {
     setLoadListParams({
@@ -357,8 +472,18 @@
     }
   );
 
+  async function initDepartList() {
+    try {
+      department.value = await getDepartmentTree();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   onBeforeMount(() => {
     searchData();
+    initDepartList();
   });
 </script>
 

@@ -79,7 +79,7 @@
               @click="handleDeleteListItem(index)"
             >
               <template #icon>
-                <CrmIcon type="iconicon_minus_circle1" :size="16" class="mr-[3px]" />
+                <CrmIcon type="iconicon_minus_circle1" :size="16" />
               </template>
             </n-button>
           </div>

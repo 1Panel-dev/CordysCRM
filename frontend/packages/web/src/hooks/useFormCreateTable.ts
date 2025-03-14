@@ -6,6 +6,8 @@ import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 import useTable from '@/components/pure/crm-table/useTable';
 import { getFormConfigApiMap, getFormListApiMap } from '@/components/business/crm-form-create/config';
 
+import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
+
 import { useI18n } from './useI18n';
 
 type FormKey =
@@ -23,7 +25,7 @@ export interface FormCreateTableProps {
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
   const { t } = useI18n();
-
+  const { getFilterListConfig, customFieldsFilterConfig } = useFormCreateAdvanceFilter(props.formKey);
   const loading = ref(false);
   let columns: CrmDataTableColumn[] = [];
   const tableKeyMap = {
@@ -332,6 +334,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       if (props.operationColumn) {
         columns.push(props.operationColumn);
       }
+      customFieldsFilterConfig.value = getFilterListConfig(res);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -366,5 +369,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   return {
     loading,
     useTableRes,
+    customFieldsFilterConfig,
   };
 }

@@ -7,8 +7,8 @@
     >
       <div class="crm-workflow-item-status" :class="statusClass(index, item)">
         <CrmIcon
-          v-if="index < currentStatusIndex || item.isError"
-          :type="item.isError ? 'iconicon_close' : 'iconicon_check'"
+          v-if="index < currentStatusIndex || item.value === StageResultEnum.FAIL"
+          :type="item.value === StageResultEnum.FAIL ? 'iconicon_close' : 'iconicon_check'"
           :size="16"
         />
         <div v-else class="flex items-center justify-center">{{ index + 1 }} </div>
@@ -35,10 +35,12 @@
 </template>
 
 <script setup lang="ts">
-  import type { WorkflowStepItem } from '@lib/shared/models/opportunity';
+  import { SelectOption } from 'naive-ui';
+
+  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
 
   const props = defineProps<{
-    workflowList: WorkflowStepItem[];
+    workflowList: SelectOption[];
   }>();
 
   const currentStatus = defineModel<string>('status', {
@@ -49,11 +51,11 @@
 
   const currentStatusIndex = computed(() => workflowData.value.findIndex((e) => e.value === currentStatus.value));
 
-  function statusClass(index: number, item: WorkflowStepItem) {
+  function statusClass(index: number, item: SelectOption) {
     return {
-      done: index < currentStatusIndex.value && !item.isError,
-      current: index === currentStatusIndex.value && !item.isError,
-      error: item.isError,
+      done: index < currentStatusIndex.value && item.value !== StageResultEnum.FAIL,
+      current: index === currentStatusIndex.value && item.value !== StageResultEnum.FAIL,
+      error: item.value === StageResultEnum.FAIL,
     };
   }
 </script>

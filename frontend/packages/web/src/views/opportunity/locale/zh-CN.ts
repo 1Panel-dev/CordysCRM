@@ -29,4 +29,10 @@ export default {
   'opportunity.myOpportunities': '我的商机',
   'opportunity.departmentOpportunities': '部门商机',
   'opportunity.convertedOpportunities': '成交商机',
+  'opportunity.searchPlaceholder': '输入客户/商机名称进行搜索',
+  'opportunity.clearRequirements': '需求明确',
+  'opportunity.schemeValidation': '方案验证',
+  'opportunity.projectProposalReport': '立项汇报',
+  'opportunity.businessProcurement': '商务采购',
+  'opportunity.end': '完结',
 };

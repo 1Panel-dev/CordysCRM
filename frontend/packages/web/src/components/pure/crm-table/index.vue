@@ -11,7 +11,9 @@
       <slot name="actionLeft"></slot>
     </template>
     <template #actionRight>
-      <slot name="actionRight"></slot>
+      <div class="flex items-center gap-[8px]">
+        <slot name="actionRight"></slot>
+      </div>
     </template>
   </BatchAction>
   <n-data-table

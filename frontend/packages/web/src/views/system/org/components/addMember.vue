@@ -56,7 +56,8 @@
                 {{ t('org.noDepartmentToChoose') }}
               </div>
             </template>
-            <template #action>
+            <!-- TODO xxw -->
+            <!-- <template #action>
               <div class="text-left">
                 <n-button type="primary" text>
                   <template #icon>
@@ -65,7 +66,7 @@
                   {{ t('org.addDepartment') }}
                 </n-button>
               </div>
-            </template>
+            </template> -->
           </n-tree-select>
         </n-form-item>
         <n-form-item
