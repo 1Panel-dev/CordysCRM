@@ -199,15 +199,15 @@ public class PersonalCenterService {
             Customer customer = extCustomerMapper.checkRepeatCustomerByName(name, organizationId);
             if (customer != null) {
                 List<OpportunityRepeatResponse> repeatList = extOpportunityMapper.getRepeatList(customer.getId());
-                List<List<String>> productIds = repeatList.stream().map(OpportunityRepeatResponse::getProducts).toList();
-                List<String> flattenedProductIds = productIds.stream()
-                        .flatMap(List::stream).distinct()
+                List<String> flattenedProductIds = repeatList.stream()
+                        .flatMap(or -> or.getProducts().stream())
+                        .distinct()
                         .toList();
-                Map<String, String> productNameMap = new HashMap<>();
-                if (CollectionUtils.isNotEmpty(productIds)) {
-                    List<Product> products = extProductMapper.listByIds(flattenedProductIds);
-                    productNameMap = products.stream().collect(Collectors.toMap(Product::getId, Product::getName));
-                }
+                // 优化产品名称映射获取
+                Map<String, String> productNameMap = flattenedProductIds.isEmpty() ?
+                        Collections.emptyMap() :
+                        extProductMapper.listByIds(flattenedProductIds).stream()
+                                .collect(Collectors.toMap(Product::getId, Product::getName));
 
                 for (OpportunityRepeatResponse opportunityRepeatResponse : repeatList) {
                     opportunityRepeatResponse.setCustomerName(customer.getName());
