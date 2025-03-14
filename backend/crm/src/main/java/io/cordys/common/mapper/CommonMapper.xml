@@ -22,48 +22,60 @@
     <sql id="arrayValueCondition">
         <trim prefix="(" suffix=")">
             <choose>
+                <!-- JSON_OVERLAPS 处理数组匹配 -->
                 <when test="${condition}.operator == 'CONTAINS'">
-                    <foreach collection="${condition}.value" item="valueItem" separator="or" open="(" close=")">
-                        JSON_CONTAINS(${column}, JSON_ARRAY(#{valueItem}))
-                    </foreach>
+                    JSON_OVERLAPS(${column}, JSON_ARRAY(
+                    <foreach collection="${condition}.value" item="valueItem" separator=",">
+                        CAST(#{valueItem} AS SIGNED)
+                    </foreach>))
                 </when>
+
                 <when test="${condition}.operator == 'NOT_CONTAINS'">
-                    !(
-                        <foreach collection="${condition}.value" item="valueItem" separator="or" open="(" close=")">
-                            JSON_CONTAINS(${column}, JSON_ARRAY(#{valueItem}))
-                        </foreach>
-                    )
+                    NOT JSON_OVERLAPS(${column}, JSON_ARRAY(
+                    <foreach collection="${condition}.value" item="valueItem" separator=",">
+                        CAST(#{valueItem} AS SIGNED)
+                    </foreach>))
                 </when>
+
                 <when test="${condition}.operator == 'IN'">
-                    <foreach collection="${condition}.value" item="tag" separator="or" open="(" close=")">
-                        JSON_CONTAINS(${column}, JSON_ARRAY(#{tag}))
-                    </foreach>
+                    JSON_OVERLAPS(${column}, JSON_ARRAY(
+                    <foreach collection="${condition}.value" item="tag" separator=",">
+                        CAST(#{tag} AS SIGNED)
+                    </foreach>))
                 </when>
+
                 <when test="${condition}.operator == 'NOT_IN'">
-                    !(
-                        <foreach collection="${condition}.value" item="tag" separator="or" open="(" close=")">
-                            JSON_CONTAINS(${column}, JSON_ARRAY(#{tag}))
-                        </foreach>
-                    )
+                    NOT JSON_OVERLAPS(${column}, JSON_ARRAY(
+                    <foreach collection="${condition}.value" item="tag" separator=",">
+                        CAST(#{tag} AS SIGNED)
+                    </foreach>))
                 </when>
+
+                <!-- COUNT_GT 和 COUNT_LT -->
                 <when test="${condition}.operator == 'COUNT_GT'">
                     JSON_LENGTH(${column}) &gt; #{condition.value}
                 </when>
+
                 <when test="${condition}.operator == 'COUNT_LT'">
-                    <if test="${condition}.value == 0">
-                        false
-                    </if>
-                    <if test="${condition}.value != 0">
-                        ${column} is null or ${column} = '[]' or
-                        JSON_LENGTH(${column}) &lt; #{condition.value}
-                    </if>
+                    <choose>
+                        <when test="${condition}.value == 0">
+                            false
+                        </when>
+                        <otherwise>
+                            (JSON_LENGTH(${column}) &lt; #{condition.value} OR JSON_TYPE(${column}) = 'NULL' OR ${column} = '[]')
+                        </otherwise>
+                    </choose>
                 </when>
+
+                <!-- EMPTY / NOT_EMPTY -->
                 <when test="${condition}.operator == 'EMPTY'">
-                    ${column} is null or ${column} = '[]'
+                    (${column} IS NULL OR ${column} = '[]')
                 </when>
+
                 <when test="${condition}.operator == 'NOT_EMPTY'">
-                    ${column} is not null and ${column} != '[]'
+                    (${column} IS NOT NULL AND ${column} != '[]')
                 </when>
+
             </choose>
         </trim>
     </sql>
@@ -154,9 +166,18 @@
     </sql>
 
     <sql id="filterMultipleWrapper">
-        <foreach collection="values" item="value" separator="or" open="(" close=")">
-            JSON_CONTAINS(`value`, JSON_ARRAY(#{value}))
-        </foreach>
+        JSON_OVERLAPS(${column},
+        <choose>
+            <when test="values != null and values.size() > 1">
+                JSON_ARRAY(
+                <foreach collection="values" item="value" separator=",">
+                    CAST(#{value} AS SIGNED)
+                </foreach>)
+            </when>
+            <otherwise>
+                JSON_ARRAY(CAST(#{values[0]} AS SIGNED))
+            </otherwise>
+        </choose>)
     </sql>
 
     <sql id="sort">
