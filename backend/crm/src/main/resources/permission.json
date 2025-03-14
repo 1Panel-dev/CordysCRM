@@ -197,5 +197,29 @@
         ]
       }
     ]
+  },
+  {
+    "id": "PRODUCT_MANAGEMENT",
+    "name": "permission.product_management.name",
+    "children": [
+      {
+        "id": "PRODUCT_MANAGEMENT_PRODUCT",
+        "name": "permission.product_management.product.name",
+        "permissions": [
+          {
+            "id": "PRODUCT_MANAGEMENT:READ"
+          },
+          {
+            "id": "PRODUCT_MANAGEMENT:ADD"
+          },
+          {
+            "id": "PRODUCT_MANAGEMENT:UPDATE"
+          },
+          {
+            "id": "PRODUCT_MANAGEMENT:DELETE"
+          }
+        ]
+      }
+    ]
   }
 ]
