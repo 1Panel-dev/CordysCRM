@@ -22,6 +22,9 @@ public class ShiroFilter {
         filterChainDefinitionMap.put("/mobile/**", "anon");
         filterChainDefinitionMap.put("/static/**", "anon");
 
+        // 模版文件
+        filterChainDefinitionMap.put("/templates/**", "anon");
+
         // 公共可访问的 URL
         filterChainDefinitionMap.put("/login", "anon");
         filterChainDefinitionMap.put("/signout", "anon");
