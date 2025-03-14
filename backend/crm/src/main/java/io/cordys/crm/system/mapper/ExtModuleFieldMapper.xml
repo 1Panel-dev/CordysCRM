@@ -15,4 +15,11 @@
             #{id}
         </foreach>
     </delete>
+
+    <select id="getSourceOptionsByIds" resultType="io.cordys.common.dto.OptionDTO">
+        select id, name from ${tableName} where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+          #{id}
+        </foreach>>
+    </select>
 </mapper>

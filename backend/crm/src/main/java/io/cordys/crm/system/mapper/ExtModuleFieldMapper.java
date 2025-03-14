@@ -1,5 +1,6 @@
 package io.cordys.crm.system.mapper;
 
+import io.cordys.common.dto.OptionDTO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -17,4 +18,6 @@ public interface ExtModuleFieldMapper {
 	 * @param ids ID集合
 	 */
 	void deletePropByIds(@Param("ids") List<String> ids);
+
+	List<OptionDTO> getSourceOptionsByIds(@Param("tableName") String table, @Param("ids") List<String> ids);
 }

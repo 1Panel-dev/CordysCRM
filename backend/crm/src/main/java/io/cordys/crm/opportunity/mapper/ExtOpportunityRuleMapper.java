@@ -1,6 +1,7 @@
 package io.cordys.crm.opportunity.mapper;
 
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;
 import org.apache.ibatis.annotations.Param;
 
@@ -15,4 +16,12 @@ public interface ExtOpportunityRuleMapper {
 	 * @return 商机规则集合
 	 */
 	List<OpportunityRuleDTO> list(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
+
+	/**
+	 * 获取范围下商机关闭规则
+	 * @param scopeIds 范围ID集合
+	 * @param orgId 组织ID
+	 * @return 商机关闭规则
+	 */
+	List<OpportunityRule> getRuleByScopeIds(@Param("ids") List<String> scopeIds, @Param("orgId") String orgId);
 }

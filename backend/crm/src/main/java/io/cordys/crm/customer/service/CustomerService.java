@@ -1,9 +1,15 @@
 package io.cordys.crm.customer.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -18,6 +24,9 @@ import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -58,12 +67,25 @@ public class CustomerService {
     @Resource
     private BaseMapper<CustomerPoolRecycleRule> customerPoolRecycleRuleMapper;
     @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+	@Resource
+	private ModuleFormService moduleFormService;
+    @Resource
     private CustomerRelationService customerRelationService;
 
-    public List<CustomerListResponse> list(CustomerPageRequest request, String userId, String orgId,
-                                           DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId,
+                                                           DeptDataPermissionDTO deptDataPermission) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomerListResponse> list = extCustomerMapper.list(request, orgId, userId, deptDataPermission);
-        return buildListData(list, orgId);
+        List<CustomerListResponse> buildList = buildListData(list, orgId);
+        // 处理自定义字段选项数据
+        List<BaseModuleFieldValue> allDataFields = buildList.stream().map(CustomerListResponse::getModuleFields)
+                .filter(CollectionUtils::isNotEmpty)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, allDataFields);
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
     private List<CustomerListResponse> buildListData(List<CustomerListResponse> list, String orgId) {

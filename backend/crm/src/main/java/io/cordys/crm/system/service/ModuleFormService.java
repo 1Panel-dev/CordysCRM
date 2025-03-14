@@ -2,16 +2,25 @@ package io.cordys.crm.system.service;
 
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.constants.FieldSourceType;
+import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleFieldBlob;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.domain.ModuleFormBlob;
+import io.cordys.crm.system.dto.field.CheckBoxField;
+import io.cordys.crm.system.dto.field.DatasourceField;
+import io.cordys.crm.system.dto.field.RadioField;
+import io.cordys.crm.system.dto.field.SelectField;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.field.base.ControlRuleProp;
+import io.cordys.crm.system.dto.field.base.OptionProp;
 import io.cordys.crm.system.dto.form.FormProp;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -20,6 +29,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -174,6 +184,71 @@ public class ModuleFormService {
 	}
 
 	/**
+	 * 获取字段选项集合
+	 * @param formConfig 表单配置
+	 * @param allDataFields 所有数据字段
+	 * @return 字段选项集合
+	 */
+	public Map<String, List<OptionDTO>> getOptionMap(ModuleFormConfigDTO formConfig, List<BaseModuleFieldValue> allDataFields) {
+		Map<String, List<OptionDTO>> optionMap = new HashMap<>(4);
+		Map<String, String> idTypeMap = new HashMap<>(8);
+		formConfig.getFields().forEach(field -> {
+			if (StringUtils.equalsAny(field.getType(), FieldType.RADIO.name()) && field instanceof RadioField radioField) {
+				optionMap.put(field.getId(), optionPropToDto(radioField.getOptions()));
+			}
+			if (StringUtils.equalsAny(field.getType(), FieldType.CHECKBOX.name()) && field instanceof CheckBoxField checkBoxField) {
+				optionMap.put(field.getId(), optionPropToDto(checkBoxField.getOptions()));
+			}
+			if (StringUtils.equalsAny(field.getType(), FieldType.SELECT.name()) && field instanceof SelectField selectField) {
+				optionMap.put(field.getId(), optionPropToDto(selectField.getOptions()));
+			}
+			if (StringUtils.equals(field.getType(), FieldType.DATA_SOURCE.name()) && field instanceof DatasourceField sourceField) {
+				idTypeMap.put(field.getId(), sourceField.getDataSourceType());
+			}
+			if (StringUtils.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.DEPARTMENT.name())) {
+				idTypeMap.put(field.getId(), field.getType());
+			}
+		});
+
+		Map<String, List<String>> typeIdsMap = new HashMap<>(8);
+		allDataFields.stream().filter(field -> idTypeMap.containsKey(field.getFieldId())).forEach(field -> {
+			String optionType = idTypeMap.get(field.getFieldId());
+			if (!typeIdsMap.containsKey(optionType)) {
+				typeIdsMap.put(optionType, new ArrayList<>());
+			}
+			Object fieldValue = field.getFieldValue();
+			if (fieldValue instanceof List) {
+				typeIdsMap.get(optionType).addAll(JSON.parseArray(JSON.toJSONString(fieldValue), String.class));
+			} else {
+				typeIdsMap.get(optionType).add(fieldValue.toString());
+			}
+		});
+
+		Map<String, String> sourceMap = initTypeSourceMap();
+		typeIdsMap.forEach((type, ids) -> {
+			List<OptionDTO> options = extModuleFieldMapper.getSourceOptionsByIds(sourceMap.get(type), ids);
+			if (CollectionUtils.isNotEmpty(options)) {
+				optionMap.put(type, options);
+			}
+		});
+		return optionMap;
+	}
+
+	/**
+	 * OptionProp转OptionDTO
+	 * @param options 选项集合
+	 * @return 选项DTO集合
+	 */
+	public List<OptionDTO> optionPropToDto(List<OptionProp> options) {
+		return options.stream().map(option -> {
+			OptionDTO optionDTO = new OptionDTO();
+			optionDTO.setName(option.getLabel());
+			optionDTO.setId(option.getValue());
+			return optionDTO;
+		}).toList();
+	}
+
+	/**
 	 * 表单初始化
 	 */
 	public void initForm() {
@@ -262,5 +337,17 @@ public class ModuleFormService {
 		} catch (Exception e) {
 			throw new GenericException("表单字段初始化失败", e);
 		}
+	}
+
+	private Map<String, String> initTypeSourceMap() {
+		Map<String, String> typeSourceMap = new HashMap<>(8);
+		typeSourceMap.put(FieldType.MEMBER.name(), "system_user");
+		typeSourceMap.put(FieldType.DEPARTMENT.name(), "system_department");
+		typeSourceMap.put(FieldSourceType.CUSTOMER.name(), "customer");
+		typeSourceMap.put(FieldSourceType.CLUE.name(), "clue");
+		typeSourceMap.put(FieldSourceType.CONTACT.name(), "customer_contact");
+		typeSourceMap.put(FieldSourceType.OPPORTUNITY.name(), "opportunity");
+		typeSourceMap.put(FieldSourceType.PRODUCT.name(), "product");
+		return typeSourceMap;
 	}
 }

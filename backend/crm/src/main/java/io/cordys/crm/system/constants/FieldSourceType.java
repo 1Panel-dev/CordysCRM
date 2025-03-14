@@ -17,7 +17,7 @@ public enum FieldSourceType {
 	/**
 	 * 商机来源
 	 */
-	BUSINESS,
+	OPPORTUNITY,
 	/**
 	 * 产品来源
 	 */

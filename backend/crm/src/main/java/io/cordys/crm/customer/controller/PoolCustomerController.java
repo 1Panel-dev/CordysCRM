@@ -42,8 +42,7 @@ public class PoolCustomerController {
 	@Operation(summary = "客户列表")
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ})
 	public Pager<List<CustomerListResponse>> list(@Validated @RequestBody CustomerPageRequest request) {
-		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-		return PageUtils.setPageInfo(page, customerService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null));
+		return customerService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
 	}
 
 	@PostMapping("/pick")

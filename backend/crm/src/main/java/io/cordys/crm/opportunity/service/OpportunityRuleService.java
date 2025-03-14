@@ -6,6 +6,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;
 import io.cordys.crm.opportunity.dto.request.OpportunityRuleAddRequest;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -145,6 +147,26 @@ public class OpportunityRuleService {
 		rule.setUpdateUser(currentUserId);
 		rule.setUpdateTime(System.currentTimeMillis());
 		opportunityRuleMapper.updateById(rule);
+	}
+
+	/**
+	 * 获取负责人默认线索池ID
+	 * @param ownerIds 负责人ID集合
+	 * @param organizationId 组织ID
+	 * @return 默认线索池
+	 */
+	public Map<String, OpportunityRule> getOwnersDefaultRuleMap(List<String> ownerIds, String organizationId) {
+		Map<String, OpportunityRule> ruleMap = new HashMap<>(4);
+		ownerIds.forEach(ownerId -> {
+			List<String> scopeIds = userExtendService.getUserScopeIds(ownerId, organizationId);
+			List<OpportunityRule> rules = extOpportunityRuleMapper.getRuleByScopeIds(scopeIds, organizationId);
+			if (CollectionUtils.isEmpty(rules)) {
+				return;
+			}
+			ruleMap.put(ownerId, rules.getFirst());
+		});
+
+		return ruleMap;
 	}
 
 	/**

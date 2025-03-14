@@ -1,6 +1,10 @@
 package io.cordys.common.pager;
 
 import com.github.pagehelper.Page;
+import io.cordys.common.dto.OptionDTO;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 分页工具类，提供分页信息设置功能。
@@ -29,6 +33,28 @@ public class PageUtils {
             pager.setPageSize(page.getPageSize());
             pager.setCurrent(page.getPageNum());
             pager.setTotal(page.getTotal());
+            return pager;
+        } catch (Exception e) {
+            throw new RuntimeException("保存当前页码数据时发生错误！", e);
+        }
+    }
+
+    /**
+     * 设置带有选项数据的分页信息
+     * @param page 分页对象
+     * @param list 数据列表
+     * @param <T> 数据列表的类型
+     * @param optionMap 选项集合
+     * @return 包含分页信息的自定义分页对象
+     */
+    public static <T> PagerWithOption<T> setPageInfoWithOption(Page<?> page, T list, Map<String, List<OptionDTO>> optionMap) {
+        try {
+            PagerWithOption<T> pager = new PagerWithOption<>();
+            pager.setList(list);
+            pager.setPageSize(page.getPageSize());
+            pager.setCurrent(page.getPageNum());
+            pager.setTotal(page.getTotal());
+            pager.setOptionMap(optionMap);
             return pager;
         } catch (Exception e) {
             throw new RuntimeException("保存当前页码数据时发生错误！", e);
