@@ -13,6 +13,9 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.*;
+import io.cordys.crm.clue.mapper.ExtClueMapper;
+import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.system.domain.*;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.request.*;
@@ -86,6 +89,12 @@ public class OrganizationUserService {
     private DepartmentService departmentService;
     @Resource
     private SqlSessionFactory sqlSessionFactory;
+    @Resource
+    private ExtOpportunityMapper extOpportunityMapper;
+    @Resource
+    private ExtCustomerMapper extCustomerMapper;
+    @Resource
+    private ExtClueMapper extClueMapper;
 
     /**
      * 员工列表查询
@@ -787,7 +796,11 @@ public class OrganizationUserService {
     }
 
     public boolean checkUserResource(String id) {
-        //todo 校验员工是否存在线索、客户、商机资源（等待模块业务逻辑完成补充）
+        if (extOpportunityMapper.countByOwner(id) > 0 ||
+                extCustomerMapper.countByOwner(id) > 0 ||
+                extClueMapper.countByOwner(id) > 0) {
+            return false;
+        }
 
         return true;
     }

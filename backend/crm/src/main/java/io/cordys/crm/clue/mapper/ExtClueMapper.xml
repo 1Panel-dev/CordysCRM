@@ -200,4 +200,10 @@
             #{id}
         </foreach>
     </select>
+
+
+    <select id="countByOwner" resultType="java.lang.Integer">
+        select count(id) from `clue`
+        where owner = #{owner}
+    </select>
 </mapper>

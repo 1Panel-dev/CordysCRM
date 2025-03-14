@@ -303,4 +303,9 @@
                 INNER JOIN sys_user u ON o.owner = u.id
         WHERE o.status = 1 AND o.customer_id = #{customerId}
     </select>
+
+    <select id="countByOwner" resultType="java.lang.Integer">
+        select count(id) from opportunity
+        where owner = #{owner}
+    </select>
 </mapper>

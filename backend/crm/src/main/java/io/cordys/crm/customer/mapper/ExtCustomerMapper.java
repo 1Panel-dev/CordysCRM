@@ -29,4 +29,5 @@ public interface ExtCustomerMapper {
 
     Customer checkRepeatCustomerByName(@Param("name") String name, @Param("orgId") String orgId);
 
+    int countByOwner(@Param("owner") String owner);
 }

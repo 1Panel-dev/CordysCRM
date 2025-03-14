@@ -212,4 +212,8 @@
     </select>
 
 
+    <select id="countByOwner" resultType="java.lang.Integer">
+        select count(id) from customer
+        where owner = #{owner}
+    </select>
 </mapper>

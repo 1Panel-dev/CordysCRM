@@ -27,4 +27,6 @@ public interface ExtClueMapper {
     List<OptionDTO> selectOptionByIds(@Param("ids") List<String> ids);
 
     void batchTransfer(@Param("request") ClueBatchTransferRequest request);
+
+    int countByOwner(@Param("owner") String owner);
 }
