@@ -6,15 +6,21 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.common.utils.RecycleConditionUtils;
 import io.cordys.crm.clue.domain.CluePool;
+import io.cordys.crm.customer.domain.CustomerPool;
+import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
+import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;
 import io.cordys.crm.opportunity.dto.request.OpportunityRuleAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityRuleUpdateRequest;
+import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityRuleMapper;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
@@ -150,10 +156,10 @@ public class OpportunityRuleService {
 	}
 
 	/**
-	 * 获取负责人默认线索池ID
+	 * 获取负责人默认规则
 	 * @param ownerIds 负责人ID集合
 	 * @param organizationId 组织ID
-	 * @return 默认线索池
+	 * @return 默认规则
 	 */
 	public Map<String, OpportunityRule> getOwnersDefaultRuleMap(List<String> ownerIds, String organizationId) {
 		Map<String, OpportunityRule> ruleMap = new HashMap<>(4);
@@ -167,6 +173,23 @@ public class OpportunityRuleService {
 		});
 
 		return ruleMap;
+	}
+
+	/**
+	 * 计算剩余归属天数
+	 *
+	 * @param rule 商机规则
+	 * @param opportunity 商机
+	 * @return 剩余归属天数
+	 */
+	public Integer calcReservedDay(OpportunityRule rule, OpportunityListResponse opportunity) {
+		if (rule == null || !rule.getAuto()) {
+			return null;
+		}
+
+		// 判断商机是否存在创建时间
+		List<RuleConditionDTO> conditions = JSON.parseArray(rule.getCondition(), RuleConditionDTO.class);
+		return RecycleConditionUtils.calcRecycleDays(conditions, opportunity.getCreateTime());
 	}
 
 	/**

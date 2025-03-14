@@ -49,4 +49,25 @@ public class RecycleConditionUtils {
 		}
 		return (int) betweenDays;
 	}
+
+	public static Integer calcRecycleDays(List<RuleConditionDTO> conditions, Long createTime) {
+		List<RuleConditionDTO> reservedConditions = conditions.stream().filter(condition -> RecycleConditionColumnKey.matchReserved(condition.getColumn())).toList();
+		if (CollectionUtils.isEmpty(reservedConditions)) {
+			return null;
+		}
+		RuleConditionDTO condition = reservedConditions.getFirst();
+		if (StringUtils.equals(condition.getOperator(), RecycleConditionTimeOperator.FIXED.name())) {
+			return null;
+		}
+		LocalDateTime dynamicTime = condition.getDynamicTime();
+		if (dynamicTime == null) {
+			return null;
+		}
+		LocalDateTime pickedTime = Instant.ofEpochMilli(createTime).atZone(ZoneId.systemDefault()).toLocalDateTime();
+		long betweenDays = ChronoUnit.DAYS.between(dynamicTime, pickedTime);
+		if (!pickedTime.toLocalTime().equals(LocalDateTime.MIN.toLocalTime())) {
+			betweenDays++;
+		}
+		return (int) betweenDays;
+	}
 }

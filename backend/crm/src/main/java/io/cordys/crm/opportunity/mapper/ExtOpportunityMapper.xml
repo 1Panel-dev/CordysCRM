@@ -27,7 +27,7 @@
         FROM
             opportunity o
                 INNER JOIN customer c ON o.customer_id = c.id
-        inner join sys_organization_user on o.owner = sys_organization_user.id
+        inner join sys_organization_user on o.owner = sys_organization_user.user_id
         inner join sys_department on sys_department.id = sys_organization_user.department_id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>

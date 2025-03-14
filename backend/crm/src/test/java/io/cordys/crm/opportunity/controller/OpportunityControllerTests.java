@@ -5,10 +5,7 @@ import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.opportunity.domain.Opportunity;
-import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
-import io.cordys.crm.opportunity.dto.request.OpportunityStageRequest;
-import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
-import io.cordys.crm.opportunity.dto.request.OpportunityUpdateRequest;
+import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
@@ -143,5 +140,30 @@ public class OpportunityControllerTests extends BaseTest {
         request.setId(addOpportunity.getId());
         request.setStage("SUCCESS");
         this.requestPostWithOk(UPDATE_STAGE, request);
+    }
+
+    @Test
+    @Order(7)
+    @Sql(scripts = {"/dml/init_opportunity_rule_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/dml/cleanup_opportunity_rule_test.sql"},
+            config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void testPageReservedDay() throws Exception{
+        OpportunityAddRequest request = new OpportunityAddRequest();
+        request.setName("商机1");
+        request.setCustomerId("123");
+        request.setAmount(BigDecimal.valueOf(1.1));
+        request.setProducts(List.of("11"));
+        request.setPossible(BigDecimal.valueOf(1.2));
+        request.setContactId("12345");
+        request.setOwner("admin");
+        this.requestPostWithOk(DEFAULT_ADD, request);
+        OpportunityPageRequest pageRequest = new OpportunityPageRequest();
+        pageRequest.setSearchType("ALL");
+        pageRequest.setCurrent(1);
+        pageRequest.setPageSize(10);
+        this.requestPostWithOk(DEFAULT_PAGE, pageRequest);
     }
 }

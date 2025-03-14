@@ -16,6 +16,7 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityField;
+import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
@@ -27,6 +28,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,15 +54,17 @@ public class OpportunityService {
     private BaseMapper<Opportunity> opportunityMapper;
     @Resource
     private BaseMapper<Product> productMapper;
+	@Autowired
+	private OpportunityRuleService opportunityRuleService;
 
 
     public List<OpportunityListResponse> list(OpportunityPageRequest request, String userId, String orgId,
                                               DeptDataPermissionDTO deptDataPermission) {
         List<OpportunityListResponse> list = extOpportunityMapper.list(request, orgId, userId, deptDataPermission);
-        return buildListData(list);
+        return buildListData(list, orgId);
     }
 
-    private List<OpportunityListResponse> buildListData(List<OpportunityListResponse> list) {
+    private List<OpportunityListResponse> buildListData(List<OpportunityListResponse> list, String orgId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }
@@ -97,15 +101,14 @@ public class OpportunityService {
                 .toList();
         Map<String, String> contactMap = baseService.getContactMap(contactIds);
 
+        Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(ownerIds, orgId);
+
         list.forEach(opportunityListResponse -> {
             // 获取自定义字段
             List<OpportunityField> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
 
-            if (CollectionUtils.isNotEmpty(opportunityFields)) {
-                // 将毫秒数转换为天数, 并向上取整
-                int days = (int) Math.ceil(opportunityListResponse.getCreateTime() * 1.0 / 86400000);
-                opportunityListResponse.setReservedDays(days);
-            }
+            opportunityListResponse.setReservedDays(opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
+            opportunityListResponse.setModuleFields(opportunityFields);
 
             opportunityListResponse.setFollowerName(userNameMap.get(opportunityListResponse.getFollower()));
             opportunityListResponse.setCreateUserName(userNameMap.get(opportunityListResponse.getCreateUser()));
