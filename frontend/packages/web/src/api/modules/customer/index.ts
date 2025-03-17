@@ -4,11 +4,16 @@ import {
   AddCustomerFollowRecordUrl,
   AddCustomerOpenSeaUrl,
   AddCustomerUrl,
+  AssignOpenSeaCustomerUrl,
+  BatchAssignOpenSeaCustomerUrl,
   BatchDeleteCustomerUrl,
+  BatchDeleteOpenSeaCustomerUrl,
+  BatchPickOpenSeaCustomerUrl,
   BatchTransferCustomerUrl,
   DeleteCustomerContactUrl,
   DeleteCustomerOpenSeaUrl,
   DeleteCustomerUrl,
+  DeleteOpenSeaCustomerUrl,
   DisableCustomerContactUrl,
   EnableCustomerContactUrl,
   GetCustomerContactFormConfigUrl,
@@ -24,7 +29,10 @@ import {
   GetCustomerListUrl,
   GetCustomerOpenSeaListUrl,
   GetCustomerUrl,
+  GetOpenSeaCustomerListUrl,
+  GetOpenSeaOptionsUrl,
   IsCustomerOpenSeaNoPickUrl,
+  PickOpenSeaCustomerUrl,
   SwitchCustomerOpenSeaUrl,
   UpdateCustomerContactUrl,
   UpdateCustomerFollowPlanUrl,
@@ -34,6 +42,9 @@ import {
 } from '@lib/shared/api/requrls/customer';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import type {
+  AssignOpenSeaCustomerParams,
+  BatchAssignOpenSeaCustomerParams,
+  BatchOperationOpenSeaCustomerParams,
   CustomerContractListItem,
   CustomerContractTableParams,
   CustomerDetail,
@@ -45,6 +56,8 @@ import type {
   CustomerOpenSeaListItem,
   CustomerTableParams,
   FollowDetailItem,
+  OpenSeaCustomerTableParams,
+  PickOpenSeaCustomerParams,
   SaveCustomerContractParams,
   SaveCustomerFollowPlanParams,
   SaveCustomerFollowRecordParams,
@@ -57,7 +70,7 @@ import type {
   UpdateCustomerOpenSeaParams,
   UpdateCustomerParams,
 } from '@lib/shared/models/customer';
-import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import type { CluePoolParams, FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import CDR from '@/api/http/index';
 
@@ -219,4 +232,44 @@ export function deleteCustomerOpenSea(id: string) {
 // 公海是否存在未领取线索
 export function isCustomerOpenSeaNoPick(id: string) {
   return CDR.get<boolean>({ url: `${IsCustomerOpenSeaNoPickUrl}/${id}` });
+}
+
+// 获取公海客户列表
+export function getOpenSeaCustomerList(data: OpenSeaCustomerTableParams) {
+  return CDR.post<CommonList<CustomerOpenSeaListItem>>({ url: GetOpenSeaCustomerListUrl, data });
+}
+
+// 领取公海客户
+export function pickOpenSeaCustomer(data: PickOpenSeaCustomerParams) {
+  return CDR.post({ url: PickOpenSeaCustomerUrl, data });
+}
+
+// 批量领取公海客户
+export function batchPickOpenSeaCustomer(data: BatchOperationOpenSeaCustomerParams) {
+  return CDR.post({ url: BatchPickOpenSeaCustomerUrl, data });
+}
+
+// 批量删除公海客户
+export function batchDeleteOpenSeaCustomer(data: BatchOperationOpenSeaCustomerParams) {
+  return CDR.post({ url: BatchDeleteOpenSeaCustomerUrl, data });
+}
+
+// 批量分配公海客户
+export function batchAssignOpenSeaCustomer(data: BatchAssignOpenSeaCustomerParams) {
+  return CDR.post({ url: BatchAssignOpenSeaCustomerUrl, data });
+}
+
+// 分配公海客户
+export function assignOpenSeaCustomer(data: AssignOpenSeaCustomerParams) {
+  return CDR.post({ url: AssignOpenSeaCustomerUrl, data });
+}
+
+// 获取公海选项
+export function getOpenSeaOptions() {
+  return CDR.get<CluePoolParams[]>({ url: GetOpenSeaOptionsUrl });
+}
+
+// 删除公海客户
+export function deleteOpenSeaCustomer(id: string) {
+  return CDR.get({ url: `${DeleteOpenSeaCustomerUrl}/${id}` });
 }

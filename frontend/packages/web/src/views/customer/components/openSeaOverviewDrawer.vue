@@ -15,7 +15,9 @@
       <TransferForm ref="distributeFormRef" v-model:form="distributeForm" />
     </template>
     <template #left>
-      <CrmFormDescription :form-key="FormDesignKeyEnum.CUSTOMER" :source-id="props.sourceId" />
+      <div class="p-[16px_24px]">
+        <CrmFormDescription :form-key="FormDesignKeyEnum.CUSTOMER" :source-id="props.sourceId" />
+      </div>
     </template>
     <template #right>
       <div v-if="activeTab === 'overview'" class="mt-[16px] h-[100px] bg-[var(--text-n10)]"></div>
@@ -34,11 +36,16 @@
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
 
+  import { assignOpenSeaCustomer, deleteOpenSeaCustomer, pickOpenSeaCustomer } from '@/api/modules/customer';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
   const props = defineProps<{
     sourceId: string;
+    poolId: string | number;
+  }>();
+  const emit = defineEmits<{
+    (e: 'change'): void;
   }>();
 
   const { t } = useI18n();
@@ -89,23 +96,11 @@
     },
   ];
 
-  const activeTab = ref('overview');
+  const activeTab = ref('followRecord');
   const tabList: TabContentItem[] = [
-    {
-      name: 'overview',
-      tab: t('common.overview'),
-      enable: true,
-      allowClose: false,
-    },
     {
       name: 'followRecord',
       tab: t('crmFollowRecord.followRecord'),
-      enable: true,
-      allowClose: true,
-    },
-    {
-      name: 'followPlan',
-      tab: t('common.followPlan'),
       enable: true,
       allowClose: true,
     },
@@ -132,8 +127,10 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO: 联调
+          await deleteOpenSeaCustomer(props.sourceId);
           Message.success(t('common.deleteSuccess'));
+          emit('change');
+          show.value = false;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -142,10 +139,52 @@
     });
   }
 
+  async function handleClaim(id: string) {
+    try {
+      claimLoading.value = true;
+      await pickOpenSeaCustomer({
+        customerId: id,
+        poolId: props.poolId,
+      });
+      Message.success(t('common.claimSuccess'));
+      emit('change');
+      show.value = false;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      claimLoading.value = false;
+    }
+  }
+
+  async function handleDistribute(id: string) {
+    try {
+      distributeLoading.value = true;
+      await assignOpenSeaCustomer({
+        customerId: id,
+        assignUserId: distributeForm.value.owner,
+      });
+      Message.success(t('common.distributeSuccess'));
+      emit('change');
+      show.value = false;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      distributeLoading.value = false;
+    }
+  }
+
   function handleButtonSelect(key: string) {
     switch (key) {
       case 'delete':
         handleDelete();
+        break;
+      case 'pop-claim':
+        handleClaim(props.sourceId);
+        break;
+      case 'pop-distribute':
+        handleDistribute(props.sourceId);
         break;
       default:
         break;

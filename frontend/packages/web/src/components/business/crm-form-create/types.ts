@@ -44,7 +44,7 @@ export interface FormCreateField {
   precision?: number | null; // 精度
   showThousandsSeparator?: boolean; // 是否显示千分位
   // 日期输入属性
-  datetype?: 'month' | 'date' | 'datetime';
+  dateType?: 'month' | 'date' | 'datetime';
   // radio属性
   direction?: 'horizontal' | 'vertical';
   // divider属性

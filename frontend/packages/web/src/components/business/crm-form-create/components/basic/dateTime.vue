@@ -12,7 +12,7 @@
     ></div>
     <n-date-picker
       v-model:value="value"
-      :type="props.fieldConfig.datetype"
+      :type="props.fieldConfig.dateType"
       :placeholder="props.fieldConfig.placeholder"
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"

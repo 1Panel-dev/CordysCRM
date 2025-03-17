@@ -17,6 +17,7 @@ const internalFilterKeyMap: Record<FormDesignKeyEnum, string[]> = {
   [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: [],
   [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: [],
   [FormDesignKeyEnum.PRODUCT]: [],
+  [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: [],
 };
 
 export default function useFormCreateFilter(formKey: FormDesignKeyEnum) {

@@ -3,6 +3,7 @@ export enum FormDesignKeyEnum {
   FOLLOW_PLAN_CLUE = 'planClue', // 线索跟进计划
   FOLLOW_RECORD_CLUE = 'recordClue', // 线索跟进记录
   CUSTOMER = 'customer', // 客户
+  CUSTOMER_OPEN_SEA = 'customerOpenSea', // 公海客户
   CONTACT = 'contact', // 联系人
   FOLLOW_RECORD_CUSTOMER = 'recordCustomer', // 客户跟进记录
   FOLLOW_PLAN_CUSTOMER = 'planCustomer', // 客户跟进计划

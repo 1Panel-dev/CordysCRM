@@ -133,7 +133,14 @@
   function handleSave(isContinue = false) {
     formRef.value?.validate((errors) => {
       if (!errors) {
-        emit('save', form.value, isContinue);
+        const result = cloneDeep(form.value);
+        list.value.forEach((item) => {
+          if (item.type === FieldTypeEnum.DATA_SOURCE) {
+            // 处理数据源字段，单选传单个值，多选传数组
+            result[item.id] = item.multiple ? result[item.id] : result[item.id][0];
+          }
+        });
+        emit('save', result, isContinue);
       }
     });
   }

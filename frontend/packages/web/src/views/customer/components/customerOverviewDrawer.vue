@@ -125,15 +125,9 @@
     },
   ];
 
-  const activeTab = ref('overview');
+  const activeTab = ref('contact');
   const cachedList = ref([]);
   const tabList: TabContentItem[] = [
-    {
-      name: 'overview',
-      tab: t('common.overview'),
-      enable: true,
-      allowClose: false,
-    },
     {
       name: 'contact',
       tab: t('opportunity.contactInfo'),

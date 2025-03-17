@@ -11,7 +11,14 @@
       @batch-action="handleBatchAction"
     >
       <template #actionLeft>
-        <n-select v-model:value="openSea" :options="openSeaOptions" :render-option="renderOption" class="w-[240px]" />
+        <n-select
+          v-model:value="openSea"
+          :options="openSeaOptions"
+          :render-option="renderOption"
+          :show-checkmark="false"
+          class="w-[240px]"
+          @update-value="(e) => searchData(undefined, e)"
+        />
       </template>
       <template #actionRight>
         <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
@@ -19,16 +26,28 @@
     </CrmTable>
   </CrmCard>
   <addOrEditPoolDrawer v-model:visible="drawerVisible" :type="ModuleConfigEnum.CUSTOMER_MANAGEMENT" :row="openSeaRow" />
-  <openSeaOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeCustomerId" />
-  <TransferModal v-model:show="showDistributeModal" :source-ids="checkedRowKeys" :title="t('common.batchDistribute')" />
+  <openSeaOverviewDrawer
+    v-model:show="showOverviewDrawer"
+    :source-id="activeCustomerId"
+    :pool-id="openSea"
+    @change="searchData"
+  />
+  <TransferModal
+    v-model:show="showDistributeModal"
+    :source-ids="checkedRowKeys"
+    :title="t('common.batchDistribute')"
+    :positive-text="t('common.distribute')"
+    @confirm="handleBatchAssign"
+  />
 </template>
 
 <script setup lang="ts">
   import { VNodeChild } from 'vue';
-  import { DataTableRowKey, NButton, NSelect, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NSelect, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { TableQueryParams } from '@lib/shared/models/common';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -36,57 +55,47 @@
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import openSeaOverviewDrawer from './components/openSeaOverviewDrawer.vue';
   import addOrEditPoolDrawer from '@/views/system/module/components/addOrEditPoolDrawer.vue';
 
+  import {
+    assignOpenSeaCustomer,
+    batchAssignOpenSeaCustomer,
+    batchDeleteOpenSeaCustomer,
+    batchPickOpenSeaCustomer,
+    deleteOpenSeaCustomer,
+    getOpenSeaOptions,
+    pickOpenSeaCustomer,
+  } from '@/api/modules/customer';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
-  import { SelectMixedOption, SelectOption } from 'naive-ui/es/select/src/interface';
+  import { SelectOption } from 'naive-ui/es/select/src/interface';
 
   const { t } = useI18n();
   const { openModal } = useModal();
   const Message = useMessage();
 
-  const openSea = ref('');
-  const openSeaOptions = ref<SelectMixedOption[]>([
-    {
-      label: 'GGBOND',
-      value: '1',
-      id: '1',
-      createUser: '1',
-      updateUser: 'string;',
-      updateUserName: 'string;',
-      createTime: 'number;',
-      updateTime: 'number;',
-      name: 'string;',
-      scopeId: ' string;',
-      organizationId: 'string;',
-      ownerId: 'string;',
-      enable: 'boolean;',
-      auto: 'boolean;',
-      members: [],
-      owners: [],
-      pickRule: {}, // 领取规则
-      recycleRule: {}, // 回收规则
-    },
-  ]);
+  const openSea = ref<string | number>('');
+  const openSeaOptions = ref<SelectOption[]>([]);
   const keyword = ref('');
   const drawerVisible = ref(false);
   const openSeaRow = ref<any>({});
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const activeCustomerId = ref('');
-  const showOverviewDrawer = ref(true);
+  const showOverviewDrawer = ref(false);
+  const batchTableQueryParams = ref<TableQueryParams>({});
 
   function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
     (node.children as Array<VNode>)?.push(
       h(CrmIcon, {
         type: 'iconicon_set_up',
-        class: 'cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-8)]',
+        class: 'openSea-setting-icon',
         onClick: (e: Event) => {
           e.stopPropagation();
           openSeaRow.value = option;
@@ -104,7 +113,7 @@
         key: 'batchClaim',
       },
       {
-        label: t('customer.batchDistribute'),
+        label: t('common.batchDistribute'),
         key: 'batchDistribute',
       },
       {
@@ -119,15 +128,20 @@
   // 批量领取
   function handleBatchClaim() {
     openModal({
-      type: 'info',
-      title: t('customer.batchClaimTip', { number: checkedRowKeys.value.length }),
+      type: 'default',
+      title: t('customer.batchClaimTip', { count: checkedRowKeys.value.length }),
       content: t('customer.claimTipContent'),
       positiveText: t('common.confirmClaim'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO  联调
+          await batchPickOpenSeaCustomer({
+            ...batchTableQueryParams.value,
+            batchIds: checkedRowKeys.value,
+            poolId: openSea.value,
+          });
           tableRefreshId.value += 1;
+          checkedRowKeys.value = [];
           Message.success(t('common.claimSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -138,7 +152,30 @@
   }
 
   // 批量分配
+  const distributeLoading = ref(false);
+  const distributeFormRef = ref<InstanceType<typeof TransferForm>>();
+  const distributeForm = ref<any>({
+    owner: null,
+  });
   const showDistributeModal = ref<boolean>(false);
+  async function handleBatchAssign(owner: string | null) {
+    try {
+      distributeLoading.value = true;
+      await batchAssignOpenSeaCustomer({
+        ...batchTableQueryParams.value,
+        batchIds: checkedRowKeys.value,
+        assignUserId: owner || '',
+      });
+      checkedRowKeys.value = [];
+      Message.success(t('common.distributeSuccess'));
+      showDistributeModal.value = false;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
+      distributeLoading.value = false;
+    }
+  }
 
   // 批量删除
   function handleBatchDelete() {
@@ -150,7 +187,12 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO  联调
+          await batchDeleteOpenSeaCustomer({
+            ...batchTableQueryParams.value,
+            batchIds: checkedRowKeys.value,
+            poolId: openSea.value,
+          });
+          checkedRowKeys.value = [];
           tableRefreshId.value += 1;
           Message.success(t('common.deleteSuccess'));
         } catch (error) {
@@ -178,11 +220,6 @@
   }
 
   const claimLoading = ref(false);
-  const distributeLoading = ref(false);
-  const distributeFormRef = ref<InstanceType<typeof TransferForm>>();
-  const distributeForm = ref<any>({
-    head: null,
-  });
 
   const operationGroupList = computed<ActionsItem[]>(() => {
     return [
@@ -225,7 +262,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO: 联调
+          await deleteOpenSeaCustomer(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {
@@ -236,12 +273,47 @@
     });
   }
 
+  async function handleClaim(id: string) {
+    try {
+      claimLoading.value = true;
+      await pickOpenSeaCustomer({
+        customerId: id,
+        poolId: openSea.value,
+      });
+      Message.success(t('common.claimSuccess'));
+      tableRefreshId.value += 1;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      claimLoading.value = false;
+    }
+  }
+
+  async function handleDistribute(id: string) {
+    try {
+      distributeLoading.value = true;
+      await assignOpenSeaCustomer({
+        customerId: id,
+        assignUserId: distributeForm.value.owner,
+      });
+      Message.success(t('common.distributeSuccess'));
+      tableRefreshId.value += 1;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      distributeLoading.value = false;
+    }
+  }
+
   function handleActionSelect(row: any, actionKey: string) {
-    // TODO:
     switch (actionKey) {
-      case 'claim':
+      case 'pop-claim':
+        handleClaim(row.id);
         break;
-      case 'distribute':
+      case 'pop-distribute':
+        handleDistribute(row.id);
         break;
       case 'delete':
         handleDelete(row);
@@ -252,10 +324,10 @@
   }
 
   const { useTableRes } = await useFormCreateTable({
-    formKey: FormDesignKeyEnum.CUSTOMER,
+    formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
     operationColumn: {
       key: 'operation',
-      width: 200,
+      width: 150,
       fixed: 'right',
       render: (row: any) =>
         h(
@@ -264,7 +336,7 @@
             groupList: operationGroupList.value,
             onSelect: (key: string) => handleActionSelect(row, key),
             onCancel: () => {
-              distributeForm.value.head = null;
+              distributeForm.value.owner = null;
             },
           },
           {
@@ -281,24 +353,23 @@
     specialRender: {
       name: (row: any) => {
         return h(
-          NButton,
+          CrmTableButton,
           {
-            text: true,
-            type: 'primary',
             onClick: () => {
               activeCustomerId.value = row.id;
               showOverviewDrawer.value = true;
             },
           },
-          { default: () => row.name }
+          { default: () => row.name, trigger: () => row.name }
         );
       },
     },
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
+  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams } = useTableRes;
+  batchTableQueryParams.value = tableQueryParams;
 
-  function searchData() {
-    setLoadListParams({ keyword: keyword.value });
+  function searchData(_keyword?: string, poolId?: string) {
+    setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: poolId || openSea.value });
     loadList();
   }
 
@@ -309,7 +380,18 @@
     }
   );
 
-  onMounted(() => {
+  async function initOpenSeaOptions() {
+    const res = await getOpenSeaOptions();
+    openSeaOptions.value = res.map((item) => ({
+      label: item.name,
+      value: item.id,
+      ...item,
+    }));
+    openSea.value = openSeaOptions.value[0]?.value || '';
+  }
+
+  onBeforeMount(async () => {
+    await initOpenSeaOptions();
     searchData();
   });
 </script>
@@ -317,5 +399,18 @@
 <style lang="less">
   .n-base-select-option {
     @apply justify-between;
+  }
+  .n-base-select-option:hover {
+    .openSea-setting-icon {
+      @apply visible;
+    }
+  }
+  .openSea-setting-icon {
+    @apply invisible cursor-pointer;
+
+    color: var(--text-n4);
+    &:hover {
+      color: var(--primary-8);
+    }
   }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="handleTabChange" />
   </CrmCard>
 
   <CrmCard :special-height="64" hide-footer>
@@ -45,6 +45,7 @@
 <script setup lang="ts">
   import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
 
+  import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 
@@ -54,6 +55,7 @@
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
@@ -69,23 +71,23 @@
   const { openModal } = useModal();
   const { t } = useI18n();
 
-  const activeTab = ref('all');
+  const activeTab = ref(CustomerSearchTypeEnum.ALL);
   const tabList = computed<TabPaneProps[]>(() => {
     return [
       {
-        name: 'all',
+        name: CustomerSearchTypeEnum.ALL,
         tab: t('customer.all'),
       },
       {
-        name: 'mine',
+        name: CustomerSearchTypeEnum.SELF,
         tab: t('customer.mine'),
       },
       {
-        name: 'deptCustomer',
+        name: CustomerSearchTypeEnum.DEPARTMENT,
         tab: t('customer.deptCustomer'),
       },
       {
-        name: 'cooperationCustomer',
+        name: CustomerSearchTypeEnum.VISIBLE,
         tab: t('customer.cooperationCustomer'),
       },
     ];
@@ -255,7 +257,7 @@
         popSlotName: 'transferPopTitle',
         popSlotContent: 'transferPopContent',
       },
-      ...(activeTab.value === 'all'
+      ...(activeTab.value === CustomerSearchTypeEnum.ALL
         ? [
             {
               label: t('common.delete'),
@@ -302,17 +304,15 @@
     specialRender: {
       name: (row: any) => {
         return h(
-          NButton,
+          CrmTableButton,
           {
-            text: true,
-            type: 'primary',
             onClick: () => {
               activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
               activeSourceId.value = row.id;
               showOverviewDrawer.value = true;
             },
           },
-          { default: () => row.name }
+          { trigger: () => row.name, default: () => row.name }
         );
       },
     },
@@ -320,8 +320,12 @@
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
 
   function searchData() {
-    setLoadListParams({ keyword: keyword.value });
+    setLoadListParams({ keyword: keyword.value, searchType: activeTab.value });
     loadList();
+  }
+
+  function handleTabChange() {
+    searchData();
   }
 
   watch(

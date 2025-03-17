@@ -195,6 +195,7 @@ export default function useTable<T>(
   return {
     propsRes,
     propsEvent,
+    tableQueryParams,
     setLoading,
     setLoadListParams,
     loadList,

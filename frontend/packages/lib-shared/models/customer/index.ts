@@ -215,4 +215,28 @@ export type FollowDetailItem = FollowDetailItemType<CustomerFollowRecordListItem
 export interface TransferParams {
   ids: (string | number)[];
   owner: string | null; // 负责人
+  [key: string]: any;
+}
+
+export interface PickOpenSeaCustomerParams {
+  customerId: string;
+  poolId: string | number;
+}
+
+export interface BatchOperationOpenSeaCustomerParams {
+  batchIds: (string | number)[];
+  poolId?: string | number;
+}
+
+export interface BatchAssignOpenSeaCustomerParams extends BatchOperationOpenSeaCustomerParams {
+  assignUserId: string;
+}
+
+export interface AssignOpenSeaCustomerParams {
+  customerId: string;
+  assignUserId: string;
+}
+
+export interface OpenSeaCustomerTableParams extends TableQueryParams {
+  poolId: string;
 }

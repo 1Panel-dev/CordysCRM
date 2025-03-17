@@ -67,7 +67,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           });
         } else {
           // 其他的字段读取moduleFields TODO: 等接口字段
-          const field = form.moduleFields.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
+          const field = form.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
           if (item.type === FieldTypeEnum.DIVIDER) {
             descriptions.value.push({
               label: item.name,
@@ -80,7 +80,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               label: item.name,
               value:
                 item.type === FieldTypeEnum.LOCATION
-                  ? getCityPath((field?.fieldValue as string).split('-')[0])
+                  ? getCityPath((field?.fieldValue as string)?.split('-')[0])
                   : field?.fieldValue || [],
             });
           }

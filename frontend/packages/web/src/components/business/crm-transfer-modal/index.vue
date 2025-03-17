@@ -4,7 +4,7 @@
     size="small"
     :title="title"
     :ok-loading="loading"
-    :positive-text="t('common.transfer')"
+    :positive-text="props.positiveText || t('common.transfer')"
     @confirm="confirmHandler"
     @cancel="closeHandler"
   >
@@ -30,6 +30,7 @@
     title?: string;
     sourceIds: DataTableRowKey[];
     isBatch?: boolean;
+    positiveText?: string;
     saveApi?: (params: TransferParams) => Promise<any>;
   }
 
@@ -39,6 +40,7 @@
 
   const emit = defineEmits<{
     (e: 'loadList'): void;
+    (e: 'confirm', owner: string | null): void;
   }>();
 
   const showModal = defineModel<boolean>('show', {
@@ -82,6 +84,8 @@
             // eslint-disable-next-line no-console
             console.log(e);
           }
+        } else {
+          emit('confirm', form.value.owner);
         }
       }
     });

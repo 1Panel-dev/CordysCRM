@@ -84,6 +84,7 @@
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
@@ -349,10 +350,8 @@
     specialRender: {
       name: (row: OpportunityItem) => {
         return h(
-          NButton,
+          CrmTableButton,
           {
-            text: true,
-            type: 'primary',
             onClick: () => {
               activeSourceId.value = row.id;
               activeOpportunity.value = row;
@@ -360,7 +359,7 @@
               showOverviewDrawer.value = true;
             },
           },
-          { default: () => row.opportunityName }
+          { default: () => row.opportunityName, trigger: () => row.opportunityName }
         );
       },
       customerName: (row: OpportunityItem) => {

@@ -15,7 +15,8 @@ type FormKey =
   | FormDesignKeyEnum.CONTACT
   | FormDesignKeyEnum.BUSINESS
   | FormDesignKeyEnum.CLUE
-  | FormDesignKeyEnum.PRODUCT;
+  | FormDesignKeyEnum.PRODUCT
+  | FormDesignKeyEnum.CUSTOMER_OPEN_SEA;
 
 export interface FormCreateTableProps {
   formKey: FormKey;
@@ -34,6 +35,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.BUSINESS]: TableKeyEnum.BUSINESS,
     [FormDesignKeyEnum.CLUE]: TableKeyEnum.CLUE,
     [FormDesignKeyEnum.PRODUCT]: TableKeyEnum.PRODUCT,
+    [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: TableKeyEnum.CUSTOMER_OPEN_SEA,
   };
 
   const internalColumnMap: Record<FormKey, CrmDataTableColumn[]> = {
@@ -227,6 +229,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
     ],
     [FormDesignKeyEnum.PRODUCT]: [],
+    [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: [],
   };
   const staticColumns: CrmDataTableColumn[] = [
     {
@@ -302,13 +305,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           if (field.businessKey === 'name') {
             return {
               title: field.name,
-              width: 150,
+              width: 200,
               key: field.businessKey,
-              ellipsis: {
-                tooltip: true,
-              },
               sortOrder: false,
               sorter: true,
+              fixed: 'left',
               render: props.specialRender?.[field.businessKey],
             };
           }
@@ -326,6 +327,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       columns = [
         {
           type: 'selection',
+          fixed: 'left',
         },
         ...columns,
         ...(internalColumnMap[props.formKey] || []),
@@ -351,7 +353,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       tableKey: tableKeyMap[props.formKey],
       showSetting: true,
       columns,
-      scrollX: columns.reduce((prev, curr) => prev + (curr.width as number), 0),
+      scrollX: columns.reduce((prev, curr) => prev + (curr.width as number), 0) + 46,
       maxHeight: 600,
     },
     (item) => {

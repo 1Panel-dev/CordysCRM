@@ -35,6 +35,7 @@ import {
   getCustomerFollowRecordFormConfig,
   getCustomerFormConfig,
   getCustomerList,
+  getOpenSeaCustomerList,
   updateCustomer,
   updateCustomerContact,
   updateCustomerFollowPlan,
@@ -114,7 +115,7 @@ export const dateTimeDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: true,
   rules: [],
-  datetype: 'datetime',
+  dateType: 'datetime',
 };
 
 export const radioDefaultFieldConfig: FormCreateField = {
@@ -362,6 +363,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: getCustomerFollowRecordFormConfig,
   [FormDesignKeyEnum.CLUE]: getClueFormConfig,
   [FormDesignKeyEnum.PRODUCT]: getProductFormConfig,
+  [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getCustomerFormConfig,
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -376,6 +378,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: addOptFollowRecord,
   [FormDesignKeyEnum.CLUE]: addClue,
   [FormDesignKeyEnum.PRODUCT]: addProduct,
+  [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: async () => ({}), // 公海无添加
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -390,6 +393,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: updateOptFollowRecord,
   [FormDesignKeyEnum.CLUE]: updateClue,
   [FormDesignKeyEnum.PRODUCT]: updateProduct,
+  [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: async () => ({}), // 公海无更新
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {
@@ -412,4 +416,5 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.CONTACT]: getCustomerContactList,
   [FormDesignKeyEnum.CLUE]: getClueList,
   [FormDesignKeyEnum.PRODUCT]: getProductList,
+  [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getOpenSeaCustomerList,
 };

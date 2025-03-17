@@ -107,9 +107,9 @@
           {{ t('common.type') }}
         </div>
         <n-select
-          v-model:value="fieldConfig.datetype"
+          v-model:value="fieldConfig.dateType"
           :options="dateTypeOptions"
-          :disabled="fieldConfig.disabledProps?.includes('datetype')"
+          :disabled="fieldConfig.disabledProps?.includes('dateType')"
         />
       </div>
       <!-- date End -->
@@ -493,7 +493,7 @@
         <n-date-picker
           v-else-if="fieldConfig.type === FieldTypeEnum.DATE_TIME"
           v-model:value="fieldConfig.defaultValue"
-          :type="fieldConfig.datetype"
+          :type="fieldConfig.dateType"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
           class="w-full"
         ></n-date-picker>

@@ -57,6 +57,7 @@
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -328,16 +329,14 @@
     specialRender: {
       name: (row: any) => {
         return h(
-          NButton,
+          CrmTableButton,
           {
-            text: true,
-            type: 'primary',
             onClick: () => {
               activeClue.value = row;
               showOverviewDrawer.value = true;
             },
           },
-          { default: () => row.name }
+          { default: () => row.name, trigger: () => row.name }
         );
       },
     },

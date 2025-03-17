@@ -50,6 +50,7 @@
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
@@ -347,16 +348,14 @@
     specialRender: {
       name: (row: ClueListItem) => {
         return h(
-          NButton,
+          CrmTableButton,
           {
-            text: true,
-            type: 'primary',
             onClick: () => {
               activeClue.value = row;
               showOverviewDrawer.value = true;
             },
           },
-          { default: () => row.name }
+          { default: () => row.name, trigger: () => row.name }
         );
       },
     },
