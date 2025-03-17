@@ -98,4 +98,11 @@ public class CustomerController {
     public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
         customerService.batchDelete(ids);
     }
+
+    @PostMapping("/batch/to-pool")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @Operation(summary = "批量移入公海")
+    public void batchToPool(@RequestBody @NotEmpty List<String> ids) {
+        customerService.batchToPool(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 }

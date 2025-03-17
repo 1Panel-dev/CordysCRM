@@ -31,6 +31,7 @@ import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -45,9 +46,11 @@ class CustomerControllerTests extends BaseTest {
     protected static final String MODULE_FORM = "module/form";
 
     protected static final String BATCH_TRANSFER = "batch/transfer";
+    protected static final String BATCH_TO_POOL = "batch/to-pool";
 
     private static Customer addCustomer;
     private static Customer anotherCustomer;
+    private static List<String> batchIds = new ArrayList<>();
 
     @Resource
     private BaseMapper<Customer> customerMapper;
@@ -299,7 +302,19 @@ class CustomerControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
         request.setSearchType(BusinessSearchType.ALL.name());
-        this.requestPostWithOk(DEFAULT_PAGE, request);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
+        Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
+        List<CustomerListResponse> customerList = pageResult.getList();
+        customerList.forEach(customerListResponse -> {
+            batchIds.add(customerListResponse.getId());
+        });
+        this.requestPostWithOk(BATCH_TO_POOL, batchIds);
+    }
+
+    @Test
+    @Order(13)
+    void testBatchToPool() throws Exception {
+        this.requestPostWithOk(BATCH_TO_POOL, batchIds);
     }
 
     private List<CustomerField> getCustomerFields(String customerId) {

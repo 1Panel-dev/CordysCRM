@@ -122,19 +122,15 @@ public class CustomerService {
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
-        // 获取公海&&回收信息
-        List<String> poolIds = list.stream().map(CustomerListResponse::getPoolId).distinct().toList();
-        List<CustomerPool> pools = customerPoolService.getPoolsByIds(poolIds);
-        Map<String, CustomerPool> poolMap = pools.stream().collect(Collectors.toMap(CustomerPool::getId, pool -> pool));
+        // 获取负责人默认公海信息
         Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
-        List<String> allPoolIds = ListUtils.union(poolMap.values().stream().map(CustomerPool::getId).toList(),
-                ownersDefaultPoolMap.values().stream().map(CustomerPool::getId).toList()).stream().distinct().toList();
+        List<String> poolIds = ownersDefaultPoolMap.values().stream().map(CustomerPool::getId).distinct().toList();
         Map<String, CustomerPoolRecycleRule> recycleRuleMap;
-        if (CollectionUtils.isEmpty(allPoolIds)) {
+        if (CollectionUtils.isEmpty(poolIds)) {
             recycleRuleMap = Map.of();
         } else {
             LambdaQueryWrapper<CustomerPoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
-            recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, allPoolIds);
+            recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
             List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper.selectListByLambda(recycleRuleWrapper);
             recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
         }
@@ -144,12 +140,7 @@ public class CustomerService {
             List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
             customerListResponse.setModuleFields(customerFields);
             // 设置回收公海
-            CustomerPool reservePool;
-            if (poolMap.containsKey(customerListResponse.getPoolId())) {
-                reservePool = poolMap.get(customerListResponse.getPoolId());
-            } else {
-                reservePool = ownersDefaultPoolMap.get(customerListResponse.getOwner());
-            }
+            CustomerPool reservePool = ownersDefaultPoolMap.get(customerListResponse.getOwner());
             customerListResponse.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
             // 计算剩余归属天数
             customerListResponse.setReservedDays(customerPoolService.calcReservedDay(reservePool,
@@ -285,5 +276,33 @@ public class CustomerService {
         customerOwnerHistoryService.deleteByCustomerIds(ids);
         // 删除客户关系
         customerRelationService.deleteByCustomerIds(ids);
+    }
+
+    /**
+     * 批量移入公海
+     * @param ids id集合
+     * @param orgId 组织ID
+     * @param currentUser 当前用户
+     */
+    public void batchToPool(List<String> ids, String currentUser, String orgId) {
+        LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Customer::getId, ids);
+        List<Customer> customers = customerMapper.selectListByLambda(wrapper);
+        List<String> ownerIds = customers.stream().map(Customer::getOwner).distinct().toList();
+        Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+        for (Customer customer : customers) {
+            CustomerPool customerPool = ownersDefaultPoolMap.get(customer.getOwner());
+            if (customerPool == null) {
+                // 未找到默认公海，不移入
+                continue;
+            }
+            customer.setPoolId(customerPool.getId());
+            customer.setInSharedPool(true);
+            customer.setOwner(null);
+            customer.setCollectionTime(null);
+            customer.setUpdateUser(currentUser);
+            customer.setUpdateTime(System.currentTimeMillis());
+            customerMapper.updateById(customer);
+        }
     }
 }
