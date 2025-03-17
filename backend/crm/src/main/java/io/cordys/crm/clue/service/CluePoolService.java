@@ -1,5 +1,6 @@
 package io.cordys.crm.clue.service;
 
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
@@ -30,6 +31,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -329,6 +331,9 @@ public class CluePoolService {
      * @param accessUserId 访问用户ID
      */
     private void checkPoolOwner(CluePool pool, String accessUserId) {
+        if (StringUtils.equals(accessUserId, InternalUser.ADMIN.getValue())) {
+            return;
+        }
         List<String> ownerIds = JSON.parseArray(pool.getOwnerId(), String.class);
         List<String> ownerUserIds = extUserMapper.getUserIdsByScope(ownerIds, pool.getOrganizationId());
 

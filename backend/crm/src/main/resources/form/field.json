@@ -393,7 +393,7 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "datetype": "date",
+      "dateType": "date",
       "rules": [
         {"key":  "required"}
       ]
@@ -736,7 +736,7 @@
       "name": "跟进时间",
       "internalKey": "recordTime",
       "type": "DATE_TIME",
-      "datetype": "date",
+      "dateType": "date",
       "showLabel": true,
       "readable": true,
       "editable": true,
@@ -867,7 +867,7 @@
       "name": "预计开始时间",
       "internalKey": "planStartTime",
       "type": "DATE_TIME",
-      "datetype": "date",
+      "dateType": "date",
       "showLabel": true,
       "readable": true,
       "editable": true,

@@ -13,8 +13,4 @@ public class PoolCustomerBatchRequest {
 	@NotNull
 	@Schema(description = "批量ID集合")
 	private List<String> batchIds;
-
-	@NotBlank
-	@Schema(description = "公海ID", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String poolId;
 }

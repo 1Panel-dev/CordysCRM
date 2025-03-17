@@ -94,12 +94,6 @@ public class CluePoolControllerTests extends BaseTest {
 		request.setPickRule(pickRule);
 		CluePoolRecycleRuleDTO recycleRule = CluePoolRecycleRuleDTO.builder().expireNotice(true).noticeDays(10).build();
 		request.setRecycleRule(recycleRule);
-		MvcResult mvcResult = this.requestPost("/clue-pool/update", request).andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("clue_pool_access_fail"));
-		// update owner id by sql
-		cluePool.setOwnerId(JSON.toJSONString(List.of("admin")));
-		cluePoolMapper.updateById(cluePool);
-		request.setOwnerIds(List.of("admin"));
 		this.requestPostWithOk("/clue-pool/update", request);
 	}
 

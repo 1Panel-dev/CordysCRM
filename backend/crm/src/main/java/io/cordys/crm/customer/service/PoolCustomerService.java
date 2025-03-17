@@ -8,7 +8,7 @@ import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.dto.request.PoolCustomerBatchAssignRequest;
-import io.cordys.crm.customer.dto.request.PoolCustomerBatchRequest;
+import io.cordys.crm.customer.dto.request.PoolCustomerBatchPickRequest;
 import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerCapacityMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
@@ -106,7 +106,7 @@ public class PoolCustomerService {
 	 * @param currentUser 当前用户ID
 	 * @param currentOrgId 当前组织ID
 	 */
-	public void batchPick(PoolCustomerBatchRequest request, String currentUser, String currentOrgId) {
+	public void batchPick(PoolCustomerBatchPickRequest request, String currentUser, String currentOrgId) {
 		validateCapacity(request.getBatchIds().size(), currentUser, currentOrgId);
 		LambdaQueryWrapper<CustomerPoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
 		pickRuleWrapper.eq(CustomerPoolPickRule::getPoolId, request.getPoolId());

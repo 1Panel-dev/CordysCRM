@@ -69,7 +69,7 @@ public class PoolCustomerController {
 	@PostMapping("/batch-pick")
 	@Operation(summary = "批量领取客户")
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_PICK})
-	public void batchPick(@Validated @RequestBody PoolCustomerBatchRequest request) {
+	public void batchPick(@Validated @RequestBody PoolCustomerBatchPickRequest request) {
 		poolCustomerService.batchPick(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 

@@ -133,7 +133,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 		rule.setPickNumber(1);
 		customerPoolPickRuleMapper.insert(rule);
 		customerCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
-		PoolCustomerBatchRequest request = new PoolCustomerBatchRequest();
+		PoolCustomerBatchPickRequest request = new PoolCustomerBatchPickRequest();
 		request.setBatchIds(List.of(testDataId));
 		request.setPoolId("test-pool-id");
 		MvcResult mvcResult = this.requestPost(BATCH_PICK, request).andExpect(status().is5xxServerError()).andReturn();
@@ -153,7 +153,6 @@ public class PoolCustomerControllerTests extends BaseTest {
 		PoolCustomerBatchAssignRequest request = new PoolCustomerBatchAssignRequest();
 		request.setBatchIds(List.of("aaa"));
 		request.setAssignUserId("cc");
-		request.setPoolId("test-pool-id");
 		MvcResult mvcResult = this.requestPost(BATCH_ASSIGN, request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer.not.exist"));
 		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_ASSIGN, BATCH_ASSIGN, request);
@@ -164,7 +163,6 @@ public class PoolCustomerControllerTests extends BaseTest {
 	void batchDeleteSuccess() throws Exception {
 		PoolCustomerBatchRequest request = new PoolCustomerBatchRequest();
 		request.setBatchIds(List.of(testDataId));
-		request.setPoolId("test-pool-id");
 		this.requestPostWithOk(BATCH_DELETE, request);
 		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, BATCH_DELETE, request);
 	}
