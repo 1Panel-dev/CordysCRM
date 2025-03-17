@@ -9,7 +9,6 @@ import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.field.base.OptionProp;
 import io.cordys.crm.system.dto.field.base.RuleProp;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;

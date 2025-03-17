@@ -89,7 +89,7 @@ public class CustomerOwnerHistoryService {
     }
 
     public void deleteByCustomerIds(List<String> customerIds) {
-        LambdaQueryWrapper<CustomerOwner> wrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<CustomerOwner> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(CustomerOwner::getCustomerId, customerIds);
         customerOwnerMapper.deleteByLambda(wrapper);
     }

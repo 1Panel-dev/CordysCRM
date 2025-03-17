@@ -197,7 +197,7 @@ public class MessageTaskService {
                         String platform = messageTask.getReceiveType();
                         String defaultSubject = StringUtils.EMPTY;
                         if (StringUtils.equalsIgnoreCase(platform, NotificationConstants.SendType.MAIL)) {
-                            defaultSubject = "Cordys 通知";
+                            defaultSubject = "CORDYS 通知";
                         }
                         ProjectRobotConfigDTO projectRobotConfigDTO = new ProjectRobotConfigDTO();
                         projectRobotConfigDTO.setEnable(messageTask.getEnable());

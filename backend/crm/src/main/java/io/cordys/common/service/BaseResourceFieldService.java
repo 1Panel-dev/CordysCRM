@@ -51,8 +51,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         Type superclass = getClass().getGenericSuperclass();
 
         // 检查是否是ParameterizedType
-        if (superclass instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) superclass;
+        if (superclass instanceof ParameterizedType parameterizedType) {
 
             // 获取泛型类型的实际类型参数
             Type[] typeArguments = parameterizedType.getActualTypeArguments();

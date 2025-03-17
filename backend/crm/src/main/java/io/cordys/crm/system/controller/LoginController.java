@@ -91,7 +91,7 @@ public class LoginController {
      *
      * @return 返回退出成功信息。
      */
-    @GetMapping(value = "/signout")
+    @GetMapping(value = "/logout")
     @Operation(summary = "退出登录")
     public String logout() {
         if (SessionUtils.getUser() == null) {

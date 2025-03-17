@@ -1,9 +1,13 @@
 package io.cordys.crm.utils;
 
+import io.cordys.common.util.LogUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class FileBaseUtils {
 
@@ -27,27 +31,26 @@ public class FileBaseUtils {
         if (!file.isFile()) {
             return null;
         }
-        MessageDigest digest = null;
-        FileInputStream in = null;
-        byte buffer[] = new byte[8192];
-        int len;
-        try {
-            digest = MessageDigest.getInstance("MD5");
-            in = new FileInputStream(file);
+
+        try (FileInputStream in = new FileInputStream(file)) {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] buffer = new byte[8192];
+            int len;
             while ((len = in.read(buffer)) != -1) {
                 digest.update(buffer, 0, len);
             }
-            BigInteger bigInt = new BigInteger(1, digest.digest());
-            return bigInt.toString(16);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            try {
-                in.close();
-            } catch (Exception e) {
-                e.printStackTrace();
+
+            // 返回 MD5 字符串
+            byte[] md5Bytes = digest.digest();
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : md5Bytes) {
+                hexString.append(String.format("%02x", b));
             }
+            return hexString.toString();
+        } catch (IOException | NoSuchAlgorithmException e) {
+            // 使用标准日志框架记录异常信息
+            LogUtils.error("getFileMD5 error", e);
+            return null;
         }
     }
 
@@ -58,7 +61,6 @@ public class FileBaseUtils {
             BigInteger bigInt = new BigInteger(1, digest.digest());
             return bigInt.toString(16);
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }

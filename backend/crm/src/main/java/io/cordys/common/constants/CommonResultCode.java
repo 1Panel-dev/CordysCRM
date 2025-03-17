@@ -12,8 +12,8 @@ public enum CommonResultCode implements IResultCode {
     FIELD_VALIDATE_ERROR(100001, "field_validate_error");
 
 
-    private int code;
-    private String message;
+    private final int code;
+    private final String message;
 
     CommonResultCode(int code, String message) {
         this.code = code;

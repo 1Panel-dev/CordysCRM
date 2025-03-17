@@ -89,7 +89,7 @@ public class ClueOwnerHistoryService {
     }
 
     public void deleteByClueIds(List<String> clueIds) {
-        LambdaQueryWrapper<ClueOwner> wrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<ClueOwner> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(ClueOwner::getClueId, clueIds);
         clueOwnerMapper.deleteByLambda(wrapper);
     }

@@ -288,13 +288,13 @@ public class OpportunityService {
         List<Opportunity> opportunityList = opportunityMapper.selectListByLambda(wrapper);
         opportunityMapper.deleteByIds(ids);
         opportunityFieldService.deleteByResourceIds(ids);
-        List<LogDTO> logDTOS = new ArrayList<>();
+        List<LogDTO> logs = new ArrayList<>();
         opportunityList.forEach(opportunity -> {
             LogDTO logDTO = new LogDTO(opportunity.getOrganizationId(), opportunity.getId(), userId, LogType.DELETE, LogModule.OPPORTUNITY, opportunity.getName());
             logDTO.setOriginalValue(opportunity);
-            logDTOS.add(logDTO);
+            logs.add(logDTO);
         });
-        logService.batchAdd(logDTOS);
+        logService.batchAdd(logs);
     }
 
 

@@ -32,15 +32,11 @@ public class BaseModuleFieldValue implements Serializable {
     private Object fieldValue;
 
     public boolean valid() {
-        if (fieldValue == null) {
-            return false;
-        }
-        if (fieldValue instanceof String fieldValueStr && StringUtils.isBlank(fieldValueStr)) {
-            return false;
-        }
-        if (fieldValue instanceof List fieldValueList && CollectionUtils.isEmpty(fieldValueList)) {
-            return false;
-        }
-        return true;
+        return switch (fieldValue) {
+            case null -> false;
+            case String fieldValueStr when StringUtils.isBlank(fieldValueStr) -> false;
+            case List fieldValueList when CollectionUtils.isEmpty(fieldValueList) -> false;
+            default -> true;
+        };
     }
 }

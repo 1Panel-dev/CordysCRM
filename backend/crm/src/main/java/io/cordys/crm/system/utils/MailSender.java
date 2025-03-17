@@ -76,7 +76,7 @@ public class MailSender {
         if (subject.length() > 60) {
             subject = subject.substring(0, 59);
         }
-        helper.setSubject("Cordys Crm " + subject);
+        helper.setSubject("CORDYS CRM " + subject);
 
         LogUtils.info("收件人地址: {}", Arrays.asList(users));
         helper.setText(context, true);

@@ -108,7 +108,7 @@ public class CustomerCollaborationService {
     }
 
     public void deleteByCustomerIds(List<String> customerIds) {
-        LambdaQueryWrapper<CustomerCollaboration> wrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<CustomerCollaboration> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(CustomerCollaboration::getCustomerId, customerIds);
         customerCollaborationMapper.deleteByLambda(wrapper);
     }

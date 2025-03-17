@@ -2,6 +2,7 @@ package io.cordys.crm.system.excel.constants;
 
 
 import io.cordys.crm.system.excel.domain.UserExcelData;
+import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -25,24 +26,18 @@ public enum UserImportFiled {
     WORK_CITY("workCity", "工作城市", "Work City", UserExcelData::getWorkCity),
     EMPLOYEE_TYPE("employeeType", "员工类型", "Employee type", UserExcelData::getEmployeeType);
 
-    private Map<Locale, String> filedLangMap;
-    private Function<UserExcelData, String> parseFunc;
-    private String value;
+    @Getter
+    private final Map<Locale, String> filedLangMap;
+    private final Function<UserExcelData, String> parseFunc;
+    @Getter
+    private final String value;
 
     UserImportFiled(String value, String zn, String us, Function<UserExcelData, String> parseFunc) {
-        this.filedLangMap = new HashMap<Locale, String>();
+        this.filedLangMap = new HashMap<>();
         filedLangMap.put(Locale.SIMPLIFIED_CHINESE, zn);
         filedLangMap.put(Locale.US, us);
         this.value = value;
         this.parseFunc = parseFunc;
-    }
-
-    public Map<Locale, String> getFiledLangMap() {
-        return this.filedLangMap;
-    }
-
-    public String getValue() {
-        return value;
     }
 
     public String parseExcelDataValue(UserExcelData excelData) {
@@ -50,6 +45,6 @@ public enum UserImportFiled {
     }
 
     public boolean containsHead(String head) {
-        return filedLangMap.values().contains(head);
+        return filedLangMap.containsValue(head);
     }
 }
