@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.mapper;
 
+import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.*;
@@ -15,11 +16,15 @@ import java.util.List;
  */
 public interface ExtCustomerContactMapper {
 
-    List<CustomerContactListResponse> list(@Param("request") CustomerContactPageRequest request, @Param("orgId") String orgId);
+    List<CustomerContactListResponse> list(@Param("request") CustomerContactPageRequest request, @Param("orgId") String orgId,
+                                           @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
     boolean checkAddExist(@Param("customerContact") CustomerContact customerContact);
 
     boolean checkUpdateExist(@Param("customerContact") CustomerContact CustomerContact);
 
     List<OptionDTO> selectContactOptionByIds(List<String> contactIds);
+
+    List<CustomerContactListResponse> listByCustomerId(@Param("customerId") String customerId, @Param("userId") String userId,
+                                                       @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 }

@@ -1,12 +1,16 @@
 package io.cordys.crm.customer.service;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.crm.customer.constants.CustomerCollaborationType;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerCollaboration;
 import io.cordys.crm.customer.domain.CustomerContact;
 import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactDisableRequest;
@@ -25,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.cordys.crm.customer.constants.CustomerResultCode.CUSTOMER_CONTACT_EXIST;
@@ -44,12 +49,16 @@ public class CustomerContactService {
     @Resource
     private ExtCustomerContactMapper extCustomerContactMapper;
     @Resource
+    private BaseMapper<Customer> customerMapper;
+    @Resource
     private BaseService baseService;
     @Resource
     private CustomerContactFieldService customerContactFieldService;
+    @Resource
+    private CustomerCollaborationService customerCollaborationService;
 
-    public List<CustomerContactListResponse> list(CustomerContactPageRequest request, String orgId) {
-        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, orgId);
+    public List<CustomerContactListResponse> list(CustomerContactPageRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, orgId, deptDataPermission);
         return buildListData(list, orgId);
     }
 
@@ -183,5 +192,40 @@ public class CustomerContactService {
         customerContact.setId(id);
         customerContact.setDisableReason(request.getReason());
         customerContactMapper.updateById(customerContact);
+    }
+
+    public List<CustomerContactListResponse> listByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        // 根据数据权限查询联系人
+        List<CustomerContactListResponse> list = extCustomerContactMapper.listByCustomerId(customerId, userId, deptDataPermission);
+        // 查询协作人信息
+        List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerIdAndUserId(customerId, userId);
+        if (CollectionUtils.isNotEmpty(collaborations)) {
+            // 获取协作人相关的联系人
+            String collaborationType = collaborations.getFirst().getCollaborationType();
+            List<CustomerContact> collaborationContacts;
+            if (StringUtils.equals(collaborationType, CustomerCollaborationType.READ_ONLY.name())) {
+                // 只读，查询客户责任人的联系人
+                Customer customer = customerMapper.selectByPrimaryKey(customerId);
+                CustomerContact example = new CustomerContact();
+                example.setCustomerId(customerId);
+                example.setOwner(customer.getOwner());
+                collaborationContacts = customerContactMapper.select(example);
+            } else {
+                // 协作，查询当前用户的联系人
+                CustomerContact example = new CustomerContact();
+                example.setCustomerId(customerId);
+                example.setOwner(userId);
+                collaborationContacts = customerContactMapper.select(example);
+            }
+            Set<String> userIds = list.stream()
+                    .map(CustomerContactListResponse::getOwner)
+                    .collect(Collectors.toSet());
+
+            collaborationContacts.stream()
+                    .filter(contact -> !userIds.contains(contact.getOwner())) // 去重
+                    .map(contact -> BeanUtils.copyBean(new CustomerContactListResponse(), contact))
+                    .forEach(list::add);
+        }
+        return buildListData(list, orgId);
     }
 }

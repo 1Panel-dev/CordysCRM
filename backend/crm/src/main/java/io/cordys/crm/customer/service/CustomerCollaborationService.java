@@ -36,6 +36,13 @@ public class CustomerCollaborationService {
         return buildListData(orgId, collaborations);
     }
 
+    public List<CustomerCollaboration> selectByCustomerIdAndUserId(String customerId, String userId) {
+        CustomerCollaboration example = new CustomerCollaboration();
+        example.setCustomerId(customerId);
+        example.setUserId(userId);
+        return customerCollaborationMapper.select(example);
+    }
+
     private List<CustomerCollaborationListResponse> buildListData(String orgId, List<CustomerCollaboration> collaborations) {
         if (CollectionUtils.isEmpty(collaborations)) {
             return List.of();

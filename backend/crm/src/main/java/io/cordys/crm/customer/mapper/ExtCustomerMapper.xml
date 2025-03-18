@@ -107,7 +107,7 @@
     </sql>
 
     <sql id="fieldSortJoin">
-        <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'owner'">
+        <if test="${sort} != null and ${sort}.valid() and ${sort}.name != 'name' and ${sort}.name != 'owner'">
             <bind name="sortName" value="${sort}.name"/>
             left join customer_field sort_table
             on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}

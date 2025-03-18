@@ -30,6 +30,7 @@ import java.util.List;
 class CustomerContactControllerTests extends BaseTest {
     private static final String BASE_PATH = "/customer/contact/";
     protected static final String MODULE_FORM = "module/form";
+    protected static final String LIST = "list/{0}";
     protected static final String DISABLE = "disable/{0}";
     protected static final String ENABLE = "enable/{0}";
 
@@ -91,7 +92,8 @@ class CustomerContactControllerTests extends BaseTest {
         assertErrorCode(this.requestPost(DEFAULT_ADD, request), CustomerResultCode.CUSTOMER_CONTACT_EXIST);
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_ADD, DEFAULT_ADD, request);
+        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_ADD, PermissionConstants.CUSTOMER_MANAGEMENT_ADD),
+                DEFAULT_ADD, request);
     }
 
     @Test
@@ -114,7 +116,8 @@ class CustomerContactControllerTests extends BaseTest {
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, DEFAULT_UPDATE, request);
+        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE),
+                DEFAULT_UPDATE, request);
     }
 
     @Test
@@ -135,7 +138,7 @@ class CustomerContactControllerTests extends BaseTest {
         Assertions.assertNotNull(getResponse.getDepartmentName());
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, DEFAULT_GET, addCustomerContact.getId());
+        requestGetPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ), DEFAULT_GET, addCustomerContact.getId());
     }
 
     @Test
@@ -165,6 +168,27 @@ class CustomerContactControllerTests extends BaseTest {
     }
 
     @Test
+    @Order(4)
+    void testList() throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, "customerId");
+        List<CustomerContactListResponse> customerContactList = getResultDataArray(mvcResult, CustomerContactListResponse.class);
+        customerContactList.forEach(customerContactListResponse -> {
+            CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(customerContactListResponse.getId());
+            CustomerContact result = BeanUtils.copyBean(new CustomerContact(), customerContactListResponse);
+            result.setOrganizationId(customerContact.getOrganizationId());
+            Assertions.assertEquals(customerContact, result);
+            Assertions.assertNotNull(customerContactListResponse.getUpdateUserName());
+            Assertions.assertNotNull(customerContactListResponse.getDepartmentName());
+            Assertions.assertNotNull(customerContactListResponse.getOwnerName());
+            Assertions.assertNotNull(customerContactListResponse.getDepartmentId());
+            Assertions.assertNotNull(customerContactListResponse.getDepartmentName());
+        });
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, "customerId");
+    }
+
+    @Test
     @Order(5)
     void testDisable() throws Exception {
         CustomerContactDisableRequest request = new CustomerContactDisableRequest();
@@ -182,7 +206,8 @@ class CustomerContactControllerTests extends BaseTest {
         this.requestPostWithOk(DISABLE, request, addCustomerContact.getId());
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, DISABLE, request, addCustomerContact.getId());
+        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE),
+                DISABLE, request, addCustomerContact.getId());
     }
 
     @Test
@@ -196,7 +221,8 @@ class CustomerContactControllerTests extends BaseTest {
         Assertions.assertTrue(customerContact.getEnable());
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, ENABLE, addCustomerContact.getId());
+        requestGetPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE),
+                ENABLE, addCustomerContact.getId());
     }
 
     @Test
@@ -206,6 +232,7 @@ class CustomerContactControllerTests extends BaseTest {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(addCustomerContact.getId());
         Assertions.assertNull(customerContact);
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE, DEFAULT_DELETE, addCustomerContact.getId());
+        requestGetPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE, PermissionConstants.CUSTOMER_MANAGEMENT_DELETE),
+                DEFAULT_DELETE, addCustomerContact.getId());
     }
 }

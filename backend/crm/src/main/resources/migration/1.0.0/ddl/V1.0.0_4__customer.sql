@@ -193,7 +193,7 @@ CREATE TABLE customer_collaboration
     `update_user`        VARCHAR(32) NOT NULL COMMENT '更新人',
     `user_id`            VARCHAR(32) NOT NULL COMMENT '协作人id',
     `customer_id`        VARCHAR(32) NOT NULL COMMENT '客户id',
-    `collaboration_type` VARCHAR(50) NOT NULL COMMENT '协作类型(共享/协作)',
+    `collaboration_type` VARCHAR(50) NOT NULL COMMENT '协作类型(只读/协作)',
     PRIMARY KEY (id)
 ) COMMENT = '客户协作人'
 ENGINE = InnoDB

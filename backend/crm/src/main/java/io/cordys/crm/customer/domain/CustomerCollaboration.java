@@ -22,6 +22,6 @@ public class CustomerCollaboration extends BaseModel {
 	@Schema(description = "客户id")
 	private String customerId;
 
-	@Schema(description = "协作类型(共享/协作)")
+	@Schema(description = "协作类型(只读/协作)")
 	private String collaborationType;
 }

@@ -75,7 +75,7 @@ class CustomerCollaborationControllerTests extends BaseTest {
         // 请求成功
         CustomerCollaborationUpdateRequest request = new CustomerCollaborationUpdateRequest();
         request.setId(addCustomerCollaboration.getId());
-        request.setCollaborationType(CustomerCollaborationType.SHARE.name());
+        request.setCollaborationType(CustomerCollaborationType.READ_ONLY.name());
         this.requestPostWithOk(DEFAULT_UPDATE, request);
 
         // 校验请求成功数据

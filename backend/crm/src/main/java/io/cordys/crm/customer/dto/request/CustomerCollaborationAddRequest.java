@@ -28,7 +28,7 @@ public class CustomerCollaborationAddRequest {
     private String userId;
 
     @NotNull
-    @Schema(description = "协作类型(共享 SHARE / 协作 COLLABORATION)", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "协作类型(只读 READ_ONLY / 协作 COLLABORATION)", requiredMode = Schema.RequiredMode.REQUIRED)
     @EnumValue(enumClass = CustomerCollaborationType.class)
     private String collaborationType;
 }

@@ -6,9 +6,9 @@ package io.cordys.crm.customer.constants;
  */
 public enum CustomerCollaborationType {
     /**
-     * 共享
+     * 只读
      */
-    SHARE,
+    READ_ONLY,
     /**
      * 协作
      */
