@@ -115,6 +115,12 @@
                 and condition.name != 'products'
                 and condition.name != 'contactId'
                 and condition.name != 'followTime'
+                and condition.name != 'status'
+                and condition.name != 'updateUser'
+                and condition.name != 'createTime'
+                and condition.name != 'updateTime'
+                and condition.name != 'createUser'
+                and condition.name != 'follower'
                 and condition.name != 'departmentId'">
                     inner join opportunity_field ${tablePrefix}_${i}
                     on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -124,7 +130,23 @@
     </sql>
 
     <sql id="fieldSortJoin">
-        <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'owner'">
+        <if test="${sort} != null
+                and ${sort}.name != 'name'
+                and condition.name != 'owner'
+                and condition.name != 'customerId'
+                and condition.name != 'stage'
+                and condition.name != 'amount'
+                and condition.name != 'possible'
+                and condition.name != 'products'
+                and condition.name != 'contactId'
+                and condition.name != 'followTime'
+                and condition.name != 'status'
+                and condition.name != 'updateUser'
+                and condition.name != 'createTime'
+                and condition.name != 'updateTime'
+                and condition.name != 'createUser'
+                and condition.name != 'follower'
+                and condition.name != 'departmentId'">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_field sort_table
             on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
