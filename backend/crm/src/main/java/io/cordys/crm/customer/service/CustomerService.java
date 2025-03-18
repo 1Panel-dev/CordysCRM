@@ -301,6 +301,8 @@ public class CustomerService {
                 // 未找到默认公海，不移入
                 continue;
             }
+            // 插入责任人历史
+            customerOwnerHistoryService.add(customer, currentUser);
             customer.setPoolId(customerPool.getId());
             customer.setInSharedPool(true);
             customer.setOwner(null);

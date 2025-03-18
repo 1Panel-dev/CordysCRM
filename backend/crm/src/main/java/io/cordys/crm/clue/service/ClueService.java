@@ -16,13 +16,10 @@ import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
-import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -267,6 +264,8 @@ public class ClueService {
                 // 未找到默认公海，不移入
                 continue;
             }
+            // 插入责任人历史
+            clueOwnerHistoryService.add(clue, currentUser);
             clue.setPoolId(cluePool.getId());
             clue.setInSharedPool(true);
             clue.setOwner(null);

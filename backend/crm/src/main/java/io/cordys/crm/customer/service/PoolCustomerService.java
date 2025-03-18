@@ -5,6 +5,7 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerOwner;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.dto.request.PoolCustomerBatchAssignRequest;
@@ -16,10 +17,12 @@ import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -27,6 +30,8 @@ public class PoolCustomerService {
 
 	@Resource
 	private BaseMapper<Customer> customerMapper;
+	@Resource
+	private BaseMapper<CustomerOwner> ownerMapper;
 	@Resource
 	private BaseMapper<CustomerPool> poolMapper;
 	@Resource
@@ -198,11 +203,20 @@ public class PoolCustomerService {
 		if (customer == null) {
 			throw new IllegalArgumentException(Translator.get("customer.not.exist"));
 		}
-		if (pickRule != null && pickRule.getLimitPreOwner() && StringUtils.equals(customer.getOwner(), ownerId)) {
-			if (System.currentTimeMillis() - customer.getCollectionTime() < pickRule.getPickIntervalDays() * DAY_MILLIS) {
-				throw new ArithmeticException(Translator.get("customer.pre_owner.pick.limit"));
+		if (pickRule != null && pickRule.getLimitPreOwner()) {
+			LambdaQueryWrapper<CustomerOwner> queryWrapper = new LambdaQueryWrapper<>();
+			queryWrapper.eq(CustomerOwner::getCustomerId, customerId);
+			List<CustomerOwner> customerOwners = ownerMapper.selectListByLambda(queryWrapper);
+			if (CollectionUtils.isNotEmpty(customerOwners)) {
+				customerOwners.sort(Comparator.comparingLong(CustomerOwner::getCollectionTime).reversed());
+				CustomerOwner lastOwner = customerOwners.getFirst();
+				if (StringUtils.equals(lastOwner.getOwner(), ownerId) &&
+						System.currentTimeMillis() - lastOwner.getCollectionTime() < pickRule.getPickIntervalDays() * DAY_MILLIS) {
+					throw new ArithmeticException(Translator.get("customer.pre_owner.pick.limit"));
+				}
 			}
 		}
+		customer.setPoolId(null);
 		customer.setInSharedPool(false);
 		customer.setOwner(ownerId);
 		customer.setCollectionTime(System.currentTimeMillis());

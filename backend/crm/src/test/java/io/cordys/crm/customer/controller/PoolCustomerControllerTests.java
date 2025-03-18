@@ -7,6 +7,7 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerCapacity;
+import io.cordys.crm.customer.domain.CustomerOwner;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
 import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
@@ -44,6 +45,8 @@ public class PoolCustomerControllerTests extends BaseTest {
 
 	@Resource
 	private BaseMapper<Customer> customerMapper;
+	@Resource
+	private BaseMapper<CustomerOwner> customerOwnerMapper;
 	@Resource
 	private BaseMapper<CustomerCapacity> customerCapacityMapper;
 	@Resource
@@ -142,6 +145,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 		rule.setLimitPreOwner(true);
 		rule.setPickIntervalDays(1);
 		customerPoolPickRuleMapper.updateById(rule);
+		insertOwnerHis();
 		MvcResult mvcResult1 = this.requestPost(BATCH_PICK, request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("customer.pre_owner.pick.limit"));
 		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_PICK, BATCH_PICK, request);
@@ -208,5 +212,16 @@ public class PoolCustomerControllerTests extends BaseTest {
 		rule.setUpdateTime(System.currentTimeMillis());
 		rule.setUpdateUser("admin");
 		return rule;
+	}
+
+	private void insertOwnerHis() {
+		CustomerOwner customerOwner = new CustomerOwner();
+		customerOwner.setId(IDGenerator.nextStr());
+		customerOwner.setCustomerId(testDataId);
+		customerOwner.setOwner("admin");
+		customerOwner.setCollectionTime(System.currentTimeMillis());
+		customerOwner.setOperator("admin");
+		customerOwner.setEndTime(System.currentTimeMillis());
+		customerOwnerMapper.insert(customerOwner);
 	}
 }
