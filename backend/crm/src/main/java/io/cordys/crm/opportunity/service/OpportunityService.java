@@ -15,7 +15,6 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.Opportunity;
-import io.cordys.crm.opportunity.domain.OpportunityField;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
@@ -45,8 +44,6 @@ public class OpportunityService {
     @Resource
     private BaseService baseService;
     @Resource
-    private BaseMapper<OpportunityField> opportunityFieldMapper;
-    @Resource
     private OpportunityFieldService opportunityFieldService;
     @Resource
     private LogService logService;
@@ -54,8 +51,8 @@ public class OpportunityService {
     private BaseMapper<Opportunity> opportunityMapper;
     @Resource
     private BaseMapper<Product> productMapper;
-	@Autowired
-	private OpportunityRuleService opportunityRuleService;
+    @Autowired
+    private OpportunityRuleService opportunityRuleService;
 
 
     public List<OpportunityListResponse> list(OpportunityPageRequest request, String userId, String orgId,
@@ -70,7 +67,7 @@ public class OpportunityService {
         }
         List<String> opportunityIds = list.stream().map(OpportunityListResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<OpportunityField>> opportunityFiledMap = getOpportunityFiledMap(opportunityIds);
+        Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = opportunityFieldService.getResourceFieldMap(opportunityIds);
 
         List<String> ownerIds = list.stream()
                 .map(OpportunityListResponse::getOwner)
@@ -105,7 +102,7 @@ public class OpportunityService {
 
         list.forEach(opportunityListResponse -> {
             // 获取自定义字段
-            List<OpportunityField> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
+            List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
 
             opportunityListResponse.setReservedDays(opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
             opportunityListResponse.setModuleFields(opportunityFields);
@@ -118,22 +115,6 @@ public class OpportunityService {
 
         });
         return baseService.setCreateAndUpdateUserName(list);
-    }
-
-
-    public Map<String, List<OpportunityField>> getOpportunityFiledMap(List<String> opportunityIds) {
-        if (CollectionUtils.isEmpty(opportunityIds)) {
-            return Map.of();
-        }
-        List<OpportunityField> opportunityFields = getOpportunityFieldsByOpportunityIds(opportunityIds);
-        return opportunityFields.stream().collect(Collectors.groupingBy(OpportunityField::getResourceId));
-    }
-
-
-    private List<OpportunityField> getOpportunityFieldsByOpportunityIds(List<String> opportunityIds) {
-        LambdaQueryWrapper<OpportunityField> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(OpportunityField::getResourceId, opportunityIds);
-        return opportunityFieldMapper.selectListByLambda(wrapper);
     }
 
 

@@ -14,7 +14,7 @@ public class OpportunityListResponse {
     private String id;
 
     @Schema(description = "商机名称")
-    private String opportunityName;
+    private String name;
 
     @Schema(description = "客户名称")
     private String customerName;
