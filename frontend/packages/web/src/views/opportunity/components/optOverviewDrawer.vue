@@ -21,38 +21,27 @@
         class="mb-[16px]"
         :workflow-list="workflowList"
         :source-id="sourceId"
-        :save-api="updateOptStage"
+        :update-api="updateOptStage"
         @load-detail="loadStageDetail"
       />
     </template>
     <template #right>
       <FollowDetail
         v-if="['followRecord', 'followPlan'].includes(activeTab)"
-        v-model:data="followList"
-        v-model:active-status="activeStatus"
         class="mt-[16px]"
-        :loading="followLoading"
         :show-title="activeTab === 'followRecord'"
-        :type="activeTab"
-        wrapper-class="h-[calc(100vh-162px)]"
-        virtual-scroll-height="calc(100vh - 194px)"
-        @reach-bottom="handleReachBottom"
-        @search="() => loadFollowList()"
-        @cancel-plan="handleCancelPlan"
-        @handle-edit="handleEditFollow"
+        :active-type="(activeTab as 'followRecord'| 'followPlan')"
+        wrapper-class="h-[calc(100vh-290px)]"
+        virtual-scroll-height="calc(100vh - 322px)"
+        :follow-api-key="FormDesignKeyEnum.BUSINESS"
+        :source-id="sourceId"
       />
 
       <HeaderTable
         v-if="activeTab === 'headRecord'"
-        class="mt-[16px] h-[calc(100vh-161px)]"
+        class="mt-[16px] h-[calc(100vh-290px)]"
         :source-id="sourceId"
         :load-list-api="getUserList"
-      />
-
-      <CrmFormCreateDrawer
-        v-model:visible="formDrawerVisible"
-        :form-key="realFormKey"
-        :source-id="realFollowSourceId"
       />
     </template>
 
@@ -65,15 +54,13 @@
 <script setup lang="ts">
   import { SelectOption, useMessage } from 'naive-ui';
 
-  import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
-  import type { FollowDetailItem, TransferParams } from '@lib/shared/models/customer';
+  import type { TransferParams } from '@lib/shared/models/customer';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
-  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import HeaderTable from '@/components/business/crm-form-create-table/headerTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
@@ -81,15 +68,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import {
-    cancelOptFollowPlan,
-    deleteOpt,
-    getOptFollowPlanList,
-    getOptFollowRecordList,
-    getOptStageDetail,
-    transferOpt,
-    updateOptStage,
-  } from '@/api/modules/opportunity';
+  import { deleteOpt, getOptStageDetail, transferOpt, updateOptStage } from '@/api/modules/opportunity';
   import { getUserList } from '@/api/modules/system/org';
   import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
@@ -221,81 +200,9 @@
     return [...props.baseSteps, endStage.value];
   });
 
-  const pageNation = ref({
-    total: 0,
-    pageSize: 10,
-    current: 1,
-  });
-
-  const followList = ref<FollowDetailItem[]>([]);
-  const activeStatus = ref(CustomerFollowPlanStatusEnum.ALL);
-  const followLoading = ref<boolean>(false);
-
-  async function loadFollowList() {
-    try {
-      followLoading.value = true;
-      const params = {
-        sourceId: sourceId.value,
-        current: pageNation.value.current || 1,
-        pageSize: pageNation.value.pageSize,
-      };
-
-      let res;
-      if (activeTab.value === 'followPlan') {
-        res = await getOptFollowPlanList({
-          ...params,
-          status: activeStatus.value,
-        });
-      } else {
-        res = await getOptFollowRecordList(params);
-      }
-
-      followList.value = res.list || [];
-      pageNation.value.total = res.total;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    } finally {
-      followLoading.value = false;
-    }
-  }
-
-  function handleReachBottom() {
-    pageNation.value.current += 1;
-    if (pageNation.value.current > Math.ceil(pageNation.value.total / pageNation.value.pageSize)) {
-      return;
-    }
-    loadFollowList();
-  }
-
-  const formDrawerVisible = ref(false);
-  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS);
-
-  // 取消计划
-  async function handleCancelPlan(item: FollowDetailItem) {
-    try {
-      await cancelOptFollowPlan(item.id);
-      Message.success(t('common.cancelSuccess'));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  // 编辑跟进内容
-  const realFollowSourceId = ref<string | undefined>('');
-  function handleEditFollow(item: FollowDetailItem) {
-    realFormKey.value =
-      activeTab.value === 'followRecord'
-        ? FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS
-        : FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS;
-    realFollowSourceId.value = item.id;
-    formDrawerVisible.value = true;
-  }
-
   // 转移
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
-  function handleTransfer() {
+  function handleTransfer(done?: () => void) {
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
         try {
@@ -307,6 +214,7 @@
           Message.success(t('common.transferSuccess'));
           transferForm.value = { ...defaultTransferForm };
           showOptOverviewDrawer.value = false;
+          done?.();
           emit('refresh');
         } catch (e) {
           // eslint-disable-next-line no-console
@@ -349,10 +257,10 @@
     }
   }
 
-  function handleSelect(key: string) {
+  function handleSelect(key: string, done?: () => void) {
     switch (key) {
       case 'pop-transfer':
-        handleTransfer();
+        handleTransfer(done);
         break;
       case 'delete':
         handleDelete();
@@ -363,19 +271,9 @@
   }
 
   watch(
-    () => activeTab.value,
-    (val) => {
-      if (['followPlan', 'followRecord'].includes(val)) {
-        loadFollowList();
-      }
-    }
-  );
-
-  watch(
     () => showOptOverviewDrawer.value,
     (val) => {
       if (val) {
-        loadFollowList();
         loadStageDetail();
       }
     }

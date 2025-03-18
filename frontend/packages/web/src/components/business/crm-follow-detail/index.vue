@@ -1,27 +1,26 @@
 <template>
-  <div :class="`crm-follow-detail ${props.noPadding ? '' : 'p-[24px]'} ${props.wrapperClass}`">
+  <div :class="`crm-follow-detail p-[24px] ${props.wrapperClass}`">
     <div class="mb-[16px] flex items-center justify-between">
-      <div v-if="props.showTitle" class="font-medium text-[var(--text-n1)]">
+      <div v-if="props.activeType === 'followRecord'" class="font-medium text-[var(--text-n1)]">
         {{ t('crmFollowRecord.followRecord') }}
       </div>
       <CrmTab
-        v-if="props.type === 'followPlan'"
+        v-if="props.activeType === 'followPlan'"
         v-model:active-tab="activeStatus"
         no-content
         :tab-list="statusTabList"
         type="segment"
-        @change="() => emit('search')"
+        @change="() => loadFollowList()"
       >
       </CrmTab>
       <CrmSearchInput
-        v-if="props.showSearchInput"
         v-model:value="followKeyword"
         :placeholder="t('common.byKeywordSearch')"
         class="!w-[240px]"
-        @search="() => emit('search')"
+        @search="(val) => searchData(val)"
       />
     </div>
-    <n-spin :show="props.loading" class="h-full">
+    <n-spin :show="loading" class="h-full">
       <FollowRecord
         v-model:data="data"
         v-model:keyword="followKeyword"
@@ -29,17 +28,17 @@
         :get-description-fun="getDescriptionFun"
         key-field="id"
         :empty-text="
-          props.type === 'followPlan' ? t('crmFollowRecord.noFollowPlan') : t('crmFollowRecord.noFollowRecord')
+          props.activeType === 'followPlan' ? t('crmFollowRecord.noFollowPlan') : t('crmFollowRecord.noFollowRecord')
         "
-        @reach-bottom="() => emit('reachBottom')"
+        @reach-bottom="handleReachBottom"
       >
         <template #headerAction="{ item }">
           <div class="flex items-center gap-[12px]">
             <n-button
-              v-if="props.type === 'followPlan' && item.status !== CustomerFollowPlanStatusEnum.CANCELLED"
+              v-if="props.activeType === 'followPlan' && item.status !== CustomerFollowPlanStatusEnum.CANCELLED"
               type="primary"
               text
-              @click="cancelPlan(item)"
+              @click="handleCancelPlan(item)"
             >
               {{ t('common.cancelPlan') }}
             </n-button>
@@ -60,6 +59,12 @@
         </template>
       </FollowRecord>
     </n-spin>
+    <CrmFormCreateDrawer
+      v-model:visible="formDrawerVisible"
+      :form-key="realFormKey"
+      :source-id="realFollowSourceId"
+      @saved="() => loadFollowList()"
+    />
   </div>
 </template>
 
@@ -68,52 +73,50 @@
   import dayjs from 'dayjs';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import type { FollowDetailItem } from '@lib/shared/models/customer';
 
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import FollowRecord from './followRecord.vue';
 
   import { useI18n } from '@/hooks/useI18n';
+
+  import useFollowApi, { type followEnumType } from './useFollowApi';
 
   const { t } = useI18n();
 
   export type ActiveType = 'followPlan' | 'followRecord';
 
   interface FollowDetailProps {
-    type: string; // 跟进记录|跟进计划
-    showSearchInput?: boolean; // 是否显示检索框
-    showTitle?: boolean; // 是否显示标题
-    noPadding?: boolean; // 无边距
+    activeType: 'followRecord' | 'followPlan'; // 跟进记录|跟进计划
+    followApiKey: followEnumType; // 跟进计划apiKey
+
     virtualScrollHeight?: string; // 虚拟高度
     wrapperClass?: string;
-    loading: boolean;
+    sourceId: string; // 资源id
   }
 
-  const props = withDefaults(defineProps<FollowDetailProps>(), {
-    showSearchInput: true,
-    noPadding: false,
-  });
+  const props = defineProps<FollowDetailProps>();
 
-  const emit = defineEmits<{
-    (e: 'search'): void;
-    (e: 'handleEdit', item: FollowDetailItem): void;
-    (e: 'cancelPlan', item: FollowDetailItem): void;
-    (e: 'reachBottom'): void;
-  }>();
+  const formDrawerVisible = ref(false);
 
-  const data = defineModel<FollowDetailItem[]>('data', {
-    required: true,
-    default: [],
-  });
-
-  const activeStatus = defineModel<string | number>('activeStatus', {
-    default: '',
-  });
-
-  const innerKeyword = defineModel<string>('keyword', {
-    default: '',
+  const {
+    data,
+    loading,
+    handleReachBottom,
+    searchData,
+    activeStatus,
+    loadFollowList,
+    handleCancelPlan,
+    followKeyword,
+    followFormKeyMap,
+  } = useFollowApi({
+    type: toRef(props, 'activeType'),
+    followApiKey: props.followApiKey,
+    sourceId: toRef(props, 'sourceId'),
   });
 
   // 跟进计划状态
@@ -182,26 +185,19 @@
     })) || []) as Description[];
   }
 
-  // 取消计划
-  function cancelPlan(item: FollowDetailItem) {
-    emit('cancelPlan', item);
-  }
+  // 编辑记录或计划
+  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER);
+  const realFollowSourceId = ref<string | undefined>('');
 
-  // 编辑记录
   function handleEdit(item: FollowDetailItem) {
-    emit('handleEdit', item);
+    realFormKey.value = followFormKeyMap[props.followApiKey as keyof typeof followFormKeyMap][props.activeType];
+    realFollowSourceId.value = item.id;
+    formDrawerVisible.value = true;
   }
 
-  const followKeyword = ref<string>('');
-
-  watch(
-    () => innerKeyword.value,
-    (val) => {
-      if (val && !props.showSearchInput) {
-        followKeyword.value = val;
-      }
-    }
-  );
+  onBeforeMount(() => {
+    loadFollowList();
+  });
 </script>
 
 <style lang="less" scoped>

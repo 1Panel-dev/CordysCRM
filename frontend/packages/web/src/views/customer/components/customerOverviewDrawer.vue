@@ -28,6 +28,15 @@
       <div class="mt-[16px]">
         <div v-if="activeTab === 'overview'" class="mt-[16px] h-[100px] bg-[var(--text-n10)]"></div>
         <ContactTable v-else-if="activeTab === 'contact'" class="h-[calc(100vh-161px)]" is-overview />
+        <FollowDetail
+          v-else-if="['followRecord', 'followPlan'].includes(activeTab)"
+          class="mt-[16px]"
+          :active-type="(activeTab as 'followRecord'| 'followPlan')"
+          wrapper-class="h-[calc(100vh-162px)]"
+          virtual-scroll-height="calc(100vh - 194px)"
+          :follow-api-key="FormDesignKeyEnum.CUSTOMER"
+          :source-id="props.sourceId"
+        />
         <HeaderTable
           v-else-if="activeTab === 'headRecord'"
           class="h-[calc(100vh-161px)]"
@@ -48,6 +57,7 @@
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import HeaderTable from '@/components/business/crm-form-create-table/headerTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';

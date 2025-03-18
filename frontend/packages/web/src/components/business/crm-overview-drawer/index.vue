@@ -90,7 +90,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'buttonSelect', key: string): void;
+    (e: 'buttonSelect', key: string, done?: () => void): void;
   }>();
 
   const showDrawer = defineModel<boolean>('show', {
@@ -118,7 +118,7 @@
   const realFormKey = ref<FormDesignKeyEnum>(props.formKey);
   const realSourceId = ref<string | undefined>(''); // 编辑时传入
 
-  function handleButtonClick(key: string) {
+  function handleButtonClick(key: string, done?: () => void) {
     switch (key) {
       case 'addContract':
         realFormKey.value = FormDesignKeyEnum.CONTACT;
@@ -152,7 +152,7 @@
       default:
         break;
     }
-    emit('buttonSelect', key);
+    emit('buttonSelect', key, done);
   }
 
   watch(

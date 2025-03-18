@@ -10,6 +10,7 @@ import {
   BatchDeleteOpenSeaCustomerUrl,
   BatchPickOpenSeaCustomerUrl,
   BatchTransferCustomerUrl,
+  CancelCustomerFollowPlanUrl,
   DeleteCustomerContactUrl,
   DeleteCustomerOpenSeaUrl,
   DeleteCustomerUrl,
@@ -152,6 +153,11 @@ export function updateCustomerFollowPlan(data: UpdateCustomerFollowPlanParams) {
 // 获取客户跟进计划列表
 export function getCustomerFollowPlanList(data: CustomerFollowPlanTableParams) {
   return CDR.post<CommonList<CustomerFollowPlanListItem>>({ url: GetCustomerFollowPlanListUrl, data });
+}
+
+// 取消客户跟进计划
+export function cancelCustomerFollowPlan(id: string) {
+  return CDR.get({ url: `${CancelCustomerFollowPlanUrl}/${id}` });
 }
 
 // 获取客户跟进计划表单配置

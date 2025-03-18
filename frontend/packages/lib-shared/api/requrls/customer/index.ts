@@ -38,3 +38,4 @@ export const BatchAssignOpenSeaCustomerUrl = '/pool/customer/batch-assign'; // �
 export const AssignOpenSeaCustomerUrl = '/pool/customer/assign'; // 分配公海客户
 export const GetOpenSeaOptionsUrl = '/pool/customer/options'; // 获取公海选项
 export const DeleteOpenSeaCustomerUrl = '/pool/customer/delete'; // 删除公海客户
+export const CancelCustomerFollowPlanUrl = '/customer/follow/plan/cancel'; // 取消客户跟进计划

@@ -29,12 +29,12 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'select', key: string): void;
+    (e: 'select', key: string, done?: () => void): void;
     (e: 'cancel'): void;
   }>();
 
-  function handleSelect(key: string) {
-    emit('select', key);
+  function handleSelect(key: string, done?: () => void) {
+    emit('select', key, done);
   }
 
   function handleMoreSelect(item: ActionsItem) {

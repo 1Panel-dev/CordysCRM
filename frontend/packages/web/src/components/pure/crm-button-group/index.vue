@@ -4,10 +4,10 @@
       <slot :name="item.slotName" :item="item" :index="index">
         <template v-if="item.popConfirmProps">
           <CrmPopConfirm
-            :show="item.popShow as boolean"
+            v-model:show="popShow"
             placement="bottom-end"
             v-bind="item.popConfirmProps"
-            @confirm="emit('select', `pop-${item.key}` as string)"
+            @confirm="emit('select', `pop-${item.key}` as string, cancel)"
             @cancel="emit('cancel')"
           >
             <n-button
@@ -15,7 +15,7 @@
               v-bind="item"
               type="primary"
               :class="item.text === false ? '' : '!p-0'"
-              @click="() => (item.popShow = true)"
+              @click="() => (popShow = true)"
             >
               {{ item.label }}
             </n-button>
@@ -52,10 +52,16 @@
     notShowDivider?: boolean; // 不显示分割线
   }>();
 
+  const popShow = ref(false);
+
   const emit = defineEmits<{
-    (e: 'select', key: string): void;
+    (e: 'select', key: string, done?: () => void): void;
     (e: 'cancel'): void;
   }>();
+
+  function cancel() {
+    popShow.value = false;
+  }
 </script>
 
 <style scoped lang="less">

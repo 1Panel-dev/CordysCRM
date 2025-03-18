@@ -5,9 +5,9 @@ export enum FormDesignKeyEnum {
   CUSTOMER = 'customer', // 客户
   CUSTOMER_OPEN_SEA = 'customerOpenSea', // 公海客户
   CONTACT = 'contact', // 联系人
-  FOLLOW_RECORD_CUSTOMER = 'recordCustomer', // 客户跟进记录
-  FOLLOW_PLAN_CUSTOMER = 'planCustomer', // 客户跟进计划
-  BUSINESS = 'business', // 商机
+  FOLLOW_RECORD_CUSTOMER = 'record', // 客户跟进记录
+  FOLLOW_PLAN_CUSTOMER = 'plan', // 客户跟进计划
+  BUSINESS = 'opportunity', // 商机
   FOLLOW_RECORD_BUSINESS = 'recordBusiness', // 商机跟进记录
   FOLLOW_PLAN_BUSINESS = 'planBusiness', // 商机跟进计划
   PRODUCT = 'product', // 产品

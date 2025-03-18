@@ -20,17 +20,12 @@
     <template #right>
       <FollowDetail
         v-if="['followRecord', 'followPlan'].includes(activeTab)"
-        v-model:data="followList"
-        v-model:active-status="activeStatus"
         class="mt-[16px]"
-        :loading="followLoading"
-        :show-title="activeTab === 'followRecord'"
-        :type="activeTab"
+        :active-type="(activeTab as 'followRecord'| 'followPlan')"
         wrapper-class="h-[calc(100vh-162px)]"
         virtual-scroll-height="calc(100vh - 258px)"
-        @reach-bottom="handleReachBottom"
-        @search="() => loadFollowList()"
-        @handle-edit="handleEditFollow"
+        :follow-api-key="FormDesignKeyEnum.CLUE"
+        :source-id="sourceId"
       />
 
       <!-- TODO getUserList接口换了 -->

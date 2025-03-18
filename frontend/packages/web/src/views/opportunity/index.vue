@@ -1,6 +1,6 @@
 <template>
   <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="() => searchData()" />
   </CrmCard>
   <CrmCard hide-footer>
     <CrmTable
@@ -72,7 +72,7 @@
   import { DataTableRowKey, NButton, SelectOption, TabPaneProps, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  import { OpportunitySearchTypeEnum, OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
@@ -123,25 +123,25 @@
   };
 
   const tableRefreshId = ref(0);
-  const activeTab = ref('all');
+  const activeTab = ref(OpportunitySearchTypeEnum.ALL);
 
   const tabList = computed<TabPaneProps[]>(() => {
     // TODO 根据不同的用户展示tab
     return [
       {
-        name: 'all',
+        name: OpportunitySearchTypeEnum.ALL,
         tab: t('opportunity.allOpportunities'),
       },
       {
-        name: 'my',
+        name: OpportunitySearchTypeEnum.SELF,
         tab: t('opportunity.myOpportunities'),
       },
       {
-        name: 'department',
+        name: OpportunitySearchTypeEnum.DEPARTMENT,
         tab: t('opportunity.departmentOpportunities'),
       },
       {
-        name: 'converted',
+        name: OpportunitySearchTypeEnum.DEAL,
         tab: t('opportunity.convertedOpportunities'),
       },
     ];
@@ -192,7 +192,7 @@
     }
   }
 
-  const showOverviewDrawer = ref<boolean>(true);
+  const showOverviewDrawer = ref<boolean>(false);
   const activeSourceId = ref('');
   const activeOpportunity = ref<OpportunityItem>();
   const formCreateDrawerVisible = ref(false);
@@ -250,7 +250,7 @@
   const transferLoading = ref(false);
 
   // 转移
-  function handleTransfer(row: OpportunityItem) {
+  function handleTransfer(row: OpportunityItem, done?: () => void) {
     transferFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
         try {
@@ -262,6 +262,7 @@
           Message.success(t('common.transferSuccess'));
           transferForm.value = { ...defaultTransferForm };
           tableRefreshId.value += 1;
+          done?.();
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -272,7 +273,7 @@
     });
   }
 
-  function handleActionSelect(row: OpportunityItem, actionKey: string) {
+  function handleActionSelect(row: OpportunityItem, actionKey: string, done?: () => void) {
     switch (actionKey) {
       case 'edit':
         handleEdit(row.id);
@@ -281,7 +282,7 @@
         handleFollowUp(row.id);
         break;
       case 'pop-transfer':
-        handleTransfer(row);
+        handleTransfer(row, done);
         break;
       case 'delete':
         handleDelete(row);
@@ -331,7 +332,7 @@
           CrmOperationButton,
           {
             groupList: operationGroupList.value,
-            onSelect: (key: string) => handleActionSelect(row, key),
+            onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
             onCancel: () => {
               transferForm.value = { ...defaultTransferForm };
             },
@@ -364,16 +365,14 @@
       },
       customerName: (row: OpportunityItem) => {
         return h(
-          NButton,
+          CrmTableButton,
           {
-            text: true,
-            type: 'primary',
             onClick: () => {
               activeSourceId.value = row.customerId;
               realFormKey.value = FormDesignKeyEnum.CUSTOMER;
             },
           },
-          { default: () => row.customerName }
+          { default: () => row.customerName, trigger: () => row.customerName }
         );
       },
     },
@@ -460,6 +459,7 @@
   function searchData() {
     setLoadListParams({
       keyword: keyword.value,
+      searchType: activeTab.value,
     });
     loadList();
   }

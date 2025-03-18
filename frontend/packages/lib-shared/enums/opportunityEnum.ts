@@ -25,3 +25,10 @@ export enum StageResultEnum {
   /** 失败 */
   FAIL = 'FAIL',
 }
+
+export enum OpportunitySearchTypeEnum {
+  ALL = 'ALL',
+  SELF = 'SELF',
+  DEPARTMENT = 'DEPARTMENT',
+  DEAL = 'DEAL',
+}

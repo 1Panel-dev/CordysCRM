@@ -1,56 +1,69 @@
 <template>
   <div class="bg-[var(--text-n10)] p-[16px]">
-    <WorkflowStep v-model:status="currentStatus" :workflow-list="workflowList">
-      <template #action="{ currentStatusIndex }">
-        <n-button
-          v-if="props.showErrorBtn"
-          type="error"
-          ghost
-          class="n-btn-outline-error mr-[12px]"
-          @click="handleUpdateStatus(currentStatusIndex, true)"
-        >
-          {{ t('common.followFailed') }}
-        </n-button>
-        <n-button type="primary" :loading="updateStageLoading" @click="handleUpdateStatus(currentStatusIndex)">
-          {{ t('common.updateToCurrentProgress') }}
-        </n-button>
-      </template>
-    </WorkflowStep>
+    <n-spin :show="updateStageLoading">
+      <WorkflowStep v-model:status="currentStatus" :workflow-list="workflowList">
+        <template #action="{ currentStatusIndex }">
+          <n-button
+            v-if="props.showErrorBtn"
+            type="error"
+            ghost
+            class="n-btn-outline-error mr-[12px]"
+            @click="handleUpdateStatus(currentStatusIndex, true)"
+          >
+            {{ t('common.followFailed') }}
+          </n-button>
+          <n-button type="primary" @click="handleUpdateStatus(currentStatusIndex)">
+            {{ t('common.updateToCurrentProgress') }}
+          </n-button>
+        </template>
+      </WorkflowStep>
 
-    <CrmModal
-      v-model:show="updateStatusModal"
-      :title="t('common.complete')"
-      :ok-loading="loading"
-      size="small"
-      @confirm="handleConfirm"
-      @cancel="handleCancel"
-    >
-      <n-form ref="formRef" :model="form" :rules="rules" label-placement="left" require-mark-placement="left">
-        <n-form-item
-          require-mark-placement="left"
-          label-placement="left"
-          path="stage"
-          :show-feedback="false"
-          :label="t('common.result')"
-        >
-          <n-radio-group v-model:value="form.stage" name="radiogroup">
-            <n-space>
-              <n-radio key="success" :value="StageResultEnum.SUCCESS">
-                {{ t('common.success') }}
-              </n-radio>
-              <n-radio key="fail" :value="StageResultEnum.FAIL">
-                {{ t('common.fail') }}
-              </n-radio>
-            </n-space>
-          </n-radio-group>
-        </n-form-item>
-      </n-form>
-    </CrmModal>
+      <CrmModal
+        v-model:show="updateStatusModal"
+        :title="t('common.complete')"
+        :ok-loading="updateStageLoading"
+        size="small"
+        @confirm="handleConfirm"
+        @cancel="handleCancel"
+      >
+        <n-form ref="formRef" :model="form" :rules="rules" label-placement="left" require-mark-placement="left">
+          <n-form-item
+            require-mark-placement="left"
+            label-placement="left"
+            path="stage"
+            :show-feedback="false"
+            :label="t('common.result')"
+          >
+            <n-radio-group v-model:value="form.stage" name="radiogroup">
+              <n-space>
+                <n-radio key="success" :value="StageResultEnum.SUCCESS">
+                  {{ t('common.success') }}
+                </n-radio>
+                <n-radio key="fail" :value="StageResultEnum.FAIL">
+                  {{ t('common.fail') }}
+                </n-radio>
+              </n-space>
+            </n-radio-group>
+          </n-form-item>
+        </n-form>
+      </CrmModal>
+    </n-spin>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { FormInst, FormRules, NButton, NForm, NFormItem, NRadio, NRadioGroup, NSpace, SelectOption } from 'naive-ui';
+  import {
+    FormInst,
+    FormRules,
+    NButton,
+    NForm,
+    NFormItem,
+    NRadio,
+    NRadioGroup,
+    NSpace,
+    NSpin,
+    SelectOption,
+  } from 'naive-ui';
 
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
 
@@ -95,36 +108,27 @@
   }
 
   const formRef = ref<FormInst | null>(null);
-
-  async function executeWithLoading(cb: () => Promise<void>, loadingRef: Ref<boolean>) {
-    try {
-      loadingRef.value = true;
-      await cb();
-      emit('loadDetail');
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    } finally {
-      loadingRef.value = false;
-    }
-  }
+  const updateStageLoading = ref(false);
 
   async function handleSave(stage: string) {
     try {
+      updateStageLoading.value = true;
       if (props.updateApi) {
         await props.updateApi({
           id: props.sourceId,
           stage,
         });
+        emit('loadDetail');
       }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    } finally {
+      updateStageLoading.value = false;
     }
   }
 
   // 更新状态
-  const updateStageLoading = ref(false);
   async function handleUpdateStatus(currentStatusIndex: number, isError = false) {
     if (props.showConfirmStatus && currentStatusIndex === props.workflowList.length - 2) {
       updateStatusModal.value = true;
@@ -132,15 +136,14 @@
     }
 
     const nextStage = isError ? StageResultEnum.FAIL : props.workflowList[currentStatusIndex + 1]?.value;
-    await executeWithLoading(() => handleSave(nextStage as string), updateStageLoading);
+    await handleSave(nextStage as string);
   }
 
   // 确认更新
-  const loading = ref(false);
   async function handleConfirm() {
     formRef.value?.validate(async (errors) => {
       if (!errors) {
-        await executeWithLoading(() => handleSave(form.value.stage), loading);
+        await handleSave(form.value.stage);
         handleCancel();
       }
     });
