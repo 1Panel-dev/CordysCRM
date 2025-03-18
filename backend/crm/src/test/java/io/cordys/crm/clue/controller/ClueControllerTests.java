@@ -14,6 +14,7 @@ import io.cordys.crm.clue.domain.ClueField;
 import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
+import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.mybatis.BaseMapper;
@@ -26,6 +27,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -39,9 +41,11 @@ class ClueControllerTests extends BaseTest {
     protected static final String MODULE_FORM = "module/form";
     protected static final String STATUS_UPDATE = "status/update";
     protected static final String BATCH_TRANSFER = "batch/transfer";
+    protected static final String BATCH_TO_POOL = "batch/to-pool";
 
     private static Clue addClue;
     private static Clue anotherClue;
+    private static List<String> batchIds = new ArrayList<>();
 
     @Resource
     private BaseMapper<Clue> clueMapper;
@@ -309,7 +313,19 @@ class ClueControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
         request.setSearchType(BusinessSearchType.ALL.name());
-        this.requestPostWithOk(DEFAULT_PAGE, request);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
+        Pager<List<ClueListResponse>> pageResult = getPageResult(mvcResult, ClueListResponse.class);
+        List<ClueListResponse> clueList = pageResult.getList();
+        clueList.forEach(clue -> {
+            batchIds.add(clue.getId());
+        });
+        this.requestPostWithOk(BATCH_TO_POOL, batchIds);
+    }
+
+    @Test
+    @Order(13)
+    void testBatchToPool() throws Exception {
+        this.requestPostWithOk(BATCH_TO_POOL, batchIds);
     }
 
     private List<ClueField> getClueFields(String clueId) {

@@ -103,4 +103,11 @@ public class ClueController {
     public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
         clueService.batchDelete(ids);
     }
+
+    @PostMapping("/batch/to-pool")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @Operation(summary = "批量移入线索池")
+    public void batchToPool(@RequestBody @NotEmpty List<String> ids) {
+        clueService.batchToPool(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 }

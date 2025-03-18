@@ -51,4 +51,7 @@ public class Clue extends BaseModel {
 
 	@Schema(description = "最新跟进时间")
 	private Long followTime;
+
+	@Schema(description = "线索池ID")
+	private String poolId;
 }

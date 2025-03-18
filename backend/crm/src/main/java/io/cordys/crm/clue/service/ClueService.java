@@ -16,6 +16,8 @@ import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -92,19 +94,15 @@ public class ClueService {
                 .toList();
         Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
 
-        // 获取线索池信息
-        List<String> poolIds = list.stream().map(ClueListResponse::getPoolId).distinct().toList();
-        List<CluePool> pools = cluePoolService.getPoolsByIds(poolIds);
-        Map<String, CluePool> poolMap = pools.stream().collect(Collectors.toMap(CluePool::getId, pool -> pool));
+        // 获取负责人线索池信息
         Map<String, CluePool> ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
-        List<String> allPoolIds = ListUtils.union(poolMap.values().stream().map(CluePool::getId).toList(),
-                ownersDefaultPoolMap.values().stream().map(CluePool::getId).toList()).stream().distinct().toList();
+        List<String> poolIds = ownersDefaultPoolMap.values().stream().map(CluePool::getId).distinct().toList();
         Map<String, CluePoolRecycleRule> recycleRuleMap;
-        if (CollectionUtils.isEmpty(allPoolIds)) {
+        if (CollectionUtils.isEmpty(poolIds)) {
             recycleRuleMap = Map.of();
         } else {
             LambdaQueryWrapper<CluePoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
-            recycleRuleWrapper.in(CluePoolRecycleRule::getPoolId, allPoolIds);
+            recycleRuleWrapper.in(CluePoolRecycleRule::getPoolId, poolIds);
             List<CluePoolRecycleRule> recycleRules = recycleRuleMapper.selectListByLambda(recycleRuleWrapper);
             recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, rule -> rule));
         }
@@ -116,12 +114,7 @@ public class ClueService {
             clueListResponse.setModuleFields(clueFields);
 
             // 设置回收公海
-            CluePool reservePool;
-            if (poolMap.containsKey(clueListResponse.getPoolId())) {
-                reservePool = poolMap.get(clueListResponse.getPoolId());
-            } else {
-                reservePool = ownersDefaultPoolMap.get(clueListResponse.getOwner());
-            }
+            CluePool reservePool = ownersDefaultPoolMap.get(clueListResponse.getOwner());
             clueListResponse.setRecyclePoolName(reservePool != null ? reservePool.getName() : null);
             // 计算剩余归属天数
             clueListResponse.setReservedDays(cluePoolService.calcReservedDay(reservePool,
@@ -254,5 +247,33 @@ public class ClueService {
         clueFieldService.deleteByResourceIds(ids);
         // 删除责任人历史
         clueOwnerHistoryService.deleteByClueIds(ids);
+    }
+
+    /**
+     * 批量移入线索池
+     * @param ids id集合
+     * @param orgId 组织ID
+     * @param currentUser 当前用户
+     */
+    public void batchToPool(List<String> ids, String currentUser, String orgId) {
+        LambdaQueryWrapper<Clue> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Clue::getId, ids);
+        List<Clue> clues = clueMapper.selectListByLambda(wrapper);
+        List<String> ownerIds = clues.stream().map(Clue::getOwner).distinct().toList();
+        Map<String, CluePool> ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+        for (Clue clue : clues) {
+            CluePool cluePool = ownersDefaultPoolMap.get(clue.getOwner());
+            if (cluePool == null) {
+                // 未找到默认公海，不移入
+                continue;
+            }
+            clue.setPoolId(cluePool.getId());
+            clue.setInSharedPool(true);
+            clue.setOwner(null);
+            clue.setCollectionTime(null);
+            clue.setUpdateUser(currentUser);
+            clue.setUpdateTime(System.currentTimeMillis());
+            clueMapper.updateById(clue);
+        }
     }
 }
