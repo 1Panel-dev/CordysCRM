@@ -34,6 +34,7 @@ export interface CommonList<T> {
   total: number;
   current: number;
   list: T[];
+  optionMap?: Record<string, any[]>;
 }
 
 export interface FilterConditionItem {

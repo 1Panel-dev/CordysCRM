@@ -20,7 +20,10 @@ export default function useTable<T>(
   loadListFunc?: (v?: TableQueryParams | any) => Promise<CommonList<CrmTableDataItem<T>> | CrmTableDataItem<T>>,
   props?: Partial<CrmTableProps<T>>,
   // 数据处理的回调函数
-  dataTransform?: (item: CrmTableDataItem<T>) => CrmTableDataItem<T> | any
+  dataTransform?: (
+    item: CrmTableDataItem<T>,
+    originalData?: CommonList<CrmTableDataItem<T>>
+  ) => CrmTableDataItem<T> | any
 ) {
   const defaultProps: CrmTableProps<T> = {
     bordered: false,
@@ -112,7 +115,10 @@ export default function useTable<T>(
 
   const sortItem = ref<SortParams>(); // 排序
 
-  function processRecordItem(item: CrmTableDataItem<T>): CrmTableDataItem<T> {
+  function processRecordItem(
+    item: CrmTableDataItem<T>,
+    originalData?: CommonList<CrmTableDataItem<T>>
+  ): CrmTableDataItem<T> {
     if (item.updateTime) {
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss');
     }
@@ -120,7 +126,7 @@ export default function useTable<T>(
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss');
     }
     if (dataTransform) {
-      item = dataTransform(item);
+      item = dataTransform(item, originalData);
     }
     return item;
   }
@@ -145,7 +151,7 @@ export default function useTable<T>(
       } else {
         const tmpArr = data as CommonList<CrmTableDataItem<T>>;
         propsRes.value.data = tmpArr.list?.map((item: CrmTableDataItem<T>) => {
-          return processRecordItem(item);
+          return processRecordItem(item, tmpArr);
         }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
         // 设置分页
         setPagination(tmpArr.current, tmpArr.total);

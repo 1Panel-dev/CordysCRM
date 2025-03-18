@@ -246,6 +246,12 @@
   }
 </script>
 
+<style lang="less">
+  .n-data-table-th--fixed-left {
+    background-color: var(--text-n10) !important;
+  }
+</style>
+
 <style lang="less" scoped>
   :deep(.sort-up-icon) {
     transform: translateY(4px);

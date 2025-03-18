@@ -7,6 +7,7 @@ import useTable from '@/components/pure/crm-table/useTable';
 import { getFormConfigApiMap, getFormListApiMap } from '@/components/business/crm-form-create/config';
 
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
+import { getCityPath } from '@/utils';
 
 import { useI18n } from './useI18n';
 
@@ -37,6 +38,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.PRODUCT]: TableKeyEnum.PRODUCT,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: TableKeyEnum.CUSTOMER_OPEN_SEA,
   };
+  // 存储地址类型字段集合
+  const addressFieldIds = ref<string[]>([]);
 
   const internalColumnMap: Record<FormKey, CrmDataTableColumn[]> = {
     [FormDesignKeyEnum.CUSTOMER]: [
@@ -281,6 +284,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       columns = res.fields
         .filter((e) => e.type !== FieldTypeEnum.DIVIDER)
         .map((field) => {
+          if (field.type === FieldTypeEnum.LOCATION) {
+            addressFieldIds.value.push(field.id);
+          }
           if (
             [
               FieldTypeEnum.RADIO,
@@ -298,6 +304,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               ellipsis: {
                 tooltip: true,
               },
+              isTag:
+                field.type === FieldTypeEnum.CHECKBOX ||
+                (field.type === FieldTypeEnum.SELECT && field.multiple) ||
+                (field.type === FieldTypeEnum.MEMBER && field.multiple) ||
+                (field.type === FieldTypeEnum.DEPARTMENT && field.multiple),
               filterOptions: field.options || field.initialOptions?.map((e) => ({ label: e.name, value: e.id })),
               filter: true,
             };
@@ -317,6 +328,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             title: field.name,
             width: 150,
             key: field.businessKey || field.id,
+            isTag: field.type === FieldTypeEnum.DATA_SOURCE || field.type === FieldTypeEnum.MULTIPLE_INPUT,
             ellipsis: {
               tooltip: true,
             },
@@ -356,10 +368,26 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       scrollX: columns.reduce((prev, curr) => prev + (curr.width as number), 0) + 46,
       maxHeight: 600,
     },
-    (item) => {
+    (item, originalData) => {
       const customFieldAttr: Record<string, any> = {};
+      // TODO:业务字段值options
       item.moduleFields?.forEach((field: ModuleField) => {
-        customFieldAttr[field.fieldId] = field.fieldValue; // TODO:多值字段处理
+        const options = originalData?.optionMap?.[field.fieldId];
+        if (options) {
+          // 若字段值是选项值，则取选项值的name
+          if (Array.isArray(field.fieldValue)) {
+            customFieldAttr[field.fieldId] = options.filter((e) => field.fieldValue.includes(e.id)).map((e) => e.name);
+          } else {
+            customFieldAttr[field.fieldId] = options.find((e) => e.id === field.fieldValue)?.name;
+          }
+        } else if (addressFieldIds.value.includes(field.fieldId)) {
+          // 地址类型字段，解析代码替换成省市区
+          const address = (field?.fieldValue as string)?.split('-');
+          const value = `${getCityPath(address[0])}-${address[1]}`;
+          customFieldAttr[field.fieldId] = value;
+        } else {
+          customFieldAttr[field.fieldId] = field.fieldValue;
+        }
       });
       return {
         ...item,

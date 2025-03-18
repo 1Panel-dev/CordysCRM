@@ -2,7 +2,6 @@
   <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
     <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="handleTabChange" />
   </CrmCard>
-
   <CrmCard :special-height="64" hide-footer>
     <CrmTable
       v-model:checked-row-keys="checkedRowKeys"

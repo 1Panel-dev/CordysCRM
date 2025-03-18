@@ -76,12 +76,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               fieldInfo: item,
             });
           } else {
+            let value = field?.fieldValue || '';
+            if (item.type === FieldTypeEnum.LOCATION) {
+              const address = (field?.fieldValue as string)?.split('-');
+              value = `${getCityPath(address[0])}-${address[1]}`;
+            }
             descriptions.value.push({
               label: item.name,
-              value:
-                item.type === FieldTypeEnum.LOCATION
-                  ? getCityPath((field?.fieldValue as string)?.split('-')[0])
-                  : field?.fieldValue || [],
+              value,
             });
           }
         }

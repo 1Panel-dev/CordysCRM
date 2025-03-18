@@ -1,7 +1,7 @@
 <template>
   <n-tooltip trigger="hover" :delay="300">
     <template #trigger>
-      <n-button type="primary" text class="w-full" @click="emit('click')">
+      <n-button type="primary" text class="max-w-full" @click="emit('click')">
         <div class="one-line-text">
           <slot name="trigger"></slot>
         </div>
