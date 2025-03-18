@@ -1,10 +1,16 @@
 package io.cordys.crm.customer.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -20,6 +26,9 @@ import io.cordys.crm.customer.dto.response.CustomerContactGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -35,7 +44,6 @@ import java.util.stream.Collectors;
 import static io.cordys.crm.customer.constants.CustomerResultCode.CUSTOMER_CONTACT_EXIST;
 
 /**
- *
  * @author jianxing
  * @date 2025-02-24 11:06:10
  */
@@ -56,10 +64,26 @@ public class CustomerContactService {
     private CustomerContactFieldService customerContactFieldService;
     @Resource
     private CustomerCollaborationService customerCollaborationService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private ModuleFormService moduleFormService;
 
-    public List<CustomerContactListResponse> list(CustomerContactPageRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, orgId, deptDataPermission);
-        return buildListData(list, orgId);
+        list = buildListData(list, orgId);
+
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
+        // 获取所有模块字段的值
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, CustomerContactListResponse::getModuleFields);
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+
+        // 补充负责人选项
+        moduleFormService.putBusinessFieldOption(list, customerFormConfig.getFields(), BusinessModuleField.CUSTOMER_CONTACT_OWNER,
+                CustomerContactListResponse::getOwner, CustomerContactListResponse::getOwnerName, optionMap);
+        return PageUtils.setPageInfoWithOption(page, list, optionMap);
     }
 
     private List<CustomerContactListResponse> buildListData(List<CustomerContactListResponse> list, String orgId) {

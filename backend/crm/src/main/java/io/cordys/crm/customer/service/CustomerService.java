@@ -2,6 +2,7 @@ package io.cordys.crm.customer.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
@@ -31,7 +32,6 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,23 +68,27 @@ public class CustomerService {
     private BaseMapper<CustomerPoolRecycleRule> customerPoolRecycleRuleMapper;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
-	@Resource
-	private ModuleFormService moduleFormService;
+    @Resource
+    private ModuleFormService moduleFormService;
     @Resource
     private CustomerRelationService customerRelationService;
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId,
-                                                           DeptDataPermissionDTO deptDataPermission) {
+                                                            DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomerListResponse> list = extCustomerMapper.list(request, orgId, userId, deptDataPermission);
         List<CustomerListResponse> buildList = buildListData(list, orgId);
+
         // 处理自定义字段选项数据
-        List<BaseModuleFieldValue> allDataFields = buildList.stream().map(CustomerListResponse::getModuleFields)
-                .filter(CollectionUtils::isNotEmpty)
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, allDataFields);
+        // 获取所有模块字段的值
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, CustomerListResponse::getModuleFields);
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+
+        // 补充负责人选项
+        moduleFormService.putBusinessFieldOption(buildList, customerFormConfig.getFields(), BusinessModuleField.CUSTOMER_OWNER,
+                CustomerListResponse::getOwner, CustomerListResponse::getOwnerName, optionMap);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
@@ -280,8 +284,9 @@ public class CustomerService {
 
     /**
      * 批量移入公海
-     * @param ids id集合
-     * @param orgId 组织ID
+     *
+     * @param ids         id集合
+     * @param orgId       组织ID
      * @param currentUser 当前用户
      */
     public void batchToPool(List<String> ids, String currentUser, String orgId) {

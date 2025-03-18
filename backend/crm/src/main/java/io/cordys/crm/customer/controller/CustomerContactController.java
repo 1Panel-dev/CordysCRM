@@ -1,31 +1,30 @@
 package io.cordys.crm.customer.controller;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.FormKey;
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
+import io.cordys.context.OrganizationContext;
+import io.cordys.crm.customer.domain.CustomerContact;
+import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerContactDisableRequest;
+import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
+import io.cordys.crm.customer.dto.request.CustomerContactUpdateRequest;
+import io.cordys.crm.customer.dto.response.CustomerContactGetResponse;
+import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
+import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
-
+import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import jakarta.annotation.Resource;
-import io.cordys.common.constants.PermissionConstants;
-import io.cordys.context.OrganizationContext;
 
-import io.cordys.common.pager.Pager;
-import io.cordys.security.SessionUtils;
-import io.cordys.crm.customer.domain.CustomerContact;
-import io.cordys.crm.customer.dto.request.*;
-import io.cordys.crm.customer.dto.response.*;
-
-import io.cordys.crm.customer.service.CustomerContactService;
-import io.cordys.common.pager.PageUtils;
 import java.util.List;
 
 /**
@@ -55,12 +54,10 @@ public class CustomerContactController {
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
     @Operation(summary = "联系人列表")
-    public Pager<List<CustomerContactListResponse>> list(@Validated @RequestBody CustomerContactPageRequest request) {
+    public PagerWithOption<List<CustomerContactListResponse>> list(@Validated @RequestBody CustomerContactPageRequest request) {
         DeptDataPermissionDTO deptDataPermission =
                 dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, customerContactService.list(request, OrganizationContext.getOrganizationId(), deptDataPermission));
+        return customerContactService.list(request, OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @GetMapping("/list/{customerId}")

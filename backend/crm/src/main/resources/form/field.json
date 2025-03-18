@@ -637,6 +637,20 @@
       "rules": [
         {"key":  "required"}
       ]
+    },
+    {
+      "name": "负责人",
+      "internalKey": "contactOwner",
+      "type": "MEMBER",
+      "multiple": false,
+      "hasCurrentUser": false,
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ]
     }
   ],
   "record": [
