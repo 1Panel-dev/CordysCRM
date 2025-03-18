@@ -1,5 +1,6 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.domain.BaseModuleFieldValue;
@@ -8,6 +9,8 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
+import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.system.constants.FieldSourceType;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.ModuleField;
@@ -37,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -349,5 +353,50 @@ public class ModuleFormService {
 		typeSourceMap.put(FieldSourceType.OPPORTUNITY.name(), "opportunity");
 		typeSourceMap.put(FieldSourceType.PRODUCT.name(), "product");
 		return typeSourceMap;
+	}
+
+	/**
+	 * 将业务字段选项放入optionMap
+	 * @param list 列表数据
+	 * @param fields 字段集合
+	 * @param businessModuleField 业务字段
+	 * @param getOptionIdFunc 获取选项ID函数
+	 * @param getOptionNameFunc 获取选项名称函数
+	 * @param optionMap 选项Map
+	 * @param <T>
+	 */
+	public <T> void putBusinessFieldOption(List<T> list,
+										   List<BaseField> fields,
+										   BusinessModuleField businessModuleField,
+										   Function<T, String> getOptionIdFunc,
+										   Function<T, String> getOptionNameFunc,
+										   Map<String, List<OptionDTO>> optionMap) {
+		List<OptionDTO> businessFieldOptions = list.stream()
+				.map(item -> {
+					OptionDTO optionDTO = new OptionDTO();
+					optionDTO.setId(getOptionIdFunc.apply(item));
+					optionDTO.setName(getOptionNameFunc.apply(item));
+					return optionDTO;
+				})
+				.distinct()
+				.toList();
+
+		String businessFieldId = fields
+				.stream()
+				.filter(item -> StringUtils.equals(item.getBusinessKey(), businessModuleField.getBusinessKey()))
+				.findFirst()
+				.get()
+				.getId();
+
+		optionMap.put(businessFieldId, businessFieldOptions);
+	}
+
+	public <T> List<BaseModuleFieldValue> getBaseModuleFieldValues(List<T> list, Function<T, List<BaseModuleFieldValue>> getModuleFieldFunc) {
+		// 处理自定义字段选项数据
+		return list.stream()
+				.map(getModuleFieldFunc::apply)
+				.filter(org.apache.commons.collections.CollectionUtils::isNotEmpty)
+				.flatMap(List::stream)
+				.collect(Collectors.toList());
 	}
 }

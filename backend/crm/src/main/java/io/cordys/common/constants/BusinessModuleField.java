@@ -31,6 +31,10 @@ public enum BusinessModuleField {
      */
     CUSTOMER_CONTACT_CUSTOMER("contactCustomer", "customerId"),
     /**
+     * 联系人责任人
+     */
+    CUSTOMER_CONTACT_OWNER("contactOwner", "owner", Set.of("rules")),
+    /**
      * 联系人名称
      */
     CUSTOMER_CONTACT_NAME("contactName", "name", Set.of("rules")),
