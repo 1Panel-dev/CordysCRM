@@ -4,9 +4,6 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.clue.domain.ClueCapacity;
 import io.cordys.crm.clue.dto.ClueCapacityDTO;
-import io.cordys.crm.system.domain.Department;
-import io.cordys.crm.system.domain.Role;
-import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.CapacityRequest;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
@@ -27,12 +24,6 @@ public class ClueCapacityService {
 	@Resource
 	private BaseMapper<ClueCapacity> clueCapacityMapper;
 	@Resource
-	private BaseMapper<User> userMapper;
-	@Resource
-	private BaseMapper<Role> roleMapper;
-	@Resource
-	private BaseMapper<Department> departmentMapper;
-	@Resource
 	private UserExtendService userExtendService;
 
 	/**
@@ -47,16 +38,11 @@ public class ClueCapacityService {
 		if (CollectionUtils.isEmpty(capacities)) {
 			return new ArrayList<>();
 		}
-		List<String> scopeIds = new ArrayList<>();
-		capacities.forEach(capacity -> scopeIds.addAll(JSON.parseArray(capacity.getScopeId(), String.class)));
-		List<User> users = userMapper.selectByIds(scopeIds.toArray(new String[0]));
-		List<Role> roles = roleMapper.selectByIds(scopeIds.toArray(new String[0]));
-		List<Department> departments = departmentMapper.selectByIds(scopeIds.toArray(new String[0]));
 		capacities.stream().sorted(Comparator.comparing(ClueCapacity::getCreateTime)).forEach(capacity -> {
 			ClueCapacityDTO capacityDTO = new ClueCapacityDTO();
 			capacityDTO.setId(capacity.getId());
 			capacityDTO.setCapacity(capacity.getCapacity());
-			capacityDTO.setMembers(userExtendService.getScope(users, roles, departments, JSON.parseArray(capacity.getScopeId(), String.class)));
+			capacityDTO.setMembers(userExtendService.getScope(JSON.parseArray(capacity.getScopeId(), String.class)));
 			capacityData.add(capacityDTO);
 		});
 		return capacityData;

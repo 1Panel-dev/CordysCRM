@@ -1,24 +1,18 @@
 package io.cordys.crm.opportunity.service;
 
-import io.cordys.common.exception.GenericException;
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
-import io.cordys.crm.clue.domain.CluePool;
-import io.cordys.crm.customer.domain.CustomerPool;
-import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
-import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;
 import io.cordys.crm.opportunity.dto.request.OpportunityRuleAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityRuleUpdateRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityRuleMapper;
-import io.cordys.crm.system.domain.Department;
-import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.mapper.ExtUserMapper;
@@ -26,7 +20,6 @@ import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -44,10 +38,6 @@ public class OpportunityRuleService {
 	private ExtUserMapper extUserMapper;
 	@Resource
 	private BaseMapper<User> userMapper;
-	@Resource
-	private BaseMapper<Role> roleMapper;
-	@Resource
-	private BaseMapper<Department> departmentMapper;
 	@Resource
 	private BaseMapper<OpportunityRule> opportunityRuleMapper;
 	@Resource
@@ -65,24 +55,12 @@ public class OpportunityRuleService {
 		if (CollectionUtils.isEmpty(rules)) {
 			return new ArrayList<>();
 		}
-		List<String> userIds = new ArrayList<>();
-		List<String> scopeIds = new ArrayList<>();
-		List<String> ownerIds = new ArrayList<>();
-		rules.forEach(rule -> {
-			userIds.add(rule.getCreateUser());
-			userIds.add(rule.getUpdateUser());
-			scopeIds.addAll(JSON.parseArray(rule.getScopeId(), String.class));
-			ownerIds.addAll(JSON.parseArray(rule.getOwnerId(), String.class));
-		});
-		List<String> unionIds = ListUtils.union(scopeIds, ownerIds).stream().distinct().toList();
-		List<User> users = userMapper.selectByIds(unionIds.toArray(new String[0]));
-		List<Role> roles = roleMapper.selectByIds(unionIds.toArray(new String[0]));
-		List<Department> departments = departmentMapper.selectByIds(unionIds.toArray(new String[0]));
+		List<String> userIds = rules.stream().flatMap(rule -> Stream.of(rule.getCreateUser(), rule.getUpdateUser())).toList();
 		List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
 		Map<String, String> userMap = createOrUpdateUsers.stream().collect(Collectors.toMap(User::getId, User::getName));
 		rules.forEach(rule -> {
-			rule.setMembers(userExtendService.getScope(users, roles, departments, JSON.parseArray(rule.getScopeId(), String.class)));
-			rule.setOwners(userExtendService.getScope(users, roles, departments, JSON.parseArray(rule.getOwnerId(), String.class)));
+			rule.setMembers(userExtendService.getScope(JSON.parseArray(rule.getScopeId(), String.class)));
+			rule.setOwners(userExtendService.getScope(JSON.parseArray(rule.getOwnerId(), String.class)));
 			rule.setCreateUserName(userMap.get(rule.getCreateUser()));
 			rule.setUpdateUserName(userMap.get(rule.getUpdateUser()));
 		});

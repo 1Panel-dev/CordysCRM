@@ -9,4 +9,20 @@
         </foreach>
     </delete>
 
+    <select id="groupByScopeIds" resultType="io.cordys.crm.system.dto.ScopeNameDTO">
+        select id, name, 'DEPARTMENT' as scope from sys_department where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        union all
+        select id, name, 'ROLE' as scope from sys_role where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        union all
+        select id, name, 'USER' as scope from sys_user where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

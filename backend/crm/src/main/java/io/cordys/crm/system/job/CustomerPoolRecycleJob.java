@@ -1,0 +1,77 @@
+package io.cordys.crm.system.job;
+
+import com.fit2cloud.quartz.anno.QuartzScheduled;
+import io.cordys.common.constants.InternalUser;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerPool;
+import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
+import io.cordys.crm.customer.service.CustomerOwnerHistoryService;
+import io.cordys.crm.customer.service.CustomerPoolService;
+import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
+import jakarta.annotation.Resource;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Component
+public class CustomerPoolRecycleJob {
+
+	@Resource
+	private BaseMapper<Customer> customerMapper;
+	@Resource
+	private BaseMapper<CustomerPool> customerPoolMapper;
+	@Resource
+	private BaseMapper<CustomerPoolRecycleRule> customerPoolRecycleRuleMapper;
+	@Resource
+	private CustomerPoolService customerPoolService;
+	@Resource
+	private CustomerOwnerHistoryService customerOwnerHistoryService;
+
+	/**
+	 * 回收客户, 每天凌晨一点执行
+	 */
+	@QuartzScheduled(cron = "0 0 1 * * ?")
+	public void recycle() {
+		LambdaQueryWrapper<CustomerPool> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(CustomerPool::getEnable, true).eq(CustomerPool::getAuto, true);
+		List<CustomerPool> pools = customerPoolMapper.selectListByLambda(queryWrapper);
+		if (CollectionUtils.isEmpty(pools)) {
+			return;
+		}
+		Map<List<String>, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersBestMatchPoolMap(pools);
+		List<String> recycleOwnersIds = ownersDefaultPoolMap.keySet().stream().flatMap(List::stream).toList();
+		LambdaQueryWrapper<Customer> customerQueryWrapper = new LambdaQueryWrapper<>();
+		customerQueryWrapper.in(Customer::getOwner, recycleOwnersIds).eq(Customer::getInSharedPool, false);
+		List<Customer> customers = customerMapper.selectListByLambda(customerQueryWrapper);
+		if (CollectionUtils.isEmpty(customers)) {
+			return;
+		}
+		List<String> poolIds = pools.stream().map(CustomerPool::getId).toList();
+		LambdaQueryWrapper<CustomerPoolRecycleRule> ruleQueryWrapper = new LambdaQueryWrapper<>();
+		ruleQueryWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
+		List<CustomerPoolRecycleRule> recycleRules = customerPoolRecycleRuleMapper.selectListByLambda(ruleQueryWrapper);
+		Map<String, CustomerPoolRecycleRule> recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, r -> r));
+		customers.forEach(customer -> ownersDefaultPoolMap.forEach((ownerIds, pool) -> {
+			if (ownerIds.contains(customer.getOwner())) {
+				CustomerPoolRecycleRule rule = recycleRuleMap.get(pool.getId());
+				boolean recycle = customerPoolService.checkRecycled(customer, rule);
+				if (recycle) {
+					// 插入责任人历史
+					customerOwnerHistoryService.add(customer, InternalUser.ADMIN.getValue());
+					customer.setPoolId(pool.getId());
+					customer.setInSharedPool(true);
+					customer.setOwner(null);
+					customer.setCollectionTime(null);
+					customer.setUpdateUser(InternalUser.ADMIN.getValue());
+					customer.setUpdateTime(System.currentTimeMillis());
+					// 回收客户至公海
+					customerMapper.updateById(customer);
+				}
+			}
+		}));
+	}
+}

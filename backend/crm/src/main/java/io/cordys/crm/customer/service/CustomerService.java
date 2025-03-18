@@ -309,6 +309,7 @@ public class CustomerService {
             customer.setCollectionTime(null);
             customer.setUpdateUser(currentUser);
             customer.setUpdateTime(System.currentTimeMillis());
+            // 回收客户至公海
             customerMapper.updateById(customer);
         }
     }

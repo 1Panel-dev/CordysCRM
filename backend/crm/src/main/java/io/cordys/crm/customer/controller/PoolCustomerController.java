@@ -1,10 +1,7 @@
 package io.cordys.crm.customer.controller;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.dto.request.*;

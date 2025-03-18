@@ -20,8 +20,6 @@ import io.cordys.crm.clue.dto.request.CluePoolAddRequest;
 import io.cordys.crm.clue.dto.request.CluePoolUpdateRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtCluePoolMapper;
-import io.cordys.crm.system.domain.Department;
-import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.mapper.ExtUserMapper;
@@ -30,7 +28,6 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -51,10 +49,6 @@ public class CluePoolService {
     private BaseMapper<CluePool> cluePoolMapper;
     @Resource
     private BaseMapper<User> userMapper;
-    @Resource
-    private BaseMapper<Role> roleMapper;
-    @Resource
-    private BaseMapper<Department> departmentMapper;
     @Resource
     private BaseMapper<CluePoolPickRule> cluePoolPickRuleMapper;
     @Resource
@@ -78,27 +72,8 @@ public class CluePoolService {
             return new ArrayList<>();
         }
 
-        List<String> userIds = new ArrayList<>();
-        List<String> scopeIds = new ArrayList<>();
-        List<String> ownerIds = new ArrayList<>();
-
-        pools.forEach(pool -> {
-            userIds.add(pool.getCreateUser());
-            userIds.add(pool.getUpdateUser());
-            scopeIds.addAll(JSON.parseArray(pool.getScopeId(), String.class));
-            ownerIds.addAll(JSON.parseArray(pool.getOwnerId(), String.class));
-        });
-
-        List<String> unionIds = ListUtils.union(scopeIds, ownerIds)
-                .stream()
-                .distinct()
-                .toList();
-
-        List<User> users = userMapper.selectByIds(unionIds.toArray(new String[0]));
-        List<Role> roles = roleMapper.selectByIds(unionIds.toArray(new String[0]));
-        List<Department> departments = departmentMapper.selectByIds(unionIds.toArray(new String[0]));
+        List<String> userIds = pools.stream().flatMap(pool -> Stream.of(pool.getCreateUser(), pool.getUpdateUser())).toList();
         List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
-
         Map<String, String> userMap = createOrUpdateUsers.stream()
                 .collect(Collectors.toMap(User::getId, User::getName));
 
@@ -121,10 +96,8 @@ public class CluePoolService {
                 .collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, recycleRule -> recycleRule));
 
         pools.forEach(pool -> {
-            pool.setMembers(userExtendService.getScope(users, roles, departments,
-                    JSON.parseArray(pool.getScopeId(), String.class)));
-            pool.setOwners(userExtendService.getScope(users, roles, departments,
-                    JSON.parseArray(pool.getOwnerId(), String.class)));
+            pool.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
+            pool.setOwners(userExtendService.getScope(JSON.parseArray(pool.getOwnerId(), String.class)));
             pool.setCreateUserName(userMap.get(pool.getCreateUser()));
             pool.setUpdateUserName(userMap.get(pool.getUpdateUser()));
 

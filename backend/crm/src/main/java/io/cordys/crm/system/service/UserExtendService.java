@@ -6,6 +6,7 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.ScopeKey;
 import io.cordys.crm.system.domain.*;
 import io.cordys.crm.system.dto.ScopeNameDTO;
+import io.cordys.crm.system.mapper.ExtUserExtendMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -25,45 +26,52 @@ public class UserExtendService {
 	@Resource
 	private BaseMapper<OrganizationUser> organizationUserMapper;
 	@Resource
+	private ExtUserExtendMapper extUserExtendMapper;
+	@Resource
 	private DepartmentService departmentService;
 	@Resource
 	private BaseMapper<UserRole> userRoleMapper;
 
 	/**
+	 * 获取范围的所有负责人ID
+	 * @param scopeIds 范围ID集合
+	 * @param orgId 组织ID
+	 * @return 负责人ID集合
+	 */
+	public List<String> getScopeOwnerIds(List<String> scopeIds, String  orgId) {
+		List<ScopeNameDTO> scopes = getScope(scopeIds);
+		List<String> ownerIds = new ArrayList<>(scopes.stream().filter(scope -> StringUtils.equals(scope.getScope(), ScopeKey.USER.name())).map(ScopeNameDTO::getId).toList());
+		List<ScopeNameDTO> roleList = scopes.stream().filter(scope -> StringUtils.equals(scope.getScope(), ScopeKey.ROLE.name())).toList();
+		List<ScopeNameDTO> dptList = scopes.stream().filter(scope -> StringUtils.equals(scope.getScope(), ScopeKey.DEPARTMENT.name())).toList();
+		if (!CollectionUtils.isEmpty(roleList)) {
+			List<String> roleIds = roleList.stream().map(ScopeNameDTO::getId).toList();
+			LambdaQueryWrapper<UserRole> userRoleWrapper = new LambdaQueryWrapper<>();
+			userRoleWrapper.in(UserRole::getRoleId, roleIds);
+			List<UserRole> userRoles = userRoleMapper.selectListByLambda(userRoleWrapper);
+			ownerIds.addAll(userRoles.stream().map(UserRole::getUserId).toList());
+		}
+		if (!CollectionUtils.isEmpty(dptList)) {
+			List<BaseTreeNode> tree = departmentService.getTree(orgId);
+			List<String> allDptIds = new ArrayList<>(dptList.stream().map(ScopeNameDTO::getId).toList());
+			dptList.forEach(dpt -> {
+				List<String> childDptIds = getChildDptById(tree.getFirst(), dpt.getId());
+				allDptIds.addAll(childDptIds);
+			});
+			LambdaQueryWrapper<OrganizationUser> queryWrapper = new LambdaQueryWrapper<>();
+			queryWrapper.in(OrganizationUser::getDepartmentId, allDptIds.stream().distinct().toList());
+			List<OrganizationUser> organizationUsers = organizationUserMapper.selectListByLambda(queryWrapper);
+			ownerIds.addAll(organizationUsers.stream().map(OrganizationUser::getUserId).toList());
+		}
+		return ownerIds.stream().distinct().toList();
+	}
+
+	/**
 	 * 获取成员范围集合
-	 * @param users 用户
-	 * @param roles 角色
-	 * @param departments 部门
 	 * @param scopeIds 范围ID集合
 	 * @return 范围集合
 	 */
-	public List<ScopeNameDTO> getScope(List<User> users, List<Role> roles, List<Department> departments, List<String> scopeIds) {
-		Map<String, String> userMap = users.stream().collect(Collectors.toMap(User::getId, User::getName));
-		Map<String, String> roleMap = roles.stream().collect(Collectors.toMap(Role::getId, Role::getName));
-		Map<String, String> departmentMap = departments.stream().collect(Collectors.toMap(Department::getId, Department::getName));
-		List<ScopeNameDTO> scopes = new ArrayList<>();
-		scopeIds.forEach(scopeId -> {
-			ScopeNameDTO scope = ScopeNameDTO.builder().id(scopeId).build();
-			if (userMap.containsKey(scopeId)) {
-				scope.setName(userMap.get(scopeId));
-				scope.setScope(ScopeKey.USER.name());
-			} else if (roleMap.containsKey(scopeId)) {
-				if (StringUtils.equalsAny(scopeId,
-						InternalRole.ORG_ADMIN.getValue(),
-						InternalRole.SALES_MANAGER.getValue(),
-						InternalRole.SALES_STAFF.getValue())) {
-					scope.setName(Translator.get("role." + scopeId));
-				} else {
-					scope.setName(roleMap.get(scopeId));
-				}
-				scope.setScope(ScopeKey.ROLE.name());
-			} else if (departmentMap.containsKey(scopeId)) {
-				scope.setName(departmentMap.get(scopeId));
-				scope.setScope(ScopeKey.DEPARTMENT.name());
-			}
-			scopes.add(scope);
-		});
-		return scopes;
+	public List<ScopeNameDTO> getScope(List<String> scopeIds) {
+		return extUserExtendMapper.groupByScopeIds(scopeIds);
 	}
 
 	/**
@@ -118,5 +126,58 @@ public class UserExtendService {
 		}
 		// 未命中, 回退当前节点
 		path.removeLast();
+	}
+
+	/**
+	 * 查找目标部门的子部门节点
+	 * @param node 树节点
+	 * @param targetId 目标部门ID
+	 * @return 子部门节点
+	 */
+	public static List<String> getChildDptById(BaseTreeNode node, String targetId) {
+		BaseTreeNode targetNode = findTargetById(node, targetId);
+		if (targetNode != null) {
+			// find, return all children
+			return getAllChildDptIds(targetNode);
+		} else {
+			// not found, return empty list
+			return new ArrayList<>();
+		}
+	}
+
+	/**
+	 * 根据ID递归查找目标部门节点
+	 * @param node 树节点
+	 * @param targetId 目标部门ID
+	 * @return 树节点
+	 */
+	public static BaseTreeNode findTargetById(BaseTreeNode node, String targetId) {
+		if (StringUtils.equals(node.getId(), targetId)) {
+			return node;
+		}
+		for (BaseTreeNode child : node.getChildren()) {
+			BaseTreeNode result = findTargetById(child, targetId);
+			if (result != null) {
+				return result;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 递归获取所有子节点部门ID
+	 * @param currentNode 当前节点
+	 * @return 子节点部门ID集合
+	 */
+	public static List<String> getAllChildDptIds(BaseTreeNode currentNode) {
+		List<String> children = new ArrayList<>();
+		if (CollectionUtils.isEmpty(currentNode.getChildren())) {
+			return children;
+		}
+		for (BaseTreeNode child : currentNode.getChildren()) {
+			children.add(child.getId());
+			children.addAll(getAllChildDptIds(child));
+		}
+		return children;
 	}
 }
