@@ -70,6 +70,7 @@
 
   const value = defineModel<DataTableRowKey[]>('value', {
     required: true,
+    default: [],
   });
   const rows = defineModel<InternalRowData[]>('rows', {
     default: [],

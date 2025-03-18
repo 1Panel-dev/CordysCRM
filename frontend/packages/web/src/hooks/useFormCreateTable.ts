@@ -324,11 +324,20 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               render: props.specialRender?.[field.businessKey],
             };
           }
+          if (field.type === FieldTypeEnum.DATA_SOURCE || field.type === FieldTypeEnum.MULTIPLE_INPUT) {
+            return {
+              title: field.name,
+              width: 150,
+              key: field.businessKey || field.id,
+              isTag: true,
+              sortOrder: false,
+              sorter: true,
+            };
+          }
           return {
             title: field.name,
             width: 150,
             key: field.businessKey || field.id,
-            isTag: field.type === FieldTypeEnum.DATA_SOURCE || field.type === FieldTypeEnum.MULTIPLE_INPUT,
             ellipsis: {
               tooltip: true,
             },

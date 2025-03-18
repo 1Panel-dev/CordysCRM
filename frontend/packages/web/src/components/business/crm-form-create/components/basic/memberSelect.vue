@@ -10,16 +10,31 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
-    <CrmUserTagSelector v-model:selected-list="selectedUsers" :multiple="fieldConfig.multiple" />
+    <CrmUserTagSelector
+      v-model:selected-list="selectedUsers"
+      :multiple="fieldConfig.multiple"
+      :drawer-title="t('crmFormDesign.selectDataSource', { type: props.fieldConfig.name })"
+      :api-type-key="MemberApiTypeEnum.SYSTEM_ROLE"
+      :disabled-node-types="
+        props.fieldConfig.type === FieldTypeEnum.MEMBER
+          ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
+          : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
+      "
+    />
   </n-form-item>
 </template>
 
 <script setup lang="ts">
   import { NFormItem } from 'naive-ui';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { MemberApiTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
+
+  import { useI18n } from '@/hooks/useI18n';
 
   import { FormCreateField } from '../../types';
 
@@ -30,6 +45,8 @@
   const emit = defineEmits<{
     (e: 'change', value: string | number | (string | number)[]): void;
   }>();
+
+  const { t } = useI18n();
 
   const value = defineModel<string | number | (string | number)[]>('value', {
     default: [],

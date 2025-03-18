@@ -170,7 +170,7 @@
     () => {
       list.value.forEach((item) => {
         if (!form.value[item.id]) {
-          form.value[item.id] = item.defaultValue;
+          form.value[item.id] = item.defaultValue || getRuleType(item) === 'array' ? [] : '';
         }
         handleFieldChange(form.value[item.id], item); // 初始化时，根据字段值控制显示
         const fullRules: FormCreateFieldRule[] = [];
@@ -181,6 +181,9 @@
             staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
             staticRule.message = t(rule.message as string, { value: t(item.name) });
             staticRule.type = getRuleType(item);
+            if (item.type === FieldTypeEnum.DATA_SOURCE) {
+              staticRule.trigger = 'none';
+            }
             fullRules.push(staticRule);
           }
         });

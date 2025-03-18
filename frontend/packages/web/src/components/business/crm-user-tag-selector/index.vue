@@ -17,11 +17,12 @@
       v-model:visible="showSelectAdminDrawer"
       :loading="false"
       :title="props.drawerTitle || t('role.addMember')"
-      :api-type-key="MemberApiTypeEnum.MODULE_ROLE"
+      :api-type-key="props.apiTypeKey"
       :disabled-list="modelValue"
       :multiple="props.multiple"
       :ok-text="props.okText"
       :member-types="props.memberTypes"
+      :disabled-node-types="props.disabledNodeTypes"
       @confirm="handleAddAdminConfirm"
     />
   </div>
@@ -31,6 +32,7 @@
   import { NSelect, SelectOption } from 'naive-ui';
 
   import { MemberApiTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
@@ -42,6 +44,8 @@
   const { t } = useI18n();
 
   export type UserTagSelectorProps = {
+    apiTypeKey?: MemberApiTypeEnum; // 要配置对应的key
+    disabledNodeTypes?: DeptNodeTypeEnum[]; // 禁用的节点类型
     userErrorTagIds?: string[];
     multiple?: boolean;
     drawerTitle?: string;
@@ -51,6 +55,7 @@
   };
   const props = withDefaults(defineProps<UserTagSelectorProps>(), {
     multiple: true,
+    apiTypeKey: MemberApiTypeEnum.MODULE_ROLE,
   });
   const selectedList = defineModel<SelectedUsersItem[]>('selectedList', {
     required: true,

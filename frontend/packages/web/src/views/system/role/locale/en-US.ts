@@ -5,7 +5,7 @@ export default {
   'role.permission': 'Permission',
   'role.member': 'Member',
   'role.addMember': 'Add member',
-  'role.addMemberType': 'Add member way',
+  'role.addMemberType': 'Way',
   'deleteConfirmContent': 'After deletion, role members no longer have this permission',
   'role.dataPermission': 'Data permission',
   'role.dataPermissionAll': 'All',

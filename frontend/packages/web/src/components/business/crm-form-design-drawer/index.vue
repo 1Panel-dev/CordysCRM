@@ -146,7 +146,14 @@
   async function initFormConfig() {
     try {
       loading.value = true;
-      const res = await getFormDesignConfig(props.formKey);
+      let key = props.formKey;
+      // 跟进记录和计划 key 特殊处理，因为各模块 key 不一致但是表单配置一致
+      if (key.includes('record')) {
+        key = 'record' as FormDesignKeyEnum;
+      } else if (key.includes('plan')) {
+        key = 'plan' as FormDesignKeyEnum;
+      }
+      const res = await getFormDesignConfig(key);
       fieldList.value = res.fields.map((item) => ({
         ...item,
         id: item.id,

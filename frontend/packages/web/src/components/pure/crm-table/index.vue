@@ -110,7 +110,7 @@
       if (column.isTag) {
         render = (row: Record<string, any>) =>
           h(CrmTagGroup, {
-            tags: row[column.key as string],
+            tags: row[column.key as string] || [],
             ...column.tagGroupProps,
           });
       }

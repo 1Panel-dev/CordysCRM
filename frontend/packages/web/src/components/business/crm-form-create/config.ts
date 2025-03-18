@@ -320,7 +320,7 @@ export const rules: FormCreateFieldRule[] = [
     required: true,
     message: 'common.notNull',
     label: 'crmFormDesign.required',
-    trigger: 'change',
+    trigger: 'input',
   },
   {
     key: FieldRuleEnum.UNIQUE,

@@ -5,7 +5,7 @@ export default {
   'role.permission': '权限',
   'role.member': '成员',
   'role.addMember': '添加成员',
-  'role.addMemberType': '添加方式',
+  'role.addMemberType': '方式',
   'role.deleteConfirmContent': '删除后，角色成员不再拥有该权限',
   'role.dataPermission': '数据权限',
   'role.dataPermissionAll': '全部数据',

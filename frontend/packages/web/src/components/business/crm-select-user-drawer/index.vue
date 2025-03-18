@@ -67,6 +67,7 @@
       memberTypes?: Option[];
       multiple?: boolean;
       okText?: string;
+      disabledNodeTypes?: DeptNodeTypeEnum[]; // 需要禁用掉的节点类型
     }>(),
     {
       multiple: true,
@@ -156,7 +157,8 @@
         return {
           label: item.name,
           value: item.id,
-          disabled: !item.enabled || props.disabledList?.includes(item.id),
+          disabled:
+            !item.enabled || props.disabledList?.includes(item.id) || props.disabledNodeTypes?.includes(item.nodeType),
           ...item,
           children: item.children?.length ? item.children : undefined,
         };
@@ -167,7 +169,8 @@
         return {
           label: item.name,
           value: item.id,
-          disabled: !item.enabled || props.disabledList?.includes(item.id),
+          disabled:
+            !item.enabled || props.disabledList?.includes(item.id) || props.disabledNodeTypes?.includes(item.nodeType),
           ...item,
           children: item.children?.length ? item.children : undefined,
         };
@@ -193,6 +196,7 @@
       pattern,
       selectedKeys: addMembers.value,
       showIrrelevantNodes: false,
+      defaultExpandAll: true,
       renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
         if (node.option.internal) {
           return h(roleTreeNodePrefix);
