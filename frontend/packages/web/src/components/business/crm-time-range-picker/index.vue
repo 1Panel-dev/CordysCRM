@@ -1,6 +1,6 @@
 <template>
-  <n-date-picker v-if="isFixed" v-model:value="fixedValue" type="datetimerange" clearable />
-  <div v-else>
+  <n-date-picker v-if="isFixed" v-model:value="fixedValue" class="w-full" type="datetimerange" clearable />
+  <div v-else class="w-full">
     <div class="flex items-center gap-[8px]">
       <n-input-number v-model:value="dynamicValue[0]" class="flex-1" :min="1" />
       <n-select
@@ -9,7 +9,6 @@
         :options="unitOptions"
         :placeholder="t('common.pleaseSelect')"
       />
-      <div>{{ t('common.toPresent') }}</div>
     </div>
     <div class="text-[12px] text-[var(--primary-8)]">{{ formattedDateRange }}</div>
   </div>
@@ -17,7 +16,7 @@
 
 <script setup lang="ts">
   import { NDatePicker, NInputNumber, NSelect } from 'naive-ui';
-  import dayjs from 'dayjs';
+  import dayjs, { ManipulateType } from 'dayjs';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 
@@ -64,9 +63,11 @@
   watch(
     () => dynamicValue.value,
     ([value, unit]) => {
-      modelValue.value = `${value},${unit}`;
+      if (!isFixed.value) {
+        modelValue.value = `${value},${unit}`;
+      }
     },
-    { deep: true }
+    { deep: true, immediate: true }
   );
 
   watch(
@@ -77,55 +78,28 @@
     { deep: true }
   );
 
+  watch(
+    () => props.timeRangeType,
+    () => {
+      if (!isFixed.value && !modelValue.value) {
+        modelValue.value = '6,month';
+      }
+    }
+  );
+
   const unitOptions = [
     { label: t('common.month'), value: 'month' },
     { label: t('common.week'), value: 'week' },
     { label: t('common.day'), value: 'day' },
-    { label: t('common.today'), value: 'today' },
-    { label: t('common.monthAfter'), value: 'monthAfter' },
-    { label: t('common.weekAfter'), value: 'weekAfter' },
-    { label: t('common.dayAfter'), value: 'dayAfter' },
   ];
 
-  function calculateDynamicDateRange(value: number, unitValue: string) {
+  function calculateDynamicDateRange(value: number, unitValue: string = 'month') {
+    const DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
     const now = dayjs();
-    let startDate;
-    let endDate;
+    const startDate = now.subtract(value, unitValue as ManipulateType);
+    const endDate = now;
 
-    switch (unitValue) {
-      case 'month':
-        startDate = now.subtract(value, 'month');
-        endDate = now;
-        break;
-      case 'week':
-        startDate = now.subtract(value, 'week');
-        endDate = now;
-        break;
-      case 'day':
-        startDate = now.subtract(value, 'day');
-        endDate = now;
-        break;
-      case 'today':
-        startDate = now.startOf('day');
-        endDate = now.endOf('day');
-        break;
-      case 'monthAfter':
-        startDate = now;
-        endDate = now.add(value, 'month');
-        break;
-      case 'weekAfter':
-        startDate = now;
-        endDate = now.add(value, 'week');
-        break;
-      case 'dayAfter':
-        startDate = now;
-        endDate = now.add(value, 'day');
-        break;
-      default:
-        startDate = now;
-        endDate = now;
-    }
-    return `${startDate.format('YYYY-MM-DD HH:mm:ss')} ${t('common.to')} ${endDate.format('YYYY-MM-DD HH:mm:ss')}`;
+    return `${startDate.format(DATE_FORMAT)} ${t('common.to')} ${endDate.format(DATE_FORMAT)}`;
   }
 
   const formattedDateRange = computed(() => {

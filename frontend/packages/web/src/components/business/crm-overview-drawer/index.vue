@@ -1,5 +1,13 @@
 <template>
-  <CrmDrawer v-model:show="showDrawer" width="100%" :footer="false" no-padding :show-back="true" :closable="false">
+  <CrmDrawer
+    v-model:show="showDrawer"
+    :content-style="{ minWidth: '1200px' }"
+    width="100%"
+    :footer="false"
+    no-padding
+    :show-back="true"
+    :closable="false"
+  >
     <template #title>
       <n-tooltip trigger="hover" :delay="300" :disabled="!props.title">
         <template #trigger>

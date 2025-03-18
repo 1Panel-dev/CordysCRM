@@ -72,15 +72,12 @@
           </n-space>
         </n-radio-group>
       </n-form-item>
-      <CrmBatchForm
+      <FilterContent
         v-if="form.auto"
-        ref="batchFormRef"
-        class="mt-[16px]"
-        :models="formItemModel"
-        :default-list="form.conditions"
-        :add-text="t('module.clue.addConditions')"
-        :validate-when-add="true"
-        show-all-or
+        ref="filterContentRef"
+        v-model:form-model="recycleFormItemModel"
+        keep-one-line
+        :config-list="filterConfigList"
       />
       <n-form-item
         require-mark-placement="left"
@@ -130,26 +127,19 @@
     NRadio,
     NRadioGroup,
     NSpace,
-    SelectOption,
     useMessage,
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
-  import type {
-    ModuleConditionsItem,
-    OpportunityDetail,
-    OpportunityItem,
-    OpportunityParams,
-  } from '@lib/shared/models/system/module';
+  import type { OpportunityDetail, OpportunityItem, OpportunityParams } from '@lib/shared/models/system/module';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
+  import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
+  import { EQUAL, NOT_EQUAL } from '@/components/pure/crm-advance-filter/index';
+  import { AccordBelowType, FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import { EQUAL, GE, GT, LE, LT, NOT_EQUAL } from '@/components/business/crm-batch-form/config';
-  import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
-  import type { FormItemModel } from '@/components/business/crm-batch-form/types';
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
@@ -195,59 +185,22 @@
     noticeDays: [{ required: true, message: t('common.pleaseInput'), trigger: ['blur'] }],
   };
 
-  const closeAttrsOptions = ref<SelectOption[]>([
-    {
-      value: 'keepDays',
-      label: t('opportunity.belongDays'),
-    },
-    {
-      value: 'remainKeepDays',
-      label: t('module.remainingDays'),
-    },
-    {
-      value: 'opportunityStage',
-      label: t('opportunity.opportunityStage'),
-    },
-  ]);
-
-  const formItemModel: Ref<FormItemModel[]> = ref([
-    {
-      path: 'column',
-      type: FieldTypeEnum.SELECT,
-      rule: [
-        {
-          required: true,
-          message: t('common.pleaseSelect'),
-        },
-      ],
-      selectProps: {
-        options: closeAttrsOptions.value,
+  const filterConfigList = computed<FilterFormItem[]>(() => {
+    return [
+      {
+        title: t('common.createTime'),
+        dataIndex: 'createTime',
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+        showScope: true,
       },
-    },
-    {
-      path: 'operator',
-      type: FieldTypeEnum.SELECT,
-      rule: [
-        {
-          required: true,
-          message: t('common.pleaseSelect'),
-        },
-      ],
-      selectProps: {
-        options: [EQUAL, NOT_EQUAL, GT, GE, LT, LE],
+      {
+        title: t('opportunity.opportunityStage'),
+        dataIndex: 'opportunityStage',
+        type: FieldTypeEnum.INPUT,
+        operatorOption: [EQUAL, NOT_EQUAL],
       },
-    },
-    {
-      path: 'value',
-      type: FieldTypeEnum.INPUT,
-    },
-  ]);
-
-  const initDefaultItem: ModuleConditionsItem = {
-    column: 'keepDays',
-    operator: OperatorEnum.EQUALS,
-    value: '',
-  };
+    ];
+  });
 
   const initRuleForm: OpportunityDetailType = {
     name: '',
@@ -255,7 +208,7 @@
     enable: true,
     expireNotice: false,
     noticeDays: 0,
-    conditions: [initDefaultItem],
+    conditions: [],
     operator: 'AND',
     ownerIds: [],
     scopeIds: [],
@@ -263,42 +216,42 @@
 
   const form = ref<OpportunityDetailType>(cloneDeep(initRuleForm));
 
+  const defaultFormModel: FilterForm = {
+    searchMode: 'AND',
+    list: [],
+  };
+  const recycleFormItemModel = ref<FilterForm>(cloneDeep(defaultFormModel));
+
   function cancelHandler() {
     form.value = cloneDeep(initRuleForm);
+    recycleFormItemModel.value = cloneDeep(defaultFormModel);
     visible.value = false;
   }
 
   const formRef = ref<FormInst | null>(null);
   const loading = ref<boolean>(false);
 
-  const batchFormRef = ref<InstanceType<typeof CrmBatchForm>>();
-
-  function userFormValidate(cb: (_isContinue: boolean) => Promise<any>, isContinue: boolean) {
-    batchFormRef.value?.formValidate(async (batchForm?: Record<string, any>) => {
-      try {
-        loading.value = true;
-        form.value.conditions = batchForm?.list;
-        form.value.operator = batchForm?.allOr;
-        await cb(isContinue);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
-      } finally {
-        loading.value = false;
-      }
-    });
-  }
-
   async function handleSave(isContinue: boolean) {
     try {
       loading.value = true;
-      const { ownerIds, scopeIds, conditions, auto } = form.value;
+      const { ownerIds, scopeIds, auto, ...otherParams } = form.value;
       const params: OpportunityParams = {
-        ...form.value,
+        ...otherParams,
+        auto,
         ownerIds: ownerIds.map((e) => e.id),
         scopeIds: scopeIds.map((e) => e.id),
-        conditions: auto ? conditions : [],
+        operator: recycleFormItemModel.value.searchMode as string,
+        conditions: [],
       };
+      if (auto) {
+        const list = recycleFormItemModel.value.list?.map((item) => ({
+          column: item.dataIndex as string,
+          operator: item.operator as string,
+          value: item.value as string,
+          scope: item.scope ?? [],
+        }));
+        params.conditions = list;
+      }
 
       if (form.value.id) {
         await updateOpportunityRule(params);
@@ -309,6 +262,7 @@
       }
       if (isContinue) {
         form.value = cloneDeep(initRuleForm);
+        recycleFormItemModel.value = cloneDeep(defaultFormModel);
       } else {
         cancelHandler();
       }
@@ -321,11 +275,16 @@
     }
   }
 
+  const filterContentRef = ref<InstanceType<typeof FilterContent>>();
   function confirmHandler(isContinue: boolean) {
     formRef.value?.validate(async (error) => {
       if (!error) {
-        if (form.value.auto) {
-          userFormValidate(handleSave, isContinue);
+        if (filterContentRef.value) {
+          filterContentRef.value?.formRef?.validate((errors) => {
+            if (!errors) {
+              handleSave(isContinue);
+            }
+          });
         } else {
           handleSave(isContinue);
         }
@@ -343,9 +302,30 @@
           scopeIds: val.members,
           conditions: JSON.parse(val.condition),
         };
+        if (val.auto) {
+          recycleFormItemModel.value.list = JSON.parse(val.condition)?.map((item: any) => {
+            const filterConfigItem = filterConfigList.value.find((listItem) => listItem.dataIndex === item.column);
+            return {
+              dataIndex: item.column,
+              operator: item.operator,
+              value: item.value,
+              scope: item.scope,
+              showScope: filterConfigItem?.showScope,
+              type: filterConfigItem?.type,
+            } as FilterFormItem;
+          });
+          recycleFormItemModel.value.searchMode = val.operator as AccordBelowType;
+        } else {
+          recycleFormItemModel.value = cloneDeep(defaultFormModel);
+        }
       }
     }
   );
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+  :deep(.dataIndex-col) {
+    width: 100px;
+    flex: initial;
+  }
+</style>

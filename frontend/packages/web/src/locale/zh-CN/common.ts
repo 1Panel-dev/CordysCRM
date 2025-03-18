@@ -260,10 +260,6 @@ export default {
   'common.month': '月前',
   'common.week': '周前',
   'common.day': '天前',
-  'common.today': '当天',
-  'common.monthAfter': '月后',
-  'common.weekAfter': '周后',
-  'common.dayAfter': '天后',
   'common.sort': '排序',
   'common.tabConfig': 'tab配置',
   'common.head': '负责人',
@@ -283,5 +279,4 @@ export default {
   'common.complete': '完结',
   'common.result': '结果',
   'common.contact': '联系人',
-  'common.toPresent': '至当前',
 };

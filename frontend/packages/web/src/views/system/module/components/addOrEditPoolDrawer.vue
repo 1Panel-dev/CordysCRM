@@ -114,14 +114,12 @@
           </n-space>
         </n-radio-group>
       </n-form-item>
-      <CrmBatchForm
+      <FilterContent
         v-if="form.auto"
-        ref="batchFormRef"
-        :models="formItemModel"
-        :default-list="form.recycleRule.conditions"
-        :add-text="t('module.clue.addConditions')"
-        :validate-when-add="true"
-        show-all-or
+        ref="filterContentRef"
+        v-model:form-model="recycleFormItemModel"
+        keep-one-line
+        :config-list="filterConfigList"
       />
       <n-form-item path="recycleRule.expireNotice" :label="t('opportunity.expirationReminder')">
         <n-radio-group v-model:value="form.recycleRule.expireNotice" name="radiogroup">
@@ -172,10 +170,9 @@
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import type { CluePoolForm, CluePoolItem, CluePoolParams } from '@lib/shared/models/system/module';
 
+  import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
+  import { AccordBelowType, FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import { timeFormItem } from '@/components/business/crm-batch-form/config';
-  import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
-  import type { FormItemModel } from '@/components/business/crm-batch-form/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { addCluePool, addCustomerPool, updateCluePool, updateCustomerPool } from '@/api/modules/system/module';
@@ -225,13 +222,26 @@
       expireNotice: false,
       noticeDays: undefined,
       operator: 'all',
-      conditions: [
-        { column: 'storageTime', operator: OperatorEnum.DYNAMICS, value: '6,month', scope: ['Created', 'Picked'] },
-      ],
+      conditions: [],
     },
   };
 
   const form = ref<CluePoolForm>(cloneDeep(initForm));
+
+  const defaultFormModel: FilterForm = {
+    searchMode: 'AND',
+    list: [
+      {
+        dataIndex: 'storageTime',
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+        operator: OperatorEnum.DYNAMICS,
+        value: '6,month',
+        showScope: true,
+        scope: ['Created', 'Picked'],
+      },
+    ],
+  };
+  const recycleFormItemModel = ref<FilterForm>(cloneDeep(defaultFormModel));
 
   const title = computed(() => {
     if (props.type === ModuleConfigEnum.CLUE_MANAGEMENT) {
@@ -242,38 +252,25 @@
     }
   });
 
-  const conditionsColumnOptions = [
-    {
-      value: 'storageTime',
-      label: t('module.clue.storageTime'),
-    },
-    {
-      value: 'followUpTime',
-      label: t('module.clue.followUpTime'),
-    },
-  ];
-
-  const formItemModel: Ref<FormItemModel[]> = ref([
-    {
-      path: 'column',
-      type: FieldTypeEnum.SELECT,
-      rule: [
-        {
-          required: true,
-          message: t('common.pleaseSelect'),
-        },
-      ],
-      selectProps: {
-        options: conditionsColumnOptions,
-        clearable: false,
-        filterRepeat: true,
+  const filterConfigList = computed<FilterFormItem[]>(() => {
+    return [
+      {
+        title: t('module.clue.storageTime'),
+        dataIndex: 'storageTime',
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+        showScope: true,
       },
-    },
-    ...timeFormItem,
-  ]);
+      {
+        title: t('module.clue.followUpTime'),
+        dataIndex: 'followUpTime',
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+      },
+    ];
+  });
 
   function cancelHandler() {
     form.value = cloneDeep(initForm);
+    recycleFormItemModel.value = cloneDeep(defaultFormModel);
     row.value = undefined;
     visible.value = false;
   }
@@ -281,33 +278,32 @@
   const formRef = ref<FormInst | null>(null);
   const loading = ref<boolean>(false);
 
-  const batchFormRef = ref<InstanceType<typeof CrmBatchForm>>();
-
-  function userFormValidate(cb: (_isContinue: boolean) => Promise<any>, isContinue: boolean) {
-    batchFormRef.value?.formValidate(async (batchForm?: Record<string, any>) => {
-      try {
-        loading.value = true;
-        form.value.recycleRule.conditions = batchForm?.list;
-        form.value.recycleRule.operator = batchForm?.allOr;
-        await cb(isContinue);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
-      } finally {
-        loading.value = false;
-      }
-    });
-  }
-
   async function handleSave(isContinue: boolean) {
     try {
       loading.value = true;
-      const { userIds, adminIds, ...otherParams } = form.value;
+      const { userIds, auto, adminIds, recycleRule, ...otherParams } = form.value;
+
       const params: CluePoolParams = {
         ...otherParams,
         ownerIds: adminIds.map((e) => e.id),
         scopeIds: userIds.map((e) => e.id),
+        auto,
+        recycleRule: {
+          expireNotice: recycleRule.expireNotice,
+          noticeDays: recycleRule.noticeDays,
+          operator: recycleFormItemModel.value.searchMode as string,
+          conditions: [],
+        },
       };
+      if (auto) {
+        const conditions = recycleFormItemModel.value.list?.map((item) => ({
+          column: item.dataIndex as string,
+          operator: item.operator as string,
+          value: item.value as string,
+          scope: item.scope ?? [],
+        }));
+        params.recycleRule.conditions = conditions;
+      }
       if (form.value.id) {
         await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT
           ? updateCustomerPool(params)
@@ -319,6 +315,7 @@
       }
       if (isContinue) {
         form.value = cloneDeep(initForm);
+        recycleFormItemModel.value = cloneDeep(defaultFormModel);
       } else {
         cancelHandler();
       }
@@ -331,11 +328,16 @@
     }
   }
 
+  const filterContentRef = ref<InstanceType<typeof FilterContent>>();
   function confirmHandler(isContinue: boolean) {
     formRef.value?.validate(async (error) => {
       if (!error) {
-        if (batchFormRef.value) {
-          userFormValidate(handleSave, isContinue);
+        if (filterContentRef.value) {
+          filterContentRef.value?.formRef?.validate((errors) => {
+            if (!errors) {
+              handleSave(isContinue);
+            }
+          });
         } else {
           handleSave(isContinue);
         }
@@ -357,10 +359,30 @@
           userIds: val.members,
           adminIds: val.owners,
         };
+        if (val.auto) {
+          recycleFormItemModel.value = {
+            list: val.recycleRule.conditions?.map((item) => ({
+              dataIndex: item.column,
+              operator: item.operator,
+              showScope: !!item.scope?.length,
+              value: item.value,
+              scope: item.scope,
+              type: FieldTypeEnum.TIME_RANGE_PICKER,
+            })) as FilterFormItem[],
+            searchMode: val.recycleRule.operator as AccordBelowType,
+          };
+        } else {
+          recycleFormItemModel.value = cloneDeep(defaultFormModel);
+        }
       }
     },
     { deep: true }
   );
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+  :deep(.dataIndex-col) {
+    width: 100px;
+    flex: initial;
+  }
+</style>

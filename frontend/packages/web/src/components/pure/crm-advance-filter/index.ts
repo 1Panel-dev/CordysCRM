@@ -1,6 +1,10 @@
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
+import { useI18n } from '@/hooks/useI18n';
+
+const { t } = useI18n();
+
 // 大于等于
 export const GE = { label: 'advanceFilter.operator.ge', value: OperatorEnum.GE };
 // 在范围内
@@ -31,6 +35,10 @@ export const NOT_EMPTY = { label: 'advanceFilter.operator.not_empty', value: Ope
 export const CONTAINS = { label: 'advanceFilter.operator.contains', value: OperatorEnum.CONTAINS };
 // 不包含
 export const NO_CONTAINS = { label: 'advanceFilter.operator.not_contains', value: OperatorEnum.NOT_CONTAINS };
+// 动态
+export const DYNAMICS = { value: OperatorEnum.DYNAMICS, label: 'common.dynamics' };
+// 固定
+export const FIXED = { value: OperatorEnum.FIXED, label: 'common.fixed' };
 // 通用文本符号
 const COMMON_TEXT_OPERATORS = [CONTAINS, NO_CONTAINS, EMPTY, NOT_EMPTY, EQUAL, NOT_EQUAL];
 // 通用选择符号
@@ -48,4 +56,17 @@ export const operatorOptionsMap: Record<string, { value: string; label: string }
   [FieldTypeEnum.DATA_SOURCE]: COMMON_TEXT_OPERATORS,
   [FieldTypeEnum.TREE_SELECT]: [IN, NOT_IN],
   [FieldTypeEnum.DATE_TIME]: [BETWEEN, GT, LT, EMPTY, NOT_EMPTY],
+  [FieldTypeEnum.TIME_RANGE_PICKER]: [DYNAMICS, FIXED],
 };
+
+export const scopeOptions = [
+  {
+    value: 'Created',
+    label: t('common.newCreate'),
+  },
+  {
+    value: 'Picked',
+    label: t('common.claim'),
+    disabled: true,
+  },
+];

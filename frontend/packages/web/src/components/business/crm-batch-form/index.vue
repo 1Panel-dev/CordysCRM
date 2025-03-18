@@ -34,11 +34,6 @@
               class="block flex-1"
               :class="model.formItemClass"
             >
-              <CrmTimeRangePicker
-                v-if="model.type === FieldTypeEnum.TIME_RANGE_PICKER"
-                v-model:value="element[model.path]"
-                :time-range-type="element[model.crmTimeRangePickerProps?.typePath as string]"
-              />
               <n-input
                 v-if="model.type === FieldTypeEnum.INPUT"
                 v-model:value="element[model.path]"
@@ -122,7 +117,6 @@
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import CrmTimeRangePicker from '@/components/business/crm-time-range-picker/index.vue';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { useI18n } from '@/hooks/useI18n';

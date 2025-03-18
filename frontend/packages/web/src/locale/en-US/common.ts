@@ -260,10 +260,6 @@ export default {
   'common.month': 'Month Ago',
   'common.week': 'Week Ago',
   'common.day': 'Day Ago',
-  'common.today': 'Today',
-  'common.monthAfter': 'Month After',
-  'common.weekAfter': 'Week After',
-  'common.dayAfter': 'Day After',
   'common.sort': 'Sort',
   'common.tabConfig': 'Tab config',
   'common.head': 'Head',
@@ -282,5 +278,4 @@ export default {
   'common.complete': 'Complete',
   'common.result': 'Result',
   'common.contact': 'Contact',
-  'common.toPresent': 'to present',
 };

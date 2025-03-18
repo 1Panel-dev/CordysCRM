@@ -11,14 +11,16 @@ export interface FilterFormItem {
   dataIndex?: string | null; // 第一列下拉的value
   title?: string; // 第一列下拉显示的label
   operator?: OperatorEnum; // 第二列的值
+  operatorOption?: { value: string; label: string }[]; // operatorOptionsMap里设置的下拉数据不符合业务时，可以通过这个字段传入
   type: FieldTypeEnum; // 类型：判断第二列下拉数据和第三列显示形式
+  showScope?: boolean;
+  scope?: string[];
   value?: any; // 第三列的值
   inputProps?: Partial<InputProps>;
   numberProps?: Partial<InputNumberProps>;
   selectProps?: Partial<SelectProps>;
   treeSelectProps?: Partial<TreeSelectProps>;
   userTagSelectorProps?: Partial<UserTagSelectorProps>;
-  crmTimeRangePickerProps?: { typePath: string };
   cascaderProps?: Partial<CascaderProps>;
 }
 
