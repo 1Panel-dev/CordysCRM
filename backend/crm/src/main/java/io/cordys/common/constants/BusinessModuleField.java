@@ -24,6 +24,24 @@ public enum BusinessModuleField {
     CUSTOMER_OWNER("customerOwner", "owner", Set.of("rules")),
     /*------ end: CUSTOMER ------*/
 
+    /*------ start: CLUE ------*/
+    /**
+     * 线索名称
+     */
+    CLUE_NAME("clueName", "name", Set.of("rules")),
+    /**
+     * 负责人
+     */
+    CLUE_OWNER("clueOwner", "owner", Set.of("rules")),
+    /**
+     * 联系人
+     */
+    CLUE_CONTACT("clueContactName", "contact"),
+    /**
+     * 联系人电话
+     */
+    CLUE_CONTACT_PHONE("clueContactPhone", "phone"),
+    /*------ end: CUSTOMER ------*/
 
     /*------ start: CUSTOMER_MANAGEMENT_CONTACT ------*/
     /**

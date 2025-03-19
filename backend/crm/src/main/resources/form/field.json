@@ -255,6 +255,24 @@
       ]
     },
     {
+      "name": "联系人名称",
+      "internalKey": "clueContactName",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5
+    },
+    {
+      "name": "联系人电话",
+      "internalKey": "clueContactPhone",
+      "type": "INPUT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5
+    },
+    {
       "name": "地址信息",
       "internalKey": "clueAddressInfo",
       "type": "DIVIDER",

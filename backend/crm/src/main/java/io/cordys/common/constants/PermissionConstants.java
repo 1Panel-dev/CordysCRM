@@ -81,11 +81,14 @@ public class PermissionConstants {
     /*------ end: OPPORTUNITY_MANAGEMENT ------*/
 
 
-    /*------ start: CLUE_MANAGEMENT ------*/
+    /**
+     * clue permission
+     */
     public static final String CLUE_MANAGEMENT_READ = "CLUE_MANAGEMENT:READ";
     public static final String CLUE_MANAGEMENT_ADD = "CLUE_MANAGEMENT:ADD";
     public static final String CLUE_MANAGEMENT_UPDATE = "CLUE_MANAGEMENT:UPDATE";
     public static final String CLUE_MANAGEMENT_DELETE = "CLUE_MANAGEMENT:DELETE";
-    /*------ end: CLUE_MANAGEMENT ------*/
+    public static final String CLUE_MANAGEMENT_PICK = "CLUE_MANAGEMENT:PICK";
+    public static final String CLUE_MANAGEMENT_ASSIGN = "CLUE_MANAGEMENT:ASSIGN";
 
 }
