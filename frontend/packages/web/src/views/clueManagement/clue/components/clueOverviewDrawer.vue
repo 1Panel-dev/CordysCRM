@@ -18,11 +18,13 @@
       <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
     </template>
     <template #rightTop>
+      <!-- TODO -->
       <CrmWorkflowCard
-        v-model:status="currentStatus"
+        v-model:stage="currentStatus"
+        v-model:last-stage="lastOptStage"
         class="mb-[16px]"
         :show-confirm-status="true"
-        :workflow-list="workflowList"
+        :base-steps="workflowList"
         :source-id="sourceId"
       />
     </template>
@@ -242,6 +244,7 @@
 
   // 进度条 TODO 从后端获取数据
   const currentStatus = ref<string>('purchasing');
+  const lastOptStage = ref<string>('purchasing');
   const workflowList = ref<SelectOption[]>([]);
 
   // tab

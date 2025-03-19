@@ -45,6 +45,9 @@
             <n-button type="primary" text @click="handleEdit(item)">
               {{ t('common.edit') }}
             </n-button>
+            <n-button type="error" text @click="handleDelete(item)">
+              {{ t('common.delete') }}
+            </n-button>
           </div>
         </template>
         <template #createTime="{ descItem }">
@@ -113,6 +116,7 @@
     handleCancelPlan,
     followKeyword,
     followFormKeyMap,
+    handleDelete,
   } = useFollowApi({
     type: toRef(props, 'activeType'),
     followApiKey: props.followApiKey,

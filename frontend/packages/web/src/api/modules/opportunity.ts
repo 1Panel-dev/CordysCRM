@@ -2,10 +2,10 @@ import {
   AddOptFollowPlanUrl,
   AddOptFollowRecordUrl,
   CancelOptFollowPlanUrl,
+  GetOptDetailUrl,
   GetOptFollowPlanUrl,
   GetOptFollowRecordUrl,
   GetOptFormConfigUrl,
-  GetOptStageDetailUrl,
   OptAddUrl,
   OptBatchDeleteUrl,
   OptBatchTransferUrl,
@@ -29,7 +29,12 @@ import type {
   UpdateCustomerFollowPlanParams,
   UpdateCustomerFollowRecordParams,
 } from '@lib/shared/models/customer';
-import type { OpportunityItem, SaveOpportunityParams, UpdateOpportunityParams } from '@lib/shared/models/opportunity';
+import type {
+  OpportunityDetail,
+  OpportunityItem,
+  SaveOpportunityParams,
+  UpdateOpportunityParams,
+} from '@lib/shared/models/opportunity';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import CDR from '@/api/http/index';
@@ -47,6 +52,11 @@ export function addOpportunity(data: SaveOpportunityParams) {
 // 更新商机
 export function updateOpportunity(data: UpdateOpportunityParams) {
   return CDR.post({ url: OptUpdateUrl, data });
+}
+
+// 商机详情
+export function getOptDetail(id: string) {
+  return CDR.get<OpportunityDetail>({ url: `${GetOptDetailUrl}/${id}` });
 }
 
 // 获取商机表单配置
@@ -117,9 +127,4 @@ export function deleteOpt(id: string) {
 // 更新商机阶段
 export function updateOptStage(data: { id: string; stage: string }) {
   return CDR.post({ url: OptUpdateStageUrl, data });
-}
-
-// 获取商机阶段详情 TODO ts类型
-export function getOptStageDetail(id: string) {
-  return CDR.get<any>({ url: `${GetOptStageDetailUrl}/${id}` });
 }

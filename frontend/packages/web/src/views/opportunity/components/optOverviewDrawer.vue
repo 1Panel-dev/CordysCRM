@@ -16,13 +16,14 @@
     </template>
     <template #rightTop>
       <CrmWorkflowCard
-        v-model:status="currentStatus"
+        v-model:stage="currentStatus"
+        v-model:last-stage="lastOptStage"
         :show-confirm-status="true"
         class="mb-[16px]"
-        :workflow-list="workflowList"
+        :base-steps="baseStepList"
         :source-id="sourceId"
         :update-api="updateOptStage"
-        @load-detail="loadStageDetail"
+        @load-detail="loadDetail"
       />
     </template>
     <template #right>
@@ -48,7 +49,7 @@
   import { SelectOption, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  import { OpportunityStatusEnum } from '@lib/shared/enums/opportunityEnum';
   import type { TransferParams } from '@lib/shared/models/customer';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
@@ -60,7 +61,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import { deleteOpt, getOptStageDetail, transferOpt, updateOptStage } from '@/api/modules/opportunity';
+  import { deleteOpt, getOptDetail, transferOpt, updateOptStage } from '@/api/modules/opportunity';
   import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -139,6 +140,14 @@
     },
   ];
 
+  const baseStepList = computed(() => [
+    ...props.baseSteps,
+    {
+      value: OpportunityStatusEnum.END,
+      label: t('opportunity.end'),
+    },
+  ]);
+
   const activeTab = ref('followRecord');
   const cachedList = ref([]);
   const tabList: TabContentItem[] = [
@@ -155,35 +164,6 @@
       allowClose: true,
     },
   ];
-
-  const currentStatus = ref<string>(OpportunityStatusEnum.CREATE);
-
-  const endStage = computed<SelectOption>(() => {
-    const status = currentStatus.value;
-
-    if (status === StageResultEnum.SUCCESS) {
-      return {
-        value: StageResultEnum.SUCCESS,
-        label: t('common.success'),
-      };
-    }
-
-    if (status === StageResultEnum.FAIL) {
-      return {
-        value: StageResultEnum.FAIL,
-        label: t('common.fail'),
-      };
-    }
-
-    return {
-      value: OpportunityStatusEnum.END,
-      label: t('opportunity.end'),
-    };
-  });
-
-  const workflowList = computed<SelectOption[]>(() => {
-    return [...props.baseSteps, endStage.value];
-  });
 
   // 转移
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
@@ -233,9 +213,16 @@
     });
   }
 
-  async function loadStageDetail() {
+  const currentStatus = ref<string>(OpportunityStatusEnum.CREATE);
+  const lastOptStage = ref<string>(OpportunityStatusEnum.CREATE);
+
+  async function loadDetail() {
     try {
-      currentStatus.value = await getOptStageDetail(sourceId.value);
+      const result = await getOptDetail(sourceId.value);
+      const { stage, lastStage } = result;
+
+      currentStatus.value = stage;
+      lastOptStage.value = lastStage;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -259,7 +246,7 @@
     () => showOptOverviewDrawer.value,
     (val) => {
       if (val) {
-        loadStageDetail();
+        // loadDetail();
       }
     }
   );

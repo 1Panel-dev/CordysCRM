@@ -1,7 +1,7 @@
 <template>
   <div class="bg-[var(--text-n10)] p-[16px]">
     <n-spin :show="updateStageLoading">
-      <WorkflowStep v-model:status="currentStatus" :workflow-list="workflowList">
+      <WorkflowStep v-model:status="currentStage" :workflow-list="workflowList">
         <template #action="{ currentStatusIndex }">
           <n-button
             v-if="props.showErrorBtn"
@@ -75,7 +75,7 @@
   const { t } = useI18n();
 
   const props = defineProps<{
-    workflowList: SelectOption[];
+    baseSteps: SelectOption[]; // 基础步骤
     sourceId: string; // 资源id
     showErrorBtn?: boolean;
     showConfirmStatus?: boolean; // 是否二次确认更新成功 | 成败
@@ -86,7 +86,11 @@
     (e: 'loadDetail'): void;
   }>();
 
-  const currentStatus = defineModel<string>('status', {
+  const currentStage = defineModel<string>('stage', {
+    required: true,
+  });
+
+  const lastStage = defineModel<string>('lastStage', {
     required: true,
   });
 
@@ -100,6 +104,41 @@
     stage: string;
   }>({
     stage: 'SUCCESS',
+  });
+
+  const endStage = computed<SelectOption[]>(() => {
+    if (currentStage.value === StageResultEnum.SUCCESS) {
+      return [
+        {
+          value: StageResultEnum.SUCCESS,
+          label: t('common.success'),
+        },
+      ];
+    }
+
+    if (currentStage.value === StageResultEnum.FAIL) {
+      return [
+        {
+          value: StageResultEnum.FAIL,
+          label: t('common.fail'),
+        },
+      ];
+    }
+    return [];
+  });
+
+  const workflowList = computed<SelectOption[]>(() => {
+    // 失败返回基础阶段截止当前 + 失败阶段
+    if (currentStage.value === StageResultEnum.FAIL) {
+      const lastStageIndex = props.baseSteps.findIndex((e) => e.value === lastStage.value);
+      return [...props.baseSteps.slice(0, lastStageIndex), ...endStage.value];
+    }
+    // 成功返回全部阶段
+    if (currentStage.value === StageResultEnum.SUCCESS) {
+      return [...props.baseSteps.slice(0, props.baseSteps.length - 1), ...endStage.value];
+    }
+    // 其他返回基础阶段
+    return [...props.baseSteps];
   });
 
   function handleCancel() {
@@ -130,12 +169,12 @@
 
   // 更新状态
   async function handleUpdateStatus(currentStatusIndex: number, isError = false) {
-    if (props.showConfirmStatus && currentStatusIndex === props.workflowList.length - 2) {
+    if (props.showConfirmStatus && currentStatusIndex === workflowList.value.length - 2) {
       updateStatusModal.value = true;
       return;
     }
 
-    const nextStage = isError ? StageResultEnum.FAIL : props.workflowList[currentStatusIndex + 1]?.value;
+    const nextStage = isError ? StageResultEnum.FAIL : workflowList.value[currentStatusIndex + 1]?.value;
     await handleSave(nextStage as string);
   }
 

@@ -29,3 +29,18 @@ export interface SaveOpportunityParams {
 export interface UpdateOpportunityParams extends SaveOpportunityParams {
   id: string;
 }
+
+export interface OpportunityDetail extends OpportunityItem {
+  id: string;
+  name: string;
+  amount: number;
+  possible: number;
+  products: string[];
+  contactId: string;
+  contactName: string;
+  stage: string; // 当前阶段
+  status: string;
+  owner: string;
+  ownerName: string;
+  lastStage: string; // 上一个阶段
+}

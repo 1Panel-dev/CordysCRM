@@ -157,6 +157,17 @@ export default function useFollowApi(followProps: {
     loadFollowList();
   }
 
+  // 删除 TODO
+  function handleDelete(item: FollowDetailItem) {
+    try {
+      Message.success(t('common.deleteSuccess'));
+      loadFollowList();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   watch(
     () => type.value,
     (val) => {
@@ -175,6 +186,7 @@ export default function useFollowApi(followProps: {
     handleCancelPlan,
     followFormKeyMap,
     searchData,
+    handleDelete,
     activeStatus,
   };
 }
