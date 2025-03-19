@@ -52,7 +52,7 @@ public class OpportunityFollowPlanController {
     @Operation(summary = "商机跟进计划列表")
     public Pager<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER"));
+        return PageUtils.setPageInfo(page, followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER", null));
     }
 
 

@@ -217,4 +217,13 @@
             #{id}
         </foreach>
     </delete>
+
+
+    <select id="selectUserByUserIds" resultType="io.cordys.crm.system.domain.OrganizationUser">
+        select id,user_id,department_id from sys_organization_user
+        where user_id in
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </select>
 </mapper>

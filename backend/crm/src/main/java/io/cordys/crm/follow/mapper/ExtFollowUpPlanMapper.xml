@@ -57,6 +57,28 @@
         OR ( #{request.status} = 'UNDERWAY' AND UNIX_TIMESTAMP(CURDATE()) = estimated_time AND STATUS != 'CANCELLED' )
         OR ( #{request.status} = 'COMPLETED' AND UNIX_TIMESTAMP(CURDATE()) > estimated_time AND STATUS != 'CANCELLED' )
         )
+
+        <if test="customerData != null and !customerData.all and customerData.owner">
+            <if test="customerData.userIds != null and customerData.userIds.size() > 0">
+                AND owner not in
+                <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </if>
+
+        <if test="customerData != null and !customerData.all and !customerData.owner and !customerData.self">
+            <if test="customerData.userIds != null and customerData.userIds.size() > 0">
+                AND owner not in
+                <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </if>
+
+        <if test="customerData != null and !customerData.all and !customerData.owner and customerData.self">
+            AND owner = #{userId}
+        </if>
         ORDER BY create_time DESC
     </select>
 

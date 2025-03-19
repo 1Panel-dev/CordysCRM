@@ -10,6 +10,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.follow.domain.FollowUpPlan;
+import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
@@ -30,7 +31,7 @@ import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class FollowUpPlanService {
+public class FollowUpPlanService extends BaseFollowUpService {
 
     @Resource
     private BaseMapper<FollowUpPlan> followUpPlanMapper;
@@ -126,10 +127,11 @@ public class FollowUpPlanService {
      * @param orgId
      * @param resourceType
      * @param type
+     * @param customerData
      * @return
      */
-    public List<FollowUpPlanListResponse> list(FollowUpPlanPageRequest request, String userId, String orgId, String resourceType, String type) {
-        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, orgId, resourceType, type);
+    public List<FollowUpPlanListResponse> list(FollowUpPlanPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
+        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, orgId, resourceType, type, customerData);
         return buildListData(list);
     }
 

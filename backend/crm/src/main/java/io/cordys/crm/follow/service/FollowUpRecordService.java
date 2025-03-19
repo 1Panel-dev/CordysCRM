@@ -3,15 +3,23 @@ package io.cordys.crm.follow.service;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
+import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.domain.Clue;
+import io.cordys.crm.customer.constants.CustomerCollaborationType;
 import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerCollaboration;
+import io.cordys.crm.customer.service.CustomerCollaborationService;
 import io.cordys.crm.follow.domain.FollowUpRecord;
+import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
@@ -19,22 +27,24 @@ import io.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import io.cordys.crm.opportunity.domain.Opportunity;
+import io.cordys.crm.system.domain.OrganizationUser;
+import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class FollowUpRecordService {
+public class FollowUpRecordService extends BaseFollowUpService {
     @Resource
     private BaseMapper<FollowUpRecord> followUpRecordMapper;
     @Resource
@@ -153,7 +163,7 @@ public class FollowUpRecordService {
 
 
     /**
-     * 跟进记录列表查询
+     * 池/公海 跟进记录列表查询
      *
      * @param request
      * @param userId
@@ -162,8 +172,8 @@ public class FollowUpRecordService {
      * @param type
      * @return
      */
-    public List<FollowUpRecordListResponse> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
-        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type);
+    public List<FollowUpRecordListResponse> poollist(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
+        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectPoolList(request, userId, orgId, resourceType, type);
         buildListData(list);
         return list;
     }
@@ -211,4 +221,22 @@ public class FollowUpRecordService {
         buildListData(List.of(response));
         return response;
     }
+
+
+    /**
+     * 跟进记录
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     * @param resourceType
+     * @param type
+     * @return
+     */
+    public List<FollowUpRecordListResponse> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
+        List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type, customerData);
+        buildListData(list);
+        return list;
+    }
+
 }

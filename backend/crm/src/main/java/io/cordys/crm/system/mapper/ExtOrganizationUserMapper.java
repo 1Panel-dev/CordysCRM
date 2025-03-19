@@ -12,7 +12,9 @@ import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.security.UserDTO;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author jianxing
@@ -43,4 +45,6 @@ public interface ExtOrganizationUserMapper {
     void updateOrganizationUser(@Param("organizationUser") OrganizationUser organizationUser);
 
     void deleteUserByIds(@Param("ids") List<String> ids);
+
+    List<OrganizationUser> selectUserByUserIds(@Param("userIds") List<String> userIds);
 }

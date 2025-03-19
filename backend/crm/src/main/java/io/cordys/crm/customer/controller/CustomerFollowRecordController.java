@@ -7,6 +7,7 @@ import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.follow.domain.FollowUpRecord;
+import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
@@ -47,12 +48,21 @@ public class CustomerFollowRecordController {
     }
 
 
+    @PostMapping("/pool/page")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @Operation(summary = "客户公海池跟进记录列表")
+    public Pager<List<FollowUpRecordListResponse>> poolList(@Validated @RequestBody FollowUpRecordPageRequest request) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        return PageUtils.setPageInfo(page, followUpRecordService.poollist(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER"));
+    }
+
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户跟进记录列表")
     public Pager<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
+        CustomerDataDTO customerData = followUpRecordService.getCustomerPermission(SessionUtils.getUserId(), request.getSourceId());
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER"));
+        return PageUtils.setPageInfo(page, followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER", customerData));
     }
 
 

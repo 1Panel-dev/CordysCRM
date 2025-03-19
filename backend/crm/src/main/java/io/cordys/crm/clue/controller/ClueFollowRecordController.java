@@ -47,12 +47,20 @@ public class ClueFollowRecordController {
     }
 
 
+    @PostMapping("/pool/page")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
+    @Operation(summary = "线索池跟进记录列表")
+    public Pager<List<FollowUpRecordListResponse>> poolList(@Validated @RequestBody FollowUpRecordPageRequest request) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        return PageUtils.setPageInfo(page, followUpRecordService.poollist(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CLUE", "CLUE"));
+    }
+
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索跟进记录列表")
     public Pager<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),"CLUE","CLUE"));
+        return PageUtils.setPageInfo(page, followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CLUE", "CLUE", null));
     }
 
 

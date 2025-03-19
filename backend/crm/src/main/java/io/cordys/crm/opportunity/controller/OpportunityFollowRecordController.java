@@ -51,7 +51,7 @@ public class OpportunityFollowRecordController {
     @Operation(summary = "商机跟进记录列表")
     public Pager<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER"));
+        return PageUtils.setPageInfo(page, followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER", null));
     }
 
     @GetMapping("/get/{id}")

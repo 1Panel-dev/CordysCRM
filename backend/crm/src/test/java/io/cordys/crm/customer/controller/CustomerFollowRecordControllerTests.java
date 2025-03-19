@@ -26,6 +26,8 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
 
     private static final String BASE_PATH = "/customer/follow/record/";
 
+    private static final String POOL_PAGE = "pool/page";
+
     @Override
     protected String getBasePath() {
         return BASE_PATH;
@@ -86,5 +88,16 @@ public class CustomerFollowRecordControllerTests extends BaseTest {
     @Order(4)
     void testGet() throws Exception {
         this.requestGetWithOk(DEFAULT_GET, addFollowUpRecord.getId());
+    }
+
+
+    @Test
+    @Order(3)
+    void testPoolList() throws Exception {
+        FollowUpRecordPageRequest request = new FollowUpRecordPageRequest();
+        request.setSourceId("123");
+        request.setCurrent(1);
+        request.setPageSize(10);
+        this.requestPost(POOL_PAGE, request);
     }
 }

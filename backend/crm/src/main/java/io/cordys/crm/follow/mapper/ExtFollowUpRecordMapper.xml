@@ -3,7 +3,7 @@
 
 <mapper namespace="io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper">
 
-    <select id="selectList" resultType="io.cordys.crm.follow.dto.response.FollowUpRecordListResponse">
+    <select id="selectPoolList" resultType="io.cordys.crm.follow.dto.response.FollowUpRecordListResponse">
         SELECT
             id,
             customer_id,
@@ -27,7 +27,6 @@
         </if>
         <if test="resourceType == 'CLUE'">
             AND clue_id = #{request.sourceId}
-            AND create_user = #{userId}
         </if>
         <if test="resourceType == 'OPPORTUNITY'">
             AND opportunity_id = #{request.sourceId}
@@ -45,4 +44,67 @@
     </select>
 
 
+
+    <select id="selectList" resultType="io.cordys.crm.follow.dto.response.FollowUpRecordListResponse">
+        SELECT
+        id,
+        customer_id,
+        opportunity_id,
+        type,
+        clue_id,
+        content,
+        owner,
+        contact_id,
+        create_time,
+        update_time,
+        create_user,
+        update_user
+        FROM
+        follow_up_record
+        WHERE
+        organization_id =#{orgId}
+        and type = #{type}
+        <if test="resourceType == 'CUSTOMER'">
+            AND customer_id = #{request.sourceId}
+        </if>
+        <if test="resourceType == 'CLUE'">
+            AND clue_id = #{request.sourceId}
+        </if>
+        <if test="resourceType == 'OPPORTUNITY'">
+            AND opportunity_id = #{request.sourceId}
+        </if>
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND organization_id = #{orgId}
+        </if>
+        <if test="request.keyword != null and request.keyword != ''">
+            AND content like concat('%', #{request.keyword},'%')
+        </if>
+
+        <if test="customerData != null and !customerData.all and customerData.owner">
+            <if test="customerData.userIds != null and customerData.userIds.size() > 0">
+                AND owner not in
+                <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </if>
+
+        <if test="customerData != null and !customerData.all and !customerData.owner and !customerData.self">
+            <if test="customerData.userIds != null and customerData.userIds.size() > 0">
+                AND owner not in
+                <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </if>
+
+        <if test="customerData != null and !customerData.all and !customerData.owner and customerData.self">
+          AND owner = #{userId}
+        </if>
+
+        ORDER BY create_time DESC
+    </select>
 </mapper>
