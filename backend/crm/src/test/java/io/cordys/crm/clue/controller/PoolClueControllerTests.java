@@ -1,16 +1,18 @@
-package io.cordys.crm.customer.controller;
+package io.cordys.crm.clue.controller;
 
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.domain.CustomerCapacity;
-import io.cordys.crm.customer.domain.CustomerOwner;
-import io.cordys.crm.customer.domain.CustomerPoolPickRule;
-import io.cordys.crm.customer.dto.request.*;
-import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.clue.domain.Clue;
+import io.cordys.crm.clue.domain.ClueCapacity;
+import io.cordys.crm.clue.domain.ClueOwner;
+import io.cordys.crm.clue.domain.CluePoolPickRule;
+import io.cordys.crm.clue.dto.request.CluePageRequest;
+import io.cordys.crm.clue.dto.request.PoolClueAssignRequest;
+import io.cordys.crm.clue.dto.request.PoolCluePickRequest;
+import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import io.cordys.crm.system.dto.request.PoolBatchRequest;
@@ -32,9 +34,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class PoolCustomerControllerTests extends BaseTest {
+public class PoolClueControllerTests extends BaseTest {
 
-	public static final String BASE_PATH = "/pool/customer";
+	public static final String BASE_PATH = "/pool/clue";
 	public static final String GET_OPTIONS = "/options";
 	public static final String PAGE = "/page";
 	public static final String PICK = "/pick";
@@ -47,13 +49,13 @@ public class PoolCustomerControllerTests extends BaseTest {
 	public static String testDataId;
 
 	@Resource
-	private BaseMapper<Customer> customerMapper;
+	private BaseMapper<Clue> clueMapper;
 	@Resource
-	private BaseMapper<CustomerOwner> customerOwnerMapper;
+	private BaseMapper<ClueOwner> clueOwnerMapper;
 	@Resource
-	private BaseMapper<CustomerCapacity> customerCapacityMapper;
+	private BaseMapper<ClueCapacity> clueCapacityMapper;
 	@Resource
-	private BaseMapper<CustomerPoolPickRule> customerPoolPickRuleMapper;
+	private BaseMapper<CluePoolPickRule> cluePoolPickRuleMapper;
 
 	@Override
 	protected String getBasePath() {
@@ -63,82 +65,82 @@ public class PoolCustomerControllerTests extends BaseTest {
 	@Test
 	@Order(1)
 	void prepareTestData() {
-		Customer customer = createCustomer();
-		Customer ownCustomer = createCustomer();
-		CustomerCapacity capacity = createCapacity();
-		ownCustomer.setInSharedPool(false);
-		ownCustomer.setOwner("admin");
-		customerMapper.batchInsert(List.of(ownCustomer, customer));
-		customerCapacityMapper.insert(capacity);
+		Clue clue = createClue();
+		Clue ownClue = createClue();
+		ClueCapacity capacity = createCapacity();
+		ownClue.setInSharedPool(false);
+		ownClue.setOwner("admin");
+		clueMapper.batchInsert(List.of(ownClue, clue));
+		clueCapacityMapper.insert(capacity);
 	}
 
 	@Test
 	@Order(2)
 	void getOptions() throws Exception {
 		this.requestGetWithOk(GET_OPTIONS);
-		requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, GET_OPTIONS);
+		requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, GET_OPTIONS);
 	}
 
 	@Test
 	@Order(3)
 	void page() throws Exception {
-		CustomerPageRequest request = new CustomerPageRequest();
+		CluePageRequest request = new CluePageRequest();
 		request.setPoolId("test-pool-id");
 		request.setCurrent(1);
 		request.setPageSize(10);
 		MvcResult mvcResult = this.requestPostWithOkAndReturn(PAGE, request);
-		Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
+		Pager<List<ClueListResponse>> pageResult = getPageResult(mvcResult, ClueListResponse.class);
 		assert pageResult.getTotal() == 1;
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PAGE, request);
+		requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, PAGE, request);
 	}
 
 	@Test
 	@Order(4)
 	void pickFailWithOverCapacity() throws Exception {
-		PoolCustomerPickRequest request = new PoolCustomerPickRequest();
-		request.setCustomerId(testDataId);
+		PoolCluePickRequest request = new PoolCluePickRequest();
+		request.setClueId(testDataId);
 		request.setPoolId("test-pool-id");
 		MvcResult mvcResult = this.requestPost(PICK, request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer.capacity.over"));
-		customerCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
-		CustomerPoolPickRule pickRule = createPickRule();
+		clueCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
+		CluePoolPickRule pickRule = createPickRule();
 		pickRule.setLimitOnNumber(false);
 		pickRule.setPoolId("test-pool-id");
-		customerPoolPickRuleMapper.insert(pickRule);
+		cluePoolPickRuleMapper.insert(pickRule);
 		this.requestPostWithOk(PICK, request);
-		customerPoolPickRuleMapper.deleteByLambda(new LambdaQueryWrapper<>());
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_PICK, PICK, request);
+		cluePoolPickRuleMapper.deleteByLambda(new LambdaQueryWrapper<>());
+		requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_PICK, PICK, request);
 	}
 
 	@Test
 	@Order(5)
 	void assignSuccess() throws Exception {
-		PoolCustomerAssignRequest request = new PoolCustomerAssignRequest();
-		request.setCustomerId(testDataId);
+		PoolClueAssignRequest request = new PoolClueAssignRequest();
+		request.setClueId(testDataId);
 		request.setAssignUserId("aa");
 		this.requestPostWithOk(ASSIGN, request);
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_ASSIGN, ASSIGN, request);
+		requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_ASSIGN, ASSIGN, request);
 	}
 
 	@Test
 	@Order(6)
 	void deleteSuccess() throws Exception {
 		this.requestGetWithOk(DELETE + testDataId);
-		requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DELETE + testDataId);
+		requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_DELETE, DELETE + testDataId);
 	}
 
 	@Test
 	@Order(7)
 	void batchPickFailWithOverDailyOrPreOwnerLimit() throws Exception {
-		Customer customer = createCustomer();
-		customer.setOwner("admin");
-		customer.setInSharedPool(false);
-		customerMapper.insert(customer);
-		CustomerPoolPickRule rule = createPickRule();
+		Clue clue = createClue();
+		clue.setOwner("admin");
+		clue.setInSharedPool(false);
+		clueMapper.insert(clue);
+		CluePoolPickRule rule = createPickRule();
 		rule.setLimitOnNumber(true);
 		rule.setPickNumber(1);
-		customerPoolPickRuleMapper.insert(rule);
-		customerCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
+		cluePoolPickRuleMapper.insert(rule);
+		clueCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
 		PoolBatchPickRequest request = new PoolBatchPickRequest();
 		request.setBatchIds(List.of(testDataId));
 		request.setPoolId("test-pool-id");
@@ -147,11 +149,11 @@ public class PoolCustomerControllerTests extends BaseTest {
 		rule.setLimitOnNumber(false);
 		rule.setLimitPreOwner(true);
 		rule.setPickIntervalDays(1);
-		customerPoolPickRuleMapper.updateById(rule);
+		cluePoolPickRuleMapper.updateById(rule);
 		insertOwnerHis();
 		MvcResult mvcResult1 = this.requestPost(BATCH_PICK, request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("customer.pre_owner.pick.limit"));
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_PICK, BATCH_PICK, request);
+		requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_PICK, BATCH_PICK, request);
 	}
 
 	@Test
@@ -161,8 +163,8 @@ public class PoolCustomerControllerTests extends BaseTest {
 		request.setBatchIds(List.of("aaa"));
 		request.setAssignUserId("cc");
 		MvcResult mvcResult = this.requestPost(BATCH_ASSIGN, request).andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer.not.exist"));
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_ASSIGN, BATCH_ASSIGN, request);
+		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("clue.not.exist"));
+		requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_ASSIGN, BATCH_ASSIGN, request);
 	}
 
 	@Test
@@ -171,28 +173,29 @@ public class PoolCustomerControllerTests extends BaseTest {
 		PoolBatchRequest request = new PoolBatchRequest();
 		request.setBatchIds(List.of(testDataId));
 		this.requestPostWithOk(BATCH_DELETE, request);
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, BATCH_DELETE, request);
+		requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_DELETE, BATCH_DELETE, request);
 	}
 
-	private Customer createCustomer() {
-		Customer customer = new Customer();
-		customer.setId(IDGenerator.nextStr());
-		testDataId = customer.getId();
-		customer.setName("ct");
-		customer.setOwner("cc");
-		customer.setCollectionTime(System.currentTimeMillis());
-		customer.setPoolId("test-pool-id");
-		customer.setInSharedPool(true);
-		customer.setOrganizationId(DEFAULT_ORGANIZATION_ID);
-		customer.setCreateTime(System.currentTimeMillis());
-		customer.setCreateUser("admin");
-		customer.setUpdateTime(System.currentTimeMillis());
-		customer.setUpdateUser("admin");
-		return customer;
+	private Clue createClue() {
+		Clue clue = new Clue();
+		clue.setId(IDGenerator.nextStr());
+		testDataId = clue.getId();
+		clue.setStage("test");
+		clue.setName("ct");
+		clue.setOwner("cc");
+		clue.setCollectionTime(System.currentTimeMillis());
+		clue.setPoolId("test-pool-id");
+		clue.setInSharedPool(true);
+		clue.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+		clue.setCreateTime(System.currentTimeMillis());
+		clue.setCreateUser("admin");
+		clue.setUpdateTime(System.currentTimeMillis());
+		clue.setUpdateUser("admin");
+		return clue;
 	}
 
-	private CustomerCapacity createCapacity() {
-		CustomerCapacity capacity = new CustomerCapacity();
+	private ClueCapacity createCapacity() {
+		ClueCapacity capacity = new ClueCapacity();
 		capacity.setId(IDGenerator.nextStr());
 		capacity.setScopeId("admin");
 		capacity.setOrganizationId(DEFAULT_ORGANIZATION_ID);
@@ -204,8 +207,8 @@ public class PoolCustomerControllerTests extends BaseTest {
 		return capacity;
 	}
 
-	private CustomerPoolPickRule createPickRule() {
-		CustomerPoolPickRule rule = new CustomerPoolPickRule();
+	private CluePoolPickRule createPickRule() {
+		CluePoolPickRule rule = new CluePoolPickRule();
 		rule.setId(IDGenerator.nextStr());
 		rule.setPoolId("test-pool-id");
 		rule.setLimitOnNumber(false);
@@ -218,13 +221,13 @@ public class PoolCustomerControllerTests extends BaseTest {
 	}
 
 	private void insertOwnerHis() {
-		CustomerOwner customerOwner = new CustomerOwner();
-		customerOwner.setId(IDGenerator.nextStr());
-		customerOwner.setCustomerId(testDataId);
-		customerOwner.setOwner("admin");
-		customerOwner.setCollectionTime(System.currentTimeMillis());
-		customerOwner.setOperator("admin");
-		customerOwner.setEndTime(System.currentTimeMillis());
-		customerOwnerMapper.insert(customerOwner);
+		ClueOwner clueOwner = new ClueOwner();
+		clueOwner.setId(IDGenerator.nextStr());
+		clueOwner.setClueId(testDataId);
+		clueOwner.setOwner("admin");
+		clueOwner.setCollectionTime(System.currentTimeMillis());
+		clueOwner.setOperator("admin");
+		clueOwner.setEndTime(System.currentTimeMillis());
+		clueOwnerMapper.insert(clueOwner);
 	}
 }

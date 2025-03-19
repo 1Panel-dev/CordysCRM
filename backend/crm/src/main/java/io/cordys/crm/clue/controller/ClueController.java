@@ -7,6 +7,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.domain.Clue;
@@ -48,11 +49,9 @@ public class ClueController {
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索列表")
-    public Pager<List<ClueListResponse>> list(@Validated @RequestBody CluePageRequest request) {
+    public PagerWithOption<List<ClueListResponse>> list(@Validated @RequestBody CluePageRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), request.getSearchType());
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, clueService.list(request, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), deptDataPermission));
+        return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @GetMapping("/get/{id}")

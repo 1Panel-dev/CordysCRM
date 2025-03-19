@@ -1,9 +1,16 @@
 package io.cordys.crm.clue.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -16,6 +23,10 @@ import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
+import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -52,11 +63,30 @@ public class ClueService {
     private BaseMapper<CluePoolRecycleRule> recycleRuleMapper;
     @Resource
     private ClueOwnerHistoryService clueOwnerHistoryService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private ModuleFormService moduleFormService;
 
-    public List<ClueListResponse> list(CluePageRequest request, String userId, String orgId,
-                                       DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
+                                                        DeptDataPermissionDTO deptDataPermission) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<ClueListResponse> list = extClueMapper.list(request, orgId, userId, deptDataPermission);
-        return buildListData(list, orgId);
+        List<ClueListResponse> buildList = buildListData(list, orgId);
+
+        // 处理自定义字段选项数据
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
+        // 获取所有模块字段的值
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ClueListResponse::getModuleFields);
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
+                ClueListResponse::getOwner, ClueListResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.CLUE_OWNER.getBusinessKey(), ownerFieldOption);
+
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
     private List<ClueListResponse> buildListData(List<ClueListResponse> list, String orgId) {

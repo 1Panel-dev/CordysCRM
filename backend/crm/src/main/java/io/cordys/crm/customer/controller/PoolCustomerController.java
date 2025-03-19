@@ -3,11 +3,15 @@ package io.cordys.crm.customer.controller;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.customer.service.PoolCustomerService;
+import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
+import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
+import io.cordys.crm.system.dto.request.PoolBatchRequest;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,7 +42,7 @@ public class PoolCustomerController {
 	@PostMapping("/page")
 	@Operation(summary = "客户列表")
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ})
-	public Pager<List<CustomerListResponse>> list(@Validated @RequestBody CustomerPageRequest request) {
+	public PagerWithOption<List<CustomerListResponse>> list(@Validated @RequestBody CustomerPageRequest request) {
 		return customerService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
 	}
 
@@ -66,21 +70,21 @@ public class PoolCustomerController {
 	@PostMapping("/batch-pick")
 	@Operation(summary = "批量领取客户")
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_PICK})
-	public void batchPick(@Validated @RequestBody PoolCustomerBatchPickRequest request) {
+	public void batchPick(@Validated @RequestBody PoolBatchPickRequest request) {
 		poolCustomerService.batchPick(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/batch-assign")
 	@Operation(summary = "批量分配客户")
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_ASSIGN})
-	public void batchAssign(@Validated @RequestBody PoolCustomerBatchAssignRequest request) {
+	public void batchAssign(@Validated @RequestBody PoolBatchAssignRequest request) {
 		poolCustomerService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/batch-delete")
 	@Operation(summary = "批量删除客户")
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_DELETE})
-	public void batchDelete(@Validated @RequestBody PoolCustomerBatchRequest request) {
+	public void batchDelete(@Validated @RequestBody PoolBatchRequest request) {
 		poolCustomerService.batchDelete(request.getBatchIds());
 	}
 }
