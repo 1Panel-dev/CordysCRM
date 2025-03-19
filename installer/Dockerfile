@@ -18,7 +18,24 @@ RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
     cd backend/app/target/dependency && \
     jar -xf ../*.jar
 
-RUN cp /build/backend/app/target/dependency/crm-*.jar /build/
+
+ARG FIT2CLOUD_MAVEN_USERNAME
+ARG FIT2CLOUD_MAVEN_PASSWORD
+
+ENV FIT2CLOUD_MAVEN_USERNAME=${FIT2CLOUD_MAVEN_USERNAME}
+ENV FIT2CLOUD_MAVEN_PASSWORD=${FIT2CLOUD_MAVEN_PASSWORD}
+
+RUN JAR_VERSION=$(./mvnw help:evaluate -Dexpression=revision -q -DforceStdout || echo "1.0.x") && \
+    echo "Using Jar version: $JAR_VERSION" && \
+    ./mvnw deploy:deploy-file \
+    -Dfile=backend/crm/target/crm-${JAR_VERSION}.jar \
+    -DrepositoryId=cordys \
+    -Durl=https://repository.fit2cloud.com/repository/cordys/ \
+    -DgroupId=io.cordys \
+    -DartifactId=crm \
+    -Dversion=${JAR_VERSION} \
+    -Dpackaging=jar \
+    -s=./.mvn/wrapper/settings.xml
 
 FROM ghcr.io/cordys-dev/cordys-base
 
