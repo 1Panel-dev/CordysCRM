@@ -18,6 +18,8 @@ RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
     cd backend/app/target/dependency && \
     jar -xf ../*.jar
 
+RUN cp /build/backend/app/target/dependency/crm-*.jar /build/
+
 FROM ghcr.io/cordys-dev/cordys-base
 
 LABEL maintainer="FIT2CLOUD <support@fit2cloud.com>"
