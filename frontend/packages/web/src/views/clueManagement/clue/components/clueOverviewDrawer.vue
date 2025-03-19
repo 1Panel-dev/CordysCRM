@@ -37,12 +37,11 @@
         :source-id="sourceId"
       />
 
-      <!-- TODO getUserList接口换了 -->
-      <HeaderTable
+      <CrmHeaderTable
         v-if="activeTab === 'headRecord'"
         class="mt-[16px] h-[calc(100vh-258px)]"
         :source-id="sourceId"
-        :load-list-api="getUserList"
+        :load-list-api="getClueHeaderList"
       />
 
       <!-- TODO 确认后刷新数据 -->
@@ -66,8 +65,8 @@
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
-  import HeaderTable from '@/components/business/crm-form-create-table/headerTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+  import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
@@ -79,8 +78,8 @@
     deleteClue,
     getClueFollowPlanList,
     getClueFollowRecordList,
+    getClueHeaderList,
   } from '@/api/modules/clue';
-  import { getUserList } from '@/api/modules/system/org';
   import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';

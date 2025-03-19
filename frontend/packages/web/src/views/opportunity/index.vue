@@ -18,14 +18,14 @@
           <n-button class="mr-[12px]" type="primary" @click="formCreateDrawerVisible = true">
             {{ t('opportunity.createOpportunity') }}
           </n-button>
-          <!-- TODO 等待联调 -->
-          <CrmImportButton
+          <!-- TODO 不上 -->
+          <!-- <CrmImportButton
             :validate-api="importUserPreCheck"
             :import-save-api="importUsers"
             :title="t('opportunity.importOpportunity')"
             :button-text="t('opportunity.importOpportunity')"
             @import-success="() => searchData()"
-          />
+          /> -->
         </div>
       </template>
       <template #actionRight>

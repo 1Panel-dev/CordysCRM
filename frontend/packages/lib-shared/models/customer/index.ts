@@ -240,3 +240,16 @@ export interface AssignOpenSeaCustomerParams {
 export interface OpenSeaCustomerTableParams extends TableQueryParams {
   poolId: string;
 }
+
+export interface HeaderHistoryItem {
+  id: string;
+  customerId: string; // 客户id
+  owner: string; // 责任人
+  collectionTime: number; // 领取时间
+  endTime: number; // 结束时间
+  operator: string; // 操作人
+  operatorName: string; // 操作人名称
+  ownerName: string; // 责任人名称
+  departmentId: string;
+  departmentName: string;
+}

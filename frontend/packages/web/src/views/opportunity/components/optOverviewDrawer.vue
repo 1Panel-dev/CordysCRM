@@ -36,13 +36,6 @@
         :follow-api-key="FormDesignKeyEnum.BUSINESS"
         :source-id="sourceId"
       />
-
-      <HeaderTable
-        v-if="activeTab === 'headRecord'"
-        class="mt-[16px] h-[calc(100vh-290px)]"
-        :source-id="sourceId"
-        :load-list-api="getUserList"
-      />
     </template>
 
     <template #transferPopContent>
@@ -61,7 +54,6 @@
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
-  import HeaderTable from '@/components/business/crm-form-create-table/headerTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
@@ -69,7 +61,6 @@
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
   import { deleteOpt, getOptStageDetail, transferOpt, updateOptStage } from '@/api/modules/opportunity';
-  import { getUserList } from '@/api/modules/system/org';
   import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -160,12 +151,6 @@
     {
       name: 'followPlan',
       tab: t('common.followPlan'),
-      enable: true,
-      allowClose: true,
-    },
-    {
-      name: 'headRecord',
-      tab: t('common.headRecord'),
       enable: true,
       allowClose: true,
     },

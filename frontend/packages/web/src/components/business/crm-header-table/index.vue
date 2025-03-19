@@ -16,14 +16,16 @@
 
 <script lang="ts" setup>
   import { ref } from 'vue';
+  import dayjs from 'dayjs';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
-  import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+  import type { CustomerContractTableParams, HeaderHistoryItem } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
+  import type { CrmTableDataItem } from '@/components/pure/crm-table/type';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
 
@@ -33,106 +35,98 @@
 
   const props = defineProps<{
     sourceId: string; // 资源id
-    loadListApi: (params: TableQueryParams) => Promise<CommonList<any>>;
+    loadListApi: (data: CustomerContractTableParams) => Promise<CrmTableDataItem<HeaderHistoryItem>>;
   }>();
 
   const columns: CrmDataTableColumn[] = [
     {
       title: t('common.head'),
-      key: 'name',
+      key: 'owner',
       width: 150,
       sortOrder: false,
       sorter: true,
-    },
-    {
-      title: t('opportunity.belongStatus'),
-      key: 'belongStatus',
-      width: 100,
-      sortOrder: false,
-      sorter: true,
-      filterOptions: [
-        {
-          label: t('common.enable'),
-          value: 1,
-        },
-        {
-          label: t('common.disable'),
-          value: 0,
-        },
-      ],
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: HeaderHistoryItem) => {
+        return h(CrmNameTooltip, { text: row.ownerName });
+      },
     },
     {
       title: t('opportunity.department'),
-      key: 'departmentName',
+      key: 'departmentId',
       ellipsis: {
         tooltip: true,
       },
       width: 150,
-    },
-    {
-      title: t('opportunity.region'),
-      key: 'region',
-      ellipsis: {
-        tooltip: true,
+      render: (row: HeaderHistoryItem) => {
+        return h(CrmNameTooltip, { text: row.departmentName });
       },
-      width: 150,
     },
     {
       title: t('opportunity.belongStartTime'),
-      key: 'belongStartTime',
+      key: 'collectionTime',
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
       width: 150,
     },
     {
       title: t('opportunity.belongEndTime'),
-      key: 'belongEndTime',
+      key: 'endTime',
       width: 150,
+      sortOrder: false,
+      sorter: true,
       ellipsis: {
         tooltip: true,
       },
     },
     {
-      title: t('common.updateTime'),
-      key: 'updateTime',
+      title: t('common.operator'),
+      key: 'operator',
       width: 150,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-    {
-      title: t('common.updateUserName'),
-      key: 'updateUser',
-      width: 150,
-      ellipsis: {
-        tooltip: true,
-      },
-      // TODO ts类型
-      render: (row: any) => {
-        return h(CrmNameTooltip, { text: row.updateUserName });
+      render: (row: HeaderHistoryItem) => {
+        return h(CrmNameTooltip, { text: row.operatorName });
       },
     },
   ];
 
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(props.loadListApi, {
-    tableKey: TableKeyEnum.OPPORTUNITY_HEAD_LIST,
-    showSetting: true,
-    columns,
-  });
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable<HeaderHistoryItem>(
+    props.loadListApi,
+    {
+      tableKey: TableKeyEnum.OPPORTUNITY_HEAD_LIST,
+      showSetting: true,
+      showPagination: false,
+      columns,
+    },
+    (row: HeaderHistoryItem) => {
+      return {
+        ...row,
+        collectionTime: dayjs(row.collectionTime).format('YYYY-MM-DD HH:mm:ss'),
+        endTime: dayjs(row.endTime).format('YYYY-MM-DD HH:mm:ss'),
+      };
+    }
+  );
   const keyword = ref('');
 
   function initData() {
     setLoadListParams({
       sourceId: props.sourceId,
-      keyword: keyword.value,
     });
     loadList();
   }
 
   function searchData(val: string) {
-    keyword.value = val;
-    initData();
+    if (val.length) {
+      const lowerCaseVal = val.toLowerCase();
+      propsRes.value.data = propsRes.value.data.filter((item: HeaderHistoryItem) => {
+        return item.ownerName.toLowerCase().includes(lowerCaseVal);
+      });
+    } else {
+      initData();
+    }
   }
 
   onBeforeMount(() => {

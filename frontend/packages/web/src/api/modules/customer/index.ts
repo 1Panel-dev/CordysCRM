@@ -27,6 +27,7 @@ import {
   GetCustomerFollowRecordListUrl,
   GetCustomerFollowRecordUrl,
   GetCustomerFormConfigUrl,
+  GetCustomerHeaderListUrl,
   GetCustomerListUrl,
   GetCustomerOpenSeaListUrl,
   GetCustomerUrl,
@@ -278,4 +279,9 @@ export function getOpenSeaOptions() {
 // 删除公海客户
 export function deleteOpenSeaCustomer(id: string) {
   return CDR.get({ url: `${DeleteOpenSeaCustomerUrl}/${id}` });
+}
+
+// 获取客户负责人列表
+export function getCustomerHeaderList(data: CustomerContractTableParams) {
+  return CDR.get({ url: `${GetCustomerHeaderListUrl}/${data.sourceId}` });
 }

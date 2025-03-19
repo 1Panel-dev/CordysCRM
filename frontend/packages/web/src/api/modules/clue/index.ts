@@ -11,6 +11,7 @@ import {
   GetClueFollowRecordListUrl,
   GetClueFollowRecordUrl,
   GetClueFormConfigUrl,
+  GetClueHeaderListUrl,
   GetClueListUrl,
   GetClueUrl,
   UpdateClueFollowPlanUrl,
@@ -20,6 +21,7 @@ import {
 import type { ClueDetail, ClueListItem, SaveClueParams, UpdateClueParams } from '@lib/shared/models/clue';
 import type { CommonList } from '@lib/shared/models/common';
 import type {
+  CustomerContractTableParams,
   CustomerFollowPlanTableParams,
   CustomerFollowRecordTableParams,
   CustomerTableParams,
@@ -117,4 +119,9 @@ export function getClueFollowPlan(id: string) {
 // 取消跟进计划
 export function cancelClueFollowPlan(id: string) {
   return CDR.get({ url: `${CancelClueFollowPlanUrl}/${id}` });
+}
+
+// 获取线索负责人列表
+export function getClueHeaderList(data: CustomerContractTableParams) {
+  return CDR.get({ url: `${GetClueHeaderListUrl}/${data.sourceId}` });
 }

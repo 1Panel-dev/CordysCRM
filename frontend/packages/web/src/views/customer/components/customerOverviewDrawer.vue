@@ -37,11 +37,11 @@
           :follow-api-key="FormDesignKeyEnum.CUSTOMER"
           :source-id="props.sourceId"
         />
-        <HeaderTable
+        <CrmHeaderTable
           v-else-if="activeTab === 'headRecord'"
           class="h-[calc(100vh-161px)]"
           :source-id="props.sourceId"
-          :load-list-api="async()=>({} as any)"
+          :load-list-api="getCustomerHeaderList"
         />
         <customerRelation v-else-if="activeTab === 'relation'" :source-id="props.sourceId" />
         <collaborator v-else-if="activeTab === 'collaborator'" :source-id="props.sourceId" />
@@ -59,14 +59,15 @@
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
-  import HeaderTable from '@/components/business/crm-form-create-table/headerTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+  import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import collaborator from './collaborator.vue';
   import customerRelation from './customerRelation.vue';
 
+  import { getCustomerHeaderList } from '@/api/modules/customer/index';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
