@@ -87,8 +87,10 @@ public class CustomerService {
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
         // 补充负责人选项
-        moduleFormService.putBusinessFieldOption(buildList, customerFormConfig.getFields(), BusinessModuleField.CUSTOMER_OWNER,
-                CustomerListResponse::getOwner, CustomerListResponse::getOwnerName, optionMap);
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
+                CustomerListResponse::getOwner, CustomerListResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
+
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
