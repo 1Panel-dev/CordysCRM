@@ -21,6 +21,9 @@ public class ModuleField extends BaseModel {
 	@Schema(description = "所属表单")
 	private String formId;
 
+	@Schema(description = "名称")
+	private String name;
+
 	@Schema(description = "字段内置Key")
 	private String internalKey;
 

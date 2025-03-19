@@ -1,5 +1,6 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.domain.BaseModuleFieldValue;
@@ -99,6 +100,10 @@ public class ModuleFormService {
 		if (CollectionUtils.isEmpty(forms)) {
 			throw new GenericException(Translator.get("module.form.not_exist"));
 		}
+		boolean businessDeleted = BusinessModuleField.isBusinessDeleted(saveParam.getFormKey(), saveParam.getFields());
+		if (businessDeleted) {
+			throw new GenericException(Translator.get("module.form.business_field.deleted"));
+		}
 		ModuleForm form = forms.getFirst();
 		form.setUpdateUser(currentUserId);
 		form.setUpdateTime(System.currentTimeMillis());
@@ -127,6 +132,7 @@ public class ModuleFormService {
 				moduleField.setFormId(form.getId());
 				moduleField.setInternalKey(field.getInternalKey());
 				moduleField.setType(field.getType());
+				moduleField.setName(field.getName());
 				moduleField.setPos(pos.getAndIncrement());
 				moduleField.setCreateTime(System.currentTimeMillis());
 				moduleField.setCreateUser(currentUserId);
@@ -135,7 +141,7 @@ public class ModuleFormService {
 				addFields.add(moduleField);
 				ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
 				fieldBlob.setId(field.getId());
-				fieldBlob.setProp(JSON.toJSONBytes(field));
+				fieldBlob.setProp(JSON.toJSONString(field));
 				addFieldBlobs.add(fieldBlob);
 			});
 			if (CollectionUtils.isNotEmpty(addFields)) {
@@ -175,9 +181,9 @@ public class ModuleFormService {
 			LambdaQueryWrapper<ModuleFieldBlob> blobWrapper = new LambdaQueryWrapper<>();
 			blobWrapper.in(ModuleFieldBlob::getId, fieldIds);
 			List<ModuleFieldBlob> fieldBlobs = moduleFieldBlobMapper.selectListByLambda(blobWrapper);
-			Map<String, byte[]> fieldBlobMap = fieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
+			Map<String, String> fieldBlobMap = fieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
 			fields.forEach(field -> {
-				BaseField baseField = JSON.parseObject(new String(fieldBlobMap.get(field.getId())), BaseField.class);
+				BaseField baseField = JSON.parseObject(fieldBlobMap.get(field.getId()), BaseField.class);
 				fieldDTOList.add(baseField);
 			});
 		}
@@ -306,6 +312,7 @@ public class ModuleFormService {
 					field.setInternalKey(initField.get("internalKey").toString());
 					field.setId(controlKeyPreMap.containsKey(field.getInternalKey()) ? controlKeyPreMap.get(field.getInternalKey()) : IDGenerator.nextStr());
 					field.setType(initField.get("type").toString());
+					field.setName(initField.get("name").toString());
 					field.setPos(pos.getAndIncrement());
 					field.setCreateTime(System.currentTimeMillis());
 					field.setCreateUser(InternalUser.ADMIN.getValue());
@@ -329,7 +336,7 @@ public class ModuleFormService {
 					}
 					ModuleFieldBlob fieldBlob = new ModuleFieldBlob();
 					fieldBlob.setId(field.getId());
-					fieldBlob.setProp(JSON.toJSONBytes(initField));
+					fieldBlob.setProp(JSON.toJSONString(initField));
 					fieldBlobs.add(fieldBlob);
 				});
 			});

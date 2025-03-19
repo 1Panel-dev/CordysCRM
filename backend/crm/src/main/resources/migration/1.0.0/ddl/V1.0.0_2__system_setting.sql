@@ -496,6 +496,7 @@ CREATE TABLE sys_module_field
     `id`           VARCHAR(32) NOT NULL COMMENT 'ID',
     `form_id`      VARCHAR(32) NOT NULL COMMENT '所属表单ID',
     `internal_key` VARCHAR(255) COMMENT '字段内置Key',
+    `name`         VARCHAR(255) NOT NULL   COMMENT '名称' ,
     `type`         VARCHAR(20) NOT NULL COMMENT '类型',
     `pos`          BIGINT      NOT NULL COMMENT '排序',
     `create_user`  VARCHAR(32) NOT NULL COMMENT '创建人',
@@ -513,7 +514,7 @@ CREATE INDEX idx_form_id_internal_key ON sys_module_field (form_id, internal_key
 CREATE TABLE sys_module_field_blob
 (
     `id`   VARCHAR(32) NOT NULL COMMENT 'id',
-    `prop` BLOB COMMENT '属性',
+    `prop` TEXT    COMMENT '属性' ,
     PRIMARY KEY (id)
 ) COMMENT = '模块字段属性配置'
     ENGINE = InnoDB
