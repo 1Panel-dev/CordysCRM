@@ -62,7 +62,7 @@ public class CustomerOwnerHistoryService {
                     CustomerOwnerListResponse customerOwner =
                             BeanUtils.copyBean(new CustomerOwnerListResponse(), item);
                     UserDeptDTO userDeptDTO = userDeptMap.get(customerOwner.getOwner());
-                    if (userDeptMap != null) {
+                    if (userDeptDTO != null) {
                         customerOwner.setDepartmentId(userDeptDTO.getDeptId());
                         customerOwner.setDepartmentName(userDeptDTO.getDeptName());
                     }

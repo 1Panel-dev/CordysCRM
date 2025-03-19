@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
@@ -221,37 +222,71 @@ public class CustomerContactService {
     }
 
     public List<CustomerContactListResponse> listByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
-        // 根据数据权限查询联系人
-        List<CustomerContactListResponse> list = extCustomerContactMapper.listByCustomerId(customerId, userId, deptDataPermission);
-        // 查询协作人信息
-        List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerIdAndUserId(customerId, userId);
-        if (CollectionUtils.isNotEmpty(collaborations)) {
-            // 获取协作人相关的联系人
-            String collaborationType = collaborations.getFirst().getCollaborationType();
-            List<CustomerContact> collaborationContacts;
-            if (StringUtils.equals(collaborationType, CustomerCollaborationType.READ_ONLY.name())) {
-                // 只读，查询客户责任人的联系人
-                Customer customer = customerMapper.selectByPrimaryKey(customerId);
-                CustomerContact example = new CustomerContact();
-                example.setCustomerId(customerId);
-                example.setOwner(customer.getOwner());
-                collaborationContacts = customerContactMapper.select(example);
-            } else {
-                // 协作，查询当前用户的联系人
-                CustomerContact example = new CustomerContact();
-                example.setCustomerId(customerId);
-                example.setOwner(userId);
-                collaborationContacts = customerContactMapper.select(example);
-            }
-            Set<String> userIds = list.stream()
-                    .map(CustomerContactListResponse::getOwner)
-                    .collect(Collectors.toSet());
+        Customer customer = customerMapper.selectByPrimaryKey(customerId);
 
-            collaborationContacts.stream()
-                    .filter(contact -> !userIds.contains(contact.getOwner())) // 去重
-                    .map(contact -> BeanUtils.copyBean(new CustomerContactListResponse(), contact))
-                    .forEach(list::add);
+        if (deptDataPermission.getAll() || StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
+            // 全部数据权限，直接返回
+            List<CustomerContactListResponse> list = extCustomerContactMapper.listByCustomerId(customerId);
+            return buildListData(list, orgId);
         }
+
+        List<CustomerContactListResponse> list = List.of();
+
+        // 查询协作人信息
+        List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerId(customerId);
+
+        // 获取协作类型的协作的联系人
+        Set<String> collaborationUserIds = collaborations.stream()
+                .filter(collaboration -> StringUtils.equals(collaboration.getCollaborationType(), CustomerCollaborationType.COLLABORATION.name()))
+                .map(CustomerCollaboration::getUserId)
+                .collect(Collectors.toSet());
+
+        boolean isCustomerOwner = StringUtils.equals(customer.getOwner(), userId);
+        boolean isCollaborationUser = collaborationUserIds.contains(userId);
+
+        // 部门数据权限
+        if (CollectionUtils.isNotEmpty(deptDataPermission.getDeptIds())) {
+            UserDeptDTO customerOwnerDept = baseService.getUserDeptMapByUserId(customer.getOwner(), orgId);
+            // 部门权限是否有该客户的权限
+            boolean hasDeptCustomerPermission = customerOwnerDept != null && deptDataPermission.getDeptIds().contains(customerOwnerDept.getDeptId());
+
+            list = extCustomerContactMapper.listByCustomerId(customerId);
+            if (hasDeptCustomerPermission) {
+                Map<String, UserDeptDTO> userDeptMapByUserIds = baseService.getUserDeptMapByUserIds(collaborationUserIds, orgId);
+                list = list.stream()
+                        .filter(item -> {
+                            if (!collaborationUserIds.contains(item.getOwner())) {
+                                // 不是协作人的联系人，则不过滤
+                                return true;
+                            }
+                            UserDeptDTO userDeptDTO = userDeptMapByUserIds.get(item.getOwner());
+                            // 部门数据权限，则过滤掉非本部门的协作人的联系人
+                            return userDeptDTO != null && deptDataPermission.getDeptIds().contains(userDeptDTO.getDeptId());
+                        })
+                        .collect(Collectors.toList());
+            } else if (isCollaborationUser) {
+                // 没有权限，只是协作人，则只能看自己的
+                list = list.stream()
+                        .filter(item -> StringUtils.equals(item.getOwner(), userId))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        if (deptDataPermission.getSelf()) {
+            list = extCustomerContactMapper.listByCustomerId(customerId);
+            if (isCustomerOwner) {
+                // 本人数据权限，则过滤协作人的联系人
+                list = list.stream()
+                        .filter(item -> !collaborationUserIds.contains(item.getOwner()) && !StringUtils.equals(item.getOwner(), userId))
+                        .collect(Collectors.toList());
+            } else if (isCollaborationUser) {
+                // 没有权限，只是协作人，则只能看自己的
+                list = list.stream()
+                        .filter(item -> StringUtils.equals(item.getOwner(), userId))
+                        .collect(Collectors.toList());
+            }
+        }
+
         return buildListData(list, orgId);
     }
 }

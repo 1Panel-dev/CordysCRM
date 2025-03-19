@@ -178,21 +178,7 @@
     <select id="listByCustomerId" resultType="io.cordys.crm.customer.dto.response.CustomerContactListResponse">
         select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user,
         cc.enable, cc.owner, cc.disable_reason, cc.phone
-
         from customer_contact cc
-
-        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
-            left join sys_organization_user sou on cc.owner = sou.user_id
-            and sou.dept_id in
-            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
-                #{deptId}
-            </foreach>
-        </if>
-
         where cc.customer_id = #{customerId}
-
-        <if test="dataPermission != null and dataPermission.self">
-            and c.owner = #{userId}
-        </if>
     </select>
 </mapper>

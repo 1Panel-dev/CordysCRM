@@ -36,10 +36,9 @@ public class CustomerCollaborationService {
         return buildListData(orgId, collaborations);
     }
 
-    public List<CustomerCollaboration> selectByCustomerIdAndUserId(String customerId, String userId) {
+    public List<CustomerCollaboration> selectByCustomerId(String customerId) {
         CustomerCollaboration example = new CustomerCollaboration();
         example.setCustomerId(customerId);
-        example.setUserId(userId);
         return customerCollaborationMapper.select(example);
     }
 
