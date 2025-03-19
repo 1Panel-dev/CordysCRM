@@ -101,28 +101,28 @@ CREATE TABLE clue_capacity
 
 CREATE INDEX idx_organization_id ON clue_capacity (organization_id ASC);
 
-CREATE TABLE clue
-(
-    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
-    `name`            VARCHAR(255) NOT NULL COMMENT '客户名称',
-    `owner`           VARCHAR(32) COMMENT '负责人',
-    `status`          VARCHAR(30)  NOT NULL COMMENT '线索状态',
-    `collection_time` BIGINT COMMENT '领取时间',
-    `pool_id`         VARCHAR(32) COMMENT '线索池ID',
-    `contact`         VARCHAR(255) COMMENT '联系人名称',
-    `phone`           VARCHAR(20) COMMENT '联系人电话',
-    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
-    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
-    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
-    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
-    `transition_type` VARCHAR(30)           DEFAULT 'NONE' COMMENT '转移成客户或者线索',
-    `transition_id`   VARCHAR(32) COMMENT '客户id或者线索id',
-    `in_shared_pool`  BIT(1)       NOT NULL DEFAULT 0 COMMENT '是否在线索池',
-    `follower`        VARCHAR(32) COMMENT '最新跟进人',
-    `follow_time`     BIGINT COMMENT '最新跟进时间',
-    PRIMARY KEY (id)
-) COMMENT = '线索'
+CREATE TABLE clue(
+     `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+     `name` VARCHAR(255) NOT NULL   COMMENT '客户名称' ,
+     `owner` VARCHAR(32)    COMMENT '负责人' ,
+     `last_stage` VARCHAR(30)    COMMENT '上次修改前的线索状态' ,
+     `stage` VARCHAR(30) NOT NULL   COMMENT '线索状态' ,
+     `collection_time` BIGINT    COMMENT '领取时间' ,
+     `contact` VARCHAR(255)    COMMENT '联系人名称' ,
+     `phone` VARCHAR(20)    COMMENT '联系人电话' ,
+     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
+     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+     `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+     `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+     `transition_type` VARCHAR(30)   DEFAULT 'NONE' COMMENT '转移成客户或者线索' ,
+     `transition_id` VARCHAR(32)    COMMENT '客户id或者线索id' ,
+     `in_shared_pool` BIT(1) NOT NULL  DEFAULT 0 COMMENT '是否在线索池' ,
+     `follower` VARCHAR(32)    COMMENT '最新跟进人' ,
+     `follow_time` BIGINT(255)    COMMENT '最新跟进时间' ,
+     `pool_id` VARCHAR(32)    COMMENT '线索池ID' ,
+     PRIMARY KEY (id)
+)  COMMENT = '线索'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;

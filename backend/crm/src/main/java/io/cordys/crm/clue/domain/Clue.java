@@ -22,8 +22,11 @@ public class Clue extends BaseModel {
 	@Schema(description = "负责人")
 	private String owner;
 
-	@Schema(description = "状态")
-	private String status;
+	@Schema(description = "阶段")
+	private String stage;
+
+	@Schema(description = "上次修改前的线索阶段")
+	private String lastStage;
 
 	@Schema(description = "联系人名称")
 	private String contact;

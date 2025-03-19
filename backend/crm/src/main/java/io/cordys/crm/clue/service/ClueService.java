@@ -158,7 +158,7 @@ public class ClueService {
         clue.setCreateUser(userId);
         clue.setOrganizationId(orgId);
         clue.setId(IDGenerator.nextStr());
-        clue.setStatus(ClueStatus.NEW.name());
+        clue.setStage(ClueStatus.NEW.name());
         clue.setInSharedPool(false);
 
         // 校验名称重复
@@ -198,6 +198,9 @@ public class ClueService {
         Clue clue = BeanUtils.copyBean(new Clue(), request);
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setUpdateUser(userId);
+        Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
+        // 记录修改前的状态
+        clue.setLastStage(originClue.getStage());
         clueMapper.update(clue);
     }
 

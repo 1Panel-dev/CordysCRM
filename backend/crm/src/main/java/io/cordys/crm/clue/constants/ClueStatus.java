@@ -9,5 +9,5 @@ public enum ClueStatus {
     FOLLOWING,
     INTERESTED,
     SUCCESS,
-    FAILURE
+    FAIL
 }

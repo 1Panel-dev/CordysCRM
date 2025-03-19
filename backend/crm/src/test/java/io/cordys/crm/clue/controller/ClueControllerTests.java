@@ -14,7 +14,6 @@ import io.cordys.crm.clue.domain.ClueField;
 import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
-import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.mybatis.BaseMapper;
@@ -177,11 +176,13 @@ class ClueControllerTests extends BaseTest {
         // 请求成功
         ClueStatusUpdateRequest request = new ClueStatusUpdateRequest();
         request.setId(addClue.getId());
-        request.setStatus(ClueStatus.INTERESTED.name());
+        request.setStage(ClueStatus.INTERESTED.name());
         this.requestPostWithOk(STATUS_UPDATE, request);
         // 校验请求成功数据
         Clue clueResult = clueMapper.selectByPrimaryKey(request.getId());
-        Assertions.assertEquals(request.getStatus(), clueResult.getStatus());
+        Assertions.assertEquals(request.getStage(), clueResult.getStage());
+        Assertions.assertEquals(addClue.getStage(), clueResult.getLastStage());
+        addClue.setStage(request.getStage());
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_UPDATE, STATUS_UPDATE, request);

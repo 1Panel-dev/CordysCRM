@@ -24,5 +24,5 @@ public class ClueStatusUpdateRequest {
     @Size(max = 30)
     @EnumValue(enumClass = ClueStatus.class)
     @Schema(description = "线索状态", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String status;
+    private String stage;
 }
