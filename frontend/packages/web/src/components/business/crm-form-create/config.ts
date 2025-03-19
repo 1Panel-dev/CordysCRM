@@ -342,6 +342,7 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.DEPARTMENT]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
   [FieldTypeEnum.DIVIDER]: [],
   [FieldTypeEnum.USER_TAG_SELECTOR]: [],
+  [FieldTypeEnum.USER_SELECT]: [],
   [FieldTypeEnum.TIME_RANGE_PICKER]: [],
   [FieldTypeEnum.TREE_SELECT]: [],
   [FieldTypeEnum.MULTIPLE_INPUT]: [FieldRuleEnum.REQUIRED],

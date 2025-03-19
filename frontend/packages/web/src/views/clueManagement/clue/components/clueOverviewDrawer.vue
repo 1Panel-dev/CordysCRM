@@ -18,14 +18,14 @@
       <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
     </template>
     <template #rightTop>
-      <!-- TODO -->
       <CrmWorkflowCard
         v-model:stage="currentStatus"
         v-model:last-stage="lastOptStage"
         class="mb-[16px]"
-        :show-confirm-status="true"
+        show-error-btn
         :base-steps="workflowList"
         :source-id="sourceId"
+        :update-api="updateClueStatus"
       />
     </template>
     <template #right>
@@ -46,12 +46,7 @@
         :load-list-api="getClueHeaderList"
       />
 
-      <!-- TODO 确认后刷新数据 -->
-      <CrmFormCreateDrawer
-        v-model:visible="formDrawerVisible"
-        :form-key="realFormKey"
-        :source-id="realFollowSourceId"
-      />
+      <CrmFormCreateDrawer v-model:visible="formDrawerVisible" :form-key="realFormKey" />
     </template>
   </CrmOverviewDrawer>
 </template>
@@ -59,10 +54,11 @@
 <script setup lang="ts">
   import { SelectOption, useMessage } from 'naive-ui';
 
-  import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
+  import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import type { ClueListItem } from '@lib/shared/models/clue';
-  import type { FollowDetailItem, TransferParams } from '@lib/shared/models/customer';
+  import type { TransferParams } from '@lib/shared/models/customer';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
@@ -74,14 +70,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import {
-    batchTransferClue,
-    cancelClueFollowPlan,
-    deleteClue,
-    getClueFollowPlanList,
-    getClueFollowRecordList,
-    getClueHeaderList,
-  } from '@/api/modules/clue';
+  import { batchTransferClue, deleteClue, getClueHeaderList, updateClueStatus } from '@/api/modules/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -242,10 +231,26 @@
     }
   }
 
-  // 进度条 TODO 从后端获取数据
-  const currentStatus = ref<string>('purchasing');
-  const lastOptStage = ref<string>('purchasing');
-  const workflowList = ref<SelectOption[]>([]);
+  const currentStatus = ref<string>(props.detail?.stage || ClueStatusEnum.NEW);
+  const lastOptStage = ref<string>(props.detail?.lastStage || ClueStatusEnum.NEW);
+  const workflowList: SelectOption[] = [
+    {
+      value: ClueStatusEnum.NEW,
+      label: t('common.newCreate'),
+    },
+    {
+      value: ClueStatusEnum.FOLLOWING,
+      label: t('clue.followingUp'),
+    },
+    {
+      value: ClueStatusEnum.INTERESTED,
+      label: t('clue.interested'),
+    },
+    {
+      value: StageResultEnum.SUCCESS,
+      label: t('common.success'),
+    },
+  ];
 
   // tab
   const activeTab = ref('followRecord');
@@ -255,7 +260,7 @@
       name: 'followRecord',
       tab: t('crmFollowRecord.followRecord'),
       enable: true,
-      allowClose: true,
+      allowClose: false,
     },
     {
       name: 'followPlan',
@@ -270,90 +275,4 @@
       allowClose: true,
     },
   ];
-
-  // 跟进记录/跟进计划
-  const pageNation = ref({
-    total: 0,
-    pageSize: 10,
-    current: 1,
-  });
-  const followList = ref<FollowDetailItem[]>([]);
-  const activeStatus = ref(CustomerFollowPlanStatusEnum.ALL);
-  const followLoading = ref<boolean>(false);
-
-  async function loadFollowList() {
-    try {
-      followLoading.value = true;
-      const params = {
-        sourceId: sourceId.value,
-        current: pageNation.value.current || 1,
-        pageSize: pageNation.value.pageSize,
-      };
-
-      let res;
-      if (activeTab.value === 'followPlan') {
-        res = await getClueFollowPlanList({
-          ...params,
-          status: activeStatus.value,
-        });
-      } else {
-        res = await getClueFollowRecordList(params);
-      }
-
-      followList.value = res.list || [];
-      pageNation.value.total = res.total;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    } finally {
-      followLoading.value = false;
-    }
-  }
-
-  function handleReachBottom() {
-    pageNation.value.current += 1;
-    if (pageNation.value.current > Math.ceil(pageNation.value.total / pageNation.value.pageSize)) {
-      return;
-    }
-    loadFollowList();
-  }
-
-  // 取消计划
-  async function handleCancelPlan(item: FollowDetailItem) {
-    try {
-      await cancelClueFollowPlan(item.id);
-      Message.success(t('common.cancelSuccess'));
-      loadFollowList();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  // 编辑跟进内容
-  const realFollowSourceId = ref<string | undefined>('');
-  function handleEditFollow(item: FollowDetailItem) {
-    realFormKey.value =
-      activeTab.value === 'followRecord' ? FormDesignKeyEnum.FOLLOW_RECORD_CLUE : FormDesignKeyEnum.FOLLOW_PLAN_CLUE;
-    realFollowSourceId.value = item.id;
-    formDrawerVisible.value = true;
-  }
-
-  watch(
-    () => activeTab.value,
-    (val) => {
-      if (['followPlan', 'followRecord'].includes(val)) {
-        loadFollowList();
-      }
-    }
-  );
-
-  watch(
-    () => show.value,
-    (val) => {
-      if (val) {
-        loadFollowList();
-      }
-    }
-  );
 </script>

@@ -19,6 +19,8 @@ export interface ClueDetail {
   phone: string;
   departmentId: string;
   departmentName: string;
+  stage: string;
+  lastStage: string;
   createUser: string;
   updateUser: string;
   createTime: number;
@@ -30,7 +32,6 @@ export interface ClueDetail {
 
 export interface ClueListItem extends ClueDetail {
   inSharedPool: boolean;
-  dealStatus: string;
   latestFollowUpTime: number;
   collectionTime: number;
   reservedDays: number;

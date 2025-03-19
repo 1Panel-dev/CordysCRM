@@ -3,6 +3,7 @@ import {
   AddClueFollowRecordUrl,
   AddClueUrl,
   BatchDeleteClueUrl,
+  BatchToPoolClueUrl,
   BatchTransferClueUrl,
   CancelClueFollowPlanUrl,
   DeleteClueUrl,
@@ -16,6 +17,7 @@ import {
   GetClueUrl,
   UpdateClueFollowPlanUrl,
   UpdateClueFollowRecordUrl,
+  UpdateClueStatusUrl,
   UpdateClueUrl,
 } from '@lib/shared/api/requrls/clue';
 import type { ClueDetail, ClueListItem, SaveClueParams, UpdateClueParams } from '@lib/shared/models/clue';
@@ -46,6 +48,11 @@ export function updateClue(data: UpdateClueParams) {
   return CDR.post({ url: UpdateClueUrl, data });
 }
 
+// 更新线索状态
+export function updateClueStatus(data: { id: string; stage: string }) {
+  return CDR.post({ url: UpdateClueStatusUrl, data });
+}
+
 // 获取线索列表
 export function getClueList(data: CustomerTableParams) {
   return CDR.post<CommonList<ClueListItem>>({ url: GetClueListUrl, data });
@@ -54,6 +61,11 @@ export function getClueList(data: CustomerTableParams) {
 // 批量转移线索
 export function batchTransferClue(data: TransferParams) {
   return CDR.post({ url: BatchTransferClueUrl, data });
+}
+
+// 批量移入线索池
+export function batchToCluePool(data: string[]) {
+  return CDR.post({ url: BatchToPoolClueUrl, data });
 }
 
 // 批量删除线索

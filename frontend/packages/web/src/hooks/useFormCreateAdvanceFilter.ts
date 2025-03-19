@@ -7,7 +7,7 @@ import type { FormCreateField } from '@cordys/web/src/components/business/crm-fo
 
 const internalFilterKeyMap: Record<FormDesignKeyEnum, string[]> = {
   [FormDesignKeyEnum.BUSINESS]: ['opportunityName', 'opportunityCustomer', 'opportunitySource'],
-  [FormDesignKeyEnum.CLUE]: [],
+  [FormDesignKeyEnum.CLUE]: ['clueName', 'clueSource', 'clueProgress'],
   [FormDesignKeyEnum.CONTACT]: [],
   [FormDesignKeyEnum.CUSTOMER]: [],
   [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: [],

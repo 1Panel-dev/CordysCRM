@@ -52,6 +52,7 @@ export const operatorOptionsMap: Record<string, { value: string; label: string }
   [FieldTypeEnum.RADIO]: COMMON_SELECTION_OPERATORS,
   [FieldTypeEnum.CHECKBOX]: COMMON_SELECTION_OPERATORS,
   [FieldTypeEnum.MEMBER]: COMMON_SELECTION_OPERATORS,
+  [FieldTypeEnum.USER_SELECT]: COMMON_SELECTION_OPERATORS,
   [FieldTypeEnum.MULTIPLE_INPUT]: [EMPTY, CONTAINS, NO_CONTAINS, COUNT_LT, COUNT_GT],
   [FieldTypeEnum.DATA_SOURCE]: COMMON_TEXT_OPERATORS,
   [FieldTypeEnum.TREE_SELECT]: [IN, NOT_IN],

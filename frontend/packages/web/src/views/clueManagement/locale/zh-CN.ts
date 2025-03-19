@@ -20,4 +20,6 @@ export default {
   'clue.importClues': '导入线索',
   'clue.batchClaimTip': '确定领取 {count} 个线索吗？',
   'clue.claimTip': '确定领取 {count} 吗？',
+  'clue.followingUp': '跟进中',
+  'clue.interested': '感兴趣',
 };

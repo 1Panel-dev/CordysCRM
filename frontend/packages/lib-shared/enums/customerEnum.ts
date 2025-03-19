@@ -3,6 +3,8 @@ export enum CustomerSearchTypeEnum {
   SELF = 'SELF',
   DEPARTMENT = 'DEPARTMENT',
   VISIBLE = 'VISIBLE',
+  CUSTOMER_TRANSITION = 'CUSTOMER_TRANSITION',
+  OPPORTUNITY_TRANSITION = 'OPPORTUNITY_TRANSITION',
 }
 
 export enum CustomerFollowPlanStatusEnum {

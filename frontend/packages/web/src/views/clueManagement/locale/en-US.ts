@@ -21,4 +21,6 @@ export default {
   'club.importClues': ' Import clues',
   'club.batchClaimTip': 'Are you sure you want to collect {count} leads?',
   'clue.claimTip': 'Are you sure you want to claim {count}?',
+  'clue.followingUp': 'Following up',
+  'clue.interested': 'Interested',
 };

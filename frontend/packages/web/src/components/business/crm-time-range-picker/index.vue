@@ -97,9 +97,7 @@
     const DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
     const now = dayjs();
     const startDate = now.subtract(value, unitValue as ManipulateType);
-    const endDate = now;
-
-    return `${startDate.format(DATE_FORMAT)} ${t('common.to')} ${endDate.format(DATE_FORMAT)}`;
+    return startDate.format(DATE_FORMAT);
   }
 
   const formattedDateRange = computed(() => {

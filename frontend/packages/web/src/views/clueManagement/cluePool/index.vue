@@ -14,14 +14,14 @@
         <n-button class="mr-[12px]" type="primary" @click="formCreateDrawerVisible = true">
           {{ t('clueManagement.newClue') }}
         </n-button>
-        <!-- TODO 联调换接口 -->
-        <CrmImportButton
+        <!-- 先不上 -->
+        <!-- <CrmImportButton
           :validate-api="importUserPreCheck"
           :import-save-api="importUsers"
           :title="t('clue.importClues')"
           :button-text="t('clue.importClues')"
           @import-success="() => searchData()"
-        />
+        /> -->
       </template>
       <template #actionRight>
         <div class="flex gap-[12px]">
@@ -35,6 +35,7 @@
     v-model:visible="formCreateDrawerVisible"
     :form-key="FormDesignKeyEnum.CLUE"
     :source-id="activeClueId"
+    @saved="loadList"
   />
   <!-- TODO 联调换接口 -->
   <TransferModal
@@ -59,14 +60,13 @@
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
-  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
+  // import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CluePoolOverviewDrawer from './components/cluePoolOverviewDrawer.vue';
 
   import { batchTransferClue } from '@/api/modules/clue';
-  import { importUserPreCheck, importUsers } from '@/api/modules/system/org';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';

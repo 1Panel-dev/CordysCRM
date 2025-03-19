@@ -1,11 +1,13 @@
 // 线索
 export const GetClueFormConfigUrl = '/clue/module/form'; // 获取线索表单配置
 export const UpdateClueUrl = '/clue/update'; // 更新线索
+export const UpdateClueStatusUrl = '/clue/status/update'; // 更新线索状态
 export const GetClueListUrl = '/clue/page'; // 分页查询线索
 export const AddClueUrl = '/clue/add'; // 添加线索
 export const GetClueUrl = '/clue/get'; // 获取线索详情
 export const DeleteClueUrl = '/clue/delete'; // 删除线索
 export const BatchTransferClueUrl = '/clue/batch/transfer'; // 批量转移线索
+export const BatchToPoolClueUrl = '/clue/batch/to-pool'; // 批量移入线索池
 export const BatchDeleteClueUrl = '/clue/batch/delete'; // 批量删除线索
 
 // 跟进记录

@@ -80,6 +80,17 @@
               class="w-full"
             />
 
+            <CrmUserSelect
+              v-else-if="item.type === FieldTypeEnum.USER_SELECT"
+              v-model:value="item.value"
+              value-field="id"
+              label-field="name"
+              mode="remote"
+              multiple
+              :fetch-api="getUserOptions"
+              max-tag-count="responsive"
+            />
+
             <n-input
               v-else
               v-model:value="item.value"
@@ -145,7 +156,9 @@
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTimeRangePicker from '@/components/business/crm-time-range-picker/index.vue';
+  import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
+  import { getUserOptions } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
 
   import { operatorOptionsMap, scopeOptions } from '../index';

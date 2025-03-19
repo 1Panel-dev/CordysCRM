@@ -23,6 +23,13 @@
       </template>
       <template #actionRight>
         <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+        <CrmAdvanceFilter
+          ref="msAdvanceFilterRef"
+          v-model:keyword="keyword"
+          :custom-fields-config-list="filterConfigList"
+          :filter-config-list="customFieldsFilterConfig"
+          @adv-search="handleAdvSearch"
+        />
       </template>
     </CrmTable>
     <TransferModal
@@ -32,7 +39,13 @@
       @load-list="handleRefresh"
     />
     <ClueOverviewDrawer v-model:show="showOverviewDrawer" :detail="activeClue" @refresh="handleRefresh" />
-    <CrmFormCreateDrawer v-model:visible="formCreateDrawerVisible" :form-key="formKey" :source-id="activeClueId" />
+    <CrmFormCreateDrawer
+      v-model:visible="formCreateDrawerVisible"
+      :form-key="formKey"
+      :source-id="activeClueId"
+      :other-save-params="otherFollowRecordSaveParams"
+      @saved="loadList"
+    />
   </CrmCard>
 </template>
 
@@ -40,10 +53,13 @@
   import { ref } from 'vue';
   import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import type { ClueListItem } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
+  import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
+  import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -57,7 +73,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import ClueOverviewDrawer from './components/clueOverviewDrawer.vue';
 
-  import { batchDeleteClue, batchTransferClue, deleteClue } from '@/api/modules/clue';
+  import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue } from '@/api/modules/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
@@ -67,28 +83,28 @@
   const { openModal } = useModal();
   const { t } = useI18n();
 
-  const activeTab = ref('allClues');
+  const activeTab = ref(CustomerSearchTypeEnum.ALL);
   const tabList = computed<TabPaneProps[]>(() => {
     // TODO lmy 根据不同的用户展示tab
     return [
       {
-        name: 'allClues',
+        name: CustomerSearchTypeEnum.ALL,
         tab: t('clue.allClues'),
       },
       {
-        name: 'myClues',
+        name: CustomerSearchTypeEnum.SELF,
         tab: t('clue.myClues'),
       },
       {
-        name: 'departmentClues',
+        name: CustomerSearchTypeEnum.DEPARTMENT,
         tab: t('clue.departmentClues'),
       },
       {
-        name: 'convertedToCustomer',
+        name: CustomerSearchTypeEnum.CUSTOMER_TRANSITION,
         tab: t('clue.convertedToCustomer'),
       },
       {
-        name: 'convertedToOpportunity',
+        name: CustomerSearchTypeEnum.OPPORTUNITY_TRANSITION,
         tab: t('clue.convertedToOpportunity'),
       },
     ];
@@ -135,7 +151,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO lmy 联调
+          await batchToCluePool(checkedRowKeys.value as string[]);
           handleRefresh();
           Message.success(t('common.moveInSuccess'));
         } catch (error) {
@@ -242,15 +258,22 @@
     formCreateDrawerVisible.value = true;
   }
 
+  const otherFollowRecordSaveParams = ref({
+    type: 'CLUE',
+    clueId: '',
+    id: '',
+  });
+
   function handleActionSelect(row: ClueListItem, actionKey: string) {
     activeClueId.value = row.id;
     switch (actionKey) {
       case 'edit':
+        otherFollowRecordSaveParams.value.id = row.id;
         handleAddOrEdit();
         break;
       case 'followUp':
-        // TODO 怎么穿参数
         formKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CLUE;
+        otherFollowRecordSaveParams.value.clueId = row.id;
         formCreateDrawerVisible.value = true;
         break;
       case 'pop-transfer':
@@ -316,7 +339,7 @@
   // 概览
   const showOverviewDrawer = ref(false);
 
-  const { useTableRes } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE,
     operationColumn: {
       key: 'operation',
@@ -360,10 +383,34 @@
       },
     },
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
+  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  const filterConfigList: FilterFormItem[] = [
+    {
+      title: t('common.createTime'),
+      dataIndex: 'createTime',
+      type: FieldTypeEnum.DATE_TIME,
+    },
+    {
+      title: t('common.updateUserName'),
+      dataIndex: 'updateUser',
+      type: FieldTypeEnum.USER_SELECT,
+    },
+    {
+      title: t('common.updateTime'),
+      dataIndex: 'updateTime',
+      type: FieldTypeEnum.DATE_TIME,
+    },
+  ];
+
+  function handleAdvSearch(filter: FilterResult) {
+    keyword.value = '';
+    setAdvanceFilter(filter);
+    loadList();
+  }
 
   function searchData() {
-    setLoadListParams({ keyword: keyword.value });
+    setLoadListParams({ keyword: keyword.value, searchType: activeTab.value });
     loadList();
   }
 
