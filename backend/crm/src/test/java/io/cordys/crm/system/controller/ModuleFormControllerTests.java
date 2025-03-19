@@ -1,6 +1,7 @@
 package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.FormKey;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.dto.field.SelectField;
@@ -25,33 +26,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ModuleFormControllerTests extends BaseTest{
 
+	public static List<BaseField> fields;
+
 	@Test
 	@Order(1)
+	void testGetFieldList() throws Exception {
+		MvcResult mvcResult = this.requestGetWithOkAndReturn("/module/form/config/" + FormKey.CLUE.getKey());
+		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
+		assert formConfig.getFields().size() > 1;
+		fields = formConfig.getFields();
+	}
+
+	@Test
+	@Order(2)
 	void testSaveFields() throws Exception {
 		ModuleFormSaveRequest request = new ModuleFormSaveRequest();
 		request.setFormKey("none-key");
 		request.setFields(List.of());
 		request.setFormProp(new FormProp());
-		this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError());
+		MvcResult mvcResult = this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError()).andReturn();
+		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("module.form.not_exist"));
 		request.setFormKey(FormKey.CLUE.getKey());
+		request.setFields(fields);
+		this.requestPostWithOk("/module/form/save", request);
 		BaseField field = new SelectField();
 		field.setId("select-id");
 		field.setType(FieldType.SELECT.name());
 		request.setFields(List.of(field));
-		MvcResult mvcResult = this.requestPostWithOkAndReturn("/module/form/save", request);
-		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
-		assert formConfig.getFields().size() == 1;
-		BaseField saveField = formConfig.getFields().getFirst();
-		field.setType(FieldType.SELECT.name());
-		request.setFields(List.of(saveField));
-		this.requestPostWithOk("/module/form/save", request);
-	}
-
-	@Test
-	@Order(2)
-	void testGetFieldList() throws Exception {
-		MvcResult mvcResult = this.requestGetWithOkAndReturn("/module/form/config/" + FormKey.CLUE.getKey());
-		ModuleFormConfigDTO formConfig = getResultData(mvcResult, ModuleFormConfigDTO.class);
-		assert formConfig.getFields().size() == 1;
+		MvcResult mvcResult1 = this.requestPost("/module/form/save", request).andExpect(status().is5xxServerError()).andReturn();
+		assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("module.form.business_field.deleted"));
 	}
 }
