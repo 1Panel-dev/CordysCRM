@@ -40,6 +40,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   };
   // 存储地址类型字段集合
   const addressFieldIds = ref<string[]>([]);
+  // 业务字段集合
+  const businessFieldIds = ref<string[]>([]);
 
   const internalColumnMap: Record<FormKey, CrmDataTableColumn[]> = {
     [FormDesignKeyEnum.CUSTOMER]: [
@@ -287,6 +289,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           if (field.type === FieldTypeEnum.LOCATION) {
             addressFieldIds.value.push(field.id);
           }
+          if (field.businessKey) {
+            businessFieldIds.value.push(field.businessKey);
+          }
           if (
             [
               FieldTypeEnum.RADIO,
@@ -378,8 +383,15 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       maxHeight: 600,
     },
     (item, originalData) => {
+      const businessFieldAttr: Record<string, any> = {};
       const customFieldAttr: Record<string, any> = {};
-      // TODO:业务字段值options
+      businessFieldIds.value.forEach((fieldId) => {
+        const options = originalData?.optionMap?.[fieldId];
+        const name = options?.find((e) => e.id === item[fieldId])?.name;
+        if (name) {
+          businessFieldAttr[fieldId] = name;
+        }
+      });
       item.moduleFields?.forEach((field: ModuleField) => {
         const options = originalData?.optionMap?.[field.fieldId];
         if (options) {

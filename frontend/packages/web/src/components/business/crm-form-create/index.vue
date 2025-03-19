@@ -170,7 +170,14 @@
     () => {
       list.value.forEach((item) => {
         if (!form.value[item.id]) {
-          form.value[item.id] = item.defaultValue || getRuleType(item) === 'array' ? [] : '';
+          let defaultValue = item.defaultValue || '';
+          if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
+            defaultValue = defaultValue || null;
+          }
+          if (getRuleType(item) === 'array') {
+            defaultValue = defaultValue || [];
+          }
+          form.value[item.id] = defaultValue;
         }
         handleFieldChange(form.value[item.id], item); // 初始化时，根据字段值控制显示
         const fullRules: FormCreateFieldRule[] = [];

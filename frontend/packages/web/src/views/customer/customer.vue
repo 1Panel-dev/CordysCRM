@@ -105,6 +105,7 @@
 
   function handleNewClick() {
     activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
+    activeSourceId.value = '';
     formCreateDrawerVisible.value = true;
   }
 

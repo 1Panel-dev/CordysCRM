@@ -110,7 +110,7 @@ export const dateTimeDefaultFieldConfig: FormCreateField = {
   name: 'crmFormDesign.dateTime',
   fieldWidth: 1,
   showLabel: true,
-  defaultValue: [],
+  defaultValue: null,
   description: '',
   readable: true,
   editable: true,

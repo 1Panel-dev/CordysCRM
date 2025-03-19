@@ -104,8 +104,9 @@
       columns = await tableStore.getShowInTableColumns(attrs.tableKey as TableKeyEnum);
     }
     currentColumns.value = columns.map((column) => {
+      const defaultRender = (row: Record<string, any>) => row[column.key as string] || '-';
       // 添加上render
-      let render = props.columns.find((item) => item.key === column.key)?.render;
+      let render = props.columns.find((item) => item.key === column.key)?.render || defaultRender;
 
       if (column.isTag) {
         render = (row: Record<string, any>) =>
