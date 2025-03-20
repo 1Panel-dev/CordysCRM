@@ -37,6 +37,9 @@ public class OpportunityDetailResponse {
     @Schema(description = "联系人名称")
     private String contactName;
 
+    @Schema(description = "上次修改前的商机阶段")
+    private String lastStage;
+
     @Schema(description = "商机阶段")
     private String stage;
 

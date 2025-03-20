@@ -36,6 +36,7 @@ CREATE TABLE opportunity
     `possible`        DECIMAL(20, 10) NOT NULL COMMENT '可能性',
     `products`        VARCHAR(1000)   NOT NULL COMMENT '意向产品',
     `organization_id` VARCHAR(32)     NOT NULL COMMENT '组织id',
+    `last_stage`      VARCHAR(32) COMMENT '上次修改前的商机阶段',
     `stage`           VARCHAR(32)     NOT NULL COMMENT '商机阶段',
     `status`          BIT(1)          NOT NULL DEFAULT 1 COMMENT '状态',
     `contact_id`      VARCHAR(32)     NOT NULL COMMENT '联系人id',

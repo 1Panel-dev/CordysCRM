@@ -298,6 +298,7 @@
             o.possible,
             o.products,
             o.contact_id,
+            o.last_stage,
             o.stage,
             o.owner,
             o.status,

@@ -320,6 +320,7 @@ public class OpportunityService {
             newOpportunity.setStatus(false);
         }
         newOpportunity.setId(request.getId());
+        newOpportunity.setLastStage(oldOpportunity.getStage());
         newOpportunity.setStage(request.getStage());
         opportunityMapper.update(newOpportunity);
         OperationLogContext.setContext(

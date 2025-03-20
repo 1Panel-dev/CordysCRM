@@ -31,6 +31,9 @@ public class Opportunity extends BaseModel {
 	@Schema(description = "组织id")
 	private String organizationId;
 
+	@Schema(description = "上次修改前的商机阶段")
+	private String lastStage;
+
 	@Schema(description = "商机阶段")
 	private String stage;
 
