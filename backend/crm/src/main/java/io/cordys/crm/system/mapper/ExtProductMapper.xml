@@ -33,7 +33,7 @@
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'name' and condition.name != 'owner'">
+                <if test="condition.name != 'name'">
                     inner join product_field ${tablePrefix}_${i}
                     on p.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                 </if>
@@ -42,7 +42,7 @@
     </sql>
 
     <sql id="fieldSortJoin">
-        <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'owner'">
+        <if test="${sort} != null and ${sort}.name != 'name'">
             <bind name="sortName" value="${sort}.name"/>
             left join product_field sort_table
             on p.id = sort_table.resource_id and sort_table.field_id = #{sortName}
@@ -87,13 +87,7 @@
             <when test="condition.name == 'name'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.name"/>
-                </include>
-            </when>
-            <when test="condition.name == 'owner'">
-                <include refid="io.cordys.common.mapper.CommonMapper.condition">
-                    <property name="condition" value="condition"/>
-                    <property name="column" value="c.owner"/>
+                    <property name="column" value="p.name"/>
                 </include>
             </when>
             <otherwise>
@@ -110,6 +104,7 @@
         from product
         where name = #{product.name} and organization_id = #{product.organizationId} limit 1
     </select>
+
     <select id="checkUpdateExist" resultType="java.lang.Boolean">
         select count(1)
         from product
@@ -119,6 +114,7 @@
         )
           and id != #{product.id} limit 1
     </select>
+
     <select id="listByIds" resultType="io.cordys.crm.system.domain.Product">
         select id, name from product
         where id in
