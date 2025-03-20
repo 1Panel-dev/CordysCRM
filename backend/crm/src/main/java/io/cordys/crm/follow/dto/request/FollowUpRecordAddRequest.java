@@ -32,6 +32,9 @@ public class FollowUpRecordAddRequest {
     @Schema(description = "跟进内容", requiredMode = Schema.RequiredMode.REQUIRED)
     private String content;
 
+    @Schema(description = "跟进时间")
+    private Long followTime;
+
     @Size(max = 32)
     @NotBlank
     @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)

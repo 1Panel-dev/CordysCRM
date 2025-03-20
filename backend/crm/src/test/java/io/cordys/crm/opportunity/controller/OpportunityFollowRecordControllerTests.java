@@ -46,6 +46,7 @@ public class OpportunityFollowRecordControllerTests extends BaseTest {
         request.setContactId("123456");
         request.setType("CUSTOMER");
         request.setContent("跟进一下");
+        request.setFollowTime(System.currentTimeMillis());
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         FollowUpRecord resultData = getResultData(mvcResult, FollowUpRecord.class);

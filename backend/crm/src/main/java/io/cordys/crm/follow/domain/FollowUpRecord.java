@@ -28,6 +28,9 @@ public class FollowUpRecord extends BaseModel {
 	@Schema(description = "组织id")
 	private String organizationId;
 
+	@Schema(description = "跟进时间")
+	private Long followTime;
+
 	@Schema(description = "负责人")
 	private String owner;
 

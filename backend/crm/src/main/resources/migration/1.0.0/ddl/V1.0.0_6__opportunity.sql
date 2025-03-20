@@ -97,6 +97,7 @@ CREATE TABLE follow_up_record
     `clue_id`         VARCHAR(32) COMMENT '线索id',
     `content`         VARCHAR(1000) NOT NULL COMMENT '跟进内容',
     `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
+    `follow_time`     BIGINT NOT NULL COMMENT '跟进时间',
     `owner`           VARCHAR(32)   NOT NULL COMMENT '负责人',
     `contact_id`      VARCHAR(32)   NOT NULL COMMENT '联系人id',
     `create_time`     BIGINT        NOT NULL COMMENT '创建时间',

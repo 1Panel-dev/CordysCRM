@@ -79,7 +79,7 @@
         <if test="customerData != null and !customerData.all and !customerData.owner and customerData.self">
             AND owner = #{userId}
         </if>
-        ORDER BY create_time DESC
+        ORDER BY estimated_time DESC
     </select>
 
 </mapper>

@@ -53,6 +53,7 @@
         type,
         clue_id,
         content,
+        follow_time,
         owner,
         contact_id,
         create_time,
@@ -105,6 +106,6 @@
           AND owner = #{userId}
         </if>
 
-        ORDER BY create_time DESC
+        ORDER BY follow_time, create_time DESC
     </select>
 </mapper>
