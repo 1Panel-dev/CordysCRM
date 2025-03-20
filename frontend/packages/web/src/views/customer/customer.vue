@@ -61,7 +61,13 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import customerOverviewDrawer from './components/customerOverviewDrawer.vue';
 
-  import { batchDeleteCustomer, batchTransferCustomer, deleteCustomer, updateCustomer } from '@/api/modules/customer';
+  import {
+    batchDeleteCustomer,
+    batchMoveCustomer,
+    batchTransferCustomer,
+    deleteCustomer,
+    updateCustomer,
+  } from '@/api/modules/customer';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -159,6 +165,26 @@
         break;
       case 'batchDelete':
         handleBatchDelete();
+        break;
+      case 'moveToOpenSea':
+        openModal({
+          type: 'warning',
+          title: t('customer.batchMoveTitleTip', { number: checkedRowKeys.value.length }),
+          content: t('customer.batchMoveContentTip'),
+          positiveText: t('common.confirmMoveIn'),
+          negativeText: t('common.cancel'),
+          onPositiveClick: async () => {
+            try {
+              await batchMoveCustomer(checkedRowKeys.value);
+              checkedRowKeys.value = [];
+              tableRefreshId.value += 1;
+              Message.success(t('common.moveInSuccess'));
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.error(error);
+            }
+          },
+        });
         break;
       default:
         break;

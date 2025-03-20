@@ -1,4 +1,5 @@
 import {
+  AddCustomerCollaborationUrl,
   AddCustomerContactUrl,
   AddCustomerFollowPlanUrl,
   AddCustomerFollowRecordUrl,
@@ -6,17 +7,21 @@ import {
   AddCustomerUrl,
   AssignOpenSeaCustomerUrl,
   BatchAssignOpenSeaCustomerUrl,
+  BatchDeleteCustomerCollaborationUrl,
   BatchDeleteCustomerUrl,
   BatchDeleteOpenSeaCustomerUrl,
+  BatchMoveCustomerUrl,
   BatchPickOpenSeaCustomerUrl,
   BatchTransferCustomerUrl,
   CancelCustomerFollowPlanUrl,
+  DeleteCustomerCollaborationUrl,
   DeleteCustomerContactUrl,
   DeleteCustomerOpenSeaUrl,
   DeleteCustomerUrl,
   DeleteOpenSeaCustomerUrl,
   DisableCustomerContactUrl,
   EnableCustomerContactUrl,
+  GetCustomerCollaborationListUrl,
   GetCustomerContactFormConfigUrl,
   GetCustomerContactListUrl,
   GetCustomerContactUrl,
@@ -30,12 +35,15 @@ import {
   GetCustomerHeaderListUrl,
   GetCustomerListUrl,
   GetCustomerOpenSeaListUrl,
+  GetCustomerRelationListUrl,
   GetCustomerUrl,
   GetOpenSeaCustomerListUrl,
   GetOpenSeaOptionsUrl,
   IsCustomerOpenSeaNoPickUrl,
   PickOpenSeaCustomerUrl,
+  SaveCustomerRelationUrl,
   SwitchCustomerOpenSeaUrl,
+  UpdateCustomerCollaborationUrl,
   UpdateCustomerContactUrl,
   UpdateCustomerFollowPlanUrl,
   UpdateCustomerFollowRecordUrl,
@@ -44,9 +52,11 @@ import {
 } from '@lib/shared/api/requrls/customer';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import type {
+  AddCustomerCollaborationParams,
   AssignOpenSeaCustomerParams,
   BatchAssignOpenSeaCustomerParams,
   BatchOperationOpenSeaCustomerParams,
+  CollaborationItem,
   CustomerContractListItem,
   CustomerContractTableParams,
   CustomerDetail,
@@ -60,12 +70,15 @@ import type {
   FollowDetailItem,
   OpenSeaCustomerTableParams,
   PickOpenSeaCustomerParams,
+  RelationItem,
+  RelationListItem,
   SaveCustomerContractParams,
   SaveCustomerFollowPlanParams,
   SaveCustomerFollowRecordParams,
   SaveCustomerOpenSeaParams,
   SaveCustomerParams,
   TransferParams,
+  UpdateCustomerCollaborationParams,
   UpdateCustomerContractParams,
   UpdateCustomerFollowPlanParams,
   UpdateCustomerFollowRecordParams,
@@ -114,6 +127,11 @@ export function batchDeleteCustomer(batchIds: (string | number)[]) {
 // 批量转移客户
 export function batchTransferCustomer(data: TransferParams) {
   return CDR.post({ url: BatchTransferCustomerUrl, data });
+}
+
+// 批量移入公海
+export function batchMoveCustomer(data: (string | number)[]) {
+  return CDR.post({ url: BatchMoveCustomerUrl, data });
 }
 
 // 添加客户跟进记录
@@ -284,4 +302,39 @@ export function deleteOpenSeaCustomer(id: string) {
 // 获取客户负责人列表
 export function getCustomerHeaderList(data: CustomerContractTableParams) {
   return CDR.get({ url: `${GetCustomerHeaderListUrl}/${data.sourceId}` });
+}
+
+// 保存客户关系
+export function saveCustomerRelation(customerId: string, data: RelationItem[]) {
+  return CDR.post({ url: `${SaveCustomerRelationUrl}/${customerId}`, data });
+}
+
+// 获取客户关系列表
+export function getCustomerRelationList() {
+  return CDR.get<RelationListItem[]>({ url: GetCustomerRelationListUrl });
+}
+
+// 获取客户协作成员列表
+export function getCustomerCollaborationList(customerId: string) {
+  return CDR.get<CollaborationItem[]>({ url: `${GetCustomerCollaborationListUrl}/${customerId}` });
+}
+
+// 批量删除客户协作成员
+export function batchDeleteCustomerCollaboration(data: string[]) {
+  return CDR.post({ url: BatchDeleteCustomerCollaborationUrl, data });
+}
+
+// 更新客户协作成员
+export function updateCustomerCollaboration(data: UpdateCustomerCollaborationParams) {
+  return CDR.post({ url: UpdateCustomerCollaborationUrl, data });
+}
+
+// 添加客户协作成员
+export function addCustomerCollaboration(data: AddCustomerCollaborationParams) {
+  return CDR.post({ url: AddCustomerCollaborationUrl, data });
+}
+
+// 删除客户协作成员
+export function deleteCustomerCollaboration(id: string) {
+  return CDR.get({ url: `${DeleteCustomerCollaborationUrl}/${id}` });
 }

@@ -5,8 +5,8 @@
         <div class="flex-1">{{ t('customer.relation') }}</div>
         <div class="flex-1">{{ t('customer.selectCustomer') }}</div>
       </div>
-      <div v-for="(relation, index) in relations" :key="relation.id" class="flex items-center gap-[8px]">
-        <n-select v-model:value="relation.type" :options="getRelationOptions(relation)" />
+      <div v-for="(relation, index) in relations" :key="relation.customerId" class="flex items-center gap-[8px]">
+        <n-select v-model:value="relation.relationType" :options="getRelationOptions(relation)" />
         <n-select v-model:value="relation.customerId" :options="customerOptions" />
         <n-button class="bg-[var(--text-n10)] p-[8px]" @click="deleteRelation(index)">
           <template #icon>
@@ -33,9 +33,12 @@
 <script setup lang="ts">
   import { NButton, NSelect, useMessage } from 'naive-ui';
 
+  import { RelationListItem } from '@lib/shared/models/customer';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
+  import { saveCustomerRelation } from '@/api/modules/customer';
   import { useI18n } from '@/hooks/useI18n';
 
   import { SelectMixedOption } from 'naive-ui/es/select/src/interface';
@@ -47,8 +50,10 @@
   const { t } = useI18n();
   const Message = useMessage();
 
-  const originRelations = ref<any[]>([{ type: 'group', customerId: '' }]);
-  const relations = ref<any[]>([{ type: 'group', customerId: '' }]);
+  const originRelations = ref<RelationListItem[]>([
+    { relationType: 'GROUP', customerId: '', id: '', customerName: '' },
+  ]);
+  const relations = ref<RelationListItem[]>([{ relationType: 'GROUP', customerId: '', id: '', customerName: '' }]);
   const relationOptions = [
     {
       label: t('customer.group'),
@@ -60,7 +65,7 @@
     },
   ];
   function getRelationOptions(relation: any) {
-    if (relations.value.every((item) => item.type !== 'group') || relation.type === 'group') {
+    if (relations.value.every((item) => item.relationType !== 'GROUP') || relation.relationType === 'GROUP') {
       return relationOptions;
     }
     return relationOptions.filter((item) => item.value !== 'group');
@@ -70,8 +75,9 @@
   function addRelation() {
     relations.value.push({
       id: relations.value.length,
-      type: 'subsidiary',
+      relationType: 'SUBSIDIARY',
       customerId: '',
+      customerName: '',
     });
   }
 
@@ -87,6 +93,7 @@
   async function handleSave() {
     try {
       loading.value = true;
+      await saveCustomerRelation(props.sourceId, relations.value);
       Message.success(t('common.saveSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console

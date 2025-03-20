@@ -52,8 +52,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
-        sortOrder: false,
-        sorter: true,
       },
       {
         title: t('customer.remainingVesting'),
@@ -62,8 +60,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
-        sortOrder: false,
-        sorter: true,
       },
       {
         title: t('customer.lastFollowUps'),
@@ -115,8 +111,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
-        sortOrder: false,
-        sorter: true,
       },
       {
         title: t('common.head'),
@@ -167,8 +161,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
-        sortOrder: false,
-        sorter: true,
       },
       {
         title: t('common.status'),
@@ -199,8 +191,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
-        sortOrder: false,
-        sorter: true,
       },
       {
         title: t('customer.remainingVesting'),
@@ -209,8 +199,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
-        sortOrder: false,
-        sorter: true,
       },
       {
         title: t('customer.lastFollowUps'),
@@ -335,8 +323,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               width: 150,
               key: field.businessKey || field.id,
               isTag: true,
-              sortOrder: false,
-              sorter: true,
             };
           }
           return {
@@ -347,7 +333,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               tooltip: true,
             },
             sortOrder: false,
-            sorter: true,
+            sorter: ![FieldTypeEnum.TEXTAREA, FieldTypeEnum.LOCATION, FieldTypeEnum.PICTURE].includes(field.type),
           };
         });
       columns = [
@@ -413,6 +399,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       return {
         ...item,
         ...customFieldAttr,
+        ...businessFieldAttr,
       };
     }
   );

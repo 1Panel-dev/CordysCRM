@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
   import { NScrollbar } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import { FormConfig } from '@lib/shared/models/system/module';
 
@@ -47,23 +48,27 @@
     }
   );
 
-  onBeforeMount(() => {
-    list.value.forEach((item) => {
-      const fullRules: FormCreateFieldRule[] = [];
-      rules.forEach((rule) => {
-        if (!item.rules) {
-          item.rules = [];
-        }
-        // 遍历规则集合，将全量的规则配置载入
-        const staticRule = item.rules.find((e) => e.key === rule.key);
-        if (staticRule) {
-          staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
-          fullRules.push(staticRule);
-        }
+  watch(
+    () => list.value,
+    () => {
+      list.value.forEach((item) => {
+        const fullRules: FormCreateFieldRule[] = [];
+        rules.forEach((rule) => {
+          if (!item.rules) {
+            item.rules = [];
+          }
+          // 遍历规则集合，将全量的规则配置载入
+          const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
+          if (staticRule) {
+            staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
+            fullRules.push(staticRule);
+          }
+        });
+        item.rules = fullRules;
       });
-      item.rules = fullRules;
-    });
-  });
+    },
+    { immediate: true }
+  );
 </script>
 
 <style lang="less" scoped>

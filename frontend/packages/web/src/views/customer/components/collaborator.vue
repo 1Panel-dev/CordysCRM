@@ -61,6 +61,7 @@
   import { FormInst, NButton, NForm, NFormItem, NSelect, NTabPane, NTabs, NTooltip, useMessage } from 'naive-ui';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -70,6 +71,13 @@
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
+  import {
+    addCustomerCollaboration,
+    batchDeleteCustomerCollaboration,
+    deleteCustomerCollaboration,
+    getCustomerCollaborationList,
+    updateCustomerCollaboration,
+  } from '@/api/modules/customer';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
@@ -86,6 +94,7 @@
   async function removeMember(row: any) {
     try {
       removeLoading.value = true;
+      await deleteCustomerCollaboration(row.id);
       Message.success(t('common.removeSuccess'));
       tableRefreshId.value += 1;
     } catch (error) {
@@ -99,9 +108,12 @@
   const isEdit = ref(false);
   const addMemberModalVisible = ref(false);
   const addMemberLoading = ref(false);
-  const form = ref({
+  const form = ref<{
+    member: string | undefined;
+    permission: CollaborationType;
+  }>({
     member: undefined,
-    permission: 'readOnly',
+    permission: 'READ_ONLY',
   });
   const formRef = ref<FormInst>();
   // TODO:
@@ -112,10 +124,18 @@
       if (errs) return;
       try {
         addMemberLoading.value = true;
-        // TODO:
         if (isEdit.value) {
+          await updateCustomerCollaboration({
+            id: form.value.member || '',
+            collaborationType: form.value.permission,
+          });
           Message.success(t('common.updateSuccess'));
         } else {
+          await addCustomerCollaboration({
+            customerId: props.sourceId,
+            userId: form.value.member || '',
+            collaborationType: form.value.permission,
+          });
           Message.success(t('common.addSuccess'));
         }
         addMemberModalVisible.value = false;
@@ -133,7 +153,7 @@
     isEdit.value = false;
     form.value = {
       member: undefined,
-      permission: 'readOnly',
+      permission: 'READ_ONLY',
     };
     addMemberModalVisible.value = true;
   }
@@ -162,6 +182,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
+          await batchDeleteCustomerCollaboration(checkedRowKeys.value);
           tableRefreshId.value += 1;
           Message.success(t('common.deleteSuccess'));
         } catch (error) {
@@ -278,9 +299,10 @@
     },
   ];
 
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(async () => ({}), {
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getCustomerCollaborationList, {
     tableKey: TableKeyEnum.CUSTOMER_COLLABORATOR,
     showSetting: true,
+    showPagination: false,
     columns,
   });
 

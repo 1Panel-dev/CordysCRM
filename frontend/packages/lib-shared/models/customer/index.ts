@@ -253,3 +253,43 @@ export interface HeaderHistoryItem {
   departmentId: string;
   departmentName: string;
 }
+
+export type RelationType = 'GROUP' | 'SUBSIDIARY';
+export interface RelationItem {
+  customerId: string;
+  relationType: RelationType;
+}
+
+export interface RelationListItem extends RelationItem {
+  id: string | number;
+  customerName: string;
+}
+
+export type CollaborationType = 'READ_ONLY' | 'COLLABORATION';
+
+export interface UpdateCustomerCollaborationParams {
+  id: string;
+  collaborationType: CollaborationType;
+}
+
+export interface AddCustomerCollaborationParams {
+  customerId: string;
+  userId: string;
+  collaborationType: CollaborationType;
+}
+
+export interface CollaborationItem {
+  id: string;
+  createUser: string;
+  updateUser: string;
+  createTime: number;
+  updateTime: number;
+  userId: string;
+  customerId: string;
+  collaborationType: CollaborationType;
+  userName: string;
+  createUserName: string;
+  updateUserName: string;
+  departmentId: string;
+  departmentName: string;
+}
