@@ -42,7 +42,6 @@ public class CustomerController {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private DataScopeService dataScopeService;
-
     @GetMapping("/module/form")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "获取表单配置")
@@ -62,7 +61,7 @@ public class CustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户详情")
     public CustomerGetResponse get(@PathVariable String id) {
-        return customerService.get(id, OrganizationContext.getOrganizationId());
+        return customerService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
@@ -76,14 +75,14 @@ public class CustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "更新客户")
     public Customer update(@Validated @RequestBody CustomerUpdateRequest request) {
-        return customerService.update(request, SessionUtils.getUserId());
+        return customerService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE)
     @Operation(summary = "删除客户")
     public void delete(@PathVariable String id) {
-        customerService.delete(id);
+        customerService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/transfer")
@@ -97,7 +96,7 @@ public class CustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE)
     @Operation(summary = "批量删除客户")
     public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
-        customerService.batchDelete(ids);
+        customerService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/to-pool")

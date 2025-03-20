@@ -14,6 +14,9 @@
     <select id="list" resultType="io.cordys.crm.customer.dto.response.CustomerListResponse">
         select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
                c.follower, c.follow_time
+                <if test="dataPermission != null and dataPermission.visible">
+                    ,cc.collaboration_type
+                </if>
         from customer c
 
         <include refid="fieldConditionJoin">

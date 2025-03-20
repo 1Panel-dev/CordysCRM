@@ -177,6 +177,16 @@ public interface BaseMapper<E> {
     }
 
     /**
+     * 根据主键数组查询记录。
+     *
+     * @param ids 主键值数组
+     * @return 查询到的实体列表
+     */
+    default List<E> selectByIds(List<String> ids) {
+        return selectByIds(ids.toArray(new String[0]));
+    }
+
+    /**
      * 判断记录是否存在。
      *
      * @param criteria 查询条件

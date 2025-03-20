@@ -11,11 +11,14 @@ import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
+import io.cordys.common.response.result.CrmHttpResultCode;
 import io.cordys.common.service.BaseService;
+import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerCollaboration;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
@@ -73,9 +76,11 @@ public class CustomerService {
     private ModuleFormService moduleFormService;
     @Resource
     private CustomerRelationService customerRelationService;
+    @Resource
+    private DataScopeService dataScopeService;
 
-    public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId,
-                                                            DeptDataPermissionDTO deptDataPermission) {
+
+    public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomerListResponse> list = extCustomerMapper.list(request, orgId, userId, deptDataPermission);
         List<CustomerListResponse> buildList = buildListData(list, orgId);
@@ -169,10 +174,25 @@ public class CustomerService {
         return list;
     }
 
+    public CustomerGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
+        CustomerGetResponse getResponse = get(id, orgId);
+
+        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner());
+        if (!hasPermission) {
+            List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerIdAndUserId(getResponse.getId(), userId);
+            if (CollectionUtils.isEmpty(collaborations)) {
+                throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+            } else {
+                getResponse.setCollaborationType(collaborations.getFirst().getCollaborationType());
+            }
+        }
+
+        return getResponse;
+    }
+
     public CustomerGetResponse get(String id, String orgId) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
         CustomerGetResponse customerGetResponse = BeanUtils.copyBean(new CustomerGetResponse(), customer);
-
         // 获取模块字段
         List<BaseModuleFieldValue> customerFields = customerFieldService.getModuleFieldValuesByResourceId(id);
         customerGetResponse.setModuleFields(customerFields);
@@ -185,6 +205,7 @@ public class CustomerService {
 
         return baseService.setCreateUpdateOwnerUserName(customerGetResponse);
     }
+
 
     public Customer add(CustomerAddRequest request, String userId, String orgId) {
         Customer customer = BeanUtils.copyBean(new Customer(), request);
@@ -207,7 +228,10 @@ public class CustomerService {
         return customer;
     }
 
-    public Customer update(CustomerUpdateRequest request, String userId) {
+    public Customer update(CustomerUpdateRequest request, String userId, String orgId) {
+        Customer originCustomer = customerMapper.selectByPrimaryKey(request.getId());
+        dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner());
+
         Customer customer = BeanUtils.copyBean(new Customer(), request);
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setUpdateUser(userId);
@@ -216,7 +240,6 @@ public class CustomerService {
         checkUpdateExist(customer);
 
         if (StringUtils.isNotBlank(request.getOwner())) {
-            Customer originCustomer = customerMapper.selectByPrimaryKey(request.getId());
             if (!StringUtils.equals(request.getOwner(), originCustomer.getOwner())) {
                 // 如果责任人有修改，则添加责任人历史
                 customerOwnerHistoryService.add(originCustomer, userId);
@@ -253,7 +276,9 @@ public class CustomerService {
         }
     }
 
-    public void delete(String id) {
+    public void delete(String id, String userId, String orgId) {
+        Customer originCustomer = customerMapper.selectByPrimaryKey(id);
+        dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner());
         // 删除客户
         customerMapper.deleteByPrimaryKey(id);
         // 删除客户模块字段
@@ -272,7 +297,13 @@ public class CustomerService {
         customerOwnerHistoryService.batchAdd(request, userId);
     }
 
-    public void batchDelete(List<String> ids) {
+    public void batchDelete(List<String> ids, String userId, String orgId) {
+        List<Customer> customers = customerMapper.selectByIds(ids);
+        List<String> owners = customers.stream().map(Customer::getOwner)
+                .distinct()
+                .toList();
+        dataScopeService.checkDataPermission(userId, orgId, owners);
+
         // 删除客户
         customerMapper.deleteByIds(ids);
         // 删除客户模块字段
@@ -293,9 +324,13 @@ public class CustomerService {
      * @param currentUser 当前用户
      */
     public BatchAffectResponse batchToPool(List<String> ids, String currentUser, String orgId) {
-        LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(Customer::getId, ids);
-        List<Customer> customers = customerMapper.selectListByLambda(wrapper);
+        List<Customer> customers = customerMapper.selectByIds(ids);
+        List<String> owners = customers.stream()
+                .map(Customer::getOwner)
+                .distinct()
+                .toList();
+        dataScopeService.checkDataPermission(currentUser, orgId, owners);
+
         List<String> ownerIds = customers.stream().map(Customer::getOwner).distinct().toList();
         Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
         int success = 0;

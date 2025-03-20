@@ -52,4 +52,7 @@ public class CustomerGetResponse {
 
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
+
+    @Schema(description = "协作类型(只读/协作),为空则不是协作人员")
+    private String collaborationType;
 }

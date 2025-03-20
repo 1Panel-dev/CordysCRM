@@ -5,6 +5,9 @@ import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.UserDeptDTO;
+import io.cordys.common.exception.GenericException;
+import io.cordys.common.response.result.CrmHttpResultCode;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.UserRole;
@@ -33,6 +36,8 @@ public class DataScopeService {
     private BaseMapper<OrganizationUser> organizationUserMapper;
     @Resource
     private RoleService roleService;
+    @Resource
+    private BaseService baseService;
 
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String searchType) {
         DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
@@ -183,5 +188,55 @@ public class DataScopeService {
             childDeptIds.addAll(getNodeIdsWithChild(node.getChildren()));
         }
         return childDeptIds;
+    }
+
+    /**
+     * 校验数据权限
+     * @param userId
+     * @param orgId
+     */
+    public void checkDataPermission(String userId, String orgId, String owner) {
+        checkDataPermission(userId, orgId, List.of(owner));
+    }
+
+    public void checkDataPermission(String userId, String orgId, List<String> owners) {
+        boolean hasPermission = hasDataPermission(userId, orgId, owners);
+        if (!hasPermission) {
+            throw new GenericException(CrmHttpResultCode.FORBIDDEN);
+        }
+    }
+
+    public boolean hasDataPermission(String userId, String orgId, String owner) {
+        return hasDataPermission(userId, orgId, List.of(owner));
+    }
+
+    public boolean hasDataPermission(String userId, String orgId, List<String> owners) {
+        DeptDataPermissionDTO deptDataPermission = getDeptDataPermission(userId, orgId);
+        if (deptDataPermission.getAll() || StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
+            return true;
+        }
+
+        if (deptDataPermission.getSelf()) {
+            for (String owner : owners) {
+                // 是否是自己的客户
+                if (!StringUtils.equals(owner, userId)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        if (CollectionUtils.isNotEmpty(deptDataPermission.getDeptIds())) {
+            Map<String, UserDeptDTO> userDeptMapByUserIds = baseService.getUserDeptMapByUserIds(owners, orgId);
+            for (String owner : owners) {
+                UserDeptDTO customerOwnerDept = userDeptMapByUserIds.get(owner);
+                // 部门权限是否有该客户的权限
+                if (customerOwnerDept == null || !deptDataPermission.getDeptIds().contains(customerOwnerDept.getDeptId())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }
