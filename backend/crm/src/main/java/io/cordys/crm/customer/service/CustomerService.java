@@ -196,7 +196,15 @@ public class CustomerService {
         // 获取模块字段
         List<BaseModuleFieldValue> customerFields = customerFieldService.getModuleFieldValuesByResourceId(id);
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
-        customerGetResponse.setOptionMap(moduleFormService.getOptionMap(customerFormConfig, customerFields));
+
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, customerFields);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(customerGetResponse,
+                CustomerGetResponse::getOwner, CustomerGetResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
+
+        customerGetResponse.setOptionMap(optionMap);
         customerGetResponse.setModuleFields(customerFields);
 
         UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerGetResponse.getOwner(), orgId);

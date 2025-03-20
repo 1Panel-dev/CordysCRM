@@ -403,6 +403,12 @@ public class ModuleFormService {
 				.toList();
 	}
 
+	public <T> List<OptionDTO> getBusinessFieldOption(T item,
+													  Function<T, String> getOptionIdFunc,
+													  Function<T, String> getOptionNameFunc) {
+		return getBusinessFieldOption(List.of(item), getOptionIdFunc, getOptionNameFunc);
+	}
+
 	public <T> List<BaseModuleFieldValue> getBaseModuleFieldValues(List<T> list, Function<T, List<BaseModuleFieldValue>> getModuleFieldFunc) {
 		// 处理自定义字段选项数据
 		return list.stream()
