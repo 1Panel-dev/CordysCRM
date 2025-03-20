@@ -169,6 +169,12 @@
           },
           {
             "id": "CLUE_MANAGEMENT:DELETE"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:PICK"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:ASSIGN"
           }
         ]
       }
