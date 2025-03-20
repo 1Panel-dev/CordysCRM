@@ -23,4 +23,7 @@ export default {
   'clue.claimTip': 'Are you sure you want to claim {count}?',
   'clue.followingUp': 'Following up',
   'clue.interested': 'Interested',
+  'clue.moveIntoCluePoolFailed': 'Partial transfer failed',
+  'clue.moveIntoCluePoolFailedContent':
+    'Successfully transferred leads will enter the lead pool, while failed leads will not. Please retry the transfer!',
 };

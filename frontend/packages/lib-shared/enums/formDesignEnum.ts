@@ -1,5 +1,6 @@
 export enum FormDesignKeyEnum {
   CLUE = 'clue', // 线索
+  CLUE_POOL = 'cluePool', // 线索池
   FOLLOW_PLAN_CLUE = 'planClue', // 线索跟进计划
   FOLLOW_RECORD_CLUE = 'recordClue', // 线索跟进记录
   CUSTOMER = 'customer', // 客户

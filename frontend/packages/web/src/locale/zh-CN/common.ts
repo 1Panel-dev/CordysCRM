@@ -266,6 +266,7 @@ export default {
   'common.phoneNumber': '手机号',
   'common.transfer': '转移',
   'common.transferSuccess': '转移成功',
+  'common.transferFailed': '转移失败',
   'common.batchTransfer': '批量转移',
   'common.overview': '概览',
   'common.followPlan': '跟进计划',

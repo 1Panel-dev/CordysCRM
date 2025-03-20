@@ -17,7 +17,8 @@ type FormKey =
   | FormDesignKeyEnum.BUSINESS
   | FormDesignKeyEnum.CLUE
   | FormDesignKeyEnum.PRODUCT
-  | FormDesignKeyEnum.CUSTOMER_OPEN_SEA;
+  | FormDesignKeyEnum.CUSTOMER_OPEN_SEA
+  | FormDesignKeyEnum.CLUE_POOL;
 
 export interface FormCreateTableProps {
   formKey: FormKey;
@@ -35,6 +36,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CONTACT]: TableKeyEnum.CUSTOMER_CONTRACT,
     [FormDesignKeyEnum.BUSINESS]: TableKeyEnum.BUSINESS,
     [FormDesignKeyEnum.CLUE]: TableKeyEnum.CLUE,
+    [FormDesignKeyEnum.CLUE_POOL]: TableKeyEnum.CLUE_POOL,
     [FormDesignKeyEnum.PRODUCT]: TableKeyEnum.PRODUCT,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: TableKeyEnum.CUSTOMER_OPEN_SEA,
   };
@@ -223,6 +225,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     ],
     [FormDesignKeyEnum.PRODUCT]: [],
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: [],
+    [FormDesignKeyEnum.CLUE_POOL]: [],
   };
   const staticColumns: CrmDataTableColumn[] = [
     {

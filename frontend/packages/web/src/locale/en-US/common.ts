@@ -266,6 +266,7 @@ export default {
   'common.phoneNumber': 'Phone number',
   'common.transfer': 'Transfer',
   'common.transferSuccess': 'Transfer success',
+  'common.transferFailed': 'Transfer failed',
   'common.batchTransfer': 'Batch transfer',
   'common.overview': 'Overview',
   'common.followPlan': 'Follow plan',

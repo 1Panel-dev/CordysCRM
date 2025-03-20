@@ -22,4 +22,6 @@ export default {
   'clue.claimTip': '确定领取 {count} 吗？',
   'clue.followingUp': '跟进中',
   'clue.interested': '感兴趣',
+  'clue.moveIntoCluePoolFailed': '部分转移失败',
+  'clue.moveIntoCluePoolFailedContent': '转移成功的线索会进入到线索池中，转移失败的线索不会进入线索池，请重新进行转移!',
 };

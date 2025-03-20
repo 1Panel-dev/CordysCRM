@@ -131,7 +131,7 @@
     // 失败返回基础阶段截止当前 + 失败阶段
     if (currentStage.value === StageResultEnum.FAIL) {
       const lastStageIndex = props.baseSteps.findIndex((e) => e.value === lastStage.value);
-      return [...props.baseSteps.slice(0, lastStageIndex), ...endStage.value];
+      return [...props.baseSteps.slice(0, lastStageIndex + 1), ...endStage.value];
     }
     // 成功返回全部阶段
     if (currentStage.value === StageResultEnum.SUCCESS) {

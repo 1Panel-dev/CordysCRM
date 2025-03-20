@@ -24,3 +24,13 @@ export const GetClueFollowPlanUrl = '/clue/follow/plan/get'; // 跟进计划详�
 export const CancelClueFollowPlanUrl = '/clue/follow/plan/cancel'; // 取消跟进计划
 
 export const GetClueHeaderListUrl = '/clue/owner/history/list'; // 线索负责人记录列表
+
+// 线索池客户
+export const PickClueUrl = '/pool/clue/pick'; // 领取线索
+export const GetCluePoolListUrl = '/pool/clue/page'; // 分页查询线索池线索
+export const BatchPickClueUrl = '/pool/clue/batch-pick'; // 批量领取线索
+export const BatchDeleteCluePoolUrl = '/pool/clue/batch-delete'; // 批量删除线索池线索
+export const BatchAssignClueUrl = '/pool/clue/batch-assign'; // 批量分配线索
+export const AssignClueUrl = '/pool/clue/assign'; // 分配线索
+export const GetPoolOptionsUrl = '/pool/clue/options'; // 获取当前用户线索池选项
+export const DeleteCluePoolUrl = '/pool/clue/delete'; // 删除线索池线索

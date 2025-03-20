@@ -16,6 +16,7 @@ import {
   getClueFollowRecord,
   getClueFormConfig,
   getClueList,
+  getCluePoolList,
   updateClue,
   updateClueFollowPlan,
   updateClueFollowRecord,
@@ -363,6 +364,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: getCustomerFollowPlanFormConfig,
   [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: getCustomerFollowRecordFormConfig,
   [FormDesignKeyEnum.CLUE]: getClueFormConfig,
+  [FormDesignKeyEnum.CLUE_POOL]: getClueFormConfig,
   [FormDesignKeyEnum.PRODUCT]: getProductFormConfig,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getCustomerFormConfig,
 };
@@ -378,6 +380,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: addOptFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: addOptFollowRecord,
   [FormDesignKeyEnum.CLUE]: addClue,
+  [FormDesignKeyEnum.CLUE_POOL]: async () => ({}),
   [FormDesignKeyEnum.PRODUCT]: addProduct,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: async () => ({}), // 公海无添加
 };
@@ -393,6 +396,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: updateOptFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: updateOptFollowRecord,
   [FormDesignKeyEnum.CLUE]: updateClue,
+  [FormDesignKeyEnum.CLUE_POOL]: async () => ({}),
   [FormDesignKeyEnum.PRODUCT]: updateProduct,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: async () => ({}), // 公海无更新
 };
@@ -416,6 +420,7 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.BUSINESS]: getOpportunityList,
   [FormDesignKeyEnum.CONTACT]: getCustomerContactList,
   [FormDesignKeyEnum.CLUE]: getClueList,
+  [FormDesignKeyEnum.CLUE_POOL]: getCluePoolList,
   [FormDesignKeyEnum.PRODUCT]: getProductList,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getOpenSeaCustomerList,
 };

@@ -12,12 +12,15 @@
     @button-select="handleSelect"
   >
     <template #left>
-      <CrmFormDescription :form-key="FormDesignKeyEnum.CLUE" :source-id="sourceId" />
+      <div class="p-[16px_24px]">
+        <CrmFormDescription :form-key="FormDesignKeyEnum.CLUE" :source-id="sourceId" />
+      </div>
     </template>
     <template #distributePopContent>
       <TransferForm ref="distributeFormRef" v-model:form="distributeForm" class="mt-[16px] w-[320px]" />
     </template>
     <template #right>
+      <!-- TODO FormDesignKeyEnum.CLUE_POOL -->
       <FollowDetail
         v-if="['followRecord', 'followPlan'].includes(activeTab)"
         class="mt-[16px]"
@@ -42,7 +45,7 @@
   import { useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import type { ClueListItem } from '@lib/shared/models/clue';
+  import type { CluePoolListItem } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -53,14 +56,15 @@
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
 
-  import { batchTransferClue, deleteClue, getClueHeaderList } from '@/api/modules/clue';
+  import { assignClue, deleteCluePool, getClueHeaderList, pickClue } from '@/api/modules/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
 
   const props = defineProps<{
-    detail?: ClueListItem;
+    detail?: CluePoolListItem;
+    poolId: string;
   }>();
 
   const show = defineModel<boolean>('show', {
@@ -147,13 +151,14 @@
       if (!error) {
         try {
           distributeLoading.value = true;
-          // TODO 联调换接口
-          await batchTransferClue({
-            ...distributeForm.value,
-            ids: [sourceId.value],
+          await assignClue({
+            assignUserId: distributeForm.value.owner || '',
+            clueId: sourceId.value,
           });
           Message.success(t('common.distributeSuccess'));
           distributeForm.value = { ...defaultTransferForm };
+          emit('refresh');
+          show.value = false;
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -174,8 +179,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO 联调换接口
-          await deleteClue(sourceId.value);
+          await deleteCluePool(sourceId.value);
           Message.success(t('common.deleteSuccess'));
           show.value = false;
           emit('refresh');
@@ -187,12 +191,31 @@
     });
   }
 
+  // 领取
+  async function handleClaim() {
+    try {
+      claimLoading.value = true;
+      await pickClue({
+        clueId: sourceId.value,
+        poolId: props.poolId,
+      });
+      Message.success(t('common.claimSuccess'));
+      emit('refresh');
+      show.value = false;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      claimLoading.value = false;
+    }
+  }
+
   function handleSelect(key: string) {
     switch (key) {
-      case 'claim':
-        // TODO
+      case 'pop-claim':
+        handleClaim();
         break;
-      case 'distribute':
+      case 'pop-distribute':
         handleDistribute();
         break;
       case 'delete':

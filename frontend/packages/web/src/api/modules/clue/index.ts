@@ -2,10 +2,15 @@ import {
   AddClueFollowPlanUrl,
   AddClueFollowRecordUrl,
   AddClueUrl,
+  AssignClueUrl,
+  BatchAssignClueUrl,
+  BatchDeleteCluePoolUrl,
   BatchDeleteClueUrl,
+  BatchPickClueUrl,
   BatchToPoolClueUrl,
   BatchTransferClueUrl,
   CancelClueFollowPlanUrl,
+  DeleteCluePoolUrl,
   DeleteClueUrl,
   GetClueFollowPlanListUrl,
   GetClueFollowPlanUrl,
@@ -14,13 +19,28 @@ import {
   GetClueFormConfigUrl,
   GetClueHeaderListUrl,
   GetClueListUrl,
+  GetCluePoolListUrl,
   GetClueUrl,
+  GetPoolOptionsUrl,
+  PickClueUrl,
   UpdateClueFollowPlanUrl,
   UpdateClueFollowRecordUrl,
   UpdateClueStatusUrl,
   UpdateClueUrl,
 } from '@lib/shared/api/requrls/clue';
-import type { ClueDetail, ClueListItem, SaveClueParams, UpdateClueParams } from '@lib/shared/models/clue';
+import type {
+  AssignClueParams,
+  BatchAssignClueParams,
+  BatchPickClueParams,
+  ClueDetail,
+  ClueListItem,
+  CluePoolListItem,
+  CluePoolTableParams,
+  PickClueParams,
+  PoolOption,
+  SaveClueParams,
+  UpdateClueParams,
+} from '@lib/shared/models/clue';
 import type { CommonList } from '@lib/shared/models/common';
 import type {
   CustomerContractTableParams,
@@ -136,4 +156,44 @@ export function cancelClueFollowPlan(id: string) {
 // 获取线索负责人列表
 export function getClueHeaderList(data: CustomerContractTableParams) {
   return CDR.get({ url: `${GetClueHeaderListUrl}/${data.sourceId}` });
+}
+
+// 线索池领取线索
+export function pickClue(data: PickClueParams) {
+  return CDR.post({ url: PickClueUrl, data });
+}
+
+// 获取线索池线索列表
+export function getCluePoolList(data: CluePoolTableParams) {
+  return CDR.post<CommonList<CluePoolListItem>>({ url: GetCluePoolListUrl, data });
+}
+
+// 批量领取线索池线索
+export function batchPickClue(data: BatchPickClueParams) {
+  return CDR.post({ url: BatchPickClueUrl, data });
+}
+
+// 批量删除线索池线索
+export function batchDeleteCluePool(data: string[]) {
+  return CDR.post({ url: BatchDeleteCluePoolUrl, data });
+}
+
+// 批量分配线索池线索
+export function batchAssignClue(data: BatchAssignClueParams) {
+  return CDR.post({ url: BatchAssignClueUrl, data });
+}
+
+// 分配线索池线索
+export function assignClue(data: AssignClueParams) {
+  return CDR.post({ url: AssignClueUrl, data });
+}
+
+// 获取当前用户线索池选项
+export function getPoolOptions() {
+  return CDR.get<PoolOption[]>({ url: GetPoolOptionsUrl });
+}
+
+// 删除线索池线索
+export function deleteCluePool(id: string) {
+  return CDR.get({ url: `${DeleteCluePoolUrl}/${id}` });
 }

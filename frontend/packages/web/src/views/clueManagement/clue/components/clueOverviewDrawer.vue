@@ -12,7 +12,9 @@
     @button-select="handleSelect"
   >
     <template #left>
-      <CrmFormDescription :form-key="FormDesignKeyEnum.CLUE" :source-id="sourceId" />
+      <div class="p-[16px_24px]">
+        <CrmFormDescription :form-key="FormDesignKeyEnum.CLUE" :source-id="sourceId" />
+      </div>
     </template>
     <template #transferPopContent>
       <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
@@ -20,12 +22,13 @@
     <template #rightTop>
       <CrmWorkflowCard
         v-model:stage="currentStatus"
-        v-model:last-stage="lastOptStage"
+        v-model:last-stage="lastStage"
         class="mb-[16px]"
         show-error-btn
         :base-steps="workflowList"
         :source-id="sourceId"
         :update-api="updateClueStatus"
+        @load-detail="loadDetail"
       />
     </template>
     <template #right>
@@ -46,7 +49,7 @@
         :load-list-api="getClueHeaderList"
       />
 
-      <CrmFormCreateDrawer v-model:visible="formDrawerVisible" :form-key="realFormKey" />
+      <CrmFormCreateDrawer v-model:visible="formDrawerVisible" :form-key="realFormKey" @saved="closeAndRefresh" />
     </template>
   </CrmOverviewDrawer>
 </template>
@@ -70,7 +73,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import { batchTransferClue, deleteClue, getClueHeaderList, updateClueStatus } from '@/api/modules/clue';
+  import { batchTransferClue, deleteClue, getClue, getClueHeaderList, updateClueStatus } from '@/api/modules/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -159,6 +162,11 @@
     },
   ];
 
+  function closeAndRefresh() {
+    show.value = false;
+    emit('refresh');
+  }
+
   // 转移
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   function handleTransfer() {
@@ -172,8 +180,7 @@
           });
           Message.success(t('common.transferSuccess'));
           transferForm.value = { ...defaultTransferForm };
-          show.value = false;
-          emit('refresh');
+          closeAndRefresh();
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -196,8 +203,7 @@
         try {
           await deleteClue(sourceId.value);
           Message.success(t('common.deleteSuccess'));
-          show.value = false;
-          emit('refresh');
+          closeAndRefresh();
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
@@ -230,9 +236,8 @@
         break;
     }
   }
-
-  const currentStatus = ref<string>(props.detail?.stage || ClueStatusEnum.NEW);
-  const lastOptStage = ref<string>(props.detail?.lastStage || ClueStatusEnum.NEW);
+  const currentStatus = ref<string>(ClueStatusEnum.NEW);
+  const lastStage = ref<string>(ClueStatusEnum.NEW);
   const workflowList: SelectOption[] = [
     {
       value: ClueStatusEnum.NEW,
@@ -251,6 +256,26 @@
       label: t('common.success'),
     },
   ];
+  watch(
+    () => props.detail,
+    () => {
+      if (props.detail) {
+        currentStatus.value = props.detail.stage;
+        lastStage.value = props.detail.lastStage;
+      }
+    }
+  );
+  async function loadDetail() {
+    try {
+      const result = await getClue(sourceId.value);
+      currentStatus.value = result.stage;
+      lastStage.value = result.lastStage;
+      emit('refresh');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
 
   // tab
   const activeTab = ref('followRecord');

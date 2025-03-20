@@ -11,9 +11,6 @@
       @batch-action="handleBatchAction"
     >
       <template #actionLeft>
-        <n-button class="mr-[12px]" type="primary" @click="formCreateDrawerVisible = true">
-          {{ t('clueManagement.newClue') }}
-        </n-button>
         <!-- 先不上 -->
         <!-- <CrmImportButton
           :validate-api="importUserPreCheck"
@@ -25,32 +22,39 @@
       </template>
       <template #actionRight>
         <div class="flex gap-[12px]">
-          <n-select v-model:value="cluePool" :options="cluePoolOptions" class="w-[240px]" />
+          <n-select
+            v-model:value="poolId"
+            :options="cluePoolOptions"
+            value-field="id"
+            label-field="name"
+            class="w-[240px]"
+            @update-value="(e) => searchData(undefined, e)"
+          />
           <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
         </div>
       </template>
     </CrmTable>
   </CrmCard>
-  <CrmFormCreateDrawer
-    v-model:visible="formCreateDrawerVisible"
-    :form-key="FormDesignKeyEnum.CLUE"
-    :source-id="activeClueId"
-    @saved="loadList"
-  />
-  <!-- TODO 联调换接口 -->
   <TransferModal
     v-model:show="showDistributeModal"
     :source-ids="checkedRowKeys"
     :title="t('common.batchDistribute')"
-    :save-api="batchTransferClue"
+    :positive-text="t('common.distribute')"
+    @confirm="handleBatchAssign"
   />
-  <CluePoolOverviewDrawer v-model:show="showOverviewDrawer" :detail="activeClue" @refresh="handleRefresh" />
+  <CluePoolOverviewDrawer
+    v-model:show="showOverviewDrawer"
+    :pool-id="poolId"
+    :detail="activeClue"
+    @refresh="handleRefresh"
+  />
 </template>
 
 <script setup lang="ts">
-  import { DataTableRowKey, NButton, NSelect, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NSelect, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import type { CluePoolListItem, PoolOption } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -59,53 +63,44 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   // import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CluePoolOverviewDrawer from './components/cluePoolOverviewDrawer.vue';
 
-  import { batchTransferClue } from '@/api/modules/clue';
+  import {
+    assignClue,
+    batchAssignClue,
+    batchDeleteCluePool,
+    batchPickClue,
+    deleteCluePool,
+    getPoolOptions,
+    pickClue,
+  } from '@/api/modules/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
-  import { SelectMixedOption } from 'naive-ui/es/select/src/interface';
-
   const { t } = useI18n();
   const { openModal } = useModal();
   const Message = useMessage();
 
-  const cluePool = ref('');
-  // TODO
-  const cluePoolOptions = ref<SelectMixedOption[]>([
-    {
-      label: 'GGBOND',
-      value: '1',
-      id: '1',
-      createUser: '1',
-      updateUser: 'string;',
-      updateUserName: 'string;',
-      createTime: 'number;',
-      updateTime: 'number;',
-      name: 'string;',
-      scopeId: ' string;',
-      organizationId: 'string;',
-      ownerId: 'string;',
-      enable: 'boolean;',
-      auto: 'boolean;',
-      members: [],
-      owners: [],
-      pickRule: {}, // 领取规则
-      recycleRule: {}, // 回收规则
-    },
-  ]);
+  const poolId = ref('');
+  const cluePoolOptions = ref<PoolOption[]>([]);
+  async function getCluePoolOptions() {
+    try {
+      cluePoolOptions.value = await getPoolOptions();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
 
   const keyword = ref('');
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
-  const showOverviewDrawer = ref(true);
+  const showOverviewDrawer = ref(false);
 
   const actionConfig: BatchActionConfig = {
     baseAction: [
@@ -140,7 +135,10 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO  联调
+          await batchPickClue({
+            batchIds: checkedRowKeys.value,
+            poolId: poolId.value,
+          });
           handleRefresh();
           Message.success(t('common.claimSuccess'));
         } catch (error) {
@@ -153,6 +151,20 @@
 
   // 批量分配
   const showDistributeModal = ref<boolean>(false);
+  async function handleBatchAssign(owner: string | null) {
+    try {
+      await batchAssignClue({
+        batchIds: checkedRowKeys.value,
+        assignUserId: owner || '',
+      });
+      Message.success(t('common.distributeSuccess'));
+      handleRefresh();
+      showDistributeModal.value = false;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
 
   // 批量删除
   function handleBatchDelete() {
@@ -164,7 +176,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO  联调
+          await batchDeleteCluePool(checkedRowKeys.value as string[]);
           handleRefresh();
           Message.success(t('common.deleteSuccess'));
         } catch (error) {
@@ -197,10 +209,6 @@
   const operationGroupList = computed<ActionsItem[]>(() => {
     return [
       {
-        label: t('common.edit'),
-        key: 'edit',
-      },
-      {
         label: t('common.claim'),
         key: 'claim',
         popConfirmProps: {
@@ -229,7 +237,7 @@
   });
 
   // 删除
-  function handleDelete(row: any) {
+  function handleDelete(row: CluePoolListItem) {
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: row.name }),
@@ -238,7 +246,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO 联调
+          await deleteCluePool(row.id);
           Message.success(t('common.deleteSuccess'));
           tableRefreshId.value += 1;
         } catch (error) {
@@ -249,22 +257,41 @@
     });
   }
 
+  // 领取
+  async function handleClaim(id: string) {
+    try {
+      claimLoading.value = true;
+      await pickClue({
+        clueId: id,
+        poolId: poolId.value,
+      });
+      Message.success(t('common.claimSuccess'));
+      tableRefreshId.value += 1;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      claimLoading.value = false;
+    }
+  }
+
+  // 分配
   const distributeFormRef = ref<InstanceType<typeof TransferForm>>();
   const distributeForm = ref<TransferParams>({
     ...defaultTransferForm,
   });
-  function handleDistribute(row: any) {
+  function handleDistribute(id: string) {
     distributeFormRef.value?.formRef?.validate(async (error) => {
       if (!error) {
         try {
           distributeLoading.value = true;
-          // TODO 联调换接口
-          await batchTransferClue({
-            ...distributeForm.value,
-            ids: [row.id],
+          await assignClue({
+            assignUserId: distributeForm.value.owner || '',
+            clueId: id,
           });
           Message.success(t('common.distributeSuccess'));
           distributeForm.value = { ...defaultTransferForm };
+          tableRefreshId.value += 1;
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -275,20 +302,13 @@
     });
   }
 
-  const activeClueId = ref('');
-  const formCreateDrawerVisible = ref(false);
-
-  function handleActionSelect(row: any, actionKey: string) {
+  function handleActionSelect(row: CluePoolListItem, actionKey: string) {
     switch (actionKey) {
-      case 'edit':
-        activeClueId.value = row.id;
-        formCreateDrawerVisible.value = true;
-        break;
       case 'pop-claim':
-        tableRefreshId.value += 1;
+        handleClaim(row.id);
         break;
       case 'pop-distribute':
-        handleDistribute(row);
+        handleDistribute(row.id);
         break;
       case 'delete':
         handleDelete(row);
@@ -298,14 +318,14 @@
     }
   }
 
-  const activeClue = ref<any>();
+  const activeClue = ref<CluePoolListItem>();
   const { useTableRes } = await useFormCreateTable({
-    formKey: FormDesignKeyEnum.CLUE,
+    formKey: FormDesignKeyEnum.CLUE_POOL,
     operationColumn: {
       key: 'operation',
       width: 200,
       fixed: 'right',
-      render: (row: any) =>
+      render: (row: CluePoolListItem) =>
         h(
           CrmOperationButton,
           {
@@ -327,7 +347,7 @@
         ),
     },
     specialRender: {
-      name: (row: any) => {
+      name: (row: CluePoolListItem) => {
         return h(
           CrmTableButton,
           {
@@ -343,8 +363,8 @@
   });
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
 
-  function searchData() {
-    setLoadListParams({ keyword: keyword.value });
+  function searchData(_keyword?: string, id?: string) {
+    setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: id || poolId.value });
     loadList();
   }
 
@@ -356,6 +376,7 @@
   );
 
   onMounted(() => {
+    getCluePoolOptions();
     searchData();
   });
 </script>

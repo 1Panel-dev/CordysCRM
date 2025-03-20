@@ -1,6 +1,6 @@
 <template>
   <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="searchData()" />
   </CrmCard>
 
   <CrmCard hide-footer :special-height="64">
@@ -46,6 +46,11 @@
       :other-save-params="otherFollowRecordSaveParams"
       @saved="loadList"
     />
+    <ToCluePoolResultModel
+      v-model:show="showToCluePoolResultModel"
+      :fail-count="failCount"
+      :success-count="successCount"
+    />
   </CrmCard>
 </template>
 
@@ -72,6 +77,7 @@
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import ClueOverviewDrawer from './components/clueOverviewDrawer.vue';
+  import ToCluePoolResultModel from './components/toCluePoolResultModel.vue';
 
   import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue } from '@/api/modules/clue';
   import { defaultTransferForm } from '@/config/opportunity';
@@ -142,6 +148,9 @@
   }
 
   // 批量移入线索池
+  const showToCluePoolResultModel = ref(false);
+  const successCount = ref<number>(0);
+  const failCount = ref<number>(0);
   function handleBatchMoveIntoCluePool() {
     openModal({
       type: 'warning',
@@ -151,9 +160,11 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await batchToCluePool(checkedRowKeys.value as string[]);
+          const { success, fail } = await batchToCluePool(checkedRowKeys.value as string[]);
+          successCount.value = success;
+          failCount.value = fail;
+          showToCluePoolResultModel.value = true;
           handleRefresh();
-          Message.success(t('common.moveInSuccess'));
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -273,6 +284,7 @@
         break;
       case 'followUp':
         formKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CLUE;
+        activeClueId.value = '';
         otherFollowRecordSaveParams.value.clueId = row.id;
         formCreateDrawerVisible.value = true;
         break;
@@ -343,7 +355,7 @@
     formKey: FormDesignKeyEnum.CLUE,
     operationColumn: {
       key: 'operation',
-      width: 200,
+      width: 330,
       fixed: 'right',
       render: (row: ClueListItem) =>
         ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value)
@@ -409,8 +421,8 @@
     loadList();
   }
 
-  function searchData() {
-    setLoadListParams({ keyword: keyword.value, searchType: activeTab.value });
+  function searchData(val?: string) {
+    setLoadListParams({ keyword: val ?? keyword.value, searchType: activeTab.value });
     loadList();
   }
 
