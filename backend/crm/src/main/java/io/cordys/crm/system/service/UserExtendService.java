@@ -1,10 +1,10 @@
 package io.cordys.crm.system.service;
 
-import io.cordys.common.constants.InternalRole;
 import io.cordys.common.dto.BaseTreeNode;
-import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.ScopeKey;
-import io.cordys.crm.system.domain.*;
+import io.cordys.crm.system.domain.OrganizationUser;
+import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.dto.ScopeNameDTO;
 import io.cordys.crm.system.mapper.ExtUserExtendMapper;
 import io.cordys.mybatis.BaseMapper;
@@ -17,8 +17,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class UserExtendService {
@@ -31,6 +29,8 @@ public class UserExtendService {
 	private DepartmentService departmentService;
 	@Resource
 	private BaseMapper<UserRole> userRoleMapper;
+	@Resource
+	private BaseMapper<User> userMapper;
 
 	/**
 	 * 获取范围的所有负责人ID
@@ -134,7 +134,7 @@ public class UserExtendService {
 	 * @param targetId 目标部门ID
 	 * @return 子部门节点
 	 */
-	public static List<String> getChildDptById(BaseTreeNode node, String targetId) {
+	public List<String> getChildDptById(BaseTreeNode node, String targetId) {
 		BaseTreeNode targetNode = findTargetById(node, targetId);
 		if (targetNode != null) {
 			// find, return all children
@@ -151,7 +151,7 @@ public class UserExtendService {
 	 * @param targetId 目标部门ID
 	 * @return 树节点
 	 */
-	public static BaseTreeNode findTargetById(BaseTreeNode node, String targetId) {
+	public BaseTreeNode findTargetById(BaseTreeNode node, String targetId) {
 		if (StringUtils.equals(node.getId(), targetId)) {
 			return node;
 		}
@@ -169,7 +169,7 @@ public class UserExtendService {
 	 * @param currentNode 当前节点
 	 * @return 子节点部门ID集合
 	 */
-	public static List<String> getAllChildDptIds(BaseTreeNode currentNode) {
+	public List<String> getAllChildDptIds(BaseTreeNode currentNode) {
 		List<String> children = new ArrayList<>();
 		if (CollectionUtils.isEmpty(currentNode.getChildren())) {
 			return children;
@@ -179,5 +179,17 @@ public class UserExtendService {
 			children.addAll(getAllChildDptIds(child));
 		}
 		return children;
+	}
+
+	/**
+	 * 用户ID集合获取用户选项
+	 * @param ids 用户ID集合
+	 * @return 用户选项
+	 */
+	public List<User> getUserOptionByIds(List<String> ids) {
+		if (CollectionUtils.isEmpty(ids)) {
+			return new ArrayList<>();
+		}
+		return userMapper.selectByIds(ids.toArray(new String[0]));
 	}
 }

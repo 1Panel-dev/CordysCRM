@@ -83,4 +83,9 @@ public abstract class BaseField {
 	public boolean isTextArea() {
 		return StringUtils.equals(type, FieldType.TEXTAREA.name());
 	}
+
+	@JsonIgnore
+	public boolean needInitialOptions() {
+		return StringUtils.equalsAny(type, FieldType.MEMBER.name(), FieldType.DEPARTMENT.name());
+	}
 }

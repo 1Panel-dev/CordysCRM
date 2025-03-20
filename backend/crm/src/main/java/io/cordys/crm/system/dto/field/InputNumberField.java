@@ -15,10 +15,10 @@ public class InputNumberField extends BaseField {
 	private Double defaultValue;
 
 	@Schema(description = "最小值范围")
-	private int min;
+	private Integer min;
 
 	@Schema(description = "最大值范围")
-	private int max;
+	private Integer max;
 
 	@Schema(description = "格式", allowableValues = {"percent", "number"})
 	private String numberFormat;

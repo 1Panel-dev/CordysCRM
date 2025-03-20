@@ -8,6 +8,6 @@ import lombok.Data;
 public class PoolBatchPickRequest extends PoolBatchRequest{
 
 	@NotBlank
-	@Schema(description = "公海ID", requiredMode = Schema.RequiredMode.REQUIRED)
+	@Schema(description = "公海ID||线索池ID", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String poolId;
 }

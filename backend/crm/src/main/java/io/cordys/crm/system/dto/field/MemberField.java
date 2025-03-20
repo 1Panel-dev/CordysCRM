@@ -1,8 +1,7 @@
 package io.cordys.crm.system.dto.field;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import io.cordys.common.dto.OptionDTO;
-import io.cordys.crm.system.dto.ScopeNameDTO;
+import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -25,6 +24,6 @@ public class MemberField extends BaseField {
     @Schema(description = "是否当前用户")
     private Boolean hasCurrentUser;
 
-    @Schema(description = "初始化选项")
-    private List<OptionDTO> initialOptions;
+    @Schema(description = "默认值初始化选项")
+    private List<User> initialOptions;
 }

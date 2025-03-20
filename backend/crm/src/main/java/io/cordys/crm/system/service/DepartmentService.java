@@ -8,6 +8,7 @@ import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.NodeSortDTO;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -485,5 +486,17 @@ public class DepartmentService extends MoveNodeService {
                 extDepartmentMapper.deleteDepartmentByIds(ids);
             }
         }
+    }
+
+    /**
+     * 获取部门选项
+     * @param ids 部门ID集合
+     * @return 部门选项
+     */
+    public List<Department> getDepartmentOptionsByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return new ArrayList<>();
+        }
+        return departmentMapper.selectByIds(ids.toArray(new String[0]));
     }
 }

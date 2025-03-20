@@ -15,10 +15,7 @@ import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleFieldBlob;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.domain.ModuleFormBlob;
-import io.cordys.crm.system.dto.field.CheckBoxField;
-import io.cordys.crm.system.dto.field.DatasourceField;
-import io.cordys.crm.system.dto.field.RadioField;
-import io.cordys.crm.system.dto.field.SelectField;
+import io.cordys.crm.system.dto.field.*;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.field.base.ControlRuleProp;
 import io.cordys.crm.system.dto.field.base.OptionProp;
@@ -59,6 +56,10 @@ public class ModuleFormService {
 	private BaseMapper<ModuleFieldBlob> moduleFieldBlobMapper;
 	@Resource
 	private ExtModuleFieldMapper extModuleFieldMapper;
+	@Resource
+	private UserExtendService userExtendService;
+	@Resource
+	private DepartmentService departmentService;
 
 	private static final String DEFAULT_ORGANIZATION_ID = "100001";
 
@@ -184,6 +185,9 @@ public class ModuleFormService {
 			Map<String, String> fieldBlobMap = fieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
 			fields.forEach(field -> {
 				BaseField baseField = JSON.parseObject(fieldBlobMap.get(field.getId()), BaseField.class);
+				if (baseField.needInitialOptions()) {
+					handleInitialOption(baseField);
+				}
 				fieldDTOList.add(baseField);
 			});
 		}
@@ -347,6 +351,10 @@ public class ModuleFormService {
 		}
 	}
 
+	/**
+	 * 初始化数据类型-数据源映射
+	 * @return 集合
+	 */
 	private Map<String, String> initTypeSourceMap() {
 		Map<String, String> typeSourceMap = new HashMap<>(8);
 		typeSourceMap.put(FieldType.MEMBER.name(), "system_user");
@@ -357,6 +365,21 @@ public class ModuleFormService {
 		typeSourceMap.put(FieldSourceType.OPPORTUNITY.name(), "opportunity");
 		typeSourceMap.put(FieldSourceType.PRODUCT.name(), "product");
 		return typeSourceMap;
+	}
+
+	/**
+	 * 处理默认值初始化选项
+	 * @param field 基础字段
+	 */
+	private void handleInitialOption(BaseField field) {
+		if (field instanceof MemberField memberField) {
+			List<String> initialIds = memberField.getDefaultValue();
+			memberField.setInitialOptions(userExtendService.getUserOptionByIds(initialIds));
+		}
+		if (field instanceof DepartmentField departmentField) {
+			List<String> initialIds = departmentField.getDefaultValue();
+			departmentField.setInitialOptions(departmentService.getDepartmentOptionsByIds(initialIds));
+		}
 	}
 
 	/**

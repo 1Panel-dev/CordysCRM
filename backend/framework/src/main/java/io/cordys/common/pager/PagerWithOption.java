@@ -1,6 +1,7 @@
 package io.cordys.common.pager;
 
 import io.cordys.common.dto.OptionDTO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -12,5 +13,6 @@ public class PagerWithOption<T> extends Pager<T> {
 	/**
 	 * 选项集合
 	 */
+	@Schema(description = "选项集合")
 	private Map<String, List<OptionDTO>> optionMap;
 }
