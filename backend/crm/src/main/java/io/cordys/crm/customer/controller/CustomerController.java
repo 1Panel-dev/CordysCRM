@@ -14,6 +14,7 @@ import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
+import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.security.SessionUtils;
@@ -102,7 +103,7 @@ public class CustomerController {
     @PostMapping("/batch/to-pool")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "批量移入公海")
-    public void batchToPool(@RequestBody @NotEmpty List<String> ids) {
-        customerService.batchToPool(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectResponse batchToPool(@RequestBody @NotEmpty List<String> ids) {
+        return customerService.batchToPool(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

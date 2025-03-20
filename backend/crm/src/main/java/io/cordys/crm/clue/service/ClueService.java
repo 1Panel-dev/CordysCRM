@@ -24,6 +24,7 @@ import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
@@ -285,12 +286,13 @@ public class ClueService {
      * @param orgId 组织ID
      * @param currentUser 当前用户
      */
-    public void batchToPool(List<String> ids, String currentUser, String orgId) {
+    public BatchAffectResponse batchToPool(List<String> ids, String currentUser, String orgId) {
         LambdaQueryWrapper<Clue> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(Clue::getId, ids);
         List<Clue> clues = clueMapper.selectListByLambda(wrapper);
         List<String> ownerIds = clues.stream().map(Clue::getOwner).distinct().toList();
         Map<String, CluePool> ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+        int success = 0;
         for (Clue clue : clues) {
             CluePool cluePool = ownersDefaultPoolMap.get(clue.getOwner());
             if (cluePool == null) {
@@ -306,6 +308,8 @@ public class ClueService {
             clue.setUpdateUser(currentUser);
             clue.setUpdateTime(System.currentTimeMillis());
             clueMapper.updateById(clue);
+            success++;
         }
+        return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
     }
 }

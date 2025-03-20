@@ -25,6 +25,7 @@ import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
@@ -291,12 +292,13 @@ public class CustomerService {
      * @param orgId       组织ID
      * @param currentUser 当前用户
      */
-    public void batchToPool(List<String> ids, String currentUser, String orgId) {
+    public BatchAffectResponse batchToPool(List<String> ids, String currentUser, String orgId) {
         LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(Customer::getId, ids);
         List<Customer> customers = customerMapper.selectListByLambda(wrapper);
         List<String> ownerIds = customers.stream().map(Customer::getOwner).distinct().toList();
         Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+        int success = 0;
         for (Customer customer : customers) {
             CustomerPool customerPool = ownersDefaultPoolMap.get(customer.getOwner());
             if (customerPool == null) {
@@ -313,6 +315,8 @@ public class CustomerService {
             customer.setUpdateTime(System.currentTimeMillis());
             // 回收客户至公海
             customerMapper.updateById(customer);
+            success++;
         }
+        return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
     }
 }

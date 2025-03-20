@@ -15,6 +15,7 @@ import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.service.ClueService;
+import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.security.SessionUtils;
@@ -106,7 +107,7 @@ public class ClueController {
     @PostMapping("/batch/to-pool")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "批量移入线索池")
-    public void batchToPool(@RequestBody @NotEmpty List<String> ids) {
-        clueService.batchToPool(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectResponse batchToPool(@RequestBody @NotEmpty List<String> ids) {
+        return clueService.batchToPool(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
