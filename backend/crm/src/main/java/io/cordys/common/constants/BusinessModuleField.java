@@ -163,11 +163,15 @@ public enum BusinessModuleField {
     /**
      * 预计沟通内容
      */
-    FOLLOW_PLAN_CONTENT("planContent", "content", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey());
+    FOLLOW_PLAN_CONTENT("planContent", "content", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
 
 
     /*------ end: FOLLOW_UP_PLAN ------*/
 
+    /*------ start: PRODUCT ------*/
+    PRODUCT_NAME("productName", "name", Set.of("rules"), FormKey.PRODUCT.getKey());
+
+    /*------ end: PRODUCT ------*/
     /**
      * 字段 key，field.json 中的 internalKey
      */
