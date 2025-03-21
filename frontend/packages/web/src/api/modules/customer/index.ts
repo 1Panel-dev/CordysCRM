@@ -315,7 +315,7 @@ export function getCustomerRelationList() {
 }
 
 // 获取客户协作成员列表
-export function getCustomerCollaborationList(customerId: string) {
+export function getCustomerCollaborationList({ customerId }: { customerId: string }) {
   return CDR.get<CollaborationItem[]>({ url: `${GetCustomerCollaborationListUrl}/${customerId}` });
 }
 

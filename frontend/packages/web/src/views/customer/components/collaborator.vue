@@ -308,7 +308,7 @@
 
   function initData() {
     setLoadListParams({
-      sourceId: props.sourceId,
+      customerId: props.sourceId,
     });
     loadList();
   }

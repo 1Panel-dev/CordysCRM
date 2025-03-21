@@ -64,6 +64,16 @@
   );
 
   watch(
+    () => props.fieldConfig.initialOptions,
+    (val) => {
+      selectedUsers.value = val || [];
+    },
+    {
+      immediate: true,
+    }
+  );
+
+  watch(
     () => selectedUsers.value,
     (val) => {
       const ids = val.map((item) => item.id);

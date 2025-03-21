@@ -62,7 +62,7 @@ export interface FormCreateField {
   // 选择器属性
   multiple?: boolean;
   options?: FormCreateFieldOption[];
-  initialOptions?: { id: string; name: string }[]; // 用于回显(成员、部门、数据源选择)
+  initialOptions?: any; // 用于回显(成员、部门、数据源选择)
   // dataSource属性
   dataSourceType?: FieldDataSourceTypeEnum;
   // 成员属性
@@ -78,5 +78,6 @@ export interface FormCreateField {
 
 export interface FormDetail {
   moduleFields: ModuleField[];
+  optionMap?: Record<string, any[]>;
   [key: string]: any;
 }

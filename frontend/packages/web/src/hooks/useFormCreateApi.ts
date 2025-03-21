@@ -60,13 +60,16 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       const form = await asyncApi(props.sourceId?.value);
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
+          const options = form.optionMap?.[item.businessKey];
           // 业务标准字段读取最外层
+          const name = options?.find((e) => e.id === item.businessKey)?.name;
           descriptions.value.push({
             label: item.name,
-            value: form[item.businessKey],
+            value: name || form[item.businessKey],
           });
         } else {
-          // 其他的字段读取moduleFields TODO: 等接口字段
+          const options = form.optionMap?.[item.id];
+          // 其他的字段读取moduleFields
           const field = form.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
           if (item.type === FieldTypeEnum.DIVIDER) {
             descriptions.value.push({
@@ -77,7 +80,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             });
           } else {
             let value = field?.fieldValue || '';
-            if (item.type === FieldTypeEnum.LOCATION) {
+            if (field && options) {
+              // 若字段值是选项值，则取选项值的name
+              if (Array.isArray(field.fieldValue)) {
+                value = options.filter((e) => field.fieldValue.includes(e.id)).map((e) => e.name);
+              } else {
+                value = options.find((e) => e.id === field.fieldValue)?.name;
+              }
+            } else if (item.type === FieldTypeEnum.LOCATION) {
               const address = (field?.fieldValue as string)?.split('-');
               value = address ? `${getCityPath(address[0])}-${address[1]}` : '-';
             }
@@ -102,14 +112,25 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (!asyncApi || !props.sourceId?.value) return;
       const res = await asyncApi(props.sourceId?.value);
       fieldList.value.forEach((item) => {
-        // TODO: options字段
         if (item.businessKey) {
+          const options = res.optionMap?.[item.businessKey];
+          if ([FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE].includes(item.type)) {
+            // 处理成员和数据源类型的字段
+            item.initialOptions = options;
+          }
           // 业务标准字段读取最外层
           formDetail.value[item.id] = res[item.businessKey];
         } else {
-          formDetail.value[item.id] = res.moduleFields?.find(
-            (moduleField) => moduleField.fieldId === item.id
-          )?.fieldValue;
+          const options = res.optionMap?.[item.id];
+          if ([FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE].includes(item.type)) {
+            // 处理成员和数据源类型的字段
+            item.initialOptions = options;
+          }
+          // 其他的字段读取moduleFields
+          const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
+          if (field) {
+            formDetail.value[item.id] = field.fieldValue;
+          }
         }
       });
     } catch (error) {

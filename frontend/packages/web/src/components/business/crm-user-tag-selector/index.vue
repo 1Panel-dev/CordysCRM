@@ -60,12 +60,13 @@
   const selectedList = defineModel<SelectedUsersItem[]>('selectedList', {
     required: true,
   });
+  const modelValue = defineModel<string[]>('value', {
+    default: [],
+  });
 
   const emit = defineEmits<{
     (e: 'deleteTag'): void;
   }>();
-
-  const modelValue = ref<string[]>([]);
 
   const showSelectAdminDrawer = ref(false);
   const crmSelectUserDrawerRef = ref<InstanceType<typeof CrmSelectUserDrawer>>();

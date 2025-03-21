@@ -500,22 +500,26 @@
         <CrmUserTagSelector
           v-else-if="fieldConfig.type === FieldTypeEnum.MEMBER"
           v-show="fieldConfig.multiple || !fieldConfig.hasCurrentUser"
-          v-model:selected-list="fieldConfig.defaultValue"
+          v-model:selected-list="fieldConfig.initialOptions"
+          v-model:value="fieldConfig.defaultValue"
           :multiple="fieldConfig.multiple"
           :drawer-title="t('crmFormDesign.selectMember')"
           :ok-text="t('common.confirm')"
           :member-types="[]"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+          :disabled-node-types="[DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]"
         />
         <CrmUserTagSelector
           v-else-if="fieldConfig.type === FieldTypeEnum.DEPARTMENT"
           v-show="fieldConfig.multiple || !fieldConfig.hasCurrentUserDept"
-          v-model:selected-list="fieldConfig.defaultValue"
+          v-model:selected-list="fieldConfig.initialOptions"
+          v-model:value="fieldConfig.defaultValue"
           :multiple="fieldConfig.multiple"
           :drawer-title="t('crmFormDesign.selectMember')"
           :ok-text="t('common.confirm')"
           :member-types="[]"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+          :disabled-node-types="[DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]"
         />
         <CrmDataSource
           v-else-if="fieldConfig.type === FieldTypeEnum.DATA_SOURCE"
@@ -646,6 +650,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
 
   import CrmColorSelect from '@/components/pure/crm-color-select/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';

@@ -305,7 +305,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                 (field.type === FieldTypeEnum.SELECT && field.multiple) ||
                 (field.type === FieldTypeEnum.MEMBER && field.multiple) ||
                 (field.type === FieldTypeEnum.DEPARTMENT && field.multiple),
-              filterOptions: field.options || field.initialOptions?.map((e) => ({ label: e.name, value: e.id })),
+              filterOptions: field.options || field.initialOptions?.map((e: any) => ({ label: e.name, value: e.id })),
               filter: true,
             };
           }
