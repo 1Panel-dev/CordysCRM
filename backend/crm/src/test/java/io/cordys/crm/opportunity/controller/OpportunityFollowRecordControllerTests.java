@@ -85,6 +85,12 @@ public class OpportunityFollowRecordControllerTests extends BaseTest {
     @Test
     @Order(4)
     void testGet() throws Exception {
-        this.requestGetWithOk(DEFAULT_GET, addFollowUpRecord.getId());
+        this.requestGet(DEFAULT_GET, addFollowUpRecord.getId());
+    }
+
+    @Test
+    @Order(5)
+    void testDeleteRecord() throws Exception {
+        this.requestGetWithOk(DEFAULT_DELETE, addFollowUpRecord.getId());
     }
 }

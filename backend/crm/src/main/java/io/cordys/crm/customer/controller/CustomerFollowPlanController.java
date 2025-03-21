@@ -71,4 +71,12 @@ public class CustomerFollowPlanController {
     public void cancelPlan(@PathVariable String id) {
         followUpPlanService.cancelPlan(id);
     }
+
+
+    @GetMapping("/delete/{id}")
+    @Operation(summary = "客户删除跟进计划")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE)
+    public void deletePlan(@PathVariable String id) {
+        followUpPlanService.delete(id);
+    }
 }

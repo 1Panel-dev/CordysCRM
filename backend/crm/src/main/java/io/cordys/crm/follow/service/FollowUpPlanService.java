@@ -247,4 +247,17 @@ public class FollowUpPlanService extends BaseFollowUpService {
         plan.setStatus("CANCELLED");
         followUpPlanMapper.updateById(plan);
     }
+
+
+    /**
+     * 删除跟进计划
+     * @param id
+     */
+    public void delete(String id) {
+        FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
+        if (followUpPlan == null) {
+            throw new GenericException("plan_not_found");
+        }
+        followUpPlanMapper.deleteByPrimaryKey(id);
+    }
 }

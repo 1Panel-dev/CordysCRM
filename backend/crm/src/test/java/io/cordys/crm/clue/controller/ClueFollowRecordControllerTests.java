@@ -89,7 +89,7 @@ public class ClueFollowRecordControllerTests extends BaseTest {
     @Test
     @Order(4)
     void testGet() throws Exception {
-        this.requestGetWithOk(DEFAULT_GET, addFollowUpRecord.getId());
+        this.requestGet(DEFAULT_GET, addFollowUpRecord.getId());
     }
 
 
@@ -101,5 +101,11 @@ public class ClueFollowRecordControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
         this.requestPost(POOL_PAGE, request);
+    }
+
+    @Test
+    @Order(5)
+    void testDeleteRecord() throws Exception {
+        this.requestGetWithOk(DEFAULT_DELETE, addFollowUpRecord.getId());
     }
 }

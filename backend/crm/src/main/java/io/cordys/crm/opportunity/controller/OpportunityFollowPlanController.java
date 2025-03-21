@@ -66,4 +66,12 @@ public class OpportunityFollowPlanController {
     public void cancelPlan(@PathVariable String id) {
         followUpPlanService.cancelPlan(id);
     }
+
+
+    @GetMapping("/delete/{id}")
+    @Operation(summary = "商机删除跟进计划")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE)
+    public void deletePlan(@PathVariable String id) {
+        followUpPlanService.delete(id);
+    }
 }

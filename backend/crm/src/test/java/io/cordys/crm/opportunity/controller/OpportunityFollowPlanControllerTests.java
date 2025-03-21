@@ -90,12 +90,18 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
     @Test
     @Order(4)
     void testGet() throws Exception {
-        this.requestGetWithOk(DEFAULT_GET, addFollowUpPlan.getId());
+        this.requestGet(DEFAULT_GET, addFollowUpPlan.getId());
     }
 
     @Test
     @Order(5)
     void testCancelPlan() throws Exception {
         this.requestGetWithOk(CANCEL_PLAN, addFollowUpPlan.getId());
+    }
+
+    @Test
+    @Order(6)
+    void tesDeletePlan() throws Exception {
+        this.requestGetWithOk(DEFAULT_DELETE, addFollowUpPlan.getId());
     }
 }

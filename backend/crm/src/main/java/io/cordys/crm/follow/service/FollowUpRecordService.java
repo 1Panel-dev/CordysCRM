@@ -297,4 +297,16 @@ public class FollowUpRecordService extends BaseFollowUpService {
         return PageUtils.setPageInfoWithOption(page, list, optionMap);
     }
 
+
+    /**
+     * 删除跟进记录
+     * @param id
+     */
+    public void delete(String id) {
+        FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(id);
+        if(followUpRecord == null){
+            throw new GenericException("record_not_found");
+        }
+        followUpRecordMapper.deleteByPrimaryKey(id);
+    }
 }

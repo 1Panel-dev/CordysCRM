@@ -66,4 +66,12 @@ public class ClueFollowPlanController {
     public void cancelPlan(@PathVariable String id) {
         followUpPlanService.cancelPlan(id);
     }
+
+
+    @GetMapping("/delete/{id}")
+    @Operation(summary = "线索删除跟进计划")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_DELETE)
+    public void deletePlan(@PathVariable String id) {
+        followUpPlanService.delete(id);
+    }
 }

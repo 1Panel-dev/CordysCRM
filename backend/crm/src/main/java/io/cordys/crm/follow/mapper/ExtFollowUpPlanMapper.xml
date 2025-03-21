@@ -13,6 +13,7 @@
         content,
         owner,
         contact_id,
+        estimated_time,
         create_time,
         update_time,
         create_user,
