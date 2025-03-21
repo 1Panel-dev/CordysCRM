@@ -6,7 +6,12 @@ import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEn
 import type { CommonList } from '@lib/shared/models/common';
 import type { FollowDetailItem } from '@lib/shared/models/customer';
 
-import { cancelClueFollowPlan, getClueFollowPlanList, getClueFollowRecordList } from '@/api/modules/clue/index';
+import {
+  cancelClueFollowPlan,
+  getClueFollowPlanList,
+  getClueFollowRecordList,
+  getCluePoolFollowRecordList,
+} from '@/api/modules/clue/index';
 import {
   cancelCustomerFollowPlan,
   getCustomerFollowPlanList,
@@ -21,16 +26,17 @@ import type { FormCreateField } from '@cordys/web/src/components/business/crm-fo
 export type followEnumType =
   | typeof FormDesignKeyEnum.CUSTOMER
   | typeof FormDesignKeyEnum.BUSINESS
-  | typeof FormDesignKeyEnum.CLUE;
+  | typeof FormDesignKeyEnum.CLUE
+  | typeof FormDesignKeyEnum.CLUE_POOL;
 
 type FollowApiMapType = Record<
   followEnumType,
   {
     list: {
       followRecord: (params: any) => Promise<CommonList<FollowDetailItem>>;
-      followPlan: (params: any) => Promise<CommonList<FollowDetailItem>>;
+      followPlan?: (params: any) => Promise<CommonList<FollowDetailItem>>;
     };
-    cancel: {
+    cancel?: {
       followPlan: typeof cancelOptFollowPlan;
     };
   }
@@ -64,14 +70,21 @@ const followApiMap: FollowApiMapType = {
       followPlan: cancelClueFollowPlan,
     },
   },
+  [FormDesignKeyEnum.CLUE_POOL]: {
+    list: {
+      followRecord: getCluePoolFollowRecordList,
+    },
+  },
 };
 
-const followFormKeyMap: Record<
-  followEnumType,
-  {
-    followRecord: FormDesignKeyEnum;
-    followPlan: FormDesignKeyEnum;
-  }
+const followFormKeyMap: Partial<
+  Record<
+    followEnumType,
+    {
+      followRecord: FormDesignKeyEnum;
+      followPlan: FormDesignKeyEnum;
+    }
+  >
 > = {
   [FormDesignKeyEnum.CUSTOMER]: {
     followRecord: FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER, // 客户跟进记录
@@ -88,7 +101,7 @@ const followFormKeyMap: Record<
 };
 
 export default function useFollowApi(followProps: {
-  followApiKey: (typeof FormDesignKeyEnum)['CUSTOMER' | 'BUSINESS' | 'CLUE'];
+  followApiKey: (typeof FormDesignKeyEnum)['CUSTOMER' | 'BUSINESS' | 'CLUE' | 'CLUE_POOL'];
   type: Ref<'followRecord' | 'followPlan'>;
   sourceId: Ref<string>;
 }) {
@@ -147,10 +160,11 @@ export default function useFollowApi(followProps: {
         keyword: followKeyword.value,
         ...(type.value === 'followPlan' && { status: activeStatus.value }),
       };
-
-      const res = await apis.list[type.value](params);
-      data.value = res.list.map((item) => transformField(item));
-      pageNation.value.total = res.total;
+      const res = await apis.list[type.value]?.(params);
+      if (res) {
+        data.value = res.list.map((item) => transformField(item));
+        pageNation.value.total = res.total;
+      }
     } catch (err) {
       // eslint-disable-next-line no-console
       console.log(err);
@@ -162,7 +176,7 @@ export default function useFollowApi(followProps: {
   // 取消计划
   async function handleCancelPlan(item: FollowDetailItem) {
     try {
-      await apis.cancel.followPlan(item.id);
+      await apis.cancel?.followPlan(item.id);
       Message.success(t('common.cancelSuccess'));
       loadFollowList();
     } catch (error) {

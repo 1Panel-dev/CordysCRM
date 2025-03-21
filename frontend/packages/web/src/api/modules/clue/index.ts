@@ -19,6 +19,7 @@ import {
   GetClueFormConfigUrl,
   GetClueHeaderListUrl,
   GetClueListUrl,
+  GetCluePoolFollowRecordListUrl,
   GetCluePoolListUrl,
   GetClueUrl,
   GetPoolOptionsUrl,
@@ -196,4 +197,9 @@ export function getPoolOptions() {
 // 删除线索池线索
 export function deleteCluePool(id: string) {
   return CDR.get({ url: `${DeleteCluePoolUrl}/${id}` });
+}
+
+// 获取线索池跟进记录列表
+export function getCluePoolFollowRecordList(data: CustomerFollowRecordTableParams) {
+  return CDR.post<CommonList<FollowDetailItem>>({ url: GetCluePoolFollowRecordListUrl, data });
 }

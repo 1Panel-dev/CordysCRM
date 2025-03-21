@@ -42,6 +42,7 @@
         virtual-scroll-height="calc(100vh - 382px)"
         :follow-api-key="FormDesignKeyEnum.CLUE"
         :source-id="sourceId"
+        :show-action="showAction"
       />
 
       <CrmHeaderTable
@@ -104,66 +105,6 @@
     ...defaultTransferForm,
   });
   const transferLoading = ref(false);
-
-  const buttonList: ActionsItem[] = [
-    {
-      label: t('common.edit'),
-      key: 'edit',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    {
-      label: t('common.followPlan'),
-      key: 'followPlan',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    {
-      label: t('crmFollowRecord.followRecord'),
-      key: 'followRecord',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    {
-      label: t('common.transfer'),
-      key: 'transfer',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      popConfirmProps: {
-        loading: transferLoading.value,
-        title: t('common.transfer'),
-        positiveText: t('common.confirm'),
-        iconType: 'primary',
-      },
-      popSlotName: 'transferPopTitle',
-      popSlotContent: 'transferPopContent',
-    },
-    {
-      label: t('clue.convertToCustomer'),
-      key: 'convertToCustomer',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    {
-      label: t('clue.convertToOpportunity'),
-      key: 'convertToOpportunity',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-  ];
 
   function closeAndRefresh() {
     show.value = false;
@@ -241,6 +182,9 @@
   }
   const currentStatus = ref<string>(ClueStatusEnum.NEW);
   const lastStage = ref<string>(ClueStatusEnum.NEW);
+  const showAction = computed(
+    () => currentStatus.value !== StageResultEnum.FAIL && currentStatus.value !== StageResultEnum.SUCCESS
+  );
   const workflowList: SelectOption[] = [
     {
       value: ClueStatusEnum.NEW,
@@ -279,6 +223,74 @@
       console.log(error);
     }
   }
+
+  const buttonList = computed<ActionsItem[]>(() => [
+    ...(showAction.value
+      ? [
+          {
+            label: t('common.edit'),
+            key: 'edit',
+            text: false,
+            ghost: true,
+            class: 'n-btn-outline-primary',
+          },
+          {
+            label: t('common.followPlan'),
+            key: 'followPlan',
+            text: false,
+            ghost: true,
+            class: 'n-btn-outline-primary',
+          },
+          {
+            label: t('crmFollowRecord.followRecord'),
+            key: 'followRecord',
+            text: false,
+            ghost: true,
+            class: 'n-btn-outline-primary',
+          },
+        ]
+      : []),
+    {
+      label: t('common.transfer'),
+      key: 'transfer',
+      text: false,
+      ghost: true,
+      class: 'n-btn-outline-primary',
+      popConfirmProps: {
+        loading: transferLoading.value,
+        title: t('common.transfer'),
+        positiveText: t('common.confirm'),
+        iconType: 'primary',
+      },
+      popSlotName: 'transferPopTitle',
+      popSlotContent: 'transferPopContent',
+    },
+    {
+      label: t('clue.convertToCustomer'),
+      key: 'convertToCustomer',
+      text: false,
+      ghost: true,
+      class: 'n-btn-outline-primary',
+    },
+    {
+      label: t('clue.convertToOpportunity'),
+      key: 'convertToOpportunity',
+      text: false,
+      ghost: true,
+      class: 'n-btn-outline-primary',
+    },
+    ...(showAction.value
+      ? [
+          {
+            label: t('common.delete'),
+            key: 'delete',
+            text: false,
+            ghost: true,
+            class: 'n-btn-outline-primary',
+          },
+        ]
+      : []),
+  ]);
 
   // tab
   const activeTab = ref('followRecord');

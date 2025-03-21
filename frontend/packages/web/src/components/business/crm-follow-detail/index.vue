@@ -214,7 +214,9 @@
   const realFollowSourceId = ref<string | undefined>('');
 
   function handleEdit(item: FollowDetailItem) {
-    realFormKey.value = followFormKeyMap[props.followApiKey as keyof typeof followFormKeyMap][props.activeType];
+    realFormKey.value = followFormKeyMap[props.followApiKey as keyof typeof followFormKeyMap]?.[
+      props.activeType
+    ] as FormDesignKeyEnum;
     realFollowSourceId.value = item.id;
     formDrawerVisible.value = true;
   }

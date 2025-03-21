@@ -36,6 +36,7 @@
     </template>
   </n-data-table>
   <CrmPagination
+    v-if="!!attrs.showPagination"
     class="mt-[16px]"
     v-bind="{ ...(attrs.crmPagination || {}) }"
     @handle-page-change="handlePageChange"

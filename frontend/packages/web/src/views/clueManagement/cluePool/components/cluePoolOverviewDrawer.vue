@@ -7,7 +7,7 @@
     :button-list="buttonList"
     :source-id="sourceId"
     :title="props.detail?.name"
-    :form-key="FormDesignKeyEnum.CLUE"
+    :form-key="FormDesignKeyEnum.CLUE_POOL"
     :show-tab-setting="true"
     @button-select="handleSelect"
     @saved="() => (refreshKey += 1)"
@@ -21,18 +21,18 @@
       <TransferForm ref="distributeFormRef" v-model:form="distributeForm" class="mt-[16px] w-[320px]" />
     </template>
     <template #right>
-      <!-- TODO FormDesignKeyEnum.CLUE_POOL -->
       <FollowDetail
-        v-if="['followRecord', 'followPlan'].includes(activeTab)"
+        v-if="['followRecord'].includes(activeTab)"
         class="mt-[16px]"
-        :active-type="(activeTab as 'followRecord'| 'followPlan')"
+        :active-type="(activeTab as 'followRecord')"
         wrapper-class="h-[calc(100vh-162px)]"
         virtual-scroll-height="calc(100vh - 258px)"
-        :follow-api-key="FormDesignKeyEnum.CLUE"
+        :follow-api-key="FormDesignKeyEnum.CLUE_POOL"
         :source-id="sourceId"
+        :show-action="false"
         :refresh-key="refreshKey"
       />
-
+      <!-- TODO 更换接口 -->
       <CrmHeaderTable
         v-if="activeTab === 'headRecord'"
         class="mt-[16px] h-[calc(100vh-258px)]"
@@ -90,13 +90,6 @@
 
   const buttonList: ActionsItem[] = [
     {
-      label: t('common.edit'),
-      key: 'edit',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    {
       label: t('common.claim'),
       key: 'claim',
       text: false,
@@ -104,7 +97,7 @@
       class: 'n-btn-outline-primary',
       popConfirmProps: {
         loading: claimLoading.value,
-        title: t('clue.claimTip'),
+        title: t('clue.claimOverviewTip'),
         positiveText: t('common.claim'),
         iconType: 'primary',
       },
@@ -122,20 +115,6 @@
         iconType: 'primary',
       },
       popSlotContent: 'distributePopContent',
-    },
-    {
-      label: t('common.followPlan'),
-      key: 'followPlan',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    {
-      label: t('crmFollowRecord.followRecord'),
-      key: 'followRecord',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
     },
     {
       label: t('common.delete'),
@@ -239,12 +218,6 @@
       tab: t('crmFollowRecord.followRecord'),
       enable: true,
       allowClose: false,
-    },
-    {
-      name: 'followPlan',
-      tab: t('common.followPlan'),
-      enable: true,
-      allowClose: true,
     },
     {
       name: 'headRecord',

@@ -153,7 +153,7 @@
   const failCount = ref<number>(0);
   function handleBatchMoveIntoCluePool() {
     openModal({
-      type: 'warning',
+      type: 'default',
       title: t('clue.batchMoveIntoCluePoolTitleTip', { number: checkedRowKeys.value.length }),
       content: t('clue.batchMoveIntoCluePoolContentTip'),
       positiveText: t('common.confirmMoveIn'),

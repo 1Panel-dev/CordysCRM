@@ -4,7 +4,7 @@
       <slot :name="item.slotName" :item="item" :index="index">
         <template v-if="item.popConfirmProps">
           <CrmPopConfirm
-            v-model:show="popShow"
+            v-model:show="popShow[item.key as string]"
             placement="bottom-end"
             v-bind="item.popConfirmProps"
             @confirm="emit('select', `pop-${item.key}` as string, cancel)"
@@ -15,7 +15,7 @@
               v-bind="item"
               type="primary"
               :class="item.text === false ? '' : '!p-0'"
-              @click="() => (popShow = true)"
+              @click="() => (popShow[item.key as string] = true)"
             >
               {{ item.label }}
             </n-button>
@@ -42,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+  import { ref, watch } from 'vue';
   import { NButton, NDivider } from 'naive-ui';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -52,7 +53,20 @@
     notShowDivider?: boolean; // 不显示分割线
   }>();
 
-  const popShow = ref(false);
+  const popShow = ref<Record<string, boolean>>({});
+
+  // 初始化
+  watch(
+    () => props.list,
+    (newList) => {
+      newList.forEach((item) => {
+        if (item.popConfirmProps) {
+          popShow.value[item.key as string] = false;
+        }
+      });
+    },
+    { immediate: true }
+  );
 
   const emit = defineEmits<{
     (e: 'select', key: string, done?: () => void): void;
@@ -60,7 +74,10 @@
   }>();
 
   function cancel() {
-    popShow.value = false;
+    // 关闭所有弹出框
+    Object.keys(popShow.value).forEach((key) => {
+      popShow.value[key] = false;
+    });
   }
 </script>
 

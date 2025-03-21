@@ -92,6 +92,7 @@
   async function getCluePoolOptions() {
     try {
       cluePoolOptions.value = await getPoolOptions();
+      poolId.value = cluePoolOptions.value[0]?.id || '';
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -109,7 +110,7 @@
         key: 'batchClaim',
       },
       {
-        label: t('customer.batchDistribute'),
+        label: t('common.batchDistribute'),
         key: 'batchDistribute',
       },
       {
@@ -129,8 +130,8 @@
   // 批量领取
   function handleBatchClaim() {
     openModal({
-      type: 'info',
-      title: t('clue.batchClaimTip', { number: checkedRowKeys.value.length }),
+      type: 'default',
+      title: t('clue.batchClaimTip', { count: checkedRowKeys.value.length }),
       positiveText: t('common.confirmClaim'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
@@ -205,36 +206,6 @@
 
   const claimLoading = ref(false);
   const distributeLoading = ref(false);
-
-  const operationGroupList = computed<ActionsItem[]>(() => {
-    return [
-      {
-        label: t('common.claim'),
-        key: 'claim',
-        popConfirmProps: {
-          loading: claimLoading.value,
-          title: t('clue.claimTip'),
-          positiveText: t('common.claim'),
-          iconType: 'primary',
-        },
-      },
-      {
-        label: t('common.distribute'),
-        key: 'distribute',
-        popConfirmProps: {
-          loading: distributeLoading.value,
-          title: t('common.distribute'),
-          positiveText: t('common.confirm'),
-          iconType: 'primary',
-        },
-        popSlotContent: 'distributePopContent',
-      },
-      {
-        label: t('common.delete'),
-        key: 'delete',
-      },
-    ];
-  });
 
   // 删除
   function handleDelete(row: CluePoolListItem) {
@@ -329,7 +300,33 @@
         h(
           CrmOperationButton,
           {
-            groupList: operationGroupList.value,
+            groupList: [
+              {
+                label: t('common.claim'),
+                key: 'claim',
+                popConfirmProps: {
+                  loading: claimLoading.value,
+                  title: t('clue.claimTip', { name: row.name }),
+                  positiveText: t('common.claim'),
+                  iconType: 'primary',
+                },
+              },
+              {
+                label: t('common.distribute'),
+                key: 'distribute',
+                popConfirmProps: {
+                  loading: distributeLoading.value,
+                  title: t('common.distribute'),
+                  positiveText: t('common.confirm'),
+                  iconType: 'primary',
+                },
+                popSlotContent: 'distributePopContent',
+              },
+              {
+                label: t('common.delete'),
+                key: 'delete',
+              },
+            ],
             onSelect: (key: string) => handleActionSelect(row, key),
             onCancel: () => {
               distributeForm.value = { ...defaultTransferForm };
@@ -375,8 +372,8 @@
     }
   );
 
-  onMounted(() => {
-    getCluePoolOptions();
+  onMounted(async () => {
+    await getCluePoolOptions();
     searchData();
   });
 </script>
