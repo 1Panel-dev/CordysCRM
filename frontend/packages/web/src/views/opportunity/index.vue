@@ -64,6 +64,7 @@
       :source-id="activeSourceId"
       @saved="searchData"
     />
+    <customerOverviewDrawer v-model:show="showCustomerOverviewDrawer" :source-id="activeSourceId" />
   </CrmCard>
 </template>
 
@@ -87,14 +88,16 @@
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
-  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
+  // TODO 不上
+  // import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import OptOverviewDrawer from './components/optOverviewDrawer.vue';
+  import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
 
   import { batchDeleteOpt, deleteOpt, transferOpt } from '@/api/modules/opportunity';
-  import { getDepartmentTree, importUserPreCheck, importUsers } from '@/api/modules/system/org';
+  import { getDepartmentTree } from '@/api/modules/system/org';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
@@ -321,6 +324,8 @@
     ];
   });
 
+  const showCustomerOverviewDrawer = ref(false);
+
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.BUSINESS,
     operationColumn: {
@@ -360,20 +365,23 @@
               showOverviewDrawer.value = true;
             },
           },
-          { default: () => row.opportunityName, trigger: () => row.opportunityName }
+          { default: () => row.name, trigger: () => row.name }
         );
       },
-      customerName: (row: OpportunityItem) => {
+      customerId: (row: OpportunityItem) => {
         return h(
           CrmTableButton,
           {
             onClick: () => {
               activeSourceId.value = row.customerId;
-              realFormKey.value = FormDesignKeyEnum.CUSTOMER;
+              showCustomerOverviewDrawer.value = true;
             },
           },
           { default: () => row.customerName, trigger: () => row.customerName }
         );
+      },
+      status: (row: OpportunityItem) => {
+        return row.status === '1' ? t('common.open') : t('common.close');
       },
     },
   });

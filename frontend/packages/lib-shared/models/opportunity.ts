@@ -2,6 +2,8 @@ import { ModuleField } from '@lib/shared/models/customer';
 
 export interface OpportunityItem {
   id: string; // 商机ID
+  name: string;
+  status: string;
   opportunityName: string; // 商机名称
   customerId: string;
   customerName: string; // 客户名称
@@ -12,6 +14,8 @@ export interface OpportunityItem {
   createUserName: string; // 创建人名称
   updateUserName: string; // 更新人名称
   reservedDays: number; // 归属天数
+  stage: string;
+  lastStage: string;
   moduleFields: ModuleField[]; // 自定义字段
 }
 

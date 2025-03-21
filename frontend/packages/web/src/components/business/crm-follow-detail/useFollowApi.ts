@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 
 import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
-import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import type { CommonList } from '@lib/shared/models/common';
 import type { FollowDetailItem } from '@lib/shared/models/customer';
 
@@ -13,7 +13,10 @@ import {
   getCustomerFollowRecordList,
 } from '@/api/modules/customer/index';
 import { cancelOptFollowPlan, getOptFollowPlanList, getOptFollowRecordList } from '@/api/modules/opportunity';
+import { getFormDesignConfig } from '@/api/modules/system/module';
 import { useI18n } from '@/hooks/useI18n';
+
+import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
 export type followEnumType =
   | typeof FormDesignKeyEnum.CUSTOMER
@@ -110,6 +113,30 @@ export default function useFollowApi(followProps: {
 
   const apis = followApiMap[followApiKey];
 
+  const fieldList = ref<FormCreateField[]>([]);
+
+  function transformField(e: FollowDetailItem) {
+    const tmpObject: Record<string, any> = {};
+    (e.moduleFields || []).forEach((moduleField) => {
+      const fieldVal = fieldList.value.find((field) => moduleField.fieldId === field.id);
+      if (fieldVal) {
+        const isSelectableField = [FieldTypeEnum.SELECT, FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO].includes(
+          fieldVal.type
+        );
+        if (isSelectableField && fieldVal.options?.length) {
+          const option = fieldVal.options.find((item) => item.value === moduleField.fieldValue);
+          tmpObject[fieldVal.internalKey as string] = option ? option.label : '-';
+        } else {
+          tmpObject[fieldVal.internalKey as string] = moduleField.fieldValue;
+        }
+      }
+    });
+    return {
+      ...e,
+      ...tmpObject,
+    };
+  }
+
   async function loadFollowList() {
     loading.value = true;
     try {
@@ -122,7 +149,7 @@ export default function useFollowApi(followProps: {
       };
 
       const res = await apis.list[type.value](params);
-      data.value = res.list;
+      data.value = res.list.map((item) => transformField(item));
       pageNation.value.total = res.total;
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -168,10 +195,22 @@ export default function useFollowApi(followProps: {
     }
   }
 
+  async function initFollowFormConfig() {
+    try {
+      const followKey = type.value === 'followRecord' ? 'record' : 'plan';
+      const res = await getFormDesignConfig(followKey);
+      fieldList.value = res.fields;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   watch(
     () => type.value,
     (val) => {
       if (['followPlan', 'followRecord'].includes(val)) {
+        initFollowFormConfig();
         loadFollowList();
       }
     }
@@ -188,5 +227,6 @@ export default function useFollowApi(followProps: {
     searchData,
     handleDelete,
     activeStatus,
+    initFollowFormConfig,
   };
 }

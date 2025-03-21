@@ -106,7 +106,7 @@
         },
       },
       {
-        default: () => rows.value.find((item) => item.id === option.value)?.name,
+        default: () => (rows.value || []).find((item) => item.id === option.value)?.name,
       }
     );
   };

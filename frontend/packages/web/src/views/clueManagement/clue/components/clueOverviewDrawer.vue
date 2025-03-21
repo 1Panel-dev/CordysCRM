@@ -10,6 +10,7 @@
     :form-key="FormDesignKeyEnum.CLUE"
     :show-tab-setting="true"
     @button-select="handleSelect"
+    @saved="() => (refreshKey += 1)"
   >
     <template #left>
       <div class="p-[16px_24px]">
@@ -34,10 +35,11 @@
     <template #right>
       <FollowDetail
         v-if="['followRecord', 'followPlan'].includes(activeTab)"
+        :refresh-key="refreshKey"
         class="mt-[16px]"
         :active-type="(activeTab as 'followRecord'| 'followPlan')"
         wrapper-class="h-[calc(100vh-290px)]"
-        virtual-scroll-height="calc(100vh - 322px)"
+        virtual-scroll-height="calc(100vh - 382px)"
         :follow-api-key="FormDesignKeyEnum.CLUE"
         :source-id="sourceId"
       />
@@ -96,6 +98,7 @@
   const Message = useMessage();
 
   const sourceId = computed(() => props.detail?.id ?? '');
+  const refreshKey = ref(0);
 
   const transferForm = ref<TransferParams>({
     ...defaultTransferForm,

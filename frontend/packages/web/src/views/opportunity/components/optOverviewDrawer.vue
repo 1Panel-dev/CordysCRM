@@ -5,14 +5,18 @@
     v-model:cached-list="cachedList"
     :tab-list="tabList"
     :button-list="buttonList"
-    :title="props.detail?.opportunityName"
+    :title="props.detail?.name"
     :subtitle="props.detail?.customerName"
     :form-key="FormDesignKeyEnum.BUSINESS"
     :show-tab-setting="true"
+    :source-id="sourceId"
     @button-select="handleSelect"
+    @saved="() => (refreshKey += 1)"
   >
     <template #left>
-      <CrmFormDescription :form-key="FormDesignKeyEnum.BUSINESS" :source-id="sourceId" />
+      <div class="p-[16px_24px]">
+        <CrmFormDescription :form-key="FormDesignKeyEnum.BUSINESS" :source-id="sourceId" />
+      </div>
     </template>
     <template #rightTop>
       <CrmWorkflowCard
@@ -30,12 +34,13 @@
       <FollowDetail
         v-if="['followRecord', 'followPlan'].includes(activeTab)"
         class="mt-[16px]"
-        :show-title="activeTab === 'followRecord'"
+        :refresh-key="refreshKey"
         :active-type="(activeTab as 'followRecord'| 'followPlan')"
         wrapper-class="h-[calc(100vh-290px)]"
-        virtual-scroll-height="calc(100vh - 322px)"
+        virtual-scroll-height="calc(100vh - 382px)"
         :follow-api-key="FormDesignKeyEnum.BUSINESS"
         :source-id="sourceId"
+        :show-action="showAction"
       />
     </template>
 
@@ -49,7 +54,7 @@
   import { SelectOption, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { OpportunityStatusEnum } from '@lib/shared/enums/opportunityEnum';
+  import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import type { TransferParams } from '@lib/shared/models/customer';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
@@ -61,7 +66,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import { deleteOpt, getOptDetail, transferOpt, updateOptStage } from '@/api/modules/opportunity';
+  import { deleteOpt, getOpportunityDetail, transferOpt, updateOptStage } from '@/api/modules/opportunity';
   import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -91,54 +96,67 @@
   });
 
   const sourceId = computed(() => props.detail?.id ?? '');
+  const refreshKey = ref(0);
+
+  const currentStatus = ref<string>(OpportunityStatusEnum.CREATE);
+  const showAction = computed(
+    () => currentStatus.value !== StageResultEnum.FAIL && currentStatus.value !== StageResultEnum.SUCCESS
+  );
 
   const transferLoading = ref(false);
 
-  const buttonList: ActionsItem[] = [
-    {
-      label: t('common.edit'),
-      key: 'edit',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    {
-      label: t('common.followPlan'),
-      key: 'followPlan',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    {
-      label: t('crmFollowRecord.followRecord'),
-      key: 'followRecord',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    {
-      label: t('common.transfer'),
-      key: 'transfer',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      popConfirmProps: {
-        loading: transferLoading.value,
-        title: t('common.transfer'),
-        positiveText: t('common.confirm'),
-        iconType: 'primary',
+  const buttonList = computed<ActionsItem[]>(() => {
+    const transferAction: ActionsItem[] = [
+      {
+        label: t('common.transfer'),
+        key: 'transfer',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        popConfirmProps: {
+          loading: transferLoading.value,
+          title: t('common.transfer'),
+          positiveText: t('common.confirm'),
+          iconType: 'primary',
+        },
+        popSlotName: 'transferPopTitle',
+        popSlotContent: 'transferPopContent',
       },
-      popSlotName: 'transferPopTitle',
-      popSlotContent: 'transferPopContent',
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-  ];
+    ];
+    return showAction.value
+      ? [
+          {
+            label: t('common.edit'),
+            key: 'edit',
+            text: false,
+            ghost: true,
+            class: 'n-btn-outline-primary',
+          },
+          {
+            label: t('common.followPlan'),
+            key: 'followPlan',
+            text: false,
+            ghost: true,
+            class: 'n-btn-outline-primary',
+          },
+          {
+            label: t('crmFollowRecord.followRecord'),
+            key: 'followRecord',
+            text: false,
+            ghost: true,
+            class: 'n-btn-outline-primary',
+          },
+          ...transferAction,
+          {
+            label: t('common.delete'),
+            key: 'delete',
+            text: false,
+            ghost: true,
+            class: 'n-btn-outline-primary',
+          },
+        ]
+      : transferAction;
+  });
 
   const baseStepList = computed(() => [
     ...props.baseSteps,
@@ -213,12 +231,11 @@
     });
   }
 
-  const currentStatus = ref<string>(OpportunityStatusEnum.CREATE);
   const lastOptStage = ref<string>(OpportunityStatusEnum.CREATE);
 
   async function loadDetail() {
     try {
-      const result = await getOptDetail(sourceId.value);
+      const result = await getOpportunityDetail(sourceId.value);
       const { stage, lastStage } = result;
 
       currentStatus.value = stage;
@@ -243,10 +260,11 @@
   }
 
   watch(
-    () => showOptOverviewDrawer.value,
-    (val) => {
-      if (val) {
-        // loadDetail();
+    () => props.detail,
+    () => {
+      if (props.detail) {
+        currentStatus.value = props.detail.stage;
+        lastOptStage.value = props.detail.lastStage;
       }
     }
   );

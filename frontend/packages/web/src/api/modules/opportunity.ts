@@ -55,7 +55,7 @@ export function updateOpportunity(data: UpdateOpportunityParams) {
 }
 
 // 商机详情
-export function getOptDetail(id: string) {
+export function getOpportunityDetail(id: string) {
   return CDR.get<OpportunityDetail>({ url: `${GetOptDetailUrl}/${id}` });
 }
 

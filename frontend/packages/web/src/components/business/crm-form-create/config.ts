@@ -46,6 +46,7 @@ import {
   addOpportunity,
   addOptFollowPlan,
   addOptFollowRecord,
+  getOpportunityDetail,
   getOpportunityList,
   getOptFollowPlan,
   getOptFollowRecord,
@@ -403,7 +404,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {
   [FormDesignKeyEnum.CUSTOMER]: getCustomer,
-  [FormDesignKeyEnum.BUSINESS]: getCustomer, // TODO:
+  [FormDesignKeyEnum.BUSINESS]: getOpportunityDetail,
   [FormDesignKeyEnum.CONTACT]: getCustomerContact,
   [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: getCustomerFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: getCustomerFollowRecord,

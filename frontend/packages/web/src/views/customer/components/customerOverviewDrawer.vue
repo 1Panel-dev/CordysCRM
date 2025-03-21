@@ -11,6 +11,7 @@
     :source-id="props.sourceId"
     show-tab-setting
     @button-select="handleButtonSelect"
+    @saved="() => (refreshKey += 1)"
   >
     <template #transferPopContent>
       <TransferForm
@@ -33,9 +34,10 @@
           class="mt-[16px]"
           :active-type="(activeTab as 'followRecord'| 'followPlan')"
           wrapper-class="h-[calc(100vh-162px)]"
-          virtual-scroll-height="calc(100vh - 194px)"
+          virtual-scroll-height="calc(100vh - 254px)"
           :follow-api-key="FormDesignKeyEnum.CUSTOMER"
           :source-id="props.sourceId"
+          :refresh-key="refreshKey"
         />
         <CrmHeaderTable
           v-else-if="activeTab === 'headRecord'"
@@ -82,7 +84,7 @@
   const show = defineModel<boolean>('show', {
     required: true,
   });
-
+  const refreshKey = ref(0);
   const transferLoading = ref(false);
   const buttonList: ActionsItem[] = [
     {

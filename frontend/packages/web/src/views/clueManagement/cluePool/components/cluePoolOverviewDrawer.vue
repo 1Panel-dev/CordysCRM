@@ -10,6 +10,7 @@
     :form-key="FormDesignKeyEnum.CLUE"
     :show-tab-setting="true"
     @button-select="handleSelect"
+    @saved="() => (refreshKey += 1)"
   >
     <template #left>
       <div class="p-[16px_24px]">
@@ -29,6 +30,7 @@
         virtual-scroll-height="calc(100vh - 258px)"
         :follow-api-key="FormDesignKeyEnum.CLUE"
         :source-id="sourceId"
+        :refresh-key="refreshKey"
       />
 
       <CrmHeaderTable
@@ -80,6 +82,8 @@
   const Message = useMessage();
 
   const sourceId = computed(() => props.detail?.id ?? '');
+
+  const refreshKey = ref(0);
 
   const claimLoading = ref(false);
   const distributeLoading = ref(false);

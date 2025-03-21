@@ -8,6 +8,7 @@
     :style="{
       height: props.virtualScrollHeight,
     }"
+    item-resizable
     @scroll="handleScroll"
     @wheel="handleWheel"
   >

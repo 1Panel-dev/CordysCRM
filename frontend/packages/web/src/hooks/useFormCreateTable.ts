@@ -174,15 +174,16 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         filterOptions: [
           {
             label: t('common.enable'),
-            value: true,
+            value: '1',
           },
           {
             label: t('common.disable'),
-            value: false,
+            value: '0',
           },
         ],
         sortOrder: false,
         sorter: true,
+        render: props.specialRender?.status,
       },
     ],
     [FormDesignKeyEnum.CLUE]: [
@@ -320,6 +321,18 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               render: props.specialRender?.[field.businessKey],
             };
           }
+
+          if (field.businessKey === 'customerId') {
+            return {
+              title: field.name,
+              width: 200,
+              key: field.businessKey,
+              sortOrder: false,
+              sorter: true,
+              render: props.specialRender?.[field.businessKey],
+            };
+          }
+
           if (field.type === FieldTypeEnum.DATA_SOURCE || field.type === FieldTypeEnum.MULTIPLE_INPUT) {
             return {
               title: field.name,

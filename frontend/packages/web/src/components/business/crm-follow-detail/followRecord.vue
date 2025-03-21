@@ -18,7 +18,9 @@
             <div class="flex items-center gap-[16px]">
               <StatusTag v-if="item.status" :status="item.status" />
               <div class="text-[var(--text-n1)]">{{ getShowTime(item) }}</div>
-              <div class="crm-follow-record-method">{{ item.methodName }}</div>
+              <div class="crm-follow-record-method">
+                {{ (props.type === 'followRecord' ? item.recordMethod : item.planMethod) ?? '-' }}
+              </div>
             </div>
 
             <slot name="headerAction" :item="item"></slot>
@@ -28,8 +30,13 @@
             <CrmDetailCard :description="props.getDescriptionFun(item)">
               <template #prefix>
                 <div class="flex items-center gap-[8px]">
-                  <CrmAvatar :size="24" />
-                  {{ item.ownerName }}
+                  <CrmAvatar :size="24" :word="item.ownerName" />
+                  <n-tooltip :delay="300">
+                    <template #trigger>
+                      <div class="one-line-text max-w-[300px]">{{ item.ownerName }} </div>
+                    </template>
+                    {{ item.ownerName }}
+                  </n-tooltip>
                 </div>
               </template>
               <template v-for="ele in props.getDescriptionFun(item)" :key="ele.key" #[ele.key]="{ item: descItem }">
@@ -48,6 +55,7 @@
 </template>
 
 <script setup lang="ts">
+  import { NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import type { FollowDetailItem } from '@lib/shared/models/customer';
@@ -61,6 +69,7 @@
   import useHighlight from './useHighlight';
 
   const props = defineProps<{
+    type: 'followRecord' | 'followPlan';
     keyField: string;
     getDescriptionFun: (item: FollowDetailItem) => Description[];
     virtualScrollHeight: string;
@@ -111,13 +120,13 @@
   );
 
   function getFutureClass(item: FollowDetailItem) {
-    return new Date(item.createTime).valueOf() > Date.now() ? 'crm-follow-dot-future' : '';
+    const time = 'estimatedTime' in item ? item.estimatedTime : item.followTime;
+    return new Date(time).valueOf() > Date.now() ? 'crm-follow-dot-future' : '';
   }
 
   function getShowTime(item: FollowDetailItem) {
-    // TODO
-    const time = 'estimatedTime' in item ? item.estimatedTime : item.createTime;
-    return dayjs(time).format('YYYY-MM-DD HH:mm:ss');
+    const time = 'estimatedTime' in item ? item.estimatedTime : item.followTime;
+    return time ? dayjs(time).format('YYYY-MM-DD') : '-';
   }
 </script>
 

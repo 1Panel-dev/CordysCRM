@@ -62,7 +62,12 @@
       </CrmSplitPanel>
     </div>
   </CrmDrawer>
-  <CrmFormCreateDrawer v-model:visible="formDrawerVisible" :form-key="realFormKey" :source-id="realSourceId" />
+  <CrmFormCreateDrawer
+    v-model:visible="formDrawerVisible"
+    :form-key="realFormKey"
+    :source-id="realSourceId"
+    @saved="emit('saved')"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -91,6 +96,7 @@
 
   const emit = defineEmits<{
     (e: 'buttonSelect', key: string, done?: () => void): void;
+    (e: 'saved'): void;
   }>();
 
   const showDrawer = defineModel<boolean>('show', {

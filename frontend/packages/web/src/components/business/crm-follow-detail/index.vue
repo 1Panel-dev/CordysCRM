@@ -27,13 +27,14 @@
         :virtual-scroll-height="`${props.virtualScrollHeight || '1000px'}`"
         :get-description-fun="getDescriptionFun"
         key-field="id"
+        :type="props.activeType"
         :empty-text="
           props.activeType === 'followPlan' ? t('crmFollowRecord.noFollowPlan') : t('crmFollowRecord.noFollowRecord')
         "
         @reach-bottom="handleReachBottom"
       >
         <template #headerAction="{ item }">
-          <div class="flex items-center gap-[12px]">
+          <div v-if="props.showAction" class="flex items-center gap-[12px]">
             <n-button
               v-if="props.activeType === 'followPlan' && item.status !== CustomerFollowPlanStatusEnum.CANCELLED"
               type="primary"
@@ -42,7 +43,18 @@
             >
               {{ t('common.cancelPlan') }}
             </n-button>
-            <n-button type="primary" text @click="handleEdit(item)">
+            <n-button
+              v-if="
+                props.activeType === 'followRecord' ||
+                (props.activeType === 'followPlan' &&
+                  ![CustomerFollowPlanStatusEnum.CANCELLED, CustomerFollowPlanStatusEnum.CANCELLED].includes(
+                    item.status
+                  ))
+              "
+              type="primary"
+              text
+              @click="handleEdit(item)"
+            >
               {{ t('common.edit') }}
             </n-button>
             <n-button type="error" text @click="handleDelete(item)">
@@ -96,13 +108,16 @@
   interface FollowDetailProps {
     activeType: 'followRecord' | 'followPlan'; // 跟进记录|跟进计划
     followApiKey: followEnumType; // 跟进计划apiKey
-
     virtualScrollHeight?: string; // 虚拟高度
     wrapperClass?: string;
     sourceId: string; // 资源id
+    refreshKey: number;
+    showAction?: boolean; // 显示操作
   }
 
-  const props = defineProps<FollowDetailProps>();
+  const props = withDefaults(defineProps<FollowDetailProps>(), {
+    showAction: true,
+  });
 
   const formDrawerVisible = ref(false);
 
@@ -117,6 +132,7 @@
     followKeyword,
     followFormKeyMap,
     handleDelete,
+    initFollowFormConfig,
   } = useFollowApi({
     type: toRef(props, 'activeType'),
     followApiKey: props.followApiKey,
@@ -147,7 +163,6 @@
     },
   ]);
 
-  // TODO 统一处理
   const descriptionList: Description[] = [
     {
       key: 'department',
@@ -168,6 +183,11 @@
       key: 'createTime',
       label: t('common.createTime'),
       value: 'createTime',
+    },
+    {
+      key: 'createUserName',
+      label: t('common.creator'),
+      value: 'createUserName',
     },
     {
       key: 'updateTime',
@@ -200,8 +220,18 @@
   }
 
   onBeforeMount(() => {
+    initFollowFormConfig();
     loadFollowList();
   });
+
+  watch(
+    () => props.refreshKey,
+    (val) => {
+      if (val) {
+        loadFollowList();
+      }
+    }
+  );
 </script>
 
 <style lang="less" scoped>
