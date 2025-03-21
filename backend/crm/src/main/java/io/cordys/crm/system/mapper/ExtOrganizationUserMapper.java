@@ -9,6 +9,7 @@ import io.cordys.crm.system.dto.request.UserBatchRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
 import io.cordys.crm.system.dto.response.UserImportDTO;
 import io.cordys.crm.system.dto.response.UserPageResponse;
+import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.security.UserDTO;
 import org.apache.ibatis.annotations.Param;
 
@@ -47,4 +48,6 @@ public interface ExtOrganizationUserMapper {
     void deleteUserByIds(@Param("ids") List<String> ids);
 
     List<OrganizationUser> selectUserByUserIds(@Param("userIds") List<String> userIds);
+
+    List<UserResponse> getUserDepAndPhoneByUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
 }

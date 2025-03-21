@@ -63,6 +63,14 @@ public class FollowUpRecordListResponse {
     @Schema(description = "更新时间")
     private Long updateTime;
 
+    @Schema(description = "归属部门")
+    private String departmentId;
+
+    @Schema(description = "归属部门名称")
+    private String departmentName;
+
+    @Schema(description = "电话")
+    private String phone;
 
 
     @Schema(description = "自定义字段集合")

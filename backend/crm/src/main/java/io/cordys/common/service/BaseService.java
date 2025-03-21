@@ -4,7 +4,8 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
-import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
+import io.cordys.crm.system.dto.response.UserResponse;
+import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -28,7 +29,7 @@ public class BaseService {
     @Resource
     private ExtCustomerContactMapper extCustomerContactMapper;
     @Resource
-    private ExtFollowUpRecordMapper extFollowUpRecordMapper;
+    private ExtOrganizationUserMapper extOrganizationUserMapper;
 
 
     /**
@@ -189,4 +190,8 @@ public class BaseService {
     }
 
 
+    public Map<String, UserResponse> getUserDepAndPhoneByUserIds(List<String> ownerIds, String orgId) {
+        List<UserResponse> userResponseList = extOrganizationUserMapper.getUserDepAndPhoneByUserIds(ownerIds, orgId);
+        return userResponseList.stream().collect(Collectors.toMap(UserResponse::getId, Function.identity()));
+    }
 }

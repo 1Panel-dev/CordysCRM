@@ -16,6 +16,9 @@ public class OpportunityListResponse {
     @Schema(description = "商机名称")
     private String name;
 
+    @Schema(description = "客户id")
+    private String customerId;
+
     @Schema(description = "客户名称")
     private String customerName;
 

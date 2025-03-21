@@ -8,6 +8,7 @@
         SELECT
             o.id,
             o.NAME,
+            c.id AS customerId,
             c.NAME AS customerName,
             o.create_time,
             o.update_time,
@@ -41,14 +42,14 @@
             <property name="sort" value="request.sort"/>
         </include>
 
+        where o.organization_id = #{orgId}
+
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             and sys_organization_user.dept_id in
             <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                 #{deptId}
             </foreach>
         </if>
-
-        where o.organization_id = #{orgId}
 
         <if test="dataPermission != null and dataPermission.self">
             and o.owner = #{userId}

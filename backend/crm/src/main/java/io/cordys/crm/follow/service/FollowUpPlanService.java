@@ -23,10 +23,9 @@ import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
-import io.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
-import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
@@ -149,7 +148,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
     public PagerWithOption<List<FollowUpPlanListResponse>> list(FollowUpPlanPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, orgId, resourceType, type, customerData);
-        List<FollowUpPlanListResponse> buildList = buildListData(list);
+        List<FollowUpPlanListResponse> buildList = buildListData(list, orgId);
 
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), orgId);
@@ -171,7 +170,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    private List<FollowUpPlanListResponse> buildListData(List<FollowUpPlanListResponse> list) {
+    private List<FollowUpPlanListResponse> buildListData(List<FollowUpPlanListResponse> list, String orgId) {
         List<String> ids = list.stream().map(FollowUpPlanListResponse::getId).toList();
         Map<String, List<BaseModuleFieldValue>> resourceFieldMap = followUpPlanFieldService.getResourceFieldMap(ids);
 
@@ -187,6 +186,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
         List<String> contactIds = list.stream().map(FollowUpPlanListResponse::getContactId).toList();
         Map<String, String> contactMap = baseService.getContactMap(contactIds);
 
+        Map<String, UserResponse> userDeptMap = baseService.getUserDepAndPhoneByUserIds(ownerIds, orgId);
+
         list.forEach(planResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> planCustomerFields = resourceFieldMap.get(planResponse.getId());
@@ -195,6 +196,13 @@ public class FollowUpPlanService extends BaseFollowUpService {
             planResponse.setUpdateUserName(userNameMap.get(planResponse.getUpdateUser()));
             planResponse.setOwnerName(userNameMap.get(planResponse.getOwner()));
             planResponse.setContactName(contactMap.get(planResponse.getContactId()));
+
+            UserResponse userResponse = userDeptMap.get(planResponse.getOwner());
+            if (userResponse != null) {
+                planResponse.setDepartmentId(userResponse.getDepartmentId());
+                planResponse.setDepartmentName(userResponse.getDepartmentName());
+                planResponse.setPhone(userResponse.getPhone());
+            }
         });
         return list;
     }
@@ -206,12 +214,12 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param id
      * @return
      */
-    public FollowUpPlanDetailResponse get(String id,String orgId) {
+    public FollowUpPlanDetailResponse get(String id, String orgId) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
         FollowUpPlanDetailResponse response = BeanUtils.copyBean(new FollowUpPlanDetailResponse(), followUpPlan);
         List<BaseModuleFieldValue> fieldValueList = followUpPlanFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fieldValueList);
-        List<FollowUpPlanListResponse> buildList = buildListData(List.of(response));
+        List<FollowUpPlanListResponse> buildList = buildListData(List.of(response), orgId);
 
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), orgId);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, fieldValueList);
@@ -251,6 +259,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
 
     /**
      * 删除跟进计划
+     *
      * @param id
      */
     public void delete(String id) {

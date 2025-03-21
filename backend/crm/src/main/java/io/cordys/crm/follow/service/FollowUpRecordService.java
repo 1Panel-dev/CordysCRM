@@ -28,6 +28,7 @@ import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
@@ -180,7 +181,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
     public PagerWithOption<List<FollowUpRecordListResponse>> poolList(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectPoolList(request, userId, orgId, resourceType, type);
-        buildListData(list);
+        buildListData(list, orgId);
 
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
@@ -202,7 +203,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
         return PageUtils.setPageInfoWithOption(page, list, optionMap);
     }
 
-    private void buildListData(List<FollowUpRecordListResponse> list) {
+    private void buildListData(List<FollowUpRecordListResponse> list, String orgId) {
         List<String> ids = list.stream().map(FollowUpRecordListResponse::getId).toList();
         Map<String, List<BaseModuleFieldValue>> recordCustomFieldMap = followUpRecordFieldService.getResourceFieldMap(ids);
 
@@ -218,6 +219,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
         List<String> contactIds = list.stream().map(FollowUpRecordListResponse::getContactId).toList();
         Map<String, String> contactMap = baseService.getContactMap(contactIds);
 
+        Map<String, UserResponse> userDeptMap = baseService.getUserDepAndPhoneByUserIds(ownerIds, orgId);
+
         list.forEach(recordListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> customerFields = recordCustomFieldMap.get(recordListResponse.getId());
@@ -227,6 +230,13 @@ public class FollowUpRecordService extends BaseFollowUpService {
             recordListResponse.setUpdateUserName(userNameMap.get(recordListResponse.getUpdateUser()));
             recordListResponse.setOwnerName(userNameMap.get(recordListResponse.getOwner()));
             recordListResponse.setContactName(contactMap.get(recordListResponse.getContactId()));
+
+            UserResponse userResponse = userDeptMap.get(recordListResponse.getOwner());
+            if (userResponse != null) {
+                recordListResponse.setDepartmentId(userResponse.getDepartmentId());
+                recordListResponse.setDepartmentName(userResponse.getDepartmentName());
+                recordListResponse.setPhone(userResponse.getPhone());
+            }
         });
     }
 
@@ -242,7 +252,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
         FollowUpRecordDetailResponse response = BeanUtils.copyBean(new FollowUpRecordDetailResponse(), followUpRecord);
         List<BaseModuleFieldValue> fieldValueList = followUpRecordFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fieldValueList);
-        buildListData(List.of(response));
+        buildListData(List.of(response), orgId);
 
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
         Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, fieldValueList);
@@ -276,7 +286,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
     public PagerWithOption<List<FollowUpRecordListResponse>> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type, customerData);
-        buildListData(list);
+        buildListData(list, orgId);
 
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
@@ -300,11 +310,12 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
     /**
      * 删除跟进记录
+     *
      * @param id
      */
     public void delete(String id) {
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(id);
-        if(followUpRecord == null){
+        if (followUpRecord == null) {
             throw new GenericException("record_not_found");
         }
         followUpRecordMapper.deleteByPrimaryKey(id);

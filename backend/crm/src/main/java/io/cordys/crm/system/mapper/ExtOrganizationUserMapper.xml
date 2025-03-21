@@ -226,4 +226,23 @@
             #{userId}
         </foreach>
     </select>
+
+
+    <select id="getUserDepAndPhoneByUserIds" resultType="io.cordys.crm.system.dto.response.UserResponse">
+        SELECT
+            su.id as userId,
+            su.phone,
+            sou.department_id as departmentId,
+            sd.NAME AS departmentName
+        FROM
+            sys_user su
+                INNER JOIN sys_organization_user sou on su.id = sou.user_id
+                INNER JOIN sys_department sd on sd.id = sou.department_id
+        where
+            sou.organization_id = #{orgId}
+           and su.id in
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </select>
 </mapper>
