@@ -69,7 +69,7 @@
   import collaborator from './collaborator.vue';
   import customerRelation from './customerRelation.vue';
 
-  import { getCustomerHeaderList } from '@/api/modules/customer/index';
+  import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules/customer/index';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
@@ -189,7 +189,10 @@
   async function transfer() {
     try {
       transferLoading.value = true;
-      // TODO:
+      await updateCustomer({
+        id: props.sourceId,
+        owner: transferForm.value.owner,
+      });
       Message.success(t('common.transferSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -209,7 +212,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO:
+          await deleteCustomer(props.sourceId);
           Message.success(t('common.deleteSuccess'));
           show.value = false;
         } catch (error) {

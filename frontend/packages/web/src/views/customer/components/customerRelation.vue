@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer>
+  <CrmCard :loading="loading" hide-footer>
     <div class="flex flex-col gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
       <div class="flex w-[calc(100%-40px)] items-center gap-[8px] text-[var(--text-n2)]">
         <div class="flex-1">{{ t('customer.relation') }}</div>
@@ -38,7 +38,7 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
-  import { saveCustomerRelation } from '@/api/modules/customer';
+  import { getCustomerRelationList, saveCustomerRelation } from '@/api/modules/customer';
   import { useI18n } from '@/hooks/useI18n';
 
   import { SelectMixedOption } from 'naive-ui/es/select/src/interface';
@@ -57,20 +57,20 @@
   const relationOptions = [
     {
       label: t('customer.group'),
-      value: 'group',
+      value: 'GROUP',
     },
     {
       label: t('customer.subsidiary'),
-      value: 'subsidiary',
+      value: 'SUBSIDIARY',
     },
   ];
   function getRelationOptions(relation: any) {
     if (relations.value.every((item) => item.relationType !== 'GROUP') || relation.relationType === 'GROUP') {
       return relationOptions;
     }
-    return relationOptions.filter((item) => item.value !== 'group');
+    return relationOptions.filter((item) => item.value !== 'GROUP');
   }
-  const customerOptions = ref<SelectMixedOption[]>([]);
+  const customerOptions = ref<SelectMixedOption[]>([]); // TODO: 数据源接口
 
   function addRelation() {
     relations.value.push({
@@ -102,6 +102,32 @@
       loading.value = false;
     }
   }
+
+  async function initList() {
+    try {
+      loading.value = true;
+      relations.value = await getCustomerRelationList(props.sourceId);
+      if (relations.value.length === 0) {
+        relations.value = [
+          {
+            relationType: 'GROUP',
+            customerId: '',
+            id: '',
+            customerName: '',
+          },
+        ];
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  onBeforeMount(() => {
+    initList();
+  });
 </script>
 
 <style lang="less" scoped></style>

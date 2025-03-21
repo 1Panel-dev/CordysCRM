@@ -310,8 +310,8 @@ export function saveCustomerRelation(customerId: string, data: RelationItem[]) {
 }
 
 // 获取客户关系列表
-export function getCustomerRelationList() {
-  return CDR.get<RelationListItem[]>({ url: GetCustomerRelationListUrl });
+export function getCustomerRelationList(customerId: string) {
+  return CDR.get<RelationListItem[]>({ url: `${GetCustomerRelationListUrl}/${customerId}` });
 }
 
 // 获取客户协作成员列表

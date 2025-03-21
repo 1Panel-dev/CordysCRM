@@ -14,6 +14,7 @@
       v-model:file-list="fileList"
       :max="props.fieldConfig.uploadLimit || 10"
       :accept="props.fieldConfig.type === FieldTypeEnum.PICTURE ? 'image/*' : '*/*'"
+      :list-type="props.fieldConfig.pictureShowType === 'card' ? 'image-card' : 'text'"
       multiple
       directory-dnd
       @before-upload="beforeUpload"
@@ -22,7 +23,7 @@
       <n-upload-dragger>
         <div class="flex items-center gap-[8px] px-[8px] py-[4px]">
           <CrmIcon type="iconicon_add" :size="16" class="text-[var(--primary-8)]" />
-          <div class="text-[var(--text-n4)]">
+          <div v-if="props.fieldConfig.pictureShowType === 'list'" class="text-[var(--text-n4)]">
             {{ t('crmFormCreate.advanced.uploadTip', { size: props.fieldConfig.uploadSizeLimit }) }}
           </div>
         </div>
@@ -56,6 +57,7 @@
   const fileList = defineModel<UploadFileInfo[]>('value', {
     default: [],
   });
+  // TODO: 上传接口
 
   async function beforeUpload({
     file,

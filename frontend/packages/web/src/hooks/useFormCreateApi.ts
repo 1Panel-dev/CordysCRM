@@ -133,6 +133,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           }
         }
       });
+      nextTick(() => {
+        unsaved.value = false;
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

@@ -152,7 +152,8 @@
       item.type === FieldTypeEnum.MULTIPLE_INPUT ||
       (item.type === FieldTypeEnum.MEMBER && item.multiple) ||
       (item.type === FieldTypeEnum.DEPARTMENT && item.multiple) ||
-      item.type === FieldTypeEnum.DATA_SOURCE
+      item.type === FieldTypeEnum.DATA_SOURCE ||
+      item.type === FieldTypeEnum.PICTURE
     ) {
       return 'array';
     }

@@ -34,7 +34,15 @@
       }"
     >
       <n-form-item path="member" :label="t('role.member')">
-        <n-select v-model:value="form.member" :options="memberOptions" :disabled="isEdit" />
+        <CrmUserSelect
+          v-model:value="form.member"
+          value-field="id"
+          label-field="name"
+          mode="remote"
+          :fetch-api="getUserOptions"
+          max-tag-count="responsive"
+          :disabled="isEdit"
+        />
       </n-form-item>
       <n-form-item path="permission" feedback-class="hidden">
         <template #label>
@@ -49,8 +57,8 @@
           </n-tooltip>
         </template>
         <n-tabs v-model:value="form.permission" type="segment" class="collaborator-tabs">
-          <n-tab-pane name="readOnly" :tab="t('customer.readOnly')"></n-tab-pane>
-          <n-tab-pane name="cooperation" :tab="t('customer.cooperation')"></n-tab-pane>
+          <n-tab-pane name="READ_ONLY" :tab="t('customer.readOnly')"></n-tab-pane>
+          <n-tab-pane name="COLLABORATION" :tab="t('customer.cooperation')"></n-tab-pane>
         </n-tabs>
       </n-form-item>
     </n-form>
@@ -58,7 +66,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { FormInst, NButton, NForm, NFormItem, NSelect, NTabPane, NTabs, NTooltip, useMessage } from 'naive-ui';
+  import { FormInst, NButton, NForm, NFormItem, NTabPane, NTabs, NTooltip, useMessage } from 'naive-ui';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { CollaborationType } from '@lib/shared/models/customer';
@@ -70,6 +78,7 @@
   import { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
   import {
     addCustomerCollaboration,
@@ -78,6 +87,7 @@
     getCustomerCollaborationList,
     updateCustomerCollaboration,
   } from '@/api/modules/customer';
+  import { getUserOptions } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
@@ -109,15 +119,13 @@
   const addMemberModalVisible = ref(false);
   const addMemberLoading = ref(false);
   const form = ref<{
-    member: string | undefined;
+    member: string | number | (string | number)[];
     permission: CollaborationType;
   }>({
-    member: undefined,
+    member: '',
     permission: 'READ_ONLY',
   });
   const formRef = ref<FormInst>();
-  // TODO:
-  const memberOptions = ref([]);
 
   function handleAddMember() {
     formRef.value?.validate(async (errs) => {
@@ -126,14 +134,14 @@
         addMemberLoading.value = true;
         if (isEdit.value) {
           await updateCustomerCollaboration({
-            id: form.value.member || '',
+            id: (form.value.member as string) || '',
             collaborationType: form.value.permission,
           });
           Message.success(t('common.updateSuccess'));
         } else {
           await addCustomerCollaboration({
             customerId: props.sourceId,
-            userId: form.value.member || '',
+            userId: (form.value.member as string) || '',
             collaborationType: form.value.permission,
           });
           Message.success(t('common.addSuccess'));
@@ -152,7 +160,7 @@
   function handleAddClick() {
     isEdit.value = false;
     form.value = {
-      member: undefined,
+      member: '',
       permission: 'READ_ONLY',
     };
     addMemberModalVisible.value = true;
@@ -162,7 +170,7 @@
     if (actionKey === 'edit') {
       isEdit.value = true;
       form.value = {
-        member: row.id,
+        member: row.userId,
         permission: row.permission,
       };
       addMemberModalVisible.value = true;
@@ -206,7 +214,7 @@
   const columns: CrmDataTableColumn[] = [
     {
       title: t('common.name'),
-      key: 'name',
+      key: 'userName',
       width: 150,
       ellipsis: {
         tooltip: true,
@@ -225,42 +233,19 @@
       sorter: true,
     },
     {
-      title: t('opportunity.region'),
-      key: 'region',
-      ellipsis: {
-        tooltip: true,
-      },
-      width: 150,
-    },
-    {
       title: t('role.permission'),
-      key: 'permission',
+      key: 'collaborationType',
       ellipsis: {
         tooltip: true,
       },
       width: 80,
-    },
-    {
-      title: t('clue.belongToPublicPool'),
-      key: 'belongToPublicPool',
-      width: 120,
-      ellipsis: {
-        tooltip: true,
+      render: (row) => {
+        return t(row.collaborationType === 'READ_ONLY' ? 'customer.readOnly' : 'customer.cooperation');
       },
     },
     {
-      title: t('opportunity.belongDays'),
-      key: 'belongDays',
-      width: 120,
-    },
-    {
-      title: t('opportunity.remainingBelong'),
-      key: 'remainingBelong',
-      width: 120,
-    },
-    {
       title: t('common.creator'),
-      key: 'creatorName',
+      key: 'createUserName',
       width: 150,
       ellipsis: {
         tooltip: true,
@@ -273,7 +258,7 @@
     },
     {
       key: 'operation',
-      width: 80,
+      width: 100,
       fixed: 'right',
       render: (row) =>
         h(CrmOperationButton, {
