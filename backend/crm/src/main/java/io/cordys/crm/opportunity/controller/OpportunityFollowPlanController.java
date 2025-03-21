@@ -1,10 +1,7 @@
 package io.cordys.crm.opportunity.controller;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.pager.PageUtils;
-import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.follow.domain.FollowUpPlan;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
@@ -50,9 +47,8 @@ public class OpportunityFollowPlanController {
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机跟进计划列表")
-    public Pager<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER", null));
+    public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
+        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER", null);
     }
 
 
@@ -60,7 +56,7 @@ public class OpportunityFollowPlanController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机跟进计划详情")
     public FollowUpPlanDetailResponse get(@PathVariable String id) {
-        return followUpPlanService.get(id);
+        return followUpPlanService.get(id, OrganizationContext.getOrganizationId());
     }
 
 

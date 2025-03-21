@@ -6,6 +6,7 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
@@ -49,15 +50,14 @@ public class OpportunityFollowRecordController {
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机跟进记录列表")
-    public Pager<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER", null));
+    public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
+        return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "OPPORTUNITY", "CUSTOMER", null);
     }
 
     @GetMapping("/get/{id}")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机跟进记录详情")
     public FollowUpRecordDetailResponse get(@PathVariable String id) {
-        return followUpRecordService.get(id);
+        return followUpRecordService.get(id, OrganizationContext.getOrganizationId());
     }
 }

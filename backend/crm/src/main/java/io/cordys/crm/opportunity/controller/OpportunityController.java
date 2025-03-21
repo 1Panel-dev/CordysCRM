@@ -7,6 +7,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.opportunity.domain.Opportunity;
@@ -51,11 +52,9 @@ public class OpportunityController {
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机列表")
-    public Pager<List<OpportunityListResponse>> list(@Validated @RequestBody OpportunityPageRequest request) {
+    public PagerWithOption<List<OpportunityListResponse>> list(@Validated @RequestBody OpportunityPageRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), request.getSearchType());
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, opportunityService.list(request, SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), deptDataPermission));
+        return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
 
@@ -102,7 +101,7 @@ public class OpportunityController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机详情")
     public OpportunityDetailResponse get(@PathVariable String id) {
-        return opportunityService.get(id);
+        return opportunityService.get(id, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/update/stage")

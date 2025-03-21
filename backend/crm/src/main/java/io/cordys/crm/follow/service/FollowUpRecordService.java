@@ -1,23 +1,23 @@
 package io.cordys.crm.follow.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.dto.LogDTO;
-import io.cordys.common.constants.InternalUser;
+import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
-import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
-import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.domain.Clue;
-import io.cordys.crm.customer.constants.CustomerCollaborationType;
 import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.domain.CustomerCollaboration;
-import io.cordys.crm.customer.service.CustomerCollaborationService;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
@@ -27,19 +27,20 @@ import io.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import io.cordys.crm.opportunity.domain.Opportunity;
-import io.cordys.crm.system.domain.OrganizationUser;
-import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.LogService;
+import io.cordys.crm.system.service.ModuleFormCacheService;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
@@ -61,6 +62,10 @@ public class FollowUpRecordService extends BaseFollowUpService {
     private BaseMapper<Opportunity> opportunityMapper;
     @Resource
     private BaseMapper<Clue> clueMapper;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private ModuleFormService moduleFormService;
 
     /**
      * 添加跟进记录
@@ -172,10 +177,29 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @param type
      * @return
      */
-    public List<FollowUpRecordListResponse> poollist(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> poolList(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectPoolList(request, userId, orgId, resourceType, type);
         buildListData(list);
-        return list;
+
+        // 处理自定义字段选项数据
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
+        // 获取所有模块字段的值
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, FollowUpRecordListResponse::getModuleFields);
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(list,
+                FollowUpRecordListResponse::getOwner, FollowUpRecordListResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey(), ownerFieldOption);
+
+        // 联系人
+        List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(list,
+                FollowUpRecordListResponse::getContactId, FollowUpRecordListResponse::getContactName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+
+        return PageUtils.setPageInfoWithOption(page, list, optionMap);
     }
 
     private void buildListData(List<FollowUpRecordListResponse> list) {
@@ -213,12 +237,28 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @param id
      * @return
      */
-    public FollowUpRecordDetailResponse get(String id) {
+    public FollowUpRecordDetailResponse get(String id, String orgId) {
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(id);
         FollowUpRecordDetailResponse response = BeanUtils.copyBean(new FollowUpRecordDetailResponse(), followUpRecord);
         List<BaseModuleFieldValue> fieldValueList = followUpRecordFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fieldValueList);
         buildListData(List.of(response));
+
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, fieldValueList);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(response,
+                FollowUpRecordDetailResponse::getOwner, FollowUpRecordDetailResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
+
+        // 联系人
+        List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(response,
+                FollowUpRecordDetailResponse::getContactId, FollowUpRecordDetailResponse::getContactName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+
+        response.setOptionMap(optionMap);
+
         return response;
     }
 
@@ -233,10 +273,28 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @param type
      * @return
      */
-    public List<FollowUpRecordListResponse> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
+    public PagerWithOption<List<FollowUpRecordListResponse>> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type, customerData);
         buildListData(list);
-        return list;
+
+        // 处理自定义字段选项数据
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_RECORD.getKey(), orgId);
+        // 获取所有模块字段的值
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, FollowUpRecordListResponse::getModuleFields);
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(list,
+                FollowUpRecordListResponse::getOwner, FollowUpRecordListResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey(), ownerFieldOption);
+
+        // 联系人
+        List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(list,
+                FollowUpRecordListResponse::getContactId, FollowUpRecordListResponse::getContactName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+        return PageUtils.setPageInfoWithOption(page, list, optionMap);
     }
 
 }

@@ -1,18 +1,27 @@
 package io.cordys.crm.opportunity.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.customer.dto.response.CustomerGetResponse;
+import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
@@ -21,7 +30,10 @@ import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.system.domain.Product;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.LogService;
+import io.cordys.crm.system.service.ModuleFormCacheService;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -53,12 +65,37 @@ public class OpportunityService {
     private BaseMapper<Product> productMapper;
     @Autowired
     private OpportunityRuleService opportunityRuleService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private ModuleFormService moduleFormService;
 
 
-    public List<OpportunityListResponse> list(OpportunityPageRequest request, String userId, String orgId,
-                                              DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
+                                                               DeptDataPermissionDTO deptDataPermission) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<OpportunityListResponse> list = extOpportunityMapper.list(request, orgId, userId, deptDataPermission);
-        return buildListData(list, orgId);
+        List<OpportunityListResponse> buildList = buildListData(list, orgId);
+
+        // 处理自定义字段选项数据
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
+        // 获取所有模块字段的值
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, OpportunityListResponse::getModuleFields);
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
+                OpportunityListResponse::getOwner, OpportunityListResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey(), ownerFieldOption);
+
+        // 联系人
+        List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(buildList,
+                OpportunityListResponse::getContactId, OpportunityListResponse::getContactName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+
+
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
     private List<OpportunityListResponse> buildListData(List<OpportunityListResponse> list, String orgId) {
@@ -286,9 +323,10 @@ public class OpportunityService {
      * 商机详情
      *
      * @param id
+     * @param orgId
      * @return
      */
-    public OpportunityDetailResponse get(String id) {
+    public OpportunityDetailResponse get(String id, String orgId) {
         OpportunityDetailResponse response = extOpportunityMapper.getDetail(id);
         List<BaseModuleFieldValue> fieldValueList = opportunityFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fieldValueList);
@@ -303,6 +341,23 @@ public class OpportunityService {
         response.setUpdateUserName(userNameMap.get(response.getUpdateUser()));
         response.setOwnerName(userNameMap.get(response.getOwner()));
         response.setContactName(contactMap.get(response.getContactId()));
+
+
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, fieldValueList);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(response,
+                OpportunityDetailResponse::getOwner, OpportunityDetailResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
+
+        // 联系人
+        List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(response,
+                OpportunityDetailResponse::getContactId, OpportunityDetailResponse::getContactName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+
+        response.setOptionMap(optionMap);
+
         return response;
     }
 

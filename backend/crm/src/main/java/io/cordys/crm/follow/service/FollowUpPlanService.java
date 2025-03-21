@@ -1,10 +1,17 @@
 package io.cordys.crm.follow.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -16,8 +23,13 @@ import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
+import io.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
+import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.LogService;
+import io.cordys.crm.system.service.ModuleFormCacheService;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -43,6 +55,10 @@ public class FollowUpPlanService extends BaseFollowUpService {
     private ExtFollowUpPlanMapper extFollowUpPlanMapper;
     @Resource
     private BaseService baseService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private ModuleFormService moduleFormService;
 
 
     /**
@@ -130,9 +146,29 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param customerData
      * @return
      */
-    public List<FollowUpPlanListResponse> list(FollowUpPlanPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
+    public PagerWithOption<List<FollowUpPlanListResponse>> list(FollowUpPlanPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, orgId, resourceType, type, customerData);
-        return buildListData(list);
+        List<FollowUpPlanListResponse> buildList = buildListData(list);
+
+        // 处理自定义字段选项数据
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), orgId);
+        // 获取所有模块字段的值
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, FollowUpPlanListResponse::getModuleFields);
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
+                FollowUpPlanListResponse::getOwner, FollowUpPlanListResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey(), ownerFieldOption);
+
+        // 联系人
+        List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(buildList,
+                FollowUpPlanListResponse::getContactId, FollowUpPlanListResponse::getContactName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
     private List<FollowUpPlanListResponse> buildListData(List<FollowUpPlanListResponse> list) {
@@ -170,12 +206,28 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param id
      * @return
      */
-    public FollowUpPlanDetailResponse get(String id) {
+    public FollowUpPlanDetailResponse get(String id,String orgId) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
         FollowUpPlanDetailResponse response = BeanUtils.copyBean(new FollowUpPlanDetailResponse(), followUpPlan);
         List<BaseModuleFieldValue> fieldValueList = followUpPlanFieldService.getModuleFieldValuesByResourceId(id);
         response.setModuleFields(fieldValueList);
-        buildListData(List.of(response));
+        List<FollowUpPlanListResponse> buildList = buildListData(List.of(response));
+
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), orgId);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, fieldValueList);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
+                FollowUpPlanListResponse::getOwner, FollowUpPlanListResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
+
+        // 联系人
+        List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(buildList,
+                FollowUpPlanListResponse::getContactId, FollowUpPlanListResponse::getContactName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+
+        response.setOptionMap(optionMap);
+
         return response;
     }
 

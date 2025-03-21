@@ -63,50 +63,48 @@
         update_user
         FROM
         follow_up_record
-        WHERE
-        organization_id =#{orgId}
-        and type = #{type}
-        <if test="resourceType == 'CUSTOMER'">
-            AND customer_id = #{request.sourceId}
-        </if>
-        <if test="resourceType == 'CLUE'">
-            AND clue_id = #{request.sourceId}
-        </if>
-        <if test="resourceType == 'OPPORTUNITY'">
-            AND opportunity_id = #{request.sourceId}
-        </if>
-        <if test="type != null and type != ''">
-            AND type = #{type}
-        </if>
-        <if test="orgId != null and orgId != ''">
-            AND organization_id = #{orgId}
-        </if>
-        <if test="request.keyword != null and request.keyword != ''">
-            AND content like concat('%', #{request.keyword},'%')
-        </if>
-
-        <if test="customerData != null and !customerData.all and customerData.owner">
-            <if test="customerData.userIds != null and customerData.userIds.size() > 0">
-                AND owner not in
-                <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
-                    #{userId}
-                </foreach>
+        <where>
+            <if test="resourceType == 'CUSTOMER'">
+                AND customer_id = #{request.sourceId}
             </if>
-        </if>
-
-        <if test="customerData != null and !customerData.all and !customerData.owner and !customerData.self">
-            <if test="customerData.userIds != null and customerData.userIds.size() > 0">
-                AND owner not in
-                <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
-                    #{userId}
-                </foreach>
+            <if test="resourceType == 'CLUE'">
+                AND clue_id = #{request.sourceId}
             </if>
-        </if>
+            <if test="resourceType == 'OPPORTUNITY'">
+                AND opportunity_id = #{request.sourceId}
+            </if>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="orgId != null and orgId != ''">
+                AND organization_id = #{orgId}
+            </if>
+            <if test="request.keyword != null and request.keyword != ''">
+                AND content like concat('%', #{request.keyword},'%')
+            </if>
 
-        <if test="customerData != null and !customerData.all and !customerData.owner and customerData.self">
-          AND owner = #{userId}
-        </if>
+            <if test="customerData != null and !customerData.all and customerData.owner">
+                <if test="customerData.userIds != null and customerData.userIds.size() > 0">
+                    AND owner not in
+                    <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
+                        #{userId}
+                    </foreach>
+                </if>
+            </if>
 
+            <if test="customerData != null and !customerData.all and !customerData.owner and !customerData.self">
+                <if test="customerData.userIds != null and customerData.userIds.size() > 0">
+                    AND owner not in
+                    <foreach collection="customerData.userIds" item="userId" open="(" close=")" separator=",">
+                        #{userId}
+                    </foreach>
+                </if>
+            </if>
+
+            <if test="customerData != null and !customerData.all and !customerData.owner and customerData.self">
+                AND owner = #{userId}
+            </if>
+        </where>
         ORDER BY follow_time, create_time DESC
     </select>
 </mapper>

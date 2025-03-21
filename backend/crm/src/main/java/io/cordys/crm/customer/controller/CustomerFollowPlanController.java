@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.follow.domain.FollowUpPlan;
 import io.cordys.crm.follow.dto.CustomerDataDTO;
@@ -51,17 +52,16 @@ public class CustomerFollowPlanController {
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户跟进计划列表")
-    public Pager<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
+    public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
         CustomerDataDTO customerData = followUpPlanService.getCustomerPermission(SessionUtils.getUserId(), request.getSourceId());
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER", customerData));
+        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER", customerData);
     }
 
     @GetMapping("/get/{id}")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户跟进计划详情")
     public FollowUpPlanDetailResponse get(@PathVariable String id) {
-        return followUpPlanService.get(id);
+        return followUpPlanService.get(id, OrganizationContext.getOrganizationId());
     }
 
 
