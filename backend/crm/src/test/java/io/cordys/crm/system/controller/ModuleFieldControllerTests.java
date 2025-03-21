@@ -1,13 +1,10 @@
 package io.cordys.crm.system.controller;
 
-import io.cordys.common.constants.FormKey;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.system.constants.FieldSourceType;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.ModuleField;
-import io.cordys.crm.system.dto.request.ModuleFieldRequest;
-import io.cordys.crm.system.dto.request.ModuleSourceDataRequest;
+import io.cordys.crm.system.dto.request.*;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
@@ -26,10 +23,16 @@ public class ModuleFieldControllerTests extends BaseTest {
 	@Resource
 	private BaseMapper<ModuleField> moduleFieldMapper;
 
+	public static String FIELD_ID = "field-test-id";
+
 	public static final String BASE_PATH = "/field";
 	public static final String DEPT_TREE = "/dept/tree";
 	public static final String USER_DEPT_TREE = "/user/dept/tree";
-	public static final String SOURCE_DATA = "/source/data";
+	public static final String CLUE_SOURCE_DATA = "/source/clue";
+	public static final String CUSTOMER_SOURCE_DATA = "/source/customer";
+	public static final String CONTACT_SOURCE_DATA = "/source/contact";
+	public static final String OPPORTUNITY_SOURCE_DATA = "/source/opportunity";
+	public static final String PRODUCT_SOURCE_DATA = "/source/product";
 
 
 	@Override
@@ -41,7 +44,7 @@ public class ModuleFieldControllerTests extends BaseTest {
 	@Order(1)
 	void initData() {
 		ModuleField field = new ModuleField();
-		field.setId("dep-test-1");
+		field.setId(FIELD_ID);
 		field.setFormId("form-test-1");
 		field.setName("dep-test-1");
 		field.setType(FieldType.DEPARTMENT.name());
@@ -57,8 +60,7 @@ public class ModuleFieldControllerTests extends BaseTest {
 	@Order(2)
 	void testGetDeptTree() throws Exception {
 		ModuleFieldRequest request = new ModuleFieldRequest();
-		request.setFieldId("dep-test-1");
-		request.setFormKey(FormKey.CUSTOMER.getKey());
+		request.setFieldId(FIELD_ID);
 		this.requestPostWithOk(DEPT_TREE, request);
 	}
 
@@ -66,8 +68,7 @@ public class ModuleFieldControllerTests extends BaseTest {
 	@Order(3)
 	void testGetUserDeptTree() throws Exception {
 		ModuleFieldRequest request = new ModuleFieldRequest();
-		request.setFieldId("dep-test-1");
-		request.setFormKey(FormKey.CUSTOMER.getKey());
+		request.setFieldId(FIELD_ID);
 		MvcResult r1 = this.requestPost(USER_DEPT_TREE, request).andReturn();
 		assert r1.getResponse().getContentAsString().contains(Translator.get("module.field.not_match_type"));
 		request.setFieldId("dep-not-exit");
@@ -77,13 +78,60 @@ public class ModuleFieldControllerTests extends BaseTest {
 
 	@Test
 	@Order(4)
-	void testGetSourceData() throws Exception {
-		ModuleSourceDataRequest sourceDataRequest = new ModuleSourceDataRequest();
-		sourceDataRequest.setFieldId("dep-test-1");
-		sourceDataRequest.setFormKey(FormKey.CUSTOMER.getKey());
-		sourceDataRequest.setCurrent(1);
-		sourceDataRequest.setPageSize(10);
-		sourceDataRequest.setSourceType(FieldSourceType.CUSTOMER.name());
-		this.requestPost(SOURCE_DATA, sourceDataRequest);
+	void resetFieldData() {
+		ModuleField field = new ModuleField();
+		field.setId(FIELD_ID);
+		field.setType(FieldType.DATA_SOURCE.name());
+		moduleFieldMapper.updateById(field);
+	}
+
+	@Test
+	@Order(5)
+	void testListClueSourceData() throws Exception {
+		SourceCluePageRequest cluePageRequest = new SourceCluePageRequest();
+		cluePageRequest.setFieldId(FIELD_ID);
+		cluePageRequest.setCurrent(1);
+		cluePageRequest.setPageSize(10);
+		this.requestPostWithOk(CLUE_SOURCE_DATA, cluePageRequest);
+	}
+
+	@Test
+	@Order(6)
+	void testListCustomerSourceData() throws Exception {
+		SourceCustomerPageRequest customerPageRequest = new SourceCustomerPageRequest();
+		customerPageRequest.setFieldId(FIELD_ID);
+		customerPageRequest.setCurrent(1);
+		customerPageRequest.setPageSize(10);
+		this.requestPostWithOk(CUSTOMER_SOURCE_DATA, customerPageRequest);
+	}
+
+	@Test
+	@Order(7)
+	void testListContactSourceData() throws Exception {
+		SourceContactPageRequest contactPageRequest = new SourceContactPageRequest();
+		contactPageRequest.setFieldId(FIELD_ID);
+		contactPageRequest.setCurrent(1);
+		contactPageRequest.setPageSize(10);
+		this.requestPostWithOk(CONTACT_SOURCE_DATA, contactPageRequest);
+	}
+
+	@Test
+	@Order(8)
+	void testListOpportunitySourceData() throws Exception {
+		SourceOpportunityPageRequest opportunityPageRequest = new SourceOpportunityPageRequest();
+		opportunityPageRequest.setFieldId(FIELD_ID);
+		opportunityPageRequest.setCurrent(1);
+		opportunityPageRequest.setPageSize(10);
+		this.requestPostWithOk(OPPORTUNITY_SOURCE_DATA, opportunityPageRequest);
+	}
+
+	@Test
+	@Order(9)
+	void testListProductSourceData() throws Exception {
+		SourceProductPageRequest productPageRequest = new SourceProductPageRequest();
+		productPageRequest.setFieldId(FIELD_ID);
+		productPageRequest.setCurrent(1);
+		productPageRequest.setPageSize(10);
+		this.requestPostWithOk(PRODUCT_SOURCE_DATA, productPageRequest);
 	}
 }

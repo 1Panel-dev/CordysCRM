@@ -8,7 +8,7 @@ import lombok.Data;
  * @author song-cc-rock
  */
 @Data
-public class ModuleFieldRequest {
+public class SourceProductPageRequest extends ProductPageRequest{
 
 	@NotBlank
 	@Schema(description = "字段ID", requiredMode = Schema.RequiredMode.REQUIRED)

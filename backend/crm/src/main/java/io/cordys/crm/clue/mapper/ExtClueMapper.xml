@@ -213,4 +213,10 @@
         select count(id) from `clue`
         where owner = #{owner}
     </select>
+
+    <update id="moveToPool" parameterType="io.cordys.crm.clue.domain.Clue">
+        update `clue` set pool_id = #{clue.poolId}, owner = #{clue.owner}, collection_time = #{clue.collectionTime},
+                          in_shared_pool = #{clue.inSharedPool}, update_user = #{clue.updateUser}, update_time = #{clue.updateTime}
+        where id = #{clue.id}
+    </update>
 </mapper>

@@ -29,4 +29,10 @@ public interface ExtClueMapper {
     void batchTransfer(@Param("request") ClueBatchTransferRequest request);
 
     int countByOwner(@Param("owner") String owner);
+
+    /**
+     * 移入线索池
+     * @param clue 线索池
+     */
+    void moveToPool(@Param("clue")Clue clue);
 }

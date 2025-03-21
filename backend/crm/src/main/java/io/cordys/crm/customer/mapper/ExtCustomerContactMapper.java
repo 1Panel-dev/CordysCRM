@@ -19,6 +19,9 @@ public interface ExtCustomerContactMapper {
     List<CustomerContactListResponse> list(@Param("request") CustomerContactPageRequest request, @Param("orgId") String orgId,
                                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
+    List<CustomerContactListResponse> sourceList(@Param("request") CustomerContactPageRequest request, @Param("orgId") String orgId,
+                                                 @Param("userId") String userId);
+
     boolean checkAddExist(@Param("customerContact") CustomerContact customerContact);
 
     boolean checkUpdateExist(@Param("customerContact") CustomerContact CustomerContact);

@@ -309,7 +309,7 @@ public class ClueService {
             clue.setCollectionTime(null);
             clue.setUpdateUser(currentUser);
             clue.setUpdateTime(System.currentTimeMillis());
-            clueMapper.updateById(clue);
+            extClueMapper.moveToPool(clue);
             success++;
         }
         return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();

@@ -19,6 +19,8 @@ public interface ExtCustomerMapper {
     List<CustomerListResponse> list(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId,
                                     @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
+    List<CustomerListResponse> sourceList(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId, @Param("userId") String userId);
+
     boolean checkAddExist(@Param("customer") Customer customer);
 
     boolean checkUpdateExist(@Param("customer") Customer Customer);
@@ -30,4 +32,10 @@ public interface ExtCustomerMapper {
     Customer checkRepeatCustomerByName(@Param("name") String name, @Param("orgId") String orgId);
 
     int countByOwner(@Param("owner") String owner);
+
+    /**
+     * 移入公海
+     * @param customer 客户
+     */
+    void moveToPool(@Param("customer") Customer customer);
 }

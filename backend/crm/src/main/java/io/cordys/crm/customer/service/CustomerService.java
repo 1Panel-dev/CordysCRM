@@ -101,6 +101,11 @@ public class CustomerService {
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
+    public List<CustomerListResponse> sourceList(CustomerPageRequest request, String userId, String orgId) {
+        List<CustomerListResponse> list = extCustomerMapper.sourceList(request, orgId, userId);
+        return buildListData(list, orgId);
+    }
+
     private List<CustomerListResponse> buildListData(List<CustomerListResponse> list, String orgId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
@@ -368,7 +373,7 @@ public class CustomerService {
             customer.setUpdateUser(currentUser);
             customer.setUpdateTime(System.currentTimeMillis());
             // 回收客户至公海
-            customerMapper.updateById(customer);
+            extCustomerMapper.moveToPool(customer);
             success++;
         }
         return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
