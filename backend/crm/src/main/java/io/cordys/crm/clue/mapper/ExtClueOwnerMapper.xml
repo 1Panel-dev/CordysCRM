@@ -5,7 +5,7 @@
 
     <update id="batchAdd">
         insert into clue_owner (id, owner, operator, clue_id, collection_time, end_time)
-        select UUID_SHORT() as id, clue.owner, clue.id as clue_id, '${userId}' as operator, clue.collection_time, UNIX_TIMESTAMP() * 1000 as end_time
+        select UUID_SHORT() as id, clue.owner, '${userId}' as operator, clue.id as clue_id, clue.collection_time, UNIX_TIMESTAMP() * 1000 as end_time
         from clue
         where clue.owner != #{request.owner} and id in
         <foreach collection="request.ids" item="id" open="(" close=")" separator=",">

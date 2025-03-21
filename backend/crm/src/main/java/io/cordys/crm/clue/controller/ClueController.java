@@ -90,7 +90,7 @@ public class ClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "批量转移线索")
     public void batchTransfer(@RequestBody ClueBatchTransferRequest request) {
-        clueService.batchTransfer(request);
+        clueService.batchTransfer(request, SessionUtils.getUserId());
     }
 
     @PostMapping("/batch/delete")

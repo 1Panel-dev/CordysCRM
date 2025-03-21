@@ -267,7 +267,9 @@ public class ClueService {
         clueOwnerHistoryService.deleteByClueIds(List.of(id));
     }
 
-    public void batchTransfer(ClueBatchTransferRequest request) {
+    public void batchTransfer(ClueBatchTransferRequest request, String userId) {
+        // 添加责任人历史
+        clueOwnerHistoryService.batchAdd(request, userId);
         extClueMapper.batchTransfer(request);
     }
 

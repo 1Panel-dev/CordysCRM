@@ -89,7 +89,7 @@ public class CustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "批量转移客户")
     public void batchTransfer(@RequestBody CustomerBatchTransferRequest request) {
-        customerService.batchTransfer(request, SessionUtils.getUserId());
+        customerService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/delete")

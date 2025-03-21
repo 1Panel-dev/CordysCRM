@@ -37,6 +37,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -301,17 +302,16 @@ public class CustomerService {
         customerRelationService.deleteByCustomerId(id);
     }
 
-    public void batchTransfer(CustomerBatchTransferRequest request, String userId) {
-        extCustomerMapper.batchTransfer(request);
+    public void batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
+        List<String> owners = getCustomerOwnersByIds(request.getIds());
+        dataScopeService.checkDataPermission(userId, orgId, owners);
         // 添加责任人历史
         customerOwnerHistoryService.batchAdd(request, userId);
+        extCustomerMapper.batchTransfer(request);
     }
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
-        List<Customer> customers = customerMapper.selectByIds(ids);
-        List<String> owners = customers.stream().map(Customer::getOwner)
-                .distinct()
-                .toList();
+        List<String> owners = getCustomerOwnersByIds(ids);
         dataScopeService.checkDataPermission(userId, orgId, owners);
 
         // 删除客户
@@ -324,6 +324,15 @@ public class CustomerService {
         customerOwnerHistoryService.deleteByCustomerIds(ids);
         // 删除客户关系
         customerRelationService.deleteByCustomerIds(ids);
+    }
+
+    @NotNull
+    private List<String> getCustomerOwnersByIds(List<String> ids) {
+        List<Customer> customers = customerMapper.selectByIds(ids);
+        List<String> owners = customers.stream().map(Customer::getOwner)
+                .distinct()
+                .toList();
+        return owners;
     }
 
     /**
