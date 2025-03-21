@@ -24,7 +24,7 @@ export function hasPermission(permission: string) {
  * 判断是否有任一权限
  * @param permissions 权限列表
  */
-export function hasAnyPermission(permissions: string[]) {
+export function hasAnyPermission(permissions?: string[]) {
   if (!permissions || permissions.length === 0) {
     return true;
   }
@@ -35,7 +35,7 @@ export function hasAnyPermission(permissions: string[]) {
  * 判断是否有所有权限
  * @param permissions 权限列表
  */
-export function hasAllPermission(permissions: string[]) {
+export function hasAllPermission(permissions?: string[]) {
   if (!permissions || permissions.length === 0) {
     return true;
   }

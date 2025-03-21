@@ -9,7 +9,7 @@ const system: AppRouteRecordRaw = {
   redirect: '/opportunity/opt',
   component: DEFAULT_LAYOUT,
   meta: {
-    permissions: [],
+    permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
   },
   children: [
     {
@@ -17,7 +17,7 @@ const system: AppRouteRecordRaw = {
       name: OpportunityRouteEnum.OPPORTUNITY_OPT,
       component: () => import('@/views/opportunity/index.vue'),
       meta: {
-        permissions: [],
+        permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
       },
     },
   ],

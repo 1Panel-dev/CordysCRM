@@ -16,7 +16,11 @@
           </template>
         </CrmButtonGroup>
         <n-divider v-if="item.groupList.length" class="!mx-[4px]" vertical />
-        <NSwitch :value="item.enable" @update:value="(value:boolean)=>toggleModule(value,item)" />
+        <NSwitch
+          :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
+          :value="item.enable"
+          @update:value="(value:boolean)=>toggleModule(value,item)"
+        />
       </div>
     </div>
   </div>
@@ -65,6 +69,7 @@
   import { toggleModuleNavStatus } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
   const Message = useMessage();

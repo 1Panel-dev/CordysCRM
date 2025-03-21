@@ -1,7 +1,8 @@
 <template>
   <n-dropdown
+    v-if="moreOptions.length"
     :trigger="props.trigger"
-    :options="props.options"
+    :options="moreOptions"
     :render-label="renderLabel"
     class="crm-dropdown"
     :node-props="getNodeProps"
@@ -42,6 +43,8 @@
   } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+
+  import { hasAnyPermission } from '@/utils/permission';
 
   import type { ActionsItem } from './type';
 
@@ -156,6 +159,32 @@
 
     return { class: baseClass };
   }
+
+  function cleanDividers(actions: ActionsItem[]) {
+    const cleaned: ActionsItem[] = [];
+    let prevIsDivider = false;
+
+    actions.forEach((action) => {
+      if (action.type === 'divider') {
+        if (cleaned.length === 0 || prevIsDivider) return;
+        prevIsDivider = true;
+      } else {
+        prevIsDivider = false;
+      }
+      cleaned.push(action);
+    });
+
+    if (cleaned[cleaned.length - 1]?.type === 'divider') {
+      cleaned.pop();
+    }
+
+    return cleaned;
+  }
+
+  const moreOptions = computed(() => {
+    const filtered = props.options.filter((e) => e.type === 'divider' || hasAnyPermission(e.permission));
+    return cleanDividers(filtered);
+  });
 
   function clickOutSide() {
     emit('close');

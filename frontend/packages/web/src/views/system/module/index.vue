@@ -11,7 +11,13 @@
             </div>
           </div>
           <div class="nav-list">
-            <VueDraggable v-model="moduleNavList" ghost-class="ghost" handle=".nav-item" @end="onDragEnd">
+            <VueDraggable
+              v-model="moduleNavList"
+              ghost-class="ghost"
+              handle=".nav-item"
+              :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
+              @end="onDragEnd"
+            >
               <div v-for="item in moduleNavList" :key="item.key" class="nav-item">
                 <CrmIcon type="iconicon_move" :size="16" class="mt-[1px] cursor-move text-[var(--text-n4)]" />
                 <CrmIcon v-if="enable" :type="item.icon ?? ''" :size="18" class="text-[var(--text-n1)]" />
@@ -46,6 +52,7 @@
   import { moduleNavListSort } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
   import useAppStore from '@/store/modules/app';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const appStore = useAppStore();

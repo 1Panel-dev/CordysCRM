@@ -57,6 +57,7 @@
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
 
   import { useI18n } from '@/hooks/useI18n';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import { BatchActionConfig } from '../type';
 
@@ -172,8 +173,10 @@
     () => props.actionConfig,
     (newVal) => {
       if (newVal) {
-        const newBaseAction = newVal.baseAction;
-        const newMoreAction = newVal.moreAction ?? [];
+        const newBaseAction = newVal.baseAction.filter(
+          (e) => hasAllPermission(e.permission) && hasAnyPermission(e?.anyPermission)
+        );
+        const newMoreAction = (newVal.moreAction ?? []).filter((e) => hasAllPermission(e.permission));
 
         allAction.value = [...newBaseAction, ...newMoreAction];
         baseAction.value = [...newBaseAction];

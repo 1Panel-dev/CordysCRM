@@ -40,7 +40,7 @@
         virtual-scroll-height="calc(100vh - 382px)"
         :follow-api-key="FormDesignKeyEnum.BUSINESS"
         :source-id="sourceId"
-        :show-action="showAction"
+        :show-action="showAction && hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
       />
     </template>
 
@@ -71,6 +71,7 @@
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
 
@@ -121,6 +122,7 @@
         },
         popSlotName: 'transferPopTitle',
         popSlotContent: 'transferPopContent',
+        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
     ];
     return showAction.value
@@ -131,6 +133,7 @@
             text: false,
             ghost: true,
             class: 'n-btn-outline-primary',
+            permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
           },
           {
             label: t('common.followPlan'),
@@ -138,6 +141,7 @@
             text: false,
             ghost: true,
             class: 'n-btn-outline-primary',
+            permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
           },
           {
             label: t('crmFollowRecord.followRecord'),
@@ -145,6 +149,7 @@
             text: false,
             ghost: true,
             class: 'n-btn-outline-primary',
+            permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
           },
           ...transferAction,
           {
@@ -153,6 +158,7 @@
             text: false,
             ghost: true,
             class: 'n-btn-outline-primary',
+            permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
           },
         ]
       : transferAction;

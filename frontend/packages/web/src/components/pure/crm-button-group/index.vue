@@ -1,6 +1,6 @@
 <template>
   <div class="crm-button-group">
-    <div v-for="(item, index) of props.list" :key="item.key" class="crm-button-item flex items-center">
+    <div v-for="(item, index) of buttonGroupList" :key="item.key" class="crm-button-item flex items-center">
       <slot :name="item.slotName" :item="item" :index="index">
         <template v-if="item.popConfirmProps">
           <CrmPopConfirm
@@ -48,6 +48,8 @@
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
 
+  import { hasAnyPermission } from '@/utils/permission';
+
   const props = defineProps<{
     list: ActionsItem[]; // 按钮组
     notShowDivider?: boolean; // 不显示分割线
@@ -79,6 +81,10 @@
       popShow.value[key] = false;
     });
   }
+
+  const buttonGroupList = computed(() => {
+    return props.list.filter((e) => hasAnyPermission(e.permission));
+  });
 </script>
 
 <style scoped lang="less">

@@ -15,7 +15,12 @@
     >
       <template #actionLeft>
         <div class="flex items-center">
-          <n-button class="mr-[12px]" type="primary" @click="formCreateDrawerVisible = true">
+          <n-button
+            v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD'])"
+            class="mr-[12px]"
+            type="primary"
+            @click="formCreateDrawerVisible = true"
+          >
             {{ t('opportunity.createOpportunity') }}
           </n-button>
           <!-- TODO 不上 -->
@@ -103,6 +108,7 @@
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const Message = useMessage();
   const { openModal } = useModal();
@@ -117,10 +123,12 @@
       {
         label: t('common.batchTransfer'),
         key: 'batchTransfer',
+        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
       {
         label: t('common.batchDelete'),
         key: 'batchDelete',
+        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
       },
     ],
   };
@@ -301,10 +309,12 @@
       {
         label: t('common.edit'),
         key: 'edit',
+        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
       {
         label: t('opportunity.followUp'),
         key: 'followUp',
+        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
       {
         label: t('common.transfer'),
@@ -316,10 +326,12 @@
           iconType: 'primary',
         },
         popSlotContent: 'transferPopContent',
+        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
       {
         label: t('common.delete'),
         key: 'delete',
+        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
       },
     ];
   });

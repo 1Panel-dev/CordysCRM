@@ -12,7 +12,12 @@
     >
       <template #actionLeft>
         <div class="flex items-center">
-          <n-button class="mr-[12px]" type="primary" @click="formCreateDrawerVisible = true">
+          <n-button
+            v-if="hasAnyPermission(['PRODUCT_MANAGEMENT:ADD'])"
+            class="mr-[12px]"
+            type="primary"
+            @click="formCreateDrawerVisible = true"
+          >
             {{ t('product.createProduct') }}
           </n-button>
         </div>
@@ -47,6 +52,7 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
 
@@ -65,14 +71,17 @@
       {
         label: t('product.batchUp'),
         key: 'batchUp',
+        permission: ['PRODUCT_MANAGEMENT:UPDATE'],
       },
       {
         label: t('product.batchDown'),
         key: 'batchDown',
+        permission: ['PRODUCT_MANAGEMENT:UPDATE'],
       },
       {
         label: t('common.batchDelete'),
         key: 'batchDelete',
+        permission: ['PRODUCT_MANAGEMENT:DELETE'],
       },
     ],
   };
@@ -169,10 +178,12 @@
     {
       label: t('common.edit'),
       key: 'edit',
+      permission: ['PRODUCT_MANAGEMENT:UPDATE'],
     },
     {
       label: t('common.delete'),
       key: 'delete',
+      permission: ['PRODUCT_MANAGEMENT:DELETE'],
     },
   ];
 
