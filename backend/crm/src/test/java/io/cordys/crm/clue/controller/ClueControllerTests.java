@@ -327,6 +327,8 @@ class ClueControllerTests extends BaseTest {
     @Order(13)
     void testBatchToPool() throws Exception {
         this.requestPostWithOk(BATCH_TO_POOL, batchIds);
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_RECYCLE, BATCH_TO_POOL, batchIds);
     }
 
     private List<ClueField> getClueFields(String clueId) {

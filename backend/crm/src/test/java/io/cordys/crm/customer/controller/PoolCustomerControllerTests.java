@@ -76,7 +76,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 	@Order(2)
 	void getOptions() throws Exception {
 		this.requestGetWithOk(GET_OPTIONS);
-		requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, GET_OPTIONS);
+		requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ, GET_OPTIONS);
 	}
 
 	@Test
@@ -89,7 +89,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 		MvcResult mvcResult = this.requestPostWithOkAndReturn(PAGE, request);
 		Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
 		assert pageResult.getTotal() == 1;
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PAGE, request);
+		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ, PAGE, request);
 	}
 
 	@Test
@@ -107,7 +107,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 		customerPoolPickRuleMapper.insert(pickRule);
 		this.requestPostWithOk(PICK, request);
 		customerPoolPickRuleMapper.deleteByLambda(new LambdaQueryWrapper<>());
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_PICK, PICK, request);
+		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK, PICK, request);
 	}
 
 	@Test
@@ -117,14 +117,14 @@ public class PoolCustomerControllerTests extends BaseTest {
 		request.setCustomerId(testDataId);
 		request.setAssignUserId("aa");
 		this.requestPostWithOk(ASSIGN, request);
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_ASSIGN, ASSIGN, request);
+		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN, ASSIGN, request);
 	}
 
 	@Test
 	@Order(6)
 	void deleteSuccess() throws Exception {
 		this.requestGetWithOk(DELETE + testDataId);
-		requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, DELETE + testDataId);
+		requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE, DELETE + testDataId);
 	}
 
 	@Test
@@ -151,7 +151,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 		insertOwnerHis();
 		MvcResult mvcResult1 = this.requestPost(BATCH_PICK, request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("customer.pre_owner.pick.limit"));
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_PICK, BATCH_PICK, request);
+		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK, BATCH_PICK, request);
 	}
 
 	@Test
@@ -162,7 +162,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 		request.setAssignUserId("cc");
 		MvcResult mvcResult = this.requestPost(BATCH_ASSIGN, request).andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer.not.exist"));
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_ASSIGN, BATCH_ASSIGN, request);
+		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN, BATCH_ASSIGN, request);
 	}
 
 	@Test
@@ -171,7 +171,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 		PoolBatchRequest request = new PoolBatchRequest();
 		request.setBatchIds(List.of(testDataId));
 		this.requestPostWithOk(BATCH_DELETE, request);
-		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE, BATCH_DELETE, request);
+		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE, BATCH_DELETE, request);
 	}
 
 	private Customer createCustomer() {

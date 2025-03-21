@@ -120,13 +120,31 @@
             "id": "CUSTOMER_MANAGEMENT:UPDATE"
           },
           {
+            "id": "CUSTOMER_MANAGEMENT:RECYCLE",
+            "name": "permission.customer_management.customer.recycle"
+          },
+          {
             "id": "CUSTOMER_MANAGEMENT:DELETE"
+          }
+        ]
+      },
+      {
+        "id": "CUSTOMER_MANAGEMENT_POOL",
+        "name": "permission.customer_management.pool.name",
+        "permissions": [
+          {
+            "id": "CUSTOMER_MANAGEMENT_POOL:READ"
           },
           {
-            "id": "CUSTOMER_MANAGEMENT:PICK"
+            "id": "CUSTOMER_MANAGEMENT_POOL:PICK",
+            "name": "permission.customer_management.pool.pick"
           },
           {
-            "id": "CUSTOMER_MANAGEMENT:ASSIGN"
+            "id": "CUSTOMER_MANAGEMENT_POOL:ASSIGN",
+            "name": "permission.customer_management.pool.assign"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT_POOL:DELETE"
           }
         ]
       },
@@ -168,13 +186,31 @@
             "id": "CLUE_MANAGEMENT:UPDATE"
           },
           {
+            "id": "CUSTOMER_MANAGEMENT:RECYCLE",
+            "name": "permission.clue_management.clue.recycle"
+          },
+          {
             "id": "CLUE_MANAGEMENT:DELETE"
+          }
+        ]
+      },
+      {
+        "id": "CLUE_MANAGEMENT_POOL",
+        "name": "permission.clue_management.pool.name",
+        "permissions": [
+          {
+            "id": "CLUE_MANAGEMENT_POOL:READ"
           },
           {
-            "id": "CUSTOMER_MANAGEMENT:PICK"
+            "id": "CLUE_MANAGEMENT_POOL:PICK",
+            "name": "permission.customer_management.pool.pick"
           },
           {
-            "id": "CUSTOMER_MANAGEMENT:ASSIGN"
+            "id": "CLUE_MANAGEMENT_POOL:ASSIGN",
+            "name": "permission.customer_management.pool.assign"
+          },
+          {
+            "id": "CLUE_MANAGEMENT_POOL:DELETE"
           }
         ]
       }
