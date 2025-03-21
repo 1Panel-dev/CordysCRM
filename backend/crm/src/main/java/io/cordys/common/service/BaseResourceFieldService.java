@@ -70,7 +70,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @return
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
-        return getResourceFieldMap(List.of(resourceId), true).get(resourceId);
+        Map<String, List<BaseModuleFieldValue>> resourceFieldMap = getResourceFieldMap(List.of(resourceId), true);
+        return resourceFieldMap.get(resourceId);
     }
 
     /**
@@ -289,5 +290,63 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         LambdaQueryWrapper<V> blobWrapper = new LambdaQueryWrapper();
         wrapper.in(BaseResourceField::getResourceId, resourceIds);
         getResourceFieldBlobMapper().deleteByLambda(blobWrapper);
+    }
+
+    /**
+     * 保存指定资源的模块字段值
+     * @param moduleFieldValues
+     */
+    public void saveModuleFieldByResourceIds(List<String> resourceIds, List<BaseModuleFieldValue> moduleFieldValues) {
+        if (CollectionUtils.isEmpty(moduleFieldValues)) {
+            return;
+        }
+
+        Map<String, BaseField> fieldConfigMap = CommonBeanFactory.getBean(ModuleFormService.class)
+                .getAllFields(getFormKey(), OrganizationContext.getOrganizationId())
+                .stream()
+                .collect(Collectors.toMap(BaseField::getId, Function.identity()));
+
+        List<T> customerFields = new ArrayList<>();
+        List<V> customerFieldBlobs = new ArrayList<>();
+        moduleFieldValues.stream()
+                .filter(BaseModuleFieldValue::valid)
+                .forEach(fieldValue -> {
+                    BaseField fieldConfig = fieldConfigMap.get(fieldValue.getFieldId());
+                    if (fieldConfig == null) {
+                        return;
+                    }
+
+                    // 获取字段解析器
+                    AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+                    // 校验参数值
+                    customFieldResolver.validate(fieldConfig, fieldValue.getFieldValue());
+                    // 将参数值转换成字符串入库
+                    String strValue = customFieldResolver.parse2String(fieldConfig, fieldValue.getFieldValue());
+                    for (String resourceId : resourceIds) {
+                        if (fieldConfig.isTextArea()) {
+                            V resourceField = newResourceFieldBlob();
+                            resourceField.setId(IDGenerator.nextStr());
+                            resourceField.setResourceId(resourceId);
+                            resourceField.setFieldId(fieldValue.getFieldId());
+                            resourceField.setFieldValue(strValue.getBytes());
+                            customerFieldBlobs.add(resourceField);
+                        } else {
+                            T resourceField = newResourceField();
+                            resourceField.setId(IDGenerator.nextStr());
+                            resourceField.setResourceId(resourceId);
+                            resourceField.setFieldId(fieldValue.getFieldId());
+                            resourceField.setFieldValue(strValue);
+                            customerFields.add(resourceField);
+                        }
+                    }
+                });
+
+        if (CollectionUtils.isNotEmpty(customerFields)) {
+            getResourceFieldMapper().batchInsert(customerFields);
+        }
+
+        if (CollectionUtils.isNotEmpty(customerFieldBlobs)) {
+            getResourceFieldBlobMapper().batchInsert(customerFieldBlobs);
+        }
     }
 }

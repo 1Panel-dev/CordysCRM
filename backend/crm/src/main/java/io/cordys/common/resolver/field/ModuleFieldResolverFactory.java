@@ -1,5 +1,6 @@
 package io.cordys.common.resolver.field;
 
+import io.cordys.common.resolver.RadioResolver;
 import io.cordys.crm.system.constants.FieldType;
 
 import java.util.HashMap;
@@ -18,7 +19,7 @@ public class ModuleFieldResolverFactory {
 
     static {
         resolverMap.put(FieldType.SELECT.name(), new SelectResolver());
-        resolverMap.put(FieldType.RADIO.name(), new SelectResolver());
+        resolverMap.put(FieldType.RADIO.name(), new RadioResolver());
 
         resolverMap.put(FieldType.CHECKBOX.name(), new MultipleSelectResolver());
 

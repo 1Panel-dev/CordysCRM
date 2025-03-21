@@ -8,6 +8,7 @@ import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Product;
+import io.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -19,6 +20,7 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -77,10 +79,25 @@ public class ProductController {
         return productService.update(request, SessionUtils.getUserId());
     }
 
+    @PostMapping("/batch/update")
+    @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
+    @Operation(summary = "批量更新产品")
+    public void update(@Validated @RequestBody ProductBatchEditRequest request){
+         productService.batchUpdate(request);
+    }
+
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_DELETE)
     @Operation(summary = "删除产品")
     public void delete(@PathVariable String id){
         productService.delete(id);
+    }
+
+
+    @PostMapping("/batch/delete")
+    @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_DELETE)
+    @Operation(summary = "批量删除产品")
+    public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
+        productService.batchDelete(ids, SessionUtils.getUserId());
     }
 }

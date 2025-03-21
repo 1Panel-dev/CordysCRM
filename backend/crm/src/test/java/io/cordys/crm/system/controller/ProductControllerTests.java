@@ -1,15 +1,21 @@
 package io.cordys.crm.system.controller;
 
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.system.domain.ModuleField;
+import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.domain.ProductField;
+import io.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
 import io.cordys.crm.system.dto.response.product.ProductGetResponse;
 import io.cordys.crm.system.dto.response.product.ProductListResponse;
+import io.cordys.crm.system.service.ProductFieldService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -17,7 +23,9 @@ import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -33,11 +41,23 @@ class ProductControllerTests extends BaseTest {
 
     private static Product addProduct;
 
+    private static List<String> batchIds = new ArrayList<>();
+    private static String moduleFieldPriceId = "";
+    private static String moduleFieldStatusId=  "";
+
     @Resource
     private BaseMapper<Product> productBaseMapper;
 
     @Resource
     private BaseMapper<ProductField> productFieldBaseMapper;
+    @Resource
+    private BaseMapper<ModuleField> moduleFieldMapper;
+
+    @Resource
+    private BaseMapper<ModuleForm> moduleFormMapper;
+
+    @Resource
+    private ProductFieldService productFieldService;
 
     @Override
     protected String getBasePath() {
@@ -63,9 +83,16 @@ class ProductControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<ProductListResponse>> pageResult = getPageResult(mvcResult, ProductListResponse.class);
         List<ProductListResponse> productListResponses = pageResult.getList();
-
+        Assertions.assertTrue(CollectionUtils.isEmpty(productListResponses));
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, DEFAULT_PAGE, request);
+    }
+
+    private ModuleForm getModuleForm() {
+        ModuleForm example = new ModuleForm();
+        example.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        example.setFormKey(FormKey.PRODUCT.getKey());
+        return moduleFormMapper.selectOne(example);
     }
 
     @Test
@@ -78,7 +105,50 @@ class ProductControllerTests extends BaseTest {
         Product resultData = getResultData(mvcResult, Product.class);
         // 校验请求成功数据
         addProduct = productBaseMapper.selectByPrimaryKey(resultData.getId());
+        ModuleForm moduleForm = getModuleForm();
 
+        ModuleField example = new ModuleField();
+        example.setFormId(moduleForm.getId());
+        List<ModuleField> select = moduleFieldMapper.select(example);
+        ModuleField moduleFieldPrice= select
+                .stream()
+                .filter(field -> StringUtils.equals(field.getInternalKey(), "productPrice"))
+                .findFirst().orElse(null);
+        moduleFieldPriceId = moduleFieldPrice.getId();
+        ModuleField moduleFieldStatus= select
+                .stream()
+                .filter(field -> StringUtils.equals(field.getInternalKey(), "productStatus"))
+                .findFirst().orElse(null);
+        moduleFieldStatusId = moduleFieldStatus.getId();
+        request = new ProductEditRequest();
+        request.setName("productOne");
+
+
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 12),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+
+        mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
+        resultData = getResultData(mvcResult, Product.class);
+        // 校验请求成功数据
+        Product product = productBaseMapper.selectByPrimaryKey(resultData.getId());
+        batchIds.add(product.getId());
+
+        request = new ProductEditRequest();
+        request.setName("productTwo");
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 14),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+        mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
+        resultData = getResultData(mvcResult, Product.class);
+
+        // 校验请求成功数据
+        product = productBaseMapper.selectByPrimaryKey(resultData.getId());
+        batchIds.add(product.getId());
+        request = new ProductEditRequest();
+        request.setName("productThree");
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+        mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
+        resultData = getResultData(mvcResult, Product.class);
+        // 校验请求成功数据
+        product = productBaseMapper.selectByPrimaryKey(resultData.getId());
+        batchIds.add(product.getId());
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_ADD, DEFAULT_ADD, request);
     }
@@ -140,14 +210,56 @@ class ProductControllerTests extends BaseTest {
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, DEFAULT_PAGE, request);
     }
 
+
     @Test
-    @Order(10)
+    @Order(6)
+    void testBatchUpdate() throws Exception {
+        // 请求成功
+        ProductBatchEditRequest request = new ProductBatchEditRequest();
+        request.setIds(batchIds);
+
+        List<BaseModuleFieldValue> baseModuleFieldValues = List.of(new BaseModuleFieldValue(moduleFieldPriceId, 15), new BaseModuleFieldValue(moduleFieldStatusId, "2"));
+        request.setModuleFields(baseModuleFieldValues);
+        this.requestPostWithOk("batch/update", request);
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(DEFAULT_GET, batchIds.getFirst());
+        ProductGetResponse getResponse = getResultData(mvcResult, ProductGetResponse.class);
+        for (BaseModuleFieldValue moduleField : getResponse.getModuleFields()) {
+            if (StringUtils.equalsAnyIgnoreCase(moduleField.getFieldId(), moduleFieldStatusId)) {
+                Assertions.assertEquals("2",moduleField.getFieldValue());
+            }
+        }
+        Map<String, List<BaseModuleFieldValue>> productFiledMap = productFieldService.getResourceFieldMap(batchIds);
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);
+
+
+    }
+
+
+    @Test
+    @Order(7)
     void delete() throws Exception {
         this.requestGetWithOk(DEFAULT_DELETE, addProduct.getId());
         Assertions.assertNull(productBaseMapper.selectByPrimaryKey(addProduct.getId()));
 
         ProductField example = new ProductField();
         example.setResourceId(addProduct.getId());
+        List<ProductField> fields = productFieldBaseMapper.select(example);
+        Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_DELETE, DEFAULT_DELETE, addProduct.getId());
+    }
+
+    @Test
+    @Order(8)
+    void batchDelete() throws Exception {
+
+        this.requestPostWithOk("batch/delete", batchIds);
+        Assertions.assertNull(productBaseMapper.selectByPrimaryKey(batchIds.getFirst()));
+
+        ProductField example = new ProductField();
+        example.setResourceId(batchIds.getFirst());
         List<ProductField> fields = productFieldBaseMapper.select(example);
         Assumptions.assumeTrue(CollectionUtils.isEmpty(fields));
 

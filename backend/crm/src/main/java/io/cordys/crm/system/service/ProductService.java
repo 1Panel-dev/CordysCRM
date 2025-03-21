@@ -1,5 +1,8 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.service.BaseService;
@@ -7,16 +10,19 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Product;
+import io.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
 import io.cordys.crm.system.dto.response.product.ProductGetResponse;
 import io.cordys.crm.system.dto.response.product.ProductListResponse;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,6 +43,8 @@ public class ProductService {
     private BaseService baseService;
     @Resource
     private ProductFieldService productFieldService;
+    @Resource
+    private LogService logService;
 
     public List<ProductListResponse> list(ProductPageRequest request, String orgId) {
         List<ProductListResponse> list = extProductMapper.list(request, orgId);
@@ -116,15 +124,26 @@ public class ProductService {
         }
     }
 
-    private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields) {
+    private void updateModuleField(String productId, List<BaseModuleFieldValue> moduleFields) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
         }
         // 先删除
-        productFieldService.deleteByResourceId(customerId);
+        productFieldService.deleteByResourceId(productId);
         // 再保存
-        productFieldService.saveModuleField(customerId, moduleFields);
+        productFieldService.saveModuleField(productId, moduleFields);
+    }
+
+    private void batchUpdateModuleField(List<String>  productIds, List<BaseModuleFieldValue> moduleFields) {
+        if (moduleFields == null) {
+            // 如果为 null，则不更新
+            return;
+        }
+        // 先删除
+        productFieldService.deleteByResourceIds(productIds);
+        // 再保存
+        productFieldService.saveModuleFieldByResourceIds(productIds, moduleFields);
     }
 
     public void delete(String id) {
@@ -132,5 +151,24 @@ public class ProductService {
         productBaseMapper.deleteByPrimaryKey(id);
         // 删除产品模块字段
         productFieldService.deleteByResourceId(id);
+    }
+
+    public void batchUpdate(ProductBatchEditRequest request) {
+        batchUpdateModuleField(request.getIds(),request.getModuleFields());
+    }
+
+    public void batchDelete(List<String> ids, String userId) {
+        LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Product::getId, ids);
+        List<Product> products = productBaseMapper.selectListByLambda(wrapper);
+        productBaseMapper.deleteByIds(ids);
+        productFieldService.deleteByResourceIds(ids);
+        List<LogDTO> logs = new ArrayList<>();
+        products.forEach(product -> {
+            LogDTO logDTO = new LogDTO(product.getOrganizationId(), product.getId(), userId, LogType.DELETE, LogModule.OPPORTUNITY, product.getName());
+            logDTO.setOriginalValue(product);
+            logs.add(logDTO);
+        });
+        logService.batchAdd(logs);
     }
 }
