@@ -267,6 +267,9 @@
           margin-bottom: 4px;
           padding-bottom: 0;
         }
+        .n-form-item-feedback-wrapper {
+          @apply hidden;
+        }
         .crm-form-design--composition-item-mask {
           @apply absolute bottom-0 left-0 right-0 top-0 z-10 cursor-move bg-transparent;
         }

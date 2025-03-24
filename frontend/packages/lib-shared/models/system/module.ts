@@ -1,4 +1,5 @@
 import type { FormDesignKeyEnum } from '../../enums/formDesignEnum';
+import type { TableQueryParams } from '../common';
 import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
 
@@ -173,4 +174,8 @@ export interface SaveFormDesignConfigParams {
 export interface FormDesignConfigDetailParams {
   fields: FormCreateField[];
   formProp: FormConfig;
+}
+
+export interface FormDesignDataSourceTableQueryParams extends TableQueryParams {
+  field: string;
 }

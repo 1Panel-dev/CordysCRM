@@ -22,7 +22,12 @@
     </template>
     <template #left>
       <div class="p-[16px_24px]">
-        <CrmFormDescription :form-key="FormDesignKeyEnum.CUSTOMER" :source-id="props.sourceId" />
+        <CrmFormDescription
+          :form-key="FormDesignKeyEnum.CUSTOMER"
+          :source-id="props.sourceId"
+          :refresh-key="refreshKey"
+          @init="(e) => (collaborationType = e)"
+        />
       </div>
     </template>
     <template #right>
@@ -57,6 +62,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { CollaborationType } from '@lib/shared/models/customer';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
@@ -86,63 +92,69 @@
   });
   const refreshKey = ref(0);
   const transferLoading = ref(false);
-  const buttonList: ActionsItem[] = [
-    {
-      label: t('common.edit'),
-      key: 'edit',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-    },
-    {
-      label: t('overviewDrawer.addContract'),
-      key: 'addContract',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-    },
-    {
-      label: t('overviewDrawer.followRecord'),
-      key: 'followRecord',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-    },
-    {
-      label: t('overviewDrawer.followPlan'),
-      key: 'followPlan',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-    },
-    {
-      label: t('common.transfer'),
-      key: 'transfer',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-      popConfirmProps: {
-        loading: transferLoading.value,
-        title: t('common.transfer'),
-        positiveText: t('common.confirm'),
-        iconType: 'primary',
+  const collaborationType = ref<CollaborationType>();
+  const buttonList = computed<ActionsItem[]>(() => {
+    if (collaborationType.value === 'READ_ONLY') {
+      return [];
+    }
+    return [
+      {
+        label: t('common.edit'),
+        key: 'edit',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
-      popSlotContent: 'transferPopContent',
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      permission: ['CUSTOMER_MANAGEMENT:DELETE'],
-    },
-  ];
+      {
+        label: t('overviewDrawer.addContract'),
+        key: 'addContract',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+      },
+      {
+        label: t('overviewDrawer.followRecord'),
+        key: 'followRecord',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+      },
+      {
+        label: t('overviewDrawer.followPlan'),
+        key: 'followPlan',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+      },
+      {
+        label: t('common.transfer'),
+        key: 'transfer',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+        popConfirmProps: {
+          loading: transferLoading.value,
+          title: t('common.transfer'),
+          positiveText: t('common.confirm'),
+          iconType: 'primary',
+        },
+        popSlotContent: 'transferPopContent',
+      },
+      {
+        label: t('common.delete'),
+        key: 'delete',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CUSTOMER_MANAGEMENT:DELETE'],
+      },
+    ];
+  });
 
   const activeTab = ref('contact');
   const cachedList = ref([]);

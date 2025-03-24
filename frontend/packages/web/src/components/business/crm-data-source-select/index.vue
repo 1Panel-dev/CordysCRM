@@ -27,6 +27,7 @@
       v-model:selected-keys="selectedKeys"
       v-model:selected-rows="selectedRows"
       :multiple="props.multiple"
+      :source-type="props.dataSourceType"
     />
   </CrmModal>
 </template>
@@ -44,11 +45,9 @@
 
   import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 
-  const { t } = useI18n();
-
   const props = withDefaults(
     defineProps<{
-      dataSourceType?: FieldDataSourceTypeEnum;
+      dataSourceType: FieldDataSourceTypeEnum;
       multiple?: boolean;
       disabled?: boolean;
     }>(),
@@ -59,6 +58,8 @@
   const emit = defineEmits<{
     (e: 'change', value: (string | number)[]): void;
   }>();
+
+  const { t } = useI18n();
 
   const typeLocaleMap = {
     [FieldDataSourceTypeEnum.CUSTOMER]: 'crmFormDesign.customer',

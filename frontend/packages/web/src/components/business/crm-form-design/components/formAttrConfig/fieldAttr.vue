@@ -526,7 +526,7 @@
           v-model:value="fieldConfig.defaultValue"
           v-model:rows="fieldConfig.initialOptions"
           :multiple="fieldConfig.multiple"
-          :data-source-type="fieldConfig.dataSourceType"
+          :data-source-type="fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
         />
         <n-input
@@ -785,6 +785,10 @@
     {
       label: t('crmFormDesign.product'),
       value: FieldDataSourceTypeEnum.PRODUCT,
+    },
+    {
+      label: t('crmFormDesign.clue'),
+      value: FieldDataSourceTypeEnum.CLUE,
     },
   ];
 

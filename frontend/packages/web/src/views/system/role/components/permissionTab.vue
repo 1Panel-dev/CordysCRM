@@ -88,6 +88,7 @@
 
   import { createRole, getPermissions, getRoleDeptTree, getRoleDetail, updateRole } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
+  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
@@ -103,6 +104,7 @@
 
   const { t } = useI18n();
   const message = useMessage();
+  const userStore = useUserStore();
 
   const dataPermission = ref('ALL');
   const dataPermissionOptions = [
@@ -133,6 +135,9 @@
   }
 
   const isDisabled = computed(() => {
+    if (userStore.userInfo.id.includes('org_admin')) {
+      return true;
+    }
     if (props.isNew) {
       return !hasAnyPermission(['SYSTEM_ROLE:ADD']);
     }

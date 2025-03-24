@@ -39,3 +39,10 @@ export const NoPickCustomerPoolUrl = '/customer-pool/no-pick'; // 未领取线�
 // 模块-表单设计
 export const GetFormDesignConfigUrl = '/module/form/config'; // 获取表单设计配置
 export const SaveFormDesignConfigUrl = '/module/form/save'; // 保存表单设计配置
+export const GetFieldDeptUerTreeUrl = '/field/user/dept/tree'; // 获取部门成员树
+export const GetFieldDeptTreeUrl = '/field/dept/tree'; // 获取部门树
+export const GetFieldProductListUrl = '/field/source/product'; // 获取产品列表
+export const GetFieldOpportunityListUrl = '/field/source/opportunity'; // 获取商机列表
+export const GetFieldCustomerListUrl = '/field/source/customer'; // 获取客户列表
+export const GetFieldContactListUrl = '/field/source/contact'; // 获取联系人列表
+export const GetFieldClueListUrl = '/field/source/clue'; // 获取线索列表

@@ -14,7 +14,7 @@
       v-model:value="value"
       :rows="props.fieldConfig.initialOptions"
       :multiple="fieldConfig.multiple"
-      :data-source-type="props.fieldConfig.dataSourceType"
+      :data-source-type="props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
       @change="($event) => emit('change', $event)"
     />
   </n-form-item>
@@ -22,6 +22,8 @@
 
 <script setup lang="ts">
   import { NFormItem } from 'naive-ui';
+
+  import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
 

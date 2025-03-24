@@ -16,6 +16,10 @@ export const getDataApiMap: Record<
     [MemberSelectTypeEnum.ORG]: getModuleUserDeptTree,
     [MemberSelectTypeEnum.ROLE]: getModuleRoleTree,
   },
+  [MemberApiTypeEnum.FORM_FIELD]: {
+    [MemberSelectTypeEnum.ORG]: getModuleUserDeptTree,
+    [MemberSelectTypeEnum.ROLE]: getModuleRoleTree,
+  },
 };
 
 // 获取部门、角色、成员数据

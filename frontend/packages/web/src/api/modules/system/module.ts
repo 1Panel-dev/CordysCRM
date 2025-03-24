@@ -9,6 +9,13 @@ import {
   GetCluePoolPageUrl,
   GetCustomerCapacityPageUrl,
   GetCustomerPoolPageUrl,
+  GetFieldClueListUrl,
+  GetFieldContactListUrl,
+  GetFieldCustomerListUrl,
+  GetFieldDeptTreeUrl,
+  GetFieldDeptUerTreeUrl,
+  GetFieldOpportunityListUrl,
+  GetFieldProductListUrl,
   GetFormDesignConfigUrl,
   getModuleNavConfigListUrl,
   getOpportunityListUrl,
@@ -29,13 +36,17 @@ import {
   updateOpportunityRuleUrl,
 } from '@lib/shared/api/requrls/system/module';
 import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+import type { ClueListItem } from '@lib/shared/models/clue';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+import type { CustomerContractListItem, CustomerListItem } from '@lib/shared/models/customer';
+import type { ProductListItem } from '@lib/shared/models/product';
 import type {
   CapacityItem,
   CapacityParams,
   CluePoolItem,
   CluePoolParams,
   FormDesignConfigDetailParams,
+  FormDesignDataSourceTableQueryParams,
   ModuleNavBaseInfoItem,
   ModuleSortParams,
   OpportunityItem,
@@ -166,4 +177,32 @@ export function saveFormDesignConfig(data: SaveFormDesignConfigParams) {
 
 export function getFormDesignConfig(id: string) {
   return CDR.get<FormDesignConfigDetailParams>({ url: `${GetFormDesignConfigUrl}/${id}` });
+}
+
+export function getFieldDeptUerTree(fieldId: string) {
+  return CDR.post<DeptUserTreeNode[]>({ url: GetFieldDeptUerTreeUrl, data: { fieldId } });
+}
+
+export function getFieldDeptTree(fieldId: string) {
+  return CDR.post<DeptUserTreeNode[]>({ url: GetFieldDeptTreeUrl, data: { fieldId } });
+}
+
+export function getFieldClueList(data: FormDesignDataSourceTableQueryParams) {
+  return CDR.post<CommonList<ClueListItem>>({ url: GetFieldClueListUrl, data });
+}
+
+export function getFieldContactList(data: FormDesignDataSourceTableQueryParams) {
+  return CDR.post<CommonList<CustomerContractListItem>>({ url: GetFieldContactListUrl, data });
+}
+
+export function getFieldCustomerList(data: FormDesignDataSourceTableQueryParams) {
+  return CDR.post<CommonList<CustomerListItem>>({ url: GetFieldCustomerListUrl, data });
+}
+
+export function getFieldOpportunityList(data: FormDesignDataSourceTableQueryParams) {
+  return CDR.post<CommonList<OpportunityItem>>({ url: GetFieldOpportunityListUrl, data });
+}
+
+export function getFieldProductList(data: FormDesignDataSourceTableQueryParams) {
+  return CDR.post<CommonList<ProductListItem>>({ url: GetFieldProductListUrl, data });
 }

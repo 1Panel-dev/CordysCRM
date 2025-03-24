@@ -14,17 +14,28 @@
 <script setup lang="ts">
   import { DataTableRowKey } from 'naive-ui';
 
+  import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { CommonList } from '@lib/shared/models/common';
+
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
 
+  import {
+    getFieldClueList,
+    getFieldContactList,
+    getFieldCustomerList,
+    getFieldOpportunityList,
+    getFieldProductList,
+  } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
 
   import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 
   const props = withDefaults(
     defineProps<{
+      sourceType: FieldDataSourceTypeEnum;
       multiple?: boolean;
     }>(),
     {
@@ -60,31 +71,18 @@
     },
   ];
 
-  // TODO:数据源接口
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
-    () =>
-      Promise.resolve({
-        list: [
-          {
-            id: '1',
-            name: '数据源1',
-            phone: '12345678901',
-          },
-          {
-            id: '2',
-            name: '数据源2',
-            phone: '12345678902',
-          },
-        ],
-        pageSize: 10,
-        current: 1,
-        total: 10,
-      }),
-    {
-      columns,
-      showSetting: false,
-    }
-  );
+  const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<CommonList<any>>> = {
+    [FieldDataSourceTypeEnum.BUSINESS]: getFieldOpportunityList,
+    [FieldDataSourceTypeEnum.CLUE]: getFieldClueList,
+    [FieldDataSourceTypeEnum.CONTACT]: getFieldContactList,
+    [FieldDataSourceTypeEnum.CUSTOMER]: getFieldCustomerList,
+    [FieldDataSourceTypeEnum.PRODUCT]: getFieldProductList,
+  };
+
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(sourceApi[props.sourceType], {
+    columns,
+    showSetting: false,
+  });
 
   const keyword = ref('');
 
@@ -98,7 +96,7 @@
   }
 
   onBeforeMount(() => {
-    loadList();
+    searchData();
   });
 </script>
 

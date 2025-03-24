@@ -14,7 +14,7 @@
       v-model:selected-list="selectedUsers"
       :multiple="fieldConfig.multiple"
       :drawer-title="t('crmFormDesign.selectDataSource', { type: props.fieldConfig.name })"
-      :api-type-key="MemberApiTypeEnum.SYSTEM_ROLE"
+      :api-type-key="MemberApiTypeEnum.FORM_FIELD"
       :disabled-node-types="
         props.fieldConfig.type === FieldTypeEnum.MEMBER
           ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]

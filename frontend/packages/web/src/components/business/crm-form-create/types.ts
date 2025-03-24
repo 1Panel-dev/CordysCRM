@@ -1,5 +1,5 @@
 import type { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
-import type { ModuleField } from '@lib/shared/models/customer';
+import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
 
 import type { FormItemRule } from 'naive-ui';
 import type { Option } from 'naive-ui/es/transfer/src/interface';
@@ -79,5 +79,6 @@ export interface FormCreateField {
 export interface FormDetail {
   moduleFields: ModuleField[];
   optionMap?: Record<string, any[]>;
+  collaborationType?: CollaborationType; // 协作类型
   [key: string]: any;
 }

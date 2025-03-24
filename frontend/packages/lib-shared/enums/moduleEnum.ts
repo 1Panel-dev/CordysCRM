@@ -25,6 +25,7 @@ export enum ModuleConfigEnum {
 export enum MemberApiTypeEnum {
   SYSTEM_ROLE = 'SYSTEM_ROLE',
   MODULE_ROLE = 'MODULE_ROLE',
+  FORM_FIELD = 'FORM_FIELD',
 }
 
 // 选择添加

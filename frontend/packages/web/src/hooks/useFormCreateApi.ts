@@ -1,7 +1,7 @@
 import { useMessage } from 'naive-ui';
 
 import { FieldTypeEnum, type FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-import type { ModuleField } from '@lib/shared/models/customer';
+import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
 import type { FormConfig } from '@lib/shared/models/system/module';
 
 import type { Description } from '@/components/pure/crm-description/index.vue';
@@ -27,6 +27,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   const { t } = useI18n();
   const Message = useMessage();
 
+  const collaborationType = ref<CollaborationType>(); // 协作类型
   const descriptions = ref<Description[]>([]); // 表单详情描述列表
   const fieldList = ref<FormCreateField[]>([]); // 表单字段列表
   const loading = ref(false);
@@ -58,6 +59,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       const asyncApi = getFormDetailApiMap[props.formKey.value];
       if (!asyncApi || !props.sourceId?.value) return;
       const form = await asyncApi(props.sourceId?.value);
+      descriptions.value = [];
+      collaborationType.value = form.collaborationType;
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
           const options = form.optionMap?.[item.businessKey];
@@ -111,6 +114,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       const asyncApi = getFormDetailApiMap[props.formKey.value];
       if (!asyncApi || !props.sourceId?.value) return;
       const res = await asyncApi(props.sourceId?.value);
+      collaborationType.value = res.collaborationType;
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
           const options = res.optionMap?.[item.businessKey];
@@ -170,6 +174,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       const params: Record<string, any> = {
         ...props.otherSaveParams?.value,
         moduleFields: [],
+        id: props.sourceId?.value,
       };
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
@@ -213,6 +218,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     formConfig,
     formDetail,
     formCreateTitle,
+    collaborationType,
     initFormDescription,
     initFormConfig,
     initFormDetail,
