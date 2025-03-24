@@ -580,6 +580,26 @@ CREATE TABLE product_field_blob
 
 CREATE INDEX idx_resource_id ON product_field_blob (resource_id);
 
+CREATE TABLE sys_attachment(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
+    `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
+    `type` VARCHAR(50)    COMMENT '类型' ,
+    `size` BIGINT(255)    COMMENT '大小' ,
+    `storage` VARCHAR(50) NOT NULL   COMMENT '存储方式' ,
+    `path` VARCHAR(1000)    COMMENT '路径' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '系统附件'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_storage ON sys_attachment(storage ASC);
+CREATE INDEX idx_org_id ON sys_attachment(organization_id ASC);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
