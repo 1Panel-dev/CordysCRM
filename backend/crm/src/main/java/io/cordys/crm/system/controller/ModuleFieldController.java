@@ -119,8 +119,7 @@ public class ModuleFieldController {
 	@Operation(summary = "分页获取产品")
 	public Pager<List<ProductListResponse>> sourceProductPage(@Valid @RequestBody SourceProductPageRequest request) {
 		moduleFieldService.isMatchType(request.getFieldId(), FieldType.DATA_SOURCE.name());
-		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
 		ProductPageRequest productPageRequest = BeanUtils.copyBean(new ProductPageRequest(), request);
-		return PageUtils.setPageInfo(page, productService.list(productPageRequest, OrganizationContext.getOrganizationId()));
+		return productService.list(productPageRequest, OrganizationContext.getOrganizationId());
 	}
 }

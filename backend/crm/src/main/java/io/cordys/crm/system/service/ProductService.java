@@ -1,18 +1,27 @@
 package io.cordys.crm.system.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.dto.response.product.ProductGetResponse;
 import io.cordys.crm.system.dto.response.product.ProductListResponse;
 import io.cordys.crm.system.mapper.ExtProductMapper;
@@ -46,10 +55,23 @@ public class ProductService {
     private ProductFieldService productFieldService;
     @Resource
     private LogService logService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private ModuleFormService moduleFormService;
 
-    public List<ProductListResponse> list(ProductPageRequest request, String orgId) {
+    public PagerWithOption<List<ProductListResponse>> list(ProductPageRequest request, String orgId) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<ProductListResponse> list = extProductMapper.list(request, orgId);
-        return buildListData(list);
+        List<ProductListResponse> buildList = buildListData(list);
+        // 处理自定义字段选项数据
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), orgId);
+        // 获取所有模块字段的值
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ProductListResponse::getModuleFields);
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
     private List<ProductListResponse> buildListData(List<ProductListResponse> list) {

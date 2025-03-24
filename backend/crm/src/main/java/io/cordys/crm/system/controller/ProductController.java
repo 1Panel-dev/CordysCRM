@@ -1,11 +1,8 @@
 package io.cordys.crm.system.controller;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.pager.PageUtils;
-import io.cordys.common.pager.Pager;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.request.ProductBatchEditRequest;
@@ -53,9 +50,8 @@ public class ProductController {
     @PostMapping("/page")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_READ)
     @Operation(summary = "产品列表")
-    public Pager<List<ProductListResponse>> list(@Validated @RequestBody ProductPageRequest request){
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, productService.list(request, OrganizationContext.getOrganizationId()));
+    public PagerWithOption<List<ProductListResponse>> list(@Validated @RequestBody ProductPageRequest request){
+        return productService.list(request, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
