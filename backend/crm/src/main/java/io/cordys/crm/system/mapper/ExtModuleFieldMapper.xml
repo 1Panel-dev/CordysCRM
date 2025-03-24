@@ -20,6 +20,6 @@
         select id, name from ${tableName} where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">
           #{id}
-        </foreach>>
+        </foreach>
     </select>
 </mapper>
