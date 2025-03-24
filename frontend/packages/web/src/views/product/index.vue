@@ -13,7 +13,7 @@
       <template #actionLeft>
         <div class="flex items-center">
           <n-button
-            v-if="hasAnyPermission(['PRODUCT_MANAGEMENT:ADD'])"
+            v-permission="['PRODUCT_MANAGEMENT:ADD']"
             class="mr-[12px]"
             type="primary"
             @click="formCreateDrawerVisible = true"

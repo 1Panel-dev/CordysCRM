@@ -16,7 +16,7 @@
       <template #actionLeft>
         <div class="flex items-center">
           <n-button
-            v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD'])"
+            v-permission="['OPPORTUNITY_MANAGEMENT:ADD']"
             class="mr-[12px]"
             type="primary"
             @click="formCreateDrawerVisible = true"
@@ -56,12 +56,7 @@
       :save-api="transferOpt"
       @load-list="handleRefresh"
     />
-    <OptOverviewDrawer
-      v-model:show="showOverviewDrawer"
-      :base-steps="baseSteps"
-      :detail="activeOpportunity"
-      @refresh="handleRefresh"
-    />
+    <OptOverviewDrawer v-model:show="showOverviewDrawer" :detail="activeOpportunity" @refresh="handleRefresh" />
     <CrmFormCreateDrawer
       v-model:visible="formCreateDrawerVisible"
       :form-key="realFormKey"
@@ -75,10 +70,10 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { DataTableRowKey, NButton, SelectOption, TabPaneProps, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { OpportunitySearchTypeEnum, OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
   import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
@@ -103,12 +98,11 @@
 
   import { batchDeleteOpt, deleteOpt, transferOpt } from '@/api/modules/opportunity';
   import { getDepartmentTree } from '@/api/modules/system/org';
-  import { defaultTransferForm } from '@/config/opportunity';
+  import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
-  import { hasAnyPermission } from '@/utils/permission';
 
   const Message = useMessage();
   const { openModal } = useModal();
@@ -395,6 +389,10 @@
       status: (row: OpportunityItem) => {
         return row.status === '1' ? t('common.open') : t('common.close');
       },
+      stage: (row: OpportunityItem) => {
+        const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
+        return step ? step.label : '-';
+      },
     },
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
@@ -407,29 +405,6 @@
 
   const department = ref<CrmTreeNodeData[]>([]);
 
-  const baseSteps: SelectOption[] = [
-    {
-      value: OpportunityStatusEnum.CREATE,
-      label: t('common.newCreate'),
-    },
-    {
-      value: OpportunityStatusEnum.CLEAR_REQUIREMENTS,
-      label: t('opportunity.clearRequirements'),
-    },
-    {
-      value: OpportunityStatusEnum.SCHEME_VALIDATION,
-      label: t('opportunity.schemeValidation'),
-    },
-    {
-      value: OpportunityStatusEnum.PROJECT_PROPOSAL_REPORT,
-      label: t('opportunity.projectProposalReport'),
-    },
-    {
-      value: OpportunityStatusEnum.BUSINESS_PROCUREMENT,
-      label: t('opportunity.businessProcurement'),
-    },
-  ];
-
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
       {
@@ -437,17 +412,7 @@
         dataIndex: 'stage',
         type: FieldTypeEnum.SELECT,
         selectProps: {
-          options: [
-            ...baseSteps,
-            {
-              value: StageResultEnum.SUCCESS,
-              label: t('common.success'),
-            },
-            {
-              value: StageResultEnum.FAIL,
-              label: t('common.fail'),
-            },
-          ],
+          options: lastOpportunitySteps,
         },
       },
       {

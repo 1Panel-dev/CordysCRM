@@ -235,25 +235,28 @@
   }
 
   function renderExtraDom(infoProps: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
-    const { option } = infoProps;
-    // 额外的节点
-    return h(
-      NButton,
-      {
-        type: 'primary',
-        size: 'small',
-        bordered: false,
-        class: `crm-suffix-btn !p-[4px] ml-[4px] h-[24px] h-[24px]  mr-[4px] rounded`,
-        onClick: () => handleAdd(option),
-      },
-      () => {
-        return h(CrmIcon, {
-          size: 18,
-          type: 'iconicon_add',
-          class: `text-[var(--primary-8)] hover:text-[var(--primary-8)]`,
-        });
-      }
-    );
+    if (hasAnyPermission(['SYS_ORGANIZATION:ADD'])) {
+      const { option } = infoProps;
+      // 额外的节点
+      return h(
+        NButton,
+        {
+          type: 'primary',
+          size: 'small',
+          bordered: false,
+          class: `crm-suffix-btn !p-[4px] ml-[4px] h-[24px] h-[24px]  mr-[4px] rounded`,
+          onClick: () => handleAdd(option),
+        },
+        () => {
+          return h(CrmIcon, {
+            size: 18,
+            type: 'iconicon_add',
+            class: `text-[var(--primary-8)] hover:text-[var(--primary-8)]`,
+          });
+        }
+      );
+    }
+    return null;
   }
 
   /**

@@ -15,7 +15,7 @@
           <n-tooltip trigger="hover" :disabled="!isSyncFromThirdChecked">
             <template #trigger>
               <n-button
-                v-if="hasAnyPermission(['SYS_ORGANIZATION:ADD'])"
+                v-permission="['SYS_ORGANIZATION:ADD']"
                 :disabled="isSyncFromThirdChecked"
                 class="mr-[12px]"
                 type="primary"

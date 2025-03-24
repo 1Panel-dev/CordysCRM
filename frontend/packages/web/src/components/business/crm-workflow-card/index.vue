@@ -3,18 +3,20 @@
     <n-spin :show="updateStageLoading">
       <WorkflowStep v-model:status="currentStage" :workflow-list="workflowList">
         <template #action="{ currentStatusIndex }">
-          <n-button
-            v-if="props.showErrorBtn"
-            type="error"
-            ghost
-            class="n-btn-outline-error mr-[12px]"
-            @click="handleUpdateStatus(currentStatusIndex, true)"
-          >
-            {{ t('common.followFailed') }}
-          </n-button>
-          <n-button type="primary" @click="handleUpdateStatus(currentStatusIndex)">
-            {{ t('common.updateToCurrentProgress') }}
-          </n-button>
+          <div class="flex items-center">
+            <n-button
+              v-if="props.showErrorBtn"
+              type="error"
+              ghost
+              class="n-btn-outline-error mr-[12px]"
+              @click="handleUpdateStatus(currentStatusIndex, true)"
+            >
+              {{ t('common.followFailed') }}
+            </n-button>
+            <n-button type="primary" @click="handleUpdateStatus(currentStatusIndex)">
+              {{ t('common.updateToCurrentProgress') }}
+            </n-button>
+          </div>
         </template>
       </WorkflowStep>
 

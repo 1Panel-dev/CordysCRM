@@ -6,6 +6,7 @@ import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 import useTable from '@/components/pure/crm-table/useTable';
 import { getFormConfigApiMap, getFormListApiMap } from '@/components/business/crm-form-create/config';
 
+import { lastOpportunitySteps } from '@/config/opportunity';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
 import { getCityPath } from '@/utils';
 
@@ -136,6 +137,16 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
     ],
     [FormDesignKeyEnum.BUSINESS]: [
+      {
+        title: t('opportunity.stage'),
+        width: 150,
+        key: 'stage',
+        ellipsis: {
+          tooltip: true,
+        },
+        filterOptions: lastOpportunitySteps,
+        render: props.specialRender?.stage,
+      },
       {
         title: t('customer.lastFollowUps'),
         width: 150,

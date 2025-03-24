@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-  import { SelectOption, useMessage } from 'naive-ui';
+  import { useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
@@ -67,7 +67,7 @@
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
   import { deleteOpt, getOpportunityDetail, transferOpt, updateOptStage } from '@/api/modules/opportunity';
-  import { defaultTransferForm } from '@/config/opportunity';
+  import { defaultTransferForm, opportunityBaseSteps } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
@@ -79,7 +79,6 @@
   const Message = useMessage();
 
   const props = defineProps<{
-    baseSteps: SelectOption[];
     detail?: OpportunityItem;
   }>();
 
@@ -165,7 +164,7 @@
   });
 
   const baseStepList = computed(() => [
-    ...props.baseSteps,
+    ...opportunityBaseSteps,
     {
       value: OpportunityStatusEnum.END,
       label: t('opportunity.end'),
