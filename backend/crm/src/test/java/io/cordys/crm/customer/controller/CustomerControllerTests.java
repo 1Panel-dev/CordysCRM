@@ -5,6 +5,8 @@ import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.BasePageRequest;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
@@ -47,6 +49,7 @@ class CustomerControllerTests extends BaseTest {
 
     protected static final String BATCH_TRANSFER = "batch/transfer";
     protected static final String BATCH_TO_POOL = "batch/to-pool";
+    protected static final String OPTION = "option";
 
     private static Customer addCustomer;
     private static Customer anotherCustomer;
@@ -172,6 +175,8 @@ class CustomerControllerTests extends BaseTest {
         request.setName(anotherCustomer.getName());
         assertErrorCode(this.requestPost(DEFAULT_UPDATE, request), CustomerResultCode.CUSTOMER_EXIST);
 
+        addCustomer = customerMapper.selectByPrimaryKey(addCustomer.getId());
+
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);
     }
@@ -260,6 +265,30 @@ class CustomerControllerTests extends BaseTest {
     }
 
     @Test
+    @Order(4)
+    void testOption() throws Exception {
+        BasePageRequest request = new BasePageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(OPTION, request);
+
+        List<OptionDTO> options = getPageResult(mvcResult, OptionDTO.class).getList();
+
+        Assertions.assertTrue(CollectionUtils.isNotEmpty(options));
+
+        request.setKeyword(addCustomer.getName());
+        mvcResult = this.requestPostWithOkAndReturn(OPTION, request);
+        options = getPageResult(mvcResult, OptionDTO.class).getList();
+
+        Assertions.assertTrue(options.size() == 1);
+        Assertions.assertEquals(addCustomer.getId(), options.getFirst().getId());
+        Assertions.assertEquals(addCustomer.getName(), options.getFirst().getName());
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, OPTION, request);
+    }
+
+    @Test
     @Order(10)
     void testDelete() throws Exception {
         this.requestGetWithOk(DEFAULT_DELETE, addCustomer.getId());
@@ -311,7 +340,7 @@ class CustomerControllerTests extends BaseTest {
         this.requestPostWithOk(BATCH_TO_POOL, batchIds);
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, BATCH_TO_POOL, batchIds);
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE, BATCH_TO_POOL, batchIds);
     }
 
     @Test

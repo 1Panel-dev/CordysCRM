@@ -378,4 +378,8 @@ public class CustomerService {
         }
         return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
     }
+
+    public List<OptionDTO> getCustomerOptions(String keyword, String organizationId) {
+        return extCustomerMapper.getCustomerOptions(keyword, organizationId);
+    }
 }
