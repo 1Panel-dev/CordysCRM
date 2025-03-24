@@ -70,9 +70,9 @@ public class CustomerContactService {
     @Resource
     private ModuleFormService moduleFormService;
 
-    public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, orgId, deptDataPermission);
+        List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, deptDataPermission);
         list = buildListData(list, orgId);
 
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);

@@ -89,7 +89,7 @@ public class DataScopeService {
         List<Role> customDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_CUSTOM.name());
 
         if (CollectionUtils.isEmpty(userDeptRoles)
-                || CollectionUtils.isEmpty(customDeptRoles)) {
+                && CollectionUtils.isEmpty(customDeptRoles)) {
             // 如果没有部门权限,则默认只能查看自己的数据
             deptDataPermission.setSelf(true);
             return deptDataPermission;
@@ -165,6 +165,7 @@ public class DataScopeService {
         List<String> childDeptIds = new ArrayList<>();
         for (BaseTreeNode node : tree) {
             if (deptIds.contains(node.getId())) {
+                childDeptIds.add(node.getId());
                 childDeptIds.addAll(getNodeIdsWithChild(node.getChildren()));
             } else {
                 childDeptIds.addAll(getDeptIdsWithChild(node.getChildren(), deptIds));

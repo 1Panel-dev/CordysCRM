@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface ExtCustomerContactMapper {
 
-    List<CustomerContactListResponse> list(@Param("request") CustomerContactPageRequest request, @Param("orgId") String orgId,
+    List<CustomerContactListResponse> list(@Param("request") CustomerContactPageRequest request, @Param("userId")  String userId, @Param("orgId") String orgId,
                                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
     List<CustomerContactListResponse> sourceList(@Param("request") CustomerContactPageRequest request, @Param("orgId") String orgId,

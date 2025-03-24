@@ -57,7 +57,7 @@ public class CustomerContactController {
     public PagerWithOption<List<CustomerContactListResponse>> list(@Validated @RequestBody CustomerContactPageRequest request) {
         DeptDataPermissionDTO deptDataPermission =
                 dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-        return customerContactService.list(request, OrganizationContext.getOrganizationId(), deptDataPermission);
+        return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
     @GetMapping("/list/{customerId}")

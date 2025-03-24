@@ -33,7 +33,7 @@
 
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user sou on c.owner = sou.user_id
-            and sou.dept_id in
+            and sou.department_id in
             <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                 #{deptId}
             </foreach>
