@@ -20,6 +20,7 @@
             o.amount,
             o.possible,
             o.products,
+            o.last_stage,
             o.stage,
             o.status,
             o.contact_id,
