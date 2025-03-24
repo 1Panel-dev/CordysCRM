@@ -7,7 +7,7 @@
         </n-icon>
       </template>
     </n-input>
-    <n-tooltip trigger="hover" :delay="300">
+    <n-tooltip v-if="hasAnyPermission(['SYS_ORGANIZATION:ADD'])" trigger="hover" :delay="300">
       <template #trigger>
         <n-button type="primary" ghost class="n-btn-outline-primary px-[7px]" @click="addDepart">
           <template #icon>
@@ -67,6 +67,7 @@
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit, getNextAvailableName, mapTree } from '@/utils';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
 
@@ -103,10 +104,12 @@
     {
       label: t('common.rename'),
       key: 'rename',
+      permission: ['SYS_ORGANIZATION:UPDATE'],
     },
     {
       label: t('org.setDepartmentHead'),
       key: 'setHead',
+      permission: ['SYS_ORGANIZATION:UPDATE'],
     },
     {
       type: 'divider',
@@ -115,6 +118,7 @@
       label: t('common.delete'),
       key: 'delete',
       danger: true,
+      permission: ['SYS_ORGANIZATION:DELETE'],
     },
   ]);
 

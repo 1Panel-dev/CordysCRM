@@ -30,6 +30,7 @@
       v-model:visible="formCreateDrawerVisible"
       :form-key="FormDesignKeyEnum.PRODUCT"
       :source-id="activeProductId"
+      @saved="() => searchData()"
     />
   </CrmCard>
 </template>
@@ -97,6 +98,7 @@
       onPositiveClick: async () => {
         try {
           await batchDeleteProduct(checkedRowKeys.value);
+          checkedRowKeys.value = [];
           tableRefreshId.value += 1;
           Message.success(t('common.deleteSuccess'));
         } catch (error) {
@@ -107,15 +109,19 @@
     });
   }
 
-  // 批量上架 | 下架 TODO  接口要调整
+  // 批量上架 | 下架
   async function handleBatchUpOrDown(status: boolean) {
     try {
       const params = {
         ids: checkedRowKeys.value,
+        status: status ? '1' : '0',
         moduleFields: [],
+        price: null,
       };
       await batchUpdateProduct(params);
       Message.success(t(status ? 'product.batchUpSuccess' : 'product.batchDownSuccess'));
+      checkedRowKeys.value = [];
+      tableRefreshId.value += 1;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -197,7 +203,7 @@
       key: 'operation',
       width: 150,
       fixed: 'right',
-      render: (row: any) =>
+      render: (row: ProductListItem) =>
         h(CrmOperationButton, {
           groupList: operationGroupList,
           onSelect: (key: string) => handleActionSelect(row, key),

@@ -15,6 +15,7 @@
           <n-tooltip trigger="hover" :disabled="!isSyncFromThirdChecked">
             <template #trigger>
               <n-button
+                v-if="hasAnyPermission(['SYS_ORGANIZATION:ADD'])"
                 :disabled="isSyncFromThirdChecked"
                 class="mr-[12px]"
                 type="primary"
@@ -122,6 +123,7 @@
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
   import { characterLimit, getCityPath } from '@/utils';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const Message = useMessage();
 
@@ -156,8 +158,7 @@
     showSyncWeChatModal.value = true;
   }
 
-  const isHasConfigPermission = ref<boolean>(true); // 有配置权限
-  const isHasSyncPermission = ref<boolean>(true); // 有同步权限
+  const isHasConfigPermission = computed(() => hasAnyPermission(['SYSTEM_SETTING:UPDATE'])); // 有配置权限
   const isHasConfig = ref<boolean>(false); // 已配置
 
   async function handleSync() {
@@ -174,7 +175,7 @@
   }
 
   function renderSync() {
-    if (!isHasSyncPermission.value && !isHasConfigPermission.value) {
+    if (!hasAnyPermission(['SYS_ORGANIZATION:SYNC']) && !isHasConfigPermission.value) {
       return null;
     }
     return h(
@@ -229,11 +230,13 @@
         key: 'import',
         tooltipContent: isSyncFromThirdChecked.value ? t('org.checkSyncUserHoverTip') : '',
         disabled: isSyncFromThirdChecked.value,
+        permission: ['SYS_ORGANIZATION:IMPORT'],
       },
-      {
-        label: t('common.export'),
-        key: 'export',
-      },
+      // TOTO  不上
+      // {
+      //   label: t('common.export'),
+      //   key: 'export',
+      // },
     ];
   });
 
@@ -269,26 +272,31 @@
       {
         label: t('common.batchEdit'),
         key: 'batchEdit',
+        permission: ['SYS_ORGANIZATION:UPDATE'],
       },
       {
         label: t('common.enable'),
         key: 'enabled',
+        permission: ['SYS_ORGANIZATION:UPDATE'],
       },
       {
         label: t('common.disable'),
         key: 'disable',
+        permission: ['SYS_ORGANIZATION:UPDATE'],
       },
       {
         label: t('org.resetPassWord'),
         key: 'resetPassWord',
+        permission: ['SYS_ORGANIZATION_USER:RESET_PASSWORD'],
       },
     ],
-    moreAction: [
-      {
-        label: t('common.export'),
-        key: 'export',
-      },
-    ],
+    // TODO 不上
+    // moreAction: [
+    //   {
+    //     label: t('common.export'),
+    //     key: 'export',
+    //   },
+    // ],
   };
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
@@ -388,10 +396,12 @@
     {
       label: t('common.edit'),
       key: 'edit',
+      permission: ['SYS_ORGANIZATION:UPDATE'],
     },
     {
       label: t('org.resetPassWord'),
       key: 'resetPassWord',
+      permission: ['SYS_ORGANIZATION_USER:RESET_PASSWORD'],
     },
     {
       label: 'more',
@@ -405,6 +415,7 @@
       label: t('common.delete'),
       key: 'delete',
       danger: true,
+      permission: ['SYS_ORGANIZATION:DELETE'],
     },
   ];
 
@@ -613,6 +624,7 @@
       render: (row: MemberItem) => {
         return h(NSwitch, {
           value: row.enable,
+          disabled: !hasAnyPermission(['SYS_ORGANIZATION:UPDATE']),
           onClick: () => {
             handleToggleStatus(row);
           },

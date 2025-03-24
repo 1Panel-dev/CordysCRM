@@ -11,7 +11,7 @@
         {{ detail?.enable ? t('common.opened') : t('common.disabled') }}
       </CrmTag>
     </template>
-    <template #titleRight>
+    <template v-if="hasAnyPermission(['SYS_ORGANIZATION:UPDATE'])" #titleRight>
       <n-button type="primary" ghost @click="() => emit('edit', detail?.id)">
         {{ t('common.edit') }}
       </n-button>
@@ -37,6 +37,7 @@
 
   import { getUserDetail } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
 
