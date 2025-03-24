@@ -2,7 +2,7 @@
   <!-- special-height 64是tab的高度和margin -->
   <CrmCard hide-footer :special-height="64">
     <div class="mb-[16px] flex items-center justify-between">
-      <n-button type="primary" @click="handleAdd">
+      <n-button v-permission="['SYSTEM_SETTING:UPDATE']" type="primary" @click="handleAdd">
         {{ t('system.business.authenticationSettings.add') }}
       </n-button>
       <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
@@ -30,7 +30,14 @@
       </CrmTag>
     </template>
     <template #titleRight>
-      <n-button type="primary" ghost @click="handleEdit(activeAuthDetail, true)"> {{ t('common.edit') }} </n-button>
+      <n-button
+        v-permission="['SYSTEM_SETTING:UPDATE']"
+        type="primary"
+        ghost
+        @click="handleEdit(activeAuthDetail, true)"
+      >
+        {{ t('common.edit') }}
+      </n-button>
     </template>
     <CrmDescription
       :one-line-label="false"
@@ -95,6 +102,7 @@
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { desensitize } from '@/utils';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const { openModal } = useModal();
@@ -170,10 +178,12 @@
     {
       label: t('common.edit'),
       key: 'edit',
+      permission: ['SYSTEM_SETTING:UPDATE'],
     },
     {
       label: t('common.delete'),
       key: 'delete',
+      permission: ['SYSTEM_SETTING:UPDATE'],
     },
   ]);
 
@@ -271,6 +281,7 @@
           CrmEditableText,
           {
             value: row.name,
+            permission: ['SYSTEM_SETTING:UPDATE'],
             onHandleEdit: async (val: string) => {
               await handleChangeName(row.id, val);
               row.name = val;
@@ -298,7 +309,9 @@
       render: (row: AuthItem) => {
         return h(NSwitch, {
           value: row.enable,
+          disabled: !hasAnyPermission(['SYSTEM_SETTING:UPDATE']),
           onClick: () => {
+            if (!hasAnyPermission(['SYSTEM_SETTING:UPDATE'])) return;
             if (row.enable) {
               handleDisable(row);
             } else {

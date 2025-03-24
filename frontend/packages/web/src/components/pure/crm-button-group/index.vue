@@ -48,7 +48,7 @@
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
 
-  import { hasAnyPermission } from '@/utils/permission';
+  import { hasAllPermission } from '@/utils/permission';
 
   const props = defineProps<{
     list: ActionsItem[]; // 按钮组
@@ -83,7 +83,7 @@
   }
 
   const buttonGroupList = computed(() => {
-    return props.list.filter((e) => hasAnyPermission(e.permission));
+    return props.list.filter((e) => hasAllPermission(e.permission));
   });
 </script>
 

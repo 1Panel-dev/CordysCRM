@@ -9,7 +9,7 @@ const clue: AppRouteRecordRaw = {
   redirect: '/clueManagement/clue',
   component: DEFAULT_LAYOUT,
   meta: {
-    permissions: [],
+    permissions: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'],
   },
   children: [
     {
@@ -19,7 +19,7 @@ const clue: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.clue',
         isTopMenu: true,
-        permissions: [],
+        permissions: ['CLUE_MANAGEMENT:READ'],
       },
     },
     {
@@ -29,7 +29,7 @@ const clue: AppRouteRecordRaw = {
       meta: {
         locale: 'module.cluePool',
         isTopMenu: true,
-        permissions: [],
+        permissions: ['CLUE_MANAGEMENT_POOL:READ'],
       },
     },
   ],

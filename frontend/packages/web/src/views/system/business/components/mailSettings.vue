@@ -37,7 +37,9 @@
       <n-button type="primary" ghost @click="testLink(false)">
         {{ t('system.business.mailSettings.testLink') }}
       </n-button>
-      <n-button type="primary" class="ml-[8px]" @click="showDrawer = true">{{ t('common.edit') }}</n-button>
+      <n-button v-permission="['SYSTEM_SETTING:UPDATE']" type="primary" class="ml-[8px]" @click="showDrawer = true">
+        {{ t('common.edit') }}
+      </n-button>
     </div>
   </CrmCard>
 

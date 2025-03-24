@@ -27,9 +27,15 @@
               </div>
 
               <div>
-                <n-button size="small" type="default" class="outline--secondary mr-[8px]" @click="handleEdit(item)">{{
-                  t('common.edit')
-                }}</n-button>
+                <n-button
+                  v-permission="['SYSTEM_SETTING:UPDATE']"
+                  size="small"
+                  type="default"
+                  class="outline--secondary mr-[8px]"
+                  @click="handleEdit(item)"
+                >
+                  {{ t('common.edit') }}
+                </n-button>
                 <n-tooltip :disabled="item.hasConfig">
                   <template #trigger>
                     <n-button
@@ -56,7 +62,7 @@
                 <n-switch
                   size="small"
                   :value="item.response.qrcodeEnable"
-                  :disabled="!item.hasConfig && !item.response.verify"
+                  :disabled="(!item.hasConfig && !item.response.verify) || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
                   @update:value="handleChangeEnable(item, 'qrcodeEnable')"
                 />
               </template>
@@ -71,7 +77,7 @@
                 <n-switch
                   size="small"
                   :value="item.response.syncEnable"
-                  :disabled="!item.hasConfig"
+                  :disabled="!item.hasConfig || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
                   @update:value="handleChangeEnable(item, 'syncEnable')"
                 />
               </template>
@@ -108,6 +114,7 @@
     testConfigSynchronization,
     updateConfigSynchronization,
   } from '@/api/modules/system/business';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const Message = useMessage();

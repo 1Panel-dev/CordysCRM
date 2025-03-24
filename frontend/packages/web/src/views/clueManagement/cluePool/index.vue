@@ -31,6 +31,13 @@
             @update-value="(e) => searchData(undefined, e)"
           />
           <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+          <CrmAdvanceFilter
+            ref="msAdvanceFilterRef"
+            v-model:keyword="keyword"
+            :custom-fields-config-list="filterConfigList"
+            :filter-config-list="customFieldsFilterConfig"
+            @adv-search="handleAdvSearch"
+          />
         </div>
       </template>
     </CrmTable>
@@ -57,6 +64,8 @@
   import type { CluePoolListItem, PoolOption } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
+  import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
+  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -78,6 +87,7 @@
     getPoolOptions,
     pickClue,
   } from '@/api/modules/clue';
+  import { filterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
@@ -108,14 +118,17 @@
       {
         label: t('common.batchClaim'),
         key: 'batchClaim',
+        permission: ['CLUE_MANAGEMENT_POOL:PICK'],
       },
       {
         label: t('common.batchDistribute'),
         key: 'batchDistribute',
+        permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
       },
       {
         label: t('common.batchDelete'),
         key: 'batchDelete',
+        permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
       },
     ],
   };
@@ -290,7 +303,7 @@
   }
 
   const activeClue = ref<CluePoolListItem>();
-  const { useTableRes } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE_POOL,
     operationColumn: {
       key: 'operation',
@@ -304,6 +317,7 @@
               {
                 label: t('common.claim'),
                 key: 'claim',
+                permission: ['CLUE_MANAGEMENT_POOL:PICK'],
                 popConfirmProps: {
                   loading: claimLoading.value,
                   title: t('clue.claimTip', { name: row.name }),
@@ -314,6 +328,7 @@
               {
                 label: t('common.distribute'),
                 key: 'distribute',
+                permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
                 popConfirmProps: {
                   loading: distributeLoading.value,
                   title: t('common.distribute'),
@@ -325,6 +340,7 @@
               {
                 label: t('common.delete'),
                 key: 'delete',
+                permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
               },
             ],
             onSelect: (key: string) => handleActionSelect(row, key),
@@ -358,7 +374,13 @@
       },
     },
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
+  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  function handleAdvSearch(filter: FilterResult) {
+    keyword.value = '';
+    setAdvanceFilter(filter);
+    loadList();
+  }
 
   function searchData(_keyword?: string, id?: string) {
     setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: id || poolId.value });

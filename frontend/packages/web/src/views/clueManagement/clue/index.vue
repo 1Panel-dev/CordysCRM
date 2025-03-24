@@ -16,7 +16,7 @@
     >
       <template #actionLeft>
         <div class="flex items-center">
-          <n-button class="mr-[12px]" type="primary" @click="handleAddOrEdit">
+          <n-button v-permission="['CLUE_MANAGEMENT:ADD']" class="mr-[12px]" type="primary" @click="handleAddOrEdit">
             {{ t('clueManagement.newClue') }}
           </n-button>
         </div>
@@ -59,12 +59,12 @@
   import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import type { ClueListItem } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
-  import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -80,6 +80,7 @@
   import ToCluePoolResultModel from './components/toCluePoolResultModel.vue';
 
   import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue } from '@/api/modules/clue';
+  import { filterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
@@ -128,14 +129,17 @@
       {
         label: t('common.batchTransfer'),
         key: 'batchTransfer',
+        permission: ['CLUE_MANAGEMENT:UPDATE'],
       },
       {
         label: t('clue.moveIntoCluePool'),
         key: 'moveIntoCluePool',
+        permission: ['CLUE_MANAGEMENT:RECYCLE'],
       },
       {
         label: t('common.batchDelete'),
         key: 'batchDelete',
+        permission: ['CLUE_MANAGEMENT:DELETE'],
       },
     ],
   };
@@ -313,14 +317,17 @@
       {
         label: t('common.edit'),
         key: 'edit',
+        permission: ['CLUE_MANAGEMENT:UPDATE'],
       },
       {
         label: t('opportunity.followUp'),
         key: 'followUp',
+        permission: ['CLUE_MANAGEMENT:UPDATE'],
       },
       {
         label: t('common.transfer'),
         key: 'transfer',
+        permission: ['CLUE_MANAGEMENT:UPDATE'],
         popConfirmProps: {
           loading: transferLoading.value,
           title: t('common.transfer'),
@@ -332,10 +339,12 @@
       {
         label: t('clue.convertToCustomer'),
         key: 'convertToCustomer',
+        permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
       },
       {
         label: t('clue.convertToOpportunity'),
         key: 'convertToOpportunity',
+        permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
       },
       ...(['departmentClues', 'myClues'].includes(activeTab.value)
         ? []
@@ -343,6 +352,7 @@
             {
               label: t('common.delete'),
               key: 'delete',
+              permission: ['CLUE_MANAGEMENT:DELETE'],
             },
           ]),
     ];
@@ -396,24 +406,6 @@
     },
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
-
-  const filterConfigList: FilterFormItem[] = [
-    {
-      title: t('common.createTime'),
-      dataIndex: 'createTime',
-      type: FieldTypeEnum.DATE_TIME,
-    },
-    {
-      title: t('common.updateUserName'),
-      dataIndex: 'updateUser',
-      type: FieldTypeEnum.USER_SELECT,
-    },
-    {
-      title: t('common.updateTime'),
-      dataIndex: 'updateTime',
-      type: FieldTypeEnum.DATE_TIME,
-    },
-  ];
 
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';

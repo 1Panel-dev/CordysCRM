@@ -233,6 +233,7 @@
             text: false,
             ghost: true,
             class: 'n-btn-outline-primary',
+            permission: ['CLUE_MANAGEMENT:UPDATE'],
           },
           {
             label: t('common.followPlan'),
@@ -240,6 +241,7 @@
             text: false,
             ghost: true,
             class: 'n-btn-outline-primary',
+            permission: ['CLUE_MANAGEMENT:UPDATE'],
           },
           {
             label: t('crmFollowRecord.followRecord'),
@@ -247,12 +249,14 @@
             text: false,
             ghost: true,
             class: 'n-btn-outline-primary',
+            permission: ['CLUE_MANAGEMENT:UPDATE'],
           },
         ]
       : []),
     {
       label: t('common.transfer'),
       key: 'transfer',
+      permission: ['CLUE_MANAGEMENT:UPDATE'],
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
@@ -268,6 +272,7 @@
     {
       label: t('clue.convertToCustomer'),
       key: 'convertToCustomer',
+      permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
@@ -275,6 +280,7 @@
     {
       label: t('clue.convertToOpportunity'),
       key: 'convertToOpportunity',
+      permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
@@ -284,6 +290,7 @@
           {
             label: t('common.delete'),
             key: 'delete',
+            permission: ['CLUE_MANAGEMENT:DELETE'],
             text: false,
             ghost: true,
             class: 'n-btn-outline-primary',

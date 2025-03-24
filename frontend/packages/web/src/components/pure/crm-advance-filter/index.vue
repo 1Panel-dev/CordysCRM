@@ -75,7 +75,9 @@
     emit('advSearch', filter, isAdvancedSearchMode.value);
   };
 
+  const filterModalRef = ref<InstanceType<typeof FilterModal>>();
   function clearFilter() {
+    filterModalRef.value?.handleReset();
     handleFilter({ searchMode: 'AND', conditions: [] });
   }
 

@@ -11,6 +11,7 @@
   <div v-else class="flex items-center gap-[8px]">
     <slot>{{ value }} </slot>
     <CrmIcon
+      v-permission="props.permission"
       class="table-row-edit cursor-pointer text-[var(--text-n4)]"
       type="iconicon_edit"
       :size="16"
@@ -26,6 +27,7 @@
 
   const props = defineProps<{
     value: string;
+    permission: string[];
   }>();
 
   const emit = defineEmits<{

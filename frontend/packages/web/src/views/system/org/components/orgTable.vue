@@ -579,6 +579,7 @@
           CrmEditableText,
           {
             value: row.userName,
+            permission: ['SYS_ORGANIZATION:UPDATE'],
             onHandleEdit: (val: string) => {
               updateUserName(row, val);
               row.userName = val;

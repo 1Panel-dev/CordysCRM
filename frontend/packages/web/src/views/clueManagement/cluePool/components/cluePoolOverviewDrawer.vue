@@ -92,6 +92,7 @@
     {
       label: t('common.claim'),
       key: 'claim',
+      permission: ['CLUE_MANAGEMENT_POOL:PICK'],
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
@@ -105,6 +106,7 @@
     {
       label: t('common.distribute'),
       key: 'distribute',
+      permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
@@ -119,6 +121,7 @@
     {
       label: t('common.delete'),
       key: 'delete',
+      permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',

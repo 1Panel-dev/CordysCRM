@@ -59,7 +59,6 @@
   // 重置
   function handleReset() {
     formModel.value = JSON.parse(JSON.stringify(savedFormModel.value));
-    emit('reset');
   }
 
   function getParams(): FilterResult {
@@ -87,4 +86,8 @@
       }
     });
   }
+
+  defineExpose({
+    handleReset,
+  });
 </script>
