@@ -16,6 +16,8 @@ import {
   CancelCustomerFollowPlanUrl,
   DeleteCustomerCollaborationUrl,
   DeleteCustomerContactUrl,
+  DeleteCustomerFollowPlanUrl,
+  DeleteCustomerFollowRecordUrl,
   DeleteCustomerOpenSeaUrl,
   DeleteCustomerUrl,
   DeleteOpenSeaCustomerUrl,
@@ -144,6 +146,11 @@ export function updateCustomerFollowRecord(data: UpdateCustomerFollowRecordParam
   return CDR.post({ url: UpdateCustomerFollowRecordUrl, data });
 }
 
+// 删除客户跟进记录
+export function deleteCustomerFollowRecord(id: string) {
+  return CDR.get({ url: `${DeleteCustomerFollowRecordUrl}/${id}` });
+}
+
 // 获取客户跟进记录列表
 export function getCustomerFollowRecordList(data: CustomerFollowRecordTableParams) {
   return CDR.post<CommonList<CustomerFollowRecordListItem>>({ url: GetCustomerFollowRecordListUrl, data });
@@ -167,6 +174,11 @@ export function addCustomerFollowPlan(data: SaveCustomerFollowPlanParams) {
 // 更新客户跟进计划
 export function updateCustomerFollowPlan(data: UpdateCustomerFollowPlanParams) {
   return CDR.post({ url: UpdateCustomerFollowPlanUrl, data });
+}
+
+// 删除客户跟进计划
+export function deleteCustomerFollowPlan(id: string) {
+  return CDR.get({ url: `${DeleteCustomerFollowPlanUrl}/${id}` });
 }
 
 // 获取客户跟进计划列表

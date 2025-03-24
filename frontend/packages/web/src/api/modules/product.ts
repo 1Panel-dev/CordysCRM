@@ -1,5 +1,7 @@
 import {
   AddProductUrl,
+  BatchDeleteProductUrl,
+  BatchUpdateProductUrl,
   DeleteProductUrl,
   GetProductFormConfigUrl,
   GetProductListUrl,
@@ -7,7 +9,12 @@ import {
   UpdateProductUrl,
 } from '@lib/shared/api/requrls/product';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
-import type { ProductListItem, SaveProductParams, UpdateProductParams } from '@lib/shared/models/product';
+import type {
+  BatchUpdateProductParams,
+  ProductListItem,
+  SaveProductParams,
+  UpdateProductParams,
+} from '@lib/shared/models/product';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import CDR from '@/api/http/index';
@@ -40,4 +47,14 @@ export function getProduct(id: string) {
 // 删除产品
 export function deleteProduct(id: string) {
   return CDR.get({ url: `${DeleteProductUrl}/${id}` });
+}
+
+// 批量删除产品
+export function batchDeleteProduct(data: (string | number)[]) {
+  return CDR.post({ url: BatchDeleteProductUrl, data });
+}
+
+// 批量更新产品
+export function batchUpdateProduct(data: BatchUpdateProductParams) {
+  return CDR.post({ url: BatchUpdateProductUrl, data });
 }

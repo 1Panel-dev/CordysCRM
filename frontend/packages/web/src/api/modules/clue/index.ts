@@ -10,6 +10,8 @@ import {
   BatchToPoolClueUrl,
   BatchTransferClueUrl,
   CancelClueFollowPlanUrl,
+  DeleteClueFollowPlanUrl,
+  DeleteClueFollowRecordUrl,
   DeleteCluePoolUrl,
   DeleteClueUrl,
   GetClueFollowPlanListUrl,
@@ -124,6 +126,11 @@ export function getClueFollowRecordList(data: CustomerFollowRecordTableParams) {
   return CDR.post<CommonList<FollowDetailItem>>({ url: GetClueFollowRecordListUrl, data });
 }
 
+// 删除线索跟进记录
+export function deleteClueFollowRecord(id: string) {
+  return CDR.get({ url: `${DeleteClueFollowRecordUrl}/${id}` });
+}
+
 // 获取线索跟进记录详情
 export function getClueFollowRecord(id: string) {
   return CDR.get<FollowDetailItem>({ url: `${GetClueFollowRecordUrl}/${id}` });
@@ -137,6 +144,11 @@ export function addClueFollowPlan(data: SaveCustomerFollowPlanParams) {
 // 更新线索跟进计划
 export function updateClueFollowPlan(data: UpdateCustomerFollowPlanParams) {
   return CDR.post({ url: UpdateClueFollowPlanUrl, data });
+}
+
+// 删除线索跟进计划
+export function deleteClueFollowPlan(id: string) {
+  return CDR.get({ url: `${DeleteClueFollowPlanUrl}/${id}` });
 }
 
 // 获取线索跟进计划列表

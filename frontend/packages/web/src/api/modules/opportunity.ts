@@ -2,6 +2,8 @@ import {
   AddOptFollowPlanUrl,
   AddOptFollowRecordUrl,
   CancelOptFollowPlanUrl,
+  DeleteOptFollowPlanUrl,
+  DeleteOptFollowRecordUrl,
   GetOptDetailUrl,
   GetOptFollowPlanUrl,
   GetOptFollowRecordUrl,
@@ -69,6 +71,11 @@ export function getOptFollowRecordList(data: CustomerFollowRecordTableParams) {
   return CDR.post<CommonList<FollowDetailItem>>({ url: OptFollowRecordListUrl, data });
 }
 
+// 删除商机跟进记录
+export function deleteOptFollowRecord(id: string) {
+  return CDR.get({ url: `${DeleteOptFollowRecordUrl}/${id}` });
+}
+
 // 添加商机跟进记录
 export function addOptFollowRecord(data: SaveCustomerFollowRecordParams) {
   return CDR.post({ url: AddOptFollowRecordUrl, data });
@@ -97,6 +104,11 @@ export function addOptFollowPlan(data: SaveCustomerFollowPlanParams) {
 // 更新商机跟进计划
 export function updateOptFollowPlan(data: UpdateCustomerFollowPlanParams) {
   return CDR.post({ url: UpdateOptFollowPlanUrl, data });
+}
+
+// 删除商机跟进计划
+export function deleteOptFollowPlan(id: string) {
+  return CDR.get({ url: `${DeleteOptFollowPlanUrl}/${id}` });
 }
 
 // 获取商机跟进计划详情

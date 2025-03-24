@@ -16,3 +16,5 @@ export const OptBatchDeleteUrl = '/opportunity/batch/delete'; // 批量删除商
 export const OptDeleteUrl = '/opportunity/delete'; // 删除商机
 export const OptUpdateStageUrl = '/opportunity/update/stage'; // 更新商机阶段
 export const GetOptDetailUrl = '/opportunity/get'; // 获取商机详情
+export const DeleteOptFollowRecordUrl = '/opportunity/follow/record/delete'; // 删除商机跟进记录
+export const DeleteOptFollowPlanUrl = '/opportunity/follow/plan/delete'; // 删除商机跟进计划

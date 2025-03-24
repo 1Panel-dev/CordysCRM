@@ -48,7 +48,7 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
-  import { deleteProduct } from '@/api/modules/product';
+  import { batchDeleteProduct, batchUpdateProduct, deleteProduct } from '@/api/modules/product';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -96,7 +96,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          // TODO
+          await batchDeleteProduct(checkedRowKeys.value);
           tableRefreshId.value += 1;
           Message.success(t('common.deleteSuccess'));
         } catch (error) {
@@ -107,10 +107,14 @@
     });
   }
 
-  // 批量上架 | 下架
-  function handleBatchUpOrDown(status: boolean) {
+  // 批量上架 | 下架 TODO  接口要调整
+  async function handleBatchUpOrDown(status: boolean) {
     try {
-      // TODO
+      const params = {
+        ids: checkedRowKeys.value,
+        moduleFields: [],
+      };
+      await batchUpdateProduct(params);
       Message.success(t(status ? 'product.batchUpSuccess' : 'product.batchDownSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console

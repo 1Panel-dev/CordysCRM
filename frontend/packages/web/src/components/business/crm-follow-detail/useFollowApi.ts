@@ -8,16 +8,26 @@ import type { FollowDetailItem } from '@lib/shared/models/customer';
 
 import {
   cancelClueFollowPlan,
+  deleteClueFollowPlan,
+  deleteClueFollowRecord,
   getClueFollowPlanList,
   getClueFollowRecordList,
   getCluePoolFollowRecordList,
 } from '@/api/modules/clue/index';
 import {
   cancelCustomerFollowPlan,
+  deleteCustomerFollowPlan,
+  deleteCustomerFollowRecord,
   getCustomerFollowPlanList,
   getCustomerFollowRecordList,
 } from '@/api/modules/customer/index';
-import { cancelOptFollowPlan, getOptFollowPlanList, getOptFollowRecordList } from '@/api/modules/opportunity';
+import {
+  cancelOptFollowPlan,
+  deleteOptFollowPlan,
+  deleteOptFollowRecord,
+  getOptFollowPlanList,
+  getOptFollowRecordList,
+} from '@/api/modules/opportunity';
 import { getFormDesignConfig } from '@/api/modules/system/module';
 import { useI18n } from '@/hooks/useI18n';
 
@@ -39,6 +49,10 @@ type FollowApiMapType = Record<
     cancel?: {
       followPlan: typeof cancelOptFollowPlan;
     };
+    delete?: {
+      followRecord: (params: string) => Promise<any>;
+      followPlan?: (params: string) => Promise<any>;
+    };
   }
 >;
 
@@ -51,6 +65,10 @@ const followApiMap: FollowApiMapType = {
     cancel: {
       followPlan: cancelOptFollowPlan,
     },
+    delete: {
+      followRecord: deleteOptFollowRecord,
+      followPlan: deleteOptFollowPlan,
+    },
   },
   [FormDesignKeyEnum.CUSTOMER]: {
     list: {
@@ -60,6 +78,10 @@ const followApiMap: FollowApiMapType = {
     cancel: {
       followPlan: cancelCustomerFollowPlan,
     },
+    delete: {
+      followRecord: deleteCustomerFollowRecord,
+      followPlan: deleteCustomerFollowPlan,
+    },
   },
   [FormDesignKeyEnum.CLUE]: {
     list: {
@@ -68,6 +90,10 @@ const followApiMap: FollowApiMapType = {
     },
     cancel: {
       followPlan: cancelClueFollowPlan,
+    },
+    delete: {
+      followRecord: deleteClueFollowRecord,
+      followPlan: deleteClueFollowPlan,
     },
   },
   [FormDesignKeyEnum.CLUE_POOL]: {
@@ -198,9 +224,10 @@ export default function useFollowApi(followProps: {
     loadFollowList();
   }
 
-  // 删除 TODO
-  function handleDelete(item: FollowDetailItem) {
+  // 删除
+  async function handleDelete(item: FollowDetailItem) {
     try {
+      await apis.delete?.[type.value]?.(item.id);
       Message.success(t('common.deleteSuccess'));
       loadFollowList();
     } catch (error) {

@@ -15,6 +15,7 @@ export const UpdateClueFollowRecordUrl = '/clue/follow/record/update'; // 更新
 export const GetClueFollowRecordListUrl = '/clue/follow/record/page'; // 获取跟进记录列表
 export const AddClueFollowRecordUrl = '/clue/follow/record/add'; // 添加跟进记录
 export const GetClueFollowRecordUrl = '/clue/follow/record/get'; // 获取跟进记录详情
+export const DeleteClueFollowRecordUrl = '/clue/follow/record/delete'; // 删除跟进记录
 
 // 跟进计划
 export const UpdateClueFollowPlanUrl = '/clue/follow/plan/update'; // 更新跟进计划
@@ -22,6 +23,7 @@ export const GetClueFollowPlanListUrl = '/clue/follow/plan/page'; // 获取跟�
 export const AddClueFollowPlanUrl = '/clue/follow/plan/add'; // 添加跟进计划
 export const GetClueFollowPlanUrl = '/clue/follow/plan/get'; // 跟进计划详情
 export const CancelClueFollowPlanUrl = '/clue/follow/plan/cancel'; // 取消跟进计划
+export const DeleteClueFollowPlanUrl = '/clue/follow/plan/delete'; // 删除跟进计划
 
 export const GetClueHeaderListUrl = '/clue/owner/history/list'; // 线索负责人记录列表
 
