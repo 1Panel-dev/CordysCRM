@@ -133,21 +133,21 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null
                 and ${sort}.name != 'name'
-                and condition.name != 'owner'
-                and condition.name != 'customerId'
-                and condition.name != 'stage'
-                and condition.name != 'amount'
-                and condition.name != 'possible'
-                and condition.name != 'products'
-                and condition.name != 'contactId'
-                and condition.name != 'followTime'
-                and condition.name != 'status'
-                and condition.name != 'updateUser'
-                and condition.name != 'createTime'
-                and condition.name != 'updateTime'
-                and condition.name != 'createUser'
-                and condition.name != 'follower'
-                and condition.name != 'departmentId'">
+                and ${sort}.name != 'owner'
+                and ${sort}.name != 'customerId'
+                and ${sort}.name != 'stage'
+                and ${sort}.name != 'amount'
+                and ${sort}.name != 'possible'
+                and ${sort}.name != 'products'
+                and ${sort}.name != 'contactId'
+                and ${sort}.name != 'followTime'
+                and ${sort}.name != 'status'
+                and ${sort}.name != 'updateUser'
+                and ${sort}.name != 'createTime'
+                and ${sort}.name != 'updateTime'
+                and ${sort}.name != 'createUser'
+                and ${sort}.name != 'follower'
+                and ${sort}.name != 'departmentId'">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_field sort_table
             on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
