@@ -27,7 +27,7 @@ public class ShiroFilter {
 
         // 公共可访问的 URL
         filterChainDefinitionMap.put("/login", "anon");
-        filterChainDefinitionMap.put("/signout", "anon");
+        filterChainDefinitionMap.put("/logout", "anon");
         filterChainDefinitionMap.put("/is-login", "anon");
         filterChainDefinitionMap.put("/get-key", "anon");
 
