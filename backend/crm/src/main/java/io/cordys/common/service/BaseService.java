@@ -191,6 +191,9 @@ public class BaseService {
 
 
     public Map<String, UserResponse> getUserDepAndPhoneByUserIds(List<String> ownerIds, String orgId) {
+        if (CollectionUtils.isEmpty(ownerIds)) {
+            return Collections.emptyMap();
+        }
         List<UserResponse> userResponseList = extOrganizationUserMapper.getUserDepAndPhoneByUserIds(ownerIds, orgId);
         return userResponseList.stream().collect(Collectors.toMap(UserResponse::getId, Function.identity()));
     }
