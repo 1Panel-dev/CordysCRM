@@ -9,7 +9,7 @@ const customer: AppRouteRecordRaw = {
   redirect: '/customer/index',
   component: DEFAULT_LAYOUT,
   meta: {
-    permissions: [],
+    permissions: ['CUSTOMER_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT_POOL:READ', 'CUSTOMER_MANAGEMENT_CONTACT:READ'],
   },
   children: [
     {
@@ -19,7 +19,7 @@ const customer: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.customer',
         isTopMenu: true,
-        permissions: [],
+        permissions: ['CUSTOMER_MANAGEMENT:READ'],
       },
     },
     {
@@ -29,7 +29,7 @@ const customer: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.contact',
         isTopMenu: true,
-        permissions: [],
+        permissions: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],
       },
     },
     {
@@ -39,7 +39,7 @@ const customer: AppRouteRecordRaw = {
       meta: {
         locale: 'module.openSea',
         isTopMenu: true,
-        permissions: [],
+        permissions: ['CUSTOMER_MANAGEMENT_POOL:READ'],
       },
     },
   ],

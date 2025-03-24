@@ -93,6 +93,7 @@
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
     },
     {
       label: t('overviewDrawer.addContract'),
@@ -100,6 +101,7 @@
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
     },
     {
       label: t('overviewDrawer.followRecord'),
@@ -107,6 +109,7 @@
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
     },
     {
       label: t('overviewDrawer.followPlan'),
@@ -114,6 +117,7 @@
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
     },
     {
       label: t('common.transfer'),
@@ -121,6 +125,7 @@
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       popConfirmProps: {
         loading: transferLoading.value,
         title: t('common.transfer'),
@@ -135,6 +140,7 @@
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT:DELETE'],
     },
   ];
 

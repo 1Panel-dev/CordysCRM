@@ -14,7 +14,7 @@ export default function checkStatus(status: number, msg: string, code?: number):
       errMessage = `${msg}`;
       break;
     case 401: {
-      errMessage = msg || t('api.errMsg401');
+      // errMessage = msg || t('api.errMsg401');
       if (!isLoginPage() && !isWhiteListPage()) {
         // 不是登录页再调用logout
         logout();

@@ -8,14 +8,24 @@
       <div v-for="(relation, index) in relations" :key="relation.customerId" class="flex items-center gap-[8px]">
         <n-select v-model:value="relation.relationType" :options="getRelationOptions(relation)" />
         <n-select v-model:value="relation.customerId" :options="customerOptions" />
-        <n-button class="bg-[var(--text-n10)] p-[8px]" @click="deleteRelation(index)">
+        <n-button
+          v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
+          class="bg-[var(--text-n10)] p-[8px]"
+          @click="deleteRelation(index)"
+        >
           <template #icon>
             <CrmIcon type="iconicon_minus_circle1" class="text-[var(--text-n4)]" />
           </template>
         </n-button>
       </div>
       <div class="flex justify-center">
-        <n-button type="primary" text :disabled="relations.length >= 11" @click="addRelation">
+        <n-button
+          v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
+          type="primary"
+          text
+          :disabled="relations.length >= 11"
+          @click="addRelation"
+        >
           <template #icon>
             <CrmIcon type="iconicon_add" />
           </template>
@@ -24,8 +34,12 @@
       </div>
     </div>
     <div class="mt-[16px] flex items-center justify-end gap-[16px]">
-      <n-button :disabled="loading" @click="reset">{{ t('common.reset') }}</n-button>
-      <n-button type="primary" :loading="loading" @click="handleSave">{{ t('common.save') }}</n-button>
+      <n-button v-permission="['CUSTOMER_MANAGEMENT:UPDATE']" :disabled="loading" @click="reset">
+        {{ t('common.reset') }}
+      </n-button>
+      <n-button v-permission="['CUSTOMER_MANAGEMENT:UPDATE']" type="primary" :loading="loading" @click="handleSave">
+        {{ t('common.save') }}
+      </n-button>
     </div>
   </CrmCard>
 </template>

@@ -111,14 +111,17 @@
       {
         label: t('common.batchClaim'),
         key: 'batchClaim',
+        permission: ['CUSTOMER_MANAGEMENT_POOL:PICK'],
       },
       {
         label: t('common.batchDistribute'),
         key: 'batchDistribute',
+        permission: ['CUSTOMER_MANAGEMENT_POOL:ASSIGN'],
       },
       {
         label: t('common.batchDelete'),
         key: 'batchDelete',
+        permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
       },
     ],
   };
@@ -226,6 +229,7 @@
       {
         label: t('common.claim'),
         key: 'claim',
+        permission: ['CUSTOMER_MANAGEMENT_POOL:PICK'],
         popConfirmProps: {
           loading: claimLoading.value,
           title: t('customer.claimTip'),
@@ -237,6 +241,7 @@
       {
         label: t('common.distribute'),
         key: 'distribute',
+        permission: ['CUSTOMER_MANAGEMENT_POOL:ASSIGN'],
         popConfirmProps: {
           loading: distributeLoading.value,
           title: t('common.distribute'),
@@ -248,6 +253,7 @@
       {
         label: t('common.delete'),
         key: 'delete',
+        permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
       },
     ];
   });

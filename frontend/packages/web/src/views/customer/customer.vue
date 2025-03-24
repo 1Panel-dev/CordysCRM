@@ -15,7 +15,7 @@
     >
       <template #actionLeft>
         <div class="flex items-center">
-          <n-button class="mr-[12px]" type="primary" @click="handleNewClick">
+          <n-button v-permission="['CUSTOMER_MANAGEMENT:ADD']" class="mr-[12px]" type="primary" @click="handleNewClick">
             {{ t('customer.new') }}
           </n-button>
         </div>
@@ -120,14 +120,17 @@
       {
         label: t('common.batchTransfer'),
         key: 'batchTransfer',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
       {
         label: t('customer.moveToOpenSea'),
         key: 'moveToOpenSea',
+        permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
       },
       {
         label: t('common.batchDelete'),
         key: 'batchDelete',
+        permission: ['CUSTOMER_MANAGEMENT:DELETE'],
       },
     ],
   };
@@ -266,10 +269,12 @@
       {
         label: t('opportunity.followUp'),
         key: 'followUp',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
       {
         label: t('common.edit'),
         key: 'edit',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
       {
         label: t('common.transfer'),
@@ -282,12 +287,14 @@
         },
         popSlotName: 'transferPopTitle',
         popSlotContent: 'transferPopContent',
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
       ...(activeTab.value === CustomerSearchTypeEnum.ALL
         ? [
             {
               label: t('common.delete'),
               key: 'delete',
+              permission: ['CUSTOMER_MANAGEMENT:DELETE'],
             },
           ]
         : []),

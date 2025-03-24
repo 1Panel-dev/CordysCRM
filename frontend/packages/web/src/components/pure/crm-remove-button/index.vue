@@ -1,6 +1,7 @@
 <template>
   <CrmPopConfirm
     v-model:show="showModal"
+    v-permission="props.permission"
     :title="props.title"
     :content="props.content"
     :loading="props.loading"
@@ -46,6 +47,7 @@
       | 'left-start'
       | 'left'
       | 'left-end';
+    permission?: string[]; // 权限
   }>();
 
   const emit = defineEmits<{

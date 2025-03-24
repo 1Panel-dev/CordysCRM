@@ -5,7 +5,7 @@
         <div class="flex h-full flex-col p-[24px]">
           <div class="mb-[8px] flex items-center justify-between gap-[8px]">
             <CrmSearchInput v-model:value="keyword" :placeholder="t('common.searchByName')" />
-            <n-tooltip trigger="hover" :delay="300">
+            <n-tooltip v-permission="['SYSTEM_ROLE:ADD']" trigger="hover" :delay="300">
               <template #trigger>
                 <n-button type="primary" ghost class="n-btn-outline-primary px-[7px]" @click="addRole">
                   <template #icon>
@@ -78,6 +78,7 @@
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { getGenerateId } from '@/utils';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const { openModal } = useModal();
@@ -108,10 +109,12 @@
     {
       key: 'rename',
       label: t('common.rename'),
+      permission: ['SYSTEM_ROLE:UPDATE'],
     },
     {
       key: 'copy',
       label: t('common.copy'),
+      permission: ['SYSTEM_ROLE:ADD'],
     },
     {
       type: 'divider',
@@ -120,11 +123,12 @@
       key: 'delete',
       label: t('common.delete'),
       danger: true,
+      permission: ['SYSTEM_ROLE:DELETE'],
     },
   ];
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
-    if (node.internal) {
+    if (node.internal || !hasAnyPermission(['SYSTEM_ROLE:UPDATE'])) {
       return [];
     }
     if (node.isNew) {

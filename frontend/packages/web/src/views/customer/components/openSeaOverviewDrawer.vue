@@ -65,6 +65,7 @@
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT_POOL:PICK'],
       popConfirmProps: {
         loading: claimLoading.value,
         title: t('customer.claimTip'),
@@ -78,6 +79,7 @@
       key: 'distribute',
       text: false,
       ghost: true,
+      permission: ['CUSTOMER_MANAGEMENT_POOL:ASSIGN'],
       class: 'n-btn-outline-primary',
       popConfirmProps: {
         loading: distributeLoading.value,
@@ -93,6 +95,7 @@
       text: false,
       ghost: true,
       class: 'n-btn-outline-primary',
+      permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
     },
   ];
 

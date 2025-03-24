@@ -11,7 +11,9 @@
       @batch-action="handleBatchAction"
     >
       <template #actionLeft>
-        <n-button type="primary" @click="handleAddClick">{{ t('role.addMember') }}</n-button>
+        <n-button v-permission="['CUSTOMER_MANAGEMENT:UPDATE']" type="primary" @click="handleAddClick">
+          {{ t('role.addMember') }}
+        </n-button>
       </template>
     </CrmTable>
   </CrmCard>
@@ -303,6 +305,7 @@
       {
         key: 'delete',
         label: t('common.batchDelete'),
+        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
     ],
   };

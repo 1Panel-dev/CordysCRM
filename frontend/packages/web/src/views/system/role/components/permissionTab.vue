@@ -6,7 +6,7 @@
     >
       <div class="group-title">{{ t('role.dataPermission') }}</div>
       <div class="mb-[24px] flex h-[32px] items-center gap-[8px]">
-        <n-radio-group v-model:value="dataPermission" @update-value="handleDataPermissionChange">
+        <n-radio-group v-model:value="dataPermission" :disabled="isDisabled" @update-value="handleDataPermissionChange">
           <n-space>
             <n-radio v-for="item in dataPermissionOptions" :key="item.value" :value="item.value">
               {{ item.label }}
@@ -23,6 +23,7 @@
           class="w-[240px]"
           :placeholder="t('role.pleaseSelectDepartment')"
           :loading="departmentLoading"
+          :disabled="isDisabled"
           key-field="id"
           label-field="name"
           @update-value="() => (unsave = true)"
@@ -41,10 +42,20 @@
       />
     </n-scrollbar>
     <div class="tab-footer">
-      <n-button :disabled="loading || (!props.isNew && !unsave)" secondary @click="handleCancel">
+      <n-button
+        v-permission="['SYSTEM_ROLE:ADD', 'SYSTEM_ROLE:UPDATE']"
+        :disabled="loading || (!props.isNew && !unsave)"
+        secondary
+        @click="handleCancel"
+      >
         {{ t(props.isNew ? 'common.cancel' : 'common.revokeChange') }}
       </n-button>
-      <n-button :loading="loading" type="primary" @click="handleSave">
+      <n-button
+        v-permission="['SYSTEM_ROLE:ADD', 'SYSTEM_ROLE:UPDATE']"
+        :loading="loading"
+        type="primary"
+        @click="handleSave"
+      >
         {{ t(props.isNew ? 'common.create' : 'common.update') }}
       </n-button>
     </div>
@@ -77,6 +88,7 @@
 
   import { createRole, getPermissions, getRoleDeptTree, getRoleDetail, updateRole } from '@/api/modules/system/role';
   import { useI18n } from '@/hooks/useI18n';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     activeRoleId: string;
@@ -119,6 +131,13 @@
       departmentLoading.value = false;
     }
   }
+
+  const isDisabled = computed(() => {
+    if (props.isNew) {
+      return !hasAnyPermission(['SYSTEM_ROLE:ADD']);
+    }
+    return !hasAnyPermission(['SYSTEM_ROLE:UPDATE']);
+  });
 
   async function init() {
     try {
@@ -204,6 +223,7 @@
               {
                 class: 'mr-[8px]',
                 checked: item.enable as boolean,
+                disabled: isDisabled.value,
                 onUpdateChecked: (value: boolean) => {
                   unsave.value = true;
                   item.enable = value;
@@ -248,6 +268,7 @@
         h(NCheckbox, {
           checked: permissionAllChecked.value,
           indeterminate: data.value.some((item) => item.enable || item.indeterminate) && !permissionAllChecked.value,
+          disabled: isDisabled.value,
           onUpdateChecked: (value: boolean) => {
             unsave.value = true;
             permissionAllChecked.value = value;
@@ -264,6 +285,7 @@
         h(NCheckbox, {
           checked: rowData.enable as boolean,
           indeterminate: ((rowData.permissions as []) || []).some((item: any) => item.enable) && !rowData.enable,
+          disabled: isDisabled.value,
           onUpdateChecked: (value: boolean) => {
             unsave.value = true;
             rowData.enable = value;

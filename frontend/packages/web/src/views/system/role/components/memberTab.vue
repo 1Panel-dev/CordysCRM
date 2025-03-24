@@ -12,7 +12,7 @@
         @batch-action="handleBatchAction"
       >
         <template #actionLeft>
-          <n-button type="primary" @click="handleCreate">
+          <n-button v-permission="['SYSTEM_ROLE:ADD_USER']" type="primary" @click="handleCreate">
             {{ t('role.addMember') }}
           </n-button>
         </template>
@@ -155,6 +155,7 @@
           loading: removeLoading.value,
           title: t('common.removeConfirmTitle', { name: row.userName }),
           content: t('role.removeMemberTip'),
+          permission: ['SYSTEM_ROLE:REMOVE_USER'],
           onConfirm: (cancel) => removeMember(row, cancel),
         }),
     },
@@ -183,6 +184,7 @@
       {
         label: t('role.batchRemove'),
         key: 'batchRemove',
+        permission: ['SYSTEM_ROLE:REMOVE_USER'],
       },
     ],
   };

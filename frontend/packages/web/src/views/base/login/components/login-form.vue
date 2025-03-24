@@ -90,7 +90,7 @@
             class="loginType"
             @click="switchLoginType('QR_CODE')"
           >
-            <CrmIcon type="icon-icon_scan_outlined" class="text-[var(--primary-8)]" />
+            <CrmIcon type="iconicon_scan" class="text-[var(--primary-8)]" />
           </div>
           <div v-if="userInfo.authenticate !== 'LDAP' && isShowLDAP" class="loginType" @click="switchLoginType('LDAP')">
             <span class="type-text text-[10px]">LDAP</span>
