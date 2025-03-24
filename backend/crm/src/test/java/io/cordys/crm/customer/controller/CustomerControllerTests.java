@@ -311,7 +311,7 @@ class CustomerControllerTests extends BaseTest {
         this.requestPostWithOk(BATCH_TO_POOL, batchIds);
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_RECYCLE, BATCH_TO_POOL, batchIds);
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, BATCH_TO_POOL, batchIds);
     }
 
     @Test

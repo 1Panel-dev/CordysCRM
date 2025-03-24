@@ -1,6 +1,7 @@
 package io.cordys.crm.customer.service;
 
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.Translator;
@@ -156,7 +157,7 @@ public class PoolCustomerService {
 		List<Customer> customers = customerMapper.selectListByLambda(customerWrapper);
 		int ownCount = customers.size();
 		if (capacity != null && capacity - ownCount < processCount) {
-			throw new ArithmeticException(Translator.get("customer.capacity.over"));
+			throw new GenericException(Translator.get("customer.capacity.over"));
 		}
 	}
 
@@ -177,7 +178,7 @@ public class PoolCustomerService {
 			List<Customer> customers = customerMapper.selectListByLambda(customerWrapper);
 			int pickedCount = customers.size();
 			if (pickingCount + pickedCount > pickRule.getPickNumber()) {
-				throw new ArithmeticException(Translator.get("customer.daily.pick.over"));
+				throw new GenericException(Translator.get("customer.daily.pick.over"));
 			}
 		}
 	}
@@ -212,7 +213,7 @@ public class PoolCustomerService {
 				CustomerOwner lastOwner = customerOwners.getFirst();
 				if (StringUtils.equals(lastOwner.getOwner(), ownerId) &&
 						System.currentTimeMillis() - lastOwner.getCollectionTime() < pickRule.getPickIntervalDays() * DAY_MILLIS) {
-					throw new ArithmeticException(Translator.get("customer.pre_owner.pick.limit"));
+					throw new GenericException(Translator.get("customer.pre_owner.pick.limit"));
 				}
 			}
 		}

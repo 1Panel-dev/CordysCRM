@@ -4,6 +4,7 @@ import com.alibaba.excel.util.StringUtils;
 import io.cordys.common.domain.BaseModel;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.dto.request.ModuleSourceDataRequest;
@@ -47,11 +48,11 @@ public class ModuleFieldService {
 		fieldWrapper.eq(ModuleField::getId, fieldId);
 		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
 		if (fields.isEmpty()) {
-			throw new ArithmeticException(Translator.get("module.field.not_exist"));
+			throw new GenericException(Translator.get("module.field.not_exist"));
 		}
 		ModuleField field = fields.getFirst();
 		if (!StringUtils.equals(type, field.getType())) {
-			throw new ArithmeticException(Translator.get("module.field.not_match_type"));
+			throw new GenericException(Translator.get("module.field.not_match_type"));
 		}
 	}
 }

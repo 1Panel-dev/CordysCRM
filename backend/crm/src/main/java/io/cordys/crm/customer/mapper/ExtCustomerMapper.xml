@@ -260,6 +260,6 @@
     <update id="moveToPool" parameterType="io.cordys.crm.customer.domain.Customer">
         update customer set pool_id = #{customer.poolId}, in_shared_pool = #{customer.inSharedPool}, owner = #{customer.owner},
                             collection_time = #{customer.collectionTime}, update_time = #{customer.updateTime}, update_user = #{customer.updateUser}
-        where id = #{id}
+        where id = #{customer.id}
     </update>
 </mapper>
