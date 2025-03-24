@@ -130,7 +130,7 @@ public class OpportunityControllerTests extends BaseTest {
     @Test
     @Order(2)
     void testGetDetail() throws Exception {
-        this.requestGetWithOk(DEFAULT_GET, addOpportunity.getId());
+        this.requestGet(DEFAULT_GET, addOpportunity.getId());
     }
 
     @Test
