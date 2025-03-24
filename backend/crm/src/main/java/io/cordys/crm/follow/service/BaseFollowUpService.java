@@ -71,7 +71,10 @@ public class BaseFollowUpService {
 
         // 部门数据权限
         if (CollectionUtils.isNotEmpty(deptDataPermission.getDeptIds())) {
-            List<OrganizationUser> users = extOrganizationUserMapper.selectUserByUserIds(new ArrayList<>(collaborationUserIds));
+            List<OrganizationUser> users = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(collaborationUserIds)) {
+                users = extOrganizationUserMapper.selectUserByUserIds(new ArrayList<>(collaborationUserIds));
+            }
             List<OrganizationUser> currentUser = extOrganizationUserMapper.selectUserByUserIds(List.of(userId));
             if (customerDataDTO.isOwner()) {
                 List<OrganizationUser> depUsers = users.stream()
