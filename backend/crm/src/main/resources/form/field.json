@@ -676,7 +676,7 @@
       "editable": true,
       "fieldWidth": 0.5,
       "options": [
-        {"label": "客户", "value":  "1"}, {"label": "线索", "value":  "2"}
+        {"label": "客户", "value":  "CUSTOMER"}, {"label": "线索", "value":  "CLUE"}
       ],
       "rules": [
         {"key":  "required"}
