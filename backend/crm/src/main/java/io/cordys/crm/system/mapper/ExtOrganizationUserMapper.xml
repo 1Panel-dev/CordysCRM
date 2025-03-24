@@ -162,6 +162,10 @@
         select * from sys_organization_user where organization_id = #{orgId} and user_id != 'admin'
     </select>
 
+    <select id="getOrgUserIdByUserId" resultType="java.lang.String">
+        select id from sys_organization_user where organization_id = #{orgId} and user_id = #{userId}
+    </select>
+
     <update id="updateOrganizationUser" parameterType="io.cordys.crm.system.domain.OrganizationUser">
         update sys_organization_user
         <set>

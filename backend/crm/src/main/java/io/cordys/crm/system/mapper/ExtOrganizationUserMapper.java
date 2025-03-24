@@ -50,4 +50,6 @@ public interface ExtOrganizationUserMapper {
     List<OrganizationUser> selectUserByUserIds(@Param("userIds") List<String> userIds);
 
     List<UserResponse> getUserDepAndPhoneByUserIds(@Param("userIds") List<String> userIds, @Param("orgId") String orgId);
+
+    String getOrgUserIdByUserId(@Param("orgId") String orgId, @Param("userId") String userId);
 }

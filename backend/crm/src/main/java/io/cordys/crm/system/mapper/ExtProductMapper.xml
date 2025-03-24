@@ -2,6 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="io.cordys.crm.system.mapper.ExtProductMapper">
+    <update id="updateProduct">
+        UPDATE product
+        <set>
+            <if test="product.price != null">
+                price = #{product.price},
+            </if>
+            <if test="product.status != null">
+                status = #{product.status},
+            </if>
+            <if test="product.updateTime != null">
+                update_time = #{product.updateTime},
+            </if>
+            <if test="product.updateUser != null">
+                update_user = #{product.updateUser},
+            </if>
+        </set>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+
+    </update>
 
     <select id="list" resultType="io.cordys.crm.system.dto.response.product.ProductListResponse">
         select *

@@ -19,6 +19,7 @@ import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,6 +81,8 @@ public class ProductService {
     public Product add(ProductEditRequest request, String userId, String orgId) {
         Product product = BeanUtils.copyBean(new Product(), request);
         product.setName(request.getName());
+        product.setPrice(request.getPrice());
+        product.setStatus(request.getStatus());
         product.setCreateTime(System.currentTimeMillis());
         product.setUpdateTime(System.currentTimeMillis());
         product.setUpdateUser(userId);
@@ -98,10 +101,11 @@ public class ProductService {
         return product;
     }
 
-    public Product update(ProductEditRequest request, String userId) {
+    public Product update(ProductEditRequest request, String userId, String orgId) {
         Product product = BeanUtils.copyBean(new Product(), request);
         product.setUpdateTime(System.currentTimeMillis());
         product.setUpdateUser(userId);
+        product.setOrganizationId(orgId);
 
         // 校验名称重复
         checkUpdateExist(product);
@@ -153,7 +157,12 @@ public class ProductService {
         productFieldService.deleteByResourceId(id);
     }
 
-    public void batchUpdate(ProductBatchEditRequest request) {
+    public void batchUpdate(ProductBatchEditRequest request, String userId, String orgId) {
+        Product product = BeanUtils.copyBean(new Product(), request);
+        product.setUpdateTime(System.currentTimeMillis());
+        product.setUpdateUser(userId);
+        product.setOrganizationId(orgId);
+        extProductMapper.updateProduct(request.getIds(),product);
         batchUpdateModuleField(request.getIds(),request.getModuleFields());
     }
 

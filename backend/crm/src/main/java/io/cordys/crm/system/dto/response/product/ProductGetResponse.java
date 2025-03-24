@@ -20,6 +20,12 @@ public class ProductGetResponse {
     @Schema(description = "产品名称")
     private String name;
 
+    @Schema(description = "价格")
+    private Double price;
+
+    @Schema(description = "状态")
+    private String status;
+
     @Schema(description = "创建人")
     private String createUser;
 

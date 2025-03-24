@@ -76,14 +76,14 @@ public class ProductController {
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
     @Operation(summary = "更新产品")
     public Product update(@Validated @RequestBody ProductEditRequest request){
-        return productService.update(request, SessionUtils.getUserId());
+        return productService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/update")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
     @Operation(summary = "批量更新产品")
-    public void update(@Validated @RequestBody ProductBatchEditRequest request){
-         productService.batchUpdate(request);
+    public void batchUpdate(@Validated @RequestBody ProductBatchEditRequest request){
+         productService.batchUpdate(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")

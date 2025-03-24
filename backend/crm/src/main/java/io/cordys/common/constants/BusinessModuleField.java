@@ -181,8 +181,9 @@ public enum BusinessModuleField {
     /*------ end: FOLLOW_UP_PLAN ------*/
 
     /*------ start: PRODUCT ------*/
-    PRODUCT_NAME("productName", "name", Set.of("rules"), FormKey.PRODUCT.getKey());
-
+    PRODUCT_NAME("productName", "name", Set.of("rules"), FormKey.PRODUCT.getKey()),
+    PRODUCT_PRICE("productPrice", "price", Set.of("rules"), FormKey.PRODUCT.getKey()),
+    PRODUCT_STATUS("productStatus", "status", Set.of("rules"), FormKey.PRODUCT.getKey());
     /*------ end: PRODUCT ------*/
     /**
      * 字段 key，field.json 中的 internalKey

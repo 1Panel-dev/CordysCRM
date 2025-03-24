@@ -22,4 +22,6 @@ public interface ExtProductMapper {
 
     List<Product> listByIds(@Param("ids") List<String> ids);
 
+    void updateProduct(@Param("ids") List<String> ids, @Param("product") Product product);
+
 }

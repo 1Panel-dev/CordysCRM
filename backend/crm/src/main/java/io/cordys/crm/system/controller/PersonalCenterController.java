@@ -54,7 +54,7 @@ public class PersonalCenterController {
     @GetMapping("/info")
     @Operation(summary = "当前用户详情")
     public UserResponse getUserDetail() {
-        return personalCenterService.getUserDetail(SessionUtils.getUserId());
+        return personalCenterService.getUserDetail(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

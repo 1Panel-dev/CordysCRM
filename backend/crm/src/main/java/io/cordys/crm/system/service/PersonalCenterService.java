@@ -27,6 +27,7 @@ import io.cordys.crm.system.dto.request.PersonalInfoRequest;
 import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
 import io.cordys.crm.system.dto.response.RepeatCustomerResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
+import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.crm.system.utils.MailSender;
@@ -73,13 +74,16 @@ public class PersonalCenterService {
     private ExtProductMapper extProductMapper;
     @Resource
     private ExtClueMapper extClueMapper;
+    @Resource
+    private ExtOrganizationUserMapper extOrganizationUserMapper;
 
 
     private static final String PREFIX = "personal_email_code:";  // Redis 存储前缀
 
 
-    public UserResponse getUserDetail(String id) {
-        return organizationUserService.getUserDetail(id);
+    public UserResponse getUserDetail(String id, String orgId) {
+        String orgUserIdByUserId = extOrganizationUserMapper.getOrgUserIdByUserId(orgId, id);
+        return organizationUserService.getUserDetail(orgUserIdByUserId);
     }
 
     /**

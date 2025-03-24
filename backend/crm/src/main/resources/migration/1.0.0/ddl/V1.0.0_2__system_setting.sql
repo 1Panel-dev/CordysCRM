@@ -532,22 +532,25 @@ CREATE TABLE sys_parameter
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE product
-(
-    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
-    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织机构id',
-    `name`            VARCHAR(255) NOT NULL COMMENT '产品名称',
-    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
-    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
-    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
-    PRIMARY KEY (id)
-) COMMENT = '产品'
+CREATE TABLE product(
+                        `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+                        `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
+                        `price` DECIMAL NOT NULL   COMMENT '价格' ,
+                        `status` VARCHAR(32) NOT NULL   COMMENT '状态' ,
+                        `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织机构id' ,
+                        `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+                        `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+                        `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+                        `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+                        PRIMARY KEY (id)
+)  COMMENT = '产品'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_organization_id ON product (organization_id ASC);
+CREATE INDEX idx_organization_id ON product(organization_id ASC);
+CREATE INDEX idx_name ON product(name ASC);
+
 
 CREATE TABLE product_field
 (

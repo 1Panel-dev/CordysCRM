@@ -101,6 +101,8 @@ class ProductControllerTests extends BaseTest {
         // 请求成功
         ProductEditRequest request = new ProductEditRequest();
         request.setName("product");
+        request.setPrice(7.23d);
+        request.setStatus("1");
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Product resultData = getResultData(mvcResult, Product.class);
         // 校验请求成功数据
@@ -122,7 +124,8 @@ class ProductControllerTests extends BaseTest {
         moduleFieldStatusId = moduleFieldStatus.getId();
         request = new ProductEditRequest();
         request.setName("productOne");
-
+        request.setPrice(7.23d);
+        request.setStatus("1");
 
         request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 12),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
 
@@ -134,6 +137,8 @@ class ProductControllerTests extends BaseTest {
 
         request = new ProductEditRequest();
         request.setName("productTwo");
+        request.setPrice(7.23d);
+        request.setStatus("1");
         request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 14),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         resultData = getResultData(mvcResult, Product.class);
@@ -143,6 +148,8 @@ class ProductControllerTests extends BaseTest {
         batchIds.add(product.getId());
         request = new ProductEditRequest();
         request.setName("productThree");
+        request.setPrice(7.23d);
+        request.setStatus("1");
         request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         resultData = getResultData(mvcResult, Product.class);
@@ -160,7 +167,11 @@ class ProductControllerTests extends BaseTest {
         ProductEditRequest request = new ProductEditRequest();
         request.setName("product");
         request.setId(addProduct.getId());
+        request.setPrice(5.66d);
+        request.setStatus("2");
         this.requestPostWithOk(DEFAULT_UPDATE, request);
+        Product product = productBaseMapper.selectByPrimaryKey(addProduct.getId());
+        Assertions.assertTrue(StringUtils.equalsIgnoreCase(product.getStatus(),"2"));
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);
     }
@@ -217,18 +228,18 @@ class ProductControllerTests extends BaseTest {
         // 请求成功
         ProductBatchEditRequest request = new ProductBatchEditRequest();
         request.setIds(batchIds);
-
+        request.setPrice(3.00d);
         List<BaseModuleFieldValue> baseModuleFieldValues = List.of(new BaseModuleFieldValue(moduleFieldPriceId, 15), new BaseModuleFieldValue(moduleFieldStatusId, "2"));
         request.setModuleFields(baseModuleFieldValues);
         this.requestPostWithOk("batch/update", request);
         MvcResult mvcResult = this.requestGetWithOkAndReturn(DEFAULT_GET, batchIds.getFirst());
         ProductGetResponse getResponse = getResultData(mvcResult, ProductGetResponse.class);
+        Assertions.assertEquals(3.00d, getResponse.getPrice());
         for (BaseModuleFieldValue moduleField : getResponse.getModuleFields()) {
             if (StringUtils.equalsAnyIgnoreCase(moduleField.getFieldId(), moduleFieldStatusId)) {
                 Assertions.assertEquals("2",moduleField.getFieldValue());
             }
         }
-        Map<String, List<BaseModuleFieldValue>> productFiledMap = productFieldService.getResourceFieldMap(batchIds);
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);
 

@@ -18,8 +18,14 @@ public class ProductEditRequest {
     @Size(max = 32)
     private String id;
 
-    @Schema(description = "name")
+    @Schema(description = "产品名称")
     private String name;
+
+    @Schema(description = "价格")
+    private Double price;
+
+    @Schema(description = "状态")
+    private String status;
 
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
