@@ -5,8 +5,11 @@ import {
   GetAuthsUrl,
   GetConfigEmailUrl,
   GetConfigSynchronizationUrl,
+  GetPersonalFollowUrl,
+  GetPersonalUrl,
   GetThirdConfigByTypeUrl,
   GetThirdTypeListUrl,
+  SendEmailCodeUrl,
   TestConfigEmailUrl,
   TestConfigSynchronizationUrl,
   UpdateAuthNameUrl,
@@ -14,8 +17,11 @@ import {
   UpdateAuthUrl,
   UpdateConfigEmailUrl,
   UpdateConfigSynchronizationUrl,
+  UpdatePersonalUrl,
+  UpdateUserPasswordUrl,
 } from '@lib/shared/api/requrls/system/business';
 import type { CommonList } from '@lib/shared/models/common';
+import { CustomerFollowPlanTableParams, FollowDetailItem } from '@lib/shared/models/customer';
 import type {
   Auth,
   AuthItem,
@@ -24,7 +30,8 @@ import type {
   ConfigEmailParams,
   ConfigSynchronization,
 } from '@lib/shared/models/system/business';
-import { OptionDTO } from '@lib/shared/models/system/business';
+import { OptionDTO, PersonalInfoRequest, PersonalPassword } from '@lib/shared/models/system/business';
+import { OrgUserInfo } from '@lib/shared/models/system/org';
 
 import CDR from '@/api/http/index';
 
@@ -101,4 +108,26 @@ export function updateAuthName(id: string, name: string) {
 // 删除认证设置
 export function deleteAuth(id: string) {
   return CDR.get({ url: `${DeleteAuthUrl}/${id}` });
+}
+
+// 获取个人信息
+export function getPersonalUrl() {
+  return CDR.get<OrgUserInfo>({ url: GetPersonalUrl });
+}
+// 更新个人信息
+export function updatePersonalUrl(data: PersonalInfoRequest) {
+  return CDR.post({ url: UpdatePersonalUrl, data });
+}
+// 发送验证码
+export function sendEmailCode(email: string) {
+  return CDR.post({ url: SendEmailCodeUrl, params: { email } });
+}
+// 修改密码
+export function updateUserPassword(data: PersonalPassword) {
+  return CDR.post({ url: UpdateUserPasswordUrl, data });
+}
+
+// 获取个人跟进计划
+export function getPersonalFollow(data: CustomerFollowPlanTableParams) {
+  return CDR.post<CommonList<FollowDetailItem>>({ url: GetPersonalFollowUrl, data });
 }

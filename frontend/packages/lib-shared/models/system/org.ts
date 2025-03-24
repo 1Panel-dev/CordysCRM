@@ -1,4 +1,5 @@
 import type { TableQueryParams } from '../common';
+import { UserInfo } from '../user';
 
 // 添加部门
 export interface DepartmentItemParams {
@@ -75,4 +76,11 @@ export interface ValidateInfo {
   failCount: number;
   successCount: number;
   errorMessages: ErrorMessagesType[];
+}
+
+
+export interface OrgUserInfo extends UserInfo {
+  userId: string;
+  userName: string;
+  departmentName: string;
 }

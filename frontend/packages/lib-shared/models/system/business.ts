@@ -70,3 +70,17 @@ export interface AuthItem extends Auth {
 export interface AuthTableQueryParams extends TableQueryParams {
   configId: string; // 认证设置id
 }
+
+
+// 个人中心
+export interface PersonalInfoRequest {
+  email: string;
+  phone: string;
+}
+
+export interface PersonalPassword {
+  email: string;
+  code: string;
+  password: string;
+  confirmPassword: string;
+}

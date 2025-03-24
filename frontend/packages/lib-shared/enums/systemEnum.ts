@@ -5,4 +5,9 @@ export enum DeptNodeTypeEnum {
   ROLE = 'ROLE',
 }
 
+export enum PersonalEnum {
+  INFO = 'INFO',
+  MY_PLAN = 'MY_PLAN',
+}
+
 export default DeptNodeTypeEnum;

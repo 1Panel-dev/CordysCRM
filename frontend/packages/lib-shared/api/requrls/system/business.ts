@@ -17,3 +17,12 @@ export const CreateAuthUrl = '/system/authsource/add'; // 认证设置-新增
 export const UpdateAuthStatusUrl = '/system/authsource/update/status'; // 认证设置-更新状态
 export const UpdateAuthNameUrl = '/system/authsource/update/name'; // 认证设置-更新名称
 export const DeleteAuthUrl = '/system/authsource/delete'; // 认证设置-删除
+
+
+export const GetPersonalUrl='/personal/center/info'
+export const UpdatePersonalUrl='/personal/center/update'
+export const SendEmailCodeUrl='/personal/center/mail/send_code'
+export const UpdateUserPasswordUrl='/personal/center/info/reset'
+export const GetPersonalFollowUrl='/personal/center/follow/plan/list'
+
+

@@ -1,5 +1,8 @@
 import { FormItemRule, InputProps } from 'naive-ui';
 
+import { OrgUserInfo } from '@lib/shared/models/system/org';
+import { UserInfo } from '@lib/shared/models/user';
+
 import { useI18n } from '@/hooks/useI18n';
 
 const { t } = useI18n();
@@ -388,4 +391,30 @@ export const defaultAuthForm = {
   name: '',
   type: 'OAUTH2',
   configuration: {},
+};
+
+export const defaultUserInfo: OrgUserInfo = {
+  id: '',
+  name: '',
+  email: '',
+  password: '',
+  enable: true,
+  createTime: 0,
+  updateTime: 0,
+  language: '',
+  lastOrganizationId: '',
+  phone: '',
+  source: '',
+  createUser: '',
+  updateUser: '',
+  platformInfo: '',
+  avatar: '',
+  permissionIds: [''],
+  organizationIds: [''],
+  csrfToken: '',
+  sessionId: '',
+  roles: [''],
+  userId: '',
+  userName: '',
+  departmentName: '',
 };

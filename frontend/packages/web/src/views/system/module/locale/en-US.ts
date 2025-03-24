@@ -63,4 +63,7 @@ export default {
   'module.capacitySet.repeatMsg': 'Already added in another rule',
   'module.capacitySet.Maximum': 'Capacity Limit',
   'module.capacitySet.MaximumPlaceholder': 'No limit',
+  'module.personal.info': 'Personal information',
+  'module.personal.plan': 'My plan',
+  'module.logout': 'Exit',
 };

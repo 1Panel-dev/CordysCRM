@@ -30,10 +30,16 @@ export enum ProductRouteEnum {
   PRODUCT_PRO = 'productPro',
 }
 
+export enum PersonalRouteEnum {
+  PERSONAL_INFO = 'personalInfo',
+  PERSONAL_PLAN = 'personalPlan',
+  LOGOUT = 'logout',
+}
 export const AppRouteEnum = {
   ...SystemRouteEnum,
   ...OpportunityRouteEnum,
   ...ClueRouteEnum,
   ...CustomerRouteEnum,
   ...ProductRouteEnum,
+  ...PersonalRouteEnum,
 };

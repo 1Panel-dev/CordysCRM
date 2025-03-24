@@ -61,4 +61,7 @@ export default {
   'module.capacitySet.repeatMsg': '已在其他规则中添加',
   'module.capacitySet.Maximum': '库容上限',
   'module.capacitySet.MaximumPlaceholder': '不限制',
+  'module.personal.info': '个人信息',
+  'module.personal.plan': '我的计划',
+  'module.logout': '退出系统',
 };
