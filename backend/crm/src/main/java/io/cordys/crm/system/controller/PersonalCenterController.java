@@ -15,6 +15,7 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
@@ -61,14 +62,14 @@ public class PersonalCenterController {
     @PostMapping("/update")
     @Operation(summary = "更新户详情")
     public UserResponse updateInfo(@Validated @RequestBody PersonalInfoRequest personalInfoRequest) {
-        return personalCenterService.updateInfo(personalInfoRequest, SessionUtils.getUserId());
+        return personalCenterService.updateInfo(personalInfoRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     /**
      * 发送验证码
      */
     @PostMapping("/mail/send_code")
-    public void sendCode(@RequestParam(value = "email") String email) {
+    public void sendCode(@RequestBody @NotNull String email) {
         personalCenterService.sendCode(email, OrganizationContext.getOrganizationId());
     }
 

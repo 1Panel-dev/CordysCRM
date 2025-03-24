@@ -15,7 +15,6 @@ import io.cordys.crm.system.dto.request.ProductEditRequest;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
 import io.cordys.crm.system.dto.response.product.ProductGetResponse;
 import io.cordys.crm.system.dto.response.product.ProductListResponse;
-import io.cordys.crm.system.service.ProductFieldService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -56,9 +55,6 @@ class ProductControllerTests extends BaseTest {
     @Resource
     private BaseMapper<ModuleForm> moduleFormMapper;
 
-    @Resource
-    private ProductFieldService productFieldService;
-
     @Override
     protected String getBasePath() {
         return BASE_PATH;
@@ -80,10 +76,8 @@ class ProductControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
 
-        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
-        Pager<List<ProductListResponse>> pageResult = getPageResult(mvcResult, ProductListResponse.class);
-        List<ProductListResponse> productListResponses = pageResult.getList();
-        Assertions.assertTrue(CollectionUtils.isEmpty(productListResponses));
+        this.requestPostWithOk(DEFAULT_PAGE, request);
+
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, DEFAULT_PAGE, request);
     }

@@ -28,7 +28,6 @@
     <select id="list" resultType="io.cordys.crm.system.dto.response.product.ProductListResponse">
         select *
         from product p
-        where p.organization_id = #{orgId}
 
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
@@ -39,6 +38,7 @@
             <property name="sort" value="request.sort"/>
         </include>
 
+        where p.organization_id = #{orgId}
         <if test="request.keyword != null and request.keyword != ''">
             and p.name like concat('%', #{request.keyword},'%')
         </if>

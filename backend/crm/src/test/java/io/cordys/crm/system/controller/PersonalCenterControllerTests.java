@@ -148,7 +148,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         personalInfoRequest.setPhone("12345678912");
         personalInfoRequest.setEmail("3Gyq3@Cordys.com");
 
-        this.requestPost("/personal/center/update", personalInfoRequest).andExpect(status().is5xxServerError());
+        this.requestPost("/personal/center/update", personalInfoRequest).andExpect(status().isOk());
 
 
     }

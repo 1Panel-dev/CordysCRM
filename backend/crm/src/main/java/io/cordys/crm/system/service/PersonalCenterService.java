@@ -151,7 +151,7 @@ public class PersonalCenterService {
 
 
     @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.UPDATE, operator = "{#userId}")
-    public UserResponse updateInfo(PersonalInfoRequest personalInfoRequest, String userId) {
+    public UserResponse updateInfo(PersonalInfoRequest personalInfoRequest, String userId, String orgId) {
         User oldUser = userBaseMapper.selectByPrimaryKey(userId);
         User user = new User();
         user.setId(userId);
@@ -159,7 +159,8 @@ public class PersonalCenterService {
         user.setEmail(personalInfoRequest.getEmail());
         userBaseMapper.update(user);
 
-        UserResponse userDetail = organizationUserService.getUserDetail(userId);
+        String orgUserIdByUserId = extOrganizationUserMapper.getOrgUserIdByUserId(orgId, userId);
+        UserResponse userDetail = organizationUserService.getUserDetail(orgUserIdByUserId);
         //添加日志上下文
         OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(oldUser)
