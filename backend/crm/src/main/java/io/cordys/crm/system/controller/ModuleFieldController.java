@@ -67,59 +67,47 @@ public class ModuleFieldController {
 
 	@PostMapping("/dept/tree")
 	@Operation(summary = "获取部门树")
-	public List<DeptUserTreeNode> getDeptTree(@Valid @RequestBody ModuleFieldRequest request) {
-		moduleFieldService.isMatchType(request.getFieldId(), FieldType.DEPARTMENT.name());
+	public List<DeptUserTreeNode> getDeptTree() {
 		return moduleFieldService.getDeptTree(OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/user/dept/tree")
 	@Operation(summary = "获取部门用户树")
-	public List<DeptUserTreeNode> getDeptUserTree(@Valid @RequestBody ModuleFieldRequest request) {
-		moduleFieldService.isMatchType(request.getFieldId(), FieldType.MEMBER.name());
+	public List<DeptUserTreeNode> getDeptUserTree() {
 		return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/source/clue")
 	@Operation(summary = "分页获取线索")
-	public Pager<List<ClueListResponse>> sourceCluePage(@Valid @RequestBody SourceCluePageRequest request) {
-		moduleFieldService.isMatchType(request.getFieldId(), FieldType.DATA_SOURCE.name());
+	public Pager<List<ClueListResponse>> sourceCluePage(@Valid @RequestBody CluePageRequest request) {
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), BusinessSearchType.SELF.name());
-		CluePageRequest cluePageRequest = BeanUtils.copyBean(new CluePageRequest(), request);
-		return clueService.list(cluePageRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+		return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}
 
 	@PostMapping("/source/customer")
 	@Operation(summary = "分页获取客户")
-	public Pager<List<CustomerListResponse>> sourceCustomerPage(@Valid @RequestBody SourceCustomerPageRequest request) {
-		moduleFieldService.isMatchType(request.getFieldId(), FieldType.DATA_SOURCE.name());
+	public Pager<List<CustomerListResponse>> sourceCustomerPage(@Valid @RequestBody CustomerPageRequest request) {
 		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-		CustomerPageRequest customerPageRequest = BeanUtils.copyBean(new CustomerPageRequest(), request);
-		return PageUtils.setPageInfo(page, customerService.sourceList(customerPageRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
+		return PageUtils.setPageInfo(page, customerService.sourceList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
 	}
 
 	@PostMapping("/source/contact")
 	@Operation(summary = "分页获取联系人")
-	public Pager<List<CustomerContactListResponse>> sourceContactPage(@Valid @RequestBody SourceContactPageRequest request) {
-		moduleFieldService.isMatchType(request.getFieldId(), FieldType.DATA_SOURCE.name());
+	public Pager<List<CustomerContactListResponse>> sourceContactPage(@Valid @RequestBody CustomerContactPageRequest request) {
 		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-		CustomerContactPageRequest contactPageRequest = BeanUtils.copyBean(new CustomerContactPageRequest(), request);
-		return PageUtils.setPageInfo(page, customerContactService.sourceList(contactPageRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
+		return PageUtils.setPageInfo(page, customerContactService.sourceList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
 	}
 
 	@PostMapping("/source/opportunity")
 	@Operation(summary = "分页获取商机")
-	public Pager<List<OpportunityListResponse>> sourceOpportunityPage(@Valid @RequestBody SourceOpportunityPageRequest request) {
-		moduleFieldService.isMatchType(request.getFieldId(), FieldType.DATA_SOURCE.name());
+	public Pager<List<OpportunityListResponse>> sourceOpportunityPage(@Valid @RequestBody OpportunityPageRequest request) {
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), BusinessSearchType.SELF.name());
-		OpportunityPageRequest opportunityPageRequest = BeanUtils.copyBean(new OpportunityPageRequest(), request);
-		return  opportunityService.list(opportunityPageRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+		return  opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}
 
 	@PostMapping("/source/product")
 	@Operation(summary = "分页获取产品")
-	public Pager<List<ProductListResponse>> sourceProductPage(@Valid @RequestBody SourceProductPageRequest request) {
-		moduleFieldService.isMatchType(request.getFieldId(), FieldType.DATA_SOURCE.name());
-		ProductPageRequest productPageRequest = BeanUtils.copyBean(new ProductPageRequest(), request);
-		return productService.list(productPageRequest, OrganizationContext.getOrganizationId());
+	public Pager<List<ProductListResponse>> sourceProductPage(@Valid @RequestBody ProductPageRequest request) {
+		return productService.list(request, OrganizationContext.getOrganizationId());
 	}
 }

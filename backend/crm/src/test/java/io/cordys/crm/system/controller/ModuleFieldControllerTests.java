@@ -2,6 +2,10 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.clue.dto.request.CluePageRequest;
+import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
+import io.cordys.crm.customer.dto.request.CustomerPageRequest;
+import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.dto.request.*;
@@ -59,21 +63,13 @@ public class ModuleFieldControllerTests extends BaseTest {
 	@Test
 	@Order(2)
 	void testGetDeptTree() throws Exception {
-		ModuleFieldRequest request = new ModuleFieldRequest();
-		request.setFieldId(FIELD_ID);
-		this.requestPostWithOk(DEPT_TREE, request);
+		this.requestPostWithOk(DEPT_TREE, null);
 	}
 
 	@Test
 	@Order(3)
 	void testGetUserDeptTree() throws Exception {
-		ModuleFieldRequest request = new ModuleFieldRequest();
-		request.setFieldId(FIELD_ID);
-		MvcResult r1 = this.requestPost(USER_DEPT_TREE, request).andReturn();
-		assert r1.getResponse().getContentAsString().contains(Translator.get("module.field.not_match_type"));
-		request.setFieldId("dep-not-exit");
-		MvcResult r2 = this.requestPost(USER_DEPT_TREE, request).andReturn();
-		assert r2.getResponse().getContentAsString().contains(Translator.get("module.field.not_exist"));
+		this.requestPostWithOk(USER_DEPT_TREE, null);
 	}
 
 	@Test
@@ -88,8 +84,7 @@ public class ModuleFieldControllerTests extends BaseTest {
 	@Test
 	@Order(5)
 	void testListClueSourceData() throws Exception {
-		SourceCluePageRequest cluePageRequest = new SourceCluePageRequest();
-		cluePageRequest.setFieldId(FIELD_ID);
+		CluePageRequest cluePageRequest = new CluePageRequest();
 		cluePageRequest.setCurrent(1);
 		cluePageRequest.setPageSize(10);
 		this.requestPostWithOk(CLUE_SOURCE_DATA, cluePageRequest);
@@ -98,8 +93,7 @@ public class ModuleFieldControllerTests extends BaseTest {
 	@Test
 	@Order(6)
 	void testListCustomerSourceData() throws Exception {
-		SourceCustomerPageRequest customerPageRequest = new SourceCustomerPageRequest();
-		customerPageRequest.setFieldId(FIELD_ID);
+		CustomerPageRequest customerPageRequest = new CustomerPageRequest();
 		customerPageRequest.setCurrent(1);
 		customerPageRequest.setPageSize(10);
 		this.requestPostWithOk(CUSTOMER_SOURCE_DATA, customerPageRequest);
@@ -108,8 +102,7 @@ public class ModuleFieldControllerTests extends BaseTest {
 	@Test
 	@Order(7)
 	void testListContactSourceData() throws Exception {
-		SourceContactPageRequest contactPageRequest = new SourceContactPageRequest();
-		contactPageRequest.setFieldId(FIELD_ID);
+		CustomerContactPageRequest contactPageRequest = new CustomerContactPageRequest();
 		contactPageRequest.setCurrent(1);
 		contactPageRequest.setPageSize(10);
 		this.requestPostWithOk(CONTACT_SOURCE_DATA, contactPageRequest);
@@ -118,8 +111,7 @@ public class ModuleFieldControllerTests extends BaseTest {
 	@Test
 	@Order(8)
 	void testListOpportunitySourceData() throws Exception {
-		SourceOpportunityPageRequest opportunityPageRequest = new SourceOpportunityPageRequest();
-		opportunityPageRequest.setFieldId(FIELD_ID);
+		OpportunityPageRequest opportunityPageRequest = new OpportunityPageRequest();
 		opportunityPageRequest.setCurrent(1);
 		opportunityPageRequest.setPageSize(10);
 		this.requestPostWithOk(OPPORTUNITY_SOURCE_DATA, opportunityPageRequest);
@@ -128,8 +120,7 @@ public class ModuleFieldControllerTests extends BaseTest {
 	@Test
 	@Order(9)
 	void testListProductSourceData() throws Exception {
-		SourceProductPageRequest productPageRequest = new SourceProductPageRequest();
-		productPageRequest.setFieldId(FIELD_ID);
+		ProductPageRequest productPageRequest = new ProductPageRequest();
 		productPageRequest.setCurrent(1);
 		productPageRequest.setPageSize(10);
 		this.requestPostWithOk(PRODUCT_SOURCE_DATA, productPageRequest);
