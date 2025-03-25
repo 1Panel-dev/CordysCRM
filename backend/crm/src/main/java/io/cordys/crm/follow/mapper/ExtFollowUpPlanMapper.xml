@@ -20,9 +20,9 @@
         update_user,
         CASE
         WHEN `status` = 'CANCELLED' THEN 'CANCELLED'
-        WHEN UNIX_TIMESTAMP(CURDATE()) <![CDATA[<]]> estimated_time THEN 'PREPARED'
-        WHEN UNIX_TIMESTAMP(CURDATE()) = estimated_time THEN 'UNDERWAY'
-        WHEN UNIX_TIMESTAMP(CURDATE()) > estimated_time THEN 'COMPLETED'
+        WHEN UNIX_TIMESTAMP(CURDATE())*1000 <![CDATA[<]]> estimated_time THEN 'PREPARED'
+        WHEN UNIX_TIMESTAMP(CURDATE())*1000 = estimated_time THEN 'UNDERWAY'
+        WHEN UNIX_TIMESTAMP(CURDATE())*1000 > estimated_time THEN 'COMPLETED'
         END AS status
         FROM
         follow_up_plan
@@ -54,9 +54,9 @@
         (
         #{request.status} = 'ALL'
         OR ( #{request.status} = 'CANCELLED' AND STATUS = 'CANCELLED' )
-        OR ( #{request.status} = 'PREPARED' AND UNIX_TIMESTAMP(CURDATE()) <![CDATA[<]]> estimated_time AND STATUS != 'CANCELLED' )
-        OR ( #{request.status} = 'UNDERWAY' AND UNIX_TIMESTAMP(CURDATE()) = estimated_time AND STATUS != 'CANCELLED' )
-        OR ( #{request.status} = 'COMPLETED' AND UNIX_TIMESTAMP(CURDATE()) > estimated_time AND STATUS != 'CANCELLED' )
+        OR ( #{request.status} = 'PREPARED' AND UNIX_TIMESTAMP(CURDATE())*1000 <![CDATA[<]]> estimated_time AND STATUS != 'CANCELLED' )
+        OR ( #{request.status} = 'UNDERWAY' AND UNIX_TIMESTAMP(CURDATE())*1000 = estimated_time AND STATUS != 'CANCELLED' )
+        OR ( #{request.status} = 'COMPLETED' AND UNIX_TIMESTAMP(CURDATE())*1000 > estimated_time AND STATUS != 'CANCELLED' )
         )
 
         <if test="customerData != null and !customerData.all and customerData.owner">
