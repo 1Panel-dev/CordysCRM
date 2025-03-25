@@ -24,6 +24,7 @@ import io.cordys.crm.customer.dto.request.CustomerContactDisableRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactGetResponse;
+import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
@@ -78,6 +79,12 @@ public class CustomerContactService {
         List<CustomerContactListResponse> list = extCustomerContactMapper.list(request, userId, orgId, deptDataPermission);
         list = buildListData(list, orgId);
 
+        Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);
+
+        return PageUtils.setPageInfoWithOption(page, list, optionMap);
+    }
+
+    private Map<String, List<OptionDTO>> getListOptionMap(String orgId, List<CustomerContactListResponse> list) {
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
         // 获取所有模块字段的值
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, CustomerContactListResponse::getModuleFields);
@@ -93,8 +100,7 @@ public class CustomerContactService {
         List<OptionDTO> customerFieldOption = moduleFormService.getBusinessFieldOption(list,
                 CustomerContactListResponse::getCustomerId, CustomerContactListResponse::getCustomerName);
         optionMap.put(BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey(), customerFieldOption);
-
-        return PageUtils.setPageInfoWithOption(page, list, optionMap);
+        return optionMap;
     }
 
     public List<CustomerContactListResponse> sourceList(CustomerContactPageRequest request, String currentUser, String orgId) {
@@ -145,9 +151,9 @@ public class CustomerContactService {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(id);
         CustomerContactGetResponse customerContactGetResponse = BeanUtils.copyBean(new CustomerContactGetResponse(), customerContact);
 
-        List<OptionDTO> customers = extCustomerMapper.selectOptionByIds(List.of(customerContact.getCustomerId()));
-        if (CollectionUtils.isNotEmpty(customers)) {
-            customerContactGetResponse.setCustomerName(customers.getFirst().getName());
+        Customer customer = customerMapper.selectByPrimaryKey(customerContact.getCustomerId());
+        if (customer != null) {
+            customerContactGetResponse.setCustomerName(customer.getName());
         }
 
         UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerContact.getOwner(), orgId);
@@ -155,6 +161,8 @@ public class CustomerContactService {
             customerContactGetResponse.setDepartmentId(userDeptDTO.getDeptId());
             customerContactGetResponse.setDepartmentName(userDeptDTO.getDeptName());
         }
+
+        customerContactGetResponse = baseService.setCreateUpdateOwnerUserName(customerContactGetResponse);
 
         // 获取模块字段
         List<BaseModuleFieldValue> customerContactFields = customerContactFieldService.getModuleFieldValuesByResourceId(id);
@@ -175,7 +183,7 @@ public class CustomerContactService {
         customerContactGetResponse.setOptionMap(optionMap);
         customerContactGetResponse.setModuleFields(customerContactFields);
 
-        return baseService.setCreateUpdateOwnerUserName(customerContactGetResponse);
+        return customerContactGetResponse;
     }
 
     public CustomerContact add(CustomerContactAddRequest request, String userId, String orgId) {
@@ -253,13 +261,17 @@ public class CustomerContactService {
         customerContactMapper.updateById(customerContact);
     }
 
-    public List<CustomerContactListResponse> listByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public CustomerContactListAllResponse listByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Customer customer = customerMapper.selectByPrimaryKey(customerId);
-
+        CustomerContactListAllResponse response = new CustomerContactListAllResponse();
         if (deptDataPermission.getAll() || StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
             // 全部数据权限，直接返回
             List<CustomerContactListResponse> list = extCustomerContactMapper.listByCustomerId(customerId);
-            return buildListData(list, orgId);
+            list = buildListData(list, orgId);
+            Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);
+            response.setList(list);
+            response.setOptionMap(optionMap);
+            return response;
         }
 
         List<CustomerContactListResponse> list = List.of();
@@ -319,7 +331,11 @@ public class CustomerContactService {
             }
         }
 
-        return buildListData(list, orgId);
+        list = buildListData(list, orgId);
+        Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);
+        response.setList(list);
+        response.setOptionMap(optionMap);
+        return response;
     }
 
     public boolean checkOpportunity(String id) {

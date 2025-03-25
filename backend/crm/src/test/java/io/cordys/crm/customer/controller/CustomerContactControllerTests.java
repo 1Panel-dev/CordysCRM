@@ -12,6 +12,7 @@ import io.cordys.crm.customer.dto.request.CustomerContactDisableRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactGetResponse;
+import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -172,8 +173,8 @@ class CustomerContactControllerTests extends BaseTest {
     @Order(4)
     void testList() throws Exception {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(LIST, "customerId");
-        List<CustomerContactListResponse> customerContactList = getResultDataArray(mvcResult, CustomerContactListResponse.class);
-        customerContactList.forEach(customerContactListResponse -> {
+        CustomerContactListAllResponse listAllResponse = getResultData(mvcResult, CustomerContactListAllResponse.class);
+        listAllResponse.getList().forEach(customerContactListResponse -> {
             CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(customerContactListResponse.getId());
             CustomerContact result = BeanUtils.copyBean(new CustomerContact(), customerContactListResponse);
             result.setOrganizationId(customerContact.getOrganizationId());

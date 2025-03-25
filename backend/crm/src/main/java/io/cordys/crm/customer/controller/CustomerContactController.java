@@ -12,6 +12,7 @@ import io.cordys.crm.customer.dto.request.CustomerContactDisableRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactGetResponse;
+import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -63,7 +64,7 @@ public class CustomerContactController {
     @GetMapping("/list/{customerId}")
     @Operation(summary = "客户下的联系人列表")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
-    public List<CustomerContactListResponse> list(@Validated @PathVariable String customerId) {
+    public CustomerContactListAllResponse list(@Validated @PathVariable String customerId) {
         DeptDataPermissionDTO deptDataPermission =
                 dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         return customerContactService.listByCustomerId(customerId, SessionUtils.getUserId(),
