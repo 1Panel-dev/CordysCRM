@@ -24,7 +24,7 @@ public class FileRequest {
     /**
      * 存储类型，指示文件存储的方式或位置。
      * <p>
-     * 例如，可以是 "MINIO"、"LOCAL" 等存储类型的标识符。
+     * 例如，可以是 "S3"、"LOCAL" 等存储类型的标识符。
      * </p>
      */
     private String storage;

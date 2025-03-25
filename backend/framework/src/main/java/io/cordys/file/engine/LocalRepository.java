@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 /**
@@ -19,7 +21,6 @@ import java.util.List;
  */
 @Component
 public class LocalRepository implements FileRepository {
-    private static final String DEFAULT_FOLDER = "/opt/cordys/data/files/";
 
     /**
      * 保存文件到本地存储。
@@ -171,14 +172,31 @@ public class LocalRepository implements FileRepository {
     }
 
     /**
-     * 复制文件到指定目录（未实现）。
+     * 获取指定文件夹下的文件列表
+     * @param request 文件请求信息，包含目标文件夹的标识符或路径。
+     * @return 文件列表
+     */
+    @Override
+    public List<File> getFolderFiles(FileRequest request) {
+        File file = new File(getFilePath(request));
+        if (!file.isDirectory()) {
+            throw new GenericException("The specified path is not a directory.");
+        }
+        File[] files = file.listFiles();
+        return files != null ? List.of(files) : null;
+    }
+
+    /**
+     * 复制文件到指定目录
      *
      * @param request 文件复制请求信息。
      * @throws GenericException 如果复制文件时发生不支持的操作，抛出系统异常。
      */
     @Override
     public void copyFile(FileCopyRequest request) throws Exception {
-        throw new GenericException("Not support copy file");
+        Files.createDirectories(Paths.get(getFolderWithDefaultDir(request.getDestFolder())));
+        Files.copy(Paths.get(getFolderWithDefaultDir(request.getSourceFolder()), request.getFileName()),
+                Paths.get(getFolderWithDefaultDir(request.getDestFolder()), request.getFileName()), StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**
@@ -202,7 +220,7 @@ public class LocalRepository implements FileRepository {
      */
     private String getFilePath(FileRequest request) {
         FileValidate.validateFileName(request.getFolder(), request.getFileName());
-        return StringUtils.join(DEFAULT_FOLDER, getFileDir(request), "/", request.getFileName());
+        return StringUtils.join(DefaultRepositoryDir.getDefaultDir(), getFileDir(request), "/", request.getFileName());
     }
 
     /**
@@ -214,5 +232,9 @@ public class LocalRepository implements FileRepository {
     private String getFileDir(FileRequest request) {
         FileValidate.validateFileName(request.getFolder(), request.getFileName());
         return request.getFolder();
+    }
+
+    private String getFolderWithDefaultDir(String folder) {
+        return StringUtils.join(DefaultRepositoryDir.getDefaultDir(), folder);
     }
 }

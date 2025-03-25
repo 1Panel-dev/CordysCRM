@@ -2,6 +2,7 @@ package io.cordys.file.engine;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 
@@ -48,6 +49,11 @@ public class S3Repository implements FileRepository {
 
     @Override
     public List<String> getFolderFileNames(FileRequest request) throws Exception {
+        return List.of();
+    }
+
+    @Override
+    public List<File> getFolderFiles(FileRequest request) throws Exception {
         return List.of();
     }
 

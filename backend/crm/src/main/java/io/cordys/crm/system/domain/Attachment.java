@@ -24,8 +24,8 @@ public class Attachment extends BaseModel {
 	@Schema(description = "存储方式")
 	private String storage;
 
-	@Schema(description = "路径")
-	private String path;
+	@Schema(description = "资源ID")
+	private String resourceId;
 
 	@Schema(description = "组织ID")
 	private String organizationId;

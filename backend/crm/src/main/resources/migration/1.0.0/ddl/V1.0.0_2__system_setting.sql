@@ -582,6 +582,7 @@ CREATE TABLE sys_attachment(
     `size` BIGINT(255)    COMMENT '大小' ,
     `storage` VARCHAR(50) NOT NULL   COMMENT '存储方式' ,
     `path` VARCHAR(1000)    COMMENT '路径' ,
+    `resource_id` VARCHAR(32)    COMMENT '资源ID' ,
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
     `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
@@ -593,8 +594,10 @@ CREATE TABLE sys_attachment(
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
+
 CREATE INDEX idx_storage ON sys_attachment(storage ASC);
 CREATE INDEX idx_org_id ON sys_attachment(organization_id ASC);
+CREATE INDEX idx_resource_id ON sys_attachment(resource_id ASC);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

@@ -88,7 +88,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
         followUpRecordMapper.insert(followUpRecord);
 
         //保存自定义字段
-        followUpRecordFieldService.saveModuleField(followUpRecord.getId(), request.getModuleFields());
+        followUpRecordFieldService.saveModuleField(followUpRecord.getId(), orgId, userId, request.getModuleFields());
 
         if (StringUtils.isNotBlank(request.getCustomerId())) {
             Customer customer = new Customer();
@@ -132,7 +132,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
             //更新跟进记录
             updateRecord(record, request, userId);
             //更新模块字段
-            updateModuleField(request.getId(), request.getModuleFields());
+            updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
             logDTO.setModifiedValue(record);
             logService.add(logDTO);
         }, () -> {
@@ -142,7 +142,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
         return followUpRecord;
     }
 
-    private void updateModuleField(String followUpId, List<BaseModuleFieldValue> moduleFields) {
+    private void updateModuleField(String followUpId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -150,7 +150,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
         // 先删除
         followUpRecordFieldService.deleteByResourceId(followUpId);
         // 再保存
-        followUpRecordFieldService.saveModuleField(followUpId, moduleFields);
+        followUpRecordFieldService.saveModuleField(followUpId, orgId, userId, moduleFields);
     }
 
 

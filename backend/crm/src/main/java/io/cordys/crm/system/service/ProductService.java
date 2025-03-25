@@ -119,7 +119,7 @@ public class ProductService {
 
 
         //保存自定义字段
-        productFieldService.saveModuleField(product.getId(), request.getModuleFields());
+        productFieldService.saveModuleField(product.getId(), orgId, userId, request.getModuleFields());
         return product;
     }
 
@@ -134,7 +134,7 @@ public class ProductService {
         productBaseMapper.update(product);
 
         // 更新模块字段
-        updateModuleField(request.getId(), request.getModuleFields());
+        updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
         return productBaseMapper.selectByPrimaryKey(product.getId());
     }
 
@@ -150,7 +150,7 @@ public class ProductService {
         }
     }
 
-    private void updateModuleField(String productId, List<BaseModuleFieldValue> moduleFields) {
+    private void updateModuleField(String productId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -158,7 +158,7 @@ public class ProductService {
         // 先删除
         productFieldService.deleteByResourceId(productId);
         // 再保存
-        productFieldService.saveModuleField(productId, moduleFields);
+        productFieldService.saveModuleField(productId, orgId, userId, moduleFields);
     }
 
     private void batchUpdateModuleField(List<String>  productIds, List<BaseModuleFieldValue> moduleFields) {

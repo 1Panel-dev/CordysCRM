@@ -92,7 +92,7 @@ public class CustomerContactController {
             PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE}, logical = Logical.OR)
     @Operation(summary = "更新客户联系人")
     public CustomerContact update(@Validated @RequestBody CustomerContactUpdateRequest request) {
-        return customerContactService.update(request, SessionUtils.getUserId());
+        return customerContactService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/enable/{id}")

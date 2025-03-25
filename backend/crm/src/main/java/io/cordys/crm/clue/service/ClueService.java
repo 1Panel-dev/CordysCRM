@@ -198,11 +198,11 @@ public class ClueService {
         clueMapper.insert(clue);
 
         //保存自定义字段
-        clueFieldService.saveModuleField(clue.getId(), request.getModuleFields());
+        clueFieldService.saveModuleField(clue.getId(), orgId, userId, request.getModuleFields());
         return clue;
     }
 
-    public Clue update(ClueUpdateRequest request, String userId) {
+    public Clue update(ClueUpdateRequest request, String userId, String orgId) {
         Clue clue = BeanUtils.copyBean(new Clue(), request);
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setUpdateUser(userId);
@@ -221,7 +221,7 @@ public class ClueService {
         clueMapper.update(clue);
 
         // 更新模块字段
-        updateModuleField(request.getId(), request.getModuleFields());
+        updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
         return clueMapper.selectByPrimaryKey(clue.getId());
     }
 
@@ -235,7 +235,7 @@ public class ClueService {
         clueMapper.update(clue);
     }
 
-    private void updateModuleField(String clueId, List<BaseModuleFieldValue> moduleFields) {
+    private void updateModuleField(String clueId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -243,7 +243,7 @@ public class ClueService {
         // 先删除
         clueFieldService.deleteByResourceId(clueId);
         // 再保存
-        clueFieldService.saveModuleField(clueId, moduleFields);
+        clueFieldService.saveModuleField(clueId, orgId, userId, moduleFields);
     }
 
     private void checkAddExist(Clue clue) {

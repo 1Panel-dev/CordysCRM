@@ -85,6 +85,11 @@ public abstract class BaseField {
 	}
 
 	@JsonIgnore
+	public boolean isPic() {
+		return StringUtils.equals(type, FieldType.PICTURE.name());
+	}
+
+	@JsonIgnore
 	public boolean needInitialOptions() {
 		return StringUtils.equalsAny(type, FieldType.MEMBER.name(), FieldType.DEPARTMENT.name());
 	}

@@ -1,5 +1,6 @@
 package io.cordys.file.engine;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
@@ -9,21 +10,21 @@ import lombok.Data;
  * </p>
  */
 @Data
+@AllArgsConstructor
 public class FileCopyRequest extends FileRequest {
 
     /**
-     * 复制的目标文件夹路径。
-     * <p>
-     * 此字段指示文件应该被复制到的目标目录。必须提供有效的目录路径。
-     * </p>
+     * 复制的文件来源目录。
      */
-    private String copyFolder;
+    private String sourceFolder;
+
+    /**
+     * 复制的文件目标目录。
+     */
+    private String destFolder;
 
     /**
      * 复制的文件名称。
-     * <p>
-     * 此字段指示复制后的文件名称。可以与原文件名称相同或不同。
-     * </p>
      */
-    private String copyfileName;
+    private String fileName;
 }

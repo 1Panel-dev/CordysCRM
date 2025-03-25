@@ -240,7 +240,7 @@ public class CustomerService {
         customerMapper.insert(customer);
 
         //保存自定义字段
-        customerFieldService.saveModuleField(customer.getId(), request.getModuleFields());
+        customerFieldService.saveModuleField(customer.getId(), orgId, userId, request.getModuleFields());
         return customer;
     }
 
@@ -265,11 +265,11 @@ public class CustomerService {
         customerMapper.update(customer);
 
         // 更新模块字段
-        updateModuleField(request.getId(), request.getModuleFields());
+        updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
         return customerMapper.selectByPrimaryKey(customer.getId());
     }
 
-    private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields) {
+    private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -277,7 +277,7 @@ public class CustomerService {
         // 先删除
         customerFieldService.deleteByResourceId(customerId);
         // 再保存
-        customerFieldService.saveModuleField(customerId, moduleFields);
+        customerFieldService.saveModuleField(customerId, orgId, userId, moduleFields);
     }
 
     private void checkAddExist(Customer customer) {

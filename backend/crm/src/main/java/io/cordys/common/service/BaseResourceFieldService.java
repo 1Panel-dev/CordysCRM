@@ -10,7 +10,9 @@ import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.field.base.BaseField;
+import io.cordys.crm.system.dto.request.UploadTransferRequest;
 import io.cordys.crm.system.service.ModuleFormService;
+import io.cordys.crm.system.service.PicService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.apache.commons.collections.CollectionUtils;
@@ -77,7 +79,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     /**
      * @param moduleFieldValues
      */
-    public void saveModuleField(String resourceId, List<BaseModuleFieldValue> moduleFieldValues) {
+    public void saveModuleField(String resourceId, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues) {
         if (CollectionUtils.isEmpty(moduleFieldValues)) {
             return;
         }
@@ -95,6 +97,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     BaseField fieldConfig = fieldConfigMap.get(fieldValue.getFieldId());
                     if (fieldConfig == null) {
                         return;
+                    }
+
+                    if (fieldConfig.isPic()) {
+                        preProcessWithPic(orgId, resourceId, userId, fieldValue.getFieldValue());
                     }
 
                     // 获取字段解析器
@@ -347,6 +353,24 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
         if (CollectionUtils.isNotEmpty(customerFieldBlobs)) {
             getResourceFieldBlobMapper().batchInsert(customerFieldBlobs);
+        }
+    }
+
+    /**
+     * 图片类型字段的前置处理
+     */
+    private void preProcessWithPic(String orgId, String resourceId, String userId, Object processValue) {
+        // 图片类型前置处理
+        List<String> tmpPicIds = new ArrayList<>();
+        if (processValue instanceof String) {
+            tmpPicIds.add(processValue.toString());
+        } else if (processValue instanceof List) {
+            tmpPicIds.addAll((List<String>) processValue);
+        }
+        PicService picService = CommonBeanFactory.getBean(PicService.class);
+        UploadTransferRequest transferRequest = new UploadTransferRequest(orgId, resourceId, userId, tmpPicIds);
+        if (picService != null) {
+            picService.transferTempPic(transferRequest);
         }
     }
 }

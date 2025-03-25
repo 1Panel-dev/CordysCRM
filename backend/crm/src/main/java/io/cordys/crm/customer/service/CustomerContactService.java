@@ -200,11 +200,11 @@ public class CustomerContactService {
         customerContactMapper.insert(customerContact);
 
         //保存自定义字段
-        customerContactFieldService.saveModuleField(customerContact.getId(), request.getModuleFields());
+        customerContactFieldService.saveModuleField(customerContact.getId(), orgId, userId, request.getModuleFields());
         return customerContact;
     }
 
-    public CustomerContact update(CustomerContactUpdateRequest request, String userId) {
+    public CustomerContact update(CustomerContactUpdateRequest request, String userId, String orgId) {
         CustomerContact customerContact = BeanUtils.copyBean(new CustomerContact(), request);
         customerContact.setUpdateTime(System.currentTimeMillis());
         customerContact.setUpdateUser(userId);
@@ -213,11 +213,11 @@ public class CustomerContactService {
         customerContactMapper.update(customerContact);
 
         // 更新模块字段
-        updateModuleField(request.getId(), request.getModuleFields());
+        updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
         return customerContactMapper.selectByPrimaryKey(customerContact.getId());
     }
 
-    private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields) {
+    private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -225,7 +225,7 @@ public class CustomerContactService {
         // 先删除
         customerContactFieldService.deleteByResourceId(customerId);
         // 再保存
-        customerContactFieldService.saveModuleField(customerId, moduleFields);
+        customerContactFieldService.saveModuleField(customerId, orgId, userId, moduleFields);
     }
 
     private void checkAddExist(CustomerContact customerContact) {

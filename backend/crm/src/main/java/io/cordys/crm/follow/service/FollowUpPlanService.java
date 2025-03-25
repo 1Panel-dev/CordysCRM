@@ -78,7 +78,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         followUpPlan.setOrganizationId(orgId);
         followUpPlanMapper.insert(followUpPlan);
         //保存自定义字段
-        followUpPlanFieldService.saveModuleField(followUpPlan.getId(), request.getModuleFields());
+        followUpPlanFieldService.saveModuleField(followUpPlan.getId(), orgId, userId, request.getModuleFields());
         return followUpPlan;
     }
 
@@ -99,7 +99,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
             //更新跟进计划
             updatePlan(plan, request, userId);
             //更新模块字段
-            updateModuleField(request.getId(), request.getModuleFields());
+            updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
             logDTO.setModifiedValue(plan);
             logService.add(logDTO);
         }, () -> {
@@ -108,7 +108,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         return followUpPlan;
     }
 
-    private void updateModuleField(String id, List<BaseModuleFieldValue> moduleFields) {
+    private void updateModuleField(String id, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -116,7 +116,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         // 先删除
         followUpPlanFieldService.deleteByResourceId(id);
         // 再保存
-        followUpPlanFieldService.saveModuleField(id, moduleFields);
+        followUpPlanFieldService.saveModuleField(id, orgId, userId, moduleFields);
     }
 
     private void updatePlan(FollowUpPlan plan, FollowUpRecordUpdateRequest request, String userId) {

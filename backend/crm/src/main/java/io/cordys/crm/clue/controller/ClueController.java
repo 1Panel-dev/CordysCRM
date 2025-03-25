@@ -69,7 +69,7 @@ public class ClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "更新线索")
     public Clue update(@Validated @RequestBody ClueUpdateRequest request) {
-        return clueService.update(request, SessionUtils.getUserId());
+        return clueService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/status/update")

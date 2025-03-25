@@ -2,6 +2,7 @@ package io.cordys.file.engine;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 
@@ -93,6 +94,14 @@ public interface FileRepository {
      * @throws Exception 如果获取文件夹文件列表过程中发生错误，抛出异常。
      */
     List<String> getFolderFileNames(FileRequest request) throws Exception;
+
+    /**
+     * 获取指定文件夹下所有文件的文件列表。
+     * @param request 文件请求信息，包含目标文件夹的标识符或路径。
+     * @return 返回文件夹中所有文件列表。
+     * @throws Exception 如果获取文件夹文件列表过程中发生错误，抛出异常。
+     */
+    List<File> getFolderFiles(FileRequest request) throws Exception;
 
     /**
      * 复制文件到指定目录。

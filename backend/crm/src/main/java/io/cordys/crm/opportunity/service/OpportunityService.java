@@ -185,7 +185,7 @@ public class OpportunityService {
         opportunityMapper.insert(opportunity);
 
         //自定义字段
-        opportunityFieldService.saveModuleField(id, request.getModuleFields());
+        opportunityFieldService.saveModuleField(id, orgId, operatorId, request.getModuleFields());
         //日志
         LogDTO logDTO = new LogDTO(orgId, id, operatorId, LogType.ADD, LogModule.OPPORTUNITY, request.getName());
         logDTO.setOriginalValue(null);
@@ -233,7 +233,7 @@ public class OpportunityService {
             //更新跟进计划
             updateOpportunity(item, request, userId);
             //更新模块字段
-            updateModuleField(request.getId(), request.getModuleFields());
+            updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
             logDTO.setModifiedValue(item);
             logService.add(logDTO);
         }, () -> {
@@ -257,7 +257,7 @@ public class OpportunityService {
     }
 
 
-    private void updateModuleField(String id, List<BaseModuleFieldValue> moduleFields) {
+    private void updateModuleField(String id, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -265,7 +265,7 @@ public class OpportunityService {
         // 先删除
         opportunityFieldService.deleteByResourceId(id);
         // 再保存
-        opportunityFieldService.saveModuleField(id, moduleFields);
+        opportunityFieldService.saveModuleField(id, orgId, userId, moduleFields);
     }
 
 

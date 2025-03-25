@@ -33,6 +33,7 @@ public class ModuleFieldResolverFactory {
         resolverMap.put(FieldType.MEMBER.name(), new MemberResolver());
 
         resolverMap.put(FieldType.INPUT_NUMBER.name(), new NumberResolver());
+        resolverMap.put(FieldType.PICTURE.name(), new PictureResolver());
 
         resolverMap.put(MULTI_SELECT, new MultipleSelectResolver());
     }
