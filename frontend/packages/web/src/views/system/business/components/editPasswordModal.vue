@@ -27,7 +27,7 @@
               :duration="60 * 1000"
               :active="true"
               :on-finish="finishCountdown"
-            />)s
+            />s)
           </n-button>
           <n-button v-if="showRetryCode === 1" :disabled="loading" secondary @click="sendCode">
             {{ t('system.personal.getCode') }}
@@ -170,6 +170,7 @@
   };
 
   function cancel() {
+    showRetryCode.value = 1;
     showModal.value = false;
   }
 

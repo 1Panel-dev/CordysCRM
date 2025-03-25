@@ -20,6 +20,7 @@
         <div>
           <div>{{ personalInfo.userName }}</div>
           <n-tag
+            v-if="showRoleTag"
             :bordered="false"
             size="small"
             :color="{
@@ -27,7 +28,7 @@
               textColor: 'var(--primary-8)',
             }"
           >
-            {{ personalInfo.userId === 'admin' ? t('common.admin') : personalInfo.roles[0] }}
+            {{ personalInfo.userId === 'admin' ? t('common.admin') : t('opportunity.admin') }}
           </n-tag>
         </div>
       </div>
@@ -56,9 +57,7 @@
         </n-button>
       </div>
     </CrmCard>
-    <CrmCard v-if="activeTab === PersonalEnum.MY_PLAN" hide-footer :special-height="64">
-
-    </CrmCard>
+    <CrmCard v-if="activeTab === PersonalEnum.MY_PLAN" hide-footer :special-height="64"> </CrmCard>
   </CrmDrawer>
   <EditPersonalInfoModal v-model:show="showEditPersonalModal" :integration="currentInfo" @init-sync="searchData()" />
   <EditPasswordModal v-model:show="showEditPasswordModal" :integration="currentPassword" @init-sync="searchData()" />
@@ -119,6 +118,7 @@
 
   const showEditPersonalModal = ref<boolean>(false); // 已配置
   const showEditPasswordModal = ref<boolean>(false); // 已配置
+  const showRoleTag = ref<boolean>(false);
 
   const activeTab = ref(PersonalEnum.INFO);
   watch(
@@ -143,11 +143,11 @@
     ];
   });
 
-  const refreshKey = ref(0);
 
   async function searchData() {
     if (activeTab.value === PersonalEnum.INFO) {
       personalInfo.value = await getPersonalUrl();
+      showRoleTag.value = personalInfo.value.roles.some((role) => role.id === 'org_admin') || personalInfo.value.userId === 'admin';
     }
   }
   function edit() {

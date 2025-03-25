@@ -1,7 +1,9 @@
 package io.cordys.crm.system.utils;
 
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.OrganizationConfigConstants;
 import io.cordys.crm.system.domain.OrganizationConfig;
 import io.cordys.crm.system.domain.OrganizationConfigDetail;
@@ -35,12 +37,12 @@ public class MailSender {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.EMAIL.name());
         if (organizationConfig == null) {
             LogUtils.error("邮件未设置 ");
-            return;
+            throw new GenericException(Translator.get("email.config.not.exist.text"));
         }
         OrganizationConfigDetail organizationConfigDetail = extOrganizationConfigDetailMapper.getOrganizationConfigDetail(organizationConfig.getId());
         if (organizationConfigDetail == null) {
             LogUtils.error("邮件内容为空 ");
-            return;
+            throw new GenericException(Translator.get("email.config.is.null"));
         }
         EmailDTO emailDTO = JSON.parseObject(new String(organizationConfigDetail.getContent()), EmailDTO.class);
         JavaMailSenderImpl javaMailSender = getMailSender(emailDTO);
