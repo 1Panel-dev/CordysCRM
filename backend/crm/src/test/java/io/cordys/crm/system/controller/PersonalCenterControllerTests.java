@@ -137,7 +137,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         this.requestPost("/organization/config/edit/email", emailDTO).andExpect(status().isOk());
 
 
-        this.requestPost("/personal/center/mail/send_code?email=test@qq.com", null).andExpect(status().isOk());
+        this.requestPost("/personal/center/mail/code/send?email=test@qq.com", null).andExpect(status().isOk());
 
     }
 

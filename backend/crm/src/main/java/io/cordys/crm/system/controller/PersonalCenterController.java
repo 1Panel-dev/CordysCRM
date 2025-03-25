@@ -68,7 +68,7 @@ public class PersonalCenterController {
     /**
      * 发送验证码
      */
-    @PostMapping("/mail/send_code")
+    @PostMapping("/mail/code/send")
     public void sendCode(@RequestBody @NotNull String email) {
         personalCenterService.sendCode(email, OrganizationContext.getOrganizationId());
     }

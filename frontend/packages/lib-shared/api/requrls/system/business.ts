@@ -21,7 +21,7 @@ export const DeleteAuthUrl = '/system/authsource/delete'; // 认证设置-删除
 
 export const GetPersonalUrl='/personal/center/info'
 export const UpdatePersonalUrl='/personal/center/update'
-export const SendEmailCodeUrl='/personal/center/mail/send_code'
+export const SendEmailCodeUrl='/personal/center/mail/code/send'
 export const UpdateUserPasswordUrl='/personal/center/info/reset'
 export const GetPersonalFollowUrl='/personal/center/follow/plan/list'
 
