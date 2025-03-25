@@ -466,10 +466,6 @@ public class RoleService {
                 rolePermission.setId(IDGenerator.nextStr());
                 rolePermission.setRoleId(roleId);
                 rolePermission.setPermissionId(permissionId);
-                rolePermission.setCreateUser(userId);
-                rolePermission.setUpdateUser(userId);
-                rolePermission.setUpdateTime(System.currentTimeMillis());
-                rolePermission.setCreateTime(System.currentTimeMillis());
                 rolePermissionMapper.insert(rolePermission);
             }
         });

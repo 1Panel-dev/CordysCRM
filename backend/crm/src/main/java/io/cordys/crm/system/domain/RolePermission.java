@@ -1,7 +1,6 @@
 package io.cordys.crm.system.domain;
 
 import jakarta.persistence.Table;
-import io.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -14,7 +13,10 @@ import lombok.Data;
  */
 @Data
 @Table(name = "sys_role_permission")
-public class RolePermission extends BaseModel {
+public class RolePermission {
+
+	@Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
+	private String id;
 
 	@Schema(description = "角色id")
 	private String roleId;

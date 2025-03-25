@@ -9,7 +9,6 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.LoginLog;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
-import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;

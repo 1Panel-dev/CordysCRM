@@ -320,10 +320,6 @@ public abstract class BaseTest {
         rolePermission.setRoleId(PERMISSION_USER_NAME);
         rolePermission.setId(IDGenerator.nextStr());
         rolePermission.setPermissionId(permissionId);
-        rolePermission.setCreateUser(InternalUser.ADMIN.getValue());
-        rolePermission.setUpdateUser(InternalUser.ADMIN.getValue());
-        rolePermission.setCreateTime(System.currentTimeMillis());
-        rolePermission.setUpdateTime(System.currentTimeMillis());
         rolePermissionMapper.insert(rolePermission);
         return rolePermission;
     }

@@ -312,20 +312,15 @@ CREATE TABLE sys_role
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE sys_role_permission
-(
-    `id`            VARCHAR(32)  NOT NULL COMMENT 'id',
-    `role_id`       VARCHAR(32)  NOT NULL COMMENT '角色id',
-    `permission_id` VARCHAR(255) NOT NULL COMMENT '权限id',
-    `create_time`   BIGINT       NOT NULL COMMENT '创建时间',
-    `update_time`   BIGINT       NOT NULL COMMENT '更新时间',
-    `create_user`   VARCHAR(32)  NOT NULL COMMENT '创建人',
-    `update_user`   VARCHAR(32)  NOT NULL COMMENT '更新人',
+CREATE TABLE sys_role_permission(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `role_id` VARCHAR(32) NOT NULL   COMMENT '角色id' ,
+    `permission_id` VARCHAR(255) NOT NULL   COMMENT '权限id' ,
     PRIMARY KEY (id)
-) COMMENT = '角色关联权限'
-    ENGINE = InnoDB
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_general_ci;
+)  COMMENT = '角色权限'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_role_id ON sys_role_permission (role_id ASC);
 
