@@ -78,9 +78,9 @@ export interface ValidateInfo {
   errorMessages: ErrorMessagesType[];
 }
 
-
-export interface OrgUserInfo extends UserInfo {
+export interface OrgUserInfo extends Omit<UserInfo, 'roles'> {
   userId: string;
   userName: string;
   departmentName: string;
+  roles: MemberRoleItem[];
 }

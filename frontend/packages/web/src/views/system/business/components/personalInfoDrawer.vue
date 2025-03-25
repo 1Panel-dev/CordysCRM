@@ -12,9 +12,9 @@
       <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="searchData()" />
     </CrmCard>
     <CrmCard v-if="activeTab === PersonalEnum.INFO" hide-footer :special-height="64">
-      <div class="flex font-medium text-[var(--text-n1)]"
-        ><n-spin>{{ t('common.baseInfo') }}</n-spin></div
-      >
+      <div class="flex font-medium text-[var(--text-n1)]">
+        <n-spin>{{ t('common.baseInfo') }}</n-spin>
+      </div>
       <div class="flex w-full items-center gap-[8px] py-[16px]">
         <CrmAvatar />
         <div>
@@ -65,7 +65,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NButton, NTag, TabPaneProps, useMessage } from 'naive-ui';
+  import { NButton, NP, NSpin, NTag, TabPaneProps } from 'naive-ui';
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { PersonalInfoRequest, PersonalPassword } from '@lib/shared/models/system/business';
@@ -83,7 +83,6 @@
   import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
-  const Message = useMessage();
 
   const props = withDefaults(
     defineProps<{
@@ -143,11 +142,11 @@
     ];
   });
 
-
   async function searchData() {
     if (activeTab.value === PersonalEnum.INFO) {
       personalInfo.value = await getPersonalUrl();
-      showRoleTag.value = personalInfo.value.roles.some((role) => role.id === 'org_admin') || personalInfo.value.userId === 'admin';
+      showRoleTag.value =
+        personalInfo.value.roles.some((role) => role.id === 'org_admin') || personalInfo.value.userId === 'admin';
     }
   }
   function edit() {

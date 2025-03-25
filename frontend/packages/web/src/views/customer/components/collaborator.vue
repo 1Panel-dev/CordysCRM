@@ -122,9 +122,11 @@
   const addMemberModalVisible = ref(false);
   const addMemberLoading = ref(false);
   const form = ref<{
+    id: string;
     member: string | number | (string | number)[];
     permission: CollaborationType;
   }>({
+    id: '',
     member: '',
     permission: 'READ_ONLY',
   });
@@ -137,7 +139,7 @@
         addMemberLoading.value = true;
         if (isEdit.value) {
           await updateCustomerCollaboration({
-            id: (form.value.member as string) || '',
+            id: form.value.id,
             collaborationType: form.value.permission,
           });
           Message.success(t('common.updateSuccess'));
@@ -163,6 +165,7 @@
   function handleAddClick() {
     isEdit.value = false;
     form.value = {
+      id: '',
       member: '',
       permission: 'READ_ONLY',
     };
@@ -173,6 +176,7 @@
     if (actionKey === 'edit') {
       isEdit.value = true;
       form.value = {
+        id: row.id,
         member: row.userId,
         permission: row.collaborationType,
       };

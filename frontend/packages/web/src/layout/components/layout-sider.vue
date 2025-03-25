@@ -74,7 +74,7 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { NDivider, NLayoutSider, NMenu, NPopover, NTag } from 'naive-ui';
+  import { NDivider, NLayoutSider, NMenu, NPopover, NTag, NText } from 'naive-ui';
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
 
@@ -226,14 +226,15 @@
   .personal-menu {
     min-width: 120px;
     .n-menu .n-menu-item {
-      height: 30px;
-      padding: 4px 12px;
-      border-radius: 4px;
-      margin-top: 0;
       align-items: flex-start;
+      margin-top: 0;
+      padding: 4px 12px;
+      height: 30px;
+      border-radius: 4px;
     }
     .n-menu .n-menu-item:hover {
       transition: 0.7s;
+
       --n-item-color-hover: var(--primary-7);
     }
     .n-menu-item-content {
@@ -242,16 +243,16 @@
         color: var(--text-n2);
       }
       .n-menu-item-content__icon {
-        color: var(--text-n2);
         width: 16px;
         height: 16px;
+        color: var(--text-n2);
       }
     }
     .n-menu-item-content::before {
-      left: -8px;
-      right: -8px;
       top: -4px;
+      right: -8px;
       bottom: -4px;
+      left: -8px;
     }
   }
   .personal-popover {
@@ -262,9 +263,9 @@
     }
   }
   .personal-name {
-    font-weight: 500;
     font-size: 14px;
-    line-height: 22px;
+    font-weight: 500;
     color: var(--text-n1);
+    line-height: 22px;
   }
 </style>

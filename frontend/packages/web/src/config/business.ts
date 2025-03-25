@@ -1,7 +1,6 @@
 import { FormItemRule, InputProps } from 'naive-ui';
 
 import { OrgUserInfo } from '@lib/shared/models/system/org';
-import { UserInfo } from '@lib/shared/models/user';
 
 import { useI18n } from '@/hooks/useI18n';
 
@@ -413,7 +412,7 @@ export const defaultUserInfo: OrgUserInfo = {
   organizationIds: [''],
   csrfToken: '',
   sessionId: '',
-  roles: [''],
+  roles: [],
   userId: '',
   userName: '',
   departmentName: '',
