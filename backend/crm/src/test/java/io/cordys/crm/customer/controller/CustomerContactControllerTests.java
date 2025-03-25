@@ -33,6 +33,7 @@ class CustomerContactControllerTests extends BaseTest {
     protected static final String LIST = "list/{0}";
     protected static final String DISABLE = "disable/{0}";
     protected static final String ENABLE = "enable/{0}";
+    protected static final String OPPORTUNITY_CHECK = "opportunity/check/{0}";
 
     private static CustomerContact addCustomerContact;
 
@@ -223,6 +224,20 @@ class CustomerContactControllerTests extends BaseTest {
         // 校验权限
         requestGetPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE),
                 ENABLE, addCustomerContact.getId());
+    }
+
+    @Test
+    @Order(7)
+    void testCheck() throws Exception {
+        // 请求成功
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(OPPORTUNITY_CHECK, addCustomerContact.getId());
+        Boolean result = getResultData(mvcResult, Boolean.class);
+
+        Assertions.assertFalse(result);
+
+        // 校验权限
+        requestGetPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_DELETE, PermissionConstants.CUSTOMER_MANAGEMENT_DELETE),
+                DEFAULT_DELETE, addCustomerContact.getId());
     }
 
     @Test

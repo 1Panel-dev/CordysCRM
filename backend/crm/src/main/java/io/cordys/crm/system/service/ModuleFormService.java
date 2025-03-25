@@ -222,18 +222,21 @@ public class ModuleFormService {
 		});
 
 		Map<String, List<String>> typeIdsMap = new HashMap<>(8);
-		allDataFields.stream().filter(field -> idTypeMap.containsKey(field.getFieldId())).forEach(field -> {
-			String optionType = idTypeMap.get(field.getFieldId());
-			if (!typeIdsMap.containsKey(optionType)) {
-				typeIdsMap.put(optionType, new ArrayList<>());
-			}
-			Object fieldValue = field.getFieldValue();
-			if (fieldValue instanceof List) {
-				typeIdsMap.get(optionType).addAll(JSON.parseArray(JSON.toJSONString(fieldValue), String.class));
-			} else {
-				typeIdsMap.get(optionType).add(fieldValue.toString());
-			}
-		});
+
+		if (CollectionUtils.isNotEmpty(allDataFields)) {
+			allDataFields.stream().filter(field -> idTypeMap.containsKey(field.getFieldId())).forEach(field -> {
+				String optionType = idTypeMap.get(field.getFieldId());
+				if (!typeIdsMap.containsKey(optionType)) {
+					typeIdsMap.put(optionType, new ArrayList<>());
+				}
+				Object fieldValue = field.getFieldValue();
+				if (fieldValue instanceof List) {
+					typeIdsMap.get(optionType).addAll(JSON.parseArray(JSON.toJSONString(fieldValue), String.class));
+				} else {
+					typeIdsMap.get(optionType).add(fieldValue.toString());
+				}
+			});
+		}
 
 		Map<String, String> sourceMap = initTypeSourceMap();
 		typeIdsMap.forEach((type, ids) -> {

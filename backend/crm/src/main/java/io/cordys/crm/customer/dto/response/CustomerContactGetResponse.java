@@ -1,8 +1,13 @@
 package io.cordys.crm.customer.dto.response;
 
+import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.OptionDTO;
 import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.cordys.crm.customer.domain.CustomerContact;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -28,4 +33,10 @@ public class CustomerContactGetResponse extends CustomerContact {
 
     @Schema(description = "更新人名称")
     private String updateUserName;
+
+    @Schema(description = "自定义字段")
+    private List<BaseModuleFieldValue> moduleFields;
+
+    @Schema(description = "选项集合")
+    private Map<String, List<OptionDTO>> optionMap;
 }

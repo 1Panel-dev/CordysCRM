@@ -70,7 +70,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @return
      */
     public List<BaseModuleFieldValue> getModuleFieldValuesByResourceId(String resourceId) {
-        return getResourceFieldMap(List.of(resourceId), true).get(resourceId);
+        List<BaseModuleFieldValue> fieldValues = getResourceFieldMap(List.of(resourceId), true).get(resourceId);
+        return fieldValues == null ? List.of() : fieldValues;
     }
 
     /**

@@ -27,6 +27,7 @@ import io.cordys.crm.customer.dto.response.CustomerContactGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
@@ -69,6 +70,8 @@ public class CustomerContactService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
+    @Resource
+    private BaseMapper<Opportunity> opportunityMapper;
 
     public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -85,6 +88,11 @@ public class CustomerContactService {
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(list,
                 CustomerContactListResponse::getOwner, CustomerContactListResponse::getOwnerName);
         optionMap.put(BusinessModuleField.CUSTOMER_CONTACT_OWNER.getBusinessKey(), ownerFieldOption);
+
+        // 补充客户选项
+        List<OptionDTO> customerFieldOption = moduleFormService.getBusinessFieldOption(list,
+                CustomerContactListResponse::getCustomerId, CustomerContactListResponse::getCustomerName);
+        optionMap.put(BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey(), customerFieldOption);
 
         return PageUtils.setPageInfoWithOption(page, list, optionMap);
     }
@@ -147,6 +155,25 @@ public class CustomerContactService {
             customerContactGetResponse.setDepartmentId(userDeptDTO.getDeptId());
             customerContactGetResponse.setDepartmentName(userDeptDTO.getDeptName());
         }
+
+        // 获取模块字段
+        List<BaseModuleFieldValue> customerContactFields = customerContactFieldService.getModuleFieldValuesByResourceId(id);
+        ModuleFormConfigDTO customerContactFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CONTACT.getKey(), orgId);
+
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerContactFormConfig, customerContactFields);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(customerContactGetResponse,
+                CustomerContactGetResponse::getOwner, CustomerContactGetResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.CUSTOMER_CONTACT_OWNER.getBusinessKey(), ownerFieldOption);
+
+        // 补充客户选项
+        List<OptionDTO> customerFieldOption = moduleFormService.getBusinessFieldOption(customerContactGetResponse,
+                CustomerContactGetResponse::getCustomerId, CustomerContactGetResponse::getCustomerName);
+        optionMap.put(BusinessModuleField.CUSTOMER_CONTACT_CUSTOMER.getBusinessKey(), customerFieldOption);
+
+        customerContactGetResponse.setOptionMap(optionMap);
+        customerContactGetResponse.setModuleFields(customerContactFields);
 
         return baseService.setCreateUpdateOwnerUserName(customerContactGetResponse);
     }
@@ -293,5 +320,11 @@ public class CustomerContactService {
         }
 
         return buildListData(list, orgId);
+    }
+
+    public boolean checkOpportunity(String id) {
+        Opportunity example = new Opportunity();
+        example.setContactId(id);
+        return opportunityMapper.countByExample(example) > 0;
     }
 }
