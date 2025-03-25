@@ -2,8 +2,8 @@ package io.cordys.crm.follow.service;
 
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.service.BaseResourceFieldService;
-import io.cordys.crm.follow.domain.FollowUpField;
-import io.cordys.crm.follow.domain.FollowUpFieldBlob;
+import io.cordys.crm.follow.domain.FollowUpRecordField;
+import io.cordys.crm.follow.domain.FollowUpRecordFieldBlob;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -15,11 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class FollowUpRecordFieldService extends BaseResourceFieldService<FollowUpField, FollowUpFieldBlob> {
+public class FollowUpRecordFieldService extends BaseResourceFieldService<FollowUpRecordField, FollowUpRecordFieldBlob> {
     @Resource
-    private BaseMapper<FollowUpField> followUpFieldMapper;
+    private BaseMapper<FollowUpRecordField> followUpRecordFieldMapper;
     @Resource
-    private BaseMapper<FollowUpFieldBlob> followUpFieldBlobMapper;
+    private BaseMapper<FollowUpRecordFieldBlob> followUpRecordFieldBlobMapper;
 
     @Override
     protected String getFormKey() {
@@ -27,12 +27,12 @@ public class FollowUpRecordFieldService extends BaseResourceFieldService<FollowU
     }
 
     @Override
-    protected BaseMapper<FollowUpField> getResourceFieldMapper() {
-        return followUpFieldMapper;
+    protected BaseMapper<FollowUpRecordField> getResourceFieldMapper() {
+        return followUpRecordFieldMapper;
     }
 
     @Override
-    protected BaseMapper<FollowUpFieldBlob> getResourceFieldBlobMapper() {
-        return followUpFieldBlobMapper;
+    protected BaseMapper<FollowUpRecordFieldBlob> getResourceFieldBlobMapper() {
+        return followUpRecordFieldBlobMapper;
     }
 }

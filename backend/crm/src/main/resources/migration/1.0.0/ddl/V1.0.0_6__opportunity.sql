@@ -118,7 +118,7 @@ CREATE INDEX idx_owner ON follow_up_record (owner ASC);
 CREATE INDEX idx_contact_id ON follow_up_record (contact_id ASC);
 
 
-CREATE TABLE follow_up_field
+CREATE TABLE follow_up_record_field
 (
     `id`          VARCHAR(32)  NOT NULL COMMENT 'id',
     `resource_id` VARCHAR(32)  NOT NULL COMMENT '跟进记录id',
@@ -130,9 +130,9 @@ CREATE TABLE follow_up_field
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id_field_id_field_value ON follow_up_field (resource_id, field_id, field_value);
+CREATE INDEX idx_resource_id_field_id_field_value ON follow_up_record_field (resource_id, field_id, field_value);
 
-CREATE TABLE follow_up_field_blob
+CREATE TABLE follow_up_record_field_blob
 (
     `id`          VARCHAR(32) NOT NULL COMMENT 'id',
     `resource_id` VARCHAR(32) NOT NULL COMMENT '跟进记录id',
@@ -144,7 +144,7 @@ CREATE TABLE follow_up_field_blob
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_resource_id ON follow_up_field_blob (resource_id);
+CREATE INDEX idx_resource_id ON follow_up_record_field_blob (resource_id);
 
 
 

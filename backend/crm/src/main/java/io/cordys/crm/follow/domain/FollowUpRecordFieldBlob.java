@@ -7,6 +7,6 @@ import lombok.Data;
 
 
 @Data
-@Table(name = "follow_up_field")
-public class FollowUpField extends BaseResourceField {
+@Table(name = "follow_up_record_field_blob")
+public class FollowUpRecordFieldBlob extends BaseResourceField {
 }
