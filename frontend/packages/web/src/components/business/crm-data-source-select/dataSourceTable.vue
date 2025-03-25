@@ -22,6 +22,7 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
 
+  import { getCustomerOptions } from '@/api/modules/customer';
   import {
     getFieldClueList,
     getFieldContactList,
@@ -31,12 +32,13 @@
   } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
 
-  import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
+  import { InternalRowData, RowData } from 'naive-ui/es/data-table/src/interface';
 
   const props = withDefaults(
     defineProps<{
       sourceType: FieldDataSourceTypeEnum;
       multiple?: boolean;
+      disabledSelection?: (row: RowData) => boolean;
     }>(),
     {
       multiple: true,
@@ -56,6 +58,10 @@
     {
       type: 'selection',
       multiple: props.multiple,
+      width: 46,
+      disabled(row: RowData) {
+        return props.disabledSelection ? props.disabledSelection(row) : false;
+      },
     },
     {
       title: t('common.name'),
@@ -65,11 +71,14 @@
         tooltip: true,
       },
     },
-    {
+  ];
+
+  if (props.sourceType === FieldDataSourceTypeEnum.CONTACT) {
+    columns.push({
       title: t('crmFormDesign.phone'),
       key: 'phone',
-    },
-  ];
+    });
+  }
 
   const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<CommonList<any>>> = {
     [FieldDataSourceTypeEnum.BUSINESS]: getFieldOpportunityList,
@@ -77,6 +86,7 @@
     [FieldDataSourceTypeEnum.CONTACT]: getFieldContactList,
     [FieldDataSourceTypeEnum.CUSTOMER]: getFieldCustomerList,
     [FieldDataSourceTypeEnum.PRODUCT]: getFieldProductList,
+    [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: getCustomerOptions,
   };
 
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(sourceApi[props.sourceType], {

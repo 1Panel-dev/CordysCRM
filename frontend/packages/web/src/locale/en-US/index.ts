@@ -19,7 +19,7 @@ Object.keys(_Vmodules).forEach((key) => {
 
 export default {
   message: {
-    'menu.workbenchHome': 'Home page',
+    'menu.workbench': 'Home page',
     'menu.settings': 'Settings',
     'menu.settings.org': 'Organization',
     'menu.settings.permission': 'Role',

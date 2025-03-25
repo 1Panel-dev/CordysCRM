@@ -261,7 +261,7 @@ export interface HeaderHistoryItem {
 
 export type RelationType = 'GROUP' | 'SUBSIDIARY';
 export interface RelationItem {
-  customerId: string;
+  customerId: string | number;
   relationType: RelationType;
 }
 
@@ -297,4 +297,9 @@ export interface CollaborationItem {
   updateUserName: string;
   departmentId: string;
   departmentName: string;
+}
+
+export interface CustomerOptionsItem {
+  id: string | number;
+  name: string;
 }

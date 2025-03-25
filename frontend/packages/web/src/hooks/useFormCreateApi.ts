@@ -27,7 +27,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   const { t } = useI18n();
   const Message = useMessage();
 
-  const collaborationType = ref<CollaborationType>(); // 协作类型
+  const sourceName = ref(''); // 资源名称
+  const collaborationType = ref<CollaborationType>(); // 协作类型-客户独有
   const descriptions = ref<Description[]>([]); // 表单详情描述列表
   const fieldList = ref<FormCreateField[]>([]); // 表单字段列表
   const loading = ref(false);
@@ -70,6 +71,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             label: item.name,
             value: name || form[item.businessKey],
           });
+          if (item.businessKey === 'name') {
+            sourceName.value = name || form[item.businessKey];
+          }
         } else {
           const options = form.optionMap?.[item.id];
           // 其他的字段读取moduleFields
@@ -219,6 +223,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     formDetail,
     formCreateTitle,
     collaborationType,
+    sourceName,
     initFormDescription,
     initFormConfig,
     initFormDetail,

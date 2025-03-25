@@ -28,12 +28,14 @@
       v-model:selected-rows="selectedRows"
       :multiple="props.multiple"
       :source-type="props.dataSourceType"
+      :disabled-selection="props.disabledSelection"
     />
   </CrmModal>
 </template>
 
 <script setup lang="ts">
   import { DataTableRowKey, NSelect, SelectOption } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
@@ -43,13 +45,14 @@
 
   import { useI18n } from '@/hooks/useI18n';
 
-  import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
+  import { InternalRowData, RowData } from 'naive-ui/es/data-table/src/interface';
 
   const props = withDefaults(
     defineProps<{
       dataSourceType: FieldDataSourceTypeEnum;
       multiple?: boolean;
       disabled?: boolean;
+      disabledSelection?: (row: RowData) => boolean;
     }>(),
     {
       multiple: true,
@@ -67,6 +70,7 @@
     [FieldDataSourceTypeEnum.BUSINESS]: 'crmFormDesign.business',
     [FieldDataSourceTypeEnum.PRODUCT]: 'crmFormDesign.product',
     [FieldDataSourceTypeEnum.CLUE]: 'crmFormDesign.clue',
+    [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: '',
   };
 
   const value = defineModel<DataTableRowKey[]>('value', {
@@ -83,8 +87,8 @@
   const dataSourcesModalVisible = ref(false);
 
   function handleDataSourceConfirm() {
-    value.value = selectedKeys.value;
-    rows.value = selectedRows.value;
+    value.value = cloneDeep(selectedKeys.value);
+    rows.value = cloneDeep(selectedRows.value);
     dataSourcesModalVisible.value = false;
   }
 
@@ -107,7 +111,9 @@
         },
       },
       {
-        default: () => (rows.value || []).find((item) => item.id === option.value)?.name,
+        default: () => {
+          return (rows.value || []).find((item) => item.id === option.value)?.name;
+        },
       }
     );
   };

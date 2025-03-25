@@ -40,6 +40,16 @@
   const value = defineModel<(string | number)[]>('value', {
     default: [],
   });
+
+  watch(
+    () => props.fieldConfig.defaultValue,
+    (val) => {
+      value.value = val;
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>

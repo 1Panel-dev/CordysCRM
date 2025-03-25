@@ -5,8 +5,7 @@
     v-model:cached-list="tabList"
     :tab-list="tabList"
     :button-list="buttonList"
-    title="1"
-    subtitle="2"
+    :title="sourceName"
     :form-key="FormDesignKeyEnum.CUSTOMER"
     :source-id="props.sourceId"
     @button-select="handleButtonSelect"
@@ -16,7 +15,11 @@
     </template>
     <template #left>
       <div class="p-[16px_24px]">
-        <CrmFormDescription :form-key="FormDesignKeyEnum.CUSTOMER" :source-id="props.sourceId" />
+        <CrmFormDescription
+          :form-key="FormDesignKeyEnum.CUSTOMER"
+          :source-id="props.sourceId"
+          @init="handleDescriptionInit"
+        />
       </div>
     </template>
     <template #right>
@@ -29,6 +32,7 @@
   import { useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { CollaborationType } from '@lib/shared/models/customer';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
@@ -192,5 +196,10 @@
       default:
         break;
     }
+  }
+
+  const sourceName = ref('');
+  function handleDescriptionInit(_collaborationType?: CollaborationType, _sourceName?: string) {
+    sourceName.value = _sourceName || '';
   }
 </script>

@@ -18,7 +18,7 @@ Object.keys(_Vmodules).forEach((key) => {
 });
 export default {
   message: {
-    'menu.workbenchHome': '首页',
+    'menu.workbench': '首页',
     'menu.settings': '系统设置',
     'menu.opportunity': '商机管理',
     'menu.clue': '线索',

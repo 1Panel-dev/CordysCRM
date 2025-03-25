@@ -32,6 +32,7 @@
     options?: SelectMixedOption[];
     fetchApi?: (params: Record<string, any>) => Promise<Record<string, any>[]>;
     params?: Record<string, any>;
+    disabledIds?: string[];
   }
 
   const props = withDefaults(defineProps<CrmUserSelectProps>(), {
@@ -63,6 +64,7 @@
       optionsList.value = res.map((user) => ({
         [props.labelField]: user[props.labelField],
         [props.valueField]: user[props.valueField],
+        disabled: props.disabledIds?.includes(user[props.valueField]),
       }));
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -90,6 +92,7 @@
           ...item,
           [props.labelField]: item[props.labelField],
           [props.valueField]: item[props.valueField],
+          disabled: props.disabledIds?.includes(item[props.valueField] as string),
         }))
       : optionsList.value;
   });

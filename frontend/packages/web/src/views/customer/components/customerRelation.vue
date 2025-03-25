@@ -7,7 +7,13 @@
       </div>
       <div v-for="(relation, index) in relations" :key="relation.customerId" class="flex items-center gap-[8px]">
         <n-select v-model:value="relation.relationType" :options="getRelationOptions(relation)" />
-        <n-select v-model:value="relation.customerId" :options="customerOptions" />
+        <CrmDataSource
+          v-model:value="relation.customerId"
+          v-model:rows="relation.customerName"
+          :data-source-type="FieldDataSourceTypeEnum.CUSTOMER_OPTIONS"
+          :multiple="false"
+          :disabled-selection="disabledSelection"
+        />
         <n-button
           v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
           class="bg-[var(--text-n10)] p-[8px]"
@@ -47,15 +53,17 @@
 <script setup lang="ts">
   import { NButton, NSelect, useMessage } from 'naive-ui';
 
+  import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { RelationListItem } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
 
   import { getCustomerRelationList, saveCustomerRelation } from '@/api/modules/customer';
   import { useI18n } from '@/hooks/useI18n';
 
-  import { SelectMixedOption } from 'naive-ui/es/select/src/interface';
+  import { RowData } from 'naive-ui/es/data-table/src/interface';
 
   const props = defineProps<{
     sourceId: string;
@@ -64,10 +72,10 @@
   const { t } = useI18n();
   const Message = useMessage();
 
-  const originRelations = ref<RelationListItem[]>([
-    { relationType: 'GROUP', customerId: '', id: '', customerName: '' },
+  const originRelations = ref<Record<string, any>[]>([
+    { relationType: 'GROUP', customerId: [], id: '', customerName: [] },
   ]);
-  const relations = ref<RelationListItem[]>([{ relationType: 'GROUP', customerId: '', id: '', customerName: '' }]);
+  const relations = ref<Record<string, any>[]>([{ relationType: 'GROUP', customerId: [], id: '', customerName: [] }]);
   const relationOptions = [
     {
       label: t('customer.group'),
@@ -84,14 +92,13 @@
     }
     return relationOptions.filter((item) => item.value !== 'GROUP');
   }
-  const customerOptions = ref<SelectMixedOption[]>([]); // TODO: 数据源接口
 
   function addRelation() {
     relations.value.push({
       id: relations.value.length,
       relationType: 'SUBSIDIARY',
-      customerId: '',
-      customerName: '',
+      customerId: [],
+      customerName: [],
     });
   }
 
@@ -107,7 +114,14 @@
   async function handleSave() {
     try {
       loading.value = true;
-      await saveCustomerRelation(props.sourceId, relations.value);
+      await saveCustomerRelation(
+        props.sourceId,
+        relations.value.map((item) => ({
+          ...item,
+          customerId: item.customerId[0],
+          customerName: item.customerName[0]?.name,
+        })) as RelationListItem[]
+      );
       Message.success(t('common.saveSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -120,16 +134,29 @@
   async function initList() {
     try {
       loading.value = true;
-      relations.value = await getCustomerRelationList(props.sourceId);
-      if (relations.value.length === 0) {
+      const res = await getCustomerRelationList(props.sourceId);
+      if (res.length === 0) {
         relations.value = [
           {
             relationType: 'GROUP',
-            customerId: '',
+            customerId: [],
             id: '',
-            customerName: '',
+            customerName: [],
           },
         ];
+      } else {
+        relations.value = res.map((item) => ({
+          ...item,
+          customerId: item.customerId ? [item.customerId] : [],
+          customerName: item.customerName
+            ? [
+                {
+                  id: item.customerId,
+                  name: item.customerName,
+                },
+              ]
+            : [],
+        }));
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -137,6 +164,10 @@
     } finally {
       loading.value = false;
     }
+  }
+
+  function disabledSelection(row: RowData) {
+    return row.id === props.sourceId;
   }
 
   onBeforeMount(() => {

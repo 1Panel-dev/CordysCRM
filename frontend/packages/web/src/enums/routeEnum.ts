@@ -35,6 +35,11 @@ export enum PersonalRouteEnum {
   PERSONAL_PLAN = 'personalPlan',
   LOGOUT = 'logout',
 }
+export enum WorkbenchRouteEnum {
+  WORKBENCH = 'workbench',
+  WORKBENCH_INDEX = 'workbenchIndex',
+}
+
 export const AppRouteEnum = {
   ...SystemRouteEnum,
   ...OpportunityRouteEnum,
@@ -42,4 +47,5 @@ export const AppRouteEnum = {
   ...CustomerRouteEnum,
   ...ProductRouteEnum,
   ...PersonalRouteEnum,
+  ...WorkbenchRouteEnum,
 };

@@ -92,7 +92,7 @@
     let columns = cloneDeep(props.columns).map((column: CrmDataTableColumn) => {
       const _col = { ...column };
       Object.keys(_col).forEach((key) => {
-        if (typeof _col[key as keyof CrmDataTableColumn] === 'function') {
+        if (typeof _col[key as keyof CrmDataTableColumn] === 'function' && attrs.showSetting) {
           delete _col[key as keyof CrmDataTableColumn];
         }
       });

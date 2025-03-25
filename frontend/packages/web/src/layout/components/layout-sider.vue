@@ -115,6 +115,11 @@
 
   const menuOptions = [
     {
+      label: t('menu.workbench'),
+      key: AppRouteEnum.WORKBENCH_INDEX,
+      icon: renderIcon('iconicon_home1'),
+    },
+    {
       label: t('module.customerManagement'),
       key: AppRouteEnum.CUSTOMER,
       icon: renderIcon('iconicon_multiple_choice_of_members'),

@@ -25,25 +25,27 @@
     refreshKey?: number;
   }>();
   const emit = defineEmits<{
-    (e: 'init', collaborationType?: CollaborationType): void;
+    (e: 'init', collaborationType?: CollaborationType, sourceName?: string): void;
   }>();
 
-  const { descriptions, loading, collaborationType, initFormConfig, initFormDescription } = useFormCreateApi({
-    formKey: toRefs(props).formKey,
-    sourceId: toRefs(props).sourceId,
-  });
+  const { descriptions, loading, collaborationType, sourceName, initFormConfig, initFormDescription } =
+    useFormCreateApi({
+      formKey: toRefs(props).formKey,
+      sourceId: toRefs(props).sourceId,
+    });
 
   watch(
     () => props.refreshKey,
     async () => {
       await initFormDescription();
-      emit('init', collaborationType.value);
+      emit('init', collaborationType.value, sourceName.value);
     }
   );
 
   onBeforeMount(async () => {
     await initFormConfig();
-    initFormDescription();
+    await initFormDescription();
+    emit('init', collaborationType.value, sourceName.value);
   });
 </script>
 

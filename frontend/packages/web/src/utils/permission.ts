@@ -4,6 +4,8 @@ import appRoutes from '@/router/routes/index';
 import useAppStore from '@/store/modules/app';
 import useUserStore from '@/store/modules/user';
 
+import { WorkbenchRouteEnum } from '@/enums/routeEnum';
+
 export function hasPermission(permission: string) {
   const userStore = useUserStore();
   if (userStore.isAdmin) {
@@ -65,7 +67,7 @@ export function topLevelMenuHasPermission(route: RouteLocationNormalized | Route
 // 有权限的第一个路由名，如果没有找到则返回IndexRoute
 export function getFirstRouteNameByPermission(routerList: RouteRecordNormalized[]) {
   const currentRoute = routerList.filter((item) => hasAnyPermission(item.meta.permissions || []))[0]; // 排除没有权限的路由
-  return currentRoute?.name; // TODO: indexRoute
+  return currentRoute?.name || WorkbenchRouteEnum.WORKBENCH;
 }
 
 // 判断当前路由名有没有权限

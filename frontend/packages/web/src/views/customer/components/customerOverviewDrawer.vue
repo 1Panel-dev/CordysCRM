@@ -5,8 +5,7 @@
     v-model:cached-list="cachedList"
     :tab-list="tabList"
     :button-list="buttonList"
-    title="1"
-    subtitle="2"
+    :title="sourceName"
     :form-key="FormDesignKeyEnum.CUSTOMER"
     :source-id="props.sourceId"
     show-tab-setting
@@ -26,7 +25,7 @@
           :form-key="FormDesignKeyEnum.CUSTOMER"
           :source-id="props.sourceId"
           :refresh-key="refreshKey"
-          @init="(e) => (collaborationType = e)"
+          @init="handleDescriptionInit"
         />
       </div>
     </template>
@@ -93,6 +92,7 @@
   const refreshKey = ref(0);
   const transferLoading = ref(false);
   const collaborationType = ref<CollaborationType>();
+  const sourceName = ref('');
   const buttonList = computed<ActionsItem[]>(() => {
     if (collaborationType.value === 'READ_ONLY') {
       return [];
@@ -247,6 +247,11 @@
     } else if (key === 'transfer') {
       transfer();
     }
+  }
+
+  function handleDescriptionInit(_collaborationType?: CollaborationType, _sourceName?: string) {
+    collaborationType.value = _collaborationType;
+    sourceName.value = _sourceName || '';
   }
 </script>
 

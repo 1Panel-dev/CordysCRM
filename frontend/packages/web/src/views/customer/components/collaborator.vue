@@ -44,6 +44,7 @@
           :fetch-api="getUserOptions"
           max-tag-count="responsive"
           :disabled="isEdit"
+          :disabled-ids="disabledIds"
         />
       </n-form-item>
       <n-form-item path="permission" feedback-class="hidden">
@@ -173,10 +174,10 @@
       isEdit.value = true;
       form.value = {
         member: row.userId,
-        permission: row.permission,
+        permission: row.collaborationType,
       };
       addMemberModalVisible.value = true;
-    } else if (actionKey === 'delete') {
+    } else if (actionKey === 'pop-delete') {
       removeMember(row);
     }
   }
@@ -292,6 +293,8 @@
     showPagination: false,
     columns,
   });
+
+  const disabledIds = computed(() => propsRes.value.data.map((e) => e.userId));
 
   function initData() {
     setLoadListParams({

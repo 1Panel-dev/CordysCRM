@@ -50,3 +50,4 @@ export const BatchDeleteCustomerCollaborationUrl = '/customer/collaboration/batc
 export const AddCustomerCollaborationUrl = '/customer/collaboration/add'; // 添加协作成员
 export const GetCustomerCollaborationListUrl = '/customer/collaboration/list'; // 获取协作成员列表
 export const DeleteCustomerCollaborationUrl = '/customer/collaboration/delete'; // 删除协作成员
+export const GetCustomerOptionsUrl = '/customer/option'; // 获取客户选项列表
