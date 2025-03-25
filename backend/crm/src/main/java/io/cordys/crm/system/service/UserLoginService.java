@@ -1,5 +1,6 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.request.LoginRequest;
 import io.cordys.common.uid.IDGenerator;
@@ -8,6 +9,7 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.LoginLog;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -23,6 +25,7 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,8 +62,13 @@ public class UserLoginService {
                 throw new DisabledAccountException(Translator.get("user_has_been_disabled"));
             }
         }
+
+        List<String> roleIds = roleService.getRoleIdsByUserId(userId);
+        List<OptionDTO> roleOptions = roleService.getRoleOptions(roleIds);
+        // 设置角色信息，供前端展示
+        userDTO.setRoles(roleOptions);
         // 设置权限
-        userDTO.setPermissionIds(roleService.getPermissionIdsByUserId(userDTO.getId()));
+        userDTO.setPermissionIds(roleService.getPermissionIds(roleIds));
         // 设置组织ID
         userDTO.setOrganizationIds(getOrgIdsByUserId(userDTO.getId()));
         return userDTO;

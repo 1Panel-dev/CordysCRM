@@ -7,6 +7,7 @@ import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.InternalRole;
 import io.cordys.common.constants.RoleDataScope;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.permission.Permission;
 import io.cordys.common.permission.PermissionDefinitionItem;
@@ -15,7 +16,10 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.domain.*;
+import io.cordys.crm.system.domain.Role;
+import io.cordys.crm.system.domain.RolePermission;
+import io.cordys.crm.system.domain.RoleScopeDept;
+import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.dto.request.PermissionUpdateRequest;
 import io.cordys.crm.system.dto.request.RoleAddRequest;
 import io.cordys.crm.system.dto.request.RoleUpdateRequest;
@@ -405,23 +409,31 @@ public class RoleService {
         return rolePermissionMapper.select(example);
     }
 
-    public Set<String> getPermissionIdsByUserId(String userId) {
-        return getPermissionsByUserId(userId)
+    public Set<String> getPermissionIds(List<String> roleIds) {
+        return getPermissions(roleIds)
                 .stream()
                 .map(RolePermission::getPermissionId)
                 .collect(Collectors.toSet());
     }
 
-    public List<RolePermission> getPermissionsByUserId(String userId) {
+    public List<RolePermission> getPermissions(List<String> roleIds) {
+        if (CollectionUtils.isEmpty(roleIds)) {
+            return List.of();
+        }
+        var userLambdaQueryWrapper = new LambdaQueryWrapper<RolePermission>()
+                .in(RolePermission::getRoleId, roleIds);
+        return rolePermissionMapper.selectListByLambda(userLambdaQueryWrapper);
+    }
+
+
+    public List<String> getRoleIdsByUserId(String userId) {
         List<UserRole> userRoles = getUserRolesByUserId(userId);
         if (CollectionUtils.isEmpty(userRoles)) {
             return List.of();
         }
-
-        List<String> roleIds = userRoles.stream().map(UserRole::getRoleId).toList();
-        var userLambdaQueryWrapper = new LambdaQueryWrapper<RolePermission>()
-                .in(RolePermission::getRoleId, roleIds);
-        return rolePermissionMapper.selectListByLambda(userLambdaQueryWrapper);
+        return userRoles.stream()
+                .map(UserRole::getRoleId)
+                .toList();
     }
 
     public List<UserRole> getUserRolesByUserId(String userId) {
@@ -468,5 +480,20 @@ public class RoleService {
             return List.of();
         }
         return roleMapper.selectByIds(ids.toArray(new String[0]));
+    }
+
+    public List<OptionDTO> getRoleOptions(List<String> roleIds) {
+        if (CollectionUtils.isEmpty(roleIds)) {
+            return List.of();
+        }
+        List<Role> roles = getByIds(roleIds);
+        return roles.stream()
+                .map(role -> {
+                    role = translateInternalRole(role);
+                    OptionDTO option = new OptionDTO();
+                    option.setId(role.getId());
+                    option.setName(role.getName());
+                    return option;
+                }).toList();
     }
 }
