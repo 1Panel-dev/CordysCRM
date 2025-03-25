@@ -99,14 +99,20 @@
       content,
       positiveText,
       negativeText,
+      positiveButtonProps: {
+        type: hasData ? 'primary' : 'error',
+        size: 'medium',
+      },
       onPositiveClick: async () => {
-        try {
-          await deleteCluePool(row.id);
-          Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
+        if (!hasData) {
+          try {
+            await deleteCluePool(row.id);
+            Message.success(t('common.deleteSuccess'));
+            tableRefreshId.value += 1;
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+          }
         }
       },
     });

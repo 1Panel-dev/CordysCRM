@@ -19,22 +19,27 @@ type FormKey =
   | FormDesignKeyEnum.CLUE
   | FormDesignKeyEnum.PRODUCT
   | FormDesignKeyEnum.CUSTOMER_OPEN_SEA
-  | FormDesignKeyEnum.CLUE_POOL;
+  | FormDesignKeyEnum.CLUE_POOL
+  | FormDesignKeyEnum.CUSTOMER_CONTACT;
 
 export interface FormCreateTableProps {
   formKey: FormKey;
   operationColumn?: CrmDataTableColumn;
   specialRender?: Record<string, (row: any) => void>;
+  showPagination?: boolean;
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
   const { t } = useI18n();
   const { getFilterListConfig, customFieldsFilterConfig } = useFormCreateAdvanceFilter(props.formKey);
   const loading = ref(false);
+  const showPagination = props.showPagination ?? true;
   let columns: CrmDataTableColumn[] = [];
+  const columnsSorter = showPagination ? true : 'default';
   const tableKeyMap = {
     [FormDesignKeyEnum.CUSTOMER]: TableKeyEnum.CUSTOMER,
     [FormDesignKeyEnum.CONTACT]: TableKeyEnum.CUSTOMER_CONTRACT,
+    [FormDesignKeyEnum.CUSTOMER_CONTACT]: TableKeyEnum.CUSTOMER_CONTRACT,
     [FormDesignKeyEnum.BUSINESS]: TableKeyEnum.BUSINESS,
     [FormDesignKeyEnum.CLUE]: TableKeyEnum.CLUE,
     [FormDesignKeyEnum.CLUE_POOL]: TableKeyEnum.CLUE_POOL,
@@ -116,14 +121,45 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         },
       },
       {
-        title: t('common.head'),
+        title: t('org.department'),
         width: 120,
-        key: 'head',
+        key: 'department',
         ellipsis: {
           tooltip: true,
         },
         sortOrder: false,
         sorter: true,
+      },
+    ],
+    [FormDesignKeyEnum.CUSTOMER_CONTACT]: [
+      {
+        title: t('common.status'),
+        width: 120,
+        key: 'status',
+        ellipsis: {
+          tooltip: true,
+        },
+        filterOptions: [
+          {
+            label: t('common.enable'),
+            value: true,
+          },
+          {
+            label: t('common.disable'),
+            value: false,
+          },
+        ],
+        sortOrder: false,
+        sorter: 'default',
+        render: props.specialRender?.status,
+      },
+      {
+        title: t('customer.disableReason'),
+        width: 120,
+        key: 'disableReason',
+        ellipsis: {
+          tooltip: true,
+        },
       },
       {
         title: t('org.department'),
@@ -133,7 +169,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           tooltip: true,
         },
         sortOrder: false,
-        sorter: true,
+        sorter: 'default',
       },
     ],
     [FormDesignKeyEnum.BUSINESS]: [
@@ -248,7 +284,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         tooltip: true,
       },
       sortOrder: false,
-      sorter: true,
+      sorter: columnsSorter,
     },
     {
       title: t('common.createTime'),
@@ -258,7 +294,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         tooltip: true,
       },
       sortOrder: false,
-      sorter: true,
+      sorter: columnsSorter,
     },
     {
       title: t('common.updateUserName'),
@@ -268,7 +304,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         tooltip: true,
       },
       sortOrder: false,
-      sorter: true,
+      sorter: columnsSorter,
     },
     {
       title: t('common.updateTime'),
@@ -278,7 +314,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         tooltip: true,
       },
       sortOrder: false,
-      sorter: true,
+      sorter: columnsSorter,
     },
   ];
 
@@ -391,6 +427,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     {
       tableKey: tableKeyMap[props.formKey],
       showSetting: true,
+      showPagination,
       columns,
       scrollX: columns.reduce((prev, curr) => prev + (curr.width as number), 0) + 46,
       maxHeight: 600,

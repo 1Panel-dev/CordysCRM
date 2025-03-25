@@ -14,6 +14,8 @@ import {
   BatchPickOpenSeaCustomerUrl,
   BatchTransferCustomerUrl,
   CancelCustomerFollowPlanUrl,
+  CheckOpportunityContactUrl,
+  ContactListUnderCustomerUrl,
   DeleteCustomerCollaborationUrl,
   DeleteCustomerContactUrl,
   DeleteCustomerFollowPlanUrl,
@@ -241,6 +243,16 @@ export function enableCustomerContact(id: string) {
 // 删除客户联系人
 export function deleteCustomerContact(id: string) {
   return CDR.get({ url: `${DeleteCustomerContactUrl}/${id}` });
+}
+
+// 是否绑定商机
+export function checkOpportunity(id: string) {
+  return CDR.get({ url: `${CheckOpportunityContactUrl}/${id}` });
+}
+
+//  客户下的联系人列表
+export function getContactListUnderCustomer(data: { id: string }) {
+  return CDR.get({ url: `${ContactListUnderCustomerUrl}/${data.id}` });
 }
 
 // 添加公海

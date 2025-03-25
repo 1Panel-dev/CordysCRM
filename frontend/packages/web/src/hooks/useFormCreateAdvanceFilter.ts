@@ -10,6 +10,7 @@ const internalFilterKeyMap: Record<FormDesignKeyEnum, string[]> = {
   [FormDesignKeyEnum.CLUE]: ['clueName', 'clueSource', 'clueProgress'],
   [FormDesignKeyEnum.CLUE_POOL]: ['clueName', 'clueSource', 'clueProgress'],
   [FormDesignKeyEnum.CONTACT]: [],
+  [FormDesignKeyEnum.CUSTOMER_CONTACT]: [],
   [FormDesignKeyEnum.CUSTOMER]: [],
   [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: [],
   [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: [],

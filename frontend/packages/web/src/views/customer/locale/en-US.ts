@@ -12,9 +12,10 @@ export default {
   'customer.batchMoveContentTip': 'After the move, the customer will have no person in charge',
   'customer.confirmMove': 'Confirm move',
   'customer.moveSuccess': 'Move success',
-  'customer. contact. deleteContentTip':
+  'customer.contact.deleteContentTip':
     'After deletion, the contact cannot be queried and cannot be recovered. Please proceed with caution!',
-  'customer. contact. deleteTitle': 'There are unallocated business opportunities, please delete them after xx',
+  'customer.contact.deleteTitle':
+    'There is a bound business opportunity, please change the contact person for the business opportunity binding before deleting it!',
   'customer.recycleOpenSea': 'Recycle Open Sea',
   'customer.remainingVesting': 'Remaining vesting',
   'customer.lastFollowUps': 'Last follow-up personnel',

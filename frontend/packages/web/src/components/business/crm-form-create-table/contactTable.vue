@@ -1,7 +1,7 @@
 <template>
   <CrmCard hide-footer>
     <div class="mb-[16px] flex justify-between">
-      <div v-if="props.isOverview" class="font-medium text-[var(--text-n1)]">
+      <div v-if="props.customerId" class="font-medium text-[var(--text-n1)]">
         {{ t('opportunity.contactInfo') }}
       </div>
       <n-button v-else type="primary" @click="formCreateDrawerVisible = true">
@@ -69,14 +69,20 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
-  import { deleteCustomerContact, disableCustomerContact, enableCustomerContact } from '@/api/modules/customer/index';
+  import {
+    checkOpportunity,
+    deleteCustomerContact,
+    disableCustomerContact,
+    enableCustomerContact,
+  } from '@/api/modules/customer/index';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
   import { characterLimit } from '@/utils';
 
   const props = defineProps<{
-    isOverview?: boolean;
+    customerId?: string;
+    refreshKey?: number;
   }>();
 
   const Message = useMessage();
@@ -100,11 +106,18 @@
     },
   ];
 
+  async function bindOpportunity(id: string) {
+    try {
+      return await checkOpportunity(id);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   // 删除
   async function handleDelete(row: CustomerContractListItem) {
-    // TODO 判断是否存在绑定商机
-    const hasData = true;
-    // const hasData = await noPick(row.id);
+    const hasData = await bindOpportunity(row.id);
     const title = hasData
       ? t('customer.contact.deleteTitle')
       : t('common.deleteConfirmTitle', { name: characterLimit(row.name) });
@@ -118,14 +131,20 @@
       content,
       positiveText,
       negativeText,
+      positiveButtonProps: {
+        type: hasData ? 'primary' : 'error',
+        size: 'medium',
+      },
       onPositiveClick: async () => {
-        try {
-          await deleteCustomerContact(row.id);
-          Message.success(t('common.deleteSuccess'));
-          tableRefreshId.value += 1;
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
+        if (!hasData) {
+          try {
+            await deleteCustomerContact(row.id);
+            Message.success(t('common.deleteSuccess'));
+            tableRefreshId.value += 1;
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+          }
         }
       },
     });
@@ -144,6 +163,7 @@
     if (row.enable) {
       deactivateModalVisible.value = true;
       form.value.reason = '';
+      activeContactName.value = row.name;
       activeContactId.value = row.id;
     } else {
       openModal({
@@ -200,7 +220,8 @@
   }
 
   const { useTableRes } = await useFormCreateTable({
-    formKey: FormDesignKeyEnum.CONTACT,
+    formKey: !props.customerId ? FormDesignKeyEnum.CONTACT : FormDesignKeyEnum.CUSTOMER_CONTACT,
+    showPagination: !props.customerId,
     operationColumn: {
       key: 'operation',
       width: 100,
@@ -224,15 +245,36 @@
   });
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
 
-  function searchData() {
-    setLoadListParams({ keyword: keyword.value });
-    loadList();
+  function searchData(val?: string) {
+    if (props.customerId) {
+      if (val) {
+        const lowerCaseVal = val.toLowerCase();
+        propsRes.value.data = propsRes.value.data.filter((item: CustomerContractListItem) => {
+          return item.name.toLowerCase().includes(lowerCaseVal);
+        });
+      } else {
+        setLoadListParams({ id: props.customerId });
+        loadList();
+      }
+    } else {
+      setLoadListParams({ keyword: val ?? keyword.value });
+      loadList();
+    }
   }
 
   watch(
     () => tableRefreshId.value,
     () => {
       loadList();
+    }
+  );
+
+  watch(
+    () => props.refreshKey,
+    (val) => {
+      if (val) {
+        loadList();
+      }
     }
   );
 

@@ -44,7 +44,7 @@
       key: 'owner',
       width: 150,
       sortOrder: false,
-      sorter: true,
+      sorter: 'default',
       ellipsis: {
         tooltip: true,
       },
@@ -70,7 +70,7 @@
         tooltip: true,
       },
       sortOrder: false,
-      sorter: true,
+      sorter: 'default',
       width: 150,
     },
     {
@@ -78,7 +78,7 @@
       key: 'endTime',
       width: 150,
       sortOrder: false,
-      sorter: true,
+      sorter: 'default',
       ellipsis: {
         tooltip: true,
       },

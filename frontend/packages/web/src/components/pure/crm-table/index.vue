@@ -228,10 +228,12 @@
     } else if (sorter.order === 'descend') {
       sortOrder = 'desc';
     }
+    if (!attrs.showPagination) return;
     emit('sorterChange', !sorter.order ? {} : { name: sorter.columnKey as string, type: sortOrder });
   }
 
   function handleFiltersChange(filters: DataTableFilterState) {
+    if (!attrs.showPagination) return;
     emit('filterChange', filters);
   }
 

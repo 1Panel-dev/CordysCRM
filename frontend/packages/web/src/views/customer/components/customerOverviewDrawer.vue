@@ -32,7 +32,12 @@
     <template #right>
       <div class="mt-[16px]">
         <div v-if="activeTab === 'overview'" class="mt-[16px] h-[100px] bg-[var(--text-n10)]"></div>
-        <ContactTable v-else-if="activeTab === 'contact'" class="h-[calc(100vh-161px)]" is-overview />
+        <ContactTable
+          v-else-if="activeTab === 'contact'"
+          :refresh-key="refreshKey"
+          class="h-[calc(100vh-161px)]"
+          :customer-id="props.sourceId"
+        />
         <FollowDetail
           v-else-if="['followRecord', 'followPlan'].includes(activeTab)"
           class="mt-[16px]"
