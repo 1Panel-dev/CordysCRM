@@ -1,0 +1,18 @@
+export default {
+  'system.message.notify': 'Message notification',
+  'system.message.announcement': 'Announcement',
+  'system.message.announcementTitle': 'Announcement title',
+  'system.message.content': 'Content',
+  'system.message.timeOfPublication': 'Time of publication',
+  'system.message.receiver': 'Receiver',
+  'system.message.newAnnouncement': 'New announcement',
+  'system.message.updateAnnouncement': 'Update announcement',
+  'system.message.announcementContent': 'Announcement content',
+  'system.message.href': 'Link',
+  'system.message.hrefRename': 'Rename link',
+  'system.message.preview': 'Preview announcement',
+  'system.message.hrefName': 'Link name',
+  'system.message.descContent': 'Add a link in the announcement',
+  'system.message.deleteAnnouncementTitle': 'Are you sure you want to delete {name}?',
+  'system.message.deleteAnnouncementContent': 'After deletion, the receiver will no longer receive the announcement',
+};

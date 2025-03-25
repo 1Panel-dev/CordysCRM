@@ -182,7 +182,7 @@
     name: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }), trigger: ['blur'] }],
     ownerIds: [{ required: true, message: t('common.pleaseSelect') }],
     scopeIds: [{ required: true, message: t('common.pleaseSelect') }],
-    noticeDays: [{ required: true, message: t('common.pleaseInput'), trigger: ['blur'] }],
+    noticeDays: [{ required: true, message: t('common.pleaseInput') }],
   };
 
   const filterConfigList = computed<FilterFormItem[]>(() => {

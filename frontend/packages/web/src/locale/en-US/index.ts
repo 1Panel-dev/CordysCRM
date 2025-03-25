@@ -29,6 +29,7 @@ export default {
     'menu.customer': 'Customer',
     'menu.contact': 'Contact',
     'menu.settings.businessSetting': 'Enterprise',
+    'menu.settings.messageSetting': 'Message setting',
     'menu.settings.log': 'Log',
     'navbar.action.locale': 'Switch to English',
     ...sys,

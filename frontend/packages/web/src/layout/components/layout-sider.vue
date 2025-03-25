@@ -157,6 +157,10 @@
           key: AppRouteEnum.SYSTEM_MODULE,
         },
         {
+          label: t('menu.settings.messageSetting'),
+          key: AppRouteEnum.SYSTEM_MESSAGE,
+        },
+        {
           label: t('menu.settings.businessSetting'),
           key: AppRouteEnum.SYSTEM_BUSINESS,
         },

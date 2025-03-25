@@ -45,6 +45,14 @@ const system: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'message',
+      name: SystemRouteEnum.SYSTEM_MESSAGE,
+      component: () => import('@/views/system/message/index.vue'),
+      meta: {
+        permissions: ['SYSTEM_NOTICE:READ'],
+      },
+    },
+    {
       path: 'log',
       name: SystemRouteEnum.SYSTEM_LOG,
       component: () => import('@/views/system/log/index.vue'),

@@ -2,6 +2,8 @@ export enum TableKeyEnum {
   ROLE_MEMBER = 'roleMember',
   AUTH = 'auth',
   SYSTEM_ORG_TABLE = 'systemOrgTable',
+  SYSTEM_MESSAGE_TABLE = 'systemMessageTable',
+  SYSTEM_ANNOUNCEMENT_TABLE = 'systemAnnouncementTable',
   MODULE_OPPORTUNITY_RULE_TABLE = 'moduleOpportunityRuleTable',
   MODULE_CLUE_POOL = 'moduleCluePool',
   OPPORTUNITY_HEAD_LIST = 'opportunityHeadList',

@@ -5,6 +5,8 @@
     :show-icon="false"
     flip
     arrow-point-to-center
+    :negative-text="props.negativeText"
+    :positive-text="props.positiveText"
     :placement="props.placement"
     @positive-click="handlePositiveClick"
     @negative-click="handleNegativeClick"
@@ -32,10 +34,20 @@
     </template>
     <template #action>
       <div class="flex items-center justify-end">
-        <n-button :disabled="props.loading" v-bind="cancelButtonProps" @click="handleNegativeClick">
+        <n-button
+          v-if="props.negativeText"
+          :disabled="props.loading"
+          v-bind="cancelButtonProps"
+          @click="handleNegativeClick"
+        >
           {{ t(props.negativeText) }}
         </n-button>
-        <n-button :loading="props.loading" v-bind="okButtonProps" @click="handlePositiveClick">
+        <n-button
+          v-if="props.positiveText"
+          :loading="props.loading"
+          v-bind="okButtonProps"
+          @click="handlePositiveClick"
+        >
           {{ t(props.positiveText) }}
         </n-button>
       </div>
@@ -51,14 +63,14 @@
   const { t } = useI18n();
 
   export type CrmPopConfirmProps = {
-    loading: boolean;
+    loading?: boolean;
     title: string; // 标题
     content?: string; // 内容
     iconType?: 'error' | 'warning' | 'primary'; // 图标类型
     negativeButtonProps?: ButtonProps; // 取消按钮文字
     positiveButtonProps?: ButtonProps; // 确定按钮的属性
-    positiveText?: string; // 确定按钮文本
-    negativeText?: string; // 取消按钮文本
+    positiveText?: string | null; // 确定按钮文本
+    negativeText?: string | null; // 取消按钮文本
     showIcon?: boolean; // 显示icon
     placement?:
       | 'top-start'

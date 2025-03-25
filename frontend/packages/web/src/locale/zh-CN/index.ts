@@ -28,6 +28,7 @@ export default {
     'menu.settings.permission': '角色权限',
     'menu.settings.moduleSetting': '模块设置',
     'menu.settings.businessSetting': '企业设置',
+    'menu.settings.messageSetting': '消息设置',
     'menu.settings.log': '系统日志',
     'navbar.action.locale': '切换为中文',
     ...sys,

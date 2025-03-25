@@ -1,0 +1,18 @@
+export default {
+  'system.message.notify': '消息通知',
+  'system.message.announcement': '公告',
+  'system.message.announcementTitle': '公告标题',
+  'system.message.content': '内容',
+  'system.message.timeOfPublication': '发布时间',
+  'system.message.receiver': '接收人',
+  'system.message.newAnnouncement': '新建公告',
+  'system.message.updateAnnouncement': '更新公告',
+  'system.message.announcementContent': '公告内容',
+  'system.message.href': '链接',
+  'system.message.hrefRename': '链接重命名',
+  'system.message.preview': '预览公告',
+  'system.message.hrefName': '链接名',
+  'system.message.descContent': '添加在公告内的链接',
+  'system.message.deleteAnnouncementTitle': '确定删除 {name} 吗？',
+  'system.message.deleteAnnouncementContent': '删除后，接收人将不再接收该公告',
+};

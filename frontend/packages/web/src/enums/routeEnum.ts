@@ -5,6 +5,7 @@ export enum SystemRouteEnum {
   SYSTEM_MODULE = 'systemModule',
   SYSTEM_BUSINESS = 'systemBusiness',
   SYSTEM_LOG = 'systemLog',
+  SYSTEM_MESSAGE = 'systemMessage',
 }
 
 export enum OpportunityRouteEnum {

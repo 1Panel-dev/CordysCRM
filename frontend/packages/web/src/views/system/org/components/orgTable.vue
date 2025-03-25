@@ -610,7 +610,6 @@
       },
       sortOrder: false,
       sorter: true,
-      showInTable: true,
       filterOptions: [
         {
           label: t('common.enable'),
@@ -669,7 +668,6 @@
         tooltip: true,
       },
       width: 100,
-      showInTable: true,
     },
     {
       title: t('org.department'),
@@ -678,7 +676,6 @@
         tooltip: true,
       },
       width: 100,
-      showInTable: true,
     },
     {
       title: t('org.directSuperior'),
