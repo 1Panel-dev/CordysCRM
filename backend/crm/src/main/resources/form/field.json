@@ -682,8 +682,8 @@
         {"key":  "required"}
       ],
       "showControlRules": [
-          {"value": "1", "fieldIds": ["recordCustomer", "recordOpportunity"]},
-          {"value": "2", "fieldIds": ["recordClue"]}
+          {"value": "CUSTOMER", "fieldIds": ["recordCustomer", "recordOpportunity"]},
+          {"value": "CLUE", "fieldIds": ["recordClue"]}
       ]
     },
     {
@@ -823,14 +823,14 @@
       "editable": true,
       "fieldWidth": 0.5,
       "options": [
-        {"label": "客户", "value":  "1"}, {"label": "线索", "value":  "2"}
+        {"label": "客户", "value":  "CUSTOMER"}, {"label": "线索", "value":  "CLUE"}
       ],
       "rules": [
         {"key":  "required"}
       ],
       "showControlRules": [
-        {"value": "1", "fieldIds": ["planCustomer", "planOpportunity"]},
-        {"value": "2", "fieldIds": ["planClue"]}
+        {"value": "CUSTOMER", "fieldIds": ["planCustomer", "planOpportunity"]},
+        {"value": "CLUE", "fieldIds": ["planClue"]}
       ]
     },
     {
