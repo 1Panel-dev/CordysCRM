@@ -718,7 +718,7 @@
       "name": "商机",
       "internalKey": "recordOpportunity",
       "type": "DATA_SOURCE",
-      "dataSourceType": "BUSINESS",
+      "dataSourceType": "OPPORTUNITY",
       "multiple": false,
       "showLabel": true,
       "readable": true,

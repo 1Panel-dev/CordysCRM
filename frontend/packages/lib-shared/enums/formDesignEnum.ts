@@ -47,7 +47,7 @@ export enum FieldRuleEnum {
 export enum FieldDataSourceTypeEnum {
   CUSTOMER = 'CUSTOMER', // 客户
   CONTACT = 'CONTACT', // 联系人
-  BUSINESS = 'BUSINESS', // 商机
+  BUSINESS = 'OPPORTUNITY', // 商机
   PRODUCT = 'PRODUCT', // 产品
   CLUE = 'CLUE', // 线索
   CUSTOMER_OPTIONS = 'CUSTOMER_OPTIONS', // 客户选项
