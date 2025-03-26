@@ -723,10 +723,7 @@
       "showLabel": true,
       "readable": true,
       "editable": true,
-      "fieldWidth": 0.5,
-      "rules": [
-        {"key":  "required"}
-      ]
+      "fieldWidth": 0.5
     },
     {
       "name": "联系人",
@@ -870,10 +867,7 @@
       "showLabel": true,
       "readable": true,
       "editable": true,
-      "fieldWidth": 0.5,
-      "rules": [
-        {"key":  "required"}
-      ]
+      "fieldWidth": 0.5
     },
     {
       "name": "联系人",
