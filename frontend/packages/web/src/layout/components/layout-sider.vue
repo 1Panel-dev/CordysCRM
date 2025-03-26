@@ -38,7 +38,7 @@
                     textColor: 'var(--primary-8)',
                   }"
                 >
-                  {{ userStore.userInfo.id === 'admin' ? t('common.admin') : userStore.userInfo.roles[0] }}
+                  {{ userStore.userInfo.id === 'admin' ? t('common.admin') : (userStore.userInfo.roles[0] as any)?.name }}
                 </n-tag>
               </div>
             </div>
