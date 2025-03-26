@@ -374,10 +374,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
             PicService picService = CommonBeanFactory.getBean(PicService.class);
             UploadTransferRequest transferRequest = new UploadTransferRequest(orgId, resourceId, userId, tmpPicIds);
             if (picService != null) {
-                picService.transferTempPic(transferRequest);
+                picService.processTemp(transferRequest);
             }
         } catch (Exception e) {
-            LogUtils.error("文件转存失败", e);
+            LogUtils.error("图片字段处理失败", e);
         }
     }
 }

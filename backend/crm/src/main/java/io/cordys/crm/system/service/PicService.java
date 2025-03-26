@@ -55,10 +55,10 @@ public class PicService {
 	}
 
 	/**
-	 * 转存临时图片=>正式目录
+	 * 处理图片: 转存新的临时图片, 移除删除的正式图片
 	 * @param transferRequest 转存参数
 	 */
-	public void transferTempPic(UploadTransferRequest transferRequest) {
+	public void processTemp(UploadTransferRequest transferRequest) {
 		if (CollectionUtils.isEmpty(transferRequest.getTempFileIds())) {
 			return;
 		}
@@ -94,6 +94,17 @@ public class PicService {
 		});
 		// insert pic info
 		attachmentMapper.batchInsert(attachments);
+		// remove deleted pic
+		List<String> removePicIds = transferredPicIds.stream().filter(picId -> !transferRequest.getTempFileIds().contains(picId)).toList();
+		if (!CollectionUtils.isEmpty(removePicIds)) {
+			LambdaQueryWrapper<Attachment> duplicateQueryWrapper = new LambdaQueryWrapper<>();
+			duplicateQueryWrapper.in(Attachment::getId, removePicIds);
+			attachmentMapper.deleteByLambda(duplicateQueryWrapper);
+			removePicIds.forEach(removeId -> {
+				FileRequest request = new FileRequest(getTransferFileDir(transferRequest.getOrganizationId(), transferRequest.getResourceId(), removeId), StorageType.LOCAL.name(), null);
+				fileCommonService.deleteFolder(request);
+			});
+		}
 	}
 
 	/**
@@ -129,24 +140,6 @@ public class PicService {
 		} catch (Exception e) {
 			LogUtils.error(e);
 			return null;
-		}
-	}
-
-	/**
-	 * 删除图片
-	 * @param picId 图片ID
-	 */
-	public void deletePic(String picId) {
-		Attachment attachment = attachmentMapper.selectByPrimaryKey(picId);
-		if (attachment == null) {
-			// delete temp pic
-			FileRequest request = new FileRequest(getTempFileDir(picId), StorageType.LOCAL.name(), null);
-			fileCommonService.deleteFolder(request);
-		} else {
-			// delete transferred pic
-			FileRequest request = new FileRequest(getTransferFileDir(attachment.getOrganizationId(), attachment.getResourceId(), attachment.getId()), StorageType.LOCAL.name(), attachment.getName());
-			fileCommonService.deleteFolder(request);
-			attachmentMapper.deleteByPrimaryKey(picId);
 		}
 	}
 

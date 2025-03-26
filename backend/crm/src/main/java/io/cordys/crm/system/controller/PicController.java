@@ -38,10 +38,4 @@ public class PicController {
 	public ResponseEntity<org.springframework.core.io.Resource> download(@PathVariable String id) {
 		return picService.getPicResource(id);
 	}
-
-	@GetMapping("/delete/{id}")
-	@Operation(summary = "删除图片")
-	public void delete(@PathVariable String id) {
-		picService.deletePic(id);
-	}
 }
