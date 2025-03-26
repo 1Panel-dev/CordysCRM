@@ -231,7 +231,7 @@ public class LocalRepository implements FileRepository {
      */
     private String getFileDir(FileRequest request) {
         FileValidate.validateFileName(request.getFolder(), request.getFileName());
-        return request.getFolder();
+        return getFolderWithDefaultDir(request.getFolder());
     }
 
     private String getFolderWithDefaultDir(String folder) {
