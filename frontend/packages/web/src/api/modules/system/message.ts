@@ -3,6 +3,13 @@ import {
   DeleteAnnouncementUrl,
   GetAnnouncementDetailUrl,
   GetAnnouncementListUrl,
+  GetMessageTaskUrl,
+  GetNotificationCountUrl,
+  GetNotificationListUrl,
+  GetUnreadNotificationUrl,
+  SaveMessageTaskUrl,
+  SetAllNotificationReadUrl,
+  SetNotificationReadUrl,
   UpdateAnnouncementUrl,
 } from '@lib/shared/api/requrls/system/message';
 import type { CommonList } from '@lib/shared/models/common';
@@ -10,10 +17,13 @@ import type {
   AnnouncementItemDetail,
   AnnouncementSaveParams,
   AnnouncementTableQueryParams,
+  MessageConfigItem,
+  SaveMessageConfigParams,
 } from '@lib/shared/models/system/message';
 
 import CDR from '@/api/http/index';
 
+// 公告
 // 添加公告
 export function addAnnouncement(data: AnnouncementSaveParams) {
   return CDR.post({ url: AddAnnouncementUrl, data });
@@ -37,4 +47,39 @@ export function getAnnouncementDetail(id: string) {
 // 删除公告
 export function deleteAnnouncement(id: string) {
   return CDR.get({ url: `${DeleteAnnouncementUrl}/${id}` });
+}
+
+// 消息中心
+// 消息列表  TODO ts
+export function getNotificationList(data: any) {
+  return CDR.post({ url: GetNotificationListUrl, data });
+}
+
+// 具体消息类型具体状态的数量   TODO ts
+export function getNotificationCount(data: any) {
+  return CDR.post({ url: GetNotificationCountUrl, data });
+}
+
+// 获取未读的消息
+export function getUnreadNotification() {
+  return CDR.get<number>({ url: GetUnreadNotificationUrl });
+}
+
+// 设置消息已读
+export function setNotificationRead(id: string) {
+  return CDR.get({ url: `${SetNotificationReadUrl}/${id}` });
+}
+
+// 所有信息设置为已读消息
+export function setAllNotificationRead() {
+  return CDR.get({ url: SetAllNotificationReadUrl });
+}
+
+// 获取消息设置
+export function getMessageTask() {
+  return CDR.get<MessageConfigItem[]>({ url: GetMessageTaskUrl });
+}
+// 保存消息设置
+export function saveMessageTask(data: SaveMessageConfigParams) {
+  return CDR.post<MessageConfigItem>({ url: SaveMessageTaskUrl, data });
 }

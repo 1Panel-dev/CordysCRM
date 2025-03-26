@@ -15,4 +15,11 @@ export default {
   'system.message.descContent': '添加在公告内的链接',
   'system.message.deleteAnnouncementTitle': '确定删除 {name} 吗？',
   'system.message.deleteAnnouncementContent': '删除后，接收人将不再接收该公告',
+  'system.message.Feature': '功能',
+  'system.message.notificationScenario': '通知场景',
+  'system.message.systemMessage': '系统消息',
+  'system.message.emailReminder': '邮件提醒',
+  'system.message.confirmClose': '确定关闭',
+  'system.message.confirmCloseSystemNotify': '确定关闭该系统通知吗？',
+  'system.message.confirmCloseSystemNotifyContent': '关闭后，成员将不再接收该功能通知',
 };

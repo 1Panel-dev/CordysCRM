@@ -42,3 +42,39 @@ export interface AnnouncementItemDetail {
   roleIdName: { id: string; name: string }[]; // 角色
   userIdName: { id: string; name: string }[]; // 用户
 }
+
+export interface RobotConfigMap {
+  receiveType: string; // 接收类型
+  enable: boolean; // 是否启用
+  useDefaultTemplate: boolean;
+  template: string;
+  defaultTemplate: string;
+  subject: string;
+  previewTemplate: string; // 预览模板
+}
+
+export interface MessageTaskDetailDTOItem {
+  event: string;
+  eventName: string;
+  receivers: { id: string; name: string }[];
+  projectRobotConfigMap: Record<string, RobotConfigMap>;
+}
+
+export interface MessageConfigItem {
+  type: string; // 消息配置功能
+  name: string; // 消息配置功能名称
+  enable: boolean;
+  messageTaskDetailDTOList: MessageTaskDetailDTOItem[];
+}
+
+// TODO 接口参数要调整
+export interface SaveMessageConfigParams {
+  module: string;
+  event: string;
+  receiverIds: string[];
+  testId: string;
+  receiveType: string;
+  enable: boolean;
+  template: string;
+  useDefaultTemplate: boolean;
+}

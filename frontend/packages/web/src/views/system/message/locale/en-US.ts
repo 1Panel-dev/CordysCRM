@@ -15,4 +15,12 @@ export default {
   'system.message.descContent': 'Add a link in the announcement',
   'system.message.deleteAnnouncementTitle': 'Are you sure you want to delete {name}?',
   'system.message.deleteAnnouncementContent': 'After deletion, the receiver will no longer receive the announcement',
+  'system.message.Feature': 'Feature',
+  'system.message.notificationScenario': 'Notification scenario',
+  'system.message.systemMessage': 'System message',
+  'system.message.emailReminder': 'Email reminder',
+  'system.message.confirmClose': 'Confirm close',
+  'system.message.confirmCloseSystemNotify': 'Are you sure you want to close this system notification?',
+  'system.message.confirmCloseSystemNotifyContent':
+    'After closing, members will no longer receive notifications for this feature',
 };
