@@ -23,7 +23,12 @@ import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.dto.request.CustomerAddRequest;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.customer.service.CustomerService;
+import io.cordys.crm.opportunity.domain.Opportunity;
+import io.cordys.crm.opportunity.service.OpportunityService;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
@@ -56,6 +61,10 @@ public class ClueService {
     private ExtClueMapper extClueMapper;
     @Resource
     private BaseService baseService;
+    @Resource
+    private CustomerService customerService;
+    @Resource
+    private OpportunityService opportunityService;
     @Resource
     private ClueFieldService clueFieldService;
     @Resource
@@ -256,6 +265,38 @@ public class ClueService {
         if (extClueMapper.checkUpdateExist(clue)) {
             throw new GenericException(ClueResultCode.CLUE_EXIST);
         }
+    }
+
+    /**
+     * 转移客户
+     * @param request 请求参数
+     * @param userId 用户ID
+     * @param orgId 组织ID
+     */
+    public void transitionCustomer(ClueTransitionCustomerRequest request, String userId, String orgId) {
+        Customer customer = customerService.add(request, userId, orgId);
+        Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
+        clue.setTransitionId(customer.getId());
+        clue.setTransitionType(FormKey.CUSTOMER.name());
+        clue.setUpdateTime(System.currentTimeMillis());
+        clue.setUpdateUser(userId);
+        clueMapper.update(clue);
+    }
+
+    /**
+     * 转移商机
+     * @param request 请求参数
+     * @param userId 用户ID
+     * @param orgId 组织ID
+     */
+    public void transitionOpportunity(ClueTransitionOpportunityRequest request, String userId, String orgId) {
+        Opportunity opportunity = opportunityService.add(request, userId, orgId);
+        Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
+        clue.setTransitionId(opportunity.getId());
+        clue.setTransitionType(FormKey.OPPORTUNITY.name());
+        clue.setUpdateTime(System.currentTimeMillis());
+        clue.setUpdateUser(userId);
+        clueMapper.update(clue);
     }
 
     public void delete(String id) {
