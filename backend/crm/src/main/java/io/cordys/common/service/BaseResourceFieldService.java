@@ -272,6 +272,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 删除指定资源的模块字段值
+     *
      * @param resourceId
      */
     public void deleteByResourceId(String resourceId) {
@@ -286,6 +287,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 删除指定资源的模块字段值
+     *
      * @param resourceIds
      */
     public void deleteByResourceIds(List<String> resourceIds) {
@@ -300,6 +302,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 保存指定资源的模块字段值
+     *
      * @param moduleFieldValues
      */
     public void saveModuleFieldByResourceIds(List<String> resourceIds, List<BaseModuleFieldValue> moduleFieldValues) {
@@ -360,17 +363,21 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * 图片类型字段的前置处理
      */
     private void preProcessWithPic(String orgId, String resourceId, String userId, Object processValue) {
-        // 图片类型前置处理
-        List<String> tmpPicIds = new ArrayList<>();
-        if (processValue instanceof String) {
-            tmpPicIds.add(processValue.toString());
-        } else if (processValue instanceof List) {
-            tmpPicIds.addAll((List<String>) processValue);
-        }
-        PicService picService = CommonBeanFactory.getBean(PicService.class);
-        UploadTransferRequest transferRequest = new UploadTransferRequest(orgId, resourceId, userId, tmpPicIds);
-        if (picService != null) {
-            picService.transferTempPic(transferRequest);
+        try {
+            // 图片类型前置处理
+            List<String> tmpPicIds = new ArrayList<>();
+            if (processValue instanceof String) {
+                tmpPicIds.add(processValue.toString());
+            } else if (processValue instanceof List) {
+                tmpPicIds.addAll((List<String>) processValue);
+            }
+            PicService picService = CommonBeanFactory.getBean(PicService.class);
+            UploadTransferRequest transferRequest = new UploadTransferRequest(orgId, resourceId, userId, tmpPicIds);
+            if (picService != null) {
+                picService.transferTempPic(transferRequest);
+            }
+        } catch (Exception e) {
+            LogUtils.error("文件转存失败", e);
         }
     }
 }
