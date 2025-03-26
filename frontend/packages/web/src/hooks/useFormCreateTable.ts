@@ -1,3 +1,6 @@
+import { NImage, NImageGroup } from 'naive-ui';
+
+import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import type { ModuleField } from '@lib/shared/models/customer';
@@ -323,8 +326,32 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       loading.value = true;
       const res = await getFormConfigApiMap[props.formKey]();
       columns = res.fields
-        .filter((e) => e.type !== FieldTypeEnum.DIVIDER)
+        .filter((e) => e.type !== FieldTypeEnum.DIVIDER && e.type !== FieldTypeEnum.TEXTAREA)
         .map((field) => {
+          if (field.type === FieldTypeEnum.PICTURE) {
+            return {
+              title: field.name,
+              width: 200,
+              key: field.businessKey || field.id,
+              render: (row: any) =>
+                h(
+                  NImageGroup,
+                  {},
+                  {
+                    default: () =>
+                      row[field.businessKey || field.id]?.length
+                        ? (row[field.businessKey || field.id] || []).map((key: string) =>
+                            h(NImage, {
+                              width: 40,
+                              height: 40,
+                              src: `${PreviewPictureUrl}/${key}`,
+                            })
+                          )
+                        : '-',
+                  }
+                ),
+            };
+          }
           if (field.type === FieldTypeEnum.LOCATION) {
             addressFieldIds.value.push(field.id);
           }

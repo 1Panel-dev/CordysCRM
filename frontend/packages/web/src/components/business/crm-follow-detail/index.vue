@@ -238,6 +238,8 @@
 
 <style lang="less" scoped>
   .crm-follow-detail {
+    @apply overflow-hidden;
+
     border-radius: @border-radius-medium;
     background: var(--text-n10);
   }

@@ -46,3 +46,6 @@ export const GetFieldOpportunityListUrl = '/field/source/opportunity'; // 获取
 export const GetFieldCustomerListUrl = '/field/source/customer'; // 获取客户列表
 export const GetFieldContactListUrl = '/field/source/contact'; // 获取联系人列表
 export const GetFieldClueListUrl = '/field/source/clue'; // 获取线索列表
+export const UploadTempFileUrl = '/pic/upload/temp'; // 上传临时图片
+export const PreviewPictureUrl = '/pic/preview'; // 预览图片
+export const DownloadPictureUrl = '/pic/download'; // 下载图片

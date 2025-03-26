@@ -43,6 +43,7 @@ export const BatchAssignOpenSeaCustomerUrl = '/pool/customer/batch-assign'; // �
 export const AssignOpenSeaCustomerUrl = '/pool/customer/assign'; // 分配公海客户
 export const GetOpenSeaOptionsUrl = '/pool/customer/options'; // 获取公海选项
 export const DeleteOpenSeaCustomerUrl = '/pool/customer/delete'; // 删除公海客户
+export const GetOpenSeaCustomerUrl = '/pool/customer/get'; // 获取公海客户详情
 export const CancelCustomerFollowPlanUrl = '/customer/follow/plan/cancel'; // 取消客户跟进计划
 export const GetCustomerHeaderListUrl = '/customer/owner/history/list'; // 客户负责人记录列表
 export const SaveCustomerRelationUrl = '/customer/relation/save'; // 保存客户关系

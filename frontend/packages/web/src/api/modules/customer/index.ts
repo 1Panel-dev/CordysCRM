@@ -43,6 +43,7 @@ import {
   GetCustomerRelationListUrl,
   GetCustomerUrl,
   GetOpenSeaCustomerListUrl,
+  GetOpenSeaCustomerUrl,
   GetOpenSeaOptionsUrl,
   IsCustomerOpenSeaNoPickUrl,
   PickOpenSeaCustomerUrl,
@@ -318,6 +319,11 @@ export function assignOpenSeaCustomer(data: AssignOpenSeaCustomerParams) {
 // 获取公海选项
 export function getOpenSeaOptions() {
   return CDR.get<CluePoolParams[]>({ url: GetOpenSeaOptionsUrl });
+}
+
+// 获取公海客户详情
+export function getOpenSeaCustomer(id: string) {
+  return CDR.get<CustomerDetail>({ url: `${GetOpenSeaCustomerUrl}/${id}` });
 }
 
 // 删除公海客户

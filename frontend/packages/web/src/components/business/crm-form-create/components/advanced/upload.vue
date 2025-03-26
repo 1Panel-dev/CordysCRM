@@ -15,10 +15,12 @@
       :max="props.fieldConfig.uploadLimit || 10"
       :accept="props.fieldConfig.type === FieldTypeEnum.PICTURE ? 'image/*' : '*/*'"
       :list-type="props.fieldConfig.pictureShowType === 'card' ? 'image-card' : 'text'"
+      :custom-request="customRequest"
       multiple
       directory-dnd
       @before-upload="beforeUpload"
-      @update-file-list="() => emit('change', fileList)"
+      @update-file-list="() => emit('change', fileKeys, fileList)"
+      @remove="handleFileRemove"
     >
       <n-upload-dragger>
         <div class="flex items-center gap-[8px] px-[8px] py-[4px]">
@@ -33,12 +35,22 @@
 </template>
 
 <script setup lang="ts">
-  import { NFormItem, NUpload, NUploadDragger, UploadFileInfo, UploadSettledFileInfo, useMessage } from 'naive-ui';
+  import {
+    NFormItem,
+    NUpload,
+    NUploadDragger,
+    UploadCustomRequestOptions,
+    UploadFileInfo,
+    UploadSettledFileInfo,
+    useMessage,
+  } from 'naive-ui';
 
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
+  import { uploadTempFile } from '@/api/modules/system/module';
   import { useI18n } from '@/hooks/useI18n';
 
   import { FormCreateField } from '../../types';
@@ -48,16 +60,17 @@
     path: string;
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: UploadFileInfo[]): void;
+    (e: 'change', value: string[], files: UploadFileInfo[]): void;
   }>();
 
   const { t } = useI18n();
   const Message = useMessage();
 
-  const fileList = defineModel<UploadFileInfo[]>('value', {
+  const fileKeys = defineModel<string[]>('value', {
     default: [],
   });
-  // TODO: 上传接口
+  const fileList = ref<UploadFileInfo[]>([]);
+  const fileKeysMap = ref<Record<string, string>>({});
 
   async function beforeUpload({
     file,
@@ -65,14 +78,86 @@
     file: UploadSettledFileInfo;
     fileList: UploadSettledFileInfo[];
   }): Promise<boolean> {
+    if (fileList.value.length > 0) {
+      // 附件上传校验名称重复
+      const isRepeat = fileList.value.filter((item) => item.name === file.name).length >= 1;
+      if (isRepeat) {
+        Message.warning(t('crm.upload.repeatFileTip'));
+        return Promise.resolve(false);
+      }
+    }
     const maxSize = props.fieldConfig.uploadSizeLimit || 20;
     const _maxSize = maxSize * 1024 * 1024;
     if (file.file && file.file.size > _maxSize) {
       Message.warning(t('crmFormCreate.advanced.overSize', { size: maxSize }));
       return Promise.resolve(false);
     }
+    if (props.fieldConfig.uploadLimit === 1) {
+      // 单文件上传时，清空之前的文件（得放到校验文件大小之后，避免文件大小限制后文件丢失）
+      fileList.value = [];
+      fileKeys.value = [];
+    }
     return Promise.resolve(true);
   }
+
+  async function customRequest({ file, onFinish, onError, onProgress }: UploadCustomRequestOptions) {
+    try {
+      // 模拟上传进度
+      let upLoadProgress = 0;
+      const timer = setInterval(() => {
+        if (upLoadProgress < 50) {
+          // 进度在0-50%之间较快
+          const randomIncrement = Math.floor(Math.random() * 10) + 1; // 随机增加 5-10 的百分比
+          upLoadProgress += randomIncrement;
+          onProgress({ percent: upLoadProgress });
+        } else if (upLoadProgress < 100) {
+          // 进度在50%-100%之间较慢
+          const randomIncrement = Math.floor(Math.random() * 10) + 1; // 随机增加 1-5 的百分比
+          upLoadProgress = Math.min(upLoadProgress + randomIncrement, 99);
+          onProgress({ percent: upLoadProgress });
+        }
+      }, 100); // 定时器间隔为 100 毫秒
+      const res = await uploadTempFile(file.file);
+      onProgress({ percent: 100 });
+      clearInterval(timer as unknown as number);
+      onFinish();
+      fileKeys.value.push(...res.data);
+      [fileKeysMap.value[file.id]] = res.data;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      Message.error(t('crm.upload.uploadFail'));
+      onError();
+    }
+  }
+
+  function handleFileRemove({ file }: { file: UploadSettledFileInfo }) {
+    const index = fileList.value.findIndex((item) => item.id === file.id);
+    if (index !== -1) {
+      fileKeys.value = fileKeys.value.filter((key) => key !== fileKeysMap.value[file.id]);
+      delete fileKeysMap.value[file.id];
+    }
+  }
+
+  watch(
+    () => fileKeys.value,
+    (keys: string[]) => {
+      if (Object.keys(fileKeysMap.value).length === 0) {
+        keys.forEach((key) => {
+          fileKeysMap.value[key] = key;
+          fileList.value.push({
+            id: key,
+            url: `${PreviewPictureUrl}/${key}`,
+            name: key,
+            status: 'finished',
+          });
+        });
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less" scoped>

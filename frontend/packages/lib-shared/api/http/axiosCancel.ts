@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 import { isFunction } from '../../method/is';
-
 import type { AxiosRequestConfig, Canceler } from 'axios';
 
 let pendingMap = new Map<string, Canceler>();

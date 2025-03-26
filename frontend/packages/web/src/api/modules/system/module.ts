@@ -5,6 +5,7 @@ import {
   DeleteCluePoolUrl,
   DeleteCustomerPoolUrl,
   deleteOpportunityUrl,
+  DownloadPictureUrl,
   GetClueCapacityPageUrl,
   GetCluePoolPageUrl,
   GetCustomerCapacityPageUrl,
@@ -24,6 +25,7 @@ import {
   ModuleUserDeptTreeUrl,
   NoPickCluePoolUrl,
   NoPickCustomerPoolUrl,
+  PreviewPictureUrl,
   SaveClueCapacityUrl,
   SaveCustomerCapacityUrl,
   SaveFormDesignConfigUrl,
@@ -34,6 +36,7 @@ import {
   UpdateCluePoolUrl,
   UpdateCustomerPoolUrl,
   updateOpportunityRuleUrl,
+  UploadTempFileUrl,
 } from '@lib/shared/api/requrls/system/module';
 import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import type { ClueListItem } from '@lib/shared/models/clue';
@@ -54,6 +57,7 @@ import type {
   SaveFormDesignConfigParams,
 } from '@lib/shared/models/system/module';
 import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
+import type { Result } from '@lib/shared/types/axios';
 
 import CDR from '@/api/http/index';
 
@@ -205,4 +209,16 @@ export function getFieldOpportunityList(data: FormDesignDataSourceTableQueryPara
 
 export function getFieldProductList(data: FormDesignDataSourceTableQueryParams) {
   return CDR.post<CommonList<ProductListItem>>({ url: GetFieldProductListUrl, data });
+}
+
+export function uploadTempFile(file: File | null) {
+  return CDR.uploadFile<Result<string[]>>({ url: UploadTempFileUrl }, { fileList: [file] }, 'files', true);
+}
+
+export function previewPicture(id: string) {
+  return CDR.get({ url: `${PreviewPictureUrl}/${id}` });
+}
+
+export function downloadPicture(id: string) {
+  return CDR.get({ url: `${DownloadPictureUrl}/${id}` });
 }

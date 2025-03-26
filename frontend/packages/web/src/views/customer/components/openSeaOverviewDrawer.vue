@@ -16,7 +16,7 @@
     <template #left>
       <div class="p-[16px_24px]">
         <CrmFormDescription
-          :form-key="FormDesignKeyEnum.CUSTOMER"
+          :form-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
           :source-id="props.sourceId"
           @init="handleDescriptionInit"
         />

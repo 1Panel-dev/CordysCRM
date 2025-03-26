@@ -37,6 +37,7 @@ import {
   getCustomerFollowRecordFormConfig,
   getCustomerFormConfig,
   getCustomerList,
+  getOpenSeaCustomer,
   getOpenSeaCustomerList,
   updateCustomer,
   updateCustomerContact,
@@ -419,6 +420,7 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: getOptFollowRecord,
   [FormDesignKeyEnum.CLUE]: getClue,
   [FormDesignKeyEnum.PRODUCT]: getProduct,
+  [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getOpenSeaCustomer,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {
