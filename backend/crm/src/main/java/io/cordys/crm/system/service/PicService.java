@@ -101,7 +101,7 @@ public class PicService {
 	 * @param picId 图片ID
 	 * @return 图片流
 	 */
-	public ResponseEntity<org.springframework.core.io.Resource> getPicBytes(String picId) {
+	public ResponseEntity<org.springframework.core.io.Resource> getPicResource(String picId) {
 		Attachment attachment = attachmentMapper.selectByPrimaryKey(picId);
 		FileRequest request;
 		ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();

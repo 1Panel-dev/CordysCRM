@@ -7,6 +7,7 @@ import io.cordys.crm.customer.service.CustomerOwnerHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +28,7 @@ public class CustomerOwnerHistoryController {
     private CustomerOwnerHistoryService customerOwnerHistoryService;
 
     @GetMapping("/list/{customerId}")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ}, logical = Logical.OR)
     @Operation(summary = "客户责任人历史列表")
     public List<CustomerOwnerListResponse> list(@PathVariable String customerId) {
         return customerOwnerHistoryService.list(customerId, OrganizationContext.getOrganizationId());

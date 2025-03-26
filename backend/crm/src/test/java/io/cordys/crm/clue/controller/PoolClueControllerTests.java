@@ -42,6 +42,7 @@ public class PoolClueControllerTests extends BaseTest {
 	public static final String PICK = "/pick";
 	public static final String ASSIGN = "/assign";
 	public static final String DELETE = "/delete/";
+	public static final String GET_DETAIL = "/get/";
 	public static final String BATCH_PICK = "/batch-pick";
 	public static final String BATCH_ASSIGN = "/batch-assign";
 	public static final String BATCH_DELETE = "/batch-delete";
@@ -124,13 +125,20 @@ public class PoolClueControllerTests extends BaseTest {
 
 	@Test
 	@Order(6)
+	void getDetail() throws Exception {
+		this.requestGetWithOk(GET_DETAIL + testDataId);
+		requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_READ, GET_DETAIL + testDataId);
+	}
+
+	@Test
+	@Order(7)
 	void deleteSuccess() throws Exception {
 		this.requestGetWithOk(DELETE + testDataId);
 		requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE, DELETE + testDataId);
 	}
 
 	@Test
-	@Order(7)
+	@Order(8)
 	void batchPickFailWithOverDailyOrPreOwnerLimit() throws Exception {
 		Clue clue = createClue();
 		clue.setOwner("admin");
@@ -157,7 +165,7 @@ public class PoolClueControllerTests extends BaseTest {
 	}
 
 	@Test
-	@Order(8)
+	@Order(9)
 	void batchAssignFailWithNotExit() throws Exception {
 		PoolBatchAssignRequest request = new PoolBatchAssignRequest();
 		request.setBatchIds(List.of("aaa"));
@@ -168,7 +176,7 @@ public class PoolClueControllerTests extends BaseTest {
 	}
 
 	@Test
-	@Order(9)
+	@Order(10)
 	void batchDeleteSuccess() throws Exception {
 		PoolBatchRequest request = new PoolBatchRequest();
 		request.setBatchIds(List.of(testDataId));

@@ -7,6 +7,7 @@ import io.cordys.crm.clue.service.ClueOwnerHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +28,7 @@ public class ClueOwnerHistoryController {
     private ClueOwnerHistoryService clueOwnerHistoryService;
 
     @GetMapping("/list/{clueId}")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ}, logical = Logical.OR)
     @Operation(summary = "线索责任人历史列表")
     public List<ClueOwnerListResponse> list(@PathVariable String clueId) {
         return clueOwnerHistoryService.list(clueId, OrganizationContext.getOrganizationId());

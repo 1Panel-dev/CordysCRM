@@ -30,13 +30,13 @@ public class PicController {
 	@GetMapping("/preview/{id}")
 	@Operation(summary = "预览图片")
 	public ResponseEntity<org.springframework.core.io.Resource> preview(@PathVariable String id) {
-		return picService.getPicBytes(id);
+		return picService.getPicResource(id);
 	}
 
 	@GetMapping("/download/{id}")
 	@Operation(summary = "下载图片")
 	public ResponseEntity<org.springframework.core.io.Resource> download(@PathVariable String id) {
-		return picService.getPicBytes(id);
+		return picService.getPicResource(id);
 	}
 
 	@GetMapping("/delete/{id}")

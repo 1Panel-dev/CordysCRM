@@ -7,6 +7,7 @@ import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
 import io.cordys.crm.clue.dto.request.PoolClueAssignRequest;
 import io.cordys.crm.clue.dto.request.PoolCluePickRequest;
+import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.service.ClueService;
 import io.cordys.crm.clue.service.PoolClueService;
@@ -66,6 +67,13 @@ public class PoolClueController {
 	@RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE})
 	public void delete(@PathVariable String id) {
 		poolClueService.delete(id);
+	}
+
+	@GetMapping("/get/{id}")
+	@RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_READ)
+	@Operation(summary = "线索详情")
+	public ClueGetResponse get(@PathVariable String id) {
+		return clueService.get(id, OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/batch-pick")

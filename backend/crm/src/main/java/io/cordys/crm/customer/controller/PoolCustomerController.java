@@ -5,6 +5,7 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.dto.request.*;
+import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.customer.service.PoolCustomerService;
@@ -64,6 +65,13 @@ public class PoolCustomerController {
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE})
 	public void delete(@PathVariable String id) {
 		poolCustomerService.delete(id);
+	}
+
+	@GetMapping("/get/{id}")
+	@RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ)
+	@Operation(summary = "客户详情")
+	public CustomerGetResponse get(@PathVariable String id) {
+		return customerService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/batch-pick")
