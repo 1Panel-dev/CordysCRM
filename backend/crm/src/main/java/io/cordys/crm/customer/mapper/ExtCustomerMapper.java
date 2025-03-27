@@ -40,4 +40,6 @@ public interface ExtCustomerMapper {
     void moveToPool(@Param("customer") Customer customer);
 
     List<OptionDTO> getCustomerOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
+
+    List<OptionDTO> getCustomerOptionsByIds(@Param("ids") List<String> ids);
 }

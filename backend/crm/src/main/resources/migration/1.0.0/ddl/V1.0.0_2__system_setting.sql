@@ -53,23 +53,23 @@ CREATE TABLE IF NOT EXISTS worker_node
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci COMMENT = 'DB WorkerID Assigner for UID Generator';
 
-CREATE TABLE sys_operation_log
-(
-    `id`              VARCHAR(32)  NOT NULL COMMENT '主键',
-    `organization_id` VARCHAR(32)  NOT NULL DEFAULT 'NONE' COMMENT '组织id',
-    `type`            VARCHAR(32)  NOT NULL COMMENT '操作类型/add/update/delete',
-    `module`          VARCHAR(32)  NOT NULL COMMENT '操作模块',
-    `resource_id`     VARCHAR(32)  NOT NULL COMMENT '资源id',
-    `resource_name`   VARCHAR(500) COMMENT '资源名称',
-    `create_time`     BIGINT       NOT NULL COMMENT '操作时间',
-    `create_user`     VARCHAR(32)  NOT NULL COMMENT '操作人',
-    `path`            VARCHAR(255) COMMENT '操作路径',
-    `method`          VARCHAR(255) NOT NULL COMMENT '操作方法',
-    PRIMARY KEY (id)
-) COMMENT = '操作日志'
-    ENGINE = InnoDB
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_general_ci;
+CREATE TABLE sys_operation_log(
+  `id` VARCHAR(32) NOT NULL   COMMENT '主键' ,
+  `organization_id` VARCHAR(32) NOT NULL  DEFAULT 'NONE' COMMENT '组织id' ,
+  `type` VARCHAR(32) NOT NULL   COMMENT '操作类型/add/update/delete' ,
+  `module` VARCHAR(32) NOT NULL   COMMENT '操作模块' ,
+  `resource_id` VARCHAR(32) NOT NULL   COMMENT '资源id' ,
+  `resource_name` VARCHAR(255)    COMMENT '资源名称' ,
+  `detail` VARCHAR(500)    COMMENT '操作详情' ,
+  `create_time` BIGINT NOT NULL   COMMENT '操作时间' ,
+  `create_user` VARCHAR(32) NOT NULL   COMMENT '操作人' ,
+  `path` VARCHAR(255)    COMMENT '操作路径' ,
+  `method` VARCHAR(255) NOT NULL   COMMENT '操作方法' ,
+  PRIMARY KEY (id)
+)  COMMENT = '操作日志'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE sys_login_log
 (

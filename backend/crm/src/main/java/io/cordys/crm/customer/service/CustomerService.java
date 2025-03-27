@@ -2,6 +2,12 @@ package io.cordys.crm.customer.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
@@ -16,6 +22,8 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerCollaboration;
@@ -30,6 +38,7 @@ import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
@@ -37,10 +46,10 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +88,8 @@ public class CustomerService {
     private CustomerRelationService customerRelationService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private LogService logService;
 
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -222,7 +233,7 @@ public class CustomerService {
         return baseService.setCreateUpdateOwnerUserName(customerGetResponse);
     }
 
-
+    @OperationLog(module = LogModule.CUSTOMER, type = LogType.ADD, resourceName = "{#request.name}")
     public Customer add(CustomerAddRequest request, String userId, String orgId) {
         Customer customer = BeanUtils.copyBean(new Customer(), request);
         customer.setCreateTime(System.currentTimeMillis());
@@ -241,9 +252,24 @@ public class CustomerService {
 
         //保存自定义字段
         customerFieldService.saveModuleField(customer.getId(), orgId, userId, request.getModuleFields());
+
+        Map originCustomer = JSON.parseMap(JSON.toJSONString(customer));
+        if (request.getModuleFields() != null) {
+            request.getModuleFields().forEach(field -> {
+                originCustomer.put(field.getFieldId(), field.getFieldValue());
+            });
+        }
+
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(customer.getId())
+                        .modifiedValue(originCustomer)
+                        .build()
+        );
         return customer;
     }
 
+    @OperationLog(module = LogModule.CUSTOMER, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Customer update(CustomerUpdateRequest request, String userId, String orgId) {
         Customer originCustomer = customerMapper.selectByPrimaryKey(request.getId());
         dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner());
@@ -264,9 +290,40 @@ public class CustomerService {
 
         customerMapper.update(customer);
 
+        // 获取模块字段
+        List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
+
         // 更新模块字段
         updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
-        return customerMapper.selectByPrimaryKey(customer.getId());
+
+        return handleUpdateLog(request, originCustomer, originCustomerFields);
+    }
+
+    private Customer handleUpdateLog(CustomerUpdateRequest request, Customer originCustomer, List<BaseModuleFieldValue> originCustomerFields) {
+        Customer customer = customerMapper.selectByPrimaryKey(request.getId());
+
+        Map originCustomerLog = JSON.parseMap(JSON.toJSONString(originCustomer));
+        if (request.getModuleFields() != null && originCustomerFields != null) {
+            originCustomerFields.forEach(field -> {
+                originCustomerLog.put(field.getFieldId(), field.getFieldValue());
+            });
+        }
+
+        Map modifiedCustomerLog = JSON.parseMap(JSON.toJSONString(customer));
+        if (request.getModuleFields() != null) {
+            request.getModuleFields().forEach(field -> {
+                modifiedCustomerLog.put(field.getFieldId(), field.getFieldValue());
+            });
+        }
+
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(customer.getName())
+                        .originalValue(originCustomerLog)
+                        .modifiedValue(modifiedCustomerLog)
+                        .build()
+        );
+        return customer;
     }
 
     private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
@@ -292,6 +349,7 @@ public class CustomerService {
         }
     }
 
+    @OperationLog(module = LogModule.CUSTOMER, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {
         Customer originCustomer = customerMapper.selectByPrimaryKey(id);
         dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner());
@@ -305,19 +363,43 @@ public class CustomerService {
         customerOwnerHistoryService.deleteByCustomerIds(List.of(id));
         // 删除客户关系
         customerRelationService.deleteByCustomerId(id);
+
+        // 设置操作对象
+        OperationLogContext.setResourceName(originCustomer.getName());
     }
 
     public void batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
-        List<String> owners = getCustomerOwnersByIds(request.getIds());
+        List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
+        List<String> owners = originCustomers.stream().map(Customer::getOwner)
+                .distinct()
+                .toList();;
+
         dataScopeService.checkDataPermission(userId, orgId, owners);
         // 添加责任人历史
         customerOwnerHistoryService.batchAdd(request, userId);
         extCustomerMapper.batchTransfer(request);
+
+        // 记录日志
+        List<LogDTO> logs = new ArrayList<>();
+        originCustomers.forEach(customer -> {
+            Customer originCustomer = new Customer();
+            originCustomer.setOwner(customer.getOwner());
+            Customer modifieCustomer = new Customer();
+            modifieCustomer.setOwner(request.getOwner());
+            LogDTO logDTO = new LogDTO(orgId, customer.getId(), userId, LogType.UPDATE, LogModule.CUSTOMER, customer.getName());
+            logDTO.setOriginalValue(originCustomer);
+            logDTO.setModifiedValue(modifieCustomer);
+            logs.add(logDTO);
+        });
+
+        logService.batchAdd(logs);
     }
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
         List<String> owners = getCustomerOwnersByIds(ids);
         dataScopeService.checkDataPermission(userId, orgId, owners);
+
+        List<OptionDTO> customers = extCustomerMapper.getCustomerOptionsByIds(ids);
 
         // 删除客户
         customerMapper.deleteByIds(ids);
@@ -329,9 +411,15 @@ public class CustomerService {
         customerOwnerHistoryService.deleteByCustomerIds(ids);
         // 删除客户关系
         customerRelationService.deleteByCustomerIds(ids);
+
+        List<LogDTO> logs = customers.stream()
+                .map(customer ->
+                        new LogDTO(orgId, customer.getId(), userId, LogType.DELETE, LogModule.CUSTOMER, customer.getName())
+                )
+                .toList();
+        logService.batchAdd(logs);
     }
 
-    @NotNull
     private List<String> getCustomerOwnersByIds(List<String> ids) {
         List<Customer> customers = customerMapper.selectByIds(ids);
         List<String> owners = customers.stream().map(Customer::getOwner)
@@ -376,6 +464,22 @@ public class CustomerService {
             extCustomerMapper.moveToPool(customer);
             success++;
         }
+
+        // 记录日志
+        List<LogDTO> logs = new ArrayList<>();
+        customers.forEach(customer -> {
+            CustomerPool customerPool = ownersDefaultPoolMap.get(customer.getOwner());
+            if (customerPool != null) {
+                LogDTO logDTO = new LogDTO(orgId, customer.getId(), currentUser, LogType.MOVE_TO_CUSTOMER_POOL, LogModule.CUSTOMER, customer.getName());
+                String detail = Translator.getWithArgs("customer.to.pool", customer.getName(),
+                        customerPool.getName());
+                logDTO.setDetail(detail);
+                logs.add(logDTO);
+            }
+        });
+
+        logService.batchAdd(logs);
+
         return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
     }
 

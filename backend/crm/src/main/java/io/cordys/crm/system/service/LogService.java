@@ -113,10 +113,12 @@ public class LogService implements OperationLogHandler {
         }
 
         // 截断日志内容
-        log.setResourceName(subStrContent(log.getResourceName()));
+        log.setResourceName(log.getResourceName());
+        log.setDetail(subStrContent(log.getDetail()));
         log.setMethod(StringUtils.defaultIfBlank(log.getMethod(), "GET"));
         OperationLog operationLog = BeanUtils.copyBean(new OperationLog(), log);
         operationLog.setResourceName(log.getResourceName());
+        operationLog.setDetail(log.getDetail());
         operationLogMapper.insert(operationLog);
 
         OperationLogBlob blob = getBlob(log);
@@ -143,7 +145,8 @@ public class LogService implements OperationLogHandler {
         var blobs = logs.stream()
                 .peek(log -> {
                     log.setId(IDGenerator.nextStr());
-                    log.setResourceName(subStrContent(log.getResourceName()));
+                    log.setResourceName(log.getResourceName());
+                    log.setDetail(subStrContent(log.getDetail()));
                     log.setCreateTime(currentTimeMillis);
                     OperationLog item = new OperationLog();
                     BeanUtils.copyBean(item, log);

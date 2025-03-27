@@ -45,6 +45,15 @@ public class LogModule {
      */
     public static final String MODULE_SETTING = "MODULE_SETTING";
 
+    /**
+     * 客户
+     */
+    public static final String CUSTOMER = "CUSTOMER";
+
+    /**
+     * 客户联系人
+     */
+    public static final String CUSTOMER_CONTACT = "CUSTOMER_CONTACT";
 
     //TODO  start  暂定跟进记录模块常量
     /**

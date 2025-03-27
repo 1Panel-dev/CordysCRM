@@ -266,6 +266,14 @@
             and name like concat('%', #{keyword},'%')
         </if>
     </select>
+    <select id="getCustomerOptionsByIds" resultType="io.cordys.common.dto.OptionDTO">
+        select id, name
+        from customer
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 
     <update id="moveToPool" parameterType="io.cordys.crm.customer.domain.Customer">
         update customer set pool_id = #{customer.poolId}, in_shared_pool = #{customer.inSharedPool}, owner = #{customer.owner},

@@ -3,7 +3,6 @@ package io.cordys.aspectj.dto;
 import io.cordys.common.groups.Created;
 import io.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -15,7 +14,6 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Table(name = "operation_log")
 public class LogDTO {
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "{operation_log.id.not_blank}", groups = {Updated.class})
@@ -38,6 +36,14 @@ public class LogDTO {
 
     @Schema(description = "资源名称")
     private String resourceName;
+
+    /**
+     * 无需对比的操作日志详情
+     * 例如可以移入公海
+     * 详情记录为：客户 xxx 移入公海 xxx
+     */
+    @Schema(description = "日志详情")
+    private String detail;
 
     @Schema(description = "操作方法", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "{operation_log.method.not_blank}", groups = {Created.class})

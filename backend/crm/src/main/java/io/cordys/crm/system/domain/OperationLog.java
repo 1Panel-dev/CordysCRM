@@ -33,6 +33,14 @@ public class OperationLog  {
     @Schema(description = "资源名称")
     private String resourceName;
 
+    /**
+     * 无需对比的操作日志详情
+     * 例如可以移入公海
+     * 详情记录为：客户 xxx 移入公海 xxx
+     */
+    @Schema(description = "日志详情")
+    private String detail;
+
     @Schema(description = "操作时间")
     private Long createTime;
 

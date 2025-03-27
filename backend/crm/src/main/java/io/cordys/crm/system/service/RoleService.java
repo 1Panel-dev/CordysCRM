@@ -448,6 +448,10 @@ public class RoleService {
      * @param permissions
      */
     public void updatePermissionSetting(List<PermissionUpdateRequest> permissions, String roleId, String userId) {
+        if (permissions == null) {
+            return;
+        }
+
         // 先删除
         deletePermissionByRoleId(roleId);
 

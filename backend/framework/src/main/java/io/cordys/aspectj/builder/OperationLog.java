@@ -47,6 +47,12 @@ public class OperationLog {
     private String resourceName;
 
     /**
+     * 日志详情
+     */
+    @NotBlank(message = "日志详情（非对比的日志详情）")
+    private String detail;
+
+    /**
      * 操作人
      */
     @NotBlank(message = "operator required")
