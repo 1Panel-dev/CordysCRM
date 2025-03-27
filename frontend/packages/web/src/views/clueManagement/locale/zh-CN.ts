@@ -5,6 +5,8 @@ export default {
   'clue.departmentClues': '部门线索',
   'clue.convertedTo': '已转',
   'clue.convertedToCustomer': '已转客户',
+  'clue.transferredToCustomer': '已转为客户',
+  'clue.transferredToOpportunity': '已转为商机',
   'clue.convertedToOpportunity': '已转商机',
   'clue.clueProgress': '线索进度',
   'clue.clueSource': '线索来源',

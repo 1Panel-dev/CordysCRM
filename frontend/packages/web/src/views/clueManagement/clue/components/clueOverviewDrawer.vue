@@ -52,7 +52,12 @@
         :load-list-api="getClueHeaderList"
       />
 
-      <CrmFormCreateDrawer v-model:visible="formDrawerVisible" :form-key="realFormKey" @saved="closeAndRefresh" />
+      <CrmFormCreateDrawer
+        v-model:visible="formDrawerVisible"
+        :other-save-params="otherFollowRecordSaveParams"
+        :form-key="realFormKey"
+        @saved="closeAndRefresh"
+      />
     </template>
   </CrmOverviewDrawer>
 </template>
@@ -158,7 +163,9 @@
 
   const formDrawerVisible = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD_CLUE);
-
+  const otherFollowRecordSaveParams = ref({
+    clueId: '',
+  });
   function handleSelect(key: string) {
     switch (key) {
       case 'pop-transfer':
@@ -168,12 +175,13 @@
         handleDelete();
         break;
       case 'convertToCustomer':
-        // TODO 参数
-        realFormKey.value = FormDesignKeyEnum.CUSTOMER;
+        realFormKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
+        otherFollowRecordSaveParams.value.clueId = sourceId.value;
         formDrawerVisible.value = true;
         break;
       case 'convertToOpportunity':
-        realFormKey.value = FormDesignKeyEnum.BUSINESS;
+        realFormKey.value = FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS;
+        otherFollowRecordSaveParams.value.clueId = sourceId.value;
         formDrawerVisible.value = true;
         break;
       default:

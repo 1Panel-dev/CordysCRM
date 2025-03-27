@@ -319,7 +319,7 @@
                 groupList: operationGroupList.value,
                 onSelect: (key: string) => handleActionSelect(row, key),
                 onCancel: () => {
-                  transferForm.value.owner = null; // TODO lmy 字段
+                  transferForm.value.owner = null;
                 },
               },
               {

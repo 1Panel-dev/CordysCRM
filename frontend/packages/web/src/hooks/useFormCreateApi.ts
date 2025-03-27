@@ -1,6 +1,6 @@
 import { useMessage } from 'naive-ui';
 
-import { FieldTypeEnum, type FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
 import type { FormConfig } from '@lib/shared/models/system/module';
 
@@ -196,7 +196,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         Message.success(t('common.updateSuccess'));
       } else {
         await createFormApi[props.formKey.value](params);
-        Message.success(t('common.createSuccess'));
+        if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
+          Message.success(t('clue.transferredToCustomer'));
+        } else if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS) {
+          Message.success(t('clue.transferredToOpportunity'));
+        } else {
+          Message.success(t('common.createSuccess'));
+        }
       }
       if (callback) {
         callback(isContinue);
@@ -210,6 +216,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   }
 
   const formCreateTitle = computed(() => {
+    if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
+      return t('clue.convertToCustomer');
+    }
+    if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS) {
+      return t('clue.convertToOpportunity');
+    }
     const prefix = props.sourceId?.value ? t('common.edit') : t('common.add');
     return `${prefix}${t(`crmFormCreate.drawer.${props.formKey.value}`)}`;
   });

@@ -36,6 +36,9 @@ export const BatchAssignClueUrl = '/pool/clue/batch-assign'; // 批量分配线�
 export const AssignClueUrl = '/pool/clue/assign'; // 分配线索
 export const GetPoolOptionsUrl = '/pool/clue/options'; // 获取当前用户线索池选项
 export const DeleteCluePoolUrl = '/pool/clue/delete'; // 删除线索池线索
+export const GetPoolClueUrl = '/pool/clue/get'; // 获取线索池详情
+export const ClueTransitionOpportunityUrl = '/clue/transition/opportunity'; // 转为商机
+export const ClueTransitionCustomerUrl = '/clue/transition/customer'; // 转为客户
 
 // 线索池跟进记录
 export const GetCluePoolFollowRecordListUrl = '/clue/follow/record/pool/page'; // 获取跟进记录列表

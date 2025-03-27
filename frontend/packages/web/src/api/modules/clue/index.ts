@@ -10,6 +10,8 @@ import {
   BatchToPoolClueUrl,
   BatchTransferClueUrl,
   CancelClueFollowPlanUrl,
+  ClueTransitionCustomerUrl,
+  ClueTransitionOpportunityUrl,
   DeleteClueFollowPlanUrl,
   DeleteClueFollowRecordUrl,
   DeleteCluePoolUrl,
@@ -24,6 +26,7 @@ import {
   GetCluePoolFollowRecordListUrl,
   GetCluePoolListUrl,
   GetClueUrl,
+  GetPoolClueUrl,
   GetPoolOptionsUrl,
   PickClueUrl,
   UpdateClueFollowPlanUrl,
@@ -39,6 +42,8 @@ import type {
   ClueListItem,
   CluePoolListItem,
   CluePoolTableParams,
+  ClueTransitionCustomerParams,
+  ClueTransitionOpportunityParams,
   PickClueParams,
   PoolOption,
   SaveClueParams,
@@ -109,6 +114,16 @@ export function getClue(id: string) {
 // 删除线索
 export function deleteClue(id: string) {
   return CDR.get({ url: `${DeleteClueUrl}/${id}` });
+}
+
+// 转为商机
+export function ClueTransitionOpportunity(data: ClueTransitionOpportunityParams) {
+  return CDR.post({ url: ClueTransitionOpportunityUrl, data });
+}
+
+// 转为客户
+export function ClueTransitionCustomer(data: ClueTransitionCustomerParams) {
+  return CDR.post({ url: ClueTransitionCustomerUrl, data });
 }
 
 // 添加线索跟进记录
@@ -214,4 +229,9 @@ export function deleteCluePool(id: string) {
 // 获取线索池跟进记录列表
 export function getCluePoolFollowRecordList(data: CustomerFollowRecordTableParams) {
   return CDR.post<CommonList<FollowDetailItem>>({ url: GetCluePoolFollowRecordListUrl, data });
+}
+
+// 获取线索池详情
+export function getPoolClue(id: string) {
+  return CDR.get<ClueDetail>({ url: `${GetPoolClueUrl}/${id}` });
 }

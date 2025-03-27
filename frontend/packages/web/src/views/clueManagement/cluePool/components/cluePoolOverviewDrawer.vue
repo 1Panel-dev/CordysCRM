@@ -14,7 +14,7 @@
   >
     <template #left>
       <div class="p-[16px_24px]">
-        <CrmFormDescription :form-key="FormDesignKeyEnum.CLUE" :source-id="sourceId" />
+        <CrmFormDescription :form-key="FormDesignKeyEnum.CLUE_POOL" :source-id="sourceId" />
       </div>
     </template>
     <template #distributePopContent>
@@ -32,7 +32,6 @@
         :show-action="false"
         :refresh-key="refreshKey"
       />
-      <!-- TODO 更换接口 -->
       <CrmHeaderTable
         v-if="activeTab === 'headRecord'"
         class="mt-[16px] h-[calc(100vh-258px)]"

@@ -79,7 +79,7 @@
   import ClueOverviewDrawer from './components/clueOverviewDrawer.vue';
   import ToCluePoolResultModel from './components/toCluePoolResultModel.vue';
 
-  import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue } from '@/api/modules/clue';
+  import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue, updateClue } from '@/api/modules/clue';
   import { filterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -250,9 +250,9 @@
       if (!error) {
         try {
           transferLoading.value = true;
-          await batchTransferClue({
-            ...transferForm.value,
-            ids: [row.id],
+          await updateClue({
+            id: row.id,
+            owner: transferForm.value.owner as string,
           });
           Message.success(t('common.transferSuccess'));
           transferForm.value = { ...defaultTransferForm };
@@ -296,12 +296,15 @@
         handleTransfer(row);
         break;
       case 'convertToCustomer':
-        // TODO 调整一下
-        formKey.value = FormDesignKeyEnum.CUSTOMER;
+        activeClueId.value = '';
+        formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
+        otherFollowRecordSaveParams.value.clueId = row.id;
         formCreateDrawerVisible.value = true;
         break;
       case 'convertToOpportunity':
-        formKey.value = FormDesignKeyEnum.BUSINESS;
+        activeClueId.value = '';
+        formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS;
+        otherFollowRecordSaveParams.value.clueId = row.id;
         formCreateDrawerVisible.value = true;
         break;
       case 'delete':
