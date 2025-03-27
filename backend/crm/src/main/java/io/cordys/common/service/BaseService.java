@@ -1,8 +1,15 @@
 package io.cordys.common.service;
 
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.util.JSON;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.dto.request.CustomerAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
@@ -196,5 +203,63 @@ public class BaseService {
         }
         List<UserResponse> userResponseList = extOrganizationUserMapper.getUserDepAndPhoneByUserIds(ownerIds, orgId);
         return userResponseList.stream().collect(Collectors.toMap(UserResponse::getUserId, Function.identity()));
+    }
+
+    public <T> void handleAddLog(T resource, List<BaseModuleFieldValue> moduleFields) {
+        Map originCustomer = JSON.parseMap(JSON.toJSONString(resource));
+        if (moduleFields != null) {
+            moduleFields.forEach(field ->
+                    originCustomer.put(field.getFieldId(), field.getFieldValue()));
+        }
+
+        try {
+
+            Class<?> clazz = resource.getClass();
+            Method getId = clazz.getMethod("getId");
+            OperationLogContext.setContext(
+                    LogContextInfo.builder()
+                            .resourceId((String) getId.invoke(resource))
+                            .modifiedValue(originCustomer)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new GenericException(e);
+        }
+    }
+
+    public <T> void handleUpdateLog(T originResource,
+                                     T modifiedResource,
+                                     List<BaseModuleFieldValue> originResourceFields,
+                                     List<BaseModuleFieldValue> modifiedResourceFields) {
+
+        Map originResourceLog = JSON.parseMap(JSON.toJSONString(originResource));
+        if (modifiedResourceFields != null && originResourceFields != null) {
+            originResourceFields.forEach(field ->
+                    originResourceLog.put(field.getFieldId(), field.getFieldValue()));
+        }
+
+        Map modifiedResourceLog = JSON.parseMap(JSON.toJSONString(modifiedResource));
+        if (modifiedResourceFields != null) {
+            modifiedResourceFields.forEach(field ->
+                    modifiedResourceLog.put(field.getFieldId(), field.getFieldValue()));
+        }
+
+        try {
+
+            Class<?> clazz = originResource.getClass();
+            Method getId = clazz.getMethod("getId");
+            Method getName = clazz.getMethod("getName");
+
+            OperationLogContext.setContext(
+                    LogContextInfo.builder()
+                            .resourceId((String) getId.invoke(originResource))
+                            .resourceName((String) getName.invoke(originResource))
+                            .originalValue(originResourceLog)
+                            .modifiedValue(modifiedResourceLog)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new GenericException(e);
+        }
     }
 }

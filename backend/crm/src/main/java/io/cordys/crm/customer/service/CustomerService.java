@@ -253,19 +253,7 @@ public class CustomerService {
         //保存自定义字段
         customerFieldService.saveModuleField(customer.getId(), orgId, userId, request.getModuleFields());
 
-        Map originCustomer = JSON.parseMap(JSON.toJSONString(customer));
-        if (request.getModuleFields() != null) {
-            request.getModuleFields().forEach(field -> {
-                originCustomer.put(field.getFieldId(), field.getFieldValue());
-            });
-        }
-
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceId(customer.getId())
-                        .modifiedValue(originCustomer)
-                        .build()
-        );
+        baseService.handleAddLog(customer, request.getModuleFields());
         return customer;
     }
 
@@ -296,33 +284,8 @@ public class CustomerService {
         // 更新模块字段
         updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
 
-        return handleUpdateLog(request, originCustomer, originCustomerFields);
-    }
-
-    private Customer handleUpdateLog(CustomerUpdateRequest request, Customer originCustomer, List<BaseModuleFieldValue> originCustomerFields) {
-        Customer customer = customerMapper.selectByPrimaryKey(request.getId());
-
-        Map originCustomerLog = JSON.parseMap(JSON.toJSONString(originCustomer));
-        if (request.getModuleFields() != null && originCustomerFields != null) {
-            originCustomerFields.forEach(field -> {
-                originCustomerLog.put(field.getFieldId(), field.getFieldValue());
-            });
-        }
-
-        Map modifiedCustomerLog = JSON.parseMap(JSON.toJSONString(customer));
-        if (request.getModuleFields() != null) {
-            request.getModuleFields().forEach(field -> {
-                modifiedCustomerLog.put(field.getFieldId(), field.getFieldValue());
-            });
-        }
-
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceName(customer.getName())
-                        .originalValue(originCustomerLog)
-                        .modifiedValue(modifiedCustomerLog)
-                        .build()
-        );
+        customer = customerMapper.selectByPrimaryKey(request.getId());
+        baseService.handleUpdateLog(originCustomer, customer, originCustomerFields, request.getModuleFields());
         return customer;
     }
 
