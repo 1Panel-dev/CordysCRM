@@ -28,7 +28,7 @@ public class SystemInterceptor {
     public List<MybatisInterceptorConfig> systemCompressConfigs() {
         List<MybatisInterceptorConfig> configList = new ArrayList<>();
 
-        configList.add(new MybatisInterceptorConfig(MessageTaskBlob.class, "template", CompressUtils.class, "zip", "unzip"));
+        configList.add(new MybatisInterceptorConfig(MessageTask.class, "template", CompressUtils.class, "zip", "unzip"));
         configList.add(new MybatisInterceptorConfig(Announcement.class, "content", CompressUtils.class, "zip", "unzip"));
         configList.add(new MybatisInterceptorConfig(Announcement.class, "receiver", CompressUtils.class, "zip", "unzip"));
         configList.add(new MybatisInterceptorConfig(Announcement.class, "receiveType", CompressUtils.class, "zip", "unzip"));

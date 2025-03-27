@@ -3,19 +3,21 @@ package io.cordys.crm.system.controller;
 import io.cordys.common.response.handler.ResultHolder;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.MessageTask;
 import io.cordys.crm.system.dto.request.MessageTaskRequest;
-import io.cordys.mybatis.BaseMapper;
+import io.cordys.crm.system.mapper.ExtMessageTaskMapper;
+import io.cordys.crm.system.notice.CommonNoticeSendService;
 import jakarta.annotation.Resource;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
+
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -27,41 +29,42 @@ public class MessageTaskControllerTest extends BaseTest {
     public static final String GET_MESSAGE_TASK = "/message/task/get";
 
     @Resource
-    private BaseMapper<MessageTask> messageTaskMapper;
+    private ExtMessageTaskMapper extMessageTaskMapper;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
 
     @Test
     @Order(1)
     void testSaveMessageTask() throws Exception {
         MessageTaskRequest messageTaskRequest = new MessageTaskRequest();
-        messageTaskRequest.setReceiveType("USER");
-        messageTaskRequest.setModule("SYSTEM");
-        messageTaskRequest.setEvent("NOTICE");
-        messageTaskRequest.setReceiverIds(Arrays.asList("1", "2", "3"));
-        messageTaskRequest.setUseDefaultTemplate(true);
-        messageTaskRequest.setTemplate("test");
-        messageTaskRequest.setEnable(true);
+        messageTaskRequest.setModule(NotificationConstants.Module.CUSTOMER);
+        messageTaskRequest.setEvent(NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS);
+        messageTaskRequest.setEmailEnable(true);
+        messageTaskRequest.setSysEnable(true);
         MvcResult mvcResult = this.requestPostWithOkAndReturn(SAVE_MESSAGE_TASK, messageTaskRequest);
         String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
         MessageTask messageTask = JSON.parseObject(JSON.toJSONString(resultHolder.getData()), MessageTask.class);
         Assertions.assertNotNull(messageTask);
-        MessageTask messageTask1 = messageTaskMapper.selectOne(messageTask);
+        MessageTask messageTask1 = extMessageTaskMapper.getMessageByModuleAndEvent(messageTaskRequest.getModule(), messageTaskRequest.getEvent(), DEFAULT_ORGANIZATION_ID);
         Assertions.assertNotNull(messageTask1);
         messageTaskRequest = new MessageTaskRequest();
-        messageTaskRequest.setReceiveType("USER");
-        messageTaskRequest.setModule("SYSTEM");
-        messageTaskRequest.setEvent("NOTICE");
-        messageTaskRequest.setReceiverIds(Arrays.asList("1", "2", "3"));
-        messageTaskRequest.setUseDefaultTemplate(true);
-        messageTaskRequest.setTemplate("test");
-        messageTaskRequest.setEnable(true);
-        messageTaskRequest.setTestId(messageTask.getId());
+        messageTaskRequest.setModule(NotificationConstants.Module.CUSTOMER);
+        messageTaskRequest.setEvent(NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS);
+        messageTaskRequest.setEmailEnable(false);
+        messageTaskRequest.setSysEnable(true);
         MvcResult mvcResult1 = this.requestPostWithOkAndReturn(SAVE_MESSAGE_TASK, messageTaskRequest);
         String updateReturnData1 = mvcResult1.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder1 = JSON.parseObject(updateReturnData1, ResultHolder.class);
         MessageTask messageTask2 = JSON.parseObject(JSON.toJSONString(resultHolder1.getData()), MessageTask.class);
         Assertions.assertNotNull(messageTask2);
+        Map<String, Object> resource = new HashMap<>();
+        resource.put("relatedUsers", "aa");
+        resource.put("name", "cc");
+
         // TODO: Implement test
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin",  DEFAULT_ORGANIZATION_ID, List.of("aa"),true);
+
     }
 
     @Test

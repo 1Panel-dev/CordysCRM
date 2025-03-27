@@ -35,7 +35,7 @@ import java.util.Objects;
 @Component
 public class SendNoticeAspect {
     @Resource
-    private BatchNoticeSendService batchNoticeSendService;
+    private CommonNoticeSendService commonNoticeSendService;
 
     private final ExpressionParser parser = new SpelExpressionParser();
     private final StandardReflectionParameterNameDiscoverer discoverer = new StandardReflectionParameterNameDiscoverer();
@@ -175,7 +175,7 @@ public class SendNoticeAspect {
                     }
                 }
             }
-            batchNoticeSendService.sendNotice(module, event, resources, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+            commonNoticeSendService.sendNotice(module, event, resources, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
         } catch (Exception e) {
             LogUtils.error(e.getMessage(), e);
         } finally {

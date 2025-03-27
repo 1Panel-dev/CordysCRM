@@ -65,12 +65,11 @@ public class ProductService {
         List<ProductListResponse> list = extProductMapper.list(request, orgId);
         List<ProductListResponse> buildList = buildListData(list);
         // 处理自定义字段选项数据
-        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), orgId);
+        ModuleFormConfigDTO productFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), orgId);
         // 获取所有模块字段的值
         List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(list, ProductListResponse::getModuleFields);
         // 获取选项值对应的 option
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
-
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(productFormConfig, moduleFieldValues);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 

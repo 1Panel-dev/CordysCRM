@@ -53,13 +53,6 @@ public class NotificationController {
         return notificationService.readAll(OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
-    @GetMapping(value = "/un-read")
-    @Operation(summary = "消息中心-获取未读的消息")
-    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
-    public Integer getUnRead() {
-        return notificationService.getUnRead(OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
-    }
-
     @PostMapping(value = "/count")
     @Operation(summary = "消息中心-获取消息中心消息具体类型具体状态的数量")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)

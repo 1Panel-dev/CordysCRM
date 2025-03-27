@@ -1,7 +1,11 @@
 package io.cordys.crm.customer.dto.response;
 
+import io.cordys.crm.clue.dto.response.ClueListResponse;
+import io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class CustomerRepeatResponse {
@@ -26,5 +30,11 @@ public class CustomerRepeatResponse {
 
     @Schema(description = "创建时间")
     private Long createTime;
+
+    @Schema(description = "线索重复数据")
+    private List<ClueListResponse> clueList;
+
+    @Schema(description = "商机重复数据")
+    private List<OpportunityRepeatResponse>opportunityList;
 
 }

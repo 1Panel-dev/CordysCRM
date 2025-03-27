@@ -14,11 +14,11 @@ public class MessageTaskDTO implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "消息配置功能")
-    public String type;
+    @Schema(description = "消息配置模块")
+    public String module;
 
-    @Schema(description = "消息配置功能名称")
-    public String name;
+    @Schema(description = "消息配置模块名称")
+    public String moduleName;
 
     @Schema(description = "消息配置功能展开内容")
     public List<MessageTaskDetailDTO> messageTaskDetailDTOList;

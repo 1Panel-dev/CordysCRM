@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface ExtNotificationMapper {
 
-    List<NotificationDTO> listNotification(@Param("request") NotificationRequest notificationRequest, String organizationId);
+    List<NotificationDTO> listNotification(@Param("request") NotificationRequest notificationRequest, @Param("organizationId") String organizationId);
 
     void deleteByTime(@Param("timestamp") long timestamp);
 
@@ -22,5 +22,8 @@ public interface ExtNotificationMapper {
     int countByReceiver(@Param("request") Notification request);
 
     List<NotificationDTO> selectByAnyOne(@Param("request") Notification request);
+
+    List<NotificationDTO> selectLastList(@Param("userId") String userId, @Param("organizationId") String organizationId);
+
 
 }

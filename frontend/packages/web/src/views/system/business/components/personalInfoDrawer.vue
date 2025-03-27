@@ -13,12 +13,12 @@
     </CrmCard>
     <CrmCard v-if="activeTab === PersonalEnum.INFO" hide-footer :special-height="64">
       <div class="flex font-medium text-[var(--text-n1)]">
-        <n-spin>{{ t('common.baseInfo') }}</n-spin>
+        <n-p>{{ t('common.baseInfo') }}</n-p>
       </div>
       <div class="flex w-full items-center gap-[8px] py-[16px]">
         <CrmAvatar />
         <div>
-          <div>{{ personalInfo.userName }}</div>
+          <div class="text-[var(--text-n1)]">{{ personalInfo.userName }}</div>
           <n-tag
             v-if="showRoleTag"
             :bordered="false"
@@ -35,17 +35,17 @@
       <div
         class="flex w-full items-center justify-between gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[24px]"
       >
-        <div>
-          <n-p class="text-[var(--text-n4)]">{{ t('system.personal.phone') }}</n-p>
-          <n-p class="mx-[8px] text-[var(--text-n1)]">{{ personalInfo.phone }}</n-p>
+        <div class="flex">
+          <n-p class="m-[0] text-[var(--text-n4)]">{{ t('system.personal.phone') }}</n-p>
+          <n-p class="mx-[8px] my-[0] text-[var(--text-n1)]">{{ personalInfo.phone }}</n-p>
         </div>
-        <div>
-          <n-p class="text-[var(--text-n4)]">{{ t('system.personal.email') }}</n-p>
-          <n-p class="mx-[8px] text-[var(--text-n1)]">{{ personalInfo.email }}</n-p>
+        <div class="flex">
+          <n-p class="m-[0] text-[var(--text-n4)]">{{ t('system.personal.email') }}</n-p>
+          <n-p class="mx-[8px] my-[0] text-[var(--text-n1)]">{{ personalInfo.email }}</n-p>
         </div>
-        <div>
-          <n-p class="text-[var(--text-n4)]">{{ t('system.personal.department') }}</n-p>
-          <n-p class="mx-[8px] text-[var(--text-n1)]">{{ personalInfo.departmentName }}</n-p>
+        <div class="flex">
+          <n-p class="m-[0] text-[var(--text-n4)]">{{ t('system.personal.department') }}</n-p>
+          <n-p class="mx-[8px] my-[0] text-[var(--text-n1)]">{{ personalInfo.departmentName }}</n-p>
         </div>
       </div>
       <div class="py-[24px]">

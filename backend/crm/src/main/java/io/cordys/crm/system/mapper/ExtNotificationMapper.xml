@@ -2,9 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.cordys.crm.system.mapper.ExtNotificationMapper">
 
-    <select id="listNotification" parameterType="io.cordys.crm.system.dto.request.NotificationRequest" resultType="io.cordys.crm.system.dto.response.NotificationDTO">
+    <select id="listNotification" parameterType="io.cordys.crm.system.dto.request.NotificationRequest"
+            resultType="io.cordys.crm.system.dto.response.NotificationDTO">
         SELECT * FROM sys_notification
-        WHERE sys_notification.receiver = #{request.receiver} AND sys_notification.create_time &gt; (unix_timestamp()  - 90 * 24 * 3600) * 1000 and sys_notification.organization_id = #{organizationId}
+        WHERE sys_notification.receiver = #{request.receiver} and sys_notification.organization_id = #{organizationId}
         <if test='request.subject != null and request.subject != ""'>
             AND ( sys_notification.subject LIKE #{request.subject} OR sys_notification.content LIKE #{request.subject} )
         </if>
@@ -17,15 +18,25 @@
         <if test='request.resourceType != null and request.resourceType != ""'>
             AND sys_notification.resource_type LIKE #{request.resourceType}
         </if>
+        <if test='request.createTime != null and request.endTime == null'>
+            AND sys_notification.create_time &gt;= #{request.createTime}
+        </if>
+        <if test='request.createTime != null and request.endTime != null'>
+            AND sys_notification.create_time &gt;= #{request.createTime} AND sys_notification.create_time &lt;= #{request.endTime} 
+        </if>
         ORDER BY sys_notification.create_time, sys_notification.status DESC
     </select>
 
     <delete id="deleteByTime" parameterType="java.lang.Long">
-        DELETE FROM sys_notification WHERE create_time &lt; #{timestamp}
+        DELETE
+        FROM sys_notification
+        WHERE create_time &lt; #{timestamp}
     </delete>
 
     <delete id="deleteByResourceId" parameterType="java.lang.String">
-        DELETE FROM sys_notification WHERE resource_id = #{resourceId}
+        DELETE
+        FROM sys_notification
+        WHERE resource_id = #{resourceId}
     </delete>
 
     <update id="updateByReceiver" parameterType="io.cordys.crm.system.domain.Notification">
@@ -39,7 +50,8 @@
         AND sys_notification.organization_id = #{request.organizationId}
     </update>
 
-    <select id="countByReceiver" parameterType="io.cordys.crm.system.domain.Notification" resultType="java.lang.Integer">
+    <select id="countByReceiver" parameterType="io.cordys.crm.system.domain.Notification"
+            resultType="java.lang.Integer">
         SELECT COUNT(*) FROM sys_notification WHERE sys_notification.organization_id = #{request.organizationId}
         <if test='request.resourceType != null and request.resourceType != ""'>
             AND sys_notification.resource_type LIKE #{request.resourceType}
@@ -50,7 +62,8 @@
         AND sys_notification.receiver = #{request.receiver}
     </select>
 
-    <select id="selectByAnyOne" parameterType="io.cordys.crm.system.domain.Notification" resultType="io.cordys.crm.system.dto.response.NotificationDTO">
+    <select id="selectByAnyOne" parameterType="io.cordys.crm.system.domain.Notification"
+            resultType="io.cordys.crm.system.dto.response.NotificationDTO">
         SELECT * FROM sys_notification WHERE sys_notification.organization_id = #{request.organizationId}
         <if test='request.resourceType != null and request.resourceType != ""'>
             AND sys_notification.resource_type LIKE #{request.resourceType}
@@ -67,6 +80,11 @@
         <if test='request.resourceId != null and request.resourceId != ""'>
             AND sys_notification.resource_id = #{request.resourceId}
         </if>
+    </select>
+    <select id="selectLastList" resultType="io.cordys.crm.system.dto.response.NotificationDTO">
+        SELECT * FROM sys_notification
+        WHERE sys_notification.receiver = #{userId} and sys_notification.organization_id = #{organizationId}
+        and sys_notification.resource_type and EXISTS (SELECT 1 FROM sys_module where sys_module.organization_id = #{organizationId} and sys_module.enable = 1  AND sys_module.module_key = sys_notification.resource_type)  order by sys_notification.create_time DESC limit 5
     </select>
 
 </mapper>

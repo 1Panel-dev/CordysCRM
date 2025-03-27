@@ -25,7 +25,7 @@ public interface ExtOpportunityMapper {
 
     OpportunityDetailResponse getDetail(@Param("id") String id);
 
-    List<OpportunityRepeatResponse> getRepeatList(@Param("customerId") String customerId);
+    List<OpportunityRepeatResponse> getRepeatList(@Param("customerIds") List<String> customerIds);
 
     int countByOwner(@Param("owner") String owner);
 }

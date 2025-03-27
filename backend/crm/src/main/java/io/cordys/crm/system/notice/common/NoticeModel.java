@@ -36,11 +36,6 @@ public class NoticeModel implements Serializable {
     private String context;
 
     /**
-     * 保存特殊的用户
-     */
-    private List<String> relatedUsers;
-
-    /**
      * 模版里的参数信息
      */
     private Map<String, Object> paramMap;

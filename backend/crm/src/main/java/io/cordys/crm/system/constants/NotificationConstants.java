@@ -26,7 +26,7 @@ public class NotificationConstants {
         String CLUE = "CLUE";
         //商机管理
         @Schema(description = "message.business")
-        String BUSINESS = "BUSINESS";
+        String OPPORTUNITY = "OPPORTUNITY";
         //公告
         @Schema(description = "message.announcement")
         String ANNOUNCEMENT = "ANNOUNCEMENT";
@@ -105,12 +105,8 @@ public class NotificationConstants {
     }
 
     public interface RelatedUser {
-        @Schema(description = "message.create_user")
-        String CREATE_USER = "CREATE_USER";//创建人
         @Schema(description = "message.operator")
         String OPERATOR = "OPERATOR"; //操作人
-        @Schema(description = "message.handle_user")
-        String HANDLE_USER = "HANDLE_USER"; //处理人
     }
 
 

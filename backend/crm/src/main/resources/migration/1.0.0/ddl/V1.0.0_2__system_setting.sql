@@ -192,18 +192,17 @@ CREATE INDEX idx_resource_id ON sys_notification (resource_id ASC);
 
 CREATE TABLE sys_message_task
 (
-    `id`                   VARCHAR(50)   NOT NULL COMMENT '',
-    `event`                VARCHAR(255)  NOT NULL COMMENT '通知事件类型',
-    `receivers`            VARCHAR(1000) NOT NULL COMMENT '接收人id集合',
-    `receive_type`         VARCHAR(50) COMMENT '接收方式',
-    `task_type`            VARCHAR(64)   NOT NULL COMMENT '任务类型',
-    `enable`               BIT           NOT NULL DEFAULT 0 COMMENT '是否启用',
-    `organization_id`      VARCHAR(32)   NOT NULL COMMENT '组织id',
-    `use_default_template` BIT           NOT NULL DEFAULT 1 COMMENT '是否使用默认模版',
-    `create_user`          VARCHAR(50)   NOT NULL COMMENT '创建人',
-    `create_time`          BIGINT        NOT NULL DEFAULT 0 COMMENT '创建时间',
-    `update_user`          VARCHAR(50)   NOT NULL COMMENT '修改人',
-    `update_time`          BIGINT        NOT NULL COMMENT '更新时间',
+    `id`              VARCHAR(50)  NOT NULL COMMENT '',
+    `event`           VARCHAR(255) NOT NULL COMMENT '通知事件类型',
+    `task_type`       VARCHAR(64)  NOT NULL COMMENT '任务类型',
+    `email_enable`    BIT          NOT NULL DEFAULT 0 COMMENT '邮件启用',
+    `sys_enable`      BIT          NOT NULL DEFAULT 0 COMMENT '系统启用',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `template`        BLOB COMMENT '消息模版',
+    `create_user`     VARCHAR(50)  NOT NULL COMMENT '创建人',
+    `create_time`     BIGINT       NOT NULL DEFAULT 0 COMMENT '创建时间',
+    `update_user`     VARCHAR(50)  NOT NULL COMMENT '修改人',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
     PRIMARY KEY (id)
 ) COMMENT = '消息通知任务'
     ENGINE = InnoDB
@@ -215,18 +214,8 @@ CREATE INDEX idx_create_time ON sys_message_task (create_time DESC);
 CREATE INDEX idx_task_type ON sys_message_task (task_type ASC);
 CREATE INDEX idx_event ON sys_message_task (event ASC);
 CREATE INDEX idx_organization_id ON sys_message_task (organization_id ASC);
-CREATE INDEX idx_enable ON sys_message_task (enable ASC);
-CREATE INDEX idx_use_default_template ON sys_message_task (use_default_template ASC);
-
-CREATE TABLE IF NOT EXISTS `sys_message_task_blob`
-(
-    `id`       VARCHAR(32) NOT NULL COMMENT 'id',
-    `template` BLOB COMMENT '消息模版',
-    PRIMARY KEY (id)
-) COMMENT = '消息通知任务大字段'
-    ENGINE = InnoDB
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_general_ci;
+CREATE INDEX idx_email_enable ON sys_message_task (email_enable ASC);
+CREATE INDEX idx_sys_enable ON sys_message_task (sys_enable ASC);
 
 CREATE TABLE sys_announcement
 (

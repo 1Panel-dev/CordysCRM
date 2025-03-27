@@ -17,17 +17,21 @@ public class MessageTaskDetailDTO implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "消息配置场景")
+    @Schema(description = "消息配置事件")
     public String event;
 
-    @Schema(description = "消息配置场景名称")
+    @Schema(description = "消息配置事件名称")
     public String eventName;
 
-    @Schema(description = "消息配置接收人")
-    private List<OptionDTO> receivers;
+    @Schema(description = "邮件启用")
+    private Boolean emailEnable;
 
-    @Schema(description = "消息配置接收方设置")
-    private Map<String,ProjectRobotConfigDTO> projectRobotConfigMap;
+    @Schema(description = "系统启用")
+    private Boolean sysEnable;
+
+
+
+
 
 
 

@@ -28,6 +28,9 @@ public class NotificationRequest extends BasePageRequest {
     @Schema(description =  "创建时间")
     private Long createTime;
 
+    @Schema(description =  "结束时间")
+    private Long endTime;
+
     @Schema(description =  "操作人")
     private String operator;
 

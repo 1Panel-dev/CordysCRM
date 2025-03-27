@@ -62,6 +62,35 @@
             sou.id = #{id}
     </select>
 
+    <select id="getUserDetailList" resultType="io.cordys.crm.system.dto.response.UserResponse">
+        SELECT
+        sou.id,
+        sou.user_id,
+        sou.organization_id,
+        sou.department_id,
+        su.NAME userName,
+        sou.`enable`,
+        su.gender,
+        su.phone,
+        su.email,
+        sou.supervisor_id,
+        sou.employee_id,
+        sou.position,
+        sou.employee_type,
+        sou.work_city,
+        sd.`name` departmentName
+        FROM
+        sys_user su
+        INNER JOIN sys_organization_user sou ON su.id = sou.user_id
+        INNER JOIN sys_department sd on sd.id = sou.department_id
+        WHERE sou.id IN
+        <foreach collection="userIds" item="userId" index="index"
+                 open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
+
+    
     <select id="getOrgUserByUserIds" resultType="io.cordys.crm.system.domain.User">
         SELECT sys_user.id, sys_user.name
         FROM sys_user LEFT JOIN sys_organization_user on sys_organization_user.user_id = sys_user.id

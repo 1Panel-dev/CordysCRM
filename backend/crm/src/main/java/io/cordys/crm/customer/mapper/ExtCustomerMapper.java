@@ -29,7 +29,7 @@ public interface ExtCustomerMapper {
 
     void batchTransfer(@Param("request") CustomerBatchTransferRequest request);
 
-    Customer checkRepeatCustomerByName(@Param("name") String name, @Param("orgId") String orgId);
+    List<Customer> checkRepeatCustomerByName(@Param("name") String name, @Param("orgId") String orgId);
 
     int countByOwner(@Param("owner") String owner);
 

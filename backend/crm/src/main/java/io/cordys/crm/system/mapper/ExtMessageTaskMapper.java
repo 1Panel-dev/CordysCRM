@@ -8,9 +8,10 @@ import io.cordys.crm.system.domain.MessageTask;
 
 public interface ExtMessageTaskMapper {
 
-   List<MessageTask> getEnableMessageTaskByReceiveTypeAndTaskType(@Param("receiveType") String receiveType, @Param("module") String taskType, @Param("organizationId") String organizationId);
+    List<MessageTask> getEnableMessageTaskByReceiveTypeAndTaskType(@Param("module") String taskType, @Param("organizationId") String organizationId);
 
-   List<MessageTask> getMessageTaskByReceiveTypeAndTaskType(@Param("receiveType") String receiveType, @Param("module") String taskType, @Param("organizationId") String organizationId);
+    List<MessageTask> getMessageTaskList(@Param("organizationId") String organizationId);
 
-   List<MessageTask>getMessageTaskList(@Param("organizationId") String organizationId);
+    MessageTask getMessageByModuleAndEvent(@Param("module") String taskType, @Param("event") String event, @Param("organizationId") String organizationId);
+
 }

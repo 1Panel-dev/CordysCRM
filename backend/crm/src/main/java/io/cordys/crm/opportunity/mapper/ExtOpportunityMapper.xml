@@ -332,7 +332,10 @@
         FROM
             opportunity o
                 INNER JOIN sys_user u ON o.owner = u.id
-        WHERE o.status = 1 AND o.customer_id = #{customerId}
+        WHERE o.status = 1 AND o.customer_id IN
+        <foreach collection="customerIds" item="customerId" open="(" close=")" separator=",">
+            #{customerId}
+        </foreach>
     </select>
 
     <select id="countByOwner" resultType="java.lang.Integer">

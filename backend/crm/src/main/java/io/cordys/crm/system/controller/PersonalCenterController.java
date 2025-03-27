@@ -48,7 +48,7 @@ public class PersonalCenterController {
     @Operation(summary = "用户跟进计划列表")
     public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
         request.setMyPlan(true);
-        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "NULL", "NULL", null);
+        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "NULL", null, null);
     }
 
 

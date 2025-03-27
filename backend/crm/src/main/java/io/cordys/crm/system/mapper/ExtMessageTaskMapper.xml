@@ -3,21 +3,16 @@
 <mapper namespace="io.cordys.crm.system.mapper.ExtMessageTaskMapper">
 
  <select id="getEnableMessageTaskByReceiveTypeAndTaskType" resultType="io.cordys.crm.system.domain.MessageTask">
-    select * from sys_message_task where organization_id = #{organizationId} and task_type = #{module} and enable = 1 
-    <if test="receiveType != null">
-        and receive_type = #{receiveType}
-    </if>
- </select>
-
- <select id="getMessageTaskByReceiveTypeAndTaskType" resultType="io.cordys.crm.system.domain.MessageTask">
-    select * from sys_message_task where organization_id = #{organizationId} and task_type = #{module}
-    <if test="receiveType != null">
-        and receive_type = #{receiveType}
-    </if>
+    select * from sys_message_task where organization_id = #{organizationId} and task_type = #{module} and (sys_enable = 1 or email_enable=1)
  </select>
 
     <select id="getMessageTaskList" resultType="io.cordys.crm.system.domain.MessageTask">
         select * from sys_message_task where organization_id = #{organizationId};
     </select>
+
+    <select id="getMessageByModuleAndEvent" resultType="io.cordys.crm.system.domain.MessageTask">
+        select * from sys_message_task where organization_id = #{organizationId} and task_type = #{module} and event = #{event} limit 1;
+    </select>
+
 
 </mapper> 

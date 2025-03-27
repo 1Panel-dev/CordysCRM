@@ -2,20 +2,18 @@ package io.cordys.crm.system.service;
 
 
 import io.cordys.common.dto.OptionDTO;
-
-import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.request.NotificationRequest;
 import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.mapper.ExtNotificationMapper;
 import io.cordys.mybatis.BaseMapper;
+import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,6 +28,7 @@ public class NotificationService {
     private ExtNotificationMapper extNotificationMapper;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
 
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
@@ -87,6 +86,19 @@ public class NotificationService {
         totalOptionDTO.setId("total");
         totalOptionDTO.setName(String.valueOf(notifications.size()));
         optionDTOS.add(totalOptionDTO);
+        if (CollectionUtils.isEmpty(notifications)){
+            Map<String, Integer> countMap = new HashMap<>();
+            countMap.put(NotificationConstants.Module.CUSTOMER, 0);
+            countMap.put(NotificationConstants.Module.CLUE, 0);
+            countMap.put(NotificationConstants.Module.OPPORTUNITY, 0);
+            countMap.put(NotificationConstants.Module.ANNOUNCEMENT, 0);
+            countMap.forEach((k, v) -> {
+                OptionDTO optionDTO = new OptionDTO();
+                optionDTO.setId(k);
+                optionDTO.setName(String.valueOf(v));
+                optionDTOS.add(optionDTO);
+            });
+        }
         buildSourceCount(notifications, optionDTOS);
         return optionDTOS;
     }
@@ -95,16 +107,17 @@ public class NotificationService {
         Map<String, Integer> countMap = new HashMap<>();
         Map<String, List<Notification>> resourceMap = notifications.stream().collect(Collectors.groupingBy(Notification::getResourceType));
         resourceMap.forEach((k, v) -> {
-            if (k.contains(NotificationConstants.Module.CUSTOMER)) {
+             if (k.contains(NotificationConstants.Module.CUSTOMER)) {
                 countMap.merge(NotificationConstants.Module.CUSTOMER, v.size(), Integer::sum);
             } else if (k.contains(NotificationConstants.Module.CLUE)) {
                 countMap.merge(NotificationConstants.Module.CLUE, v.size(), Integer::sum);
-            } else if (k.contains(NotificationConstants.Module.BUSINESS)) {
-                countMap.merge(NotificationConstants.Module.BUSINESS, v.size(), Integer::sum);
+            } else if (k.contains(NotificationConstants.Module.OPPORTUNITY)) {
+                countMap.merge(NotificationConstants.Module.OPPORTUNITY, v.size(), Integer::sum);
             } else {
                 countMap.merge(NotificationConstants.Module.ANNOUNCEMENT, v.size(), Integer::sum);
             }
         });
+
         countMap.forEach((k, v) -> {
             OptionDTO optionDTO = new OptionDTO();
             optionDTO.setId(k);

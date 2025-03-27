@@ -2,7 +2,6 @@ package io.cordys.crm.system.notice;
 
 
 import io.cordys.common.util.LogUtils;
-import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.dto.MessageDetailDTO;
 import io.cordys.crm.system.notice.common.NoticeModel;
 import io.cordys.crm.system.notice.message.MessageDetailDTOService;
@@ -30,15 +29,6 @@ public class NoticeSendService {
     private MessageDetailDTOService messageDetailDTOService;
 
 
-    private AbstractNoticeSender getNoticeSender(MessageDetailDTO messageDetailDTO) {
-        AbstractNoticeSender noticeSender;
-        switch (messageDetailDTO.getReceiveType()) {
-            case NotificationConstants.SendType.MAIL -> noticeSender = mailNoticeSender;
-            default -> noticeSender = inSiteNoticeSender;
-        }
-        return noticeSender;
-    }
-
     /**
      * 在线操作发送通知
      */
@@ -55,7 +45,12 @@ public class NoticeSendService {
                         MessageDetailDTO m = SerializationUtils.clone(messageDetail);
                         NoticeModel n = SerializationUtils.clone(noticeModel);
                         try {
-                            this.getNoticeSender(m).send(m, n);
+                            if (m.isSysEnable()) {
+                                inSiteNoticeSender.send(m, n);
+                            }
+                            if (m.isEmailEnable()) {
+                                mailNoticeSender.send(m, n);
+                            }
                         } catch (Exception e) {
                             LogUtils.error(e);
                         }
@@ -102,7 +97,12 @@ public class NoticeSendService {
                         MessageDetailDTO m = SerializationUtils.clone(messageDetail);
                         NoticeModel n = SerializationUtils.clone(noticeModel);
                         try {
-                            this.getNoticeSender(m).send(m, n);
+                            if (m.isSysEnable()) {
+                                inSiteNoticeSender.send(m, n);
+                            }
+                            if (m.isEmailEnable()) {
+                                mailNoticeSender.send(m, n);
+                            }
                         } catch (Exception e) {
                             LogUtils.error(e);
                         }
@@ -117,7 +117,7 @@ public class NoticeSendService {
      * 其他类型
      */
     @Async("threadPoolTaskExecutor")
-    public void sendOther(String module, NoticeModel noticeModel, List<String> users, boolean excludeSelf) {
+    public void sendOther(String module, NoticeModel noticeModel, boolean excludeSelf) {
         //如果在线需要排除自己，也需要选定当前环境选择的语言
         if (excludeSelf) {
             setLanguage(noticeModel);
@@ -131,20 +131,21 @@ public class NoticeSendService {
                     .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
                     .toList();
             if (CollectionUtils.isEmpty(messageDetailDTOS)) {
-                NoticeModel n = SerializationUtils.clone(noticeModel);
-                MessageDetailDTO m = messageDetailDTOService.buildMessageTailDTO(module, noticeModel, users, organizationId);
-                inSiteNoticeSender.send(m, n);
+                MessageDetailDTO m = messageDetailDTOService.buildMessageTailDTO(module, noticeModel, organizationId);
+                inSiteNoticeSender.send(m, noticeModel);
             } else {
                 // 异步发送通知
                 messageDetailDTOS.stream()
                         .forEach(messageDetail -> {
                             MessageDetailDTO m = SerializationUtils.clone(messageDetail);
-                            if (CollectionUtils.isNotEmpty(users)) {
-                                m.getReceiverIds().addAll(users);
-                            }
                             NoticeModel n = SerializationUtils.clone(noticeModel);
                             try {
-                                this.getNoticeSender(m).send(m, n);
+                                if (m.isSysEnable()) {
+                                    inSiteNoticeSender.send(m, n);
+                                }
+                                if (m.isEmailEnable()) {
+                                    mailNoticeSender.send(m, n);
+                                }
                             } catch (Exception e) {
                                 LogUtils.error(e);
                             }

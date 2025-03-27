@@ -5,6 +5,7 @@ import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.User;
 
 import io.cordys.crm.system.notice.common.NoticeModel;
+import io.cordys.crm.system.notice.common.Receiver;
 import io.cordys.crm.system.utils.MessageTemplateUtils;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
-public class BatchNoticeSendService {
+public class CommonNoticeSendService {
     @Resource
     private NoticeSendService noticeSendService;
     @Resource
@@ -34,12 +35,8 @@ public class BatchNoticeSendService {
             paramMap.putAll(resource);
             paramMap.putIfAbsent("organizationId", currentOrganizationId);
 
-            // 占位符
-            handleDefaultValues(paramMap);
-
             String context = getContext(event);
 
-            List<String> relatedUsers = getRelatedUsers(resource.get("relatedUsers"));
 
             NoticeModel noticeModel = NoticeModel.builder()
                     .operator(operator.getId())
@@ -48,7 +45,6 @@ public class BatchNoticeSendService {
                     .event(event)
                     .status((String) paramMap.get("status"))
                     .excludeSelf(true)
-                    .relatedUsers(relatedUsers)
                     .build();
             noticeSendService.send(module, noticeModel);
         }
@@ -56,28 +52,28 @@ public class BatchNoticeSendService {
 
     /**
      * 发送通知
-     * @param taskType
-     * @param event
-     * @param operator
-     * @param currentProjectId
-     * @param resource
-     * @param extraUsers   除了消息通知配置的用户，需要额外通知的用户
+     * @param taskType 发送类型
+     * @param event 发送事件
+     * @param currentOrgId  当前组织id
+     * @param resource 消息变量的名称 eg: xxxx 的名称，resource.put("name", "名称");
+     * @param users   需要通知的用户
      * @param excludeSelf  是否排除自己
      */
-    public void sendNotice(String taskType, String event, Map resource, User operator, String currentProjectId,
-                           List<String> extraUsers, boolean excludeSelf) {
+    public void sendNotice(String taskType, String event, Map resource, String operatorId, String currentOrgId,
+                           List<String> users, boolean excludeSelf) {
         Map paramMap = new HashMap<>();
+        User operator = userBaseMapper.selectByPrimaryKey(operatorId);
         paramMap.put(NotificationConstants.RelatedUser.OPERATOR, operator.getName());
         paramMap.put("Language", operator.getLanguage());
         paramMap.putAll(resource);
-        paramMap.putIfAbsent("projectId", currentProjectId);
-
-        // 占位符
-        handleDefaultValues(paramMap);
+        paramMap.putIfAbsent("organizationId", currentOrgId);
 
         String context = getContext(event);
 
-        List<String> relatedUsers = getRelatedUsers(resource.get("relatedUsers"));
+        List<Receiver> receivers = new ArrayList<>();
+        for (String userId :users) {
+            receivers.add(new Receiver(userId, NotificationConstants.Type.SYSTEM_NOTICE.name()));
+        }
 
         NoticeModel noticeModel = NoticeModel.builder()
                 .operator(operator.getId())
@@ -86,19 +82,11 @@ public class BatchNoticeSendService {
                 .event(event)
                 .status((String) paramMap.get("status"))
                 .excludeSelf(true)
-                .relatedUsers(relatedUsers)
+                .receivers(receivers)
                 .build();
-        noticeSendService.sendOther(taskType, noticeModel, extraUsers, excludeSelf);
+        noticeSendService.sendOther(taskType, noticeModel, excludeSelf);
     }
 
-    private List<String> getRelatedUsers(Object relatedUsers) {
-        String relatedUser = (String) relatedUsers;
-        List<String> relatedUserList = new ArrayList<>();
-        if (StringUtils.isNotBlank(relatedUser)) {
-            relatedUserList = Arrays.asList(relatedUser.split(";"));
-        }
-        return relatedUserList;
-    }
 
     private static void setLanguage(String language) {
         Locale locale = Locale.SIMPLIFIED_CHINESE;
@@ -108,14 +96,6 @@ public class BatchNoticeSendService {
             locale = Locale.TAIWAN;
         }
         LocaleContextHolder.setLocale(locale);
-    }
-
-
-    /**
-     * 有些默认的值，避免通知里出现 ${key}
-     */
-    private void handleDefaultValues(Map paramMap) {
-        paramMap.put("planShareUrl", StringUtils.EMPTY); // 占位符
     }
 
     private String getContext(String event) {

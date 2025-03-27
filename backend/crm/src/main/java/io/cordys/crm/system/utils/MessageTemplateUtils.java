@@ -13,7 +13,6 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.text.StringSubstitutor;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,31 +67,9 @@ public class MessageTemplateUtils {
         return defaultTemplateMap;
     }
 
-
-    /**
-     * 获取接收人的特殊值
-     *
-     * @return List<String> defaultRelatedUsers
-     */
-    public static List<String> getDefaultRelatedUser() {
-        Field[] defaultRelatedUserFields = FieldUtils.getAllFields(NotificationConstants.RelatedUser.class);
-        List<String> defaultRelatedUsers = new ArrayList<>();
-        for (Field defaultRelatedUserField : defaultRelatedUserFields) {
-            defaultRelatedUsers.add(defaultRelatedUserField.getName());
-        }
-        return defaultRelatedUsers;
-    }
-
-    /**
-     * 获取接收人的特殊值
-     *
-     * @return List<String> defaultRelatedUsers
-     */
-    public static Map<String, String> getDefaultRelatedUserMap() {
-        Map<String, String> defaultRelatedUserMap = new HashMap<>();
-        Field[] defaultRelatedUserFields = FieldUtils.getAllFields(NotificationConstants.RelatedUser.class);
-        MessageTemplateUtils.setFieldNameMap(defaultRelatedUserFields, defaultRelatedUserMap);
-        return defaultRelatedUserMap;
+    public static String getTemplate(String event) {
+        Map<String, String> defaultTemplateMap = getDefaultTemplateMap();
+        return defaultTemplateMap.get(event + "_TEXT");
     }
 
     public static String getContent(String template, Map<String, Object> context) {
@@ -136,20 +113,6 @@ public class MessageTemplateUtils {
                 }
             }
         });
-    }
-
-    public static String getTranslateTemplate(String template) {
-        Map<String, Object> map = new HashMap<>();
-        if (StringUtils.isNotBlank(template) && template.contains("${OPERATOR}")) {
-            template = template.replace("${OPERATOR}", "<" + Translator.get("message.operator") + ">");
-        }
-        if (StringUtils.isNotBlank(template) && template.contains("${count}")) {
-            template = template.replace("${count}", "<n>");
-        }
-        Map<String, String> defaultRelatedUserMap = getDefaultRelatedUserMap();
-        defaultRelatedUserMap.remove("FOLLOW_PEOPLE");
-        map.putAll(defaultRelatedUserMap);
-        return getContent(template, map);
     }
 
 

@@ -3,8 +3,10 @@ package io.cordys.crm.system.notice.sse;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.response.NotificationDTO;
+import io.cordys.crm.system.mapper.ExtNotificationMapper;
 import io.cordys.crm.system.notice.dto.SseMessageDTO;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -23,8 +25,9 @@ public class SseService {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    private static final String USER_PREFIX = "msg_user:";  // Redis 存储用户前缀
-    private static final String MSG_PREFIX = "msg_content:";  // Redis 存储信息前缀
+    @Resource
+    private ExtNotificationMapper extNotificationMapper;
+
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
     private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
@@ -106,11 +109,9 @@ public class SseService {
         userEmitters.forEach((userId, emitters) -> {
             //获取系统通知
             SseMessageDTO sseMessageDTO = new SseMessageDTO();
-            Set<String> sysValues = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
-            if (CollectionUtils.isNotEmpty(sysValues)) {
-                List<NotificationDTO> notificationDTOList = buildDTOList(sysValues, MSG_PREFIX);
-                sseMessageDTO.setNotificationDTOList(notificationDTOList);
-            }
+            List<NotificationDTO> notificationDTOS = extNotificationMapper.selectLastList(userId, OrganizationContext.getOrganizationId());
+            notificationDTOS.forEach(notification -> notification.setContentText(new String(notification.getContent())));
+            sseMessageDTO.setNotificationDTOList(notificationDTOS);
             //获取公告
             Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX + userId, 0, -1);
             if (CollectionUtils.isNotEmpty(values)) {

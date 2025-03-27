@@ -248,7 +248,7 @@
     <select id="checkRepeatCustomerByName" resultType="io.cordys.crm.customer.domain.Customer">
         select *
         from customer
-        where name = #{name} and organization_id = #{orgId} limit 1
+        where name like concat('%', #{name},'%') and organization_id = #{orgId}
     </select>
 
 

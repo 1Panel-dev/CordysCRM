@@ -25,6 +25,8 @@ public interface ExtUserMapper {
 
     UserResponse getUserDetail(@Param("id") String id);
 
+    List<UserResponse> getUserDetailList(@Param("userIds") List<String> userIds);
+
     void batchUpdatePassword(@Param("userList") List<User> userList);
 
     void updateUserPassword(@Param("password") String password, @Param("id") String id);
