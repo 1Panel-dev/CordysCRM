@@ -3,6 +3,7 @@ package io.cordys.crm.system.service;
 import io.cordys.common.util.LogUtils;
 import io.cordys.file.engine.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -14,6 +15,18 @@ import java.util.List;
  */
 @Service
 public class FileCommonService {
+
+	/**
+	 * 清除临时文件资源
+	 * @param request 文件请求参数
+	 */
+	public void cleanTempResource(FileRequest request) {
+		List<File> folderFiles = getFolderFiles(request);
+		if (CollectionUtils.isEmpty(folderFiles)) {
+			return;
+		}
+		folderFiles.forEach(File::deleteOnExit);
+	}
 
 	/**
 	 * 上传文件

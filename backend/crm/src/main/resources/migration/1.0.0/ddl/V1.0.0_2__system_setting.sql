@@ -581,7 +581,6 @@ CREATE TABLE sys_attachment(
     `type` VARCHAR(50)    COMMENT '类型' ,
     `size` BIGINT(255)    COMMENT '大小' ,
     `storage` VARCHAR(50) NOT NULL   COMMENT '存储方式' ,
-    `path` VARCHAR(1000)    COMMENT '路径' ,
     `resource_id` VARCHAR(32)    COMMENT '资源ID' ,
     `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
     `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,

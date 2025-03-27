@@ -35,7 +35,6 @@ public class LocalRepository implements FileRepository {
         if (multipartFile == null || request == null || StringUtils.isEmpty(request.getFileName()) || StringUtils.isEmpty(request.getFolder())) {
             return null;
         }
-        FileValidate.validateFileName(request.getFolder(), request.getFileName());
         createFileDir(request);
         File file = new File(getFilePath(request));
         FileUtils.copyInputStreamToFile(multipartFile.getInputStream(), file);
@@ -69,7 +68,8 @@ public class LocalRepository implements FileRepository {
         // 检查父目录是否存在，如果不存在则创建它
         File parentDir = file.getParentFile();
         if (parentDir != null && !parentDir.exists()) {
-            boolean dirsCreated = parentDir.mkdirs(); // 创建父目录
+            // 创建父目录
+            boolean dirsCreated = parentDir.mkdirs();
             if (!dirsCreated) {
                 throw new IOException("Failed to create directories: " + parentDir.getAbsolutePath());
             }
@@ -204,10 +204,9 @@ public class LocalRepository implements FileRepository {
      *
      * @param request 文件请求信息，包含待获取大小的文件路径和文件名。
      * @return 返回文件的大小（字节数）。
-     * @throws Exception 如果获取文件大小过程中发生错误，抛出异常。
-     */
+	 */
     @Override
-    public long getFileSize(FileRequest request) throws Exception {
+    public long getFileSize(FileRequest request) {
         File file = new File(getFilePath(request));
         return file.length();
     }
@@ -220,7 +219,7 @@ public class LocalRepository implements FileRepository {
      */
     private String getFilePath(FileRequest request) {
         FileValidate.validateFileName(request.getFolder(), request.getFileName());
-        return StringUtils.join(DefaultRepositoryDir.getDefaultDir(), getFileDir(request), "/", request.getFileName());
+        return StringUtils.join(getFileDir(request), "/", request.getFileName());
     }
 
     /**
@@ -234,6 +233,11 @@ public class LocalRepository implements FileRepository {
         return getFolderWithDefaultDir(request.getFolder());
     }
 
+    /**
+     * 获取默认的文件夹路径
+     * @param folder 文件夹名称
+     * @return 文件夹路径
+     */
     private String getFolderWithDefaultDir(String folder) {
         return StringUtils.join(DefaultRepositoryDir.getDefaultDir(), folder);
     }

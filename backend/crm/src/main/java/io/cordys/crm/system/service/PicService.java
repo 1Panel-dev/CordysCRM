@@ -171,6 +171,6 @@ public class PicService {
 	 * @return 转存文件目录
 	 */
 	private String getTransferFileDir(String organizationId, String resourceId, String fileId) {
-		return organizationId + "/" + resourceId + "/" + fileId;
+		return "/" + organizationId + "/" + resourceId + "/" + fileId;
 	}
 }
