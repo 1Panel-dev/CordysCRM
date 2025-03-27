@@ -47,7 +47,7 @@ class ClueOwnerHistoryControllerTests extends BaseTest {
         Assertions.assertTrue(CollectionUtils.isEmpty(list));
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, "111");
+        requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, LIST, "111");
     }
 
     @Test
@@ -101,7 +101,7 @@ class ClueOwnerHistoryControllerTests extends BaseTest {
         });
 
         // 校验权限
-        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, "111");
+        requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, LIST, "111");
     }
 
     @Test
