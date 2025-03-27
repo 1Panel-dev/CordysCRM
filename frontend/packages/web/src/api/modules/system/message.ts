@@ -6,7 +6,6 @@ import {
   GetMessageTaskUrl,
   GetNotificationCountUrl,
   GetNotificationListUrl,
-  GetUnreadNotificationUrl,
   SaveMessageTaskUrl,
   SetAllNotificationReadUrl,
   SetNotificationReadUrl,
@@ -17,6 +16,8 @@ import type {
   AnnouncementItemDetail,
   AnnouncementSaveParams,
   AnnouncementTableQueryParams,
+  MessageCenterItem,
+  MessageCenterQueryParams,
   MessageConfigItem,
   SaveMessageConfigParams,
 } from '@lib/shared/models/system/message';
@@ -50,19 +51,14 @@ export function deleteAnnouncement(id: string) {
 }
 
 // 消息中心
-// 消息列表  TODO ts
-export function getNotificationList(data: any) {
-  return CDR.post({ url: GetNotificationListUrl, data });
+// 消息列表
+export function getNotificationList(data: MessageCenterQueryParams) {
+  return CDR.post<CommonList<MessageCenterItem>>({ url: GetNotificationListUrl, data });
 }
 
-// 具体消息类型具体状态的数量   TODO ts
-export function getNotificationCount(data: any) {
-  return CDR.post({ url: GetNotificationCountUrl, data });
-}
-
-// 获取未读的消息
-export function getUnreadNotification() {
-  return CDR.get<number>({ url: GetUnreadNotificationUrl });
+// 具体消息类型具体状态的数量 TODOts
+export function getNotificationCount(data: MessageCenterQueryParams) {
+  return CDR.post<any>({ url: GetNotificationCountUrl, data });
 }
 
 // 设置消息已读

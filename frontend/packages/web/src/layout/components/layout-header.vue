@@ -37,8 +37,12 @@
             </template>
           </n-button>
         </n-popselect>
+        <n-button class="p-[8px]" quaternary @click="showMessage">
+          <CrmIcon type="iconicon-alarmclock" :size="16" />
+        </n-button>
       </div>
     </div>
+    <MessageDrawer v-model:show="showMessageDrawer" />
   </n-layout-header>
 </template>
 
@@ -49,6 +53,7 @@
   import { LocaleType } from '@lib/shared/types/global';
 
   import CrmTopMenu from '@/components/business/crm-top-menu/index.vue';
+  import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
   import { LOCALE_OPTIONS } from '@/locale/index';
   import useLocale from '@/locale/useLocale';
@@ -62,6 +67,11 @@
 
   function changeLanguage(locale: LocaleType) {
     changeLocale(locale);
+  }
+
+  const showMessageDrawer = ref(false);
+  function showMessage() {
+    showMessageDrawer.value = true;
   }
 </script>
 

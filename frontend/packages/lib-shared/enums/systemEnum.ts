@@ -10,4 +10,18 @@ export enum PersonalEnum {
   MY_PLAN = 'MY_PLAN',
 }
 
-export default DeptNodeTypeEnum;
+export enum SystemMessageTypeEnum {
+  ANNOUNCEMENT_NOTICE = 'ANNOUNCEMENT_NOTICE', // 系统公告
+  SYSTEM_NOTICE = 'SYSTEM_NOTICE', // 系统消息
+}
+
+export enum SystemResourceMessageTypeEnum {
+  CUSTOMER = 'CUSTOMER',
+  CLUE = 'CLUE',
+  BUSINESS = 'BUSINESS',
+}
+
+export enum SystemMessageStatusEnum {
+  READ = 'READ', // 已读
+  UNREAD = 'UNREAD', // 未读
+}

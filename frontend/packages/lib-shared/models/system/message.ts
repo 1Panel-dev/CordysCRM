@@ -78,3 +78,36 @@ export interface SaveMessageConfigParams {
   template: string;
   useDefaultTemplate: boolean;
 }
+
+export interface MessageCenterItem {
+  id: string;
+  type: string; // 通知类型
+  receiver: string;
+  subject: string;
+  status: string;
+  operator: string;
+  operation: string;
+  organizationId: string;
+  resourceId: string;
+  resourceType: string; // 资源类型
+  resourceName: string; // 资源名称
+  content: string; // 通知内容
+  createUser: string;
+  updateUser: string;
+  createTime: number;
+  updateTime: number;
+  contentText: string;
+}
+
+export interface MessageCenterQueryParams extends TableQueryParams {
+  type: string;
+  status: string;
+  resourceType: string;
+  createTime: number | null;
+  endTime: number | null;
+}
+
+export type MessageCenterSubsetParams = Pick<
+  MessageCenterQueryParams,
+  'type' | 'status' | 'resourceType' | 'createTime' | 'endTime'
+>;

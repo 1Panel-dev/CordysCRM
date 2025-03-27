@@ -125,7 +125,8 @@
               :options="roleOptions"
             />
           </n-form-item>
-          <n-form-item
+          <!-- TODO  不上 -->
+          <!-- <n-form-item
             require-mark-placement="left"
             label-placement="left"
             path="userGroupIds"
@@ -136,7 +137,7 @@
               :placeholder="t('common.pleaseSelect')"
               :options="userGroupOptions"
             />
-          </n-form-item>
+          </n-form-item> -->
         </CrmExpandButton>
       </n-form>
     </div>
