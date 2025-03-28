@@ -210,43 +210,102 @@
     messageListRef.value?.loadMessageList();
   }
 
-  const messageCount = ref();
+  const messageCount = ref<Record<string, string>>({});
 
   const messageTypeList = computed(() => {
-    const enabledModuleKeys = appStore.moduleConfigList
-      .filter((module) => module.enable)
-      .map((module) => module.moduleKey.toUpperCase());
+    const enabledModuleKeys = new Set(
+      appStore.moduleConfigList.filter((module) => module.enable).map((module) => module.moduleKey.toUpperCase())
+    );
 
-    // TODO Count
-    const baseMessageTypes = [
-      { value: '', label: t('system.message.allMessage'), count: 99 },
-      { value: SystemResourceMessageTypeEnum.CUSTOMER, label: t('system.message.customerMessage'), count: 99 },
-      { value: SystemResourceMessageTypeEnum.CLUE, label: t('menu.clue'), count: 99 },
-      { value: SystemResourceMessageTypeEnum.BUSINESS, label: t('system.message.opportunityMessage'), count: 99 },
+    const isAnnouncementTab = activeTab.value === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE;
+
+    const allMessage = [
+      {
+        value: '',
+        label: t('system.message.allMessage'),
+        count: isAnnouncementTab
+          ? messageCount.value[SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE]
+          : messageCount.value?.total,
+      },
     ];
 
-    return baseMessageTypes.filter((type) => {
-      if (activeTab.value === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE) {
-        return !type.value;
-      }
-      return enabledModuleKeys.includes(type.value) || !type.value;
-    });
+    const baseMessageTypes = [
+      {
+        value: SystemResourceMessageTypeEnum.CUSTOMER,
+        label: t('system.message.customerMessage'),
+        count: messageCount.value[SystemResourceMessageTypeEnum.CUSTOMER],
+      },
+      {
+        value: SystemResourceMessageTypeEnum.CLUE,
+        label: t('menu.clue'),
+        count: messageCount.value[SystemResourceMessageTypeEnum.CLUE],
+      },
+      {
+        value: SystemResourceMessageTypeEnum.OPPORTUNITY,
+        label: t('system.message.opportunityMessage'),
+        count: messageCount.value[SystemResourceMessageTypeEnum.OPPORTUNITY],
+      },
+      {
+        value: SystemResourceMessageTypeEnum.SYSTEM,
+        label: t('menu.settings'),
+        count: messageCount.value[SystemResourceMessageTypeEnum.SYSTEM],
+      },
+    ];
+
+    if (isAnnouncementTab) {
+      return allMessage;
+    }
+    return [
+      ...allMessage,
+      ...baseMessageTypes.filter(
+        ({ value }) => enabledModuleKeys.has(value) || value === SystemResourceMessageTypeEnum.SYSTEM
+      ),
+    ];
   });
+
+  async function initMessageCount() {
+    try {
+      const result = await getNotificationCount({
+        type: activeTab.value,
+        status: '',
+        resourceType: activeMessageType.value,
+        createTime: null,
+        endTime: null,
+      });
+      if (result) {
+        result.forEach(({ key, count }) => {
+          messageCount.value[key] = count > 99 ? `99+` : `${count ?? 0}`;
+        });
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  function refresh(initCount = false) {
+    nextTick(() => {
+      if (initCount) {
+        initMessageCount();
+      }
+      messageListRef.value?.loadMessageList();
+    });
+  }
 
   function changeMessageType(value: string) {
     activeMessageType.value = value;
-    messageListRef.value?.loadMessageList();
+    refresh();
   }
 
   function handleChangeType() {
     activeMessageType.value = '';
-    messageListRef.value?.loadMessageList();
+    refresh(true);
   }
 
   function changeHandler(val: boolean | string) {
     range.value = undefined;
     if (val !== 'custom') {
-      messageListRef.value?.loadMessageList();
+      refresh();
     }
   }
 
@@ -255,9 +314,7 @@
     _formattedValue: string | [string, string] | null
   ) {
     range.value = value;
-    nextTick(() => {
-      messageListRef.value?.loadMessageList();
-    });
+    refresh();
   }
 
   async function setAllMessageStatus() {
@@ -269,25 +326,6 @@
       console.log(error);
     }
   }
-
-  async function initMessageCount() {
-    try {
-      messageCount.value = await getNotificationCount({
-        type: activeTab.value,
-        status: '',
-        resourceType: activeMessageType.value,
-        createTime: null,
-        endTime: null,
-      });
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  onMounted(() => {
-    initMessageCount();
-  });
 
   watch(
     () => showMessageDrawer.value,

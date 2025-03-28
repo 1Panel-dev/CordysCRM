@@ -1,5 +1,6 @@
 import {
   AddAnnouncementUrl,
+  BatchSaveMessageTaskUrl,
   DeleteAnnouncementUrl,
   GetAnnouncementDetailUrl,
   GetAnnouncementListUrl,
@@ -56,9 +57,9 @@ export function getNotificationList(data: MessageCenterQueryParams) {
   return CDR.post<CommonList<MessageCenterItem>>({ url: GetNotificationListUrl, data });
 }
 
-// 具体消息类型具体状态的数量 TODOts
+// 具体消息类型具体状态的数量
 export function getNotificationCount(data: MessageCenterQueryParams) {
-  return CDR.post<any>({ url: GetNotificationCountUrl, data });
+  return CDR.post<{ key: string; count: number }[]>({ url: GetNotificationCountUrl, data });
 }
 
 // 设置消息已读
@@ -75,7 +76,13 @@ export function setAllNotificationRead() {
 export function getMessageTask() {
   return CDR.get<MessageConfigItem[]>({ url: GetMessageTaskUrl });
 }
+
 // 保存消息设置
 export function saveMessageTask(data: SaveMessageConfigParams) {
-  return CDR.post<MessageConfigItem>({ url: SaveMessageTaskUrl, data });
+  return CDR.post({ url: SaveMessageTaskUrl, data });
+}
+
+// 批量编辑消息设置
+export function batchSaveMessageTask(data: Pick<SaveMessageConfigParams, 'emailEnable' | 'sysEnable'>) {
+  return CDR.post({ url: BatchSaveMessageTaskUrl, data });
 }

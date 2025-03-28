@@ -8,7 +8,7 @@
       @reach-bottom="handleReachBottom"
     >
       <template #item="{ item }">
-        <div class="crm-message-item p-[8px]" @click="setMessageRead(item)">
+        <div class="crm-message-item p-[8px]">
           <div class="crm-message-item-content flex h-full w-full justify-between gap-[24px] p-[16px]">
             <div>
               <div class="mb-[8px] flex w-full items-center gap-[8px]">

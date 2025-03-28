@@ -110,10 +110,9 @@
       },
       width: 200,
     },
-    // TODO |公告时间 排序字段待确认
     {
       title: t('system.message.timeOfPublication'),
-      key: 'time',
+      key: 'startTime',
       sortOrder: false,
       sorter: true,
       ellipsis: {
@@ -128,9 +127,10 @@
       ellipsis: {
         tooltip: true,
       },
+      isTag: true,
       width: 100,
-      render: (row: AnnouncementItemDetail) => {
-        return h(CrmNameTooltip, { text: row.receiver });
+      tagGroupProps: {
+        labelKey: 'name',
       },
     },
     {
@@ -214,9 +214,10 @@
     (row: AnnouncementItemDetail) => {
       return {
         ...row,
-        time: `${dayjs(row.startTime).format('YYYY-MM-DD HH:mm:ss')} ${t('common.to')} ${dayjs(row.endTime).format(
+        startTime: `${dayjs(row.startTime).format('YYYY-MM-DD HH:mm:ss')} ${t('common.to')} ${dayjs(row.endTime).format(
           'YYYY-MM-DD HH:mm:ss'
         )}`,
+        receiver: [...(row.deptIdName || []), ...(row.userIdName || [])],
       };
     }
   );

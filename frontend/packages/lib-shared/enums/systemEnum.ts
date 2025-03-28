@@ -18,7 +18,8 @@ export enum SystemMessageTypeEnum {
 export enum SystemResourceMessageTypeEnum {
   CUSTOMER = 'CUSTOMER',
   CLUE = 'CLUE',
-  BUSINESS = 'BUSINESS',
+  OPPORTUNITY = 'OPPORTUNITY',
+  SYSTEM = 'SYSTEM',
 }
 
 export enum SystemMessageStatusEnum {

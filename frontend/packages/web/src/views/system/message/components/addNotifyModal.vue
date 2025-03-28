@@ -52,9 +52,11 @@
             v-model:show="showPopModal"
             :title="form.subject"
             icon-type="warning"
+            :show-arrow="false"
             :positive-text="null"
             :negative-text="null"
-            placement="bottom-end"
+            placement="right"
+            :show-close="true"
           >
             <n-button type="primary" text @click="() => (showPopModal = true)">
               {{ t('system.message.preview') }}
@@ -90,14 +92,10 @@
           path="userIds"
           :label="t('system.message.receiver')"
         >
-          <CrmUserSelect
-            v-model:value="form.userIds"
-            value-field="id"
-            label-field="name"
-            mode="remote"
-            :multiple="true"
-            filterable
-            :fetch-api="getUserOptions"
+          <CrmUserTagSelector
+            v-model:selected-list="form.ownerIds"
+            :api-type-key="MemberApiTypeEnum.SYSTEM_ROLE"
+            :member-types="memberTypes"
           />
         </n-form-item>
       </n-form>
@@ -109,14 +107,15 @@
   import { FormInst, FormRules, NButton, NDatePicker, NForm, NFormItem, NInput, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import type { AnnouncementSaveParams } from '@lib/shared/models/system/message';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
-  import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
+  import type { Option } from '@/components/business/crm-select-user-drawer/type';
+  import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { addAnnouncement, getAnnouncementDetail, updateAnnouncement } from '@/api/modules/system/message';
-  import { getUserOptions } from '@/api/modules/system/org';
   import { useI18n } from '@/hooks/useI18n';
   import useAppStore from '@/store/modules/app';
 
@@ -139,13 +138,24 @@
     required: true,
   });
 
+  const memberTypes: Option[] = [
+    {
+      label: t('menu.settings.org'),
+      value: MemberSelectTypeEnum.ORG,
+    },
+    {
+      label: t('role.member'),
+      value: MemberSelectTypeEnum.MEMBER,
+    },
+  ];
+
   const rules: FormRules = {
     subject: [{ required: true, message: t('common.notNull', { value: `${t('system.message.announcementTitle')}` }) }],
     content: [
       { required: true, message: t('common.notNull', { value: `${t('system.message.announcementContent')}` }) },
     ],
     range: [{ required: true, message: t('common.pleaseSelect') }],
-    userIds: [{ required: true, message: t('common.pleaseSelect') }],
+    ownerIds: [{ required: true, message: t('common.pleaseSelect') }],
   };
 
   const initForm: AnnouncementSaveParams = {
@@ -157,10 +167,10 @@
     url: '',
     organizationId: '',
     deptIds: [],
-    roleIds: [],
     userIds: [],
     range: undefined,
-    renameUrl: '', // TODO 加字段
+    renameUrl: '',
+    ownerIds: [],
   };
 
   const form = ref<AnnouncementSaveParams>(cloneDeep(initForm));
@@ -179,11 +189,17 @@
       if (!errors) {
         try {
           loading.value = true;
+          const { ownerIds, range } = form.value;
+          const deptIds = ownerIds.filter((item) => item.scope === MemberSelectTypeEnum.ORG).map((item) => item.id);
+          const userIds = ownerIds.filter((item) => item.scope !== MemberSelectTypeEnum.ORG).map((item) => item.id);
+          const [startTime, endTime] = range || [0, 0];
           const params = {
             ...form.value,
+            deptIds,
+            userIds,
+            startTime,
+            endTime,
             organizationId: appStore.orgId,
-            startTime: form.value.range ? form.value.range[0] : 0,
-            endTime: form.value.range ? form.value.range[1] : 0,
           };
           if (form.value.id) {
             await updateAnnouncement(params);
@@ -207,19 +223,8 @@
     if (props.id) {
       try {
         const result = await getAnnouncementDetail(props.id);
-        const {
-          subject,
-          startTime,
-          endTime,
-          url,
-          renameUrl,
-          userIdName,
-          roleIdName,
-          deptIdName,
-          organizationId,
-          id,
-          contentText,
-        } = result;
+        const { subject, startTime, endTime, url, renameUrl, userIdName, deptIdName, organizationId, id, contentText } =
+          result;
 
         form.value = {
           id,
@@ -230,10 +235,10 @@
           renameUrl,
           organizationId,
           userIds: userIdName?.map((e) => e.id),
-          roleIds: roleIdName?.map((e) => e.id),
           deptIds: deptIdName?.map((e) => e.id),
           content: contentText,
           range: [startTime, endTime],
+          ownerIds: [...(deptIdName || []), ...(userIdName || [])],
         };
       } catch (error) {
         // eslint-disable-next-line no-console

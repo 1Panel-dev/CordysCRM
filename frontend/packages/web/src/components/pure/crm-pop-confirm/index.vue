@@ -5,6 +5,7 @@
     :show-icon="false"
     flip
     arrow-point-to-center
+    :show-arrow="props.showArrow"
     :negative-text="props.negativeText"
     :positive-text="props.positiveText"
     :placement="props.placement"
@@ -18,13 +19,22 @@
       <div class="crm-pop-confirm-content-wrapper">
         <slot name="title">
           <div class="crm-pop-confirm-title">
+            <div class="one-line-text flex items-center">
+              <CrmIcon
+                v-if="showIcon"
+                :class="`crm-pop-confirm-icon-${props.iconType} mr-[8px]`"
+                type="iconicon_info_circle_filled"
+                :size="20"
+              />
+              <div class="one-line-text">{{ props.title }}</div>
+            </div>
             <CrmIcon
-              v-if="showIcon"
-              :class="`crm-pop-confirm-icon-${props.iconType} mr-[8px]`"
-              type="iconicon_info_circle_filled"
-              :size="20"
+              v-if="props.showClose"
+              class="cursor-pointer text-[var(--text-n2)]"
+              type="iconicon_close"
+              :size="16"
+              @click="() => (show = false)"
             />
-            <div class="one-line-text">{{ props.title }}</div>
           </div>
         </slot>
         <slot name="content">
@@ -72,6 +82,8 @@
     positiveText?: string | null; // 确定按钮文本
     negativeText?: string | null; // 取消按钮文本
     showIcon?: boolean; // 显示icon
+    showArrow?: boolean;
+    showClose?: boolean; // 是否显示关闭
     placement?:
       | 'top-start'
       | 'top'
@@ -92,6 +104,7 @@
     positiveText: 'common.remove',
     negativeText: 'common.cancel',
     showIcon: true,
+    showArrow: true,
   });
 
   const emit = defineEmits<{
@@ -164,7 +177,7 @@
       .crm-pop-confirm-title {
         font-size: 14px;
         color: var(--text-n1);
-        @apply flex items-center font-semibold;
+        @apply flex items-center justify-between font-semibold;
       }
       .crm-pop-confirm-content {
         padding: 8px 16px 16px 28px;

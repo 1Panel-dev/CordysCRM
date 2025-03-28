@@ -1,4 +1,5 @@
 import type { TableQueryParams } from '../common';
+import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
 export interface AnnouncementSaveParams {
   id?: string;
@@ -9,10 +10,10 @@ export interface AnnouncementSaveParams {
   url: string; // 链接
   organizationId: string;
   deptIds: string[];
-  roleIds: string[];
   userIds: string[];
   renameUrl: string;
   range: [number, number] | undefined;
+  ownerIds: SelectedUsersItem[];
 }
 
 export interface AnnouncementTableQueryParams extends TableQueryParams {
@@ -38,45 +39,29 @@ export interface AnnouncementItemDetail {
   createUserName: string;
   updateUserName: string;
   renameUrl: string;
-  deptIdName: { id: string; name: string }[]; // 部门
-  roleIdName: { id: string; name: string }[]; // 角色
-  userIdName: { id: string; name: string }[]; // 用户
-}
-
-export interface RobotConfigMap {
-  receiveType: string; // 接收类型
-  enable: boolean; // 是否启用
-  useDefaultTemplate: boolean;
-  template: string;
-  defaultTemplate: string;
-  subject: string;
-  previewTemplate: string; // 预览模板
+  deptIdName: SelectedUsersItem[]; // 部门
+  userIdName: SelectedUsersItem[]; // 用户
 }
 
 export interface MessageTaskDetailDTOItem {
   event: string;
   eventName: string;
-  receivers: { id: string; name: string }[];
-  projectRobotConfigMap: Record<string, RobotConfigMap>;
+  sysEnable: boolean;
+  emailEnable: boolean;
 }
 
-export interface MessageConfigItem {
-  type: string; // 消息配置功能
-  name: string; // 消息配置功能名称
-  enable: boolean;
+export interface MessageConfigItem extends MessageTaskDetailDTOItem {
+  id: string;
+  module: string; // 消息配置功能
+  moduleName: string; // 消息配置功能名称
   messageTaskDetailDTOList: MessageTaskDetailDTOItem[];
 }
 
-// TODO 接口参数要调整
 export interface SaveMessageConfigParams {
   module: string;
   event: string;
-  receiverIds: string[];
-  testId: string;
-  receiveType: string;
-  enable: boolean;
-  template: string;
-  useDefaultTemplate: boolean;
+  emailEnable: boolean;
+  sysEnable: boolean;
 }
 
 export interface MessageCenterItem {

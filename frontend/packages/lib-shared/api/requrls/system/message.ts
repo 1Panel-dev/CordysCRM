@@ -14,3 +14,4 @@ export const SetAllNotificationReadUrl = '/notification/read/all'; // 所有信�
 // 消息设置
 export const GetMessageTaskUrl = '/message/task/get'; // 获取消息设置
 export const SaveMessageTaskUrl = '/message/task/save'; // 保存消息设置
+export const BatchSaveMessageTaskUrl = '/message/task/batch/save'; // 消息设置批量编辑
