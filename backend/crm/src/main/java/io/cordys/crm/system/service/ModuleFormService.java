@@ -205,13 +205,13 @@ public class ModuleFormService {
 		Map<String, String> idTypeMap = new HashMap<>(8);
 		formConfig.getFields().forEach(field -> {
 			if (StringUtils.equalsAny(field.getType(), FieldType.RADIO.name()) && field instanceof RadioField radioField) {
-				optionMap.put(field.getId(), optionPropToDto(radioField.getOptions()));
+				optionMap.put(field.getBusinessKey() != null ? field.getBusinessKey() : field.getId(), optionPropToDto(radioField.getOptions()));
 			}
 			if (StringUtils.equalsAny(field.getType(), FieldType.CHECKBOX.name()) && field instanceof CheckBoxField checkBoxField) {
-				optionMap.put(field.getId(), optionPropToDto(checkBoxField.getOptions()));
+				optionMap.put(field.getBusinessKey() != null ? field.getBusinessKey() : field.getId(), optionPropToDto(checkBoxField.getOptions()));
 			}
 			if (StringUtils.equalsAny(field.getType(), FieldType.SELECT.name()) && field instanceof SelectField selectField) {
-				optionMap.put(field.getId(), optionPropToDto(selectField.getOptions()));
+				optionMap.put(field.getBusinessKey() != null ? field.getBusinessKey() : field.getId(), optionPropToDto(selectField.getOptions()));
 			}
 			if (StringUtils.equals(field.getType(), FieldType.DATA_SOURCE.name()) && field instanceof DatasourceField sourceField) {
 				idTypeMap.put(field.getId(), sourceField.getDataSourceType());

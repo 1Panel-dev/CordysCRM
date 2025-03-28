@@ -39,7 +39,7 @@ public class ShiroFilter {
         filterChainDefinitionMap.put("/assets/**", "anon");
         filterChainDefinitionMap.put("/fonts/**", "anon");
         filterChainDefinitionMap.put("/display/info", "anon");
-        filterChainDefinitionMap.put("/pic/**", "anon");
+        filterChainDefinitionMap.put("/pic/preview", "anon");
 
         // 暂定 favicon.ico 和 logo.png 为匿名访问
         filterChainDefinitionMap.put("/favicon.ico", "anon");
