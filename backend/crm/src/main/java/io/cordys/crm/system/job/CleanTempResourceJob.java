@@ -1,6 +1,7 @@
 package io.cordys.crm.system.job;
 
 import com.fit2cloud.quartz.anno.QuartzScheduled;
+import io.cordys.common.util.LogUtils;
 import io.cordys.crm.system.service.FileCommonService;
 import io.cordys.file.engine.DefaultRepositoryDir;
 import io.cordys.file.engine.FileRequest;
@@ -19,7 +20,9 @@ public class CleanTempResourceJob {
 	 */
 	@QuartzScheduled(cron = "0 0 2 * * ?")
 	public void clean() {
+		LogUtils.info("Start cleaning temp dir resource");
 		FileRequest request = new FileRequest(DefaultRepositoryDir.getTmpDir(), StorageType.LOCAL.name(), null);
 		fileCommonService.cleanTempResource(request);
+		LogUtils.info("Temp dir resource cleanup completed");
 	}
 }

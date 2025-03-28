@@ -2,6 +2,7 @@ package io.cordys.crm.system.job;
 
 import com.fit2cloud.quartz.anno.QuartzScheduled;
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.util.LogUtils;
 import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.clue.domain.CluePoolRecycleRule;
@@ -39,6 +40,7 @@ public class CluePoolRecycleJob {
 	 */
 	@QuartzScheduled(cron = "0 0 1 * * ?")
 	public void recycle() {
+		LogUtils.info("Start recycle clue resource");
 		LambdaQueryWrapper<CluePool> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(CluePool::getEnable, true).eq(CluePool::getAuto, true);
 		List<CluePool> pools = cluePoolMapper.selectListByLambda(queryWrapper);
@@ -76,5 +78,6 @@ public class CluePoolRecycleJob {
 				}
 			}
 		}));
+		LogUtils.info("Finish recycle clue resource");
 	}
 }

@@ -2,6 +2,7 @@ package io.cordys.crm.system.job;
 
 import com.fit2cloud.quartz.anno.QuartzScheduled;
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.util.LogUtils;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
@@ -39,6 +40,7 @@ public class CustomerPoolRecycleJob {
 	 */
 	@QuartzScheduled(cron = "0 0 1 * * ?")
 	public void recycle() {
+		LogUtils.info("Start recycle customer resource");
 		LambdaQueryWrapper<CustomerPool> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(CustomerPool::getEnable, true).eq(CustomerPool::getAuto, true);
 		List<CustomerPool> pools = customerPoolMapper.selectListByLambda(queryWrapper);
@@ -76,5 +78,6 @@ public class CustomerPoolRecycleJob {
 				}
 			}
 		}));
+		LogUtils.info("Finish recycle customer resource");
 	}
 }
