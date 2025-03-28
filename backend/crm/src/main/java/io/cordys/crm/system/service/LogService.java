@@ -59,6 +59,13 @@ public class LogService implements OperationLogHandler {
             }
         }
 
+        if (ObjectUtils.isNotEmpty(log.getOriginalValue())) {
+            blob.setOriginalValue(JSON.toJSONBytes(log.getOriginalValue()));
+        }
+        if (ObjectUtils.isNotEmpty(log.getModifiedValue())) {
+            blob.setModifiedValue(JSON.toJSONBytes(log.getModifiedValue()));
+        }
+
         return blob;
     }
 

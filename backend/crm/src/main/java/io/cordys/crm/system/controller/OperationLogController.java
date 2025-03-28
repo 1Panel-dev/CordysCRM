@@ -39,6 +39,6 @@ public class OperationLogController {
     @Operation(summary = "系统管理-操作日志-详情")
     @RequiresPermissions(PermissionConstants.OPERATION_LOG_READ)
     public List<JsonDifferenceDTO> logDetail(@PathVariable String id) {
-        return sysOperationLogService.getLogDetail(id);
+        return sysOperationLogService.getLogDetail(id, OrganizationContext.getOrganizationId());
     }
 }

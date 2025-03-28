@@ -20,8 +20,22 @@ public class JsonDifferenceDTO implements Serializable {
     @Schema(description = "新值")
     private String newValue;
 
+
+    @Schema(description = "字段名称")
+    private String columnName;
+
+    @Schema(description = "原值结果")
+    private Object oldValueName;
+
+    @Schema(description = "新值结果")
+    private Object newValueName;
+
     @Schema(description = "类型", examples = {"add/新增", "removed/删除", "modified/修改"})
     private String type;
 
 
+    public void replace(String oldValue, String newValue) {
+        this.oldValue = oldValue.replaceAll("^\"+|\"+$", "");
+        this.newValue = newValue.replaceAll("^\"+|\"+$", "");
+    }
 }

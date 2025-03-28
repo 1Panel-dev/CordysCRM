@@ -20,8 +20,8 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.customer.dto.response.CustomerGetResponse;
-import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.service.CustomerFieldService;
 import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
@@ -69,6 +69,8 @@ public class OpportunityService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
+    @Resource
+    private CustomerFieldService customerFieldService;
 
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
@@ -163,6 +165,7 @@ public class OpportunityService {
      * @param orgId
      * @return
      */
+    @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.ADD, resourceName = "{#request.name}")
     public Opportunity add(OpportunityAddRequest request, String operatorId, String orgId) {
         checkOpportunity(request, orgId, null);
         Opportunity opportunity = new Opportunity();
@@ -186,11 +189,7 @@ public class OpportunityService {
 
         //自定义字段
         opportunityFieldService.saveModuleField(id, orgId, operatorId, request.getModuleFields());
-        //日志
-        LogDTO logDTO = new LogDTO(orgId, id, operatorId, LogType.ADD, LogModule.OPPORTUNITY, request.getName());
-        logDTO.setOriginalValue(null);
-        logDTO.setModifiedValue(opportunity);
-        logService.add(logDTO);
+        baseService.handleAddLog(opportunity, request.getModuleFields());
 
         return opportunity;
     }
@@ -224,18 +223,20 @@ public class OpportunityService {
      * @param userId
      * @param orgId
      */
+    @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Opportunity update(OpportunityUpdateRequest request, String userId, String orgId) {
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(opportunity).ifPresentOrElse(item -> {
             checkOpportunity(request, orgId, request.getId());
-            LogDTO logDTO = new LogDTO(orgId, item.getId(), userId, LogType.UPDATE, LogModule.OPPORTUNITY, Translator.get("update_opportunity"));
-            logDTO.setOriginalValue(opportunity);
-            //更新跟进计划
+            //更新商机
             updateOpportunity(item, request, userId);
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
-            logDTO.setModifiedValue(item);
-            logService.add(logDTO);
+
+            // 获取模块字段
+            List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
+            Opportunity newOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
+            baseService.handleUpdateLog(opportunity, newOpportunity, originCustomerFields, request.getModuleFields());
         }, () -> {
             throw new GenericException("opportunity_not_found");
         });
@@ -293,8 +294,23 @@ public class OpportunityService {
      *
      * @param request
      */
-    public void transfer(OpportunityTransferRequest request) {
+    public void transfer(OpportunityTransferRequest request, String userId, String orgId) {
         extOpportunityMapper.batchTransfer(request);
+        List<Opportunity> opportunityList = opportunityMapper.selectByIds(request.getIds());
+        // 记录日志
+        List<LogDTO> logs = new ArrayList<>();
+        opportunityList.forEach(customer -> {
+            Customer originCustomer = new Customer();
+            originCustomer.setOwner(customer.getOwner());
+            Customer modifieCustomer = new Customer();
+            modifieCustomer.setOwner(request.getOwner());
+            LogDTO logDTO = new LogDTO(orgId, customer.getId(), userId, LogType.UPDATE, LogModule.CUSTOMER, customer.getName());
+            logDTO.setOriginalValue(originCustomer);
+            logDTO.setModifiedValue(modifieCustomer);
+            logs.add(logDTO);
+        });
+
+        logService.batchAdd(logs);
     }
 
     /**

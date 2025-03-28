@@ -22,4 +22,22 @@
           #{id}
         </foreach>
     </select>
+
+
+    <select id="getModuleField" resultType="io.cordys.crm.system.domain.ModuleField">
+        SELECT
+        field.id,
+        field.form_id,
+        field.internal_key,
+        field.`name`,
+        field.type
+        FROM
+        sys_module_field field
+        INNER JOIN sys_module_form form on field.form_id = form.id
+        where form.organization_id = #{orgId}
+        and form.form_key in
+        <foreach collection="formKeys" item="formKey" open="(" separator="," close=")">
+            #{formKey}
+        </foreach>
+    </select>
 </mapper>

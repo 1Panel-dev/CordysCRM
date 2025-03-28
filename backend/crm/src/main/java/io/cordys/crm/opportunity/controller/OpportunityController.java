@@ -1,12 +1,8 @@
 package io.cordys.crm.opportunity.controller;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptDataPermissionDTO;
-import io.cordys.common.pager.PageUtils;
-import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
@@ -86,7 +82,7 @@ public class OpportunityController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "批量转移商机")
     public void batchTransfer(@RequestBody OpportunityTransferRequest request) {
-        opportunityService.transfer(request);
+        opportunityService.transfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

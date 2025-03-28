@@ -7,9 +7,6 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.JSON;
-import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.dto.request.CustomerAddRequest;
-import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
@@ -228,9 +225,9 @@ public class BaseService {
     }
 
     public <T> void handleUpdateLog(T originResource,
-                                     T modifiedResource,
-                                     List<BaseModuleFieldValue> originResourceFields,
-                                     List<BaseModuleFieldValue> modifiedResourceFields) {
+                                    T modifiedResource,
+                                    List<BaseModuleFieldValue> originResourceFields,
+                                    List<BaseModuleFieldValue> modifiedResourceFields) {
 
         Map originResourceLog = JSON.parseMap(JSON.toJSONString(originResource));
         if (modifiedResourceFields != null && originResourceFields != null) {
@@ -240,8 +237,10 @@ public class BaseService {
 
         Map modifiedResourceLog = JSON.parseMap(JSON.toJSONString(modifiedResource));
         if (modifiedResourceFields != null) {
-            modifiedResourceFields.forEach(field ->
-                    modifiedResourceLog.put(field.getFieldId(), field.getFieldValue()));
+            modifiedResourceFields.stream()
+                    .filter(BaseModuleFieldValue::valid)
+                    .forEach(field ->
+                            modifiedResourceLog.put(field.getFieldId(), field.getFieldValue()));
         }
 
         try {
