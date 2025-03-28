@@ -2,6 +2,11 @@ package io.cordys.crm.customer.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
@@ -73,6 +78,8 @@ public class CustomerContactService {
     private ModuleFormService moduleFormService;
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;
+    @Resource
+    private CustomerFieldService customerFieldService;
 
     public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -186,6 +193,7 @@ public class CustomerContactService {
         return customerContactGetResponse;
     }
 
+    @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.ADD, resourceName = "{#request.name}")
     public CustomerContact add(CustomerContactAddRequest request, String userId, String orgId) {
         CustomerContact customerContact = BeanUtils.copyBean(new CustomerContact(), request);
         customerContact.setCreateTime(System.currentTimeMillis());
@@ -201,20 +209,31 @@ public class CustomerContactService {
 
         //保存自定义字段
         customerContactFieldService.saveModuleField(customerContact.getId(), orgId, userId, request.getModuleFields());
+
+        baseService.handleAddLog(customerContact, request.getModuleFields());
         return customerContact;
     }
 
+    @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.UPDATE, resourceId = "{#request.id}")
     public CustomerContact update(CustomerContactUpdateRequest request, String userId, String orgId) {
         CustomerContact customerContact = BeanUtils.copyBean(new CustomerContact(), request);
         customerContact.setUpdateTime(System.currentTimeMillis());
         customerContact.setUpdateUser(userId);
         // 校验名称重复
         checkUpdateExist(customerContact);
+
+        CustomerContact originCustomerContact = customerContactMapper.selectByPrimaryKey(customerContact.getId());
+        // 获取模块字段
+        List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
+
         customerContactMapper.update(customerContact);
 
         // 更新模块字段
         updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
-        return customerContactMapper.selectByPrimaryKey(customerContact.getId());
+
+        customerContact = customerContactMapper.selectByPrimaryKey(customerContact.getId());
+        baseService.handleUpdateLog(originCustomerContact, customerContact, originCustomerFields, request.getModuleFields());
+        return customerContact;
     }
 
     private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
@@ -240,25 +259,50 @@ public class CustomerContactService {
         }
     }
 
+    @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
+        CustomerContact originCustomerContact = customerContactMapper.selectByPrimaryKey(id);
+
         customerContactMapper.deleteByPrimaryKey(id);
         customerContactFieldService.deleteByResourceId(id);
+
+        // 设置操作对象
+        OperationLogContext.setResourceName(originCustomerContact.getName());
     }
 
+    @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.UPDATE, resourceId = "{#id}")
     public void enable(String id) {
-        CustomerContact customerContact = new CustomerContact();
-        customerContact.setEnable(true);
-        customerContact.setId(id);
-        customerContact.setDisableReason(StringUtils.EMPTY);
-        customerContactMapper.updateById(customerContact);
+        changeEnable(id, true, null);
     }
 
-    public void disable(String id, CustomerContactDisableRequest request) {
+    private void changeEnable(String id, boolean enable, String reason) {
+        CustomerContact originCustomerContact = customerContactMapper.selectByPrimaryKey(id);
+
         CustomerContact customerContact = new CustomerContact();
-        customerContact.setEnable(false);
+        customerContact.setEnable(enable);
         customerContact.setId(id);
-        customerContact.setDisableReason(request.getReason());
+        customerContact.setDisableReason(reason);
         customerContactMapper.updateById(customerContact);
+
+        if (!originCustomerContact.getEnable().equals(customerContact.getEnable())) {
+            CustomerContact originResourceLog = new CustomerContact();
+            originResourceLog.setEnable(originResourceLog.getEnable());
+            CustomerContact modifiedResourceLog = new CustomerContact();
+            modifiedResourceLog.setEnable(customerContact.getEnable());
+            OperationLogContext.setContext(
+                    LogContextInfo.builder()
+                            .resourceId(id)
+                            .resourceName(originCustomerContact.getName())
+                            .originalValue(originResourceLog)
+                            .modifiedValue(modifiedResourceLog)
+                            .build()
+            );
+        }
+    }
+
+    @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.UPDATE, resourceId = "{#id}")
+    public void disable(String id, CustomerContactDisableRequest request) {
+        changeEnable(id, false, request.getReason());
     }
 
     public CustomerContactListAllResponse listByCustomerId(String customerId, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {

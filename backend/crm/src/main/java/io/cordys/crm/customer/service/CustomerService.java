@@ -6,7 +6,6 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
-import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
@@ -22,7 +21,6 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
@@ -335,7 +333,8 @@ public class CustomerService {
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
         List<String> owners = originCustomers.stream().map(Customer::getOwner)
                 .distinct()
-                .toList();;
+                .toList();
+        ;
 
         dataScopeService.checkDataPermission(userId, orgId, owners);
         // 添加责任人历史
@@ -343,17 +342,17 @@ public class CustomerService {
         extCustomerMapper.batchTransfer(request);
 
         // 记录日志
-        List<LogDTO> logs = new ArrayList<>();
-        originCustomers.forEach(customer -> {
-            Customer originCustomer = new Customer();
-            originCustomer.setOwner(customer.getOwner());
-            Customer modifieCustomer = new Customer();
-            modifieCustomer.setOwner(request.getOwner());
-            LogDTO logDTO = new LogDTO(orgId, customer.getId(), userId, LogType.UPDATE, LogModule.CUSTOMER, customer.getName());
-            logDTO.setOriginalValue(originCustomer);
-            logDTO.setModifiedValue(modifieCustomer);
-            logs.add(logDTO);
-        });
+        List<LogDTO> logs = originCustomers.stream()
+                .map(customer -> {
+                    Customer originCustomer = new Customer();
+                    originCustomer.setOwner(customer.getOwner());
+                    Customer modifieCustomer = new Customer();
+                    modifieCustomer.setOwner(request.getOwner());
+                    LogDTO logDTO = new LogDTO(orgId, customer.getId(), userId, LogType.UPDATE, LogModule.CUSTOMER, customer.getName());
+                    logDTO.setOriginalValue(originCustomer);
+                    logDTO.setModifiedValue(modifieCustomer);
+                    return logDTO;
+                }).toList();
 
         logService.batchAdd(logs);
     }
