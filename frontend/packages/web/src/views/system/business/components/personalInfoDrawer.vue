@@ -57,7 +57,22 @@
         </n-button>
       </div>
     </CrmCard>
-    <CrmCard v-if="activeTab === PersonalEnum.MY_PLAN" hide-footer :special-height="64"> </CrmCard>
+    <CrmCard v-if="activeTab === PersonalEnum.MY_PLAN" hide-footer :special-height="64">
+      <!-- TODO 新建跟进记录 -->
+      <n-button type="primary">
+        {{ t('common.followPlan') }}
+      </n-button>
+      <FollowDetail
+        :refresh-key="refreshKey"
+        class="mt-[16px] p-0"
+        active-type="followPlan"
+        wrapper-class="h-[calc(100vh-239px)]"
+        virtual-scroll-height="calc(100vh - 332px)"
+        follow-api-key="myPlan"
+        source-id="NULL"
+        show-action
+      />
+    </CrmCard>
   </CrmDrawer>
   <EditPersonalInfoModal v-model:show="showEditPersonalModal" :integration="currentInfo" @init-sync="searchData()" />
   <EditPasswordModal v-model:show="showEditPasswordModal" :integration="currentPassword" @init-sync="searchData()" />
@@ -65,7 +80,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NButton, NP, NSpin, NTag, TabPaneProps } from 'naive-ui';
+  import { NButton, NP, NTag, TabPaneProps } from 'naive-ui';
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { PersonalInfoRequest, PersonalPassword } from '@lib/shared/models/system/business';
@@ -75,6 +90,7 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
+  import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import EditPasswordModal from '@/views/system/business/components/editPasswordModal.vue';
   import EditPersonalInfoModal from '@/views/system/business/components/editPersonalInfoModal.vue';
 
@@ -84,17 +100,13 @@
 
   const { t } = useI18n();
 
-  const props = withDefaults(
-    defineProps<{
-      activeTabValue?: PersonalEnum;
-    }>(),
-    {
-      activeTabValue: PersonalEnum.INFO,
-    }
-  );
-
   const visible = defineModel<boolean>('visible', {
     required: true,
+  });
+
+  const activeTab = defineModel<PersonalEnum>('activeTabValue', {
+    required: false,
+    default: PersonalEnum.INFO,
   });
 
   const personalInfo = ref<OrgUserInfo>({
@@ -118,16 +130,6 @@
   const showEditPersonalModal = ref<boolean>(false); // 已配置
   const showEditPasswordModal = ref<boolean>(false); // 已配置
   const showRoleTag = ref<boolean>(false);
-
-  const activeTab = ref(PersonalEnum.INFO);
-  watch(
-    () => props.activeTabValue,
-    () => {
-      if (props.activeTabValue) {
-        activeTab.value = props.activeTabValue;
-      }
-    }
-  );
 
   const tabList = computed<TabPaneProps[]>(() => {
     return [
@@ -163,6 +165,8 @@
   onMounted(() => {
     searchData();
   });
+
+  const refreshKey = ref(0);
 </script>
 
 <style scoped lang="less"></style>

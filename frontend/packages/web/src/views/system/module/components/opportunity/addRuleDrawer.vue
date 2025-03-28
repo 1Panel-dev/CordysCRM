@@ -79,56 +79,13 @@
         keep-one-line
         :config-list="filterConfigList"
       />
-      <n-form-item
-        require-mark-placement="left"
-        label-placement="left"
-        class="mt-[16px]"
-        path="expireNotice"
-        :label="t('opportunity.expirationReminder')"
-      >
-        <n-radio-group v-model:value="form.expireNotice" name="radiogroup">
-          <n-space>
-            <n-radio key="yes" :value="true">
-              {{ t('common.yes') }}
-            </n-radio>
-            <n-radio key="no" :value="false">
-              {{ t('common.no') }}
-            </n-radio>
-          </n-space>
-        </n-radio-group>
-      </n-form-item>
-      <n-form-item
-        v-if="form.expireNotice"
-        require-mark-placement="left"
-        label-placement="left"
-        path="noticeDays"
-        :label="t('module.reminderAdvance')"
-      >
-        <n-input-number
-          v-model:value="form.noticeDays"
-          class="crm-reminder-advance-input"
-          :placeholder="t('common.pleaseInput')"
-        />
-        <div class="flex flex-nowrap"> {{ t('module.reminderDays') }}</div>
-      </n-form-item>
     </n-form>
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import {
-    FormInst,
-    FormRules,
-    NForm,
-    NFormItem,
-    NInput,
-    NInputNumber,
-    NRadio,
-    NRadioGroup,
-    NSpace,
-    useMessage,
-  } from 'naive-ui';
+  import { FormInst, FormRules, NForm, NFormItem, NInput, NRadio, NRadioGroup, NSpace, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
@@ -182,7 +139,6 @@
     name: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }), trigger: ['blur'] }],
     ownerIds: [{ required: true, message: t('common.pleaseSelect') }],
     scopeIds: [{ required: true, message: t('common.pleaseSelect') }],
-    noticeDays: [{ required: true, message: t('common.pleaseInput') }],
   };
 
   const filterConfigList = computed<FilterFormItem[]>(() => {
@@ -206,8 +162,6 @@
     name: '',
     auto: false,
     enable: true,
-    expireNotice: false,
-    noticeDays: 0,
     conditions: [],
     operator: 'AND',
     ownerIds: [],

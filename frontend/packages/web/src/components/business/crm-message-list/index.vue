@@ -87,11 +87,12 @@
     keyField: string;
     virtualScrollHeight: string;
     emptyText?: string;
-    loadParams: MessageCenterSubsetParams;
+    loadParams?: MessageCenterSubsetParams;
+    messageList?: MessageCenterItem[];
   }>();
 
   const innerKeyword = defineModel<string>('keyword', {
-    required: true,
+    required: false,
     default: null,
   });
 
@@ -116,6 +117,7 @@
 
   async function loadMessageList() {
     try {
+      if (!props.loadParams) return;
       loading.value = true;
       const res = await getNotificationList({
         current: pageNation.value.current || 1,
@@ -144,8 +146,18 @@
   }
 
   onBeforeMount(() => {
+    if (props.messageList) return;
     loadMessageList();
   });
+
+  watch(
+    () => props.messageList,
+    (val) => {
+      if (val) {
+        list.value = val;
+      }
+    }
+  );
 
   defineExpose({
     loadMessageList,

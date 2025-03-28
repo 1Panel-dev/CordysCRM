@@ -57,8 +57,6 @@ export default {
   'module.businessManage.businessCloseRule': 'Business close rules',
   'module.businessManage.addRules': 'Add Rules',
   'module.businessManage.mainNavConfig': 'Main navigation configuration',
-  'module.reminderAdvance': 'Advance',
-  'module.reminderDays': 'Days to remind the owner',
   'module.capacitySet.departmentOrMember': 'Department or member',
   'module.capacitySet.repeatMsg': 'Already added in another rule',
   'module.capacitySet.Maximum': 'Capacity Limit',

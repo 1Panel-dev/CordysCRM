@@ -1,7 +1,125 @@
 <template>
-  <div> workbench </div>
+  <!-- 先不上 -->
+  <!-- <CrmCard hide-footer auto-height class="mb-[16px]">
+    <div class="flex gap-[16px]">
+      <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="segment" class="w-fit" />
+      <n-date-picker v-if="activeTab === 'custom'" v-model:value="rangeTime" type="datetimerange" class="w-[360px]" />
+    </div>
+  </CrmCard> -->
+  <div class="flex h-full w-full">
+    <div class="h-full flex-1">
+      <QuickAccess />
+      <CrmCard hide-footer :special-height="177">
+        <div class="title">
+          <div class="title-name">{{ t('system.personal.plan') }}</div>
+          <div class="title-right" @click="showPersonalInfo = true">{{ t('common.ViewMore') }}</div>
+        </div>
+        <FollowDetail
+          :refresh-key="refreshKey"
+          class="mt-[16px] p-0"
+          active-type="followPlan"
+          wrapper-class="h-calc(100%-28px)"
+          virtual-scroll-height="calc(100vh - 482px)"
+          follow-api-key="myPlan"
+          source-id="NULL"
+          show-action
+        />
+      </CrmCard>
+    </div>
+    <CrmCard hide-footer class="ml-[16px] w-[400px]">
+      <div class="title !mb-[8px]">
+        <div class="title-name">{{ t('system.message.notify') }}</div>
+        <div class="title-right" @click="showMessageDrawer = true">{{ t('common.ViewMore') }}</div>
+      </div>
+      <CrmMessageList
+        ref="messageListRef"
+        :message-list="messageList"
+        virtual-scroll-height="calc(100vh - 156px)"
+        key-field="id"
+      />
+    </CrmCard>
+    <PersonalInfoDrawer v-model:visible="showPersonalInfo" v-model:active-tab-value="personalTab" />
+    <MessageDrawer v-model:show="showMessageDrawer" />
+  </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+  // import { NDatePicker } from 'naive-ui';
+  import { PersonalEnum } from '@lib/shared/enums/systemEnum';
 
-<style lang="less" scoped></style>
+  import CrmCard from '@/components/pure/crm-card/index.vue';
+  // import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
+  import CrmMessageList from '@/components/business/crm-message-list/index.vue';
+  import QuickAccess from './components/quickAccess.vue';
+  import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
+  import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
+
+  import { useI18n } from '@/hooks/useI18n';
+  import useUserStore from '@/store/modules/user';
+
+  const { t } = useI18n();
+  const userStore = useUserStore();
+
+  // 先不上
+  // const activeTab = ref('3');
+  // const tabList = [
+  //   {
+  //     name: '3',
+  //     tab: t('workbench.nearlyThreeDays'),
+  //   },
+  //   {
+  //     name: '7',
+  //     tab: t('workbench.nearlySevenDays'),
+  //   },
+  //   {
+  //     name: '30',
+  //     tab: t('workbench.lastOneMonth'),
+  //   },
+  //   {
+  //     name: 'custom',
+  //     tab: t('common.custom'),
+  //   },
+  // ];
+  // const rangeTime = ref<[number, number]>();
+
+  // 计划
+  const showPersonalInfo = ref<boolean>(false);
+  const personalTab = ref(PersonalEnum.MY_PLAN);
+
+  const refreshKey = ref(0);
+
+  watch(
+    () => showPersonalInfo.value,
+    (val) => {
+      if (!val) {
+        refreshKey.value += 1;
+      }
+    }
+  );
+
+  // 消息
+  const showMessageDrawer = ref(false);
+
+  const messageList = computed(() => {
+    return userStore.messageInfo.notificationDToList;
+  });
+</script>
+
+<style lang="less" scoped>
+  .title {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    .title-name {
+      font-weight: 600;
+    }
+    .title-right {
+      color: var(--text-n4);
+      cursor: pointer;
+    }
+  }
+  :deep(.crm-message-item) {
+    padding: 8px 0;
+  }
+</style>

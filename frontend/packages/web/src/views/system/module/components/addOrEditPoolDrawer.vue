@@ -121,30 +121,6 @@
         keep-one-line
         :config-list="filterConfigList"
       />
-      <n-form-item path="recycleRule.expireNotice" :label="t('opportunity.expirationReminder')">
-        <n-radio-group v-model:value="form.recycleRule.expireNotice" name="radiogroup">
-          <n-space>
-            <n-radio :value="true">
-              {{ t('common.yes') }}
-            </n-radio>
-            <n-radio :value="false">
-              {{ t('common.no') }}
-            </n-radio>
-          </n-space>
-        </n-radio-group>
-      </n-form-item>
-      <n-form-item
-        v-if="form.recycleRule.expireNotice"
-        path="recycleRule.noticeDays"
-        :label="t('module.reminderAdvance')"
-      >
-        <n-input-number
-          v-model:value="form.recycleRule.noticeDays"
-          class="crm-reminder-advance-input"
-          :placeholder="t('common.pleaseInput')"
-        />
-        <div class="flex flex-nowrap"> {{ t('module.reminderDays') }}</div>
-      </n-form-item>
     </n-form>
   </CrmDrawer>
 </template>
@@ -201,7 +177,6 @@
     name: [{ required: true, message: t('common.notNull', { value: `${t('module.clue.name')}` }) }],
     adminIds: [{ required: true, message: t('common.pleaseSelect') }],
     userIds: [{ required: true, message: t('common.pleaseSelect') }],
-    [`recycleRule.noticeDays`]: [{ required: true, message: t('common.pleaseInput') }],
     [`pickRule.pickIntervalDays`]: [{ required: true, message: t('common.pleaseInput') }],
     [`pickRule.pickNumber`]: [{ required: true, message: t('common.pleaseInput') }],
   };
@@ -219,8 +194,6 @@
       pickIntervalDays: undefined,
     },
     recycleRule: {
-      expireNotice: false,
-      noticeDays: undefined,
       operator: 'all',
       conditions: [],
     },
@@ -281,7 +254,7 @@
   async function handleSave(isContinue: boolean) {
     try {
       loading.value = true;
-      const { userIds, auto, adminIds, recycleRule, ...otherParams } = form.value;
+      const { userIds, auto, adminIds, ...otherParams } = form.value;
 
       const params: CluePoolParams = {
         ...otherParams,
@@ -289,8 +262,6 @@
         scopeIds: userIds.map((e) => e.id),
         auto,
         recycleRule: {
-          expireNotice: recycleRule.expireNotice,
-          noticeDays: recycleRule.noticeDays,
           operator: recycleFormItemModel.value.searchMode as string,
           conditions: [],
         },

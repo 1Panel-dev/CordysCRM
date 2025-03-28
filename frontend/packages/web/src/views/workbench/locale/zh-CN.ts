@@ -1,0 +1,16 @@
+export default {
+  'workbench.duplicateCheck': '查重',
+  'workbench.duplicateCheck.inputPlaceholder': '请输入客户名称',
+  'workbench.duplicateCheck.result': '查询结果',
+  'workbench.duplicateCheck.status': '重复状态',
+  'workbench.duplicateCheck.relatedOpportunity': '对应商机',
+  'workbench.duplicateCheck.relatedClue': '对应线索',
+  'workbench.duplicateCheck.relatedClues': '线索相关',
+  'workbench.duplicateCheck.clueStage': '线索阶段',
+  'workbench.quickAccess': '快捷入口',
+  'workbench.nearlyThreeDays': '近 3 天',
+  'workbench.nearlySevenDays': '近 7 天',
+  'workbench.lastOneMonth': '近 1 个月',
+  'workbench.createFollowUpRecord': '新建跟进记录',
+  'workbench.createFollowUpPlan': '新建跟进计划',
+};

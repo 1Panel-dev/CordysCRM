@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { clearToken, setToken } from '@lib/shared/method/auth';
 import { removeRouteListener } from '@lib/shared/method/route-listener';
 import type { LoginParams } from '@lib/shared/models/system/login';
-import type { UserInfo } from '@lib/shared/models/user';
+import type { MessageInfo, UserInfo } from '@lib/shared/models/user';
 
 import { isLogin, login, signout } from '@/api/modules/system/login';
 import { useI18n } from '@/hooks/useI18n';
@@ -17,6 +17,7 @@ import useAppStore from '../app';
 export interface UserState {
   loginType: string[];
   userInfo: UserInfo;
+  messageInfo: MessageInfo;
 }
 
 const useUserStore = defineStore('user', {
@@ -44,6 +45,11 @@ const useUserStore = defineStore('user', {
       csrfToken: '',
       sessionId: '',
       roles: [],
+    },
+    messageInfo: {
+      read: false,
+      notificationDToList: [],
+      announcementDToList: [],
     },
   }),
 

@@ -7,6 +7,7 @@ import {
   GetConfigSynchronizationUrl,
   GetPersonalFollowUrl,
   GetPersonalUrl,
+  GetRepeatCustomerUrl,
   GetThirdConfigByTypeUrl,
   GetThirdTypeListUrl,
   SendEmailCodeUrl,
@@ -130,4 +131,9 @@ export function updateUserPassword(data: PersonalPassword) {
 // 获取个人跟进计划
 export function getPersonalFollow(data: CustomerFollowPlanTableParams) {
   return CDR.post<CommonList<FollowDetailItem>>({ url: GetPersonalFollowUrl, data });
+}
+
+// 查重 TODO lmy 联调
+export function GetRepeatCustomerData(data: any) {
+  return CDR.post<CommonList<any>>({ url: GetRepeatCustomerUrl, data });
 }

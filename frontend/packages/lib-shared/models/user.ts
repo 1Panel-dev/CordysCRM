@@ -1,3 +1,5 @@
+import type { MessageCenterItem } from '@lib/shared/models/system/message';
+
 export interface UserInfo {
   id: string;
   name: string;
@@ -19,4 +21,10 @@ export interface UserInfo {
   csrfToken: string;
   sessionId: string;
   roles: string[];
+}
+
+export interface MessageInfo {
+  read: boolean;
+  notificationDToList: MessageCenterItem[];
+  announcementDToList: MessageCenterItem[];
 }

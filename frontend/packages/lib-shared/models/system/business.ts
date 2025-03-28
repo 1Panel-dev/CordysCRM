@@ -71,7 +71,6 @@ export interface AuthTableQueryParams extends TableQueryParams {
   configId: string; // 认证设置id
 }
 
-
 // 个人中心
 export interface PersonalInfoRequest {
   email: string;

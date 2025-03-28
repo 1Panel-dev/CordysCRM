@@ -133,6 +133,7 @@
     followKeyword,
     followFormKeyMap,
     handleDelete,
+    getApiKey,
     initFollowFormConfig,
   } = useFollowApi({
     type: toRef(props, 'activeType'),
@@ -215,7 +216,7 @@
   const realFollowSourceId = ref<string | undefined>('');
 
   function handleEdit(item: FollowDetailItem) {
-    realFormKey.value = followFormKeyMap[props.followApiKey as keyof typeof followFormKeyMap]?.[
+    realFormKey.value = followFormKeyMap[getApiKey(item) as keyof typeof followFormKeyMap]?.[
       props.activeType
     ] as FormDesignKeyEnum;
     realFollowSourceId.value = item.id;

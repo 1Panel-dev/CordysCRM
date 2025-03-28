@@ -28,6 +28,7 @@ import {
   getOptFollowPlanList,
   getOptFollowRecordList,
 } from '@/api/modules/opportunity';
+import { getPersonalFollow } from '@/api/modules/system/business';
 import { getFormDesignConfig } from '@/api/modules/system/module';
 import { useI18n } from '@/hooks/useI18n';
 
@@ -37,13 +38,14 @@ export type followEnumType =
   | typeof FormDesignKeyEnum.CUSTOMER
   | typeof FormDesignKeyEnum.BUSINESS
   | typeof FormDesignKeyEnum.CLUE
-  | typeof FormDesignKeyEnum.CLUE_POOL;
+  | typeof FormDesignKeyEnum.CLUE_POOL
+  | 'myPlan';
 
 type FollowApiMapType = Record<
   followEnumType,
   {
     list: {
-      followRecord: (params: any) => Promise<CommonList<FollowDetailItem>>;
+      followRecord?: (params: any) => Promise<CommonList<FollowDetailItem>>;
       followPlan?: (params: any) => Promise<CommonList<FollowDetailItem>>;
     };
     cancel?: {
@@ -101,6 +103,11 @@ const followApiMap: FollowApiMapType = {
       followRecord: getCluePoolFollowRecordList,
     },
   },
+  myPlan: {
+    list: {
+      followPlan: getPersonalFollow,
+    },
+  },
 };
 
 const followFormKeyMap: Partial<
@@ -127,7 +134,7 @@ const followFormKeyMap: Partial<
 };
 
 export default function useFollowApi(followProps: {
-  followApiKey: (typeof FormDesignKeyEnum)['CUSTOMER' | 'BUSINESS' | 'CLUE' | 'CLUE_POOL'];
+  followApiKey: followEnumType;
   type: Ref<'followRecord' | 'followPlan'>;
   sourceId: Ref<string>;
 }) {
@@ -185,6 +192,7 @@ export default function useFollowApi(followProps: {
         pageSize: pageNation.value.pageSize,
         keyword: followKeyword.value,
         ...(type.value === 'followPlan' && { status: activeStatus.value }),
+        myPlan: followApiKey === 'myPlan',
       };
       const res = await apis.list[type.value]?.(params);
       if (res) {
@@ -199,10 +207,23 @@ export default function useFollowApi(followProps: {
     }
   }
 
+  function getApiKey(item: FollowDetailItem) {
+    if (followApiKey === 'myPlan') {
+      if (item.clueId?.length) {
+        return FormDesignKeyEnum.CLUE;
+      }
+      if (item.opportunityId?.length && item.customerId?.length) {
+        return FormDesignKeyEnum.CUSTOMER;
+      }
+      return FormDesignKeyEnum.BUSINESS;
+    }
+    return followApiKey;
+  }
+
   // 取消计划
   async function handleCancelPlan(item: FollowDetailItem) {
     try {
-      await apis.cancel?.followPlan(item.id);
+      await followApiMap[getApiKey(item)].cancel?.followPlan(item.id);
       Message.success(t('common.cancelSuccess'));
       loadFollowList();
     } catch (error) {
@@ -227,7 +248,7 @@ export default function useFollowApi(followProps: {
   // 删除
   async function handleDelete(item: FollowDetailItem) {
     try {
-      await apis.delete?.[type.value]?.(item.id);
+      await followApiMap[getApiKey(item)].delete?.[type.value]?.(item.id);
       Message.success(t('common.deleteSuccess'));
       loadFollowList();
     } catch (error) {
@@ -268,6 +289,7 @@ export default function useFollowApi(followProps: {
     searchData,
     handleDelete,
     activeStatus,
+    getApiKey,
     initFollowFormConfig,
   };
 }

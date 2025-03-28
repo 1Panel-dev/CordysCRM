@@ -45,8 +45,6 @@ export interface ModuleConditionsItem {
 export interface OpportunityBaseInfoItem {
   name: string;
   enable: boolean;
-  expireNotice: boolean; // 到期提醒
-  noticeDays: number; // 提前提醒天数
   operator: string; // 操作符
   auto: boolean; // 自动回收
 }
@@ -89,8 +87,6 @@ export interface CluePoolPickRuleParams {
 
 // 线索池回收规则
 export interface CluePoolRecycleRuleParams {
-  expireNotice: boolean; // 到期提醒
-  noticeDays?: number; // 提前提醒天数
   operator: string; // 操作符
   conditions: ModuleConditionsItem[]; // 规则条件集合
 }

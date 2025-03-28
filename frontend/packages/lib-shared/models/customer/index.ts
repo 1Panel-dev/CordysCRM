@@ -108,6 +108,7 @@ export interface UpdateCustomerFollowPlanParams extends SaveCustomerFollowPlanPa
 export interface CustomerFollowPlanTableParams extends TableQueryParams {
   sourceId: string; // 客户ID/商机ID/线索ID
   status: CustomerFollowPlanStatusEnum; // 状态: ALL/PREPARED/UNDERWAY/COMPLETED/CANCELLED
+  myPlan?: boolean; // 个人中心查询时传入true
 }
 
 export interface CustomerFollowPlanListItem extends CustomerFollowRecordListItem {
@@ -159,8 +160,6 @@ export interface Condition {
 }
 
 export interface RecycleRule {
-  expireNotice: boolean; // 到期提醒
-  noticeDays: number; // 提前提醒天数
   operator: string; // 操作符
   conditions: Condition[]; // 规则条件集合
 }

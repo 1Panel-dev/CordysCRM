@@ -1,9 +1,10 @@
 <template>
   <n-spin
     :show="props.loading"
-    :class="`relative ${
-      props.autoHeight ? '' : !!props.specialHeight ? `h-[calc(100%-${props.specialHeight}px)]` : 'h-full'
-    }`"
+    class="relative"
+    :style="{
+      height: props.autoHeight ? '' : !!props.specialHeight ? `calc(100% - ${props.specialHeight}px)` : '100%',
+    }"
     content-class="h-full"
   >
     <!-- 有卡片footer 时，高度为100%-64px，64px 为：footer 高度80px 减去底部内边距 16px -->

@@ -1,0 +1,16 @@
+export default {
+  'workbench.duplicateCheck': 'Duplicate check',
+  'workbench.duplicateCheck.inputPlaceholder': 'Enter customer name',
+  'workbench.duplicateCheck.result': 'Results',
+  'workbench.duplicateCheck.status': 'Duplicate status',
+  'workbench.duplicateCheck.relatedOpportunity': 'Related opportunity',
+  'workbench.duplicateCheck.relatedClue': 'Related clue',
+  'workbench.duplicateCheck.relatedClues': 'Clue relations',
+  'workbench.duplicateCheck.clueStage': 'Clue stage',
+  'workbench.quickAccess': 'Quick access',
+  'workbench.nearlyThreeDays': 'Last 3 days',
+  'workbench.nearlySevenDays': 'Last 7 days',
+  'workbench.lastOneMonth': 'Last month',
+  'workbench.createFollowUpRecord': 'New follow-up record',
+  'workbench.createFollowUpPlan': 'New follow-up plan',
+};
