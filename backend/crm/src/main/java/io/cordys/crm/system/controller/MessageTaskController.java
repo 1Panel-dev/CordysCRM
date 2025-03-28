@@ -6,6 +6,7 @@ import io.cordys.common.groups.Created;
 import io.cordys.common.groups.Updated;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.MessageTask;
+import io.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import io.cordys.crm.system.dto.request.MessageTaskRequest;
 import io.cordys.crm.system.dto.response.MessageTaskDTO;
 import io.cordys.crm.system.service.MessageTaskService;
@@ -31,6 +32,13 @@ public class MessageTaskController {
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
     public MessageTask saveMessage(@Validated({Created.class, Updated.class}) @RequestBody MessageTaskRequest messageTaskRequest) {
         return messageTaskService.saveMessageTask(messageTaskRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("batch/save")
+    @Operation(summary = "项目管理-消息管理-消息设置-批量编辑")
+    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
+    public void batchSaveMessage(@Validated({Created.class, Updated.class}) @RequestBody MessageTaskBatchRequest messageTaskBatchRequest) {
+        messageTaskService.batchSaveMessageTask(messageTaskBatchRequest, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("get")

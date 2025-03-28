@@ -1,8 +1,8 @@
 [
   {
     "organizationId": "",
-    "type": "CUSTOMER",
-    "name": "",
+    "module": "CUSTOMER",
+    "moduleName": "",
     "messageTaskDetailDTOList": [
       {
         "event": "CUSTOMER_TRANSFERRED_CUSTOMER",
@@ -50,8 +50,8 @@
   },
   {
     "organizationId": "",
-    "type": "CLUE",
-    "name": "",
+    "module": "CLUE",
+    "moduleName": "",
     "messageTaskDetailDTOList": [
       {
         "event": "CLUE_AUTOMATIC_MOVE_POOL",
@@ -117,8 +117,8 @@
   },
   {
     "organizationId": "",
-    "type": "BUSINESS",
-    "name": "",
+    "module": "OPPORTUNITY",
+    "moduleName": "",
     "messageTaskDetailDTOList": [
       {
         "event": "BUSINESS_DELETED",

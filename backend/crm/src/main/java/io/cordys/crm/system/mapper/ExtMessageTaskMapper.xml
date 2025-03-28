@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.cordys.crm.system.mapper.ExtMessageTaskMapper">
+    <update id="updateMessageTask">
+        update sys_message_task
+        <set>
+            <if test="request.emailEnable != null">
+                `email_enable` = #{request.emailEnable},
+            </if>
+            <if test="request.sysEnable != null">
+                sys_enable = #{request.sysEnable},
+            </if>
+        </set>
+        where organization_id = #{organizationId}
+    </update>
 
- <select id="getEnableMessageTaskByReceiveTypeAndTaskType" resultType="io.cordys.crm.system.domain.MessageTask">
+    <select id="getEnableMessageTaskByReceiveTypeAndTaskType" resultType="io.cordys.crm.system.domain.MessageTask">
     select * from sys_message_task where organization_id = #{organizationId} and task_type = #{module} and (sys_enable = 1 or email_enable=1)
  </select>
 

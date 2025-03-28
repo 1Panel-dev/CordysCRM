@@ -3,9 +3,8 @@ package io.cordys.crm.system.controller;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.OptionCountDTO;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.context.OrganizationContext;
@@ -16,7 +15,6 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -56,7 +54,7 @@ public class NotificationController {
     @PostMapping(value = "/count")
     @Operation(summary = "消息中心-获取消息中心消息具体类型具体状态的数量")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
-    public List<OptionDTO> countNotification(@RequestBody NotificationRequest notificationRequest) {
+    public List<OptionCountDTO> countNotification(@RequestBody NotificationRequest notificationRequest) {
         return notificationService.countNotification(notificationRequest, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 }

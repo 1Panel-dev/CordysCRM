@@ -1,7 +1,7 @@
 package io.cordys.crm.system.service;
 
 
-import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.OptionCountDTO;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.request.NotificationRequest;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +34,7 @@ public class NotificationService {
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
     private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
+    private static final String SYSTEM_COUNT = "SYSTEM";  // 系统通知key
 
 
     public List<NotificationDTO> listNotification(NotificationRequest notificationRequest, String userId, String organizationId) {
@@ -76,15 +78,15 @@ public class NotificationService {
         return extNotificationMapper.updateByReceiver(record);
     }
 
-    public List<OptionDTO> countNotification(NotificationRequest notificationRequest, String organizationId, String userId) {
-        List<OptionDTO> optionDTOS = new ArrayList<>();
+    public List<OptionCountDTO> countNotification(NotificationRequest notificationRequest, String organizationId, String userId) {
+        List<OptionCountDTO> optionDTOS = new ArrayList<>();
         buildParam(notificationRequest, userId);
         notificationRequest.setResourceType(StringUtils.EMPTY);
         notificationRequest.setStatus(NotificationConstants.Status.UNREAD.name());
         List<NotificationDTO> notifications = extNotificationMapper.listNotification(notificationRequest, organizationId);
-        OptionDTO totalOptionDTO = new OptionDTO();
-        totalOptionDTO.setId("total");
-        totalOptionDTO.setName(String.valueOf(notifications.size()));
+        OptionCountDTO totalOptionDTO = new OptionCountDTO();
+        totalOptionDTO.setKey("total");
+        totalOptionDTO.setCount(notifications.size());
         optionDTOS.add(totalOptionDTO);
         if (CollectionUtils.isEmpty(notifications)){
             Map<String, Integer> countMap = new HashMap<>();
@@ -93,17 +95,21 @@ public class NotificationService {
             countMap.put(NotificationConstants.Module.OPPORTUNITY, 0);
             countMap.put(NotificationConstants.Module.ANNOUNCEMENT, 0);
             countMap.forEach((k, v) -> {
-                OptionDTO optionDTO = new OptionDTO();
-                optionDTO.setId(k);
-                optionDTO.setName(String.valueOf(v));
+                OptionCountDTO optionDTO = new OptionCountDTO();
+                optionDTO.setKey(k);
+                optionDTO.setCount(v);
                 optionDTOS.add(optionDTO);
             });
+            OptionCountDTO optionDTO = new OptionCountDTO();
+            optionDTO.setKey(SYSTEM_COUNT);
+            optionDTO.setCount(0);
+            optionDTOS.add(optionDTO);
         }
         buildSourceCount(notifications, optionDTOS);
         return optionDTOS;
     }
 
-    private static void buildSourceCount(List<NotificationDTO> notifications, List<OptionDTO> optionDTOS) {
+    private static void buildSourceCount(List<NotificationDTO> notifications, List<OptionCountDTO> optionDTOS) {
         Map<String, Integer> countMap = new HashMap<>();
         Map<String, List<Notification>> resourceMap = notifications.stream().collect(Collectors.groupingBy(Notification::getResourceType));
         resourceMap.forEach((k, v) -> {
@@ -117,13 +123,18 @@ public class NotificationService {
                 countMap.merge(NotificationConstants.Module.ANNOUNCEMENT, v.size(), Integer::sum);
             }
         });
-
+        AtomicInteger systemCount = new AtomicInteger();
         countMap.forEach((k, v) -> {
-            OptionDTO optionDTO = new OptionDTO();
-            optionDTO.setId(k);
-            optionDTO.setName(String.valueOf(v));
+            systemCount.addAndGet(v);
+            OptionCountDTO optionDTO = new OptionCountDTO();
+            optionDTO.setKey(k);
+            optionDTO.setCount(v);
             optionDTOS.add(optionDTO);
         });
+        OptionCountDTO optionDTO = new OptionCountDTO();
+        optionDTO.setKey(SYSTEM_COUNT);
+        optionDTO.setCount(systemCount.get());
+        optionDTOS.add(optionDTO);
     }
 
 

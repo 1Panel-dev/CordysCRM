@@ -9,6 +9,7 @@ import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.system.domain.MessageTask;
+import io.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import io.cordys.crm.system.dto.request.MessageTaskRequest;
 import io.cordys.crm.system.dto.response.MessageTaskDTO;
 import io.cordys.crm.system.dto.response.MessageTaskDetailDTO;
@@ -145,4 +146,7 @@ public class MessageTaskService {
     }
 
 
+    public void batchSaveMessageTask(MessageTaskBatchRequest messageTaskBatchRequest, String organizationId) {
+        extMessageTaskMapper.updateMessageTask(messageTaskBatchRequest, organizationId);
+    }
 }

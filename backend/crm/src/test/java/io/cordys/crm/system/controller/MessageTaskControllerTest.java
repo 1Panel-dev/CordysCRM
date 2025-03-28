@@ -5,6 +5,7 @@ import io.cordys.common.util.JSON;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.MessageTask;
+import io.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import io.cordys.crm.system.dto.request.MessageTaskRequest;
 import io.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
@@ -25,6 +26,7 @@ import java.util.Map;
 public class MessageTaskControllerTest extends BaseTest {
 
     public static final String SAVE_MESSAGE_TASK = "/message/task/save";
+    public static final String BATCH_SAVE_MESSAGE_TASK = "/message/task/batch/save";
 
     public static final String GET_MESSAGE_TASK = "/message/task/get";
 
@@ -61,8 +63,6 @@ public class MessageTaskControllerTest extends BaseTest {
         Map<String, Object> resource = new HashMap<>();
         resource.put("relatedUsers", "aa");
         resource.put("name", "cc");
-
-        // TODO: Implement test
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin",  DEFAULT_ORGANIZATION_ID, List.of("aa"),true);
 
     }
@@ -75,5 +75,16 @@ public class MessageTaskControllerTest extends BaseTest {
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
         List<MessageTask> messageTasks = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), MessageTask.class);
         Assertions.assertFalse(messageTasks.isEmpty());
+    }
+
+    @Test
+    @Order(3)
+    void testBatchSaveMessageTask() throws Exception {
+        MessageTaskBatchRequest messageTaskRequest = new MessageTaskBatchRequest();
+        messageTaskRequest.setEmailEnable(true);
+        messageTaskRequest.setSysEnable(true);
+        this.requestPostWithOk(BATCH_SAVE_MESSAGE_TASK, messageTaskRequest);
+        MessageTask messageTask1 = extMessageTaskMapper.getMessageByModuleAndEvent(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, DEFAULT_ORGANIZATION_ID);
+        Assertions.assertTrue(messageTask1.getEmailEnable());
     }
 }
