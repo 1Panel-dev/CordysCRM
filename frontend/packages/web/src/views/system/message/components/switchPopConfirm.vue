@@ -52,6 +52,8 @@
   }
 
   function changeStatus() {
+    if (!hasAnyPermission(['SYSTEM_NOTICE:UPDATE'])) return;
+
     if (!props.title || !props.value) {
       emit('change', handleCancel);
       return;

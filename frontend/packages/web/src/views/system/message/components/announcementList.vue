@@ -124,9 +124,6 @@
     {
       title: t('system.message.receiver'),
       key: 'receiver',
-      ellipsis: {
-        tooltip: true,
-      },
       isTag: true,
       width: 100,
       tagGroupProps: {

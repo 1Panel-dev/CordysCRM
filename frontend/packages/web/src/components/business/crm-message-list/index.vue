@@ -52,7 +52,7 @@
               </div>
             </div>
             <n-button
-              v-if="item.status === SystemMessageStatusEnum.UNREAD"
+              v-if="item.status === SystemMessageStatusEnum.UNREAD && hasAnyPermission(['SYSTEM_NOTICE:UPDATE'])"
               type="primary"
               text
               class="flex-shrink-0"
@@ -79,6 +79,7 @@
 
   import { getNotificationList, setNotificationRead } from '@/api/modules/system/message';
   import { useI18n } from '@/hooks/useI18n';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
 

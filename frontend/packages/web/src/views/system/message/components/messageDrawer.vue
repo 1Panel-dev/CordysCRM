@@ -65,8 +65,8 @@
           <div class="mb-[8px] flex items-center gap-[8px]">
             <n-switch v-model:value="unReadEnable" @update:value="changeHandler" />
             {{ t('system.message.unreadOnly') }}
-            <n-divider class="!mx-0" vertical />
-            <n-button text type="primary" @click="setAllMessageStatus">
+            <n-divider v-permission="['SYSTEM_NOTICE:UPDATE']" class="!mx-0" vertical />
+            <n-button v-permission="['SYSTEM_NOTICE:UPDATE']" text type="primary" @click="setAllMessageStatus">
               <CrmIcon class="mr-[4px]" type="iconicon_browse" :size="16" />
               {{ t('system.message.markAllAsRead') }}
             </n-button>
