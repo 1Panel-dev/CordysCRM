@@ -219,4 +219,27 @@
                           in_shared_pool = #{clue.inSharedPool}, update_user = #{clue.updateUser}, update_time = #{clue.updateTime}
         where id = #{clue.id}
     </update>
+
+    <select id="getRepeatCountMap" resultType="io.cordys.common.dto.OptionDTO">
+        select name as id, count(id) as name from clue where name in
+        <foreach collection="customerNames" item="customerName" open="(" close=")" separator=",">   
+            #{customerName}
+        </foreach>
+        group by name
+    </select>
+
+    <select id="getSimilarClueList" resultType="io.cordys.crm.clue.dto.response.ClueRepeatListResponse">
+        select c.id, c.name, c.owner, c.stage, su.name as ownerName from clue c
+        left join sys_user su on c.owner = su.id
+        where c.name like concat('%', #{customerName}, '%') and c.name != #{customerName} and c.organization_id = #{orgId}  
+        order by c.create_time desc 
+    </select>
+
+    <select id="getRepeatClueList" resultType="io.cordys.crm.clue.dto.response.ClueRepeatListResponse">
+        select c.id, c.name, c.owner, c.stage, su.name as ownerName from clue c
+        left join sys_user su on c.owner = su.id
+        where c.name = #{customerName} and c.organization_id = #{orgId}  
+        order by c.create_time desc 
+    </select>
+
 </mapper>

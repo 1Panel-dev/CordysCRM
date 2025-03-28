@@ -332,14 +332,19 @@
         FROM
             opportunity o
                 INNER JOIN sys_user u ON o.owner = u.id
-        WHERE o.status = 1 AND o.customer_id IN
-        <foreach collection="customerIds" item="customerId" open="(" close=")" separator=",">
-            #{customerId}
-        </foreach>
+        WHERE o.customer_id = #{customerId}
     </select>
 
     <select id="countByOwner" resultType="java.lang.Integer">
         select count(id) from opportunity
         where owner = #{owner}
+    </select>
+
+    <select id="getRepeatCountMap" resultType="io.cordys.common.dto.OptionDTO">
+        select customer_id as id, count(id) as name from opportunity where customer_id in
+        <foreach collection="customerIds" item="customerId" open="(" close=")" separator=",">
+            #{customerId}
+        </foreach>
+        group by customer_id
     </select>
 </mapper>

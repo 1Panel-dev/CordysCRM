@@ -6,6 +6,7 @@ import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.clue.dto.request.ClueBatchTransferRequest;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
+import io.cordys.crm.clue.dto.response.ClueRepeatListResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -35,4 +36,26 @@ public interface ExtClueMapper {
      * @param clue 线索池
      */
     void moveToPool(@Param("clue")Clue clue);
+
+    /**
+     * 获取线索重复数据数量
+     * @param customerNames 客户名称列表
+     * @return 重复数据数量
+     */
+    List<OptionDTO> getRepeatCountMap(@Param("customerNames") List<String> customerNames);
+
+    /**
+     * 获取相似线索列表
+     * @param customerName 客户名称
+     * @return 相似线索列表
+     */
+    List<ClueRepeatListResponse> getSimilarClueList(@Param("customerName") String customerName,@Param("orgId") String orgId);
+
+    /**
+     * 获取重复线索列表
+     * @param customerName 客户名称
+     * @return 重复线索列表
+     */
+    List<ClueRepeatListResponse> getRepeatClueList(@Param("customerName") String customerName,@Param("orgId") String orgId);
+    
 }

@@ -1,15 +1,25 @@
 package io.cordys.crm.system.controller;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.clue.dto.response.ClueListResponse;
+import io.cordys.crm.clue.dto.response.ClueRepeatListResponse;
+import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import io.cordys.crm.follow.service.FollowUpPlanService;
+import io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse;
 import io.cordys.crm.system.dto.request.PersonalInfoRequest;
 import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
-import io.cordys.crm.system.dto.response.RepeatCustomerResponse;
+import io.cordys.crm.system.dto.request.RepeatCustomerDetailPageRequest;
+import io.cordys.crm.system.dto.request.RepeatCustomerPageRequest;
 import io.cordys.crm.system.dto.response.UserResponse;
+import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.crm.system.service.PersonalCenterService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,12 +45,39 @@ public class PersonalCenterController {
     @Resource
     private FollowUpPlanService followUpPlanService;
 
+    @Resource
+    private ExtUserRoleMapper extUserRoleMapper;
 
-    @GetMapping("/repeat/customer")
+
+    @PostMapping("/repeat/customer")
     @Operation(summary = "获取重复客户相关数据")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_READ}, logical = Logical.OR)
-    public RepeatCustomerResponse getRepeatCustomer(@RequestParam(value = "name") String name) {
-        return personalCenterService.getRepeatCustomer(OrganizationContext.getOrganizationId(), SessionUtils.getUserId(), name);
+    public Pager<List<CustomerRepeatResponse>> getRepeatCustomer(@Validated @RequestBody RepeatCustomerPageRequest request) {
+        List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(SessionUtils.getUserId());
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        return PageUtils.setPageInfo(page, personalCenterService.getRepeatCustomer(request,permissions,OrganizationContext.getOrganizationId(), SessionUtils.getUserId()));
+    }
+
+
+    @PostMapping("/repeat/clue")
+    @Operation(summary = "获取重复线索相关数据")
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ})
+    public Pager<List<ClueRepeatListResponse>> getRepeatClue(@Validated @RequestBody RepeatCustomerPageRequest request) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        return PageUtils.setPageInfo(page, personalCenterService.getRepeatClue(request,OrganizationContext.getOrganizationId()));
+    }
+
+
+    @PostMapping("/repeat/clue/detail")
+    @Operation(summary = "获取重复线索详情")
+    public List<ClueRepeatListResponse> getRepeatClueDetail(@Validated @RequestBody RepeatCustomerDetailPageRequest request) {
+        return personalCenterService.getRepeatClueDetail(request,OrganizationContext.getOrganizationId());
+    }
+    
+    @PostMapping("/repeat/opportunity/detail")
+    @Operation(summary = "获取重复商机详情")
+    public List<OpportunityRepeatResponse> getRepeatOpportunityDetail(@Validated @RequestBody RepeatCustomerDetailPageRequest request) {
+        return personalCenterService.getRepeatOpportunityDetail(request);
     }
 
 

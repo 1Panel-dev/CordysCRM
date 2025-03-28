@@ -10,6 +10,7 @@ import io.cordys.crm.system.utils.MessageTemplateUtils;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -36,8 +37,8 @@ public class CommonNoticeSendService {
             paramMap.putIfAbsent("organizationId", currentOrganizationId);
 
             String context = getContext(event);
-
-
+            List<String> relatedUsers = getRelatedUsers(resource.get("relatedUsers"));
+            List<Receiver> receivers = getReceivers(relatedUsers);
             NoticeModel noticeModel = NoticeModel.builder()
                     .operator(operator.getId())
                     .context(context)
@@ -45,9 +46,18 @@ public class CommonNoticeSendService {
                     .event(event)
                     .status((String) paramMap.get("status"))
                     .excludeSelf(true)
+                    .receivers(receivers)
                     .build();
             noticeSendService.send(module, noticeModel);
         }
+    }
+
+    private List<Receiver> getReceivers(List<String> relatedUsers) {
+        List<Receiver> receivers = new ArrayList<>();
+        for (String relatedUserId : relatedUsers) {
+            receivers.add(new Receiver(relatedUserId, NotificationConstants.Type.SYSTEM_NOTICE.name()));
+        }
+        return receivers;
     }
 
     /**
@@ -84,11 +94,7 @@ public class CommonNoticeSendService {
 
         String context = getContext(event);
 
-        List<Receiver> receivers = new ArrayList<>();
-        for (String userId :users) {
-            receivers.add(new Receiver(userId, NotificationConstants.Type.SYSTEM_NOTICE.name()));
-        }
-
+        List<Receiver> receivers = getReceivers(users);
         NoticeModel noticeModel = NoticeModel.builder()
                 .operator(operator.getId())
                 .context(context)
@@ -99,6 +105,15 @@ public class CommonNoticeSendService {
                 .receivers(receivers)
                 .build();
         noticeSendService.sendOther(taskType, noticeModel, excludeSelf);
+    }
+
+    private List<String> getRelatedUsers(Object relatedUsers) {
+        String relatedUser = (String) relatedUsers;
+        List<String> relatedUserList = new ArrayList<>();
+        if (StringUtils.isNotBlank(relatedUser)) {
+            relatedUserList = Arrays.asList(relatedUser.split(";"));
+        }
+        return relatedUserList;
     }
 
 

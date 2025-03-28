@@ -37,15 +37,15 @@ public class AnnouncementRequest{
     @Schema(description = "链接")
     private String url;
 
+    @Schema(description = "重命名链接")
+    private String renameUrl;
+
     @Size(min = 1, max = 32, message = "{announcement.organizationId.length_range}", groups = {Created.class, Updated.class})
     @NotBlank(message = "{announcement.organizationId.not_blank}", groups = {Created.class, Updated.class})
     private String organizationId;
 
     @Schema(description = "部门ID")
     private List<String> deptIds;
-
-    @Schema(description = "角色ID")
-    private List<String> roleIds;
 
     @Schema(description = "用户ID")
     private List<String> userIds;

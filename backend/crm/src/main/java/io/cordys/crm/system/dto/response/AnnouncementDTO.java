@@ -16,13 +16,13 @@ public class AnnouncementDTO extends Announcement{
     @Schema(description = "创建人名称")
     private String createUserName;
 
-    @Schema(description = "部门对应关系")
-    private List<OptionDTO> deptIdName;
+    @Schema(description = "操作人")
+    private String updateUserName;
 
-    @Schema(description = "角色对应关系")
-    private List<OptionDTO> roleIdName;
+    @Schema(description = "部门对应关系")
+    private List<OptionScopeDTO> deptIdName;
 
     @Schema(description = "用户对应关系")
-    private List<OptionDTO> userIdName;
+    private List<OptionScopeDTO> userIdName;
 
 }

@@ -93,7 +93,7 @@ public class NotificationService {
             countMap.put(NotificationConstants.Module.CUSTOMER, 0);
             countMap.put(NotificationConstants.Module.CLUE, 0);
             countMap.put(NotificationConstants.Module.OPPORTUNITY, 0);
-            countMap.put(NotificationConstants.Module.ANNOUNCEMENT, 0);
+            countMap.put(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), 0);
             countMap.forEach((k, v) -> {
                 OptionCountDTO optionDTO = new OptionCountDTO();
                 optionDTO.setKey(k);
@@ -104,8 +104,9 @@ public class NotificationService {
             optionDTO.setKey(SYSTEM_COUNT);
             optionDTO.setCount(0);
             optionDTOS.add(optionDTO);
+        } else {
+            buildSourceCount(notifications, optionDTOS);
         }
-        buildSourceCount(notifications, optionDTOS);
         return optionDTOS;
     }
 
@@ -120,7 +121,7 @@ public class NotificationService {
             } else if (k.contains(NotificationConstants.Module.OPPORTUNITY)) {
                 countMap.merge(NotificationConstants.Module.OPPORTUNITY, v.size(), Integer::sum);
             } else {
-                countMap.merge(NotificationConstants.Module.ANNOUNCEMENT, v.size(), Integer::sum);
+                countMap.merge(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), v.size(), Integer::sum);
             }
         });
         AtomicInteger systemCount = new AtomicInteger();

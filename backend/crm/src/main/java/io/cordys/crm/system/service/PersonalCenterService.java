@@ -5,32 +5,30 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
-import io.cordys.common.constants.BusinessSearchType;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.OptionCountDTO;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
-import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.clue.dto.request.CluePageRequest;
-import io.cordys.crm.clue.dto.response.ClueListResponse;
+import io.cordys.crm.clue.dto.response.ClueRepeatListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
-import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import io.cordys.crm.system.constants.RepeatType;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.PersonalInfoRequest;
 import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
-import io.cordys.crm.system.dto.response.RepeatCustomerResponse;
+import io.cordys.crm.system.dto.request.RepeatCustomerDetailPageRequest;
+import io.cordys.crm.system.dto.request.RepeatCustomerPageRequest;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
-import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.crm.system.utils.MailSender;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -60,9 +58,6 @@ public class PersonalCenterService {
 
     @Resource
     private BaseMapper<User> userBaseMapper;
-
-    @Resource
-    private ExtUserRoleMapper extUserRoleMapper;
 
     @Resource
     private ExtCustomerMapper extCustomerMapper;
@@ -172,83 +167,81 @@ public class PersonalCenterService {
         return userDetail;
     }
 
-    public RepeatCustomerResponse getRepeatCustomer(String organizationId, String userId, String name) {
-        RepeatCustomerResponse repeatCustomerResponse = new RepeatCustomerResponse();
+    public List<CustomerRepeatResponse> getRepeatCustomer(RepeatCustomerPageRequest request, List<String> permissions, String organizationId, String userId) {
         //1.查询当前用户权限
-        List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
-        //2.根据权限查询客户，线索，商机数据
-        List<CustomerRepeatResponse> customerRepeatResponses = new ArrayList<>();
-        if (permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
-            List<Customer> customers = extCustomerMapper.checkRepeatCustomerByName(name, organizationId);
-            if (CollectionUtils.isNotEmpty(customers)) {
-                List<String> ownerIds = customers.stream().map(Customer::getOwner).collect(Collectors.toList());
-                Map<String, UserResponse> userResponseMap  = new HashMap<>();
-                if (CollectionUtils.isNotEmpty(ownerIds)) {
-                    List<UserResponse> userResponses = extUserMapper.getUserDetailList(ownerIds);
-                    userResponseMap = userResponses.stream().collect(Collectors.toMap(UserResponse::getId, userResponse -> userResponse));
-                }
-               
-                //查商机
-                Map<String,List<OpportunityRepeatResponse>> opportunityRepeatResponseMap = new HashMap<>();
-                if (permissions.indexOf(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
-                
-                    if (CollectionUtils.isNotEmpty(customerRepeatResponses)) {
-                        List<String> customerIds = customerRepeatResponses.stream().map(CustomerRepeatResponse::getId).collect(Collectors.toList());
-                        List<OpportunityRepeatResponse> repeatList = extOpportunityMapper.getRepeatList(customerIds);
-                        List<String> flattenedProductIds = repeatList.stream()
-                                .flatMap(or -> or.getProducts().stream())
-                                .distinct()
-                                .toList();
-                        // 优化产品名称映射获取
-                        Map<String, String> productNameMap = flattenedProductIds.isEmpty() ?
-                                Collections.emptyMap() :
-                                extProductMapper.listByIds(flattenedProductIds).stream()
-                                        .collect(Collectors.toMap(Product::getId, Product::getName));
+        if (!permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ) && !StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
+            return new ArrayList<>();
+        }
+        List<CustomerRepeatResponse> customers = extCustomerMapper.checkRepeatCustomerByName(request.getName(), organizationId);
 
-                        for (OpportunityRepeatResponse opportunityRepeatResponse : repeatList) {
-                            List<String> productName = new ArrayList<>();
-                            for (String product : opportunityRepeatResponse.getProducts()) {
-                                if (productNameMap.get(product)!=null) {
-                                    productName.add(productNameMap.get(product));
-                                }
-                            }
-                            opportunityRepeatResponse.setProductNames(productName);
-                            opportunityRepeatResponseMap.computeIfAbsent(opportunityRepeatResponse.getCustomerName(), k -> new ArrayList<>());
-                            opportunityRepeatResponseMap.get(opportunityRepeatResponse.getCustomerName()).add(opportunityRepeatResponse);
-                        }
+        //查商机
+        Map<String, String> repeatCountMap = new HashMap<>();
+        if (permissions.indexOf(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
+            if (CollectionUtils.isNotEmpty(customers)) {
+                List<String> customerIds = customers.stream().map(CustomerRepeatResponse::getId).collect(Collectors.toList());
+                List<OptionDTO> repeatCountDTOList = extOpportunityMapper.getRepeatCountMap(customerIds);
+                repeatCountMap = repeatCountDTOList.stream().collect(Collectors.toMap(OptionDTO::getId,OptionDTO::getName));
+            }
+        }
+
+        //查线索 
+        Map<String, String> clueRepeatCountMap = new HashMap<>();
+        if (permissions.indexOf(PermissionConstants.CLUE_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
+            if (CollectionUtils.isNotEmpty(customers)) {
+                List<String> customerNames = customers.stream().map(CustomerRepeatResponse::getName).collect(Collectors.toList());
+                List<OptionDTO> repeatCountDTOList = extClueMapper.getRepeatCountMap(customerNames);
+                clueRepeatCountMap = repeatCountDTOList.stream().collect(Collectors.toMap(OptionDTO::getId,OptionDTO::getName));
+            }
+        }
+
+        for (CustomerRepeatResponse customer : customers) {
+            if (StringUtils.equalsIgnoreCase(customer.getName(), request.getName())) {
+                customer.setRepeatType(RepeatType.ALL.toString());
+            } else {
+                customer.setRepeatType(RepeatType.PART.toString());
+            }
+            String opportunity = repeatCountMap.get(customer.getId());
+
+            customer.setOpportunityCount(Integer.parseInt(StringUtils.isBlank(opportunity) ? "0" : opportunity));
+            String clue = clueRepeatCountMap.get(customer.getName());
+            customer.setClueCount(Integer.parseInt(StringUtils.isBlank(clue) ? "0" : clue));
+        }
+        return customers;
+    }
+
+    public List<ClueRepeatListResponse> getRepeatClue(RepeatCustomerPageRequest request, String organizationId) {
+        return extClueMapper.getSimilarClueList(request.getName(), organizationId);
+    }
+
+    public List<ClueRepeatListResponse> getRepeatClueDetail(RepeatCustomerDetailPageRequest request,
+                                                            String organizationId) {
+        return extClueMapper.getRepeatClueList(request.getName(), organizationId);
+    }
+
+    public List<OpportunityRepeatResponse> getRepeatOpportunityDetail(
+            RepeatCustomerDetailPageRequest request) {
+        List<OpportunityRepeatResponse> opportunityRepeatResponses = extOpportunityMapper.getRepeatList(request.getId());
+        if (CollectionUtils.isNotEmpty(opportunityRepeatResponses)) {
+            List<String> flattenedProductIds = opportunityRepeatResponses.stream()
+                    .flatMap(or -> or.getProducts().stream())
+                    .distinct()
+                    .toList();
+            // 优化产品名称映射获取
+            Map<String, String> productNameMap = flattenedProductIds.isEmpty() ?
+                    Collections.emptyMap() :
+                    extProductMapper.listByIds(flattenedProductIds).stream()
+                            .collect(Collectors.toMap(Product::getId, Product::getName));
+
+            for (OpportunityRepeatResponse opportunityRepeatResponse : opportunityRepeatResponses) {
+                List<String> productName = new ArrayList<>();
+                for (String product : opportunityRepeatResponse.getProducts()) {
+                    if (productNameMap.get(product) != null) {
+                        productName.add(productNameMap.get(product));
                     }
                 }
-                Map<String, UserResponse> finalUserResponseMap = userResponseMap;
-                customers.forEach(customer -> {
-                    CustomerRepeatResponse customerRepeatResponse = new CustomerRepeatResponse();
-                    UserResponse userDetail = finalUserResponseMap.get(customer.getOwner());
-                    customerRepeatResponse.setOwnerName(userDetail.getUserName());
-                    customerRepeatResponse.setOwnerDepartmentId(userDetail.getDepartmentId());
-                    customerRepeatResponse.setOwnerDepartmentName(userDetail.getDepartmentName());
-                    BeanUtils.copyBean(customerRepeatResponse, customer);
-                    customerRepeatResponse.setOpportunityList(opportunityRepeatResponseMap.get(customer.getName()));    
-                    customerRepeatResponses.add(customerRepeatResponse);
-                });
+                opportunityRepeatResponse.setProductNames(productName);
             }
         }
-        //查线索
-        if (permissions.indexOf(PermissionConstants.CLUE_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
-            CluePageRequest request = new CluePageRequest();
-            request.setKeyword(name);
-            request.setSearchType(BusinessSearchType.ALL.name());
-            DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
-            deptDataPermission.setAll(true);
-            List<ClueListResponse> list = extClueMapper.list(request, organizationId, userId, deptDataPermission);
-            repeatCustomerResponse.setClueList(list);
-            if(CollectionUtils.isNotEmpty(customerRepeatResponses)){
-                customerRepeatResponses.forEach(customerRepeatResponse -> {
-                    List<ClueListResponse> clueListResponses = list.stream().filter(clueListResponse -> StringUtils.equalsIgnoreCase(clueListResponse.getName(), customerRepeatResponse.getName())).toList();
-                    customerRepeatResponse.setClueList(clueListResponses);
-                });
-            }
-        }
-        
-        repeatCustomerResponse.setCustomerData(customerRepeatResponses);
-        return repeatCustomerResponse;
+        return opportunityRepeatResponses;
     }
 }

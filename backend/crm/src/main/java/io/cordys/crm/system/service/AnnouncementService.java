@@ -18,8 +18,12 @@ import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.AnnouncementReceiveTypeDTO;
 import io.cordys.crm.system.dto.request.AnnouncementPageRequest;
 import io.cordys.crm.system.dto.request.AnnouncementRequest;
+import io.cordys.crm.system.dto.convert.AnnouncementContentDTO;
 import io.cordys.crm.system.dto.response.AnnouncementDTO;
+import io.cordys.crm.system.dto.response.NotificationDTO;
+import io.cordys.crm.system.dto.response.OptionScopeDTO;
 import io.cordys.crm.system.mapper.*;
+import io.cordys.crm.system.notice.sse.SseService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 
@@ -42,11 +46,9 @@ public class AnnouncementService {
     @Resource
     private ExtAnnouncementMapper extAnnouncementMapper;
     @Resource
-    private ExtUserRoleMapper extUserRoleMapper;
-    @Resource
     private ExtDepartmentMapper extDepartmentMapper;
     @Resource
-    private ExtRoleMapper extRoleMapper;
+    private SseService sseService;
     @Resource
     private ExtNotificationMapper notificationMapper;
     @Resource
@@ -64,10 +66,6 @@ public class AnnouncementService {
     public void add(AnnouncementRequest request, String userId) {
         Set<String> userSet = new HashSet<>();
         AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = new AnnouncementReceiveTypeDTO();
-        if (CollectionUtils.isNotEmpty(request.getRoleIds())) {
-            userSet.addAll(extUserRoleMapper.getUserIdsByRoleIds(request.getRoleIds()));
-            announcementReceiveTypeDTO.setRoleIds(request.getRoleIds());
-        }
         if (CollectionUtils.isNotEmpty(request.getDeptIds())) {
             userSet.addAll(extDepartmentMapper.getUserIdsByDeptIds(request.getDeptIds()));
             announcementReceiveTypeDTO.setDeptIds(request.getDeptIds());
@@ -85,6 +83,7 @@ public class AnnouncementService {
         announcement.setStartTime(request.getStartTime());
         announcement.setEndTime(request.getEndTime());
         announcement.setUrl(request.getUrl());
+        announcement.setRenameUrl(request.getRenameUrl());
         announcement.setReceiver(JSON.toJSONString(userIds).getBytes(StandardCharsets.UTF_8));
         announcement.setReceiveType(JSON.toJSONString(announcementReceiveTypeDTO).getBytes(StandardCharsets.UTF_8));
         announcement.setOrganizationId(request.getOrganizationId());
@@ -118,10 +117,6 @@ public class AnnouncementService {
         }
         Set<String> userSet = new HashSet<>();
         AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = new AnnouncementReceiveTypeDTO();
-        if (CollectionUtils.isNotEmpty(request.getRoleIds())) {
-            userSet.addAll(extUserRoleMapper.getUserIdsByRoleIds(request.getRoleIds()));
-            announcementReceiveTypeDTO.setRoleIds(request.getRoleIds());
-        }
         if (CollectionUtils.isNotEmpty(request.getDeptIds())) {
             userSet.addAll(extDepartmentMapper.getUserIdsByDeptIds(request.getDeptIds()));
             announcementReceiveTypeDTO.setDeptIds(request.getDeptIds());
@@ -137,6 +132,7 @@ public class AnnouncementService {
         announcement.setStartTime(request.getStartTime());
         announcement.setEndTime(request.getEndTime());
         announcement.setUrl(request.getUrl());
+        announcement.setRenameUrl(request.getRenameUrl());
         announcement.setReceiver(JSON.toJSONString(userIds).getBytes(StandardCharsets.UTF_8));
         announcement.setReceiveType(JSON.toJSONString(announcementReceiveTypeDTO).getBytes(StandardCharsets.UTF_8));
         announcement.setOrganizationId(request.getOrganizationId());
@@ -184,17 +180,27 @@ public class AnnouncementService {
                 notification.setResourceId(announcement.getId());
                 notification.setResourceType(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name());
                 notification.setResourceName(announcement.getSubject());
-                notification.setContent(announcement.getContent());
+                AnnouncementContentDTO announcementContentDTO = new AnnouncementContentDTO();
+                announcementContentDTO.setUrl(announcement.getUrl());
+                announcementContentDTO.setRenameUrl(announcement.getRenameUrl());
+                announcementContentDTO.setContent(new String(announcement.getContent()));
+                notification.setContent(JSON.toJSONString(announcementContentDTO).getBytes());
                 notification.setCreateUser(userId);
                 notification.setUpdateUser(userId);
                 notification.setCreateTime(System.currentTimeMillis());
                 notification.setUpdateTime(System.currentTimeMillis());
                 notifications.add(notification);
-                String messageText = JSON.toJSONString(notification);
+                NotificationDTO notificationDTO = new NotificationDTO();
+                BeanUtils.copyBean(notificationDTO,notification);
+                notificationDTO.setContentText(JSON.toJSONString(announcementContentDTO));
+                String messageText = JSON.toJSONString(notificationDTO);
+
                 stringRedisTemplate.opsForZSet().add(USER_ANNOUNCE_PREFIX+subUserId, id, System.currentTimeMillis());
                 stringRedisTemplate.opsForValue().set(ANNOUNCE_PREFIX + id, messageText);
                 //更新用户的已读全部消息状态 0 为未读，1为已读
                 stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + subUserId, "0");
+                // 发送消息
+                sseService.broadcastPeriodically(subUserId);
             }
             notificationBaseMapper.batchInsert(notifications);
         });
@@ -223,7 +229,29 @@ public class AnnouncementService {
         List<AnnouncementDTO> announcementDTOS = extAnnouncementMapper.selectByBaseRequest(request);
         if (CollectionUtils.isNotEmpty(announcementDTOS)) {
             for (AnnouncementDTO announcementDTO : announcementDTOS) {
-                announcementDTO.setContentText(new String(announcementDTO.getContent()));
+                AnnouncementReceiveTypeDTO announcementReceiveTypeDTO  = JSON.parseObject(new String(announcementDTO.getReceiveType()), AnnouncementReceiveTypeDTO.class);
+                if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getDeptIds())) {
+                    List<OptionDTO> idNameByIds = extDepartmentMapper.getIdNameByIds(announcementReceiveTypeDTO.getDeptIds());
+                    List<OptionScopeDTO>optionScopeDTOList = new ArrayList<>();
+                    for (OptionDTO idNameById : idNameByIds) {
+                        OptionScopeDTO optionScopeDTO = new OptionScopeDTO();
+                        BeanUtils.copyBean(optionScopeDTO, idNameById);
+                        optionScopeDTO.setScope("DEPARTMENT");
+                        optionScopeDTOList.add(optionScopeDTO);
+                    }
+                    announcementDTO.setDeptIdName(optionScopeDTOList);
+                }
+                if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getUserIds())) {
+                    List<OptionDTO> idNameByIds = userMapper.selectUserOptionByIds(announcementReceiveTypeDTO.getUserIds());
+                    List<OptionScopeDTO>optionScopeDTOList = new ArrayList<>();
+                    for (OptionDTO idNameById : idNameByIds) {
+                        OptionScopeDTO optionScopeDTO = new OptionScopeDTO();
+                        BeanUtils.copyBean(optionScopeDTO, idNameById);
+                        optionScopeDTO.setScope("USER");
+                        optionScopeDTOList.add(optionScopeDTO);
+                    }
+                    announcementDTO.setUserIdName(optionScopeDTOList);
+                }
             }
         }
         return announcementDTOS;
@@ -243,15 +271,25 @@ public class AnnouncementService {
         AnnouncementReceiveTypeDTO announcementReceiveTypeDTO  = JSON.parseObject(new String(announcementDTO.getReceiveType()), AnnouncementReceiveTypeDTO.class);
         if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getDeptIds())) {
             List<OptionDTO> idNameByIds = extDepartmentMapper.getIdNameByIds(announcementReceiveTypeDTO.getDeptIds());
-            announcementDTO.setDeptIdName(idNameByIds);
-        }
-        if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getRoleIds())) {
-            List<OptionDTO> idNameByIds = extRoleMapper.getIdNameByIds(announcementReceiveTypeDTO.getRoleIds());
-            announcementDTO.setRoleIdName(idNameByIds);
+            List<OptionScopeDTO>optionScopeDTOList = new ArrayList<>();
+            for (OptionDTO idNameById : idNameByIds) {
+                OptionScopeDTO optionScopeDTO = new OptionScopeDTO();
+                BeanUtils.copyBean(optionScopeDTO, idNameById);
+                optionScopeDTO.setScope("DEPARTMENT");
+                optionScopeDTOList.add(optionScopeDTO);
+            }
+            announcementDTO.setDeptIdName(optionScopeDTOList);
         }
         if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getUserIds())) {
             List<OptionDTO> idNameByIds = userMapper.selectUserOptionByIds(announcementReceiveTypeDTO.getUserIds());
-            announcementDTO.setUserIdName(idNameByIds);
+            List<OptionScopeDTO>optionScopeDTOList = new ArrayList<>();
+            for (OptionDTO idNameById : idNameByIds) {
+                OptionScopeDTO optionScopeDTO = new OptionScopeDTO();
+                BeanUtils.copyBean(optionScopeDTO, idNameById);
+                optionScopeDTO.setScope("USER");
+                optionScopeDTOList.add(optionScopeDTO);
+            }
+            announcementDTO.setUserIdName(optionScopeDTOList);
         }
         announcementDTO.setContentText(new String(announcementDTO.getContent()));
         return announcementDTO;

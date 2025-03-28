@@ -23,6 +23,9 @@ public class Announcement extends BaseModel {
     @Schema(description = "链接")
     private String url;
 
+    @Schema(description = "重命名链接")
+    private String renameUrl;
+
     @Schema(description = "接收者")
     private byte[] receiver;
 

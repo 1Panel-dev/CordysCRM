@@ -225,6 +225,7 @@ CREATE TABLE sys_announcement
     `start_time`      BIGINT       NOT NULL COMMENT '开始时间',
     `end_time`        BIGINT       NOT NULL COMMENT '结束时间',
     `url`             VARCHAR(255) COMMENT '链接',
+    `rename_url`      VARCHAR(255) COMMENT '重命名链接',
     `receiver`        BLOB         NOT NULL COMMENT '接收人id(销售ids/角色ids/部门ids)',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
     `notice`          BIT          NOT NULL DEFAULT 0 COMMENT '转为通知',

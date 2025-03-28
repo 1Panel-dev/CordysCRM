@@ -13,6 +13,8 @@ import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.PersonalInfoRequest;
 import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
+import io.cordys.crm.system.dto.request.RepeatCustomerDetailPageRequest;
+import io.cordys.crm.system.dto.request.RepeatCustomerPageRequest;
 import io.cordys.crm.system.dto.request.UserAddRequest;
 import io.cordys.crm.system.dto.request.UserPageRequest;
 import io.cordys.crm.system.dto.response.EmailDTO;
@@ -198,7 +200,12 @@ public class PersonalCenterControllerTests extends BaseTest {
         customer.setUpdateUser("admin");
         customer.setInSharedPool(false);
         customerBaseMapper.insert(customer);
-        this.requestGet("/personal/center/repeat/customer?name=kehu").andExpect(status().isOk());
+
+        RepeatCustomerPageRequest request = new RepeatCustomerPageRequest();    
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setName("kehu");
+        this.requestPost("/personal/center/repeat/customer", request).andExpect(status().isOk());
     }
 
     @Test
@@ -214,4 +221,34 @@ public class PersonalCenterControllerTests extends BaseTest {
         Assertions.assertNotNull(result.getList());
     }
 
+
+    @Test
+    @Order(7)
+    public void testAnnouncement() throws Exception {
+        RepeatCustomerPageRequest request = new RepeatCustomerPageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setName("kehu");
+        this.requestPost("/personal/center/repeat/clue", request).andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(8)
+    public void testAnnouncementDetail() throws Exception {
+        RepeatCustomerDetailPageRequest request = new RepeatCustomerDetailPageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setName("kehu");
+        this.requestPost("/personal/center/repeat/clue/detail", request).andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(9)
+    public void testRepeatOpportunityDetail() throws Exception {
+        RepeatCustomerDetailPageRequest request = new RepeatCustomerDetailPageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setName("kehu");
+        this.requestPost("/personal/center/repeat/opportunity/detail", request).andExpect(status().isOk());
+    }
 }

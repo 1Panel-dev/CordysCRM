@@ -15,9 +15,10 @@
 
     <select id="selectByBaseRequest" parameterType="io.cordys.crm.system.dto.request.AnnouncementPageRequest"
             resultType="io.cordys.crm.system.dto.response.AnnouncementDTO">
-        SELECT sys_announcement.*, sys_user.name as createUserName
+        SELECT sys_announcement.*, sys_user.name as createUserName, su.name as updateUserName
         FROM sys_announcement
         LEFT JOIN sys_user ON sys_announcement.create_user = sys_user.id
+        LEFT JOIN sys_user su ON sys_announcement.update_user = su.id   
         WHERE
         sys_announcement.organization_id = #{organizationId}
         <if test="keyword != null">
