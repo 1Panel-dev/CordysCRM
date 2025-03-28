@@ -34,8 +34,10 @@ import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
@@ -88,6 +90,8 @@ public class CustomerService {
     private DataScopeService dataScopeService;
     @Resource
     private LogService logService;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
 
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -273,6 +277,7 @@ public class CustomerService {
             if (!StringUtils.equals(request.getOwner(), originCustomer.getOwner())) {
                 // 如果责任人有修改，则添加责任人历史
                 customerOwnerHistoryService.add(originCustomer, userId);
+                sendTransferNotice(List.of(originCustomer), request.getOwner(), userId, orgId);
             }
         }
 
@@ -329,14 +334,15 @@ public class CustomerService {
 
         // 设置操作对象
         OperationLogContext.setResourceName(originCustomer.getName());
+
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_DELETED, originCustomer.getName(), userId,
+                orgId, List.of(originCustomer.getOwner()), true);
     }
 
     public void batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
-        List<String> owners = originCustomers.stream().map(Customer::getOwner)
-                .distinct()
-                .toList();
-        ;
+        List<String> owners = getOwners(originCustomers);
 
         dataScopeService.checkDataPermission(userId, orgId, owners);
         // 添加责任人历史
@@ -357,13 +363,22 @@ public class CustomerService {
                 }).toList();
 
         logService.batchAdd(logs);
+
+        sendTransferNotice(originCustomers, request.getOwner(), userId, orgId);
+    }
+
+    private void sendTransferNotice(List<Customer> originCustomers, String toUser, String userId, String orgId) {
+        String customerNames = getCustomerNames(originCustomers);
+
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER, customerNames, userId,
+                orgId, List.of(toUser), true);
     }
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
-        List<String> owners = getCustomerOwnersByIds(ids);
+        List<Customer> customers = customerMapper.selectByIds(ids);
+        List<String> owners = getOwners(customers);
         dataScopeService.checkDataPermission(userId, orgId, owners);
-
-        List<OptionDTO> customers = extCustomerMapper.getCustomerOptionsByIds(ids);
 
         // 删除客户
         customerMapper.deleteByIds(ids);
@@ -382,10 +397,19 @@ public class CustomerService {
                 )
                 .toList();
         logService.batchAdd(logs);
+
+        // 消息通知
+        customers.stream()
+                .collect(Collectors.groupingBy(Customer::getOwner))
+                .forEach((owner, customerList) ->
+                    commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                            NotificationConstants.Event.CUSTOMER_DELETED, getCustomerNames(customerList), userId,
+                            orgId, List.of(owner), true)
+                );
+
     }
 
-    private List<String> getCustomerOwnersByIds(List<String> ids) {
-        List<Customer> customers = customerMapper.selectByIds(ids);
+    private  List<String> getOwners(List<Customer> customers) {
         List<String> owners = customers.stream().map(Customer::getOwner)
                 .distinct()
                 .toList();
@@ -401,13 +425,10 @@ public class CustomerService {
      */
     public BatchAffectResponse batchToPool(List<String> ids, String currentUser, String orgId) {
         List<Customer> customers = customerMapper.selectByIds(ids);
-        List<String> owners = customers.stream()
-                .map(Customer::getOwner)
-                .distinct()
-                .toList();
+        List<String> owners = getOwners(customers);
         dataScopeService.checkDataPermission(currentUser, orgId, owners);
 
-        List<String> ownerIds = customers.stream().map(Customer::getOwner).distinct().toList();
+        List<String> ownerIds = getOwners(customers);
         Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
         int success = 0;
         for (Customer customer : customers) {
@@ -444,7 +465,19 @@ public class CustomerService {
 
         logService.batchAdd(logs);
 
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, getCustomerNames(customers), currentUser,
+                orgId, List.of(currentUser), true);
+
         return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
+    }
+
+    private String getCustomerNames(List<Customer> customers) {
+        return String.join(";",
+                customers.stream()
+                        .map(Customer::getName)
+                        .toList()
+        );
     }
 
     public List<OptionDTO> getCustomerOptions(String keyword, String organizationId) {

@@ -55,7 +55,7 @@ public class ClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索详情")
     public ClueGetResponse get(@PathVariable String id) {
-        return clueService.get(id, OrganizationContext.getOrganizationId());
+        return clueService.getWithDataPermissionCheck(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/add")
@@ -76,14 +76,14 @@ public class ClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "更新线索状态")
     public void updateStatus(@Validated @RequestBody ClueStatusUpdateRequest request) {
-        clueService.updateStatus(request, SessionUtils.getUserId());
+        clueService.updateStatus(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_DELETE)
     @Operation(summary = "删除线索")
     public void delete(@PathVariable String id) {
-        clueService.delete(id);
+        clueService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/transition/customer")
@@ -104,14 +104,14 @@ public class ClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "批量转移线索")
     public void batchTransfer(@RequestBody ClueBatchTransferRequest request) {
-        clueService.batchTransfer(request, SessionUtils.getUserId());
+        clueService.batchTransfer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/delete")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_DELETE)
     @Operation(summary = "批量删除线索")
     public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
-        clueService.batchDelete(ids);
+        clueService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/to-pool")

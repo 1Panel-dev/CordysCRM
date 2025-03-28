@@ -12,6 +12,7 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
+import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.clue.constants.ClueResultCode;
@@ -24,13 +25,13 @@ import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.dto.request.CustomerAddRequest;
-import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.service.OpportunityService;
+import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
@@ -77,6 +78,10 @@ public class ClueService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
+    @Resource
+    private DataScopeService dataScopeService;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -172,6 +177,12 @@ public class ClueService {
         return list;
     }
 
+    public ClueGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
+        ClueGetResponse getResponse = get(id, orgId);
+        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner());
+        return getResponse;
+    }
+
     public ClueGetResponse get(String id, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
         ClueGetResponse clueGetResponse = BeanUtils.copyBean(new ClueGetResponse(), clue);
@@ -214,6 +225,9 @@ public class ClueService {
     }
 
     public Clue update(ClueUpdateRequest request, String userId, String orgId) {
+        Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
+        dataScopeService.checkDataPermission(userId, orgId, originClue.getOwner());
+
         Clue clue = BeanUtils.copyBean(new Clue(), request);
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setUpdateUser(userId);
@@ -222,10 +236,10 @@ public class ClueService {
         checkUpdateExist(clue);
 
         if (StringUtils.isNotBlank(request.getOwner())) {
-            Clue originCustomer = clueMapper.selectByPrimaryKey(request.getId());
-            if (!StringUtils.equals(request.getOwner(), originCustomer.getOwner())) {
+            if (!StringUtils.equals(request.getOwner(), originClue.getOwner())) {
                 // 如果责任人有修改，则添加责任人历史
-                clueOwnerHistoryService.add(originCustomer, userId);
+                clueOwnerHistoryService.add(originClue, userId);
+                sendTransferNotice(List.of(originClue), request.getOwner(), userId, orgId);
             }
         }
 
@@ -236,8 +250,25 @@ public class ClueService {
         return clueMapper.selectByPrimaryKey(clue.getId());
     }
 
-    public void updateStatus(ClueStatusUpdateRequest request, String userId) {
+    private void sendTransferNotice(List<Clue> originClues, String toUser, String userId, String orgId) {
+        String customerNames = getClueNames(originClues);
+
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+                NotificationConstants.Event.TRANSFER_CLUE, customerNames, userId,
+                orgId, List.of(toUser), true);
+    }
+
+    private String getClueNames(List<Clue> clues) {
+        return String.join(";",
+                clues.stream()
+                        .map(Clue::getName)
+                        .toList()
+        );
+    }
+
+    public void updateStatus(ClueStatusUpdateRequest request, String userId, String orgId) {
         Clue clue = BeanUtils.copyBean(new Clue(), request);
+        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner());
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setUpdateUser(userId);
         Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
@@ -278,11 +309,16 @@ public class ClueService {
     public void transitionCustomer(ClueTransitionCustomerRequest request, String userId, String orgId) {
         Customer customer = customerService.add(request, userId, orgId);
         Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
+        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner());
         clue.setTransitionId(customer.getId());
         clue.setTransitionType(FormKey.CUSTOMER.name());
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setUpdateUser(userId);
         clueMapper.update(clue);
+
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+                NotificationConstants.Event.CLUE_CONVERT_CUSTOMER, customer.getName(), userId,
+                orgId, List.of(customer.getOwner()), true);
     }
 
     /**
@@ -294,6 +330,8 @@ public class ClueService {
     public void transitionOpportunity(ClueTransitionOpportunityRequest request, String userId, String orgId) {
         Opportunity opportunity = opportunityService.add(request, userId, orgId);
         Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
+        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner());
+
         clue.setTransitionId(opportunity.getId());
         clue.setTransitionType(FormKey.OPPORTUNITY.name());
         clue.setUpdateTime(System.currentTimeMillis());
@@ -301,28 +339,62 @@ public class ClueService {
         clueMapper.update(clue);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String userId, String orgId) {
+        Clue clue = clueMapper.selectByPrimaryKey(id);
+        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner());
         // 删除客户
         clueMapper.deleteByPrimaryKey(id);
         // 删除客户模块字段
         clueFieldService.deleteByResourceId(id);
         // 删除责任人历史
         clueOwnerHistoryService.deleteByClueIds(List.of(id));
+
+        // 消息通知
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+                NotificationConstants.Event.CLUE_DELETED, clue.getName(), userId,
+                orgId, List.of(clue.getOwner()), true);
+
     }
 
-    public void batchTransfer(ClueBatchTransferRequest request, String userId) {
+    public void batchTransfer(ClueBatchTransferRequest request, String userId, String orgId) {
+        List<Clue> clues = clueMapper.selectByIds(request.getIds());
+        List<String> ownerIds = getOwners(clues);
+        dataScopeService.checkDataPermission(userId, orgId, ownerIds);
+
         // 添加责任人历史
         clueOwnerHistoryService.batchAdd(request, userId);
         extClueMapper.batchTransfer(request);
+
+        sendTransferNotice(clues, request.getOwner(), userId, orgId);
     }
 
-    public void batchDelete(List<String> ids) {
+    public void batchDelete(List<String> ids, String userId, String orgId) {
+        List<Clue> clues = clueMapper.selectByIds(ids);
+        List<String> owners = getOwners(clues);
+        dataScopeService.checkDataPermission(userId, orgId, owners);
+
         // 删除客户
         clueMapper.deleteByIds(ids);
         // 删除客户模块字段
         clueFieldService.deleteByResourceIds(ids);
         // 删除责任人历史
         clueOwnerHistoryService.deleteByClueIds(ids);
+
+        // 消息通知
+        clues.stream()
+                .collect(Collectors.groupingBy(Clue::getOwner))
+                .forEach((owner, customerList) ->
+                        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+                                NotificationConstants.Event.CLUE_DELETED, getClueNames(customerList), userId,
+                                orgId, List.of(owner), true)
+                );
+    }
+
+    private List<String> getOwners(List<Clue> clues) {
+        return clues.stream()
+                .map(Clue::getOwner)
+                .distinct()
+                .toList();
     }
 
     /**
@@ -335,7 +407,9 @@ public class ClueService {
         LambdaQueryWrapper<Clue> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(Clue::getId, ids);
         List<Clue> clues = clueMapper.selectListByLambda(wrapper);
-        List<String> ownerIds = clues.stream().map(Clue::getOwner).distinct().toList();
+        List<String> ownerIds = getOwners(clues);
+        dataScopeService.checkDataPermission(currentUser, orgId, ownerIds);
+
         Map<String, CluePool> ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
         int success = 0;
         for (Clue clue : clues) {

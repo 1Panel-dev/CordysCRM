@@ -55,6 +55,20 @@ public class CommonNoticeSendService {
      * @param taskType 发送类型
      * @param event 发送事件
      * @param currentOrgId  当前组织id
+     * @param resourceName 资源名称
+     * @param users   需要通知的用户
+     * @param excludeSelf  是否排除自己
+     */
+    public void sendNotice(String taskType, String event, String resourceName, String operatorId, String currentOrgId,
+                           List<String> users, boolean excludeSelf) {
+        sendNotice(taskType, event, Map.of("name", resourceName), operatorId, currentOrgId, users, excludeSelf);
+    }
+
+    /**
+     * 发送通知
+     * @param taskType 发送类型
+     * @param event 发送事件
+     * @param currentOrgId  当前组织id
      * @param resource 消息变量的名称 eg: xxxx 的名称，resource.put("name", "名称");
      * @param users   需要通知的用户
      * @param excludeSelf  是否排除自己
