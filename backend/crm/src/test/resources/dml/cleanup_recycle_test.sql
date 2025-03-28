@@ -5,3 +5,5 @@ delete from sys_organization_user where id = 'recycle_organization_user_id';
 
 delete from customer_pool where id = 'job_pool_id';
 delete from customer_pool_recycle_rule where id = 'job_recycle_rule_id';
+delete from clue_pool where id = 'job_pool_id';
+delete from clue_pool_recycle_rule where id = 'job_recycle_rule_id';
