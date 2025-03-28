@@ -8,6 +8,7 @@
     :title="sourceName"
     :form-key="FormDesignKeyEnum.CUSTOMER"
     :source-id="props.sourceId"
+    :initial-source-name="sourceName"
     show-tab-setting
     @button-select="handleButtonSelect"
     @saved="() => (refreshKey += 1)"

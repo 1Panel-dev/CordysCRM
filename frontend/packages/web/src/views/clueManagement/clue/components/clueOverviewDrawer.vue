@@ -6,6 +6,7 @@
     :tab-list="tabList"
     :button-list="buttonList"
     :source-id="sourceId"
+    :initial-source-name="sourceName"
     :title="props.detail?.name"
     :form-key="FormDesignKeyEnum.CLUE"
     :show-tab-setting="true"
@@ -14,7 +15,7 @@
   >
     <template #left>
       <div class="p-[16px_24px]">
-        <CrmFormDescription :form-key="FormDesignKeyEnum.CLUE" :source-id="sourceId" />
+        <CrmFormDescription :form-key="FormDesignKeyEnum.CLUE" :source-id="sourceId" @init="handleDescriptionInit" />
       </div>
     </template>
     <template #transferPopContent>
@@ -69,7 +70,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import type { ClueListItem } from '@lib/shared/models/clue';
-  import type { TransferParams } from '@lib/shared/models/customer';
+  import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
@@ -330,4 +331,9 @@
       allowClose: true,
     },
   ];
+
+  const sourceName = ref('');
+  function handleDescriptionInit(_collaborationType?: CollaborationType, _sourceName?: string) {
+    sourceName.value = _sourceName || '';
+  }
 </script>

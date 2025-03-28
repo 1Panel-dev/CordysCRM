@@ -20,6 +20,8 @@ import { useI18n } from './useI18n';
 export interface FormCreateApiProps {
   sourceId?: Ref<string | undefined>;
   formKey: Ref<FormDesignKeyEnum>;
+  needInitDetail?: Ref<boolean>;
+  initialSourceName?: Ref<string | undefined>; // 特殊字段初始化需要的资源名称
   otherSaveParams?: Ref<Record<string, any> | undefined>;
 }
 
@@ -27,8 +29,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   const { t } = useI18n();
   const Message = useMessage();
 
-  const sourceName = ref(''); // 资源名称
+  const sourceName = ref(props.initialSourceName?.value); // 资源名称
   const collaborationType = ref<CollaborationType>(); // 协作类型-客户独有
+  const specialInitialOptions = ref<Record<string, any>[]>([]); // 特殊字段的初始化选项列表
   const descriptions = ref<Description[]>([]); // 表单详情描述列表
   const fieldList = ref<FormCreateField[]>([]); // 表单字段列表
   const loading = ref(false);
@@ -113,12 +116,20 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
+  function initFieldValue(field: FormCreateField, value: string | number | (string | number)[]) {
+    if (field.type === FieldTypeEnum.DATA_SOURCE && typeof value === 'string') {
+      return [value];
+    }
+    return value;
+  }
+
   async function initFormDetail() {
     try {
       const asyncApi = getFormDetailApiMap[props.formKey.value];
       if (!asyncApi || !props.sourceId?.value) return;
       const res = await asyncApi(props.sourceId?.value);
       collaborationType.value = res.collaborationType;
+      sourceName.value = res.name;
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
           const options = res.optionMap?.[item.businessKey];
@@ -127,7 +138,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             item.initialOptions = options;
           }
           // 业务标准字段读取最外层
-          formDetail.value[item.id] = res[item.businessKey];
+          formDetail.value[item.id] = initFieldValue(item, res[item.businessKey]);
         } else {
           const options = res.optionMap?.[item.id];
           if ([FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE].includes(item.type)) {
@@ -137,8 +148,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           // 其他的字段读取moduleFields
           const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
           if (field) {
-            formDetail.value[item.id] = field.fieldValue;
+            formDetail.value[item.id] = initFieldValue(item, field.fieldValue);
           }
+        }
+        if (item.type === FieldTypeEnum.DATE_TIME) {
+          // 处理时间类型的字段
+          formDetail.value[item.id] = formDetail.value[item.id] ? Number(formDetail.value[item.id]) : '';
         }
       });
       nextTick(() => {
@@ -152,14 +167,73 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
+  /**
+   * 处理业务表单的特殊字段在特定场景下的初始化默认值
+   */
+  function specialFormFieldInit(field: FormCreateField) {
+    if (
+      [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER, FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER].includes(props.formKey.value)
+    ) {
+      if (field.businessKey === 'type') {
+        return {
+          defaultValue: 'CUSTOMER',
+        };
+      }
+      if (field.businessKey === 'customerId') {
+        specialInitialOptions.value = [
+          {
+            id: props.sourceId?.value,
+            name: sourceName.value,
+          },
+        ];
+        return {
+          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          initialOptions: specialInitialOptions.value,
+        };
+      }
+    }
+    if ([FormDesignKeyEnum.FOLLOW_PLAN_CLUE, FormDesignKeyEnum.FOLLOW_RECORD_CLUE].includes(props.formKey.value)) {
+      if (field.businessKey === 'type') {
+        return {
+          defaultValue: 'CLUE',
+        };
+      }
+      if (field.businessKey === 'clueId') {
+        specialInitialOptions.value = [
+          {
+            id: props.sourceId?.value,
+            name: sourceName.value,
+          },
+        ];
+        return {
+          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          initialOptions: specialInitialOptions.value,
+        };
+      }
+    }
+    if (field.type === FieldTypeEnum.DATA_SOURCE) {
+      return {
+        defaultValue: typeof field.defaultValue === 'string' ? [field.defaultValue] : field.defaultValue,
+      };
+    }
+    return {
+      defaultValue: field.defaultValue,
+    };
+  }
+
   async function initFormConfig() {
     try {
       loading.value = true;
       const res = await getFormConfigApiMap[props.formKey.value]();
-      fieldList.value = res.fields.map((item) => ({
-        ...item,
-        fieldWidth: safeFractionConvert(item.fieldWidth),
-      }));
+      fieldList.value = res.fields.map((item) => {
+        const { defaultValue, initialOptions } = specialFormFieldInit(item);
+        return {
+          ...item,
+          defaultValue,
+          initialOptions,
+          fieldWidth: safeFractionConvert(item.fieldWidth),
+        };
+      });
       formConfig.value = res.formProp;
       nextTick(() => {
         unsaved.value = false;
@@ -170,6 +244,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     } finally {
       loading.value = false;
     }
+  }
+
+  function transformFieldValue(field: FormCreateField, value: string | number | (string | number)[]) {
+    if (field.type === FieldTypeEnum.DATA_SOURCE) {
+      return field.multiple ? value : (value as (string | number)[])?.[0];
+    }
+    return value;
   }
 
   async function saveForm(form: Record<string, any>, isContinue: boolean, callback?: (_isContinue: boolean) => void) {
@@ -183,11 +264,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
           // 存在业务字段，则按照业务字段的key存储
-          params[item.businessKey] = form[item.id];
+          params[item.businessKey] = transformFieldValue(item, form[item.id]);
         } else {
           params.moduleFields.push({
             fieldId: item.id,
-            fieldValue: form[item.id],
+            fieldValue: transformFieldValue(item, form[item.id]),
           });
         }
       });
@@ -222,7 +303,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS) {
       return t('clue.convertToOpportunity');
     }
-    const prefix = props.sourceId?.value ? t('common.edit') : t('common.add');
+    const prefix = props.sourceId?.value && props.needInitDetail?.value ? t('common.edit') : t('common.add');
     return `${prefix}${t(`crmFormCreate.drawer.${props.formKey.value}`)}`;
   });
 

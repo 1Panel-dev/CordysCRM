@@ -65,7 +65,9 @@
   <CrmFormCreateDrawer
     v-model:visible="formDrawerVisible"
     :form-key="realFormKey"
-    :source-id="realSourceId"
+    :source-id="sourceId"
+    :need-init-detail="needInitDetail"
+    :initial-source-name="props.initialSourceName"
     @saved="emit('saved')"
   />
 </template>
@@ -92,6 +94,7 @@
     formKey: FormDesignKeyEnum;
     sourceId?: string;
     showTabSetting?: boolean;
+    initialSourceName?: string;
   }>();
 
   const emit = defineEmits<{
@@ -122,12 +125,13 @@
 
   const formDrawerVisible = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(props.formKey);
-  const realSourceId = ref<string | undefined>(''); // 编辑时传入
+  const needInitDetail = ref(false);
 
   function handleButtonClick(key: string, done?: () => void) {
     switch (key) {
       case 'addContract':
         realFormKey.value = FormDesignKeyEnum.CONTACT;
+        needInitDetail.value = false;
         formDrawerVisible.value = true;
         return;
       case 'followRecord':
@@ -138,6 +142,7 @@
         } else {
           realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
         }
+        needInitDetail.value = false;
         formDrawerVisible.value = true;
         return;
       case 'followPlan':
@@ -148,11 +153,12 @@
         } else {
           realFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS;
         }
+        needInitDetail.value = false;
         formDrawerVisible.value = true;
         return;
       case 'edit':
         realFormKey.value = props.formKey;
-        realSourceId.value = props.sourceId;
+        needInitDetail.value = true;
         formDrawerVisible.value = true;
         return;
       default:

@@ -81,8 +81,8 @@
     default: [],
   });
 
-  const selectedRows = ref<InternalRowData[]>([]);
-  const selectedKeys = ref<DataTableRowKey[]>([]);
+  const selectedRows = ref<InternalRowData[]>(rows.value);
+  const selectedKeys = ref<DataTableRowKey[]>(value.value);
 
   const dataSourcesModalVisible = ref(false);
 
@@ -119,8 +119,8 @@
   };
 
   function showDataSourcesModal() {
-    dataSourcesModalVisible.value = true;
     selectedKeys.value = value.value;
+    dataSourcesModalVisible.value = true;
   }
 </script>
 

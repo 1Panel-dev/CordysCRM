@@ -43,6 +43,8 @@
       v-model:visible="formCreateDrawerVisible"
       :form-key="formKey"
       :source-id="activeClueId"
+      :need-init-detail="needInitDetail"
+      :initial-source-name="activeRowName"
       :other-save-params="otherFollowRecordSaveParams"
       @saved="loadList"
     />
@@ -120,6 +122,7 @@
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const keyword = ref('');
   const activeClueId = ref('');
+  const needInitDetail = ref(false);
   const activeClue = ref<ClueListItem>();
   const formKey = ref(FormDesignKeyEnum.CLUE);
   const formCreateDrawerVisible = ref(false);
@@ -278,18 +281,21 @@
     clueId: '',
     id: '',
   });
+  const activeRowName = ref('');
 
   function handleActionSelect(row: ClueListItem, actionKey: string) {
     activeClueId.value = row.id;
     switch (actionKey) {
       case 'edit':
         otherFollowRecordSaveParams.value.id = row.id;
+        needInitDetail.value = true;
         handleAddOrEdit();
         break;
       case 'followUp':
         formKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CLUE;
-        activeClueId.value = '';
         otherFollowRecordSaveParams.value.clueId = row.id;
+        activeRowName.value = row.name;
+        needInitDetail.value = false;
         formCreateDrawerVisible.value = true;
         break;
       case 'pop-transfer':
@@ -299,12 +305,14 @@
         activeClueId.value = '';
         formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
         otherFollowRecordSaveParams.value.clueId = row.id;
+        needInitDetail.value = false;
         formCreateDrawerVisible.value = true;
         break;
       case 'convertToOpportunity':
         activeClueId.value = '';
         formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS;
         otherFollowRecordSaveParams.value.clueId = row.id;
+        needInitDetail.value = false;
         formCreateDrawerVisible.value = true;
         break;
       case 'delete':

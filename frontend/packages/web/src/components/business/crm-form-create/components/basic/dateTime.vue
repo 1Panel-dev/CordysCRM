@@ -36,7 +36,7 @@
     (e: 'change', value: (string | number)[]): void;
   }>();
 
-  const value = defineModel<number>('value', {
+  const value = defineModel<number | [number, number]>('value', {
     default: null,
   });
 

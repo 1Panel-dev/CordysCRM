@@ -1,4 +1,5 @@
 import { NImage, NImageGroup } from 'naive-ui';
+import dayjs from 'dayjs';
 
 import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -8,6 +9,7 @@ import type { ModuleField } from '@lib/shared/models/customer';
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 import useTable from '@/components/pure/crm-table/useTable';
 import { getFormConfigApiMap, getFormListApiMap } from '@/components/business/crm-form-create/config';
+import type { FormCreateField, FormCreateFieldDateType } from '@/components/business/crm-form-create/types';
 
 import { lastOpportunitySteps } from '@/config/opportunity';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
@@ -53,6 +55,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const addressFieldIds = ref<string[]>([]);
   // 业务字段集合
   const businessFieldIds = ref<string[]>([]);
+  // 数据源字段集合
+  const dataSourceFieldIds = ref<string[]>([]);
 
   const internalColumnMap: Record<FormKey, CrmDataTableColumn[]> = {
     [FormDesignKeyEnum.CUSTOMER]: [
@@ -321,6 +325,31 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     },
   ];
 
+  function formatTimeValue(value: string | number, type?: FormCreateFieldDateType) {
+    if (value) {
+      const date = dayjs(Number(value));
+      switch (type) {
+        case 'month':
+          return date.format('YYYY-MM');
+        case 'date':
+          return date.format('YYYY-MM-DD');
+        case 'datetime':
+        default:
+          return date.format('YYYY-MM-DD HH:mm:ss');
+      }
+    }
+    return '-';
+  }
+
+  function formatNumberValue(value: string | number, field: FormCreateField) {
+    if (field.numberFormat === 'percent') {
+      return value ? `${value}%` : '-';
+    }
+    if (field.showThousandsSeparator) {
+      return value ? Number(value).toLocaleString('en-us') : '-';
+    }
+  }
+
   async function initFormConfig() {
     try {
       loading.value = true;
@@ -353,7 +382,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             };
           }
           if (field.type === FieldTypeEnum.LOCATION) {
-            addressFieldIds.value.push(field.id);
+            addressFieldIds.value.push(field.businessKey || field.id);
+          } else if (field.type === FieldTypeEnum.DATA_SOURCE) {
+            dataSourceFieldIds.value.push(field.businessKey || field.id);
           }
           if (field.businessKey) {
             businessFieldIds.value.push(field.businessKey);
@@ -415,6 +446,22 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               isTag: true,
             };
           }
+          if (field.type === FieldTypeEnum.DATE_TIME) {
+            return {
+              title: field.name,
+              width: 180,
+              key: field.businessKey || field.id,
+              render: (row: any) => formatTimeValue(row[field.businessKey || field.id], field.dateType),
+            };
+          }
+          if (field.type === FieldTypeEnum.INPUT_NUMBER) {
+            return {
+              title: field.name,
+              width: 100,
+              key: field.businessKey || field.id,
+              render: (row: any) => formatNumberValue(row[field.businessKey || field.id], field),
+            };
+          }
           return {
             title: field.name,
             width: 150,
@@ -466,7 +513,12 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         const options = originalData?.optionMap?.[fieldId];
         const name = options?.find((e) => e.id === item[fieldId])?.name;
         if (name) {
-          businessFieldAttr[fieldId] = name;
+          businessFieldAttr[fieldId] = dataSourceFieldIds.value.includes(fieldId) ? [name] : name;
+        } else if (addressFieldIds.value.includes(fieldId)) {
+          // 地址类型字段，解析代码替换成省市区
+          const address = item[fieldId]?.split('-');
+          const value = `${getCityPath(address[0])}-${address[1]}`;
+          businessFieldAttr[fieldId] = value;
         }
       });
       item.moduleFields?.forEach((field: ModuleField) => {
@@ -485,6 +537,16 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           customFieldAttr[field.fieldId] = value;
         } else {
           customFieldAttr[field.fieldId] = field.fieldValue;
+        }
+        // 数据源字段赋值
+        if (dataSourceFieldIds.value.includes(field.fieldId)) {
+          customFieldAttr[field.fieldId] = Array.isArray(field.fieldValue) ? field.fieldValue : [field.fieldValue];
+        }
+      });
+      // 数据源字段赋值
+      dataSourceFieldIds.value.forEach((fieldId) => {
+        if (!customFieldAttr[fieldId] && !businessFieldAttr[fieldId]) {
+          customFieldAttr[fieldId] = dataSourceFieldIds.value.includes(fieldId) ? [item[fieldId]] : item[fieldId];
         }
       });
       return {

@@ -36,6 +36,7 @@
     v-model:visible="formCreateDrawerVisible"
     :form-key="activeFormKey"
     :source-id="activeSourceId"
+    :need-init-detail="!!activeSourceId"
     :other-save-params="otherFollowRecordSaveParams"
     @saved="loadList"
   />

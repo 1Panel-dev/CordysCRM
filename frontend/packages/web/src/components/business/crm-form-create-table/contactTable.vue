@@ -20,6 +20,7 @@
       v-model:visible="formCreateDrawerVisible"
       :form-key="FormDesignKeyEnum.CONTACT"
       :source-id="activeContactId"
+      need-init-detail
     />
     <!-- 停用 -->
     <CrmModal

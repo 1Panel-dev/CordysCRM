@@ -46,6 +46,8 @@
   const props = defineProps<{
     sourceId?: string;
     formKey: FormDesignKeyEnum;
+    needInitDetail?: boolean; // 是否需要初始化详情
+    initialSourceName?: string; // 初始化详情时的名称
     otherSaveParams?: Record<string, any>;
   }>();
   const emit = defineEmits<{
@@ -72,6 +74,8 @@
   } = useFormCreateApi({
     formKey: toRefs(props).formKey,
     sourceId: toRefs(props).sourceId,
+    needInitDetail: toRefs(props).needInitDetail,
+    initialSourceName: toRefs(props).initialSourceName,
     otherSaveParams: toRefs(props).otherSaveParams,
   });
 
@@ -113,7 +117,7 @@
     async (val) => {
       if (val) {
         await initFormConfig();
-        if (props.sourceId) {
+        if (props.sourceId && props.needInitDetail) {
           initFormDetail();
         }
       }

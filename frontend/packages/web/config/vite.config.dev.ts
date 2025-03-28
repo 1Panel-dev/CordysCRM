@@ -26,6 +26,11 @@ export default mergeConfig(
           changeOrigin: true,
           rewrite: (path: string) => path.replace(/^\/front/, ''),
         },
+        '/pic': {
+          target: process.env.VITE_DEV_DOMAIN,
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/front\/pic/, ''),
+        },
       },
     },
     plugins: [

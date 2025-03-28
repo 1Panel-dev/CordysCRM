@@ -62,6 +62,7 @@
       :form-key="realFormKey"
       :other-save-params="otherFollowRecordSaveParams"
       :source-id="activeSourceId"
+      :need-init-detail="!!activeSourceId"
       @saved="searchData"
     />
     <customerOverviewDrawer v-model:show="showCustomerOverviewDrawer" :source-id="activeSourceId" />

@@ -78,6 +78,7 @@
       v-model:visible="formDrawerVisible"
       :form-key="realFormKey"
       :source-id="realFollowSourceId"
+      need-init-detail
       @saved="() => loadFollowList()"
     />
   </div>

@@ -19,6 +19,8 @@ export interface FormCreateFieldShowControlRule {
   fieldIds: string[]; // 控制的字段id集合
 }
 
+export type FormCreateFieldDateType = 'month' | 'date' | 'datetime';
+
 export interface FormCreateField {
   // 基础属性
   id: string;
@@ -44,7 +46,7 @@ export interface FormCreateField {
   precision?: number | null; // 精度
   showThousandsSeparator?: boolean; // 是否显示千分位
   // 日期输入属性
-  dateType?: 'month' | 'date' | 'datetime';
+  dateType?: FormCreateFieldDateType;
   // radio属性
   direction?: 'horizontal' | 'vertical';
   // divider属性

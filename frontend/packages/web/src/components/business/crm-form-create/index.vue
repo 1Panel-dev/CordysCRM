@@ -137,7 +137,7 @@
         list.value.forEach((item) => {
           if (item.type === FieldTypeEnum.DATA_SOURCE) {
             // 处理数据源字段，单选传单个值，多选传数组
-            result[item.id] = item.multiple ? result[item.id] : result[item.id][0];
+            result[item.id] = item.multiple ? result[item.id] : result[item.id]?.[0];
           }
         });
         emit('save', result, isContinue);
@@ -173,7 +173,7 @@
         if (!form.value[item.id]) {
           let defaultValue = item.defaultValue || '';
           if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
-            defaultValue = defaultValue || null;
+            defaultValue = Number(defaultValue) || null;
           }
           if (getRuleType(item) === 'array') {
             defaultValue = defaultValue || [];

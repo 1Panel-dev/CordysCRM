@@ -16,7 +16,12 @@
             v-permission="['PRODUCT_MANAGEMENT:ADD']"
             class="mr-[12px]"
             type="primary"
-            @click="formCreateDrawerVisible = true"
+            @click="
+              {
+                activeProductId = '';
+                formCreateDrawerVisible = true;
+              }
+            "
           >
             {{ t('product.createProduct') }}
           </n-button>
@@ -30,6 +35,7 @@
       v-model:visible="formCreateDrawerVisible"
       :form-key="FormDesignKeyEnum.PRODUCT"
       :source-id="activeProductId"
+      :need-init-detail="!!activeProductId"
       @saved="() => searchData()"
     />
   </CrmCard>
@@ -53,7 +59,6 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
-  import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
 
