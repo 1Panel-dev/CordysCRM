@@ -222,10 +222,12 @@ public class CustomerService {
         customerGetResponse.setOptionMap(optionMap);
         customerGetResponse.setModuleFields(customerFields);
 
-        UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerGetResponse.getOwner(), orgId);
-        if (userDeptDTO != null) {
-            customerGetResponse.setDepartmentId(userDeptDTO.getDeptId());
-            customerGetResponse.setDepartmentName(userDeptDTO.getDeptName());
+        if (customerGetResponse.getOwner() != null) {
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(customerGetResponse.getOwner(), orgId);
+            if (userDeptDTO != null) {
+                customerGetResponse.setDepartmentId(userDeptDTO.getDeptId());
+                customerGetResponse.setDepartmentName(userDeptDTO.getDeptName());
+            }
         }
 
         return baseService.setCreateUpdateOwnerUserName(customerGetResponse);

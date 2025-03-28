@@ -180,10 +180,12 @@ public class ClueService {
         List<BaseModuleFieldValue> clueFields = clueFieldService.getModuleFieldValuesByResourceId(id);
         clueGetResponse.setModuleFields(clueFields);
 
-        UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(clueGetResponse.getOwner(), orgId);
-        if (userDeptDTO != null) {
-            clueGetResponse.setDepartmentId(userDeptDTO.getDeptId());
-            clueGetResponse.setDepartmentName(userDeptDTO.getDeptName());
+        if (clueGetResponse.getOwner() != null) {
+            UserDeptDTO userDeptDTO = baseService.getUserDeptMapByUserId(clueGetResponse.getOwner(), orgId);
+            if (userDeptDTO != null) {
+                clueGetResponse.setDepartmentId(userDeptDTO.getDeptId());
+                clueGetResponse.setDepartmentName(userDeptDTO.getDeptName());
+            }
         }
 
         return baseService.setCreateUpdateOwnerUserName(clueGetResponse);

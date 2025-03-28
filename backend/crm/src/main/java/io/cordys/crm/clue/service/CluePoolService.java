@@ -2,6 +2,7 @@ package io.cordys.crm.clue.service;
 
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.common.dto.condition.CombineSearch;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -9,10 +10,7 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.clue.domain.CluePool;
-import io.cordys.crm.clue.domain.CluePoolPickRule;
-import io.cordys.crm.clue.domain.CluePoolRecycleRule;
-import io.cordys.crm.clue.domain.CluePoolRelation;
+import io.cordys.crm.clue.domain.*;
 import io.cordys.crm.clue.dto.CluePoolDTO;
 import io.cordys.crm.clue.dto.CluePoolPickRuleDTO;
 import io.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
@@ -20,6 +18,7 @@ import io.cordys.crm.clue.dto.request.CluePoolAddRequest;
 import io.cordys.crm.clue.dto.request.CluePoolUpdateRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtCluePoolMapper;
+import io.cordys.crm.customer.constants.RecycleConditionColumnKey;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.mapper.ExtUserMapper;
@@ -32,10 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -280,7 +276,7 @@ public class CluePoolService {
 
         // 判断线索池是否存在入库条件
         List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
-        return RecycleConditionUtils.calcMinRecycleDays(conditions, clue.getCreateTime(), clue.getCollectionTime());
+        return RecycleConditionUtils.calcRecycleDays(conditions, clue.getCollectionTime());
     }
 
     /**
@@ -316,11 +312,41 @@ public class CluePoolService {
     }
 
     /**
-     * 根据ID集合获取线索池
-     * @param poolIds ID集合
-     * @return 线索池集合
+     * 获取负责人最佳匹配公海
+     * @param pools 公海列表
+     * @return 公海集合
      */
-    public List<CluePool> getPoolsByIds(List<String> poolIds) {
-        return cluePoolMapper.selectByIds(poolIds.toArray(new String[0]));
+    public Map<List<String>, CluePool> getOwnersBestMatchPoolMap(List<CluePool> pools) {
+        Map<List<String>, CluePool> poolMap = new HashMap<>(4);
+        pools.sort(Comparator.comparing(CluePool::getCreateTime).reversed());
+        for (CluePool pool : pools) {
+            List<String> exitOwnerIds = poolMap.keySet().stream().flatMap(List::stream).toList();
+            List<String> scopeIds = JSON.parseArray(pool.getScopeId(), String.class);
+            List<String> ownerIds = userExtendService.getScopeOwnerIds(scopeIds, pool.getOrganizationId());
+            List<String> defaultOwnerIds = ownerIds.stream().distinct().filter(ownerId -> !exitOwnerIds.contains(ownerId)).toList();
+            if (CollectionUtils.isEmpty(defaultOwnerIds)) {
+                continue;
+            }
+            poolMap.put(defaultOwnerIds, pool);
+        }
+        return poolMap;
+    }
+
+    /**
+     * 校验线索是否符合回收规则
+     * @param clue 线索
+     * @param recycleRule 回收规则
+     * @return 是否符合回收规则
+     */
+    public boolean checkRecycled(Clue clue, CluePoolRecycleRule recycleRule) {
+        boolean allMatch = StringUtils.equals(CombineSearch.SearchMode.AND.name(), recycleRule.getOperator());
+        List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
+        if (allMatch) {
+            return conditions.stream().allMatch(condition -> RecycleConditionUtils.matchTime(condition, StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME) ?
+                    clue.getCollectionTime() : clue.getFollowTime()));
+        } else {
+            return conditions.stream().anyMatch(condition -> RecycleConditionUtils.matchTime(condition, StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME) ?
+                    clue.getCollectionTime() : clue.getFollowTime()));
+        }
     }
 }

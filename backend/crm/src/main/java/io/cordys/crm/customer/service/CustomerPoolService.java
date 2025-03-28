@@ -2,12 +2,14 @@ package io.cordys.crm.customer.service;
 
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.common.dto.condition.CombineSearch;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
+import io.cordys.crm.customer.constants.RecycleConditionColumnKey;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
@@ -283,7 +285,7 @@ public class CustomerPoolService {
 
 		// 判断公海是否存在入库条件
 		List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
-		return RecycleConditionUtils.calcMinRecycleDays(conditions, customer.getCreateTime(), customer.getCollectionTime());
+		return RecycleConditionUtils.calcRecycleDays(conditions, customer.getCollectionTime());
 	}
 
 	/**
@@ -312,7 +314,15 @@ public class CustomerPoolService {
 	 * @return 是否回收
 	 */
 	public boolean checkRecycled(Customer customer, CustomerPoolRecycleRule recycleRule) {
-		// TODO: 解析回收规则
-		return false;
+		boolean allMatch = StringUtils.equals(CombineSearch.SearchMode.AND.name(), recycleRule.getOperator());
+		List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
+		if (allMatch) {
+			return conditions.stream().allMatch(condition -> RecycleConditionUtils.matchTime(condition, StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME) ?
+					customer.getCollectionTime() : customer.getFollowTime()));
+		} else {
+			return conditions.stream().anyMatch(condition -> RecycleConditionUtils.matchTime(condition, StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME) ?
+					customer.getCollectionTime() : customer.getFollowTime()));
+		}
+
 	}
 }

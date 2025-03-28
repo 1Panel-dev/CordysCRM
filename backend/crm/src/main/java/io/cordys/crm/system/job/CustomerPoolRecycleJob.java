@@ -5,6 +5,7 @@ import io.cordys.common.constants.InternalUser;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
+import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.customer.service.CustomerOwnerHistoryService;
 import io.cordys.crm.customer.service.CustomerPoolService;
 import io.cordys.mybatis.BaseMapper;
@@ -26,6 +27,8 @@ public class CustomerPoolRecycleJob {
 	private BaseMapper<CustomerPool> customerPoolMapper;
 	@Resource
 	private BaseMapper<CustomerPoolRecycleRule> customerPoolRecycleRuleMapper;
+	@Resource
+	private ExtCustomerMapper extCustomerMapper;
 	@Resource
 	private CustomerPoolService customerPoolService;
 	@Resource
@@ -69,7 +72,7 @@ public class CustomerPoolRecycleJob {
 					customer.setUpdateUser(InternalUser.ADMIN.getValue());
 					customer.setUpdateTime(System.currentTimeMillis());
 					// 回收客户至公海
-					customerMapper.updateById(customer);
+					extCustomerMapper.moveToPool(customer);
 				}
 			}
 		}));
