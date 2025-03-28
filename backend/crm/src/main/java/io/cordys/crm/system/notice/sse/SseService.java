@@ -108,33 +108,44 @@ public class SseService {
         //返回最新的5条信息，加是否有未读信息, 公告
         userEmitters.forEach((userId, emitters) -> {
             //获取系统通知
-            SseMessageDTO sseMessageDTO = new SseMessageDTO();
-            List<NotificationDTO> notificationDTOS = extNotificationMapper.selectLastList(userId, OrganizationContext.getOrganizationId());
-            notificationDTOS.forEach(notification -> notification.setContentText(new String(notification.getContent())));
-            sseMessageDTO.setNotificationDTOList(notificationDTOS);
-            //获取公告
-            Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX + userId, 0, -1);
-            if (CollectionUtils.isNotEmpty(values)) {
-                List<NotificationDTO> announcementDTOList = buildDTOList(values, ANNOUNCE_PREFIX);
-                sseMessageDTO.setAnnouncementDTOList(announcementDTOList);
-            }
-            //获取用户读取状态
-            String read = stringRedisTemplate.opsForValue().get(USER_READ_PREFIX + userId);
-            if (StringUtils.isBlank(read)) {
-                sseMessageDTO.setRead(false);
-            } else {
-                sseMessageDTO.setRead(Boolean.getBoolean(read));
-            }
-            var message = "User " + userId + " time: " + System.currentTimeMillis();
-            sendToUser(userId, "message", JSON.toJSONString(sseMessageDTO));
-            LogUtils.info("Broadcast to user {}: {}", userId, message);
+            broadcastPeriodically(userId);
         });
     }
 
-    private List<NotificationDTO> buildDTOList(Set<String> sysValues, String prefix) {
+    public void broadcastPeriodically(String userId) {
+        if (userEmitters.isEmpty()) return;
+
+        SseMessageDTO sseMessageDTO = new SseMessageDTO();
+
+        // 获取通知并转换内容
+        List<NotificationDTO> notifications = extNotificationMapper
+                .selectLastList(userId, OrganizationContext.getOrganizationId());
+        notifications.forEach(notification ->
+                notification.setContentText(new String(notification.getContent())));
+        sseMessageDTO.setNotificationDTOList(notifications);
+
+        // 获取公告（如果存在）
+        Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX + userId, 0, -1);
+        if (CollectionUtils.isNotEmpty(values)) {
+            sseMessageDTO.setAnnouncementDTOList(buildDTOList(values));
+        }
+
+        // 获取用户读取状态
+        // Boolean.parseBoolean 直接将 null 或空字符串解析为 false
+        sseMessageDTO.setRead(Boolean.parseBoolean(stringRedisTemplate
+                .opsForValue().get(USER_READ_PREFIX + userId)));
+
+        // 发送消息并记录日志
+        String message = "User " + userId + " time: " + System.currentTimeMillis();
+        sendToUser(userId, "message", JSON.toJSONString(sseMessageDTO));
+        LogUtils.info("Broadcast to user {}: {}", userId, message);
+
+    }
+
+    private List<NotificationDTO> buildDTOList(Set<String> sysValues) {
         List<NotificationDTO> notificationDTOList = new ArrayList<>();
         for (String value : sysValues) {
-            String announceNotification = stringRedisTemplate.opsForValue().get(prefix + value);
+            String announceNotification = stringRedisTemplate.opsForValue().get(SseService.ANNOUNCE_PREFIX + value);
             if (StringUtils.isBlank(announceNotification)) {
                 continue;
             }

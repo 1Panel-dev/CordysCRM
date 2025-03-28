@@ -9,6 +9,7 @@ import io.cordys.crm.system.dto.MessageDetailDTO;
 import io.cordys.crm.system.notice.common.NoticeModel;
 import io.cordys.crm.system.notice.common.Receiver;
 import io.cordys.crm.system.notice.sender.AbstractNoticeSender;
+import io.cordys.crm.system.notice.sse.SseService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -25,6 +26,8 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
     private BaseMapper<Notification>notificationBaseMapper;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private SseService sseService;
 
     private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
 
@@ -60,7 +63,10 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             //更新用户的已读全部消息状态 0 为未读，1为已读
             stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + receiver.getUserId(), "0");
 
+            // 发送消息
+            sseService.broadcastPeriodically(receiver.getUserId());
         });
+
     }
 
     @Override
