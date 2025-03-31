@@ -59,7 +59,9 @@ public class ShiroFilter {
         // 匿名路径
         filterChainDefinitionMap.put("/anonymous/**", "anon");
         filterChainDefinitionMap.put("/system/version/current", "anon");
-        filterChainDefinitionMap.put("/sse/**", "anon");
+        filterChainDefinitionMap.put("/sse/subscribe/**", "anon");
+        filterChainDefinitionMap.put("/sse/close/**", "anon");
+
         filterChainDefinitionMap.put("/sso/callback/**", "anon");
         filterChainDefinitionMap.put("/organization/config/third/type/list", "anon");
         filterChainDefinitionMap.put("/organization/config/third/by/**", "anon");
