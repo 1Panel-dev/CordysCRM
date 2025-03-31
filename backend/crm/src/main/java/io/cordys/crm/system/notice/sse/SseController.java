@@ -1,6 +1,5 @@
 package io.cordys.crm.system.notice.sse;
 
-import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
@@ -56,8 +55,8 @@ public class SseController {
      * 主动断开客户端连接
      */
     @GetMapping("/close")
-    @Operation(summary = "主动断开客户端连接 SYSTEM_HEARTBEAT")
-    public void close(@RequestParam String clientId) {
-        sseService.removeEmitter(SessionUtils.getUserId(), clientId);
+    @Operation(summary = "主动断开客户端连接")
+    public void close(@RequestParam String userId, @RequestParam String clientId) {
+        sseService.removeEmitter(userId, clientId);
     }
 }
