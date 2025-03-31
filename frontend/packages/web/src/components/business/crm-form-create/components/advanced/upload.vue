@@ -101,10 +101,11 @@
   }
 
   async function customRequest({ file, onFinish, onError, onProgress }: UploadCustomRequestOptions) {
+    let timer: NodeJS.Timeout | null = null;
     try {
       // 模拟上传进度
       let upLoadProgress = 0;
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         if (upLoadProgress < 50) {
           // 进度在0-50%之间较快
           const randomIncrement = Math.floor(Math.random() * 10) + 1; // 随机增加 5-10 的百分比
@@ -127,6 +128,7 @@
       // eslint-disable-next-line no-console
       console.error(error);
       Message.error(t('crm.upload.uploadFail'));
+      clearInterval(timer as unknown as number);
       onError();
     }
   }
@@ -147,9 +149,11 @@
           fileKeysMap.value[key] = key;
           fileList.value.push({
             id: key,
+            thumbnailUrl: `${PreviewPictureUrl}/${key}`,
             url: `${PreviewPictureUrl}/${key}`,
             name: key,
             status: 'finished',
+            type: 'image/*',
           });
         });
       }
