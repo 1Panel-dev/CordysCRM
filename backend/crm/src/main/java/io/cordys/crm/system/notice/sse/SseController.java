@@ -24,11 +24,13 @@ public class SseController {
     /**
      * 客户端订阅 SSE 事件流
      */
+/*
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "客户端订阅 SSE 事件流")
     public SseEmitter subscribe(@RequestParam String clientId) {
         return sseService.addEmitter(SessionUtils.getUserId(), clientId);
     }
+*/
 
     /**
      * 客户端订阅 SSE 事件流
