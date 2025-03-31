@@ -3,6 +3,7 @@ package io.cordys.crm.system.controller;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.BusinessSearchType;
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.pager.PageUtils;
@@ -33,6 +34,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -80,7 +82,12 @@ public class ModuleFieldController {
 	@PostMapping("/source/clue")
 	@Operation(summary = "分页获取线索")
 	public Pager<List<ClueListResponse>> sourceCluePage(@Valid @RequestBody CluePageRequest request) {
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), BusinessSearchType.SELF.name());
+		DeptDataPermissionDTO deptDataPermission;
+		if (StringUtils.equals(SessionUtils.getUserId(), InternalUser.ADMIN.getValue())) {
+			deptDataPermission = null;
+		} else {
+			deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), BusinessSearchType.SELF.name());
+		}
 		return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}
 
@@ -101,7 +108,12 @@ public class ModuleFieldController {
 	@PostMapping("/source/opportunity")
 	@Operation(summary = "分页获取商机")
 	public Pager<List<OpportunityListResponse>> sourceOpportunityPage(@Valid @RequestBody OpportunityPageRequest request) {
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), BusinessSearchType.SELF.name());
+		DeptDataPermissionDTO deptDataPermission;
+		if (StringUtils.equals(SessionUtils.getUserId(), InternalUser.ADMIN.getValue())) {
+			deptDataPermission = null;
+		} else {
+			deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), BusinessSearchType.SELF.name());
+		}
 		return  opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}
 

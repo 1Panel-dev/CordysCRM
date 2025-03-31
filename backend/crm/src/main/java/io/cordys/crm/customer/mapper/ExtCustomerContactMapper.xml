@@ -70,16 +70,17 @@
             <property name="sort" value="request.sort"/>
         </include>
 
-        where cc.organization_id = #{orgId} and cc.customer_id in (
-            select distinct c.id from customer c
+        where cc.organization_id = #{orgId}
+        <if test="userId != 'admin'">
+            and cc.customer_id in (
+                select distinct c.id from customer c
                 left join customer_collaboration cc on c.id = cc.customer_id
                 where cc.user_id = #{userId} or c.owner = #{userId}
-        )
-
+            )
+        </if>
         <if test="request.keyword != null and request.keyword != ''">
             and cc.name like concat('%', #{request.keyword},'%')
         </if>
-
         <include refid="filters">
             <property name="filters" value="request.filters"/>
         </include>
