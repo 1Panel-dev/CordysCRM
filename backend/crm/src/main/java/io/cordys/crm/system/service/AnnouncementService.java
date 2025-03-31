@@ -93,7 +93,7 @@ public class AnnouncementService {
         announcement.setUpdateUser(userId);
         announcement.setNotice(false);
         //根据有效时间判断是否生成notification
-        if (request.getStartTime()<= announcement.getCreateTime() && request.getEndTime() >= announcement.getCreateTime()) {
+        if (request.getStartTime() <= announcement.getCreateTime() && request.getEndTime() >= announcement.getCreateTime()) {
             convertNotification(userId, announcement, userIds);
             announcement.setNotice(true);
         }
@@ -159,12 +159,13 @@ public class AnnouncementService {
 
     /**
      * 公告转为接收人收到的通知
-     * @param userId 创建人
+     *
+     * @param userId       创建人
      * @param announcement 公告
-     * @param userIds 接收人集合
+     * @param userIds      接收人集合
      */
     public void convertNotification(String userId, Announcement announcement, List<String> userIds) {
-        List<Notification>notifications = new ArrayList<>();
+        List<Notification> notifications = new ArrayList<>();
         SubListUtils.dealForSubList(userIds, 50, (subUserIds) -> {
             for (String subUserId : subUserIds) {
                 Notification notification = new Notification();
@@ -191,11 +192,11 @@ public class AnnouncementService {
                 notification.setUpdateTime(System.currentTimeMillis());
                 notifications.add(notification);
                 NotificationDTO notificationDTO = new NotificationDTO();
-                BeanUtils.copyBean(notificationDTO,notification);
+                BeanUtils.copyBean(notificationDTO, notification);
                 notificationDTO.setContentText(JSON.toJSONString(announcementContentDTO));
                 String messageText = JSON.toJSONString(notificationDTO);
 
-                stringRedisTemplate.opsForZSet().add(USER_ANNOUNCE_PREFIX+subUserId, id, System.currentTimeMillis());
+                stringRedisTemplate.opsForZSet().add(USER_ANNOUNCE_PREFIX + subUserId, id, System.currentTimeMillis());
                 stringRedisTemplate.opsForValue().set(ANNOUNCE_PREFIX + id, messageText);
                 //更新用户的已读全部消息状态 0 为未读，1为已读
                 stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + subUserId, "0");
@@ -229,10 +230,11 @@ public class AnnouncementService {
         List<AnnouncementDTO> announcementDTOS = extAnnouncementMapper.selectByBaseRequest(request);
         if (CollectionUtils.isNotEmpty(announcementDTOS)) {
             for (AnnouncementDTO announcementDTO : announcementDTOS) {
-                AnnouncementReceiveTypeDTO announcementReceiveTypeDTO  = JSON.parseObject(new String(announcementDTO.getReceiveType()), AnnouncementReceiveTypeDTO.class);
+                announcementDTO.setContentText(new String(announcementDTO.getContent(), StandardCharsets.UTF_8));
+                AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = JSON.parseObject(new String(announcementDTO.getReceiveType()), AnnouncementReceiveTypeDTO.class);
                 if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getDeptIds())) {
                     List<OptionDTO> idNameByIds = extDepartmentMapper.getIdNameByIds(announcementReceiveTypeDTO.getDeptIds());
-                    List<OptionScopeDTO>optionScopeDTOList = new ArrayList<>();
+                    List<OptionScopeDTO> optionScopeDTOList = new ArrayList<>();
                     for (OptionDTO idNameById : idNameByIds) {
                         OptionScopeDTO optionScopeDTO = new OptionScopeDTO();
                         BeanUtils.copyBean(optionScopeDTO, idNameById);
@@ -243,7 +245,7 @@ public class AnnouncementService {
                 }
                 if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getUserIds())) {
                     List<OptionDTO> idNameByIds = userMapper.selectUserOptionByIds(announcementReceiveTypeDTO.getUserIds());
-                    List<OptionScopeDTO>optionScopeDTOList = new ArrayList<>();
+                    List<OptionScopeDTO> optionScopeDTOList = new ArrayList<>();
                     for (OptionDTO idNameById : idNameByIds) {
                         OptionScopeDTO optionScopeDTO = new OptionScopeDTO();
                         BeanUtils.copyBean(optionScopeDTO, idNameById);
@@ -268,10 +270,10 @@ public class AnnouncementService {
         if (announcementDTO == null) {
             throw new RuntimeException(Translator.get("announcement.blank"));
         }
-        AnnouncementReceiveTypeDTO announcementReceiveTypeDTO  = JSON.parseObject(new String(announcementDTO.getReceiveType()), AnnouncementReceiveTypeDTO.class);
+        AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = JSON.parseObject(new String(announcementDTO.getReceiveType()), AnnouncementReceiveTypeDTO.class);
         if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getDeptIds())) {
             List<OptionDTO> idNameByIds = extDepartmentMapper.getIdNameByIds(announcementReceiveTypeDTO.getDeptIds());
-            List<OptionScopeDTO>optionScopeDTOList = new ArrayList<>();
+            List<OptionScopeDTO> optionScopeDTOList = new ArrayList<>();
             for (OptionDTO idNameById : idNameByIds) {
                 OptionScopeDTO optionScopeDTO = new OptionScopeDTO();
                 BeanUtils.copyBean(optionScopeDTO, idNameById);
@@ -282,7 +284,7 @@ public class AnnouncementService {
         }
         if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getUserIds())) {
             List<OptionDTO> idNameByIds = userMapper.selectUserOptionByIds(announcementReceiveTypeDTO.getUserIds());
-            List<OptionScopeDTO>optionScopeDTOList = new ArrayList<>();
+            List<OptionScopeDTO> optionScopeDTOList = new ArrayList<>();
             for (OptionDTO idNameById : idNameByIds) {
                 OptionScopeDTO optionScopeDTO = new OptionScopeDTO();
                 BeanUtils.copyBean(optionScopeDTO, idNameById);
@@ -291,7 +293,7 @@ public class AnnouncementService {
             }
             announcementDTO.setUserIdName(optionScopeDTOList);
         }
-        announcementDTO.setContentText(new String(announcementDTO.getContent()));
+        announcementDTO.setContentText(new String(announcementDTO.getContent(), StandardCharsets.UTF_8));
         return announcementDTO;
     }
 }
