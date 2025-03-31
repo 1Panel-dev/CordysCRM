@@ -12,6 +12,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -65,7 +66,13 @@ public class MessageDetailDTOService {
             MessageTask messageTask = messageTaskList.getFirst();
             MessageDetailDTO messageDetailDTO = new MessageDetailDTO();
             BeanUtils.copyBean(messageDetailDTO,messageTask);
-            messageDetailDTO.setTemplate(new String(messageTask.getTemplate()));
+            if (messageTask.getTemplate()==null) {
+                String template = MessageTemplateUtils.getTemplate(messageTask.getEvent());
+                messageDetailDTO.setTemplate(template);
+            } else {
+                messageDetailDTO.setTemplate(new String(messageTask.getTemplate()));
+
+            }
             messageDetailDTOS.add(messageDetailDTO);
         });
     }
