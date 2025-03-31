@@ -88,6 +88,9 @@ public class ClueListResponse {
     @Schema(description = "默认回收公海名称")
     private String recyclePoolName;
 
+    @Schema(description = "转移类型")
+    private String transitionType;
+
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
 }
