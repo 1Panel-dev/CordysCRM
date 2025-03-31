@@ -29,7 +29,7 @@ public class JsonDifferenceUtils {
                 //删除的属性
                 JsonDifferenceDTO removed = new JsonDifferenceDTO();
                 removed.setColumn(fieldName);
-                removed.setOldValue(oldValue.toString());
+                removed.setOldValue(getValue(oldValue));
                 removed.setType("removed");
                 JsonDifferenceDTOList.add(removed);
             } else if (!oldValue.equals(newValue)) {
@@ -42,8 +42,8 @@ public class JsonDifferenceUtils {
                     //更新的属性
                     JsonDifferenceDTO diff = new JsonDifferenceDTO();
                     diff.setColumn(fieldName);
-                    diff.setOldValue(oldValue.toString());
-                    diff.setNewValue(newValue.toString());
+                    diff.setOldValue(getValue(oldValue));
+                    diff.setNewValue(getValue(newValue));
                     diff.setType("modified");
                     JsonDifferenceDTOList.add(diff);
                 }
@@ -57,10 +57,18 @@ public class JsonDifferenceUtils {
             if (!oldNode.has(fieldName)) {
                 JsonDifferenceDTO add = new JsonDifferenceDTO();
                 add.setColumn(fieldName);
-                add.setNewValue(newNode.get(fieldName).toString());
+                add.setNewValue(getValue(newNode.get(fieldName)));
                 add.setType("add");
                 JsonDifferenceDTOList.add(add);
             }
+        }
+    }
+
+    public static Object getValue(JsonNode jsonNode) {
+        if (jsonNode.isArray()) {
+            return JSON.parseObject(jsonNode.toString());
+        } else {
+            return jsonNode.asText();
         }
     }
 

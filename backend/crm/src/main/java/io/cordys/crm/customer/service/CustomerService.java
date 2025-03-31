@@ -212,6 +212,7 @@ public class CustomerService {
     public CustomerGetResponse get(String id, String orgId) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
         CustomerGetResponse customerGetResponse = BeanUtils.copyBean(new CustomerGetResponse(), customer);
+        customerGetResponse = baseService.setCreateUpdateOwnerUserName(customerGetResponse);
         // 获取模块字段
         List<BaseModuleFieldValue> customerFields = customerFieldService.getModuleFieldValuesByResourceId(id);
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
@@ -234,7 +235,7 @@ public class CustomerService {
             }
         }
 
-        return baseService.setCreateUpdateOwnerUserName(customerGetResponse);
+        return customerGetResponse;
     }
 
     @OperationLog(module = LogModule.CUSTOMER, type = LogType.ADD, resourceName = "{#request.name}")

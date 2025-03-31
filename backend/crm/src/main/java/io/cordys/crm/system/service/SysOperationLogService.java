@@ -3,7 +3,6 @@ package io.cordys.crm.system.service;
 import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
-import io.cordys.common.util.JSON;
 import io.cordys.common.util.JsonDifferenceUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.OperationLog;
@@ -110,9 +109,9 @@ public class SysOperationLogService {
                                 moduleLogService.handleLogField(differenceDTOS, orgId);
                             } else {
                                 differenceDTOS.forEach(differ -> {
-                                    differ.setColumnName(Translator.get("log_" + differ.getColumn()));
-                                    differ.setOldValueName(JSON.parseObject(differ.getOldValue()));
-                                    differ.setNewValueName(JSON.parseObject(differ.getNewValue()));
+                                    differ.setColumnName(Translator.get("log." + differ.getColumn()));
+                                    differ.setOldValueName(differ.getOldValue());
+                                    differ.setNewValueName(differ.getNewValue());
                                 });
                             }
 

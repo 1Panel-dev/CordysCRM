@@ -93,4 +93,10 @@ public abstract class BaseField {
 	public boolean needInitialOptions() {
 		return StringUtils.equalsAny(type, FieldType.MEMBER.name(), FieldType.DEPARTMENT.name());
 	}
+
+	@JsonIgnore
+	public boolean hasOptions() {
+		return StringUtils.equalsAny(type, FieldType.RADIO.name(), FieldType.CHECKBOX.name(), FieldType.SELECT.name(),
+				FieldType.DATA_SOURCE.name(), FieldType.MEMBER.name(), FieldType.DEPARTMENT.name());
+	}
 }

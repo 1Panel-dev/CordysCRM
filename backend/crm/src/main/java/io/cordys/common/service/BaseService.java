@@ -8,11 +8,14 @@ import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
+import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
+import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +33,8 @@ import java.util.stream.Collectors;
 public class BaseService {
     @Resource
     private ExtUserMapper extUserMapper;
+    @Resource
+    private BaseMapper<User> userMapper;
     @Resource
     private ExtCustomerContactMapper extCustomerContactMapper;
     @Resource
@@ -147,6 +152,17 @@ public class BaseService {
         return extUserMapper.selectUserOptionByIds(userIds)
                 .stream()
                 .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+    }
+
+    public String getUserName(String userId) {
+        if (StringUtils.isBlank(userId)) {
+            return null;
+        }
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (user != null) {
+            return user.getName();
+        }
+        return null;
     }
 
     /**
