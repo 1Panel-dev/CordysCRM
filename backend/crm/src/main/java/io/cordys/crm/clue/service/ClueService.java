@@ -189,6 +189,17 @@ public class ClueService {
 
         // 获取模块字段
         List<BaseModuleFieldValue> clueFields = clueFieldService.getModuleFieldValuesByResourceId(id);
+        // 处理自定义字段选项数据
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, clueFields);
+
+        // 补充负责人选项
+        List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(clueGetResponse,
+                ClueGetResponse::getOwner, ClueGetResponse::getOwnerName);
+        optionMap.put(BusinessModuleField.CLUE_OWNER.getBusinessKey(), ownerFieldOption);
+
+        clueGetResponse.setOptionMap(optionMap);
         clueGetResponse.setModuleFields(clueFields);
 
         if (clueGetResponse.getOwner() != null) {

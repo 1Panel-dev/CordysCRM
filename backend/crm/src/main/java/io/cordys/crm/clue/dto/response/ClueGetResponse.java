@@ -1,10 +1,12 @@
 package io.cordys.crm.clue.dto.response;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.OptionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -64,4 +66,7 @@ public class ClueGetResponse {
 
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
+
+    @Schema(description = "选项集合")
+    private Map<String, List<OptionDTO>> optionMap;
 }
