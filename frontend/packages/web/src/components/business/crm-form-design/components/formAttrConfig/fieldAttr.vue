@@ -539,10 +539,14 @@
       </div>
       <div v-if="showRules.length > 0" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.validator') }}</div>
-        <n-checkbox-group v-model:value="checkedRules" :disabled="fieldConfig.disabledProps?.includes('rules')">
+        <n-checkbox-group
+          v-model:value="checkedRules"
+          :disabled="fieldConfig.disabledProps?.includes('rules')"
+          @update-value="handleRuleChange"
+        >
           <n-space item-class="w-full">
             <n-checkbox v-for="rule of showRules" :key="rule.key" :value="rule.key">
-              {{ t(rule.label, { value: t(fieldConfig.name) }) }}
+              {{ t(rule.label || '', { value: t(fieldConfig.name) }) }}
             </n-checkbox>
           </n-space>
         </n-checkbox-group>
@@ -658,7 +662,11 @@
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import { rules, showRulesMap } from '@/components/business/crm-form-create/config';
-  import { FormCreateField, FormCreateFieldShowControlRule } from '@/components/business/crm-form-create/types';
+  import {
+    FormCreateField,
+    FormCreateFieldRule,
+    FormCreateFieldShowControlRule,
+  } from '@/components/business/crm-form-create/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import optionConfig from './optionConfig.vue';
 
@@ -698,6 +706,18 @@
       checkedRules.value = arr.map((e) => e.key);
     }
   );
+
+  function handleRuleChange(val: (string | number)[]) {
+    fieldConfig.value.rules = val
+      .map((e) => {
+        const rule = rules.find((item) => item.key === e);
+        if (rule) {
+          return { key: rule.key };
+        }
+        return null;
+      })
+      .filter((e) => e !== null) as FormCreateFieldRule[];
+  }
 
   function handleMultipleChange(val: boolean) {
     if (val || [FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(fieldConfig.value.type)) {

@@ -59,6 +59,8 @@
             clearable
             :max-length="64"
             size="large"
+            show-password-on="click"
+            @keydown.enter="handleSubmit"
           />
         </n-form-item>
         <div class="mt-[12px]" :class="hasMoreLoginWay ? 'mb-[60px]' : 'mb-7'">

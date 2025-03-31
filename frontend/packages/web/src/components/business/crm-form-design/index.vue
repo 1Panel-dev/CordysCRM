@@ -53,10 +53,7 @@
     () => {
       list.value.forEach((item) => {
         const fullRules: FormCreateFieldRule[] = [];
-        rules.forEach((rule) => {
-          if (!item.rules) {
-            item.rules = [];
-          }
+        (item.rules || []).forEach((rule) => {
           // 遍历规则集合，将全量的规则配置载入
           const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
           if (staticRule) {

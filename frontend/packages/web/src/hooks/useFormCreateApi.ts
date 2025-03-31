@@ -174,6 +174,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     if (
       [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER, FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER].includes(props.formKey.value)
     ) {
+      // 客户跟进计划和记录，需要赋予类型字段默认为客户，客户字段默认值为当前客户
       if (field.businessKey === 'type') {
         return {
           defaultValue: 'CUSTOMER',
@@ -183,7 +184,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         specialInitialOptions.value = [
           {
             id: props.sourceId?.value,
-            name: sourceName.value,
+            name: sourceName.value || props.initialSourceName?.value,
           },
         ];
         return {
@@ -193,6 +194,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       }
     }
     if ([FormDesignKeyEnum.FOLLOW_PLAN_CLUE, FormDesignKeyEnum.FOLLOW_RECORD_CLUE].includes(props.formKey.value)) {
+      // 线索跟进计划和记录，需要赋予类型字段默认为客户，线索字段默认值为当前线索
       if (field.businessKey === 'type') {
         return {
           defaultValue: 'CLUE',
@@ -202,7 +204,22 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         specialInitialOptions.value = [
           {
             id: props.sourceId?.value,
-            name: sourceName.value,
+            name: sourceName.value || props.initialSourceName?.value,
+          },
+        ];
+        return {
+          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          initialOptions: specialInitialOptions.value,
+        };
+      }
+    }
+    if (props.formKey.value === FormDesignKeyEnum.CONTACT) {
+      // 联系人表单，赋予客户字段默认值为当前客户
+      if (field.businessKey === 'customerId') {
+        specialInitialOptions.value = [
+          {
+            id: props.sourceId?.value,
+            name: sourceName.value || props.initialSourceName?.value,
           },
         ];
         return {
@@ -212,6 +229,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       }
     }
     if (field.type === FieldTypeEnum.DATA_SOURCE) {
+      // 数据源类型的字段，默认值需要转为数组
       return {
         defaultValue: typeof field.defaultValue === 'string' ? [field.defaultValue] : field.defaultValue,
       };
@@ -246,13 +264,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
-  function transformFieldValue(field: FormCreateField, value: string | number | (string | number)[]) {
-    if (field.type === FieldTypeEnum.DATA_SOURCE) {
-      return field.multiple ? value : (value as (string | number)[])?.[0];
-    }
-    return value;
-  }
-
   async function saveForm(form: Record<string, any>, isContinue: boolean, callback?: (_isContinue: boolean) => void) {
     try {
       loading.value = true;
@@ -264,11 +275,11 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
           // 存在业务字段，则按照业务字段的key存储
-          params[item.businessKey] = transformFieldValue(item, form[item.id]);
+          params[item.businessKey] = form[item.id];
         } else {
           params.moduleFields.push({
             fieldId: item.id,
-            fieldValue: transformFieldValue(item, form[item.id]),
+            fieldValue: form[item.id],
           });
         }
       });

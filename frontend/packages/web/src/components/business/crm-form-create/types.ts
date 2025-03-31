@@ -10,7 +10,7 @@ export interface FormCreateFieldOption extends Option {
 
 export interface FormCreateFieldRule extends FormItemRule {
   key: FieldRuleEnum;
-  label: string;
+  label?: string;
   regex?: string;
 }
 

@@ -2,8 +2,7 @@ import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEn
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import type { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
-
-import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
+import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
 const internalFilterKeyMap: Record<FormDesignKeyEnum, string[]> = {
   [FormDesignKeyEnum.BUSINESS]: ['opportunityName', 'opportunityCustomer', 'opportunitySource'],

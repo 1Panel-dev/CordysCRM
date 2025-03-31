@@ -285,7 +285,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const staticColumns: CrmDataTableColumn[] = [
     {
       title: t('common.creator'),
-      key: 'createUser',
+      key: 'createUserName',
       width: 120,
       ellipsis: {
         tooltip: true,
@@ -305,7 +305,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     },
     {
       title: t('common.updateUserName'),
-      key: 'updateUser',
+      key: 'updateUserName',
       width: 120,
       ellipsis: {
         tooltip: true,
@@ -511,9 +511,18 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       const customFieldAttr: Record<string, any> = {};
       businessFieldIds.value.forEach((fieldId) => {
         const options = originalData?.optionMap?.[fieldId];
-        const name = options?.find((e) => e.id === item[fieldId])?.name;
+        let name: string | string[] = '';
+        if (dataSourceFieldIds.value.includes(fieldId)) {
+          if (typeof item[fieldId] === 'string') {
+            name = [options?.find((e) => e.id === item[fieldId])?.name];
+          } else {
+            name = options?.filter((e) => item[fieldId].includes(e.id)).map((e) => e.name) || [];
+          }
+        } else {
+          name = options?.find((e) => e.id === item[fieldId])?.name;
+        }
         if (name) {
-          businessFieldAttr[fieldId] = dataSourceFieldIds.value.includes(fieldId) ? [name] : name;
+          businessFieldAttr[fieldId] = name;
         } else if (addressFieldIds.value.includes(fieldId)) {
           // 地址类型字段，解析代码替换成省市区
           const address = item[fieldId]?.split('-');

@@ -19,7 +19,12 @@
             v-permission="['OPPORTUNITY_MANAGEMENT:ADD']"
             class="mr-[12px]"
             type="primary"
-            @click="formCreateDrawerVisible = true"
+            @click="
+              {
+                activeSourceId = '';
+                formCreateDrawerVisible = true;
+              }
+            "
           >
             {{ t('opportunity.createOpportunity') }}
           </n-button>

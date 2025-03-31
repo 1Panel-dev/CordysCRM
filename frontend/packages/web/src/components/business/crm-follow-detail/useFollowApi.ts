@@ -6,6 +6,8 @@ import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEn
 import type { CommonList } from '@lib/shared/models/common';
 import type { FollowDetailItem } from '@lib/shared/models/customer';
 
+import type { FormCreateField } from '@/components/business/crm-form-create/types';
+
 import {
   cancelClueFollowPlan,
   deleteClueFollowPlan,
@@ -31,8 +33,6 @@ import {
 import { getPersonalFollow } from '@/api/modules/system/business';
 import { getFormDesignConfig } from '@/api/modules/system/module';
 import { useI18n } from '@/hooks/useI18n';
-
-import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
 export type followEnumType =
   | typeof FormDesignKeyEnum.CUSTOMER
