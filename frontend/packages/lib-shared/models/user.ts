@@ -21,6 +21,8 @@ export interface UserInfo {
   csrfToken: string;
   sessionId: string;
   roles: string[];
+  departmentId: string;
+  departmentName: string;
 }
 
 export interface MessageInfo {

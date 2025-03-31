@@ -44,6 +44,7 @@
   import { FormCreateField, FormCreateFieldRule } from '@/components/business/crm-form-create/types';
 
   import { useI18n } from '@/hooks/useI18n';
+  import useUserStore from '@/store/modules/user';
 
   import { rules } from './config';
 
@@ -57,6 +58,7 @@
   }>();
 
   const { t } = useI18n();
+  const userStore = useUserStore();
 
   const list = defineModel<FormCreateField[]>('list', {
     required: true,
@@ -182,7 +184,7 @@
         }
         handleFieldChange(form.value[item.id], item); // 初始化时，根据字段值控制显示
         const fullRules: FormCreateFieldRule[] = [];
-        rules.forEach((rule) => {
+        (item.rules || []).forEach((rule) => {
           // 遍历规则集合，将全量的规则配置载入
           const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
           if (staticRule) {
@@ -196,6 +198,24 @@
           }
         });
         item.rules = fullRules;
+        if (item.type === FieldTypeEnum.MEMBER && item.hasCurrentUser) {
+          item.defaultValue = userStore.userInfo.id;
+          item.initialOptions = [
+            {
+              id: userStore.userInfo.id,
+              name: userStore.userInfo.name,
+            },
+          ];
+        }
+        if (item.type === FieldTypeEnum.DEPARTMENT && item.hasCurrentUserDept) {
+          item.defaultValue = userStore.userInfo.departmentId;
+          item.initialOptions = [
+            {
+              id: userStore.userInfo.departmentId,
+              name: userStore.userInfo.departmentName,
+            },
+          ];
+        }
       });
     },
     { immediate: true }

@@ -416,4 +416,5 @@ export const defaultUserInfo: OrgUserInfo = {
   userId: '',
   userName: '',
   departmentName: '',
+  departmentId: '',
 };

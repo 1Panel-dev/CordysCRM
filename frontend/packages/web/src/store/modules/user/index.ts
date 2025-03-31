@@ -45,6 +45,8 @@ const useUserStore = defineStore('user', {
       csrfToken: '',
       sessionId: '',
       roles: [],
+      departmentId: '',
+      departmentName: '',
     },
     messageInfo: {
       read: false,
