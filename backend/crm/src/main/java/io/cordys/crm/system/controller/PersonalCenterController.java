@@ -70,12 +70,14 @@ public class PersonalCenterController {
 
     @PostMapping("/repeat/clue/detail")
     @Operation(summary = "获取重复线索详情")
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ})
     public List<ClueRepeatListResponse> getRepeatClueDetail(@Validated @RequestBody RepeatCustomerDetailPageRequest request) {
         return personalCenterService.getRepeatClueDetail(request,OrganizationContext.getOrganizationId());
     }
     
     @PostMapping("/repeat/opportunity/detail")
     @Operation(summary = "获取重复商机详情")
+    @RequiresPermissions(value = {PermissionConstants.OPPORTUNITY_MANAGEMENT_READ})
     public List<OpportunityRepeatResponse> getRepeatOpportunityDetail(@Validated @RequestBody RepeatCustomerDetailPageRequest request) {
         return personalCenterService.getRepeatOpportunityDetail(request);
     }

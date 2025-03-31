@@ -111,6 +111,7 @@ public class AnnouncementService {
     @Transactional(rollbackFor = Exception.class)
     @OperationLog(module = LogModule.SYSTEM_ANNOUNCEMENT, type = LogType.UPDATE)
     public void update(AnnouncementRequest request, String userId) {
+        String organizationId = request.getOrganizationId();
         Announcement originalAnnouncement = announcementMapper.selectByPrimaryKey(request.getId());
         if (originalAnnouncement == null) {
             throw new GenericException(Translator.get("announcement.blank"));
@@ -135,14 +136,16 @@ public class AnnouncementService {
         announcement.setRenameUrl(request.getRenameUrl());
         announcement.setReceiver(JSON.toJSONString(userIds).getBytes(StandardCharsets.UTF_8));
         announcement.setReceiveType(JSON.toJSONString(announcementReceiveTypeDTO).getBytes(StandardCharsets.UTF_8));
-        announcement.setOrganizationId(request.getOrganizationId());
+        announcement.setOrganizationId(organizationId);
         announcement.setUpdateTime(System.currentTimeMillis());
         announcement.setUpdateUser(userId);
         announcement.setNotice(originalAnnouncement.getNotice());
         announcementMapper.updateById(announcement);
         if (originalAnnouncement.getNotice()) {
             //删除旧的notice，根据接收人生成新的未读的notice
-            notificationMapper.deleteByResourceId(announcement.getId());
+            String announcementId = announcement.getId();
+            deleteAnnouncementKeyById(announcementId, organizationId);
+            notificationMapper.deleteByResourceId(announcementId);
             convertNotification(userId, announcement, userIds);
         }
         // 添加日志上下文
@@ -155,6 +158,23 @@ public class AnnouncementService {
                         .modifiedValue(announcementMapper.selectByPrimaryKey(request.getId()))
                         .build()
         );
+    }
+
+    /**
+     *  删除缓存中的公告提示
+     * @param announcementId 公告id
+     * @param organizationId 组织Id
+     */
+    private void deleteAnnouncementKeyById(String announcementId, String organizationId) {
+        Notification notificationRequest = new Notification();
+        notificationRequest.setResourceId(announcementId);
+        notificationRequest.setOrganizationId(organizationId);
+        List<NotificationDTO> notificationDTOS = notificationMapper.selectByAnyOne(notificationRequest);
+        for (NotificationDTO notificationDTO : notificationDTOS) {
+            String notificationDTOId = notificationDTO.getId();
+            stringRedisTemplate.opsForZSet().remove(USER_ANNOUNCE_PREFIX + notificationDTO.getReceiver(), notificationDTOId);
+            stringRedisTemplate.delete(ANNOUNCE_PREFIX + notificationDTOId);
+        }
     }
 
     /**
@@ -214,8 +234,10 @@ public class AnnouncementService {
         if (announcement == null) {
             throw new RuntimeException(Translator.get("announcement.blank"));
         }
+        deleteAnnouncementKeyById(id, announcement.getOrganizationId());
         announcementMapper.deleteByPrimaryKey(id);
         notificationMapper.deleteByResourceId(id);
+
         // 添加日志上下文
         OperationLogContext.setResourceName(announcement.getSubject());
     }
