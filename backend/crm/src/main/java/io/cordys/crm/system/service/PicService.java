@@ -127,31 +127,23 @@ public class PicService {
 				}
 				File picFile = folderFiles.getFirst();
 				picStream = new FileInputStream(picFile);
-				responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + picFile.getName() + "\"").contentLength(picFile.length());
+				responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + picFile.getName() + "\"")
+						.contentLength(picFile.length())
+						.contentType(isSvg(picFile.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
 			} else {
 				// get pic from transferred dir
 				request = new FileRequest(getTransferFileDir(attachment.getOrganizationId(), attachment.getResourceId(), attachment.getId()), StorageType.LOCAL.name(), attachment.getName());
 				picStream = fileCommonService.getFileInputStream(request);
-				responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachment.getName() + "\"").contentLength(attachment.getSize());
+				responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachment.getName() + "\"")
+						.contentLength(attachment.getSize())
+						.contentType(isSvg(attachment.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
 			}
 			return responseBuilder
-					.contentType(MediaType.parseMediaType("application/octet-stream"))
 					.body(new InputStreamResource(picStream));
 		} catch (Exception e) {
 			LogUtils.error(e);
 			return null;
 		}
-	}
-
-	/**
-	 * 获取图片信息集合
-	 * @param picIds 图片ID集合
-	 * @return 信息集合
-	 */
-	public List<Attachment> getPicInfos(List<String> picIds) {
-		LambdaQueryWrapper<Attachment> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.in(Attachment::getId, picIds);
-		return attachmentMapper.selectListByLambda(queryWrapper);
 	}
 
 	/**
@@ -172,5 +164,14 @@ public class PicService {
 	 */
 	private String getTransferFileDir(String organizationId, String resourceId, String fileId) {
 		return "/" + organizationId + "/" + resourceId + "/" + fileId;
+	}
+
+	/**
+	 * 判断是否svg文件
+	 * @param fileName 文件名
+	 * @return 是否svg
+	 */
+	private boolean isSvg(String fileName) {
+		return fileName.endsWith(".svg") || fileName.endsWith(".SVG");
 	}
 }

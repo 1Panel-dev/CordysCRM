@@ -27,7 +27,6 @@ public class PicControllerTests extends BaseTest {
 
 	private static final String UPLOAD = "/upload/temp";
 	private static final String PREVIEW = "/preview";
-	private static final String DOWNLOAD = "/download";
 
 	public static List<String> tempIds;
 
@@ -50,11 +49,5 @@ public class PicControllerTests extends BaseTest {
 	@Order(2)
 	void previewPic() throws Exception {
 		this.requestGetStreamWithOk(PREVIEW + "/" + tempIds.getFirst());
-	}
-
-	@Test
-	@Order(3)
-	void downloadPic() throws Exception {
-		this.requestGetStreamWithOk(DOWNLOAD + "/" + tempIds.getFirst());
 	}
 }
