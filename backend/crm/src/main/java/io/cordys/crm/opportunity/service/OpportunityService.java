@@ -31,6 +31,7 @@ import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
@@ -71,6 +72,8 @@ public class OpportunityService {
     private ModuleFormService moduleFormService;
     @Resource
     private CustomerFieldService customerFieldService;
+    @Resource
+    private ExtProductMapper extProductMapper;
 
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
@@ -95,6 +98,9 @@ public class OpportunityService {
         List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(buildList,
                 OpportunityListResponse::getContactId, OpportunityListResponse::getContactName);
         optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+
+        List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
 
 
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);

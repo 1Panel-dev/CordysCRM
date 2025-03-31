@@ -145,4 +145,10 @@
         </foreach>
     </select>
 
+
+    <select id="getOptions" resultType="io.cordys.common.dto.OptionDTO">
+        select id, name
+        from product
+        where organization_id = #{orgId}
+    </select>
 </mapper>

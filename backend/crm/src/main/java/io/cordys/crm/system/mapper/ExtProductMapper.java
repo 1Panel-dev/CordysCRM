@@ -1,5 +1,6 @@
 package io.cordys.crm.system.mapper;
 
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.response.product.ProductListResponse;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
@@ -24,4 +25,5 @@ public interface ExtProductMapper {
 
     void updateProduct(@Param("ids") List<String> ids, @Param("product") Product product);
 
+    List<OptionDTO> getOptions(@Param("orgId") String orgId);
 }
