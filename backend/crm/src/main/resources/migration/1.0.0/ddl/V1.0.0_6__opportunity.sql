@@ -12,8 +12,6 @@ CREATE TABLE opportunity_rule
     `auto`            BIT(1)       NOT NULL DEFAULT 0 COMMENT '自动回收',
     `operator`        VARCHAR(10) COMMENT '操作符',
     `condition`       TEXT COMMENT '回收条件',
-    `expire_notice`   BIT(1)       NOT NULL DEFAULT 1 COMMENT '到期提醒',
-    `notice_days`     INT COMMENT '提前提醒天数',
     `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',

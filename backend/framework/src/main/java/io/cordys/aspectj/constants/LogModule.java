@@ -73,4 +73,9 @@ public class LogModule {
     //todo end
 
     // 可以根据需要扩展其他模块常量
+
+    /**
+     * 客户
+     */
+    public static final String CUSTOMER_POOL = "CUSTOMER_POOL";
 }

@@ -9,5 +9,5 @@ INSERT INTO sys_organization_user (id, user_id, organization_id, department_id, 
 
 INSERT INTO customer_pool (id, scope_id, organization_id, name, owner_id, enable, auto, create_time, update_time, create_user, update_user) VALUES
     ('job_pool_id', '[\"role_id\", \"department_id\", \"admin\"]', '100001', 'test_pool', 'admin', 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'admin', 'admin');
-INSERT INTO customer_pool_recycle_rule (id, pool_id, expire_notice, notice_days, operator, `condition`, create_time, update_time, create_user, update_user) VALUES
-    ('job_recycle_rule_id', 'job_pool_id', 1, 10, 'and', '{\"column\":\"storageTime\",\"operator\":\"DYNAMICS\",\"value\":\"6,month\",\"scope\":[\"Created\"]}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'admin', 'admin');
+INSERT INTO customer_pool_recycle_rule (id, pool_id, operator, `condition`, create_time, update_time, create_user, update_user) VALUES
+    ('job_recycle_rule_id', 'job_pool_id','and', '{\"column\":\"storageTime\",\"operator\":\"DYNAMICS\",\"value\":\"6,month\",\"scope\":[\"Created\"]}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'admin', 'admin');

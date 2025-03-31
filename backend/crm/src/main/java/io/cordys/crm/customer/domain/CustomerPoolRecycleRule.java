@@ -12,12 +12,6 @@ public class CustomerPoolRecycleRule extends BaseModel {
 	@Schema(description = "公海池ID")
 	private String poolId;
 
-	@Schema(description = "到期提醒")
-	private Boolean expireNotice;
-
-	@Schema(description = "提前提醒天数")
-	private Integer noticeDays;
-
 	@Schema(description = "操作符")
 	private String operator;
 

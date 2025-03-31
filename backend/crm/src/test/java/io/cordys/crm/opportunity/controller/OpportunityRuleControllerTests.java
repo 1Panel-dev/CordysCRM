@@ -51,7 +51,7 @@ public class OpportunityRuleControllerTests extends BaseTest {
 	void add() throws Exception {
 		OpportunityRuleAddRequest request = OpportunityRuleAddRequest.builder()
 				.name("rule").ownerIds(List.of("cc")).scopeIds(List.of("cc"))
-				.enable(true).auto(false).expireNotice(false).build();
+				.enable(true).auto(false).build();
 		this.requestPostWithOk("/opportunity-rule/add", request);
 	}
 

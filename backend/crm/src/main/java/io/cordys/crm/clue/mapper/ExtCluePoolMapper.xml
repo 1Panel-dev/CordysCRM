@@ -21,8 +21,7 @@
     </update>
 
     <update id="updateRecycleRule" parameterType="io.cordys.crm.clue.domain.CluePoolRecycleRule">
-        update clue_pool_recycle_rule set expire_notice = #{rule.expireNotice}, notice_days = #{rule.noticeDays},
-                                              operator = #{rule.operator}, `condition` = #{rule.condition}, update_user = #{rule.updateUser}, update_time = #{rule.updateTime}
+        update clue_pool_recycle_rule set operator = #{rule.operator}, `condition` = #{rule.condition}, update_user = #{rule.updateUser}, update_time = #{rule.updateTime}
         where pool_id = #{rule.poolId}
     </update>
 

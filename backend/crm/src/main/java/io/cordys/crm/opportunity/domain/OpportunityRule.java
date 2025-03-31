@@ -32,10 +32,4 @@ public class OpportunityRule extends BaseModel {
 
 	@Schema(description = "回收条件")
 	private String condition;
-
-	@Schema(description = "到期提醒")
-	private Boolean expireNotice;
-
-	@Schema(description = "提前提醒天数")
-	private Integer noticeDays;
 }

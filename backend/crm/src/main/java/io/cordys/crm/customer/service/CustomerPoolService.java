@@ -1,5 +1,10 @@
 package io.cordys.crm.customer.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.condition.CombineSearch;
@@ -117,6 +122,7 @@ public class CustomerPoolService {
 	 * @param request 请求参数
 	 * @param currentUserId 当前用户ID
 	 */
+	@OperationLog(module = LogModule.CUSTOMER_POOL, type = LogType.ADD, resourceName = "{#request.name}")
 	public void add(CustomerPoolAddRequest request, String currentUserId, String organizationId) {
 		CustomerPool pool = new CustomerPool();
 		BeanUtils.copyBean(pool, request);
@@ -148,6 +154,13 @@ public class CustomerPoolService {
 		recycleRule.setUpdateUser(currentUserId);
 		recycleRule.setUpdateTime(System.currentTimeMillis());
 		customerPoolRecycleRuleMapper.insert(recycleRule);
+
+		// 添加日志上下文
+		OperationLogContext.setContext(LogContextInfo.builder()
+				.modifiedValue(pool)
+				.resourceId(pool.getId())
+				.resourceName(pool.getName())
+				.build());
 	}
 
 	/**

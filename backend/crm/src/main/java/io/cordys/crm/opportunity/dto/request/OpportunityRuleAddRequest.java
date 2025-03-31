@@ -41,11 +41,4 @@ public class OpportunityRuleAddRequest {
 
 	@Schema(description = "规则条件集合")
 	private List<RuleConditionDTO> conditions;
-
-	@NotNull
-	@Schema(description = "到期提醒")
-	private Boolean expireNotice;
-
-	@Schema(description = "提前提醒天数")
-	private Integer noticeDays;
 }
