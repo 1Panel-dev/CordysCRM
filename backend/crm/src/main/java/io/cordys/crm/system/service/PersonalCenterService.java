@@ -169,7 +169,7 @@ public class PersonalCenterService {
 
     public List<CustomerRepeatResponse> getRepeatCustomer(RepeatCustomerPageRequest request, List<String> permissions, String organizationId, String userId) {
         //1.查询当前用户权限
-        if (!permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ) && !StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
+        if (!permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ) || !StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
             return new ArrayList<>();
         }
         List<CustomerRepeatResponse> customers = extCustomerMapper.checkRepeatCustomerByName(request.getName(), organizationId);
