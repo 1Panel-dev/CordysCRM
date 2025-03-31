@@ -34,7 +34,6 @@ public class NotificationService {
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
     private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
-    private static final String SYSTEM_COUNT = "SYSTEM";  // 系统通知key
 
 
     public List<NotificationDTO> listNotification(NotificationRequest notificationRequest, String userId, String organizationId) {
@@ -88,25 +87,7 @@ public class NotificationService {
         totalOptionDTO.setKey("total");
         totalOptionDTO.setCount(notifications.size());
         optionDTOS.add(totalOptionDTO);
-        if (CollectionUtils.isEmpty(notifications)){
-            Map<String, Integer> countMap = new HashMap<>();
-            countMap.put(NotificationConstants.Module.CUSTOMER, 0);
-            countMap.put(NotificationConstants.Module.CLUE, 0);
-            countMap.put(NotificationConstants.Module.OPPORTUNITY, 0);
-            countMap.put(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), 0);
-            countMap.forEach((k, v) -> {
-                OptionCountDTO optionDTO = new OptionCountDTO();
-                optionDTO.setKey(k);
-                optionDTO.setCount(v);
-                optionDTOS.add(optionDTO);
-            });
-            OptionCountDTO optionDTO = new OptionCountDTO();
-            optionDTO.setKey(SYSTEM_COUNT);
-            optionDTO.setCount(0);
-            optionDTOS.add(optionDTO);
-        } else {
-            buildSourceCount(notifications, optionDTOS);
-        }
+        buildSourceCount(notifications, optionDTOS);
         return optionDTOS;
     }
 
@@ -114,7 +95,7 @@ public class NotificationService {
         Map<String, Integer> countMap = new HashMap<>();
         Map<String, List<Notification>> resourceMap = notifications.stream().collect(Collectors.groupingBy(Notification::getResourceType));
         resourceMap.forEach((k, v) -> {
-             if (k.contains(NotificationConstants.Module.CUSTOMER)) {
+            if (k.contains(NotificationConstants.Module.CUSTOMER)) {
                 countMap.merge(NotificationConstants.Module.CUSTOMER, v.size(), Integer::sum);
             } else if (k.contains(NotificationConstants.Module.CLUE)) {
                 countMap.merge(NotificationConstants.Module.CLUE, v.size(), Integer::sum);
@@ -124,18 +105,17 @@ public class NotificationService {
                 countMap.merge(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), v.size(), Integer::sum);
             }
         });
-        AtomicInteger systemCount = new AtomicInteger();
+        countMap.putIfAbsent(NotificationConstants.Module.CUSTOMER, 0);
+        countMap.putIfAbsent(NotificationConstants.Module.CLUE, 0);
+        countMap.putIfAbsent(NotificationConstants.Module.OPPORTUNITY, 0);
+        countMap.putIfAbsent(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.name(), 0);
+
         countMap.forEach((k, v) -> {
-            systemCount.addAndGet(v);
             OptionCountDTO optionDTO = new OptionCountDTO();
             optionDTO.setKey(k);
             optionDTO.setCount(v);
             optionDTOS.add(optionDTO);
         });
-        OptionCountDTO optionDTO = new OptionCountDTO();
-        optionDTO.setKey(SYSTEM_COUNT);
-        optionDTO.setCount(systemCount.get());
-        optionDTOS.add(optionDTO);
     }
 
 
