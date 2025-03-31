@@ -58,6 +58,25 @@ public class SseService {
     }
 
     /**
+     * 给所有用户发送心跳信息
+     */
+    public void sendHeartbeat() {
+        if (userEmitters.isEmpty()) return;
+
+        userEmitters.forEach((userId, emitters) -> {
+            emitters.forEach((clientId, emitter) -> {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("SYSTEM_HEARTBEAT")
+                            .data("SYSTEM_HEARTBEAT: " + System.currentTimeMillis()));
+                } catch (IOException e) {
+                    removeEmitter(userId, clientId);
+                }
+            });
+        });
+    }
+
+    /**
      * 按用户 ID 发送事件（所有客户端接收）
      */
     public void sendToUser(String userId, String eventName, Object data) {
