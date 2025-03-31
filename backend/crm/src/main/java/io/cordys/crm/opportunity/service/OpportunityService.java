@@ -378,6 +378,13 @@ public class OpportunityService {
                 OpportunityDetailResponse::getContactId, OpportunityDetailResponse::getContactName);
         optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
 
+        List<OptionDTO> customerOption = moduleFormService.getBusinessFieldOption(response,
+                OpportunityDetailResponse::getCustomerId, OpportunityDetailResponse::getCustomerName);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_CUSTOMER_NAME.getBusinessKey(), customerOption);
+
+        List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
+
         response.setOptionMap(optionMap);
 
         return response;
