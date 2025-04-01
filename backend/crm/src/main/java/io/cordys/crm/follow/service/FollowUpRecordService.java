@@ -18,6 +18,7 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.service.CustomerFieldService;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
@@ -67,6 +68,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
+    @Resource
+    private CustomerFieldService customerFieldService;
 
     /**
      * 添加跟进记录
@@ -127,14 +130,10 @@ public class FollowUpRecordService extends BaseFollowUpService {
     public FollowUpRecord update(FollowUpRecordUpdateRequest request, String userId, String orgId) {
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(followUpRecord).ifPresentOrElse(record -> {
-            LogDTO logDTO = new LogDTO(orgId, followUpRecord.getId(), userId, LogType.UPDATE, LogModule.FOLLOW_UP_RECORD, Translator.get("update_follow_up_record"));
-            logDTO.setOriginalValue(record);
             //更新跟进记录
             updateRecord(record, request, userId);
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
-            logDTO.setModifiedValue(record);
-            logService.add(logDTO);
         }, () -> {
             throw new GenericException("record_not_found");
         });

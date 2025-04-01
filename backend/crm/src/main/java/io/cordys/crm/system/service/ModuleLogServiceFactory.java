@@ -14,6 +14,7 @@ public class ModuleLogServiceFactory {
     static {
         logServiceMap.put(LogModule.CUSTOMER, CommonBeanFactory.getBean(CustomerLogService.class));
         logServiceMap.put(LogModule.CUSTOMER_CONTACT, CommonBeanFactory.getBean(CustomerContactLogService.class));
+        logServiceMap.put(LogModule.OPPORTUNITY, CommonBeanFactory.getBean(CustomerContactLogService.class));
     }
 
     public static BaseModuleLogService getModuleLogService(String type) {

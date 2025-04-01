@@ -2,9 +2,6 @@ package io.cordys.crm.follow.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import io.cordys.aspectj.constants.LogModule;
-import io.cordys.aspectj.constants.LogType;
-import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
@@ -15,7 +12,7 @@ import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.Translator;
+import io.cordys.crm.customer.service.CustomerFieldService;
 import io.cordys.crm.follow.domain.FollowUpPlan;
 import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
@@ -59,7 +56,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
-
+    @Resource
+    private CustomerFieldService customerFieldService;
 
     /**
      * 新建跟进计划
@@ -95,14 +93,10 @@ public class FollowUpPlanService extends BaseFollowUpService {
     public FollowUpPlan update(FollowUpRecordUpdateRequest request, String userId, String orgId) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(followUpPlan).ifPresentOrElse(plan -> {
-            LogDTO logDTO = new LogDTO(orgId, followUpPlan.getId(), userId, LogType.UPDATE, LogModule.FOLLOW_UP_PLAN, Translator.get("update_follow_up_plan"));
-            logDTO.setOriginalValue(followUpPlan);
             //更新跟进计划
             updatePlan(plan, request, userId);
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
-            logDTO.setModifiedValue(plan);
-            logService.add(logDTO);
         }, () -> {
             throw new GenericException("plan_not_found");
         });
