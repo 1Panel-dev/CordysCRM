@@ -56,8 +56,8 @@ export default function checkStatus(status: number, msg: string, code?: number):
       break;
     default:
   }
-
-  if (errMessage) {
+  // 101003 用于查重功能，表示模块未开启，不需要弹出消息
+  if (errMessage && code !== 101003) {
     message.error(errMessage);
   }
 }

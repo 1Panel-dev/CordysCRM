@@ -1,3 +1,4 @@
+import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
 import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
@@ -24,4 +25,17 @@ export const filterConfigList: FilterFormItem[] = [
   },
 ];
 
-export default {};
+export const clueBaseSteps = [
+  {
+    value: ClueStatusEnum.NEW,
+    label: t('common.newCreate'),
+  },
+  {
+    value: ClueStatusEnum.FOLLOWING,
+    label: t('clue.followingUp'),
+  },
+  {
+    value: ClueStatusEnum.INTERESTED,
+    label: t('clue.interested'),
+  },
+];

@@ -7,7 +7,10 @@ import {
   GetConfigSynchronizationUrl,
   GetPersonalFollowUrl,
   GetPersonalUrl,
+  GetRepeatClueDetailUrl,
+  GetRepeatClueUrl,
   GetRepeatCustomerUrl,
+  GetRepeatOpportunityDetailUrl,
   GetThirdConfigByTypeUrl,
   GetThirdTypeListUrl,
   SendEmailCodeUrl,
@@ -30,6 +33,10 @@ import type {
   AuthUpdateParams,
   ConfigEmailParams,
   ConfigSynchronization,
+  RepeatClueItem,
+  RepeatClueParams,
+  RepeatCustomerItem,
+  RepeatOpportunityItem,
 } from '@lib/shared/models/system/business';
 import { OptionDTO, PersonalInfoRequest, PersonalPassword } from '@lib/shared/models/system/business';
 import { OrgUserInfo } from '@lib/shared/models/system/org';
@@ -133,7 +140,22 @@ export function getPersonalFollow(data: CustomerFollowPlanTableParams) {
   return CDR.post<CommonList<FollowDetailItem>>({ url: GetPersonalFollowUrl, data });
 }
 
-// 查重 TODO lmy 联调
-export function GetRepeatCustomerData(data: any) {
-  return CDR.post<CommonList<any>>({ url: GetRepeatCustomerUrl, data });
+// 查重
+export function GetRepeatCustomerList(data: RepeatClueParams) {
+  return CDR.post<CommonList<RepeatCustomerItem>>(
+    { url: GetRepeatCustomerUrl, data },
+    { isReturnNativeResponse: true }
+  );
+}
+
+export function GetRepeatClueList(data: RepeatClueParams) {
+  return CDR.post<CommonList<RepeatCustomerItem>>({ url: GetRepeatClueUrl, data }, { isReturnNativeResponse: true });
+}
+
+export function GetRepeatClueDetailList(data: RepeatClueParams) {
+  return CDR.post<CommonList<RepeatClueItem>>({ url: GetRepeatClueDetailUrl, data });
+}
+
+export function GetRepeatOpportunityDetailList(data: RepeatClueParams) {
+  return CDR.post<CommonList<RepeatOpportunityItem>>({ url: GetRepeatOpportunityDetailUrl, data });
 }

@@ -32,14 +32,15 @@ export default function useTable<T>(
     columns: [],
     tableRowKey: 'id', // 表格行的key
     showPagination: true, // 是否显示分页
+    ...props,
     crmPagination: {
       page: 1,
       itemCount: 0,
       pageSize: appStore.pageSize,
       showSizePicker: appStore.showSizePicker,
       showQuickJumper: appStore.showQuickJumper,
+      ...props?.crmPagination,
     },
-    ...props,
   };
 
   const propsRes = ref<CrmTableProps<T>>(cloneDeep(defaultProps));
@@ -47,6 +48,8 @@ export default function useTable<T>(
   const filterItem = ref<FilterConditionItem[]>([]); // 筛选
 
   const keyword = ref('');
+
+  const code = ref(0); // 状态码
 
   // 高级筛选
   const advanceFilter = reactive<FilterResult>({ searchMode: 'AND', conditions: [] });
@@ -143,7 +146,11 @@ export default function useTable<T>(
         ...loadListParams.value,
         filters: filterItem.value,
       };
-      const data = await loadListFunc(tableQueryParams.value);
+      const res = await loadListFunc(tableQueryParams.value);
+      if (props?.isReturnNativeResponse) {
+        code.value = res.data.code;
+      }
+      const data = props?.isReturnNativeResponse ? res.data.data : res;
       if (!propsRes.value.showPagination && Array.isArray(data)) {
         propsRes.value.data = data.map((item: CrmTableDataItem<T>) => {
           return processRecordItem(item);
@@ -156,10 +163,13 @@ export default function useTable<T>(
         // 设置分页
         setPagination(tmpArr.current, tmpArr.total);
       }
-    } catch (error) {
+    } catch (error: any) {
       propsRes.value.data = [];
       // eslint-disable-next-line no-console
       console.error(error);
+      if (props?.isReturnNativeResponse) {
+        code.value = error.code;
+      }
       throw error;
     } finally {
       setLoading(false);
@@ -208,5 +218,6 @@ export default function useTable<T>(
     setPagination,
     advanceFilter,
     setAdvanceFilter,
+    code,
   };
 }

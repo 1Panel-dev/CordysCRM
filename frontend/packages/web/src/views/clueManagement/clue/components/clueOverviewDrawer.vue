@@ -83,6 +83,7 @@
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
   import { batchTransferClue, deleteClue, getClue, getClueHeaderList, updateClueStatus } from '@/api/modules/clue';
+  import { clueBaseSteps } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
@@ -195,18 +196,7 @@
     () => currentStatus.value !== StageResultEnum.FAIL && currentStatus.value !== StageResultEnum.SUCCESS
   );
   const workflowList: SelectOption[] = [
-    {
-      value: ClueStatusEnum.NEW,
-      label: t('common.newCreate'),
-    },
-    {
-      value: ClueStatusEnum.FOLLOWING,
-      label: t('clue.followingUp'),
-    },
-    {
-      value: ClueStatusEnum.INTERESTED,
-      label: t('clue.interested'),
-    },
+    ...clueBaseSteps,
     {
       value: StageResultEnum.SUCCESS,
       label: t('common.success'),

@@ -83,3 +83,41 @@ export interface PersonalPassword {
   password: string;
   confirmPassword: string;
 }
+
+export interface RepeatClueParams extends TableQueryParams {
+  name: string;
+  id?: string;
+}
+
+export interface RepeatCustomerItem {
+  id: string;
+  name: string;
+  owner: string;
+  ownerName: string;
+  createTime: number;
+  repeatType: string;
+  clueCount: number;
+  clueModuleEnable: boolean;
+  opportunityCount: number;
+  opportunityModuleEnable: boolean;
+}
+
+export interface RepeatClueItem {
+  id: string;
+  name: string;
+  owner: string;
+  stage: string;
+  ownerName: string;
+}
+
+export interface RepeatOpportunityItem {
+  id: string;
+  name: string;
+  customerId: string;
+  customerName: string;
+  stage: string;
+  products: string[];
+  productNames: string[];
+  owner: string;
+  ownerName: string;
+}

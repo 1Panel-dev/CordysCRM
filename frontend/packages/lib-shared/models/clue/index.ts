@@ -45,6 +45,7 @@ export interface ClueListItem extends ClueDetail {
   latestFollowUpTime: number;
   collectionTime: number;
   reservedDays: number;
+  transitionType?: 'CUSTOMER' | 'OPPORTUNITY';
 }
 
 export interface CluePoolTableParams extends TableQueryParams {

@@ -62,6 +62,7 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import type { ClueListItem } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
@@ -323,52 +324,6 @@
     }
   }
 
-  const operationGroupList = computed<ActionsItem[]>(() => {
-    return [
-      {
-        label: t('common.edit'),
-        key: 'edit',
-        permission: ['CLUE_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('opportunity.followUp'),
-        key: 'followUp',
-        permission: ['CLUE_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('common.transfer'),
-        key: 'transfer',
-        permission: ['CLUE_MANAGEMENT:UPDATE'],
-        popConfirmProps: {
-          loading: transferLoading.value,
-          title: t('common.transfer'),
-          positiveText: t('common.confirm'),
-          iconType: 'primary',
-        },
-        popSlotContent: 'transferPopContent',
-      },
-      {
-        label: t('clue.convertToCustomer'),
-        key: 'convertToCustomer',
-        permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-      },
-      {
-        label: t('clue.convertToOpportunity'),
-        key: 'convertToOpportunity',
-        permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
-      },
-      ...(['departmentClues', 'myClues'].includes(activeTab.value)
-        ? []
-        : [
-            {
-              label: t('common.delete'),
-              key: 'delete',
-              permission: ['CLUE_MANAGEMENT:DELETE'],
-            },
-          ]),
-    ];
-  });
-
   // 概览
   const showOverviewDrawer = ref(false);
 
@@ -379,12 +334,59 @@
       width: 330,
       fixed: 'right',
       render: (row: ClueListItem) =>
-        ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value)
+        row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)
           ? '-'
           : h(
               CrmOperationButton,
               {
-                groupList: operationGroupList.value,
+                groupList: [
+                  ...([StageResultEnum.FAIL, StageResultEnum.SUCCESS].includes(row.stage as StageResultEnum)
+                    ? []
+                    : [
+                        {
+                          label: t('common.edit'),
+                          key: 'edit',
+                          permission: ['CLUE_MANAGEMENT:UPDATE'],
+                        },
+                        {
+                          label: t('opportunity.followUp'),
+                          key: 'followUp',
+                          permission: ['CLUE_MANAGEMENT:UPDATE'],
+                        },
+                      ]),
+                  {
+                    label: t('common.transfer'),
+                    key: 'transfer',
+                    permission: ['CLUE_MANAGEMENT:UPDATE'],
+                    popConfirmProps: {
+                      loading: transferLoading.value,
+                      title: t('common.transfer'),
+                      positiveText: t('common.confirm'),
+                      iconType: 'primary',
+                    },
+                    popSlotContent: 'transferPopContent',
+                  },
+                  {
+                    label: t('clue.convertToCustomer'),
+                    key: 'convertToCustomer',
+                    permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+                  },
+                  {
+                    label: t('clue.convertToOpportunity'),
+                    key: 'convertToOpportunity',
+                    permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
+                  },
+                  ...([CustomerSearchTypeEnum.DEPARTMENT, CustomerSearchTypeEnum.SELF].includes(activeTab.value) ||
+                  [StageResultEnum.FAIL, StageResultEnum.SUCCESS].includes(row.stage as StageResultEnum)
+                    ? []
+                    : [
+                        {
+                          label: t('common.delete'),
+                          key: 'delete',
+                          permission: ['CLUE_MANAGEMENT:DELETE'],
+                        },
+                      ]),
+                ],
                 onSelect: (key: string) => handleActionSelect(row, key),
                 onCancel: () => {
                   transferForm.value = { ...defaultTransferForm };

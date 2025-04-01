@@ -1,13 +1,18 @@
 <template>
-  <div class="font-semibold">{{ props.title }}</div>
-  <div class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
-    <CrmTable
-      v-bind="propsRes"
-      @page-change="propsEvent.pageChange"
-      @page-size-change="propsEvent.pageSizeChange"
-      @sorter-change="propsEvent.sorterChange"
-      @filter-change="propsEvent.filterChange"
-    />
+  <div>
+    <div class="font-semibold">{{ props.title }}</div>
+    <div v-show="code === 101003" class="text-center text-[var(--text-n4)]">
+      {{ t('workbench.duplicateCheck.moduleNotEnabled') }}
+    </div>
+    <div v-show="code !== 101003" class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
+      <CrmTable
+        v-bind="propsRes"
+        @page-change="propsEvent.pageChange"
+        @page-size-change="propsEvent.pageSizeChange"
+        @sorter-change="propsEvent.sorterChange"
+        @filter-change="propsEvent.filterChange"
+      />
+    </div>
   </div>
 </template>
 
@@ -18,23 +23,34 @@
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
 
+  import { useI18n } from '@/hooks/useI18n';
+
   const props = defineProps<{
     api: (data: any) => Promise<CommonList<any>>;
     columns: CrmDataTableColumn[];
     title: string;
+    isReturnNativeResponse?: boolean;
   }>();
 
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(props.api, {
+  const { t } = useI18n();
+
+  const { propsRes, propsEvent, loadList, setLoadListParams, code } = useTable(props.api, {
     showSetting: false,
     columns: props.columns,
+    crmPagination: {
+      size: 'small',
+    },
+    isReturnNativeResponse: props.isReturnNativeResponse,
   });
 
-  async function searchData(val?: string) {
-    setLoadListParams({ ...(val ? { keyword: val } : {}) });
-    loadList();
+  async function searchData(val: string, id?: string) {
+    setLoadListParams({ name: val, ...(id ? { id } : {}) });
+    await loadList();
   }
 
   defineExpose({
     searchData,
+    propsRes,
+    code,
   });
 </script>
