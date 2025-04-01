@@ -50,7 +50,6 @@ public class PersonalCenterController {
     @Resource
     private PersonalCenterService personalCenterService;
 
-
     @Resource
     private ExtUserRoleMapper extUserRoleMapper;
 
@@ -69,7 +68,7 @@ public class PersonalCenterController {
         List<Module> modules = moduleMapper.selectListByLambda(queryWrapper);
         List<String> keyList = modules.stream().map(Module::getModuleKey).toList();
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        return PageUtils.setPageInfo(page, personalCenterService.getRepeatCustomer(request,permissions,keyList,OrganizationContext.getOrganizationId(), SessionUtils.getUserId()));
+        return PageUtils.setPageInfo(page, personalCenterService.getRepeatCustomer(request, permissions, keyList, OrganizationContext.getOrganizationId(), SessionUtils.getUserId()));
     }
 
 
@@ -87,8 +86,8 @@ public class PersonalCenterController {
         //模块关闭，但是有权限，返回指定code
         if ((permissions.indexOf(PermissionConstants.CLUE_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(SessionUtils.getUserId(), InternalUser.ADMIN.getValue()) && CollectionUtils.isEmpty(modules))) {
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
-        }else {
-            return PageUtils.setPageInfo(page, personalCenterService.getRepeatClue(request,OrganizationContext.getOrganizationId()));
+        } else {
+            return PageUtils.setPageInfo(page, personalCenterService.getRepeatClue(request, OrganizationContext.getOrganizationId()));
         }
     }
 
@@ -96,15 +95,17 @@ public class PersonalCenterController {
     @PostMapping("/repeat/clue/detail")
     @Operation(summary = "获取重复线索详情")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ})
-    public List<ClueRepeatListResponse> getRepeatClueDetail(@Validated @RequestBody RepeatCustomerDetailPageRequest request) {
-        return personalCenterService.getRepeatClueDetail(request,OrganizationContext.getOrganizationId());
+    public Pager<List<ClueRepeatListResponse>> getRepeatClueDetail(@Validated @RequestBody RepeatCustomerDetailPageRequest request) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        return PageUtils.setPageInfo(page, personalCenterService.getRepeatClueDetail(request, OrganizationContext.getOrganizationId()));
     }
 
     @PostMapping("/repeat/opportunity/detail")
     @Operation(summary = "获取重复商机详情")
     @RequiresPermissions(value = {PermissionConstants.OPPORTUNITY_MANAGEMENT_READ})
-    public List<OpportunityRepeatResponse> getRepeatOpportunityDetail(@Validated @RequestBody RepeatCustomerDetailPageRequest request) {
-        return personalCenterService.getRepeatOpportunityDetail(request);
+    public Pager<List<OpportunityRepeatResponse>> getRepeatOpportunityDetail(@Validated @RequestBody RepeatCustomerDetailPageRequest request) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        return PageUtils.setPageInfo(page, personalCenterService.getRepeatOpportunityDetail(request));
     }
 
 
