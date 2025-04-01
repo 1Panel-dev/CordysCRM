@@ -139,8 +139,9 @@ public class SseService {
         // 获取通知并转换内容
         List<NotificationDTO> notifications = extNotificationMapper
                 .selectLastList(userId, OrganizationContext.getOrganizationId());
-        notifications.forEach(notification ->
+        notifications.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).forEach(notification ->
                 notification.setContentText(new String(notification.getContent())));
+
         sseMessageDTO.setNotificationDTOList(notifications);
 
         // 获取公告（如果存在）
@@ -174,6 +175,7 @@ public class SseService {
             notificationDTO.setContentText(new String(notification.getContent()));
             notificationDTOList.add(notificationDTO);
         }
-        return notificationDTOList;
+
+        return notificationDTOList.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).toList();
     }
 }

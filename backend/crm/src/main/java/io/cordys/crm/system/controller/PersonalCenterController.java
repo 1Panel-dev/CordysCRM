@@ -50,8 +50,6 @@ public class PersonalCenterController {
     @Resource
     private PersonalCenterService personalCenterService;
 
-    @Resource
-    private FollowUpPlanService followUpPlanService;
 
     @Resource
     private ExtUserRoleMapper extUserRoleMapper;
@@ -101,7 +99,7 @@ public class PersonalCenterController {
     public List<ClueRepeatListResponse> getRepeatClueDetail(@Validated @RequestBody RepeatCustomerDetailPageRequest request) {
         return personalCenterService.getRepeatClueDetail(request,OrganizationContext.getOrganizationId());
     }
-    
+
     @PostMapping("/repeat/opportunity/detail")
     @Operation(summary = "获取重复商机详情")
     @RequiresPermissions(value = {PermissionConstants.OPPORTUNITY_MANAGEMENT_READ})
@@ -114,7 +112,13 @@ public class PersonalCenterController {
     @Operation(summary = "用户跟进计划列表")
     public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
         request.setMyPlan(true);
-        return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "NULL", null, null);
+        List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(SessionUtils.getUserId());
+        LambdaQueryWrapper<Module> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Module::getOrganizationId, OrganizationContext.getOrganizationId());
+        queryWrapper.eq(Module::getEnable, true);
+        List<Module> modules = moduleMapper.selectListByLambda(queryWrapper);
+        List<String> keyList = modules.stream().map(Module::getModuleKey).toList();
+        return personalCenterService.getPlanList(request, permissions, keyList, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

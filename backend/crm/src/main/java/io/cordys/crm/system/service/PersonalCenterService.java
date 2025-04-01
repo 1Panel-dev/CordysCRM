@@ -1,5 +1,7 @@
 package io.cordys.crm.system.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
@@ -8,20 +10,25 @@ import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.dto.OptionCountDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.clue.dto.response.ClueRepeatListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
+import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
+import io.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
+import io.cordys.crm.follow.service.FollowUpPlanService;
 import io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.constants.RepeatType;
 import io.cordys.crm.system.constants.SystemResultCode;
-import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.PersonalInfoRequest;
@@ -34,7 +41,6 @@ import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.utils.MailSender;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,31 +56,28 @@ public class PersonalCenterService {
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
-
     @Resource
     private MailSender mailSender;
-
     @Resource
     private OrganizationUserService organizationUserService;
-
+    @Resource
+    private FollowUpPlanService followUpPlanService;
     @Resource
     private ExtUserMapper extUserMapper;
-
     @Resource
     private BaseMapper<User> userBaseMapper;
-
     @Resource
     private ExtCustomerMapper extCustomerMapper;
-
     @Resource
     private ExtOpportunityMapper extOpportunityMapper;
-
     @Resource
     private ExtProductMapper extProductMapper;
     @Resource
     private ExtClueMapper extClueMapper;
     @Resource
     private ExtOrganizationUserMapper extOrganizationUserMapper;
+    @Resource
+    private ExtFollowUpPlanMapper extFollowUpPlanMapper;
 
 
     private static final String PREFIX = "personal_email_code:";  // Redis 存储前缀
@@ -258,5 +261,23 @@ public class PersonalCenterService {
             }
         }
         return opportunityRepeatResponses;
+    }
+
+    public PagerWithOption<List<FollowUpPlanListResponse>> getPlanList(FollowUpPlanPageRequest request, List<String> permissions, List<String> keyList, String userId, String organizationId) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        List<String> resourceTypeList = new ArrayList<>();
+        if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) && keyList.contains(ModuleKey.CUSTOMER.getKey())) {
+            resourceTypeList.add(NotificationConstants.Module.CUSTOMER);
+        }
+        if ((permissions.indexOf(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) && keyList.contains(ModuleKey.BUSINESS.getKey())) {
+            resourceTypeList.add(NotificationConstants.Module.OPPORTUNITY);
+        }
+        if ((permissions.indexOf(PermissionConstants.CLUE_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) && keyList.contains(ModuleKey.CLUE.getKey())) {
+            resourceTypeList.add(NotificationConstants.Module.CLUE);
+        }
+        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, organizationId, null, null, null, resourceTypeList);
+        List<FollowUpPlanListResponse> buildList = followUpPlanService.buildListData(list, organizationId);
+        Map<String, List<OptionDTO>> optionMap = followUpPlanService.buildOptionMap(organizationId, list, buildList);
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 }

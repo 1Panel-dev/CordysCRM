@@ -31,6 +31,7 @@ import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -149,7 +150,12 @@ public class FollowUpPlanService extends BaseFollowUpService {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, orgId, resourceType, type, customerData, null);
         List<FollowUpPlanListResponse> buildList = buildListData(list, orgId);
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+    }
 
+
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<FollowUpPlanListResponse> list, List<FollowUpPlanListResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), orgId);
         // 获取所有模块字段的值
@@ -166,11 +172,10 @@ public class FollowUpPlanService extends BaseFollowUpService {
         List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(buildList,
                 FollowUpPlanListResponse::getContactId, FollowUpPlanListResponse::getContactName);
         optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
-
-        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+        return optionMap;
     }
 
-    private List<FollowUpPlanListResponse> buildListData(List<FollowUpPlanListResponse> list, String orgId) {
+    public List<FollowUpPlanListResponse> buildListData(List<FollowUpPlanListResponse> list, String orgId) {
         List<String> ids = list.stream().map(FollowUpPlanListResponse::getId).toList();
         Map<String, List<BaseModuleFieldValue>> resourceFieldMap = followUpPlanFieldService.getResourceFieldMap(ids);
 
