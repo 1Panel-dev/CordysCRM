@@ -147,7 +147,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
      */
     public PagerWithOption<List<FollowUpPlanListResponse>> list(FollowUpPlanPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, orgId, resourceType, type, customerData);
+        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, orgId, resourceType, type, customerData, null);
         List<FollowUpPlanListResponse> buildList = buildListData(list, orgId);
 
         // 处理自定义字段选项数据

@@ -32,6 +32,7 @@ import io.cordys.crm.system.mapper.*;
 import io.cordys.excel.utils.EasyExcelExporter;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
+import io.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
@@ -321,8 +322,9 @@ public class OrganizationUserService {
         updateUserBaseData(request, operatorId, oldUser.getUserId());
         //update user role
         updateUserRole(request.getRoleIds(), oldUser, operatorId);
-        //todo update user group
-
+        if (!request.getEnable()) {
+            SessionUtils.kickOutUser(oldUser.getUserId());
+        }
 
         //添加日志上下文
         OperationLogContext.setContext(LogContextInfo.builder()
@@ -420,6 +422,11 @@ public class OrganizationUserService {
      */
     public void enable(UserBatchEnableRequest request, String operatorId, String orgId) {
         extOrganizationUserMapper.enable(request, operatorId, System.currentTimeMillis());
+        if (!request.isEnable()) {
+            request.getIds().forEach(id -> {
+                SessionUtils.kickOutUser(id);
+            });
+        }
 
         // 记录日志
         OrganizationUser originUser = new OrganizationUser();
@@ -763,6 +770,7 @@ public class OrganizationUserService {
         if (checkUserResource(user.getUserId())) {
             //删除后该员工在系统上的全部数据将会被清理
             deleteUserAllData(user.getUserId(), id, orgId);
+            SessionUtils.kickOutUser(user.getUserId());
             // 添加日志上下文
             OperationLogContext.setResourceName(user.getUserName());
         } else {

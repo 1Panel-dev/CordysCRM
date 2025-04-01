@@ -80,6 +80,34 @@
         <if test="customerData != null and !customerData.all and !customerData.owner and customerData.self">
             AND owner = #{userId}
         </if>
+
+        <if test="resourceTypeList!=null and resourceTypeList.size()>0">
+            AND type in
+            <foreach collection="resourceTypeList" item="type" open="(" close=")" separator=",">
+                <choose>
+                    <when test="type == 'OPPORTUNITY'">
+                        'CUSTOMER'
+                    </when>
+                    <otherwise>
+                        #{type}
+                    </otherwise>
+                </choose>
+            </foreach>
+        and
+            <foreach collection="resourceTypeList" item="type" open="(" close=")" separator="or">
+                <if test="type == 'CUSTOMER'">
+                    customer_id is not null
+                </if>
+                <if test="type == 'OPPORTUNITY'">
+                    opportunity_id is not null
+                </if>
+                <if test="type == 'CLUE'">
+                    clue_id is not null
+                </if>
+
+            </foreach>
+        </if>
+
         ORDER BY estimated_time DESC
     </select>
 
