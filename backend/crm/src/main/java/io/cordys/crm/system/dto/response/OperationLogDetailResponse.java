@@ -1,13 +1,15 @@
 package io.cordys.crm.system.dto.response;
 
+import io.cordys.common.dto.JsonDifferenceDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @Data
-public class OperationLogResponse implements Serializable {
+public class OperationLogDetailResponse implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -32,4 +34,6 @@ public class OperationLogResponse implements Serializable {
     @Schema(description = "资源名称")
     private String resourceName;
 
+    @Schema(description = "字段差异")
+    private List<JsonDifferenceDTO> diffs = List.of();
 }

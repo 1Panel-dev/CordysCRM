@@ -20,6 +20,13 @@ public abstract class BaseModuleLogService {
 
     abstract public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId);
 
+    /**
+     * 处理非业务字段的自定义字段
+     * 同时会翻译其他字段的 ColumnName
+     * @param differenceDTOS
+     * @param orgId
+     * @param formKey
+     */
     protected void handleModuleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId, String formKey) {
         ModuleFormConfigDTO customerFormConfig = CommonBeanFactory.getBean(ModuleFormCacheService.class)
                 .getBusinessFormConfig(formKey, orgId);
@@ -59,12 +66,21 @@ public abstract class BaseModuleLogService {
                 // 设置字段值名称
                 setColumnValueName(optionMap, differ);
             } else {
-                //主表字段
-                differ.setColumnName(Translator.get("log." + differ.getColumn()));
-                differ.setOldValueName(differ.getOldValue());
-                differ.setNewValueName(differ.getNewValue());
+                translatorDifferInfo(differ);
             }
         });
+    }
+
+    /**
+     * 翻译字段名称
+     * 赋值旧值名称和新值名称
+     * @param differ
+     */
+    public static void translatorDifferInfo(JsonDifferenceDTO differ) {
+        //主表字段
+        differ.setColumnName(Translator.get("log." + differ.getColumn()));
+        differ.setOldValueName(differ.getOldValue());
+        differ.setNewValueName(differ.getNewValue());
     }
 
     private void setColumnValueName(Map<String, List<OptionDTO>> optionMap, JsonDifferenceDTO differ) {

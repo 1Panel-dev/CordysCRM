@@ -3,11 +3,14 @@ package io.cordys.crm.system.service;
 import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.service.BaseService;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JsonDifferenceUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.OperationLog;
 import io.cordys.crm.system.domain.OperationLogBlob;
 import io.cordys.crm.system.dto.request.OperationLogRequest;
+import io.cordys.crm.system.dto.response.OperationLogDetailResponse;
 import io.cordys.crm.system.dto.response.OperationLogResponse;
 import io.cordys.crm.system.mapper.ExtOperationLogMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
@@ -39,6 +42,8 @@ public class SysOperationLogService {
     private BaseMapper<OperationLogBlob> operationLogBlobMapper;
     @Resource
     private BaseMapper<OperationLog> operationLogMapper;
+    @Resource
+    private BaseService baseService;
 
     /**
      * 操作日志列表查询
@@ -65,7 +70,7 @@ public class SysOperationLogService {
             Map<String, String> userMap = userList.stream()
                     .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
 
-            list.forEach(item -> item.setOperator(userMap.getOrDefault(item.getOperator(), StringUtils.EMPTY)));
+            list.forEach(item -> item.setOperatorName(userMap.getOrDefault(item.getOperator(), StringUtils.EMPTY)));
         }
     }
 
@@ -87,40 +92,65 @@ public class SysOperationLogService {
      * @param id 日志ID
      * @return 日志详情
      */
-    public List<JsonDifferenceDTO> getLogDetail(String id, String orgId) {
-        List<JsonDifferenceDTO> differenceDTOS = new ArrayList<>();
-        Optional.ofNullable(operationLogBlobMapper.selectByPrimaryKey(id))
-                .ifPresent(operationLog -> {
-                    String oldString = new String(
-                            Optional.ofNullable(operationLog.getOriginalValue()).orElse(new byte[0]),
-                            StandardCharsets.UTF_8
-                    );
-                    String newString = new String(
-                            Optional.ofNullable(operationLog.getModifiedValue()).orElse(new byte[0]),
-                            StandardCharsets.UTF_8
-                    );
+    public OperationLogDetailResponse getLogDetail(String id, String orgId) {
+        OperationLog operationLog = operationLogMapper.selectByPrimaryKey(id);
+        OperationLogDetailResponse logResponse = BeanUtils.copyBean(new OperationLogDetailResponse(), operationLog);
+        logResponse.setOperator(operationLog.getCreateUser());
+        logResponse.setOperatorName(baseService.getUserName(logResponse.getOperator()));
 
-                    try {
-                        JsonDifferenceUtils.compareJson(oldString, newString, differenceDTOS);
-                        if (CollectionUtils.isNotEmpty(differenceDTOS)) {
-                            OperationLog log = operationLogMapper.selectByPrimaryKey(id);
-                            BaseModuleLogService moduleLogService = ModuleLogServiceFactory.getModuleLogService(log.getModule());
-                            if (moduleLogService != null) {
-                                moduleLogService.handleLogField(differenceDTOS, orgId);
-                            } else {
-                                differenceDTOS.forEach(differ -> {
-                                    differ.setColumnName(Translator.get("log." + differ.getColumn()));
-                                    differ.setOldValueName(differ.getOldValue());
-                                    differ.setNewValueName(differ.getNewValue());
-                                });
-                            }
+        OperationLogBlob operationLogBlob = operationLogBlobMapper.selectByPrimaryKey(id);
+        if (operationLogBlob == null) {
+            return logResponse;
+        }
 
-                        }
-                    } catch (Exception e) {
-                        throw new GenericException(Translator.get("data_parsing_exception"));
+        String oldString = new String(
+                Optional.ofNullable(operationLogBlob.getOriginalValue()).orElse(new byte[0]),
+                StandardCharsets.UTF_8
+        );
+        String newString = new String(
+                Optional.ofNullable(operationLogBlob.getModifiedValue()).orElse(new byte[0]),
+                StandardCharsets.UTF_8
+        );
+
+        try {
+            List<JsonDifferenceDTO> differenceDTOS = new ArrayList<>();
+            JsonDifferenceUtils.compareJson(oldString, newString, differenceDTOS);
+            // 过滤掉组织ID等字段
+            differenceDTOS = filterIgnoreFields(differenceDTOS);
+
+            if (CollectionUtils.isNotEmpty(differenceDTOS)) {
+                OperationLog log = operationLogMapper.selectByPrimaryKey(id);
+                BaseModuleLogService moduleLogService = ModuleLogServiceFactory.getModuleLogService(log.getModule());
+                if (moduleLogService != null) {
+                    moduleLogService.handleLogField(differenceDTOS, orgId);
+                } else {
+                    differenceDTOS.forEach(differ -> BaseModuleLogService.translatorDifferInfo(differ));
+                }
+
+            }
+            logResponse.setDiffs(differenceDTOS);
+        } catch (Exception e) {
+            throw new GenericException(Translator.get("data_parsing_exception"));
+        }
+
+        return logResponse;
+    }
+
+    /**
+     * 过滤掉日志对比无需显示的字段
+     * 例如：organizationId
+     * @param differenceDTOS
+     * @return
+     */
+    private List<JsonDifferenceDTO> filterIgnoreFields(List<JsonDifferenceDTO> differenceDTOS) {
+        differenceDTOS = differenceDTOS.stream()
+                .filter(differ -> {
+                    if (StringUtils.equalsAny(differ.getColumn(),
+                            "organizationId", "createUser", "updateUser", "createTime", "updateTime")) {
+                        return false;
                     }
-                });
-
+                    return true;
+                }).toList();
         return differenceDTOS;
     }
 }
