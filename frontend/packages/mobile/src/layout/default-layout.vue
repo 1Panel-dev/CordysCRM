@@ -10,8 +10,14 @@
         </div>
       </transition>
     </router-view>
-    <van-tabbar v-model="active">
-      <van-tabbar-item v-for="menu of menuList" :key="menu.name" :name="menu.name">
+    <van-tabbar v-model="active" :fixed="false" class="!py-[8px]">
+      <van-tabbar-item
+        v-for="menu of menuList"
+        :key="menu.name"
+        :name="menu.name"
+        class="rounded-full"
+        :class="active === menu.name ? '!bg-[var(--primary-7)]' : ''"
+      >
         <template #icon>
           <CrmIcon
             :name="menu.icon"
@@ -63,4 +69,14 @@
   ];
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  .page {
+    @apply flex flex-col;
+
+    height: 100vh;
+    background-color: var(--text-n9);
+    .page-content {
+      @apply flex-1 overflow-hidden;
+    }
+  }
+</style>

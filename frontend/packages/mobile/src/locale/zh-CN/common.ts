@@ -1,0 +1,15 @@
+export default {
+  'common.newCustomer': '新建客户',
+  'common.newContact': '新建联系人',
+  'common.newOpportunity': '新建商机',
+  'common.newClue': '新建线索',
+  'common.newFollowRecord': '写跟进',
+  'common.newFollowPlan': '写计划',
+  'common.listLoadErrorTip': '请求失败，点击重新加载',
+  'common.listFinishedTip': '已经到底部啦~',
+  'common.message': '消息通知',
+  'common.checkMore': '查看更多',
+  'common.system': '系统',
+  'common.systemNotification': '系统通知',
+  'common.signRead': '标为已读',
+};

@@ -1,3 +1,4 @@
+import common from './common';
 import dayjsLocale from 'dayjs/locale/zh-cn';
 
 const _Cmodules: any = import.meta.glob('../../components/**/locale/zh-CN.ts', { eager: true });
@@ -23,6 +24,7 @@ export default {
     'menu.mine': '我的',
     'navbar.action.locale': '切换为中文',
     ...result,
+    ...common,
   },
   dayjsLocale,
   dayjsLocaleName: 'zh-CN',

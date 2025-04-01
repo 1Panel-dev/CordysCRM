@@ -1,0 +1,15 @@
+export default {
+  'common.newCustomer': 'New Customer',
+  'common.newContact': 'New Contact',
+  'common.newOpportunity': 'New Opportunity',
+  'common.newClue': 'New Clue',
+  'common.newFollowRecord': 'New Follow Record',
+  'common.newFollowPlan': 'New Follow Plan',
+  'common.listLoadErrorTip': 'Request failed, click to reload',
+  'common.listFinishedTip': 'Already at the bottom~',
+  'common.message': 'Message Notification',
+  'common.checkMore': 'Check More',
+  'common.system': 'System',
+  'common.systemNotification': 'System Notification',
+  'common.signRead': 'Sign Read',
+};

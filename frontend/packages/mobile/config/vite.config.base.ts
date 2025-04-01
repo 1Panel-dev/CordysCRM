@@ -1,8 +1,10 @@
 import { VantResolver } from '@vant/auto-import-resolver';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
+import autoprefixer from 'autoprefixer';
 import { resolve } from 'path';
 import postcssPxtorem from 'postcss-pxtorem';
+import tailwindcss from 'tailwindcss';
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { defineConfig } from 'vite';
@@ -11,7 +13,7 @@ import vueSetupExtend from 'vite-plugin-vue-setup-extend';
 import svgLoader from 'vite-svg-loader';
 
 export default defineConfig({
-  base: './',
+  base: '/mobile/',
   plugins: [
     vue(),
     vueJsx(),
@@ -77,6 +79,8 @@ export default defineConfig({
           mediaQuery: false, // 是否允许在媒体查询中转换
           minPixelValue: 2, // 小于或等于 2px 的值不转换为 rem
         }),
+        tailwindcss(),
+        autoprefixer(),
       ],
     },
     preprocessorOptions: {

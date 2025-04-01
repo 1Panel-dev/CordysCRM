@@ -28,5 +28,6 @@
 
     width: v-bind(width);
     height: v-bind(height);
+    color: transparent; // 解决部分图标线条填充色问题
   }
 </style>

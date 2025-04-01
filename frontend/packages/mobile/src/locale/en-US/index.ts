@@ -1,3 +1,4 @@
+import common from './common';
 import dayjsLocale from 'dayjs/locale/en';
 
 const _Cmodules: any = import.meta.glob('../../components/**/locale/en-US.ts', { eager: true });
@@ -24,6 +25,7 @@ export default {
     'menu.mine': 'Mine',
     'navbar.action.locale': 'Switch to English',
     ...result,
+    ...common,
   },
   dayjsLocale,
   dayjsLocaleName: 'en-US',
