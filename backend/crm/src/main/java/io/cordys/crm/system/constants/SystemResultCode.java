@@ -8,7 +8,8 @@ import io.cordys.common.exception.IResultCode;
 public enum SystemResultCode implements IResultCode {
 
     ROLE_EXIST(101001, "role.exist"),
-    INTERNAL_ROLE_PERMISSION(101002, "internal.role.permission.error");
+    INTERNAL_ROLE_PERMISSION(101002, "internal.role.permission.error"),
+    MODULE_ENABLE(101003, "internal.role.permission.error");
 
 
     private final int code;

@@ -30,4 +30,10 @@ public class CustomerRepeatResponse {
     @Schema(description = "商机重复数据数量")
     private int opportunityCount;
 
+    @Schema(description = "线索模块是否开启")
+    private boolean clueModuleEnable;
+
+    @Schema(description = "商机模块是否开启")
+    private boolean opportunityModuleEnable;
+
 }

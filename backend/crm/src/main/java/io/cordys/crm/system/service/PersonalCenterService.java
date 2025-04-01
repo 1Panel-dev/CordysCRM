@@ -6,6 +6,7 @@ import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.OptionCountDTO;
 import io.cordys.common.dto.OptionDTO;
@@ -19,6 +20,8 @@ import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.system.constants.RepeatType;
+import io.cordys.crm.system.constants.SystemResultCode;
+import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.PersonalInfoRequest;
@@ -31,6 +34,7 @@ import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.utils.MailSender;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -167,20 +171,25 @@ public class PersonalCenterService {
         return userDetail;
     }
 
-    public List<CustomerRepeatResponse> getRepeatCustomer(RepeatCustomerPageRequest request, List<String> permissions, String organizationId, String userId) {
+    public List<CustomerRepeatResponse> getRepeatCustomer(RepeatCustomerPageRequest request, List<String> permissions, List<String> keyList, String organizationId, String userId) {
+        //模块关闭，但是有权限，返回指定code
+        if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue()) && !keyList.contains(ModuleKey.CUSTOMER.getKey()))) {
+            throw new GenericException(SystemResultCode.MODULE_ENABLE);
+        }
         //1.查询当前用户权限
+        List<CustomerRepeatResponse> customers;
         if (permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
+            customers = extCustomerMapper.checkRepeatCustomerByName(request.getName(), organizationId);
+        } else {
             return new ArrayList<>();
         }
-        List<CustomerRepeatResponse> customers = extCustomerMapper.checkRepeatCustomerByName(request.getName(), organizationId);
-
         //查商机
         Map<String, String> repeatCountMap = new HashMap<>();
         if (permissions.indexOf(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
             if (CollectionUtils.isNotEmpty(customers)) {
                 List<String> customerIds = customers.stream().map(CustomerRepeatResponse::getId).collect(Collectors.toList());
                 List<OptionDTO> repeatCountDTOList = extOpportunityMapper.getRepeatCountMap(customerIds);
-                repeatCountMap = repeatCountDTOList.stream().collect(Collectors.toMap(OptionDTO::getId,OptionDTO::getName));
+                repeatCountMap = repeatCountDTOList.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
             }
         }
 
@@ -190,9 +199,12 @@ public class PersonalCenterService {
             if (CollectionUtils.isNotEmpty(customers)) {
                 List<String> customerNames = customers.stream().map(CustomerRepeatResponse::getName).collect(Collectors.toList());
                 List<OptionDTO> repeatCountDTOList = extClueMapper.getRepeatCountMap(customerNames);
-                clueRepeatCountMap = repeatCountDTOList.stream().collect(Collectors.toMap(OptionDTO::getId,OptionDTO::getName));
+                clueRepeatCountMap = repeatCountDTOList.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
             }
         }
+        boolean clueModuleEnable = keyList.contains(ModuleKey.CLUE.getKey());
+
+        boolean opportunityModuleEnable = keyList.contains(ModuleKey.BUSINESS.getKey());
 
         for (CustomerRepeatResponse customer : customers) {
             if (StringUtils.equalsIgnoreCase(customer.getName(), request.getName())) {
@@ -205,6 +217,9 @@ public class PersonalCenterService {
             customer.setOpportunityCount(Integer.parseInt(StringUtils.isBlank(opportunity) ? "0" : opportunity));
             String clue = clueRepeatCountMap.get(customer.getName());
             customer.setClueCount(Integer.parseInt(StringUtils.isBlank(clue) ? "0" : clue));
+            customer.setOpportunityModuleEnable(opportunityModuleEnable);
+            customer.setClueModuleEnable(clueModuleEnable);
+
         }
         return customers;
     }
