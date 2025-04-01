@@ -64,7 +64,7 @@ public class CluePoolControllerTests extends BaseTest {
 		condition.setColumn("name");
 		condition.setOperator("=");
 		condition.setValue("cc");
-		CluePoolRecycleRuleDTO recycleRule = CluePoolRecycleRuleDTO.builder().expireNotice(true).noticeDays(10).conditions(List.of(condition)).build();
+		CluePoolRecycleRuleDTO recycleRule = CluePoolRecycleRuleDTO.builder().conditions(List.of(condition)).build();
 		request.setRecycleRule(recycleRule);
 		this.requestPostWithOk("/clue-pool/add", request);
 	}
@@ -92,7 +92,7 @@ public class CluePoolControllerTests extends BaseTest {
 		CluePoolPickRuleDTO pickRule = CluePoolPickRuleDTO.builder()
 				.pickNumber(1).limitOnNumber(true).pickIntervalDays(1).limitPreOwner(true).build();
 		request.setPickRule(pickRule);
-		CluePoolRecycleRuleDTO recycleRule = CluePoolRecycleRuleDTO.builder().expireNotice(true).noticeDays(10).build();
+		CluePoolRecycleRuleDTO recycleRule = CluePoolRecycleRuleDTO.builder().build();
 		request.setRecycleRule(recycleRule);
 		this.requestPostWithOk("/clue-pool/update", request);
 	}

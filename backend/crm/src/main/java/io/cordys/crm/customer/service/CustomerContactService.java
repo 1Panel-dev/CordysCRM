@@ -262,7 +262,9 @@ public class CustomerContactService {
     @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         CustomerContact originCustomerContact = customerContactMapper.selectByPrimaryKey(id);
-
+        if (originCustomerContact == null) {
+            return;
+        }
         customerContactMapper.deleteByPrimaryKey(id);
         customerContactFieldService.deleteByResourceId(id);
 

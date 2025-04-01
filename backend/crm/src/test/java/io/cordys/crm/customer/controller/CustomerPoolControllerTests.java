@@ -16,19 +16,13 @@ import io.cordys.crm.customer.dto.request.CustomerPoolAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolUpdateRequest;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
@@ -70,7 +64,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 		condition.setOperator("=");
 		condition.setValue("cc");
 		CustomerPoolRecycleRuleDTO recycleRule = CustomerPoolRecycleRuleDTO.builder()
-				.expireNotice(true).noticeDays(10).conditions(List.of(condition)).build();
+				.conditions(List.of(condition)).build();
 		request.setRecycleRule(recycleRule);
 		this.requestPostWithOk("/customer-pool/add", request);
 	}
@@ -99,7 +93,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 				.limitOnNumber(true).limitPreOwner(true).pickNumber(1).pickIntervalDays(1).build();
 		request.setPickRule(pickRule);
 		CustomerPoolRecycleRuleDTO recycleRule = CustomerPoolRecycleRuleDTO.builder()
-				.expireNotice(true).noticeDays(10).build();
+				.build();
 		request.setRecycleRule(recycleRule);
 		this.requestPostWithOk("/customer-pool/update", request);
 	}
