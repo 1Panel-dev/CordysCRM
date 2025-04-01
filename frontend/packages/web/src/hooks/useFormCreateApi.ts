@@ -283,7 +283,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           });
         }
       });
-      if (props.sourceId?.value) {
+      if (props.sourceId?.value && props.needInitDetail?.value) {
         await updateFormApi[props.formKey.value](params);
         Message.success(t('common.updateSuccess'));
       } else {

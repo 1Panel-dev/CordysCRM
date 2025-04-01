@@ -24,7 +24,12 @@
           </div>
           <div :class="getValueClass()" :style="{ textAlign: props.valueAlign }">
             <slot :name="item.valueSlotName" :item="item">
-              <CrmTagGroup v-if="Array.isArray(item.value)" :tags="item.value" :class="`justify-${props.valueAlign}`" />
+              <CrmTagGroup
+                v-if="Array.isArray(item.value)"
+                :tags="item.value"
+                :label-key="item.tagProps?.labelKey"
+                :class="`justify-${props.valueAlign}`"
+              />
               <n-tooltip
                 v-else
                 :disabled="item.value === undefined || item.value === null || item.value?.toString() === ''"
@@ -75,6 +80,9 @@
       | 'left'
       | 'left-end'
       | undefined; // 提示位置防止窗口抖动
+    tagProps?: {
+      labelKey?: string;
+    };
     [key: string]: any;
   }
 

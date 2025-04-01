@@ -241,6 +241,7 @@
     roleIds: [],
     userGroupIds: [],
     userName: '',
+    roles: [],
   };
 
   const form = ref<MemberParams>(cloneDeep(initUserForm));
@@ -358,6 +359,7 @@
         form.value = {
           ...detail,
           name: detail.userName,
+          roleIds: detail.roles.map((e) => e.id),
         };
       }
     } catch (error) {

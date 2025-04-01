@@ -54,3 +54,4 @@ export const AddCustomerCollaborationUrl = '/customer/collaboration/add'; // 添
 export const GetCustomerCollaborationListUrl = '/customer/collaboration/list'; // 获取协作成员列表
 export const DeleteCustomerCollaborationUrl = '/customer/collaboration/delete'; // 删除协作成员
 export const GetCustomerOptionsUrl = '/customer/option'; // 获取客户选项列表
+export const GetCustomerOpenSeaFollowRecordListUrl = '/customer/follow/record/pool/page'; // 获取客户公海池跟进记录列表

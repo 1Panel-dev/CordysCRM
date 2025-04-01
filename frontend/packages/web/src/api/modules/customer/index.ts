@@ -38,6 +38,7 @@ import {
   GetCustomerFormConfigUrl,
   GetCustomerHeaderListUrl,
   GetCustomerListUrl,
+  GetCustomerOpenSeaFollowRecordListUrl,
   GetCustomerOpenSeaListUrl,
   GetCustomerOptionsUrl,
   GetCustomerRelationListUrl,
@@ -374,4 +375,9 @@ export function deleteCustomerCollaboration(id: string) {
 // 获取客户选项列表
 export function getCustomerOptions(data: TableQueryParams) {
   return CDR.post<CommonList<CustomerOptionsItem>>({ url: GetCustomerOptionsUrl, data });
+}
+
+// 获取客户公海跟进记录列表
+export function GetCustomerOpenSeaFollowRecordList(data: CustomerFollowRecordTableParams) {
+  return CDR.post<CommonList<CustomerFollowRecordListItem>>({ url: GetCustomerOpenSeaFollowRecordListUrl, data });
 }

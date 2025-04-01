@@ -15,7 +15,7 @@
   >
     <template #left>
       <div class="p-[16px_24px]">
-        <CrmFormDescription :form-key="FormDesignKeyEnum.BUSINESS" :source-id="sourceId" />
+        <CrmFormDescription :form-key="FormDesignKeyEnum.BUSINESS" :source-id="sourceId" :refresh-key="refreshKey" />
       </div>
     </template>
     <template #rightTop>

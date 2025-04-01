@@ -70,6 +70,7 @@
     roleIds: [],
     userGroupIds: [],
     userName: '',
+    roles: [],
   };
 
   const detail = ref<MemberParams>(cloneDeep(initDetail));
@@ -86,8 +87,9 @@
     { label: t('org.employeeType'), value: 'employeeType' },
     { label: t('org.directSuperior'), value: 'supervisorId' },
     { label: t('org.workingCity'), value: 'workCity' },
-    { label: t('org.role'), value: 'role' },
-    { label: t('org.userGroup'), value: 'userGroup' },
+    { label: t('org.role'), value: 'roles', tagProps: { labelKey: 'name' } },
+    // TODO 不上
+    // { label: t('org.userGroup'), value: 'userGroup' },
   ];
 
   const descriptions = ref<Description[]>(cloneDeep(initDescriptions));

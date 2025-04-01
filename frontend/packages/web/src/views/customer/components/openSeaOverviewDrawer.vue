@@ -9,6 +9,7 @@
     :form-key="FormDesignKeyEnum.CUSTOMER"
     :source-id="props.sourceId"
     @button-select="handleButtonSelect"
+    @saved="() => (refreshKey += 1)"
   >
     <template #distributePopContent>
       <TransferForm ref="distributeFormRef" v-model:form="distributeForm" />
@@ -24,6 +25,23 @@
     </template>
     <template #right>
       <div v-if="activeTab === 'overview'" class="mt-[16px] h-[100px] bg-[var(--text-n10)]"></div>
+      <CrmHeaderTable
+        v-else-if="activeTab === 'headRecord'"
+        class="mt-[16px]"
+        :source-id="props.sourceId"
+        :load-list-api="getCustomerHeaderList"
+      />
+      <FollowDetail
+        v-else-if="['followRecord'].includes(activeTab)"
+        class="mt-[16px]"
+        :active-type="(activeTab as 'followRecord')"
+        wrapper-class="h-[calc(100vh-162px)]"
+        virtual-scroll-height="calc(100vh - 258px)"
+        :follow-api-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
+        :source-id="sourceId"
+        :show-action="false"
+        :refresh-key="refreshKey"
+      />
     </template>
   </CrmOverviewDrawer>
 </template>
@@ -35,14 +53,23 @@
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
+  import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
 
-  import { assignOpenSeaCustomer, deleteOpenSeaCustomer, pickOpenSeaCustomer } from '@/api/modules/customer';
+  import {
+    assignOpenSeaCustomer,
+    deleteOpenSeaCustomer,
+    getCustomerHeaderList,
+    pickOpenSeaCustomer,
+  } from '@/api/modules/customer';
   import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
+
+  const refreshKey = ref(0);
 
   const props = defineProps<{
     sourceId: string;

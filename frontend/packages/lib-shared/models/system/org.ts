@@ -64,6 +64,11 @@ export interface MemberItem extends BaseMemberInfo {
 export interface MemberParams extends BaseMemberInfo {
   id?: string;
   userName: string;
+  roles: {
+    id: string;
+    name: string;
+    userId: string;
+  }[];
 }
 
 export interface ErrorMessagesType {

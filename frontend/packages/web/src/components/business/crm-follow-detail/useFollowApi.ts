@@ -22,6 +22,7 @@ import {
   deleteCustomerFollowRecord,
   getCustomerFollowPlanList,
   getCustomerFollowRecordList,
+  GetCustomerOpenSeaFollowRecordList,
 } from '@/api/modules/customer/index';
 import {
   cancelOptFollowPlan,
@@ -39,6 +40,7 @@ export type followEnumType =
   | typeof FormDesignKeyEnum.BUSINESS
   | typeof FormDesignKeyEnum.CLUE
   | typeof FormDesignKeyEnum.CLUE_POOL
+  | typeof FormDesignKeyEnum.CUSTOMER_OPEN_SEA
   | 'myPlan';
 
 type FollowApiMapType = Record<
@@ -101,6 +103,11 @@ const followApiMap: FollowApiMapType = {
   [FormDesignKeyEnum.CLUE_POOL]: {
     list: {
       followRecord: getCluePoolFollowRecordList,
+    },
+  },
+  [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: {
+    list: {
+      followRecord: GetCustomerOpenSeaFollowRecordList,
     },
   },
   myPlan: {
