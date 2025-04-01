@@ -1,4 +1,4 @@
-// eslint-disable-next-line  @typescript-eslint/no-var-requires
+// eslint-disable-next-line  @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 const path = require('path');
 
 module.exports = {
@@ -97,6 +97,8 @@ module.exports = {
             '^vue-i18n$',
             '^pinia$',
             '^@vueuse/core$',
+            '^naive-ui$',
+            '^@vicons/ionicons5$',
             '^lodash-es$',
             '^axios$',
             '^dayjs$',
@@ -105,6 +107,7 @@ module.exports = {
             '^localforage$',
           ], // node依赖
           ['.*/assets/.*', '^@/assets$'], // 项目静态资源
+          ['^@lib/shared/.*'], // 共享库
           ['^@/components/pure/.*', '^@/components/business/.*', '.*\\.vue$'], // 组件
           [
             '^@/api($|/.*)',
