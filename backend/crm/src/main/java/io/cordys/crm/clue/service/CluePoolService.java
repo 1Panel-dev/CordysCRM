@@ -10,7 +10,10 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.clue.domain.*;
+import io.cordys.crm.clue.domain.Clue;
+import io.cordys.crm.clue.domain.CluePool;
+import io.cordys.crm.clue.domain.CluePoolPickRule;
+import io.cordys.crm.clue.domain.CluePoolRecycleRule;
 import io.cordys.crm.clue.dto.CluePoolDTO;
 import io.cordys.crm.clue.dto.CluePoolPickRuleDTO;
 import io.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
@@ -39,15 +42,15 @@ import java.util.stream.Stream;
 public class CluePoolService {
 
     @Resource
-    private BaseMapper<CluePool> cluePoolMapper;
+    private BaseMapper<Clue> clueMapper;
     @Resource
     private BaseMapper<User> userMapper;
+    @Resource
+    private BaseMapper<CluePool> cluePoolMapper;
     @Resource
     private BaseMapper<CluePoolPickRule> cluePoolPickRuleMapper;
     @Resource
     private BaseMapper<CluePoolRecycleRule> cluePoolRecycleRuleMapper;
-    @Resource
-    private BaseMapper<CluePoolRelation> cluePoolRelationMapper;
     @Resource
     private ExtCluePoolMapper extCluePoolMapper;
     @Resource
@@ -194,11 +197,11 @@ public class CluePoolService {
      * @param id 线索池ID
      */
     public boolean checkNoPick(String id) {
-        LambdaQueryWrapper<CluePoolRelation> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CluePoolRelation::getPoolId, id)
-                .eq(CluePoolRelation::getPicked, false);
-        List<CluePoolRelation> cluePoolRelations = cluePoolRelationMapper.selectListByLambda(wrapper);
-        return CollectionUtils.isNotEmpty(cluePoolRelations);
+        LambdaQueryWrapper<Clue> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Clue::getPoolId, id)
+                .eq(Clue::getInSharedPool, true);
+        List<Clue> relations = clueMapper.selectListByLambda(wrapper);
+        return CollectionUtils.isNotEmpty(relations);
     }
 
     /**

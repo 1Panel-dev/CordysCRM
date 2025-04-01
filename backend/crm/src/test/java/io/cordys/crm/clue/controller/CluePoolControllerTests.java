@@ -1,22 +1,19 @@
 package io.cordys.crm.clue.controller;
 
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.SortRequest;
 import io.cordys.common.pager.Pager;
-import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.clue.domain.CluePool;
-import io.cordys.crm.clue.domain.CluePoolRelation;
 import io.cordys.crm.clue.dto.CluePoolDTO;
 import io.cordys.crm.clue.dto.CluePoolPickRuleDTO;
 import io.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import io.cordys.crm.clue.dto.request.CluePoolAddRequest;
 import io.cordys.crm.clue.dto.request.CluePoolUpdateRequest;
 import io.cordys.crm.system.dto.RuleConditionDTO;
-import io.cordys.mybatis.BaseMapper;
-import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -35,11 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CluePoolControllerTests extends BaseTest {
 
 	private static CluePoolDTO testCluePool;
-
-	@Resource
-	private BaseMapper<CluePool> cluePoolMapper;
-	@Resource
-	private BaseMapper<CluePoolRelation> cluePoolRelationMapper;
 
 	@Test
 	@Order(1)
@@ -110,13 +102,7 @@ public class CluePoolControllerTests extends BaseTest {
 	void delete() throws Exception {
 		MvcResult mvcResult = this.requestGet("/clue-pool/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("clue_pool_not_exist"));
-		// insert free clue on the pool, then delete it
-		CluePoolRelation cluePoolRelation = createCluePoolRelation();
-		cluePoolRelation.setPoolId(testCluePool.getId());
-		cluePoolRelationMapper.insert(cluePoolRelation);
 		this.requestGet("/clue-pool/check-pick/" + testCluePool.getId());
-		// pick clue, delete the pool
-		cluePoolRelationMapper.deleteByPrimaryKey(cluePoolRelation.getId());
 		this.requestGetWithOk("/clue-pool/delete/" + testCluePool.getId());
 	}
 
@@ -135,19 +121,5 @@ public class CluePoolControllerTests extends BaseTest {
 		cluePool.setEnable(true);
 		cluePool.setAuto(true);
 		return cluePool;
-	}
-
-	private CluePoolRelation createCluePoolRelation() {
-		CluePoolRelation cluePoolRelation = new CluePoolRelation();
-		cluePoolRelation.setId("default-clue-pool-relation");
-		cluePoolRelation.setClueId("default-clue");
-		cluePoolRelation.setPicked(false);
-		cluePoolRelation.setLastPickUserId("default-user");
-		cluePoolRelation.setLastPickTime(System.currentTimeMillis());
-		cluePoolRelation.setCreateTime(System.currentTimeMillis());
-		cluePoolRelation.setCreateUser("default-user");
-		cluePoolRelation.setUpdateTime(System.currentTimeMillis());
-		cluePoolRelation.setUpdateUser("default-user");
-		return cluePoolRelation;
 	}
 }

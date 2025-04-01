@@ -60,27 +60,6 @@ CREATE TABLE clue_pool_recycle_rule
 
 CREATE INDEX idx_pool_id ON clue_pool_recycle_rule (pool_id ASC);
 
-CREATE TABLE clue_pool_relation
-(
-    `id`                VARCHAR(32) NOT NULL COMMENT 'id',
-    `clue_id`           VARCHAR(32) NOT NULL COMMENT '线索id',
-    `pool_id`           VARCHAR(32) NOT NULL COMMENT '线索池id',
-    `last_pick_user_id` VARCHAR(32) NOT NULL COMMENT '上一次领取人',
-    `last_pick_time`    BIGINT(255) NOT NULL COMMENT '上一次领取时间',
-    `picked`            BIT(1)      NOT NULL COMMENT '是否领取',
-    `create_time`       BIGINT      NOT NULL COMMENT '创建时间',
-    `update_time`       BIGINT      NOT NULL COMMENT '更新时间',
-    `create_user`       VARCHAR(32) NOT NULL COMMENT '创建人',
-    `update_user`       VARCHAR(32) NOT NULL COMMENT '更新人',
-    PRIMARY KEY (id)
-) COMMENT = '线索池中的线索'
-    ENGINE = InnoDB
-    DEFAULT CHARSET = utf8mb4
-    COLLATE = utf8mb4_general_ci;
-
-CREATE INDEX idx_clue_id ON clue_pool_relation (clue_id ASC);
-CREATE INDEX idx_pool_id ON clue_pool_relation (pool_id ASC);
-
 CREATE TABLE clue_capacity
 (
     `id`              VARCHAR(32) NOT NULL COMMENT 'id',
