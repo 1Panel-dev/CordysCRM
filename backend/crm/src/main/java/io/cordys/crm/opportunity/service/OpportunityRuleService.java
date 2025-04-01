@@ -15,7 +15,6 @@ import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityRuleMapper;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
-import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -34,8 +33,6 @@ import java.util.stream.Stream;
 @Transactional(rollbackFor = Exception.class)
 public class OpportunityRuleService {
 
-	@Resource
-	private ExtUserMapper extUserMapper;
 	@Resource
 	private BaseMapper<User> userMapper;
 	@Resource
@@ -190,7 +187,7 @@ public class OpportunityRuleService {
 	 */
 	private void checkRuleOwner(OpportunityRule rule, String accessUserId) {
 		List<String> ownerIds = JSON.parseArray(rule.getOwnerId(), String.class);
-		List<String> ownerUserIds = extUserMapper.getUserIdsByScope(ownerIds, rule.getOrganizationId());
+		List<String> ownerUserIds = userExtendService.getScopeOwnerIds(ownerIds, rule.getOrganizationId());
 		if (!ownerUserIds.contains(accessUserId)) {
 			throw new GenericException(Translator.get("opportunity.access_fail"));
 		}

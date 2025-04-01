@@ -21,7 +21,6 @@ import io.cordys.crm.clue.mapper.ExtCluePoolMapper;
 import io.cordys.crm.customer.constants.RecycleConditionColumnKey;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
-import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -39,8 +38,6 @@ import java.util.stream.Stream;
 @Transactional(rollbackFor = Exception.class)
 public class CluePoolService {
 
-    @Resource
-    private ExtUserMapper extUserMapper;
     @Resource
     private BaseMapper<CluePool> cluePoolMapper;
     @Resource
@@ -304,7 +301,7 @@ public class CluePoolService {
             return;
         }
         List<String> ownerIds = JSON.parseArray(pool.getOwnerId(), String.class);
-        List<String> ownerUserIds = extUserMapper.getUserIdsByScope(ownerIds, pool.getOrganizationId());
+        List<String> ownerUserIds = userExtendService.getScopeOwnerIds(ownerIds, pool.getOrganizationId());
 
         if (!ownerUserIds.contains(accessUserId)) {
             throw new GenericException(Translator.get("clue_pool_access_fail"));

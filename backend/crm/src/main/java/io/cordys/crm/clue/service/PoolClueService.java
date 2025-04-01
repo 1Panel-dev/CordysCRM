@@ -13,7 +13,6 @@ import io.cordys.crm.clue.dto.request.PoolCluePickRequest;
 import io.cordys.crm.clue.mapper.ExtClueCapacityMapper;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
-import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -38,8 +37,6 @@ public class PoolClueService {
 	@Resource
 	private BaseMapper<CluePoolPickRule> pickRuleMapper;
 	@Resource
-	private ExtUserMapper extUserMapper;
-	@Resource
 	private ExtClueCapacityMapper extClueCapacityMapper;
 	@Resource
 	private UserExtendService userExtendService;
@@ -59,7 +56,7 @@ public class PoolClueService {
 		List<CluePool> pools = poolMapper.selectListByLambda(poolWrapper);
 		pools.forEach(pool -> {
 			List<String> scopeIds = JSON.parseArray(pool.getScopeId(), String.class);
-			List<String> ownerUserIds = extUserMapper.getUserIdsByScope(scopeIds, currentOrgId);
+			List<String> ownerUserIds = userExtendService.getScopeOwnerIds(scopeIds, pool.getOrganizationId());
 			if (ownerUserIds.contains(currentUser)) {
 				OptionDTO optionDTO = new OptionDTO();
 				optionDTO.setId(pool.getId());
@@ -151,7 +148,7 @@ public class PoolClueService {
 	 */
 	public void validateCapacity(int processCount, String ownUserId, String currentOrgId) {
 		// 实际可处理条数 = 负责人库容容量 - 所领取的数量 < 处理数量, 提示库容不足.
-				Integer capacity = getUserCapacity(ownUserId, currentOrgId);
+		Integer capacity = getUserCapacity(ownUserId, currentOrgId);
 		LambdaQueryWrapper<Clue> customerWrapper = new LambdaQueryWrapper<>();
 		customerWrapper.eq(Clue::getOwner, ownUserId).eq(Clue::getInSharedPool, false);
 		List<Clue> clues = clueMapper.selectListByLambda(customerWrapper);

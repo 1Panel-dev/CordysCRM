@@ -174,26 +174,6 @@
         WHERE sys_organization_user.organization_id = #{orgId}
     </select>
 
-    <select id="getUserIdsByScope" resultType="java.lang.String">
-        -- department
-        select user_id from sys_organization_user where department_id in
-        <foreach collection="ids" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-        -- role
-        union
-        select user_id from sys_user_role where role_id in
-        <foreach collection="ids" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-        -- user
-        union
-        select id from sys_user where id in
-        <foreach collection="ids" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-    </select>
-
     <select id="getUserDeptByUserIds" resultType="io.cordys.common.dto.UserDeptDTO">
         select sou.user_id, sd.id as deptId, sd.`name` as deptName
         from sys_organization_user sou

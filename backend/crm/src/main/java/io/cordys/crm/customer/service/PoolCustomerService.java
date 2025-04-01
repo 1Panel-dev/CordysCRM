@@ -13,7 +13,6 @@ import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerCapacityMapper;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
-import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -38,8 +37,6 @@ public class PoolCustomerService {
 	@Resource
 	private BaseMapper<CustomerPoolPickRule> pickRuleMapper;
 	@Resource
-	private ExtUserMapper extUserMapper;
-	@Resource
 	private ExtCustomerCapacityMapper extCustomerCapacityMapper;
 	@Resource
 	private UserExtendService userExtendService;
@@ -59,7 +56,7 @@ public class PoolCustomerService {
 		List<CustomerPool> pools = poolMapper.selectListByLambda(poolWrapper);
 		pools.forEach(pool -> {
 			List<String> scopeIds = JSON.parseArray(pool.getScopeId(), String.class);
-			List<String> ownerUserIds = extUserMapper.getUserIdsByScope(scopeIds, currentOrgId);
+			List<String> ownerUserIds = userExtendService.getScopeOwnerIds(scopeIds, currentOrgId);
 			if (ownerUserIds.contains(currentUser)) {
 				OptionDTO optionDTO = new OptionDTO();
 				optionDTO.setId(pool.getId());

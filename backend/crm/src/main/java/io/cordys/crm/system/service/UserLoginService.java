@@ -62,7 +62,7 @@ public class UserLoginService {
             }
         }
 
-        List<String> roleIds = roleService.getRoleIdsByUserId(userId);
+        List<String> roleIds = roleService.getRoleIdsByUserId(userDTO.getId());
         List<OptionDTO> roleOptions = roleService.getRoleOptions(roleIds);
         // 设置角色信息，供前端展示
         userDTO.setRoles(roleOptions);

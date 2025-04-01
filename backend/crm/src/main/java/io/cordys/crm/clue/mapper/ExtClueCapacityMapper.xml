@@ -7,5 +7,6 @@
         <foreach collection="ids" item="id" separator="or">
             scope_id like concat('%', #{id}, '%')
         </foreach>
+        order by create_time desc limit 1
     </select>
 </mapper>
