@@ -233,34 +233,24 @@
       {
         value: SystemResourceMessageTypeEnum.CUSTOMER,
         label: t('system.message.customerMessage'),
-        count: messageCount.value[SystemResourceMessageTypeEnum.CUSTOMER],
+        count: messageCount.value[SystemResourceMessageTypeEnum.CUSTOMER] || 0,
       },
       {
         value: SystemResourceMessageTypeEnum.CLUE,
         label: t('menu.clue'),
-        count: messageCount.value[SystemResourceMessageTypeEnum.CLUE],
+        count: messageCount.value[SystemResourceMessageTypeEnum.CLUE] || 0,
       },
       {
         value: SystemResourceMessageTypeEnum.OPPORTUNITY,
         label: t('system.message.opportunityMessage'),
-        count: messageCount.value[SystemResourceMessageTypeEnum.OPPORTUNITY],
-      },
-      {
-        value: SystemResourceMessageTypeEnum.SYSTEM,
-        label: t('menu.settings'),
-        count: messageCount.value[SystemResourceMessageTypeEnum.SYSTEM],
+        count: messageCount.value[SystemResourceMessageTypeEnum.OPPORTUNITY] || 0,
       },
     ];
 
     if (isAnnouncementTab) {
       return allMessage;
     }
-    return [
-      ...allMessage,
-      ...baseMessageTypes.filter(
-        ({ value }) => enabledModuleKeys.has(value) || value === SystemResourceMessageTypeEnum.SYSTEM
-      ),
-    ];
+    return [...allMessage, ...baseMessageTypes.filter(({ value }) => enabledModuleKeys.has(value) || value)];
   });
 
   async function initMessageCount() {

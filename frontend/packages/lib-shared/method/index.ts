@@ -87,3 +87,33 @@ export function getUrlParameterWidthRegExp(name: string) {
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
+/**
+ * 建立 SSE 连接
+ * @param url 连接地址
+ * @param host 连接主机
+ * @returns EventSource 实例
+ */
+export const apiSSE = (url: string, host?: string): EventSource => {
+  let protocol = 'http://';
+
+  // 判断是否使用 HTTPS
+  if (!host?.startsWith('http') && (window.location.protocol === 'https:' || host?.startsWith('https'))) {
+    protocol = 'https://';
+  }
+
+  // 解析 URL，自动适配 host
+  const uri = protocol + (host?.split('://')[1] || window.location.host) + url;
+
+  return new EventSource(uri);
+};
+
+/**
+ * 获取 SSE 连接
+ * @param sseUrl，自定义 SSE 地址
+ * @param host 自定义主机
+ * @returns EventSource 实例
+ */
+export function getSSE(sseUrl: string, params: Record<string, string>, host?: string): EventSource {
+  const queryString = new URLSearchParams(params).toString();
+  return apiSSE(`${sseUrl}?${queryString}`, host);
+}

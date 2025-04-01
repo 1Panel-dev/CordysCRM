@@ -27,7 +27,6 @@
           <n-input v-model:value="form.url" type="text" :placeholder="t('common.pleaseInput')" />
           <div class="text-[var(--text-n4)]">{{ t('system.message.descContent') }}</div>
         </n-form-item>
-        <!-- TODO 加字段 -->
         <n-form-item
           require-mark-placement="left"
           label-placement="left"
@@ -63,10 +62,10 @@
             </n-button>
             <template #content>
               <div class="p-[16px]">
-                <div>{{ form.content }}</div>
-                <div class="cursor-pointer text-[var(--primary-8)]" @click="goUrl">
+                {{ form.content }}
+                <n-button class="!inline" text type="primary" @click="goUrl">
                   {{ form.renameUrl ?? form.url }}
-                </div>
+                </n-button>
               </div>
             </template>
           </CrmPopConfirm>

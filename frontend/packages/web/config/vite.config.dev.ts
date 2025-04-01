@@ -15,11 +15,9 @@ export default mergeConfig(
         strict: true,
       },
       proxy: {
-        '/ws': {
+        '/sse': {
           target: process.env.VITE_DEV_DOMAIN,
           changeOrigin: true,
-          rewrite: (path: string) => path.replace(/^\/front\/ws/, ''),
-          ws: true,
         },
         '/front': {
           target: process.env.VITE_DEV_DOMAIN,

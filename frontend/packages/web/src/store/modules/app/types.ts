@@ -1,6 +1,7 @@
 import { UploadFileInfo } from 'naive-ui';
 
 import type { ModuleNavBaseInfoItem } from '@lib/shared/models/system/module';
+import type { MessageInfo } from '@lib/shared/models/user';
 
 import type { GlobalThemeOverrides } from 'naive-ui';
 import type { RouteRecordRaw } from 'vue-router';
@@ -56,4 +57,6 @@ export interface AppState {
   moduleConfigList: ModuleNavBaseInfoItem[]; // 模块配置列表
   topMenus: RouteRecordRaw[];
   currentTopMenu: RouteRecordRaw;
+  messageInfo: MessageInfo; // 消息通知和公告
+  eventSource: null | EventSource; // 事件流资源
 }

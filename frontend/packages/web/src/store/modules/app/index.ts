@@ -1,11 +1,14 @@
 import { defineStore } from 'pinia';
 import { cloneDeep } from 'lodash-es';
 
+import { CloseMessageUrl, SubscribeMessageUrl } from '@lib/shared/api/requrls/system/message';
+import { getSSE } from '@lib/shared/method/index';
 import { setLocalStorage } from '@lib/shared/method/local-storage';
 
 import { getKey } from '@/api/modules/system/login';
 import { getModuleNavConfigList } from '@/api/modules/system/module';
 import { useI18n } from '@/hooks/useI18n';
+import useUserStore from '@/store/modules/user';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
 import type { AppState, PageConfig, Style, Theme } from './types';
@@ -54,6 +57,12 @@ const useAppStore = defineStore('app', {
     moduleConfigList: [],
     currentTopMenu: {} as RouteRecordRaw,
     topMenus: [],
+    messageInfo: {
+      read: false,
+      notificationDTOList: [],
+      announcementDTOList: [],
+    },
+    eventSource: null,
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -139,6 +148,55 @@ const useAppStore = defineStore('app', {
      */
     setCurrentTopMenu(menu: RouteRecordRaw) {
       this.currentTopMenu = cloneDeep(menu);
+    },
+    /**
+     * 连接SSE消息订阅流
+     */
+    connectSystemMessageSSE(callback: () => void) {
+      const userStore = useUserStore();
+
+      if (this.eventSource) {
+        this.eventSource.close();
+      }
+
+      this.eventSource = getSSE(SubscribeMessageUrl, {
+        clientId: userStore.clientIdRandomId,
+        userId: userStore.userInfo.id,
+      });
+
+      if (this.eventSource) {
+        this.eventSource.onmessage = (event: MessageEvent) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'SYSTEM_HEARTBEAT') {
+              return;
+            }
+
+            this.messageInfo = { ...data };
+            callback();
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('SSE Message parsing failure:', error);
+          }
+        };
+
+        this.eventSource.onerror = () => {
+          this.eventSource?.close();
+          setTimeout(() => this.connectSystemMessageSSE(callback), 5000);
+        };
+      }
+    },
+    /**
+     * 客户端主动断开连接
+     */
+    disconnectSystemMessageSSE() {
+      const userStore = useUserStore();
+      this.eventSource = getSSE(CloseMessageUrl, {
+        clientId: userStore.clientIdRandomId,
+        userId: userStore.userInfo.id,
+      });
+      this.eventSource.close();
+      this.eventSource = null;
     },
   },
   persist: {

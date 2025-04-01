@@ -50,8 +50,8 @@ const useUserStore = defineStore('user', {
     },
     messageInfo: {
       read: false,
-      notificationDToList: [],
-      announcementDToList: [],
+      notificationDTOList: [],
+      announcementDTOList: [],
     },
   }),
 

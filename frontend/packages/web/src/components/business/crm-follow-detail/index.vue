@@ -167,9 +167,9 @@
 
   const descriptionList: Description[] = [
     {
-      key: 'department',
+      key: 'departmentName',
       label: t('org.department'),
-      value: 'department',
+      value: 'departmentName',
     },
     {
       key: 'contactName',

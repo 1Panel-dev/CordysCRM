@@ -15,3 +15,5 @@ export const SetAllNotificationReadUrl = '/notification/read/all'; // 所有信�
 export const GetMessageTaskUrl = '/message/task/get'; // 获取消息设置
 export const SaveMessageTaskUrl = '/message/task/save'; // 保存消息设置
 export const BatchSaveMessageTaskUrl = '/message/task/batch/save'; // 消息设置批量编辑
+export const SubscribeMessageUrl = '/sse/subscribe'; // 客户端订阅 SSE 事件流
+export const CloseMessageUrl = '/sse/close'; // 客户端关闭 SSE 事件流

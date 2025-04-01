@@ -5,10 +5,11 @@
       :virtual-scroll-height="props.virtualScrollHeight"
       :key-field="props.keyField"
       :item-height="114"
+      :mode="props.messageList ? 'static' : 'remote'"
       @reach-bottom="handleReachBottom"
     >
       <template #item="{ item }">
-        <div class="crm-message-item p-[8px]">
+        <div class="crm-message-item py-[8px]">
           <div class="crm-message-item-content flex h-full w-full justify-between gap-[24px] p-[16px]">
             <div>
               <div class="mb-[8px] flex w-full items-center gap-[8px]">
@@ -43,8 +44,13 @@
                 </n-badge>
               </div>
               <div class="flex flex-col pl-[48px]">
-                <div :class="`message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
-                  {{ item.contentText }}
+                <div
+                  :class="`flex message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`"
+                >
+                  {{ JSON.parse(item.contentText)?.content ?? '-' }}
+                  <div class="ml-[8px] cursor-pointer text-[var(--primary-8)]" @click="goUrl(item.contentText)">
+                    {{ JSON.parse(item.contentText)?.renameUrl ?? JSON.parse(item.contentText)?.url }}
+                  </div>
                 </div>
                 <div :class="`message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
                   {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
@@ -143,6 +149,13 @@
       return;
     }
     loadMessageList();
+  }
+
+  function goUrl(context: string) {
+    const url = JSON.parse(context)?.url;
+    if (url) {
+      window.open(url, '_blank');
+    }
   }
 
   onBeforeMount(() => {

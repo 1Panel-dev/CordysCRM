@@ -3,21 +3,27 @@ import { defineStore } from 'pinia';
 import { clearToken, setToken } from '@lib/shared/method/auth';
 import { removeRouteListener } from '@lib/shared/method/route-listener';
 import type { LoginParams } from '@lib/shared/models/system/login';
-import type { MessageInfo, UserInfo } from '@lib/shared/models/user';
+import type { UserInfo } from '@lib/shared/models/user';
+
+import NotifyContent from '@/views/system/message/components/notifyContent.vue';
 
 import { isLogin, login, signout } from '@/api/modules/system/login';
+import useDiscreteApi from '@/hooks/useDiscreteApi';
 import { useI18n } from '@/hooks/useI18n';
 import useUser from '@/hooks/useUser';
 import router from '@/router';
+import { getGenerateId } from '@/utils';
 
 import { AppRouteEnum } from '@/enums/routeEnum';
 
 import useAppStore from '../app';
 
+const { notification } = useDiscreteApi();
+
 export interface UserState {
   loginType: string[];
   userInfo: UserInfo;
-  messageInfo: MessageInfo;
+  clientIdRandomId: string; // 客户端随机id
 }
 
 const useUserStore = defineStore('user', {
@@ -48,11 +54,7 @@ const useUserStore = defineStore('user', {
       departmentId: '',
       departmentName: '',
     },
-    messageInfo: {
-      read: false,
-      notificationDToList: [],
-      announcementDToList: [],
-    },
+    clientIdRandomId: '',
   }),
 
   getters: {
@@ -72,7 +74,9 @@ const useUserStore = defineStore('user', {
         this.setInfo(res);
         const appStore = useAppStore();
         const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
+        this.clientIdRandomId = getGenerateId();
         appStore.setOrgId(lastOrganizationId);
+        appStore.connectSystemMessageSSE(this.showSystemNotify);
       } catch (error) {
         clearToken();
         throw error;
@@ -81,6 +85,7 @@ const useUserStore = defineStore('user', {
     // 登出回调
     logoutCallBack() {
       const appStore = useAppStore();
+      appStore.disconnectSystemMessageSSE();
       // 重置用户信息
       this.$reset();
       clearToken();
@@ -154,6 +159,19 @@ const useUserStore = defineStore('user', {
         // TODO lmy 跳转到有权限的第一个路由名
         await router.push({ name: AppRouteEnum.SYSTEM });
       }
+    },
+    // 展示系统公告
+    showSystemNotify() {
+      const notify = ref();
+      notify.value = notification.create({
+        title: '',
+        content: () => {
+          return h(NotifyContent, {
+            onClose: () => notify.value.destroy(),
+          });
+        },
+        duration: undefined,
+      });
     },
   },
 });

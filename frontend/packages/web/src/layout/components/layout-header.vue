@@ -66,7 +66,7 @@
   import { useI18n } from '@/hooks/useI18n';
   import { LOCALE_OPTIONS } from '@/locale/index';
   import useLocale from '@/locale/useLocale';
-  import useUserStore from '@/store/modules/user';
+  import useAppStore from '@/store/modules/app';
 
   const props = defineProps<{
     logo?: string;
@@ -75,14 +75,15 @@
 
   const { t } = useI18n();
   const { changeLocale, currentLocale } = useLocale();
-  const userStore = useUserStore();
+
+  const appStore = useAppStore();
 
   function changeLanguage(locale: LocaleType) {
     changeLocale(locale);
   }
 
   const showBadge = computed(() => {
-    return userStore.messageInfo.read;
+    return appStore.messageInfo.read;
   });
 
   const showMessageDrawer = ref(false);

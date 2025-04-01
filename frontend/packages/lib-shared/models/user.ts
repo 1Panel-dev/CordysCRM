@@ -27,6 +27,6 @@ export interface UserInfo {
 
 export interface MessageInfo {
   read: boolean;
-  notificationDToList: MessageCenterItem[];
-  announcementDToList: MessageCenterItem[];
+  notificationDTOList: MessageCenterItem[];
+  announcementDTOList: MessageCenterItem[];
 }

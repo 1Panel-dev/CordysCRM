@@ -56,10 +56,10 @@
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
   import { useI18n } from '@/hooks/useI18n';
-  import useUserStore from '@/store/modules/user';
+  import useAppStore from '@/store/modules/app';
 
   const { t } = useI18n();
-  const userStore = useUserStore();
+  const appStore = useAppStore();
 
   // 先不上
   // const activeTab = ref('3');
@@ -102,7 +102,7 @@
   const showMessageDrawer = ref(false);
 
   const messageList = computed(() => {
-    return userStore.messageInfo.notificationDToList;
+    return appStore.messageInfo.notificationDTOList;
   });
 </script>
 

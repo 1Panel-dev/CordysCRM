@@ -5,6 +5,7 @@
     :virtual-scroll-height="props.virtualScrollHeight"
     :key-field="props.keyField"
     :item-height="100"
+    mode="remote"
     @reach-bottom="emit('reachBottom')"
   >
     <template #item="{ item }">
