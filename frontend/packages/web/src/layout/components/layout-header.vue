@@ -25,7 +25,7 @@
         </n-breadcrumb-item>
       </n-breadcrumb> -->
       <div class="flex items-center gap-[8px]">
-        <CrmTag theme="light" type="primary" @click="showDuplicateCheckDrawer = true">
+        <CrmTag theme="light" type="primary" class="cursor-pointer" @click="showDuplicateCheckDrawer = true">
           {{ t('workbench.duplicateCheck') }}
         </CrmTag>
         <n-popselect

@@ -18,8 +18,8 @@
           :refresh-key="refreshKey"
           class="mt-[16px] p-0"
           active-type="followPlan"
-          wrapper-class="h-calc(100%-28px)"
-          virtual-scroll-height="calc(100vh - 482px)"
+          wrapper-class="h-[calc(100%-38px)] p-[0px]"
+          virtual-scroll-height="calc(100vh - 402px)"
           follow-api-key="myPlan"
           source-id="NULL"
           show-action
@@ -110,7 +110,6 @@
   .title {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 16px;
     .title-name {
       font-weight: 600;
     }

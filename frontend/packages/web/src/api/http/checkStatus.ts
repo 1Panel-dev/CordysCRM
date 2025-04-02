@@ -37,7 +37,12 @@ export default function checkStatus(status: number, msg: string, code?: number):
       errMessage = msg || t('api.errMsg408');
       break;
     case 500:
-      errMessage = msg || t('api.errMsg500');
+      // 101003 用于查重功能，表示模块未开启，不需要弹出消息
+      if (code === 101003) {
+        errMessage = '';
+      } else {
+        errMessage = msg || t('api.errMsg500');
+      }
       break;
     case 501:
       errMessage = msg || t('api.errMsg501');
@@ -56,8 +61,7 @@ export default function checkStatus(status: number, msg: string, code?: number):
       break;
     default:
   }
-  // 101003 用于查重功能，表示模块未开启，不需要弹出消息
-  if (errMessage && code !== 101003) {
+  if (errMessage) {
     message.error(errMessage);
   }
 }
