@@ -2,8 +2,10 @@ package io.cordys.crm.follow.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
@@ -132,8 +134,11 @@ public class FollowUpRecordService extends BaseFollowUpService {
         Optional.ofNullable(followUpRecord).ifPresentOrElse(record -> {
             //更新跟进记录
             updateRecord(record, request, userId);
+            // 获取模块字段
+            List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+            baseService.handleUpdateLog(followUpRecord, record, originCustomerFields, request.getModuleFields(), followUpRecord.getId(), Translator.get("update_follow_up_record"));
         }, () -> {
             throw new GenericException("record_not_found");
         });
@@ -312,11 +317,15 @@ public class FollowUpRecordService extends BaseFollowUpService {
      *
      * @param id
      */
+    @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(id);
         if (followUpRecord == null) {
             throw new GenericException("record_not_found");
         }
         followUpRecordMapper.deleteByPrimaryKey(id);
+
+        // 设置操作对象
+        OperationLogContext.setResourceName(Translator.get("delete_follow_up_record"));
     }
 }

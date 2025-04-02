@@ -236,13 +236,12 @@ public class OpportunityService {
             checkOpportunity(request, orgId, request.getId());
             //更新商机
             updateOpportunity(item, request, userId);
-            //更新模块字段
-            updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
-
             // 获取模块字段
             List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
+            //更新模块字段
+            updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
             Opportunity newOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
-            baseService.handleUpdateLog(opportunity, newOpportunity, originCustomerFields, request.getModuleFields());
+            baseService.handleUpdateLog(opportunity, newOpportunity, originCustomerFields, request.getModuleFields(), opportunity.getId(), opportunity.getName());
         }, () -> {
             throw new GenericException("opportunity_not_found");
         });

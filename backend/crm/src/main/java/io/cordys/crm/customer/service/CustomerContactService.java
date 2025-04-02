@@ -232,7 +232,7 @@ public class CustomerContactService {
         updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
 
         customerContact = customerContactMapper.selectByPrimaryKey(customerContact.getId());
-        baseService.handleUpdateLog(originCustomerContact, customerContact, originCustomerFields, request.getModuleFields());
+        baseService.handleUpdateLog(originCustomerContact, customerContact, originCustomerFields, request.getModuleFields(), originCustomerContact.getId(), originCustomerContact.getName());
         return customerContact;
     }
 

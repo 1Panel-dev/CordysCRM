@@ -243,7 +243,9 @@ public class BaseService {
     public <T> void handleUpdateLog(T originResource,
                                     T modifiedResource,
                                     List<BaseModuleFieldValue> originResourceFields,
-                                    List<BaseModuleFieldValue> modifiedResourceFields) {
+                                    List<BaseModuleFieldValue> modifiedResourceFields,
+                                    String id,
+                                    String name) {
 
         Map originResourceLog = JSON.parseMap(JSON.toJSONString(originResource));
         if (modifiedResourceFields != null && originResourceFields != null) {
@@ -261,14 +263,10 @@ public class BaseService {
 
         try {
 
-            Class<?> clazz = originResource.getClass();
-            Method getId = clazz.getMethod("getId");
-            Method getName = clazz.getMethod("getName");
-
             OperationLogContext.setContext(
                     LogContextInfo.builder()
-                            .resourceId((String) getId.invoke(originResource))
-                            .resourceName((String) getName.invoke(originResource))
+                            .resourceId(id)
+                            .resourceName(name)
                             .originalValue(originResourceLog)
                             .modifiedValue(modifiedResourceLog)
                             .build()

@@ -2,6 +2,10 @@ package io.cordys.crm.follow.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
@@ -12,6 +16,7 @@ import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.service.CustomerFieldService;
 import io.cordys.crm.follow.domain.FollowUpPlan;
 import io.cordys.crm.follow.dto.CustomerDataDTO;
@@ -95,8 +100,11 @@ public class FollowUpPlanService extends BaseFollowUpService {
         Optional.ofNullable(followUpPlan).ifPresentOrElse(plan -> {
             //更新跟进计划
             updatePlan(plan, request, userId);
+            // 获取模块字段
+            List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+            baseService.handleUpdateLog(followUpPlan, plan, originCustomerFields, request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));
         }, () -> {
             throw new GenericException("plan_not_found");
         });
@@ -261,11 +269,15 @@ public class FollowUpPlanService extends BaseFollowUpService {
      *
      * @param id
      */
+    @OperationLog(module = LogModule.FOLLOW_UP_PLAN, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
         if (followUpPlan == null) {
             throw new GenericException("plan_not_found");
         }
         followUpPlanMapper.deleteByPrimaryKey(id);
+
+        // 设置操作对象
+        OperationLogContext.setResourceName(Translator.get("delete_follow_up_plan"));
     }
 }

@@ -291,7 +291,7 @@ public class CustomerService {
         updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
 
         customer = customerMapper.selectByPrimaryKey(request.getId());
-        baseService.handleUpdateLog(originCustomer, customer, originCustomerFields, request.getModuleFields());
+        baseService.handleUpdateLog(originCustomer, customer, originCustomerFields, request.getModuleFields(), originCustomer.getId(), originCustomer.getName());
         return customer;
     }
 
