@@ -175,8 +175,11 @@ public class PersonalCenterService {
     }
 
     public List<CustomerRepeatResponse> getRepeatCustomer(RepeatCustomerPageRequest request, List<String> permissions, List<String> keyList, String organizationId, String userId) {
+        if (StringUtils.isBlank(request.getName())){
+            return new ArrayList<>();
+        }
         //模块关闭，但是有权限，返回指定code
-        if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue()) && !keyList.contains(ModuleKey.CUSTOMER.getKey()))) {
+        if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) && !keyList.contains(ModuleKey.CUSTOMER.getKey())) {
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
         //1.查询当前用户权限
