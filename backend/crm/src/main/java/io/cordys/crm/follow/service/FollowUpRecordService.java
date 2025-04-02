@@ -105,7 +105,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
         if (StringUtils.isNotBlank(request.getOpportunityId())) {
             Opportunity opportunity = new Opportunity();
-            opportunity.setId(request.getCustomerId());
+            opportunity.setId(request.getOpportunityId());
             opportunity.setFollowTime(time);
             opportunity.setFollower(request.getOwner());
             opportunityMapper.update(opportunity);
@@ -113,7 +113,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
         if (StringUtils.isNotBlank(request.getClueId())) {
             Clue clue = new Clue();
-            clue.setId(request.getCustomerId());
+            clue.setId(request.getClueId());
             clue.setFollowTime(time);
             clue.setFollower(request.getOwner());
             clueMapper.update(clue);
