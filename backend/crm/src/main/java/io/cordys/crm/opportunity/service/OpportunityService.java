@@ -29,9 +29,11 @@ import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtProductMapper;
+import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
@@ -74,6 +76,8 @@ public class OpportunityService {
     private CustomerFieldService customerFieldService;
     @Resource
     private ExtProductMapper extProductMapper;
+    @Resource
+    private CommonNoticeSendService commonNoticeSendService;
 
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
@@ -281,7 +285,7 @@ public class OpportunityService {
      * @param id
      */
     @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.DELETE, resourceId = "{#id}")
-    public void delete(String id) {
+    public void delete(String id, String userId, String orgId) {
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(id);
         Optional.ofNullable(opportunity).ifPresentOrElse(item -> {
             opportunityMapper.deleteByPrimaryKey(opportunity.getId());
@@ -291,6 +295,10 @@ public class OpportunityService {
         });
         // 添加日志上下文
         OperationLogContext.setResourceName(opportunity.getName());
+
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+                NotificationConstants.Event.BUSINESS_DELETED, opportunity.getName(), userId,
+                orgId, List.of(opportunity.getOwner()), true);
     }
 
 
@@ -316,6 +324,15 @@ public class OpportunityService {
         });
 
         logService.batchAdd(logs);
+        sendTransferNotice(opportunityList, request.getOwner(), userId, orgId);
+    }
+
+    private void sendTransferNotice(List<Opportunity> opportunityList, String toUser, String userId, String orgId) {
+        String opportunityNames = getOpportunityNames(opportunityList);
+
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+                NotificationConstants.Event.BUSINESS_TRANSFER, opportunityNames, userId,
+                orgId, List.of(toUser), true);
     }
 
     /**
@@ -324,7 +341,7 @@ public class OpportunityService {
      * @param ids
      * @param userId
      */
-    public void batchDelete(List<String> ids, String userId) {
+    public void batchDelete(List<String> ids, String userId, String orgId) {
         LambdaQueryWrapper<Opportunity> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(Opportunity::getId, ids);
         List<Opportunity> opportunityList = opportunityMapper.selectListByLambda(wrapper);
@@ -337,6 +354,23 @@ public class OpportunityService {
             logs.add(logDTO);
         });
         logService.batchAdd(logs);
+
+        // 消息通知
+        opportunityList.stream()
+                .collect(Collectors.groupingBy(Opportunity::getOwner))
+                .forEach((owner, opportunity) ->
+                        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+                                NotificationConstants.Event.BUSINESS_DELETED, getOpportunityNames(opportunity), userId,
+                                orgId, List.of(owner), true)
+                );
+    }
+
+    private String getOpportunityNames(List<Opportunity> opportunity) {
+        return String.join(";",
+                opportunity.stream()
+                        .map(Opportunity::getName)
+                        .toList()
+        );
     }
 
 

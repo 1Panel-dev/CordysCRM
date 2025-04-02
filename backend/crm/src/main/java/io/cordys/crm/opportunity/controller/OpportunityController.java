@@ -74,7 +74,7 @@ public class OpportunityController {
     @Operation(summary = "删除商机")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE)
     public void deleteOpportunity(@PathVariable String id) {
-        opportunityService.delete(id);
+        opportunityService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
@@ -90,7 +90,7 @@ public class OpportunityController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE)
     @Operation(summary = "批量删除商机")
     public void delete(@RequestBody @NotEmpty List<String> ids) {
-        opportunityService.batchDelete(ids, SessionUtils.getUserId());
+        opportunityService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/get/{id}")
