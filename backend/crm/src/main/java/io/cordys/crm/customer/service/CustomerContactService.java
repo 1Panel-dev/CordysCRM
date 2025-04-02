@@ -120,7 +120,7 @@ public class CustomerContactService {
             return List.of();
         }
 
-        List<String> customerIds = list.stream().map(CustomerContactListResponse::getId)
+        List<String> customerIds = list.stream().map(CustomerContactListResponse::getCustomerId)
                 .distinct()
                 .collect(Collectors.toList());
 

@@ -278,11 +278,11 @@ public class ClueService {
     }
 
     public void updateStatus(ClueStatusUpdateRequest request, String userId, String orgId) {
+        Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
         Clue clue = BeanUtils.copyBean(new Clue(), request);
-        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner());
+        dataScopeService.checkDataPermission(userId, orgId, originClue.getOwner());
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setUpdateUser(userId);
-        Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
         // 记录修改前的状态
         clue.setLastStage(originClue.getStage());
         clueMapper.update(clue);
