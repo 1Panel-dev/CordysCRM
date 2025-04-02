@@ -41,6 +41,7 @@ export type CrmDataTableColumn<T = any> = (
     value: string | number | boolean;
     label: string;
   }[];
+  disabled?: (rowData: T) => boolean;
 };
 
 export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {

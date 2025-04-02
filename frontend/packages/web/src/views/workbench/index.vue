@@ -8,7 +8,7 @@
   </CrmCard> -->
   <div class="flex h-full w-full">
     <div class="h-full flex-1">
-      <QuickAccess />
+      <QuickAccess @refresh="refresh" />
       <CrmCard hide-footer :special-height="177">
         <div class="title">
           <div class="title-name">{{ t('system.personal.plan') }}</div>
@@ -45,6 +45,7 @@
 
 <script setup lang="ts">
   // import { NDatePicker } from 'naive-ui';
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -97,6 +98,12 @@
       }
     }
   );
+
+  function refresh(key: FormDesignKeyEnum) {
+    if (key === FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS) {
+      refreshKey.value += 1;
+    }
+  }
 
   // 消息
   const showMessageDrawer = ref(false);

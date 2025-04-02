@@ -38,6 +38,7 @@ export interface ClueDetail {
   createUserName: string;
   updateUserName: string;
   moduleFields: ModuleField[];
+  transitionType?: 'CUSTOMER' | 'OPPORTUNITY';
 }
 
 export interface ClueListItem extends ClueDetail {
@@ -45,7 +46,6 @@ export interface ClueListItem extends ClueDetail {
   latestFollowUpTime: number;
   collectionTime: number;
   reservedDays: number;
-  transitionType?: 'CUSTOMER' | 'OPPORTUNITY';
 }
 
 export interface CluePoolTableParams extends TableQueryParams {

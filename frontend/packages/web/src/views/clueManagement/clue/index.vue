@@ -329,6 +329,9 @@
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE,
+    disabledSelection: (row) => {
+      return row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType);
+    },
     operationColumn: {
       key: 'operation',
       width: 330,

@@ -223,80 +223,85 @@
     }
   }
 
-  const buttonList = computed<ActionsItem[]>(() => [
-    ...(showAction.value
-      ? [
-          {
-            label: t('common.edit'),
-            key: 'edit',
-            text: false,
-            ghost: true,
-            class: 'n-btn-outline-primary',
-            permission: ['CLUE_MANAGEMENT:UPDATE'],
-          },
-          {
-            label: t('common.followPlan'),
-            key: 'followPlan',
-            text: false,
-            ghost: true,
-            class: 'n-btn-outline-primary',
-            permission: ['CLUE_MANAGEMENT:UPDATE'],
-          },
-          {
-            label: t('crmFollowRecord.followRecord'),
-            key: 'followRecord',
-            text: false,
-            ghost: true,
-            class: 'n-btn-outline-primary',
-            permission: ['CLUE_MANAGEMENT:UPDATE'],
-          },
-        ]
-      : []),
-    {
-      label: t('common.transfer'),
-      key: 'transfer',
-      permission: ['CLUE_MANAGEMENT:UPDATE'],
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      popConfirmProps: {
-        loading: transferLoading.value,
-        title: t('common.transfer'),
-        positiveText: t('common.confirm'),
-        iconType: 'primary',
+  const buttonList = computed<ActionsItem[]>(() => {
+    if (props.detail?.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(props.detail.transitionType)) {
+      return [];
+    }
+    return [
+      ...(showAction.value
+        ? [
+            {
+              label: t('common.edit'),
+              key: 'edit',
+              text: false,
+              ghost: true,
+              class: 'n-btn-outline-primary',
+              permission: ['CLUE_MANAGEMENT:UPDATE'],
+            },
+            {
+              label: t('common.followPlan'),
+              key: 'followPlan',
+              text: false,
+              ghost: true,
+              class: 'n-btn-outline-primary',
+              permission: ['CLUE_MANAGEMENT:UPDATE'],
+            },
+            {
+              label: t('crmFollowRecord.followRecord'),
+              key: 'followRecord',
+              text: false,
+              ghost: true,
+              class: 'n-btn-outline-primary',
+              permission: ['CLUE_MANAGEMENT:UPDATE'],
+            },
+          ]
+        : []),
+      {
+        label: t('common.transfer'),
+        key: 'transfer',
+        permission: ['CLUE_MANAGEMENT:UPDATE'],
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        popConfirmProps: {
+          loading: transferLoading.value,
+          title: t('common.transfer'),
+          positiveText: t('common.confirm'),
+          iconType: 'primary',
+        },
+        popSlotName: 'transferPopTitle',
+        popSlotContent: 'transferPopContent',
       },
-      popSlotName: 'transferPopTitle',
-      popSlotContent: 'transferPopContent',
-    },
-    {
-      label: t('clue.convertToCustomer'),
-      key: 'convertToCustomer',
-      permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    {
-      label: t('clue.convertToOpportunity'),
-      key: 'convertToOpportunity',
-      permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-    },
-    ...(showAction.value
-      ? [
-          {
-            label: t('common.delete'),
-            key: 'delete',
-            permission: ['CLUE_MANAGEMENT:DELETE'],
-            text: false,
-            ghost: true,
-            class: 'n-btn-outline-primary',
-          },
-        ]
-      : []),
-  ]);
+      {
+        label: t('clue.convertToCustomer'),
+        key: 'convertToCustomer',
+        permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+      },
+      {
+        label: t('clue.convertToOpportunity'),
+        key: 'convertToOpportunity',
+        permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+      },
+      ...(showAction.value
+        ? [
+            {
+              label: t('common.delete'),
+              key: 'delete',
+              permission: ['CLUE_MANAGEMENT:DELETE'],
+              text: false,
+              ghost: true,
+              class: 'n-btn-outline-primary',
+            },
+          ]
+        : []),
+    ];
+  });
 
   // tab
   const activeTab = ref('followRecord');

@@ -26,14 +26,12 @@ export const quickAccessList = [
     label: t('opportunity.new'),
   },
   {
-    // TODO lmy 修改key
-    key: FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER,
+    key: FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS,
     icon: 'newRecord',
     label: t('workbench.createFollowUpRecord'),
   },
   {
-    // TODO lmy 修改key
-    key: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
+    key: FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS,
     icon: 'newPlan',
     label: t('workbench.createFollowUpPlan'),
   },

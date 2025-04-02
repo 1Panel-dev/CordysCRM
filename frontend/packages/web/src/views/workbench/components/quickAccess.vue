@@ -15,8 +15,11 @@
       </div>
     </div>
   </CrmCard>
-  <!-- TODO 保存后刷新 other-save-params参数 -->
-  <CrmFormCreateDrawer v-model:visible="formCreateDrawerVisible" :form-key="activeFormKey" />
+  <CrmFormCreateDrawer
+    v-model:visible="formCreateDrawerVisible"
+    :form-key="activeFormKey"
+    @saved="emit('refresh', activeFormKey)"
+  />
 </template>
 
 <script setup lang="ts">
@@ -29,6 +32,10 @@
   import { quickAccessList } from '@/config/workbench';
   import { useI18n } from '@/hooks/useI18n';
 
+  const emit = defineEmits<{
+    (e: 'refresh', activeFormKey: FormDesignKeyEnum): void;
+  }>();
+
   const { t } = useI18n();
 
   const activeFormKey = ref(FormDesignKeyEnum.CUSTOMER);
@@ -36,17 +43,7 @@
 
   function handleActionSelect(actionKey: FormDesignKeyEnum) {
     activeFormKey.value = actionKey;
-    switch (actionKey) {
-      case FormDesignKeyEnum.CUSTOMER:
-      case FormDesignKeyEnum.CLUE:
-      case FormDesignKeyEnum.BUSINESS:
-      case FormDesignKeyEnum.CONTACT:
-        formCreateDrawerVisible.value = true;
-        break;
-      // TODO lmy 新建跟进计划/新建跟进记录
-      default:
-        break;
-    }
+    formCreateDrawerVisible.value = true;
   }
 </script>
 

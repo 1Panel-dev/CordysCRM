@@ -29,6 +29,7 @@ type FormKey =
 
 export interface FormCreateTableProps {
   formKey: FormKey;
+  disabledSelection?: (row: any) => boolean;
   operationColumn?: CrmDataTableColumn;
   specialRender?: Record<string, (row: any) => void>;
   showPagination?: boolean;
@@ -477,6 +478,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         {
           type: 'selection',
           fixed: 'left',
+          disabled(row) {
+            return props.disabledSelection ? props.disabledSelection(row) : false;
+          },
         },
         ...columns,
         ...(internalColumnMap[props.formKey] || []),

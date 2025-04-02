@@ -108,6 +108,7 @@
       const defaultRender = (row: Record<string, any>) => row[column.key as string] || '-';
       // 添加上render
       let render = props.columns.find((item) => item.key === column.key)?.render || defaultRender;
+      const disabled = props.columns.find((item) => item.key === column.key)?.disabled;
 
       if (column.isTag) {
         render = (row: Record<string, any>) =>
@@ -123,6 +124,7 @@
           ...column,
           width: 46,
           titleAlign: 'center',
+          disabled,
         };
       }
       // 操作列

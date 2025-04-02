@@ -58,13 +58,12 @@
       </div>
     </CrmCard>
     <CrmCard v-if="activeTab === PersonalEnum.MY_PLAN" hide-footer :special-height="64">
-      <!-- TODO 新建跟进记录 -->
-      <n-button type="primary">
+      <n-button type="primary" @click="formCreateDrawerVisible = true">
         {{ t('common.followPlan') }}
       </n-button>
       <FollowDetail
         :refresh-key="refreshKey"
-        class="mt-[16px] p-0"
+        class="mt-[16px] p-[0px]"
         active-type="followPlan"
         wrapper-class="h-[calc(100vh-239px)]"
         virtual-scroll-height="calc(100vh - 332px)"
@@ -74,6 +73,11 @@
       />
     </CrmCard>
   </CrmDrawer>
+  <CrmFormCreateDrawer
+    v-model:visible="formCreateDrawerVisible"
+    :form-key="FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS"
+    @saved="() => (refreshKey += 1)"
+  />
   <EditPersonalInfoModal v-model:show="showEditPersonalModal" :integration="currentInfo" @init-sync="searchData()" />
   <EditPasswordModal v-model:show="showEditPasswordModal" :integration="currentPassword" @init-sync="searchData()" />
 </template>
@@ -82,6 +86,7 @@
   import { ref } from 'vue';
   import { NButton, NP, NTag, TabPaneProps } from 'naive-ui';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { PersonalInfoRequest, PersonalPassword } from '@lib/shared/models/system/business';
   import { OrgUserInfo } from '@lib/shared/models/system/org';
@@ -91,6 +96,7 @@
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
+  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import EditPasswordModal from '@/views/system/business/components/editPasswordModal.vue';
   import EditPersonalInfoModal from '@/views/system/business/components/editPersonalInfoModal.vue';
 
@@ -167,6 +173,7 @@
   });
 
   const refreshKey = ref(0);
+  const formCreateDrawerVisible = ref(false);
 </script>
 
 <style scoped lang="less"></style>
