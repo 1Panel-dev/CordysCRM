@@ -343,10 +343,7 @@ public class OrganizationUserService {
      * @param operatorId
      */
     private void updateUserRole(List<String> roleIds, UserResponse oldUser, String operatorId) {
-        List<String> ids = oldUser.getRoles().stream().map(UserRoleConvert::getId).toList();
-        if (CollectionUtils.isNotEmpty(ids)) {
-            extUserRoleMapper.deleteUserRole(ids);
-        }
+        extUserRoleMapper.deleteUserRoleByUserId(oldUser.getUserId());
         if (CollectionUtils.isNotEmpty(roleIds)) {
             addUserRole(roleIds, oldUser.getUserId(), operatorId);
         }

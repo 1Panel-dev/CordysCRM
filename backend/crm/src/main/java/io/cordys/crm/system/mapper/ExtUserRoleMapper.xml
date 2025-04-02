@@ -3,13 +3,10 @@
 
 <mapper namespace="io.cordys.crm.system.mapper.ExtUserRoleMapper">
 
-    <delete id="deleteUserRole">
+    <delete id="deleteUserRoleByUserId">
         DELETE
         FROM sys_user_role
-        WHERE id in
-        <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
+        WHERE user_id = #{userId}
     </delete>
 
     <delete id="deleteByIds">
