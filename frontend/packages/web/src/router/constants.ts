@@ -1,3 +1,14 @@
+import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+
+import {
+  ClueRouteEnum,
+  CustomerRouteEnum,
+  OpportunityRouteEnum,
+  ProductRouteEnum,
+  SystemRouteEnum,
+  WorkbenchRouteEnum,
+} from '@/enums/routeEnum';
+
 // 404 路由
 export const NOT_FOUND = {
   name: 'notFound',
@@ -20,3 +31,17 @@ export const NO_RESOURCE_ROUTE_NAME = 'no-resource';
 
 // 首页路由
 export const DEFAULT_ROUTE_NAME = 'workbench';
+
+// 模块（有开关）路由
+export const featureRouteMap: Record<string, any> = {
+  [WorkbenchRouteEnum.WORKBENCH]: ModuleConfigEnum.HOME,
+  [CustomerRouteEnum.CUSTOMER]: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
+  [OpportunityRouteEnum.OPPORTUNITY]: ModuleConfigEnum.BUSINESS_MANAGEMENT,
+  [ProductRouteEnum.PRODUCT]: ModuleConfigEnum.PRODUCT_MANAGEMENT,
+  [ClueRouteEnum.CLUE_MANAGEMENT]: ModuleConfigEnum.CLUE_MANAGEMENT,
+};
+
+export const allMenuRouteMap: Record<string, any> = {
+  ...featureRouteMap,
+  [SystemRouteEnum.SYSTEM]: ModuleConfigEnum.SYSTEM_SETTINGS,
+};

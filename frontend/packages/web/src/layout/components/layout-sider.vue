@@ -38,7 +38,9 @@
                     textColor: 'var(--primary-8)',
                   }"
                 >
-                  {{ userStore.userInfo.id === 'admin' ? t('common.admin') : (userStore.userInfo.roles[0] as any)?.name }}
+                  {{
+                    userStore.userInfo.id === 'admin' ? t('common.admin') : (userStore.userInfo.roles[0] as any)?.name
+                  }}
                 </n-tag>
               </div>
             </div>
@@ -83,10 +85,14 @@
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
 
   import { useI18n } from '@/hooks/useI18n';
+  import useMenuTree from '@/hooks/useMenuTree';
   import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
+  import { mapTree } from '@/utils';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
+
+  import { MenuOption } from 'naive-ui/es/menu/src/interface';
 
   const { t } = useI18n();
   const appStore = useAppStore();
@@ -112,66 +118,6 @@
         type,
       });
   }
-
-  const menuOptions = [
-    {
-      label: t('menu.workbench'),
-      key: AppRouteEnum.WORKBENCH_INDEX,
-      icon: renderIcon('iconicon_home1'),
-    },
-    {
-      label: t('module.customerManagement'),
-      key: AppRouteEnum.CUSTOMER,
-      icon: renderIcon('iconicon_multiple_choice_of_members'),
-    },
-    {
-      label: t('module.clueManagement'),
-      key: AppRouteEnum.CLUE_MANAGEMENT_CLUE,
-      icon: renderIcon('iconicon_clue'),
-    },
-    {
-      label: t('menu.opportunity'),
-      key: AppRouteEnum.OPPORTUNITY_OPT,
-      icon: renderIcon('iconicon_business_opportunity'),
-    },
-    {
-      label: t('module.productManagement'),
-      key: AppRouteEnum.PRODUCT_PRO,
-      icon: renderIcon('iconicon_product'),
-    },
-    {
-      label: t('menu.settings'),
-      key: 'a-wild-sheep-chase',
-      icon: renderIcon('iconicon_set_up'),
-      children: [
-        {
-          label: t('menu.settings.org'),
-          key: AppRouteEnum.SYSTEM_ORG,
-        },
-        {
-          label: t('menu.settings.permission'),
-          key: AppRouteEnum.SYSTEM_ROLE,
-        },
-        {
-          label: t('menu.settings.moduleSetting'),
-          key: AppRouteEnum.SYSTEM_MODULE,
-        },
-        {
-          label: t('menu.settings.messageSetting'),
-          key: AppRouteEnum.SYSTEM_MESSAGE,
-        },
-        {
-          label: t('menu.settings.businessSetting'),
-          key: AppRouteEnum.SYSTEM_BUSINESS,
-        },
-        {
-          label: t('menu.settings.log'),
-          key: AppRouteEnum.SYSTEM_LOG,
-        },
-      ],
-    },
-  ];
-
   const personalMenuOptions = [
     {
       label: t('module.personal.info'),
@@ -208,6 +154,22 @@
       router.push({ name: 'login' });
     }
   }
+
+  const { menuTree } = useMenuTree();
+
+  const menuOptions = computed<MenuOption[]>(() => {
+    return mapTree(menuTree.value, (e: any) => {
+      const menuChildren = mapTree(e.children);
+      return e.meta.isTopMenu
+        ? null
+        : {
+            label: t(e?.meta?.locale ?? ''),
+            key: e.name,
+            children: menuChildren.length ? menuChildren : undefined,
+            icon: appStore.menuIconStatus && e?.meta?.icon ? renderIcon(e?.meta?.icon) : null,
+          };
+    }) as unknown as MenuOption[];
+  });
 
   onBeforeMount(() => {
     if (router.currentRoute.value.meta.isTopMenu) {
@@ -272,4 +234,5 @@
     color: var(--text-n1);
     line-height: 22px;
   }
+
 </style>

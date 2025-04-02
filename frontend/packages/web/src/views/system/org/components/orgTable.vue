@@ -94,6 +94,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
   import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -588,13 +589,11 @@
           {
             default: () => {
               return h(
-                NButton,
+                CrmTableButton,
                 {
-                  text: true,
-                  type: 'primary',
                   onClick: () => showDetail(row.id),
                 },
-                { default: () => row.userName }
+                { default: () => row.userName, trigger: () => row.userName }
               );
             },
           }

@@ -9,7 +9,9 @@ const system: AppRouteRecordRaw = {
   redirect: '/system/role',
   component: DEFAULT_LAYOUT,
   meta: {
+    locale: 'menu.settings',
     permissions: ['SYS_ORGANIZATION:READ', 'SYSTEM_ROLE:READ', 'MODULE_SETTING:READ', 'SYSTEM_SETTING:READ'],
+    icon: 'iconicon_set_up',
   },
   children: [
     {
@@ -17,6 +19,7 @@ const system: AppRouteRecordRaw = {
       name: SystemRouteEnum.SYSTEM_ORG,
       component: () => import('@/views/system/org/index.vue'),
       meta: {
+        locale: 'menu.settings.org',
         permissions: ['SYS_ORGANIZATION:READ'],
       },
     },
@@ -25,6 +28,7 @@ const system: AppRouteRecordRaw = {
       name: SystemRouteEnum.SYSTEM_ROLE,
       component: () => import('@/views/system/role/index.vue'),
       meta: {
+        locale: 'menu.settings.permission',
         permissions: ['SYSTEM_ROLE:READ'],
       },
     },
@@ -33,15 +37,8 @@ const system: AppRouteRecordRaw = {
       name: SystemRouteEnum.SYSTEM_MODULE,
       component: () => import('@/views/system/module/index.vue'),
       meta: {
+        locale: 'menu.settings.moduleSetting',
         permissions: ['MODULE_SETTING:READ'],
-      },
-    },
-    {
-      path: 'business',
-      name: SystemRouteEnum.SYSTEM_BUSINESS,
-      component: () => import('@/views/system/business/index.vue'),
-      meta: {
-        permissions: ['SYSTEM_SETTING:READ'],
       },
     },
     {
@@ -49,7 +46,17 @@ const system: AppRouteRecordRaw = {
       name: SystemRouteEnum.SYSTEM_MESSAGE,
       component: () => import('@/views/system/message/index.vue'),
       meta: {
+        locale: 'menu.settings.messageSetting',
         permissions: ['SYSTEM_NOTICE:READ'],
+      },
+    },
+    {
+      path: 'business',
+      name: SystemRouteEnum.SYSTEM_BUSINESS,
+      component: () => import('@/views/system/business/index.vue'),
+      meta: {
+        locale: 'menu.settings.businessSetting',
+        permissions: ['SYSTEM_SETTING:READ'],
       },
     },
     {
@@ -57,6 +64,7 @@ const system: AppRouteRecordRaw = {
       name: SystemRouteEnum.SYSTEM_LOG,
       component: () => import('@/views/system/log/index.vue'),
       meta: {
+        locale: 'menu.settings.log',
         permissions: [],
       },
     },

@@ -245,6 +245,7 @@
 
       currentStatus.value = stage;
       lastOptStage.value = lastStage;
+      emit('refresh');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

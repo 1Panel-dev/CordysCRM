@@ -9,7 +9,10 @@ const workbench: AppRouteRecordRaw = {
   redirect: '/workbench/index',
   component: DEFAULT_LAYOUT,
   meta: {
+    hideChildrenInMenu: true,
+    locale: 'menu.workbench',
     permissions: [],
+    icon: 'iconicon_home1',
   },
   children: [
     {

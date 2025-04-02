@@ -129,9 +129,14 @@
       console.log(error);
     }
   };
-
   // 改变icon
-  function changeIcon() {}
+  function changeIcon(val: boolean) {
+    appStore.setMenuIconStatus(val);
+  }
+
+  onMounted(() => {
+    enable.value = appStore.getMenuIconStatus;
+  });
 
   watch(
     () => appStore.orgId,

@@ -9,7 +9,10 @@ const customer: AppRouteRecordRaw = {
   redirect: '/customer/index',
   component: DEFAULT_LAYOUT,
   meta: {
+    locale: 'module.customerManagement',
     permissions: ['CUSTOMER_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT_POOL:READ', 'CUSTOMER_MANAGEMENT_CONTACT:READ'],
+    icon: 'iconicon_multiple_choice_of_members',
+    hideChildrenInMenu: true,
   },
   children: [
     {

@@ -9,7 +9,10 @@ const product: AppRouteRecordRaw = {
   redirect: '/product/pro',
   component: DEFAULT_LAYOUT,
   meta: {
+    hideChildrenInMenu: true,
+    locale: 'module.productManagement',
     permissions: ['PRODUCT_MANAGEMENT:READ'],
+    icon: 'iconicon_product',
   },
   children: [
     {
@@ -17,6 +20,7 @@ const product: AppRouteRecordRaw = {
       name: ProductRouteEnum.PRODUCT_PRO,
       component: () => import('@/views/product/index.vue'),
       meta: {
+        locale: 'module.productManagement',
         permissions: ['PRODUCT_MANAGEMENT:READ'],
       },
     },

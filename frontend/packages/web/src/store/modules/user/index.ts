@@ -153,11 +153,17 @@ const useUserStore = defineStore('user', {
     },
     async checkIsLogin() {
       const { isLoginPage } = useUser();
+      const appStore = useAppStore();
       const isLoginStatus = await this.isLogin();
-      if (isLoginPage() && isLoginStatus) {
-        // 当前页面为登录页面，且已经登录，跳转到首页
-        // TODO lmy 跳转到有权限的第一个路由名
-        await router.push({ name: AppRouteEnum.SYSTEM });
+      if (isLoginStatus) {
+        if (isLoginPage()) {
+          // 当前页面为登录页面，且已经登录，跳转到首页
+          // TODO lmy 跳转到有权限的第一个路由名
+          await router.push({ name: AppRouteEnum.SYSTEM });
+          return;
+        }
+        appStore.connectSystemMessageSSE(this.showSystemNotify);
+        appStore.initModuleConfig();
       }
     },
     // 展示系统公告

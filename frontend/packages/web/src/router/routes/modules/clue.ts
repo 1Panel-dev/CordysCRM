@@ -9,7 +9,10 @@ const clue: AppRouteRecordRaw = {
   redirect: '/clueManagement/clue',
   component: DEFAULT_LAYOUT,
   meta: {
+    locale: 'module.clueManagement',
     permissions: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'],
+    icon: 'iconicon_clue',
+    hideChildrenInMenu: true,
   },
   children: [
     {

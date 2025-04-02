@@ -79,7 +79,7 @@
   import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
+  import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
@@ -303,19 +303,8 @@
     }
   }
 
-  // TODO :
-  const operationGroupList = computed<ActionsItem[]>(() => {
-    return [
-      {
-        label: t('common.edit'),
-        key: 'edit',
-        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('opportunity.followUp'),
-        key: 'followUp',
-        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-      },
+  function getOperationGroupList(row: OpportunityItem): ActionsItem[] {
+    const transferAction: ActionsItem[] = [
       {
         label: t('common.transfer'),
         key: 'transfer',
@@ -328,13 +317,28 @@
         popSlotContent: 'transferPopContent',
         permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
-      {
-        label: t('common.delete'),
-        key: 'delete',
-        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
-      },
     ];
-  });
+    return [StageResultEnum.FAIL, StageResultEnum.SUCCESS].includes(row.stage as StageResultEnum)
+      ? transferAction
+      : [
+          {
+            label: t('common.edit'),
+            key: 'edit',
+            permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+          },
+          {
+            label: t('opportunity.followUp'),
+            key: 'followUp',
+            permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+          },
+          ...transferAction,
+          {
+            label: t('common.delete'),
+            key: 'delete',
+            permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+          },
+        ];
+  }
 
   const showCustomerOverviewDrawer = ref(false);
 
@@ -348,7 +352,7 @@
         h(
           CrmOperationButton,
           {
-            groupList: operationGroupList.value,
+            groupList: getOperationGroupList(row),
             onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
             onCancel: () => {
               transferForm.value = { ...defaultTransferForm };

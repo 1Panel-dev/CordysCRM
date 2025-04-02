@@ -63,6 +63,7 @@ const useAppStore = defineStore('app', {
       announcementDTOList: [],
     },
     eventSource: null,
+    menuIconStatus: true,
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -86,6 +87,9 @@ const useAppStore = defineStore('app', {
     },
     getCurrentTopMenu(state: AppState): RouteRecordRaw {
       return state.currentTopMenu;
+    },
+    getMenuIconStatus(state: AppState) {
+      return state.menuIconStatus;
     },
   },
   actions: {
@@ -197,6 +201,17 @@ const useAppStore = defineStore('app', {
       });
       this.eventSource.close();
       this.eventSource = null;
+    },
+    /**
+     * 设置菜单icon展示
+     */
+    setMenuIconStatus(val: boolean) {
+      const userStore = useUserStore();
+      const storageData = JSON.parse(localStorage.getItem('MENU_ICON_SHOW') || '{}');
+
+      storageData[userStore.userInfo.id] = val;
+      this.menuIconStatus = val;
+      localStorage.setItem('MENU_ICON_SHOW', JSON.stringify(storageData));
     },
   },
   persist: {

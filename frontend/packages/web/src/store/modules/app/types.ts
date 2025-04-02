@@ -59,4 +59,5 @@ export interface AppState {
   currentTopMenu: RouteRecordRaw;
   messageInfo: MessageInfo; // 消息通知和公告
   eventSource: null | EventSource; // 事件流资源
+  menuIconStatus: boolean;
 }
