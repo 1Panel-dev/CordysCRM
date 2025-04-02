@@ -14,7 +14,6 @@ import io.cordys.crm.clue.dto.response.ClueRepeatListResponse;
 import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
-import io.cordys.crm.follow.service.FollowUpPlanService;
 import io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse;
 import io.cordys.crm.system.constants.SystemResultCode;
 import io.cordys.crm.system.domain.Module;

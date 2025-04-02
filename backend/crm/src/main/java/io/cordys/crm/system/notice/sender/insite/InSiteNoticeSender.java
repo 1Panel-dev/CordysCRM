@@ -3,6 +3,7 @@ package io.cordys.crm.system.notice.sender.insite;
 
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.LogUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.MessageDetailDTO;
@@ -13,6 +14,7 @@ import io.cordys.crm.system.notice.sse.SseService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -43,7 +45,7 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             Map<String, Object> paramMap = noticeModel.getParamMap();
             Notification notification = new Notification();
             notification.setId(id);
-            notification.setSubject(subjectText);
+            notification.setSubject(StringUtils.isBlank(subjectText) ? Translator.get("notice.default.subject") : subjectText);
             notification.setOrganizationId(messageDetailDTO.getOrganizationId());
             notification.setOperator(noticeModel.getOperator());
             notification.setOperation(noticeModel.getEvent());
