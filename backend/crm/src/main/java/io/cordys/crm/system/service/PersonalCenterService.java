@@ -13,9 +13,11 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
+import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.dto.response.ClueRepeatListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
@@ -29,6 +31,7 @@ import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.constants.RepeatType;
 import io.cordys.crm.system.constants.SystemResultCode;
+import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.request.PersonalInfoRequest;
@@ -39,8 +42,10 @@ import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
+import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.crm.system.utils.MailSender;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -78,7 +83,10 @@ public class PersonalCenterService {
     private ExtOrganizationUserMapper extOrganizationUserMapper;
     @Resource
     private ExtFollowUpPlanMapper extFollowUpPlanMapper;
-
+    @Resource
+    private ExtUserRoleMapper extUserRoleMapper;
+    @Resource
+    private BaseMapper<Module> moduleMapper;
 
     private static final String PREFIX = "personal_email_code:";  // Redis 存储前缀
 
@@ -92,20 +100,27 @@ public class PersonalCenterService {
      * 发送验证码
      */
     public void sendCode(String email, String organizationId) {
-        if (stringRedisTemplate.hasKey(PREFIX + email)) {
+        String redisKey = PREFIX + email;
+        if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(redisKey))) {
             throw new GenericException(Translator.get("email_setting_reset_error"));
         }
-        String code = generateCode();  // 生成随机验证码
-        saveCode(email, code);         // 将验证码存入 Redis
-        String[] users = new String[]{email};
+
+        String code = generateCode();
+        saveCode(email, code);
+
         try {
-            String emailSettingContent = Translator.get("email_setting_content");
-            if (emailSettingContent.contains("${code}")) {
-                emailSettingContent = emailSettingContent.replace("${code}", code);
-            }
-            mailSender.send(Translator.get("email_setting_subject"), emailSettingContent, users, new String[0], organizationId);      // 发送验证码到邮箱
+            String emailContent = Translator.get("email_setting_content")
+                    .replace("${code}", code);
+
+            mailSender.send(
+                    Translator.get("email_setting_subject"),
+                    emailContent,
+                    new String[]{email},
+                    new String[0],
+                    organizationId
+            );
         } catch (Exception e) {
-            throw new GenericException(Translator.get("email_setting_send_error"));
+            throw new GenericException(Translator.get("email_setting_send_error"), e);
         }
     }
 
@@ -174,64 +189,191 @@ public class PersonalCenterService {
         return userDetail;
     }
 
-    public List<CustomerRepeatResponse> getRepeatCustomer(RepeatCustomerPageRequest request, List<String> permissions, List<String> keyList, String organizationId, String userId) {
-        if (StringUtils.isBlank(request.getName())){
-            return new ArrayList<>();
+    /**
+     * 获取重复客户列表
+     *
+     * @param request        查询请求参数
+     * @param organizationId 组织ID
+     * @param userId         用户ID
+     * @return 重复客户响应列表
+     */
+    public Pager<List<CustomerRepeatResponse>> getRepeatCustomer(RepeatCustomerPageRequest request,
+                                                                 String organizationId,
+                                                                 String userId) {
+        // 如果客户名为空，直接返回空列表
+        if (StringUtils.isBlank(request.getName())) {
+            return PageUtils.setPageInfo(
+                    PageHelper.startPage(request.getCurrent(), request.getPageSize()), new ArrayList<>());
         }
-        //模块关闭，但是有权限，返回指定code
-        if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) && !keyList.contains(ModuleKey.CUSTOMER.getKey())) {
+
+        // 查询用户权限并检查是否是管理员
+        List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
+        boolean isAdmin = StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue());
+        boolean hasCustomerRead = permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ) || isAdmin;
+
+        // 查询当前组织下已启用的模块列表
+        List<String> enabledModules = moduleMapper.selectListByLambda(
+                        new LambdaQueryWrapper<Module>()
+                                .eq(Module::getOrganizationId, OrganizationContext.getOrganizationId())
+                                .eq(Module::getEnable, true)
+                ).stream()
+                .map(Module::getModuleKey)
+                .toList();
+
+        // 检查：如果有客户读取权限但客户模块未启用，抛出异常
+        if (hasCustomerRead && !enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
         }
-        //1.查询当前用户权限
-        List<CustomerRepeatResponse> customers;
-        if (permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
-            customers = extCustomerMapper.checkRepeatCustomerByName(request.getName(), organizationId);
-        } else {
-            return new ArrayList<>();
-        }
-        //查商机
-        Map<String, String> repeatCountMap = new HashMap<>();
-        if (permissions.indexOf(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
-            if (CollectionUtils.isNotEmpty(customers)) {
-                List<String> customerIds = customers.stream().map(CustomerRepeatResponse::getId).collect(Collectors.toList());
-                List<OptionDTO> repeatCountDTOList = extOpportunityMapper.getRepeatCountMap(customerIds);
-                repeatCountMap = repeatCountDTOList.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
-            }
+
+        // 没有客户读取权限直接返回空列表
+        if (!hasCustomerRead) {
+            return PageUtils.setPageInfo(
+                    PageHelper.startPage(request.getCurrent(), request.getPageSize()), new ArrayList<>());
         }
 
-        //查线索 
-        Map<String, String> clueRepeatCountMap = new HashMap<>();
-        if (permissions.indexOf(PermissionConstants.CLUE_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
-            if (CollectionUtils.isNotEmpty(customers)) {
-                List<String> customerNames = customers.stream().map(CustomerRepeatResponse::getName).collect(Collectors.toList());
-                List<OptionDTO> repeatCountDTOList = extClueMapper.getRepeatCountMap(customerNames);
-                clueRepeatCountMap = repeatCountDTOList.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
-            }
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        // 查询重复客户列表
+        List<CustomerRepeatResponse> customers = extCustomerMapper.checkRepeatCustomerByName(request.getName(), organizationId);
+        if (CollectionUtils.isEmpty(customers)) {
+            return PageUtils.setPageInfo(
+                    PageHelper.startPage(request.getCurrent(), request.getPageSize()), new ArrayList<>());
         }
-        boolean clueModuleEnable = keyList.contains(ModuleKey.CLUE.getKey());
 
-        boolean opportunityModuleEnable = keyList.contains(ModuleKey.BUSINESS.getKey());
+        // 获取商机和线索的重复数量映射
+        Map<String, String> opportunityCounts = getOpportunityCounts(permissions, isAdmin, customers, enabledModules);
+        Map<String, String> clueCounts = getClueCounts(permissions, isAdmin, customers, enabledModules);
 
-        for (CustomerRepeatResponse customer : customers) {
-            if (StringUtils.equalsIgnoreCase(customer.getName(), request.getName())) {
-                customer.setRepeatType(RepeatType.ALL.toString());
-            } else {
-                customer.setRepeatType(RepeatType.PART.toString());
-            }
-            String opportunity = repeatCountMap.get(customer.getId());
+        // 检查相关模块是否启用
+        boolean isClueModuleEnabled = enabledModules.contains(ModuleKey.CLUE.getKey());
+        boolean isOpportunityModuleEnabled = enabledModules.contains(ModuleKey.BUSINESS.getKey());
 
-            customer.setOpportunityCount(Integer.parseInt(StringUtils.isBlank(opportunity) ? "0" : opportunity));
-            String clue = clueRepeatCountMap.get(customer.getName());
-            customer.setClueCount(Integer.parseInt(StringUtils.isBlank(clue) ? "0" : clue));
-            customer.setOpportunityModuleEnable(opportunityModuleEnable);
-            customer.setClueModuleEnable(clueModuleEnable);
-
-        }
-        return customers;
+        // 处理每个客户返回结果
+        return PageUtils.setPageInfo(page, customers.stream()
+                .peek(customer -> {
+                    // 设置重复类型(完全匹配/部分匹配)
+                    customer.setRepeatType(StringUtils.equalsIgnoreCase(customer.getName(), request.getName())
+                            ? RepeatType.ALL.toString()
+                            : RepeatType.PART.toString());
+                    // 设置商机数量
+                    customer.setOpportunityCount(parseCount(opportunityCounts.get(customer.getId())));
+                    // 设置线索数量
+                    customer.setClueCount(parseCount(clueCounts.get(customer.getName())));
+                    // 设置模块启用状态
+                    customer.setOpportunityModuleEnable(isOpportunityModuleEnabled);
+                    customer.setClueModuleEnable(isClueModuleEnabled);
+                })
+                .toList());
     }
 
-    public List<ClueRepeatListResponse> getRepeatClue(RepeatCustomerPageRequest request, String organizationId) {
-        return extClueMapper.getSimilarClueList(request.getName(), organizationId);
+    /**
+     * 获取客户关联的商机数量
+     *
+     * @param permissions    用户权限列表
+     * @param isAdmin        是否是管理员
+     * @param customers      客户列表
+     * @param enabledModules 已启用模块列表
+     * @return 商机数量映射(客户ID - > 数量)
+     */
+    private Map<String, String> getOpportunityCounts(List<String> permissions,
+                                                     boolean isAdmin,
+                                                     List<CustomerRepeatResponse> customers,
+                                                     List<String> enabledModules) {
+        // 没有商机读取权限且不是管理员返回空map
+        if (!permissions.contains(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) && !isAdmin) {
+            return Collections.emptyMap();
+        }
+        // 商机模块未启用返回空map
+        if (!enabledModules.contains(ModuleKey.BUSINESS.getKey())) {
+            return Collections.emptyMap();
+        }
+
+        // 获取客户ID列表并查询商机数量
+        List<String> customerIds = customers.stream()
+                .map(CustomerRepeatResponse::getId)
+                .toList();
+
+        return extOpportunityMapper.getRepeatCountMap(customerIds).stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+    }
+
+    /**
+     * 获取客户关联的线索数量
+     *
+     * @param permissions    用户权限列表
+     * @param isAdmin        是否是管理员
+     * @param customers      客户列表
+     * @param enabledModules 已启用模块列表
+     * @return 线索数量映射(客户名称 - > 数量)
+     */
+    private Map<String, String> getClueCounts(List<String> permissions,
+                                              boolean isAdmin,
+                                              List<CustomerRepeatResponse> customers,
+                                              List<String> enabledModules) {
+        // 没有线索读取权限且不是管理员返回空map
+        if (!permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) && !isAdmin) {
+            return Collections.emptyMap();
+        }
+        // 线索模块未启用返回空map
+        if (!enabledModules.contains(ModuleKey.CLUE.getKey())) {
+            return Collections.emptyMap();
+        }
+
+        // 获取客户名称列表并查询线索数量
+        List<String> customerNames = customers.stream()
+                .map(CustomerRepeatResponse::getName)
+                .toList();
+
+        return extClueMapper.getRepeatCountMap(customerNames).stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+    }
+
+    /**
+     * 安全解析数量字符串
+     *
+     * @param count 数量字符串
+     * @return 解析后的整型数量(空字符串返回0)
+     */
+    private int parseCount(String count) {
+        return StringUtils.isBlank(count) ? 0 : Integer.parseInt(count);
+    }
+
+    /**
+     * 获取重复线索列表
+     *
+     * @param request        查询请求参数(包含线索名称)
+     * @param organizationId 组织ID
+     * @param userId         用户ID
+     * @return 重复线索响应列表
+     */
+    public Pager<List<ClueRepeatListResponse>> getRepeatClue(RepeatCustomerPageRequest request,
+                                                             String organizationId,
+                                                             String userId) {
+        if (StringUtils.isBlank(request.getName())) {
+            return PageUtils.setPageInfo(
+                    PageHelper.startPage(request.getCurrent(), request.getPageSize()), new ArrayList<>());
+        }
+
+        // 1. 获取用户权限列表
+        List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
+
+        // 2. 检查线索模块是否启用
+        LambdaQueryWrapper<Module> moduleQuery = new LambdaQueryWrapper<>();
+        moduleQuery.eq(Module::getOrganizationId, organizationId)
+                .eq(Module::getEnable, true)
+                .eq(Module::getModuleKey, ModuleKey.CLUE.getKey());
+        List<Module> modules = moduleMapper.selectListByLambda(moduleQuery);
+
+        // 3. 权限检查：有线索读取权限或是管理员，但线索模块未启用
+        boolean hasClueReadPermission = permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ);
+        boolean isAdmin = StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue());
+
+        if ((hasClueReadPermission || isAdmin) && CollectionUtils.isEmpty(modules)) {
+            throw new GenericException(SystemResultCode.MODULE_ENABLE);
+        }
+
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        // 4. 查询并返回相似线索列表
+        return PageUtils.setPageInfo(page, extClueMapper.getSimilarClueList(request.getName(), organizationId));
     }
 
     public List<ClueRepeatListResponse> getRepeatClueDetail(RepeatCustomerDetailPageRequest request,
@@ -239,48 +381,119 @@ public class PersonalCenterService {
         return extClueMapper.getRepeatClueList(request.getName(), organizationId);
     }
 
+    /**
+     * 获取重复商机详情列表
+     *
+     * @param request 包含商机ID的查询请求
+     * @return 重复商机响应列表(包含产品名称信息)
+     */
     public List<OpportunityRepeatResponse> getRepeatOpportunityDetail(
             RepeatCustomerDetailPageRequest request) {
-        List<OpportunityRepeatResponse> opportunityRepeatResponses = extOpportunityMapper.getRepeatList(request.getId());
-        if (CollectionUtils.isNotEmpty(opportunityRepeatResponses)) {
-            List<String> flattenedProductIds = opportunityRepeatResponses.stream()
-                    .flatMap(or -> or.getProducts().stream())
-                    .distinct()
-                    .toList();
-            // 优化产品名称映射获取
-            Map<String, String> productNameMap = flattenedProductIds.isEmpty() ?
-                    Collections.emptyMap() :
-                    extProductMapper.listByIds(flattenedProductIds).stream()
-                            .collect(Collectors.toMap(Product::getId, Product::getName));
 
-            for (OpportunityRepeatResponse opportunityRepeatResponse : opportunityRepeatResponses) {
-                List<String> productName = new ArrayList<>();
-                for (String product : opportunityRepeatResponse.getProducts()) {
-                    if (productNameMap.get(product) != null) {
-                        productName.add(productNameMap.get(product));
-                    }
-                }
-                opportunityRepeatResponse.setProductNames(productName);
-            }
+        // 1. 获取基础重复商机列表
+        List<OpportunityRepeatResponse> responses = extOpportunityMapper.getRepeatList(request.getId());
+
+        if (CollectionUtils.isEmpty(responses)) {
+            return responses;
         }
-        return opportunityRepeatResponses;
+
+        // 2. 获取所有不重复的产品ID列表
+        List<String> productIds = responses.stream()
+                .flatMap(response -> response.getProducts().stream())
+                .distinct()
+                .toList();
+
+        // 3. 批量获取产品名称映射(优化数据库查询)
+        Map<String, String> productNameMap = productIds.isEmpty()
+                ? Collections.emptyMap()
+                : extProductMapper.listByIds(productIds).stream()
+                .collect(Collectors.toMap(
+                        Product::getId,
+                        Product::getName,
+                        (existing, replacement) -> existing)); // 处理可能的重复键
+
+        // 4. 填充每个商机的产品名称
+        responses.forEach(response -> {
+            List<String> names = response.getProducts().stream()
+                    .map(productNameMap::get)
+                    .filter(Objects::nonNull) // 过滤掉null值
+                    .toList();
+            response.setProductNames(names);
+        });
+
+        return responses;
     }
 
-    public PagerWithOption<List<FollowUpPlanListResponse>> getPlanList(FollowUpPlanPageRequest request, List<String> permissions, List<String> keyList, String userId, String organizationId) {
+    /**
+     * 分页获取跟进计划列表
+     *
+     * @param request        分页查询请求参数
+     * @param userId         当前用户ID
+     * @param organizationId 组织ID
+     * @return 分页的跟进计划列表及选项数据
+     */
+    public PagerWithOption<List<FollowUpPlanListResponse>> getPlanList(
+            FollowUpPlanPageRequest request,
+            String userId,
+            String organizationId) {
+
+        // 1. 初始化分页
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<String> resourceTypeList = new ArrayList<>();
-        if ((permissions.indexOf(PermissionConstants.CUSTOMER_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) && keyList.contains(ModuleKey.CUSTOMER.getKey())) {
-            resourceTypeList.add(NotificationConstants.Module.CUSTOMER);
+
+        // 2. 获取用户权限和模块信息
+        List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
+        boolean isAdmin = StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue());
+
+        // 3. 查询已启用的模块
+        List<String> enabledModules = moduleMapper.selectListByLambda(
+                        new LambdaQueryWrapper<Module>()
+                                .eq(Module::getOrganizationId, organizationId)
+                                .eq(Module::getEnable, true)
+                ).stream()
+                .map(Module::getModuleKey)
+                .toList();
+
+        // 4. 构建可访问的资源类型列表
+        List<String> resourceTypeList = buildAccessibleResourceTypes(permissions, isAdmin, enabledModules);
+
+        // 5. 查询跟进计划基础数据
+        List<FollowUpPlanListResponse> planList = extFollowUpPlanMapper.selectList(
+                request, userId, organizationId, null, null, null, resourceTypeList);
+
+        // 6. 构建完整数据和选项映射
+        List<FollowUpPlanListResponse> enrichedList = followUpPlanService.buildListData(planList, organizationId);
+        Map<String, List<OptionDTO>> optionMap = followUpPlanService.buildOptionMap(organizationId, planList, enrichedList);
+
+        // 7. 返回分页结果
+        return PageUtils.setPageInfoWithOption(page, enrichedList, optionMap);
+    }
+
+    /**
+     * 构建用户可访问的资源类型列表
+     */
+    private List<String> buildAccessibleResourceTypes(List<String> permissions,
+                                                      boolean isAdmin,
+                                                      List<String> enabledModules) {
+        List<String> resourceTypes = new ArrayList<>();
+
+        // 检查客户模块权限
+        if ((permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ) || isAdmin)
+                && enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
+            resourceTypes.add(NotificationConstants.Module.CUSTOMER);
         }
-        if ((permissions.indexOf(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) && keyList.contains(ModuleKey.BUSINESS.getKey())) {
-            resourceTypeList.add(NotificationConstants.Module.OPPORTUNITY);
+
+        // 检查商机模块权限
+        if ((permissions.contains(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ) || isAdmin)
+                && enabledModules.contains(ModuleKey.BUSINESS.getKey())) {
+            resourceTypes.add(NotificationConstants.Module.OPPORTUNITY);
         }
-        if ((permissions.indexOf(PermissionConstants.CLUE_MANAGEMENT_READ) > 0 || StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) && keyList.contains(ModuleKey.CLUE.getKey())) {
-            resourceTypeList.add(NotificationConstants.Module.CLUE);
+
+        // 检查线索模块权限
+        if ((permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) || isAdmin)
+                && enabledModules.contains(ModuleKey.CLUE.getKey())) {
+            resourceTypes.add(NotificationConstants.Module.CLUE);
         }
-        List<FollowUpPlanListResponse> list = extFollowUpPlanMapper.selectList(request, userId, organizationId, null, null, null, resourceTypeList);
-        List<FollowUpPlanListResponse> buildList = followUpPlanService.buildListData(list, organizationId);
-        Map<String, List<OptionDTO>> optionMap = followUpPlanService.buildOptionMap(organizationId, list, buildList);
-        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+
+        return resourceTypes;
     }
 }
