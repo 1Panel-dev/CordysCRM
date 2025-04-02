@@ -1,29 +1,17 @@
-export enum SystemRouteEnum {
-  SYSTEM = 'system',
-  SYSTEM_ORG = 'systemOrg',
-  SYSTEM_ROLE = 'systemRole',
-  SYSTEM_MODULE = 'systemModule',
-  SYSTEM_BUSINESS = 'systemBusiness',
-  SYSTEM_LOG = 'systemLog',
-  SYSTEM_MESSAGE = 'systemMessage',
-}
-
 export enum OpportunityRouteEnum {
   OPPORTUNITY = 'opportunity',
-  OPPORTUNITY_OPT = 'opportunityOpt',
+  OPPORTUNITY_INDEX = 'opportunityIndex',
 }
 
 export enum ClueRouteEnum {
-  CLUE_MANAGEMENT = 'clueManagement',
-  CLUE_MANAGEMENT_CLUE = 'clueManagementClue',
-  CLUE_MANAGEMENT_POOL = 'clueManagementPool',
+  CLUE = 'clue',
+  CLUE_INDEX = 'clueIndex',
+  CLUE_POOL = 'cluePool',
 }
 
 export enum CustomerRouteEnum {
   CUSTOMER = 'customer',
   CUSTOMER_INDEX = 'customerIndex',
-  CUSTOMER_CONTACT = 'customerContact',
-  CUSTOMER_OPEN_SEA = 'customerOpenSea',
 }
 
 export enum ProductRouteEnum {
@@ -31,22 +19,22 @@ export enum ProductRouteEnum {
   PRODUCT_PRO = 'productPro',
 }
 
-export enum PersonalRouteEnum {
-  PERSONAL_INFO = 'personalInfo',
-  PERSONAL_PLAN = 'personalPlan',
-  LOGOUT = 'logout',
+export enum MineRouteEnum {
+  MINE = 'mine',
+  MINE_INDEX = 'mineIndex',
+  MINE_MESSAGE = 'mineMessage',
 }
 export enum WorkbenchRouteEnum {
   WORKBENCH = 'workbench',
   WORKBENCH_INDEX = 'workbenchIndex',
+  WORKBENCH_DUPLICATE_CHECK = 'workbenchDuplicateCheck',
 }
 
 export const AppRouteEnum = {
-  ...SystemRouteEnum,
   ...OpportunityRouteEnum,
   ...ClueRouteEnum,
   ...CustomerRouteEnum,
   ...ProductRouteEnum,
-  ...PersonalRouteEnum,
+  ...MineRouteEnum,
   ...WorkbenchRouteEnum,
 };

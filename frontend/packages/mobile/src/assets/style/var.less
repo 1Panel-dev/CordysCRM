@@ -1,7 +1,7 @@
 /** 圆角 **/
-@border-radius-mini: 2px;
-@border-radius-small: 4px;
-@border-radius-medium: 6px;
+@border-radius-mini: 3px;
+@border-radius-small: 6px;
+@border-radius-medium: 9px;
 @border-radius-large: 12px;
 
 @color-white: #fff;
@@ -33,5 +33,35 @@
     &::-webkit-scrollbar-thumb {
       @apply block;
     }
+  }
+}
+
+/** 0.5px边框 **/
+.half-px-border-top() {
+  position: relative;
+  &::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 1px;
+    background-color: var(--text-n7); // 边框颜色
+    content: '';
+    transform: scaleY(0.5); // 缩放为 0.5px
+    transform-origin: 0 0;
+  }
+}
+.half-px-border-bottom() {
+  position: relative;
+  &::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    background-color: var(--text-n7); // 边框颜色
+    content: '';
+    transform: scaleY(0.5); // 缩放为 0.5px
+    transform-origin: 0 0;
   }
 }

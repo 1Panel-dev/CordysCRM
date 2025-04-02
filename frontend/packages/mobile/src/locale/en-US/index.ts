@@ -17,10 +17,13 @@ Object.keys(_Vmodules).forEach((key) => {
 
 export default {
   message: {
-    'menu.workbench': 'Home page',
+    'menu.workbench': 'Home',
+    'menu.duplicateCheck': 'Duplicate Check',
     'menu.opportunity': 'Opportunity',
     'menu.clue': 'Clue',
+    'menu.cluePool': 'Clue Pool',
     'menu.customer': 'Customer',
+    'menu.openSea': 'Open Sea',
     'menu.contact': 'Contact',
     'menu.mine': 'Mine',
     'navbar.action.locale': 'Switch to English',

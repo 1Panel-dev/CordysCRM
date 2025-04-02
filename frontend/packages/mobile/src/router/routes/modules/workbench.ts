@@ -21,6 +21,15 @@ const workbench: AppRouteRecordRaw = {
         permissions: [],
       },
     },
+    {
+      path: 'duplicateCheck',
+      name: WorkbenchRouteEnum.WORKBENCH_DUPLICATE_CHECK,
+      component: () => import('@/views/workbench/duplicateCheck.vue'),
+      meta: {
+        locale: 'menu.duplicateCheck',
+        permissions: [],
+      },
+    },
   ],
 };
 

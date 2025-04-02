@@ -68,8 +68,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
           const options = form.optionMap?.[item.businessKey];
-          // 业务标准字段读取最外层
-          const name = options?.find((e) => e.id === item.businessKey)?.name;
+          // 业务标准字段读取最外层，读取form[item.businessKey]取到 id 值，然后去 options 里取 name
+          const name = options?.find((e) => e.id === form[item.businessKey as string])?.name;
           descriptions.value.push({
             label: item.name,
             value: name || form[item.businessKey],

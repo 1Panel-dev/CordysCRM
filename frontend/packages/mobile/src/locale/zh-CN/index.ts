@@ -17,10 +17,13 @@ Object.keys(_Vmodules).forEach((key) => {
 export default {
   message: {
     'menu.workbench': '首页',
+    'menu.duplicateCheck': '查重',
     'menu.opportunity': '商机',
     'menu.clue': '线索',
+    'menu.cluePool': '线索池',
     'menu.customer': '客户',
     'menu.contact': '联系人',
+    'menu.openSea': '公海',
     'menu.mine': '我的',
     'navbar.action.locale': '切换为中文',
     ...result,

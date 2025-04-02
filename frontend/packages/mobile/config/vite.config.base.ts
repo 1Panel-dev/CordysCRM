@@ -71,7 +71,7 @@ export default defineConfig({
     postcss: {
       plugins: [
         postcssPxtorem({
-          rootValue: 16, // 基准值，1rem
+          rootValue: 14, // 基准值，1rem
           propList: ['*'], // 需要转换的属性，`*` 表示所有属性都转换
           unitPrecision: 5, // 转换后保留的小数位数
           selectorBlackList: ['.no-rem'], // 忽略的选择器，例如 `.no-rem` 类名的样式不会被转换

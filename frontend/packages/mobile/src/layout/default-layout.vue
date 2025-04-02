@@ -10,7 +10,13 @@
         </div>
       </transition>
     </router-view>
-    <van-tabbar v-model="active" :fixed="false" class="!py-[8px]">
+    <van-tabbar
+      v-if="isModuleRouteIndex"
+      v-model="active"
+      :fixed="false"
+      class="page-bottom-tabbar !py-[8px]"
+      @change="handleTabbarChange"
+    >
       <van-tabbar-item
         v-for="menu of menuList"
         :key="menu.name"
@@ -21,52 +27,77 @@
         <template #icon>
           <CrmIcon
             :name="menu.icon"
-            width="20px"
-            height="20px"
+            width="18px"
+            height="16px"
             :color="active === menu.name ? 'var(--van-tabbar-item-active-color)' : ''"
           />
         </template>
-        {{ t(menu.text) }}
+        <div class="text-[10px]">{{ t(menu.text) }}</div>
       </van-tabbar-item>
     </van-tabbar>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { useRouter } from 'vue-router';
+
+  import { listenerRouteChange } from '@lib/shared/method/route-listener';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+
+  import { AppRouteEnum } from '@/enums/routeEnum';
 
   import { useI18n } from '@cordys/web/src/hooks/useI18n';
 
   const { t } = useI18n();
+  const router = useRouter();
 
-  const active = ref('workbench');
+  const active = ref<string>(AppRouteEnum.WORKBENCH_INDEX);
   const menuList = [
     {
-      name: 'workbench',
+      name: AppRouteEnum.WORKBENCH,
       icon: 'iconicon_home',
       text: t('menu.workbench'),
     },
     {
-      name: 'customer',
+      name: AppRouteEnum.CUSTOMER,
       icon: 'iconicon_customer',
       text: t('menu.customer'),
     },
     {
-      name: 'clue',
+      name: AppRouteEnum.CLUE,
       icon: 'iconicon_clue',
       text: t('menu.clue'),
     },
     {
-      name: 'opportunity',
+      name: AppRouteEnum.OPPORTUNITY,
       icon: 'iconicon_business_opportunity',
       text: t('menu.opportunity'),
     },
     {
-      name: 'mine',
+      name: AppRouteEnum.MINE,
       icon: 'iconicon_user_circle',
       text: t('menu.mine'),
     },
   ];
+
+  function handleTabbarChange(name: string) {
+    router.replace({ name });
+  }
+
+  const isModuleRouteIndex = computed(() => router.currentRoute.value.name?.toString().includes('Index'));
+
+  /**
+   * 监听路由变化，切换菜单选中
+   */
+  listenerRouteChange((newRoute) => {
+    const { name } = newRoute;
+    menuList.forEach((item) => {
+      if (name?.toString().includes(item.name)) {
+        active.value = item.name;
+      }
+    });
+  }, true);
 </script>
 
 <style lang="less" scoped>
@@ -77,6 +108,12 @@
     background-color: var(--text-n9);
     .page-content {
       @apply flex-1 overflow-hidden;
+    }
+    .page-bottom-tabbar {
+      gap: 8px;
+      :deep(.van-tabbar-item__icon) {
+        @apply mb-0;
+      }
     }
   }
 </style>

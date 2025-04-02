@@ -12,4 +12,13 @@ export default {
   'common.system': '系统',
   'common.systemNotification': '系统通知',
   'common.signRead': '标为已读',
+  'common.noData': '暂无数据',
+  'common.edit': '编辑',
+  'common.writeRecord': '写跟进',
+  'common.transfer': '转移',
+  'common.delete': '删除',
+  'common.pick': '领取',
+  'common.distribute': '分配',
+  'common.normal': '正常',
+  'common.abnormal': '异常',
 };

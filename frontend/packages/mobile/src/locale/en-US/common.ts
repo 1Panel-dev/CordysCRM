@@ -12,4 +12,13 @@ export default {
   'common.system': 'System',
   'common.systemNotification': 'System Notification',
   'common.signRead': 'Sign Read',
+  'common.noData': 'No Data',
+  'common.edit': 'Edit',
+  'common.writeRecord': 'Write Follow Record',
+  'common.transfer': 'Transfer',
+  'common.delete': 'Delete',
+  'common.pick': 'Pick',
+  'common.distribute': 'Distribute',
+  'common.normal': 'Normal',
+  'common.abnormal': 'Abnormal',
 };

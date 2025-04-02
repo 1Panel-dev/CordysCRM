@@ -1,4 +1,25 @@
 html,
 body {
-  font-size: 14px;
+  font-size: 16px; /* 设置 1rem = 16px */
+}
+
+@media (max-width: 768px) {
+  html,
+  body {
+    font-size: 14px; /* 在小屏幕上调整基准值 */
+  }
+}
+
+@media (max-width: 480px) {
+  html,
+  body {
+    font-size: 12px; /* 在更小的屏幕上调整基准值 */
+  }
+}
+
+/* 单行文本缩略 */
+.one-line-text {
+  @apply overflow-hidden overflow-ellipsis whitespace-nowrap;
+
+  line-height: 1.57;
 }

@@ -5,9 +5,15 @@
         <div class="flex h-full flex-col p-[24px]">
           <div class="mb-[8px] flex items-center justify-between gap-[8px]">
             <CrmSearchInput v-model:value="keyword" :placeholder="t('common.searchByName')" />
-            <n-tooltip v-permission="['SYSTEM_ROLE:ADD']" trigger="hover" :delay="300">
+            <n-tooltip trigger="hover" :delay="300">
               <template #trigger>
-                <n-button type="primary" ghost class="n-btn-outline-primary px-[7px]" @click="addRole">
+                <n-button
+                  v-permission="['SYSTEM_ROLE:ADD']"
+                  type="primary"
+                  ghost
+                  class="n-btn-outline-primary px-[7px]"
+                  @click="addRole"
+                >
                   <template #icon>
                     <n-icon><Add /></n-icon>
                   </template>
