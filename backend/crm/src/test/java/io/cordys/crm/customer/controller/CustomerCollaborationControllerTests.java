@@ -104,4 +104,26 @@ class CustomerCollaborationControllerTests extends BaseTest {
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, "customerId");
     }
+
+    @Test
+    @Order(10)
+    void delete() throws Exception {
+        this.requestGetWithOk(DEFAULT_DELETE, addCustomerCollaboration.getId());
+        CustomerCollaboration customerCollaboration = customerCollaborationMapper.selectByPrimaryKey(addCustomerCollaboration.getId());
+        Assertions.assertNull(customerCollaboration);
+        // 校验权限
+        requestGetPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE),
+                DEFAULT_DELETE, addCustomerCollaboration.getId());
+    }
+
+    @Test
+    @Order(10)
+    void batchDelete() throws Exception {
+        this.requestPostWithOk(DEFAULT_BATCH_DELETE, List.of(addCustomerCollaboration.getId()));
+        CustomerCollaboration customerCollaboration = customerCollaborationMapper.selectByPrimaryKey(addCustomerCollaboration.getId());
+        Assertions.assertNull(customerCollaboration);
+        // 校验权限
+        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE),
+                DEFAULT_BATCH_DELETE, List.of(addCustomerCollaboration.getId()));
+    }
 }

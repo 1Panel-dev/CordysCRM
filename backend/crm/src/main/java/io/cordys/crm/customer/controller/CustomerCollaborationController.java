@@ -50,7 +50,7 @@ public class CustomerCollaborationController {
     }
 
     @GetMapping("/delete/{id}")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE)
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "删除客户协作人")
     public void delete(@PathVariable String id) {
         customerCollaborationService.delete(id);
@@ -58,7 +58,7 @@ public class CustomerCollaborationController {
 
     @PostMapping("/batch/delete")
     @Operation(summary = "批量删除客户协作人")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE)
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     public void batchDelete(@RequestBody List<String> ids) {
         customerCollaborationService.batchDelete(ids);
     }

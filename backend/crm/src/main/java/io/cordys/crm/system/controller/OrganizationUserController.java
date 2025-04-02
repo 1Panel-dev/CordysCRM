@@ -129,7 +129,6 @@ public class OrganizationUserController {
 
     @GetMapping(value = "/option")
     @Operation(summary = "获取用户下拉option")
-    @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_READ)
     public List<OptionDTO> getUserList() {
         return organizationUserService.getUserOptions(OrganizationContext.getOrganizationId());
     }

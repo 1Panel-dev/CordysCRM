@@ -83,6 +83,7 @@ public class CustomerRelationService {
         deleteByCustomerId(customerId);
         // 再创建
         List<CustomerRelation> relations = requests.stream()
+                .filter(request -> StringUtils.isNotBlank(request.getCustomerId()) && StringUtils.isNotBlank(request.getRelationType()))
                 .map(item -> {
                     CustomerRelation customerRelation = new CustomerRelation();
                     customerRelation.setId(IDGenerator.nextStr());

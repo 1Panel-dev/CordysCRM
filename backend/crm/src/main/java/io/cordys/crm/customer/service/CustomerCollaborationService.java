@@ -108,10 +108,7 @@ public class CustomerCollaborationService {
     }
 
     public void batchDelete(List<String> ids) {
-        for (String id : ids) {
-            // 数据少，直接循环删
-            customerCollaborationMapper.deleteByPrimaryKey(id);
-        }
+        customerCollaborationMapper.deleteByIds(ids);
     }
 
     public void deleteByCustomerId(String customerId) {

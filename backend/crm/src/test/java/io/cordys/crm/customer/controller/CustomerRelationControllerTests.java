@@ -69,8 +69,14 @@ class CustomerRelationControllerTests extends BaseTest {
         customerAddRequest.setName(UUID.randomUUID().toString());
         anotherAddCustomer = customerService.add(customerAddRequest, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID);
 
-        List<CustomerRelationSaveRequest> requests = List.of(new CustomerRelationSaveRequest(anotherAddCustomer.getId(), CustomerRelationType.SUBSIDIARY.name()));
+        List<CustomerRelationSaveRequest> requests = List.of(new CustomerRelationSaveRequest());
         requestPostWithOk(SAVE, requests, addCustomer.getId());
+
+        requests = List.of(new CustomerRelationSaveRequest(anotherAddCustomer.getId(), CustomerRelationType.SUBSIDIARY.name()));
+        requestPostWithOk(SAVE, requests, addCustomer.getId());
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, SAVE, requests, addCustomer.getId());
     }
 
     @Test

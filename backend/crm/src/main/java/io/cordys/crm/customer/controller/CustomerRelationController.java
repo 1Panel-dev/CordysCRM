@@ -7,6 +7,7 @@ import io.cordys.crm.customer.service.CustomerRelationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +36,7 @@ public class CustomerRelationController {
     @PostMapping("/save/{customerId}")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "添加客户关系")
-    public void save(@PathVariable String customerId, @Validated @RequestBody @NotNull List<CustomerRelationSaveRequest> requests) {
+    public void save(@PathVariable String customerId, @Validated @RequestBody @Valid @NotNull List<CustomerRelationSaveRequest> requests) {
         customerRelationService.save(customerId, requests);
     }
 }
