@@ -23,10 +23,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.constants.CustomerResultCode;
-import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.domain.CustomerCollaboration;
-import io.cordys.crm.customer.domain.CustomerPool;
-import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
+import io.cordys.crm.customer.domain.*;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -49,10 +46,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -486,5 +480,10 @@ public class CustomerService {
 
     public List<OptionDTO> getCustomerOptions(String keyword, String organizationId) {
         return extCustomerMapper.getCustomerOptions(keyword, organizationId);
+    }
+
+    public String getCustomerName(String id) {
+        Customer customer = customerMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(customer).map(Customer::getName).orElse(null);
     }
 }

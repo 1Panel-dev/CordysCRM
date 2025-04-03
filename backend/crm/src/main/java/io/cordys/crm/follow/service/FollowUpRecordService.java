@@ -6,7 +6,6 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
-import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
@@ -132,13 +131,14 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @param userId
      * @return
      */
+    @OperationLog(module = LogModule.FOLLOW_UP_RECORD, type = LogType.UPDATE, resourceId = "{#request.id}")
     public FollowUpRecord update(FollowUpRecordUpdateRequest request, String userId, String orgId) {
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(followUpRecord).ifPresentOrElse(record -> {
             //更新跟进记录
             updateRecord(record, request, userId);
             // 获取模块字段
-            List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
+            List<BaseModuleFieldValue> originCustomerFields = followUpRecordFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
             baseService.handleUpdateLog(followUpRecord, record, originCustomerFields, request.getModuleFields(), followUpRecord.getId(), Translator.get("update_follow_up_record"));

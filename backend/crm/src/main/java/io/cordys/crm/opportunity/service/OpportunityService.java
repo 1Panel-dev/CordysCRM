@@ -18,10 +18,10 @@ import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.service.CustomerFieldService;
 import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
@@ -72,8 +72,6 @@ public class OpportunityService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
-    @Resource
-    private CustomerFieldService customerFieldService;
     @Resource
     private ExtProductMapper extProductMapper;
     @Resource
@@ -238,21 +236,21 @@ public class OpportunityService {
      */
     @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Opportunity update(OpportunityUpdateRequest request, String userId, String orgId) {
-        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(request.getId());
-        Optional.ofNullable(opportunity).ifPresentOrElse(item -> {
+        Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
+        Optional.ofNullable(oldOpportunity).ifPresentOrElse(item -> {
+            Opportunity newOpportunity = BeanUtils.copyBean(new Opportunity(), item);
             checkOpportunity(request, orgId, request.getId());
             //更新商机
-            updateOpportunity(item, request, userId);
+            updateOpportunity(newOpportunity, request, userId);
             // 获取模块字段
-            List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
+            List<BaseModuleFieldValue> originCustomerFields = opportunityFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
-            Opportunity newOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
-            baseService.handleUpdateLog(opportunity, newOpportunity, originCustomerFields, request.getModuleFields(), opportunity.getId(), opportunity.getName());
+            baseService.handleUpdateLog(oldOpportunity, newOpportunity, originCustomerFields, request.getModuleFields(), oldOpportunity.getId(), oldOpportunity.getName());
         }, () -> {
             throw new GenericException("opportunity_not_found");
         });
-        return opportunity;
+        return oldOpportunity;
     }
 
 

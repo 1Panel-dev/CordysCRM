@@ -99,13 +99,14 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param orgId
      * @return
      */
+    @OperationLog(module = LogModule.FOLLOW_UP_PLAN, type = LogType.UPDATE, resourceId = "{#request.id}")
     public FollowUpPlan update(FollowUpRecordUpdateRequest request, String userId, String orgId) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(followUpPlan).ifPresentOrElse(plan -> {
             //更新跟进计划
             updatePlan(plan, request, userId);
             // 获取模块字段
-            List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
+            List<BaseModuleFieldValue> originCustomerFields = followUpPlanFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
             baseService.handleUpdateLog(followUpPlan, plan, originCustomerFields, request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));

@@ -10,7 +10,8 @@
             t.module,
             t.create_time,
             t.create_user as operator,
-            t.resource_name
+            t.resource_name,
+            t.detail
         FROM
         sys_operation_log t
         where t.organization_id = #{orgId}

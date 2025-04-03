@@ -99,6 +99,15 @@
             "id": "SYSTEM_SETTING:UPDATE"
           }
         ]
+      },
+      {
+        "id": "SYSTEM_SETTING",
+        "name": "permission.operation.log",
+        "permissions": [
+          {
+            "id": "OPERATION_LOG:READ"
+          }
+        ]
       }
     ]
   },

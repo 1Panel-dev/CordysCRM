@@ -3,16 +3,29 @@ package io.cordys.crm.opportunity.service;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.dto.JsonDifferenceDTO;
+import io.cordys.crm.customer.domain.CustomerContact;
+import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.service.BaseModuleLogService;
+import io.cordys.mybatis.BaseMapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class OpportunityLogService extends BaseModuleLogService {
+
+    @Resource
+    private BaseMapper<Product> productMapper;
+    @Resource
+    private BaseMapper<CustomerContact> customerContactMapper;
+
+
     @Override
     public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
         super.handleModuleLogField(differenceDTOS, orgId, FormKey.OPPORTUNITY.getKey());
@@ -22,6 +35,57 @@ public class OpportunityLogService extends BaseModuleLogService {
                 setUserFieldName(differ);
                 break;
             }
+
+            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())) {
+                setProductFieldName(differ);
+                break;
+            }
+
+            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey())) {
+                setContactFieldName(differ);
+                break;
+            }
+
+            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_CUSTOMER_NAME.getBusinessKey())) {
+                setCustomerName(differ);
+                break;
+            }
         }
+    }
+
+
+    /**
+     * 联系人
+     *
+     * @param differ
+     */
+    private void setContactFieldName(JsonDifferenceDTO differ) {
+        CustomerContact oldCustomerContact = customerContactMapper.selectByPrimaryKey(differ.getOldValue().toString());
+        differ.setOldValueName(Optional.ofNullable(oldCustomerContact).map(CustomerContact::getName).orElse(null));
+        CustomerContact newCustomerContact = customerContactMapper.selectByPrimaryKey(differ.getNewValue().toString());
+        differ.setNewValueName(Optional.ofNullable(newCustomerContact).map(CustomerContact::getName).orElse(null));
+    }
+
+    /**
+     * 产品
+     *
+     * @param differ
+     */
+    private void setProductFieldName(JsonDifferenceDTO differ) {
+        Optional.ofNullable(differ.getOldValue()).ifPresent(oldValue -> {
+            List<String> ids = ((Collection<?>) oldValue).stream()
+                    .map(String::valueOf)
+                    .toList();
+            List<Product> products = productMapper.selectByIds(ids);
+            differ.setOldValueName(products.stream().map(Product::getName).toList());
+        });
+
+        Optional.ofNullable(differ.getNewValue()).ifPresent(newValue -> {
+            List<String> ids = ((Collection<?>) newValue).stream()
+                    .map(String::valueOf)
+                    .toList();
+            List<Product> products = productMapper.selectByIds(ids);
+            differ.setNewValueName(products.stream().map(Product::getName).toList());
+        });
     }
 }

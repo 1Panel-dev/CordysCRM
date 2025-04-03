@@ -6,6 +6,7 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import org.apache.commons.lang3.StringUtils;
@@ -111,6 +112,23 @@ public abstract class BaseModuleLogService {
         }
         if (differ.getNewValue() != null) {
             String userName = baseService.getUserName(differ.getNewValue().toString());
+            differ.setNewValueName(userName);
+        }
+    }
+
+
+    /**
+     * 客户名称
+     * @param differ
+     */
+    protected void setCustomerName(JsonDifferenceDTO differ) {
+        CustomerService customerService = CommonBeanFactory.getBean(CustomerService.class);
+        if (differ.getOldValue() != null) {
+            String customerName = customerService.getCustomerName(differ.getOldValue().toString());
+            differ.setOldValueName(customerName);
+        }
+        if (differ.getNewValue() != null) {
+            String userName = customerService.getCustomerName(differ.getNewValue().toString());
             differ.setNewValueName(userName);
         }
     }

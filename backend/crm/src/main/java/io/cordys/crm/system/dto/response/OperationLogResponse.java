@@ -32,4 +32,7 @@ public class OperationLogResponse implements Serializable {
     @Schema(description = "资源名称")
     private String resourceName;
 
+    @Schema(description = "日志描述")
+    private String detail;
+
 }
