@@ -22,7 +22,6 @@ public class ClueAddRequest {
     @Schema(description = "客户名称")
     private String name;
 
-    @NotBlank
     @Size(max = 32)
     @Schema(description = "负责人")
     private String owner;

@@ -1,7 +1,6 @@
-package io.cordys.common.resolver;
+package io.cordys.common.resolver.field;
 
 
-import io.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import io.cordys.crm.system.dto.field.RadioField;
 
 /**

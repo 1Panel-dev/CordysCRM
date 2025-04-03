@@ -33,6 +33,7 @@ import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,6 +81,9 @@ public class FollowUpPlanService extends BaseFollowUpService {
         followUpPlan.setCreateUser(userId);
         followUpPlan.setId(IDGenerator.nextStr());
         followUpPlan.setOrganizationId(orgId);
+        if (StringUtils.isBlank(request.getOwner())) {
+            followUpPlan.setOwner(userId);
+        }
         followUpPlanMapper.insert(followUpPlan);
         //保存自定义字段
         followUpPlanFieldService.saveModuleField(followUpPlan.getId(), orgId, userId, request.getModuleFields());

@@ -33,7 +33,6 @@ public class FollowUpPlanAddRequest {
     private String content;
 
     @Size(max = 32)
-    @NotBlank
     @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)
     private String owner;
 

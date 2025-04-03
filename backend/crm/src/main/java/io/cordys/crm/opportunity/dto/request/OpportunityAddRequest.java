@@ -37,7 +37,6 @@ public class OpportunityAddRequest {
     private String contactId;
 
     @Size(max = 32)
-    @NotBlank
     @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)
     private String owner;
 

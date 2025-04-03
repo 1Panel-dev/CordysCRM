@@ -224,6 +224,9 @@ public class ClueService {
         clue.setId(IDGenerator.nextStr());
         clue.setStage(ClueStatus.NEW.name());
         clue.setInSharedPool(false);
+        if (StringUtils.isBlank(request.getOwner())) {
+            clue.setOwner(userId);
+        }
 
         // 校验名称重复
         checkAddExist(clue);

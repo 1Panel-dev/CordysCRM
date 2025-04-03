@@ -21,7 +21,6 @@ public class CustomerContactAddRequest {
     @Schema(description = "客户id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String customerId;
 
-    @NotBlank
     @Size(max = 32)
     @Schema(description = "负责人")
     private String owner;

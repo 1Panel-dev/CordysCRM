@@ -1,7 +1,6 @@
 package io.cordys.common.resolver.field;
 
 
-import io.cordys.common.constants.RuleValidatorConstants;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
@@ -54,14 +53,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
     }
 
     protected void validateRequired(T customField, Object value) {
-        if (!hasValidatorKey(customField.getRules(), RuleValidatorConstants.REQUIRED)) {
-            return;
-        }
-        if (value == null
-                || (value instanceof String && StringUtils.isBlank(value.toString()))
-                || (value instanceof List listValue && CollectionUtils.isEmpty((listValue)))) {
-            throwValidateException(customField.getName());
-        }
+        // 移动端，不一定需要校验必填，暂时不校验
     }
 
     protected void validateArray(String name, Object value) {

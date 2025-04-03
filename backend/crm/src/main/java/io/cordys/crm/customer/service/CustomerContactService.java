@@ -203,6 +203,10 @@ public class CustomerContactService {
         customerContact.setOrganizationId(orgId);
         customerContact.setId(IDGenerator.nextStr());
         customerContact.setEnable(true);
+        if (StringUtils.isBlank(request.getOwner())) {
+            customerContact.setOwner(userId);
+        }
+
         // 校验名称重复
         checkAddExist(customerContact);
         customerContactMapper.insert(customerContact);

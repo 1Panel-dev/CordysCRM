@@ -90,6 +90,9 @@ public class FollowUpRecordService extends BaseFollowUpService {
         followUpRecord.setCreateUser(userId);
         followUpRecord.setId(IDGenerator.nextStr());
         followUpRecord.setOrganizationId(orgId);
+        if (StringUtils.isBlank(request.getOwner())) {
+            followUpRecord.setOwner(userId);
+        }
         followUpRecordMapper.insert(followUpRecord);
 
         //保存自定义字段

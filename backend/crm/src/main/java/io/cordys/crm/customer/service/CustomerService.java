@@ -249,6 +249,9 @@ public class CustomerService {
         customer.setOrganizationId(orgId);
         customer.setId(IDGenerator.nextStr());
         customer.setInSharedPool(false);
+        if (StringUtils.isBlank(request.getOwner())) {
+            customer.setOwner(userId);
+        }
 
         // 校验名称重复
         checkAddExist(customer);

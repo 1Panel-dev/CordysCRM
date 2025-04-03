@@ -195,6 +195,9 @@ public class OpportunityService {
         opportunity.setUpdateTime(System.currentTimeMillis());
         opportunity.setUpdateUser(operatorId);
         opportunity.setStatus(true);
+        if (StringUtils.isBlank(request.getOwner())) {
+            opportunity.setOwner(operatorId);
+        }
         opportunityMapper.insert(opportunity);
 
         //自定义字段
