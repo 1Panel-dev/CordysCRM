@@ -1,4 +1,5 @@
 import { ref, unref } from 'vue';
+import { showLoadingToast } from 'vant';
 import dayjs from 'dayjs';
 
 import type { LocaleType, Recordable } from '@lib/shared/types/global';
@@ -6,7 +7,6 @@ import type { LocaleType, Recordable } from '@lib/shared/types/global';
 import { i18n } from '@/locale';
 
 import { loadLocalePool } from './helper';
-import { showLoadingToast } from 'vant';
 
 interface LangModule {
   message: Recordable;

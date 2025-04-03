@@ -97,7 +97,7 @@ module.exports = {
             '^vue-i18n$',
             '^pinia$',
             '^@vueuse/core$',
-            '^naive-ui$',
+            '^vant$',
             '^@vicons/ionicons5$',
             '^lodash-es$',
             '^axios$',

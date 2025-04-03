@@ -12,6 +12,14 @@ export enum ClueRouteEnum {
 export enum CustomerRouteEnum {
   CUSTOMER = 'customer',
   CUSTOMER_INDEX = 'customerIndex',
+  CUSTOMER_DETAIL = 'customerDetail',
+}
+
+export enum CommonRouteEnum {
+  COMMON = 'common',
+  FORM_CREATE = 'formCreate',
+  CONTACT_DETAIL = 'contactDetail',
+  FOLLOW_DETAIL = 'followDetail',
 }
 
 export enum ProductRouteEnum {
@@ -34,6 +42,7 @@ export const AppRouteEnum = {
   ...OpportunityRouteEnum,
   ...ClueRouteEnum,
   ...CustomerRouteEnum,
+  ...CommonRouteEnum,
   ...ProductRouteEnum,
   ...MineRouteEnum,
   ...WorkbenchRouteEnum,

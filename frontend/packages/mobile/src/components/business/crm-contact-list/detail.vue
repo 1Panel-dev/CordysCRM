@@ -1,0 +1,74 @@
+<template>
+  <CrmPageWrapper :title="route.query.name?.toString() || ''">
+    <div class="relative h-full bg-[var(--text-n9)] pt-[16px]">
+      <CrmDescription :description="description" />
+    </div>
+    <template #footer>
+      <van-button
+        type="danger"
+        class="!rounded-[var(--border-radius-small)] !text-[16px]"
+        block
+        plain
+        :loading="loading"
+        @click="handleDelete"
+      >
+        {{ t('common.delete') }}
+      </van-button>
+    </template>
+  </CrmPageWrapper>
+</template>
+
+<script setup lang="ts">
+  import { useRoute } from 'vue-router';
+  import { showToast } from 'vant';
+
+  import CrmDescription, { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
+  import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+
+  import { useI18n } from '@cordys/web/src/hooks/useI18n';
+
+  const route = useRoute();
+  const { t } = useI18n();
+
+  const description: CrmDescriptionItem[] = [
+    {
+      label: '基本信息',
+      isTitle: true,
+    },
+    {
+      label: t('customer.customerName'),
+      value: '张三',
+    },
+    {
+      label: t('customer.customerType'),
+      value: 'VIP客户',
+    },
+    {
+      label: t('customer.customerLevel'),
+      value: 'VIP客户',
+    },
+    {
+      label: t('customer.customerSource'),
+      value: '市场活动',
+    },
+    {
+      label: t('customer.customerStatus'),
+      value: '潜在客户',
+    },
+  ];
+  const loading = ref(false);
+  async function handleDelete() {
+    try {
+      loading.value = true;
+      // Simulate delete operation
+      showToast(t('common.deleteSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+</script>
+
+<style lang="less" scoped></style>

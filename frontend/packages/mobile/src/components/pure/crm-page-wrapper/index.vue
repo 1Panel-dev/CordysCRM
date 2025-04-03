@@ -4,6 +4,9 @@
     <div class="crm-page-content">
       <slot />
     </div>
+    <div v-if="$slots.footer" class="crm-page-footer">
+      <slot name="footer" />
+    </div>
   </div>
 </template>
 
@@ -23,10 +26,15 @@
     height: 100vh;
     background-color: var(--text-n10);
     .crm-page-content {
-      @apply flex-1;
+      @apply flex flex-1 flex-col;
 
       overflow: auto;
       margin-top: 48px;
+      background-color: transparent;
+    }
+    .crm-page-footer {
+      padding: 16px;
+      background-color: var(--text-n10);
     }
   }
 </style>

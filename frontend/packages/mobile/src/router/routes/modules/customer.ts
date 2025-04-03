@@ -21,6 +21,14 @@ const customer: AppRouteRecordRaw = {
         permissions: [],
       },
     },
+    {
+      path: 'detail',
+      name: CustomerRouteEnum.CUSTOMER_DETAIL,
+      component: () => import('@/views/customer/detail.vue'),
+      meta: {
+        permissions: [],
+      },
+    },
   ],
 };
 

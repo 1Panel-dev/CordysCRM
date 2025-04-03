@@ -17,9 +17,9 @@
 </template>
 
 <script setup lang="ts">
-  import contact from './components/contact.vue';
   import customer from './components/customer.vue';
-  import openSea from './components/openSea.vue';
+  import contact from './contact/index.vue';
+  import openSea from './openSea/index.vue';
 
   import { useI18n } from '@cordys/web/src/hooks/useI18n';
 

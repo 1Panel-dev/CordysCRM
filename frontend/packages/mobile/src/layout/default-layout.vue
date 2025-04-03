@@ -14,6 +14,7 @@
       v-if="isModuleRouteIndex"
       v-model="active"
       :fixed="false"
+      safe-area-inset-bottom
       class="page-bottom-tabbar !py-[8px]"
       @change="handleTabbarChange"
     >

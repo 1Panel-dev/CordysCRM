@@ -29,6 +29,7 @@
 
 <style lang="less" scoped>
   .crm-page-header {
+    height: 48px;
     :deep(.van-nav-bar__left) {
       padding: 0 12px;
     }

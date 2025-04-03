@@ -1,19 +1,14 @@
 html,
 body {
-  font-size: 16px; /* 设置 1rem = 16px */
+  padding-bottom: env(safe-area-inset-bottom);
+  /* stylelint-disable-next-line function-no-unknown */
+  padding-bottom: constant(safe-area-inset-bottom);
 }
 
-@media (max-width: 768px) {
-  html,
-  body {
-    font-size: 14px; /* 在小屏幕上调整基准值 */
-  }
-}
-
-@media (max-width: 480px) {
-  html,
-  body {
-    font-size: 12px; /* 在更小的屏幕上调整基准值 */
+/* 修改进度条的背景颜色 */
+#nprogress {
+  .bar {
+    background: rgb(var(--primary-6));
   }
 }
 
@@ -22,4 +17,12 @@ body {
   @apply overflow-hidden overflow-ellipsis whitespace-nowrap;
 
   line-height: 1.57;
+}
+.top-bar {
+  @apply flex items-center;
+
+  gap: 12px;
+  padding: 8px 16px;
+  background-color: var(--text-n10);
+  .half-px-border-bottom();
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="crm-list-common-item">
+  <div class="crm-list-common-item" @click="emit('click', item)">
     <div class="crm-list-common-item-header">
       <div class="text-[14px] font-semibold text-[var(--text-n1)]">{{ props.item.name }}</div>
       <van-tag
@@ -45,6 +45,9 @@
   const props = defineProps<{
     item: Record<string, any>;
     actions?: CrmListCommonItemActionsItem[];
+  }>();
+  const emit = defineEmits<{
+    (e: 'click', item: Record<string, any>): void;
   }>();
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="crm-text-button" :class="props.direction === 'column' ? 'flex-col' : ''" @click="emit('click')">
+  <div class="crm-text-button" :class="props.direction === 'column' ? 'flex-col' : ''" @click.stop="emit('click')">
     <CrmIcon
       v-if="props.icon"
       :name="props.icon"
