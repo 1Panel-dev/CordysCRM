@@ -22,13 +22,13 @@ public class OpportunityAddRequest {
     @Schema(description = "客户id", requiredMode = Schema.RequiredMode.REQUIRED)
     private String customerId;
 
-    @Schema(description = "金额", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "金额")
     private BigDecimal amount;
 
     @Schema(description = "意向产品", requiredMode = Schema.RequiredMode.REQUIRED)
     private List<String> products;
 
-    @Schema(description = "可能性", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "可能性")
     private BigDecimal possible;
 
     @Size(max = 32)
