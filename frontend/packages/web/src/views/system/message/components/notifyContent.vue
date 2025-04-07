@@ -53,12 +53,12 @@
   import { NButton, NTooltip } from 'naive-ui';
 
   import { SystemMessageStatusEnum } from '@lib/shared/enums/systemEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { MessageCenterItem } from '@lib/shared/models/system/message';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
-  import { setNotificationRead } from '@/api/modules/system/message';
-  import { useI18n } from '@/hooks/useI18n';
+  import { setNotificationRead } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
   import { hasAnyPermission } from '@/utils/permission';
 

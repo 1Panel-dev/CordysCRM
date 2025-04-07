@@ -16,11 +16,11 @@
 <script setup lang="ts">
   import { NScrollbar } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import IntegrationList from './components/integrationList.vue';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   const AuthenticationSettings = defineAsyncComponent(() => import('./components/authenticationSettings.vue'));
   const PageSettings = defineAsyncComponent(() => import('./components/pageSettings.vue'));

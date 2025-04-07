@@ -72,6 +72,7 @@
   import { FormInst, NButton, NForm, NFormItem, NTabPane, NTabs, NTooltip, useMessage } from 'naive-ui';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -88,10 +89,9 @@
     batchDeleteCustomerCollaboration,
     deleteCustomerCollaboration,
     getCustomerCollaborationList,
+    getUserOptions,
     updateCustomerCollaboration,
-  } from '@/api/modules/customer';
-  import { getUserOptions } from '@/api/modules/system/org';
-  import { useI18n } from '@/hooks/useI18n';
+  } from '@/api/modules';
   import useModal from '@/hooks/useModal';
 
   const props = defineProps<{

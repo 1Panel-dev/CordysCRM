@@ -46,6 +46,8 @@
   import { useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import type { CluePoolListItem } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer';
 
@@ -57,11 +59,9 @@
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
 
-  import { assignClue, deleteCluePool, getClueHeaderList, pickClue } from '@/api/modules/clue';
+  import { assignClue, deleteCluePool, getClueHeaderList, pickClue } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
-  import { characterLimit } from '@/utils';
 
   const props = defineProps<{
     detail?: CluePoolListItem;

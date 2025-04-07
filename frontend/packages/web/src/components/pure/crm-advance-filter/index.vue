@@ -26,9 +26,9 @@
 <script lang="ts" setup>
   import { NButton } from 'naive-ui';
 
-  import FilterModal from './filterModal.vue';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import { useI18n } from '@/hooks/useI18n';
+  import FilterModal from './filterModal.vue';
 
   import { ConditionsItem, FilterFormItem, FilterResult } from './type';
 

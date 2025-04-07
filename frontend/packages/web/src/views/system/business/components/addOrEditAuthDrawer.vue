@@ -68,14 +68,14 @@
   import { FormInst, NButton, NForm, NFormItem, NInput, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { AuthForm, AuthUpdateParams } from '@lib/shared/models/system/business';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
   // import CrmTab from '@/components/pure/crm-tab/index.vue';
-  import { createAuth, updateAuth } from '@/api/modules/system/business';
+  import { createAuth, updateAuth } from '@/api/modules';
   import { authTypeFieldMap, defaultAuthForm } from '@/config/business';
-  import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
   const Message = useMessage();

@@ -4,6 +4,8 @@ import dayjs from 'dayjs';
 import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+import { useI18n } from '@lib/shared/hooks/useI18n';
+import { getCityPath } from '@lib/shared/method';
 import type { ModuleField } from '@lib/shared/models/customer';
 
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -13,9 +15,6 @@ import type { FormCreateField, FormCreateFieldDateType } from '@/components/busi
 
 import { lastOpportunitySteps } from '@/config/opportunity';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
-import { getCityPath } from '@/utils';
-
-import { useI18n } from './useI18n';
 
 type FormKey =
   | FormDesignKeyEnum.CUSTOMER

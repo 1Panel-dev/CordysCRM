@@ -36,4 +36,13 @@ export default {
   'common.updateSuccess': 'Update Success',
   'common.cancel': 'Cancel',
   'common.pleaseInputKeyword': 'Please Input Keyword',
+  'common.customer': 'Customer',
+  'common.clue': 'Clue',
+  'common.opportunity': 'Opportunity',
+  'common.recordBusiness': 'Follow-up record',
+  'common.planBusiness': 'Follow-up plan',
+  'common.recordClue': 'Follow-up record',
+  'common.planClue': 'Follow-up plan',
+  'common.convertToCustomer': 'Convert to customer',
+  'common.convertToOpportunity': 'Convert to opportunity',
 };

@@ -42,14 +42,14 @@
   import { ChevronBackOutline } from '@vicons/ionicons5';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { safeFractionConvert } from '@lib/shared/method';
   import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
-  import { getFormDesignConfig, saveFormDesignConfig } from '@/api/modules/system/module';
-  import { useI18n } from '@/hooks/useI18n';
+  import { getFormDesignConfig, saveFormDesignConfig } from '@/api/modules';
   import useModal from '@/hooks/useModal';
-  import { safeFractionConvert } from '@/utils';
 
   import { FormCreateField } from '../crm-form-create/types';
 

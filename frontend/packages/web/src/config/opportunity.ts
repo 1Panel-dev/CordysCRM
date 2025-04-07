@@ -1,7 +1,6 @@
 import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { TransferParams } from '@lib/shared/models/customer/index';
-
-import { useI18n } from '@/hooks/useI18n';
 
 const { t } = useI18n();
 

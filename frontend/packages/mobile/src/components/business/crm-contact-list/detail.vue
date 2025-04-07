@@ -22,10 +22,10 @@
   import { useRoute } from 'vue-router';
   import { showToast } from 'vant';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmDescription, { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
-
-  import { useI18n } from '@cordys/web/src/hooks/useI18n';
 
   const route = useRoute();
   const { t } = useI18n();

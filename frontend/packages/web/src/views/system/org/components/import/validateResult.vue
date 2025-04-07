@@ -135,11 +135,11 @@
   import { ref } from 'vue';
   import { NButton, NPopover, NScrollbar } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
 

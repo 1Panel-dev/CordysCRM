@@ -56,7 +56,7 @@
   import LarkSuiteQrCode from './larkSuiteQrCode.vue';
   import WecomQr from './weComQrCode.vue';
 
-  import { getThirdTypeList } from '@/api/modules/system/business';
+  import { getThirdTypeList } from '@/api/modules';
 
   // import { getPlatformParamUrl } from '@/api/modules/user';
 

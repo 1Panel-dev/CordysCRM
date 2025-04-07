@@ -190,6 +190,7 @@
 <script setup lang="ts">
   import { FormInst, NButton, NForm, NFormItem, NInput, NLayout, useMessage } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { scrollIntoView } from '@lib/shared/method/dom';
   import { sleep } from '@lib/shared/method/index';
 
@@ -203,7 +204,6 @@
   import LoginForm from '@/views/base/login/components/login-form.vue';
 
   import useFullScreen from '@/hooks/useFullScreen';
-  import { useI18n } from '@/hooks/useI18n';
   import useAppStore from '@/store/modules/app';
   import { setCustomTheme, setPlatformColor, watchStyle, watchTheme } from '@/utils/theme';
 

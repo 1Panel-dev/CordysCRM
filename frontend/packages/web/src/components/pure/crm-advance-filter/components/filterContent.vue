@@ -153,13 +153,13 @@
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTimeRangePicker from '@/components/business/crm-time-range-picker/index.vue';
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
-  import { getUserOptions } from '@/api/modules/system/org';
-  import { useI18n } from '@/hooks/useI18n';
+  import { getUserOptions } from '@/api/modules';
 
   import { operatorOptionsMap, scopeOptions } from '../index';
   import type { FilterForm, FilterFormItem } from '../type';

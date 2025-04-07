@@ -1,8 +1,7 @@
 import { FormItemRule, InputProps } from 'naive-ui';
 
+import { useI18n } from '@lib/shared/hooks/useI18n';
 import { OrgUserInfo } from '@lib/shared/models/system/org';
-
-import { useI18n } from '@/hooks/useI18n';
 
 const { t } = useI18n();
 

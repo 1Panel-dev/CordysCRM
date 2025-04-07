@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 
+import { useI18n } from '@lib/shared/hooks/useI18n';
+import { getGenerateId } from '@lib/shared/method';
 import { clearToken, setToken } from '@lib/shared/method/auth';
 import { removeRouteListener } from '@lib/shared/method/route-listener';
 import type { LoginParams } from '@lib/shared/models/system/login';
@@ -9,10 +11,8 @@ import NotifyContent from '@/views/system/message/components/notifyContent.vue';
 
 import { isLogin, login, signout } from '@/api/modules/system/login';
 import useDiscreteApi from '@/hooks/useDiscreteApi';
-import { useI18n } from '@/hooks/useI18n';
 import useUser from '@/hooks/useUser';
 import router from '@/router';
-import { getGenerateId } from '@/utils';
 
 import { AppRouteEnum } from '@/enums/routeEnum';
 

@@ -22,14 +22,14 @@
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberSelectTypeEnum, ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
 
-  import { getCapacityPage, saveCapacity } from '@/api/modules/system/module';
-  import { useI18n } from '@/hooks/useI18n';
+  import { getCapacityPage, saveCapacity } from '@/api/modules';
 
   const Message = useMessage();
 

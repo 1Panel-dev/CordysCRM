@@ -55,6 +55,8 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import type { TransferParams } from '@lib/shared/models/customer';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
@@ -66,11 +68,9 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import { deleteOpt, getOpportunityDetail, transferOpt, updateOptStage } from '@/api/modules/opportunity';
+  import { deleteOpt, getOpportunityDetail, transferOpt, updateOptStage } from '@/api/modules';
   import { defaultTransferForm, opportunityBaseSteps } from '@/config/opportunity';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
-  import { characterLimit } from '@/utils';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();

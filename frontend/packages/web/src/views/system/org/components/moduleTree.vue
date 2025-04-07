@@ -51,6 +51,9 @@
   import { NButton, NIcon, NInput, NTooltip, useMessage } from 'naive-ui';
   import { Add, Search } from '@vicons/ionicons5';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit, getNextAvailableName, mapTree } from '@lib/shared/method';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTree from '@/components/pure/crm-tree/index.vue';
@@ -63,10 +66,8 @@
     deleteDepartment,
     getDepartmentTree,
     renameDepartment,
-  } from '@/api/modules/system/org';
-  import { useI18n } from '@/hooks/useI18n';
+  } from '@/api/modules';
   import useModal from '@/hooks/useModal';
-  import { characterLimit, getNextAvailableName, mapTree } from '@/utils';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();

@@ -52,6 +52,7 @@
 <script setup lang="ts">
   import { NButton } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { RepeatCustomerItem } from '@lib/shared/models/system/business';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -66,10 +67,9 @@
     GetRepeatClueList,
     GetRepeatCustomerList,
     GetRepeatOpportunityDetailList,
-  } from '@/api/modules/system/business';
+  } from '@/api/modules';
   import { clueBaseSteps } from '@/config/clue';
   import { lastOpportunitySteps, opportunityResultSteps } from '@/config/opportunity';
-  import { useI18n } from '@/hooks/useI18n';
 
   const visible = defineModel<boolean>('visible', {
     required: true,

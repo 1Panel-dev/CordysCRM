@@ -7,12 +7,12 @@
 </template>
 
 <script lang="ts" setup>
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import AnnouncementList from './components/announcementList.vue';
   import MessageList from './components/messageList.vue';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
 

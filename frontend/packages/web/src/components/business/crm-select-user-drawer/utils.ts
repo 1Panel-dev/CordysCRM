@@ -1,7 +1,12 @@
 import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
 
-import { getModuleRoleTree, getModuleUserDeptTree } from '@/api/modules/system/module';
-import { getRoleDeptUserTree, getRoleMemberTree, getUsers } from '@/api/modules/system/role';
+import {
+  getModuleRoleTree,
+  getModuleUserDeptTree,
+  getRoleDeptUserTree,
+  getRoleMemberTree,
+  getUsers,
+} from '@/api/modules';
 // 添加部门、角色、成员数据API
 export const getDataApiMap: Record<
   MemberApiTypeEnum,

@@ -83,6 +83,8 @@
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit, getCityPath } from '@lib/shared/method';
   import type { ConfigSynchronization } from '@lib/shared/models/system/business';
   import type { MemberItem, ValidateInfo } from '@lib/shared/models/system/org';
 
@@ -106,24 +108,22 @@
   import ValidateModal from '@/views/system/org/components/import/validateModal.vue';
   import ValidateResult from '@/views/system/org/components/import/validateResult.vue';
 
-  import { getConfigSynchronization } from '@/api/modules/system/business';
   import {
     batchResetUserPassword,
     batchToggleStatusUser,
     checkSyncUserFromThird,
     deleteUser,
     deleteUserCheck,
+    getConfigSynchronization,
     getUserList,
     importUserPreCheck,
     importUsers,
     resetUserPassword,
     syncOrg,
     updateUser,
-  } from '@/api/modules/system/org';
-  import { useI18n } from '@/hooks/useI18n';
+  } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
-  import { characterLimit, getCityPath } from '@/utils';
   import { hasAnyPermission } from '@/utils/permission';
 
   const Message = useMessage();

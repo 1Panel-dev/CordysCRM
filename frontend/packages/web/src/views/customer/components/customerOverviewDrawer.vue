@@ -67,6 +67,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -80,8 +81,7 @@
   import collaborator from './collaborator.vue';
   import customerRelation from './customerRelation.vue';
 
-  import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules/customer/index';
-  import { useI18n } from '@/hooks/useI18n';
+  import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules';
   import useModal from '@/hooks/useModal';
 
   const props = defineProps<{

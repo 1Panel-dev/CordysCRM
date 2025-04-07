@@ -47,6 +47,7 @@
   // import { NDatePicker } from 'naive-ui';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   // import CrmTab from '@/components/pure/crm-tab/index.vue';
@@ -56,7 +57,6 @@
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
-  import { useI18n } from '@/hooks/useI18n';
   import useAppStore from '@/store/modules/app';
 
   const { t } = useI18n();

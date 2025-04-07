@@ -43,14 +43,14 @@
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ModuleNavItem } from '@lib/shared/models/system/module';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import ConfigCard from './components/configCard.vue';
 
-  import { moduleNavListSort } from '@/api/modules/system/module';
-  import { useI18n } from '@/hooks/useI18n';
+  import { moduleNavListSort } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
   import { hasAnyPermission } from '@/utils/permission';
 

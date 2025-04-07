@@ -78,13 +78,13 @@
   import dayjs from 'dayjs';
 
   import { SystemMessageStatusEnum, SystemMessageTypeEnum } from '@lib/shared/enums/systemEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { MessageCenterItem, MessageCenterSubsetParams } from '@lib/shared/models/system/message';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
-  import { getNotificationList, setNotificationRead } from '@/api/modules/system/message';
-  import { useI18n } from '@/hooks/useI18n';
+  import { getNotificationList, setNotificationRead } from '@/api/modules';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();

@@ -31,6 +31,7 @@
   import { ref } from 'vue';
   import { NButton, useMessage } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ValidateInfo } from '@lib/shared/models/system/org';
 
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
@@ -38,7 +39,6 @@
   import ValidateModal from './components/validateModal.vue';
   import ValidateResult from './components/validateResult.vue';
 
-  import { useI18n } from '@/hooks/useI18n';
   import useProgressBar from '@/hooks/useProgressBar';
 
   const { t } = useI18n();

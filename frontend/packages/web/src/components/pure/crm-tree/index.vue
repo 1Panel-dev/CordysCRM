@@ -43,13 +43,14 @@
   import { FormItemRule, NTree } from 'naive-ui';
   import { debounce } from 'lodash-es';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { findNodeByKey, getAllParentNodeIds, traverseTree } from '@lib/shared/method';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 
   import useContainerShadow from '@/hooks/useContainerShadow';
-  import { useI18n } from '@/hooks/useI18n';
-  import { findNodeByKey, getAllParentNodeIds, traverseTree } from '@/utils';
 
   import type {
     CrmInfoNode,

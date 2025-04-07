@@ -69,6 +69,8 @@
   import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import type { ClueListItem } from '@lib/shared/models/clue';
   import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
 
@@ -82,12 +84,10 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import { batchTransferClue, deleteClue, getClue, getClueHeaderList, updateClueStatus } from '@/api/modules/clue';
+  import { batchTransferClue, deleteClue, getClue, getClueHeaderList, updateClueStatus } from '@/api/modules';
   import { clueBaseSteps } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
-  import { characterLimit } from '@/utils';
 
   const props = defineProps<{
     detail?: ClueListItem;

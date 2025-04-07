@@ -60,6 +60,8 @@
   import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, NSwitch, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import type { CustomerContractListItem } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -75,11 +77,9 @@
     deleteCustomerContact,
     disableCustomerContact,
     enableCustomerContact,
-  } from '@/api/modules/customer/index';
+  } from '@/api/modules';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
-  import { characterLimit } from '@/utils';
 
   const props = defineProps<{
     customerId?: string;

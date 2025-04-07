@@ -190,6 +190,7 @@
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { MemberParams } from '@lib/shared/models/system/org';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -198,15 +199,7 @@
   import CrmExpandButton from '@/components/business/crm-expand-button/index.vue';
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
-  import {
-    addUser,
-    getDepartmentTree,
-    getRoleOptions,
-    getUserDetail,
-    getUserOptions,
-    updateUser,
-  } from '@/api/modules/system/org';
-  import { useI18n } from '@/hooks/useI18n';
+  import { addUser, getDepartmentTree, getRoleOptions, getUserDetail, getUserOptions, updateUser } from '@/api/modules';
   import { validateEmail, validatePhone } from '@/utils/validate';
 
   const Message = useMessage();

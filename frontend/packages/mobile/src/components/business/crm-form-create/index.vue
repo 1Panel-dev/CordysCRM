@@ -42,9 +42,9 @@
   import { useRoute, useRouter } from 'vue-router';
   import { FormInstance, showToast } from 'vant';
 
-  import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import { useI18n } from '@cordys/web/src/hooks/useI18n';
+  import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
 
   const route = useRoute();
   const router = useRouter();

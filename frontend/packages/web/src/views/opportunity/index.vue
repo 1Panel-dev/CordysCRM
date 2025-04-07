@@ -80,6 +80,8 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
@@ -102,13 +104,10 @@
   import OptOverviewDrawer from './components/optOverviewDrawer.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
 
-  import { batchDeleteOpt, deleteOpt, transferOpt } from '@/api/modules/opportunity';
-  import { getDepartmentTree } from '@/api/modules/system/org';
+  import { batchDeleteOpt, deleteOpt, getDepartmentTree, transferOpt } from '@/api/modules';
   import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
-  import { characterLimit } from '@/utils';
 
   const Message = useMessage();
   const { openModal } = useModal();

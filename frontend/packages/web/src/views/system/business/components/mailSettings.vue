@@ -123,13 +123,14 @@
 <script setup lang="ts">
   import { FormInst, FormItemRule, NButton, NDivider, NForm, NFormItem, NInput, NSwitch, useMessage } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { desensitize } from '@lib/shared/method';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
-  import { getConfigEmail, testConfigEmail, updateConfigEmail } from '@/api/modules/system/business';
-  import { useI18n } from '@/hooks/useI18n';
-  import { desensitize } from '@/utils';
+  import { getConfigEmail, testConfigEmail, updateConfigEmail } from '@/api/modules';
   import { validateEmail } from '@/utils/validate';
 
   const { t } = useI18n();

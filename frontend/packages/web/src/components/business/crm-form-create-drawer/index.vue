@@ -33,12 +33,12 @@
   import { NButton } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
   const CrmFormCreate = defineAsyncComponent(() => import('@/components/business/crm-form-create/index.vue'));

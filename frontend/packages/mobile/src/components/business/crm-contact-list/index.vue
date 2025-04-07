@@ -52,14 +52,13 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
-
-  import { useI18n } from '@cordys/web/src/hooks/useI18n';
 
   const { t } = useI18n();
   const router = useRouter();

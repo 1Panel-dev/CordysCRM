@@ -126,6 +126,7 @@
   import { useStorage } from '@vueuse/core';
   import { FormInst, NButton, NDivider, NForm, NFormItem, NInput, NSpin, useMessage } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getLoginType, setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import { encrypted } from '@lib/shared/method/index';
 
@@ -136,8 +137,7 @@
   // import { getAuthDetailByType } from '@/api/modules/setting/config';
   // import { getPlatformParamUrl } from '@/api/modules/user';
   // import { GetLoginLogoUrl } from '@/api/requrls/setting/config';
-  import { getThirdTypeList } from '@/api/modules/system/business';
-  import { useI18n } from '@/hooks/useI18n';
+  import { getThirdTypeList } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
   import useAppStore from '@/store/modules/app';
   // import useModal from '@/hooks/useModal';

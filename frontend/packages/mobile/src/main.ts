@@ -1,15 +1,17 @@
 import { createApp } from 'vue';
+import { showLoadingToast } from 'vant';
 
 import '@/assets/icon-font/iconfont';
 import '@/assets/icon-font/iconfont.css';
 import '@/assets/style/index.less';
 
+import { setupI18n } from '@lib/shared/locale';
+import useLocale from '@lib/shared/locale/useLocale';
+
 import App from './App.vue';
 
 // eslint-disable-next-line import/no-unresolved
 import 'virtual:svg-icons-register';
-import { setupI18n } from './locale';
-import useLocale from './locale/useLocale';
 import router from './router';
 import store from './store';
 
@@ -25,7 +27,7 @@ async function setupApp() {
   if (!localLocale) {
     // TODO 国际化接口对接
     // const defaultLocale = await getDefaultLocale();
-    const { changeLocale } = useLocale();
+    const { changeLocale } = useLocale(showLoadingToast);
     changeLocale('zh-CN');
   }
 

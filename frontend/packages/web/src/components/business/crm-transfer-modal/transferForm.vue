@@ -25,13 +25,13 @@
 <script lang="ts" setup>
   import { FormInst, FormRules, NForm, NFormItem } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
-  import { getUserOptions } from '@/api/modules/system/org';
+  import { getUserOptions } from '@/api/modules';
   import { defaultTransferForm } from '@/config/opportunity';
-  import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
 

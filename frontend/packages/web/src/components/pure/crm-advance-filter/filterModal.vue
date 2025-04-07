@@ -25,11 +25,10 @@
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import FilterContent from './components/filterContent.vue';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   import { ConditionsItem, FilterForm, FilterFormItem, FilterResult } from './type';
 

@@ -24,13 +24,13 @@
 
 <script setup lang="ts">
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
 
   import { quickAccessList } from '@/config/workbench';
-  import { useI18n } from '@/hooks/useI18n';
 
   const emit = defineEmits<{
     (e: 'refresh', activeFormKey: FormDesignKeyEnum): void;

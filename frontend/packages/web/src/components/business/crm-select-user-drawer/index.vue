@@ -39,6 +39,8 @@
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { mapTree } from '@lib/shared/method';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
   import { DeptTreeNode, RoleItem } from '@lib/shared/models/system/role';
 
@@ -46,9 +48,6 @@
   import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import { Option } from '@/components/business/crm-select-user-drawer/type';
   import roleTreeNodePrefix from './roleTreeNodePrefix.vue';
-
-  import { useI18n } from '@/hooks/useI18n';
-  import { mapTree } from '@/utils';
 
   import { getDataFunc } from './utils';
 

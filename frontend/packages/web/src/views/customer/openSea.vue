@@ -47,6 +47,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { TableQueryParams } from '@lib/shared/models/common';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -70,9 +71,8 @@
     deleteOpenSeaCustomer,
     getOpenSeaOptions,
     pickOpenSeaCustomer,
-  } from '@/api/modules/customer';
+  } from '@/api/modules';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
   import { SelectOption } from 'naive-ui/es/select/src/interface';

@@ -22,14 +22,13 @@
   import { useRoute } from 'vue-router';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmDescription, { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import CrmContactList from '@/components/business/crm-contact-list/index.vue';
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
-
-  import { useI18n } from '@cordys/web/src/hooks/useI18n';
 
   const route = useRoute();
   const { t } = useI18n();
@@ -101,7 +100,7 @@
   .detail-tabs {
     @apply flex-1 overflow-hidden;
     :deep(.van-tabs__content) {
-      @apply h-full;
+      height: calc(100% - var(--van-tabs-line-height));
       .van-tab__panel {
         @apply h-full;
       }

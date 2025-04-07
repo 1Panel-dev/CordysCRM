@@ -9,10 +9,9 @@
 
 <script lang="ts" setup>
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
 

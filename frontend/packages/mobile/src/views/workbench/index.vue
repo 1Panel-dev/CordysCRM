@@ -69,12 +69,12 @@
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
 
   import { MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
-
-  import { useI18n } from '@cordys/web/src/hooks/useI18n';
 
   const { t } = useI18n();
   const router = useRouter();

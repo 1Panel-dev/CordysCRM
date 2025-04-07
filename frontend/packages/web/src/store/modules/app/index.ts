@@ -2,12 +2,12 @@ import { defineStore } from 'pinia';
 import { cloneDeep } from 'lodash-es';
 
 import { CloseMessageUrl, SubscribeMessageUrl } from '@lib/shared/api/requrls/system/message';
+import { useI18n } from '@lib/shared/hooks/useI18n';
 import { getSSE } from '@lib/shared/method/index';
 import { setLocalStorage } from '@lib/shared/method/local-storage';
 
+import { getModuleNavConfigList } from '@/api/modules';
 import { getKey } from '@/api/modules/system/login';
-import { getModuleNavConfigList } from '@/api/modules/system/module';
-import { useI18n } from '@/hooks/useI18n';
 import useUserStore from '@/store/modules/user';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
@@ -214,9 +214,7 @@ const useAppStore = defineStore('app', {
       localStorage.setItem('MENU_ICON_SHOW', JSON.stringify(storageData));
     },
   },
-  persist: {
-    paths: [''],
-  },
+  persist: {},
 });
 
 export default useAppStore;

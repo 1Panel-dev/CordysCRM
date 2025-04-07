@@ -36,7 +36,7 @@
 <script lang="ts" setup>
   import { NPagination, PaginationSizeOption } from 'naive-ui';
 
-  import { useI18n } from '@/hooks/useI18n';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   const props = withDefaults(
     defineProps<{

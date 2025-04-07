@@ -46,10 +46,10 @@
   import { VueDraggable } from 'vue-draggable-plus';
 
   import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 
-  import { useI18n } from '@/hooks/useI18n';
   import useTableStore from '@/hooks/useTableStore';
 
   const props = defineProps<{

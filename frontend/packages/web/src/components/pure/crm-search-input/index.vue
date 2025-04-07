@@ -21,7 +21,7 @@
   import { Search } from '@vicons/ionicons5';
   import { debounce } from 'lodash-es';
 
-  import { useI18n } from '@/hooks/useI18n';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   const props = defineProps<{
     autoSearch?: boolean;

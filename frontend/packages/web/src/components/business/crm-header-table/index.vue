@@ -19,6 +19,7 @@
   import dayjs from 'dayjs';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CustomerContractTableParams, HeaderHistoryItem } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -28,8 +29,6 @@
   import type { CrmTableDataItem } from '@/components/pure/crm-table/type';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
 

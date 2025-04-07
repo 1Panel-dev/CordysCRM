@@ -15,13 +15,13 @@
 <script lang="ts" setup>
   import { DataTableColumn, NDataTable, useMessage } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { MessageConfigItem } from '@lib/shared/models/system/message';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import SwitchPopConfirm from './switchPopConfirm.vue';
 
-  import { batchSaveMessageTask, getMessageTask, saveMessageTask } from '@/api/modules/system/message';
-  import { useI18n } from '@/hooks/useI18n';
+  import { batchSaveMessageTask, getMessageTask, saveMessageTask } from '@/api/modules';
 
   const Message = useMessage();
 

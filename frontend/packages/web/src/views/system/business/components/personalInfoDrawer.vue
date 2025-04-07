@@ -88,6 +88,7 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { PersonalInfoRequest, PersonalPassword } from '@lib/shared/models/system/business';
   import { OrgUserInfo } from '@lib/shared/models/system/org';
 
@@ -100,9 +101,8 @@
   import EditPasswordModal from '@/views/system/business/components/editPasswordModal.vue';
   import EditPersonalInfoModal from '@/views/system/business/components/editPersonalInfoModal.vue';
 
-  import { getPersonalUrl } from '@/api/modules/system/business';
+  import { getPersonalUrl } from '@/api/modules';
   import { defaultUserInfo } from '@/config/business';
-  import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
 

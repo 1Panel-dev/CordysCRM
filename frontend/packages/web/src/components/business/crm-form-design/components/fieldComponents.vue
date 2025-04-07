@@ -49,13 +49,12 @@
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getGenerateId } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { advancedFields, basicFields } from '@/components/business/crm-form-create/config';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
-
-  import { useI18n } from '@/hooks/useI18n';
-  import { getGenerateId } from '@/utils';
 
   const emit = defineEmits<{
     (e: 'select', field: FormCreateField): void;

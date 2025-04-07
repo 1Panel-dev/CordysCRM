@@ -92,12 +92,12 @@
     useMessage,
   } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { PersonalPassword } from '@lib/shared/models/system/business';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
-  import { sendEmailCode, updateUserPassword } from '@/api/modules/system/business';
-  import { useI18n } from '@/hooks/useI18n';
+  import { sendEmailCode, updateUserPassword } from '@/api/modules';
 
   import type { CountdownProps } from 'naive-ui';
 

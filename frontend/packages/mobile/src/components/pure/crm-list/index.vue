@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-  import { useI18n } from '@cordys/web/src/hooks/useI18n';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   const props = defineProps<{
     keyword?: string;

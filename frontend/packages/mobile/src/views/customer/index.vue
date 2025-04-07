@@ -17,11 +17,11 @@
 </template>
 
 <script setup lang="ts">
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import customer from './components/customer.vue';
   import contact from './contact/index.vue';
   import openSea from './openSea/index.vue';
-
-  import { useI18n } from '@cordys/web/src/hooks/useI18n';
 
   const { t } = useI18n();
   const activeName = ref('a');
@@ -45,7 +45,7 @@
   .customer-tabs {
     @apply h-full;
     :deep(.van-tabs__content) {
-      @apply h-full;
+      height: calc(100% - var(--van-tabs-line-height));
       .van-tab__panel {
         @apply h-full;
       }

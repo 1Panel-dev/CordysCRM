@@ -1,5 +1,6 @@
+import { useI18n } from '@lib/shared/hooks/useI18n';
+
 import useDiscreteApi from '@/hooks/useDiscreteApi';
-import { useI18n } from '@/hooks/useI18n';
 import useUser from '@/hooks/useUser';
 import router from '@/router';
 import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';

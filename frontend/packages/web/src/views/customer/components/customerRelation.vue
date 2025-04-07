@@ -54,14 +54,14 @@
   import { NButton, NSelect, useMessage } from 'naive-ui';
 
   import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { RelationListItem } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
 
-  import { getCustomerRelationList, saveCustomerRelation } from '@/api/modules/customer';
-  import { useI18n } from '@/hooks/useI18n';
+  import { getCustomerRelationList, saveCustomerRelation } from '@/api/modules';
 
   import { RowData } from 'naive-ui/es/data-table/src/interface';
 

@@ -1,9 +1,10 @@
 import { VNodeChild } from 'vue';
 
+import { useI18n } from '@lib/shared/hooks/useI18n';
+
 import NodeTitle from './nodeTitle.vue';
 
 import useDiscreteApi from '@/hooks/useDiscreteApi';
-import { useI18n } from '@/hooks/useI18n';
 
 import type { CrmInfoNode, CrmTreeFieldNames, CrmTreeNodeData, FieldConfig } from './type';
 /**

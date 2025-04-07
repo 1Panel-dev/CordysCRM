@@ -30,11 +30,10 @@
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberApiTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   import { FormCreateField } from '../../types';
 

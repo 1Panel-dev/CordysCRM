@@ -49,6 +49,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { SortParams } from '@lib/shared/models/common';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -59,7 +60,6 @@
   import BatchAction from './components/batchAction.vue';
   import ColumnSetting from './components/columnSetting.vue';
 
-  import { useI18n } from '@/hooks/useI18n';
   import useTableStore from '@/hooks/useTableStore';
 
   import { BatchActionConfig } from './type';

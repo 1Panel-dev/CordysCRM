@@ -90,6 +90,7 @@
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { FollowDetailItem } from '@lib/shared/models/customer';
 
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
@@ -97,8 +98,6 @@
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import FollowRecord from './followRecord.vue';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   import useFollowApi, { type followEnumType } from './useFollowApi';
 

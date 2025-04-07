@@ -109,11 +109,7 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import EditIntegrationModal from './editIntegrationModal.vue';
 
-  import {
-    getConfigSynchronization,
-    testConfigSynchronization,
-    updateConfigSynchronization,
-  } from '@/api/modules/system/business';
+  import { getConfigSynchronization, testConfigSynchronization, updateConfigSynchronization } from '@/api/modules';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();

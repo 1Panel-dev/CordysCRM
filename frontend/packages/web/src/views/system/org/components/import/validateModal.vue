@@ -35,9 +35,9 @@
 <script setup lang="ts">
   import { NButton, NProgress } from 'naive-ui';
 
-  import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import { useI18n } from '@/hooks/useI18n';
+  import CrmModal from '@/components/pure/crm-modal/index.vue';
 
   const { t } = useI18n();
 

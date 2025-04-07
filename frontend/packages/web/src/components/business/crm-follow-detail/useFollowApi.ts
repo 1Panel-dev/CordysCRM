@@ -3,6 +3,7 @@ import { useMessage } from 'naive-ui';
 
 import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { CommonList } from '@lib/shared/models/common';
 import type { FollowDetailItem } from '@lib/shared/models/customer';
 
@@ -10,31 +11,26 @@ import type { FormCreateField } from '@/components/business/crm-form-create/type
 
 import {
   cancelClueFollowPlan,
+  cancelCustomerFollowPlan,
+  cancelOptFollowPlan,
   deleteClueFollowPlan,
   deleteClueFollowRecord,
+  deleteCustomerFollowPlan,
+  deleteCustomerFollowRecord,
+  deleteOptFollowPlan,
+  deleteOptFollowRecord,
   getClueFollowPlanList,
   getClueFollowRecordList,
   getCluePoolFollowRecordList,
-} from '@/api/modules/clue/index';
-import {
-  cancelCustomerFollowPlan,
-  deleteCustomerFollowPlan,
-  deleteCustomerFollowRecord,
   getCustomerFollowPlanFormConfig,
   getCustomerFollowPlanList,
   getCustomerFollowRecordFormConfig,
   getCustomerFollowRecordList,
   GetCustomerOpenSeaFollowRecordList,
-} from '@/api/modules/customer/index';
-import {
-  cancelOptFollowPlan,
-  deleteOptFollowPlan,
-  deleteOptFollowRecord,
   getOptFollowPlanList,
   getOptFollowRecordList,
-} from '@/api/modules/opportunity';
-import { getPersonalFollow } from '@/api/modules/system/business';
-import { useI18n } from '@/hooks/useI18n';
+  getPersonalFollow,
+} from '@/api/modules';
 
 export type followEnumType =
   | typeof FormDesignKeyEnum.CUSTOMER

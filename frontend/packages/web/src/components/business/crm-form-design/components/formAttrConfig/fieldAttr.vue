@@ -655,6 +655,7 @@
 
   import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmColorSelect from '@/components/pure/crm-color-select/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -669,8 +670,6 @@
   } from '@/components/business/crm-form-create/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import optionConfig from './optionConfig.vue';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 

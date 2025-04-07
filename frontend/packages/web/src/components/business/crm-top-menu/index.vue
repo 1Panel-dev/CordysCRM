@@ -16,9 +16,9 @@
   import { MenuGroupOption, MenuOption, NMenu } from 'naive-ui';
   import { cloneDeep, debounce } from 'lodash-es';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { listenerRouteChange } from '@lib/shared/method/route-listener';
 
-  import { useI18n } from '@/hooks/useI18n';
   import usePermission from '@/hooks/usePermission';
   import appClientMenus from '@/router/app-menus';
   import useAppStore from '@/store/modules/app';

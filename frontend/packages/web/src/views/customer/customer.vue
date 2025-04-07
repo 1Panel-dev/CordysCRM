@@ -48,6 +48,7 @@
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -68,9 +69,8 @@
     batchTransferCustomer,
     deleteCustomer,
     updateCustomer,
-  } from '@/api/modules/customer';
+  } from '@/api/modules';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
   const Message = useMessage();

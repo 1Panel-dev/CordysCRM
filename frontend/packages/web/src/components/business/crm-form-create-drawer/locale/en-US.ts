@@ -8,6 +8,6 @@ export default {
   'crmFormCreate.drawer.planBusiness': 'Follow-up plan',
   'crmFormCreate.drawer.recordClue': 'Follow-up record',
   'crmFormCreate.drawer.planClue': 'Follow-up plan',
-  'crmFormCreate.drawer.opportunity': 'Business',
+  'crmFormCreate.drawer.opportunity': 'Opportunity',
   'crmFormCreate.drawer.product': 'Product',
 };

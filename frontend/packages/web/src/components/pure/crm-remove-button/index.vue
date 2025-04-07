@@ -23,9 +23,9 @@
   import { ref } from 'vue';
   import { NButton } from 'naive-ui';
 
-  import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import { useI18n } from '@/hooks/useI18n';
+  import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
 
   const { t } = useI18n();
 

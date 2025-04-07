@@ -36,4 +36,13 @@ export default {
   'common.updateSuccess': '更新成功',
   'common.cancel': '取消',
   'common.pleaseInputKeyword': '请输入关键词',
+  'common.customer': '客户',
+  'common.clue': '线索',
+  'common.opportunity': '商机',
+  'common.recordBusiness': '跟进记录',
+  'common.planBusiness': '跟进计划',
+  'common.recordClue': '跟进记录',
+  'common.planClue': '跟进计划',
+  'common.convertToCustomer': '转为客户',
+  'common.convertToOpportunity': '转为商机',
 };

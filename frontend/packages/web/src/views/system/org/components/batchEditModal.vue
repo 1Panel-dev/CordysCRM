@@ -103,13 +103,14 @@
     useMessage,
   } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import CrmCitySelect from '@/components/business/crm-city-select/index.vue';
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
-  import { batchEditUser, getDepartmentTree, getUserOptions } from '@/api/modules/system/org';
-  import { useI18n } from '@/hooks/useI18n';
+  import { batchEditUser, getDepartmentTree, getUserOptions } from '@/api/modules';
 
   const Message = useMessage();
   const { t } = useI18n();

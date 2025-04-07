@@ -53,9 +53,12 @@
 </template>
 
 <script setup lang="ts">
-  import { NBadge, NButton, NLayoutHeader, NPopselect, NTooltip } from 'naive-ui';
+  import { NBadge, NButton, NLayoutHeader, NPopselect, NTooltip, useMessage } from 'naive-ui';
   import { LanguageOutline } from '@vicons/ionicons5';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { LOCALE_OPTIONS } from '@lib/shared/locale';
+  import useLocale from '@lib/shared/locale/useLocale';
   import { LocaleType } from '@lib/shared/types/global';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
@@ -63,9 +66,6 @@
   import CrmTopMenu from '@/components/business/crm-top-menu/index.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
-  import { useI18n } from '@/hooks/useI18n';
-  import { LOCALE_OPTIONS } from '@/locale/index';
-  import useLocale from '@/locale/useLocale';
   import useAppStore from '@/store/modules/app';
 
   const props = defineProps<{
@@ -73,8 +73,9 @@
     name?: string;
   }>();
 
+  const { loading } = useMessage();
   const { t } = useI18n();
-  const { changeLocale, currentLocale } = useLocale();
+  const { changeLocale, currentLocale } = useLocale(loading);
 
   const appStore = useAppStore();
 

@@ -1,4 +1,5 @@
-import { useI18n } from '@/hooks/useI18n';
+import { useI18n } from '@lib/shared/hooks/useI18n';
+
 import router from '@/router';
 import { WHITE_LIST } from '@/router/constants';
 import useUserStore from '@/store/modules/user';

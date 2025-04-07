@@ -15,13 +15,13 @@
 <script lang="ts" setup>
   import { DataTableRowKey, useMessage } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import TransferForm from './transferForm.vue';
 
   import { defaultTransferForm } from '@/config/opportunity';
-  import { useI18n } from '@/hooks/useI18n';
 
   const { t } = useI18n();
   const Message = useMessage();

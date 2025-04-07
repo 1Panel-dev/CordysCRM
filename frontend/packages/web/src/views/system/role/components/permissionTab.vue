@@ -78,6 +78,7 @@
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import {
     DeptTreeNode,
     PermissionItem,
@@ -86,8 +87,7 @@
     RolePermissionItem,
   } from '@lib/shared/models/system/role';
 
-  import { createRole, getPermissions, getRoleDeptTree, getRoleDetail, updateRole } from '@/api/modules/system/role';
-  import { useI18n } from '@/hooks/useI18n';
+  import { createRole, getPermissions, getRoleDeptTree, getRoleDetail, updateRole } from '@/api/modules';
   import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 

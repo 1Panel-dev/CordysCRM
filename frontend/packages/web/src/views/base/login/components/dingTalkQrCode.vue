@@ -7,10 +7,10 @@
   import { useScriptTag } from '@vueuse/core';
   import { useMessage } from 'naive-ui';
 
+  // import { getDingCallback, getDingInfo } from '@/api/modules/user';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
-  // import { getDingCallback, getDingInfo } from '@/api/modules/user';
-  import { useI18n } from '@/hooks/useI18n';
   import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
   // import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';

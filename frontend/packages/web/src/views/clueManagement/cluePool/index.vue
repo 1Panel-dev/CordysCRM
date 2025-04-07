@@ -61,6 +61,7 @@
   import { DataTableRowKey, NSelect, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CluePoolListItem, PoolOption } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
@@ -86,11 +87,10 @@
     deleteCluePool,
     getPoolOptions,
     pickClue,
-  } from '@/api/modules/clue';
+  } from '@/api/modules';
   import { filterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
   const { t } = useI18n();

@@ -90,6 +90,7 @@
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { OpportunityDetail, OpportunityItem, OpportunityParams } from '@lib/shared/models/system/module';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
@@ -100,8 +101,7 @@
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
-  import { addOpportunityRule, updateOpportunityRule } from '@/api/modules/system/module';
-  import { useI18n } from '@/hooks/useI18n';
+  import { addOpportunityRule, updateOpportunityRule } from '@/api/modules';
 
   const { t } = useI18n();
   const Message = useMessage();

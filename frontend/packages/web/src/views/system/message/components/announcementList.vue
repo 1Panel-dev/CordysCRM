@@ -22,6 +22,7 @@
   import dayjs from 'dayjs';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { AnnouncementItemDetail } from '@lib/shared/models/system/message';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -33,8 +34,7 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddNotifyModal from './addNotifyModal.vue';
 
-  import { deleteAnnouncement, getAnnouncementList } from '@/api/modules/system/message';
-  import { useI18n } from '@/hooks/useI18n';
+  import { deleteAnnouncement, getAnnouncementList } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
 
   const appStore = useAppStore();

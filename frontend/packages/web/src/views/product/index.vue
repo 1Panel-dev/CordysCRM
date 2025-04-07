@@ -45,6 +45,7 @@
   import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ProductListItem } from '@lib/shared/models/product';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -55,9 +56,8 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
-  import { batchDeleteProduct, batchUpdateProduct, deleteProduct } from '@/api/modules/product';
+  import { batchDeleteProduct, batchUpdateProduct, deleteProduct } from '@/api/modules';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
   const { openModal } = useModal();

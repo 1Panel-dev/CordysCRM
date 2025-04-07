@@ -28,11 +28,11 @@
 <script setup lang="ts">
   import { NButton } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmUpload from '@/components/pure/crm-upload/index.vue';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   export interface UploadCardItem {
     valueKey?: string;

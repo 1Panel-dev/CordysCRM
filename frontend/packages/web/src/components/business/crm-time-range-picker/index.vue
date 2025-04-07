@@ -19,8 +19,7 @@
   import dayjs, { ManipulateType } from 'dayjs';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
-
-  import { useI18n } from '@/hooks/useI18n';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   const props = defineProps<{
     timeRangeType?: OperatorEnum.FIXED | OperatorEnum.DYNAMICS;

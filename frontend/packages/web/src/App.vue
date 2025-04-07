@@ -16,24 +16,26 @@
   import { useRouter } from 'vue-router';
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
+  import useLocale from '@lib/shared/locale/useLocale';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method/index';
 
   import { getWeComOauthCallback } from '@/api/modules/system/login';
   import useLoading from '@/hooks/useLoading';
-  import useLocale from '@/locale/useLocale';
   import useAppStore from '@/store/modules/app';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
+  import useDiscreteApi from './hooks/useDiscreteApi';
   import { WHITE_LIST } from './router/constants';
   import useUserStore from './store/modules/user';
 
   const { setLoading } = useLoading();
+  const { message } = useDiscreteApi();
 
   const router = useRouter();
   const userStore = useUserStore();
-  const { currentLocale } = useLocale();
+  const { currentLocale } = useLocale(message.loading);
   const appStore = useAppStore();
 
   const naiveUILocale = computed(() => {

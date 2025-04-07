@@ -1,10 +1,10 @@
-export const getLocalStorage = <T = string>(name: string, isJson?: boolean): T | string | null => {
+export const getLocalStorage = <T = string>(name: string, isJson?: boolean): T | null => {
   try {
     const value = localStorage.getItem(name);
     if (value && isJson) {
       return JSON.parse(value) as T;
     }
-    return value;
+    return value as T;
   } catch {
     return null;
   }

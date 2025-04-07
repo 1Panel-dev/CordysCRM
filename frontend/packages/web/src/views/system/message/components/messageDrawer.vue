@@ -94,6 +94,7 @@
     SystemMessageTypeEnum,
     SystemResourceMessageTypeEnum,
   } from '@lib/shared/enums/systemEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { MessageCenterSubsetParams } from '@lib/shared/models/system/message';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -101,8 +102,7 @@
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmMessageList from '@/components/business/crm-message-list/index.vue';
 
-  import { getNotificationCount, setAllNotificationRead } from '@/api/modules/system/message';
-  import { useI18n } from '@/hooks/useI18n';
+  import { getNotificationCount, setAllNotificationRead } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
 
   import { AppRouteEnum } from '@/enums/routeEnum';

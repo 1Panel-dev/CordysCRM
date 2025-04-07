@@ -49,6 +49,7 @@
   import { NButton, NDivider, NDropdown, NSwitch, useMessage } from 'naive-ui';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ModuleNavItem } from '@lib/shared/models/system/module';
 
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
@@ -66,8 +67,7 @@
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
   import ProductFromDrawer from './productManagement/formDrawer.vue';
 
-  import { toggleModuleNavStatus } from '@/api/modules/system/module';
-  import { useI18n } from '@/hooks/useI18n';
+  import { toggleModuleNavStatus } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 

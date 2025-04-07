@@ -70,11 +70,10 @@
   import { NTooltip, NUpload, NUploadDragger, UploadFileInfo, useMessage } from 'naive-ui';
 
   import { UploadAcceptEnum, UploadStatus } from '@lib/shared/enums/uploadEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { formatFileSize } from '@lib/shared/method';
 
   import { FileIconMap, getFileEnum, getFileIcon } from '@/components/pure/crm-upload/iconMap';
-
-  import { useI18n } from '@/hooks/useI18n';
-  import { formatFileSize } from '@/utils';
 
   import type { CrmFileItem, UploadType } from './types';
 

@@ -1,7 +1,6 @@
 import { createI18n } from 'vue-i18n';
 
-import type { LocaleType } from '@lib/shared/types/global';
-
+import type { LocaleType } from '../types/global';
 import { setLoadLocalePool } from './helper';
 import type { App } from 'vue';
 import type { I18nOptions } from 'vue-i18n';
@@ -16,7 +15,7 @@ export let i18n: ReturnType<typeof createI18n>;
 
 async function createI18nOptions(): Promise<I18nOptions> {
   const locale = (localStorage.getItem('CRM-locale') || 'zh-CN') as LocaleType;
-  const defaultLocal = await import(`./${locale}/index.ts`);
+  const defaultLocal = await import(`@locale/${locale}/index.ts`);
   const message = defaultLocal.default?.message ?? {};
 
   setLoadLocalePool((loadLocalePool) => {

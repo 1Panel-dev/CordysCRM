@@ -63,6 +63,7 @@
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ClueListItem } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
@@ -82,11 +83,10 @@
   import ClueOverviewDrawer from './components/clueOverviewDrawer.vue';
   import ToCluePoolResultModel from './components/toCluePoolResultModel.vue';
 
-  import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue, updateClue } from '@/api/modules/clue';
+  import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue, updateClue } from '@/api/modules';
   import { filterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
 
   const Message = useMessage();

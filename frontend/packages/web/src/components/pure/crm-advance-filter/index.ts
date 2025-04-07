@@ -1,7 +1,6 @@
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
-
-import { useI18n } from '@/hooks/useI18n';
+import { useI18n } from '@lib/shared/hooks/useI18n';
 
 const { t } = useI18n();
 

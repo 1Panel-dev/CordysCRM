@@ -45,6 +45,10 @@ export default defineConfig({
   resolve: {
     alias: [
       {
+        find: '@locale',
+        replacement: resolve(__dirname, '../src/locale'),
+      },
+      {
         find: '@',
         replacement: resolve(__dirname, '../src'),
       },

@@ -39,6 +39,8 @@
   import { cloneDeep } from 'lodash-es';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import type { OpportunityItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -50,10 +52,8 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddRuleDrawer from './addRuleDrawer.vue';
 
-  import { deleteOpportunity, getOpportunityList, switchOpportunityStatus } from '@/api/modules/system/module';
-  import { useI18n } from '@/hooks/useI18n';
+  import { deleteOpportunity, getOpportunityRuleList, switchOpportunityStatus } from '@/api/modules';
   import useModal from '@/hooks/useModal';
-  import { characterLimit } from '@/utils';
 
   const { openModal } = useModal();
   const Message = useMessage();
@@ -276,7 +276,7 @@
     },
   ];
 
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getOpportunityList, {
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getOpportunityRuleList, {
     tableKey: TableKeyEnum.MODULE_OPPORTUNITY_RULE_TABLE,
     showSetting: true,
     columns,

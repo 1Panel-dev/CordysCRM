@@ -15,6 +15,7 @@
   import { DataTableRowKey } from 'naive-ui';
 
   import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CommonList } from '@lib/shared/models/common';
 
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -22,15 +23,14 @@
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
 
-  import { getCustomerOptions } from '@/api/modules/customer';
   import {
+    getCustomerOptions,
     getFieldClueList,
     getFieldContactList,
     getFieldCustomerList,
     getFieldOpportunityList,
     getFieldProductList,
-  } from '@/api/modules/system/module';
-  import { useI18n } from '@/hooks/useI18n';
+  } from '@/api/modules';
 
   import { InternalRowData, RowData } from 'naive-ui/es/data-table/src/interface';
 

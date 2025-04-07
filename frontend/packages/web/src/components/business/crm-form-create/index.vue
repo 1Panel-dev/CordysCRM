@@ -38,12 +38,12 @@
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
   import { FormCreateField, FormCreateFieldRule } from '@/components/business/crm-form-create/types';
 
-  import { useI18n } from '@/hooks/useI18n';
   import useUserStore from '@/store/modules/user';
 
   import { rules } from './config';

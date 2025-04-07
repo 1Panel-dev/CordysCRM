@@ -38,12 +38,11 @@
   import { cloneDeep } from 'lodash-es';
 
   import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import dataSourceTable from './dataSourceTable.vue';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   import { InternalRowData, RowData } from 'naive-ui/es/data-table/src/interface';
 

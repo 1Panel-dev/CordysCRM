@@ -144,6 +144,7 @@
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CluePoolForm, CluePoolItem, CluePoolParams } from '@lib/shared/models/system/module';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
@@ -151,8 +152,7 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
-  import { addCluePool, addCustomerPool, updateCluePool, updateCustomerPool } from '@/api/modules/system/module';
-  import { useI18n } from '@/hooks/useI18n';
+  import { addCluePool, addCustomerPool, updateCluePool, updateCustomerPool } from '@/api/modules';
 
   const { t } = useI18n();
   const Message = useMessage();

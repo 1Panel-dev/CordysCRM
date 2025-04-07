@@ -47,11 +47,11 @@
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
-  import { uploadTempFile } from '@/api/modules/system/module';
-  import { useI18n } from '@/hooks/useI18n';
+  import { uploadTempFile } from '@/api/modules';
 
   import { FormCreateField } from '../../types';
 

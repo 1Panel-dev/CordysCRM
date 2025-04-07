@@ -107,6 +107,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { AnnouncementSaveParams } from '@lib/shared/models/system/message';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -114,8 +115,7 @@
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
-  import { addAnnouncement, getAnnouncementDetail, updateAnnouncement } from '@/api/modules/system/message';
-  import { useI18n } from '@/hooks/useI18n';
+  import { addAnnouncement, getAnnouncementDetail, updateAnnouncement } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
 
   const appStore = useAppStore();

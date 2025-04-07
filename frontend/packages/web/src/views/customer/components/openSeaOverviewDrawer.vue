@@ -50,6 +50,7 @@
   import { useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -65,8 +66,7 @@
     deleteOpenSeaCustomer,
     getCustomerHeaderList,
     pickOpenSeaCustomer,
-  } from '@/api/modules/customer';
-  import { useI18n } from '@/hooks/useI18n';
+  } from '@/api/modules';
   import useModal from '@/hooks/useModal';
 
   const refreshKey = ref(0);

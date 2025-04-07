@@ -36,16 +36,17 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { NAlert } from 'naive-ui';
+  import { NAlert, useMessage } from 'naive-ui';
+
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import useLocale from '@lib/shared/locale/useLocale';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmUpload from '@/components/pure/crm-upload/index.vue';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
 
-  import { useI18n } from '@/hooks/useI18n';
-  import useLocale from '@/locale/useLocale';
-
-  const { currentLocale } = useLocale();
+  const { loading } = useMessage();
+  const { currentLocale } = useLocale(loading);
 
   const { t } = useI18n();
 

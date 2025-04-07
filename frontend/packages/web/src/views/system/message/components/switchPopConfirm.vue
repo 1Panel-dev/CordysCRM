@@ -26,9 +26,10 @@
   import { ref } from 'vue';
   import { NSwitch } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
 
-  import { useI18n } from '@/hooks/useI18n';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();

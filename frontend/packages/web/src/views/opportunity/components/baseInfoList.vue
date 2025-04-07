@@ -23,9 +23,9 @@
 <script lang="ts" setup>
   import { NTooltip } from 'naive-ui';
 
-  import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import { useI18n } from '@/hooks/useI18n';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
 
   const { t } = useI18n();
   const props = defineProps<{

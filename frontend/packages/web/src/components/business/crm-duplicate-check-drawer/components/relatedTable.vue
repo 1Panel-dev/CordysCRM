@@ -17,13 +17,12 @@
 </template>
 
 <script setup lang="ts">
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { CommonList } from '@lib/shared/models/common';
 
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
-
-  import { useI18n } from '@/hooks/useI18n';
 
   const props = defineProps<{
     api: (data: any) => Promise<CommonList<any>>;

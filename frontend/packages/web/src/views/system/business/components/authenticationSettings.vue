@@ -77,6 +77,8 @@
   import { cloneDeep } from 'lodash-es';
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { desensitize } from '@lib/shared/method';
   import type { AuthForm, AuthItem } from '@lib/shared/models/system/business';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -91,17 +93,9 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddOrEditAuthDrawer from './addOrEditAuthDrawer.vue';
 
-  import {
-    deleteAuth,
-    getAuthDetail,
-    getAuthList,
-    updateAuthName,
-    updateAuthStatus,
-  } from '@/api/modules/system/business';
+  import { deleteAuth, getAuthDetail, getAuthList, updateAuthName, updateAuthStatus } from '@/api/modules';
   import { authTypeFieldMap, defaultAuthForm } from '@/config/business';
-  import { useI18n } from '@/hooks/useI18n';
   import useModal from '@/hooks/useModal';
-  import { desensitize } from '@/utils';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();

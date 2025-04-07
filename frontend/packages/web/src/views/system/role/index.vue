@@ -67,6 +67,8 @@
   import { NButton, NIcon, NTooltip, TabPaneProps, useMessage } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getGenerateId } from '@lib/shared/method';
   import type { RoleItem } from '@lib/shared/models/system/role';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -80,10 +82,8 @@
   import memberTab from './components/memberTab.vue';
   import permissionTab from './components/permissionTab.vue';
 
-  import { deleteRole, getRoles, updateRole } from '@/api/modules/system/role';
-  import { useI18n } from '@/hooks/useI18n';
+  import { deleteRole, getRoles, updateRole } from '@/api/modules';
   import useModal from '@/hooks/useModal';
-  import { getGenerateId } from '@/utils';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();

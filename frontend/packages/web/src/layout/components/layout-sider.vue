@@ -79,16 +79,16 @@
   import { NDivider, NLayoutSider, NMenu, NPopover, NTag, NText } from 'naive-ui';
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { mapTree } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
 
-  import { useI18n } from '@/hooks/useI18n';
   import useMenuTree from '@/hooks/useMenuTree';
   import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
-  import { mapTree } from '@/utils';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -234,5 +234,4 @@
     color: var(--text-n1);
     line-height: 22px;
   }
-
 </style>
