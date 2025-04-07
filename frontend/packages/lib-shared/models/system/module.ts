@@ -5,15 +5,15 @@ import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
 
 // 模块首页-导航模块列表
 export interface ModuleNavBaseInfoItem {
-  id: string;
-  createUser: string;
-  updateUser: string;
-  createTime: number;
-  updateTime: number;
-  organizationId: string;
+  id?: string;
+  createUser?: string;
+  updateUser?: string;
+  createTime?: number;
+  updateTime?: number;
+  organizationId?: string;
   moduleKey: string; // 模块KEY
   enable: boolean;
-  pos: number; // 自定义排序
+  pos?: number; // 自定义排序
 }
 
 export interface ModuleNavItem extends ModuleNavBaseInfoItem {

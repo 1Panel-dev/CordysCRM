@@ -36,7 +36,7 @@
           </n-button>
         </template>
       </slot>
-      <n-divider v-if="list[index + 1] && !props.notShowDivider" class="!mx-[8px]" vertical />
+      <n-divider v-if="buttonGroupList[index + 1] && !props.notShowDivider" class="!mx-[8px]" vertical />
     </div>
   </div>
 </template>

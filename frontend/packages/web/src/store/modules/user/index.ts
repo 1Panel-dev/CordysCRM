@@ -13,8 +13,7 @@ import { isLogin, login, signout } from '@/api/modules/system/login';
 import useDiscreteApi from '@/hooks/useDiscreteApi';
 import useUser from '@/hooks/useUser';
 import router from '@/router';
-
-import { AppRouteEnum } from '@/enums/routeEnum';
+import { getFirstRouteNameByPermission } from '@/utils/permission';
 
 import useAppStore from '../app';
 
@@ -157,9 +156,8 @@ const useUserStore = defineStore('user', {
       const isLoginStatus = await this.isLogin();
       if (isLoginStatus) {
         if (isLoginPage()) {
-          // 当前页面为登录页面，且已经登录，跳转到首页
-          // TODO lmy 跳转到有权限的第一个路由名
-          await router.push({ name: AppRouteEnum.SYSTEM });
+          const currentRouteName = getFirstRouteNameByPermission(router.getRoutes());
+          await router.push({ name: currentRouteName });
           return;
         }
         appStore.connectSystemMessageSSE(this.showSystemNotify);

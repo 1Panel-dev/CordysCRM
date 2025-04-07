@@ -139,9 +139,11 @@
   // import { GetLoginLogoUrl } from '@/api/requrls/setting/config';
   import { getThirdTypeList } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
+  import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
   import useAppStore from '@/store/modules/app';
   // import useModal from '@/hooks/useModal';
   import useUserStore from '@/store/modules/user';
+  import { routerNameHasPermission } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -231,8 +233,13 @@
           loginConfig.value.username = rememberPassword ? username : '';
           loginConfig.value.password = rememberPassword ? password : '';
           const { redirect, ...othersQuery } = router.currentRoute.value.query;
+          const redirectHasPermission =
+            redirect &&
+            ![NO_RESOURCE_ROUTE_NAME].includes(redirect as string) &&
+            routerNameHasPermission(redirect as string, router.getRoutes());
+
           router.push({
-            name: (redirect as string) || AppRouteEnum.SYSTEM,
+            name: redirectHasPermission ? (redirect as string) : AppRouteEnum.SYSTEM,
             query: {
               ...othersQuery,
             },

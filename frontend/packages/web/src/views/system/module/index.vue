@@ -116,17 +116,20 @@
   // 模块排序
   const onDragEnd = async (event: any) => {
     const { newIndex, oldIndex } = event;
-    try {
-      await moduleNavListSort({
-        dragModuleId: moduleNavList.value[newIndex].id,
-        end: newIndex + 1,
-        start: oldIndex + 1,
-      });
-      Message.success(t('common.operationSuccess'));
-      initModuleNavList();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
+    const dragModuleId = moduleNavList.value[newIndex]?.id;
+    if (dragModuleId) {
+      try {
+        await moduleNavListSort({
+          dragModuleId,
+          end: newIndex + 1,
+          start: oldIndex + 1,
+        });
+        Message.success(t('common.operationSuccess'));
+        initModuleNavList();
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
     }
   };
   // 改变icon

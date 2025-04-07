@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { cloneDeep } from 'lodash-es';
 
 import { CloseMessageUrl, SubscribeMessageUrl } from '@lib/shared/api/requrls/system/message';
+import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { getSSE } from '@lib/shared/method/index';
 import { setLocalStorage } from '@lib/shared/method/local-storage';
@@ -33,6 +34,29 @@ const defaultPlatformConfig = {
   helpDoc: 'https://metersphere.io/docs/v3.x/',
 };
 
+const defaultModuleConfig = [
+  {
+    moduleKey: ModuleConfigEnum.HOME,
+    enable: true,
+  },
+  {
+    moduleKey: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
+    enable: true,
+  },
+  {
+    moduleKey: ModuleConfigEnum.CLUE_MANAGEMENT,
+    enable: true,
+  },
+  {
+    moduleKey: ModuleConfigEnum.BUSINESS_MANAGEMENT,
+    enable: true,
+  },
+  {
+    moduleKey: ModuleConfigEnum.PRODUCT_MANAGEMENT,
+    enable: true,
+  },
+];
+
 const useAppStore = defineStore('app', {
   state: (): AppState => ({
     menuCollapsed: false,
@@ -54,7 +78,7 @@ const useAppStore = defineStore('app', {
       ...defaultPlatformConfig,
     },
     orgId: '',
-    moduleConfigList: [],
+    moduleConfigList: cloneDeep(defaultModuleConfig),
     currentTopMenu: {} as RouteRecordRaw,
     topMenus: [],
     messageInfo: {
@@ -63,7 +87,7 @@ const useAppStore = defineStore('app', {
       announcementDTOList: [],
     },
     eventSource: null,
-    menuIconStatus: true,
+    menuIconStatus: {},
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -89,7 +113,8 @@ const useAppStore = defineStore('app', {
       return state.currentTopMenu;
     },
     getMenuIconStatus(state: AppState) {
-      return state.menuIconStatus;
+      const userId = useUserStore().userInfo.id;
+      return state.menuIconStatus[userId] ?? true;
     },
   },
   actions: {
@@ -199,7 +224,7 @@ const useAppStore = defineStore('app', {
         clientId: userStore.clientIdRandomId,
         userId: userStore.userInfo.id,
       });
-      this.eventSource.close();
+      this.eventSource?.close();
       this.eventSource = null;
     },
     /**
@@ -207,14 +232,12 @@ const useAppStore = defineStore('app', {
      */
     setMenuIconStatus(val: boolean) {
       const userStore = useUserStore();
-      const storageData = JSON.parse(localStorage.getItem('MENU_ICON_SHOW') || '{}');
-
-      storageData[userStore.userInfo.id] = val;
-      this.menuIconStatus = val;
-      localStorage.setItem('MENU_ICON_SHOW', JSON.stringify(storageData));
+      this.menuIconStatus[userStore.userInfo.id] = val;
     },
   },
-  persist: {},
+  persist: {
+    paths: ['menuIconStatus'],
+  },
 });
 
 export default useAppStore;

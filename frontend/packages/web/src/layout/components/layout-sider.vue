@@ -166,13 +166,13 @@
             label: t(e?.meta?.locale ?? ''),
             key: e.name,
             children: menuChildren.length ? menuChildren : undefined,
-            icon: appStore.menuIconStatus && e?.meta?.icon ? renderIcon(e?.meta?.icon) : null,
+            icon: appStore.getMenuIconStatus && e?.meta?.icon ? renderIcon(e?.meta?.icon) : null,
           };
     }) as unknown as MenuOption[];
   });
 
   onBeforeMount(() => {
-    if (router.currentRoute.value.meta.isTopMenu) {
+    if (router.currentRoute.value.meta.isTopMenu || router.currentRoute.value.meta.hideChildrenInMenu) {
       menuValue.value = router.currentRoute.value.matched[0].name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
     } else {
       menuValue.value = router.currentRoute.value.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
