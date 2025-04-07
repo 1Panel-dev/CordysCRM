@@ -20,7 +20,9 @@ import {
   cancelCustomerFollowPlan,
   deleteCustomerFollowPlan,
   deleteCustomerFollowRecord,
+  getCustomerFollowPlanFormConfig,
   getCustomerFollowPlanList,
+  getCustomerFollowRecordFormConfig,
   getCustomerFollowRecordList,
   GetCustomerOpenSeaFollowRecordList,
 } from '@/api/modules/customer/index';
@@ -32,7 +34,6 @@ import {
   getOptFollowRecordList,
 } from '@/api/modules/opportunity';
 import { getPersonalFollow } from '@/api/modules/system/business';
-import { getFormDesignConfig } from '@/api/modules/system/module';
 import { useI18n } from '@/hooks/useI18n';
 
 export type followEnumType =
@@ -266,8 +267,12 @@ export default function useFollowApi(followProps: {
 
   async function initFollowFormConfig() {
     try {
-      const followKey = type.value === 'followRecord' ? 'record' : 'plan';
-      const res = await getFormDesignConfig(followKey);
+      let res;
+      if (type.value === 'followRecord') {
+        res = await getCustomerFollowRecordFormConfig();
+      } else {
+        res = await getCustomerFollowPlanFormConfig();
+      }
       fieldList.value = res.fields;
     } catch (error) {
       // eslint-disable-next-line no-console
