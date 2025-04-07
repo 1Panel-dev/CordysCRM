@@ -155,6 +155,9 @@ VALUES ('1076902920142897', 'org_admin', 'PRODUCT_MANAGEMENT:UPDATE');
 INSERT INTO sys_role_permission
     (id, role_id, permission_id)
 VALUES ('1076902920142898', 'org_admin', 'PRODUCT_MANAGEMENT:DELETE');
+INSERT INTO sys_role_permission
+(id, role_id, permission_id)
+VALUES ('1076902920142899', 'org_admin', 'OPERATION_LOG:READ');
 
 -- 销售经理
 INSERT INTO sys_role_permission
