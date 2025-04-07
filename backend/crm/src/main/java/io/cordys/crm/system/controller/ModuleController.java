@@ -28,7 +28,6 @@ public class ModuleController {
 
 	@PostMapping("/list")
 	@Operation(summary = "获取模块设置列表")
-	@RequiresPermissions(PermissionConstants.MODULE_SETTING_READ)
 	public List<Module> getModuleList(@Validated @RequestBody ModuleRequest request) {
 		return moduleService.getModuleList(request);
 	}

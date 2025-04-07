@@ -53,8 +53,6 @@ public class ModuleControllerTests extends BaseTest {
 		List<ModuleDTO> modules = getResultDataArray(mvcResult, ModuleDTO.class);
 		assert !modules.isEmpty();
 		String param = modules.getFirst().getId();
-		// permission check
-		requestPostPermissionTest(PermissionConstants.MODULE_SETTING_READ, LIST_ALL, request);
 		this.requestGetWithOk(SWITCH + param);
 		// permission check
 		requestGetPermissionTest(PermissionConstants.MODULE_SETTING_UPDATE, SWITCH + param);
