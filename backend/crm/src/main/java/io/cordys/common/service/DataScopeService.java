@@ -5,15 +5,19 @@ import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.RoleDataScopeDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.response.result.CrmHttpResultCode;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.system.domain.OrganizationUser;
-import io.cordys.crm.system.domain.Role;
+
 import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.RoleService;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.security.SessionUser;
+import io.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -67,7 +71,6 @@ public class DataScopeService {
      * @param orgId
      * @return
      */
-//    @Cacheable(value = "dept_data_permission_cache", key = "#userId + '_' + #orgId") todo 缓存
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId) {
         DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
 
@@ -77,7 +80,16 @@ public class DataScopeService {
             return deptDataPermission;
         }
 
-        Map<String, List<Role>> dataScopeRoleMap = getDataScopeRoleMap(userId);
+        // 从 sessionUser 中获取角色数据权限
+        Map<String, List<RoleDataScopeDTO>> dataScopeRoleMap;
+        SessionUser user = SessionUtils.getUser();
+        if (user != null) {
+            dataScopeRoleMap = user.getRoles()
+                    .stream()
+                    .collect(Collectors.groupingBy(RoleDataScopeDTO::getDataScope, Collectors.toList()));
+        } else {
+            dataScopeRoleMap = getDataScopeRoleMap(userId);
+        }
 
         if (CollectionUtils.isNotEmpty(dataScopeRoleMap.get(RoleDataScope.ALL.name()))) {
             // 可以查看所有数据
@@ -85,8 +97,8 @@ public class DataScopeService {
             return deptDataPermission;
         }
 
-        List<Role> userDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_AND_CHILD.name());
-        List<Role> customDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_CUSTOM.name());
+        List<RoleDataScopeDTO> userDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_AND_CHILD.name());
+        List<RoleDataScopeDTO> customDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_CUSTOM.name());
 
         if (CollectionUtils.isEmpty(userDeptRoles)
                 && CollectionUtils.isEmpty(customDeptRoles)) {
@@ -98,10 +110,10 @@ public class DataScopeService {
         return getDeptDataPermissionForDept(userId, orgId, dataScopeRoleMap);
     }
 
-    private DeptDataPermissionDTO getDeptDataPermissionForDept(String userId, String orgId, Map<String, List<Role>> dataScopeRoleMap) {
+    private DeptDataPermissionDTO getDeptDataPermissionForDept(String userId, String orgId, Map<String, List<RoleDataScopeDTO>> dataScopeRoleMap) {
         DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
-        List<Role> userDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_AND_CHILD.name());
-        List<Role> customDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_CUSTOM.name());
+        List<RoleDataScopeDTO> userDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_AND_CHILD.name());
+        List<RoleDataScopeDTO> customDeptRoles = dataScopeRoleMap.get(RoleDataScope.DEPT_CUSTOM.name());
 
         // 查询部门树
         List<BaseTreeNode> tree = departmentService.getTree(orgId);
@@ -116,7 +128,7 @@ public class DataScopeService {
         if (CollectionUtils.isNotEmpty(customDeptRoles)) {
             // 查看指定部门及其子部门数据
             List<String> customDeptRolesIds = customDeptRoles.stream()
-                    .map(Role::getId)
+                    .map(RoleDataScopeDTO::getId)
                     .toList();
             List<String> parentDeptIds = roleService.getDeptIdsByRoleIds(customDeptRolesIds);
             List<String> deptIds = getDeptIdsWithChild(tree, new HashSet<>(parentDeptIds));
@@ -126,7 +138,6 @@ public class DataScopeService {
     }
 
     /**
-     * todo 缓存
      * @param userId
      * @param orgId
      * @return
@@ -135,7 +146,7 @@ public class DataScopeService {
         return getDeptDataPermissionForDept(userId, orgId, getDataScopeRoleMap(userId));
     }
 
-    private Map<String, List<Role>> getDataScopeRoleMap(String userId) {
+    private Map<String, List<RoleDataScopeDTO>> getDataScopeRoleMap(String userId) {
         List<String> roleIds = roleService.getUserRolesByUserId(userId)
                 .stream()
                 .map(UserRole::getRoleId)
@@ -143,7 +154,8 @@ public class DataScopeService {
 
         return roleService.getByIds(roleIds)
                 .stream()
-                .collect(Collectors.groupingBy(Role::getDataScope, Collectors.toList()));
+                .map(role -> BeanUtils.copyBean(new RoleDataScopeDTO(), role))
+                .collect(Collectors.groupingBy(RoleDataScopeDTO::getDataScope, Collectors.toList()));
     }
 
     private OrganizationUser getOrganizationUser(String userId, String orgId) {

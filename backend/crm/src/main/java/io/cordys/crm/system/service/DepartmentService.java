@@ -32,6 +32,8 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,6 +61,7 @@ public class DepartmentService extends MoveNodeService {
      *
      * @return List<BaseTreeNode>
      */
+    @Cacheable(value = "dept_tree_cache", key = "#orgId")
     public List<BaseTreeNode> getTree(String orgId) {
         List<BaseTreeNode> departmentList = extDepartmentMapper.selectTreeNode(orgId);
         return BaseTreeNode.buildTree(departmentList);
@@ -71,6 +74,7 @@ public class DepartmentService extends MoveNodeService {
      * @param orgId
      */
     @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.ADD)
+    @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
     public Department addDepartment(DepartmentAddRequest request, String orgId, String userId) {
         //同一层级部门名称唯一
         checkDepartmentName(request.getName(), request.getParentId(), orgId);
@@ -216,6 +220,7 @@ public class DepartmentService extends MoveNodeService {
      * @param id
      */
     @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.DELETE, resourceId = "{#id}")
+    @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
     public void delete(String id, String orgId) {
         Department department = checkDepartment(id);
         if (deleteCheck(id, orgId)) {
@@ -382,6 +387,7 @@ public class DepartmentService extends MoveNodeService {
      * @param operatorId
      * @param orgId
      */
+    @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
     public void sort(NodeMoveRequest request, String operatorId, String orgId) {
         NodeSortDTO nodeSortDTO = super.getNodeSortDTO(request,
                 extDepartmentMapper::selectBaseTreeById,

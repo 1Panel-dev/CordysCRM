@@ -1,6 +1,6 @@
 package io.cordys.crm.system.service;
 
-import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.RoleDataScopeDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.request.LoginRequest;
 import io.cordys.common.uid.IDGenerator;
@@ -63,7 +63,7 @@ public class UserLoginService {
         }
 
         List<String> roleIds = roleService.getRoleIdsByUserId(userDTO.getId());
-        List<OptionDTO> roleOptions = roleService.getRoleOptions(roleIds);
+        List<RoleDataScopeDTO> roleOptions = roleService.getRoleOptions(roleIds);
         // 设置角色信息，供前端展示
         userDTO.setRoles(roleOptions);
         // 设置权限

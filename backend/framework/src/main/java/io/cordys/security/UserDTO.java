@@ -1,6 +1,6 @@
 package io.cordys.security;
 
-import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.RoleDataScopeDTO;
 import io.cordys.common.groups.Created;
 import io.cordys.common.groups.Updated;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -77,7 +77,7 @@ public class UserDTO implements java.io.Serializable {
     private Set<String> permissionIds;
 
     @Schema(description = "权限ID")
-    private List<OptionDTO> roles;
+    private List<RoleDataScopeDTO> roles;
 
     @Schema(description = "所在的组织ID")
     private Set<String> organizationIds;
