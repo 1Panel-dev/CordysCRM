@@ -67,7 +67,10 @@ public class AnnouncementService {
         Set<String> userSet = new HashSet<>();
         AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = new AnnouncementReceiveTypeDTO();
         if (CollectionUtils.isNotEmpty(request.getDeptIds())) {
-            userSet.addAll(extDepartmentMapper.getUserIdsByDeptIds(request.getDeptIds()));
+            List<String> depIds = extDepartmentMapper.selectChildrenByIds(request.getDeptIds());
+            if (CollectionUtils.isNotEmpty(depIds)){
+                userSet.addAll(extDepartmentMapper.getUserIdsByDeptIds(depIds));
+            }
             announcementReceiveTypeDTO.setDeptIds(request.getDeptIds());
         }
         if (CollectionUtils.isNotEmpty(request.getUserIds())) {
