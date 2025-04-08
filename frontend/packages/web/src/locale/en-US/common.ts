@@ -115,6 +115,8 @@ export default {
   'common.more': 'More',
   'common.recycle': 'Recycle Bin',
   'common.new': 'New',
+  'common.modify': 'Modify',
+  'common.sync': 'Sync',
   'common.newSuccess': 'Added successfully',
   'common.publish': 'Publish',
   'common.publishSuccessfully': 'Published successfully',

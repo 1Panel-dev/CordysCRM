@@ -1,0 +1,61 @@
+<template>
+  <CrmCard hide-footer :special-height="160">
+    <CrmTable
+      v-bind="propsRes"
+      @page-change="propsEvent.pageChange"
+      @page-size-change="propsEvent.pageSizeChange"
+      @sorter-change="propsEvent.sorterChange"
+      @filter-change="propsEvent.filterChange"
+    />
+  </CrmCard>
+</template>
+
+<script setup lang="ts">
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { OperationLogParams } from '@lib/shared/models/system/log';
+
+  import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmTable from '@/components/pure/crm-table/index.vue';
+  import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
+  import useTable from '@/components/pure/crm-table/useTable';
+
+  import { loginLogList } from '@/api/modules/system/log';
+
+  const { t } = useI18n();
+
+  const columns: CrmDataTableColumn[] = [
+    {
+      title: t('log.operator'),
+      key: 'operatorName',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('log.loginLocation'),
+      key: 'loginAddress',
+      width: 100,
+    },
+    {
+      title: t('log.loginTime'),
+      key: 'createTime',
+      width: 100,
+      sortOrder: false,
+      sorter: true,
+    },
+  ];
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(loginLogList, {
+    showSetting: false,
+    columns,
+  });
+
+  async function searchData(params: OperationLogParams) {
+    setLoadListParams({ ...params });
+    await loadList();
+  }
+
+  defineExpose({
+    searchData,
+  });
+</script>

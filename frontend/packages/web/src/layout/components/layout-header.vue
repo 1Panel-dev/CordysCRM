@@ -25,7 +25,13 @@
         </n-breadcrumb-item>
       </n-breadcrumb> -->
       <div class="flex items-center gap-[8px]">
-        <CrmTag theme="light" type="primary" class="cursor-pointer" @click="showDuplicateCheckDrawer = true">
+        <CrmTag
+          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT_READ', 'CLUE_MANAGEMENT_READ'])"
+          theme="light"
+          type="primary"
+          class="cursor-pointer"
+          @click="showDuplicateCheckDrawer = true"
+        >
           {{ t('workbench.duplicateCheck') }}
         </CrmTag>
         <n-popselect
@@ -67,6 +73,7 @@
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
   import useAppStore from '@/store/modules/app';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     logo?: string;

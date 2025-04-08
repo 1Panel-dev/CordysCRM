@@ -115,6 +115,8 @@ export default {
   'common.more': '更多',
   'common.recycle': '回收站',
   'common.new': '新增',
+  'common.modify': '修改',
+  'common.sync': '同步',
   'common.newSuccess': '新增成功',
   'common.publish': '发布',
   'common.publishSuccessfully': '发布成功',

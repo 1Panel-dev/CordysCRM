@@ -26,3 +26,13 @@ export enum SystemMessageStatusEnum {
   READ = 'READ', // 已读
   UNREAD = 'UNREAD', // 未读
 }
+
+export enum OperationTypeEnum {
+  UPDATE = 'UPDATE',
+  ADD = 'ADD',
+  DELETE = 'DELETE',
+  IMPORT = 'IMPORT',
+  EXPORT = 'EXPORT',
+  SYNC = 'SYNC',
+  MOVE_TO_CUSTOMER_POOL = 'MOVE_TO_CUSTOMER_POOL',
+}

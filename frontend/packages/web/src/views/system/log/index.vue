@@ -1,7 +1,234 @@
 <template>
-  <div> log </div>
+  <div class="h-full min-w-[1200px]">
+    <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
+      <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+    </CrmCard>
+
+    <CrmCard hide-footer auto-height class="form-card mb-[16px]">
+      <n-form ref="formRef" label-placement="left" inline label-width="auto" :model="form" class="flex-wrap">
+        <n-form-item :label="t('common.operator')" path="operator">
+          <CrmUserSelect
+            v-model:value="form.operator"
+            value-field="id"
+            label-field="name"
+            mode="remote"
+            class="w-[305px]"
+            :fetch-api="getUserOptions"
+            filterable
+            clearable
+          />
+        </n-form-item>
+        <n-form-item :label="t('log.operationTime')" path="time">
+          <n-date-picker v-model:value="form.time" type="datetimerange" :is-date-disabled="dataDisabled" />
+        </n-form-item>
+        <template v-if="activeTab === 'operation'">
+          <n-form-item :label="t('log.operationType')" path="type">
+            <n-select
+              v-model:value="form.type"
+              class="w-[305px]"
+              :options="logTypeOption"
+              :placeholder="t('common.pleaseSelect')"
+              clearable
+            />
+          </n-form-item>
+          <n-form-item :label="t('log.operationScope')" path="module">
+            <n-select
+              v-model:value="form.module"
+              class="w-[305px]"
+              :options="[]"
+              :placeholder="t('common.pleaseSelect')"
+              clearable
+            />
+          </n-form-item>
+        </template>
+        <n-form-item>
+          <n-button ghost class="mr-[12px]" type="primary" @click="searchData">
+            {{ t('advanceFilter.filter') }}
+          </n-button>
+          <n-button type="default" class="outline--secondary" @click="handleReset">
+            {{ t('common.reset') }}
+          </n-button>
+        </n-form-item>
+      </n-form>
+    </CrmCard>
+
+    <CrmCard v-if="activeTab === 'operation'" hide-footer :special-height="208">
+      <CrmTable
+        v-bind="propsRes"
+        @page-change="propsEvent.pageChange"
+        @page-size-change="propsEvent.pageSizeChange"
+        @sorter-change="propsEvent.sorterChange"
+        @filter-change="propsEvent.filterChange"
+      />
+    </CrmCard>
+    <LoginLog v-if="activeTab === 'login'" ref="loginLogRef" />
+  </div>
+
+  <CrmDrawer v-model:show="showDetailDrawer" :footer="false" :show-mask="false" :title="t('log.detail')" :width="680">
+    <LogDetailItem :detail="activeLogDetail" />
+  </CrmDrawer>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+  import { NButton, NDatePicker, NForm, NFormItem, NSelect } from 'naive-ui';
+  import dayjs from 'dayjs';
 
-<style lang="less" scoped></style>
+  import { OperationTypeEnum } from '@lib/shared/enums/systemEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { OperationLogDetail, OperationLogItem, OperationLogParams } from '@lib/shared/models/system/log';
+
+  import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmTable from '@/components/pure/crm-table/index.vue';
+  import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
+  import useTable from '@/components/pure/crm-table/useTable';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
+  import LogDetailItem from './components/logDetailItem.vue';
+  import LoginLog from './components/loginLog.vue';
+
+  import { getUserOptions } from '@/api/modules';
+  import { operationLogDetail, operationLogList } from '@/api/modules/system/log';
+  import { logTypeOption } from '@/config/system';
+
+  const { t } = useI18n();
+
+  const activeTab = ref('operation');
+  const tabList = [
+    {
+      name: 'operation',
+      tab: t('log.operationLog'),
+    },
+    {
+      name: 'login',
+      tab: t('log.loginLog'),
+    },
+  ];
+
+  // 查询条件
+  function dataDisabled(ts: number) {
+    const currentDate = new Date();
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(currentDate.getMonth() - 6);
+    const selectedDate = new Date(ts);
+    // 只能查询过去半年的
+    return selectedDate < sixMonthsAgo || selectedDate > currentDate;
+  }
+  const defaultForm = {
+    type: null,
+    module: null,
+    operator: null,
+    time: [dayjs().subtract(1, 'M').hour(0).minute(0).second(1).valueOf(), dayjs().valueOf()],
+  };
+  const form = ref<OperationLogParams>({
+    ...defaultForm,
+  });
+
+  // 详情
+  const activeLogDetail = ref<OperationLogDetail>();
+  const showDetailDrawer = ref(false);
+
+  async function getLogDetail(id: string) {
+    try {
+      activeLogDetail.value = await operationLogDetail(id);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }
+
+  const columns: CrmDataTableColumn[] = [
+    {
+      title: t('common.operator'),
+      key: 'operatorName',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: OperationLogItem) =>
+        h(
+          CrmTableButton,
+          {
+            onClick: async () => {
+              activeLogDetail.value = row;
+              if (row.type === OperationTypeEnum.UPDATE) {
+                await getLogDetail(row.id);
+              }
+              if (!showDetailDrawer.value) {
+                showDetailDrawer.value = true;
+              }
+            },
+          },
+          { default: () => row.operatorName, trigger: () => row.operatorName }
+        ),
+    },
+    {
+      title: t('log.operationScope'),
+      key: 'module',
+      width: 100,
+    },
+    {
+      title: t('log.operationType'),
+      key: 'type',
+      width: 100,
+      render: (row) => {
+        const step = logTypeOption.find((e) => e.value === row.type);
+        return step ? step.label : '-';
+      },
+    },
+    {
+      title: t('role.operator'),
+      key: 'resourceName',
+      width: 100,
+    },
+    {
+      title: t('log.operationTime'),
+      key: 'createTime',
+      width: 100,
+      sortOrder: false,
+      sorter: true,
+    },
+  ];
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(operationLogList, {
+    showSetting: false,
+    columns,
+  });
+
+  const loginLogRef = ref<InstanceType<typeof LoginLog>>();
+  async function searchData() {
+    const { time, ...otherForm } = form.value;
+    if (activeTab.value === 'operation') {
+      setLoadListParams({ ...otherForm, startTime: time[0], endTime: time[1] });
+      await loadList();
+    } else {
+      nextTick(() => {
+        loginLogRef.value?.searchData({ operator: otherForm.operator, startTime: time[0], endTime: time[1] });
+      });
+    }
+  }
+
+  function handleReset() {
+    form.value = { ...defaultForm };
+    searchData();
+  }
+
+  watch(
+    () => activeTab.value,
+    () => {
+      searchData();
+    },
+    { immediate: true }
+  );
+</script>
+
+<style lang="less" scoped>
+  .form-card {
+    :deep(.n-card__content) {
+      padding: 24px 24px 8px;
+    }
+  }
+  :deep(.n-form-item-feedback-wrapper) {
+    min-height: 16px;
+  }
+</style>

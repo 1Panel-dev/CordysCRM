@@ -65,7 +65,7 @@ const system: AppRouteRecordRaw = {
       component: () => import('@/views/system/log/index.vue'),
       meta: {
         locale: 'menu.settings.log',
-        permissions: [],
+        permissions: ['OPERATION_LOG:READ'],
       },
     },
   ],
