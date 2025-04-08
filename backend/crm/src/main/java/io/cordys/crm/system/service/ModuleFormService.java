@@ -320,6 +320,7 @@ public class ModuleFormService {
 					field.setId(controlKeyPreMap.containsKey(field.getInternalKey()) ? controlKeyPreMap.get(field.getInternalKey()) : IDGenerator.nextStr());
 					field.setType(initField.get("type").toString());
 					field.setName(initField.get("name").toString());
+					field.setMobile((Boolean) initField.getOrDefault("mobile", false));
 					field.setPos(pos.getAndIncrement());
 					field.setCreateTime(System.currentTimeMillis());
 					field.setCreateUser(InternalUser.ADMIN.getValue());

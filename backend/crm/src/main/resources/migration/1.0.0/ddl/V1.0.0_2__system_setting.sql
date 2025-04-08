@@ -483,6 +483,7 @@ CREATE TABLE sys_module_field
     `internal_key` VARCHAR(255) COMMENT '字段内置Key',
     `name`         VARCHAR(255) NOT NULL   COMMENT '名称' ,
     `type`         VARCHAR(20) NOT NULL COMMENT '类型',
+    `mobile`       BIT(1)      NOT NULL DEFAULT 0 COMMENT '是否移动端' ,
     `pos`          BIGINT      NOT NULL COMMENT '排序',
     `create_user`  VARCHAR(32) NOT NULL COMMENT '创建人',
     `create_time`  BIGINT      NOT NULL COMMENT '创建时间',
@@ -495,6 +496,7 @@ CREATE TABLE sys_module_field
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_form_id_internal_key ON sys_module_field (form_id, internal_key);
+CREATE INDEX idx_mobile ON sys_module_field(mobile ASC);
 
 CREATE TABLE sys_module_field_blob
 (

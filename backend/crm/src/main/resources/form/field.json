@@ -188,7 +188,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "线索进度",
@@ -262,7 +263,8 @@
       "showLabel": true,
       "readable": true,
       "editable": true,
-      "fieldWidth": 0.5
+      "fieldWidth": 0.5,
+      "mobile": true
     },
     {
       "name": "联系人电话",
@@ -271,7 +273,8 @@
       "showLabel": true,
       "readable": true,
       "editable": true,
-      "fieldWidth": 0.5
+      "fieldWidth": 0.5,
+      "mobile": true
     },
     {
       "name": "地址信息",
@@ -342,7 +345,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "客户名称",
@@ -356,7 +360,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "商机来源",
@@ -402,7 +407,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "预计结束",
@@ -443,7 +449,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "客户标签",
@@ -613,7 +620,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "姓名",
@@ -625,7 +633,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "邮箱",
@@ -637,7 +646,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "手机号",
@@ -649,7 +659,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "负责人",

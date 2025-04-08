@@ -51,6 +51,7 @@ public class ModuleFieldControllerTests extends BaseTest {
 		field.setId(FIELD_ID);
 		field.setFormId("form-test-1");
 		field.setName("dep-test-1");
+		field.setMobile(false);
 		field.setType(FieldType.DEPARTMENT.name());
 		field.setPos(1L);
 		field.setCreateUser("admin");
