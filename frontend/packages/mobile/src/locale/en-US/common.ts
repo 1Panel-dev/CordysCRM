@@ -45,4 +45,5 @@ export default {
   'common.planClue': 'Follow-up plan',
   'common.convertToCustomer': 'Convert to customer',
   'common.convertToOpportunity': 'Convert to opportunity',
+  'common.confirm': 'Confirm',
 };

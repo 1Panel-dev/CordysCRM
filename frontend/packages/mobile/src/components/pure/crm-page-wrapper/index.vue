@@ -1,6 +1,6 @@
 <template>
   <div class="crm-page-wrapper">
-    <CrmPageHeader :title="props.title" :back-route-name="props.backRouteName" />
+    <CrmPageHeader :title="props.title" :hide-back="props.hideBack" :back-route-name="props.backRouteName" />
     <div class="crm-page-content">
       <slot />
     </div>
@@ -15,6 +15,7 @@
 
   const props = defineProps<{
     title: string;
+    hideBack?: boolean;
     backRouteName?: string;
   }>();
 </script>

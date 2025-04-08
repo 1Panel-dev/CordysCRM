@@ -4,7 +4,6 @@ import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEn
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { getCityPath, safeFractionConvert } from '@lib/shared/method';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
-import type { FormConfig } from '@lib/shared/models/system/module';
 
 import type { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
 
@@ -17,50 +16,30 @@ import {
 import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
 export interface FormCreateApiProps {
-  sourceId?: Ref<string | undefined>;
-  formKey: Ref<FormDesignKeyEnum>;
-  needInitDetail?: Ref<boolean>;
-  initialSourceName?: Ref<string | undefined>; // 特殊字段初始化需要的资源名称
-  otherSaveParams?: Ref<Record<string, any> | undefined>;
+  sourceId?: string;
+  formKey: FormDesignKeyEnum;
+  needInitDetail?: boolean;
+  initialSourceName?: string; // 特殊字段初始化需要的资源名称
+  otherSaveParams?: Record<string, any>;
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
   const { t } = useI18n();
 
-  const sourceName = ref(props.initialSourceName?.value); // 资源名称
+  const sourceName = ref(props.initialSourceName); // 资源名称
   const collaborationType = ref<CollaborationType>(); // 协作类型-客户独有
   const specialInitialOptions = ref<Record<string, any>[]>([]); // 特殊字段的初始化选项列表
   const descriptions = ref<CrmDescriptionItem[]>([]); // 表单详情描述列表
   const fieldList = ref<FormCreateField[]>([]); // 表单字段列表
   const loading = ref(false);
   const unsaved = ref(false);
-  const formConfig = ref<FormConfig>({
-    layout: 1,
-    labelPos: 'top',
-    inputWidth: 'custom',
-    optBtnContent: [
-      {
-        text: t('common.save'),
-        enable: true,
-      },
-      {
-        text: t('common.saveAndContinue'),
-        enable: false,
-      },
-      {
-        text: t('common.cancel'),
-        enable: true,
-      },
-    ],
-    optBtnPos: 'flex-row',
-  }); // 表单属性配置
   const formDetail = ref<Record<string, any>>({});
 
   async function initFormDescription() {
     try {
-      const asyncApi = getFormDetailApiMap[props.formKey.value];
-      if (!asyncApi || !props.sourceId?.value) return;
-      const form = await asyncApi(props.sourceId?.value);
+      const asyncApi = getFormDetailApiMap[props.formKey];
+      if (!asyncApi || !props.sourceId) return;
+      const form = await asyncApi(props.sourceId);
       descriptions.value = [];
       collaborationType.value = form.collaborationType;
       fieldList.value.forEach((item) => {
@@ -123,9 +102,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
   async function initFormDetail() {
     try {
-      const asyncApi = getFormDetailApiMap[props.formKey.value];
-      if (!asyncApi || !props.sourceId?.value) return;
-      const res = await asyncApi(props.sourceId?.value);
+      const asyncApi = getFormDetailApiMap[props.formKey];
+      if (!asyncApi || !props.sourceId) return;
+      const res = await asyncApi(props.sourceId);
       collaborationType.value = res.collaborationType;
       sourceName.value = res.name;
       fieldList.value.forEach((item) => {
@@ -169,9 +148,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
    * 处理业务表单的特殊字段在特定场景下的初始化默认值
    */
   function specialFormFieldInit(field: FormCreateField) {
-    if (
-      [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER, FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER].includes(props.formKey.value)
-    ) {
+    if ([FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER, FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER].includes(props.formKey)) {
       // 客户跟进计划和记录，需要赋予类型字段默认为客户，客户字段默认值为当前客户
       if (field.businessKey === 'type') {
         return {
@@ -181,17 +158,17 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (field.businessKey === 'customerId') {
         specialInitialOptions.value = [
           {
-            id: props.sourceId?.value,
-            name: sourceName.value || props.initialSourceName?.value,
+            id: props.sourceId,
+            name: sourceName.value || props.initialSourceName,
           },
         ];
         return {
-          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          defaultValue: initFieldValue(field, props.sourceId || ''),
           initialOptions: specialInitialOptions.value,
         };
       }
     }
-    if ([FormDesignKeyEnum.FOLLOW_PLAN_CLUE, FormDesignKeyEnum.FOLLOW_RECORD_CLUE].includes(props.formKey.value)) {
+    if ([FormDesignKeyEnum.FOLLOW_PLAN_CLUE, FormDesignKeyEnum.FOLLOW_RECORD_CLUE].includes(props.formKey)) {
       // 线索跟进计划和记录，需要赋予类型字段默认为客户，线索字段默认值为当前线索
       if (field.businessKey === 'type') {
         return {
@@ -201,27 +178,27 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (field.businessKey === 'clueId') {
         specialInitialOptions.value = [
           {
-            id: props.sourceId?.value,
-            name: sourceName.value || props.initialSourceName?.value,
+            id: props.sourceId,
+            name: sourceName.value || props.initialSourceName,
           },
         ];
         return {
-          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          defaultValue: initFieldValue(field, props.sourceId || ''),
           initialOptions: specialInitialOptions.value,
         };
       }
     }
-    if (props.formKey.value === FormDesignKeyEnum.CONTACT) {
+    if (props.formKey === FormDesignKeyEnum.CONTACT) {
       // 联系人表单，赋予客户字段默认值为当前客户
       if (field.businessKey === 'customerId') {
         specialInitialOptions.value = [
           {
-            id: props.sourceId?.value,
-            name: sourceName.value || props.initialSourceName?.value,
+            id: props.sourceId,
+            name: sourceName.value || props.initialSourceName,
           },
         ];
         return {
-          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          defaultValue: initFieldValue(field, props.sourceId || ''),
           initialOptions: specialInitialOptions.value,
         };
       }
@@ -240,7 +217,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   async function initFormConfig() {
     try {
       loading.value = true;
-      const res = await getFormConfigApiMap[props.formKey.value]();
+      const res = await getFormConfigApiMap[props.formKey]();
       fieldList.value = res.fields.map((item) => {
         const { defaultValue, initialOptions } = specialFormFieldInit(item);
         return {
@@ -250,7 +227,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           fieldWidth: safeFractionConvert(item.fieldWidth),
         };
       });
-      formConfig.value = res.formProp;
       nextTick(() => {
         unsaved.value = false;
       });
@@ -268,7 +244,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       const params: Record<string, any> = {
         ...props.otherSaveParams?.value,
         moduleFields: [],
-        id: props.sourceId?.value,
+        id: props.sourceId,
       };
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
@@ -281,14 +257,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           });
         }
       });
-      if (props.sourceId?.value && props.needInitDetail?.value) {
-        await updateFormApi[props.formKey.value](params);
+      if (props.sourceId && props.needInitDetail) {
+        await updateFormApi[props.formKey](params);
         showToast(t('common.updateSuccess'));
       } else {
-        await createFormApi[props.formKey.value](params);
-        if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
+        await createFormApi[props.formKey](params);
+        if (props.formKey === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
           showToast(t('clue.transferredToCustomer'));
-        } else if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS) {
+        } else if (props.formKey === FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS) {
           showToast(t('clue.transferredToOpportunity'));
         } else {
           showToast(t('common.createSuccess'));
@@ -306,14 +282,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   }
 
   const formCreateTitle = computed(() => {
-    if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
-      return t('clue.convertToCustomer');
+    if (props.formKey === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
+      return t('common.convertToCustomer');
     }
-    if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS) {
-      return t('clue.convertToOpportunity');
+    if (props.formKey === FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS) {
+      return t('common.convertToOpportunity');
     }
-    const prefix = props.sourceId?.value && props.needInitDetail?.value ? t('common.edit') : t('common.add');
-    return `${prefix}${t(`crmFormCreate.drawer.${props.formKey.value}`)}`;
+    const prefix = props.sourceId && props.needInitDetail ? t('common.edit') : t('common.create');
+    return `${prefix}${t(`common.${props.formKey}`)}`;
   });
 
   return {
@@ -321,7 +297,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     fieldList,
     loading,
     unsaved,
-    formConfig,
     formDetail,
     formCreateTitle,
     collaborationType,

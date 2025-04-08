@@ -37,7 +37,7 @@
     router.push({
       name: CommonRouteEnum.FORM_CREATE,
       query: {
-        type: props.type,
+        formKey: props.type,
       },
     });
   }

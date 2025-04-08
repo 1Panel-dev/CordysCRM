@@ -1,7 +1,7 @@
 <template>
   <van-nav-bar :title="props.title" class="crm-page-header" fixed>
     <template #left>
-      <CrmIcon name="iconicon_chevron_left" width="24px" height="24px" @click="handleBack" />
+      <CrmIcon v-if="!props.hideBack" name="iconicon_chevron_left" width="24px" height="24px" @click="handleBack" />
     </template>
   </van-nav-bar>
 </template>
@@ -13,6 +13,7 @@
 
   const props = defineProps<{
     title: string;
+    hideBack?: boolean;
     backRouteName?: string;
   }>();
 

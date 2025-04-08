@@ -82,7 +82,7 @@
           name: CommonRouteEnum.FORM_CREATE,
           query: {
             id: item.id,
-            type: FormDesignKeyEnum.CUSTOMER,
+            formKey: FormDesignKeyEnum.CUSTOMER,
           },
         });
       },
@@ -117,7 +117,7 @@
     router.push({
       name: CommonRouteEnum.FORM_CREATE,
       query: {
-        type: FormDesignKeyEnum.CUSTOMER,
+        formKey: FormDesignKeyEnum.CUSTOMER,
       },
     });
   }

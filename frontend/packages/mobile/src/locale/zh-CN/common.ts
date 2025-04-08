@@ -45,4 +45,5 @@ export default {
   'common.planClue': '跟进计划',
   'common.convertToCustomer': '转为客户',
   'common.convertToOpportunity': '转为商机',
+  'common.confirm': '确认',
 };

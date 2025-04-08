@@ -76,7 +76,7 @@
     router.push({
       name: CommonRouteEnum.FORM_CREATE,
       query: {
-        type: FormDesignKeyEnum.CUSTOMER_CONTACT,
+        formKey: FormDesignKeyEnum.CUSTOMER_CONTACT,
       },
     });
   }
