@@ -22,7 +22,8 @@
       "rules": [
         {"key":  "required"},
         {"key":  "unique"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "客户行业",
