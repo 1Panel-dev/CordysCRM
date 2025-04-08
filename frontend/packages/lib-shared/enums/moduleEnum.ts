@@ -33,4 +33,5 @@ export enum MemberSelectTypeEnum {
   ORG = 'DEPARTMENT', // 组织架构
   ROLE = 'ROLE', // 角色
   MEMBER = 'USER', // 成员
+  ONLY_ORG = 'ONLY_DEPARTMENT', // 组织架构
 }

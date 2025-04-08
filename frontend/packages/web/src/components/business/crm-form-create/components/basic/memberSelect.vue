@@ -15,6 +15,21 @@
       :multiple="fieldConfig.multiple"
       :drawer-title="t('crmFormDesign.selectDataSource', { type: props.fieldConfig.name })"
       :api-type-key="MemberApiTypeEnum.FORM_FIELD"
+      :member-types="
+        props.fieldConfig.type === FieldTypeEnum.MEMBER
+          ? [
+              {
+                label: t('menu.settings.org'),
+                value: MemberSelectTypeEnum.ORG,
+              },
+            ]
+          : [
+              {
+                label: t('menu.settings.org'),
+                value: MemberSelectTypeEnum.ONLY_ORG,
+              },
+            ]
+      "
       :disabled-node-types="
         props.fieldConfig.type === FieldTypeEnum.MEMBER
           ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
@@ -28,7 +43,7 @@
   import { NFormItem } from 'naive-ui';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
-  import { MemberApiTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';

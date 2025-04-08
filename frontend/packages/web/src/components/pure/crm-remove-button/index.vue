@@ -1,7 +1,7 @@
 <template>
   <CrmPopConfirm
     v-model:show="showModal"
-    v-permission="props.permission"
+    :permission="props.permission"
     :title="props.title"
     :content="props.content"
     :loading="props.loading"

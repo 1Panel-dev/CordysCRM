@@ -16,7 +16,7 @@
       <slot></slot>
     </template>
     <template #default>
-      <div class="crm-pop-confirm-content-wrapper">
+      <div v-permission="props.permission" class="crm-pop-confirm-content-wrapper">
         <slot name="title">
           <div class="crm-pop-confirm-title">
             <div class="one-line-text flex items-center">
@@ -97,6 +97,7 @@
       | 'left-start'
       | 'left'
       | 'left-end';
+    permission?: string[]; // 权限
   };
 
   const props = withDefaults(defineProps<CrmPopConfirmProps>(), {

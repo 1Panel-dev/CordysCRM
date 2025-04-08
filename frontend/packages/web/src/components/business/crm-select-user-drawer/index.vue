@@ -81,7 +81,9 @@
     required: true,
   });
 
-  const addMemberType = ref<MemberSelectTypeEnum>(MemberSelectTypeEnum.ORG);
+  const addMemberType = ref<MemberSelectTypeEnum>(
+    (props.memberTypes?.[0].value as MemberSelectTypeEnum) || MemberSelectTypeEnum.ORG
+  );
   const addMemberTypes = ref(
     props.memberTypes || [
       {
@@ -151,7 +153,7 @@
   }
 
   const options = computed(() => {
-    if (addMemberType.value === MemberSelectTypeEnum.ORG) {
+    if ([MemberSelectTypeEnum.ORG, MemberSelectTypeEnum.ONLY_ORG].includes(addMemberType.value)) {
       return mapTree(departmentOptions.value, (item) => {
         return {
           label: item.name,

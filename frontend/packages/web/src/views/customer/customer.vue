@@ -36,7 +36,8 @@
     v-model:visible="formCreateDrawerVisible"
     :form-key="activeFormKey"
     :source-id="activeSourceId"
-    :need-init-detail="!!activeSourceId"
+    :need-init-detail="needInitDetail"
+    :initial-source-name="initialSourceName"
     :other-save-params="otherFollowRecordSaveParams"
     @saved="loadList"
   />
@@ -103,6 +104,8 @@
   const keyword = ref('');
   const formCreateDrawerVisible = ref(false);
   const activeSourceId = ref('');
+  const initialSourceName = ref('');
+  const needInitDetail = ref(false);
   const activeFormKey = ref(FormDesignKeyEnum.CUSTOMER);
   const otherFollowRecordSaveParams = ref({
     type: 'CUSTOMER',
@@ -244,12 +247,15 @@
       case 'edit':
         activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
         activeSourceId.value = row.id;
+        needInitDetail.value = true;
         otherFollowRecordSaveParams.value.id = row.id;
         formCreateDrawerVisible.value = true;
         break;
       case 'followUp':
         activeFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER;
-        activeSourceId.value = '';
+        activeSourceId.value = row.id;
+        needInitDetail.value = false;
+        initialSourceName.value = row.name;
         otherFollowRecordSaveParams.value.customerId = row.id;
         formCreateDrawerVisible.value = true;
         break;
