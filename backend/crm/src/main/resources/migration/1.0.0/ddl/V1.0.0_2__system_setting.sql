@@ -164,7 +164,7 @@ CREATE TABLE IF NOT EXISTS sys_notification
     `operator`        VARCHAR(32)  NOT NULL COMMENT '操作人',
     `operation`       VARCHAR(50)  NOT NULL COMMENT '操作',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
-    `resource_id`     VARCHAR(32)  NOT NULL COMMENT '资源ID',
+    `resource_id`     VARCHAR(32)  COMMENT '资源ID',
     `resource_type`   VARCHAR(64)  NOT NULL COMMENT '资源类型',
     `resource_name`   VARCHAR(255) NOT NULL COMMENT '资源名称',
     `content`         BLOB         NOT NULL COMMENT '通知内容',
@@ -410,6 +410,8 @@ CREATE TABLE sys_department
 
 CREATE INDEX idx_resource ON sys_department (resource ASC);
 CREATE INDEX idx_organization_id ON sys_department (organization_id ASC);
+CREATE INDEX idx_parent_id ON sys_department (parent_id ASC);
+
 
 CREATE TABLE sys_department_commander
 (

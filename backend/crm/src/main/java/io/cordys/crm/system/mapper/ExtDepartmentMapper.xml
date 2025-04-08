@@ -160,7 +160,23 @@
             #{userId}
         </foreach>
     </select>
+    <select id="selectChildrenByIds" resultType="java.lang.String">
+        WITH RECURSIVE dept_tree AS (
+        SELECT id, parent_id
+        FROM sys_department
+        WHERE id IN
+        <foreach collection="deptIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
 
+        UNION ALL
+
+        SELECT d.id, d.parent_id
+        FROM sys_department d
+        INNER JOIN dept_tree dt ON d.parent_id = dt.id
+        )
+        SELECT id FROM dept_tree
+    </select>
 
     <delete id="deleteDepartmentByIds">
         DELETE FROM sys_department WHERE id in

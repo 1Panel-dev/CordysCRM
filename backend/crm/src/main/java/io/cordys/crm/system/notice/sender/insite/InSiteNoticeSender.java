@@ -49,6 +49,7 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             notification.setOrganizationId(messageDetailDTO.getOrganizationId());
             notification.setOperator(noticeModel.getOperator());
             notification.setOperation(noticeModel.getEvent());
+            notification.setResourceId(messageDetailDTO.getId());
             notification.setResourceType(messageDetailDTO.getTaskType());
             if (paramMap.get("name") != null) {
                 notification.setResourceName((String) paramMap.get("name"));
@@ -61,6 +62,10 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             notification.setCreateTime(System.currentTimeMillis());
             notification.setReceiver(receiver.getUserId());
             notification.setContent(context.getBytes());
+            notification.setCreateUser(noticeModel.getOperator());
+            notification.setUpdateUser(noticeModel.getOperator());
+            notification.setCreateTime(System.currentTimeMillis());
+            notification.setUpdateTime(System.currentTimeMillis());
             notificationBaseMapper.insert(notification);
             //更新用户的已读全部消息状态 0 为未读，1为已读
             stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + receiver.getUserId(), "0");

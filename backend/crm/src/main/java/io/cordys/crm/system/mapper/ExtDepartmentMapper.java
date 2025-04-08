@@ -34,6 +34,8 @@ public interface ExtDepartmentMapper {
 
     List<String> selectChildrenIds(@Param("parentId") String parentId);
 
+    List<String> selectChildrenByIds(@Param("deptIds") List<String> deptIds);
+
     void batchUpdate(@Param("departmentList") List<Department> departmentList);
 
     Department getInternalDepartment(@Param("orgId") String orgId, @Param("resource") String resource);
