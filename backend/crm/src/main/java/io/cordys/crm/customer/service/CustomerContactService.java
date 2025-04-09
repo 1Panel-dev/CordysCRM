@@ -120,11 +120,15 @@ public class CustomerContactService {
             return List.of();
         }
 
+        List<String> customerContactIds = list.stream().map(CustomerContactListResponse::getId)
+                .distinct()
+                .collect(Collectors.toList());
+
         List<String> customerIds = list.stream().map(CustomerContactListResponse::getCustomerId)
                 .distinct()
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService.getResourceFieldMap(customerIds);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = customerContactFieldService.getResourceFieldMap(customerContactIds);
 
         Map<String, String> customNameMap = extCustomerMapper.selectOptionByIds(customerIds)
                 .stream()
@@ -278,7 +282,7 @@ public class CustomerContactService {
 
     @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.UPDATE, resourceId = "{#id}")
     public void enable(String id) {
-        changeEnable(id, true, null);
+        changeEnable(id, true, StringUtils.EMPTY);
     }
 
     private void changeEnable(String id, boolean enable, String reason) {
