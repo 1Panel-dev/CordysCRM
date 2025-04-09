@@ -8,8 +8,8 @@
   </CrmCard> -->
   <div class="flex h-full w-full">
     <div class="h-full flex-1">
-      <QuickAccess @refresh="refresh" />
-      <CrmCard hide-footer :special-height="177">
+      <QuickAccess v-if="hasAnyPermission(quickAccessPermissionList)" @refresh="refresh" />
+      <CrmCard hide-footer :special-height="hasAnyPermission(quickAccessPermissionList) ? 177 : 0">
         <div class="title">
           <div class="title-name">{{ t('system.personal.plan') }}</div>
           <div class="title-right" @click="showPersonalInfo = true">{{ t('common.ViewMore') }}</div>
@@ -18,15 +18,17 @@
           :refresh-key="refreshKey"
           class="mt-[16px] p-0"
           active-type="followPlan"
-          wrapper-class="h-[calc(100%-38px)] p-[0px]"
-          virtual-scroll-height="calc(100vh - 402px)"
+          wrapper-class="h-[calc(100%-38px)] !p-[0px]"
+          :virtual-scroll-height="`${
+            hasAnyPermission(quickAccessPermissionList) ? 'calc(100vh - 402px)' : 'calc(100vh - 235px)'
+          }`"
           follow-api-key="myPlan"
           source-id="NULL"
           show-action
         />
       </CrmCard>
     </div>
-    <CrmCard hide-footer class="ml-[16px] w-[400px]">
+    <CrmCard v-permission="['SYSTEM_NOTICE:READ']" hide-footer class="ml-[16px] w-[400px]">
       <div class="title !mb-[8px]">
         <div class="title-name">{{ t('system.message.notify') }}</div>
         <div class="title-right" @click="showMessageDrawer = true">{{ t('common.ViewMore') }}</div>
@@ -57,7 +59,9 @@
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
+  import { quickAccessList } from '@/config/workbench';
   import useAppStore from '@/store/modules/app';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const appStore = useAppStore();
@@ -83,6 +87,8 @@
   //   },
   // ];
   // const rangeTime = ref<[number, number]>();
+
+  const quickAccessPermissionList = computed(() => quickAccessList.flatMap((item) => item.permission));
 
   // 计划
   const showPersonalInfo = ref<boolean>(false);

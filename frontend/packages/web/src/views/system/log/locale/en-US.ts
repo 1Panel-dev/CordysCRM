@@ -7,4 +7,5 @@ export default {
   'log.operator': 'Operator',
   'log.loginLocation': 'Login location',
   'log.loginTime': 'Login time',
+  'log.detail': 'Log detail',
 };

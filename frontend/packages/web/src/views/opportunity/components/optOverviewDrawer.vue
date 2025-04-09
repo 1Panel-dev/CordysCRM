@@ -26,6 +26,7 @@
         class="mb-[16px]"
         :base-steps="baseStepList"
         :source-id="sourceId"
+        :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
         :update-api="updateOptStage"
         @load-detail="loadDetail"
       />

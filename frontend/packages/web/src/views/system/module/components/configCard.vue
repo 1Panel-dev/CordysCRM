@@ -8,14 +8,18 @@
         <div>{{ item.label }}</div>
       </div>
       <div class="nav-config-item-action">
-        <CrmButtonGroup :list="item.groupList" @select="(key) => handleSelect(key, item)">
+        <CrmButtonGroup
+          v-permission="['MODULE_SETTING:UPDATE']"
+          :list="item.groupList"
+          @select="(key) => handleSelect(key, item)"
+        >
           <template #more>
             <n-dropdown trigger="hover" :options="moreOptions" @select="handleMoreSelect">
               <n-button type="primary" text :keyboard="false">{{ t('common.more') }}</n-button>
             </n-dropdown>
           </template>
         </CrmButtonGroup>
-        <n-divider v-if="item.groupList.length" class="!mx-[4px]" vertical />
+        <n-divider v-if="item.groupList.length" v-permission="['MODULE_SETTING:UPDATE']" class="!mx-[4px]" vertical />
         <NSwitch
           :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
           :value="item.enable"

@@ -13,7 +13,7 @@ import { isLogin, login, signout } from '@/api/modules/system/login';
 import useDiscreteApi from '@/hooks/useDiscreteApi';
 import useUser from '@/hooks/useUser';
 import router from '@/router';
-import { getFirstRouteNameByPermission } from '@/utils/permission';
+import { getFirstRouteNameByPermission, hasAnyPermission } from '@/utils/permission';
 
 import useAppStore from '../app';
 
@@ -75,7 +75,9 @@ const useUserStore = defineStore('user', {
         const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
         this.clientIdRandomId = getGenerateId();
         appStore.setOrgId(lastOrganizationId);
-        appStore.connectSystemMessageSSE(this.showSystemNotify);
+        if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
+          appStore.connectSystemMessageSSE(this.showSystemNotify);
+        }
       } catch (error) {
         clearToken();
         throw error;
@@ -160,7 +162,9 @@ const useUserStore = defineStore('user', {
           await router.push({ name: currentRouteName });
           return;
         }
-        appStore.connectSystemMessageSSE(this.showSystemNotify);
+        if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
+          appStore.connectSystemMessageSSE(this.showSystemNotify);
+        }
         appStore.initModuleConfig();
       }
     },

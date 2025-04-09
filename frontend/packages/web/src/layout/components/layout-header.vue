@@ -46,7 +46,7 @@
             </template>
           </n-button>
         </n-popselect>
-        <n-button class="p-[8px]" quaternary @click="showMessage">
+        <n-button v-permission="['SYSTEM_NOTICE:READ']" class="p-[8px]" quaternary @click="showMessage">
           <n-badge value="1" dot :show="showBadge">
             <CrmIcon type="iconicon-alarmclock" :size="16" />
           </n-badge>

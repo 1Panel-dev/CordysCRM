@@ -917,7 +917,9 @@
   }
 
   onBeforeMount(() => {
-    initIntegration();
+    if (isHasConfigPermission.value) {
+      initIntegration();
+    }
     initCheckSyncType();
   });
 

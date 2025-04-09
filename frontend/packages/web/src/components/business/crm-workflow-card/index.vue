@@ -3,7 +3,7 @@
     <n-spin :show="updateStageLoading">
       <WorkflowStep v-model:status="currentStage" :workflow-list="workflowList">
         <template #action="{ currentStatusIndex }">
-          <div class="flex items-center">
+          <div v-permission="props.operationPermission" class="flex items-center">
             <n-button
               v-if="props.showErrorBtn"
               type="error"
@@ -81,6 +81,7 @@
     showErrorBtn?: boolean;
     showConfirmStatus?: boolean; // 是否二次确认更新成功 | 成败
     updateApi?: (params: { id: string; stage: string }) => Promise<any>;
+    operationPermission?: string[];
   }>();
 
   const emit = defineEmits<{

@@ -22,6 +22,7 @@
   import usePermission from '@/hooks/usePermission';
   import appClientMenus from '@/router/app-menus';
   import useAppStore from '@/store/modules/app';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const permission = usePermission();
@@ -33,12 +34,15 @@
   const router = useRouter();
 
   const topMenuList = computed<MenuOption[]>(() => {
-    return appStore.getTopMenus.map((e: any) => {
-      return {
-        key: e.name,
-        label: t(e?.meta?.locale ?? ''),
-      };
-    });
+    return appStore.getTopMenus
+      .map((e: any) => {
+        return {
+          key: e.name,
+          label: t(e?.meta?.locale ?? ''),
+          hasPermission: hasAnyPermission(e?.meta?.permissions),
+        };
+      })
+      .filter((item) => item.hasPermission);
   });
 
   const activeMenu: Ref<string | null> = ref('');

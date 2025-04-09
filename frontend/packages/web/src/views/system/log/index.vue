@@ -32,10 +32,11 @@
             />
           </n-form-item>
           <n-form-item :label="t('log.operationScope')" path="module">
-            <n-select
+            <n-cascader
               v-model:value="form.module"
+              :options="moduleOptions"
               class="w-[305px]"
-              :options="[]"
+              check-strategy="all"
               :placeholder="t('common.pleaseSelect')"
               clearable
             />
@@ -70,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NDatePicker, NForm, NFormItem, NSelect } from 'naive-ui';
+  import { CascaderOption, NButton, NCascader, NDatePicker, NForm, NFormItem, NSelect } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { OperationTypeEnum } from '@lib/shared/enums/systemEnum';
@@ -91,8 +92,10 @@
   import { getUserOptions } from '@/api/modules';
   import { operationLogDetail, operationLogList } from '@/api/modules/system/log';
   import { logTypeOption } from '@/config/system';
+  import usePathMap from '@/hooks/usePathMap';
 
   const { t } = useI18n();
+  const { getModuleOptions, findLocalePath } = usePathMap();
 
   const activeTab = ref('operation');
   const tabList = [
@@ -115,6 +118,12 @@
     // 只能查询过去半年的
     return selectedDate < sixMonthsAgo || selectedDate > currentDate;
   }
+
+  const moduleOptions = ref<CascaderOption[]>([]);
+  function initModuleOptions() {
+    moduleOptions.value = getModuleOptions();
+  }
+
   const defaultForm = {
     type: null,
     module: null,
@@ -167,6 +176,11 @@
       title: t('log.operationScope'),
       key: 'module',
       width: 100,
+      render: (row) => {
+        return findLocalePath(row.module)
+          .map((e) => t(e) || row.module)
+          .join('/');
+      },
     },
     {
       title: t('log.operationType'),
@@ -220,6 +234,10 @@
     },
     { immediate: true }
   );
+
+  onMounted(() => {
+    initModuleOptions();
+  });
 </script>
 
 <style lang="less" scoped>

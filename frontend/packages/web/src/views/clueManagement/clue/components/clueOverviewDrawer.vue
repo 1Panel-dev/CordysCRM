@@ -30,6 +30,7 @@
         :base-steps="workflowList"
         :source-id="sourceId"
         :update-api="updateClueStatus"
+        :operation-permission="['CLUE_MANAGEMENT:UPDATE']"
         @load-detail="loadDetail"
       />
     </template>

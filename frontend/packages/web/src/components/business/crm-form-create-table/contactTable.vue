@@ -1,12 +1,14 @@
 <template>
   <CrmCard hide-footer>
     <div class="mb-[16px] flex justify-between">
-      <div v-if="props.customerId" class="font-medium text-[var(--text-n1)]">
-        {{ t('opportunity.contactInfo') }}
+      <div>
+        <div v-if="props.customerId" class="font-medium text-[var(--text-n1)]">
+          {{ t('opportunity.contactInfo') }}
+        </div>
+        <n-button v-else v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']" type="primary" @click="handleCreate">
+          {{ t('overviewDrawer.addContract') }}
+        </n-button>
       </div>
-      <n-button v-else type="primary" @click="handleCreate">
-        {{ t('overviewDrawer.addContract') }}
-      </n-button>
       <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
     </div>
     <CrmTable
@@ -80,6 +82,7 @@
   } from '@/api/modules';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     customerId?: string;
@@ -101,10 +104,12 @@
     {
       label: t('common.edit'),
       key: 'edit',
+      permission: ['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'],
     },
     {
       label: t('common.delete'),
       key: 'delete',
+      permission: ['CUSTOMER_MANAGEMENT_CONTACT:DELETE'],
     },
   ];
 
@@ -245,6 +250,7 @@
       status: (row: CustomerContractListItem) => {
         return h(NSwitch, {
           value: row.enable,
+          disabled: !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']),
           onClick: () => {
             handleToggleStatus(row);
           },

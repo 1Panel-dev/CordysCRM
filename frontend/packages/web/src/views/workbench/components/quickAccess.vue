@@ -3,10 +3,11 @@
     <div class="title">
       <div class="title-name">{{ t('workbench.quickAccess') }}</div>
     </div>
-    <div class="flex justify-around gap-[16px]">
+    <div class="flex gap-[16px]">
       <div
         v-for="item in quickAccessList"
         :key="item.key"
+        v-permission="item.permission"
         class="flex w-[114px] cursor-pointer flex-col items-center gap-[8px] py-[8px]"
         @click="handleActionSelect(item.key)"
       >
