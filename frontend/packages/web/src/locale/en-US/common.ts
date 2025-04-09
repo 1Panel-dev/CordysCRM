@@ -271,7 +271,7 @@ export default {
   'common.transferFailed': 'Transfer failed',
   'common.batchTransfer': 'Batch transfer',
   'common.overview': 'Overview',
-  'common.followPlan': 'Follow plan',
+  'common.plan': 'Follow plan',
   'common.headRecord': 'Head record',
   'common.followFailed': 'Follow failed',
   'common.updateToCurrentProgress': 'Update to current progress',

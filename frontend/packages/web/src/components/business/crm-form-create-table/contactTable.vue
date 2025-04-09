@@ -4,7 +4,7 @@
       <div v-if="props.customerId" class="font-medium text-[var(--text-n1)]">
         {{ t('opportunity.contactInfo') }}
       </div>
-      <n-button v-else type="primary" @click="formCreateDrawerVisible = true">
+      <n-button v-else type="primary" @click="handleCreate">
         {{ t('overviewDrawer.addContract') }}
       </n-button>
       <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
@@ -20,7 +20,7 @@
       v-model:visible="formCreateDrawerVisible"
       :form-key="FormDesignKeyEnum.CONTACT"
       :source-id="activeContactId"
-      need-init-detail
+      :need-init-detail="needInitDetail"
     />
     <!-- 停用 -->
     <CrmModal
@@ -94,6 +94,7 @@
   const formCreateDrawerVisible = ref(false);
   const activeContactId = ref('');
   const activeContactName = ref('');
+  const needInitDetail = ref(false);
   const tableRefreshId = ref(0);
 
   const operationGroupList: ActionsItem[] = [
@@ -106,6 +107,12 @@
       key: 'delete',
     },
   ];
+
+  function handleCreate() {
+    activeContactId.value = '';
+    needInitDetail.value = false;
+    formCreateDrawerVisible.value = true;
+  }
 
   async function bindOpportunity(id: string) {
     try {
@@ -210,6 +217,7 @@
       case 'edit':
         activeContactId.value = row.id;
         activeContactName.value = row.name;
+        needInitDetail.value = true;
         formCreateDrawerVisible.value = true;
         break;
       case 'delete':

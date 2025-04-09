@@ -262,6 +262,7 @@
   function handleCreated() {
     if (activeRole.value) {
       activeRole.value.isNew = false;
+      activeRole.value.unsave = false;
     }
   }
 

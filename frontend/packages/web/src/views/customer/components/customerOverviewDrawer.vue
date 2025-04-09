@@ -179,7 +179,7 @@
     },
     {
       name: 'followPlan',
-      tab: t('common.followPlan'),
+      tab: t('common.plan'),
       enable: true,
       allowClose: true,
     },

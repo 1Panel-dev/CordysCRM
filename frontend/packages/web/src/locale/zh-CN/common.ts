@@ -271,7 +271,7 @@ export default {
   'common.transferFailed': '转移失败',
   'common.batchTransfer': '批量转移',
   'common.overview': '概览',
-  'common.followPlan': '跟进计划',
+  'common.plan': '跟进计划',
   'common.headRecord': '负责人记录',
   'common.previousOwnerRecord': '前负责人记录',
   'common.followFailed': '跟进失败',

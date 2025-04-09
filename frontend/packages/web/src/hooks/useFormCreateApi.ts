@@ -170,7 +170,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
    */
   function specialFormFieldInit(field: FormCreateField) {
     if (
-      [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER, FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER].includes(props.formKey.value)
+      [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER, FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER].includes(
+        props.formKey.value
+      ) &&
+      props.sourceId?.value
     ) {
       // 客户跟进计划和记录，需要赋予类型字段默认为客户，客户字段默认值为当前客户
       if (field.businessKey === 'type') {
@@ -191,7 +194,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
-    if ([FormDesignKeyEnum.FOLLOW_PLAN_CLUE, FormDesignKeyEnum.FOLLOW_RECORD_CLUE].includes(props.formKey.value)) {
+    if (
+      [FormDesignKeyEnum.FOLLOW_PLAN_CLUE, FormDesignKeyEnum.FOLLOW_RECORD_CLUE].includes(props.formKey.value) &&
+      props.sourceId?.value
+    ) {
       // 线索跟进计划和记录，需要赋予类型字段默认为客户，线索字段默认值为当前线索
       if (field.businessKey === 'type') {
         return {
@@ -211,7 +217,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
-    if (props.formKey.value === FormDesignKeyEnum.CONTACT) {
+    if (props.formKey.value === FormDesignKeyEnum.CONTACT && props.sourceId?.value) {
       // 联系人表单，赋予客户字段默认值为当前客户
       if (field.businessKey === 'customerId') {
         specialInitialOptions.value = [

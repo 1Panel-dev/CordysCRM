@@ -239,7 +239,7 @@
               permission: ['CLUE_MANAGEMENT:UPDATE'],
             },
             {
-              label: t('common.followPlan'),
+              label: t('common.plan'),
               key: 'followPlan',
               text: false,
               ghost: true,
@@ -315,7 +315,7 @@
     },
     {
       name: 'followPlan',
-      tab: t('common.followPlan'),
+      tab: t('common.plan'),
       enable: true,
       allowClose: true,
     },

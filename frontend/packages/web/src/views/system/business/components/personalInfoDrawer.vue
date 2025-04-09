@@ -59,7 +59,7 @@
     </CrmCard>
     <CrmCard v-if="activeTab === PersonalEnum.MY_PLAN" hide-footer :special-height="64">
       <n-button type="primary" @click="formCreateDrawerVisible = true">
-        {{ t('common.followPlan') }}
+        {{ t('common.plan') }}
       </n-button>
       <FollowDetail
         :refresh-key="refreshKey"
