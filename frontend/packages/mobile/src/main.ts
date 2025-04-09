@@ -10,6 +10,7 @@ import useLocale from '@lib/shared/locale/useLocale';
 
 import App from './App.vue';
 
+import 'vant/es/toast/style'; // 解决toast样式被popup覆盖的问题
 // eslint-disable-next-line import/no-unresolved
 import 'virtual:svg-icons-register';
 import router from './router';

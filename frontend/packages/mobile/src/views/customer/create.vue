@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
   import { useRoute, useRouter } from 'vue-router';
-  import { FormInstance, showToast } from 'vant';
+  import { FormInstance, showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -59,10 +59,10 @@
       await formRef.value?.validate();
       if (route.query.id) {
         // update
-        showToast(t('common.updateSuccess'));
+        showSuccessToast(t('common.updateSuccess'));
       } else {
         // create
-        showToast(t('common.createSuccess'));
+        showSuccessToast(t('common.createSuccess'));
       }
       router.back();
     } catch (error) {

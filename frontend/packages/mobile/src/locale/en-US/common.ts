@@ -46,4 +46,7 @@ export default {
   'common.convertToCustomer': 'Convert to customer',
   'common.convertToOpportunity': 'Convert to opportunity',
   'common.confirm': 'Confirm',
+  'common.notNull': '{value} cannot be empty',
+  'common.required': 'Required',
+  'common.onlyOne': 'Not allowed to repeat value',
 };

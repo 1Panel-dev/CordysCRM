@@ -281,4 +281,6 @@ export default {
   'common.complete': 'Complete',
   'common.result': 'Result',
   'common.contact': 'Contact',
+  'common.required': 'Required',
+  'common.onlyOne': 'Not allowed to repeat value',
 };

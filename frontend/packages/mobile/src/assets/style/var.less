@@ -44,25 +44,25 @@
     top: 0;
     right: 0;
     left: 0;
-    height: 1px;
-    background-color: var(--text-n7); // 边框颜色
-    content: '';
-    transform: scaleY(0.5); // 缩放为 0.5px
-    transform-origin: 0 0;
+    border-bottom: 1px solid var(--van-cell-border-color);
+    box-sizing: border-box;
+    content: ' ';
+    pointer-events: none;
+    transform: scaleY(0.5);
   }
 }
 .half-px-border-bottom() {
   position: relative;
   &::after {
     position: absolute;
+    box-sizing: border-box;
+    content: ' ';
+    pointer-events: none;
     right: 0;
     bottom: 0;
     left: 0;
-    height: 1px;
-    background-color: var(--text-n7); // 边框颜色
-    content: '';
-    transform: scaleY(0.5); // 缩放为 0.5px
-    transform-origin: 0 0;
+    border-bottom: 1px solid var(--van-cell-border-color);
+    transform: scaleY(0.5);
   }
 }
 

@@ -6,13 +6,15 @@
     :maxlength="11"
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :path="props.fieldConfig.id"
-    :rule="props.fieldConfig.rules"
+    :rules="props.fieldConfig.rules as FieldRule[]"
     :placeholder="props.fieldConfig.placeholder"
     @update:model-value="($event) => emit('change', $event)"
   />
 </template>
 
 <script setup lang="ts">
+  import { FieldRule } from 'vant';
+
   import { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const props = defineProps<{

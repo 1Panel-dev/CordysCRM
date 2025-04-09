@@ -3,7 +3,7 @@
     v-model:value="fieldValue"
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :name="props.fieldConfig.id"
-    :rule="props.fieldConfig.rules"
+    :rules="props.fieldConfig.rules as FieldRule[]"
     is-link
     readonly
     :placeholder="props.fieldConfig.placeholder"
@@ -58,6 +58,8 @@
 </template>
 
 <script setup lang="ts">
+  import { FieldRule } from 'vant';
+
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';

@@ -1,9 +1,9 @@
 <template>
   <van-field
-    v-model:value="value"
+    v-model="value"
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :name="props.fieldConfig.id"
-    :rule="props.fieldConfig.rules"
+    :rules="props.fieldConfig.rules as FieldRule[]"
     is-link
     readonly
     :placeholder="props.fieldConfig.placeholder"
@@ -19,6 +19,8 @@
 </template>
 
 <script setup lang="ts">
+  import { FieldRule } from 'vant';
+
   import { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const props = defineProps<{

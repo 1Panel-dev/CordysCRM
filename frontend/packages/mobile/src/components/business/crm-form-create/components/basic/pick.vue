@@ -1,9 +1,9 @@
 <template>
   <van-field
-    v-model:value="value"
+    v-model="fieldValue"
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :name="props.fieldConfig.id"
-    :rule="props.fieldConfig.rules"
+    :rules="props.fieldConfig.rules as FieldRule[]"
     is-link
     readonly
     :placeholder="props.fieldConfig.placeholder"
@@ -15,12 +15,11 @@
   </van-field>
   <van-popup v-model:show="showPicker" destroy-on-close round position="bottom">
     <van-picker
-      :model-value="pickerValue"
+      :model-value="[value]"
       :columns="
         props.fieldConfig.options?.map((item) => ({
-          ...item,
-          text: item.name,
-          value: item.id,
+          text: item.label,
+          value: item.value,
         }))
       "
       @cancel="showPicker = false"
@@ -30,8 +29,9 @@
 </template>
 
 <script setup lang="ts">
+  import { FieldRule } from 'vant';
+
   import { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
-  import { Numeric } from 'vant/es/utils';
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
@@ -45,12 +45,18 @@
   });
 
   const showPicker = ref(false);
-  const pickerValue = ref<Numeric[]>([]);
+  const fieldValue = ref('');
 
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
       value.value = val;
+      if (props.fieldConfig.options) {
+        const opt = props.fieldConfig.options.find((item) => item.value === val);
+        if (opt) {
+          fieldValue.value = opt.label;
+        }
+      }
     },
     {
       immediate: true,
@@ -59,8 +65,8 @@
 
   function onConfirm({ selectedValues, selectedOptions }: any) {
     showPicker.value = false;
-    pickerValue.value = selectedValues;
-    value.value = selectedOptions[0].text;
+    [value.value] = selectedValues;
+    fieldValue.value = selectedOptions[0].text;
   }
 </script>
 

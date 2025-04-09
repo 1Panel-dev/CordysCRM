@@ -282,4 +282,6 @@ export default {
   'common.complete': '完结',
   'common.result': '结果',
   'common.contact': '联系人',
+  'common.required': '必填',
+  'common.onlyOne': '不允许重复值',
 };

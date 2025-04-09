@@ -46,4 +46,7 @@ export default {
   'common.convertToCustomer': '转为客户',
   'common.convertToOpportunity': '转为商机',
   'common.confirm': '确认',
+  'common.notNull': '{value}不能为空',
+  'common.required': '必填',
+  'common.onlyOne': '不允许重复值',
 };

@@ -326,13 +326,13 @@ export const rules: FormCreateFieldRule[] = [
     key: FieldRuleEnum.REQUIRED,
     required: true,
     message: 'common.notNull',
-    label: 'crmFormDesign.required',
+    label: 'common.required',
     trigger: 'input',
   },
   {
     key: FieldRuleEnum.UNIQUE,
     message: 'common.valueExists',
-    label: 'crmFormDesign.onlyOne',
+    label: 'common.onlyOne',
     validator: () => true, // 由后台验证
   },
 ];

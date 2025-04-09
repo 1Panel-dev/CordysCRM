@@ -1,4 +1,4 @@
-import { showToast } from 'vant';
+import { showSuccessToast } from 'vant';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -238,7 +238,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
-  async function saveForm(form: Record<string, any>, isContinue: boolean, callback?: (_isContinue: boolean) => void) {
+  async function saveForm(form: Record<string, any>, callback?: () => void) {
     try {
       loading.value = true;
       const params: Record<string, any> = {
@@ -259,19 +259,19 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       });
       if (props.sourceId && props.needInitDetail) {
         await updateFormApi[props.formKey](params);
-        showToast(t('common.updateSuccess'));
+        showSuccessToast(t('common.updateSuccess'));
       } else {
         await createFormApi[props.formKey](params);
         if (props.formKey === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
-          showToast(t('clue.transferredToCustomer'));
+          showSuccessToast(t('clue.transferredToCustomer'));
         } else if (props.formKey === FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS) {
-          showToast(t('clue.transferredToOpportunity'));
+          showSuccessToast(t('clue.transferredToOpportunity'));
         } else {
-          showToast(t('common.createSuccess'));
+          showSuccessToast(t('common.createSuccess'));
         }
       }
       if (callback) {
-        callback(isContinue);
+        callback();
       }
     } catch (error) {
       // eslint-disable-next-line no-console

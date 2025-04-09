@@ -189,7 +189,7 @@
           const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
           if (staticRule) {
             staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
-            staticRule.message = t(rule.message as string, { value: t(item.name) });
+            staticRule.message = t(staticRule.message as string, { value: t(item.name) });
             staticRule.type = getRuleType(item);
             if (item.type === FieldTypeEnum.DATA_SOURCE) {
               staticRule.trigger = 'none';

@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
-  import { showToast } from 'vant';
+  import { showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -61,7 +61,7 @@
     try {
       loading.value = true;
       // Simulate delete operation
-      showToast(t('common.deleteSuccess'));
+      showSuccessToast(t('common.deleteSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
