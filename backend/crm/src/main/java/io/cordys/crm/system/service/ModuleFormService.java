@@ -131,6 +131,7 @@ public class ModuleFormService {
 				ModuleField moduleField = new ModuleField();
 				moduleField.setId(field.getId());
 				moduleField.setFormId(form.getId());
+				moduleField.setMobile(field.getMobile() != null && field.getMobile());
 				moduleField.setInternalKey(field.getInternalKey());
 				moduleField.setType(field.getType());
 				moduleField.setName(field.getName());
@@ -227,24 +228,23 @@ public class ModuleFormService {
 
 		if (CollectionUtils.isNotEmpty(allDataFields)) {
 			allDataFields.stream().filter(field -> idTypeMap.containsKey(field.getFieldId())).forEach(field -> {
-				String optionType = idTypeMap.get(field.getFieldId());
-				if (!typeIdsMap.containsKey(optionType)) {
-					typeIdsMap.put(optionType, new ArrayList<>());
+				if (!typeIdsMap.containsKey(field.getFieldId())) {
+					typeIdsMap.put(field.getFieldId(), new ArrayList<>());
 				}
 				Object fieldValue = field.getFieldValue();
 				if (fieldValue instanceof List) {
-					typeIdsMap.get(optionType).addAll(JSON.parseArray(JSON.toJSONString(fieldValue), String.class));
+					typeIdsMap.get(field.getFieldId()).addAll(JSON.parseArray(JSON.toJSONString(fieldValue), String.class));
 				} else {
-					typeIdsMap.get(optionType).add(fieldValue.toString());
+					typeIdsMap.get(field.getFieldId()).add(fieldValue.toString());
 				}
 			});
 		}
 
 		Map<String, String> sourceMap = initTypeSourceMap();
-		typeIdsMap.forEach((type, ids) -> {
-			List<OptionDTO> options = extModuleFieldMapper.getSourceOptionsByIds(sourceMap.get(type), ids);
+		typeIdsMap.forEach((fieldId, ids) -> {
+			List<OptionDTO> options = extModuleFieldMapper.getSourceOptionsByIds(sourceMap.get(idTypeMap.get(fieldId)), ids);
 			if (CollectionUtils.isNotEmpty(options)) {
-				optionMap.put(type, options);
+				optionMap.put(fieldId, options);
 			}
 		});
 		return optionMap;

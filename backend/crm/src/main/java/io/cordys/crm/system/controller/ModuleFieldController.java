@@ -33,10 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -65,13 +62,13 @@ public class ModuleFieldController {
 	@Resource
 	private ProductService productService;
 
-	@PostMapping("/dept/tree")
+	@GetMapping("/dept/tree")
 	@Operation(summary = "获取部门树")
 	public List<DeptUserTreeNode> getDeptTree() {
 		return moduleFieldService.getDeptTree(OrganizationContext.getOrganizationId());
 	}
 
-	@PostMapping("/user/dept/tree")
+	@GetMapping("/user/dept/tree")
 	@Operation(summary = "获取部门用户树")
 	public List<DeptUserTreeNode> getDeptUserTree() {
 		return moduleService.getDeptUserTree(OrganizationContext.getOrganizationId());

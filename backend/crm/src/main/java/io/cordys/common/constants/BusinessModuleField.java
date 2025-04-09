@@ -127,11 +127,6 @@ public enum BusinessModuleField {
      * 联系人id
      */
     FOLLOW_RECORD_CONTACT("recordContact", "contactId", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
-
-    /**
-     * 意向产品
-     */
-    FOLLOW_RECORD_PRODUCTS("recordProduct", "products", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 跟进内容
      */

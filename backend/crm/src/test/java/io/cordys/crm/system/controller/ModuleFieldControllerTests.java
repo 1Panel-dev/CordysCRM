@@ -64,13 +64,13 @@ public class ModuleFieldControllerTests extends BaseTest {
 	@Test
 	@Order(2)
 	void testGetDeptTree() throws Exception {
-		this.requestPostWithOk(DEPT_TREE, null);
+		this.requestGetWithOk(DEPT_TREE);
 	}
 
 	@Test
 	@Order(3)
 	void testGetUserDeptTree() throws Exception {
-		this.requestPostWithOk(USER_DEPT_TREE, null);
+		this.requestGetWithOk(USER_DEPT_TREE);
 	}
 
 	@Test
