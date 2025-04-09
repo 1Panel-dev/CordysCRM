@@ -49,6 +49,9 @@ public abstract class BaseField {
 	@Schema(description = "类型")
 	private String type;
 
+	@Schema(description = "是否移动端")
+	private Boolean mobile;
+
 	@Schema(description = "是否展示标题")
 	private Boolean showLabel;
 

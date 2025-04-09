@@ -185,6 +185,8 @@ public class ModuleFormService {
 			Map<String, String> fieldBlobMap = fieldBlobs.stream().collect(Collectors.toMap(ModuleFieldBlob::getId, ModuleFieldBlob::getProp));
 			fields.forEach(field -> {
 				BaseField baseField = JSON.parseObject(fieldBlobMap.get(field.getId()), BaseField.class);
+				baseField.setType(field.getType());
+				baseField.setMobile(field.getMobile());
 				if (baseField.needInitialOptions()) {
 					handleInitialOption(baseField);
 				}
