@@ -65,7 +65,7 @@ public class ModuleService {
 	 * 单个模块开启或关闭
 	 * @param id 模块ID
 	 */
-	@OperationLog(module = LogModule.MODULE_SETTING, type = LogType.UPDATE, operator = "{#currentUser}")
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, operator = "{#currentUser}")
 	public void switchModule(String id, String currentUser) {
 		Module module = moduleMapper.selectByPrimaryKey(id);
 		if (module == null) {
@@ -93,7 +93,7 @@ public class ModuleService {
 	 * 模块排序
 	 * @param request 请求参数
 	 */
-	@OperationLog(module = LogModule.MODULE_SETTING, type = LogType.UPDATE, operator = "{#currentUser}")
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, operator = "{#currentUser}")
 	public void sort(ModuleSortRequest request, String currentUser) {
 		Module module = moduleMapper.selectByPrimaryKey(request.getDragModuleId());
 		if (module == null) {

@@ -13,7 +13,7 @@ public class ModuleLogServiceFactory {
     private static final HashMap<String, BaseModuleLogService> logServiceMap = new HashMap<>();
 
     static {
-        logServiceMap.put(LogModule.CUSTOMER, CommonBeanFactory.getBean(CustomerLogService.class));
+        logServiceMap.put(LogModule.CUSTOMER_INDEX, CommonBeanFactory.getBean(CustomerLogService.class));
         logServiceMap.put(LogModule.CUSTOMER_CONTACT, CommonBeanFactory.getBean(CustomerContactLogService.class));
         logServiceMap.put(LogModule.OPPORTUNITY, CommonBeanFactory.getBean(OpportunityLogService.class));
     }

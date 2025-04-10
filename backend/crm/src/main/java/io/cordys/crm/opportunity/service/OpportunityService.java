@@ -318,7 +318,7 @@ public class OpportunityService {
             originCustomer.setOwner(customer.getOwner());
             Customer modifieCustomer = new Customer();
             modifieCustomer.setOwner(request.getOwner());
-            LogDTO logDTO = new LogDTO(orgId, customer.getId(), userId, LogType.UPDATE, LogModule.CUSTOMER, customer.getName());
+            LogDTO logDTO = new LogDTO(orgId, customer.getId(), userId, LogType.UPDATE, LogModule.OPPORTUNITY, customer.getName());
             logDTO.setOriginalValue(originCustomer);
             logDTO.setModifiedValue(modifieCustomer);
             logs.add(logDTO);

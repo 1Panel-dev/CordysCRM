@@ -73,7 +73,7 @@ public class DepartmentService extends MoveNodeService {
      * @param request
      * @param orgId
      */
-    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.ADD)
+    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.ADD)
     @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
     public Department addDepartment(DepartmentAddRequest request, String orgId, String userId) {
         //同一层级部门名称唯一
@@ -119,7 +119,7 @@ public class DepartmentService extends MoveNodeService {
      * @param request
      * @param userId
      */
-    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.UPDATE)
+    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE)
     public void rename(DepartmentRenameRequest request, String userId) {
         Department originalDepartment = checkDepartment(request.getId());
         checkDepartmentName(request.getName(), originalDepartment.getParentId(), originalDepartment.getOrganizationId());
@@ -156,7 +156,7 @@ public class DepartmentService extends MoveNodeService {
      * @param request
      * @param userId
      */
-    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.UPDATE)
+    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE)
     public void setCommander(DepartmentCommanderRequest request, String userId) {
         Department department = departmentMapper.selectByPrimaryKey(request.getDepartmentId());
         if (department == null) {
@@ -219,7 +219,7 @@ public class DepartmentService extends MoveNodeService {
      *
      * @param id
      */
-    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT, type = LogType.DELETE, resourceId = "{#id}")
+    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.DELETE, resourceId = "{#id}")
     @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
     public void delete(String id, String orgId) {
         Department department = checkDepartment(id);

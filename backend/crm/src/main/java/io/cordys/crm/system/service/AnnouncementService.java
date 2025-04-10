@@ -62,7 +62,7 @@ public class AnnouncementService {
     private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
 
     @Transactional(rollbackFor = Exception.class)
-    @OperationLog(module = LogModule.SYSTEM_ANNOUNCEMENT, type = LogType.ADD)
+    @OperationLog(module = LogModule.SYSTEM_MESSAGE_ANNOUNCEMENT, type = LogType.ADD)
     public void add(AnnouncementRequest request, String userId) {
         Set<String> userSet = new HashSet<>();
         AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = new AnnouncementReceiveTypeDTO();
@@ -112,7 +112,7 @@ public class AnnouncementService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    @OperationLog(module = LogModule.SYSTEM_ANNOUNCEMENT, type = LogType.UPDATE)
+    @OperationLog(module = LogModule.SYSTEM_MESSAGE_ANNOUNCEMENT, type = LogType.UPDATE)
     public void update(AnnouncementRequest request, String userId) {
         String organizationId = request.getOrganizationId();
         Announcement originalAnnouncement = announcementMapper.selectByPrimaryKey(request.getId());
@@ -231,7 +231,7 @@ public class AnnouncementService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    @OperationLog(module = LogModule.SYSTEM_ANNOUNCEMENT, type = LogType.DELETE, resourceId = "{#id}")
+    @OperationLog(module = LogModule.SYSTEM_MESSAGE_ANNOUNCEMENT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         Announcement announcement = announcementMapper.selectByPrimaryKey(id);
         if (announcement == null) {

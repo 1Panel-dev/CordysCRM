@@ -232,7 +232,7 @@ public class CustomerService {
         return customerGetResponse;
     }
 
-    @OperationLog(module = LogModule.CUSTOMER, type = LogType.ADD, resourceName = "{#request.name}")
+    @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Customer add(CustomerAddRequest request, String userId, String orgId) {
         Customer customer = BeanUtils.copyBean(new Customer(), request);
         customer.setCreateTime(System.currentTimeMillis());
@@ -259,7 +259,7 @@ public class CustomerService {
         return customer;
     }
 
-    @OperationLog(module = LogModule.CUSTOMER, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Customer update(CustomerUpdateRequest request, String userId, String orgId) {
         Customer originCustomer = customerMapper.selectByPrimaryKey(request.getId());
         dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner());
@@ -315,7 +315,7 @@ public class CustomerService {
         }
     }
 
-    @OperationLog(module = LogModule.CUSTOMER, type = LogType.DELETE, resourceId = "{#id}")
+    @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {
         Customer originCustomer = customerMapper.selectByPrimaryKey(id);
         dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner());
@@ -354,7 +354,7 @@ public class CustomerService {
                     originCustomer.setOwner(customer.getOwner());
                     Customer modifieCustomer = new Customer();
                     modifieCustomer.setOwner(request.getOwner());
-                    LogDTO logDTO = new LogDTO(orgId, customer.getId(), userId, LogType.UPDATE, LogModule.CUSTOMER, customer.getName());
+                    LogDTO logDTO = new LogDTO(orgId, customer.getId(), userId, LogType.UPDATE, LogModule.CUSTOMER_INDEX, customer.getName());
                     logDTO.setOriginalValue(originCustomer);
                     logDTO.setModifiedValue(modifieCustomer);
                     return logDTO;
@@ -391,7 +391,7 @@ public class CustomerService {
 
         List<LogDTO> logs = customers.stream()
                 .map(customer ->
-                        new LogDTO(orgId, customer.getId(), userId, LogType.DELETE, LogModule.CUSTOMER, customer.getName())
+                        new LogDTO(orgId, customer.getId(), userId, LogType.DELETE, LogModule.CUSTOMER_INDEX, customer.getName())
                 )
                 .toList();
         logService.batchAdd(logs);
@@ -453,7 +453,7 @@ public class CustomerService {
         customers.forEach(customer -> {
             CustomerPool customerPool = ownersDefaultPoolMap.get(customer.getOwner());
             if (customerPool != null) {
-                LogDTO logDTO = new LogDTO(orgId, customer.getId(), currentUser, LogType.MOVE_TO_CUSTOMER_POOL, LogModule.CUSTOMER, customer.getName());
+                LogDTO logDTO = new LogDTO(orgId, customer.getId(), currentUser, LogType.MOVE_TO_CUSTOMER_POOL, LogModule.CUSTOMER_INDEX, customer.getName());
                 String detail = Translator.getWithArgs("customer.to.pool", customer.getName(),
                         customerPool.getName());
                 logDTO.setDetail(detail);

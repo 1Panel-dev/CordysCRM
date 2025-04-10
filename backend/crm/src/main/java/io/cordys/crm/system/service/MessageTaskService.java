@@ -40,7 +40,7 @@ public class MessageTaskService {
     @Resource
     private BaseMapper<MessageTask> messageTaskMapper;
 
-    @OperationLog(module = LogModule.SYSTEM_NOTICE, type = LogType.ADD, operator = "{#userId}")
+    @OperationLog(module = LogModule.SYSTEM_MESSAGE_MESSAGE, type = LogType.ADD, operator = "{#userId}")
     public MessageTask saveMessageTask(MessageTaskRequest messageTaskRequest, String userId, String organizationId) {
         //检查设置的通知是否存在，如果存在则更新
         MessageTask messageTask = new MessageTask();
@@ -79,7 +79,7 @@ public class MessageTaskService {
      * @param messageTaskRequest 入参
      * @param userId             当前用户ID
      */
-    @OperationLog(module = LogModule.SYSTEM_NOTICE, type = LogType.UPDATE, operator = "{{#userId}}")
+    @OperationLog(module = LogModule.SYSTEM_MESSAGE_MESSAGE, type = LogType.UPDATE, operator = "{{#userId}}")
     public MessageTask updateMessageTasks(MessageTaskRequest messageTaskRequest, String userId, MessageTask oldMessageTask) {
         MessageTask messageTask = new MessageTask();
         messageTask.setId(oldMessageTask.getId());

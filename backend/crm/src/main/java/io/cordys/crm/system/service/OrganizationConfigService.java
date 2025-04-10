@@ -60,7 +60,7 @@ public class OrganizationConfigService {
         return JSON.parseObject(new String(organizationConfigDetail.getContent()), EmailDTO.class);
     }
 
-    @OperationLog(module = LogModule.SYSTEM, type = LogType.UPDATE, operator = "{#userId}")
+    @OperationLog(module = LogModule.SYSTEM_BUSINESS_MAIL, type = LogType.UPDATE, operator = "{#userId}")
     public void editEmail(EmailDTO emailDTO, String organizationId, String userId) {
         OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.EMAIL.name());
         if (organizationConfig == null) {

@@ -13,7 +13,21 @@ public class LogModule {
     /**
      * 消息通知
      */
-    public static final String SYSTEM_NOTICE = "SYSTEM_NOTICE";
+    public static final String SYSTEM_MESSAGE_MESSAGE = "SYSTEM_MESSAGE_MESSAGE";
+    /**
+     * 邮件设置
+     */
+    public static final String SYSTEM_BUSINESS_MAIL = "SYSTEM_BUSINESS_MAIL";
+    /**
+     * 认证设置
+     */
+    public static final String SYSTEM_BUSINESS_AUTH = "SYSTEM_BUSINESS_AUTH";
+
+    /**
+     * 三方设置
+     */
+    public static final String SYSTEM_BUSINESS_THIRD = "SYSTEM_BUSINESS_THIRD";
+
     /**
      * 用户
      */
@@ -21,11 +35,11 @@ public class LogModule {
     /**
      * 公告
      */
-    public static final String SYSTEM_ANNOUNCEMENT = "SYSTEM_ANNOUNCEMENT";
+    public static final String SYSTEM_MESSAGE_ANNOUNCEMENT = "SYSTEM_MESSAGE_ANNOUNCEMENT";
     /**
      * 组织架构
      */
-    public static final String SYSTEM_DEPARTMENT = "SYSTEM_DEPARTMENT";
+    public static final String SYSTEM_ORGANIZATION = "SYSTEM_ORGANIZATION";
     /**
      * 组织架构用户
      */
@@ -43,12 +57,12 @@ public class LogModule {
     /**
      * 模块设置
      */
-    public static final String MODULE_SETTING = "MODULE_SETTING";
+    public static final String SYSTEM_MODULE = "SYSTEM_MODULE";
 
     /**
      * 客户
      */
-    public static final String CUSTOMER = "CUSTOMER";
+    public static final String CUSTOMER_INDEX = "CUSTOMER_INDEX";
 
     /**
      * 客户联系人
