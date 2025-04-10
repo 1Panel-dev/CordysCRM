@@ -13,6 +13,7 @@ const clue: AppRouteRecordRaw = {
     permissions: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'],
     icon: 'iconicon_clue',
     hideChildrenInMenu: true,
+    collapsedLocale: 'menu.clue',
   },
   children: [
     {

@@ -13,6 +13,7 @@ const customer: AppRouteRecordRaw = {
     permissions: ['CUSTOMER_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT_POOL:READ', 'CUSTOMER_MANAGEMENT_CONTACT:READ'],
     icon: 'iconicon_multiple_choice_of_members',
     hideChildrenInMenu: true,
+    collapsedLocale: 'menu.customer',
   },
   children: [
     {

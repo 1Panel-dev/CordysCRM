@@ -165,7 +165,6 @@ const useUserStore = defineStore('user', {
         if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
           appStore.connectSystemMessageSSE(this.showSystemNotify);
         }
-        appStore.initModuleConfig();
       }
     },
     // 展示系统公告

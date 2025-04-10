@@ -106,6 +106,7 @@
     negativeText: 'common.cancel',
     showIcon: true,
     showArrow: true,
+    permission: () => [],
   });
 
   const emit = defineEmits<{

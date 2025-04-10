@@ -12,6 +12,7 @@ const system: AppRouteRecordRaw = {
     locale: 'menu.settings',
     permissions: ['SYS_ORGANIZATION:READ', 'SYSTEM_ROLE:READ', 'MODULE_SETTING:READ', 'SYSTEM_SETTING:READ'],
     icon: 'iconicon_set_up',
+    collapsedLocale: 'menu.collapsedSettings',
   },
   children: [
     {

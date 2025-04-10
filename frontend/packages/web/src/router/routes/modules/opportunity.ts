@@ -13,6 +13,7 @@ const system: AppRouteRecordRaw = {
     locale: 'menu.opportunity',
     permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
     icon: 'iconicon_business_opportunity',
+    collapsedLocale: 'menu.collapsedOpportunity',
   },
   children: [
     {

@@ -19,12 +19,15 @@ Object.keys(_Vmodules).forEach((key) => {
 
 export default {
   message: {
-    'menu.workbench': 'Home page',
+    'menu.workbench': 'Home',
     'menu.settings': 'Settings',
+    'menu.collapsedSettings': 'System',
     'menu.settings.org': 'Organization',
     'menu.settings.permission': 'Role',
     'menu.settings.moduleSetting': 'Module',
     'menu.opportunity': 'Opportunity',
+    'menu.collapsedOpportunity': 'Opportunity',
+    'menu.collapsedProduct': 'Product',
     'menu.clue': 'Clue',
     'menu.customer': 'Customer',
     'menu.contact': 'Contact',

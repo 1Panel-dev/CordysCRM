@@ -43,23 +43,7 @@
       </van-cell>
       <CrmList :keyword="keyword">
         <template #item="{ item }">
-          <div class="border-b border-[var(--text-n8)] px-[20px] py-[12px]">
-            <div class="mb-[4px] flex items-center justify-between">
-              <div class="flex items-center gap-[4px]">
-                <van-tag color="var(--info-5)" text-color="var(--info-blue)" class="!px-[8px] !py-[2px]">
-                  {{ t('common.system') }}
-                </van-tag>
-                <van-badge dot>
-                  <div class="font-semibold text-[var(--text-n1)]">{{ t('common.systemNotification') }}</div>
-                </van-badge>
-              </div>
-              <div class="text-[var(--primary-8)]">{{ t('common.signRead') }}</div>
-            </div>
-            <div class="flex flex-col gap-[4px] text-[12px]">
-              <div>{{ item.content }}</div>
-              <div class="text-[var(--text-n2)]">{{ item.time }}</div>
-            </div>
-          </div>
+          <CrmMessageItem :item="item" />
         </template>
       </CrmList>
     </van-cell-group>
@@ -73,6 +57,7 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
+  import CrmMessageItem from '@/components/business/crm-message-item/index.vue';
 
   import { MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
 

@@ -49,4 +49,6 @@ export default {
   'common.notNull': '{value} cannot be empty',
   'common.required': 'Required',
   'common.onlyOne': 'Not allowed to repeat value',
+  'common.phoneNumber': 'Phone number',
+  'common.announcementMessage': 'Announcement',
 };

@@ -183,12 +183,12 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<FormDesignConfigDetailParams>({ url: `${GetFormDesignConfigUrl}/${id}` });
   }
 
-  function getFieldDeptUerTree(fieldId: string) {
-    return CDR.post<DeptUserTreeNode[]>({ url: GetFieldDeptUerTreeUrl, data: { fieldId } });
+  function getFieldDeptUerTree() {
+    return CDR.get<DeptUserTreeNode[]>({ url: GetFieldDeptUerTreeUrl });
   }
 
-  function getFieldDeptTree(fieldId: string) {
-    return CDR.post<DeptUserTreeNode[]>({ url: GetFieldDeptTreeUrl, data: { fieldId } });
+  function getFieldDeptTree() {
+    return CDR.get<DeptUserTreeNode[]>({ url: GetFieldDeptTreeUrl });
   }
 
   function getFieldClueList(data: FormDesignDataSourceTableQueryParams) {

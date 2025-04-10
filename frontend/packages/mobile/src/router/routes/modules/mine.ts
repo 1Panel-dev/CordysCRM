@@ -30,6 +30,14 @@ const mine: AppRouteRecordRaw = {
         permissions: [],
       },
     },
+    {
+      path: 'detail',
+      name: MineRouteEnum.MINE_DETAIL,
+      component: () => import('@/views/mine/detail.vue'),
+      meta: {
+        permissions: [],
+      },
+    },
   ],
 };
 

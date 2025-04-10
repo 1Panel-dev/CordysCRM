@@ -191,6 +191,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { validateEmail, validatePhone } from '@lib/shared/method/validate';
   import type { MemberParams } from '@lib/shared/models/system/org';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -200,7 +201,6 @@
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
   import { addUser, getDepartmentTree, getRoleOptions, getUserDetail, getUserOptions, updateUser } from '@/api/modules';
-  import { validateEmail, validatePhone } from '@/utils/validate';
 
   const Message = useMessage();
   const { t } = useI18n();

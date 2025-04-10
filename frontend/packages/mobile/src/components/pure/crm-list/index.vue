@@ -36,7 +36,7 @@
   const error = ref(false);
   const refreshing = ref(false);
   const finished = ref(false);
-  const list = defineModel<Record<string, any>[]>({
+  const list = defineModel<any[]>({
     default: () => [],
   });
 

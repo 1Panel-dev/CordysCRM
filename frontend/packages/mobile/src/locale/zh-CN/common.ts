@@ -49,4 +49,6 @@ export default {
   'common.notNull': '{value}不能为空',
   'common.required': '必填',
   'common.onlyOne': '不允许重复值',
+  'common.phoneNumber': '手机号',
+  'common.announcementMessage': '公告',
 };

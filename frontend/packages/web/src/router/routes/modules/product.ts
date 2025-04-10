@@ -13,6 +13,7 @@ const product: AppRouteRecordRaw = {
     locale: 'module.productManagement',
     permissions: ['PRODUCT_MANAGEMENT:READ'],
     icon: 'iconicon_product',
+    collapsedLocale: 'menu.collapsedProduct',
   },
   children: [
     {

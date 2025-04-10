@@ -47,9 +47,17 @@
                 <div
                   :class="`flex message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`"
                 >
-                  {{ JSON.parse(item.contentText)?.content ?? '-' }}
-                  <div class="ml-[8px] cursor-pointer text-[var(--primary-8)]" @click="goUrl(item.contentText)">
-                    {{ JSON.parse(item.contentText)?.renameUrl ?? JSON.parse(item.contentText)?.url }}
+                  {{
+                    item.type === SystemMessageTypeEnum.SYSTEM_NOTICE
+                      ? item.contentText
+                      : parseMessageContent(item)?.content ?? '-'
+                  }}
+                  <div
+                    v-if="item.type === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE"
+                    class="ml-[8px] cursor-pointer text-[var(--primary-8)]"
+                    @click="goUrl(item.contentText)"
+                  >
+                    {{ parseMessageContent(item)?.renameUrl ?? parseMessageContent(item)?.url }}
                   </div>
                 </div>
                 <div :class="`message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
@@ -111,14 +119,8 @@
     current: 1,
   });
 
-  async function setMessageRead(item: MessageCenterItem) {
-    if (item.status === SystemMessageStatusEnum.READ) return;
-    try {
-      await setNotificationRead(item.id);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
+  function parseMessageContent(item: MessageCenterItem) {
+    return JSON.parse(item.contentText || '{}');
   }
 
   async function loadMessageList() {
@@ -140,6 +142,17 @@
       console.log(error);
     } finally {
       loading.value = false;
+    }
+  }
+
+  async function setMessageRead(item: MessageCenterItem) {
+    if (item.status === SystemMessageStatusEnum.READ) return;
+    try {
+      await setNotificationRead(item.id);
+      loadMessageList();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
     }
   }
 

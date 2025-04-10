@@ -9,26 +9,24 @@
     @update-collapsed="appStore.setMenuCollapsed"
   >
     <div class="flex h-full flex-col justify-between">
-      <n-menu
-        v-model:value="menuValue"
-        :root-indent="24"
-        :indent="28"
-        :collapsed-width="appStore.collapsedWidth"
-        :icon-size="18"
-        :collapsed-icon-size="18"
-        :options="menuOptions"
-        @update-value="menuChange"
-      />
+      <n-scrollbar content-style="min-height: 500px;height: 100%;width: 100%">
+        <n-menu
+          v-model:value="menuValue"
+          :root-indent="24"
+          :indent="28"
+          :collapsed-width="appStore.collapsedWidth"
+          :icon-size="18"
+          :collapsed-icon-size="28"
+          :options="menuOptions"
+          @update-value="menuChange"
+        />
+      </n-scrollbar>
       <div class="flex flex-col items-start p-[8px]">
         <n-popover trigger="hover" raw :show-arrow="false" placement="right-end" class="personal-popover">
           <template #trigger>
-            <CrmAvatar v-if="collapsed"> </CrmAvatar>
-            <div
-              v-else
-              class="flex w-full items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
-            >
-              <CrmAvatar />
-              <div>
+            <div class="flex w-full items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)]">
+              <CrmAvatar class="flex-shrink-0" />
+              <div v-if="!collapsed">
                 <div>{{ userStore.userInfo.name }}</div>
                 <n-tag
                   :bordered="false"
@@ -76,7 +74,7 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { NDivider, NLayoutSider, NMenu, NPopover, NTag, NText } from 'naive-ui';
+  import { NDivider, NLayoutSider, NMenu, NPopover, NScrollbar, NTag, NText } from 'naive-ui';
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -87,6 +85,7 @@
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
 
   import useMenuTree from '@/hooks/useMenuTree';
+  import type { AppRouteRecordRaw } from '@/router/routes/types';
   import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
 
@@ -118,6 +117,7 @@
         type,
       });
   }
+
   const personalMenuOptions = [
     {
       label: t('module.personal.info'),
@@ -157,6 +157,15 @@
 
   const { menuTree } = useMenuTree();
 
+  function getMenuIcon(e: AppRouteRecordRaw) {
+    if (appStore.getMenuIconStatus) {
+      return e?.meta?.icon ? renderIcon(e.meta.icon) : null;
+    }
+
+    return collapsed.value && e?.meta?.collapsedLocale
+      ? () => h('div', { class: `flex flex-nowrap text-[14px]` }, t(e?.meta?.collapsedLocale ?? ''))
+      : null;
+  }
   const menuOptions = computed<MenuOption[]>(() => {
     return mapTree(menuTree.value, (e: any) => {
       const menuChildren = mapTree(e.children);
@@ -166,7 +175,7 @@
             label: t(e?.meta?.locale ?? ''),
             key: e.name,
             children: menuChildren.length ? menuChildren : undefined,
-            icon: appStore.getMenuIconStatus && e?.meta?.icon ? renderIcon(e?.meta?.icon) : null,
+            icon: getMenuIcon(e),
           };
     }) as unknown as MenuOption[];
   });

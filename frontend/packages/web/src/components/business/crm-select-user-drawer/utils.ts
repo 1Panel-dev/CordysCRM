@@ -12,7 +12,7 @@ import {
 // 添加部门、角色、成员数据API
 export const getDataApiMap: Record<
   MemberApiTypeEnum,
-  Partial<Record<MemberSelectTypeEnum, (params: any) => Promise<any[]>>>
+  Partial<Record<MemberSelectTypeEnum, (params?: any) => Promise<any[]>>>
 > = {
   [MemberApiTypeEnum.SYSTEM_ROLE]: {
     [MemberSelectTypeEnum.ORG]: getRoleDeptUserTree,
@@ -30,7 +30,11 @@ export const getDataApiMap: Record<
 };
 
 // 获取部门、角色、成员数据
-export function getDataFunc(apiType: MemberApiTypeEnum, activeType: MemberSelectTypeEnum, params: Record<string, any>) {
+export function getDataFunc(
+  apiType: MemberApiTypeEnum,
+  activeType: MemberSelectTypeEnum,
+  params?: Record<string, any>
+) {
   const func = getDataApiMap[apiType]?.[activeType];
   if (!func) {
     return Promise.reject();

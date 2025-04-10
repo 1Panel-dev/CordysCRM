@@ -31,6 +31,7 @@ export enum MineRouteEnum {
   MINE = 'mine',
   MINE_INDEX = 'mineIndex',
   MINE_MESSAGE = 'mineMessage',
+  MINE_DETAIL = 'mineDetail',
 }
 export enum WorkbenchRouteEnum {
   WORKBENCH = 'workbench',

@@ -13,6 +13,7 @@ const workbench: AppRouteRecordRaw = {
     locale: 'menu.workbench',
     permissions: [],
     icon: 'iconicon_home1',
+    collapsedLocale: 'menu.workbench',
   },
   children: [
     {

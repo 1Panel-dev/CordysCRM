@@ -14,6 +14,7 @@ import useAppStore from '@/store/modules/app';
 export default function useMenuTree() {
   const appStore = useAppStore();
   const permission = usePermission();
+  appStore.initModuleConfig();
   const menuTree = computed(() => {
     const copyRouter = cloneDeep(appClientMenus) as RouteRecordNormalized[];
 

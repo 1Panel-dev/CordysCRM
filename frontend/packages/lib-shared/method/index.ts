@@ -474,3 +474,17 @@ export function safeFractionConvert(str: string | number) {
   if (parts.length !== 2 || parts.some((e) => Number.isNaN(e))) return 1;
   return parts[0] / parts[1];
 }
+
+/**
+ * 打开网页链接
+ * @param url 链接地址
+ */
+export function openDocumentLink(url: string) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer'; // 防止打开页面控制当前页面
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}

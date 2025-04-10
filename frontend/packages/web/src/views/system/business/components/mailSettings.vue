@@ -125,13 +125,13 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { desensitize } from '@lib/shared/method';
+  import { validateEmail } from '@lib/shared/method/validate';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
 
   import { getConfigEmail, testConfigEmail, updateConfigEmail } from '@/api/modules';
-  import { validateEmail } from '@/utils/validate';
 
   const { t } = useI18n();
   const Message = useMessage();

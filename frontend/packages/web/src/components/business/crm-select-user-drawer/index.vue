@@ -234,7 +234,7 @@
     (val) => {
       if (val) {
         // TODO: 别的接口
-        loadData(MemberSelectTypeEnum.ORG);
+        loadData(addMemberType.value);
       }
     }
   );

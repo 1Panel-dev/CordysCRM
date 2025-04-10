@@ -84,6 +84,7 @@
   import { characterLimit } from '@lib/shared/method';
   import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
+  import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -94,7 +95,6 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
-  import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   // TODO 不上
   // import CrmImportButton from '@/components/business/crm-import-button/index.vue';
@@ -104,7 +104,7 @@
   import OptOverviewDrawer from './components/optOverviewDrawer.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
 
-  import { batchDeleteOpt, deleteOpt, getDepartmentTree, transferOpt } from '@/api/modules';
+  import { batchDeleteOpt, deleteOpt, getFieldDeptTree, transferOpt } from '@/api/modules';
   import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
@@ -412,7 +412,7 @@
     loadList();
   }
 
-  const department = ref<CrmTreeNodeData[]>([]);
+  const department = ref<DeptUserTreeNode[]>([]);
 
   const filterConfigList = computed<FilterFormItem[]>(() => {
     return [
@@ -467,7 +467,7 @@
 
   async function initDepartList() {
     try {
-      department.value = await getDepartmentTree();
+      department.value = await getFieldDeptTree();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
