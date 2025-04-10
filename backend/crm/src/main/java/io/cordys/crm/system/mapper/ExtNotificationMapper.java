@@ -23,7 +23,7 @@ public interface ExtNotificationMapper {
 
     List<NotificationDTO> selectByAnyOne(@Param("request") Notification request);
 
-    List<NotificationDTO> selectLastList(@Param("userId") String userId, @Param("organizationId") String organizationId);
+    List<NotificationDTO> selectLastList(@Param("userId") String userId, @Param("organizationId") String organizationId, @Param("modules") List<String> modules);
 
 
 }

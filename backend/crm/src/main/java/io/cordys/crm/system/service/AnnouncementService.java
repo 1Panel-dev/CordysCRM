@@ -222,7 +222,7 @@ public class AnnouncementService {
                 stringRedisTemplate.opsForZSet().add(USER_ANNOUNCE_PREFIX + subUserId, id, System.currentTimeMillis());
                 stringRedisTemplate.opsForValue().set(ANNOUNCE_PREFIX + id, messageText);
                 //更新用户的已读全部消息状态 0 为未读，1为已读
-                stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + subUserId, "0");
+                stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + subUserId, "False");
                 // 发送消息
                 sseService.broadcastPeriodically(subUserId);
             }

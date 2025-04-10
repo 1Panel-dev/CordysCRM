@@ -1,13 +1,18 @@
 package io.cordys.crm.system.notice.sse;
 
+import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.system.constants.NotificationConstants;
+import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.mapper.ExtNotificationMapper;
 import io.cordys.crm.system.notice.dto.SseMessageDTO;
+import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,8 +33,13 @@ public class SseService {
     @Resource
     private ExtNotificationMapper extNotificationMapper;
 
+    @Resource
+    private BaseMapper<Module> moduleMapper;
+
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
+    private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
+    private static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
     private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
 
 
@@ -155,18 +165,56 @@ public class SseService {
 
         SseMessageDTO sseMessageDTO = new SseMessageDTO();
 
-        // 获取通知并转换内容
-        List<NotificationDTO> notifications = extNotificationMapper
-                .selectLastList(userId, OrganizationContext.getOrganizationId());
-        notifications.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).forEach(notification ->
-                notification.setContentText(new String(notification.getContent())));
+        //获取已开启的模块
+        List<String> enabledModules = moduleMapper.selectListByLambda(
+                        new LambdaQueryWrapper<Module>()
+                                .eq(Module::getOrganizationId, OrganizationContext.getOrganizationId())
+                                .eq(Module::getEnable, true)
+                ).stream()
+                .map(Module::getModuleKey).distinct()
+                .toList();
 
-        sseMessageDTO.setNotificationDTOList(notifications);
+        List<String>modules = new ArrayList<>();
+        for (String enabledModule : enabledModules) {
+            if (StringUtils.equalsIgnoreCase(enabledModule,ModuleKey.BUSINESS.getKey())) {
+                modules.add(NotificationConstants.Module.OPPORTUNITY);
+            }
+            if (StringUtils.equalsIgnoreCase(enabledModule,ModuleKey.CUSTOMER.getKey())) {
+                modules.add(NotificationConstants.Module.CUSTOMER);
+            }
+            if (StringUtils.equalsIgnoreCase(enabledModule,ModuleKey.CLUE.getKey())) {
+                modules.add(NotificationConstants.Module.CLUE);
+            }
+
+        }
+        //获取公告
+        Set<String> sysValues = stringRedisTemplate.opsForZSet().range(USER_PREFIX+userId, 0, -1);
+
+        if (CollectionUtils.isNotEmpty(sysValues)) {
+            int size = sysValues.size();
+            sseMessageDTO.setNotificationDTOList(buildDTOList(sysValues, MSG_PREFIX));
+            if (size != 5) {
+                //如果不够5条，从数据库提取最新未读加上
+                // 获取用户未读的系统通知
+                List<NotificationDTO> notifications = extNotificationMapper
+                        .selectLastList(userId, OrganizationContext.getOrganizationId(),modules);
+                notifications.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).forEach(notification ->
+                        notification.setContentText(new String(notification.getContent())));
+                List<NotificationDTO> notificationDTOS = notifications.subList(0, Math.min(5 - size, notifications.size()));
+                sseMessageDTO.setNotificationDTOList(notificationDTOS);
+            }
+        } else {
+            List<NotificationDTO> notifications = extNotificationMapper
+                    .selectLastList(userId, OrganizationContext.getOrganizationId(),modules);
+            notifications.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).forEach(notification ->
+                    notification.setContentText(new String(notification.getContent())));
+            sseMessageDTO.setNotificationDTOList(notifications);
+        }
 
         // 获取公告（如果存在）
         Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX + userId, 0, -1);
         if (CollectionUtils.isNotEmpty(values)) {
-            sseMessageDTO.setAnnouncementDTOList(buildDTOList(values));
+            sseMessageDTO.setAnnouncementDTOList(buildDTOList(values, ANNOUNCE_PREFIX));
         }
 
         // 获取用户读取状态
@@ -181,10 +229,10 @@ public class SseService {
 
     }
 
-    private List<NotificationDTO> buildDTOList(Set<String> sysValues) {
+    private List<NotificationDTO> buildDTOList(Set<String> sysValues, String prefix) {
         List<NotificationDTO> notificationDTOList = new ArrayList<>();
         for (String value : sysValues) {
-            String announceNotification = stringRedisTemplate.opsForValue().get(SseService.ANNOUNCE_PREFIX + value);
+            String announceNotification = stringRedisTemplate.opsForValue().get(prefix + value);
             if (StringUtils.isBlank(announceNotification)) {
                 continue;
             }

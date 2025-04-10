@@ -30,6 +30,7 @@ public class NotificationControllerTests extends BaseTest {
     public static final String NOTIFICATION_READ = "/notification/read/";
     public static final String NOTIFICATION_READ_ALL = "/notification/read/all";
     public static final String NOTIFICATION_COUNT = "/notification/count";
+    public static final String NOTIFICATION_LAST_LIST = "/notification/last/list";
 
     @Resource
     private ExtNotificationMapper extNotificationMapper;
@@ -121,6 +122,20 @@ public class NotificationControllerTests extends BaseTest {
         String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
         ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
         List<OptionDTO> optionDTOS = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), OptionDTO.class);
+        Assertions.assertFalse(optionDTOS.isEmpty());
+    }
+
+    @Test
+    @Order(5)
+    void getNotificationLast() throws Exception {
+        saveNotice("CUSTOMER");
+        saveNotice("CLUE");
+        saveNotice("BUSINESS");
+        saveNotice("ANNOUNCEMENT");
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(NOTIFICATION_LAST_LIST);
+        String updateReturnData = mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        ResultHolder resultHolder = JSON.parseObject(updateReturnData, ResultHolder.class);
+        List<NotificationDTO> optionDTOS = JSON.parseArray(JSON.toJSONString(resultHolder.getData()), NotificationDTO.class);
         Assertions.assertFalse(optionDTOS.isEmpty());
     }
 

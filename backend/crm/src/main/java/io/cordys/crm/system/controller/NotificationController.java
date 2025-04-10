@@ -37,6 +37,14 @@ public class NotificationController {
         return PageUtils.setPageInfo(page, notificationService.listNotification(notificationRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
     }
 
+
+    @GetMapping(value = "/last/list")
+    @Operation(summary = "消息中心-获取消息中未读的最新部分消息")
+    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
+    public List<NotificationDTO> listLastNotification() {
+        return notificationService.listLastNotification(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
     @GetMapping(value = "/read/{id}")
     @Operation(summary = "消息中心-将消息设置为已读")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)

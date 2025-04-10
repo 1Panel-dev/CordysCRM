@@ -1,13 +1,17 @@
 package io.cordys.crm.system.service;
 
 
+import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.dto.OptionCountDTO;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.constants.NotificationConstants;
+import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.request.NotificationRequest;
 import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.mapper.ExtNotificationMapper;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,10 +32,14 @@ public class NotificationService {
     private ExtNotificationMapper extNotificationMapper;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private BaseMapper<Module> moduleMapper;
 
 
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
+    private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
+    private static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
     private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
 
 
@@ -50,11 +58,13 @@ public class NotificationService {
         //删除缓存中的公告提示
         stringRedisTemplate.opsForZSet().remove(USER_ANNOUNCE_PREFIX + userId, id);
         stringRedisTemplate.delete(ANNOUNCE_PREFIX + id);
+        stringRedisTemplate.opsForZSet().remove(USER_PREFIX + userId, id);
+        stringRedisTemplate.delete(MSG_PREFIX + id);
         Integer update = notificationMapper.update(record);
         //检查当前用户是否还有有已读信息，没有更新用户状态
         Integer unRead = getUnRead(orgId, userId);
         if (unRead == 0) {
-            stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "1");
+            stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "True");
         }
         return update;
     }
@@ -71,8 +81,15 @@ public class NotificationService {
                 stringRedisTemplate.delete(ANNOUNCE_PREFIX + value);
             }
         }
+        Set<String> range = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
+        if (CollectionUtils.isNotEmpty(range)){
+            for (String value : range) {
+                stringRedisTemplate.delete(MSG_PREFIX+value);
+            }
+        }
         stringRedisTemplate.delete(USER_ANNOUNCE_PREFIX + userId);
-        stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "1");
+        stringRedisTemplate.delete(USER_PREFIX + userId);
+        stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "True");
         return extNotificationMapper.updateByReceiver(record);
     }
 
@@ -140,5 +157,34 @@ public class NotificationService {
         record.setStatus(NotificationConstants.Status.UNREAD.name());
         record.setReceiver(userId);
         return extNotificationMapper.countByReceiver(record);
+    }
+
+    public List<NotificationDTO> listLastNotification(String userId, String organizationId) {
+        //获取已开启的模块
+        List<String> enabledModules = moduleMapper.selectListByLambda(
+                        new LambdaQueryWrapper<Module>()
+                                .eq(Module::getOrganizationId, OrganizationContext.getOrganizationId())
+                                .eq(Module::getEnable, true)
+                ).stream()
+                .map(Module::getModuleKey).distinct()
+                .toList();
+
+        List<String>modules = new ArrayList<>();
+        for (String enabledModule : enabledModules) {
+            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.BUSINESS.getKey())) {
+                modules.add(NotificationConstants.Module.OPPORTUNITY);
+            }
+            if (StringUtils.equalsIgnoreCase(enabledModule,ModuleKey.CUSTOMER.getKey())) {
+                modules.add(NotificationConstants.Module.CUSTOMER);
+            }
+            if (StringUtils.equalsIgnoreCase(enabledModule,ModuleKey.CLUE.getKey())) {
+                modules.add(NotificationConstants.Module.CLUE);
+            }
+
+        }
+
+        List<NotificationDTO> notifications = extNotificationMapper.selectLastList(userId, organizationId,modules);
+        notifications.forEach(notification -> notification.setContentText(new String(notification.getContent())));
+        return notifications;
     }
 }
