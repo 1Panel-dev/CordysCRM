@@ -10,11 +10,13 @@ declare module 'vue' {
     Create: typeof import('./src/components/business/crm-contact-list/create.vue')['default'];
     CrmContactList: typeof import('./src/components/business/crm-contact-list/index.vue')['default'];
     CrmDatasource: typeof import('./src/components/business/crm-datasource/index.vue')['default'];
+    CrmDescription: typeof import('./src/components/pure/crm-description/index.vue')['default'];
     CrmFormCreate: typeof import('./src/components/business/crm-form-create/index.vue')['default'];
     CrmHeaderList: typeof import('./src/components/business/crm-header-list/index.vue')['default'];
     CrmIconFont: typeof import('./src/components/pure/crm-icon-font/index.vue')['default'];
     CrmList: typeof import('./src/components/pure/crm-list/index.vue')['default'];
     CrmListCommonItem: typeof import('./src/components/pure/crm-list-common-item/index.vue')['default'];
+    CrmMessageItem: typeof import('./src/components/business/crm-message-item/index.vue')['default'];
     CrmPageHeader: typeof import('./src/components/pure/crm-page-header/index.vue')['default'];
     CrmPageWrapper: typeof import('./src/components/pure/crm-page-wrapper/index.vue')['default'];
     CrmPasswordInput: typeof import('./src/components/pure/crm-password-input/index.vue')['default'];
@@ -51,6 +53,7 @@ declare module 'vue' {
     VanImage: typeof import('vant/es')['Image'];
     VanList: typeof import('vant/es')['List'];
     VanLoading: typeof import('vant/es')['Loading'];
+    VanNavBar: typeof import('vant/es')['NavBar'];
     VanPicker: typeof import('vant/es')['Picker'];
     VanPickerGroup: typeof import('vant/es')['PickerGroup'];
     VanPopup: typeof import('vant/es')['Popup'];

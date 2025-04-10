@@ -57,5 +57,6 @@ export default {
   'common.confirmDelete': 'Confirm delete',
   'common.copySuccess': 'Copy success',
   'common.copyNotSupport': 'Current device does not support copy, please copy manually',
+  'common.phoneNumber': 'Phone number',
   'common.announcementMessage': 'Announcement',
 };
