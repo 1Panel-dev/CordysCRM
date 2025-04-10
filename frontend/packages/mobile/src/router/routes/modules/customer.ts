@@ -29,6 +29,30 @@ const customer: AppRouteRecordRaw = {
         permissions: [],
       },
     },
+    {
+      path: 'transfer',
+      name: CustomerRouteEnum.CUSTOMER_TRANSFER,
+      component: () => import('@/views/customer/transfer.vue'),
+      meta: {
+        permissions: [],
+      },
+    },
+    {
+      path: 'distribute',
+      name: CustomerRouteEnum.CUSTOMER_DISTRIBUTE,
+      component: () => import('@/views/customer/openSea/distribute.vue'),
+      meta: {
+        permissions: [],
+      },
+    },
+    {
+      path: 'openSeaDetail',
+      name: CustomerRouteEnum.CUSTOMER_OPENSEA_DETAIL,
+      component: () => import('@/views/customer/openSea/detail.vue'),
+      meta: {
+        permissions: [],
+      },
+    },
   ],
 };
 

@@ -10,4 +10,10 @@ export default {
   'customer.headerRecord': '负责人记录',
   'customer.relation': '客户关系',
   'customer.collaborator': '协作成员',
+  'customer.transferCustomer': '转移客户',
+  'customer.searchNamePlaceholder': '请输入姓名',
+  'customer.transfer': '转移',
+  'customer.transferSuccess': '转移成功',
+  'customer.deleteTitle': '确认删除客户吗？',
+  'customer.deleteTip': '删除后，成员无法查到该客户，请谨慎操作！',
 };

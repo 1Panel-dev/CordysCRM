@@ -10,9 +10,11 @@
         <div v-if="tab.name === 'info'" class="relative h-full bg-[var(--text-n9)] pt-[16px]">
           <CrmDescription :description="description" />
         </div>
-        <CrmContactList v-else-if="tab.name === 'contact'" />
-        <CrmFollowRecordList v-else-if="tab.name === 'record'" :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER" />
-        <CrmFollowPlanList v-else-if="tab.name === 'plan'" :type="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER" />
+        <CrmFollowRecordList
+          v-else-if="tab.name === 'record'"
+          :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER"
+          readonly
+        />
       </van-tab>
     </van-tabs>
   </CrmPageWrapper>
@@ -26,8 +28,6 @@
 
   import CrmDescription, { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
-  import CrmContactList from '@/components/business/crm-contact-list/index.vue';
-  import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
 
   const route = useRoute();
@@ -40,28 +40,12 @@
       title: t('customer.info'),
     },
     {
-      name: 'contact',
-      title: t('menu.contact'),
-    },
-    {
       name: 'record',
       title: t('common.record'),
     },
     {
-      name: 'plan',
-      title: t('common.plan'),
-    },
-    {
       name: 'header',
       title: t('customer.headerRecord'),
-    },
-    {
-      name: 'relation',
-      title: t('customer.relation'),
-    },
-    {
-      name: 'collaborator',
-      title: t('customer.collaborator'),
     },
   ];
 

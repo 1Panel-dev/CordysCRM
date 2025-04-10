@@ -21,10 +21,21 @@
           <van-image round width="40px" height="40px" src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg" />
           <div class="flex flex-1 flex-wrap items-center">
             <div class="flex-1 text-[16px] font-semibold">赵开始</div>
-            <div class="flex items-center gap-[16px]">
-              <CrmTextButton icon="iconicon_delete" color="var(--error-red)" icon-size="16px" />
-              <CrmTextButton v-if="isPlan" icon="iconicon_minus_circle1" color="var(--primary-8)" icon-size="16px" />
-              <CrmTextButton icon="iconicon_handwritten_signature" color="var(--primary-8)" icon-size="16px" />
+            <div v-if="!props.readonly" class="flex items-center gap-[16px]">
+              <CrmTextButton icon="iconicon_delete" color="var(--error-red)" icon-size="16px" @click="emit('delete')" />
+              <CrmTextButton
+                v-if="isPlan"
+                icon="iconicon_minus_circle1"
+                color="var(--primary-8)"
+                icon-size="16px"
+                @click="emit('cancel')"
+              />
+              <CrmTextButton
+                icon="iconicon_handwritten_signature"
+                color="var(--primary-8)"
+                icon-size="16px"
+                @click="emit('edit')"
+              />
             </div>
             <div v-if="isPlan" class="flex basis-full items-center gap-[16px]">
               <div class="text-[12px] text-[var(--text-n4)]">重要程度</div>
@@ -51,6 +62,12 @@
   const props = defineProps<{
     item: any;
     type: 'plan' | 'record';
+    readonly?: boolean;
+  }>();
+  const emit = defineEmits<{
+    (e: 'edit'): void;
+    (e: 'delete'): void;
+    (e: 'cancel'): void;
   }>();
 
   const isPlan = computed(() => {

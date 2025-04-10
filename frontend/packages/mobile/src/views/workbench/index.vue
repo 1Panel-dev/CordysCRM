@@ -86,31 +86,17 @@
       label: t('common.newClue'),
       name: 'clue',
     },
-    {
-      icon: 'icon-newRecord',
-      label: t('common.newFollowRecord'),
-      name: 'followRecord',
-    },
-    {
-      icon: 'icon-newPlan',
-      label: t('common.newFollowPlan'),
-      name: 'followPlan',
-    },
+    // {
+    //   icon: 'icon-newRecord',
+    //   label: t('common.newFollowRecord'),
+    //   name: 'followRecord',
+    // },
+    // {
+    //   icon: 'icon-newPlan',
+    //   label: t('common.newFollowPlan'),
+    //   name: 'followPlan',
+    // },
   ];
-  const loading = ref(false);
-  const error = ref(false);
-  const refreshing = ref(false);
-  const finished = ref(false);
-  const list = ref(['1', '2', '3', '4', '5', '6', '7', '8']);
-  const onLoad = () => {
-    loading.value = true;
-    setTimeout(() => {
-      finished.value = true;
-      refreshing.value = false;
-      loading.value = false;
-      error.value = false;
-    }, 2000);
-  };
 
   function goMine() {
     router.push({ name: MineRouteEnum.MINE_INDEX });

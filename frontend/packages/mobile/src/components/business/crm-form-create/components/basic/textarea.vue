@@ -21,7 +21,6 @@
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
-    path: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: (string | number)[]): void;

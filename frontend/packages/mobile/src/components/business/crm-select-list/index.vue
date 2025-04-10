@@ -41,4 +41,11 @@
   }
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  :deep(.van-radio__label) {
+    @apply w-full;
+    .half-px-border-bottom();
+
+    padding: 16px 16px 16px 0;
+  }
+</style>

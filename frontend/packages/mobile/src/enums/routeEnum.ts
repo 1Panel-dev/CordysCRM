@@ -13,6 +13,9 @@ export enum CustomerRouteEnum {
   CUSTOMER = 'customer',
   CUSTOMER_INDEX = 'customerIndex',
   CUSTOMER_DETAIL = 'customerDetail',
+  CUSTOMER_TRANSFER = 'customerTransfer',
+  CUSTOMER_DISTRIBUTE = 'customerDistribute',
+  CUSTOMER_OPENSEA_DETAIL = 'customerOpenSeaDetail',
 }
 
 export enum CommonRouteEnum {

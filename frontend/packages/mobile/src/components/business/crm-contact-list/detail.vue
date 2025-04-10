@@ -19,8 +19,8 @@
 </template>
 
 <script setup lang="ts">
-  import { useRoute } from 'vue-router';
-  import { showSuccessToast } from 'vant';
+  import { useRoute, useRouter } from 'vue-router';
+  import { showConfirmDialog, showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -28,6 +28,7 @@
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
 
   const route = useRoute();
+  const router = useRouter();
   const { t } = useI18n();
 
   const description: CrmDescriptionItem[] = [
@@ -57,17 +58,30 @@
     },
   ];
   const loading = ref(false);
-  async function handleDelete() {
-    try {
-      loading.value = true;
-      // Simulate delete operation
-      showSuccessToast(t('common.deleteSuccess'));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    } finally {
-      loading.value = false;
-    }
+
+  function handleDelete() {
+    showConfirmDialog({
+      title: t('contact.deleteTitle'),
+      message: t('contact.deleteTip'),
+      confirmButtonText: t('common.confirmDelete'),
+      confirmButtonColor: 'var(--error-red)',
+      beforeClose: (action) => {
+        if (action === 'confirm') {
+          try {
+            // TODO: delete customer
+            showSuccessToast(t('common.deleteSuccess'));
+            router.back();
+            return Promise.resolve(true);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+            return Promise.resolve(false);
+          }
+        } else {
+          return Promise.resolve(true);
+        }
+      },
+    });
   }
 </script>
 

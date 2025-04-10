@@ -148,7 +148,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
    * 处理业务表单的特殊字段在特定场景下的初始化默认值
    */
   function specialFormFieldInit(field: FormCreateField) {
-    if ([FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER, FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER].includes(props.formKey)) {
+    if (
+      [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER, FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER].includes(props.formKey) &&
+      props.sourceId
+    ) {
       // 客户跟进计划和记录，需要赋予类型字段默认为客户，客户字段默认值为当前客户
       if (field.businessKey === 'type') {
         return {
@@ -168,7 +171,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
-    if ([FormDesignKeyEnum.FOLLOW_PLAN_CLUE, FormDesignKeyEnum.FOLLOW_RECORD_CLUE].includes(props.formKey)) {
+    if (
+      [FormDesignKeyEnum.FOLLOW_PLAN_CLUE, FormDesignKeyEnum.FOLLOW_RECORD_CLUE].includes(props.formKey) &&
+      props.sourceId
+    ) {
       // 线索跟进计划和记录，需要赋予类型字段默认为客户，线索字段默认值为当前线索
       if (field.businessKey === 'type') {
         return {
@@ -188,7 +194,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
-    if (props.formKey === FormDesignKeyEnum.CONTACT) {
+    if (props.formKey === FormDesignKeyEnum.CONTACT && props.sourceId) {
       // 联系人表单，赋予客户字段默认值为当前客户
       if (field.businessKey === 'customerId') {
         specialInitialOptions.value = [

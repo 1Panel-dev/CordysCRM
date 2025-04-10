@@ -5,7 +5,7 @@
       <van-search v-model="keyword" shape="round" :placeholder="t('customer.searchPlaceholder')" class="flex-1 !p-0" />
     </div>
     <div class="flex-1 overflow-hidden">
-      <CrmList :list-params="listParams" class="p-[16px]" :item-gap="16">
+      <CrmList ref="crmListRef" :list-params="listParams" class="p-[16px]" :item-gap="16">
         <template #item="{ item }">
           <div
             class="flex w-full items-center gap-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[16px]"
@@ -24,7 +24,7 @@
                     {{ t('common.normal') }}
                   </van-tag>
                 </div>
-                <CrmTextButton icon="iconicon_delete" icon-size="16px" color="var(--error-red)" />
+                <CrmTextButton icon="iconicon_delete" icon-size="16px" color="var(--error-red)" @click="handleDelete" />
               </div>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-[4px]">
@@ -32,7 +32,13 @@
                   <div class="text-[12px] text-[var(--text-n2)]">
                     {{ item.phone?.replace(/(\d{3})(\d{4})(\d{4})/, '$1 $2 $3') }}
                   </div>
-                  <CrmIcon name="iconicon_file_copy" width="12px" height="12px" color="var(--primary-8)" />
+                  <CrmIcon
+                    name="iconicon_file_copy"
+                    width="12px"
+                    height="12px"
+                    color="var(--primary-8)"
+                    @click.stop="() => handleCopy(item.phone)"
+                  />
                 </div>
                 <div class="flex items-center gap-[4px]">
                   <CrmIcon name="iconicon_mail1" width="12px" height="12px" color="var(--text-n2)" />
@@ -49,6 +55,8 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
+  import { useClipboard } from '@vueuse/core';
+  import { showConfirmDialog, showFailToast, showSuccessToast } from 'vant';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -62,7 +70,9 @@
 
   const { t } = useI18n();
   const router = useRouter();
+  const { copy, isSupported } = useClipboard({ legacy: true });
 
+  const crmListRef = ref<InstanceType<typeof CrmList>>();
   const keyword = ref('');
   const activeFilter = ref(CustomerSearchTypeEnum.ALL);
   const listParams = computed(() => {
@@ -71,6 +81,40 @@
       keyword: keyword.value,
     };
   });
+
+  function handleCopy(val: string) {
+    if (isSupported) {
+      copy(val);
+      showSuccessToast(t('common.copySuccess'));
+    } else {
+      showFailToast(t('common.copyNotSupport'));
+    }
+  }
+
+  function handleDelete() {
+    showConfirmDialog({
+      title: t('contact.deleteTitle'),
+      message: t('contact.deleteTip'),
+      confirmButtonText: t('common.confirmDelete'),
+      confirmButtonColor: 'var(--error-red)',
+      beforeClose: (action) => {
+        if (action === 'confirm') {
+          try {
+            // TODO: delete customer
+            showSuccessToast(t('common.deleteSuccess'));
+            crmListRef.value?.loadList(true);
+            return Promise.resolve(true);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+            return Promise.resolve(false);
+          }
+        } else {
+          return Promise.resolve(true);
+        }
+      },
+    });
+  }
 
   function goCreate() {
     router.push({
@@ -87,6 +131,7 @@
       query: {
         id: item.id,
         name: item.name,
+        needInitDetail: 'Y',
       },
     });
   }

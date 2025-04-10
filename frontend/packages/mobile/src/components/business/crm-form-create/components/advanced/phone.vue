@@ -1,6 +1,6 @@
 <template>
   <van-field
-    v-model:value="value"
+    v-model="value"
     type="tel"
     :disabled="props.fieldConfig.editable === false"
     :maxlength="11"

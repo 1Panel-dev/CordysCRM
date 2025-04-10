@@ -2,7 +2,13 @@
   <div class="flex h-full flex-col overflow-hidden">
     <div class="flex items-center gap-[12px] bg-[var(--text-n10)] p-[8px_16px]">
       <van-button plain icon="plus" type="primary" size="small" @click="goCreate"> </van-button>
-      <van-search v-model="keyword" shape="round" :placeholder="t('customer.searchPlaceholder')" class="flex-1 !p-0" />
+      <van-search
+        v-model="keyword"
+        shape="round"
+        :placeholder="t('customer.searchPlaceholder')"
+        class="flex-1 !p-0"
+        @search="search"
+      />
     </div>
     <div class="filter-buttons">
       <van-button
@@ -22,7 +28,7 @@
       </van-button>
     </div>
     <div class="flex-1 overflow-hidden">
-      <CrmList :list-params="listParams" class="p-[16px]" :item-gap="16">
+      <CrmList ref="crmListRef" :list-params="listParams" class="p-[16px]" :item-gap="16">
         <template #item="{ item }">
           <CrmListCommonItem :item="item" :actions="actions" @click="goDetail"></CrmListCommonItem>
         </template>
@@ -33,6 +39,7 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
+  import { showConfirmDialog, showSuccessToast } from 'vant';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -46,6 +53,7 @@
   const { t } = useI18n();
   const router = useRouter();
 
+  const crmListRef = ref<InstanceType<typeof CrmList>>();
   const keyword = ref('');
   const activeFilter = ref(CustomerSearchTypeEnum.ALL);
   const filterButtons = [
@@ -83,16 +91,9 @@
           query: {
             id: item.id,
             formKey: FormDesignKeyEnum.CUSTOMER,
+            needInitDetail: 'Y',
           },
         });
-      },
-    },
-    {
-      label: t('common.writeRecord'),
-      icon: 'iconicon_handwritten_signature',
-      permission: [],
-      action: (item: any) => {
-        console.log('writeRecord', item.id);
       },
     },
     {
@@ -100,7 +101,27 @@
       icon: 'iconicon_jump',
       permission: [],
       action: (item: any) => {
-        console.log('transfer', item.id);
+        router.push({
+          name: CustomerRouteEnum.CUSTOMER_TRANSFER,
+          query: {
+            id: item.id,
+          },
+        });
+      },
+    },
+    {
+      label: t('common.writeRecord'),
+      icon: 'iconicon_edit1',
+      permission: [],
+      action: (item: any) => {
+        router.push({
+          name: CommonRouteEnum.FORM_CREATE,
+          query: {
+            id: item.id,
+            formKey: FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER,
+            initialSourceName: item.name,
+          },
+        });
       },
     },
     {
@@ -108,10 +129,42 @@
       icon: 'iconicon_delete',
       permission: [],
       action: (item: any) => {
-        console.log('delete', item.id);
+        showConfirmDialog({
+          title: t('customer.deleteTitle'),
+          message: t('customer.deleteTip'),
+          confirmButtonText: t('common.confirmDelete'),
+          confirmButtonColor: 'var(--error-red)',
+          beforeClose: (action) => {
+            if (action === 'confirm') {
+              try {
+                // TODO: delete customer
+                showSuccessToast(t('common.deleteSuccess'));
+                crmListRef.value?.loadList(true);
+                return Promise.resolve(true);
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.log(error);
+                return Promise.resolve(false);
+              }
+            } else {
+              return Promise.resolve(true);
+            }
+          },
+        });
       },
     },
   ];
+
+  watch(
+    () => activeFilter.value,
+    () => {
+      crmListRef.value?.loadList(true);
+    }
+  );
+
+  function search() {
+    crmListRef.value?.loadList(true);
+  }
 
   function goCreate() {
     router.push({
@@ -128,6 +181,7 @@
       query: {
         id: item.id,
         name: item.name,
+        needInitDetail: 'Y',
       },
     });
   }

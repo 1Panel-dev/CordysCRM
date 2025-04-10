@@ -5,9 +5,16 @@
       <van-search v-model="keyword" shape="round" :placeholder="t('common.pleaseInputKeyword')" class="flex-1 !p-0" />
     </div>
     <div class="flex-1 overflow-hidden">
-      <CrmList :keyword="keyword" class="p-[16px]" :item-gap="16">
+      <CrmList ref="crmListRef" :keyword="keyword" class="p-[16px]" :item-gap="16">
         <template #item="{ item }">
-          <listItem :item="item" type="plan" @click="goDetail(item)" />
+          <listItem
+            :item="item"
+            type="plan"
+            @click="goDetail(item)"
+            @delete="handleDelete(item)"
+            @edit="handleEdit(item)"
+            @cancel="handleCancel(item)"
+          />
         </template>
       </CrmList>
     </div>
@@ -16,6 +23,7 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
+  import { showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -33,6 +41,30 @@
   const keyword = ref('');
   const router = useRouter();
 
+  const crmListRef = ref<InstanceType<typeof CrmList>>();
+
+  async function handleDelete(item: any) {
+    try {
+      // TODO: delete customer
+      showSuccessToast(t('common.deleteSuccess'));
+      crmListRef.value?.loadList(true);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function handleCancel(item: any) {
+    try {
+      // TODO: delete customer
+      showSuccessToast(t('common.cancelSuccess'));
+      crmListRef.value?.loadList(true);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   function goCreate() {
     router.push({
       name: CommonRouteEnum.FORM_CREATE,
@@ -42,13 +74,25 @@
     });
   }
 
+  function handleEdit(item: any) {
+    router.push({
+      name: CommonRouteEnum.FORM_CREATE,
+      query: {
+        formKey: props.type,
+        id: item.id,
+        needInitDetail: 'Y',
+      },
+    });
+  }
+
   function goDetail(item: any) {
     router.push({
       name: CommonRouteEnum.FOLLOW_DETAIL,
       query: {
+        formKey: props.type,
         id: item.id,
         name: item.name,
-        type: 'plan',
+        needInitDetail: 'Y',
       },
     });
   }

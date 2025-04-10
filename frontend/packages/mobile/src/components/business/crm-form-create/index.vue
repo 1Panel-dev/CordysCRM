@@ -63,10 +63,11 @@
   const formRef = ref<FormInstance>();
 
   const lastPageParams = window.history.state.params ? JSON.parse(window.history.state.params) : null; // 获取上个页面带过来的表格查询参数
+
   const { fieldList, formDetail, loading, formCreateTitle, initFormConfig, initFormDetail, saveForm } =
     useFormCreateApi({
       formKey: route.query.formKey as FormDesignKeyEnum,
-      sourceId: route.query.sourceId as string,
+      sourceId: route.query.id as string,
       needInitDetail: route.query.needInitDetail === 'Y',
       initialSourceName: route.query.initialSourceName as string,
       otherSaveParams: lastPageParams,

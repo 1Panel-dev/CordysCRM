@@ -9,4 +9,10 @@ export default {
   'customer.headerRecord': 'Header Record',
   'customer.relation': 'Customer Relationship',
   'customer.collaborator': 'Collaborator',
+  'customer.transferCustomer': 'Transfer Customer',
+  'customer.searchNamePlaceholder': 'Please enter name',
+  'customer.transfer': 'Transfer',
+  'customer.transferSuccess': 'Transfer Success',
+  'customer.deleteTitle': 'Delete this customer?',
+  'customer.deleteTip': 'Once deleted, members will not be able to find this customer. Please proceed with caution!',
 };
