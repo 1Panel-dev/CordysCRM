@@ -98,6 +98,7 @@ public class MailSender {
                     javaMailSender.send(mimeMessage);
                 } catch (Exception e) {
                     LogUtils.error("发送邮件失败: ", e);
+                    throw new GenericException(Translator.get("email_setting_send_error"), e);
                 }
             }
         }

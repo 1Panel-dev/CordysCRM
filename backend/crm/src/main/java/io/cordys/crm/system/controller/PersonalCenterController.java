@@ -12,10 +12,7 @@ import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse;
-import io.cordys.crm.system.dto.request.PersonalInfoRequest;
-import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
-import io.cordys.crm.system.dto.request.RepeatCustomerDetailPageRequest;
-import io.cordys.crm.system.dto.request.RepeatCustomerPageRequest;
+import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.service.PersonalCenterService;
 import io.cordys.security.SessionUtils;
@@ -97,7 +94,7 @@ public class PersonalCenterController {
      * 发送验证码
      */
     @PostMapping("/mail/code/send")
-    public void sendCode(@RequestBody @NotNull String email) {
+    public void sendCode(@RequestBody @NotNull SendEmailDTO email) {
         personalCenterService.sendCode(email, OrganizationContext.getOrganizationId());
     }
 

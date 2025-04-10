@@ -34,10 +34,7 @@ import io.cordys.crm.system.constants.SystemResultCode;
 import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.domain.User;
-import io.cordys.crm.system.dto.request.PersonalInfoRequest;
-import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
-import io.cordys.crm.system.dto.request.RepeatCustomerDetailPageRequest;
-import io.cordys.crm.system.dto.request.RepeatCustomerPageRequest;
+import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
 import io.cordys.crm.system.mapper.ExtProductMapper;
@@ -99,12 +96,12 @@ public class PersonalCenterService {
     /**
      * 发送验证码
      */
-    public void sendCode(String email, String organizationId) {
+    public void sendCode(SendEmailDTO emailDTO, String organizationId) {
+        String email = emailDTO.getEmail();
         String redisKey = PREFIX + email;
         if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(redisKey))) {
             throw new GenericException(Translator.get("email_setting_reset_error"));
         }
-
         String code = generateCode();
         saveCode(email, code);
 
@@ -120,7 +117,8 @@ public class PersonalCenterService {
                     organizationId
             );
         } catch (Exception e) {
-            throw new GenericException(Translator.get("email_setting_send_error"), e);
+            stringRedisTemplate.delete(redisKey); //
+            throw new GenericException(e.getMessage());
         }
     }
 

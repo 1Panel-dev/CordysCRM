@@ -11,12 +11,7 @@ import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
-import io.cordys.crm.system.dto.request.PersonalInfoRequest;
-import io.cordys.crm.system.dto.request.PersonalPasswordRequest;
-import io.cordys.crm.system.dto.request.RepeatCustomerDetailPageRequest;
-import io.cordys.crm.system.dto.request.RepeatCustomerPageRequest;
-import io.cordys.crm.system.dto.request.UserAddRequest;
-import io.cordys.crm.system.dto.request.UserPageRequest;
+import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.dto.response.EmailDTO;
 import io.cordys.crm.system.dto.response.UserPageResponse;
 import io.cordys.crm.system.dto.response.UserResponse;
@@ -129,17 +124,23 @@ public class PersonalCenterControllerTests extends BaseTest {
     @Test
     @Order(2)
     public void testSend() throws Exception {
+        String email = "test@qq.com";
+        SendEmailDTO sendEmailDTO = new SendEmailDTO();
+        sendEmailDTO.setEmail(email);
+
+        this.requestPost("/personal/center/mail/code/send", sendEmailDTO).andExpect(status().is5xxServerError());
+
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setHost("smtp.163.com");
         emailDTO.setPort("465");
-        emailDTO.setAccount("youliyuan0120@163.com");
-        emailDTO.setPassword("PABMJIUZZIZWZVCY");
+        emailDTO.setAccount("Test@163.com");
+        emailDTO.setPassword("ABCDEFGHI");
         emailDTO.setSsl("true");
         emailDTO.setTsl("true");
         this.requestPost("/organization/config/edit/email", emailDTO).andExpect(status().isOk());
 
 
-        this.requestPost("/personal/center/mail/code/send?email=test@qq.com", null).andExpect(status().isOk());
+        this.requestPost("/personal/center/mail/code/send", sendEmailDTO).andExpect(status().is5xxServerError());
 
     }
 

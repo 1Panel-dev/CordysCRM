@@ -84,6 +84,10 @@ export interface PersonalPassword {
   confirmPassword: string;
 }
 
+export interface SendEmailDTO {
+  email: string;
+}
+
 export interface RepeatClueParams extends TableQueryParams {
   name: string;
   id?: string;

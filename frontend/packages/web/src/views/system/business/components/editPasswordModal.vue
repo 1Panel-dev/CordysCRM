@@ -93,7 +93,7 @@
   } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { PersonalPassword } from '@lib/shared/models/system/business';
+  import {PersonalPassword, SendEmailDTO} from '@lib/shared/models/system/business';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
@@ -199,7 +199,10 @@
   }
   async function sendCode() {
     showRetryCode.value = 2;
-    await sendEmailCode(form.value.email);
+    const emailData:SendEmailDTO = {
+      email: form.value.email,
+    }
+    await sendEmailCode(emailData);
   }
   function sendCodeTip() {
     Message.warning(t('system.personal.countdown'));
