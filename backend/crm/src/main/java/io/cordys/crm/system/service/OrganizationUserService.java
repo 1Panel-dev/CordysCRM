@@ -45,10 +45,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -343,7 +340,9 @@ public class OrganizationUserService {
      * @param operatorId
      */
     private void updateUserRole(List<String> roleIds, UserResponse oldUser, String operatorId) {
-        extUserRoleMapper.deleteUserRoleByUserId(oldUser.getUserId());
+        Optional.ofNullable(roleIds).ifPresent(ids -> {
+            extUserRoleMapper.deleteUserRoleByUserId(oldUser.getUserId());
+        });
         if (CollectionUtils.isNotEmpty(roleIds)) {
             addUserRole(roleIds, oldUser.getUserId(), operatorId);
         }
