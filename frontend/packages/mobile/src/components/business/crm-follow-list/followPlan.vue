@@ -5,7 +5,13 @@
       <van-search v-model="keyword" shape="round" :placeholder="t('common.pleaseInputKeyword')" class="flex-1 !p-0" />
     </div>
     <div class="flex-1 overflow-hidden">
-      <CrmList ref="crmListRef" :keyword="keyword" class="p-[16px]" :item-gap="16">
+      <CrmList
+        ref="crmListRef"
+        :keyword="keyword"
+        :load-list-api="loadListApi[props.type]"
+        class="p-[16px]"
+        :item-gap="16"
+      >
         <template #item="{ item }">
           <listItem
             :item="item"
@@ -31,10 +37,12 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
   import listItem from './components/listItem.vue';
 
+  import { getClueFollowPlanList, getCustomerFollowPlanList } from '@/api/modules';
+
   import { CommonRouteEnum } from '@/enums/routeEnum';
 
   const props = defineProps<{
-    type: FormDesignKeyEnum;
+    type: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER | FormDesignKeyEnum.FOLLOW_PLAN_CLUE;
   }>();
 
   const { t } = useI18n();
@@ -42,6 +50,11 @@
   const router = useRouter();
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
+
+  const loadListApi = {
+    [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: getCustomerFollowPlanList,
+    [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: getClueFollowPlanList,
+  };
 
   async function handleDelete(item: any) {
     try {

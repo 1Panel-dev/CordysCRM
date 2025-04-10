@@ -7,7 +7,6 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    Create: typeof import('./src/components/business/crm-contact-list/create.vue')['default'];
     CrmContactList: typeof import('./src/components/business/crm-contact-list/index.vue')['default'];
     CrmDatasource: typeof import('./src/components/business/crm-datasource/index.vue')['default'];
     CrmDescription: typeof import('./src/components/pure/crm-description/index.vue')['default'];
@@ -28,9 +27,7 @@ declare module 'vue' {
     Detail: typeof import('./src/components/business/crm-contact-list/detail.vue')['default'];
     FollowDetail: typeof import('./src/components/business/crm-follow-list/followDetail.vue')['default'];
     FollowPlan: typeof import('./src/components/business/crm-follow-list/followPlan.vue')['default'];
-    FollowPlanCreate: typeof import('./src/components/business/crm-follow-list/followPlanCreate.vue')['default'];
     FollowRecord: typeof import('./src/components/business/crm-follow-list/followRecord.vue')['default'];
-    Input: typeof import('./src/components/business/crm-form-create/components/basic/input.vue')['default'];
     ListItem: typeof import('./src/components/business/crm-follow-list/components/listItem.vue')['default'];
     MultiplePick: typeof import('./src/components/business/crm-form-create/components/basic/multiplePick.vue')['default'];
     Phone: typeof import('./src/components/business/crm-form-create/components/advanced/phone.vue')['default'];
@@ -41,7 +38,6 @@ declare module 'vue' {
     Textarea: typeof import('./src/components/business/crm-form-create/components/basic/textarea.vue')['default'];
     VanBadge: typeof import('vant/es')['Badge'];
     VanButton: typeof import('vant/es')['Button'];
-    VanCell: typeof import('vant/es')['Cell'];
     VanCellGroup: typeof import('vant/es')['CellGroup'];
     VanCheckbox: typeof import('vant/es')['Checkbox'];
     VanDatePicker: typeof import('vant/es')['DatePicker'];
@@ -49,10 +45,8 @@ declare module 'vue' {
     VanEmpty: typeof import('vant/es')['Empty'];
     VanField: typeof import('vant/es')['Field'];
     VanForm: typeof import('vant/es')['Form'];
-    VanIcon: typeof import('vant/es')['Icon'];
     VanImage: typeof import('vant/es')['Image'];
     VanList: typeof import('vant/es')['List'];
-    VanLoading: typeof import('vant/es')['Loading'];
     VanNavBar: typeof import('vant/es')['NavBar'];
     VanPicker: typeof import('vant/es')['Picker'];
     VanPickerGroup: typeof import('vant/es')['PickerGroup'];

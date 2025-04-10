@@ -59,4 +59,7 @@ export default {
   'common.copyNotSupport': '当前设备不支持复制，请手动复制',
   'common.phoneNumber': '手机号',
   'common.announcementMessage': '公告',
+  'common.remainingBelong': '剩余归属',
+  'common.refreshSuccess': '刷新成功',
+  'common.searching': '搜索中...',
 };

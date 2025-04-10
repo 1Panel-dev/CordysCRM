@@ -59,4 +59,7 @@ export default {
   'common.copyNotSupport': 'Current device does not support copy, please copy manually',
   'common.phoneNumber': 'Phone number',
   'common.announcementMessage': 'Announcement',
+  'common.remainingBelong': 'Remaining belong',
+  'common.refreshSuccess': 'Refresh success',
+  'common.searching': 'Searching...',
 };

@@ -28,9 +28,17 @@
       </van-button>
     </div>
     <div class="flex-1 overflow-hidden">
-      <CrmList ref="crmListRef" :list-params="listParams" class="p-[16px]" :item-gap="16">
+      <CrmList
+        ref="crmListRef"
+        :keyword="keyword"
+        :list-params="listParams"
+        class="p-[16px]"
+        :item-gap="16"
+        :load-list-api="getCustomerList"
+        :transform="transformFormData"
+      >
         <template #item="{ item }">
-          <CrmListCommonItem :item="item" :actions="actions" @click="goDetail"></CrmListCommonItem>
+          <CrmListCommonItem :item="item" :actions="actions" name-key="ownerName" @click="goDetail"></CrmListCommonItem>
         </template>
       </CrmList>
     </div>
@@ -39,7 +47,7 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { showConfirmDialog, showSuccessToast } from 'vant';
+  import { closeToast, showConfirmDialog, showLoadingToast, showSuccessToast } from 'vant';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -47,6 +55,9 @@
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
+
+  import { getCustomerList } from '@/api/modules';
+  import useFormCreateTransform from '@/hooks/useFormCreateTransform';
 
   import { CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
@@ -80,6 +91,9 @@
       keyword: keyword.value,
     };
   });
+
+  const { transformFormData } = await useFormCreateTransform(FormDesignKeyEnum.CUSTOMER);
+
   const actions = [
     {
       label: t('common.edit'),
@@ -158,12 +172,16 @@
   watch(
     () => activeFilter.value,
     () => {
-      crmListRef.value?.loadList(true);
+      nextTick(() => {
+        crmListRef.value?.loadList(true);
+      });
     }
   );
 
-  function search() {
-    crmListRef.value?.loadList(true);
+  async function search() {
+    showLoadingToast(t('common.searching'));
+    await crmListRef.value?.loadList(true);
+    closeToast();
   }
 
   function goCreate() {

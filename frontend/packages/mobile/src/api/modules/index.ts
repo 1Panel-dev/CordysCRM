@@ -6,6 +6,8 @@ import useCustomerApi from '@lib/shared/api/modules/customer';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
 import useProductApi from '@lib/shared/api/modules/product';
 import useMessageApi from '@lib/shared/api/modules/system/message';
+import useModuleApi from '@lib/shared/api/modules/system/module';
+import useOrgApi from '@lib/shared/api/modules/system/org';
 
 import checkStatus from '../http/checkStatus';
 
@@ -19,6 +21,8 @@ const opportunityApi = useOpportunityApi(CDR);
 const clueApi = useClueApi(CDR);
 const customerApi = useCustomerApi(CDR);
 const messageApi = useMessageApi(CDR);
+const moduleApi = useModuleApi(CDR);
+const orgApi = useOrgApi(CDR);
 
 export const {
   addProduct,
@@ -90,6 +94,8 @@ export const {
   getCluePoolFollowRecordList,
   getPoolClue,
 } = clueApi;
+
+export const { getDepartmentTree, getUserList, getUserDetail, getUserOptions, getRoleOptions } = orgApi;
 
 export const {
   addCustomer,
@@ -165,3 +171,26 @@ export const {
   saveMessageTask,
   batchSaveMessageTask,
 } = messageApi;
+
+export const {
+  moduleNavListSort,
+  getModuleUserDeptTree,
+  getModuleRoleTree,
+  getOpportunityRuleList,
+  getCluePoolPage,
+  noPickCluePool,
+  getCapacityPage,
+  getCustomerPoolPage,
+  noPickCustomerPool,
+  getFormDesignConfig,
+  getFieldDeptUerTree,
+  getFieldDeptTree,
+  getFieldClueList,
+  getFieldContactList,
+  getFieldCustomerList,
+  getFieldOpportunityList,
+  getFieldProductList,
+  uploadTempFile,
+  previewPicture,
+  downloadPicture,
+} = moduleApi;

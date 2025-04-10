@@ -3,7 +3,12 @@
     <div class="flex h-full flex-col">
       <van-search v-model="keyword" shape="round" :placeholder="t('customer.searchNamePlaceholder')" />
       <div class="flex-1 overflow-hidden px-[16px]">
-        <CrmSelectList v-model:value="value" v-model:selected-rows="selectedRows" :multiple="false"></CrmSelectList>
+        <CrmSelectList
+          v-model:value="value"
+          v-model:selected-rows="selectedRows"
+          :load-list-api="getUserOptions"
+          :multiple="false"
+        ></CrmSelectList>
       </div>
     </div>
     <template #footer>
@@ -39,6 +44,8 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
+
+  import { getUserOptions } from '@/api/modules';
 
   const router = useRouter();
   const { t } = useI18n();

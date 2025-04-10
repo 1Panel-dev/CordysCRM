@@ -27,7 +27,13 @@
       </van-button>
     </div>
     <div class="flex-1 overflow-hidden">
-      <CrmList ref="crmListRef" :list-params="listParams" class="p-[16px]" :item-gap="16">
+      <CrmList
+        ref="crmListRef"
+        :list-params="listParams"
+        :load-list-api="getOpenSeaCustomerList"
+        class="p-[16px]"
+        :item-gap="16"
+      >
         <template #item="{ item }">
           <CrmListCommonItem :item="item" :actions="actions" @click="goDetail"></CrmListCommonItem>
         </template>
@@ -44,6 +50,8 @@
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
+
+  import { getOpenSeaCustomerList } from '@/api/modules';
 
   import { CustomerRouteEnum } from '@/enums/routeEnum';
 

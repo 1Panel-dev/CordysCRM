@@ -1,12 +1,13 @@
 <template>
   <div class="h-full overflow-auto" :class="props.class">
-    <van-pull-refresh v-model="refreshing" @refresh="() => loadList(true)">
+    <van-pull-refresh v-model="refreshing" class="h-full" @refresh="handleRefresh">
+      <van-empty v-if="list.length === 0 && !loading" :description="t('common.noData')" />
       <van-list
         v-model:loading="loading"
         v-model:error="error"
         :error-text="t('common.listLoadErrorTip')"
         :finished="finished"
-        :finished-text="t('common.listFinishedTip')"
+        :finished-text="list.length === 0 ? '' : t('common.listFinishedTip')"
         class="flex h-full flex-col overflow-auto"
         :class="`gap-[${itemGap}px]`"
         @load="loadList"
@@ -14,20 +15,24 @@
         <template v-for="item in list" :key="item.id">
           <slot name="item" :item="item"></slot>
         </template>
-        <van-empty v-if="list.length === 0 && !loading" :description="t('common.noData')" />
       </van-list>
     </van-pull-refresh>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { showSuccessToast } from 'vant';
+
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { CommonList } from '@lib/shared/models/common';
 
   const props = defineProps<{
     keyword?: string;
     class?: string;
     listParams?: Record<string, any>;
     itemGap?: number;
+    loadListApi: (...args: any) => Promise<CommonList<Record<string, any>>>;
+    transform?: (item: Record<string, any>, optionMap?: Record<string, any[]>) => Record<string, any>;
   }>();
 
   const { t } = useI18n();
@@ -39,297 +44,46 @@
   const list = defineModel<any[]>({
     default: () => [],
   });
+  const currentPage = ref(0);
 
-  const loadList = (refresh = false) => {
-    loading.value = true;
-    if (refresh) {
-      list.value = [];
-      finished.value = false;
-    }
-    setTimeout(() => {
+  async function loadList(refresh = false) {
+    try {
+      loading.value = true;
       if (refresh) {
-        list.value = [
-          {
-            id: 1,
-            name: '张三',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--text-n8)',
-            tagColor: 'var(--text-n1)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-            phone: '13800138000',
-            email: 'sagja@sas.csi',
-            description: [
-              {
-                label: '商机名称',
-                value: '赵胖胖文化有限公司',
-                fullLine: true,
-              },
-              {
-                label: '客户经理',
-                value: '张三',
-              },
-              {
-                label: '客户状态',
-                value: '公海',
-              },
-            ],
-          },
-          {
-            id: 2,
-            name: '李四',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--text-n8)',
-            tagColor: 'var(--text-n1)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-            description: [
-              {
-                label: '客户经理',
-                value: '张三',
-              },
-              {
-                label: '客户状态',
-                value: '公海',
-              },
-            ],
-          },
-          {
-            id: 3,
-            name: '王五',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--text-n8)',
-            tagColor: 'var(--text-n1)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 4,
-            name: '赵六',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 5,
-            name: '钱七',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 6,
-            name: '孙八',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 7,
-            name: '周九',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 8,
-            name: '吴十',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 9,
-            name: '郑十一',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 10,
-            name: '冯十二',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 11,
-            name: '陈十三',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 12,
-            name: '张十四',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-        ];
+        currentPage.value = 1;
+        finished.value = false;
       } else {
-        list.value = list.value.concat([
-          {
-            id: 1,
-            name: '张三',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--text-n8)',
-            tagColor: 'var(--text-n1)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-            phone: '13800138000',
-            email: 'sagja@sas.csi',
-            description: [
-              {
-                label: '商机名称',
-                value: '赵胖胖文化有限公司',
-                fullLine: true,
-              },
-              {
-                label: '客户经理',
-                value: '张三',
-              },
-              {
-                label: '客户状态',
-                value: '公海',
-              },
-            ],
-          },
-          {
-            id: 2,
-            name: '李四',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--text-n8)',
-            tagColor: 'var(--text-n1)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-            description: [
-              {
-                label: '客户经理',
-                value: '张三',
-              },
-              {
-                label: '客户状态',
-                value: '公海',
-              },
-            ],
-          },
-          {
-            id: 3,
-            name: '王五',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--text-n8)',
-            tagColor: 'var(--text-n1)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 4,
-            name: '赵六',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 5,
-            name: '钱七',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 6,
-            name: '孙八',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 7,
-            name: '周九',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 8,
-            name: '吴十',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 9,
-            name: '郑十一',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 10,
-            name: '冯十二',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 11,
-            name: '陈十三',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-          {
-            id: 12,
-            name: '张十四',
-            time: '2025-09-09 12:12:00',
-            tag: '重要客户',
-            tagBgColor: 'var(--info-5)',
-            tagColor: 'var(--info-blue)',
-            content: '你负责的客户 赵胖胖文化有限公司 已被移入公海，并踢了你一脚和扇了一巴掌，请知悉！',
-          },
-        ]);
+        currentPage.value += 1;
       }
-      finished.value = true;
-      refreshing.value = false;
-      loading.value = false;
+      const res = await props.loadListApi({
+        ...props.listParams,
+        keyword: props.keyword,
+        pageSize: 10,
+        current: currentPage.value,
+      });
+      const dataList = props.transform ? res.list.map((e) => props.transform!(e, res.optionMap)) : res.list;
+      if (refresh) {
+        list.value = dataList;
+      } else {
+        list.value = list.value.concat(dataList);
+      }
+      finished.value = res.total <= currentPage.value * 10;
       error.value = false;
-    }, 2000);
-  };
+    } catch (_error) {
+      // eslint-disable-next-line no-console
+      console.log(_error);
+      error.value = true;
+    } finally {
+      loading.value = false;
+      refreshing.value = false;
+    }
+  }
+
+  async function handleRefresh() {
+    refreshing.value = true;
+    await loadList(true);
+    showSuccessToast(t('common.refreshSuccess'));
+  }
 
   defineExpose({
     loadList,

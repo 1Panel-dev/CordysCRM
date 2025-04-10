@@ -41,11 +41,11 @@
           </div>
         </template>
       </van-cell>
-      <CrmList :keyword="keyword">
+      <!-- <CrmList :keyword="keyword">
         <template #item="{ item }">
           <CrmMessageItem :item="item" />
         </template>
-      </CrmList>
+      </CrmList> -->
     </van-cell-group>
   </div>
 </template>

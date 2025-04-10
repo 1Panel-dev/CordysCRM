@@ -3,20 +3,22 @@
     <div class="crm-list-common-item-header">
       <div class="text-[14px] font-semibold text-[var(--text-n1)]">{{ props.item.name }}</div>
       <van-tag
+        v-if="item.tag"
         :color="item.tagBgColor"
         :text-color="item.tagColor"
         class="rounded-[var(--border-radius-small)] !p-[2px_6px]"
-        >{{ item.tag }}</van-tag
       >
+        {{ item.tag }}
+      </van-tag>
     </div>
     <div class="crm-list-common-item-content">
       <div
         v-for="desc of item.description"
         :key="desc.label"
-        class="flex items-center gap-[8px]"
+        class="flex items-start gap-[8px]"
         :class="desc.fullLine ? 'basis-full' : ''"
       >
-        <div class="text-[12px] text-[var(--text-n4)]">{{ desc.label }}</div>
+        <div class="whitespace-nowrap text-[12px] text-[var(--text-n4)]">{{ desc.label }}</div>
         <div class="text-[12px] text-[var(--text-n1)]">{{ desc.value }}</div>
       </div>
     </div>

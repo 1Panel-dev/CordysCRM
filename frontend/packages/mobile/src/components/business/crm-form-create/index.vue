@@ -2,7 +2,7 @@
   <CrmPageWrapper :title="formCreateTitle">
     <van-form ref="formRef" required>
       <van-cell-group class="crm-form-create-inset" inset>
-        <template v-for="item in fieldList" :key="item.id">
+        <template v-for="item in mobileFieldList" :key="item.id">
           <component
             :is="getItemComponent(item.type, item.multiple)"
             v-if="item.show !== false"
@@ -73,6 +73,10 @@
       otherSaveParams: lastPageParams,
     });
 
+  const mobileFieldList = computed(() => {
+    return fieldList.value.filter((item) => item.mobile !== false);
+  });
+
   function getItemComponent(type: FieldTypeEnum, multiple?: boolean) {
     if (type === FieldTypeEnum.INPUT) {
       return CrmFormCreateComponents.basicComponents.singleText;
@@ -100,7 +104,7 @@
     // 控制显示规则
     if (item.showControlRules?.length) {
       item.showControlRules.forEach((rule) => {
-        fieldList.value.forEach((e) => {
+        mobileFieldList.value.forEach((e) => {
           // 若配置了该值的显示规则，且该字段在显示规则中，则显示
           if (rule.value === value && rule.fieldIds.includes(e.id)) {
             e.show = true;
@@ -117,7 +121,7 @@
     try {
       await formRef.value?.validate();
       const result = cloneDeep(formDetail.value);
-      fieldList.value.forEach((item) => {
+      mobileFieldList.value.forEach((item) => {
         if (item.type === FieldTypeEnum.DATA_SOURCE) {
           // 处理数据源字段，单选传单个值，多选传数组
           result[item.id] = item.multiple ? result[item.id] : result[item.id]?.[0];
@@ -159,9 +163,9 @@
   }
 
   watch(
-    () => fieldList.value,
+    () => mobileFieldList.value,
     () => {
-      fieldList.value.forEach((item) => {
+      mobileFieldList.value.forEach((item) => {
         if (!formDetail.value[item.id]) {
           let defaultValue = item.defaultValue || '';
           if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
@@ -214,5 +218,19 @@
 <style lang="less" scoped>
   .crm-form-create-inset {
     margin: 0;
+    :deep(.van-cell) {
+      position: relative;
+      &:last-child::before {
+        position: absolute;
+        box-sizing: border-box;
+        content: ' ';
+        pointer-events: none;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        border-bottom: 1px solid var(--van-cell-border-color);
+        transform: scaleY(0.5);
+      }
+    }
   }
 </style>

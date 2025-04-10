@@ -38,6 +38,7 @@ export interface FormCreateField {
   fieldWidth: number;
   defaultValue?: any;
   rules: FormCreateFieldRule[];
+  mobile?: boolean; // 是否在移动端显示
   // 数字输入属性
   max?: number;
   min?: number;

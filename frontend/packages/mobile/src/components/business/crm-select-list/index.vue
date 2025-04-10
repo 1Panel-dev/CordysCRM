@@ -1,24 +1,43 @@
 <template>
-  <CrmList v-model:model-value="list" :keyword="props.keyword">
+  <CrmList
+    v-if="props.multiple"
+    v-model:model-value="list"
+    :keyword="props.keyword"
+    :list-params="props.listParams"
+    :load-list-api="props.loadListApi"
+  >
     <template #item="{ item }">
-      <van-checkbox v-if="props.multiple" v-model="item.checked" :disabled="item.disabled" @change="handleChange">
+      <van-checkbox v-model="item.checked" :disabled="item.disabled" @change="handleChange">
         <slot name="label">{{ item.name }}</slot>
       </van-checkbox>
-      <van-radio-group v-else v-model="item.checked" :disabled="item.disabled" @change="handleChange">
-        <van-radio :name="true">
-          <slot name="label">{{ item.name }}</slot>
-        </van-radio>
-      </van-radio-group>
     </template>
   </CrmList>
+  <van-radio-group v-else v-model:model-value="value" shape="dot" @change="handleChange">
+    <CrmList
+      v-model:model-value="list"
+      :keyword="props.keyword"
+      :list-params="props.listParams"
+      :load-list-api="props.loadListApi"
+    >
+      <template #item="{ item }">
+        <van-radio :name="item.id" :disabled="item.disabled">
+          <slot name="label">{{ item.name }}</slot>
+        </van-radio>
+      </template>
+    </CrmList>
+  </van-radio-group>
 </template>
 
 <script setup lang="ts">
+  import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+
   import CrmList from '@/components/pure/crm-list/index.vue';
 
   const props = defineProps<{
     keyword?: string;
     multiple?: boolean;
+    listParams?: Record<string, any>;
+    loadListApi: (params: TableQueryParams) => Promise<CommonList<Record<string, any>>>;
   }>();
 
   const value = defineModel<string | string[]>('value', {
@@ -32,11 +51,10 @@
 
   function handleChange() {
     if (props.multiple) {
-      selectedRows.value = list.value.filter((item) => item.checked);
-      value.value = selectedRows.value.map((item) => item.id);
+      selectedRows.value = list.value.filter((e) => e.checked);
+      value.value = selectedRows.value.map((e) => e.id);
     } else {
-      selectedRows.value = list.value.filter((item) => item.checked);
-      value.value = selectedRows.value[0]?.id || '';
+      selectedRows.value = list.value.filter((e) => e.id === value.value);
     }
   }
 </script>

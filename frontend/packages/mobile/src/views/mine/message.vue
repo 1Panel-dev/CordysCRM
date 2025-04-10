@@ -40,11 +40,11 @@
         </van-tab>
       </van-tabs>
       <div class="flex-1 overflow-auto">
-        <CrmList :list-params="listParams" class="p-[16px]" :item-gap="16">
+        <!-- <CrmList :list-params="listParams" class="p-[16px]" :item-gap="16">
           <template #item="{ item }">
             <CrmMessageItem :item="item" />
           </template>
-        </CrmList>
+        </CrmList> -->
       </div>
     </div>
   </CrmPageWrapper>

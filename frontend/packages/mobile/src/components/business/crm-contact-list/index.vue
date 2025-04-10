@@ -5,7 +5,14 @@
       <van-search v-model="keyword" shape="round" :placeholder="t('customer.searchPlaceholder')" class="flex-1 !p-0" />
     </div>
     <div class="flex-1 overflow-hidden">
-      <CrmList ref="crmListRef" :list-params="listParams" class="p-[16px]" :item-gap="16">
+      <CrmList
+        ref="crmListRef"
+        :list-params="listParams"
+        :keyword="keyword"
+        :load-list-api="getCustomerContactList"
+        class="p-[16px]"
+        :item-gap="16"
+      >
         <template #item="{ item }">
           <div
             class="flex w-full items-center gap-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[16px]"
@@ -65,6 +72,8 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
+
+  import { getCustomerContactList } from '@/api/modules';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
 

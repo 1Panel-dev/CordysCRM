@@ -1,13 +1,14 @@
 <template>
   <CrmDataSource
+    :id="props.fieldConfig.id"
     v-model:value="value"
     v-model:selected-rows="selectedRows"
     :data-source-type="props.fieldConfig.dataSourceType"
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
-    :name="props.fieldConfig.id"
     :rules="props.fieldConfig.rules as FieldRule[]"
     :placeholder="props.fieldConfig.placeholder"
     :disabled="props.fieldConfig.editable === false"
+    :multiple="props.fieldConfig.multiple"
     @change="($event) => emit('change', $event)"
   >
   </CrmDataSource>

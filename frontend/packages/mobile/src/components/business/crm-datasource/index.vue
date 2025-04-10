@@ -32,7 +32,13 @@
       <div class="flex h-full flex-col">
         <van-search v-model="keyword" shape="round" :placeholder="t('customer.searchPlaceholder')" />
         <div class="flex-1 overflow-hidden px-[16px]">
-          <CrmSelectList v-model:value="value" v-model:selected-rows="selectedRows"></CrmSelectList>
+          <CrmSelectList
+            v-if="props.dataSourceType"
+            v-model:value="value"
+            v-model:selected-rows="selectedRows"
+            :multiple="props.multiple"
+            :load-list-api="sourceApi[props.dataSourceType]"
+          ></CrmSelectList>
         </div>
       </div>
       <template #footer>
@@ -49,6 +55,7 @@
             type="primary"
             class="!rounded-[var(--border-radius-small)] !text-[16px]"
             block
+            :disabled="!selectedRows.length"
             @click="onConfirm"
           >
             {{ t('common.confirm') }}
@@ -64,9 +71,19 @@
 
   import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { CommonList } from '@lib/shared/models/common';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
+
+  import {
+    getCustomerOptions,
+    getFieldClueList,
+    getFieldContactList,
+    getFieldCustomerList,
+    getFieldOpportunityList,
+    getFieldProductList,
+  } from '@/api/modules';
 
   const props = defineProps<{
     dataSourceType?: FieldDataSourceTypeEnum;
@@ -75,6 +92,7 @@
     rules?: FieldRule[];
     id?: string;
     label?: string;
+    multiple?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | string[]): void;
@@ -101,6 +119,15 @@
     [FieldDataSourceTypeEnum.PRODUCT]: 'formCreate .product',
     [FieldDataSourceTypeEnum.CLUE]: 'formCreate .clue',
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: '',
+  };
+
+  const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<CommonList<any>>> = {
+    [FieldDataSourceTypeEnum.BUSINESS]: getFieldOpportunityList,
+    [FieldDataSourceTypeEnum.CLUE]: getFieldClueList,
+    [FieldDataSourceTypeEnum.CONTACT]: getFieldContactList,
+    [FieldDataSourceTypeEnum.CUSTOMER]: getFieldCustomerList,
+    [FieldDataSourceTypeEnum.PRODUCT]: getFieldProductList,
+    [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: getCustomerOptions,
   };
 
   function onConfirm() {
