@@ -38,21 +38,40 @@ public class SseService {
 
     /**
      * 添加一个新的客户端 SseEmitter
+     * 每个用户最多允许三个客户端，超出时移除最早添加的客户端
+     *
+     * @param userId   用户 ID
+     * @param clientId 客户端 ID
+     * @return 新创建的 SseEmitter
+     * @throws IllegalArgumentException 如果 userId 或 clientId 为空
      */
     public SseEmitter addEmitter(String userId, String clientId) {
-        if (StringUtils.isAnyBlank(userId, clientId)) {
+        if (userId == null || userId.isBlank() || clientId == null || clientId.isBlank()) {
             throw new IllegalArgumentException("userId 和 clientId 不能为空");
         }
 
-        var emitter = new SseEmitter(Long.MAX_VALUE);
-        userEmitters
-                .computeIfAbsent(userId, k -> new ConcurrentHashMap<>())
-                .put(clientId, emitter);
+        // 创建新的 SseEmitter，设置超时为最大值
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
-        // 监听客户端断开连接
-        emitter.onCompletion(() -> removeEmitter(userId, clientId));
-        emitter.onTimeout(() -> removeEmitter(userId, clientId));
-        emitter.onError(e -> removeEmitter(userId, clientId));
+        // 获取或初始化用户的内部映射，使用同步的 LinkedHashMap 保持插入顺序
+        Map<String, SseEmitter> innerMap = userEmitters.computeIfAbsent(userId,
+                k -> Collections.synchronizedMap(new LinkedHashMap<>()));
+
+        // 同步操作确保线程安全并限制客户端数量
+        synchronized (innerMap) {
+            innerMap.put(clientId, emitter);
+            if (innerMap.size() > 3) {
+                innerMap.entrySet().iterator().next() // 获取最早的条目
+                        .getValue().complete();       // 完成最早的SEmitter
+                innerMap.remove(innerMap.keySet().iterator().next()); // 移除最早的客户端
+            }
+        }
+
+        // 使用方法引用设置生命周期监听器
+        Runnable removeAction = () -> removeEmitter(userId, clientId);
+        emitter.onCompletion(removeAction);
+        emitter.onTimeout(removeAction);
+        emitter.onError(e -> removeAction.run());
 
         return emitter;
     }
