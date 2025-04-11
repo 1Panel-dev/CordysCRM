@@ -387,7 +387,7 @@ export const defaultAuthForm = {
   enable: false,
   description: '',
   name: '',
-  type: 'OAUTH2',
+  type: 'WE_COM_OAUTH2',
   configuration: {},
 };
 
