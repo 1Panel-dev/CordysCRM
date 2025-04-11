@@ -100,17 +100,16 @@ public class SseService {
     public void sendHeartbeat() {
         if (userEmitters.isEmpty()) return;
 
-        userEmitters.forEach((userId, emitters) -> {
-            emitters.forEach((clientId, emitter) -> {
-                try {
-                    emitter.send(SseEmitter.event()
-                            .name("SYSTEM_HEARTBEAT")
-                            .data("SYSTEM_HEARTBEAT: " + System.currentTimeMillis()));
-                } catch (IOException e) {
-                    removeEmitter(userId, clientId);
-                }
-            });
-        });
+        userEmitters.forEach((userId, emitters) ->
+                emitters.forEach((clientId, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("SYSTEM_HEARTBEAT")
+                        .data("SYSTEM_HEARTBEAT: " + System.currentTimeMillis()));
+            } catch (IOException e) {
+                removeEmitter(userId, clientId);
+            }
+        }));
     }
 
     /**
@@ -182,21 +181,21 @@ public class SseService {
                 .map(Module::getModuleKey).distinct()
                 .toList();
 
-        List<String>modules = new ArrayList<>();
+        List<String> modules = new ArrayList<>();
         for (String enabledModule : enabledModules) {
-            if (StringUtils.equalsIgnoreCase(enabledModule,ModuleKey.BUSINESS.getKey())) {
+            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.BUSINESS.getKey())) {
                 modules.add(NotificationConstants.Module.OPPORTUNITY);
             }
-            if (StringUtils.equalsIgnoreCase(enabledModule,ModuleKey.CUSTOMER.getKey())) {
+            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.CUSTOMER.getKey())) {
                 modules.add(NotificationConstants.Module.CUSTOMER);
             }
-            if (StringUtils.equalsIgnoreCase(enabledModule,ModuleKey.CLUE.getKey())) {
+            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.CLUE.getKey())) {
                 modules.add(NotificationConstants.Module.CLUE);
             }
 
         }
         //获取公告
-        Set<String> sysValues = stringRedisTemplate.opsForZSet().range(USER_PREFIX+userId, 0, -1);
+        Set<String> sysValues = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
 
         if (CollectionUtils.isNotEmpty(sysValues)) {
             int size = sysValues.size();
@@ -205,7 +204,7 @@ public class SseService {
                 //如果不够5条，从数据库提取最新未读加上
                 // 获取用户未读的系统通知
                 List<NotificationDTO> notifications = extNotificationMapper
-                        .selectLastList(userId, OrganizationContext.getOrganizationId(),modules);
+                        .selectLastList(userId, OrganizationContext.getOrganizationId(), modules);
                 notifications.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).forEach(notification ->
                         notification.setContentText(new String(notification.getContent())));
                 List<NotificationDTO> notificationDTOS = notifications.subList(0, Math.min(5 - size, notifications.size()));
@@ -213,7 +212,7 @@ public class SseService {
             }
         } else {
             List<NotificationDTO> notifications = extNotificationMapper
-                    .selectLastList(userId, OrganizationContext.getOrganizationId(),modules);
+                    .selectLastList(userId, OrganizationContext.getOrganizationId(), modules);
             notifications.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).forEach(notification ->
                     notification.setContentText(new String(notification.getContent())));
             sseMessageDTO.setNotificationDTOList(notifications);
