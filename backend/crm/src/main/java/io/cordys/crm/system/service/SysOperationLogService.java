@@ -146,7 +146,7 @@ public class SysOperationLogService {
         differenceDTOS = differenceDTOS.stream()
                 .filter(differ -> {
                     if (StringUtils.equalsAny(differ.getColumn(),
-                            "organizationId", "createUser", "updateUser", "createTime", "updateTime")) {
+                            "organizationId", "createUser", "updateUser", "createTime", "updateTime","departmentId","supervisorId")) {
                         return false;
                     }
                     return true;

@@ -77,10 +77,10 @@ public class ModuleService {
 		moduleMapper.updateById(module);
 
 		//添加日志上下文
-		Map<String, Boolean> originalVal = new HashMap<>(1);
-		originalVal.put("module.switch", !module.getEnable());
-		Map<String, Boolean> modifiedVal = new HashMap<>(1);
-		originalVal.put("module.switch", module.getEnable());
+		Map<String, String> originalVal = new HashMap<>(1);
+		originalVal.put("module.switch", !module.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+		Map<String, String> modifiedVal = new HashMap<>(1);
+		modifiedVal.put("module.switch", module.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
 		OperationLogContext.setContext(LogContextInfo.builder()
 				.originalValue(originalVal)
 				.resourceName(module.getModuleKey())

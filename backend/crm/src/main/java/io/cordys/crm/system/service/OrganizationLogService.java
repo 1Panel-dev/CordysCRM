@@ -23,6 +23,15 @@ public class OrganizationLogService extends BaseModuleLogService {
             if (StringUtils.equals(differ.getColumnName(), Translator.get("log.roles"))) {
                 handRoleValueName(differ);
             }
+
+            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.commander"))) {
+                setUserFieldName(differ);
+            }
+
+            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.enable"))) {
+                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+            }
         });
     }
 
