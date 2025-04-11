@@ -7,17 +7,19 @@
     class="crm-form-create"
   >
     <n-scrollbar>
-      <template v-for="item in list" :key="item.id">
-        <div v-if="item.show !== false" class="crm-form-create-item" :style="{ width: `${item.fieldWidth * 100}%` }">
-          <component
-            :is="getItemComponent(item.type)"
-            v-model:value="form[item.id]"
-            :field-config="item"
-            :path="item.id"
-            @change="($event: any) => handleFieldChange($event, item)"
-          />
-        </div>
-      </template>
+      <div class="flex h-full w-full flex-wrap content-start">
+        <template v-for="item in list" :key="item.id">
+          <div v-if="item.show !== false" class="crm-form-create-item" :style="{ width: `${item.fieldWidth * 100}%` }">
+            <component
+              :is="getItemComponent(item.type)"
+              v-model:value="form[item.id]"
+              :field-config="item"
+              :path="item.id"
+              @change="($event: any) => handleFieldChange($event, item)"
+            />
+          </div>
+        </template>
+      </div>
     </n-scrollbar>
     <div class="crm-form-create-footer" :class="props.formConfig.optBtnPos">
       <n-button v-if="formConfig.optBtnContent[0].enable" type="primary" @click="handleSave(false)">
