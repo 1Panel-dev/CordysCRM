@@ -32,6 +32,7 @@ export interface FormCreateTableProps {
   operationColumn?: CrmDataTableColumn;
   specialRender?: Record<string, (row: any) => void>;
   showPagination?: boolean;
+  excludeFieldIds?: string[]; // 规避某些字段的文字替换
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
@@ -384,10 +385,13 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           }
           if (field.type === FieldTypeEnum.LOCATION) {
             addressFieldIds.value.push(field.businessKey || field.id);
-          } else if (field.type === FieldTypeEnum.DATA_SOURCE) {
+          } else if (
+            field.type === FieldTypeEnum.DATA_SOURCE &&
+            !props.excludeFieldIds?.includes(field.businessKey || field.id)
+          ) {
             dataSourceFieldIds.value.push(field.businessKey || field.id);
           }
-          if (field.businessKey) {
+          if (field.businessKey && !props.excludeFieldIds?.includes(field.businessKey)) {
             businessFieldIds.value.push(field.businessKey);
           }
           if (

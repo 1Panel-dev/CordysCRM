@@ -343,6 +343,7 @@
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.BUSINESS,
+    excludeFieldIds: ['customerId'],
     operationColumn: {
       key: 'operation',
       width: 200,
