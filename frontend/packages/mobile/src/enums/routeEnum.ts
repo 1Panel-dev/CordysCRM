@@ -6,7 +6,8 @@ export enum OpportunityRouteEnum {
 export enum ClueRouteEnum {
   CLUE = 'clue',
   CLUE_INDEX = 'clueIndex',
-  CLUE_POOL = 'cluePool',
+  CLUE_DETAIL = 'clueDetail',
+  CLUE_POOL_DETAIL = 'cluePoolDetail',
 }
 
 export enum CustomerRouteEnum {

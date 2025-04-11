@@ -36,8 +36,10 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView'];
     SingleText: typeof import('./src/components/business/crm-form-create/components/basic/singleText.vue')['default'];
     Textarea: typeof import('./src/components/business/crm-form-create/components/basic/textarea.vue')['default'];
+    VanActionSheet: typeof import('vant/es')['ActionSheet'];
     VanBadge: typeof import('vant/es')['Badge'];
     VanButton: typeof import('vant/es')['Button'];
+    VanCell: typeof import('vant/es')['Cell'];
     VanCellGroup: typeof import('vant/es')['CellGroup'];
     VanCheckbox: typeof import('vant/es')['Checkbox'];
     VanDatePicker: typeof import('vant/es')['DatePicker'];

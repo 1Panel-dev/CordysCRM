@@ -16,6 +16,7 @@ export default {
   'common.listFinishedTip': 'Already at the bottom~',
   'common.message': 'Message Notification',
   'common.checkMore': 'Check More',
+  'common.more': 'More',
   'common.system': 'System',
   'common.systemNotification': 'System Notification',
   'common.signRead': 'Sign Read',

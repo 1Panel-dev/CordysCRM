@@ -24,15 +24,15 @@
   import { showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { CommonList } from '@lib/shared/models/common';
 
   const props = defineProps<{
     keyword?: string;
     class?: string;
     listParams?: Record<string, any>;
     itemGap?: number;
-    loadListApi: (...args: any) => Promise<CommonList<Record<string, any>>>;
+    loadListApi: (...args: any) => Promise<Record<string, any>>;
     transform?: (item: Record<string, any>, optionMap?: Record<string, any[]>) => Record<string, any>;
+    noPagination?: boolean; // 不分页
   }>();
 
   const { t } = useI18n();
@@ -61,7 +61,12 @@
         pageSize: 10,
         current: currentPage.value,
       });
-      const dataList = props.transform ? res.list.map((e) => props.transform!(e, res.optionMap)) : res.list;
+      let dataList;
+      if (props.noPagination) {
+        dataList = res;
+      } else {
+        dataList = props.transform ? res.list.map((e: any) => props.transform!(e, res.optionMap)) : res.list;
+      }
       if (refresh) {
         list.value = dataList;
       } else {
@@ -79,6 +84,17 @@
     }
   }
 
+  function filterListByKeyword(keywordKey: string) {
+    if (props.keyword?.length) {
+      const lowerCaseVal = props.keyword.toLowerCase();
+      list.value = list.value.filter((item) => {
+        return item[keywordKey]?.toLowerCase().includes(lowerCaseVal);
+      });
+    } else {
+      loadList(true);
+    }
+  }
+
   async function handleRefresh() {
     refreshing.value = true;
     await loadList(true);
@@ -87,6 +103,7 @@
 
   defineExpose({
     loadList,
+    filterListByKeyword,
   });
 </script>
 

@@ -43,6 +43,7 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
 
   const descriptionMap: Partial<Record<FormDesignKeyEnum, string[]>> = {
     [FormDesignKeyEnum.CUSTOMER]: ['owner', 'reservedDays'],
+    [FormDesignKeyEnum.CLUE]: ['owner', 'reservedDays'],
   };
   const descriptionKeys = descriptionMap[formKey] || [];
   // 系统内置字段

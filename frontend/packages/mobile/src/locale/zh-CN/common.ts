@@ -16,6 +16,7 @@ export default {
   'common.listFinishedTip': '已经到底部啦~',
   'common.message': '消息通知',
   'common.checkMore': '查看更多',
+  'common.more': '更多',
   'common.system': '系统',
   'common.systemNotification': '系统通知',
   'common.signRead': '标为已读',
@@ -62,4 +63,5 @@ export default {
   'common.remainingBelong': '剩余归属',
   'common.refreshSuccess': '刷新成功',
   'common.searching': '搜索中...',
+  'common.to': '至',
 };

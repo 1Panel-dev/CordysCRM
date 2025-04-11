@@ -22,11 +22,18 @@ const clue: AppRouteRecordRaw = {
       },
     },
     {
-      path: 'pool',
-      name: ClueRouteEnum.CLUE_POOL,
-      component: () => import('@/views/clue/pool.vue'),
+      path: 'detail',
+      name: ClueRouteEnum.CLUE_DETAIL,
+      component: () => import('@/views/clue/clue/detail.vue'),
       meta: {
-        locale: 'menu.cluePool',
+        permissions: [],
+      },
+    },
+    {
+      path: 'poolDetail',
+      name: ClueRouteEnum.CLUE_POOL_DETAIL,
+      component: () => import('@/views/clue/pool/detail.vue'),
+      meta: {
         permissions: [],
       },
     },

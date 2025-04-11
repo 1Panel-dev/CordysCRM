@@ -12,7 +12,6 @@
         <open-sea v-else-if="tab.name === 'openSea'" />
       </van-tab>
     </van-tabs>
-    <div class="flex-1 overflow-auto"></div>
   </div>
 </template>
 
