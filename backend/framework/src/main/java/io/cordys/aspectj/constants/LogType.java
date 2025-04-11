@@ -39,6 +39,11 @@ public final class LogType {
      */
     public static final String COPY = "COPY";
 
+    /**
+     * 同步
+     */
+    public static final String SYNC = "SYNC";
+
     private LogType() {
         // 私有构造函数防止实例化
     }
