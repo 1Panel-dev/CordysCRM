@@ -1,13 +1,13 @@
 import { defineStore } from 'pinia';
 import { cloneDeep } from 'lodash-es';
 
-import { CloseMessageUrl, SubscribeMessageUrl } from '@lib/shared/api/requrls/system/message';
+import { SubscribeMessageUrl } from '@lib/shared/api/requrls/system/message';
 import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { getSSE } from '@lib/shared/method/index';
 import { setLocalStorage } from '@lib/shared/method/local-storage';
 
-import { getModuleNavConfigList } from '@/api/modules';
+import { closeMessageSubscribe, getHomeMessageList, getModuleNavConfigList } from '@/api/modules';
 import { getKey } from '@/api/modules/system/login';
 import useUserStore from '@/store/modules/user';
 import { getThemeOverrides } from '@/utils/themeOverrides';
@@ -160,7 +160,9 @@ const useAppStore = defineStore('app', {
      */
     async initModuleConfig() {
       try {
-        this.moduleConfigList = await getModuleNavConfigList({ organizationId: this.orgId });
+        this.moduleConfigList = await getModuleNavConfigList({
+          organizationId: this.orgId,
+        });
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
@@ -181,18 +183,14 @@ const useAppStore = defineStore('app', {
     /**
      * 连接SSE消息订阅流
      */
-    connectSystemMessageSSE(callback: () => void) {
+    async connectSystemMessageSSE(callback: () => void) {
       const userStore = useUserStore();
 
-      if (this.eventSource) {
-        this.eventSource.close();
-      }
-
+      await this.disconnectSystemMessageSSE();
       this.eventSource = getSSE(SubscribeMessageUrl, {
         clientId: userStore.clientIdRandomId,
         userId: userStore.userInfo.id,
       });
-
       if (this.eventSource) {
         this.eventSource.onmessage = (event: MessageEvent) => {
           try {
@@ -208,24 +206,30 @@ const useAppStore = defineStore('app', {
             console.error('SSE Message parsing failure:', error);
           }
         };
-
+        // 错误直接关闭，手动刷新
         this.eventSource.onerror = () => {
-          this.eventSource?.close();
-          setTimeout(() => this.connectSystemMessageSSE(callback), 5000);
+          if (this.eventSource) {
+            this.eventSource.close();
+            this.eventSource = null;
+          }
         };
       }
     },
     /**
      * 客户端主动断开连接
      */
-    disconnectSystemMessageSSE() {
+    async disconnectSystemMessageSSE() {
       const userStore = useUserStore();
-      this.eventSource = getSSE(CloseMessageUrl, {
-        clientId: userStore.clientIdRandomId,
-        userId: userStore.userInfo.id,
-      });
-      this.eventSource?.close();
-      this.eventSource = null;
+      if (this.eventSource) {
+        this.eventSource.close();
+        this.eventSource = null;
+      }
+      try {
+        await closeMessageSubscribe({ clientId: userStore.clientIdRandomId, userId: userStore.userInfo.id });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
     },
     /**
      * 设置菜单icon展示
@@ -233,6 +237,17 @@ const useAppStore = defineStore('app', {
     setMenuIconStatus(val: boolean) {
       const userStore = useUserStore();
       this.menuIconStatus[userStore.userInfo.id] = val;
+    },
+    /**
+     * 初始化首页消息
+     */
+    async initMessage() {
+      try {
+        this.messageInfo.notificationDTOList = await getHomeMessageList();
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
     },
   },
   persist: {

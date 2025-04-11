@@ -21,7 +21,13 @@
           </div>
         </van-badge>
       </div>
-      <div class="text-[var(--primary-8)]">{{ t('common.signRead') }}</div>
+      <div
+        v-if="props.item.status === SystemMessageStatusEnum.UNREAD"
+        class="text-[var(--primary-8)]"
+        @click="setMessageRead"
+      >
+        {{ t('common.signRead') }}
+      </div>
     </div>
     <div class="flex flex-col gap-[4px] text-[12px]">
       <div :class="`flex message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
@@ -49,10 +55,16 @@
   import { openDocumentLink } from '@lib/shared/method/index';
   import type { MessageCenterItem } from '@lib/shared/models/system/message';
 
+  import { setNotificationRead } from '@/api/modules';
+
   const { t } = useI18n();
 
   const props = defineProps<{
     item: MessageCenterItem;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'loadList'): void;
   }>();
 
   const isSystemMessage = computed(() => props.item.type === SystemMessageTypeEnum.SYSTEM_NOTICE);
@@ -64,6 +76,17 @@
     const url = parseMessageContent.value?.url;
     if (url) {
       openDocumentLink(url);
+    }
+  }
+
+  async function setMessageRead() {
+    if (props.item.status === SystemMessageStatusEnum.READ) return;
+    try {
+      await setNotificationRead(props.item.id);
+      emit('loadList');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
     }
   }
 </script>

@@ -39,7 +39,7 @@ import type {
   RepeatCustomerItem,
   RepeatOpportunityItem,
 } from '@lib/shared/models/system/business';
-import {OptionDTO, PersonalInfoRequest, PersonalPassword, SendEmailDTO} from '@lib/shared/models/system/business';
+import { OptionDTO, PersonalInfoRequest, PersonalPassword, SendEmailDTO } from '@lib/shared/models/system/business';
 import { OrgUserInfo } from '@lib/shared/models/system/org';
 
 export default function useProductApi(CDR: CordysAxios) {
@@ -123,7 +123,7 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<OrgUserInfo>({ url: GetPersonalUrl });
   }
   // 更新个人信息
-  function updatePersonalUrl(data: PersonalInfoRequest) {
+  function updatePersonalInfo(data: PersonalInfoRequest) {
     return CDR.post({ url: UpdatePersonalUrl, data });
   }
   // 发送验证码
@@ -177,7 +177,7 @@ export default function useProductApi(CDR: CordysAxios) {
     updateAuthName,
     deleteAuth,
     getPersonalUrl,
-    updatePersonalUrl,
+    updatePersonalInfo,
     sendEmailCode,
     updateUserPassword,
     getPersonalFollow,

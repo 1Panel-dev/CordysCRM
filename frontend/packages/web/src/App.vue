@@ -23,6 +23,7 @@
   import { getWeComOauthCallback } from '@/api/modules/system/login';
   import useLoading from '@/hooks/useLoading';
   import useAppStore from '@/store/modules/app';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -47,34 +48,43 @@
   });
 
   async function handleOauthLogin() {
-    const code = getQueryVariable('code');
-    if (code) {
-      const weComCallback = getWeComOauthCallback(code);
-      const boolean = userStore.qrCodeLogin(await weComCallback);
-      if (boolean) {
-        setLoginExpires();
-        setLoginType('WE_COM_OAUTH2');
-        const { redirect, ...othersQuery } = router.currentRoute.value.query;
-        await router.push({
-          name: (redirect as string) || AppRouteEnum.SYSTEM,
-          query: {
-            ...othersQuery,
-          },
-        });
-        setLoading(false);
-        await userStore.getAuthentication();
+    try {
+      const code = getQueryVariable('code');
+      if (code) {
+        const weComCallback = await getWeComOauthCallback(code);
+        const boolean = userStore.qrCodeLogin(await weComCallback);
+        if (boolean) {
+          setLoginExpires();
+          setLoginType('WE_COM_OAUTH2');
+          const { redirect, ...othersQuery } = router.currentRoute.value.query;
+          await router.push({
+            name: (redirect as string) || AppRouteEnum.SYSTEM,
+            query: {
+              ...othersQuery,
+            },
+          });
+          setLoading(false);
+          await userStore.getAuthentication();
+
+          if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
+            appStore.connectSystemMessageSSE(userStore.showSystemNotify);
+          }
+        }
+        if (code && getQueryVariable('state')) {
+          const currentUrl = window.location.href;
+          const url = new URL(currentUrl);
+          getUrlParameterWidthRegExp('code');
+          getUrlParameterWidthRegExp('state');
+          url.searchParams.delete('code');
+          url.searchParams.delete('state');
+          const newUrl = url.toString();
+          // 或者在不刷新页面的情况下更新URL（比如使用 History API）
+          window.history.replaceState({}, document.title, newUrl);
+        }
       }
-      if (code && getQueryVariable('state')) {
-        const currentUrl = window.location.href;
-        const url = new URL(currentUrl);
-        getUrlParameterWidthRegExp('code');
-        getUrlParameterWidthRegExp('state');
-        url.searchParams.delete('code');
-        url.searchParams.delete('state');
-        const newUrl = url.toString();
-        // 或者在不刷新页面的情况下更新URL（比如使用 History API）
-        window.history.replaceState({}, document.title, newUrl);
-      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
     }
   }
 
@@ -85,6 +95,16 @@
     }
     await handleOauthLogin();
   });
+
+  watch(
+    () => appStore.orgId,
+    (orgId) => {
+      if (orgId) {
+        appStore.initModuleConfig();
+      }
+    },
+    { immediate: true }
+  );
 
   onBeforeUnmount(() => {
     appStore.disconnectSystemMessageSSE();

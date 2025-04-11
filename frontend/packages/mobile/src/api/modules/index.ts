@@ -5,6 +5,7 @@ import useClueApi from '@lib/shared/api/modules/clue';
 import useCustomerApi from '@lib/shared/api/modules/customer';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
 import useProductApi from '@lib/shared/api/modules/product';
+import useBusinessApi from '@lib/shared/api/modules/system/business';
 import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
@@ -23,6 +24,7 @@ const customerApi = useCustomerApi(CDR);
 const messageApi = useMessageApi(CDR);
 const moduleApi = useModuleApi(CDR);
 const orgApi = useOrgApi(CDR);
+const businessApi = useBusinessApi(CDR);
 
 export const {
   addProduct,
@@ -170,6 +172,8 @@ export const {
   getMessageTask,
   saveMessageTask,
   batchSaveMessageTask,
+  getHomeMessageList,
+  closeMessageSubscribe,
 } = messageApi;
 
 export const {
@@ -194,3 +198,5 @@ export const {
   previewPicture,
   downloadPicture,
 } = moduleApi;
+
+export const { updatePersonalInfo, getPersonalUrl, sendEmailCode, updateUserPassword } = businessApi;

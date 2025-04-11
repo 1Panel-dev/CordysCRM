@@ -126,6 +126,7 @@ const useUserStore = defineStore('user', {
         const appStore = useAppStore();
         const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
         appStore.setOrgId(lastOrganizationId);
+        this.clientIdRandomId = getGenerateId();
         return true;
       } catch (err) {
         // eslint-disable-next-line no-console

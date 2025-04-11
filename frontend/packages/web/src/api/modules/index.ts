@@ -178,7 +178,7 @@ export const {
   updateAuthName,
   deleteAuth,
   getPersonalUrl,
-  updatePersonalUrl,
+  updatePersonalInfo,
   sendEmailCode,
   updateUserPassword,
   getPersonalFollow,
@@ -201,6 +201,8 @@ export const {
   getMessageTask,
   saveMessageTask,
   batchSaveMessageTask,
+  getHomeMessageList,
+  closeMessageSubscribe,
 } = messageApi;
 
 export const {

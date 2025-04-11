@@ -7,10 +7,12 @@
       <div class="personal-header-info info-item gap-[16px] p-[16px]">
         <van-image round width="64px" height="64px" src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg" />
         <div class="flex w-[calc(100%-80px)] flex-1 flex-col justify-evenly">
-          <div class="one-line-text text-[16px] font-semibold text-[var(--text-n1)]"> {{ detail.name }}</div>
+          <div class="one-line-text text-[16px] font-semibold text-[var(--text-n1)]">
+            {{ personalInfo?.userName }}
+          </div>
           <div>
             <van-tag color="var(--text-n9)" text-color="var(--text-n1)" size="medium">
-              {{ detail.departmentName }}
+              {{ personalInfo?.departmentName }}
             </van-tag>
           </div>
         </div>
@@ -23,13 +25,13 @@
           is-link
           inset
           value-class="!text-[var(--text-n4)]"
-          :value="detail.phone"
+          :value="personalInfo?.phone"
           @click="handleEditInfo('phone')"
         />
         <van-cell center class="!p-[16px]" :title="t('mine.email')" is-link @click="handleEditInfo('email')">
           <template #value>
             <div class="one-line-text text-[var(--text-n4)]">
-              {{ detail.email }}
+              {{ personalInfo?.email }}
             </div>
           </template>
         </van-cell>
@@ -39,7 +41,7 @@
         <van-cell :title="t('common.message')" is-link class="!p-[16px]" @click="handleEditInfo('message')">
           <template #value>
             <div class="absolute right-[16px] top-[8px]">
-              <van-badge :content="100" color="var(--error-red)" max="99" />
+              <van-badge :content="messageTotal" color="var(--error-red)" max="99" />
             </div>
           </template>
         </van-cell>
@@ -63,19 +65,15 @@
   import { useRouter } from 'vue-router';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { OrgUserInfo } from '@lib/shared/models/system/org';
+
+  import { getNotificationCount, getPersonalUrl } from '@/api/modules';
+  import { defaultUserInfo } from '@/config/mine';
 
   import { MineRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const router = useRouter();
-
-  const detail = ref({
-    name: '迪丽热巴迪丽热巴迪',
-    phone: '13333336676',
-    email: 'zhaopang@fit2cou.com',
-    departmentName: '部门名称',
-    id: '8889',
-  });
 
   const routeKey = ref('');
 
@@ -84,11 +82,46 @@
     router.push({
       name: routeKey.value,
       query: {
-        id: detail.value.id,
         type,
       },
     });
   }
+
+  const personalInfo = ref<OrgUserInfo>({
+    ...defaultUserInfo,
+  });
+
+  async function initPersonInfo() {
+    try {
+      personalInfo.value = await getPersonalUrl();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const messageTotal = ref(0);
+  async function initMessageCount() {
+    try {
+      const result = await getNotificationCount({
+        type: '',
+        status: '',
+        resourceType: '',
+        createTime: null,
+        endTime: null,
+      });
+
+      messageTotal.value = result.find((e) => e.key === 'total')?.count || 0;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  onBeforeMount(() => {
+    initPersonInfo();
+    initMessageCount();
+  });
 </script>
 
 <style lang="less" scoped>

@@ -17,3 +17,4 @@ export const SaveMessageTaskUrl = '/message/task/save'; // 保存消息设置
 export const BatchSaveMessageTaskUrl = '/message/task/batch/save'; // 消息设置批量编辑
 export const SubscribeMessageUrl = '/sse/subscribe'; // 客户端订阅 SSE 事件流
 export const CloseMessageUrl = '/sse/close'; // 客户端关闭 SSE 事件流
+export const GetHomeMessageUrl = '/notification/last/list'; // 获取首页消息列表

@@ -3,11 +3,14 @@
     <van-form ref="formRef" required>
       <van-cell-group v-if="route.query.type === 'phone'" inset class="mine-van-cell">
         <van-field
-          v-model="form.phoneNumber"
-          name="phoneNumber"
+          v-model="form.phone"
+          name="phone"
           :label="t('common.phoneNumber')"
           :placeholder="t('common.pleaseInput')"
-          :rules="[{ required: true, validator: validateUserPhone }]"
+          :rules="[
+            { required: true, message: t('common.notNull', { value: `${t('common.phoneNumber')}` }) },
+            { validator: validateUserPhone },
+          ]"
           class="!text-[16px]"
         />
       </van-cell-group>
@@ -17,7 +20,10 @@
           name="email"
           :label="t('mine.email')"
           :placeholder="t('common.pleaseInput')"
-          :rules="[{ required: true, validator: validateUserEmail }]"
+          :rules="[
+            { required: true, message: t('common.notNull', { value: `${t('mine.email')}` }) },
+            { validator: validateUserEmail },
+          ]"
           class="!text-[16px]"
         />
       </van-cell-group>
@@ -35,8 +41,11 @@
             <template #button>
               <div class="flex items-center gap-[8px]">
                 <van-divider class="!m-0 !h-[24px]" vertical :style="{ borderColor: 'var(--text-n7)' }" />
-                <!-- TODO xxw -->
-                <CrmTextButton :loading="loading" color="var(--primary-8)" :text="getCodeText" />
+                <CrmTextButton
+                  :color="`${isCounting ? 'var(--primary-4)' : 'var(--primary-8)'}`"
+                  :text="getCodeText"
+                  @click="sendCode"
+                />
               </div>
             </template>
           </van-field>
@@ -94,7 +103,7 @@
           block
           @click="save"
         >
-          {{ route.query.id ? t('common.update') : t('common.create') }}
+          {{ t('common.update') }}
         </van-button>
       </div>
     </template>
@@ -107,10 +116,15 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { validateEmail, validatePhone } from '@lib/shared/method/validate';
+  import { PersonalPassword, SendEmailDTO } from '@lib/shared/models/system/business';
+  import { OrgUserInfo } from '@lib/shared/models/system/org';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import CrmPasswordInput from '@/components/pure/crm-password-input/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
+
+  import { getPersonalUrl, sendEmailCode, updatePersonalInfo, updateUserPassword } from '@/api/modules/index';
+  import { defaultUserInfo } from '@/config/mine';
 
   const { t } = useI18n();
 
@@ -128,38 +142,15 @@
     }
   });
 
-  const showRetryCode = ref<number>(1); // 已配置
-
-  const getCodeText = computed(() => (showRetryCode.value !== 1 ? t('mine.retryGetCode') : t('mine.getCode')));
-
-  // TODO
-  const form = ref<any>({
-    phoneNumber: '132141234314',
-    email: '132141234314',
+  const form = ref<OrgUserInfo & PersonalPassword>({
+    ...defaultUserInfo,
     code: '',
-    password: '',
     confirmPassword: '',
   });
 
-  function validateUserPhone(value: string) {
-    if (!value) {
-      return t('common.notNull', { value: `${t('common.phoneNumber')}` });
-    }
-    if (!validatePhone(value)) {
-      return t('mine.userPhoneErrTip');
-    }
-    return true;
-  }
+  const validateUserPhone = (value: string) => (!validatePhone(value) ? t('mine.userPhoneErrTip') : true);
 
-  function validateUserEmail(value: string) {
-    if (!value) {
-      return t('common.notNull', { value: `${t('mine.email')}` });
-    }
-    if (!validateEmail(value)) {
-      return t('mine.emailErrTip');
-    }
-    return true;
-  }
+  const validateUserEmail = (value: string) => (!validateEmail(value) ? t('mine.emailErrTip') : true);
 
   function validatePasswordStartWith(value: string): boolean {
     return !!form.value.password && form.value.password.startsWith(value) && form.value.password.length >= value.length;
@@ -172,22 +163,116 @@
   const loading = ref(false);
   const formRef = ref<FormInstance>();
 
+  const isEditPersonalInfo = computed(() => ['phone', 'email'].includes(route.query.type as string));
+
+  // 更新个人信息
+  async function handleUpdatePersonalInfo() {
+    try {
+      loading.value = true;
+      const { email, phone } = form.value;
+      await updatePersonalInfo({
+        email,
+        phone,
+      });
+      showToast(t('common.updateSuccess'));
+      router.back();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // 重置密码
+  async function handleResetPassword() {
+    try {
+      loading.value = true;
+      const { email, code, password, confirmPassword } = form.value;
+      await updateUserPassword({
+        email,
+        code,
+        password,
+        confirmPassword,
+      });
+      showToast(t('common.updateSuccess'));
+      router.back();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
   async function save() {
     try {
       await formRef.value?.validate();
-      if (route.query.id) {
-        // update
-        showToast(t('common.updateSuccess'));
+      if (isEditPersonalInfo.value) {
+        await handleUpdatePersonalInfo();
       } else {
-        // create
-        showToast(t('common.createSuccess'));
+        await handleResetPassword();
       }
-      router.back();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     }
   }
+
+  const personalInfo = ref<OrgUserInfo>({
+    ...defaultUserInfo,
+  });
+
+  let timer: ReturnType<typeof setInterval> | null = null;
+  const isCounting = ref(false);
+  const count = ref(60);
+
+  const getCodeText = computed(() =>
+    isCounting.value ? t('mine.retryGetCode', { count: count.value }) : t('mine.getCode')
+  );
+
+  function GetCodeStartCountdown() {
+    isCounting.value = true;
+    count.value = 60;
+    timer = setInterval(() => {
+      if (count.value <= 1) {
+        clearInterval(timer!);
+        timer = null;
+        isCounting.value = false;
+      } else {
+        count.value--;
+      }
+    }, 1000);
+  }
+
+  // 发送验证码
+  async function sendCode() {
+    if (isCounting.value) return;
+    try {
+      GetCodeStartCountdown();
+      const emailData: SendEmailDTO = {
+        email: form.value.email,
+      };
+      await sendEmailCode(emailData);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function initPersonInfo() {
+    try {
+      personalInfo.value = await getPersonalUrl();
+      form.value = { ...form.value, ...personalInfo.value };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  onBeforeMount(() => {
+    initPersonInfo();
+  });
 </script>
 
 <style lang="less" scoped>

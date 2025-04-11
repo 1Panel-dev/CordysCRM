@@ -726,7 +726,7 @@
     },
     {
       title: t('org.workingCity'),
-      key: 'workCity',
+      key: 'workCityName',
       width: 100,
       ellipsis: {
         tooltip: true,
@@ -804,7 +804,7 @@
         ...row,
         position: row.position || '-',
         departmentName: row.departmentName || '-',
-        workCity: getCityPath(row.workCity) || '-',
+        workCityName: getCityPath(row.workCity) || '-',
         phone: row.phone || '-',
         email: row.email || '-',
       };

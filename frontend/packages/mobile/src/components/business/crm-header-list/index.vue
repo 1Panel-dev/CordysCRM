@@ -16,7 +16,7 @@
         :list-params="{ sourceId: props.sourceId }"
         :load-list-api="loadListApi"
         class="p-[16px]"
-        no-pagination
+        no-page-nation
         :item-gap="16"
       >
         <template #item="{ item }">

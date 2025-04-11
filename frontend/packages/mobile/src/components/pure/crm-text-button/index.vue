@@ -7,7 +7,7 @@
       :height="props.iconSize"
       :color="props.color"
     />
-    <div v-if="props.text" :class="`text-[${props.color}]`">{{ props.text }}</div>
+    <div v-if="props.text" :style="{ color: props.color }">{{ props.text }}</div>
   </div>
 </template>
 

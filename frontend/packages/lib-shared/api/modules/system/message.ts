@@ -2,9 +2,11 @@ import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddAnnouncementUrl,
   BatchSaveMessageTaskUrl,
+  CloseMessageUrl,
   DeleteAnnouncementUrl,
   GetAnnouncementDetailUrl,
   GetAnnouncementListUrl,
+  GetHomeMessageUrl,
   GetMessageTaskUrl,
   GetNotificationCountUrl,
   GetNotificationListUrl,
@@ -77,6 +79,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<MessageConfigItem[]>({ url: GetMessageTaskUrl });
   }
 
+  // 获取首页消息列表
+  function getHomeMessageList() {
+    return CDR.get<MessageCenterItem[]>({ url: GetHomeMessageUrl });
+  }
+
   // 保存消息设置
   function saveMessageTask(data: SaveMessageConfigParams) {
     return CDR.post({ url: SaveMessageTaskUrl, data });
@@ -85,6 +92,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 批量编辑消息设置
   function batchSaveMessageTask(data: Pick<SaveMessageConfigParams, 'emailEnable' | 'sysEnable'>) {
     return CDR.post({ url: BatchSaveMessageTaskUrl, data });
+  }
+
+  // 关闭订阅消息SSE事件流
+  function closeMessageSubscribe(params: { userId: string; clientId: string }) {
+    return CDR.get({ url: CloseMessageUrl, params });
   }
 
   return {
@@ -100,5 +112,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getMessageTask,
     saveMessageTask,
     batchSaveMessageTask,
+    getHomeMessageList,
+    closeMessageSubscribe,
   };
 }

@@ -37,7 +37,7 @@
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
-  import { updatePersonalUrl } from '@/api/modules';
+  import { updatePersonalInfo } from '@/api/modules';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -86,7 +86,7 @@
       if (!error) {
         try {
           loading.value = true;
-          await updatePersonalUrl(form.value);
+          await updatePersonalInfo(form.value);
           Message.success(t('common.updateSuccess'));
           showModal.value = false;
           emit('initSync');

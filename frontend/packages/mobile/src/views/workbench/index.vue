@@ -41,11 +41,11 @@
           </div>
         </template>
       </van-cell>
-      <!-- <CrmList :keyword="keyword">
+      <CrmList ref="crmListRef" :load-list-api="getHomeMessageList" no-page-nation>
         <template #item="{ item }">
-          <CrmMessageItem :item="item" />
+          <CrmMessageItem :item="item" @load-list="() => initMessageList()" />
         </template>
-      </CrmList> -->
+      </CrmList>
     </van-cell-group>
   </div>
 </template>
@@ -58,6 +58,8 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmMessageItem from '@/components/business/crm-message-item/index.vue';
+
+  import { getHomeMessageList } from '@/api/modules';
 
   import { MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
 
@@ -108,6 +110,12 @@
 
   function goDuplicateCheck() {
     router.push({ name: WorkbenchRouteEnum.WORKBENCH_DUPLICATE_CHECK });
+  }
+
+  const crmListRef = ref<InstanceType<typeof CrmList>>();
+
+  function initMessageList() {
+    crmListRef.value?.loadList();
   }
 </script>
 

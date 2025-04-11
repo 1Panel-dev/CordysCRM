@@ -1,7 +1,7 @@
 <template>
   <CrmPageWrapper :title="t('common.message')">
     <div class="flex h-full flex-col overflow-hidden">
-      <van-tabs v-model:active="activeName" border class="customer-tabs">
+      <van-tabs v-model:active="activeName" border class="customer-tabs" @change="changeResourceTab">
         <van-tab v-for="tab of tabList" :key="tab.name" :name="tab.name">
           <template #title>
             <div class="text-[16px]" :class="activeName === tab.name ? 'text-[var(--primary-8)]' : ''">
@@ -13,8 +13,10 @@
               <van-search
                 v-model="keyword"
                 shape="round"
-                :placeholder="t('customer.searchPlaceholder')"
+                :placeholder="t('mine.messageSearchPlaceholder')"
                 class="flex-1 !p-0"
+                @search="() => refreshMessageList()"
+                @clear="() => refreshMessageList()"
               />
             </div>
             <div class="filter-buttons flex gap-2">
@@ -40,11 +42,18 @@
         </van-tab>
       </van-tabs>
       <div class="flex-1 overflow-auto">
-        <!-- <CrmList :list-params="listParams" class="p-[16px]" :item-gap="16">
+        <CrmList
+          ref="crmListRef"
+          :list-params="listParams"
+          class="p-[16px]"
+          :item-gap="16"
+          :keyword="keyword"
+          :load-list-api="getNotificationList"
+        >
           <template #item="{ item }">
-            <CrmMessageItem :item="item" />
+            <CrmMessageItem :item="item" @load-list="() => refreshMessageList(true)" />
           </template>
-        </CrmList> -->
+        </CrmList>
       </div>
     </div>
   </CrmPageWrapper>
@@ -57,6 +66,10 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmMessageItem from '@/components/business/crm-message-item/index.vue';
 
+  import { getNotificationCount, getNotificationList } from '@/api/modules';
+  import useAppStore from '@/store/modules/app';
+
+  const appStore = useAppStore();
   const { t } = useI18n();
 
   const activeName = ref('');
@@ -80,34 +93,104 @@
 
   const activeFilter = ref('');
 
-  const messageButtons = [
-    {
-      name: '',
-      tab: t('mine.allMessage'),
-      count: 99,
-    },
-    {
-      name: SystemResourceMessageTypeEnum.CUSTOMER,
-      tab: t('menu.customer'),
-      count: 99,
-    },
-    {
-      name: SystemResourceMessageTypeEnum.CLUE,
-      tab: t('menu.clue'),
-      count: 99,
-    },
-    {
-      name: SystemResourceMessageTypeEnum.OPPORTUNITY,
-      tab: t('mine.opportunityMessage'),
-      count: 0,
-    },
-  ];
+  const messageCount = ref<Record<string, number>>({});
+
+  const messageButtons = computed(() => {
+    const enabledModuleKeys = new Set(
+      appStore.moduleConfigList.filter((module) => module.enable).map((module) => module.moduleKey.toUpperCase())
+    );
+
+    const isAnnouncementTab = activeName.value === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE;
+    const allMessage = [
+      {
+        name: '',
+        tab: t('mine.allMessage'),
+        count: isAnnouncementTab
+          ? messageCount.value[SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE]
+          : messageCount.value?.total,
+      },
+    ];
+
+    const baseMessageTypes = [
+      {
+        name: SystemResourceMessageTypeEnum.CUSTOMER,
+        tab: t('menu.customer'),
+        count: messageCount.value[SystemResourceMessageTypeEnum.CUSTOMER] || 0,
+      },
+      {
+        name: SystemResourceMessageTypeEnum.CLUE,
+        tab: t('menu.clue'),
+        count: messageCount.value[SystemResourceMessageTypeEnum.CLUE] || 0,
+      },
+      {
+        name: SystemResourceMessageTypeEnum.OPPORTUNITY,
+        tab: t('mine.opportunityMessage'),
+        count: messageCount.value[SystemResourceMessageTypeEnum.OPPORTUNITY] || 0,
+      },
+    ];
+
+    if (isAnnouncementTab) {
+      return allMessage;
+    }
+    return [...allMessage, ...baseMessageTypes.filter(({ name }) => enabledModuleKeys.has(name) || name)];
+  });
 
   const listParams = computed(() => {
     return {
-      searchType: activeFilter.value,
+      type: activeName.value,
+      resourceType: activeName.value === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE ? '' : activeFilter.value,
+      status: '',
+      endTime: null,
       keyword: keyword.value,
+      createTime: null,
     };
+  });
+
+  async function initSystemMessageCount() {
+    try {
+      const result = await getNotificationCount({
+        type: '',
+        status: '',
+        resourceType: '',
+        createTime: null,
+        endTime: null,
+      });
+
+      if (result) {
+        result.forEach(({ key, count }) => {
+          messageCount.value[key] = count || 0;
+        });
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const crmListRef = ref<InstanceType<typeof CrmList>>();
+
+  function refreshMessageList(refreshCount = false) {
+    nextTick(() => {
+      crmListRef.value?.loadList(true);
+    });
+    if (refreshCount) {
+      initSystemMessageCount();
+    }
+  }
+
+  function changeResourceTab() {
+    refreshMessageList();
+  }
+
+  watch(
+    () => activeFilter.value,
+    () => {
+      refreshMessageList();
+    }
+  );
+
+  onBeforeMount(() => {
+    initSystemMessageCount();
   });
 </script>
 

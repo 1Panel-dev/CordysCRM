@@ -9,11 +9,12 @@ export default {
   'mine.repeatPassWord': '重复密码',
   'mine.newPassWord': '新密码',
   'mine.passwordDiff': '两次密码不一致',
-  'mine.retryGetCode': '重新获取',
+  'mine.retryGetCode': '{count} 秒重新获取',
   'mine.allMessage': '全部',
   'mine.systemMessage': '系统消息',
   'mine.announcementMessage': '公告',
   'mine.opportunityMessage': '商机',
   'mine.userPhoneErrTip': '请输入 11 位手机号',
   'mine.emailErrTip': '邮箱格式错误，请重新输入',
+  'mine.messageSearchPlaceholder': '请输入关键词',
 };

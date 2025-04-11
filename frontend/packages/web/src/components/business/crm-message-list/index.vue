@@ -1,6 +1,7 @@
 <template>
   <n-spin :show="loading">
     <CrmList
+      v-if="list.length"
       v-model:data="list"
       :virtual-scroll-height="props.virtualScrollHeight"
       :key-field="props.keyField"
@@ -78,6 +79,9 @@
         </div>
       </template>
     </CrmList>
+    <div v-else class="w-full p-[16px] text-center text-[var(--text-n4)]">
+      {{ props.emptyText || t('common.noData') }}
+    </div>
   </n-spin>
 </template>
 
