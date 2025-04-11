@@ -17,6 +17,8 @@ export enum CustomerRouteEnum {
   CUSTOMER_TRANSFER = 'customerTransfer',
   CUSTOMER_DISTRIBUTE = 'customerDistribute',
   CUSTOMER_OPENSEA_DETAIL = 'customerOpenSeaDetail',
+  CUSTOMER_RELATION = 'customerRelation',
+  CUSTOMER_COLLABORATOR = 'customerCollaborator',
 }
 
 export enum CommonRouteEnum {

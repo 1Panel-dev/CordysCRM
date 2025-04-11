@@ -5,6 +5,7 @@
     :keyword="props.keyword"
     :list-params="props.listParams"
     :load-list-api="props.loadListApi"
+    :transform="props.transform"
   >
     <template #item="{ item }">
       <van-checkbox v-model="item.checked" :disabled="item.disabled" @change="handleChange">
@@ -14,10 +15,13 @@
   </CrmList>
   <van-radio-group v-else v-model:model-value="value" shape="dot" @change="handleChange">
     <CrmList
+      ref="crmListRef"
       v-model:model-value="list"
       :keyword="props.keyword"
       :list-params="props.listParams"
       :load-list-api="props.loadListApi"
+      :no-page-nation="props.noPageNation"
+      :transform="props.transform"
     >
       <template #item="{ item }">
         <van-radio :name="item.id" :disabled="item.disabled">
@@ -37,7 +41,9 @@
     keyword?: string;
     multiple?: boolean;
     listParams?: Record<string, any>;
+    noPageNation?: boolean;
     loadListApi: (params: TableQueryParams) => Promise<CommonList<Record<string, any>>>;
+    transform?: (item: Record<string, any>, optionMap?: Record<string, any[]>) => Record<string, any>;
   }>();
 
   const value = defineModel<string | string[]>('value', {
@@ -48,6 +54,7 @@
   });
 
   const list = ref<Record<string, any>[]>([]);
+  const crmListRef = ref<InstanceType<typeof CrmList>>();
 
   function handleChange() {
     if (props.multiple) {
@@ -57,6 +64,12 @@
       selectedRows.value = list.value.filter((e) => e.id === value.value);
     }
   }
+
+  onMounted(() => {
+    if (!props.multiple) {
+      crmListRef.value?.loadList(true);
+    }
+  });
 </script>
 
 <style lang="less" scoped>

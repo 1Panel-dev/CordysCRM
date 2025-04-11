@@ -53,4 +53,5 @@ export enum FieldDataSourceTypeEnum {
   PRODUCT = 'PRODUCT', // 产品
   CLUE = 'CLUE', // 线索
   CUSTOMER_OPTIONS = 'CUSTOMER_OPTIONS', // 客户选项
+  USER_OPTIONS = 'USER_OPTIONS', // 成员选项
 }

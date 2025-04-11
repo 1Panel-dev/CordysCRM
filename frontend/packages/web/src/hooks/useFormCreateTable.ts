@@ -63,7 +63,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('customer.recycleOpenSea'),
         width: 120,
-        key: 'recycleOpenSea',
+        key: 'recyclePoolName',
         ellipsis: {
           tooltip: true,
         },
@@ -71,10 +71,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('customer.remainingVesting'),
         width: 120,
-        key: 'remainingVesting',
+        key: 'reservedDays',
         ellipsis: {
           tooltip: true,
         },
+        render: (row: any) => (row.reservedDays ? `${row.reservedDays}${t('common.dayUnit')}` : '-'),
       },
       {
         title: t('customer.lastFollowUps'),
@@ -213,7 +214,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('customer.remainingVesting'),
         width: 120,
-        key: 'remainingVesting',
+        key: 'reservedDays',
         ellipsis: {
           tooltip: true,
         },
@@ -244,7 +245,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('clue.recyclePool'),
         width: 120,
-        key: 'recyclePool',
+        key: 'recyclePoolName',
         ellipsis: {
           tooltip: true,
         },
@@ -252,7 +253,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('customer.remainingVesting'),
         width: 120,
-        key: 'remainingVesting',
+        key: 'reservedDays',
         ellipsis: {
           tooltip: true,
         },

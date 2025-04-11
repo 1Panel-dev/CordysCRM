@@ -56,7 +56,7 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
 
-  import { getCustomerList } from '@/api/modules';
+  import { deleteCustomer, getCustomerList } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
 
   import { CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
@@ -148,10 +148,10 @@
           message: t('customer.deleteTip'),
           confirmButtonText: t('common.confirmDelete'),
           confirmButtonColor: 'var(--error-red)',
-          beforeClose: (action) => {
+          beforeClose: async (action) => {
             if (action === 'confirm') {
               try {
-                // TODO: delete customer
+                await deleteCustomer(item.id);
                 showSuccessToast(t('common.deleteSuccess'));
                 crmListRef.value?.loadList(true);
                 return Promise.resolve(true);

@@ -8,6 +8,7 @@
           v-model:selected-rows="selectedRows"
           :load-list-api="getUserOptions"
           :multiple="false"
+          no-page-nation
         ></CrmSelectList>
       </div>
     </div>
@@ -38,15 +39,16 @@
 </template>
 
 <script setup lang="ts">
-  import { useRouter } from 'vue-router';
-  import { showSuccessToast } from 'vant';
+  import { useRoute, useRouter } from 'vue-router';
+  import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
 
-  import { getUserOptions } from '@/api/modules';
+  import { batchTransferCustomer, getUserOptions } from '@/api/modules';
 
+  const route = useRoute();
   const router = useRouter();
   const { t } = useI18n();
 
@@ -58,6 +60,11 @@
   async function onConfirm() {
     try {
       loading.value = true;
+      showLoadingToast(t('common.transferring'));
+      await batchTransferCustomer({
+        ids: [route.query.id as string],
+        owner: value.value as string,
+      });
       showSuccessToast(t('customer.transferSuccess'));
       router.back();
     } catch (error) {
@@ -65,6 +72,7 @@
       console.error(error);
     } finally {
       loading.value = false;
+      closeToast();
     }
   }
 </script>

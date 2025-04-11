@@ -35,6 +35,8 @@ export default {
   'common.pleaseSelect': 'Please Select',
   'common.create': 'Create',
   'common.createSuccess': 'Create Success',
+  'common.add': 'Add',
+  'common.addSuccess': 'Add Success',
   'common.update': 'Update',
   'common.updateSuccess': 'Update Success',
   'common.cancel': 'Cancel',
@@ -63,4 +65,7 @@ export default {
   'common.remainingBelong': 'Remaining belong',
   'common.refreshSuccess': 'Refresh success',
   'common.searching': 'Searching...',
+  'common.transferring': 'Transferring...',
+  'common.deleting': 'Deleting...',
+  'common.loading': 'Loading...',
 };

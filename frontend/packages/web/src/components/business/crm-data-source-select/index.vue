@@ -70,6 +70,7 @@
     [FieldDataSourceTypeEnum.PRODUCT]: 'crmFormDesign.product',
     [FieldDataSourceTypeEnum.CLUE]: 'crmFormDesign.clue',
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: '',
+    [FieldDataSourceTypeEnum.USER_OPTIONS]: '',
   };
 
   const value = defineModel<DataTableRowKey[]>('value', {

@@ -1,7 +1,7 @@
 <template>
   <CrmPageWrapper :title="formCreateTitle">
     <van-form ref="formRef" required>
-      <van-cell-group class="crm-form-create-inset" inset>
+      <van-cell-group class="crm-form" inset>
         <template v-for="item in mobileFieldList" :key="item.id">
           <component
             :is="getItemComponent(item.type, item.multiple)"
@@ -215,22 +215,4 @@
   );
 </script>
 
-<style lang="less" scoped>
-  .crm-form-create-inset {
-    margin: 0;
-    :deep(.van-cell) {
-      position: relative;
-      &:last-child::before {
-        position: absolute;
-        box-sizing: border-box;
-        content: ' ';
-        pointer-events: none;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        border-bottom: 1px solid var(--van-cell-border-color);
-        transform: scaleY(0.5);
-      }
-    }
-  }
-</style>
+<style lang="less" scoped></style>

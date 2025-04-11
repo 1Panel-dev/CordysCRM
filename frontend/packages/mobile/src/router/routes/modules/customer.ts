@@ -53,6 +53,22 @@ const customer: AppRouteRecordRaw = {
         permissions: [],
       },
     },
+    {
+      path: 'relation',
+      name: CustomerRouteEnum.CUSTOMER_RELATION,
+      component: () => import('@/views/customer/relation.vue'),
+      meta: {
+        permissions: [],
+      },
+    },
+    {
+      path: 'collaborator',
+      name: CustomerRouteEnum.CUSTOMER_COLLABORATOR,
+      component: () => import('@/views/customer/collaborator.vue'),
+      meta: {
+        permissions: [],
+      },
+    },
   ],
 };
 

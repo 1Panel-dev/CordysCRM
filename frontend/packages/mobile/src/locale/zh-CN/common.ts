@@ -35,6 +35,8 @@ export default {
   'common.pleaseSelect': '请选择',
   'common.create': '新建',
   'common.createSuccess': '新建成功',
+  'common.add': '添加',
+  'common.addSuccess': '添加成功',
   'common.update': '更新',
   'common.updateSuccess': '更新成功',
   'common.cancel': '取消',
@@ -64,4 +66,7 @@ export default {
   'common.refreshSuccess': '刷新成功',
   'common.searching': '搜索中...',
   'common.to': '至',
+  'common.transferring': '转移中...',
+  'common.deleting': '删除中...',
+  'common.loading': '加载中...',
 };

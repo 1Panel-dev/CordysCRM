@@ -30,6 +30,7 @@
     getFieldCustomerList,
     getFieldOpportunityList,
     getFieldProductList,
+    getUserOptions,
   } from '@/api/modules';
 
   import { InternalRowData, RowData } from 'naive-ui/es/data-table/src/interface';
@@ -87,6 +88,7 @@
     [FieldDataSourceTypeEnum.CUSTOMER]: getFieldCustomerList,
     [FieldDataSourceTypeEnum.PRODUCT]: getFieldProductList,
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: getCustomerOptions,
+    [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
   };
 
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(sourceApi[props.sourceType], {

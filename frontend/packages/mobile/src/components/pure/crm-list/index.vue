@@ -1,7 +1,7 @@
 <template>
   <div class="h-full overflow-auto" :class="props.class">
     <van-pull-refresh v-model="refreshing" class="h-full" @refresh="handleRefresh">
-      <van-empty v-if="list.length === 0 && !loading" :description="t('common.noData')" />
+      <van-empty v-if="list.length === 0 && !loading && !error" :description="t('common.noData')" />
       <van-list
         v-model:loading="loading"
         v-model:error="error"
@@ -21,18 +21,19 @@
 </template>
 
 <script setup lang="ts">
-  import { showSuccessToast } from 'vant';
+  import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { CommonList } from '@lib/shared/models/common';
 
   const props = defineProps<{
     keyword?: string;
     class?: string;
     listParams?: Record<string, any>;
     itemGap?: number;
-    loadListApi: (...args: any) => Promise<Record<string, any>>;
+    noPageNation?: boolean;
+    loadListApi: (...args: any) => Promise<CommonList<Record<string, any>> | Record<string, any>>;
     transform?: (item: Record<string, any>, optionMap?: Record<string, any[]>) => Record<string, any>;
-    noPagination?: boolean; // 不分页
   }>();
 
   const { t } = useI18n();
@@ -55,24 +56,25 @@
       } else {
         currentPage.value += 1;
       }
+      if (currentPage.value === 1 && !refreshing.value) {
+        showLoadingToast(t('common.loading'));
+      }
       const res = await props.loadListApi({
         ...props.listParams,
         keyword: props.keyword,
         pageSize: 10,
         current: currentPage.value,
       });
-      let dataList;
-      if (props.noPagination) {
-        dataList = res;
-      } else {
-        dataList = props.transform ? res.list.map((e: any) => props.transform!(e, res.optionMap)) : res.list;
-      }
+      const resList = props.noPageNation ? res : res.list;
+      const dataList = props.transform
+        ? resList.map((e: Record<string, any>) => props.transform!(e, res.optionMap))
+        : resList;
       if (refresh) {
         list.value = dataList;
       } else {
         list.value = list.value.concat(dataList);
       }
-      finished.value = res.total <= currentPage.value * 10;
+      finished.value = props.noPageNation || res.total <= currentPage.value * 10;
       error.value = false;
     } catch (_error) {
       // eslint-disable-next-line no-console
@@ -81,6 +83,7 @@
     } finally {
       loading.value = false;
       refreshing.value = false;
+      closeToast();
     }
   }
 

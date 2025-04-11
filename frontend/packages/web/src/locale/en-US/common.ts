@@ -283,4 +283,5 @@ export default {
   'common.contact': 'Contact',
   'common.required': 'Required',
   'common.onlyOne': 'Not allowed to repeat value',
+  'common.dayUnit': 'Day',
 };

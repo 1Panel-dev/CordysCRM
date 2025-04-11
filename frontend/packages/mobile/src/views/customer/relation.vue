@@ -1,15 +1,34 @@
 <template>
-  <CrmPageWrapper :title="route.query.id ? t('common.editCustomer') : t('common.newCustomer')">
-    <van-form ref="formRef" class="border-b border-[var(--text-n8)]" required>
+  <CrmPageWrapper :title="route.query.id ? t('customer.updateRelation') : t('customer.addRelation')">
+    <van-form ref="formRef" class="crm-form" required>
       <van-cell-group inset>
         <van-field
-          v-model="name"
-          name="name"
-          :label="t('customer.customerName')"
+          v-model="relationType"
+          name="relationType"
+          :label="t('customer.relation')"
           :placeholder="t('common.pleaseInput')"
           :rules="[{ required: true, message: t('customer.customerNameNotNull') }]"
           class="!text-[16px]"
-        />
+        >
+          <template #input>
+            <van-radio-group v-model="relationType" direction="horizontal">
+              <van-radio name="GROUP">{{ t('customer.group') }}</van-radio>
+              <van-radio name="SUBSIDIARY">{{ t('customer.subsidiary') }}</van-radio>
+            </van-radio-group>
+          </template>
+        </van-field>
+        <CrmDataSource
+          id="customerId"
+          v-model:value="customerId"
+          v-model:selected-rows="selectedRows"
+          :data-source-type="FieldDataSourceTypeEnum.CUSTOMER_OPTIONS"
+          :label="t('common.pleaseSelect')"
+          :multiple="false"
+          :disabled-selection="disabledSelection"
+          no-page-nation
+          class="!text-[16px]"
+        >
+        </CrmDataSource>
       </van-cell-group>
     </van-form>
     <template #footer>
@@ -27,11 +46,11 @@
           type="primary"
           class="!rounded-[var(--border-radius-small)] !text-[16px]"
           :loading="loading"
-          :disabled="!name"
+          :disabled="!customerId"
           block
           @click="save"
         >
-          {{ route.query.id ? t('common.update') : t('common.create') }}
+          {{ route.query.id ? t('common.update') : t('common.add') }}
         </van-button>
       </div>
     </template>
@@ -42,17 +61,25 @@
   import { useRoute, useRouter } from 'vue-router';
   import { FormInstance, showSuccessToast } from 'vant';
 
+  import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+  import CrmDataSource from '@/components/business/crm-datasource/index.vue';
 
   const route = useRoute();
   const router = useRouter();
   const { t } = useI18n();
 
   const formRef = ref<FormInstance>();
-  const name = ref('');
+  const relationType = ref('GROUP');
+  const customerId = ref('');
+  const selectedRows = ref([]);
   const loading = ref(false);
+
+  function disabledSelection(row: Record<string, any>) {
+    return row.id === route.query.sourceId;
+  }
 
   async function save() {
     try {
@@ -62,7 +89,7 @@
         showSuccessToast(t('common.updateSuccess'));
       } else {
         // create
-        showSuccessToast(t('common.createSuccess'));
+        showSuccessToast(t('common.addSuccess'));
       }
       router.back();
     } catch (error) {

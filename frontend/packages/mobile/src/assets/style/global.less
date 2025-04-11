@@ -26,3 +26,22 @@ body {
   background-color: var(--text-n10);
   .half-px-border-bottom();
 }
+.crm-form {
+  .van-cell-group {
+    margin: 0;
+    .van-cell {
+      position: relative;
+      &:last-child::before {
+        position: absolute;
+        box-sizing: border-box;
+        content: ' ';
+        pointer-events: none;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        border-bottom: 1px solid var(--van-cell-border-color);
+        transform: scaleY(0.5);
+      }
+    }
+  }
+}

@@ -8,6 +8,7 @@
     readonly
     :placeholder="props.placeholder || t('common.pleaseSelect')"
     :disabled="props.disabled"
+    :class="props.class"
     clearable
     @click="showPicker = true"
     @update:model-value="($event) => emit('change', $event)"
@@ -38,6 +39,8 @@
             v-model:selected-rows="selectedRows"
             :multiple="props.multiple"
             :load-list-api="sourceApi[props.dataSourceType]"
+            :transform="disabledTransform"
+            :no-page-nation="props.noPageNation"
           ></CrmSelectList>
         </div>
       </div>
@@ -83,6 +86,7 @@
     getFieldCustomerList,
     getFieldOpportunityList,
     getFieldProductList,
+    getUserOptions,
   } from '@/api/modules';
 
   const props = defineProps<{
@@ -93,6 +97,9 @@
     id?: string;
     label?: string;
     multiple?: boolean;
+    noPageNation?: boolean;
+    disabledSelection?: (item: Record<string, any>) => boolean;
+    class?: string;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: string | string[]): void;
@@ -113,12 +120,13 @@
   const keyword = ref('');
 
   const typeLocaleMap = {
-    [FieldDataSourceTypeEnum.CUSTOMER]: 'formCreate .customer',
-    [FieldDataSourceTypeEnum.CONTACT]: 'formCreate .contract',
-    [FieldDataSourceTypeEnum.BUSINESS]: 'formCreate .business',
-    [FieldDataSourceTypeEnum.PRODUCT]: 'formCreate .product',
-    [FieldDataSourceTypeEnum.CLUE]: 'formCreate .clue',
+    [FieldDataSourceTypeEnum.CUSTOMER]: 'formCreate.customer',
+    [FieldDataSourceTypeEnum.CONTACT]: 'formCreate.contract',
+    [FieldDataSourceTypeEnum.BUSINESS]: 'formCreate.business',
+    [FieldDataSourceTypeEnum.PRODUCT]: 'formCreate.product',
+    [FieldDataSourceTypeEnum.CLUE]: 'formCreate.clue',
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: '',
+    [FieldDataSourceTypeEnum.USER_OPTIONS]: '',
   };
 
   const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<CommonList<any>>> = {
@@ -128,6 +136,7 @@
     [FieldDataSourceTypeEnum.CUSTOMER]: getFieldCustomerList,
     [FieldDataSourceTypeEnum.PRODUCT]: getFieldProductList,
     [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: getCustomerOptions,
+    [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
   };
 
   function onConfirm() {
@@ -135,6 +144,13 @@
     fieldValue.value = selectedRows.value.map((item) => item.name).join('；');
     value.value = selectedRows.value.map((item) => item.id);
     emit('change', value.value);
+  }
+
+  function disabledTransform(item: Record<string, any>) {
+    return {
+      ...item,
+      disabled: props.disabledSelection ? props.disabledSelection(item) : false,
+    };
   }
 
   onBeforeMount(() => {
