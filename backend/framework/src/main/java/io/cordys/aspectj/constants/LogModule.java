@@ -40,10 +40,7 @@ public class LogModule {
      * 组织架构
      */
     public static final String SYSTEM_ORGANIZATION = "SYSTEM_ORGANIZATION";
-    /**
-     * 组织架构用户
-     */
-    public static final String SYSTEM_DEPARTMENT_USER = "SYSTEM_DEPARTMENT_USER";
+
     /**
      * 角色权限
      */

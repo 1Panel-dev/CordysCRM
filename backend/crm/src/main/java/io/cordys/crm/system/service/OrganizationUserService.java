@@ -181,7 +181,7 @@ public class OrganizationUserService {
      * @param organizationId
      * @param operatorId
      */
-    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.ADD, operator = "{#operatorId}")
+    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.ADD, operator = "{#operatorId}")
     public void addUser(UserAddRequest request, String organizationId, String operatorId) {
         String id = IDGenerator.nextStr();
         //邮箱和手机号唯一性校验
@@ -296,6 +296,10 @@ public class OrganizationUserService {
      */
     public UserResponse getUserDetail(String id) {
         UserResponse userDetail = extUserMapper.getUserDetail(id);
+        if (StringUtils.isNotBlank(userDetail.getSupervisorId())) {
+            User user = userMapper.selectByPrimaryKey(userDetail.getSupervisorId());
+            userDetail.setSupervisorName(Optional.ofNullable(user).map(User::getName).orElse(null));
+        }
         //获取用户角色
         List<UserRoleConvert> userRoles = extUserMapper.getUserRole(List.of(userDetail.getUserId()), userDetail.getOrganizationId());
         userDetail.setRoles(userRoles);
@@ -308,7 +312,7 @@ public class OrganizationUserService {
      * @param request
      * @param operatorId
      */
-    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.UPDATE, operator = "{#operatorId}")
+    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, operator = "{#operatorId}")
     public void updateUser(UserUpdateRequest request, String operatorId) {
         UserResponse oldUser = getUserDetail(request.getId());
         //邮箱和手机号唯一性校验
@@ -386,7 +390,7 @@ public class OrganizationUserService {
      * @param userId
      * @param operatorId
      */
-    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.UPDATE, resourceId = "{#userId}", operator = "{#operatorId}")
+    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, resourceId = "{#userId}", operator = "{#operatorId}")
     public void resetPassword(String userId, String operatorId) {
         User user = userMapper.selectByPrimaryKey(userId);
         user.setPassword(
@@ -433,7 +437,7 @@ public class OrganizationUserService {
             List<OptionDTO> orgUsers = extOrganizationUserMapper.selectEnableOrgUser(ids, !request.isEnable());
             List<LogDTO> logs = new ArrayList<>();
             orgUsers.forEach(orgUser -> {
-                LogDTO logDTO = new LogDTO(orgId, orgUser.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_DEPARTMENT_USER, orgUser.getName());
+                LogDTO logDTO = new LogDTO(orgId, orgUser.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, orgUser.getName());
                 logDTO.setOriginalValue(originUser);
                 logDTO.setModifiedValue(newUser);
                 logs.add(logDTO);
@@ -467,7 +471,7 @@ public class OrganizationUserService {
             );
             user.setUpdateTime(System.currentTimeMillis());
             user.setUpdateUser(operatorId);
-            LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_DEPARTMENT_USER, user.getName());
+            LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, user.getName());
             logDTO.setOriginalValue(originPasswdUser);
             logDTO.setModifiedValue(newPasswdUser);
             logDTOS.add(logDTO);
@@ -760,7 +764,7 @@ public class OrganizationUserService {
      * @param id
      * @param orgId
      */
-    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.DELETE, resourceId = "{#id}")
+    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.DELETE, resourceId = "{#id}")
     public void deleteUserById(String id, String orgId) {
         UserResponse user = extUserMapper.getUserDetail(id);
         if (checkUserResource(user.getUserId())) {

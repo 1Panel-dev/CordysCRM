@@ -14,6 +14,7 @@
             t.detail
         FROM
         sys_operation_log t
+        INNER JOIN sys_user on sys_user.id = t.create_user
         where t.organization_id = #{orgId}
             <if test="request.operator != null and request.operator != ''">
                 AND t.create_user = #{request.operator, jdbcType=VARCHAR}

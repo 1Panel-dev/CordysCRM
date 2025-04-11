@@ -42,6 +42,9 @@ public class UserResponse {
     @Schema(description = "直属上级")
     private String supervisorId;
 
+    @Schema(description = "直属名称")
+    private String supervisorName;
+
     @Schema(description = "角色列表")
     private List<UserRoleConvert> roles;
 

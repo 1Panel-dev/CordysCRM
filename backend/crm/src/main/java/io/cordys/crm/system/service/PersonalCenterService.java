@@ -165,7 +165,7 @@ public class PersonalCenterService {
     }
 
 
-    @OperationLog(module = LogModule.SYSTEM_DEPARTMENT_USER, type = LogType.UPDATE, operator = "{#userId}")
+    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, operator = "{#userId}")
     public UserResponse updateInfo(PersonalInfoRequest personalInfoRequest, String userId, String orgId) {
         User oldUser = userBaseMapper.selectByPrimaryKey(userId);
         User user = new User();
