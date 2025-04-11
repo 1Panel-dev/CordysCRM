@@ -60,30 +60,38 @@ public class SseService {
             throw new IllegalArgumentException("userId 和 clientId 不能为空");
         }
 
-        // 创建新的 SseEmitter，设置超时为最大值
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-
         // 获取或初始化用户的内部映射，使用同步的 LinkedHashMap 保持插入顺序
         Map<String, SseEmitter> innerMap = userEmitters.computeIfAbsent(userId,
                 k -> Collections.synchronizedMap(new LinkedHashMap<>()));
 
-        // 同步操作确保线程安全并限制客户端数量
         synchronized (innerMap) {
-            innerMap.put(clientId, emitter);
-            if (innerMap.size() > 3) {
-                innerMap.entrySet().iterator().next() // 获取最早的条目
-                        .getValue().complete();       // 完成最早的SEmitter
-                innerMap.remove(innerMap.keySet().iterator().next()); // 移除最早的客户端
+            // 如果对于指定的 clientId 已经存在 emitter，则直接返回，不需要再新创建
+            if (innerMap.containsKey(clientId)) {
+                return innerMap.get(clientId);
             }
+
+            // 否则，创建新的 SseEmitter，设置超时为最大值
+            SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+            innerMap.put(clientId, emitter);
+
+            // 限制同一用户的客户端数量，当超过 3 个时，移除最早的 emitter
+            if (innerMap.size() > 3) {
+                Iterator<Map.Entry<String, SseEmitter>> iterator = innerMap.entrySet().iterator();
+                if (iterator.hasNext()) {
+                    Map.Entry<String, SseEmitter> oldestEntry = iterator.next();
+                    oldestEntry.getValue().complete();
+                    iterator.remove();
+                }
+            }
+
+            // 为 emitter 设置生命周期监听器，当完成、超时或错误时会自动移除对应的 emitter
+            Runnable removeAction = () -> removeEmitter(userId, clientId);
+            emitter.onCompletion(removeAction);
+            emitter.onTimeout(removeAction);
+            emitter.onError(e -> removeAction.run());
+
+            return emitter;
         }
-
-        // 使用方法引用设置生命周期监听器
-        Runnable removeAction = () -> removeEmitter(userId, clientId);
-        emitter.onCompletion(removeAction);
-        emitter.onTimeout(removeAction);
-        emitter.onError(e -> removeAction.run());
-
-        return emitter;
     }
 
     /**
