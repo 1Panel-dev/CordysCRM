@@ -5,11 +5,14 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.constants.CustomerRelationType;
 import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerRelation;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerRelationSaveRequest;
+import io.cordys.crm.customer.dto.request.CustomerRelationUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerRelationListResponse;
 import io.cordys.crm.customer.service.CustomerRelationService;
 import io.cordys.crm.customer.service.CustomerService;
+import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.*;
@@ -29,8 +32,12 @@ class CustomerRelationControllerTests extends BaseTest {
     protected static final String LIST = "list/{0}";
 
     protected static final String SAVE = "save/{0}";
+    protected static final String ADD = "add/{0}";
+    protected static final String UPDATE = "update/{0}";
+    protected static final String DELETE = "delete/{0}";
 
     private static Customer addCustomer;
+    private static CustomerRelation addCustomerRelation;
     private static Customer anotherAddCustomer;
 
     @Resource
@@ -38,6 +45,9 @@ class CustomerRelationControllerTests extends BaseTest {
 
     @Resource
     private CustomerService customerService;
+
+    @Resource
+    private BaseMapper<CustomerRelation> customerRelationBaseMapper;
 
     @Override
     protected String getBasePath() {
@@ -89,6 +99,49 @@ class CustomerRelationControllerTests extends BaseTest {
         Assertions.assertEquals(response.getCustomerId(), anotherAddCustomer.getId());
         Assertions.assertEquals(response.getRelationType(), CustomerRelationType.SUBSIDIARY.name());
         Assertions.assertNotNull(response.getCustomerName());
+    }
+
+    @Test
+    @Order(4)
+    void testAdd() throws Exception {
+        CustomerRelationSaveRequest customerRelationSaveRequest = new CustomerRelationSaveRequest(anotherAddCustomer.getId(), CustomerRelationType.SUBSIDIARY.name());
+
+        MvcResult mvcResult = requestPostWithOkAndReturn(ADD, customerRelationSaveRequest, addCustomer.getId());
+        addCustomerRelation = getResultData(mvcResult, CustomerRelation.class);
+        addCustomerRelation = customerRelationBaseMapper.selectByPrimaryKey(addCustomerRelation.getId());
+        Assertions.assertEquals(addCustomerRelation.getSourceCustomerId(), addCustomer.getId());
+        Assertions.assertEquals(addCustomerRelation.getTargetCustomerId(), anotherAddCustomer.getId());
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, ADD, customerRelationSaveRequest, addCustomer.getId());
+    }
+
+    @Test
+    @Order(5)
+    void testEdit() throws Exception {
+        CustomerRelationUpdateRequest customerRelationUpdateRequest = new CustomerRelationUpdateRequest();
+        customerRelationUpdateRequest.setId(addCustomerRelation.getId());
+        customerRelationUpdateRequest.setCustomerId(anotherAddCustomer.getId());
+        customerRelationUpdateRequest.setRelationType(CustomerRelationType.GROUP.name());
+        requestPostWithOk(UPDATE, customerRelationUpdateRequest, addCustomer.getId());
+
+        addCustomerRelation = customerRelationBaseMapper.selectByPrimaryKey(addCustomerRelation.getId());
+        Assertions.assertEquals(addCustomerRelation.getTargetCustomerId(), addCustomer.getId());
+        Assertions.assertEquals(addCustomerRelation.getSourceCustomerId(), anotherAddCustomer.getId());
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, UPDATE, customerRelationUpdateRequest, addCustomer.getId());
+    }
+
+    @Test
+    @Order(9)
+    void delete() throws Exception {
+        requestGetWithOk(DELETE, addCustomerRelation.getId());
+
+        Assertions.assertNull(customerRelationBaseMapper.selectByPrimaryKey(addCustomerRelation.getId()));
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE, DELETE, addCustomerRelation.getId());
     }
 
     @Test

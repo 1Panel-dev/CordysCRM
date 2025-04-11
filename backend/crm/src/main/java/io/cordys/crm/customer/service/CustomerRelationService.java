@@ -6,6 +6,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.crm.customer.constants.CustomerRelationType;
 import io.cordys.crm.customer.domain.CustomerRelation;
 import io.cordys.crm.customer.dto.request.CustomerRelationSaveRequest;
+import io.cordys.crm.customer.dto.request.CustomerRelationUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerRelationListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.mybatis.BaseMapper;
@@ -85,16 +86,7 @@ public class CustomerRelationService {
         List<CustomerRelation> relations = requests.stream()
                 .filter(request -> StringUtils.isNotBlank(request.getCustomerId()) && StringUtils.isNotBlank(request.getRelationType()))
                 .map(item -> {
-                    CustomerRelation customerRelation = new CustomerRelation();
-                    customerRelation.setId(IDGenerator.nextStr());
-                    customerRelation.setCreateTime(System.currentTimeMillis());
-                    if (StringUtils.equals(item.getRelationType(), CustomerRelationType.GROUP.name())) {
-                        customerRelation.setSourceCustomerId(item.getCustomerId());
-                        customerRelation.setTargetCustomerId(customerId);
-                    } else {
-                        customerRelation.setSourceCustomerId(customerId);
-                        customerRelation.setTargetCustomerId(item.getCustomerId());
-                    }
+                    CustomerRelation customerRelation = getCustomerRelation(item, customerId);
                     return customerRelation;
                 }).toList();
 
@@ -118,5 +110,44 @@ public class CustomerRelationService {
         wrapper = new LambdaQueryWrapper();
         wrapper.in(CustomerRelation::getTargetCustomerId, customerIds);
         customerRelationMapper.deleteByLambda(wrapper);
+    }
+
+    public CustomerRelation add(CustomerRelationSaveRequest request, String customerId) {
+        CustomerRelation customerRelation = getCustomerRelation(request, customerId);
+        customerRelationMapper.insert(customerRelation);
+        return customerRelation;
+    }
+
+    private CustomerRelation getCustomerRelation(CustomerRelationSaveRequest request, String customerId) {
+        CustomerRelation customerRelation = new CustomerRelation();
+        customerRelation.setId(IDGenerator.nextStr());
+        customerRelation.setCreateTime(System.currentTimeMillis());
+        if (StringUtils.equals(request.getRelationType(), CustomerRelationType.GROUP.name())) {
+            customerRelation.setSourceCustomerId(request.getCustomerId());
+            customerRelation.setTargetCustomerId(customerId);
+        } else {
+            customerRelation.setSourceCustomerId(customerId);
+            customerRelation.setTargetCustomerId(request.getCustomerId());
+        }
+        return customerRelation;
+    }
+
+    public CustomerRelation update(CustomerRelationUpdateRequest request, String customerId) {
+        CustomerRelation customerRelation = getCustomerRelation(request, customerId);
+        customerRelation.setId(request.getId());
+        customerRelation.setCreateTime(null);
+        if (StringUtils.equals(request.getRelationType(), CustomerRelationType.GROUP.name())) {
+            customerRelation.setSourceCustomerId(request.getCustomerId());
+            customerRelation.setTargetCustomerId(customerId);
+        } else {
+            customerRelation.setSourceCustomerId(customerId);
+            customerRelation.setTargetCustomerId(request.getCustomerId());
+        }
+        customerRelationMapper.update(customerRelation);
+        return customerRelationMapper.selectByPrimaryKey(request.getId());
+    }
+
+    public void delete(String id) {
+        customerRelationMapper.deleteByPrimaryKey(id);
     }
 }

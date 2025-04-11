@@ -1,7 +1,9 @@
 package io.cordys.crm.customer.controller;
 
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.crm.customer.domain.CustomerRelation;
 import io.cordys.crm.customer.dto.request.CustomerRelationSaveRequest;
+import io.cordys.crm.customer.dto.request.CustomerRelationUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerRelationListResponse;
 import io.cordys.crm.customer.service.CustomerRelationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,9 +35,30 @@ public class CustomerRelationController {
         return customerRelationService.list(customerId);
     }
 
-    @PostMapping("/save/{customerId}")
+    @PostMapping("/add/{customerId}")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "添加客户关系")
+    public CustomerRelation add(@PathVariable String customerId, @Validated @RequestBody CustomerRelationSaveRequest request) {
+        return customerRelationService.add(request, customerId);
+    }
+
+    @PostMapping("/update/{customerId}")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @Operation(summary = "更新客户关系")
+    public CustomerRelation update(@PathVariable String customerId, @Validated @RequestBody CustomerRelationUpdateRequest request) {
+        return customerRelationService.update(request, customerId);
+    }
+
+    @GetMapping("/delete/{id}")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @Operation(summary = "删除客户关系")
+    public void delete(@PathVariable String id) {
+        customerRelationService.delete(id);
+    }
+
+    @PostMapping("/save/{customerId}")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @Operation(summary = "整体客户关系")
     public void save(@PathVariable String customerId, @Validated @RequestBody @Valid @NotNull List<CustomerRelationSaveRequest> requests) {
         customerRelationService.save(customerId, requests);
     }
