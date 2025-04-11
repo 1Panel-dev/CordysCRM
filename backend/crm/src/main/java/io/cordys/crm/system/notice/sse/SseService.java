@@ -149,7 +149,8 @@ public class SseService {
         if (StringUtils.isAnyBlank(userId, clientId)) return;
 
         userEmitters.computeIfPresent(userId, (k, emitters) -> {
-            emitters.remove(clientId);
+            Optional.ofNullable(emitters.remove(clientId))
+                    .ifPresent(SseEmitter::complete);
             return emitters.isEmpty() ? null : emitters;
         });
     }
