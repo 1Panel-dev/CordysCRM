@@ -195,7 +195,7 @@
             "id": "CLUE_MANAGEMENT:UPDATE"
           },
           {
-            "id": "CUSTOMER_MANAGEMENT:RECYCLE",
+            "id": "CLUE_MANAGEMENT:RECYCLE",
             "name": "permission.clue_management.clue.recycle"
           },
           {
