@@ -17,6 +17,7 @@ const common: AppRouteRecordRaw = {
       component: () => import('@/components/business/crm-form-create/index.vue'),
       meta: {
         permissions: [],
+        depth: 9,
       },
     },
     {
@@ -25,6 +26,7 @@ const common: AppRouteRecordRaw = {
       component: () => import('@/components/business/crm-contact-list/detail.vue'),
       meta: {
         permissions: [],
+        depth: 9,
       },
     },
     {
@@ -33,6 +35,7 @@ const common: AppRouteRecordRaw = {
       component: () => import('@/components/business/crm-follow-list/followDetail.vue'),
       meta: {
         permissions: [],
+        depth: 9,
       },
     },
   ],

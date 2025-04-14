@@ -19,6 +19,7 @@ const clue: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.clue',
         permissions: [],
+        depth: 1,
       },
     },
     {
@@ -27,6 +28,7 @@ const clue: AppRouteRecordRaw = {
       component: () => import('@/views/clue/clue/detail.vue'),
       meta: {
         permissions: [],
+        depth: 2,
       },
     },
     {
@@ -35,6 +37,7 @@ const clue: AppRouteRecordRaw = {
       component: () => import('@/views/clue/pool/detail.vue'),
       meta: {
         permissions: [],
+        depth: 2,
       },
     },
   ],

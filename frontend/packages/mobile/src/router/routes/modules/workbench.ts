@@ -19,6 +19,7 @@ const workbench: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.workbench',
         permissions: [],
+        depth: 1,
       },
     },
     {
@@ -28,6 +29,7 @@ const workbench: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.duplicateCheck',
         permissions: [],
+        depth: 2,
       },
     },
   ],

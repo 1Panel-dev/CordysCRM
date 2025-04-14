@@ -6,7 +6,7 @@
     :rules="props.fieldConfig.rules as FieldRule[]"
     is-link
     readonly
-    :placeholder="props.fieldConfig.placeholder"
+    :placeholder="props.fieldConfig.placeholder || t('common.pleaseSelect')"
     :disabled="props.fieldConfig.editable === false"
     clearable
     @click="showPicker = true"
@@ -25,6 +25,8 @@
   import { FieldRule } from 'vant';
   import dayjs from 'dayjs';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const props = defineProps<{
@@ -33,6 +35,8 @@
   const emit = defineEmits<{
     (e: 'change', value: number): void;
   }>();
+
+  const { t } = useI18n();
 
   const value = defineModel<number>('value', {
     default: null,

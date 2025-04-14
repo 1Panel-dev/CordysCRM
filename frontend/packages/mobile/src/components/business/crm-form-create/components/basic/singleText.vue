@@ -5,7 +5,7 @@
     :name="props.fieldConfig.id"
     :rules="props.fieldConfig.rules as FieldRule[]"
     :maxlength="255"
-    :placeholder="props.fieldConfig.placeholder"
+    :placeholder="props.fieldConfig.placeholder || t('common.pleaseInput')"
     :disabled="props.fieldConfig.editable === false"
     clearable
     @update:model-value="($event) => emit('change', $event)"
@@ -16,6 +16,8 @@
 <script setup lang="ts">
   import { FieldRule } from 'vant';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
 
   const props = defineProps<{
@@ -24,6 +26,8 @@
   const emit = defineEmits<{
     (e: 'change', value: string): void;
   }>();
+
+  const { t } = useI18n();
 
   const value = defineModel<string>('value', {
     default: '',

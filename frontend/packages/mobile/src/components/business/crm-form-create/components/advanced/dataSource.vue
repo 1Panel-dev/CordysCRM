@@ -6,7 +6,7 @@
     :data-source-type="props.fieldConfig.dataSourceType"
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :rules="props.fieldConfig.rules as FieldRule[]"
-    :placeholder="props.fieldConfig.placeholder"
+    :placeholder="props.fieldConfig.placeholder || t('common.pleaseSelect')"
     :disabled="props.fieldConfig.editable === false"
     :multiple="props.fieldConfig.multiple"
     @change="($event) => emit('change', $event)"
@@ -16,6 +16,8 @@
 
 <script setup lang="ts">
   import { FieldRule } from 'vant';
+
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmDataSource from '@/components/business/crm-datasource/index.vue';
 
@@ -27,6 +29,8 @@
   const emit = defineEmits<{
     (e: 'change', value: string | string[]): void;
   }>();
+
+  const { t } = useI18n();
 
   const value = defineModel<string | string[]>('value', {
     default: '',

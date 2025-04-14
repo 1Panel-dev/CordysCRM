@@ -17,7 +17,7 @@ import { getFirstRouteNameByPermission, hasAnyPermission } from '@/utils/permiss
 
 import useAppStore from '../app';
 
-const { notification } = useDiscreteApi();
+const { notification, message } = useDiscreteApi();
 
 export interface UserState {
   loginType: string[];
@@ -155,6 +155,7 @@ const useUserStore = defineStore('user', {
     },
     async checkIsLogin() {
       const { isLoginPage } = useUser();
+      const { t } = useI18n();
       const appStore = useAppStore();
       const isLoginStatus = await this.isLogin();
       if (isLoginStatus) {
@@ -166,6 +167,9 @@ const useUserStore = defineStore('user', {
         if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
           appStore.connectSystemMessageSSE(this.showSystemNotify);
         }
+      } else if (!isLoginPage()) {
+        message.warning(t('message.loginExpired'));
+        router.push({ name: 'login' });
       }
     },
     // 展示系统公告

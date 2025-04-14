@@ -19,6 +19,7 @@ const opportunity: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.opportunity',
         permissions: [],
+        depth: 1,
       },
     },
   ],

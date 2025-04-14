@@ -1,12 +1,14 @@
 <template>
   <div class="page">
     <router-view v-slot="{ Component, route }">
-      <transition name="fade" mode="out-in" appear>
+      <transition :name="transitionName" mode="out-in" appear>
         <!-- transition内必须有且只有一个根元素，不然会导致二级路由的组件无法渲染 -->
         <div class="page-content">
           <Suspense>
             <keep-alive :include="[]">
-              <component :is="Component" :key="route.name" />
+              <transition :name="transitionName">
+                <component :is="Component" :key="route.name" />
+              </transition>
             </keep-alive>
           </Suspense>
         </div>
@@ -53,6 +55,20 @@
 
   const { t } = useI18n();
   const router = useRouter();
+
+  const transitionName = ref('slide-left');
+  // 路由深度判断，决定是前进还是返回
+  let isForward = true;
+  router.beforeEach((to, from, next) => {
+    const toDepth = to.meta.depth || 0;
+    const fromDepth = from.meta.depth || 0;
+    isForward = toDepth >= fromDepth;
+    transitionName.value = isForward ? 'slide-left' : 'slide-right';
+    if (toDepth === 1 && fromDepth === 1) {
+      transitionName.value = '';
+    }
+    next();
+  });
 
   const active = ref<string>(AppRouteEnum.WORKBENCH_INDEX);
   const menuList = [
@@ -102,6 +118,36 @@
   }, true);
 </script>
 
+<style lang="less">
+  .slide-left-enter-active,
+  .slide-left-leave-active,
+  .slide-right-enter-active,
+  .slide-right-leave-active {
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    background-color: white;
+    transition: all 0.3s;
+  }
+  .slide-left-enter-from,
+  .slide-right-leave-to {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+  .slide-right-enter-from,
+  .slide-left-leave-to {
+    opacity: 1;
+    transform: translateX(-100%);
+  }
+  .slide-left-leave-to,
+  .slide-right-leave-to {
+    opacity: 0.3;
+  }
+</style>
+
 <style lang="less" scoped>
   .page {
     @apply flex flex-col;
@@ -109,7 +155,7 @@
     height: 100vh;
     background-color: var(--text-n9);
     .page-content {
-      @apply flex-1 overflow-hidden;
+      @apply relative flex-1 overflow-hidden;
     }
     .page-bottom-tabbar {
       gap: 8px;

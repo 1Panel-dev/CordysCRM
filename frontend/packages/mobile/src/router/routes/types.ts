@@ -13,6 +13,7 @@ export interface RouteMeta {
   icon?: string; // 菜单icon
   locale?: string; // 国际化语言单词
   order?: number; // 排序权重
+  depth?: number; // 路由深度
 }
 export interface AppRouteRecordRaw {
   path: string;

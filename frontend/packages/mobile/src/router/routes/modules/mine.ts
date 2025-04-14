@@ -19,6 +19,7 @@ const mine: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.mine',
         permissions: [],
+        depth: 1,
       },
     },
     {
@@ -28,6 +29,7 @@ const mine: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.message',
         permissions: [],
+        depth: 2,
       },
     },
     {
@@ -36,6 +38,7 @@ const mine: AppRouteRecordRaw = {
       component: () => import('@/views/mine/detail.vue'),
       meta: {
         permissions: [],
+        depth: 2,
       },
     },
   ],

@@ -24,7 +24,7 @@
         </template>
       </van-cell>
       <div class="flex flex-wrap">
-        <div v-for="card of entryCardList" :key="card.name" class="quick-entry-card">
+        <div v-for="card of entryCardList" :key="card.name" class="quick-entry-card" @click="goCardRoute(card.name)">
           <CrmIcon :name="card.icon" width="30px" height="30px" />
           <div class="text-[12px] text-[var(--text-n1)]">{{ card.label }}</div>
         </div>
@@ -53,6 +53,7 @@
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -61,7 +62,7 @@
 
   import { getHomeMessageList } from '@/api/modules';
 
-  import { MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
+  import { CommonRouteEnum, MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const router = useRouter();
@@ -71,22 +72,22 @@
     {
       icon: 'icon-newCustomer',
       label: t('common.newCustomer'),
-      name: 'customer',
+      name: FormDesignKeyEnum.CUSTOMER,
     },
     {
       icon: 'icon-newContact',
       label: t('common.newContact'),
-      name: 'contact',
+      name: FormDesignKeyEnum.CUSTOMER_CONTACT,
     },
     {
       icon: 'icon-newOpportunity',
       label: t('common.newOpportunity'),
-      name: 'opportunity',
+      name: FormDesignKeyEnum.BUSINESS,
     },
     {
       icon: 'icon-newClue',
       label: t('common.newClue'),
-      name: 'clue',
+      name: FormDesignKeyEnum.CLUE,
     },
     // {
     //   icon: 'icon-newRecord',
@@ -110,6 +111,10 @@
 
   function goDuplicateCheck() {
     router.push({ name: WorkbenchRouteEnum.WORKBENCH_DUPLICATE_CHECK });
+  }
+
+  function goCardRoute(formKey: FormDesignKeyEnum) {
+    router.push({ name: CommonRouteEnum.FORM_CREATE, query: { formKey } });
   }
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
