@@ -89,7 +89,8 @@ public class SseService {
             emitter.onCompletion(removeAction);
             emitter.onTimeout(removeAction);
             emitter.onError(e -> removeAction.run());
-
+            // 立即推送一条消息
+            sendHeartbeat(emitter, clientId, userId);
             return emitter;
         }
     }
@@ -101,15 +102,19 @@ public class SseService {
         if (userEmitters.isEmpty()) return;
 
         userEmitters.forEach((userId, emitters) ->
-                emitters.forEach((clientId, emitter) -> {
-            try {
-                emitter.send(SseEmitter.event()
-                        .name("SYSTEM_HEARTBEAT")
-                        .data("SYSTEM_HEARTBEAT: " + System.currentTimeMillis()));
-            } catch (IOException e) {
-                removeEmitter(userId, clientId);
-            }
-        }));
+                emitters.forEach((clientId, emitter) -> sendHeartbeat(emitter, clientId, userId)));
+    }
+
+    private void sendHeartbeat(SseEmitter emitter, String clientId, String userId) {
+        try {
+            emitter.send(SseEmitter.event()
+                    .id(clientId)
+                    .reconnectTime(10000)
+                    .name("SYSTEM_HEARTBEAT")
+                    .data("SYSTEM_HEARTBEAT: " + System.currentTimeMillis()));
+        } catch (IOException e) {
+            removeEmitter(userId, clientId);
+        }
     }
 
     /**
@@ -136,6 +141,8 @@ public class SseService {
         try {
             emitter.send(SseEmitter.event()
                     .name(eventName)
+                    .id(clientId)
+                    .reconnectTime(10000)
                     .data(data));
         } catch (IOException e) {
             removeEmitter(userId, clientId);
