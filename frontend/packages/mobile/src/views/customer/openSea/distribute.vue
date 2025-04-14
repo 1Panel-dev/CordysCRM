@@ -42,12 +42,13 @@
   import { useRoute, useRouter } from 'vue-router';
   import { showSuccessToast } from 'vant';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
 
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
 
-  import { assignOpenSeaCustomer, getUserOptions } from '@/api/modules';
+  import { assignClue, assignOpenSeaCustomer, getUserOptions } from '@/api/modules';
 
   const route = useRoute();
   const router = useRouter();
@@ -58,11 +59,16 @@
   const selectedRows = ref<Record<string, any>[]>([]);
   const loading = ref(false);
 
+  const loadListApi: Record<string, (data: any) => Promise<any>> = {
+    [FormDesignKeyEnum.CUSTOMER]: assignOpenSeaCustomer,
+    [FormDesignKeyEnum.CLUE]: assignClue,
+  };
+
   async function onConfirm() {
     try {
       loading.value = true;
-      await assignOpenSeaCustomer({
-        customerId: route.query.id as string,
+      await loadListApi[route.query.apiKey as string]({
+        [route.query.apiKey === FormDesignKeyEnum.CUSTOMER ? 'customerId' : 'clueId']: route.query.id as string,
         assignUserId: value.value[0],
       });
       showSuccessToast(t('common.distributeSuccess'));

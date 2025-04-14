@@ -30,7 +30,9 @@
       <CrmList
         ref="crmListRef"
         :keyword="keyword"
-        :list-params="listParams"
+        :list-params="{
+          poolId: activeFilter,
+        }"
         class="p-[16px]"
         :item-gap="16"
         :load-list-api="getCluePoolList"
@@ -45,15 +47,17 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { showConfirmDialog, showSuccessToast } from 'vant';
+  import { closeToast, showConfirmDialog, showLoadingToast, showSuccessToast } from 'vant';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
   import type { CluePoolListItem, PoolOption } from '@lib/shared/models/clue';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
 
-  import { deleteCluePool, getCluePoolList, getPoolOptions } from '@/api/modules';
+  import { deleteCluePool, getCluePoolList, getPoolOptions, pickClue } from '@/api/modules';
 
   import { ClueRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
@@ -67,51 +71,41 @@
   const filterButtons = ref<PoolOption[]>([]);
   async function getCluePoolOptions() {
     try {
+      showLoadingToast(t('common.loading'));
       filterButtons.value = await getPoolOptions();
       activeFilter.value = filterButtons.value[0]?.id || '';
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
+    } finally {
+      closeToast();
     }
   }
 
-  const listParams = computed(() => {
-    return {
-      searchType: activeFilter.value,
-    };
-  });
-
-  function handlePick(id: string) {
-    // TODO lmy
-    showConfirmDialog({
-      title: t('clue.deleteTitle'),
-      message: t('clue.batchDeleteContentTip'),
-      confirmButtonText: t('common.confirmDelete'),
-      confirmButtonColor: 'var(--error-red)',
-      beforeClose: async (action) => {
-        if (action === 'confirm') {
-          try {
-            await deleteCluePool(id);
-            showSuccessToast(t('common.deleteSuccess'));
-            crmListRef.value?.loadList(true);
-            return Promise.resolve(true);
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.log(error);
-            return Promise.resolve(false);
-          }
-        } else {
-          return Promise.resolve(true);
-        }
-      },
-    });
+  async function handlePick(id: string) {
+    try {
+      showLoadingToast(t('common.picking'));
+      await pickClue({
+        clueId: id,
+        poolId: activeFilter.value,
+      });
+      showSuccessToast(t('common.pickSuccess'));
+      await sleep(300);
+      crmListRef.value?.loadList(true);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      closeToast();
+    }
   }
 
   function handleDistribute(id: string) {
     router.push({
-      name: CustomerRouteEnum.CUSTOMER_TRANSFER, // TODO lmy
+      name: CustomerRouteEnum.CUSTOMER_DISTRIBUTE,
       query: {
         id,
+        apiKey: FormDesignKeyEnum.CLUE,
       },
     });
   }
@@ -125,6 +119,7 @@
       beforeClose: async (action) => {
         if (action === 'confirm') {
           try {
+            showLoadingToast(t('common.deleting'));
             await deleteCluePool(id);
             showSuccessToast(t('common.deleteSuccess'));
             crmListRef.value?.loadList(true);
@@ -174,8 +169,12 @@
 
   watch(
     () => activeFilter.value,
-    () => {
-      search();
+    (val) => {
+      if (val.length) {
+        nextTick(() => {
+          search();
+        });
+      }
     }
   );
 

@@ -119,6 +119,7 @@
           name: CustomerRouteEnum.CUSTOMER_TRANSFER,
           query: {
             id: item.id,
+            apiKey: FormDesignKeyEnum.CUSTOMER,
           },
         });
       },

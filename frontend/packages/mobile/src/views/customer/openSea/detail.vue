@@ -12,10 +12,11 @@
         </div>
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
+          :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER"
           readonly
         />
-        <CrmHeaderList v-else :source-id="route.query.id?.toString() || ''" :load-list-api="getCustomerHeaderList" />
+        <CrmHeaderList v-else :source-id="sourceId" :load-list-api="getCustomerHeaderList" />
       </van-tab>
     </van-tabs>
   </CrmPageWrapper>
@@ -54,9 +55,11 @@
     },
   ];
 
+  const sourceId = computed(() => route.query.id?.toString() ?? '');
+
   const { descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
-    sourceId: route.query.id?.toString(),
+    sourceId: sourceId.value,
     needInitDetail: true,
   });
 

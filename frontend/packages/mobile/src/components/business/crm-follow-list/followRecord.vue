@@ -10,6 +10,9 @@
         :keyword="keyword"
         class="p-[16px]"
         :item-gap="16"
+        :list-params="{
+          sourceId: props.sourceId,
+        }"
         :load-list-api="loadListApi[props.type]"
       >
         <template #item="{ item }">
@@ -44,6 +47,7 @@
   const props = defineProps<{
     type: FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER | FormDesignKeyEnum.FOLLOW_RECORD_CLUE | FormDesignKeyEnum.CLUE_POOL;
     readonly?: boolean;
+    sourceId: string;
   }>();
 
   const { t } = useI18n();

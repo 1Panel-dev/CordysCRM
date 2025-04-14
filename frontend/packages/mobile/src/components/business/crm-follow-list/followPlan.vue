@@ -10,6 +10,10 @@
         :keyword="keyword"
         :load-list-api="loadListApi[props.type]"
         class="p-[16px]"
+        :list-params="{
+          sourceId: props.sourceId,
+          status: CustomerFollowPlanStatusEnum.ALL,
+        }"
         :item-gap="16"
       >
         <template #item="{ item }">
@@ -31,6 +35,7 @@
   import { useRouter } from 'vue-router';
   import { showSuccessToast } from 'vant';
 
+  import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -43,6 +48,7 @@
 
   const props = defineProps<{
     type: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER | FormDesignKeyEnum.FOLLOW_PLAN_CLUE;
+    sourceId: string;
   }>();
 
   const { t } = useI18n();

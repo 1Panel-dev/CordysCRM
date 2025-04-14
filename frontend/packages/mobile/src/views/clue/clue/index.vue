@@ -31,14 +31,16 @@
       <CrmList
         ref="crmListRef"
         :keyword="keyword"
-        :list-params="listParams"
+        :list-params="{
+          searchType: activeFilter,
+        }"
         class="p-[16px]"
         :item-gap="16"
         :load-list-api="getClueList"
         :transform="transformFormData"
       >
         <template #item="{ item }">
-          <CrmListCommonItem :item="item" :actions="actions" @click="goDetail"></CrmListCommonItem>
+          <CrmListCommonItem :item="item" :actions="actions(item)" @click="goDetail"></CrmListCommonItem>
         </template>
       </CrmList>
     </div>
@@ -99,11 +101,6 @@
 
   const activeClue = ref<ClueListItem>();
   const activeClueId = computed(() => activeClue.value?.id ?? '');
-  const listParams = computed(() => {
-    return {
-      searchType: activeFilter.value,
-    };
-  });
   const { transformFormData } = await useFormCreateTransform(FormDesignKeyEnum.CLUE);
 
   const moreActionShow = ref(false);
@@ -121,9 +118,10 @@
 
   function handleTransfer(id: string) {
     router.push({
-      name: CustomerRouteEnum.CUSTOMER_TRANSFER, // TODO lmy
+      name: CustomerRouteEnum.CUSTOMER_TRANSFER,
       query: {
         id,
+        apiKey: FormDesignKeyEnum.CLUE,
       },
     });
   }
@@ -135,8 +133,8 @@
         id: '',
         formKey,
       },
-      params: {
-        clueId: id,
+      state: {
+        params: JSON.stringify({ clueId: id }),
       },
     });
   }
@@ -166,41 +164,46 @@
     });
   }
 
-  const actions = [
-    {
-      label: t('common.edit'),
-      icon: 'iconicon_handwritten_signature',
-      permission: [],
-      action: (item: ClueListItem) => {
-        handleEdit(item.id);
-      },
-    },
-    {
-      label: t('common.transfer'),
-      icon: 'iconicon_jump',
-      permission: [],
-      action: (item: ClueListItem) => {
-        handleTransfer(item.id);
-      },
-    },
-    {
-      label: t('common.convertToOpportunity'),
-      icon: 'iconicon_edit1',
-      permission: [],
-      action: (item: ClueListItem) => {
-        convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS);
-      },
-    },
-    {
-      label: t('common.more'),
-      icon: 'iconicon_ellipsis',
-      permission: [],
-      action: (item: ClueListItem) => {
-        moreActionShow.value = true;
-        activeClue.value = item;
-      },
-    },
-  ];
+  const actions = computed(() => {
+    return (row: ClueListItem) => {
+      if (row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)) return [];
+      return [
+        {
+          label: t('common.edit'),
+          icon: 'iconicon_handwritten_signature',
+          permission: [],
+          action: (item: ClueListItem) => {
+            handleEdit(item.id);
+          },
+        },
+        {
+          label: t('common.transfer'),
+          icon: 'iconicon_jump',
+          permission: [],
+          action: (item: ClueListItem) => {
+            handleTransfer(item.id);
+          },
+        },
+        {
+          label: t('common.convertToOpportunity'),
+          icon: 'iconicon_edit1',
+          permission: [],
+          action: (item: ClueListItem) => {
+            convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS);
+          },
+        },
+        {
+          label: t('common.more'),
+          icon: 'iconicon_ellipsis',
+          permission: [],
+          action: (item: ClueListItem) => {
+            moreActionShow.value = true;
+            activeClue.value = item;
+          },
+        },
+      ];
+    };
+  });
 
   const moreActions: ActionSheetAction[] = [
     {
@@ -236,7 +239,9 @@
   watch(
     () => activeFilter.value,
     () => {
-      search();
+      nextTick(() => {
+        search();
+      });
     }
   );
 

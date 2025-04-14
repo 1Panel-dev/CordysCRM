@@ -24,9 +24,9 @@
             class="flex w-full items-center gap-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[16px]"
           >
             <van-image round width="40px" height="40px" src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg" />
-            <div class="flex flex-1 flex-col gap-[2px]">
+            <div class="flex flex-1 flex-col gap-[2px] overflow-hidden">
               <div class="flex justify-between">
-                <div class="text-[16px] text-[var(--text-n1)]">{{ item.ownerName }}</div>
+                <div class="one-line-text flex-1 text-[16px] text-[var(--text-n1)]">{{ item.ownerName }}</div>
                 <van-tag
                   v-show="item.departmentName?.length"
                   color="var(--text-n9)"

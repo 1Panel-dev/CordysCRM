@@ -250,7 +250,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     try {
       loading.value = true;
       const params: Record<string, any> = {
-        ...props.otherSaveParams?.value,
+        ...props.otherSaveParams,
         moduleFields: [],
         id: props.sourceId,
       };

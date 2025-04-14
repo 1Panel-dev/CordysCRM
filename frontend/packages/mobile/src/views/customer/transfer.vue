@@ -42,12 +42,13 @@
   import { useRoute, useRouter } from 'vue-router';
   import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
 
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
 
-  import { batchTransferCustomer, getUserOptions } from '@/api/modules';
+  import { getUserOptions, updateClue, updateCustomer } from '@/api/modules';
 
   const route = useRoute();
   const router = useRouter();
@@ -58,12 +59,17 @@
   const selectedRows = ref<Record<string, any>[]>([]);
   const loading = ref(false);
 
+  const loadListApi: Record<string, (data: any) => Promise<any>> = {
+    [FormDesignKeyEnum.CUSTOMER]: updateCustomer,
+    [FormDesignKeyEnum.CLUE]: updateClue,
+  };
+
   async function onConfirm() {
     try {
       loading.value = true;
       showLoadingToast(t('common.transferring'));
-      await batchTransferCustomer({
-        ids: [route.query.id as string],
+      await loadListApi[route.query.apiKey as string]({
+        id: route.query.id as string,
         owner: value.value as string,
       });
       showSuccessToast(t('customer.transferSuccess'));

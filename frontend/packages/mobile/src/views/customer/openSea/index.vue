@@ -47,6 +47,7 @@
   import { useRouter } from 'vue-router';
   import { closeToast, showConfirmDialog, showLoadingToast, showSuccessToast } from 'vant';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
   import { CustomerOptionsItem } from '@lib/shared/models/customer';
@@ -103,6 +104,7 @@
           name: CustomerRouteEnum.CUSTOMER_DISTRIBUTE,
           query: {
             id: item.id,
+            apiKey: FormDesignKeyEnum.CUSTOMER,
           },
         });
       },

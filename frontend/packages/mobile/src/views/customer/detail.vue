@@ -11,11 +11,19 @@
           <CrmDescription :description="descriptions" />
         </div>
         <CrmContactList v-else-if="tab.name === 'contact'" />
-        <CrmFollowRecordList v-else-if="tab.name === 'record'" :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER" />
-        <CrmFollowPlanList v-else-if="tab.name === 'plan'" :type="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER" />
-        <relation v-else-if="tab.name === 'relation'" :source-id="route.query.id?.toString() || ''" />
-        <collaborator v-else-if="tab.name === 'collaborator'" :source-id="route.query.id?.toString() || ''" />
-        <CrmHeaderList v-else :source-id="route.query.id?.toString() || ''" :load-list-api="getCustomerHeaderList" />
+        <CrmFollowRecordList
+          v-else-if="tab.name === 'record'"
+          :source-id="sourceId"
+          :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER"
+        />
+        <CrmFollowPlanList
+          v-else-if="tab.name === 'plan'"
+          :source-id="sourceId"
+          :type="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER"
+        />
+        <relation v-else-if="tab.name === 'relation'" :source-id="sourceId" />
+        <collaborator v-else-if="tab.name === 'collaborator'" :source-id="sourceId" />
+        <CrmHeaderList v-else :source-id="sourceId" :load-list-api="getCustomerHeaderList" />
       </van-tab>
     </van-tabs>
   </CrmPageWrapper>
@@ -74,9 +82,11 @@
     },
   ];
 
+  const sourceId = computed(() => route.query.id?.toString() ?? '');
+
   const { descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CUSTOMER,
-    sourceId: route.query.id?.toString(),
+    sourceId: sourceId.value,
     needInitDetail: true,
   });
 
