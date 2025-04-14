@@ -696,7 +696,8 @@
       "showControlRules": [
           {"value": "CUSTOMER", "fieldIds": ["recordCustomer", "recordOpportunity"]},
           {"value": "CLUE", "fieldIds": ["recordClue"]}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "客户名称",
@@ -710,7 +711,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "线索名称",
@@ -724,7 +726,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "商机",
@@ -735,7 +738,8 @@
       "showLabel": true,
       "readable": true,
       "editable": true,
-      "fieldWidth": 0.5
+      "fieldWidth": 0.5,
+      "mobile": true
     },
     {
       "name": "联系人",
@@ -749,7 +753,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "跟进方式",
@@ -765,7 +770,8 @@
       ],
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "跟进时间",
@@ -778,7 +784,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "负责人",
@@ -792,7 +799,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "意向产品",
@@ -818,7 +826,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     }
   ],
   "plan": [
@@ -840,7 +849,8 @@
       "showControlRules": [
         {"value": "CUSTOMER", "fieldIds": ["planCustomer", "planOpportunity"]},
         {"value": "CLUE", "fieldIds": ["planClue"]}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "客户名称",
@@ -854,7 +864,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "线索名称",
@@ -868,7 +879,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "商机",
@@ -879,7 +891,8 @@
       "showLabel": true,
       "readable": true,
       "editable": true,
-      "fieldWidth": 0.5
+      "fieldWidth": 0.5,
+      "mobile": true
     },
     {
       "name": "联系人",
@@ -893,7 +906,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "预计开始时间",
@@ -906,7 +920,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "跟进方式",
@@ -922,7 +937,8 @@
       ],
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "负责人",
@@ -962,7 +978,8 @@
       "fieldWidth": 0.5,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     }
   ]
 }

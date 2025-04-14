@@ -1,6 +1,5 @@
 package io.cordys.crm.system.controller;
 
-import io.cordys.common.util.Translator;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
@@ -8,7 +7,7 @@ import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.ModuleField;
-import io.cordys.crm.system.dto.request.*;
+import io.cordys.crm.system.dto.request.ProductPageRequest;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
