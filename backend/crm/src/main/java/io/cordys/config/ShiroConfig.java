@@ -1,9 +1,9 @@
 package io.cordys.config;
 
-import io.cordys.security.ShiroFilter;
 import io.cordys.common.security.ApiKeyFilter;
 import io.cordys.common.security.CsrfFilter;
 import io.cordys.common.security.realm.LocalRealm;
+import io.cordys.security.ShiroFilter;
 import org.apache.shiro.aop.AnnotationResolver;
 import org.apache.shiro.authz.aop.*;
 import org.apache.shiro.cache.CacheManager;
@@ -15,6 +15,7 @@ import org.apache.shiro.spring.aop.SpringAnnotationResolver;
 import org.apache.shiro.spring.security.interceptor.AopAllianceAnnotationsAuthorizingMethodInterceptor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.ServletContainerSessionManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
@@ -64,6 +65,8 @@ public class ShiroConfig {
         filterChainDefinitionMap.putAll(ShiroFilter.loadBaseFilterChain());
         filterChainDefinitionMap.putAll(ShiroFilter.ignoreCsrfFilter());
         filterChainDefinitionMap.put("/**", "apikey, csrf, authc");
+
+        ThreadContext.bind(sessionManager); // TODO 手动绑定 SecurityManager, 避免SSE 子线程异常
 
         return shiroFilterFactoryBean;
     }

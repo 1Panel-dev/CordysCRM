@@ -62,7 +62,7 @@ public class SseService {
 
         // 获取或初始化用户的内部映射，使用同步的 LinkedHashMap 保持插入顺序
         Map<String, SseEmitter> innerMap = userEmitters.computeIfAbsent(userId,
-                k -> Collections.synchronizedMap(new LinkedHashMap<>()));
+                k -> Collections.synchronizedMap(new ConcurrentHashMap<>()));
 
         synchronized (innerMap) {
             // 如果对于指定的 clientId 已经存在 emitter，则直接返回，不需要再新创建
