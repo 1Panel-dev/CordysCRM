@@ -12,6 +12,7 @@
         :load-list-api="getCustomerContactList"
         class="p-[16px]"
         :item-gap="16"
+        :transform="transformFormData"
       >
         <template #item="{ item }">
           <div
@@ -31,7 +32,12 @@
                     {{ t('common.normal') }}
                   </van-tag>
                 </div>
-                <CrmTextButton icon="iconicon_delete" icon-size="16px" color="var(--error-red)" @click="handleDelete" />
+                <CrmTextButton
+                  icon="iconicon_delete"
+                  icon-size="16px"
+                  color="var(--error-red)"
+                  @click="() => handleDelete(item.id)"
+                />
               </div>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-[4px]">
@@ -46,10 +52,6 @@
                     color="var(--primary-8)"
                     @click.stop="() => handleCopy(item.phone)"
                   />
-                </div>
-                <div class="flex items-center gap-[4px]">
-                  <CrmIcon name="iconicon_mail1" width="12px" height="12px" color="var(--text-n2)" />
-                  <div class="text-[12px] text-[var(--text-n2)]">{{ item.email }}</div>
                 </div>
               </div>
             </div>
@@ -68,18 +70,22 @@
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
-  import { getCustomerContactList } from '@/api/modules';
+  import { deleteCustomerContact, getCustomerContactList } from '@/api/modules';
+  import useFormCreateTransform from '@/hooks/useFormCreateTransform';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const router = useRouter();
   const { copy, isSupported } = useClipboard({ legacy: true });
+
+  const { transformFormData } = await useFormCreateTransform(FormDesignKeyEnum.CUSTOMER_CONTACT);
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
   const keyword = ref('');
@@ -100,17 +106,18 @@
     }
   }
 
-  function handleDelete() {
+  function handleDelete(id: string) {
     showConfirmDialog({
       title: t('contact.deleteTitle'),
       message: t('contact.deleteTip'),
       confirmButtonText: t('common.confirmDelete'),
       confirmButtonColor: 'var(--error-red)',
-      beforeClose: (action) => {
+      beforeClose: async (action) => {
         if (action === 'confirm') {
           try {
-            // TODO: delete customer
+            await deleteCustomerContact(id);
             showSuccessToast(t('common.deleteSuccess'));
+            await sleep(300);
             crmListRef.value?.loadList(true);
             return Promise.resolve(true);
           } catch (error) {

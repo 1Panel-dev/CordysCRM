@@ -51,6 +51,19 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
     reservedDays: t('common.remainingBelong'),
   };
 
+  /**
+   * 转换特殊字段值
+   * @param key 字段 id 标识
+   * @param value 字段值
+   */
+  function specialDescriptionValueTransform(key: string, value: string | number) {
+    if (key === 'reservedDays') {
+      // 处理剩余归属天数
+      return Number.isNaN(Number(value)) ? '-' : `${value}${t('common.dayUnit')}`;
+    }
+    return value;
+  }
+
   function transformFormData(data: Record<string, any>, optionMap?: Record<string, any[]>) {
     let formData: Record<string, any> = { ...data, description: [] };
     const businessFieldAttr: Record<string, any> = {};
@@ -113,7 +126,7 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
       } else if (systemFieldMap[key]) {
         formData.description.push({
           label: systemFieldMap[key],
-          value: formData[key] || '-',
+          value: specialDescriptionValueTransform(key, formData[key]),
         });
       }
     });

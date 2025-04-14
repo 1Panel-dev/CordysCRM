@@ -60,8 +60,8 @@
         showLoadingToast(t('common.loading'));
       }
       const res = await props.loadListApi({
-        ...props.listParams,
         keyword: props.keyword,
+        ...props.listParams,
         pageSize: 10,
         current: currentPage.value,
       });

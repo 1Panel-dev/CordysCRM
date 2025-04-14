@@ -43,6 +43,7 @@
   import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
 
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
 
@@ -66,6 +67,7 @@
         owner: value.value as string,
       });
       showSuccessToast(t('customer.transferSuccess'));
+      await sleep(300);
       router.back();
     } catch (error) {
       // eslint-disable-next-line no-console

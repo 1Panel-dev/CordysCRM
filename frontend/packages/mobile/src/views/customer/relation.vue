@@ -11,7 +11,7 @@
           class="!text-[16px]"
         >
           <template #input>
-            <van-radio-group v-model="relationType" direction="horizontal">
+            <van-radio-group v-model="relationType" direction="horizontal" :disabled="hasGroup === 'Y'">
               <van-radio name="GROUP">{{ t('customer.group') }}</van-radio>
               <van-radio name="SUBSIDIARY">{{ t('customer.subsidiary') }}</van-radio>
             </van-radio-group>
@@ -22,10 +22,10 @@
           v-model:value="customerId"
           v-model:selected-rows="selectedRows"
           :data-source-type="FieldDataSourceTypeEnum.CUSTOMER_OPTIONS"
-          :label="t('common.pleaseSelect')"
+          :label="t('customer.selectCustomer')"
           :multiple="false"
           :disabled-selection="disabledSelection"
-          no-page-nation
+          :disabled="!!route.query.id"
           class="!text-[16px]"
         >
         </CrmDataSource>
@@ -46,7 +46,7 @@
           type="primary"
           class="!rounded-[var(--border-radius-small)] !text-[16px]"
           :loading="loading"
-          :disabled="!customerId"
+          :disabled="customerId.length === 0"
           block
           @click="save"
         >
@@ -63,18 +63,24 @@
 
   import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import CrmDataSource from '@/components/business/crm-datasource/index.vue';
+
+  import { addCustomerRelationItem, updateCustomerRelationItem } from '@/api/modules';
 
   const route = useRoute();
   const router = useRouter();
   const { t } = useI18n();
 
+  const lastPageParams = window.history.state.params ? JSON.parse(window.history.state.params) : null; // 获取上个页面带过来的参数
+  const { relation, hasGroup } = lastPageParams || {};
+
   const formRef = ref<FormInstance>();
-  const relationType = ref('GROUP');
-  const customerId = ref('');
-  const selectedRows = ref([]);
+  const relationType = ref(relation?.relationType || (hasGroup === 'Y' ? 'SUBSIDIARY' : 'GROUP'));
+  const customerId = ref(relation?.customerId || []);
+  const selectedRows = ref(relation ? relation.customerName : []);
   const loading = ref(false);
 
   function disabledSelection(row: Record<string, any>) {
@@ -84,17 +90,28 @@
   async function save() {
     try {
       await formRef.value?.validate();
+      loading.value = true;
       if (route.query.id) {
-        // update
+        await updateCustomerRelationItem(route.query.sourceId as string, {
+          id: route.query.id as string,
+          customerId: customerId.value[0],
+          relationType: relationType.value,
+        });
         showSuccessToast(t('common.updateSuccess'));
       } else {
-        // create
+        await addCustomerRelationItem(route.query.sourceId as string, {
+          customerId: customerId.value[0],
+          relationType: relationType.value,
+        });
         showSuccessToast(t('common.addSuccess'));
       }
+      await sleep(300);
       router.back();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    } finally {
+      loading.value = false;
     }
   }
 </script>

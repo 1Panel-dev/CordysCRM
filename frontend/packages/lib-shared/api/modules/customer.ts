@@ -5,6 +5,7 @@ import {
   AddCustomerFollowPlanUrl,
   AddCustomerFollowRecordUrl,
   AddCustomerOpenSeaUrl,
+  AddCustomerRelationItemUrl,
   AddCustomerUrl,
   AssignOpenSeaCustomerUrl,
   BatchAssignOpenSeaCustomerUrl,
@@ -22,6 +23,7 @@ import {
   DeleteCustomerFollowPlanUrl,
   DeleteCustomerFollowRecordUrl,
   DeleteCustomerOpenSeaUrl,
+  DeleteCustomerRelationItemUrl,
   DeleteCustomerUrl,
   DeleteOpenSeaCustomerUrl,
   DisableCustomerContactUrl,
@@ -56,11 +58,13 @@ import {
   UpdateCustomerFollowPlanUrl,
   UpdateCustomerFollowRecordUrl,
   UpdateCustomerOpenSeaUrl,
+  UpdateCustomerRelationItemUrl,
   UpdateCustomerUrl,
 } from '@lib/shared/api/requrls/customer';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import type {
   AddCustomerCollaborationParams,
+  AddCustomerRelationItemParams,
   AssignOpenSeaCustomerParams,
   BatchAssignOpenSeaCustomerParams,
   BatchOperationOpenSeaCustomerParams,
@@ -93,8 +97,9 @@ import type {
   UpdateCustomerFollowRecordParams,
   UpdateCustomerOpenSeaParams,
   UpdateCustomerParams,
+  UpdateCustomerRelationItemParams,
 } from '@lib/shared/models/customer';
-import type { CluePoolParams, FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 添加客户
@@ -319,7 +324,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 获取公海选项
   function getOpenSeaOptions() {
-    return CDR.get<CluePoolParams[]>({ url: GetOpenSeaOptionsUrl });
+    return CDR.get<CustomerOptionsItem[]>({ url: GetOpenSeaOptionsUrl });
   }
 
   // 获取公海客户详情
@@ -350,6 +355,21 @@ export default function useProductApi(CDR: CordysAxios) {
   // 获取客户协作成员列表
   function getCustomerCollaborationList({ customerId }: { customerId: string }) {
     return CDR.get<CollaborationItem[]>({ url: `${GetCustomerCollaborationListUrl}/${customerId}` });
+  }
+
+  // 更新单条客户关系
+  function updateCustomerRelationItem(customerId: string, data: UpdateCustomerRelationItemParams) {
+    return CDR.post({ url: `${UpdateCustomerRelationItemUrl}/${customerId}`, data });
+  }
+
+  // 添加单条客户关系
+  function addCustomerRelationItem(customerId: string, data: AddCustomerRelationItemParams) {
+    return CDR.post({ url: `${AddCustomerRelationItemUrl}/${customerId}`, data });
+  }
+
+  // 删除单条客户关系
+  function deleteCustomerRelationItem(id: string) {
+    return CDR.get({ url: `${DeleteCustomerRelationItemUrl}/${id}` });
   }
 
   // 批量删除客户协作成员
@@ -440,5 +460,8 @@ export default function useProductApi(CDR: CordysAxios) {
     deleteCustomerCollaboration,
     getCustomerOptions,
     GetCustomerOpenSeaFollowRecordList,
+    updateCustomerRelationItem,
+    addCustomerRelationItem,
+    deleteCustomerRelationItem,
   };
 }

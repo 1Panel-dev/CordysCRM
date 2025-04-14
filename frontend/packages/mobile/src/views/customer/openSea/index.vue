@@ -11,23 +11,24 @@
     </div>
     <div class="filter-buttons">
       <van-button
-        v-for="item of filterButtons"
-        :key="item.name"
+        v-for="item of openSeaList"
+        :key="item.id"
         round
         size="small"
         class="!border-none !px-[16px] !py-[4px] !text-[14px]"
         :class="
-          activeFilter === item.name
+          activeOpenSea === item.id
             ? '!bg-[var(--primary-7)] !text-[var(--primary-8)]'
             : '!bg-[var(--text-n9)] !text-[var(--text-n1)]'
         "
-        @click="activeFilter = item.name"
+        @click="activeOpenSea = item.id"
       >
-        {{ item.tab }}
+        {{ item.name }}
       </van-button>
     </div>
     <div class="flex-1 overflow-hidden">
       <CrmList
+        v-if="openSeaList.length"
         ref="crmListRef"
         :list-params="listParams"
         :load-list-api="getOpenSeaCustomerList"
@@ -44,14 +45,16 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { showConfirmDialog, showSuccessToast } from 'vant';
+  import { closeToast, showConfirmDialog, showLoadingToast, showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
+  import { CustomerOptionsItem } from '@lib/shared/models/customer';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
 
-  import { getOpenSeaCustomerList } from '@/api/modules';
+  import { deleteOpenSeaCustomer, getOpenSeaCustomerList, getOpenSeaOptions, pickOpenSeaCustomer } from '@/api/modules';
 
   import { CustomerRouteEnum } from '@/enums/routeEnum';
 
@@ -60,24 +63,11 @@
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
   const keyword = ref('');
-  const activeFilter = ref('south');
-  const filterButtons = [
-    {
-      name: 'south',
-      tab: '南区',
-    },
-    {
-      name: 'north',
-      tab: '北区',
-    },
-    {
-      name: 'west',
-      tab: '西区',
-    },
-  ];
+  const activeOpenSea = ref<string | number>('');
+  const openSeaList = ref<CustomerOptionsItem[]>([]);
   const listParams = computed(() => {
     return {
-      searchType: activeFilter.value,
+      poolId: activeOpenSea.value,
       keyword: keyword.value,
     };
   });
@@ -86,8 +76,22 @@
       label: t('common.pick'),
       icon: 'iconicon_user_add',
       permission: [],
-      action: (item: any) => {
-        console.log('pick', item.id);
+      action: async (item: any) => {
+        try {
+          showLoadingToast(t('common.picking'));
+          await pickOpenSeaCustomer({
+            customerId: item.id,
+            poolId: activeOpenSea.value,
+          });
+          showSuccessToast(t('common.pickSuccess'));
+          await sleep(300);
+          crmListRef.value?.loadList(true);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        } finally {
+          closeToast();
+        }
       },
     },
     {
@@ -113,10 +117,11 @@
           message: t('customer.deleteTip'),
           confirmButtonText: t('common.confirmDelete'),
           confirmButtonColor: 'var(--error-red)',
-          beforeClose: (action) => {
+          beforeClose: async (action) => {
             if (action === 'confirm') {
               try {
-                // TODO: delete customer
+                showLoadingToast(t('common.deleting'));
+                await deleteOpenSeaCustomer(item.id);
                 showSuccessToast(t('common.deleteSuccess'));
                 crmListRef.value?.loadList(true);
                 return Promise.resolve(true);
@@ -135,7 +140,7 @@
   ];
 
   watch(
-    () => activeFilter.value,
+    () => activeOpenSea.value,
     () => {
       crmListRef.value?.loadList(true);
     }
@@ -155,6 +160,23 @@
       },
     });
   }
+
+  async function init() {
+    try {
+      showLoadingToast(t('common.loading'));
+      openSeaList.value = await getOpenSeaOptions();
+      activeOpenSea.value = openSeaList.value[0].id;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      closeToast();
+    }
+  }
+
+  onBeforeMount(() => {
+    init();
+  });
 </script>
 
 <style lang="less" scoped>

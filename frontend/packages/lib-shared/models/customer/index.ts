@@ -298,6 +298,15 @@ export interface CollaborationItem {
   departmentName: string;
 }
 
+export interface AddCustomerRelationItemParams {
+  customerId: string;
+  relationType: string;
+}
+
+export interface UpdateCustomerRelationItemParams extends AddCustomerRelationItemParams {
+  id: string;
+}
+
 export interface CustomerOptionsItem {
   id: string | number;
   name: string;

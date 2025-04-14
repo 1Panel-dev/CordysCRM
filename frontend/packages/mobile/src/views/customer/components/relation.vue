@@ -9,13 +9,21 @@
           text-color="var(--primary-8)"
         />
         <CrmTag v-else :tag="t('customer.subsidiary')" bg-color="var(--success-5)" text-color="var(--success-green)" />
-        <div class="one-line-text">{{ item.customerName[0].name }}</div>
-        <CrmTextButton
-          icon="iconicon_delete"
-          icon-size="16px"
-          color="var(--error-red)"
-          @click="() => handleDelete(item.id)"
-        />
+        <div class="one-line-text flex-1">{{ item.customerName[0]?.name }}</div>
+        <div class="flex items-center gap-[16px]">
+          <CrmTextButton
+            icon="iconicon_delete"
+            icon-size="16px"
+            color="var(--error-red)"
+            @click="() => handleDelete(item.id)"
+          />
+          <CrmTextButton
+            icon="iconicon_handwritten_signature"
+            color="var(--primary-8)"
+            icon-size="16px"
+            @click="() => handleEdit(item)"
+          />
+        </div>
       </div>
     </div>
     <div class="bg-[var(--text-n10)] p-[16px]">
@@ -34,7 +42,7 @@
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
-  import { getCustomerRelationList } from '@/api/modules';
+  import { deleteCustomerRelationItem, getCustomerRelationList } from '@/api/modules';
 
   import { CustomerRouteEnum } from '@/enums/routeEnum';
 
@@ -73,7 +81,10 @@
 
   async function handleDelete(id: string) {
     try {
+      showLoadingToast(t('common.deleting'));
+      await deleteCustomerRelationItem(id);
       showSuccessToast(t('common.deleteSuccess'));
+      initList();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -85,6 +96,22 @@
       name: CustomerRouteEnum.CUSTOMER_RELATION,
       query: {
         sourceId: props.sourceId,
+      },
+      state: {
+        params: JSON.stringify({ hasGroup: relations.value.some((e) => e.relationType === 'GROUP') ? 'Y' : 'N' }),
+      },
+    });
+  }
+
+  function handleEdit(item: Record<string, any>) {
+    router.push({
+      name: CustomerRouteEnum.CUSTOMER_RELATION,
+      query: {
+        sourceId: props.sourceId,
+        id: item.id,
+      },
+      state: {
+        params: JSON.stringify({ relation: item }),
       },
     });
   }

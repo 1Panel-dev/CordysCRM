@@ -50,6 +50,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           descriptions.value.push({
             label: item.name,
             value: name || form[item.businessKey],
+            isTag: item.type === FieldTypeEnum.MULTIPLE_INPUT,
           });
           if (item.businessKey === 'name') {
             sourceName.value = name || form[item.businessKey];
@@ -80,6 +81,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             }
             descriptions.value.push({
               label: item.name,
+              isTag: item.type === FieldTypeEnum.MULTIPLE_INPUT,
               value,
             });
           }

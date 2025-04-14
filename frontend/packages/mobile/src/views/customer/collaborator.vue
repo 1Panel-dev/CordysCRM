@@ -63,6 +63,7 @@
 
   import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
@@ -86,7 +87,7 @@
   });
   const selectedRows = ref([]);
   const loading = ref(false);
-  const lastPageParams = window.history.state.params ? JSON.parse(window.history.state.params) : null; // 获取上个页面带过来的表格查询参数
+  const lastPageParams = window.history.state.params ? JSON.parse(window.history.state.params) : null; // 获取上个页面带过来的参数
 
   function disabledSelection(row: Record<string, any>) {
     return lastPageParams.userIds?.includes(row.id);
@@ -110,6 +111,7 @@
         });
         showSuccessToast(t('common.addSuccess'));
       }
+      await sleep(300);
       router.back();
     } catch (error) {
       // eslint-disable-next-line no-console

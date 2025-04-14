@@ -8,6 +8,7 @@
           v-model:selected-rows="selectedRows"
           :load-list-api="getUserOptions"
           :multiple="false"
+          no-page-nation
         ></CrmSelectList>
       </div>
     </div>
@@ -38,15 +39,17 @@
 </template>
 
 <script setup lang="ts">
-  import { useRouter } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import { showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
 
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
 
-  import { getUserOptions } from '@/api/modules';
+  import { assignOpenSeaCustomer, getUserOptions } from '@/api/modules';
 
+  const route = useRoute();
   const router = useRouter();
   const { t } = useI18n();
 
@@ -58,7 +61,12 @@
   async function onConfirm() {
     try {
       loading.value = true;
+      await assignOpenSeaCustomer({
+        customerId: route.query.id as string,
+        assignUserId: value.value[0],
+      });
       showSuccessToast(t('common.distributeSuccess'));
+      await sleep(300);
       router.back();
     } catch (error) {
       // eslint-disable-next-line no-console

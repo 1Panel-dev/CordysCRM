@@ -8,13 +8,14 @@
           </div>
         </template>
         <div v-if="tab.name === 'info'" class="relative h-full bg-[var(--text-n9)] pt-[16px]">
-          <CrmDescription :description="description" />
+          <CrmDescription :description="descriptions" />
         </div>
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER"
           readonly
         />
+        <CrmHeaderList v-else :source-id="route.query.id?.toString() || ''" :load-list-api="getCustomerHeaderList" />
       </van-tab>
     </van-tabs>
   </CrmPageWrapper>
@@ -26,9 +27,13 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import CrmDescription, { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
+  import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
+  import CrmHeaderList from '@/components/business/crm-header-list/index.vue';
+
+  import { getCustomerHeaderList } from '@/api/modules';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   const route = useRoute();
   const { t } = useI18n();
@@ -49,32 +54,16 @@
     },
   ];
 
-  const description: CrmDescriptionItem[] = [
-    {
-      label: '基本信息',
-      isTitle: true,
-    },
-    {
-      label: t('customer.customerName'),
-      value: '张三',
-    },
-    {
-      label: t('customer.customerType'),
-      value: 'VIP客户',
-    },
-    {
-      label: t('customer.customerLevel'),
-      value: 'VIP客户',
-    },
-    {
-      label: t('customer.customerSource'),
-      value: '市场活动',
-    },
-    {
-      label: t('customer.customerStatus'),
-      value: '潜在客户',
-    },
-  ];
+  const { descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
+    formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
+    sourceId: route.query.id?.toString(),
+    needInitDetail: true,
+  });
+
+  onBeforeMount(async () => {
+    await initFormConfig();
+    initFormDescription();
+  });
 </script>
 
 <style lang="less" scoped>

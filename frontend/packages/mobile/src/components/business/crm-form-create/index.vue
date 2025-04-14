@@ -1,7 +1,7 @@
 <template>
   <CrmPageWrapper :title="formCreateTitle">
-    <van-form ref="formRef" required>
-      <van-cell-group class="crm-form" inset>
+    <van-form ref="formRef" class="crm-form" required>
+      <van-cell-group inset>
         <template v-for="item in mobileFieldList" :key="item.id">
           <component
             :is="getItemComponent(item.type, item.multiple)"

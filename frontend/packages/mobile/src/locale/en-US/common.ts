@@ -27,6 +27,8 @@ export default {
   'common.delete': 'Delete',
   'common.deleteSuccess': 'Delete Success',
   'common.pick': 'Pick',
+  'common.picking': 'Picking...',
+  'common.pickSuccess': 'Pick Success',
   'common.distribute': 'Distribute',
   'common.distributeSuccess': 'Distribute Success',
   'common.normal': 'Normal',
@@ -68,4 +70,5 @@ export default {
   'common.transferring': 'Transferring...',
   'common.deleting': 'Deleting...',
   'common.loading': 'Loading...',
+  'common.dayUnit': 'Days',
 };

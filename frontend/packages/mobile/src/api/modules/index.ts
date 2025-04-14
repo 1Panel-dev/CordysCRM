@@ -157,6 +157,9 @@ export const {
   deleteCustomerCollaboration,
   getCustomerOptions,
   GetCustomerOpenSeaFollowRecordList,
+  updateCustomerRelationItem,
+  deleteCustomerRelationItem,
+  addCustomerRelationItem,
 } = customerApi;
 
 export const {

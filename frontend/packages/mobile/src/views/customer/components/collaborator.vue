@@ -49,6 +49,7 @@
   import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
   import { CollaborationItem } from '@lib/shared/models/customer';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
@@ -88,6 +89,7 @@
       // eslint-disable-next-line no-console
       console.log(error);
     } finally {
+      await sleep(300);
       closeToast();
     }
   }

@@ -15,6 +15,7 @@
         <CrmFollowPlanList v-else-if="tab.name === 'plan'" :type="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER" />
         <relation v-else-if="tab.name === 'relation'" :source-id="route.query.id?.toString() || ''" />
         <collaborator v-else-if="tab.name === 'collaborator'" :source-id="route.query.id?.toString() || ''" />
+        <CrmHeaderList v-else :source-id="route.query.id?.toString() || ''" :load-list-api="getCustomerHeaderList" />
       </van-tab>
     </van-tabs>
   </CrmPageWrapper>
@@ -31,9 +32,11 @@
   import CrmContactList from '@/components/business/crm-contact-list/index.vue';
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
+  import CrmHeaderList from '@/components/business/crm-header-list/index.vue';
   import collaborator from './components/collaborator.vue';
   import relation from './components/relation.vue';
 
+  import { getCustomerHeaderList } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   const route = useRoute();

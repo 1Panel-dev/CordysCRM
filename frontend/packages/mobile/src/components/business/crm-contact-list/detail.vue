@@ -1,7 +1,7 @@
 <template>
   <CrmPageWrapper :title="route.query.name?.toString() || ''">
     <div class="relative h-full bg-[var(--text-n9)] pt-[16px]">
-      <CrmDescription :description="description" />
+      <CrmDescription :description="descriptions" />
     </div>
     <template #footer>
       <van-button
@@ -22,41 +22,25 @@
   import { useRoute, useRouter } from 'vue-router';
   import { showConfirmDialog, showSuccessToast } from 'vant';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
 
-  import CrmDescription, { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
+  import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+
+  import { deleteCustomerContact } from '@/api/modules';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   const route = useRoute();
   const router = useRouter();
   const { t } = useI18n();
 
-  const description: CrmDescriptionItem[] = [
-    {
-      label: '基本信息',
-      isTitle: true,
-    },
-    {
-      label: t('customer.customerName'),
-      value: '张三',
-    },
-    {
-      label: t('customer.customerType'),
-      value: 'VIP客户',
-    },
-    {
-      label: t('customer.customerLevel'),
-      value: 'VIP客户',
-    },
-    {
-      label: t('customer.customerSource'),
-      value: '市场活动',
-    },
-    {
-      label: t('customer.customerStatus'),
-      value: '潜在客户',
-    },
-  ];
+  const { descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
+    formKey: FormDesignKeyEnum.CUSTOMER_CONTACT,
+    sourceId: route.query.id?.toString() || '',
+    needInitDetail: true,
+  });
   const loading = ref(false);
 
   function handleDelete() {
@@ -65,17 +49,21 @@
       message: t('contact.deleteTip'),
       confirmButtonText: t('common.confirmDelete'),
       confirmButtonColor: 'var(--error-red)',
-      beforeClose: (action) => {
+      beforeClose: async (action) => {
         if (action === 'confirm') {
           try {
-            // TODO: delete customer
+            loading.value = true;
+            await deleteCustomerContact(route.query.id?.toString() || '');
             showSuccessToast(t('common.deleteSuccess'));
+            await sleep(300);
             router.back();
             return Promise.resolve(true);
           } catch (error) {
             // eslint-disable-next-line no-console
             console.log(error);
             return Promise.resolve(false);
+          } finally {
+            loading.value = false;
           }
         } else {
           return Promise.resolve(true);
@@ -83,6 +71,11 @@
       },
     });
   }
+
+  onBeforeMount(async () => {
+    await initFormConfig();
+    initFormDescription();
+  });
 </script>
 
 <style lang="less" scoped></style>

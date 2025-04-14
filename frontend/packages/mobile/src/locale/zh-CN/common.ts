@@ -27,6 +27,8 @@ export default {
   'common.delete': '删除',
   'common.deleteSuccess': '删除成功',
   'common.pick': '领取',
+  'common.picking': '领取中...',
+  'common.pickSuccess': '领取成功',
   'common.distribute': '分配',
   'common.distributeSuccess': '分配成功',
   'common.normal': '正常',
@@ -69,4 +71,5 @@ export default {
   'common.transferring': '转移中...',
   'common.deleting': '删除中...',
   'common.loading': '加载中...',
+  'common.dayUnit': '天',
 };

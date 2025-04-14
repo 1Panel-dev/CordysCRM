@@ -58,6 +58,9 @@ export default function checkStatus(status: number, msg: string, code?: number):
     default:
   }
   if (errMessage) {
-    showFailToast(errMessage);
+    showFailToast({
+      message: errMessage,
+      duration: 5000,
+    });
   }
 }
