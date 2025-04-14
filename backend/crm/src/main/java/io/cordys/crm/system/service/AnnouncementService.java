@@ -16,6 +16,7 @@ import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Announcement;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.AnnouncementReceiveTypeDTO;
+import io.cordys.crm.system.dto.log.AnnouncementLogDTO;
 import io.cordys.crm.system.dto.request.AnnouncementPageRequest;
 import io.cordys.crm.system.dto.request.AnnouncementRequest;
 import io.cordys.crm.system.dto.convert.AnnouncementContentDTO;
@@ -28,9 +29,11 @@ import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,15 +104,45 @@ public class AnnouncementService {
             announcement.setNotice(true);
         }
         announcementMapper.insert(announcement);
+        AnnouncementLogDTO announcementLogDTO = buildNewLogDTO(request, announcement, announcementReceiveTypeDTO);
         // 添加日志上下文
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceId(announcement.getId())
                         .resourceName(announcement.getSubject())
-                        .modifiedValue(announcement)
+                        .modifiedValue(announcementLogDTO)
                         .build()
         );
     }
+    @NotNull
+    private AnnouncementLogDTO buildNewLogDTO(AnnouncementRequest request, Announcement announcement, AnnouncementReceiveTypeDTO announcementReceiveTypeDTO) {
+        AnnouncementLogDTO announcementLogDTO = new AnnouncementLogDTO();
+        BeanUtils.copyBean(announcementLogDTO, announcement);
+        List<String> receiverName = getReceiverName(announcementReceiveTypeDTO);
+        announcementLogDTO.setReceiver(receiverName);
+        announcementLogDTO.setContent(request.getContent());
+        if (request.getStartTime()!= null) {
+            announcementLogDTO.setStartTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(request.getStartTime()));
+        }
+        if (request.getEndTime()!= null) {
+            announcementLogDTO.setEndTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(request.getEndTime()));
+        }
+        return announcementLogDTO;
+    }
+
+    @NotNull
+    private AnnouncementLogDTO getOldLogDTO(Announcement originalAnnouncement) {
+        AnnouncementReceiveTypeDTO oldReceiveTypeDTO = JSON.parseObject(new String(originalAnnouncement.getReceiveType()), AnnouncementReceiveTypeDTO.class);
+        AnnouncementLogDTO oldLogDTO = new AnnouncementLogDTO();
+        BeanUtils.copyBean(oldLogDTO, originalAnnouncement);
+        List<String> receiverName = getReceiverName(oldReceiveTypeDTO);
+        oldLogDTO.setReceiver(receiverName);
+        oldLogDTO.setContent(new String(originalAnnouncement.getContent(), StandardCharsets.UTF_8));
+        oldLogDTO.setStartTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(originalAnnouncement.getStartTime()));
+        oldLogDTO.setEndTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(originalAnnouncement.getStartTime()));
+        return oldLogDTO;
+    }
+
 
     @Transactional(rollbackFor = Exception.class)
     @OperationLog(module = LogModule.SYSTEM_MESSAGE_ANNOUNCEMENT, type = LogType.UPDATE)
@@ -152,17 +185,24 @@ public class AnnouncementService {
             convertNotification(userId, announcement, userIds);
         }
         // 添加日志上下文
+        AnnouncementLogDTO oldLogDTO = getOldLogDTO(originalAnnouncement);
+        if (request.getStartTime() == null) {
+            request.setStartTime(originalAnnouncement.getStartTime());
+        }
+        if (request.getEndTime() == null) {
+            request.setEndTime(originalAnnouncement.getEndTime());
+        }
+        AnnouncementLogDTO announcementLogDTO = buildNewLogDTO(request, announcement, announcementReceiveTypeDTO);
         String resourceName = Optional.ofNullable(announcement.getSubject()).orElse(originalAnnouncement.getSubject());
         OperationLogContext.setContext(
                 LogContextInfo.builder()
-                        .originalValue(originalAnnouncement)
+                        .originalValue(oldLogDTO)
                         .resourceId(originalAnnouncement.getId())
                         .resourceName(resourceName)
-                        .modifiedValue(announcementMapper.selectByPrimaryKey(request.getId()))
+                        .modifiedValue(announcementLogDTO)
                         .build()
         );
     }
-
     /**
      *  删除缓存中的公告提示
      * @param announcementId 公告id
@@ -256,29 +296,7 @@ public class AnnouncementService {
         if (CollectionUtils.isNotEmpty(announcementDTOS)) {
             for (AnnouncementDTO announcementDTO : announcementDTOS) {
                 announcementDTO.setContentText(new String(announcementDTO.getContent(), StandardCharsets.UTF_8));
-                AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = JSON.parseObject(new String(announcementDTO.getReceiveType()), AnnouncementReceiveTypeDTO.class);
-                if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getDeptIds())) {
-                    List<OptionDTO> idNameByIds = extDepartmentMapper.getIdNameByIds(announcementReceiveTypeDTO.getDeptIds());
-                    List<OptionScopeDTO> optionScopeDTOList = new ArrayList<>();
-                    for (OptionDTO idNameById : idNameByIds) {
-                        OptionScopeDTO optionScopeDTO = new OptionScopeDTO();
-                        BeanUtils.copyBean(optionScopeDTO, idNameById);
-                        optionScopeDTO.setScope("DEPARTMENT");
-                        optionScopeDTOList.add(optionScopeDTO);
-                    }
-                    announcementDTO.setDeptIdName(optionScopeDTOList);
-                }
-                if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getUserIds())) {
-                    List<OptionDTO> idNameByIds = userMapper.selectUserOptionByIds(announcementReceiveTypeDTO.getUserIds());
-                    List<OptionScopeDTO> optionScopeDTOList = new ArrayList<>();
-                    for (OptionDTO idNameById : idNameByIds) {
-                        OptionScopeDTO optionScopeDTO = new OptionScopeDTO();
-                        BeanUtils.copyBean(optionScopeDTO, idNameById);
-                        optionScopeDTO.setScope("USER");
-                        optionScopeDTOList.add(optionScopeDTO);
-                    }
-                    announcementDTO.setUserIdName(optionScopeDTOList);
-                }
+                setReceiverNameOption(announcementDTO);
             }
         }
         return announcementDTOS;
@@ -295,6 +313,12 @@ public class AnnouncementService {
         if (announcementDTO == null) {
             throw new RuntimeException(Translator.get("announcement.blank"));
         }
+        setReceiverNameOption(announcementDTO);
+        announcementDTO.setContentText(new String(announcementDTO.getContent(), StandardCharsets.UTF_8));
+        return announcementDTO;
+    }
+
+    private void setReceiverNameOption(AnnouncementDTO announcementDTO) {
         AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = JSON.parseObject(new String(announcementDTO.getReceiveType()), AnnouncementReceiveTypeDTO.class);
         if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getDeptIds())) {
             List<OptionDTO> idNameByIds = extDepartmentMapper.getIdNameByIds(announcementReceiveTypeDTO.getDeptIds());
@@ -318,8 +342,21 @@ public class AnnouncementService {
             }
             announcementDTO.setUserIdName(optionScopeDTOList);
         }
-        announcementDTO.setContentText(new String(announcementDTO.getContent(), StandardCharsets.UTF_8));
-        return announcementDTO;
     }
+
+    public List<String> getReceiverName(AnnouncementReceiveTypeDTO announcementReceiveTypeDTO){
+        List<String>returnNames = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getDeptIds())) {
+            List<String> names = extDepartmentMapper.getNameByIds(announcementReceiveTypeDTO.getDeptIds());
+            returnNames.addAll(names);
+        }
+        if (CollectionUtils.isNotEmpty(announcementReceiveTypeDTO.getUserIds())) {
+            List<String> names = userMapper.selectUserNameByIds(announcementReceiveTypeDTO.getUserIds());
+            returnNames.addAll(names);
+        }
+        return returnNames;
+
+    }
+
 }
 

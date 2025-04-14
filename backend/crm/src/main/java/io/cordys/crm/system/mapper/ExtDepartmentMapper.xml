@@ -178,6 +178,15 @@
         SELECT id FROM dept_tree
     </select>
 
+    <select id="getNameByIds" resultType="java.lang.String">
+        select name
+        from sys_department
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
     <delete id="deleteDepartmentByIds">
         DELETE FROM sys_department WHERE id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">

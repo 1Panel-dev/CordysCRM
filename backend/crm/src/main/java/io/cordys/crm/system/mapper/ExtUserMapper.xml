@@ -185,6 +185,15 @@
                 #{userId}
             </foreach>
     </select>
+    <select id="selectUserNameByIds" resultType="java.lang.String">
+        SELECT name
+        FROM sys_user
+        WHERE id IN
+        <foreach collection="userIds" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 
     <update id="updateUser" parameterType="io.cordys.crm.system.domain.User">
         update sys_user

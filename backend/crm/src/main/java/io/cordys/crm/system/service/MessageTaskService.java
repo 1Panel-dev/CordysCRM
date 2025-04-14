@@ -8,7 +8,9 @@ import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.MessageTask;
+import io.cordys.crm.system.dto.log.MessageTaskLogDTO;
 import io.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import io.cordys.crm.system.dto.request.MessageTaskRequest;
 import io.cordys.crm.system.dto.response.MessageTaskDTO;
@@ -18,6 +20,7 @@ import io.cordys.crm.system.utils.MessageTemplateUtils;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,9 +47,10 @@ public class MessageTaskService {
     public MessageTask saveMessageTask(MessageTaskRequest messageTaskRequest, String userId, String organizationId) {
         //检查设置的通知是否存在，如果存在则更新
         MessageTask messageTask = new MessageTask();
+        Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
         MessageTask messageByModuleAndEvent = extMessageTaskMapper.getMessageByModuleAndEvent(messageTaskRequest.getModule(), messageTaskRequest.getEvent(), organizationId);
         if (messageByModuleAndEvent != null) {
-            return updateMessageTasks(messageTaskRequest, userId, messageByModuleAndEvent);
+            return updateMessageTasks(messageTaskRequest, userId, messageByModuleAndEvent, eventMap);
         } else {
             //不存在则新增
             messageTask.setId(IDGenerator.nextStr());
@@ -63,11 +67,13 @@ public class MessageTaskService {
             messageTask.setTemplate(template.getBytes(StandardCharsets.UTF_8));
             messageTaskMapper.insert(messageTask);
             // 添加日志上下文
+
+            MessageTaskLogDTO newDTO = buildLogDTO(messageTask, messageTaskRequest.isEmailEnable(), messageTaskRequest.isSysEnable(), eventMap);
             OperationLogContext.setContext(LogContextInfo.builder()
                     .originalValue(null)
                     .resourceId(messageTask.getId())
-                    .resourceName(messageTask.getTaskType()+"_"+messageTask.getEvent())
-                    .modifiedValue(messageTask)
+                    .resourceName(eventMap.get(messageTask.getEvent()))
+                    .modifiedValue(newDTO)
                     .build());
         }
         return messageTask;
@@ -80,7 +86,7 @@ public class MessageTaskService {
      * @param userId             当前用户ID
      */
     @OperationLog(module = LogModule.SYSTEM_MESSAGE_MESSAGE, type = LogType.UPDATE, operator = "{{#userId}}")
-    public MessageTask updateMessageTasks(MessageTaskRequest messageTaskRequest, String userId, MessageTask oldMessageTask) {
+    public MessageTask updateMessageTasks(MessageTaskRequest messageTaskRequest, String userId, MessageTask oldMessageTask, Map<String, String> eventMap) {
         MessageTask messageTask = new MessageTask();
         messageTask.setId(oldMessageTask.getId());
         messageTask.setEmailEnable(messageTaskRequest.isEmailEnable());
@@ -89,14 +95,25 @@ public class MessageTaskService {
         messageTask.setUpdateTime(System.currentTimeMillis());
         messageTaskMapper.update(messageTask);
         // 添加日志上下文
+        MessageTaskLogDTO oldDTO = buildLogDTO(oldMessageTask, oldMessageTask.getEmailEnable(), oldMessageTask.getSysEnable(), eventMap);
+        MessageTaskLogDTO newDTO = buildLogDTO(oldMessageTask, messageTaskRequest.isEmailEnable(), messageTaskRequest.isSysEnable(), eventMap);
         OperationLogContext.setContext(LogContextInfo.builder()
                 .resourceId(messageTask.getId())
-                .resourceName(messageTask.getTaskType())
-                .originalValue(oldMessageTask)
-                .modifiedValue(messageTask)
+                .resourceName(eventMap.get(oldMessageTask.getEvent()))
+                .originalValue(oldDTO)
+                .modifiedValue(newDTO)
                 .build());
 
         return messageTask;
+    }
+
+    @NotNull
+    private static MessageTaskLogDTO buildLogDTO(MessageTask oldMessageTask, Boolean emailEnable, Boolean sysEnable, Map<String, String> eventMap) {
+        MessageTaskLogDTO newDTO = new MessageTaskLogDTO();
+        newDTO.setEvent(eventMap.get(oldMessageTask.getEvent()));
+        newDTO.setEmailEnable(emailEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        newDTO.setSysEnable(sysEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        return newDTO;
     }
 
     /**
@@ -135,7 +152,7 @@ public class MessageTaskService {
             for (MessageTaskDetailDTO messageTaskDetailDTO : messageTaskDTO.getMessageTaskDetailDTOList()) {
                 messageTaskDetailDTO.setEventName(eventMap.get(messageTaskDetailDTO.getEvent()));
                 MessageTask messageTask = messageMap.get(messageTaskDetailDTO.event);
-                if (messageTask != null) {  
+                if (messageTask != null) {
                     messageTaskDetailDTO.setEmailEnable(messageTask.getEmailEnable());
                     messageTaskDetailDTO.setSysEnable(messageTask.getSysEnable());
                 }

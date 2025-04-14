@@ -20,6 +20,8 @@ public interface ExtDepartmentMapper {
 
     List<OptionDTO> getIdNameByIds(@Param("ids") List<String> ids);
 
+    List<String> getNameByIds(@Param("ids") List<String> ids);
+
     void deleteByOrgId(@Param("orgId") String orgId);
 
     List<Department> selectAllDepartment(@Param("orgId") String orgId);

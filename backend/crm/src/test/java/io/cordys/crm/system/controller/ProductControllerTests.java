@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -168,6 +170,9 @@ class ProductControllerTests extends BaseTest {
         Assertions.assertTrue(StringUtils.equalsIgnoreCase(product.getStatus(),"2"));
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);
+
+        request.setId(null);
+        this.requestPost(DEFAULT_UPDATE, request).andExpect(status().is5xxServerError());
     }
 
     @Test

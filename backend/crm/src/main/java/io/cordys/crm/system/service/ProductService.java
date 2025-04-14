@@ -2,10 +2,12 @@ package io.cordys.crm.system.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.dto.LogDTO;
-import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.OptionDTO;
@@ -16,7 +18,6 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
@@ -29,6 +30,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,6 +101,7 @@ public class ProductService {
         return baseService.setCreateAndUpdateUserName(productGetResponse);
     }
 
+    @OperationLog(module = LogModule.PRODUCT, type = LogType.ADD, operator = "{{#userId}}")
     public Product add(ProductEditRequest request, String userId, String orgId) {
         Product product = BeanUtils.copyBean(new Product(), request);
         product.setName(request.getName());
@@ -119,10 +122,24 @@ public class ProductService {
 
         //保存自定义字段
         productFieldService.saveModuleField(product.getId(), orgId, userId, request.getModuleFields());
+
+        // 添加日志上下文
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(product.getId())
+                        .resourceName(product.getName())
+                        .modifiedValue(product.getName())
+                        .build()
+        );
         return product;
     }
 
+    @OperationLog(module = LogModule.PRODUCT, type = LogType.UPDATE, operator = "{{#userId}}")
     public Product update(ProductEditRequest request, String userId, String orgId) {
+        if (StringUtils.isBlank(request.getId())) {
+            throw new GenericException(Translator.get("product.id.empty"));
+        }
+        Product oldProduct = productBaseMapper.selectByPrimaryKey(request.getId());
         Product product = BeanUtils.copyBean(new Product(), request);
         product.setUpdateTime(System.currentTimeMillis());
         product.setUpdateUser(userId);
@@ -134,6 +151,17 @@ public class ProductService {
 
         // 更新模块字段
         updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+
+        // 添加日志上下文
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceId(product.getId())
+                        .resourceName(product.getName())
+                        .originalValue(oldProduct)
+                        .modifiedValue(product)
+                        .build()
+        );
+
         return productBaseMapper.selectByPrimaryKey(product.getId());
     }
 
@@ -171,22 +199,55 @@ public class ProductService {
         productFieldService.saveModuleFieldByResourceIds(productIds, moduleFields);
     }
 
+    @OperationLog(module = LogModule.PRODUCT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
+        Product product = productBaseMapper.selectByPrimaryKey(id);
         // 删除产品
         productBaseMapper.deleteByPrimaryKey(id);
         // 删除产品模块字段
         productFieldService.deleteByResourceId(id);
+        // 添加日志上下文
+        OperationLogContext.setResourceName(product.getName());
     }
 
     public void batchUpdate(ProductBatchEditRequest request, String userId, String orgId) {
+        if (CollectionUtils.isEmpty(request.getIds())) {
+            return;
+        }
+        // 批量更新产品
+        List<Product> products = extProductMapper.listByIds(request.getIds());
         Product product = BeanUtils.copyBean(new Product(), request);
         product.setUpdateTime(System.currentTimeMillis());
         product.setUpdateUser(userId);
         product.setOrganizationId(orgId);
         extProductMapper.updateProduct(request.getIds(),product);
         batchUpdateModuleField(request.getIds(),request.getModuleFields());
+        for (Product oldProduct : products) {
+            LogDTO logDTO = new LogDTO(oldProduct.getOrganizationId(), oldProduct.getId(), userId, LogType.UPDATE, LogModule.PRODUCT, oldProduct.getName());
+            String oldStatus = getProductStatusName(oldProduct.getStatus());
+            String newStatus = getProductStatusName(request.getStatus());
+            logDTO.setOriginalValue(oldStatus);
+            logDTO.setModifiedValue(newStatus);
+            logService.add(logDTO);
+        }
     }
 
+    private String getProductStatusName(String status) {
+        if (StringUtils.equalsIgnoreCase(status, "1")){
+            return Translator.get("product.shelves");
+        }
+        else{
+           return Translator.get("product.unShelves");
+        }
+
+    }
+
+    /**
+     * 批量删除产品
+     *
+     * @param ids 产品id集合
+     * @param userId 操作人id
+     */
     public void batchDelete(List<String> ids, String userId) {
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(Product::getId, ids);
@@ -195,8 +256,8 @@ public class ProductService {
         productFieldService.deleteByResourceIds(ids);
         List<LogDTO> logs = new ArrayList<>();
         products.forEach(product -> {
-            LogDTO logDTO = new LogDTO(product.getOrganizationId(), product.getId(), userId, LogType.DELETE, LogModule.OPPORTUNITY, product.getName());
-            logDTO.setOriginalValue(product);
+            LogDTO logDTO = new LogDTO(product.getOrganizationId(), product.getId(), userId, LogType.DELETE, LogModule.PRODUCT, product.getName());
+            logDTO.setOriginalValue(product.getName());
             logs.add(logDTO);
         });
         logService.batchAdd(logs);

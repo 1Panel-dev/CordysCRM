@@ -1,6 +1,5 @@
 package io.cordys.crm.system.dto.response;
 
-import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.system.domain.Announcement;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
