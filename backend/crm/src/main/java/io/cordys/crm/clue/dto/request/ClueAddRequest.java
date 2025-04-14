@@ -26,12 +26,10 @@ public class ClueAddRequest {
     @Schema(description = "负责人")
     private String owner;
 
-    @NotBlank
     @Size(max = 255)
     @Schema(description = "联系人名称")
     private String contact;
 
-    @NotBlank
     @Size(max = 30)
     @Schema(description = "联系人电话")
     private String phone;

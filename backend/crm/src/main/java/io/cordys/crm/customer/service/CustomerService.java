@@ -428,6 +428,8 @@ public class CustomerService {
 
         List<String> ownerIds = getOwners(customers);
         Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
+        Map<String, String> customerOwnerMap = new HashMap<>();
+
         int success = 0;
         for (Customer customer : customers) {
             CustomerPool customerPool = ownersDefaultPoolMap.get(customer.getOwner());
@@ -435,6 +437,7 @@ public class CustomerService {
                 // 未找到默认公海，不移入
                 continue;
             }
+            customerOwnerMap.put(customer.getId(), customer.getOwner());
             // 插入责任人历史
             customerOwnerHistoryService.add(customer, currentUser);
             customer.setPoolId(customerPool.getId());
@@ -451,7 +454,7 @@ public class CustomerService {
         // 记录日志
         List<LogDTO> logs = new ArrayList<>();
         customers.forEach(customer -> {
-            CustomerPool customerPool = ownersDefaultPoolMap.get(customer.getOwner());
+            CustomerPool customerPool = ownersDefaultPoolMap.get(customerOwnerMap.get(customer.getId()));
             if (customerPool != null) {
                 LogDTO logDTO = new LogDTO(orgId, customer.getId(), currentUser, LogType.MOVE_TO_CUSTOMER_POOL, LogModule.CUSTOMER_INDEX, customer.getName());
                 String detail = Translator.getWithArgs("customer.to.pool", customer.getName(),
