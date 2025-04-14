@@ -19,7 +19,6 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.service.CustomerFieldService;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
@@ -31,7 +30,6 @@ import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.dto.response.UserResponse;
-import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
@@ -58,8 +56,6 @@ public class FollowUpRecordService extends BaseFollowUpService {
     @Resource
     private BaseService baseService;
     @Resource
-    private LogService logService;
-    @Resource
     private BaseMapper<Customer> customerMapper;
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;
@@ -69,8 +65,6 @@ public class FollowUpRecordService extends BaseFollowUpService {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private ModuleFormService moduleFormService;
-    @Resource
-    private CustomerFieldService customerFieldService;
 
     /**
      * 添加跟进记录
@@ -228,6 +222,15 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
         Map<String, UserResponse> userDeptMap = baseService.getUserDepAndPhoneByUserIds(ownerIds, orgId);
 
+        List<String> customerIds = list.stream().map(FollowUpRecordListResponse::getCustomerId).toList();
+        Map<String, String> customerMap = baseService.getCustomerMap(customerIds);
+
+        List<String> opportunityIds = list.stream().map(FollowUpRecordListResponse::getOpportunityId).toList();
+        Map<String, String> opportunityMap = baseService.getOpportunityMap(opportunityIds);
+
+        List<String> clueIds = list.stream().map(FollowUpRecordListResponse::getClueId).toList();
+        Map<String, String> clueMap = baseService.getClueMap(clueIds);
+
         list.forEach(recordListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> customerFields = recordCustomFieldMap.get(recordListResponse.getId());
@@ -237,6 +240,9 @@ public class FollowUpRecordService extends BaseFollowUpService {
             recordListResponse.setUpdateUserName(userNameMap.get(recordListResponse.getUpdateUser()));
             recordListResponse.setOwnerName(userNameMap.get(recordListResponse.getOwner()));
             recordListResponse.setContactName(contactMap.get(recordListResponse.getContactId()));
+            recordListResponse.setCustomerName(customerMap.get(recordListResponse.getCustomerId()));
+            recordListResponse.setOpportunityName(opportunityMap.get(recordListResponse.getOpportunityId()));
+            recordListResponse.setClueName(clueMap.get(recordListResponse.getClueId()));
 
             UserResponse userResponse = userDeptMap.get(recordListResponse.getOwner());
             if (userResponse != null) {
@@ -267,12 +273,27 @@ public class FollowUpRecordService extends BaseFollowUpService {
         // 补充负责人选项
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(response,
                 FollowUpRecordDetailResponse::getOwner, FollowUpRecordDetailResponse::getOwnerName);
-        optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
+        optionMap.put(BusinessModuleField.FOLLOW_RECORD_OWNER.getBusinessKey(), ownerFieldOption);
 
         // 联系人
         List<OptionDTO> contactFieldOption = moduleFormService.getBusinessFieldOption(response,
                 FollowUpRecordDetailResponse::getContactId, FollowUpRecordDetailResponse::getContactName);
-        optionMap.put(BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey(), contactFieldOption);
+        optionMap.put(BusinessModuleField.FOLLOW_RECORD_CONTACT.getBusinessKey(), contactFieldOption);
+
+        //客户
+        List<OptionDTO> customerOption = moduleFormService.getBusinessFieldOption(response,
+                FollowUpRecordDetailResponse::getCustomerId, FollowUpRecordDetailResponse::getCustomerName);
+        optionMap.put(BusinessModuleField.FOLLOW_RECORD_CUSTOMER.getBusinessKey(), customerOption);
+
+        //商机
+        List<OptionDTO> opportunityOption = moduleFormService.getBusinessFieldOption(response,
+                FollowUpRecordDetailResponse::getOpportunityId, FollowUpRecordDetailResponse::getOpportunityName);
+        optionMap.put(BusinessModuleField.FOLLOW_RECORD_OPPORTUNITY.getBusinessKey(), opportunityOption);
+
+        //线索
+        List<OptionDTO> clueOption = moduleFormService.getBusinessFieldOption(response,
+                FollowUpRecordDetailResponse::getClueId, FollowUpRecordDetailResponse::getClueName);
+        optionMap.put(BusinessModuleField.FOLLOW_RECORD_CLUE.getBusinessKey(), clueOption);
 
         response.setOptionMap(optionMap);
 

@@ -7,7 +7,10 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.JSON;
+import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
+import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.mapper.ExtOrganizationUserMapper;
@@ -39,6 +42,12 @@ public class BaseService {
     private ExtCustomerContactMapper extCustomerContactMapper;
     @Resource
     private ExtOrganizationUserMapper extOrganizationUserMapper;
+    @Resource
+    private ExtCustomerMapper extCustomerMapper;
+    @Resource
+    private ExtOpportunityMapper extOpportunityMapper;
+    @Resource
+    private ExtClueMapper extClueMapper;
 
 
     /**
@@ -274,5 +283,50 @@ public class BaseService {
         } catch (Exception e) {
             throw new GenericException(e);
         }
+    }
+
+
+    /**
+     * 客户id与名称映射
+     * @param customerIds
+     * @return
+     */
+    public Map<String, String> getCustomerMap(List<String> customerIds) {
+        if (CollectionUtils.isEmpty(customerIds)) {
+            return Collections.emptyMap();
+        }
+        return extCustomerMapper.getCustomerOptionsByIds(customerIds)
+                .stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+    }
+
+    /**
+     * 商机id与名称映射
+     * @param opportunityIds
+     * @return
+     */
+    public Map<String, String> getOpportunityMap(List<String> opportunityIds) {
+        if (CollectionUtils.isEmpty(opportunityIds)) {
+            return Collections.emptyMap();
+        }
+        return extOpportunityMapper.getOpportunityOptionsByIds(opportunityIds)
+                .stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+    }
+
+
+    /**
+     * 线索id与名称映射
+     * @param clueIds
+     * @return
+     */
+    public Map<String, String> getClueMap(List<String> clueIds) {
+        if (CollectionUtils.isEmpty(clueIds)) {
+            return Collections.emptyMap();
+        }
+        return extClueMapper.selectOptionByIds(clueIds)
+                .stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+
     }
 }

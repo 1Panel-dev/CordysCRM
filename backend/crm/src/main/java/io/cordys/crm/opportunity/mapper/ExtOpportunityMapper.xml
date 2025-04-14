@@ -347,4 +347,14 @@
         </foreach>
         group by customer_id
     </select>
+
+    <select id="getOpportunityOptionsByIds" resultType="io.cordys.common.dto.OptionDTO">
+        select id, name
+        from opportunity
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
 </mapper>

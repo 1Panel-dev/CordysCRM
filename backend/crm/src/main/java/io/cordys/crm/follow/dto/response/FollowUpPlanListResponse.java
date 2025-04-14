@@ -15,14 +15,23 @@ public class FollowUpPlanListResponse {
     @Schema(description = "客户id")
     private String customerId;
 
+    @Schema(description = "客户名称")
+    private String customerName;
+
     @Schema(description = "商机id")
     private String opportunityId;
+
+    @Schema(description = "商机名称")
+    private String opportunityName;
 
     @Schema(description = "类型")
     private String type;
 
     @Schema(description = "线索id")
     private String clueId;
+
+    @Schema(description = "线索名称")
+    private String clueName;
 
     @Schema(description = "计划内容")
     private String content;

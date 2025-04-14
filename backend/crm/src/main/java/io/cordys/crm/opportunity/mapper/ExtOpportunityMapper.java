@@ -34,4 +34,6 @@ public interface ExtOpportunityMapper {
     List<OptionDTO> getRepeatCountMap(@Param("customerIds") List<String> customerIds);
 
     int countByOwner(@Param("owner") String owner);
+
+    List<OptionDTO> getOpportunityOptionsByIds(@Param("ids") List<String> ids);
 }

@@ -32,6 +32,16 @@ public class OrganizationLogService extends BaseModuleLogService {
                 differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
                 differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
             }
+
+            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.gender"))) {
+                differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
+                differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("woman") : Translator.get("man"));
+            }
+
+            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.employeeType"))) {
+                differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+            }
         });
     }
 
