@@ -35,6 +35,7 @@ public class ModuleFieldResolverFactory {
         resolverMap.put(FieldType.PICTURE.name(), new PictureResolver());
 
         resolverMap.put(MULTI_SELECT, new MultipleSelectResolver());
+        resolverMap.put(FieldType.DATA_SOURCE.name(), new DatasourceResolver());
     }
 
     public static AbstractModuleFieldResolver getResolver(String type) {

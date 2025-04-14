@@ -234,12 +234,12 @@ public class FollowUpPlanService extends BaseFollowUpService {
     public FollowUpPlanDetailResponse get(String id, String orgId) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
         FollowUpPlanDetailResponse response = BeanUtils.copyBean(new FollowUpPlanDetailResponse(), followUpPlan);
-        List<BaseModuleFieldValue> fieldValueList = followUpPlanFieldService.getModuleFieldValuesByResourceId(id);
-        response.setModuleFields(fieldValueList);
         List<FollowUpPlanListResponse> buildList = buildListData(List.of(response), orgId);
 
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.FOLLOW_PLAN.getKey(), orgId);
-        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, fieldValueList);
+        // 获取所有模块字段的值
+        List<BaseModuleFieldValue> moduleFieldValues = moduleFormService.getBaseModuleFieldValues(List.of(response), FollowUpPlanDetailResponse::getModuleFields);
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
 
         // 补充负责人选项
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
