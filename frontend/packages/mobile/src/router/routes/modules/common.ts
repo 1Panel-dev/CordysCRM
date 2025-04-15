@@ -38,6 +38,14 @@ const common: AppRouteRecordRaw = {
         depth: 9,
       },
     },
+    {
+      path: 'workflowStage',
+      name: CommonRouteEnum.WORKFLOW_STAGE,
+      component: () => import('@/components/business/crm-workflow-card/workflowStage.vue'),
+      meta: {
+        permissions: [],
+      },
+    },
   ],
 };
 

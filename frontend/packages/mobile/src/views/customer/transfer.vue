@@ -48,7 +48,7 @@
 
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
 
-  import { getUserOptions, updateClue, updateCustomer } from '@/api/modules';
+  import { getUserOptions, updateClue, updateCustomer, updateOpportunity } from '@/api/modules';
 
   const route = useRoute();
   const router = useRouter();
@@ -62,6 +62,7 @@
   const loadListApi: Record<string, (data: any) => Promise<any>> = {
     [FormDesignKeyEnum.CUSTOMER]: updateCustomer,
     [FormDesignKeyEnum.CLUE]: updateClue,
+    [FormDesignKeyEnum.BUSINESS]: updateOpportunity,
   };
 
   async function onConfirm() {

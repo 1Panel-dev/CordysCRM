@@ -1,6 +1,7 @@
 export enum OpportunityRouteEnum {
   OPPORTUNITY = 'opportunity',
   OPPORTUNITY_INDEX = 'opportunityIndex',
+  OPPORTUNITY_DETAIL = 'opportunityDetail',
 }
 
 export enum ClueRouteEnum {
@@ -26,6 +27,7 @@ export enum CommonRouteEnum {
   FORM_CREATE = 'formCreate',
   CONTACT_DETAIL = 'contactDetail',
   FOLLOW_DETAIL = 'followDetail',
+  WORKFLOW_STAGE = 'workflowStage',
 }
 
 export enum ProductRouteEnum {

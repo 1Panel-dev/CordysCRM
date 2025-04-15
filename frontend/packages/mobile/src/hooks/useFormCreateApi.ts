@@ -34,6 +34,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   const loading = ref(false);
   const unsaved = ref(false);
   const formDetail = ref<Record<string, any>>({});
+  const detail = ref<Record<string, any>>({}); // 详情
 
   async function initFormDescription() {
     try {
@@ -41,6 +42,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (!asyncApi || !props.sourceId) return;
       const form = await asyncApi(props.sourceId);
       descriptions.value = [];
+      detail.value = form;
       collaborationType.value = form.collaborationType;
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
@@ -313,5 +315,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     initFormConfig,
     initFormDetail,
     saveForm,
+    detail,
   };
 }

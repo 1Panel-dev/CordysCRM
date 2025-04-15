@@ -71,4 +71,12 @@ export default {
   'common.deleting': 'Deleting...',
   'common.loading': 'Loading...',
   'common.dayUnit': 'Days',
+  'common.transferSuccess': 'Transfer Success',
+  'common.updateToCurrentProgress': 'Update to current progress',
+  'common.success': 'Success',
+  'common.fail': 'Error',
+  'common.updating': 'Updating...',
+  'common.operationSuccess': 'Operation success',
+  'common.followFailed': 'Follow failed',
+  'common.result': 'Result',
 };

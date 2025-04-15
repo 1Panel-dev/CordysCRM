@@ -22,6 +22,14 @@ const opportunity: AppRouteRecordRaw = {
         depth: 1,
       },
     },
+    {
+      path: 'detail',
+      name: OpportunityRouteEnum.OPPORTUNITY_DETAIL,
+      component: () => import('@/views/opportunity/detail.vue'),
+      meta: {
+        permissions: [],
+      },
+    },
   ],
 };
 

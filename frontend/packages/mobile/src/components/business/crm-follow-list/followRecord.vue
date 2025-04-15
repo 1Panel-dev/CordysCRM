@@ -40,12 +40,21 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
   import listItem from './components/listItem.vue';
 
-  import { getClueFollowRecordList, getCluePoolFollowRecordList, getCustomerFollowRecordList } from '@/api/modules';
+  import {
+    getClueFollowRecordList,
+    getCluePoolFollowRecordList,
+    getCustomerFollowRecordList,
+    getOptFollowRecordList,
+  } from '@/api/modules';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
 
   const props = defineProps<{
-    type: FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER | FormDesignKeyEnum.FOLLOW_RECORD_CLUE | FormDesignKeyEnum.CLUE_POOL;
+    type:
+      | FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER
+      | FormDesignKeyEnum.FOLLOW_RECORD_CLUE
+      | FormDesignKeyEnum.CLUE_POOL
+      | FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
     readonly?: boolean;
     sourceId: string;
   }>();
@@ -59,6 +68,7 @@
     [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: getCustomerFollowRecordList,
     [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: getClueFollowRecordList,
     [FormDesignKeyEnum.CLUE_POOL]: getCluePoolFollowRecordList,
+    [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: getOptFollowRecordList,
   };
 
   async function handleDelete(item: any) {

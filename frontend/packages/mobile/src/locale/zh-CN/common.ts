@@ -72,4 +72,12 @@ export default {
   'common.deleting': '删除中...',
   'common.loading': '加载中...',
   'common.dayUnit': '天',
+  'common.transferSuccess': '转移成功',
+  'common.updateToCurrentProgress': '更新为当前进度',
+  'common.success': '成功',
+  'common.fail': '失败',
+  'common.updating': '更新中...',
+  'common.operationSuccess': '操作成功',
+  'common.followFailed': '跟进失败',
+  'common.result': '结果',
 };

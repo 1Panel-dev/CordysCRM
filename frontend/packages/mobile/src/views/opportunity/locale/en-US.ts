@@ -1,0 +1,16 @@
+export default {
+  'opportunity.searchPlaceholder': 'Please enter opportunity name',
+  'opportunity.all': 'All',
+  'opportunity.mine': 'My opportunities',
+  'opportunity.deptOpportunities': 'Department opportunities',
+  'opportunity.convertedOpportunities': 'Converted opportunities',
+  'opportunity.deleteContentTip': 'Deleted, members cannot find this opportunity, please be careful!',
+  'opportunity.info': 'Opportunity Information',
+  'opportunity.newCreate': 'New create',
+  'opportunity.clearRequirements': 'Clear requirements',
+  'opportunity.schemeValidation': 'Solution validation',
+  'opportunity.projectProposalReport': 'Project proposal report',
+  'opportunity.businessProcurement': 'Business procurement',
+  'opportunity.end': 'End',
+  'opportunity.progress': 'Opportunity progress',
+};

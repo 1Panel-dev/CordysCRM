@@ -1,0 +1,16 @@
+export default {
+  'opportunity.searchPlaceholder': '请输商机名称',
+  'opportunity.all': '全部',
+  'opportunity.mine': '我的',
+  'opportunity.deptOpportunities': '部门',
+  'opportunity.convertedOpportunities': '成交',
+  'opportunity.deleteContentTip': '删除后，成员无法查到该商机，请谨慎操作！',
+  'opportunity.info': '商机信息',
+  'opportunity.newCreate': '新建',
+  'opportunity.clearRequirements': '需求明确',
+  'opportunity.schemeValidation': '方案验证',
+  'opportunity.projectProposalReport': '立项汇报',
+  'opportunity.businessProcurement': '商务采购',
+  'opportunity.end': '完结',
+  'opportunity.progress': '商机进度',
+};

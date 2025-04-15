@@ -42,12 +42,15 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
   import listItem from './components/listItem.vue';
 
-  import { getClueFollowPlanList, getCustomerFollowPlanList } from '@/api/modules';
+  import { getClueFollowPlanList, getCustomerFollowPlanList, getOptFollowPlanList } from '@/api/modules';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
 
   const props = defineProps<{
-    type: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER | FormDesignKeyEnum.FOLLOW_PLAN_CLUE;
+    type:
+      | FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER
+      | FormDesignKeyEnum.FOLLOW_PLAN_CLUE
+      | FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS;
     sourceId: string;
   }>();
 
@@ -60,6 +63,7 @@
   const loadListApi = {
     [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: getCustomerFollowPlanList,
     [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: getClueFollowPlanList,
+    [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: getOptFollowPlanList,
   };
 
   async function handleDelete(item: any) {
