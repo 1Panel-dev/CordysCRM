@@ -9,7 +9,7 @@ import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.mapper.ExtNotificationMapper;
 import io.cordys.crm.system.notice.dto.SseMessageDTO;
-import io.cordys.crm.system.service.NotificationService;
+import io.cordys.crm.system.service.SendModuleService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +31,7 @@ public class SseService {
     private ExtNotificationMapper extNotificationMapper;
 
     @Resource
-    private NotificationService notificationService;
+    private SendModuleService sendModuleService;
 
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
@@ -182,7 +182,7 @@ public class SseService {
         //获取系统通知
         if (StringUtils.equalsIgnoreCase(sendType, NotificationConstants.Type.SYSTEM_NOTICE.toString())) {
             //获取已开启的模块
-            List<String> modules = notificationService.getNoticeModules();
+            List<String> modules = sendModuleService.getNoticeModules();
             Set<String> sysValues = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
             if (CollectionUtils.isNotEmpty(sysValues)) {
                 int size = sysValues.size();

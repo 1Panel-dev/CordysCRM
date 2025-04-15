@@ -101,7 +101,7 @@ public class ProductService {
         return baseService.setCreateAndUpdateUserName(productGetResponse);
     }
 
-    @OperationLog(module = LogModule.PRODUCT, type = LogType.ADD, operator = "{{#userId}}")
+    @OperationLog(module = LogModule.PRODUCT, type = LogType.ADD, operator = "{#userId}")
     public Product add(ProductEditRequest request, String userId, String orgId) {
         Product product = BeanUtils.copyBean(new Product(), request);
         product.setName(request.getName());
@@ -134,7 +134,7 @@ public class ProductService {
         return product;
     }
 
-    @OperationLog(module = LogModule.PRODUCT, type = LogType.UPDATE, operator = "{{#userId}}")
+    @OperationLog(module = LogModule.PRODUCT, type = LogType.UPDATE, operator = "{#userId}")
     public Product update(ProductEditRequest request, String userId, String orgId) {
         if (StringUtils.isBlank(request.getId())) {
             throw new GenericException(Translator.get("product.id.empty"));

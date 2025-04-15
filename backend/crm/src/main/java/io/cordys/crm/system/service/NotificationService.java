@@ -1,17 +1,14 @@
 package io.cordys.crm.system.service;
 
 
-import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.dto.OptionCountDTO;
-import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.constants.NotificationConstants;
-import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.request.NotificationRequest;
 import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.mapper.ExtNotificationMapper;
+import io.cordys.crm.system.notice.sse.SseService;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,7 +30,9 @@ public class NotificationService {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
-    private BaseMapper<Module> moduleMapper;
+    private SendModuleService sendModuleService;
+    @Resource
+    private SseService sseService;
 
 
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
@@ -65,6 +64,7 @@ public class NotificationService {
         Integer unRead = getUnRead(orgId, userId);
         if (unRead == 0) {
             stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "True");
+            sseService.broadcastPeriodically(userId,NotificationConstants.Status.READ.toString());
         }
         return update;
     }
@@ -90,6 +90,7 @@ public class NotificationService {
         stringRedisTemplate.delete(USER_ANNOUNCE_PREFIX + userId);
         stringRedisTemplate.delete(USER_PREFIX + userId);
         stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "True");
+        sseService.broadcastPeriodically(userId,NotificationConstants.Status.READ.toString());
         return extNotificationMapper.updateByReceiver(record);
     }
 
@@ -161,39 +162,10 @@ public class NotificationService {
 
     public List<NotificationDTO> listLastNotification(String userId, String organizationId) {
         //获取已开启的模块
-        List<String> modules = getNoticeModules();
+        List<String> modules = sendModuleService.getNoticeModules();
         List<NotificationDTO> notifications = extNotificationMapper.selectLastList(userId, organizationId,modules);
         notifications.forEach(notification -> notification.setContentText(new String(notification.getContent())));
         return notifications;
-    }
-    /**
-     * 获取已开启的模块
-     *
-     * @return 已开启的模块列表
-     */
-    public List<String> getNoticeModules() {
-        List<String> enabledModules = moduleMapper.selectListByLambda(
-                        new LambdaQueryWrapper<Module>()
-                                .eq(Module::getOrganizationId, OrganizationContext.getOrganizationId())
-                                .eq(Module::getEnable, true)
-                ).stream()
-                .map(Module::getModuleKey).distinct()
-                .toList();
-
-        List<String> modules = new ArrayList<>();
-        for (String enabledModule : enabledModules) {
-            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.BUSINESS.getKey())) {
-                modules.add(NotificationConstants.Module.OPPORTUNITY);
-            }
-            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.CUSTOMER.getKey())) {
-                modules.add(NotificationConstants.Module.CUSTOMER);
-            }
-            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.CLUE.getKey())) {
-                modules.add(NotificationConstants.Module.CLUE);
-            }
-
-        }
-        return modules;
     }
 
     public List<NotificationDTO> listLastAnnouncement(String userId, String organizationId) {
