@@ -73,6 +73,9 @@
   }
   .detail-tabs {
     @apply flex-1 overflow-hidden;
+    :deep(.van-hairline--top-bottom) {
+      margin-top: -0.5px;
+    }
     :deep(.van-tabs__content) {
       height: calc(100% - var(--van-tabs-line-height));
       .van-tab__panel {

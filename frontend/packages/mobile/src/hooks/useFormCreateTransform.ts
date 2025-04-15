@@ -59,7 +59,7 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
   function specialDescriptionValueTransform(key: string, value: string | number) {
     if (key === 'reservedDays') {
       // 处理剩余归属天数
-      return Number.isNaN(Number(value)) ? '-' : `${value}${t('common.dayUnit')}`;
+      return Number.isNaN(Number(value)) || value === null ? '-' : `${value}${t('common.dayUnit')}`;
     }
     return value;
   }

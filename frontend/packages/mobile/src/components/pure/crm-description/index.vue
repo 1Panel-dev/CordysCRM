@@ -6,8 +6,8 @@
         <template v-else>
           <div class="crm-description-label">{{ item.label }}</div>
           <div class="crm-description-value">
-            <CrmTag v-if="item.isTag" :tag="item.value || ''" />
-            <div v-else>{{ item.value }}</div>
+            <CrmTag v-if="item.isTag && item.value" :tag="item.value || ''" />
+            <div v-else>{{ item.value || '-' }}</div>
           </div>
         </template>
       </slot>
