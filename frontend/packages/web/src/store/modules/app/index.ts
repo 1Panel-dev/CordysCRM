@@ -7,7 +7,12 @@ import { useI18n } from '@lib/shared/hooks/useI18n';
 import { getSSE } from '@lib/shared/method/index';
 import { setLocalStorage } from '@lib/shared/method/local-storage';
 
-import { closeMessageSubscribe, getHomeMessageList, getModuleNavConfigList } from '@/api/modules';
+import {
+  closeMessageSubscribe,
+  getHomeMessageList,
+  getModuleNavConfigList,
+  getUnReadAnnouncement,
+} from '@/api/modules';
 import { getKey } from '@/api/modules/system/login';
 import useUserStore from '@/store/modules/user';
 import { getThemeOverrides } from '@/utils/themeOverrides';
@@ -243,7 +248,12 @@ const useAppStore = defineStore('app', {
      */
     async initMessage() {
       try {
-        this.messageInfo.notificationDTOList = await getHomeMessageList();
+        const [notifications, announcements] = await Promise.all([getHomeMessageList(), getUnReadAnnouncement()]);
+        this.messageInfo.notificationDTOList = notifications;
+        this.messageInfo.announcementDTOList = announcements;
+
+        const userStore = useUserStore();
+        userStore.showSystemNotify();
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);

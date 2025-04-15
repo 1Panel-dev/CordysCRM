@@ -67,10 +67,44 @@ function createDialog(dialog: DialogApi, opt: DialogOptions) {
 
   return createApi(dialog, mergedOpt);
 }
-
 // 创建 Notification ，合并额外配置
-function createNotification(notification: NotificationApi, opt: NotificationOptions) {
-  return createApi(notification, opt);
+function createNotification(
+  notification: NotificationApi,
+  defaultOptions: NotificationOptions & { maxCount?: number } = {} // 限制通知最大弹出数量
+): NotificationApi {
+  const queue: Array<ReturnType<NotificationApi['create']>> = [];
+  const defaultMax = defaultOptions.maxCount ?? 3;
+
+  // 创建代理对象拦截通知方法调用
+  return new Proxy(notification, {
+    get(target, key: keyof NotificationApi) {
+      const originalFn = target[key];
+
+      if (typeof originalFn === 'function' && typeMap.includes(key as string)) {
+        return (options: NotificationOptions & { maxCount?: number } = {}) => {
+          const maxCount = options.maxCount ?? defaultMax;
+
+          // 超出最大数量，移除最早的通知
+          if (queue.length >= maxCount) {
+            queue.shift()?.destroy();
+          }
+
+          // 移除 maxCount，防止多余参数传给组件
+          const { maxCount: _, ...rest } = options;
+
+          // 创建通知，合并默认参数和当前参数
+          const instance = originalFn({ ...defaultOptions, ...rest });
+          if (instance) {
+            queue.push(instance);
+          }
+          return instance;
+        };
+      }
+
+      // 非通知方法直接返回
+      return originalFn;
+    },
+  });
 }
 
 /**

@@ -203,6 +203,7 @@ export const {
   batchSaveMessageTask,
   getHomeMessageList,
   closeMessageSubscribe,
+  getUnReadAnnouncement,
 } = messageApi;
 
 export const {

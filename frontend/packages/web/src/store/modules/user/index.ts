@@ -16,6 +16,7 @@ import router from '@/router';
 import { getFirstRouteNameByPermission, hasAnyPermission } from '@/utils/permission';
 
 import useAppStore from '../app';
+import type { NotificationOptions } from 'naive-ui';
 
 const { notification, message } = useDiscreteApi();
 
@@ -76,6 +77,7 @@ const useUserStore = defineStore('user', {
         this.clientIdRandomId = getGenerateId();
         appStore.setOrgId(lastOrganizationId);
         if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
+          appStore.initMessage();
           appStore.connectSystemMessageSSE(this.showSystemNotify);
         }
       } catch (error) {
@@ -165,6 +167,7 @@ const useUserStore = defineStore('user', {
           return;
         }
         if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
+          appStore.initMessage();
           appStore.connectSystemMessageSSE(this.showSystemNotify);
         }
       } else if (!isLoginPage()) {
@@ -174,16 +177,20 @@ const useUserStore = defineStore('user', {
     },
     // 展示系统公告
     showSystemNotify() {
-      const notify = ref();
-      notify.value = notification.create({
-        title: '',
-        content: () => {
-          return h(NotifyContent, {
-            onClose: () => notify.value.destroy(),
-          });
-        },
-        duration: undefined,
-      });
+      const appStore = useAppStore();
+      if (appStore.messageInfo.announcementDTOList?.length) {
+        const notify = ref();
+        notify.value = notification.create({
+          title: '',
+          content: () => {
+            return h(NotifyContent, {
+              onClose: () => notify.value.destroy(),
+            });
+          },
+          duration: undefined,
+          maxCount: 1,
+        } as NotificationOptions);
+      }
     },
   },
 });

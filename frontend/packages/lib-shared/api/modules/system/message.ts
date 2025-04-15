@@ -10,6 +10,7 @@ import {
   GetMessageTaskUrl,
   GetNotificationCountUrl,
   GetNotificationListUrl,
+  GetUnReadAnnouncement,
   SaveMessageTaskUrl,
   SetAllNotificationReadUrl,
   SetNotificationReadUrl,
@@ -99,6 +100,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: CloseMessageUrl, params });
   }
 
+  // 获取未读公告
+  function getUnReadAnnouncement() {
+    return CDR.get<MessageCenterItem[]>({ url: GetUnReadAnnouncement });
+  }
+
   return {
     addAnnouncement,
     updateAnnouncement,
@@ -114,5 +120,6 @@ export default function useProductApi(CDR: CordysAxios) {
     batchSaveMessageTask,
     getHomeMessageList,
     closeMessageSubscribe,
+    getUnReadAnnouncement,
   };
 }

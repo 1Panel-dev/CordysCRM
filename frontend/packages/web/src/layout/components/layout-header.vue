@@ -91,7 +91,7 @@
   }
 
   const showBadge = computed(() => {
-    return appStore.messageInfo.read;
+    return !appStore.messageInfo.read;
   });
 
   const showMessageDrawer = ref(false);

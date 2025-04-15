@@ -18,8 +18,8 @@
         {{ parsedContent?.renameUrl ?? parsedContent?.url }}
       </n-button>
     </div>
-    <div v-if="total > 1" :class="`flex items-center ${total > 1 ? 'justify-between' : 'justify-end'}`">
-      <div class="flex items-center gap-[8px]">
+    <div :class="`flex items-center ${total > 1 ? 'justify-between' : 'justify-end'}`">
+      <div v-if="total > 1" class="flex items-center gap-[8px]">
         <CrmIcon
           :class="`${
             current === 1 ? 'cursor-not-allowed text-[var(--text-n6)]' : 'cursor-pointer text-[var(--text-n4)]'
@@ -38,7 +38,7 @@
         />
       </div>
       <n-button
-        v-if="hasAnyPermission(['SYSTEM_NOTICE:UPDATE'])"
+        v-if="hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) && notifyItem?.status === SystemMessageStatusEnum.UNREAD"
         class="!bg-[var(--primary-8)]"
         type="primary"
         @click="setMessageRead"

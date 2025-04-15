@@ -21,7 +21,7 @@
                       : t('system.message.announcement')
                   }}
                 </CrmTag>
-                <n-badge :dot="item.status === SystemMessageStatusEnum.UNREAD">
+                <n-badge dot :show="item.status === SystemMessageStatusEnum.UNREAD">
                   <n-tooltip :delay="300">
                     <template #trigger>
                       <div
