@@ -71,7 +71,7 @@ public class RestControllerExceptionHandler {
      * @return ResponseEntity 返回响应实体，包含错误信息
      */
     @ExceptionHandler(GenericException.class)
-    public ResponseEntity<ResultHolder> handlerMSException(GenericException e) {
+    public ResponseEntity<ResultHolder> handlerGenericException(GenericException e) {
         IResultCode errorCode = e.getErrorCode();
         if (errorCode == null) {
             // 未设置 errorCode，返回内部服务器错误

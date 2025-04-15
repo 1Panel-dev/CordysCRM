@@ -79,7 +79,11 @@ public class SseService {
                 Iterator<Map.Entry<String, SseEmitter>> iterator = innerMap.entrySet().iterator();
                 if (iterator.hasNext()) {
                     Map.Entry<String, SseEmitter> oldestEntry = iterator.next();
-                    oldestEntry.getValue().complete();
+                    try {
+                        oldestEntry.getValue().complete();
+                    } catch (Exception e) {
+                        oldestEntry.getValue().completeWithError(e);
+                    }
                     iterator.remove();
                 }
             }
@@ -157,7 +161,13 @@ public class SseService {
 
         userEmitters.computeIfPresent(userId, (k, emitters) -> {
             Optional.ofNullable(emitters.remove(clientId))
-                    .ifPresent(SseEmitter::complete);
+                    .ifPresent(emitter -> {
+                        try {
+                            emitter.complete();
+                        } catch (Exception e) {
+                            emitter.completeWithError(e);
+                        }
+                    });
             return emitters.isEmpty() ? null : emitters;
         });
     }

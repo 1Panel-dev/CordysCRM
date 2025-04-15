@@ -422,11 +422,6 @@ public class OrganizationUserService {
      */
     public void enable(UserBatchEnableRequest request, String operatorId, String orgId) {
         extOrganizationUserMapper.enable(request, operatorId, System.currentTimeMillis());
-        if (!request.isEnable()) {
-            request.getIds().forEach(id -> {
-                SessionUtils.kickOutUser(id);
-            });
-        }
 
         // 记录日志
         OrganizationUser originUser = new OrganizationUser();
@@ -445,6 +440,11 @@ public class OrganizationUserService {
 
             logService.batchAdd(logs);
         });
+
+        // 踢出用户
+        if (!request.isEnable()) {
+            request.getIds().forEach(SessionUtils::kickOutUser);
+        }
     }
 
 
@@ -675,6 +675,7 @@ public class OrganizationUserService {
     private void buildUser(UserExcelData userData, String operatorId, List<User> userList, Map<String, String> departmentPathMap, String orgId, List<OrganizationUser> organizationUsers, List<UserImportDTO> supervisorList) {
         User user = new User();
         user.setId(IDGenerator.nextStr());
+        user.setLastOrganizationId(orgId);
         user.setName(userData.getName());
         user.setPhone(userData.getPhone());
         user.setEmail(userData.getEmail());
