@@ -56,11 +56,18 @@
       </div>
     </div>
   </div>
+  <van-popup v-model:show="showPopConfirm" destroy-on-close position="bottom">
+    <van-picker
+      v-model="formStage"
+      :columns="resultColumns"
+      @confirm="onConfirm"
+      @cancel="() => (showPopConfirm = false)"
+    />
+  </van-popup>
 </template>
 
 <script setup lang="ts">
-  import { useRouter } from 'vue-router';
-  import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
+  import { closeToast, PickerOption, showLoadingToast, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
@@ -71,10 +78,7 @@
   import { updateClueStatus, updateOptStage } from '@/api/modules';
   import { hasAnyPermission } from '@/utils/permission';
 
-  import { CommonRouteEnum } from '@/enums/routeEnum';
-
   const { t } = useI18n();
-  const router = useRouter();
 
   export interface Options {
     value: string;
@@ -151,6 +155,15 @@
     };
   }
 
+  const resultColumns: PickerOption[] = [
+    { text: t('common.success'), value: StageResultEnum.SUCCESS },
+    { text: t('common.fail'), value: StageResultEnum.FAIL },
+  ];
+
+  const formStage = ref<StageResultEnum[]>([StageResultEnum.SUCCESS]);
+
+  const showPopConfirm = ref(false);
+
   async function handleSave(stage: string) {
     try {
       showLoadingToast(t('common.updating'));
@@ -168,17 +181,16 @@
     }
   }
 
+  async function onConfirm() {
+    const [nextStage] = formStage.value;
+    await handleSave(nextStage);
+    showPopConfirm.value = false;
+  }
+
   // 更新状态
   async function handleUpdateStage(isError = false) {
     if (props.showConfirmStatus && currentStageIndex.value === workflowList.value.length - 2) {
-      router.push({
-        name: CommonRouteEnum.WORKFLOW_STAGE,
-        query: {
-          id: props.sourceId,
-          type: props.formStageKey,
-          lastName: workflowList.value[workflowList.value.length - 1].label,
-        },
-      });
+      showPopConfirm.value = true;
       return;
     }
     const nextStage: string = isError ? StageResultEnum.FAIL : workflowList.value[currentStageIndex.value + 1]?.value;

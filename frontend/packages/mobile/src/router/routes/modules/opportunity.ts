@@ -28,6 +28,7 @@ const opportunity: AppRouteRecordRaw = {
       component: () => import('@/views/opportunity/detail.vue'),
       meta: {
         permissions: [],
+        depth: 2,
       },
     },
   ],
