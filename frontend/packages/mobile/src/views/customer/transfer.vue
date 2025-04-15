@@ -48,7 +48,7 @@
 
   import CrmSelectList from '@/components/business/crm-select-list/index.vue';
 
-  import { getUserOptions, updateClue, updateCustomer, updateOpportunity } from '@/api/modules';
+  import { batchTransferClue, batchTransferCustomer, getUserOptions, transferOpt } from '@/api/modules';
 
   const route = useRoute();
   const router = useRouter();
@@ -60,9 +60,9 @@
   const loading = ref(false);
 
   const loadListApi: Record<string, (data: any) => Promise<any>> = {
-    [FormDesignKeyEnum.CUSTOMER]: updateCustomer,
-    [FormDesignKeyEnum.CLUE]: updateClue,
-    [FormDesignKeyEnum.BUSINESS]: updateOpportunity,
+    [FormDesignKeyEnum.CUSTOMER]: batchTransferCustomer,
+    [FormDesignKeyEnum.CLUE]: batchTransferClue,
+    [FormDesignKeyEnum.BUSINESS]: transferOpt,
   };
 
   async function onConfirm() {
@@ -70,7 +70,7 @@
       loading.value = true;
       showLoadingToast(t('common.transferring'));
       await loadListApi[route.query.apiKey as string]({
-        id: route.query.id as string,
+        ids: [route.query.id as string],
         owner: value.value as string,
       });
       showSuccessToast(t('customer.transferSuccess'));

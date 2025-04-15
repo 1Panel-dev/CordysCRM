@@ -136,7 +136,8 @@
                   name: CommonRouteEnum.FORM_CREATE,
                   query: {
                     id: item.id,
-                    type: FormDesignKeyEnum.BUSINESS,
+                    formKey: FormDesignKeyEnum.BUSINESS,
+                    needInitDetail: 'Y',
                   },
                 });
               },
