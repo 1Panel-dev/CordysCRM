@@ -91,5 +91,14 @@
         </foreach>
         order by sys_notification.create_time DESC limit 5
     </select>
+    <select id="selectLastAnnouncementList" resultType="io.cordys.crm.system.dto.response.NotificationDTO">
+        SELECT * FROM sys_notification
+        WHERE sys_notification.receiver = #{userId} and sys_notification.organization_id = #{organizationId}
+        and sys_notification.status='UNREAD'
+        and sys_notification.resource_type = 'ANNOUNCEMENT_NOTICE'
+        order by sys_notification.create_time DESC
+
+
+    </select>
 
 </mapper>

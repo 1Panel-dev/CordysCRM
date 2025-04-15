@@ -1,18 +1,15 @@
 package io.cordys.crm.system.notice.sse;
 
-import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.constants.NotificationConstants;
-import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.mapper.ExtNotificationMapper;
 import io.cordys.crm.system.notice.dto.SseMessageDTO;
-import io.cordys.mybatis.BaseMapper;
-import io.cordys.mybatis.lambda.LambdaQueryWrapper;
+import io.cordys.crm.system.service.NotificationService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +31,7 @@ public class SseService {
     private ExtNotificationMapper extNotificationMapper;
 
     @Resource
-    private BaseMapper<Module> moduleMapper;
+    private NotificationService notificationService;
 
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
@@ -172,74 +169,51 @@ public class SseService {
         });
     }
 
+
     /**
-     * 每隔 5 秒向所有用户推送一次数据，数据内容根据用户决定
+     * 广播消息给指定的用户
+     * @param userId 用户 ID
+     * @param sendType 发送类型
      */
-    public void broadcastPeriodically() {
-        if (userEmitters.isEmpty()) return;
-
-        //返回最新的5条信息，加是否有未读信息, 公告
-        userEmitters.forEach((userId, emitters) -> {
-            //获取系统通知
-            broadcastPeriodically(userId);
-        });
-    }
-
-    public void broadcastPeriodically(String userId) {
+    public void broadcastPeriodically(String userId, String sendType) {
         if (userEmitters.isEmpty()) return;
 
         SseMessageDTO sseMessageDTO = new SseMessageDTO();
-
-        //获取已开启的模块
-        List<String> enabledModules = moduleMapper.selectListByLambda(
-                        new LambdaQueryWrapper<Module>()
-                                .eq(Module::getOrganizationId, OrganizationContext.getOrganizationId())
-                                .eq(Module::getEnable, true)
-                ).stream()
-                .map(Module::getModuleKey).distinct()
-                .toList();
-
-        List<String> modules = new ArrayList<>();
-        for (String enabledModule : enabledModules) {
-            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.BUSINESS.getKey())) {
-                modules.add(NotificationConstants.Module.OPPORTUNITY);
-            }
-            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.CUSTOMER.getKey())) {
-                modules.add(NotificationConstants.Module.CUSTOMER);
-            }
-            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.CLUE.getKey())) {
-                modules.add(NotificationConstants.Module.CLUE);
-            }
-
-        }
-        //获取公告
-        Set<String> sysValues = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
-
-        if (CollectionUtils.isNotEmpty(sysValues)) {
-            int size = sysValues.size();
-            sseMessageDTO.setNotificationDTOList(buildDTOList(sysValues, MSG_PREFIX));
-            if (size != 5) {
-                //如果不够5条，从数据库提取最新未读加上
-                // 获取用户未读的系统通知
+        //获取系统通知
+        if (StringUtils.equalsIgnoreCase(sendType, NotificationConstants.Type.SYSTEM_NOTICE.toString())) {
+            //获取已开启的模块
+            List<String> modules = notificationService.getNoticeModules();
+            Set<String> sysValues = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
+            if (CollectionUtils.isNotEmpty(sysValues)) {
+                int size = sysValues.size();
+                sseMessageDTO.setNotificationDTOList(buildDTOList(sysValues, MSG_PREFIX));
+                if (size != 5) {
+                    //如果不够5条，从数据库提取最新未读加上
+                    // 获取用户未读的系统通知
+                    List<NotificationDTO> notifications = extNotificationMapper
+                            .selectLastList(userId, OrganizationContext.getOrganizationId(), modules);
+                    notifications.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).forEach(notification ->
+                            notification.setContentText(new String(notification.getContent())));
+                    List<NotificationDTO> notificationDTOS = notifications.subList(0, Math.min(5 - size, notifications.size()));
+                    sseMessageDTO.setNotificationDTOList(notificationDTOS);
+                }
+            } else {
                 List<NotificationDTO> notifications = extNotificationMapper
                         .selectLastList(userId, OrganizationContext.getOrganizationId(), modules);
                 notifications.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).forEach(notification ->
                         notification.setContentText(new String(notification.getContent())));
-                List<NotificationDTO> notificationDTOS = notifications.subList(0, Math.min(5 - size, notifications.size()));
-                sseMessageDTO.setNotificationDTOList(notificationDTOS);
+                sseMessageDTO.setNotificationDTOList(notifications);
             }
-        } else {
-            List<NotificationDTO> notifications = extNotificationMapper
-                    .selectLastList(userId, OrganizationContext.getOrganizationId(), modules);
-            notifications.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).forEach(notification ->
-                    notification.setContentText(new String(notification.getContent())));
-            sseMessageDTO.setNotificationDTOList(notifications);
+
         }
 
+
         // 获取公告（如果存在）
-        Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX + userId, 0, -1);
-        if (CollectionUtils.isNotEmpty(values)) {
-            sseMessageDTO.setAnnouncementDTOList(buildDTOList(values, ANNOUNCE_PREFIX));
+        if (StringUtils.equalsIgnoreCase(sendType, NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString())) {
+            Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX + userId, 0, -1);
+            if (CollectionUtils.isNotEmpty(values)) {
+                sseMessageDTO.setAnnouncementDTOList(buildDTOList(values, ANNOUNCE_PREFIX));
+            }
         }
 
         // 获取用户读取状态
@@ -253,6 +227,8 @@ public class SseService {
         LogUtils.info("Broadcast to user {}: {}", userId, message);
 
     }
+
+
 
     private List<NotificationDTO> buildDTOList(Set<String> sysValues, String prefix) {
         List<NotificationDTO> notificationDTOList = new ArrayList<>();

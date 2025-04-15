@@ -161,6 +161,17 @@ public class NotificationService {
 
     public List<NotificationDTO> listLastNotification(String userId, String organizationId) {
         //获取已开启的模块
+        List<String> modules = getNoticeModules();
+        List<NotificationDTO> notifications = extNotificationMapper.selectLastList(userId, organizationId,modules);
+        notifications.forEach(notification -> notification.setContentText(new String(notification.getContent())));
+        return notifications;
+    }
+    /**
+     * 获取已开启的模块
+     *
+     * @return 已开启的模块列表
+     */
+    public List<String> getNoticeModules() {
         List<String> enabledModules = moduleMapper.selectListByLambda(
                         new LambdaQueryWrapper<Module>()
                                 .eq(Module::getOrganizationId, OrganizationContext.getOrganizationId())
@@ -169,21 +180,24 @@ public class NotificationService {
                 .map(Module::getModuleKey).distinct()
                 .toList();
 
-        List<String>modules = new ArrayList<>();
+        List<String> modules = new ArrayList<>();
         for (String enabledModule : enabledModules) {
             if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.BUSINESS.getKey())) {
                 modules.add(NotificationConstants.Module.OPPORTUNITY);
             }
-            if (StringUtils.equalsIgnoreCase(enabledModule,ModuleKey.CUSTOMER.getKey())) {
+            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.CUSTOMER.getKey())) {
                 modules.add(NotificationConstants.Module.CUSTOMER);
             }
-            if (StringUtils.equalsIgnoreCase(enabledModule,ModuleKey.CLUE.getKey())) {
+            if (StringUtils.equalsIgnoreCase(enabledModule, ModuleKey.CLUE.getKey())) {
                 modules.add(NotificationConstants.Module.CLUE);
             }
 
         }
+        return modules;
+    }
 
-        List<NotificationDTO> notifications = extNotificationMapper.selectLastList(userId, organizationId,modules);
+    public List<NotificationDTO> listLastAnnouncement(String userId, String organizationId) {
+        List<NotificationDTO> notifications = extNotificationMapper.selectLastAnnouncementList(userId, organizationId);
         notifications.forEach(notification -> notification.setContentText(new String(notification.getContent())));
         return notifications;
     }

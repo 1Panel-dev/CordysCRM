@@ -90,7 +90,7 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + receiver.getUserId(), "False");
 
             // 发送消息
-            sseService.broadcastPeriodically(receiver.getUserId());
+            sseService.broadcastPeriodically(receiver.getUserId(), NotificationConstants.Type.SYSTEM_NOTICE.toString());
         });
 
     }

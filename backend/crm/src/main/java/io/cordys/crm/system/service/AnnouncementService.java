@@ -264,7 +264,7 @@ public class AnnouncementService {
                 //更新用户的已读全部消息状态 0 为未读，1为已读
                 stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + subUserId, "False");
                 // 发送消息
-                sseService.broadcastPeriodically(subUserId);
+                sseService.broadcastPeriodically(subUserId, NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString());
             }
             notificationBaseMapper.batchInsert(notifications);
         });

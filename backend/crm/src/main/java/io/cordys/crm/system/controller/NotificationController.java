@@ -45,6 +45,13 @@ public class NotificationController {
         return notificationService.listLastNotification(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+    @GetMapping(value = "/last/announcement/list")
+    @Operation(summary = "消息中心-获取用户未读的公告列表")
+    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
+    public List<NotificationDTO> listLastAnnouncement() {
+        return notificationService.listLastAnnouncement(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
     @GetMapping(value = "/read/{id}")
     @Operation(summary = "消息中心-将消息设置为已读")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
