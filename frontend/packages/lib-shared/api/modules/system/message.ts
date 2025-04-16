@@ -97,7 +97,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 关闭订阅消息SSE事件流
   function closeMessageSubscribe(params: { userId: string; clientId: string }) {
-    return CDR.get({ url: CloseMessageUrl, params });
+    return CDR.get({ url: CloseMessageUrl, params }, { ignoreCancelToken: true });
   }
 
   // 获取未读公告

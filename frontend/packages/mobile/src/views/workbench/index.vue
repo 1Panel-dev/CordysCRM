@@ -64,7 +64,6 @@
   import CrmMessageItem from '@/components/business/crm-message-item/index.vue';
 
   import useAppStore from '@/store/modules/app';
-  import { hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum, MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
 
@@ -139,10 +138,8 @@
   );
 
   onBeforeMount(() => {
-    if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
-      appStore.initMessage();
-      appStore.connectSystemMessageSSE();
-    }
+    appStore.initMessage();
+    appStore.connectSystemMessageSSE();
   });
 </script>
 

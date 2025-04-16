@@ -59,6 +59,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRoute } from 'vue-router';
   import { NBadge, NButton, NLayoutHeader, NPopselect, NTooltip, useMessage } from 'naive-ui';
   import { LanguageOutline } from '@vicons/ionicons5';
 
@@ -73,7 +74,12 @@
   import MessageDrawer from '@/views/system/message/components/messageDrawer.vue';
 
   import useAppStore from '@/store/modules/app';
+  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { WorkbenchRouteEnum } from '@/enums/routeEnum';
+
+  const route = useRoute();
 
   const props = defineProps<{
     logo?: string;
@@ -85,6 +91,7 @@
   const { changeLocale, currentLocale } = useLocale(loading);
 
   const appStore = useAppStore();
+  const userStore = useUserStore();
 
   function changeLanguage(locale: LocaleType) {
     changeLocale(locale);
@@ -100,6 +107,13 @@
   }
 
   const showDuplicateCheckDrawer = ref(false);
+
+  onBeforeMount(() => {
+    if (route.name !== WorkbenchRouteEnum.WORKBENCH_INDEX) {
+      appStore.initMessage();
+    }
+    appStore.connectSystemMessageSSE(userStore.showSystemNotify);
+  });
 </script>
 
 <style lang="less" scoped></style>
