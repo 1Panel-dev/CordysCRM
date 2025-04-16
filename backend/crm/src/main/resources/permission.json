@@ -96,7 +96,13 @@
             "id": "SYSTEM_SETTING:READ"
           },
           {
+            "id": "SYSTEM_SETTING:ADD"
+          },
+          {
             "id": "SYSTEM_SETTING:UPDATE"
+          },
+          {
+            "id": "SYSTEM_SETTING:DELETE"
           }
         ]
       },

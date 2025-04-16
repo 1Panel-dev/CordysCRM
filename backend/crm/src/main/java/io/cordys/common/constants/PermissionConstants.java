@@ -41,6 +41,8 @@ public class PermissionConstants {
     /*------ start: SYSTEM_SETTING ------*/
     public static final String SYSTEM_SETTING_READ = "SYSTEM_SETTING:READ";
     public static final String SYSTEM_SETTING_UPDATE = "SYSTEM_SETTING:UPDATE";
+    public static final String SYSTEM_SETTING_ADD = "SYSTEM_SETTING:ADD";
+    public static final String SYSTEM_SETTING_DELETE = "SYSTEM_SETTING:DELETE";
     /*------ end: SYSTEM_SETTING ------*/
 
     /**
