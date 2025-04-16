@@ -44,9 +44,9 @@ public class ProductLogService extends BaseModuleLogService {
             differ.setOldValueName(Translator.get("product.unShelves"));
         }
         if (StringUtils.equalsIgnoreCase(differ.getNewValue().toString(), "1")){
-            differ.setOldValueName(Translator.get("product.shelves"));
+            differ.setNewValueName(Translator.get("product.shelves"));
         }else{
-            differ.setOldValueName(Translator.get("product.unShelves"));
+            differ.setNewValueName(Translator.get("product.unShelves"));
         }
     }
 }
