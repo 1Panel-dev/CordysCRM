@@ -87,7 +87,7 @@ const useAppStore = defineStore('app', {
     currentTopMenu: {} as RouteRecordRaw,
     topMenus: [],
     messageInfo: {
-      read: false,
+      read: true,
       notificationDTOList: [],
       announcementDTOList: [],
     },

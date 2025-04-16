@@ -30,7 +30,7 @@
           </div>
         </div>
         <div class="message-footer flex items-center px-[24px]">
-          <n-button text @click="goMessageSetting">
+          <n-button v-permission="['SYSTEM_NOTICE:READ']" text @click="goMessageSetting">
             <CrmIcon class="mr-[8px]" type="iconicon_set_up" :size="16" />
             {{ t('menu.settings.messageSetting') }}
           </n-button>

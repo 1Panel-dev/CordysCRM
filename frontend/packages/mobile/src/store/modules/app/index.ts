@@ -17,7 +17,7 @@ const useAppStore = defineStore('app', {
     orgId: '',
     moduleConfigList: [],
     messageInfo: {
-      read: false,
+      read: true,
       notificationDTOList: [],
       announcementDTOList: [],
     },

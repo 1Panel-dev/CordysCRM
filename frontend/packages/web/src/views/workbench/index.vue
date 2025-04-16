@@ -117,6 +117,12 @@
   const messageList = computed(() => {
     return appStore.messageInfo.notificationDTOList;
   });
+
+  onBeforeMount(() => {
+    if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
+      appStore.initMessage();
+    }
+  });
 </script>
 
 <style lang="less" scoped>

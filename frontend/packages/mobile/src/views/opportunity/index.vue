@@ -1,8 +1,6 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden">
-    <div
-      class="flex items-center justify-center bg-[var(--text-n10)] p-[11px_16px] text-[18px] font-semibold text-[var(--text-n1)]"
-    >
+    <div class="opportunity-title p-[11px_16px]">
       {{ t('common.opportunity') }}
     </div>
     <div class="flex items-center gap-[12px] bg-[var(--text-n10)] p-[8px_16px]">
@@ -237,6 +235,13 @@
 </script>
 
 <style lang="less" scoped>
+  .opportunity-title {
+    font-size: 18px;
+    color: var(--text-n1);
+    background: var(--text-n10);
+    @apply flex items-center justify-center font-semibold;
+    .half-px-border-bottom();
+  }
   .filter-buttons {
     @apply flex;
 

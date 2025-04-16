@@ -13,7 +13,7 @@
         <n-menu
           v-model:value="menuValue"
           :root-indent="24"
-          :indent="28"
+          :indent="appStore.getMenuIconStatus ? 38 : 8"
           :collapsed-width="appStore.collapsedWidth"
           :icon-size="18"
           :collapsed-icon-size="28"
@@ -26,8 +26,8 @@
           <template #trigger>
             <div class="flex w-full items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)]">
               <CrmAvatar class="flex-shrink-0" />
-              <div v-if="!collapsed">
-                <div>{{ userStore.userInfo.name }}</div>
+              <div v-if="!collapsed" class="one-line-text">
+                <div class="one-line-text">{{ userStore.userInfo.name }}</div>
                 <n-tag
                   :bordered="false"
                   size="small"
@@ -45,7 +45,12 @@
           </template>
           <template #header>
             <n-text strong depth="1">
-              <div class="personal-name">{{ userStore.userInfo.name }}</div>
+              <n-tooltip trigger="hover" :delay="300">
+                <template #trigger>
+                  <div class="personal-name one-line-text max-w-[300px]">{{ userStore.userInfo.name }}</div>
+                </template>
+                {{ userStore.userInfo.name }}
+              </n-tooltip>
             </n-text>
           </template>
           <div class="personal-menu flex h-full flex-col">
@@ -74,7 +79,7 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { NDivider, NLayoutSider, NMenu, NPopover, NScrollbar, NTag, NText } from 'naive-ui';
+  import { NDivider, NLayoutSider, NMenu, NPopover, NScrollbar, NTag, NText, NTooltip } from 'naive-ui';
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
