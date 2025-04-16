@@ -79,4 +79,10 @@ export default {
   'common.operationSuccess': 'Operation success',
   'common.followFailed': 'Follow failed',
   'common.result': 'Result',
+  'common.notStarted': 'Not started',
+  'common.inProgress': 'In progress',
+  'common.completed': 'Completed',
+  'common.canceled': 'Canceled',
+  'common.detail': 'Detail',
+  'common.communicationContent': 'Communication content',
 };

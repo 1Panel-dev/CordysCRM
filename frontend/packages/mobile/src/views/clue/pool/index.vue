@@ -9,7 +9,7 @@
         @search="search"
       />
     </div>
-    <div class="filter-buttons">
+    <div v-if="filterButtons.length" class="filter-buttons">
       <van-button
         v-for="item of filterButtons"
         :key="item.id"
@@ -198,9 +198,14 @@
   .filter-buttons {
     @apply flex;
 
-    gap: 8px;
+    overflow: auto;
     padding: 8px 4px;
+    white-space: nowrap;
     background-color: var(--text-n10);
+    gap: 8px;
+    &::-webkit-scrollbar {
+      display: none;
+    }
     .half-px-border-bottom();
   }
   :deep(.van-action-sheet__cancel) {

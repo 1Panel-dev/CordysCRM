@@ -80,4 +80,10 @@ export default {
   'common.operationSuccess': '操作成功',
   'common.followFailed': '跟进失败',
   'common.result': '结果',
+  'common.notStarted': '未开始',
+  'common.inProgress': '进行中',
+  'common.completed': '已完成',
+  'common.canceled': '已取消',
+  'common.detail': '详情',
+  'common.communicationContent': '沟通内容',
 };

@@ -1,13 +1,21 @@
 <template>
-  <CrmPageWrapper :title="route.query.name?.toString() || ''">
-    <div class="h-full bg-[var(--text-n9)] p-[16px]">
-      <CrmDescription :description="description" />
+  <CrmPageWrapper :title="t('common.detail')">
+    <div class="h-full bg-[var(--text-n9)] py-[16px]">
+      <CrmDescription :description="descriptions" />
+      <div class="mt-[16px]">
+        <van-cell-group inset class="p-[16px]">
+          <div class="font-[600]">{{ t('common.communicationContent') }}</div>
+          <div class="mt-[16px] rounded-[var(--border-radius-large)] bg-[var(--text-n9)] p-[16px]">
+            {{ detail.content }}
+          </div>
+        </van-cell-group>
+      </div>
     </div>
     <template #footer>
-      <div class="flex items-center gap-[16px]">
+      <div class="flex items-center justify-center gap-[16px]">
         <div class="flex w-[100px] items-center">
           <CrmTextButton
-            v-if="route.query.formKey?.includes('plan')"
+            v-if="isPlan && detail.status !== CustomerFollowPlanStatusEnum.CANCELLED"
             color="var(--text-n1)"
             icon="iconicon_minus_circle1"
             :text="t('common.cancelPlan')"
@@ -27,6 +35,7 @@
           />
         </div>
         <van-button
+          v-if="!isPlan || (isPlan && detail.status !== CustomerFollowPlanStatusEnum.CANCELLED)"
           type="primary"
           class="flex-1 !rounded-[var(--border-radius-small)] !text-[16px]"
           plain
@@ -43,11 +52,15 @@
   import { useRoute, useRouter } from 'vue-router';
   import { showSuccessToast } from 'vant';
 
+  import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  import CrmDescription, { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
+  import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
+
+  import { followPlanApiMap, followRecordApiMap, PlanEnumType, RecordEnumType } from '@/config/follow';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
 
@@ -55,36 +68,28 @@
   const router = useRouter();
   const { t } = useI18n();
 
-  const description: CrmDescriptionItem[] = [
-    {
-      label: '基本信息',
-      isTitle: true,
-    },
-    {
-      label: t('customer.customerName'),
-      value: '张三',
-    },
-    {
-      label: t('customer.customerType'),
-      value: 'VIP客户',
-    },
-    {
-      label: t('customer.customerLevel'),
-      value: 'VIP客户',
-    },
-    {
-      label: t('customer.customerSource'),
-      value: '市场活动',
-    },
-    {
-      label: t('customer.customerStatus'),
-      value: '潜在客户',
-    },
-  ];
+  const isPlan = computed(() => route.query.formKey?.includes('plan'));
+  const formKey = computed(() => (route.query.formKey?.toString() as RecordEnumType | PlanEnumType) || '');
+  const sourceId = computed(() => route.query.id?.toString() || '');
+
+  const { descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
+    formKey: formKey.value,
+    sourceId: sourceId.value,
+    needInitDetail: route.query.needInitDetail === 'Y',
+  });
+
+  onBeforeMount(async () => {
+    await initFormConfig();
+    initFormDescription();
+  });
 
   async function handleDelete() {
     try {
-      // TODO: delete customer
+      if (isPlan.value) {
+        await followPlanApiMap.delete?.[formKey.value as PlanEnumType]?.(sourceId.value);
+      } else {
+        await followRecordApiMap.delete?.[formKey.value as RecordEnumType]?.(sourceId.value);
+      }
       showSuccessToast(t('common.deleteSuccess'));
       router.back();
     } catch (error) {
@@ -95,7 +100,7 @@
 
   async function handleCancel() {
     try {
-      // TODO: delete customer
+      await followPlanApiMap.cancel?.[formKey.value as PlanEnumType]?.(sourceId.value);
       showSuccessToast(t('common.cancelSuccess'));
       router.back();
     } catch (error) {
@@ -108,8 +113,8 @@
     router.push({
       name: CommonRouteEnum.FORM_CREATE,
       query: {
-        formKey: route.query.formKey,
-        id: route.query.id,
+        formKey: formKey.value,
+        id: sourceId.value,
         needInitDetail: 'Y',
       },
     });

@@ -2,7 +2,7 @@
   <!-- special-height 64是tab的高度和margin -->
   <CrmCard hide-footer :special-height="64">
     <div class="mb-[16px] flex items-center justify-between">
-      <n-button v-permission="['SYSTEM_SETTING:UPDATE']" type="primary" @click="handleAdd">
+      <n-button v-permission="['SYSTEM_SETTING:ADD']" type="primary" @click="handleAdd">
         {{ t('system.business.authenticationSettings.add') }}
       </n-button>
       <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
@@ -177,7 +177,7 @@
     {
       label: t('common.delete'),
       key: 'delete',
-      permission: ['SYSTEM_SETTING:UPDATE'],
+      permission: ['SYSTEM_SETTING:DELETE'],
     },
   ]);
 

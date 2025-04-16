@@ -7,18 +7,33 @@
             {{ tab.title }}
           </div>
         </template>
-        <div v-if="tab.name === 'info'" class="relative h-full bg-[var(--text-n9)] pt-[16px]">
+        <div v-if="tab.name === 'info'" class="relative h-full bg-[var(--text-n9)]">
+          <div class="bg-[var(--text-n9)] p-[16px]">
+            <CrmWorkflowCard
+              v-model:stage="currentStatus"
+              v-model:last-stage="lastOptStage"
+              :form-stage-key="FormDesignKeyEnum.CLUE"
+              :title="t('clue.clueProgress')"
+              show-error-btn
+              :base-steps="workflowList"
+              :source-id="sourceId"
+              :operation-permission="['CLUE_MANAGEMENT:UPDATE']"
+              @load-detail="() => initStage(true)"
+            />
+          </div>
           <CrmDescription :description="descriptions" />
         </div>
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_CLUE"
+          :readonly="readonly"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_PLAN_CLUE"
+          :readonly="readonly"
         />
         <CrmHeaderList v-else-if="tab.name === 'header'" :load-list-api="getClueHeaderList" :source-id="sourceId" />
       </van-tab>
@@ -29,7 +44,9 @@
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
 
+  import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
@@ -37,8 +54,10 @@
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
   import CrmHeaderList from '@/components/business/crm-header-list/index.vue';
+  import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
   import { getClueHeaderList } from '@/api/modules';
+  import { clueBaseSteps } from '@/config/clue';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   const route = useRoute();
@@ -66,7 +85,7 @@
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
 
-  const { descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
+  const { descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CLUE,
     sourceId: sourceId.value,
     needInitDetail: true,
@@ -74,6 +93,34 @@
   onBeforeMount(async () => {
     await initFormConfig();
     initFormDescription();
+  });
+
+  const currentStatus = ref<string>(ClueStatusEnum.NEW);
+  const lastOptStage = ref<string>(ClueStatusEnum.NEW);
+  const readonly = computed(() =>
+    ([StageResultEnum.FAIL, StageResultEnum.SUCCESS] as string[]).includes(currentStatus.value)
+  );
+
+  const workflowList = [
+    ...clueBaseSteps,
+    {
+      value: StageResultEnum.SUCCESS,
+      label: t('common.success'),
+    },
+  ];
+
+  async function initStage(isInit = false) {
+    if (isInit) {
+      initFormDescription();
+    }
+
+    const { stage, lastStage } = detail.value;
+    currentStatus.value = stage;
+    lastOptStage.value = lastStage;
+  }
+
+  watch([() => detail.value.stage, () => detail.value.lastStage], () => {
+    initStage(false);
   });
 </script>
 

@@ -13,7 +13,7 @@
         :list-params="{
           sourceId: props.sourceId,
         }"
-        :load-list-api="loadListApi[props.type]"
+        :load-list-api="followRecordApiMap.list[props.type]"
       >
         <template #item="{ item }">
           <listItem
@@ -34,27 +34,18 @@
   import { useRouter } from 'vue-router';
   import { showSuccessToast } from 'vant';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { FollowDetailItem } from '@lib/shared/models/customer';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import listItem from './components/listItem.vue';
 
-  import {
-    getClueFollowRecordList,
-    getCluePoolFollowRecordList,
-    getCustomerFollowRecordList,
-    getOptFollowRecordList,
-  } from '@/api/modules';
+  import { followRecordApiMap, RecordEnumType } from '@/config/follow';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
 
   const props = defineProps<{
-    type:
-      | FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER
-      | FormDesignKeyEnum.FOLLOW_RECORD_CLUE
-      | FormDesignKeyEnum.CLUE_POOL
-      | FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
+    type: RecordEnumType;
     readonly?: boolean;
     sourceId: string;
   }>();
@@ -64,16 +55,10 @@
   const router = useRouter();
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
-  const loadListApi = {
-    [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: getCustomerFollowRecordList,
-    [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: getClueFollowRecordList,
-    [FormDesignKeyEnum.CLUE_POOL]: getCluePoolFollowRecordList,
-    [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: getOptFollowRecordList,
-  };
 
-  async function handleDelete(item: any) {
+  async function handleDelete(item: FollowDetailItem) {
     try {
-      // TODO: delete customer
+      await followRecordApiMap.delete?.[props.type]?.(item.id);
       showSuccessToast(t('common.deleteSuccess'));
       crmListRef.value?.loadList(true);
     } catch (error) {
@@ -91,7 +76,7 @@
     });
   }
 
-  function handleEdit(item: any) {
+  function handleEdit(item: FollowDetailItem) {
     router.push({
       name: CommonRouteEnum.FORM_CREATE,
       query: {
@@ -101,13 +86,12 @@
       },
     });
   }
-  function goDetail(item: any) {
+  function goDetail(item: FollowDetailItem) {
     router.push({
       name: CommonRouteEnum.FOLLOW_DETAIL,
       query: {
         formKey: props.type,
         id: item.id,
-        name: item.name,
         needInitDetail: 'Y',
       },
     });

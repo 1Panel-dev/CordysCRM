@@ -13,11 +13,13 @@
         <div class="flex items-center gap-[8px]">
           <CrmTag
             v-if="isPlan"
-            :tag="item.status"
-            icon="iconicon_block_filled"
-            icon-color="var(--text-n4)"
+            :bg-color="getStatus(item.status)?.bgColor ?? getStatus(item.status)?.color"
+            :tag="t(getStatus(item.status)?.label)"
+            :text-color="getStatus(item.status)?.color"
+            :icon="getStatus(item.status)?.icon"
+            :icon-color="getStatus(item.status)?.iconColor ?? getStatus(item.status)?.color"
             plain
-          ></CrmTag>
+          />
           <div>{{ getShowTime(item) }} </div>
         </div>
         <div class="text-[14px] font-semibold text-[var(--text-n1)]">
@@ -32,13 +34,14 @@
             <div v-if="!props.readonly" class="flex items-center gap-[16px]">
               <CrmTextButton icon="iconicon_delete" color="var(--error-red)" icon-size="16px" @click="emit('delete')" />
               <CrmTextButton
-                v-if="isPlan"
+                v-if="isPlan && item.status !== CustomerFollowPlanStatusEnum.CANCELLED"
                 icon="iconicon_minus_circle1"
                 color="var(--primary-8)"
                 icon-size="16px"
                 @click="emit('cancel')"
               />
               <CrmTextButton
+                v-if="!isPlan || (isPlan && item.status !== CustomerFollowPlanStatusEnum.CANCELLED)"
                 icon="iconicon_handwritten_signature"
                 color="var(--primary-8)"
                 icon-size="16px"
@@ -58,10 +61,14 @@
 <script setup lang="ts">
   import dayjs from 'dayjs';
 
+  import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { FollowDetailItem } from '@lib/shared/models/customer';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
+
+  import { statusMap, StatusTagKey } from '@/config/follow';
 
   const props = defineProps<{
     item: any;
@@ -74,6 +81,8 @@
     (e: 'cancel'): void;
   }>();
 
+  const { t } = useI18n();
+
   const isPlan = computed(() => {
     return props.type === 'plan';
   });
@@ -81,6 +90,10 @@
   function getShowTime(item: FollowDetailItem) {
     const time = 'estimatedTime' in item ? item.estimatedTime : item.followTime;
     return time ? dayjs(time).format('YYYY-MM-DD') : '-';
+  }
+
+  function getStatus(status: StatusTagKey) {
+    return statusMap[status];
   }
 </script>
 
