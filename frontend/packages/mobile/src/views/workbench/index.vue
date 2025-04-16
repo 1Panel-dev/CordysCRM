@@ -15,7 +15,9 @@
         class="flex-1 !p-0"
         @click="goDuplicateCheck"
       />
-      <CrmIcon name="iconicon_notification" width="21px" height="21px" @click="goMineMessage" />
+      <van-badge :dot="showBadge">
+        <CrmIcon name="iconicon_notification" width="21px" height="21px" @click="goMineMessage" />
+      </van-badge>
     </div>
     <van-cell-group inset class="py-[16px]">
       <van-cell :border="false" class="!py-0">
@@ -41,9 +43,9 @@
           </div>
         </template>
       </van-cell>
-      <CrmList ref="crmListRef" :load-list-api="getHomeMessageList" no-page-nation>
+      <CrmList ref="crmListRef" v-model="messageList" no-page-nation>
         <template #item="{ item }">
-          <CrmMessageItem :item="item" @load-list="() => initMessageList()" />
+          <CrmMessageItem :item="item" @load-list="() => appStore.initMessage()" />
         </template>
       </CrmList>
     </van-cell-group>
@@ -55,14 +57,18 @@
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { MessageCenterItem } from '@lib/shared/models/system/message';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmMessageItem from '@/components/business/crm-message-item/index.vue';
 
-  import { getHomeMessageList } from '@/api/modules';
+  import useAppStore from '@/store/modules/app';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum, MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
+
+  const appStore = useAppStore();
 
   const { t } = useI18n();
   const router = useRouter();
@@ -119,9 +125,25 @@
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
 
-  function initMessageList() {
-    crmListRef.value?.loadList();
-  }
+  const showBadge = computed(() => {
+    return !appStore.messageInfo.read;
+  });
+
+  const messageList = ref<MessageCenterItem[]>([]);
+
+  watch(
+    () => appStore.messageInfo.notificationDTOList,
+    (val) => {
+      messageList.value = val ?? [];
+    }
+  );
+
+  onBeforeMount(() => {
+    if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
+      appStore.initMessage();
+      appStore.connectSystemMessageSSE();
+    }
+  });
 </script>
 
 <style lang="less" scoped>

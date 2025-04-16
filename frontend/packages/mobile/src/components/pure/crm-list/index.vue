@@ -32,7 +32,7 @@
     listParams?: Record<string, any>;
     itemGap?: number;
     noPageNation?: boolean;
-    loadListApi: (...args: any) => Promise<CommonList<Record<string, any>> | Record<string, any>>;
+    loadListApi?: (...args: any) => Promise<CommonList<Record<string, any>> | Record<string, any>>;
     transform?: (item: Record<string, any>, optionMap?: Record<string, any[]>) => Record<string, any>;
   }>();
 
@@ -49,6 +49,12 @@
 
   async function loadList(refresh = false) {
     try {
+      if (!props.loadListApi) {
+        list.value = props.transform ? list.value.map((e: any) => props.transform!(e)) : list.value;
+        finished.value = true;
+        return;
+      }
+
       loading.value = true;
       if (refresh) {
         currentPage.value = 1;

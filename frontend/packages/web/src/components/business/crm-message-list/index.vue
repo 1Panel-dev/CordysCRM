@@ -97,7 +97,10 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
   import { getNotificationList, setNotificationRead } from '@/api/modules';
+  import useAppStore from '@/store/modules/app';
   import { hasAnyPermission } from '@/utils/permission';
+
+  const appStore = useAppStore();
 
   const { t } = useI18n();
 
@@ -154,6 +157,7 @@
     try {
       await setNotificationRead(item.id);
       loadMessageList();
+      appStore.initMessage();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

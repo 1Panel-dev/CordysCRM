@@ -22,7 +22,7 @@
         </van-badge>
       </div>
       <div
-        v-if="props.item.status === SystemMessageStatusEnum.UNREAD"
+        v-if="props.item.status === SystemMessageStatusEnum.UNREAD && hasAnyPermission(['SYSTEM_NOTICE:UPDATE'])"
         class="text-[var(--primary-8)]"
         @click="setMessageRead"
       >
@@ -56,7 +56,10 @@
   import type { MessageCenterItem } from '@lib/shared/models/system/message';
 
   import { setNotificationRead } from '@/api/modules';
+  import useAppStore from '@/store/modules/app';
+  import { hasAnyPermission } from '@/utils/permission';
 
+  const appStore = useAppStore();
   const { t } = useI18n();
 
   const props = defineProps<{
@@ -83,6 +86,7 @@
     if (props.item.status === SystemMessageStatusEnum.READ) return;
     try {
       await setNotificationRead(props.item.id);
+      appStore.initMessage();
       emit('loadList');
     } catch (error) {
       // eslint-disable-next-line no-console

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 
+import { getGenerateId } from '@lib/shared/method';
 import { clearToken, setToken } from '@lib/shared/method/auth';
 import { removeRouteListener } from '@lib/shared/method/route-listener';
 import type { LoginParams } from '@lib/shared/models/system/login';
@@ -17,6 +18,7 @@ import useAppStore from '../app';
 export interface UserState {
   loginType: string[];
   userInfo: UserInfo;
+  clientIdRandomId: string;
 }
 
 const useUserStore = defineStore('user', {
@@ -47,6 +49,7 @@ const useUserStore = defineStore('user', {
       departmentId: '',
       departmentName: '',
     },
+    clientIdRandomId: '',
   }),
 
   getters: {
@@ -67,6 +70,7 @@ const useUserStore = defineStore('user', {
     //     const appStore = useAppStore();
     //     const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
     //     appStore.setOrgId(lastOrganizationId);
+    //     this.clientIdRandomId = getGenerateId();
     //   } catch (error) {
     //     clearToken();
     //     throw error;
@@ -114,6 +118,7 @@ const useUserStore = defineStore('user', {
         const appStore = useAppStore();
         const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
         appStore.setOrgId(lastOrganizationId);
+        this.clientIdRandomId = getGenerateId();
         return true;
       } catch (err) {
         // eslint-disable-next-line no-console

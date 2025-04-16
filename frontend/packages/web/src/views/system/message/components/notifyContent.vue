@@ -108,6 +108,7 @@
       if (status === SystemMessageStatusEnum.READ) return;
       try {
         await setNotificationRead(id);
+        appStore.initMessage();
         emit('close');
       } catch (error) {
         // eslint-disable-next-line no-console

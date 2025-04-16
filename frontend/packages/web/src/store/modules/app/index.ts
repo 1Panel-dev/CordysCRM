@@ -251,6 +251,7 @@ const useAppStore = defineStore('app', {
         const [notifications, announcements] = await Promise.all([getHomeMessageList(), getUnReadAnnouncement()]);
         this.messageInfo.notificationDTOList = notifications;
         this.messageInfo.announcementDTOList = announcements;
+        this.messageInfo.read = !(announcements?.length || notifications?.length);
 
         const userStore = useUserStore();
         userStore.showSystemNotify();

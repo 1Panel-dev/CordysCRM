@@ -1,5 +1,11 @@
 import { defineStore } from 'pinia';
 
+import { SubscribeMessageUrl } from '@lib/shared/api/requrls/system/message';
+import { getSSE } from '@lib/shared/method/index';
+
+import { closeMessageSubscribe, getHomeMessageList, getUnReadAnnouncement } from '@/api/modules';
+import useUserStore from '@/store/modules/user';
+
 import type { AppState } from './types';
 
 const useAppStore = defineStore('app', {
@@ -10,6 +16,12 @@ const useAppStore = defineStore('app', {
     showQuickJumper: true,
     orgId: '',
     moduleConfigList: [],
+    messageInfo: {
+      read: false,
+      notificationDTOList: [],
+      announcementDTOList: [],
+    },
+    eventSource: null,
   }),
   getters: {
     getOrgId(state: AppState) {
@@ -31,6 +43,71 @@ const useAppStore = defineStore('app', {
     //     console.log(error);
     //   }
     // },
+
+    /**
+     * 连接SSE消息订阅流
+     */
+    async connectSystemMessageSSE() {
+      const userStore = useUserStore();
+
+      await this.disconnectSystemMessageSSE();
+      this.eventSource = getSSE(SubscribeMessageUrl, {
+        clientId: userStore.clientIdRandomId,
+        userId: userStore.userInfo.id,
+      });
+      if (this.eventSource) {
+        this.eventSource.onmessage = (event: MessageEvent) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'SYSTEM_HEARTBEAT') {
+              return;
+            }
+
+            this.messageInfo = { ...data };
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('SSE Message parsing failure:', error);
+          }
+        };
+        // 错误直接关闭，手动刷新
+        this.eventSource.onerror = () => {
+          if (this.eventSource) {
+            this.eventSource.close();
+            this.eventSource = null;
+          }
+        };
+      }
+    },
+    /**
+     * 客户端主动断开连接
+     */
+    async disconnectSystemMessageSSE() {
+      const userStore = useUserStore();
+      if (this.eventSource) {
+        this.eventSource.close();
+        this.eventSource = null;
+      }
+      try {
+        await closeMessageSubscribe({ clientId: userStore.clientIdRandomId, userId: userStore.userInfo.id });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    },
+    /**
+     * 初始化首页消息
+     */
+    async initMessage() {
+      try {
+        const [notifications, announcements] = await Promise.all([getHomeMessageList(), getUnReadAnnouncement()]);
+        this.messageInfo.notificationDTOList = notifications;
+        this.messageInfo.announcementDTOList = announcements;
+        this.messageInfo.read = !(announcements?.length || notifications?.length);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    },
   },
   persist: {
     paths: [''],

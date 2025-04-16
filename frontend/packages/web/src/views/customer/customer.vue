@@ -233,7 +233,10 @@
         id: activeSourceId.value,
         owner: transferForm.value.owner,
       });
+
       Message.success(t('common.transferSuccess'));
+      transferForm.value.owner = null;
+      tableRefreshId.value += 1;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
