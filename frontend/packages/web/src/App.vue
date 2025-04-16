@@ -65,10 +65,6 @@
           });
           setLoading(false);
           await userStore.getAuthentication();
-
-          if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
-            appStore.connectSystemMessageSSE(userStore.showSystemNotify);
-          }
         }
         if (code && getQueryVariable('state')) {
           const currentUrl = window.location.href;

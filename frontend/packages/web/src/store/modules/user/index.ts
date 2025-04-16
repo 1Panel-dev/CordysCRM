@@ -13,7 +13,7 @@ import { isLogin, login, signout } from '@/api/modules/system/login';
 import useDiscreteApi from '@/hooks/useDiscreteApi';
 import useUser from '@/hooks/useUser';
 import router from '@/router';
-import { getFirstRouteNameByPermission, hasAnyPermission } from '@/utils/permission';
+import { getFirstRouteNameByPermission } from '@/utils/permission';
 
 import useAppStore from '../app';
 import type { NotificationOptions } from 'naive-ui';
@@ -76,10 +76,6 @@ const useUserStore = defineStore('user', {
         const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
         this.clientIdRandomId = getGenerateId();
         appStore.setOrgId(lastOrganizationId);
-        if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
-          appStore.initMessage();
-          appStore.connectSystemMessageSSE(this.showSystemNotify);
-        }
       } catch (error) {
         clearToken();
         throw error;
@@ -158,17 +154,11 @@ const useUserStore = defineStore('user', {
     async checkIsLogin() {
       const { isLoginPage } = useUser();
       const { t } = useI18n();
-      const appStore = useAppStore();
       const isLoginStatus = await this.isLogin();
       if (isLoginStatus) {
         if (isLoginPage()) {
           const currentRouteName = getFirstRouteNameByPermission(router.getRoutes());
           await router.push({ name: currentRouteName });
-          return;
-        }
-        if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
-          appStore.initMessage();
-          appStore.connectSystemMessageSSE(this.showSystemNotify);
         }
       } else if (!isLoginPage()) {
         message.warning(t('message.loginExpired'));

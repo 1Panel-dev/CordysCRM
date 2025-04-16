@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash-es';
 import { SubscribeMessageUrl } from '@lib/shared/api/requrls/system/message';
 import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { getSSE } from '@lib/shared/method/index';
+import { getSSE } from '@lib/shared/method';
 import { setLocalStorage } from '@lib/shared/method/local-storage';
 
 import {
@@ -15,6 +15,7 @@ import {
 } from '@/api/modules';
 import { getKey } from '@/api/modules/system/login';
 import useUserStore from '@/store/modules/user';
+import { hasAnyPermission } from '@/utils/permission';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
 import type { AppState, PageConfig, Style, Theme } from './types';
@@ -189,6 +190,9 @@ const useAppStore = defineStore('app', {
      * 连接SSE消息订阅流
      */
     async connectSystemMessageSSE(callback: () => void) {
+      if (!hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
+        return;
+      }
       const userStore = useUserStore();
 
       await this.disconnectSystemMessageSSE();
@@ -247,6 +251,9 @@ const useAppStore = defineStore('app', {
      * 初始化首页消息
      */
     async initMessage() {
+      if (!hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
+        return;
+      }
       try {
         const [notifications, announcements] = await Promise.all([getHomeMessageList(), getUnReadAnnouncement()]);
         this.messageInfo.notificationDTOList = notifications;
