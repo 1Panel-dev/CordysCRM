@@ -31,6 +31,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -223,30 +224,24 @@ public class ProductService {
         product.setOrganizationId(orgId);
         extProductMapper.updateProduct(request.getIds(),product);
         batchUpdateModuleField(request.getIds(),request.getModuleFields());
+        List<LogDTO> logDTOList = getLogDTOList(request, userId, products);
+        logService.batchAdd(logDTOList);
+    }
+
+    @NotNull
+    private static List<LogDTO> getLogDTOList(ProductBatchEditRequest request, String userId, List<Product> products) {
         List<LogDTO>logDTOList = new ArrayList<>();
         for (Product oldProduct : products) {
             LogDTO logDTO = new LogDTO(oldProduct.getOrganizationId(), oldProduct.getId(), userId, LogType.UPDATE, LogModule.PRODUCT_MANAGEMENT, oldProduct.getName());
-            String oldStatus = getProductStatusName(oldProduct.getStatus());
-            String newStatus = getProductStatusName(request.getStatus());
             Map<String, String> oldMap = new HashMap<>();
-            oldMap.put("status", oldStatus);
+            oldMap.put("status", oldProduct.getStatus());
             Map<String, String> newMap = new HashMap<>();
-            newMap.put("status", newStatus);
+            newMap.put("status", request.getStatus());
             logDTO.setOriginalValue(oldMap);
             logDTO.setModifiedValue(newMap);
             logDTOList.add(logDTO);
         }
-        logService.batchAdd(logDTOList);
-    }
-
-    private String getProductStatusName(String status) {
-        if (StringUtils.equalsIgnoreCase(status, "1")){
-            return Translator.get("product.shelves");
-        }
-        else{
-           return Translator.get("product.unShelves");
-        }
-
+        return logDTOList;
     }
 
     /**
