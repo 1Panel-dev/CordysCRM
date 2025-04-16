@@ -119,7 +119,9 @@
   });
 
   onBeforeMount(() => {
-    appStore.initMessage();
+    if (hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
+      appStore.initMessage();
+    }
   });
 </script>
 

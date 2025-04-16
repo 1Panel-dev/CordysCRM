@@ -119,7 +119,7 @@
     try {
       const params = {
         ids: checkedRowKeys.value,
-        status: status ? '1' : '2',
+        status: status ? '1' : '0',
         moduleFields: [],
         price: null,
       };
