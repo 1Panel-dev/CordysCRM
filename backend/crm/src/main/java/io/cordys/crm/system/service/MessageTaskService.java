@@ -1,11 +1,9 @@
 package io.cordys.crm.system.service;
 
 
-import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
-import io.cordys.aspectj.context.OperationLogContext;
-import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
@@ -29,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,7 +42,9 @@ public class MessageTaskService {
     @Resource
     private BaseMapper<MessageTask> messageTaskMapper;
 
-    @OperationLog(module = LogModule.SYSTEM_MESSAGE_MESSAGE, type = LogType.ADD, operator = "{#userId}")
+    @Resource
+    private LogService logService;
+
     public MessageTask saveMessageTask(MessageTaskRequest messageTaskRequest, String userId, String organizationId) {
         //检查设置的通知是否存在，如果存在则更新
         MessageTask messageTask = new MessageTask();
@@ -67,14 +68,12 @@ public class MessageTaskService {
             messageTask.setTemplate(template.getBytes(StandardCharsets.UTF_8));
             messageTaskMapper.insert(messageTask);
             // 添加日志上下文
-
             MessageTaskLogDTO newDTO = buildLogDTO(messageTask, messageTaskRequest.isEmailEnable(), messageTaskRequest.isSysEnable(), eventMap);
-            OperationLogContext.setContext(LogContextInfo.builder()
-                    .originalValue(null)
-                    .resourceId(messageTask.getId())
-                    .resourceName(eventMap.get(messageTask.getEvent()))
-                    .modifiedValue(newDTO)
-                    .build());
+            LogDTO logDTO = new LogDTO(organizationId, messageTask.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE, eventMap.get(messageTask.getEvent()));
+            logDTO.setOriginalValue(null);
+            logDTO.setModifiedValue(newDTO);
+            logService.add(logDTO);
+
         }
         return messageTask;
     }
@@ -85,7 +84,6 @@ public class MessageTaskService {
      * @param messageTaskRequest 入参
      * @param userId             当前用户ID
      */
-    @OperationLog(module = LogModule.SYSTEM_MESSAGE_MESSAGE, type = LogType.UPDATE, operator = "{{#userId}}")
     public MessageTask updateMessageTasks(MessageTaskRequest messageTaskRequest, String userId, MessageTask oldMessageTask, Map<String, String> eventMap) {
         MessageTask messageTask = new MessageTask();
         messageTask.setId(oldMessageTask.getId());
@@ -97,12 +95,10 @@ public class MessageTaskService {
         // 添加日志上下文
         MessageTaskLogDTO oldDTO = buildLogDTO(oldMessageTask, oldMessageTask.getEmailEnable(), oldMessageTask.getSysEnable(), eventMap);
         MessageTaskLogDTO newDTO = buildLogDTO(oldMessageTask, messageTaskRequest.isEmailEnable(), messageTaskRequest.isSysEnable(), eventMap);
-        OperationLogContext.setContext(LogContextInfo.builder()
-                .resourceId(messageTask.getId())
-                .resourceName(eventMap.get(oldMessageTask.getEvent()))
-                .originalValue(oldDTO)
-                .modifiedValue(newDTO)
-                .build());
+        LogDTO logDTO = new LogDTO(oldMessageTask.getOrganizationId(), messageTask.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE, eventMap.get(messageTask.getEvent()));
+        logDTO.setOriginalValue(oldDTO);
+        logDTO.setModifiedValue(newDTO);
+        logService.add(logDTO);
 
         return messageTask;
     }
@@ -111,8 +107,16 @@ public class MessageTaskService {
     private static MessageTaskLogDTO buildLogDTO(MessageTask oldMessageTask, Boolean emailEnable, Boolean sysEnable, Map<String, String> eventMap) {
         MessageTaskLogDTO newDTO = new MessageTaskLogDTO();
         newDTO.setEvent(eventMap.get(oldMessageTask.getEvent()));
-        newDTO.setEmailEnable(emailEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
-        newDTO.setSysEnable(sysEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        if (emailEnable != null) {
+            newDTO.setEmailEnable(emailEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        } else {
+            newDTO.setEmailEnable(oldMessageTask.getEmailEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        }
+        if (sysEnable != null) {
+            newDTO.setSysEnable(sysEnable ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        } else {
+            newDTO.setSysEnable(oldMessageTask.getSysEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
+        }
         return newDTO;
     }
 
@@ -163,7 +167,20 @@ public class MessageTaskService {
     }
 
 
-    public void batchSaveMessageTask(MessageTaskBatchRequest messageTaskBatchRequest, String organizationId) {
+    public void batchSaveMessageTask(MessageTaskBatchRequest messageTaskBatchRequest, String organizationId, String userId) {
+        List<MessageTask> oldMessageList = extMessageTaskMapper.getMessageTaskList(organizationId);
         extMessageTaskMapper.updateMessageTask(messageTaskBatchRequest, organizationId);
+        // 添加日志上下文
+        Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
+        List<LogDTO>logDTOList=new ArrayList<>();
+        for (MessageTask messageTask : oldMessageList) {
+            MessageTaskLogDTO oldDTO = buildLogDTO(messageTask, messageTask.getEmailEnable(), messageTask.getSysEnable(), eventMap);
+            MessageTaskLogDTO newDTO = buildLogDTO(messageTask, messageTaskBatchRequest.getEmailEnable(), messageTaskBatchRequest.getSysEnable(), eventMap);
+            LogDTO logDTO = new LogDTO(organizationId, messageTask.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE, eventMap.get(messageTask.getEvent()));
+            logDTO.setOriginalValue(oldDTO);
+            logDTO.setModifiedValue(newDTO);
+            logDTOList.add(logDTO);
+        }
+        logService.batchAdd(logDTOList);
     }
 }

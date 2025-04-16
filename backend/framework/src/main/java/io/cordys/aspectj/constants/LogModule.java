@@ -88,7 +88,7 @@ public class LogModule {
     /**
      * 产品
      */
-    public static final String PRODUCT = "PRODUCT";
+    public static final String PRODUCT_MANAGEMENT = "PRODUCT_MANAGEMENT";
 
     /**
      * 客户

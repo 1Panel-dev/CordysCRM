@@ -38,7 +38,7 @@ public class MessageTaskController {
     @Operation(summary = "项目管理-消息管理-消息设置-批量编辑")
     @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
     public void batchSaveMessage(@Validated({Created.class, Updated.class}) @RequestBody MessageTaskBatchRequest messageTaskBatchRequest) {
-        messageTaskService.batchSaveMessageTask(messageTaskBatchRequest, OrganizationContext.getOrganizationId());
+        messageTaskService.batchSaveMessageTask(messageTaskBatchRequest, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @GetMapping("get")

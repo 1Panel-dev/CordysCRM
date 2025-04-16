@@ -40,7 +40,12 @@ public class ProductLogService extends BaseModuleLogService {
     private void setProductFieldName(JsonDifferenceDTO differ) {
         if (StringUtils.equalsIgnoreCase(differ.getOldValue().toString(), "1")){
             differ.setOldValueName(Translator.get("product.shelves"));
-        }else if (StringUtils.equalsIgnoreCase(differ.getOldValue().toString(), "2")){
+        }else{
+            differ.setOldValueName(Translator.get("product.unShelves"));
+        }
+        if (StringUtils.equalsIgnoreCase(differ.getNewValue().toString(), "1")){
+            differ.setOldValueName(Translator.get("product.shelves"));
+        }else{
             differ.setOldValueName(Translator.get("product.unShelves"));
         }
     }

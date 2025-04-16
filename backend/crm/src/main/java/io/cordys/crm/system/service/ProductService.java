@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -101,7 +102,7 @@ public class ProductService {
         return baseService.setCreateAndUpdateUserName(productGetResponse);
     }
 
-    @OperationLog(module = LogModule.PRODUCT, type = LogType.ADD, operator = "{#userId}")
+    @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.ADD, operator = "{#userId}")
     public Product add(ProductEditRequest request, String userId, String orgId) {
         Product product = BeanUtils.copyBean(new Product(), request);
         product.setName(request.getName());
@@ -134,7 +135,7 @@ public class ProductService {
         return product;
     }
 
-    @OperationLog(module = LogModule.PRODUCT, type = LogType.UPDATE, operator = "{#userId}")
+    @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.UPDATE, operator = "{#userId}")
     public Product update(ProductEditRequest request, String userId, String orgId) {
         if (StringUtils.isBlank(request.getId())) {
             throw new GenericException(Translator.get("product.id.empty"));
@@ -199,7 +200,7 @@ public class ProductService {
         productFieldService.saveModuleFieldByResourceIds(productIds, moduleFields);
     }
 
-    @OperationLog(module = LogModule.PRODUCT, type = LogType.DELETE, resourceId = "{#id}")
+    @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
         Product product = productBaseMapper.selectByPrimaryKey(id);
         // 删除产品
@@ -222,14 +223,20 @@ public class ProductService {
         product.setOrganizationId(orgId);
         extProductMapper.updateProduct(request.getIds(),product);
         batchUpdateModuleField(request.getIds(),request.getModuleFields());
+        List<LogDTO>logDTOList = new ArrayList<>();
         for (Product oldProduct : products) {
-            LogDTO logDTO = new LogDTO(oldProduct.getOrganizationId(), oldProduct.getId(), userId, LogType.UPDATE, LogModule.PRODUCT, oldProduct.getName());
+            LogDTO logDTO = new LogDTO(oldProduct.getOrganizationId(), oldProduct.getId(), userId, LogType.UPDATE, LogModule.PRODUCT_MANAGEMENT, oldProduct.getName());
             String oldStatus = getProductStatusName(oldProduct.getStatus());
             String newStatus = getProductStatusName(request.getStatus());
-            logDTO.setOriginalValue(oldStatus);
-            logDTO.setModifiedValue(newStatus);
-            logService.add(logDTO);
+            Map<String, String> oldMap = new HashMap<>();
+            oldMap.put("status", oldStatus);
+            Map<String, String> newMap = new HashMap<>();
+            newMap.put("status", newStatus);
+            logDTO.setOriginalValue(oldMap);
+            logDTO.setModifiedValue(newMap);
+            logDTOList.add(logDTO);
         }
+        logService.batchAdd(logDTOList);
     }
 
     private String getProductStatusName(String status) {
@@ -256,7 +263,7 @@ public class ProductService {
         productFieldService.deleteByResourceIds(ids);
         List<LogDTO> logs = new ArrayList<>();
         products.forEach(product -> {
-            LogDTO logDTO = new LogDTO(product.getOrganizationId(), product.getId(), userId, LogType.DELETE, LogModule.PRODUCT, product.getName());
+            LogDTO logDTO = new LogDTO(product.getOrganizationId(), product.getId(), userId, LogType.DELETE, LogModule.PRODUCT_MANAGEMENT, product.getName());
             logDTO.setOriginalValue(product.getName());
             logs.add(logDTO);
         });

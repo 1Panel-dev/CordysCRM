@@ -130,7 +130,7 @@ public class LogService implements OperationLogHandler {
 
         OperationLogBlob blob = getBlob(log);
         if (blob.getOriginalValue() != null || blob.getModifiedValue() != null) {
-            operationLogBlobMapper.insert(getBlob(log));
+            operationLogBlobMapper.insert(blob);
         }
     }
 
