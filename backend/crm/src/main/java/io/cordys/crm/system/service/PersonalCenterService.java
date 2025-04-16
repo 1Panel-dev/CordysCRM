@@ -404,7 +404,7 @@ public class PersonalCenterService {
         // 3. 批量获取产品名称映射(优化数据库查询)
         Map<String, String> productNameMap = productIds.isEmpty()
                 ? Collections.emptyMap()
-                : extProductMapper.listByIds(productIds).stream()
+                : extProductMapper.listIdNameByIds(productIds).stream()
                 .collect(Collectors.toMap(
                         Product::getId,
                         Product::getName,

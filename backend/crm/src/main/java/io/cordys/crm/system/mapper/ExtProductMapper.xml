@@ -137,7 +137,7 @@
           and id != #{product.id} limit 1
     </select>
 
-    <select id="listByIds" resultType="io.cordys.crm.system.domain.Product">
+    <select id="listIdNameByIds" resultType="io.cordys.crm.system.domain.Product">
         select id, name from product
         where id in
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
@@ -150,5 +150,13 @@
         select id, name
         from product
         where organization_id = #{orgId}
+    </select>
+
+    <select id="listByIds" resultType="io.cordys.crm.system.domain.Product">
+        select * from product
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </select>
 </mapper>

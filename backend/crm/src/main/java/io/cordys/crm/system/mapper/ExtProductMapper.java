@@ -21,6 +21,8 @@ public interface ExtProductMapper {
 
     boolean checkUpdateExist(@Param("product") Product product);
 
+    List<Product> listIdNameByIds(@Param("ids") List<String> ids);
+
     List<Product> listByIds(@Param("ids") List<String> ids);
 
     void updateProduct(@Param("ids") List<String> ids, @Param("product") Product product);
