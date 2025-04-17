@@ -111,4 +111,12 @@
         ORDER BY estimated_time DESC
     </select>
 
+
+    <select id="selectPlanByTimestamp" resultType="io.cordys.crm.follow.domain.FollowUpPlan">
+        select fup.id, fup.customer_id, fup.opportunity_id, fup.clue_id, fup.organization_id, fup.owner, fup.estimated_time, fup.create_user
+        FROM follow_up_plan fup
+        INNER JOIN sys_user on sys_user.id = fup.`owner` and sys_user.id = fup.`create_user`
+        WHERE estimated_time = #{timestamp}
+    </select>
+
 </mapper>
