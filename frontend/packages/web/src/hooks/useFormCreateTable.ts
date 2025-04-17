@@ -533,37 +533,30 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           businessFieldAttr[fieldId] = name;
         } else if (addressFieldIds.value.includes(fieldId)) {
           // 地址类型字段，解析代码替换成省市区
-          const address = item[fieldId]?.split('-');
-          const value = `${getCityPath(address[0])}-${address[1]}`;
+          const address = item[fieldId]?.split('-') || [];
+          const value = `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}`;
           businessFieldAttr[fieldId] = value;
         }
       });
       item.moduleFields?.forEach((field: ModuleField) => {
         const options = originalData?.optionMap?.[field.fieldId];
-        if (options) {
-          // 若字段值是选项值，则取选项值的name
-          if (Array.isArray(field.fieldValue)) {
-            customFieldAttr[field.fieldId] = options.filter((e) => field.fieldValue.includes(e.id)).map((e) => e.name);
+        let name: string | string[] = '';
+        if (dataSourceFieldIds.value.includes(field.fieldId)) {
+          if (typeof field.fieldValue === 'string') {
+            name = [options?.find((e) => e.id === field.fieldValue)?.name];
           } else {
-            customFieldAttr[field.fieldId] = options.find((e) => e.id === field.fieldValue)?.name;
+            name = options?.filter((e) => field.fieldValue?.includes(e.id)).map((e) => e.name) || [];
           }
+        } else {
+          name = options?.find((e) => e.id === field.fieldValue)?.name;
+        }
+        if (name) {
+          customFieldAttr[field.fieldId] = name;
         } else if (addressFieldIds.value.includes(field.fieldId)) {
           // 地址类型字段，解析代码替换成省市区
-          const address = (field?.fieldValue as string)?.split('-');
-          const value = `${getCityPath(address[0])}-${address[1]}`;
+          const address = (field.fieldValue as string)?.split('-') || [];
+          const value = `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}`;
           customFieldAttr[field.fieldId] = value;
-        } else {
-          customFieldAttr[field.fieldId] = field.fieldValue;
-        }
-        // 数据源字段赋值
-        if (dataSourceFieldIds.value.includes(field.fieldId)) {
-          customFieldAttr[field.fieldId] = Array.isArray(field.fieldValue) ? field.fieldValue : [field.fieldValue];
-        }
-      });
-      // 数据源字段赋值
-      dataSourceFieldIds.value.forEach((fieldId) => {
-        if (!customFieldAttr[fieldId] && !businessFieldAttr[fieldId]) {
-          customFieldAttr[fieldId] = dataSourceFieldIds.value.includes(fieldId) ? [item[fieldId]] : item[fieldId];
         }
       });
       return {

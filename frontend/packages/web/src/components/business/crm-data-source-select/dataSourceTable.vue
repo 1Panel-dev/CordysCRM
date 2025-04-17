@@ -104,6 +104,7 @@
   }
 
   function handleRowKeyChange(keys: DataTableRowKey[], _rows: InternalRowData[]) {
+    selectedKeys.value = keys;
     selectedRows.value = _rows;
   }
 

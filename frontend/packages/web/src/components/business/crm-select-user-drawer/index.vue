@@ -82,7 +82,7 @@
   });
 
   const addMemberType = ref<MemberSelectTypeEnum>(
-    (props.memberTypes?.[0].value as MemberSelectTypeEnum) || MemberSelectTypeEnum.ORG
+    (props.memberTypes?.[0]?.value as MemberSelectTypeEnum) || MemberSelectTypeEnum.ORG
   );
   const addMemberTypes = ref(
     props.memberTypes || [
@@ -107,7 +107,7 @@
   function handleCancelAdd() {
     addMembers.value = [];
     selectedNodes.value = [];
-    addMemberType.value = (props.memberTypes?.[0].value as MemberSelectTypeEnum) || MemberSelectTypeEnum.ORG;
+    addMemberType.value = (props.memberTypes?.[0]?.value as MemberSelectTypeEnum) || MemberSelectTypeEnum.ORG;
   }
 
   function flattenTree(list: undefined | Option[]): Option[] {

@@ -97,7 +97,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               }
             } else if (item.type === FieldTypeEnum.LOCATION) {
               const address = (field?.fieldValue as string)?.split('-');
-              value = address ? `${getCityPath(address[0])}-${address[1]}` : '-';
+              value = address ? `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}` : '-';
             }
             descriptions.value.push({
               label: item.name,
@@ -268,6 +268,19 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     }
   }
 
+  function getNormalFieldValue(item: FormCreateField, value: any) {
+    if (item.type === FieldTypeEnum.DATA_SOURCE && !value) {
+      return item.multiple ? [] : '';
+    }
+    if (item.type === FieldTypeEnum.MULTIPLE_INPUT && !value) {
+      return [];
+    }
+    if (item.multiple && !value) {
+      return [];
+    }
+    return value;
+  }
+
   async function saveForm(form: Record<string, any>, isContinue: boolean, callback?: (_isContinue: boolean) => void) {
     try {
       loading.value = true;
@@ -283,7 +296,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         } else {
           params.moduleFields.push({
             fieldId: item.id,
-            fieldValue: form[item.id],
+            fieldValue: getNormalFieldValue(item, form[item.id]),
           });
         }
       });

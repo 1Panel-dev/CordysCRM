@@ -10,7 +10,6 @@
     :show="false"
     :disabled="props.disabled"
     @click="showDataSourcesModal"
-    @update-value="($event) => emit('change', $event)"
   />
   <CrmModal
     v-model:show="dataSourcesModalVisible"
@@ -90,6 +89,7 @@
     value.value = cloneDeep(selectedKeys.value);
     rows.value = cloneDeep(selectedRows.value);
     dataSourcesModalVisible.value = false;
+    emit('change', value.value);
   }
 
   function handleDataSourceCancel() {
