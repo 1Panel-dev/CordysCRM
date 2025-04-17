@@ -51,9 +51,9 @@
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
-  import type { Options } from '@/components/business/crm-workflow-card/index.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
+  import { baseStepList } from '@/config/opportunity';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   import { OpportunityRouteEnum } from '@/enums/routeEnum';
@@ -91,33 +91,6 @@
   const currentStatus = ref(route.query.stage?.toString());
 
   const lastOptStage = ref(route.query.lastStage?.toString() ?? OpportunityStatusEnum.CREATE);
-
-  const baseStepList: Options[] = [
-    {
-      value: OpportunityStatusEnum.CREATE,
-      label: t('opportunity.newCreate'),
-    },
-    {
-      value: OpportunityStatusEnum.CLEAR_REQUIREMENTS,
-      label: t('opportunity.clearRequirements'),
-    },
-    {
-      value: OpportunityStatusEnum.SCHEME_VALIDATION,
-      label: t('opportunity.schemeValidation'),
-    },
-    {
-      value: OpportunityStatusEnum.PROJECT_PROPOSAL_REPORT,
-      label: t('opportunity.projectProposalReport'),
-    },
-    {
-      value: OpportunityStatusEnum.BUSINESS_PROCUREMENT,
-      label: t('opportunity.businessProcurement'),
-    },
-    {
-      value: OpportunityStatusEnum.END,
-      label: t('opportunity.end'),
-    },
-  ];
 
   async function initStage(isInit = false) {
     if (isInit) {

@@ -5,7 +5,7 @@
       <van-list
         v-model:loading="loading"
         v-model:error="error"
-        :error-text="t('common.listLoadErrorTip')"
+        :error-text="props.errorText ?? t('common.listLoadErrorTip')"
         :finished="finished"
         :finished-text="list.length === 0 ? '' : t('common.listFinishedTip')"
         class="flex flex-col"
@@ -32,6 +32,8 @@
     listParams?: Record<string, any>;
     itemGap?: number;
     noPageNation?: boolean;
+    errorText?: string;
+    isReturnNativeResponse?: boolean;
     loadListApi?: (...args: any) => Promise<CommonList<Record<string, any>> | Record<string, any>>;
     transform?: (item: Record<string, any>, optionMap?: Record<string, any[]>) => Record<string, any>;
   }>();
@@ -46,6 +48,8 @@
     default: () => [],
   });
   const currentPage = ref(0);
+
+  const code = ref(0); // 状态码
 
   async function loadList(refresh = false) {
     try {
@@ -71,21 +75,28 @@
         pageSize: 10,
         current: currentPage.value,
       });
-      const resList = props.noPageNation ? res : res.list;
+      if (props?.isReturnNativeResponse) {
+        code.value = res.data.code;
+      }
+      const data = props?.isReturnNativeResponse ? res.data.data : res;
+      const resList = props.noPageNation ? data : data.list;
       const dataList = props.transform
-        ? resList.map((e: Record<string, any>) => props.transform!(e, res.optionMap))
+        ? resList.map((e: Record<string, any>) => props.transform!(e, data.optionMap))
         : resList;
       if (refresh) {
         list.value = dataList;
       } else {
         list.value = list.value.concat(dataList);
       }
-      finished.value = props.noPageNation || res.total <= currentPage.value * 10;
+      finished.value = props.noPageNation || data.total <= currentPage.value * 10;
       error.value = false;
-    } catch (_error) {
+    } catch (_error: any) {
       // eslint-disable-next-line no-console
       console.log(_error);
       error.value = true;
+      if (props?.isReturnNativeResponse) {
+        code.value = _error.code;
+      }
     } finally {
       loading.value = false;
       refreshing.value = false;
@@ -113,6 +124,7 @@
   defineExpose({
     loadList,
     filterListByKeyword,
+    code,
   });
 </script>
 

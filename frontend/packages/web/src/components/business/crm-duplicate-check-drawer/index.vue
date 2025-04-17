@@ -145,11 +145,12 @@
     {
       title: t('opportunity.intendedProducts'),
       key: 'productNames',
-      width: 150,
+      width: 200,
+      isTag: true,
     },
     {
       title: t('opportunity.stage'),
-      width: 150,
+      width: 100,
       key: 'stage',
       render: (row) => {
         const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);

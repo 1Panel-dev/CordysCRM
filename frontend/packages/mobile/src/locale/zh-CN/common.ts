@@ -86,4 +86,6 @@ export default {
   'common.canceled': '已取消',
   'common.detail': '详情',
   'common.communicationContent': '沟通内容',
+  'common.head': '负责人',
+  'common.createTime': '创建时间',
 };

@@ -13,4 +13,7 @@ export default {
   'opportunity.businessProcurement': '商务采购',
   'opportunity.end': '完结',
   'opportunity.progress': '商机进度',
+  'opportunity.intendedProducts': '意向产品',
+  'opportunity.stage': '商机阶段',
+  'opportunity.name': '商机名称',
 };

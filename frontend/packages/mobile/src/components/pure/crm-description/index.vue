@@ -6,8 +6,10 @@
         <template v-else>
           <div class="crm-description-label">{{ item.label }}</div>
           <div class="crm-description-value">
-            <CrmTag v-if="item.isTag && item.value" :tag="item.value || ''" />
-            <div v-else>{{ item.value || '-' }}</div>
+            <slot :name="item.valueSlotName" :item="item">
+              <CrmTag v-if="item.isTag && item.value" :tag="item.value || ''" />
+              <div v-else>{{ item.value || '-' }}</div>
+            </slot>
           </div>
         </template>
       </slot>
@@ -24,6 +26,7 @@
     isTag?: boolean;
     isTitle?: boolean;
     slotName?: string;
+    valueSlotName?: string;
     [key: string]: any;
   }
 

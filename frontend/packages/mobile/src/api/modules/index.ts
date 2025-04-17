@@ -203,4 +203,13 @@ export const {
   downloadPicture,
 } = moduleApi;
 
-export const { updatePersonalInfo, getPersonalUrl, sendEmailCode, updateUserPassword } = businessApi;
+export const {
+  updatePersonalInfo,
+  getPersonalUrl,
+  sendEmailCode,
+  updateUserPassword,
+  GetRepeatClueDetailList,
+  GetRepeatClueList,
+  GetRepeatCustomerList,
+  GetRepeatOpportunityDetailList,
+} = businessApi;

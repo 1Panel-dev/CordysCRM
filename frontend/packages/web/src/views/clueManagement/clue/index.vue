@@ -334,7 +334,7 @@
     },
     operationColumn: {
       key: 'operation',
-      width: 330,
+      width: 200,
       fixed: 'right',
       render: (row: ClueListItem) =>
         row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)
@@ -369,6 +369,13 @@
                     },
                     popSlotContent: 'transferPopContent',
                   },
+                  {
+                    label: 'more',
+                    key: 'more',
+                    slotName: 'more',
+                  },
+                ],
+                moreList: [
                   {
                     label: t('clue.convertToCustomer'),
                     key: 'convertToCustomer',

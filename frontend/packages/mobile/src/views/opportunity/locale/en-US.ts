@@ -13,4 +13,7 @@ export default {
   'opportunity.businessProcurement': 'Business procurement',
   'opportunity.end': 'End',
   'opportunity.progress': 'Opportunity progress',
+  'opportunity.intendedProducts': 'Intended products',
+  'opportunity.stage': 'Opportunity stage',
+  'opportunity.name': 'Opportunity name',
 };

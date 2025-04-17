@@ -85,4 +85,6 @@ export default {
   'common.canceled': 'Canceled',
   'common.detail': 'Detail',
   'common.communicationContent': 'Communication content',
+  'common.head': 'Head',
+  'common.createTime': 'Created time',
 };

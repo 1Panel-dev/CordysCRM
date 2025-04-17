@@ -43,6 +43,8 @@ declare module 'vue' {
     VanCell: typeof import('vant/es')['Cell'];
     VanCellGroup: typeof import('vant/es')['CellGroup'];
     VanCheckbox: typeof import('vant/es')['Checkbox'];
+    VanCollapse: typeof import('vant/es')['Collapse'];
+    VanCollapseItem: typeof import('vant/es')['CollapseItem'];
     VanDatePicker: typeof import('vant/es')['DatePicker'];
     VanDivider: typeof import('vant/es')['Divider'];
     VanEmpty: typeof import('vant/es')['Empty'];

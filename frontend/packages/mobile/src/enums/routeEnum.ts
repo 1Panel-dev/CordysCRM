@@ -44,6 +44,7 @@ export enum WorkbenchRouteEnum {
   WORKBENCH = 'workbench',
   WORKBENCH_INDEX = 'workbenchIndex',
   WORKBENCH_DUPLICATE_CHECK = 'workbenchDuplicateCheck',
+  WORKBENCH_DUPLICATE_CHECK_DETAIL = 'workbenchDuplicateCheckDetail',
 }
 
 export const AppRouteEnum = {
