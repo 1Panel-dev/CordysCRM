@@ -141,6 +141,10 @@
     }
   }
 
+  onBeforeMount(() => {
+    fileList.value = [];
+  });
+
   watch(
     () => fileKeys.value,
     (keys: string[]) => {

@@ -177,9 +177,8 @@
         if (!form.value[item.id]) {
           let defaultValue = item.defaultValue || '';
           if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
-            defaultValue = Number(defaultValue) || null;
-          }
-          if (getRuleType(item) === 'array') {
+            defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
+          } else if (getRuleType(item) === 'array') {
             defaultValue = defaultValue || [];
           }
           form.value[item.id] = defaultValue;

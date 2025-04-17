@@ -14,7 +14,6 @@
       v-model:value="value"
       :type="props.fieldConfig.dateType"
       :placeholder="props.fieldConfig.placeholder"
-      :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
       class="w-full"
       @update-value="($event) => emit('change', $event)"
@@ -36,14 +35,14 @@
     (e: 'change', value: (string | number)[]): void;
   }>();
 
-  const value = defineModel<number | [number, number]>('value', {
+  const value = defineModel<null | number | [number, number]>('value', {
     default: null,
   });
 
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
-      value.value = val;
+      value.value = val || null;
     },
     {
       immediate: true,
