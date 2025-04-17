@@ -363,8 +363,8 @@ public class ModuleFormService {
 	 */
 	private Map<String, String> initTypeSourceMap() {
 		Map<String, String> typeSourceMap = new HashMap<>(8);
-		typeSourceMap.put(FieldType.MEMBER.name(), "system_user");
-		typeSourceMap.put(FieldType.DEPARTMENT.name(), "system_department");
+		typeSourceMap.put(FieldType.MEMBER.name(), "sys_user");
+		typeSourceMap.put(FieldType.DEPARTMENT.name(), "sys_department");
 		typeSourceMap.put(FieldSourceType.CUSTOMER.name(), "customer");
 		typeSourceMap.put(FieldSourceType.CLUE.name(), "clue");
 		typeSourceMap.put(FieldSourceType.CONTACT.name(), "customer_contact");
