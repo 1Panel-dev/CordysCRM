@@ -154,8 +154,8 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         opportunityMapper.insert(opportunity);
         followUpPlanRemindJob.followUpPlanRemind();
 
-        customerMapper.deleteByPrimaryKey("123");
-        opportunityMapper.deleteByPrimaryKey("12345");
+        customerMapper.deleteByPrimaryKey("wx_123");
+        opportunityMapper.deleteByPrimaryKey("wx_123");
     }
 
 }
