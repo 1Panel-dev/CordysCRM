@@ -102,6 +102,9 @@ public class ProductService {
         List<BaseModuleFieldValue> productFields = productFieldService.getModuleFieldValuesByResourceId(id);
 
         productGetResponse.setModuleFields(productFields);
+        ModuleFormConfigDTO productFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.PRODUCT.getKey(), product.getOrganizationId());
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(productFormConfig, productFields);
+        productGetResponse.setOptionMap(optionMap);
         return baseService.setCreateAndUpdateUserName(productGetResponse);
     }
 
