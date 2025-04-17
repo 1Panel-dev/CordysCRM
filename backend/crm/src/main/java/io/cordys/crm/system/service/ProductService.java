@@ -18,6 +18,7 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.opportunity.service.OpportunityFieldService;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
@@ -61,6 +62,8 @@ public class ProductService {
     private LogService logService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private OpportunityFieldService opportunityFieldService;
     @Resource
     private ModuleFormService moduleFormService;
 
@@ -126,13 +129,7 @@ public class ProductService {
         productFieldService.saveModuleField(product.getId(), orgId, userId, request.getModuleFields());
 
         // 添加日志上下文
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceId(product.getId())
-                        .resourceName(product.getName())
-                        .modifiedValue(product.getName())
-                        .build()
-        );
+        baseService.handleAddLog(product, request.getModuleFields());
         return product;
     }
 
@@ -155,14 +152,9 @@ public class ProductService {
         updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
 
         // 添加日志上下文
-        OperationLogContext.setContext(
-                LogContextInfo.builder()
-                        .resourceId(product.getId())
-                        .resourceName(product.getName())
-                        .originalValue(oldProduct)
-                        .modifiedValue(product)
-                        .build()
-        );
+        List<BaseModuleFieldValue> originCustomerFields = opportunityFieldService.getModuleFieldValuesByResourceId(request.getId());
+
+        baseService.handleUpdateLog(oldProduct, product, originCustomerFields, request.getModuleFields(), request.getId(), product.getName());
 
         return productBaseMapper.selectByPrimaryKey(product.getId());
     }
