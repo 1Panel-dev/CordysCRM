@@ -107,7 +107,7 @@
   function handleCancelAdd() {
     addMembers.value = [];
     selectedNodes.value = [];
-    addMemberType.value = MemberSelectTypeEnum.ORG;
+    addMemberType.value = (props.memberTypes?.[0].value as MemberSelectTypeEnum) || MemberSelectTypeEnum.ORG;
   }
 
   function flattenTree(list: undefined | Option[]): Option[] {
@@ -130,6 +130,7 @@
     let params = { ...props.baseParams };
     switch (value) {
       case MemberSelectTypeEnum.ORG:
+      case MemberSelectTypeEnum.ONLY_ORG:
         params = { ...params, ...props.fetchOrgParams };
         departmentOptions.value = await getDataFunc(props.apiTypeKey, value, params);
         break;
