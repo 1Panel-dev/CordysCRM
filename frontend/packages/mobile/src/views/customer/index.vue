@@ -22,6 +22,11 @@
   import contact from './contact/index.vue';
   import openSea from './openSea/index.vue';
 
+  import { CustomerRouteEnum } from '@/enums/routeEnum';
+
+  defineOptions({
+    name: CustomerRouteEnum.CUSTOMER_INDEX,
+  });
   const { t } = useI18n();
   const activeName = ref('a');
   const tabList = [

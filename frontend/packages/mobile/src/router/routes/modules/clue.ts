@@ -20,6 +20,7 @@ const clue: AppRouteRecordRaw = {
         locale: 'menu.clue',
         permissions: [],
         depth: 1,
+        isCache: true,
       },
     },
     {

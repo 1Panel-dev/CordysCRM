@@ -66,6 +66,9 @@
 
   import { CommonRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
+  defineOptions({
+    name: OpportunityRouteEnum.OPPORTUNITY_INDEX,
+  });
   const router = useRouter();
   const { t } = useI18n();
 

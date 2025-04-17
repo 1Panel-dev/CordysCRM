@@ -56,6 +56,11 @@
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
+  import { OpportunityRouteEnum } from '@/enums/routeEnum';
+
+  defineOptions({
+    name: OpportunityRouteEnum.OPPORTUNITY_DETAIL,
+  });
   const route = useRoute();
   const { t } = useI18n();
 

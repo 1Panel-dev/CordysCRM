@@ -27,21 +27,24 @@
         {{ item.tab }}
       </van-button>
     </div>
-    <div class="flex-1 overflow-hidden">
-      <CrmList
-        ref="crmListRef"
-        :keyword="keyword"
-        :list-params="listParams"
-        class="p-[16px]"
-        :item-gap="16"
-        :load-list-api="getCustomerList"
-        :transform="transformFormData"
-      >
-        <template #item="{ item }">
-          <CrmListCommonItem :item="item" :actions="actions" name-key="ownerName" @click="goDetail"></CrmListCommonItem>
-        </template>
-      </CrmList>
-    </div>
+    <CrmList
+      ref="crmListRef"
+      :keyword="keyword"
+      :list-params="listParams"
+      class="p-[16px]"
+      :item-gap="16"
+      :load-list-api="getCustomerList"
+      :transform="transformFormData"
+    >
+      <template #item="{ item }">
+        <CrmListCommonItem
+          :item="item"
+          :actions="item.collaborationType !== 'READ_ONLY' ? actions : []"
+          name-key="ownerName"
+          @click="goDetail"
+        ></CrmListCommonItem>
+      </template>
+    </CrmList>
   </div>
 </template>
 

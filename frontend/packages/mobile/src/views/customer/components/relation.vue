@@ -119,6 +119,10 @@
   onBeforeMount(() => {
     initList();
   });
+
+  defineExpose({
+    initList,
+  });
 </script>
 
 <style lang="less" scoped></style>

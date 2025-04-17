@@ -20,6 +20,7 @@ const opportunity: AppRouteRecordRaw = {
         locale: 'menu.opportunity',
         permissions: [],
         depth: 1,
+        isCache: true,
       },
     },
     {
@@ -29,6 +30,7 @@ const opportunity: AppRouteRecordRaw = {
       meta: {
         permissions: [],
         depth: 2,
+        isCache: true,
       },
     },
   ],

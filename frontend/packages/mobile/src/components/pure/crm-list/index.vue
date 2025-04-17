@@ -1,6 +1,6 @@
 <template>
   <div class="h-full overflow-auto" :class="props.class">
-    <van-pull-refresh v-model="refreshing" class="h-full" @refresh="handleRefresh">
+    <van-pull-refresh v-model="refreshing" @refresh="handleRefresh">
       <van-empty v-if="list.length === 0 && !loading && !error" :description="t('common.noData')" />
       <van-list
         v-model:loading="loading"
@@ -8,7 +8,7 @@
         :error-text="t('common.listLoadErrorTip')"
         :finished="finished"
         :finished-text="list.length === 0 ? '' : t('common.listFinishedTip')"
-        class="flex h-full flex-col overflow-auto"
+        class="flex flex-col"
         :class="`gap-[${itemGap}px]`"
         @load="loadList"
       >

@@ -10,7 +10,6 @@
     :disabled="props.fieldConfig.editable === false"
     clearable
     @click="showPicker = true"
-    @update:model-value="($event) => emit('change', $event)"
   >
   </van-field>
   <van-popup v-model:show="showPicker" destroy-on-close round position="bottom">
@@ -71,6 +70,7 @@
     showPicker.value = false;
     [value.value] = selectedValues;
     fieldValue.value = selectedOptions[0].text;
+    emit('change', selectedValues[0]);
   }
 </script>
 

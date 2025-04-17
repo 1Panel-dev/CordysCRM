@@ -13,7 +13,7 @@
       </van-checkbox>
     </template>
   </CrmList>
-  <van-radio-group v-else v-model:model-value="value" shape="dot" @change="handleChange">
+  <van-radio-group v-else v-model:model-value="value" shape="dot" class="h-full" @change="handleChange">
     <CrmList
       ref="crmListRef"
       v-model:model-value="list"
@@ -65,6 +65,12 @@
     }
   }
 
+  onBeforeMount(() => {
+    if (!props.multiple && Array.isArray(value.value)) {
+      [value.value] = value.value;
+    }
+  });
+
   onMounted(() => {
     if (!props.multiple) {
       crmListRef.value?.loadList(true);
@@ -73,10 +79,15 @@
 </script>
 
 <style lang="less" scoped>
-  :deep(.van-radio__label) {
-    @apply w-full;
-    .half-px-border-bottom();
+  :deep(.van-radio):not(:first-child) {
+    .half-px-border-top();
+  }
+  :deep(.van-radio) {
+    @apply overflow-visible;
+    .van-radio__label {
+      @apply w-full;
 
-    padding: 16px 16px 16px 0;
+      padding: 16px 16px 16px 0;
+    }
   }
 </style>

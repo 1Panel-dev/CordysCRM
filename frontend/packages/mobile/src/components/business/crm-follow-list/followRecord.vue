@@ -4,29 +4,27 @@
       <van-button v-if="!props.readonly" plain icon="plus" type="primary" size="small" @click="goCreate"> </van-button>
       <van-search v-model="keyword" shape="round" :placeholder="t('common.pleaseInputKeyword')" class="flex-1 !p-0" />
     </div>
-    <div class="flex-1 overflow-hidden">
-      <CrmList
-        ref="crmListRef"
-        :keyword="keyword"
-        class="p-[16px]"
-        :item-gap="16"
-        :list-params="{
-          sourceId: props.sourceId,
-        }"
-        :load-list-api="followRecordApiMap.list[props.type]"
-      >
-        <template #item="{ item }">
-          <listItem
-            :item="item"
-            type="record"
-            :readonly="props.readonly"
-            @click="goDetail(item)"
-            @delete="handleDelete(item)"
-            @edit="handleEdit(item)"
-          />
-        </template>
-      </CrmList>
-    </div>
+    <CrmList
+      ref="crmListRef"
+      :keyword="keyword"
+      class="p-[16px]"
+      :item-gap="16"
+      :list-params="{
+        sourceId: props.sourceId,
+      }"
+      :load-list-api="followRecordApiMap.list[props.type]"
+    >
+      <template #item="{ item }">
+        <listItem
+          :item="item"
+          type="record"
+          :readonly="props.readonly"
+          @click="goDetail(item)"
+          @delete="handleDelete(item)"
+          @edit="handleEdit(item)"
+        />
+      </template>
+    </CrmList>
   </div>
 </template>
 
@@ -48,6 +46,7 @@
     type: RecordEnumType;
     readonly?: boolean;
     sourceId: string;
+    initialSourceName?: string;
   }>();
 
   const { t } = useI18n();
@@ -72,6 +71,8 @@
       name: CommonRouteEnum.FORM_CREATE,
       query: {
         formKey: props.type,
+        id: props.sourceId,
+        initialSourceName: props.initialSourceName,
       },
     });
   }
@@ -96,6 +97,10 @@
       },
     });
   }
+
+  defineExpose({
+    loadList: () => crmListRef.value?.loadList(true),
+  });
 </script>
 
 <style lang="less" scoped></style>

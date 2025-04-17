@@ -27,23 +27,21 @@
         {{ item.tab }}
       </van-button>
     </div>
-    <div class="flex-1 overflow-hidden">
-      <CrmList
-        ref="crmListRef"
-        :keyword="keyword"
-        :list-params="{
-          searchType: activeFilter,
-        }"
-        class="p-[16px]"
-        :item-gap="16"
-        :load-list-api="getClueList"
-        :transform="transformFormData"
-      >
-        <template #item="{ item }">
-          <CrmListCommonItem :item="item" :actions="actions(item)" @click="goDetail"></CrmListCommonItem>
-        </template>
-      </CrmList>
-    </div>
+    <CrmList
+      ref="crmListRef"
+      :keyword="keyword"
+      :list-params="{
+        searchType: activeFilter,
+      }"
+      class="p-[16px]"
+      :item-gap="16"
+      :load-list-api="getClueList"
+      :transform="transformFormData"
+    >
+      <template #item="{ item }">
+        <CrmListCommonItem :item="item" :actions="actions(item)" @click="goDetail"></CrmListCommonItem>
+      </template>
+    </CrmList>
     <van-action-sheet
       v-model:show="moreActionShow"
       :actions="moreActions"

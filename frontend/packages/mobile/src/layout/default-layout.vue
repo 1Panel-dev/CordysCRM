@@ -5,11 +5,11 @@
         <!-- transition内必须有且只有一个根元素，不然会导致二级路由的组件无法渲染 -->
         <div class="page-content">
           <Suspense>
-            <keep-alive :include="[]">
-              <transition :name="transitionName">
+            <transition :name="transitionName">
+              <keep-alive :include="Array.from(appStore.getCacheRoutes)">
                 <component :is="Component" :key="route.name" />
-              </transition>
-            </keep-alive>
+              </keep-alive>
+            </transition>
           </Suspense>
         </div>
       </transition>
@@ -51,10 +51,13 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
+  import useAppStore from '@/store/modules/app';
+
   import { AppRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const router = useRouter();
+  const appStore = useAppStore();
 
   const transitionName = ref('slide-left');
   // 路由深度判断，决定是前进还是返回
@@ -66,6 +69,14 @@
     transitionName.value = isForward ? 'slide-left' : 'slide-right';
     if (toDepth === 1 && fromDepth === 1) {
       transitionName.value = '';
+    }
+    // 处理路由缓存
+    if ((toDepth === 1 && fromDepth === 1) || (from.meta.isCache && toDepth < fromDepth)) {
+      // 一级页面切换，移除页面缓存；从更深的页面返回上一层级页面，清理当前页面缓存
+      appStore.removeCacheRoute(from.name as string);
+    } else if (from.meta.isCache && isForward) {
+      // 离开页面时，如果当前页面配置了缓存，且是前进，则将当前路由添加到缓存列表
+      appStore.addCacheRoute(from.name as string);
     }
     next();
   });

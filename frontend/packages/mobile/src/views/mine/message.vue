@@ -41,20 +41,18 @@
           </div>
         </van-tab>
       </van-tabs>
-      <div class="flex-1 overflow-auto">
-        <CrmList
-          ref="crmListRef"
-          :list-params="listParams"
-          class="p-[16px]"
-          :item-gap="16"
-          :keyword="keyword"
-          :load-list-api="getNotificationList"
-        >
-          <template #item="{ item }">
-            <CrmMessageItem :item="item" @load-list="() => refreshMessageList(true)" />
-          </template>
-        </CrmList>
-      </div>
+      <CrmList
+        ref="crmListRef"
+        :list-params="listParams"
+        class="p-[16px]"
+        :item-gap="16"
+        :keyword="keyword"
+        :load-list-api="getNotificationList"
+      >
+        <template #item="{ item }">
+          <CrmMessageItem :item="item" @load-list="() => refreshMessageList(true)" />
+        </template>
+      </CrmList>
     </div>
   </CrmPageWrapper>
 </template>

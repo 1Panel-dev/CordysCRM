@@ -9,4 +9,5 @@ export interface AppState {
   moduleConfigList: ModuleNavBaseInfoItem[]; // 模块配置列表
   messageInfo: MessageInfo; // 消息通知和公告
   eventSource: null | EventSource; // 事件流资源
+  cacheRoutes: Set<string>; // 缓存路由列表
 }

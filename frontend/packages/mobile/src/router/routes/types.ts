@@ -14,6 +14,7 @@ export interface RouteMeta {
   locale?: string; // 国际化语言单词
   order?: number; // 排序权重
   depth?: number; // 路由深度
+  isCache?: boolean; // 缓存设置，true缓存页面状态
 }
 export interface AppRouteRecordRaw {
   path: string;

@@ -1,6 +1,6 @@
 <template>
   <van-field
-    v-model="value"
+    v-model="fieldValue"
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :name="props.fieldConfig.id"
     :rules="props.fieldConfig.rules as FieldRule[]"
@@ -14,9 +14,15 @@
   >
   </van-field>
   <van-popup v-model:show="showPicker" destroy-on-close round position="bottom">
-    <van-picker-group title="选择日期" :tabs="['选择日期', '选择时间']" next-step-text="下一步" @confirm="onConfirm">
+    <van-picker-group
+      :title="t('formCreate .pickDate')"
+      :tabs="[t('formCreate .pickDate'), t('formCreate .pickTime')]"
+      :next-step-text="t('formCreate .next')"
+      @confirm="onConfirm"
+      @cancel="showPicker = false"
+    >
       <van-date-picker v-model="currentDate" />
-      <van-time-picker v-model="currentTime" />
+      <van-time-picker v-model="currentTime" :columns-type="['hour', 'minute', 'second']" />
     </van-picker-group>
   </van-popup>
 </template>
@@ -40,6 +46,18 @@
 
   const value = defineModel<number>('value', {
     default: null,
+  });
+  const fieldValue = computed(() => {
+    if (!value.value) {
+      return undefined;
+    }
+    if (props.fieldConfig.dateType === 'datetime') {
+      return dayjs(value.value).format('YYYY-MM-DD HH:mm:ss');
+    }
+    if (props.fieldConfig.dateType === 'month') {
+      return dayjs(value.value).format('YYYY-MM');
+    }
+    return dayjs(value.value).format('YYYY-MM-DD');
   });
 
   const showPicker = ref(false);
@@ -66,7 +84,7 @@
 
   function onConfirm() {
     showPicker.value = false;
-    value.value = dayjs(`${currentDate.value.join('-')} ${currentTime.value.join('-')}`).unix() * 1000;
+    value.value = dayjs(`${currentDate.value.join('-')} ${currentTime.value.join(':')}`).unix() * 1000;
     emit('change', value.value);
   }
 </script>

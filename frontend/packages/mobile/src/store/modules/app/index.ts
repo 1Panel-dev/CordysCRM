@@ -23,15 +23,25 @@ const useAppStore = defineStore('app', {
       announcementDTOList: [],
     },
     eventSource: null,
+    cacheRoutes: new Set([]),
   }),
   getters: {
     getOrgId(state: AppState) {
       return state.orgId;
     },
+    getCacheRoutes(state: AppState) {
+      return state.cacheRoutes;
+    },
   },
   actions: {
     setOrgId(id: string) {
       this.orgId = id;
+    },
+    addCacheRoute(route: string) {
+      this.cacheRoutes.add(route);
+    },
+    removeCacheRoute(route: string) {
+      this.cacheRoutes.delete(route);
     },
     /**
      * 初始化模块配置

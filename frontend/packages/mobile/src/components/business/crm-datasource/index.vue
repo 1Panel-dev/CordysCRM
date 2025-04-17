@@ -24,14 +24,22 @@
   >
     <CrmPageWrapper
       :title="
-        t('formCreate.pickResource', {
+        t('datasource.pickResource', {
           name: props.dataSourceType ? t(typeLocaleMap[props.dataSourceType]) : '',
         })
       "
       hide-back
     >
-      <div class="flex h-full flex-col">
-        <van-search v-model="keyword" shape="round" :placeholder="t('customer.searchPlaceholder')" />
+      <div class="flex h-full flex-col overflow-hidden">
+        <van-search
+          v-model="keyword"
+          shape="round"
+          :placeholder="
+            t('datasource.searchPlaceholder', {
+              name: props.dataSourceType ? t(typeLocaleMap[props.dataSourceType]) : '',
+            })
+          "
+        />
         <div class="flex-1 overflow-hidden px-[16px]">
           <CrmSelectList
             v-if="props.dataSourceType"
@@ -142,7 +150,7 @@
   function onConfirm() {
     showPicker.value = false;
     fieldValue.value = selectedRows.value.map((item) => item.name).join('；');
-    value.value = selectedRows.value.map((item) => item.id);
+    value.value = props.multiple ? selectedRows.value.map((item) => item.id) : selectedRows.value[0].id;
     emit('change', value.value);
   }
 

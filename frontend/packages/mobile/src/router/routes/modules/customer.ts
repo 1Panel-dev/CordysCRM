@@ -20,6 +20,7 @@ const customer: AppRouteRecordRaw = {
         locale: 'menu.customer',
         permissions: [],
         depth: 1,
+        isCache: true,
       },
     },
     {
@@ -29,6 +30,7 @@ const customer: AppRouteRecordRaw = {
       meta: {
         permissions: [],
         depth: 2,
+        isCache: true,
       },
     },
     {
@@ -37,7 +39,7 @@ const customer: AppRouteRecordRaw = {
       component: () => import('@/views/customer/transfer.vue'),
       meta: {
         permissions: [],
-        depth: 2,
+        depth: 3,
       },
     },
     {
@@ -46,7 +48,7 @@ const customer: AppRouteRecordRaw = {
       component: () => import('@/views/customer/openSea/distribute.vue'),
       meta: {
         permissions: [],
-        depth: 2,
+        depth: 3,
       },
     },
     {
@@ -64,7 +66,7 @@ const customer: AppRouteRecordRaw = {
       component: () => import('@/views/customer/relation.vue'),
       meta: {
         permissions: [],
-        depth: 2,
+        depth: 3,
       },
     },
     {
@@ -73,7 +75,7 @@ const customer: AppRouteRecordRaw = {
       component: () => import('@/views/customer/collaborator.vue'),
       meta: {
         permissions: [],
-        depth: 2,
+        depth: 3,
       },
     },
   ],

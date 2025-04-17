@@ -26,22 +26,20 @@
         {{ item.name }}
       </van-button>
     </div>
-    <div class="flex-1 overflow-hidden">
-      <CrmList
-        ref="crmListRef"
-        :keyword="keyword"
-        :list-params="{
-          poolId: activeFilter,
-        }"
-        class="p-[16px]"
-        :item-gap="16"
-        :load-list-api="getCluePoolList"
-      >
-        <template #item="{ item }">
-          <CrmListCommonItem :item="item" :actions="actions" @click="goDetail"></CrmListCommonItem>
-        </template>
-      </CrmList>
-    </div>
+    <CrmList
+      ref="crmListRef"
+      :keyword="keyword"
+      :list-params="{
+        poolId: activeFilter,
+      }"
+      class="p-[16px]"
+      :item-gap="16"
+      :load-list-api="getCluePoolList"
+    >
+      <template #item="{ item }">
+        <CrmListCommonItem :item="item" :actions="actions" @click="goDetail"></CrmListCommonItem>
+      </template>
+    </CrmList>
   </div>
 </template>
 

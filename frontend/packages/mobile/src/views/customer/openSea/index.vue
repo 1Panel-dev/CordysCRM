@@ -26,20 +26,18 @@
         {{ item.name }}
       </van-button>
     </div>
-    <div class="flex-1 overflow-hidden">
-      <CrmList
-        v-if="openSeaList.length"
-        ref="crmListRef"
-        :list-params="listParams"
-        :load-list-api="getOpenSeaCustomerList"
-        class="p-[16px]"
-        :item-gap="16"
-      >
-        <template #item="{ item }">
-          <CrmListCommonItem :item="item" :actions="actions" @click="goDetail"></CrmListCommonItem>
-        </template>
-      </CrmList>
-    </div>
+    <CrmList
+      v-if="openSeaList.length"
+      ref="crmListRef"
+      :list-params="listParams"
+      :load-list-api="getOpenSeaCustomerList"
+      class="p-[16px]"
+      :item-gap="16"
+    >
+      <template #item="{ item }">
+        <CrmListCommonItem :item="item" :actions="actions" @click="goDetail"></CrmListCommonItem>
+      </template>
+    </CrmList>
   </div>
 </template>
 

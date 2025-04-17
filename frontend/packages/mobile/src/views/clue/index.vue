@@ -20,6 +20,11 @@
   import Clue from './clue/index.vue';
   import Pool from './pool/index.vue';
 
+  import { ClueRouteEnum } from '@/enums/routeEnum';
+
+  defineOptions({
+    name: ClueRouteEnum.CLUE_INDEX,
+  });
   const { t } = useI18n();
   const activeName = ref('clue');
   const tabList = [

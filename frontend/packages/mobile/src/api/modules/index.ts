@@ -181,7 +181,7 @@ export const {
 } = messageApi;
 
 export const {
-  moduleNavListSort,
+  getModuleNavConfigList,
   getModuleUserDeptTree,
   getModuleRoleTree,
   getOpportunityRuleList,

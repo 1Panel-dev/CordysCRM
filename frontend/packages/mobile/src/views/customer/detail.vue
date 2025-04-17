@@ -13,16 +13,20 @@
         <CrmContactList v-else-if="tab.name === 'contact'" />
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
+          ref="recordListRef"
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER"
+          :initial-source-name="sourceName"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
+          ref="planListRef"
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER"
+          :initial-source-name="sourceName"
         />
-        <relation v-else-if="tab.name === 'relation'" :source-id="sourceId" />
-        <collaborator v-else-if="tab.name === 'collaborator'" :source-id="sourceId" />
+        <relation v-else-if="tab.name === 'relation'" ref="relationListRef" :source-id="sourceId" />
+        <collaborator v-else-if="tab.name === 'collaborator'" ref="collaboratorListRef" :source-id="sourceId" />
         <CrmHeaderList v-else :source-id="sourceId" :load-list-api="getCustomerHeaderList" />
       </van-tab>
     </van-tabs>
@@ -47,6 +51,11 @@
   import { getCustomerHeaderList } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
+  import { CustomerRouteEnum } from '@/enums/routeEnum';
+
+  defineOptions({
+    name: CustomerRouteEnum.CUSTOMER_DETAIL,
+  });
   const route = useRoute();
   const { t } = useI18n();
 
@@ -81,10 +90,13 @@
       title: t('customer.collaborator'),
     },
   ];
-
+  const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
+  const planListRef = ref<InstanceType<typeof CrmFollowPlanList>[]>();
+  const relationListRef = ref<InstanceType<typeof relation>[]>();
+  const collaboratorListRef = ref<InstanceType<typeof collaborator>[]>();
   const sourceId = computed(() => route.query.id?.toString() ?? '');
 
-  const { descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
+  const { sourceName, descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CUSTOMER,
     sourceId: sourceId.value,
     needInitDetail: true,
@@ -93,6 +105,18 @@
   onBeforeMount(async () => {
     await initFormConfig();
     initFormDescription();
+  });
+
+  onActivated(() => {
+    if (activeTab.value === 'record') {
+      recordListRef.value?.[0].loadList();
+    } else if (activeTab.value === 'plan') {
+      planListRef.value?.[0].loadList();
+    } else if (activeTab.value === 'relation') {
+      relationListRef.value?.[0].initList();
+    } else if (activeTab.value === 'collaborator') {
+      collaboratorListRef.value?.[0].initList();
+    }
   });
 </script>
 
