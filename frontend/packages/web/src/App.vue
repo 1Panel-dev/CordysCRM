@@ -92,16 +92,6 @@
     await handleOauthLogin();
   });
 
-  watch(
-    () => appStore.orgId,
-    (orgId) => {
-      if (orgId) {
-        appStore.initModuleConfig();
-      }
-    },
-    { immediate: true }
-  );
-
   onBeforeUnmount(() => {
     appStore.disconnectSystemMessageSSE();
   });

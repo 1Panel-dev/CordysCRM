@@ -201,7 +201,6 @@
     },
   ];
 
-  // TODO 统一处理部分自定义字段
   function getDescriptionFun(item: FollowDetailItem) {
     return (descriptionList.map((desc: Description) => ({
       ...desc,

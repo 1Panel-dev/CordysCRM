@@ -40,7 +40,7 @@
       <van-cell-group inset class="info-item">
         <van-cell :title="t('common.message')" is-link class="!p-[16px]" @click="handleEditInfo('message')">
           <template #value>
-            <div class="absolute right-[16px] top-[8px]">
+            <div v-if="messageTotal > 0" class="absolute right-[16px] top-[8px]">
               <van-badge :content="messageTotal" color="var(--error-red)" max="99" />
             </div>
           </template>

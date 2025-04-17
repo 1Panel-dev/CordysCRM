@@ -192,6 +192,16 @@
       menuValue.value = router.currentRoute.value.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
     }
   });
+
+  watch(
+    () => appStore.orgId,
+    (orgId) => {
+      if (orgId) {
+        appStore.initModuleConfig();
+      }
+    },
+    { immediate: true }
+  );
 </script>
 
 <style lang="less">

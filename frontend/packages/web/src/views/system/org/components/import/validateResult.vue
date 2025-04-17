@@ -143,7 +143,6 @@
 
   const { t } = useI18n();
 
-  // TODO 类型
   export interface ValidateInfo {
     failCount: number;
     successCount: number;

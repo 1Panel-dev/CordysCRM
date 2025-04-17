@@ -165,7 +165,7 @@
     }
   }
 
-  //  重命名 TODO 接口有问题
+  //  重命名
   async function renameHandler(option: CrmTreeNodeData) {
     try {
       await renameDepartment({
