@@ -130,10 +130,15 @@
     return JSON.parse(item.contentText || '{}');
   }
 
-  async function loadMessageList() {
+  async function loadMessageList(refresh = true) {
     try {
       if (!props.loadParams) return;
       loading.value = true;
+
+      if (refresh) {
+        pageNation.value.current = 1;
+        list.value = [];
+      }
       const res = await getNotificationList({
         current: pageNation.value.current || 1,
         pageSize: pageNation.value.pageSize,
@@ -141,7 +146,7 @@
         ...props.loadParams,
       });
       if (res) {
-        list.value = res.list;
+        list.value = list.value.concat(res.list);
         pageNation.value.total = res.total;
       }
     } catch (error) {
@@ -169,7 +174,7 @@
     if (pageNation.value.current > Math.ceil(pageNation.value.total / pageNation.value.pageSize)) {
       return;
     }
-    loadMessageList();
+    loadMessageList(false);
   }
 
   function goUrl(context: string) {

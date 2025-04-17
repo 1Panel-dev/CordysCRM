@@ -1,13 +1,10 @@
-import { ref } from 'vue';
-
 export default function useHighlight(selectorArray: string[]) {
-  const searchKeyword = ref('');
   const defaultHighlightClass = `bg-[var(--primary-8)] text-[var(--text-n10)] rounded-sm`;
   // 高亮文本
-  function highlightContent() {
-    if (!searchKeyword.value) return;
+  function highlightContent(keyword: string) {
+    if (!keyword) return;
 
-    const regex = new RegExp(`(${searchKeyword.value})`, 'gi'); // 关键字匹配
+    const regex = new RegExp(`(${keyword})`, 'gi'); // 关键字匹配
 
     selectorArray.forEach((selector) => {
       const elements = document.querySelectorAll(selector);
@@ -30,7 +27,6 @@ export default function useHighlight(selectorArray: string[]) {
   }
 
   return {
-    searchKeyword,
     highlightContent,
     resetHighlight,
   };

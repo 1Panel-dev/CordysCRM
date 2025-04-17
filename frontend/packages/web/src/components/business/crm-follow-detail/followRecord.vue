@@ -1,7 +1,7 @@
 <template>
   <CrmList
-    v-if="filteredData.length"
-    v-model:data="filteredData"
+    v-if="listData.length"
+    v-model:data="listData"
     :virtual-scroll-height="props.virtualScrollHeight"
     :key-field="props.keyField"
     :item-height="100"
@@ -67,8 +67,6 @@
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import StatusTag from './statusTag.vue';
 
-  import useHighlight from './useHighlight';
-
   const props = defineProps<{
     type: 'followRecord' | 'followPlan';
     keyField: string;
@@ -84,41 +82,6 @@
   const listData = defineModel<FollowDetailItem[]>('data', {
     default: [],
   });
-
-  const innerKeyWord = defineModel<string>('keyword', {
-    default: '',
-  });
-
-  const { searchKeyword, highlightContent, resetHighlight } = useHighlight([
-    '.crm-follow-record-content',
-    '.crm-follow-record-method',
-  ]);
-
-  const filteredData = computed(() => {
-    if (!searchKeyword.value) return listData.value;
-    const keyword = searchKeyword.value.toLowerCase();
-    return listData.value.filter((item) =>
-      Object.values(item).some((value) => typeof value === 'string' && value.toLowerCase().includes(keyword))
-    );
-  });
-
-  watch(
-    () => innerKeyWord.value,
-    (val) => {
-      searchKeyword.value = val;
-    }
-  );
-
-  watch(
-    () => searchKeyword.value,
-    (val) => {
-      if (val) {
-        highlightContent();
-      } else {
-        resetHighlight();
-      }
-    }
-  );
 
   function getFutureClass(item: FollowDetailItem) {
     const time = 'estimatedTime' in item ? item.estimatedTime : item.followTime;

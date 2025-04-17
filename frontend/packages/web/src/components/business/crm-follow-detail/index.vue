@@ -23,7 +23,6 @@
     <n-spin :show="loading" class="h-full">
       <FollowRecord
         v-model:data="data"
-        v-model:keyword="followKeyword"
         :virtual-scroll-height="`${props.virtualScrollHeight || '1000px'}`"
         :get-description-fun="getDescriptionFun"
         key-field="id"
@@ -196,7 +195,7 @@
       value: 'updateTime',
     },
     {
-      key: 'updateUser',
+      key: 'updateUserName',
       label: t('common.updateUserName'),
       value: 'updateUserName',
     },

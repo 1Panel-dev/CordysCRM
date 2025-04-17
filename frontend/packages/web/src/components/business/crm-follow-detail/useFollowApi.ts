@@ -4,6 +4,7 @@ import { useMessage } from 'naive-ui';
 import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
+import { sleep } from '@lib/shared/method';
 import type { CommonList } from '@lib/shared/models/common';
 import type { FollowDetailItem } from '@lib/shared/models/customer';
 
@@ -31,6 +32,8 @@ import {
   getOptFollowRecordList,
   getPersonalFollow,
 } from '@/api/modules';
+
+import useHighlight from './useHighlight';
 
 export type followEnumType =
   | typeof FormDesignKeyEnum.CUSTOMER
@@ -187,9 +190,13 @@ export default function useFollowApi(followProps: {
     };
   }
 
-  async function loadFollowList() {
-    loading.value = true;
+  async function loadFollowList(refresh = true) {
     try {
+      loading.value = true;
+      if (refresh) {
+        pageNation.value.current = 1;
+        data.value = [];
+      }
       const params = {
         sourceId: sourceId.value,
         current: pageNation.value.current || 1,
@@ -200,7 +207,8 @@ export default function useFollowApi(followProps: {
       };
       const res = await apis.list[type.value]?.(params);
       if (res) {
-        data.value = res.list.map((item) => transformField(item));
+        const newList = res.list.map((item) => transformField(item));
+        data.value = data.value.concat(newList);
         pageNation.value.total = res.total;
       }
     } catch (err) {
@@ -241,12 +249,23 @@ export default function useFollowApi(followProps: {
     if (pageNation.value.current > Math.ceil(pageNation.value.total / pageNation.value.pageSize)) {
       return;
     }
-    loadFollowList();
+    loadFollowList(false);
   }
 
-  function searchData(keyword: string) {
+  const { highlightContent, resetHighlight } = useHighlight([
+    '.crm-follow-record-content',
+    '.crm-follow-record-method',
+  ]);
+
+  async function searchData(keyword: string) {
     followKeyword.value = keyword;
     loadFollowList();
+    await sleep(300);
+
+    highlightContent(keyword);
+    if (!keyword) {
+      resetHighlight();
+    }
   }
 
   // 删除
