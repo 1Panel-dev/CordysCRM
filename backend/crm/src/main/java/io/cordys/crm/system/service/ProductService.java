@@ -108,7 +108,7 @@ public class ProductService {
         return baseService.setCreateAndUpdateUserName(productGetResponse);
     }
 
-    @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.ADD, operator = "{#userId}")
+    @OperationLog(module = LogModule.PRODUCT_MANAGEMENT, type = LogType.ADD, resourceName = "{#request.name}", operator = "{#userId}")
     public Product add(ProductEditRequest request, String userId, String orgId) {
         Product product = BeanUtils.copyBean(new Product(), request);
         product.setName(request.getName());

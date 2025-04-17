@@ -324,6 +324,7 @@
             o.id,
             o.NAME,
             o.customer_id,
+            c.NAME AS customerName,
             o.products,
             o.stage,
             o.owner,
@@ -332,6 +333,7 @@
         FROM
             opportunity o
                 INNER JOIN sys_user u ON o.owner = u.id
+                INNER JOIN customer c ON o.customer_id = c.id
         WHERE o.customer_id = #{customerId}
     </select>
 
