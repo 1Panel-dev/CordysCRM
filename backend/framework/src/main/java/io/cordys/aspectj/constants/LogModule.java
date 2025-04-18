@@ -60,6 +60,10 @@ public class LogModule {
      * 客户
      */
     public static final String CUSTOMER_INDEX = "CUSTOMER_INDEX";
+    /**
+     * 线索管理
+     */
+    public static final String CLUE_INDEX = "CLUE_INDEX";
 
     /**
      * 客户联系人
@@ -91,7 +95,7 @@ public class LogModule {
     public static final String PRODUCT_MANAGEMENT = "PRODUCT_MANAGEMENT";
 
     /**
-     * 客户
+     * 客户公海
      */
     public static final String CUSTOMER_POOL = "CUSTOMER_POOL";
 }

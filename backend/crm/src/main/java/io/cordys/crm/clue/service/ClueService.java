@@ -2,6 +2,10 @@ package io.cordys.crm.clue.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
@@ -213,6 +217,7 @@ public class ClueService {
         return baseService.setCreateUpdateOwnerUserName(clueGetResponse);
     }
 
+    @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Clue add(ClueAddRequest request, String userId, String orgId) {
         Clue clue = BeanUtils.copyBean(new Clue(), request);
         clue.setCreateTime(System.currentTimeMillis());
@@ -235,9 +240,11 @@ public class ClueService {
 
         //保存自定义字段
         clueFieldService.saveModuleField(clue.getId(), orgId, userId, request.getModuleFields());
+        baseService.handleAddLog(clue, request.getModuleFields());
         return clue;
     }
 
+    @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Clue update(ClueUpdateRequest request, String userId, String orgId) {
         Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
         dataScopeService.checkDataPermission(userId, orgId, originClue.getOwner());
@@ -259,8 +266,12 @@ public class ClueService {
 
         clueMapper.update(clue);
 
+        // 获取模块字段
+        List<BaseModuleFieldValue> originCustomerFields = clueFieldService.getModuleFieldValuesByResourceId(request.getId());
+
         // 更新模块字段
         updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+        baseService.handleUpdateLog(originClue, clue, originCustomerFields, request.getModuleFields(), originClue.getId(), originClue.getName());
         return clueMapper.selectByPrimaryKey(clue.getId());
     }
 
@@ -353,6 +364,7 @@ public class ClueService {
         clueMapper.update(clue);
     }
 
+    @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
         dataScopeService.checkDataPermission(userId, orgId, clue.getOwner());
@@ -362,6 +374,9 @@ public class ClueService {
         clueFieldService.deleteByResourceId(id);
         // 删除责任人历史
         clueOwnerHistoryService.deleteByClueIds(List.of(id));
+
+        // 设置操作对象
+        OperationLogContext.setResourceName(clue.getName());
 
         // 消息通知
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
