@@ -1,10 +1,8 @@
 package io.cordys.common.resolver.field;
 
 
-import io.cordys.common.util.JSON;
 import io.cordys.crm.system.dto.field.MemberField;
 import org.apache.commons.lang3.BooleanUtils;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author jianxing
@@ -16,6 +14,7 @@ public class MemberResolver extends AbstractModuleFieldResolver<MemberField> {
         if (BooleanUtils.isTrue(memberField.getMultiple())) {
             ModuleFieldResolverFactory.getResolver(ModuleFieldResolverFactory.MULTI_MEMBER)
                     .validate(memberField, value);
+            return;
         }
         validateRequired(memberField, value);
         validateString(memberField.getName(), value);

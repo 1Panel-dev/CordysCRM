@@ -10,10 +10,10 @@ public class DepartmentResolver extends AbstractModuleFieldResolver<DepartmentFi
 		if (BooleanUtils.isTrue(departmentField.getMultiple())) {
 			ModuleFieldResolverFactory.getResolver(ModuleFieldResolverFactory.MULTI_DEPARTMENT)
 					.validate(departmentField, value);
-
+			return;
 		}
 		validateRequired(departmentField, value);
-		validateArray(departmentField.getName(), value);
+		validateString(departmentField.getName(), value);
 	}
 
 	@Override

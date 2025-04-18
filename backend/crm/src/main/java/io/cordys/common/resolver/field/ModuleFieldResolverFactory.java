@@ -21,7 +21,7 @@ public class ModuleFieldResolverFactory {
         resolverMap.put(FieldType.SELECT.name(), new SelectResolver());
         resolverMap.put(FieldType.RADIO.name(), new RadioResolver());
 
-        resolverMap.put(FieldType.CHECKBOX.name(), new MultipleSelectResolver());
+        resolverMap.put(FieldType.CHECKBOX.name(), new CheckBoxResolver());
 
         resolverMap.put(FieldType.INPUT.name(), new TextResolver());
         resolverMap.put(FieldType.TEXTAREA.name(), new TextResolver());
