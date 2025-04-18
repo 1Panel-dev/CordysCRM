@@ -10,10 +10,10 @@ import { setLocalStorage } from '@lib/shared/method/local-storage';
 import {
   closeMessageSubscribe,
   getHomeMessageList,
+  getKey,
   getModuleNavConfigList,
   getUnReadAnnouncement,
 } from '@/api/modules';
-import { getKey } from '@/api/modules/system/login';
 import useUserStore from '@/store/modules/user';
 import { hasAnyPermission } from '@/utils/permission';
 import { getThemeOverrides } from '@/utils/themeOverrides';

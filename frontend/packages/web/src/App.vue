@@ -20,7 +20,7 @@
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method/index';
 
-  import { getWeComOauthCallback } from '@/api/modules/system/login';
+  import { getWeComOauthCallback } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
   import useAppStore from '@/store/modules/app';
 

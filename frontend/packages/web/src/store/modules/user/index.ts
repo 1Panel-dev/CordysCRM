@@ -9,7 +9,7 @@ import type { UserInfo } from '@lib/shared/models/user';
 
 import NotifyContent from '@/views/system/message/components/notifyContent.vue';
 
-import { isLogin, login, signout } from '@/api/modules/system/login';
+import { isLogin, login, signout } from '@/api/modules';
 import useDiscreteApi from '@/hooks/useDiscreteApi';
 import useUser from '@/hooks/useUser';
 import router from '@/router';

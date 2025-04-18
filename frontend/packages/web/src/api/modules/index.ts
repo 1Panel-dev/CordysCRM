@@ -4,6 +4,7 @@ import useCustomerApi from '@lib/shared/api/modules/customer';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
 import useProductApi from '@lib/shared/api/modules/product';
 import useBusinessApi from '@lib/shared/api/modules/system/business';
+import useLoginApi from '@lib/shared/api/modules/system/login';
 import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
@@ -29,6 +30,7 @@ const messageApi = useMessageApi(CDR);
 const moduleApi = useModuleApi(CDR);
 const orgApi = useOrgApi(CDR);
 const roleApi = useRoleApi(CDR);
+const loginApi = useLoginApi(CDR);
 
 export const {
   addProduct,
@@ -287,3 +289,5 @@ export const {
   deleteRole,
   getUsers,
 } = roleApi;
+
+export const { login, signout, isLogin, getKey, getWeComCallback, getWeComOauthCallback } = loginApi;

@@ -521,15 +521,22 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         const options = originalData?.optionMap?.[fieldId];
         let name: string | string[] = '';
         if (dataSourceFieldIds.value.includes(fieldId)) {
+          // 处理数据源字段，需要赋值为数组
           if (typeof item[fieldId] === 'string') {
+            // 单选
             name = [options?.find((e) => e.id === item[fieldId])?.name];
           } else {
+            // 多选
             name = options?.filter((e) => item[fieldId].includes(e.id)).map((e) => e.name) || [];
           }
-        } else {
+        } else if (typeof item[fieldId] === 'string') {
+          // 若值是单个字符串
           name = options?.find((e) => e.id === item[fieldId])?.name;
+        } else {
+          // 若值是数组
+          name = options?.filter((e) => item[fieldId]?.includes(e.id)).map((e) => e.name) || [];
         }
-        if (name) {
+        if (name && name.length > 0) {
           businessFieldAttr[fieldId] = name;
         } else if (addressFieldIds.value.includes(fieldId)) {
           // 地址类型字段，解析代码替换成省市区
@@ -542,21 +549,31 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         const options = originalData?.optionMap?.[field.fieldId];
         let name: string | string[] = '';
         if (dataSourceFieldIds.value.includes(field.fieldId)) {
+          // 处理数据源字段，需要赋值为数组
           if (typeof field.fieldValue === 'string') {
+            // 单选
             name = [options?.find((e) => e.id === field.fieldValue)?.name];
           } else {
+            // 多选
             name = options?.filter((e) => field.fieldValue?.includes(e.id)).map((e) => e.name) || [];
           }
-        } else {
+        } else if (typeof field.fieldValue === 'string') {
+          // 若值是单个字符串
           name = options?.find((e) => e.id === field.fieldValue)?.name;
+        } else {
+          // 若值是数组
+          name = options?.filter((e) => field.fieldValue?.includes(e.id)).map((e) => e.name) || [];
         }
-        if (name) {
+        if (name && name.length > 0) {
           customFieldAttr[field.fieldId] = name;
         } else if (addressFieldIds.value.includes(field.fieldId)) {
           // 地址类型字段，解析代码替换成省市区
           const address = (field.fieldValue as string)?.split('-') || [];
           const value = `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}`;
           customFieldAttr[field.fieldId] = value;
+        } else {
+          // 其他类型字段，直接赋值
+          customFieldAttr[field.fieldId] = field.fieldValue;
         }
       });
       return {

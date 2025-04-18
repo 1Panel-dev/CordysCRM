@@ -9,8 +9,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
 
-  import { getThirdConfigByType } from '@/api/modules';
-  import { getWeComCallback } from '@/api/modules/system/login';
+  import { getThirdConfigByType, getWeComCallback } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
   import useUserStore from '@/store/modules/user';
 
