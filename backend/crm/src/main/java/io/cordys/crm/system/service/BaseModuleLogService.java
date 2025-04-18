@@ -101,6 +101,28 @@ public abstract class BaseModuleLogService {
                 // 设置新值名称
                 differ.setNewValueName(option.getName());
             }
+            if (differ.getOldValue() instanceof List<?> oldValueList) {
+                List<String>oldNameList =new ArrayList<>();
+                for (Object oldValue : oldValueList) {
+                    if (oldValue instanceof String strValue && StringUtils.equals(option.getId(), strValue)) {
+                        // 设置旧值名称
+                        oldNameList.add(option.getName());
+                    }
+                }
+
+                differ.setOldValueName(String.join(",", oldNameList));
+            }
+            if (differ.getNewValue() instanceof List<?> newValueList) {
+                List<String>newNameList =new ArrayList<>();
+                for (Object newValue : newValueList) {
+                    if (newValue instanceof String strValue && StringUtils.equals(option.getId(), strValue)) {
+                        // 设置新值名称
+                        newNameList.add(option.getName());
+                    }
+                }
+                differ.setNewValueName(String.join(",", newNameList));
+            }
+
         }
     }
 
