@@ -1,4 +1,3 @@
-import { sleep } from '@lib/shared/method';
 import { clearToken, hasToken, isLoginExpires } from '@lib/shared/method/auth';
 
 import useUser from '@/hooks/useUser';
@@ -19,36 +18,29 @@ export default function setupUserLoginInfoGuard(router: Router) {
 
     const tokenExists = hasToken(to.name as string);
 
-    // 如果目标页是 login 且已经登录，则重定向到有权限的第一个路由
-    if (to.name === 'login' && tokenExists) {
-      const currentRouteName = getFirstRouteNameByPermission(router.getRoutes());
-      next({ name: currentRouteName });
+    // 未登录访问受限页面重定向登录页
+    if (!tokenExists && to.name !== 'login' && !isWhiteListPage()) {
+      next({
+        name: 'login',
+        query: {
+          redirect: to.name,
+          ...to.query,
+        } as LocationQueryRaw,
+      });
       NProgress.done();
       return;
     }
 
-    // 有 token，直接放行
-    if (to.name !== 'login' && tokenExists) {
-      next();
+    // 已登录访问 login重定向（有权限第一个页面）
+    if (to.name === 'login' && tokenExists) {
+      const firstRoute = getFirstRouteNameByPermission(router.getRoutes());
+      next({ name: firstRoute });
+      NProgress.done();
       return;
     }
 
-    // 去登录页 or 白名单页，（比如公开页面）放行
-    if (to.name === 'login' || isWhiteListPage()) {
-      next();
-      return;
-    }
-
-    // 没 token 且访问受限页面 跳转登录页并带上 redirect
-    next({
-      name: 'login',
-      query: {
-        redirect: to.name,
-        ...to.query,
-      } as LocationQueryRaw,
-    });
-
-    await sleep(0);
+    // 其他情况（放行：已登录访问正常页面\未登录访问白名单页面）
+    next();
     NProgress.done();
   });
 }

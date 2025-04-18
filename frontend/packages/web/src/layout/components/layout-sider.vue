@@ -90,6 +90,7 @@
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
 
   import useMenuTree from '@/hooks/useMenuTree';
+  import useUser from '@/hooks/useUser';
   import type { AppRouteRecordRaw } from '@/router/routes/types';
   import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
@@ -97,6 +98,8 @@
   import { AppRouteEnum } from '@/enums/routeEnum';
 
   import { MenuOption } from 'naive-ui/es/menu/src/interface';
+
+  const { logout } = useUser();
 
   const { t } = useI18n();
   const appStore = useAppStore();
@@ -145,7 +148,7 @@
     router.push({ name: key });
   }
 
-  function personalMenuChange(key: string) {
+  async function personalMenuChange(key: string) {
     personalMenuValue.value = key;
     if (key === AppRouteEnum.PERSONAL_INFO || key === AppRouteEnum.PERSONAL_PLAN) {
       if (key === AppRouteEnum.PERSONAL_INFO) {
@@ -155,8 +158,8 @@
       }
       showPersonalInfo.value = true;
     } else {
-      userStore.logout();
-      router.push({ name: 'login' });
+      await userStore.logout();
+      logout();
     }
   }
 
