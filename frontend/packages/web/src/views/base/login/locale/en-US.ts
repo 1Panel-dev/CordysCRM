@@ -1,5 +1,5 @@
 export default {
-  'login.form.title': 'Open Source Continuous Testing Tools',
+  'login.form.title': 'Intelligent CRM, free and boundaryless',
   'login.form.userName.errMsg': 'Username cannot be empty',
   'login.form.password.errMsg': 'Password cannot be empty',
   'login.form.login.errMsg': 'Login error, refresh and try again',

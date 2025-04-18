@@ -9,7 +9,7 @@
   <div v-else class="login-form" :style="props.isPreview ? 'height: inherit' : 'height: 100vh'">
     <div class="title">
       <div class="flex justify-center">
-        <img :src="innerLogo" class="h-[60px] w-[290px]" />
+        <img :src="innerLogo" class="h-[52px] w-[240px]" />
       </div>
       <div class="title-0 mt-[16px] flex justify-center">
         <span class="title-welcome one-line-text max-w-[300px]">
@@ -18,7 +18,7 @@
       </div>
     </div>
 
-    <div class="form mt-[32px] min-w-[480px]">
+    <div class="form mt-[40px] min-w-[480px]">
       <div v-if="userInfo.authenticate === 'LOCAL'" class="mb-7 text-[18px] font-medium text-[var(--primary-8)]">
         {{ t('login.form.accountLogin') }}
       </div>
@@ -378,6 +378,7 @@
   .login-form {
     @apply flex flex-1 flex-col items-center justify-center;
     .title-welcome {
+      font-size: 20px;
       color: var(--primary-8);
     }
     .form {

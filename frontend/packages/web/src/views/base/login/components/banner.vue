@@ -15,7 +15,7 @@
   }>();
 
   const innerBanner = computed(() => {
-    return props.banner || '/images/login-banner.jpg';
+    return props.banner || '/images/login-banner.png';
   });
 </script>
 

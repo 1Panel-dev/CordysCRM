@@ -28,7 +28,7 @@ const defaultThemeConfig = {
   customTheme: '#008d91',
 };
 const defaultLoginConfig = {
-  title: 'Cordys',
+  title: 'CORDYS',
   icon: [],
   loginLogo: [],
   loginImage: [],
@@ -36,7 +36,7 @@ const defaultLoginConfig = {
 };
 const defaultPlatformConfig = {
   logoPlatform: [],
-  platformName: 'Cordys',
+  platformName: 'CORDYS',
   helpDoc: 'https://metersphere.io/docs/v3.x/',
 };
 

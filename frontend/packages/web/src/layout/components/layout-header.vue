@@ -1,14 +1,14 @@
 <template>
   <n-layout-header class="flex" bordered>
-    <div class="flex w-[180px] items-center gap-[4px] px-[30px] py-[12px]">
-      <img :src="props.logo ?? '/logo.png'" width="32px" height="32px" />
+    <div class="flex w-[200px] items-center gap-[4px] px-[30px] py-[12px]">
+      <img :src="props.logo ?? '/logo.svg'" width="32px" height="32px" />
       <n-tooltip :delay="300">
         <template #trigger>
           <div class="one-line-text text-[20px] font-semibold leading-[32px]">
-            {{ props.name ?? 'Cordys' }}
+            {{ props.name ?? 'CORDYS' }}
           </div>
         </template>
-        {{ props.name ?? 'Cordys' }}
+        {{ props.name ?? 'CORDYS' }}
       </n-tooltip>
     </div>
     <div class="flex flex-1 items-center justify-between px-[16px]">
