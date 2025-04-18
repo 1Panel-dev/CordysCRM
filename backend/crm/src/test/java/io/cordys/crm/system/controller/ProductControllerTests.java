@@ -24,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -97,7 +98,7 @@ class ProductControllerTests extends BaseTest {
         // 请求成功
         ProductEditRequest request = new ProductEditRequest();
         request.setName("product");
-        request.setPrice(7.23d);
+        request.setPrice(BigDecimal.valueOf(7.23d));
         request.setStatus("1");
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Product resultData = getResultData(mvcResult, Product.class);
@@ -120,7 +121,7 @@ class ProductControllerTests extends BaseTest {
         moduleFieldStatusId = moduleFieldStatus.getId();
         request = new ProductEditRequest();
         request.setName("productOne");
-        request.setPrice(7.23d);
+        request.setPrice(BigDecimal.valueOf(7.23d));
         request.setStatus("1");
 
         request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 12),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
@@ -133,7 +134,7 @@ class ProductControllerTests extends BaseTest {
 
         request = new ProductEditRequest();
         request.setName("productTwo");
-        request.setPrice(7.23d);
+        request.setPrice(BigDecimal.valueOf(7.23d));
         request.setStatus("1");
         request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 14),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
@@ -144,7 +145,7 @@ class ProductControllerTests extends BaseTest {
         batchIds.add(product.getId());
         request = new ProductEditRequest();
         request.setName("productThree");
-        request.setPrice(7.23d);
+        request.setPrice(BigDecimal.valueOf(7.23d));
         request.setStatus("1");
         request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
@@ -163,7 +164,7 @@ class ProductControllerTests extends BaseTest {
         ProductEditRequest request = new ProductEditRequest();
         request.setName("product");
         request.setId(addProduct.getId());
-        request.setPrice(5.66d);
+        request.setPrice(BigDecimal.valueOf(7.23d));
         request.setStatus("2");
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         Product product = productBaseMapper.selectByPrimaryKey(addProduct.getId());
@@ -227,13 +228,13 @@ class ProductControllerTests extends BaseTest {
         // 请求成功
         ProductBatchEditRequest request = new ProductBatchEditRequest();
         request.setIds(batchIds);
-        request.setPrice(3.00d);
+        request.setPrice(BigDecimal.valueOf(3.00d));
         List<BaseModuleFieldValue> baseModuleFieldValues = List.of(new BaseModuleFieldValue(moduleFieldPriceId, 15), new BaseModuleFieldValue(moduleFieldStatusId, "2"));
         request.setModuleFields(baseModuleFieldValues);
         this.requestPostWithOk("batch/update", request);
         MvcResult mvcResult = this.requestGetWithOkAndReturn(DEFAULT_GET, batchIds.getFirst());
         ProductGetResponse getResponse = getResultData(mvcResult, ProductGetResponse.class);
-        Assertions.assertEquals(3.00d, getResponse.getPrice());
+        Assertions.assertEquals(BigDecimal.valueOf(300,2), getResponse.getPrice());
         for (BaseModuleFieldValue moduleField : getResponse.getModuleFields()) {
             if (StringUtils.equalsAnyIgnoreCase(moduleField.getFieldId(), moduleFieldStatusId)) {
                 Assertions.assertEquals("2",moduleField.getFieldValue());

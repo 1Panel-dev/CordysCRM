@@ -4,6 +4,7 @@ import io.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -19,7 +20,7 @@ public class ProductListResponse {
     private String name;
 
     @Schema(description = "价格")
-    private Double price;
+    private BigDecimal price;
 
     @Schema(description = "状态")
     private String status;

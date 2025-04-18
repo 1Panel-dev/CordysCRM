@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -21,7 +22,7 @@ public class ProductBatchEditRequest {
     private List<String> ids;
 
     @Schema(description = "价格")
-    private Double price;
+    private BigDecimal price;
 
     @Schema(description = "状态")
     private String status;
