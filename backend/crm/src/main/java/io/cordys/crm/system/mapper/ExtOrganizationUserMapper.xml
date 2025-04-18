@@ -102,6 +102,8 @@
         SELECT
         su.id,
         su.name,
+        su.email,
+        su.phone,
         su.password,
         sou.enable
         from sys_user su
