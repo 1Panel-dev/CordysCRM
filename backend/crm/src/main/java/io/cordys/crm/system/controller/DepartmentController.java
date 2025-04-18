@@ -47,7 +47,7 @@ public class DepartmentController {
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_UPDATE)
     @Operation(summary = "组织架构-重命名子部门")
     public void rename(@Validated @RequestBody DepartmentRenameRequest request) {
-        departmentService.rename(request, SessionUtils.getUserId());
+        departmentService.rename(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

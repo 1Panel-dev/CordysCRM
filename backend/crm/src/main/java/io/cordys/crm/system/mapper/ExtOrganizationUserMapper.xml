@@ -94,6 +94,8 @@
         <foreach collection="request.ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
+        and phone is not null and
+        <![CDATA[ phone <> '' ]]>
     </select>
 
     <select id="getEnableUser" resultType="io.cordys.security.UserDTO">

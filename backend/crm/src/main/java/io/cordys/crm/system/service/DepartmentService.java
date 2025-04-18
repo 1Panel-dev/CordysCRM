@@ -120,7 +120,8 @@ public class DepartmentService extends MoveNodeService {
      * @param userId
      */
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE)
-    public void rename(DepartmentRenameRequest request, String userId) {
+    @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
+    public void rename(DepartmentRenameRequest request, String userId, String orgId) {
         Department originalDepartment = checkDepartment(request.getId());
         checkDepartmentName(request.getName(), originalDepartment.getParentId(), originalDepartment.getOrganizationId());
 

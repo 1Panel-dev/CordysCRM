@@ -393,6 +393,10 @@ public class OrganizationUserService {
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, resourceId = "{#userId}", operator = "{#operatorId}")
     public void resetPassword(String userId, String operatorId) {
         User user = userMapper.selectByPrimaryKey(userId);
+        if (StringUtils.isBlank(user.getPhone())) {
+            throw new GenericException(Translator.get("user_phone_not_exist"));
+        }
+
         user.setPassword(
                 userId.equals(InternalUser.ADMIN.getValue())
                         ? CodingUtils.md5(DEFAULT_USER_PASSWORD)
@@ -457,6 +461,9 @@ public class OrganizationUserService {
      */
     public void batchResetPassword(UserBatchRequest request, String operatorId, String orgId) {
         List<User> userList = extOrganizationUserMapper.getUserList(request);
+        if (CollectionUtils.isEmpty(userList)) {
+            throw new GenericException(Translator.get("user_phone_not_exist"));
+        }
 
         List<LogDTO> logDTOS = new ArrayList<>();
         User originPasswdUser = new User();
