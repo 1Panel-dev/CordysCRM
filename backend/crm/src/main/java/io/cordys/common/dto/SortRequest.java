@@ -1,7 +1,6 @@
 package io.cordys.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +17,7 @@ import java.util.regex.Matcher;
 @AllArgsConstructor
 public class SortRequest {
 
-    @Pattern(regexp = "^[A-Za-z]+$")
+    @Pattern(regexp = "^[A-Za-z0-9]+$")
     @Schema(description = "排序字段")
     private String name;
 
