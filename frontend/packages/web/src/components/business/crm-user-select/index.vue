@@ -100,6 +100,10 @@
   onMounted(() => {
     loadUsers();
   });
+
+  defineExpose({
+    loadUsers,
+  });
 </script>
 
 <style scoped></style>

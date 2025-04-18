@@ -13,7 +13,6 @@
 </template>
 
 <script setup lang="ts">
-  import { useRouter } from 'vue-router';
   import { dateEnUS, dateZhCN, enUS, NConfigProvider, NDialogProvider, NMessageProvider, zhCN } from 'naive-ui';
 
   import useLocale from '@lib/shared/locale/useLocale';
@@ -22,18 +21,18 @@
 
   import { getWeComOauthCallback } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
+  import useUser from '@/hooks/useUser';
   import useAppStore from '@/store/modules/app';
-
-  import { AppRouteEnum } from '@/enums/routeEnum';
 
   import useDiscreteApi from './hooks/useDiscreteApi';
   import { WHITE_LIST } from './router/constants';
   import useUserStore from './store/modules/user';
 
+  const { goUserHasPermissionPage } = useUser();
+
   const { setLoading } = useLoading();
   const { message } = useDiscreteApi();
 
-  const router = useRouter();
   const userStore = useUserStore();
   const { currentLocale } = useLocale(message.loading);
   const appStore = useAppStore();
@@ -55,13 +54,8 @@
         if (boolean) {
           setLoginExpires();
           setLoginType('WE_COM_OAUTH2');
-          const { redirect, ...othersQuery } = router.currentRoute.value.query;
-          await router.push({
-            name: (redirect as string) || AppRouteEnum.SYSTEM,
-            query: {
-              ...othersQuery,
-            },
-          });
+
+          goUserHasPermissionPage();
           setLoading(false);
           await userStore.getAuthentication();
         }

@@ -97,6 +97,7 @@
             :label="t('org.directSuperior')"
           >
             <CrmUserSelect
+              ref="crmUserSelectRef"
               v-model:value="form.supervisorId"
               value-field="id"
               label-field="name"
@@ -293,6 +294,8 @@
     emit('close');
   }
 
+  const crmUserSelectRef = ref<InstanceType<typeof CrmUserSelect>>();
+
   function handleSave(isContinue: boolean) {
     formRef.value?.validate(async (error) => {
       if (!error) {
@@ -308,6 +311,7 @@
 
           if (isContinue) {
             form.value = cloneDeep(initUserForm);
+            crmUserSelectRef.value?.loadUsers();
           } else {
             cancelHandler();
           }

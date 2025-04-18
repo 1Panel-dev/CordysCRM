@@ -3,7 +3,6 @@
 </template>
 
 <script lang="ts" setup>
-  import { useRouter } from 'vue-router';
   import { useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -11,18 +10,18 @@
 
   import { getThirdConfigByType, getWeComCallback } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
+  import useUser from '@/hooks/useUser';
   import useUserStore from '@/store/modules/user';
-
-  import { AppRouteEnum } from '@/enums/routeEnum';
 
   import * as ww from '@wecom/jssdk';
   import { WWLoginErrorResp, WWLoginPanelSizeType, WWLoginRedirectType, WWLoginType } from '@wecom/jssdk';
+
+  const { goUserHasPermissionPage } = useUser();
 
   const { t } = useI18n();
   const { setLoading } = useLoading();
 
   const userStore = useUserStore();
-  const router = useRouter();
   const Message = useMessage();
 
   const wwLogin = ref({});
@@ -52,13 +51,7 @@
           setLoginExpires();
           setLoginType('QR_CODE');
           Message.success(t('login.form.login.success'));
-          const { redirect, ...othersQuery } = router.currentRoute.value.query;
-          router.push({
-            name: (redirect as string) || AppRouteEnum.SYSTEM,
-            query: {
-              ...othersQuery,
-            },
-          });
+          goUserHasPermissionPage();
         }
         setLoading(false);
         userStore.getAuthentication();

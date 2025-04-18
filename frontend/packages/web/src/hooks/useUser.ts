@@ -1,8 +1,9 @@
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import router from '@/router';
-import { WHITE_LIST } from '@/router/constants';
+import { NO_RESOURCE_ROUTE_NAME, WHITE_LIST } from '@/router/constants';
 import useUserStore from '@/store/modules/user';
+import { getFirstRouteNameByPermission, routerNameHasPermission } from '@/utils/permission';
 
 import useDiscreteApi from './useDiscreteApi';
 
@@ -42,9 +43,25 @@ export default function useUser() {
     return WHITE_LIST.some((e) => e.path.includes(currentRoute.path));
   };
 
+  const goUserHasPermissionPage = () => {
+    const { redirect, ...othersQuery } = router.currentRoute.value.query;
+    const currentRouteName = getFirstRouteNameByPermission(router.getRoutes());
+    const redirectHasPermission =
+      redirect &&
+      ![NO_RESOURCE_ROUTE_NAME].includes(redirect as string) &&
+      routerNameHasPermission(redirect as string, router.getRoutes());
+    router.push({
+      name: redirectHasPermission ? (redirect as string) : currentRouteName,
+      query: {
+        ...othersQuery,
+      },
+    });
+  };
+
   return {
     logout,
     isLoginPage,
     isWhiteListPage,
+    goUserHasPermissionPage,
   };
 }
