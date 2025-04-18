@@ -127,7 +127,7 @@
   import { FormInst, NButton, NDivider, NForm, NFormItem, NInput, NSpin, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getLoginType, setLoginExpires, setLoginType } from '@lib/shared/method/auth';
+  import {clearToken, getLoginType, isLoginExpires, setLoginExpires, setLoginType} from '@lib/shared/method/auth';
   import { encrypted } from '@lib/shared/method/index';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -358,7 +358,12 @@
       initPlatformInfo();
       appStore.initPublicKey();
       try {
-        preheat.value = await userStore.isLogin();
+        if (isLoginExpires()) {
+          Message.warning(t('message.loginExpired'));
+          clearToken();
+        } else {
+          preheat.value = await userStore.isLogin();
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.log(e);
