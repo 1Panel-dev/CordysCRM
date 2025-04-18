@@ -12,7 +12,7 @@
     @update:show="updateShow"
   >
     <slot>
-      <n-button quaternary type="primary" class="text-btn-primary" @click="handleRemove">
+      <n-button text type="primary" @click="handleRemove">
         {{ t('common.remove') }}
       </n-button>
     </slot>

@@ -84,18 +84,32 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       borderPrimary: `1px solid ${getLessVariableValue('--primary-8')}`,
       borderHoverPrimary: `1px solid ${getLessVariableValue('--primary-1')}`,
       borderPressedPrimary: `1px solid ${getLessVariableValue('--primary-0')}`,
-      borderFocusPrimary: `1px solid ${getLessVariableValue('--primary-0')}`,
+      borderFocusPrimary: `1px solid ${getLessVariableValue('--primary-8')}`,
       borderDisabledPrimary: `1px solid ${getLessVariableValue('--primary-4')}`,
-      textColorFocusPrimary: getLessVariableValue('--text-n9'),
+
       colorPrimary: getLessVariableValue('--primary-8'),
       colorHoverPrimary: getLessVariableValue('--primary-1'),
       colorPressedPrimary: getLessVariableValue('--primary-0'),
-      colorFocusPrimary: getLessVariableValue('--primary-0'),
+      colorFocusPrimary: getLessVariableValue('--primary-8'),
       colorDisabledPrimary: getLessVariableValue('--primary-4'),
+      // 文字主题按钮
       textColorPrimary: getLessVariableValue('--text-n9'),
       textColorHoverPrimary: getLessVariableValue('--text-n9'),
       textColorPressedPrimary: getLessVariableValue('--text-n9'),
+      textColorFocusPrimary: getLessVariableValue('--text-n9'),
       textColorDisabledPrimary: getLessVariableValue('--text-n9'),
+      textColorTextPrimary: getLessVariableValue('--primary-8'),
+      textColorTextHoverPrimary: getLessVariableValue('--primary-8'),
+      textColorTextPressedPrimary: getLessVariableValue('--primary-0'),
+      textColorTextDisabledPrimary: getLessVariableValue('--primary-4'),
+
+      // 文本按钮
+      textColorText: getLessVariableValue('--text-n1'),
+      textColorTextHover: getLessVariableValue('--text-n1'),
+      textColorTextPressed: getLessVariableValue('--text-n1'),
+      textColorTextFocus: getLessVariableValue('--text-n1'),
+      textColorTextDisabled: getLessVariableValue('--text-n6'),
+
       // 次要按钮
       colorSecondary: getLessVariableValue('--text-n8'),
       colorSecondaryHover: getLessVariableValue('--text-n9'),
@@ -121,7 +135,9 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       textColorTextDisabledError: getLessVariableValue('--error-3'),
       // ghost主题按钮无背景
       textColorGhostPrimary: getLessVariableValue('--primary-8'),
-      textColorGhostHoverPrimary: getLessVariableValue('--primary-1'),
+      textColorGhostHoverPrimary: getLessVariableValue('--primary-8'),
+      textColorGhostFocusPrimary: getLessVariableValue('--primary-8'),
+      colorQuaternaryPressed: getLessVariableValue('--text-n7'),
       // 按钮尺寸大小字体设置
       fontSizeSmall: '12px',
       fontSizeMedium: '14px',
