@@ -21,7 +21,7 @@
     <n-input
       v-if="props.fieldConfig.locationType === 'detail'"
       v-model:value="detail"
-      :maxlength="1000"
+      :maxlength="200"
       :placeholder="t('crmFormCreate.advanced.inputLocationDetail')"
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"

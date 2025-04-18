@@ -63,6 +63,7 @@
       disabled(row: RowData) {
         return props.disabledSelection ? props.disabledSelection(row) : false;
       },
+      resizable: false,
     },
     {
       title: t('common.name'),
@@ -71,6 +72,7 @@
       ellipsis: {
         tooltip: true,
       },
+      resizable: false,
     },
   ];
 
@@ -78,6 +80,7 @@
     columns.push({
       title: t('crmFormDesign.phone'),
       key: 'phone',
+      resizable: false,
     });
   }
 

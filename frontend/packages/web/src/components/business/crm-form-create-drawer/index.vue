@@ -71,6 +71,7 @@
     initFormConfig,
     initFormDetail,
     saveForm,
+    resetForm,
   } = useFormCreateApi({
     formKey: toRefs(props).formKey,
     sourceId: toRefs(props).sourceId,
@@ -120,6 +121,8 @@
         if (props.sourceId && props.needInitDetail) {
           initFormDetail();
         }
+      } else {
+        resetForm();
       }
     },
     {

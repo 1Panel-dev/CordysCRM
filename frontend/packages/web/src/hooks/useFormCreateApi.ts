@@ -331,9 +331,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS) {
       return t('clue.convertToOpportunity');
     }
-    const prefix = props.sourceId?.value && props.needInitDetail?.value ? t('common.edit') : t('common.add');
+    const prefix = props.sourceId?.value && props.needInitDetail?.value ? t('common.edit') : t('common.newCreate');
     return `${prefix}${t(`crmFormCreate.drawer.${props.formKey.value}`)}`;
   });
+
+  function resetForm() {
+    formDetail.value = {};
+  }
 
   return {
     descriptions,
@@ -349,5 +353,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     initFormConfig,
     initFormDetail,
     saveForm,
+    resetForm,
   };
 }

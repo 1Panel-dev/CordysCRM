@@ -170,6 +170,10 @@
     return 'string';
   }
 
+  function resetForm() {
+    form.value = {};
+  }
+
   watch(
     () => list.value,
     () => {
@@ -221,6 +225,10 @@
     },
     { immediate: true }
   );
+
+  defineExpose({
+    resetForm,
+  });
 </script>
 
 <style lang="less">

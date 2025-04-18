@@ -3,4 +3,5 @@ export default {
   'crmFormCreate.advanced.overSize': '文件大小限制为 {size} MB，请重新选择文件',
   'crmFormCreate.advanced.selectLocation': '请选择地址',
   'crmFormCreate.advanced.inputLocationDetail': '请输入详细地址',
+  'crmFormCreate.basic.tagInputLimitTip': '标签数量最大为 10 个',
 };

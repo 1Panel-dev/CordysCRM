@@ -50,6 +50,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -202,7 +203,7 @@
   function handleDelete(row: any) {
     openModal({
       type: 'error',
-      title: t('common.deleteConfirmTitle', { name: row.name }),
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('customer.batchDeleteContentTip'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),

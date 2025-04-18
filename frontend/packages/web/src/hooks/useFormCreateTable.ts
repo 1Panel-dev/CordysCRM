@@ -394,15 +394,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           if (field.businessKey && !props.excludeFieldIds?.includes(field.businessKey)) {
             businessFieldIds.value.push(field.businessKey);
           }
-          if (
-            [
-              FieldTypeEnum.RADIO,
-              FieldTypeEnum.CHECKBOX,
-              FieldTypeEnum.SELECT,
-              FieldTypeEnum.MEMBER,
-              FieldTypeEnum.DEPARTMENT,
-            ].includes(field.type)
-          ) {
+          if ([FieldTypeEnum.RADIO, FieldTypeEnum.CHECKBOX, FieldTypeEnum.SELECT].includes(field.type)) {
             // 带筛选的列
             return {
               title: field.name,

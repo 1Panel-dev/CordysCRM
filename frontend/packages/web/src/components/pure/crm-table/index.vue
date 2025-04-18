@@ -186,7 +186,7 @@
         ...sorterColumn,
         ...filterColumn,
         titleAlign: 'left',
-        resizable: true,
+        resizable: column.resizable !== undefined ? column.resizable : true,
         render,
       };
     });

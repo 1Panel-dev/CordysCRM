@@ -3,4 +3,5 @@ export default {
   'crmFormCreate.advanced.overSize': 'The file size limit is {size} MB, please reselect the file',
   'crmFormCreate.advanced.selectLocation': 'Please select the address',
   'crmFormCreate.advanced.inputLocationDetail': 'Please enter the detailed address',
+  'crmFormCreate.basic.tagInputLimitTip': 'The maximum number of tags is 10',
 };
