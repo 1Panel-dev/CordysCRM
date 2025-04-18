@@ -22,6 +22,13 @@
       </template>
       <template #actionRight>
         <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+        <CrmAdvanceFilter
+          ref="msAdvanceFilterRef"
+          v-model:keyword="keyword"
+          :custom-fields-config-list="filterConfigList"
+          :filter-config-list="customFieldsFilterConfig"
+          @adv-search="handleAdvSearch"
+        />
       </template>
     </CrmTable>
   </CrmCard>
@@ -45,12 +52,14 @@
   import { VNodeChild } from 'vue';
   import { DataTableRowKey, NSelect, useMessage } from 'naive-ui';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { TableQueryParams } from '@lib/shared/models/common';
 
+  import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
+  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -330,7 +339,7 @@
     }
   }
 
-  const { useTableRes } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
     operationColumn: {
       key: 'operation',
@@ -372,8 +381,26 @@
       },
     },
   });
-  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams } = useTableRes;
+  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   batchTableQueryParams.value = tableQueryParams;
+
+  const filterConfigList = [
+    {
+      title: t('common.createTime'),
+      dataIndex: 'createTime',
+      type: FieldTypeEnum.DATE_TIME,
+    },
+    {
+      title: t('common.updateTime'),
+      dataIndex: 'updateTime',
+      type: FieldTypeEnum.DATE_TIME,
+    },
+  ];
+  function handleAdvSearch(filter: FilterResult) {
+    keyword.value = '';
+    setAdvanceFilter(filter);
+    loadList();
+  }
 
   function searchData(_keyword?: string, poolId?: string) {
     setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: poolId || openSea.value });

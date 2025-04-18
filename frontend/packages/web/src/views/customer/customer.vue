@@ -22,6 +22,13 @@
       </template>
       <template #actionRight>
         <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+        <CrmAdvanceFilter
+          ref="msAdvanceFilterRef"
+          v-model:keyword="keyword"
+          :custom-fields-config-list="filterConfigList"
+          :filter-config-list="customFieldsFilterConfig"
+          @adv-search="handleAdvSearch"
+        />
       </template>
     </CrmTable>
   </CrmCard>
@@ -47,11 +54,13 @@
   import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
 
+  import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
+  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -72,6 +81,7 @@
     deleteCustomer,
     updateCustomer,
   } from '@/api/modules';
+  import { filterConfigList as clueFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
 
@@ -315,7 +325,7 @@
   // 概览
   const showOverviewDrawer = ref(false);
 
-  const { useTableRes } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER,
     operationColumn: {
       key: 'operation',
@@ -361,7 +371,21 @@
       },
     },
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
+  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  const filterConfigList = [
+    {
+      title: t('common.head'),
+      dataIndex: 'ownerName',
+      type: FieldTypeEnum.USER_SELECT,
+    },
+    ...clueFilterConfigList,
+  ];
+  function handleAdvSearch(filter: FilterResult) {
+    keyword.value = '';
+    setAdvanceFilter(filter);
+    loadList();
+  }
 
   function searchData() {
     setLoadListParams({ keyword: keyword.value, searchType: activeTab.value });

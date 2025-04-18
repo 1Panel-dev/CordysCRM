@@ -12,7 +12,7 @@ const internalFilterKeyMap: Record<FormDesignKeyEnum, string[]> = {
   [FormDesignKeyEnum.CLUE_POOL]: ['clueName', 'clueSource', 'clueProgress'],
   [FormDesignKeyEnum.CONTACT]: [],
   [FormDesignKeyEnum.CUSTOMER_CONTACT]: [],
-  [FormDesignKeyEnum.CUSTOMER]: [],
+  [FormDesignKeyEnum.CUSTOMER]: ['customerName', 'customerLevel', 'customerSource', 'customerType'],
   [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: [],
   [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: [],
   [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: [],
@@ -20,7 +20,7 @@ const internalFilterKeyMap: Record<FormDesignKeyEnum, string[]> = {
   [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: [],
   [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: [],
   [FormDesignKeyEnum.PRODUCT]: [],
-  [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: [],
+  [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: ['customerName', 'customerLevel', 'customerSource', 'customerType'],
 };
 
 export default function useFormCreateFilter(formKey: FormDesignKeyEnum) {
