@@ -282,4 +282,11 @@
                             collection_time = #{customer.collectionTime}, update_time = #{customer.updateTime}, update_user = #{customer.updateUser}
         where id = #{customer.id}
     </update>
+
+    <select id="hasRefOpportunity" resultType="java.lang.Boolean">
+        select count(1) from opportunity where customer_id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

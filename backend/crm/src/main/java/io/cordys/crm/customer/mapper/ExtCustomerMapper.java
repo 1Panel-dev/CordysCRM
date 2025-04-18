@@ -42,4 +42,7 @@ public interface ExtCustomerMapper {
     List<OptionDTO> getCustomerOptions(@Param("keyword") String keyword, @Param("orgId") String orgId);
 
     List<OptionDTO> getCustomerOptionsByIds(@Param("ids") List<String> ids);
+
+    boolean hasRefOpportunity(@Param("ids") List<String> ids);
+
 }

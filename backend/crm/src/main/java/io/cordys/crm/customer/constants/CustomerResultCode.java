@@ -8,7 +8,8 @@ import io.cordys.common.exception.IResultCode;
 public enum CustomerResultCode implements IResultCode {
 
     CUSTOMER_EXIST(102001, "customer.exist"),
-    CUSTOMER_CONTACT_EXIST(102002, "customer_contact.exist");
+    CUSTOMER_CONTACT_EXIST(102002, "customer_contact.exist"),
+    CUSTOMER_OPPORTUNITY_REF(102003, "customer.opportunity.exist");
 
     private final int code;
     private final String message;
