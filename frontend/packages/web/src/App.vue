@@ -23,7 +23,6 @@
   import { getWeComOauthCallback } from '@/api/modules/system/login';
   import useLoading from '@/hooks/useLoading';
   import useAppStore from '@/store/modules/app';
-  import { hasAnyPermission } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
