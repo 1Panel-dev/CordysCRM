@@ -359,6 +359,7 @@
       appStore.initPublicKey();
       try {
         if (isLoginExpires()) {
+          preheat.value = false;
           Message.warning(t('message.loginExpired'));
           clearToken();
         } else {
