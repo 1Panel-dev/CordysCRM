@@ -89,3 +89,9 @@ export interface OrgUserInfo extends Omit<UserInfo, 'roles'> {
   departmentName: string;
   roles: MemberRoleItem[];
 }
+
+export interface DragNodeParams {
+  dragNodeId: string;
+  dropNodeId: string;
+  dropPosition: -1 | 1; // -1：dropNodeId节点之前。 1：dropNodeId节点后）
+}

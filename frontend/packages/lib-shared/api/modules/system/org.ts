@@ -21,12 +21,14 @@ import {
   renameDepartmentUrl,
   resetUserPasswordUrl,
   setCommanderUrl,
+  sortDepartmentUrl,
   syncOrgUrl,
   updateUserUrl,
 } from '@lib/shared/api/requrls/system/org';
 import type { CommonList } from '@lib/shared/models/common';
 import type {
   DepartmentItemParams,
+  DragNodeParams,
   MemberItem,
   MemberParams,
   SetCommanderParams,
@@ -66,6 +68,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${checkDeleteDepartmentUrl}/${id}` });
   }
 
+  // 组织架构-部门排序
+  function sortDepartment(data: DragNodeParams) {
+    return CDR.post({ url: sortDepartmentUrl, data });
+  }
+
   // 用户(员工)-添加员工
   function addUser(data: MemberParams) {
     return CDR.post({ url: addUserUrl, data });
@@ -101,7 +108,7 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${resetUserPasswordUrl}/${userId}` });
   }
 
-  // 用户(员工)- 同步组织架构 TODO 类型
+  // 用户(员工)- 同步组织架构
   function syncOrg(type: string) {
     return CDR.get({ url: `${syncOrgUrl}/${type}` });
   }
@@ -167,5 +174,6 @@ export default function useProductApi(CDR: CordysAxios) {
     deleteUserCheck,
     checkSyncUserFromThird,
     checkDeleteDepartment,
+    sortDepartment,
   };
 }

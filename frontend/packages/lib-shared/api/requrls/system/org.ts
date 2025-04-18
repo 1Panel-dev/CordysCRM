@@ -5,6 +5,7 @@ export const addDepartmentUrl = '/department/add'; // 组织架构-添加子部�
 export const getDepartmentTreeUrl = '/department/tree'; // 组织架构-部门树查询
 export const deleteDepartmentUrl = '/department/delete'; // 组织架构-删除部门
 export const checkDeleteDepartmentUrl = '/department/delete/check'; // 组织架构-删除部门校验
+export const sortDepartmentUrl = '/department/sort'; // 组织架构-部门排序
 // 员工
 export const addUserUrl = '/user/add'; // 用户(员工)-添加员工
 export const updateUserUrl = '/user/update'; // 用户(员工)-更新员工

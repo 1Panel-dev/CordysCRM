@@ -66,6 +66,7 @@
     deleteDepartment,
     getDepartmentTree,
     renameDepartment,
+    sortDepartment,
   } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -274,7 +275,12 @@
     dropPosition: 'before' | 'inside' | 'after'
   ) {
     try {
-      console.log(dragNode, dropNode, dropPosition);
+      await sortDepartment({
+        dragNodeId: dragNode.id,
+        dropNodeId: dropNode.id,
+        dropPosition: dropPosition === 'after' ? 1 : -1,
+      });
+      initTree();
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
