@@ -43,7 +43,7 @@ public class ShiroFilter {
 
         // 暂定 favicon.ico 和 logo.png 为匿名访问
         filterChainDefinitionMap.put("/favicon.ico", "anon");
-        filterChainDefinitionMap.put("/logo.png", "anon");
+        filterChainDefinitionMap.put("/logo.*", "anon");
         filterChainDefinitionMap.put("/base-display/**", "anon");
 
         // Swagger API 文档相关路径
