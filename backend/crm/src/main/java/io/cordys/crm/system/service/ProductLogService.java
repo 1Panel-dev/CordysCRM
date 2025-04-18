@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -64,10 +65,10 @@ public class ProductLogService extends BaseModuleLogService {
             }
             if (StringUtils.equals(differ.getColumn(), timeModuleFieldId)) {
                 if (differ.getOldValue()!=null) {
-                    differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(differ.getOldValue()));
+                    differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getOldValue().toString())));
                 }
                 if (differ.getNewValue()!=null) {
-                    differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(differ.getNewValue()));
+                    differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getNewValue().toString())));
                 }
             }
 
