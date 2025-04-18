@@ -74,8 +74,10 @@
   import { CascaderOption, NButton, NCascader, NDatePicker, NForm, NFormItem, NSelect } from 'naive-ui';
   import dayjs from 'dayjs';
 
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OperationTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getCityPath } from '@lib/shared/method';
   import type { OperationLogDetail, OperationLogItem, OperationLogParams } from '@lib/shared/models/system/log';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -92,6 +94,7 @@
   import { getUserOptions } from '@/api/modules';
   import { operationLogDetail, operationLogList } from '@/api/modules/system/log';
   import { logTypeOption } from '@/config/system';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import usePathMap from '@/hooks/usePathMap';
 
   const { t } = useI18n();
@@ -138,9 +141,38 @@
   const activeLogDetail = ref<OperationLogDetail>();
   const showDetailDrawer = ref(false);
 
+  function cityFormat(val: string) {
+    const address = val?.split('-');
+    return address ? `${getCityPath(address[0])}-${address[1]}` : '-';
+  }
+
+  const moduleFormKeyMap: Record<string, FormDesignKeyEnum> = {
+    PRODUCT_MANAGEMENT: FormDesignKeyEnum.PRODUCT,
+    CUSTOMER_INDEX: FormDesignKeyEnum.CUSTOMER,
+    CLUE_MANAGEMENT: FormDesignKeyEnum.CLUE,
+    OPPORTUNITY: FormDesignKeyEnum.BUSINESS,
+    FOLLOW_UP_RECORD: FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER,
+    FOLLOW_UP_PLAN: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
+  };
+
   async function getLogDetail(id: string) {
     try {
       activeLogDetail.value = await operationLogDetail(id);
+      // 处理地址字段的值
+      const matchedKey = Object.keys(moduleFormKeyMap).find((module) => activeLogDetail.value?.module === module);
+      if (matchedKey) {
+        const { fieldList, initFormConfig } = useFormCreateApi({
+          formKey: ref(moduleFormKeyMap[matchedKey]),
+        });
+        await initFormConfig();
+        const locationId = fieldList.value.find((item) => item.type === FieldTypeEnum.LOCATION)?.id;
+        activeLogDetail.value.diffs?.forEach((item) => {
+          if (item.column === locationId) {
+            item.newValueName = cityFormat(item.newValueName);
+            item.oldValueName = cityFormat(item.oldValueName);
+          }
+        });
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);

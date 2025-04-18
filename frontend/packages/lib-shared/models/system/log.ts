@@ -33,11 +33,11 @@ export interface OperationLogItem {
 
 export interface OperationLogDetailDiffItem {
   column: string;
-  oldValue: Record<string, any>;
-  newValue: Record<string, any>;
+  oldValue: string;
+  newValue: string;
   columnName: string;
-  oldValueName: Record<string, any>;
-  newValueName: Record<string, any>;
+  oldValueName: string;
+  newValueName: string;
   type: string;
 }
 

@@ -23,6 +23,7 @@
       :form-key="FormDesignKeyEnum.CONTACT"
       :source-id="activeContactId"
       :need-init-detail="needInitDetail"
+      @saved="loadList"
     />
     <!-- 停用 -->
     <CrmModal
