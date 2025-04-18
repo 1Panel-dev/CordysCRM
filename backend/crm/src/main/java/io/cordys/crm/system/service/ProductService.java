@@ -150,12 +150,13 @@ public class ProductService {
         checkUpdateExist(product);
         productBaseMapper.update(product);
 
+        // 获取模块字段
+        List<BaseModuleFieldValue> originCustomerFields = opportunityFieldService.getModuleFieldValuesByResourceId(request.getId());
+
         // 更新模块字段
         updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
 
-        // 添加日志上下文
-        List<BaseModuleFieldValue> originCustomerFields = opportunityFieldService.getModuleFieldValuesByResourceId(request.getId());
-
+        //添加日志
         baseService.handleUpdateLog(oldProduct, product, originCustomerFields, request.getModuleFields(), request.getId(), product.getName());
 
         return productBaseMapper.selectByPrimaryKey(product.getId());

@@ -63,8 +63,12 @@ public class ProductLogService extends BaseModuleLogService {
                 setProductPicName(differ);
             }
             if (StringUtils.equals(differ.getColumn(), timeModuleFieldId)) {
-                differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(differ.getOldValue()));
-                differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(differ.getNewValue()));
+                if (differ.getOldValue()!=null) {
+                    differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(differ.getOldValue()));
+                }
+                if (differ.getNewValue()!=null) {
+                    differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(differ.getNewValue()));
+                }
             }
 
         }
