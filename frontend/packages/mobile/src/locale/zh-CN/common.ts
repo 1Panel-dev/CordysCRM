@@ -88,4 +88,5 @@ export default {
   'common.communicationContent': '沟通内容',
   'common.head': '负责人',
   'common.createTime': '创建时间',
+  'common.login': '登录中...',
 };

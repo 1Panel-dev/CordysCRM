@@ -87,4 +87,5 @@ export default {
   'common.communicationContent': 'Communication content',
   'common.head': 'Head',
   'common.createTime': 'Created time',
+  'common.login': 'Login...',
 };

@@ -40,6 +40,7 @@ export enum MineRouteEnum {
   MINE_MESSAGE = 'mineMessage',
   MINE_DETAIL = 'mineDetail',
 }
+
 export enum WorkbenchRouteEnum {
   WORKBENCH = 'workbench',
   WORKBENCH_INDEX = 'workbenchIndex',
