@@ -15,6 +15,7 @@ public class ModuleFieldResolverFactory {
 
     public static final String MULTI_SELECT = "MULTI_SELECT";
     public static final String MULTI_MEMBER = "MULTI_MEMBER";
+    public static final String MULTI_DEPARTMENT = "MULTI_DEPARTMENT";
 
     static {
         resolverMap.put(FieldType.SELECT.name(), new SelectResolver());
@@ -36,6 +37,9 @@ public class ModuleFieldResolverFactory {
 
         resolverMap.put(MULTI_SELECT, new MultipleSelectResolver());
         resolverMap.put(FieldType.DATA_SOURCE.name(), new DatasourceResolver());
+        resolverMap.put(MULTI_MEMBER, new MultipleMemberResolver());
+        resolverMap.put(FieldType.DEPARTMENT.name(), new DepartmentResolver());
+        resolverMap.put(MULTI_DEPARTMENT, new MultipleDepartmentResolver());
     }
 
     public static AbstractModuleFieldResolver getResolver(String type) {
