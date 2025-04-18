@@ -151,7 +151,7 @@ public class ProductService {
         productBaseMapper.update(product);
 
         // 获取模块字段
-        List<BaseModuleFieldValue> originCustomerFields = opportunityFieldService.getModuleFieldValuesByResourceId(request.getId());
+        List<BaseModuleFieldValue> originCustomerFields = productFieldService.getModuleFieldValuesByResourceId(request.getId());
 
         // 更新模块字段
         updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
