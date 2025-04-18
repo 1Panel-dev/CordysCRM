@@ -115,7 +115,7 @@ INSERT INTO sys_role_permission
 VALUES ('1076902920142884', 'org_admin', 'CLUE_MANAGEMENT:UPDATE');
 INSERT INTO sys_role_permission
     (id, role_id, permission_id)
-VALUES ('1076902920142885', 'org_admin', 'CUSTOMER_MANAGEMENT:RECYCLE');
+VALUES ('1076902920142885', 'org_admin', 'CLUE_MANAGEMENT:RECYCLE');
 INSERT INTO sys_role_permission
     (id, role_id, permission_id)
 VALUES ('1076902920142886', 'org_admin', 'CLUE_MANAGEMENT:DELETE');
