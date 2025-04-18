@@ -91,7 +91,8 @@ public abstract class BaseModuleLogService {
             differ.setNewValueName(differ.getNewValue());
             return;
         }
-
+        List<String>oldNameList =new ArrayList<>();
+        List<String>newNameList =new ArrayList<>();
         for (OptionDTO option : options) {
             if (differ.getOldValue() instanceof String strValue && StringUtils.equals(option.getId(), strValue)) {
                 // 设置旧值名称
@@ -102,7 +103,6 @@ public abstract class BaseModuleLogService {
                 differ.setNewValueName(option.getName());
             }
             if (differ.getOldValue() instanceof List<?> oldValueList) {
-                List<String>oldNameList =new ArrayList<>();
                 for (Object oldValue : oldValueList) {
                     if (oldValue instanceof String strValue && StringUtils.equals(option.getId(), strValue)) {
                         // 设置旧值名称
@@ -110,20 +110,25 @@ public abstract class BaseModuleLogService {
                     }
                 }
 
-                differ.setOldValueName(String.join(",", oldNameList));
             }
             if (differ.getNewValue() instanceof List<?> newValueList) {
-                List<String>newNameList =new ArrayList<>();
+
                 for (Object newValue : newValueList) {
                     if (newValue instanceof String strValue && StringUtils.equals(option.getId(), strValue)) {
                         // 设置新值名称
                         newNameList.add(option.getName());
                     }
                 }
-                differ.setNewValueName(String.join(",", newNameList));
             }
 
         }
+        if (!oldNameList.isEmpty()) {
+            differ.setOldValueName(String.join(",", oldNameList));
+        }
+        if (!newNameList.isEmpty()) {
+            differ.setNewValueName(String.join(",", newNameList));
+        }
+
     }
 
     protected void setUserFieldName(JsonDifferenceDTO differ) {
