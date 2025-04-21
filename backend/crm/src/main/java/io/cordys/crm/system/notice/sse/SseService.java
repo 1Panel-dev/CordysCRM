@@ -20,230 +20,307 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * 服务端 SSE（Server-Sent Events）推送服务
+ * <p>本服务基于 Spring MVC 的 SseEmitter 实现，提供用户级别的多客户端管理、心跳检测、消息广播等功能。</p>
+ */
 @Service
 public class SseService {
+
+    /**
+     * 持久化通知数据访问接口
+     */
+    @Resource
+    private ExtNotificationMapper extNotificationMapper;
+
+    /**
+     * 发送模块配置服务
+     */
+    @Resource
+    private SendModuleService sendModuleService;
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    @Resource
-    private ExtNotificationMapper extNotificationMapper;
-
-    @Resource
-    private SendModuleService sendModuleService;
-
-    private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
-    private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
-    private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
-    private static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
-    private static final String USER_READ_PREFIX = "user_read:";  // Redis 存储用户读取前缀
-
-
-    // 线程安全的 Map，按 userId 存储该用户的所有客户端
-    private final Map<String, Map<String, SseEmitter>> userEmitters = new ConcurrentHashMap<>();
+    /**
+     * Redis 存储用户公告前缀
+     */
+    private static final String USER_ANNOUNCE_PREFIX = "announce_user:";
 
     /**
-     * 添加一个新的客户端 SseEmitter
-     * 每个用户最多允许三个客户端，超出时移除最早添加的客户端
-     *
-     * @param userId   用户 ID
-     * @param clientId 客户端 ID
-     * @return 新创建的 SseEmitter
-     * @throws IllegalArgumentException 如果 userId 或 clientId 为空
+     * Redis 存储公告内容前缀
      */
-    public SseEmitter addEmitter(String userId, String clientId) {
-        if (userId == null || userId.isBlank() || clientId == null || clientId.isBlank()) {
-            throw new IllegalArgumentException("userId 和 clientId 不能为空");
+    private static final String ANNOUNCE_PREFIX = "announce_content:";
+
+    /**
+     * Redis 存储系统通知用户前缀
+     */
+    private static final String USER_PREFIX = "msg_user:";
+
+    /**
+     * Redis 存储系统通知内容信息前缀
+     */
+    private static final String MSG_PREFIX = "msg_content:";
+
+    /**
+     * Redis 存储用户读取状态前缀
+     */
+    private static final String USER_READ_PREFIX = "user_read:";
+
+    /**
+     * 用户 -> 客户端ID -> SseEmitterWrapper 映射
+     */
+    private final Map<String, Map<String, SseEmitterWrapper>> userEmitters = new ConcurrentHashMap<>();
+
+    /**
+     * 包装 SseEmitter ，并追踪完成状态，避免重复发送异常
+     */
+    private static class SseEmitterWrapper {
+        private final SseEmitter emitter;
+        private final AtomicBoolean completed = new AtomicBoolean(false);
+
+        SseEmitterWrapper(SseEmitter emitter) {
+            this.emitter = emitter;
         }
 
-        // 获取或初始化用户的内部映射，使用同步的 LinkedHashMap 保持插入顺序
-        Map<String, SseEmitter> innerMap = userEmitters.computeIfAbsent(userId,
-                k -> Collections.synchronizedMap(new ConcurrentHashMap<>()));
+        /**
+         * 判断连接是否仍然打开
+         */
+        boolean isOpen() {
+            return !completed.get();
+        }
 
-        synchronized (innerMap) {
-            // 如果对于指定的 clientId 已经存在 emitter，则直接返回，不需要再新创建
-            if (innerMap.containsKey(clientId)) {
-                return innerMap.get(clientId);
-            }
-
-            // 否则，创建新的 SseEmitter，设置超时为最大值
-            SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-            innerMap.put(clientId, emitter);
-
-            // 限制同一用户的客户端数量，当超过 3 个时，移除最早的 emitter
-            if (innerMap.size() > 3) {
-                Iterator<Map.Entry<String, SseEmitter>> iterator = innerMap.entrySet().iterator();
-                if (iterator.hasNext()) {
-                    Map.Entry<String, SseEmitter> oldestEntry = iterator.next();
-                    try {
-                        oldestEntry.getValue().complete();
-                    } catch (Exception e) {
-                        oldestEntry.getValue().completeWithError(e);
-                    }
-                    iterator.remove();
+        /**
+         * 完成并关闭连接，仅执行一次
+         */
+        void complete() {
+            if (completed.compareAndSet(false, true)) {
+                try {
+                    emitter.complete();
+                } catch (Exception ignore) {
                 }
             }
+        }
 
-            // 为 emitter 设置生命周期监听器，当完成、超时或错误时会自动移除对应的 emitter
-            Runnable removeAction = () -> removeEmitter(userId, clientId);
-            emitter.onCompletion(removeAction);
-            emitter.onTimeout(removeAction);
-            emitter.onError(e -> removeAction.run());
-            // 立即推送一条消息
-            sendHeartbeat(emitter, clientId, userId);
+        /**
+         * 出错时完成并关闭连接，仅执行一次
+         */
+        void completeWithError(Throwable t) {
+            if (completed.compareAndSet(false, true)) {
+                try {
+                    emitter.completeWithError(t);
+                } catch (Exception ignore) {
+                }
+            }
+        }
+
+        /**
+         * 发送事件，如果连接已关闭则跳过；发生异常时自动 complete()
+         *
+         * @param event SseEventBuilder 构建的事件
+         */
+        void sendEvent(SseEmitter.SseEventBuilder event) {
+            if (!isOpen()) {
+                return;
+            }
+            try {
+                emitter.send(event);
+            } catch (IllegalStateException | IOException ex) {
+                complete();
+            }
+        }
+    }
+
+    /**
+     * 添加一个新的客户端订阅
+     *
+     * @param userId   唯一用户 ID
+     * @param clientId 唯一客户端 ID
+     * @return 新创建的 SseEmitter 对象
+     * @throws IllegalArgumentException 当 userId 或 clientId 为空时抛出
+     */
+    public SseEmitter addEmitter(String userId, String clientId) {
+        if (StringUtils.isAnyBlank(userId, clientId)) {
+            throw new IllegalArgumentException("userId 和 clientId 不能为空");
+        }
+        Map<String, SseEmitterWrapper> inner = userEmitters.computeIfAbsent(userId,
+                k -> Collections.synchronizedMap(new LinkedHashMap<>()));
+
+        synchronized (inner) {
+            // 已存在则直接返回
+            if (inner.containsKey(clientId)) {
+                return inner.get(clientId).emitter;
+            }
+            // 创建新的 emitter
+            SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+            SseEmitterWrapper wrapper = new SseEmitterWrapper(emitter);
+            inner.put(clientId, wrapper);
+            // 限制同一用户最大 3 个客户端
+            if (inner.size() > 3) {
+                Iterator<String> it = inner.keySet().iterator();
+                String oldest = it.next();
+                SseEmitterWrapper old = inner.remove(oldest);
+                old.complete();
+            }
+
+            // 注册生命周期回调
+            Runnable remove = () -> removeEmitter(userId, clientId);
+            emitter.onCompletion(remove);
+            emitter.onTimeout(remove);
+            emitter.onError(e -> remove.run());
+
+            // 首次心跳，客户端建立连接后立即推送
+            sendHeartbeat(wrapper, clientId);
             return emitter;
         }
     }
 
     /**
-     * 给所有用户发送心跳信息
+     * 向所有活跃的客户端发送心跳
      */
     public void sendHeartbeat() {
-        if (userEmitters.isEmpty()) return;
-
-        userEmitters.forEach((userId, emitters) ->
-                emitters.forEach((clientId, emitter) -> sendHeartbeat(emitter, clientId, userId)));
+        userEmitters.forEach((uid, map) -> map.forEach((cid, w) -> sendHeartbeat(w, cid)));
     }
 
-    private void sendHeartbeat(SseEmitter emitter, String clientId, String userId) {
-        try {
-            emitter.send(SseEmitter.event()
-                    .id(clientId)
-                    .reconnectTime(10000)
-                    .name("SYSTEM_HEARTBEAT")
-                    .data("SYSTEM_HEARTBEAT: " + System.currentTimeMillis()));
-        } catch (IOException e) {
-            removeEmitter(userId, clientId);
+    /**
+     * 向单个客户端发送心跳
+     *
+     * @param wrapper  包装后的 emitter
+     * @param clientId 客户端 ID
+     */
+    private void sendHeartbeat(SseEmitterWrapper wrapper, String clientId) {
+        wrapper.sendEvent(SseEmitter.event()
+                .id(clientId)
+                .name("SYSTEM_HEARTBEAT")
+                .reconnectTime(10000)
+                .data("HEARTBEAT: " + System.currentTimeMillis()));
+    }
+
+    /**
+     * 向指定用户的所有客户端发送事件
+     *
+     * @param userId    用户 ID
+     * @param eventName 事件名称
+     * @param data      事件数据
+     */
+    public void sendToUser(String userId, String eventName, Object data) {
+        Map<String, SseEmitterWrapper> map = userEmitters.get(userId);
+        if (map != null) {
+            map.forEach((cid, w) -> sendToEmitter(cid, w, eventName, data));
         }
     }
 
     /**
-     * 按用户 ID 发送事件（所有客户端接收）
-     */
-    public void sendToUser(String userId, String eventName, Object data) {
-        Optional.ofNullable(userEmitters.get(userId))
-                .ifPresent(emitters -> emitters.forEach((clientId, emitter) -> sendToEmitter(userId, clientId, emitter, eventName, data)));
-    }
-
-    /**
-     * 按具体客户端发送事件
+     * 向指定用户的单个客户端发送事件
+     *
+     * @param clientId  客户端 ID
+     * @param eventName 事件名称
+     * @param data      事件数据
      */
     public void sendToClient(String userId, String clientId, String eventName, Object data) {
         Optional.ofNullable(userEmitters.get(userId))
-                .map(emitters -> emitters.get(clientId))
-                .ifPresent(emitter -> sendToEmitter(userId, clientId, emitter, eventName, data));
+                .map(m -> m.get(clientId)).ifPresent(w -> sendToEmitter(clientId, w, eventName, data));
     }
 
     /**
-     * 发送数据并处理异常
+     * 发送事件到指定 emitter 并处理异常
      */
-    private void sendToEmitter(String userId, String clientId, SseEmitter emitter, String eventName, Object data) {
-        try {
-            emitter.send(SseEmitter.event()
-                    .name(eventName)
-                    .id(clientId)
-                    .reconnectTime(10000)
-                    .data(data));
-        } catch (IOException e) {
-            removeEmitter(userId, clientId);
-        }
+    private void sendToEmitter(String clientId, SseEmitterWrapper wrapper,
+                               String eventName, Object data) {
+        wrapper.sendEvent(SseEmitter.event()
+                .id(clientId)
+                .name(eventName)
+                .reconnectTime(10000)
+                .data(data));
     }
 
     /**
-     * 移除指定客户端的 SseEmitter
+     * 移除并关闭指定客户端的连接
+     *
+     * @param userId   用户 ID
+     * @param clientId 客户端 ID
      */
     public void removeEmitter(String userId, String clientId) {
         if (StringUtils.isAnyBlank(userId, clientId)) return;
-
-        userEmitters.computeIfPresent(userId, (k, emitters) -> {
-            Optional.ofNullable(emitters.remove(clientId))
-                    .ifPresent(emitter -> {
-                        try {
-                            emitter.complete();
-                        } catch (Exception e) {
-                            emitter.completeWithError(e);
-                        }
-                    });
-            return emitters.isEmpty() ? null : emitters;
-        });
+        Map<String, SseEmitterWrapper> map = userEmitters.get(userId);
+        if (map == null) return;
+        synchronized (map) {
+            SseEmitterWrapper w = map.remove(clientId);
+            if (w != null) {
+                w.complete();
+            }
+            if (map.isEmpty()) {
+                userEmitters.remove(userId);
+            }
+        }
     }
 
-
     /**
-     * 广播消息给指定的用户
-     * @param userId 用户 ID
-     * @param sendType 发送类型
+     * 定时广播消息给指定用户
+     * <p>本方法构建通知消息体后，调用 sendToUser 统一发送。</p>
+     *
+     * @param userId   用户 ID
+     * @param sendType 发送类型：系统通知或公告
      */
     public void broadcastPeriodically(String userId, String sendType) {
-        if (userEmitters.isEmpty()) return;
+        SseMessageDTO msg = buildMessage(userId, sendType);
+        sendToUser(userId, "message", JSON.toJSONString(msg));
+        LogUtils.info("Broadcast to user {} at {}", userId, System.currentTimeMillis());
+    }
 
+    /**
+     * 构建通知消息体
+     */
+    private SseMessageDTO buildMessage(String userId, String sendType) {
         SseMessageDTO sseMessageDTO = new SseMessageDTO();
-        //获取系统通知
+        // 构建系统通知列表
         if (StringUtils.equalsIgnoreCase(sendType, NotificationConstants.Type.SYSTEM_NOTICE.toString())) {
-            //获取已开启的模块
             List<String> modules = sendModuleService.getNoticeModules();
             Set<String> sysValues = stringRedisTemplate.opsForZSet().range(USER_PREFIX + userId, 0, -1);
             if (CollectionUtils.isNotEmpty(sysValues)) {
-                int size = sysValues.size();
-                sseMessageDTO.setNotificationDTOList(buildDTOList(sysValues, MSG_PREFIX));
-                if (size != 5) {
-                    //如果不够5条，从数据库提取最新未读加上
-                    // 获取用户未读的系统通知
-                    List<NotificationDTO> notifications = extNotificationMapper
-                            .selectLastList(userId, OrganizationContext.getOrganizationId(), modules);
-                    notifications.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).forEach(notification ->
-                            notification.setContentText(new String(notification.getContent())));
-                    List<NotificationDTO> notificationDTOS = notifications.subList(0, Math.min(5 - size, notifications.size()));
-                    sseMessageDTO.setNotificationDTOList(notificationDTOS);
-                }
+                sseMessageDTO.setNotificationDTOList(
+                        buildDTOList(sysValues, MSG_PREFIX)
+                );
             } else {
                 List<NotificationDTO> notifications = extNotificationMapper
                         .selectLastList(userId, OrganizationContext.getOrganizationId(), modules);
-                notifications.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).forEach(notification ->
-                        notification.setContentText(new String(notification.getContent())));
+                notifications.forEach(n -> n.setContentText(new String(n.getContent())));
                 sseMessageDTO.setNotificationDTOList(notifications);
             }
-
         }
-
-
-        // 获取公告（如果存在）
+        // 构建公告列表
         if (StringUtils.equalsIgnoreCase(sendType, NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString())) {
             Set<String> values = stringRedisTemplate.opsForZSet().range(USER_ANNOUNCE_PREFIX + userId, 0, -1);
             if (CollectionUtils.isNotEmpty(values)) {
-                sseMessageDTO.setAnnouncementDTOList(buildDTOList(values, ANNOUNCE_PREFIX));
+                sseMessageDTO.setAnnouncementDTOList(
+                        buildDTOList(values, ANNOUNCE_PREFIX)
+                );
             }
         }
-
-        // 获取用户读取状态
-        // Boolean.parseBoolean 直接将 null 或空字符串解析为 false
-        sseMessageDTO.setRead(Boolean.parseBoolean(stringRedisTemplate
-                .opsForValue().get(USER_READ_PREFIX + userId)));
-
-        // 发送消息并记录日志
-        String message = "User " + userId + " time: " + System.currentTimeMillis();
-        sendToUser(userId, "message", JSON.toJSONString(sseMessageDTO));
-        LogUtils.info("Broadcast to user {}: {}", userId, message);
-
+        // 用户已读状态
+        sseMessageDTO.setRead(Boolean.parseBoolean(
+                stringRedisTemplate.opsForValue().get(USER_READ_PREFIX + userId)
+        ));
+        return sseMessageDTO;
     }
 
-
-
-    private List<NotificationDTO> buildDTOList(Set<String> sysValues, String prefix) {
-        List<NotificationDTO> notificationDTOList = new ArrayList<>();
-        for (String value : sysValues) {
-            String announceNotification = stringRedisTemplate.opsForValue().get(prefix + value);
-            if (StringUtils.isBlank(announceNotification)) {
-                continue;
-            }
-            Notification notification = JSON.parseObject(announceNotification, Notification.class);
-            NotificationDTO notificationDTO = new NotificationDTO();
-            BeanUtils.copyBean(notificationDTO, notification);
-            notificationDTO.setContentText(new String(notification.getContent()));
-            notificationDTOList.add(notificationDTO);
+    /**
+     * 根据 Redis 中的值构建 DTO 列表并按创建时间倒序排序
+     */
+    private List<NotificationDTO> buildDTOList(Set<String> values, String prefix) {
+        List<NotificationDTO> list = new ArrayList<>();
+        for (String val : values) {
+            String json = stringRedisTemplate.opsForValue().get(prefix + val);
+            if (StringUtils.isBlank(json)) continue;
+            Notification notification = JSON.parseObject(json, Notification.class);
+            NotificationDTO dto = new NotificationDTO();
+            BeanUtils.copyBean(dto, notification);
+            dto.setContentText(new String(notification.getContent()));
+            list.add(dto);
         }
-
-        return notificationDTOList.stream().sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed()).toList();
+        list.sort(Comparator.comparing(NotificationDTO::getCreateTime).reversed());
+        return list;
     }
 }

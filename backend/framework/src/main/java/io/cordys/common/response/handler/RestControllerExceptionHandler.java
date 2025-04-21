@@ -1,11 +1,11 @@
 package io.cordys.common.response.handler;
 
-import io.cordys.common.exception.IResultCode;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.exception.IResultCode;
 import io.cordys.common.response.result.CrmHttpResultCode;
 import io.cordys.common.util.LogUtils;
-import io.cordys.common.util.Translator;
 import io.cordys.common.util.ServiceUtils;
+import io.cordys.common.util.Translator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -175,6 +176,12 @@ public class RestControllerExceptionHandler {
         response.setStatus(HttpStatus.FORBIDDEN.value());
         return ResultHolder.error(HttpStatus.FORBIDDEN.value(), exception.getMessage());
     }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public ResultHolder asyncRequestNotUsableExceptionHandler(HttpServletRequest request, HttpServletResponse response, Exception exception) {
+        return null;
+    }
+
 
     /**
      * 格式化异常栈信息。
