@@ -26,7 +26,7 @@
             props.type === ModuleConfigEnum.CLUE_MANAGEMENT ? t('module.clue.name') : t('module.customer.openSeaName')
           "
         >
-          <n-input v-model:value="form.name" type="text" :placeholder="t('common.pleaseInput')" />
+          <n-input v-model:value="form.name" :maxlength="255" type="text" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
       </div>
       <div class="flex">
@@ -273,7 +273,7 @@
           value: item.value as string,
           scope: item.scope ?? [],
         }));
-        params.recycleRule.conditions = conditions;
+        params.recycleRule.conditions = form.value.auto ? conditions : [];
       }
       if (form.value.id) {
         await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT

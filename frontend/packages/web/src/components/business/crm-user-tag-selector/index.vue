@@ -75,7 +75,7 @@
 
   function handleAddAdminConfirm(params: SelectedUsersItem[]) {
     if (props.multiple) {
-      selectedList.value = [...selectedList.value, ...params];
+      selectedList.value = [...(selectedList.value || []), ...params];
     } else {
       selectedList.value = params;
     }

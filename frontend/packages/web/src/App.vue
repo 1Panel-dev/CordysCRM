@@ -78,11 +78,11 @@
   }
 
   onBeforeMount(async () => {
+    await handleOauthLogin();
     if (WHITE_LIST.find((el) => window.location.hash.split('#')[1].includes(el.path)) === undefined) {
       await userStore.checkIsLogin();
       appStore.setLoginLoading(false);
     }
-    await handleOauthLogin();
   });
 
   onBeforeUnmount(() => {

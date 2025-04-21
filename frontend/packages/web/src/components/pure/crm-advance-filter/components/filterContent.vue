@@ -49,6 +49,7 @@
               v-else-if="item.type === FieldTypeEnum.INPUT_NUMBER"
               v-model:value="item.value"
               allow-clear
+              :disabled="isValueDisabled(item)"
               :placeholder="t('common.pleaseInput')"
               v-bind="item.numberProps"
               class="w-full"
@@ -58,6 +59,7 @@
               v-else-if="item.type === FieldTypeEnum.SELECT"
               v-model:value="item.value"
               clearable
+              :disabled="isValueDisabled(item)"
               :placeholder="t('common.pleaseSelect')"
               v-bind="item.selectProps"
             />
@@ -67,6 +69,7 @@
               v-model:value="item.value"
               filterable
               clearable
+              :disabled="isValueDisabled(item)"
               max-tag-count="responsive"
               :placeholder="t('common.pleaseSelect')"
               v-bind="item.treeSelectProps"
@@ -77,6 +80,7 @@
               v-model:value="item.value"
               :type="item.operator === OperatorEnum.BETWEEN ? 'daterange' : 'datetime'"
               clearable
+              :disabled="isValueDisabled(item)"
               class="w-full"
             />
 
@@ -86,6 +90,7 @@
               value-field="id"
               label-field="name"
               mode="remote"
+              :disabled="isValueDisabled(item)"
               multiple
               :fetch-api="getUserOptions"
               max-tag-count="responsive"

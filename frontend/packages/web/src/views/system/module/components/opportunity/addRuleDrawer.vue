@@ -26,7 +26,7 @@
           path="name"
           :label="t('opportunity.ruleName')"
         >
-          <n-input v-model:value="form.name" type="text" :placeholder="t('common.pleaseInput')" />
+          <n-input v-model:value="form.name" :maxlength="255" type="text" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
       </div>
       <div class="flex">

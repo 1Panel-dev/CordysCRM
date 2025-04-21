@@ -259,7 +259,7 @@ export default function useFollowApi(followProps: {
 
   async function searchData(keyword: string) {
     followKeyword.value = keyword;
-    loadFollowList();
+    await loadFollowList();
     await sleep(300);
 
     highlightContent(keyword);
