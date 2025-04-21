@@ -2,7 +2,7 @@ import { useMessage } from 'naive-ui';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { getCityPath, safeFractionConvert } from '@lib/shared/method';
+import { formatTimeValue, getCityPath, safeFractionConvert } from '@lib/shared/method';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
 import type { FormConfig } from '@lib/shared/models/system/module';
 
@@ -67,10 +67,22 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         if (item.businessKey) {
           const options = form.optionMap?.[item.businessKey];
           // 业务标准字段读取最外层，读取form[item.businessKey]取到 id 值，然后去 options 里取 name
-          const name = options?.find((e) => e.id === form[item.businessKey as string])?.name;
+          let name: string | string[] = '';
+          const value = form[item.businessKey];
+          // 若字段值是选项值，则取选项值的name
+          if (options) {
+            if (Array.isArray(value)) {
+              name = options.filter((e) => value.includes(e.id)).map((e) => e.name);
+            } else {
+              name = options.find((e) => e.id === value)?.name;
+            }
+          }
           descriptions.value.push({
             label: item.name,
-            value: name || form[item.businessKey],
+            value:
+              item.type === FieldTypeEnum.DATE_TIME
+                ? formatTimeValue(name || form[item.businessKey], item.dateType)
+                : name || form[item.businessKey],
           });
           if (item.businessKey === 'name') {
             sourceName.value = name || form[item.businessKey];
@@ -86,6 +98,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               slotName: 'divider',
               fieldInfo: item,
             });
+          } else if (item.type === FieldTypeEnum.PICTURE) {
+            descriptions.value.push({
+              label: item.name,
+              value: field?.fieldValue || [],
+              valueSlotName: 'image',
+            });
           } else {
             let value = field?.fieldValue || '';
             if (field && options) {
@@ -98,6 +116,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             } else if (item.type === FieldTypeEnum.LOCATION) {
               const address = (field?.fieldValue as string)?.split('-');
               value = address ? `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}` : '-';
+            } else if (item.type === FieldTypeEnum.DATE_TIME) {
+              value = formatTimeValue(field?.fieldValue as string, item.dateType);
             }
             descriptions.value.push({
               label: item.name,

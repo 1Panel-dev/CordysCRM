@@ -21,11 +21,12 @@
       />
     </template>
     <template #left>
-      <div class="p-[16px_24px]">
+      <div class="h-full overflow-hidden">
         <CrmFormDescription
           :form-key="FormDesignKeyEnum.CUSTOMER"
           :source-id="props.sourceId"
           :refresh-key="refreshKey"
+          class="p-[16px_24px]"
           @init="handleDescriptionInit"
         />
       </div>

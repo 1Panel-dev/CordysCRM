@@ -5,13 +5,13 @@ import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { getCityPath } from '@lib/shared/method';
+import { formatTimeValue, getCityPath } from '@lib/shared/method';
 import type { ModuleField } from '@lib/shared/models/customer';
 
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 import useTable from '@/components/pure/crm-table/useTable';
 import { getFormConfigApiMap, getFormListApiMap } from '@/components/business/crm-form-create/config';
-import type { FormCreateField, FormCreateFieldDateType } from '@/components/business/crm-form-create/types';
+import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
 import { lastOpportunitySteps } from '@/config/opportunity';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
@@ -89,7 +89,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('customer.lastFollowUps'),
         width: 150,
-        key: 'lastFollowUps',
+        key: 'followerName',
         ellipsis: {
           tooltip: true,
         },
@@ -99,12 +99,13 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('customer.lastFollowUpDate'),
         width: 160,
-        key: 'lastFollowUpDate',
+        key: 'followTime',
         ellipsis: {
           tooltip: true,
         },
         sortOrder: false,
         sorter: true,
+        render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
       },
     ],
     [FormDesignKeyEnum.CONTACT]: [
@@ -334,22 +335,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       sorter: columnsSorter,
     },
   ];
-
-  function formatTimeValue(value: string | number, type?: FormCreateFieldDateType) {
-    if (value) {
-      const date = dayjs(Number(value));
-      switch (type) {
-        case 'month':
-          return date.format('YYYY-MM');
-        case 'date':
-          return date.format('YYYY-MM-DD');
-        case 'datetime':
-        default:
-          return date.format('YYYY-MM-DD HH:mm:ss');
-      }
-    }
-    return '-';
-  }
 
   function formatNumberValue(value: string | number, field: FormCreateField) {
     if (field.numberFormat === 'percent') {

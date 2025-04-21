@@ -1,7 +1,9 @@
 import { cloneDeep } from 'lodash-es';
+import dayjs from 'dayjs';
 import JSEncrypt from 'jsencrypt';
 
 import { isObject } from './is';
+import type { FormCreateFieldDateType } from '@cordys/web/src/components/business/crm-form-create/types';
 import { getLocalStorage } from '@lib/shared/method/local-storage';
 import { regionData } from 'element-china-area-data';
 
@@ -489,4 +491,25 @@ export function openDocumentLink(url: string) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+}
+
+/**
+ * 格式化时间
+ * @param value 时间戳
+ * @param type 类型
+ */
+export function formatTimeValue(value: string | number, type?: FormCreateFieldDateType) {
+  if (value) {
+    const date = dayjs(Number(value));
+    switch (type) {
+      case 'month':
+        return date.format('YYYY-MM');
+      case 'date':
+        return date.format('YYYY-MM-DD');
+      case 'datetime':
+      default:
+        return date.format('YYYY-MM-DD HH:mm:ss');
+    }
+  }
+  return '-';
 }

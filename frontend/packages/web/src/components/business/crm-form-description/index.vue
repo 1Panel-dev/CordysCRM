@@ -1,16 +1,24 @@
 <template>
-  <n-spin :show="loading">
-    <CrmDescription :descriptions="descriptions" value-align="end">
+  <n-spin :show="loading" class="h-full">
+    <CrmDescription :descriptions="descriptions" value-align="end" :class="props.class">
       <template #divider="{ item }">
         <CrmFormCreateDivider :field-config="item.fieldInfo" class="!m-0 w-full" />
+      </template>
+      <template #image="{ item }">
+        <n-image-group>
+          <n-space class="!justify-end">
+            <n-image v-for="img in item.value" :key="img" :src="`${PreviewPictureUrl}/${img}`" width="40" height="40" />
+          </n-space>
+        </n-image-group>
       </template>
     </CrmDescription>
   </n-spin>
 </template>
 
 <script setup lang="ts">
-  import { NSpin } from 'naive-ui';
+  import { NImage, NImageGroup, NSpace, NSpin } from 'naive-ui';
 
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { CollaborationType } from '@lib/shared/models/customer';
 
@@ -23,6 +31,7 @@
     sourceId: string;
     formKey: FormDesignKeyEnum;
     refreshKey?: number;
+    class?: string;
   }>();
   const emit = defineEmits<{
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string): void;
