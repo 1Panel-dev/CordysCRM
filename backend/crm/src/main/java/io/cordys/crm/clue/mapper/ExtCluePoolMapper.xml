@@ -40,13 +40,13 @@
                     <if test="condition.name == 'auto'">
                         <include refid="io.cordys.common.mapper.CommonMapper.condition">
                             <property name="condition" value="condition"/>
-                            <property name="column" value="clue_pool.clue_pool"/>
+                            <property name="column" value="clue_pool.auto"/>
                         </include>
                     </if>
                     <if test="condition.name == 'enable'">
                         <include refid="io.cordys.common.mapper.CommonMapper.condition">
                             <property name="condition" value="condition"/>
-                            <property name="column" value="ead_pool.enable"/>
+                            <property name="column" value="clue_pool.enable"/>
                         </include>
                     </if>
                 </foreach>
