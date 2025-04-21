@@ -4,6 +4,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.clue.dto.CluePoolDTO;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
 import io.cordys.crm.clue.dto.request.PoolClueAssignRequest;
 import io.cordys.crm.clue.dto.request.PoolCluePickRequest;
@@ -37,7 +38,7 @@ public class PoolClueController {
 	@GetMapping("/options")
 	@Operation(summary = "获取当前用户线索池选项")
 	@RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_READ})
-	public List<OptionDTO> getPoolOptions() {
+	public List<CluePoolDTO> getPoolOptions() {
 		return poolClueService.getPoolOptions(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 

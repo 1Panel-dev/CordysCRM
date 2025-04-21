@@ -2,15 +2,18 @@ package io.cordys.crm.clue.service;
 
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.clue.domain.Clue;
-import io.cordys.crm.clue.domain.ClueOwner;
-import io.cordys.crm.clue.domain.CluePool;
-import io.cordys.crm.clue.domain.CluePoolPickRule;
+import io.cordys.crm.clue.domain.*;
+import io.cordys.crm.clue.dto.CluePoolDTO;
+import io.cordys.crm.clue.dto.CluePoolPickRuleDTO;
+import io.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import io.cordys.crm.clue.dto.request.PoolCluePickRequest;
 import io.cordys.crm.clue.mapper.ExtClueCapacityMapper;
+import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import io.cordys.crm.system.service.UserExtendService;
@@ -24,6 +27,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class PoolClueService {
@@ -35,7 +41,11 @@ public class PoolClueService {
 	@Resource
 	private BaseMapper<CluePool> poolMapper;
 	@Resource
+	private BaseMapper<User> userMapper;
+	@Resource
 	private BaseMapper<CluePoolPickRule> pickRuleMapper;
+	@Resource
+	private BaseMapper<CluePoolRecycleRule> recycleRuleMapper;
 	@Resource
 	private ExtClueCapacityMapper extClueCapacityMapper;
 	@Resource
@@ -49,19 +59,58 @@ public class PoolClueService {
 	 * @param currentOrgId 当前组织ID
 	 * @return 线索池选项
 	 */
-	public List<OptionDTO> getPoolOptions(String currentUser, String currentOrgId) {
-		List<OptionDTO> options = new ArrayList<>();
+	public List<CluePoolDTO> getPoolOptions(String currentUser, String currentOrgId) {
+		List<CluePoolDTO> options = new ArrayList<>();
 		LambdaQueryWrapper<CluePool> poolWrapper = new LambdaQueryWrapper<>();
 		poolWrapper.eq(CluePool::getEnable, true).eq(CluePool::getOrganizationId, currentOrgId);
 		List<CluePool> pools = poolMapper.selectListByLambda(poolWrapper);
+		if (CollectionUtils.isEmpty(pools)) {
+			return new ArrayList<>();
+		}
+
+		List<String> userIds = pools.stream().flatMap(pool -> Stream.of(pool.getCreateUser(), pool.getUpdateUser())).toList();
+		List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
+		Map<String, String> userMap = createOrUpdateUsers.stream()
+				.collect(Collectors.toMap(User::getId, User::getName));
+
+		List<String> poolIds = pools.stream()
+				.map(CluePool::getId)
+				.toList();
+
+		LambdaQueryWrapper<CluePoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
+		pickRuleWrapper.in(CluePoolPickRule::getPoolId, poolIds);
+
+		List<CluePoolPickRule> pickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
+		Map<String, CluePoolPickRule> pickRuleMap = pickRules.stream()
+				.collect(Collectors.toMap(CluePoolPickRule::getPoolId, pickRule -> pickRule));
+
+		LambdaQueryWrapper<CluePoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
+		recycleRuleWrapper.in(CluePoolRecycleRule::getPoolId, poolIds);
+
+		List<CluePoolRecycleRule> recycleRules = recycleRuleMapper.selectListByLambda(recycleRuleWrapper);
+		Map<String, CluePoolRecycleRule> recycleRuleMap = recycleRules.stream()
+				.collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, recycleRule -> recycleRule));
 		pools.forEach(pool -> {
 			List<String> scopeIds = JSON.parseArray(pool.getScopeId(), String.class);
 			List<String> ownerUserIds = userExtendService.getScopeOwnerIds(scopeIds, pool.getOrganizationId());
 			if (ownerUserIds.contains(currentUser)) {
-				OptionDTO optionDTO = new OptionDTO();
-				optionDTO.setId(pool.getId());
-				optionDTO.setName(pool.getName());
-				options.add(optionDTO);
+				CluePoolDTO poolDTO = new CluePoolDTO();
+				BeanUtils.copyBean(poolDTO, pool);
+				poolDTO.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
+				poolDTO.setOwners(userExtendService.getScope(JSON.parseArray(pool.getOwnerId(), String.class)));
+				poolDTO.setCreateUserName(userMap.get(pool.getCreateUser()));
+				poolDTO.setUpdateUserName(userMap.get(pool.getUpdateUser()));
+
+				CluePoolPickRuleDTO pickRule = new CluePoolPickRuleDTO();
+				BeanUtils.copyBean(pickRule, pickRuleMap.get(pool.getId()));
+				CluePoolRecycleRuleDTO recycleRule = new CluePoolRecycleRuleDTO();
+				CluePoolRecycleRule cluePoolRecycleRule = recycleRuleMap.get(pool.getId());
+				BeanUtils.copyBean(recycleRule, cluePoolRecycleRule);
+				recycleRule.setConditions(JSON.parseArray(cluePoolRecycleRule.getCondition(), RuleConditionDTO.class));
+
+				poolDTO.setPickRule(pickRule);
+				poolDTO.setRecycleRule(recycleRule);
+				options.add(poolDTO);
 			}
 		});
 		return options;

@@ -269,7 +269,7 @@
     {
       "name": "联系人电话",
       "internalKey": "clueContactPhone",
-      "type": "INPUT",
+      "type": "PHONE",
       "showLabel": true,
       "readable": true,
       "editable": true,

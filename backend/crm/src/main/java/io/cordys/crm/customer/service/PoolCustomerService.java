@@ -2,15 +2,18 @@ package io.cordys.crm.customer.service;
 
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.domain.CustomerOwner;
-import io.cordys.crm.customer.domain.CustomerPool;
-import io.cordys.crm.customer.domain.CustomerPoolPickRule;
+import io.cordys.crm.customer.domain.*;
+import io.cordys.crm.customer.dto.CustomerPoolDTO;
+import io.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
+import io.cordys.crm.customer.dto.CustomerPoolRecycleRuleDTO;
 import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerCapacityMapper;
+import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import io.cordys.crm.system.service.UserExtendService;
@@ -24,6 +27,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class PoolCustomerService {
@@ -31,11 +37,15 @@ public class PoolCustomerService {
 	@Resource
 	private BaseMapper<Customer> customerMapper;
 	@Resource
+	private BaseMapper<User> userMapper;
+	@Resource
 	private BaseMapper<CustomerOwner> ownerMapper;
 	@Resource
 	private BaseMapper<CustomerPool> poolMapper;
 	@Resource
 	private BaseMapper<CustomerPoolPickRule> pickRuleMapper;
+	@Resource
+	private BaseMapper<CustomerPoolRecycleRule> recycleRuleMapper;
 	@Resource
 	private ExtCustomerCapacityMapper extCustomerCapacityMapper;
 	@Resource
@@ -49,19 +59,58 @@ public class PoolCustomerService {
 	 * @param currentOrgId 当前组织ID
 	 * @return 公海选项
 	 */
-	public List<OptionDTO> getPoolOptions(String currentUser, String currentOrgId) {
-		List<OptionDTO> options = new ArrayList<>();
+	public List<CustomerPoolDTO> getPoolOptions(String currentUser, String currentOrgId) {
+		List<CustomerPoolDTO> options = new ArrayList<>();
 		LambdaQueryWrapper<CustomerPool> poolWrapper = new LambdaQueryWrapper<>();
 		poolWrapper.eq(CustomerPool::getEnable, true).eq(CustomerPool::getOrganizationId, currentOrgId);
 		List<CustomerPool> pools = poolMapper.selectListByLambda(poolWrapper);
+		if (CollectionUtils.isEmpty(pools)) {
+			return new ArrayList<>();
+		}
+
+		List<String> userIds = pools.stream().flatMap(pool -> Stream.of(pool.getCreateUser(), pool.getUpdateUser())).toList();
+		List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
+		Map<String, String> userMap = createOrUpdateUsers.stream()
+				.collect(Collectors.toMap(User::getId, User::getName));
+
+		List<String> poolIds = pools.stream()
+				.map(CustomerPool::getId)
+				.toList();
+		LambdaQueryWrapper<CustomerPoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
+		pickRuleWrapper.in(CustomerPoolPickRule::getPoolId, poolIds);
+
+		List<CustomerPoolPickRule> pickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
+		Map<String, CustomerPoolPickRule> pickRuleMap = pickRules.stream()
+				.collect(Collectors.toMap(CustomerPoolPickRule::getPoolId, pickRule -> pickRule));
+
+		LambdaQueryWrapper<CustomerPoolRecycleRule> recycleRuleWrapper = new LambdaQueryWrapper<>();
+		recycleRuleWrapper.in(CustomerPoolRecycleRule::getPoolId, poolIds);
+
+		List<CustomerPoolRecycleRule> recycleRules = recycleRuleMapper.selectListByLambda(recycleRuleWrapper);
+		Map<String, CustomerPoolRecycleRule> recycleRuleMap = recycleRules.stream()
+				.collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, recycleRule -> recycleRule));
+
 		pools.forEach(pool -> {
 			List<String> scopeIds = JSON.parseArray(pool.getScopeId(), String.class);
 			List<String> ownerUserIds = userExtendService.getScopeOwnerIds(scopeIds, currentOrgId);
 			if (ownerUserIds.contains(currentUser)) {
-				OptionDTO optionDTO = new OptionDTO();
-				optionDTO.setId(pool.getId());
-				optionDTO.setName(pool.getName());
-				options.add(optionDTO);
+				CustomerPoolDTO poolDTO = new CustomerPoolDTO();
+				BeanUtils.copyBean(poolDTO, pool);
+
+				poolDTO.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
+				poolDTO.setOwners(userExtendService.getScope(JSON.parseArray(pool.getOwnerId(), String.class)));
+				poolDTO.setCreateUserName(userMap.get(pool.getCreateUser()));
+				poolDTO.setUpdateUserName(userMap.get(pool.getUpdateUser()));
+
+				CustomerPoolPickRuleDTO pickRule = new CustomerPoolPickRuleDTO();
+				BeanUtils.copyBean(pickRule, pickRuleMap.get(pool.getId()));
+				CustomerPoolRecycleRuleDTO recycleRule = new CustomerPoolRecycleRuleDTO();
+				CustomerPoolRecycleRule customerPoolRecycleRule = recycleRuleMap.get(pool.getId());
+				BeanUtils.copyBean(recycleRule, customerPoolRecycleRule);
+				recycleRule.setConditions(JSON.parseArray(customerPoolRecycleRule.getCondition(), RuleConditionDTO.class));
+				poolDTO.setPickRule(pickRule);
+				poolDTO.setRecycleRule(recycleRule);
+				options.add(poolDTO);
 			}
 		});
 		return options;

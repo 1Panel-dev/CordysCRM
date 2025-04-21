@@ -4,6 +4,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.customer.dto.CustomerPoolDTO;
 import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
@@ -35,7 +36,7 @@ public class PoolCustomerController {
 	@GetMapping("/options")
 	@Operation(summary = "获取当前用户公海选项")
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ})
-	public List<OptionDTO> getPoolOptions() {
+	public List<CustomerPoolDTO> getPoolOptions() {
 		return poolCustomerService.getPoolOptions(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
