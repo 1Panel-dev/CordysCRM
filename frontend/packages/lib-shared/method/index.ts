@@ -106,7 +106,9 @@ export const apiSSE = (url: string, host?: string): EventSource => {
   // 解析 URL，自动适配 host
   const uri = protocol + (host?.split('://')[1] || window.location.host) + url;
 
-  return new EventSource(uri);
+  return new EventSource(uri,  {
+    withCredentials: true
+  });
 };
 
 /**

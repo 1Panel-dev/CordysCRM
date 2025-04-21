@@ -2,6 +2,7 @@ package io.cordys.crm.system.notice.sse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -20,21 +21,14 @@ public class SseController {
     /**
      * 客户端订阅 SSE 事件流
      */
-    /*
-        @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-        @Operation(summary = "客户端订阅 SSE 事件流")
-        public SseEmitter subscribe(@RequestParam String clientId) {
-            return sseService.addEmitter(SessionUtils.getUserId(), clientId);
-        }
-    */
-
-    /**
-     * 客户端订阅 SSE 事件流
-     */
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "客户端订阅 SSE 事件流")
     @CrossOrigin
-    public SseEmitter subscribe(@RequestParam String userId, @RequestParam String clientId) {
+    public SseEmitter subscribe(@RequestParam String userId, @RequestParam String clientId, HttpServletResponse response) {
+        // 标准 SSE 必要头部
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("X-Accel-Buffering", "no");
+
         return sseService.addEmitter(userId, clientId);
     }
 
