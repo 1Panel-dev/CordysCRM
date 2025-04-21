@@ -33,6 +33,7 @@
       <div class="flex h-full flex-col overflow-hidden">
         <van-search
           v-model="keyword"
+          class="crm-datasource-search"
           shape="round"
           :placeholder="
             t('datasource.searchPlaceholder', {
@@ -166,4 +167,12 @@
   });
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  .crm-datasource-search {
+    :deep(.van-cell) {
+      &:last-child::before {
+        @apply !hidden;
+      }
+    }
+  }
+</style>

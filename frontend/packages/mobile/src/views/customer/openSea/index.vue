@@ -74,7 +74,7 @@
     {
       label: t('common.pick'),
       icon: 'iconicon_user_add',
-      permission: [],
+      permission: ['CUSTOMER_MANAGEMENT_POOL:PICK'],
       action: async (item: any) => {
         try {
           showLoadingToast(t('common.picking'));
@@ -96,7 +96,7 @@
     {
       label: t('common.distribute'),
       icon: 'iconicon_swap',
-      permission: [],
+      permission: ['CUSTOMER_MANAGEMENT_POOL:ASSIGN'],
       action: (item: any) => {
         router.push({
           name: CustomerRouteEnum.CUSTOMER_DISTRIBUTE,
@@ -110,7 +110,7 @@
     {
       label: t('common.delete'),
       icon: 'iconicon_delete',
-      permission: [],
+      permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
       action: (item: any) => {
         showConfirmDialog({
           title: t('customer.deleteTitle'),

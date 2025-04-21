@@ -9,7 +9,7 @@ const customer: AppRouteRecordRaw = {
   redirect: '/customer/index',
   component: DEFAULT_LAYOUT,
   meta: {
-    permissions: [],
+    permissions: ['CUSTOMER_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT_POOL:READ', 'CUSTOMER_MANAGEMENT_CONTACT:READ'],
   },
   children: [
     {
@@ -18,9 +18,9 @@ const customer: AppRouteRecordRaw = {
       component: () => import('@/views/customer/index.vue'),
       meta: {
         locale: 'menu.customer',
-        permissions: [],
         depth: 1,
         isCache: true,
+        permissions: ['CUSTOMER_MANAGEMENT:READ'],
       },
     },
     {
@@ -28,9 +28,9 @@ const customer: AppRouteRecordRaw = {
       name: CustomerRouteEnum.CUSTOMER_DETAIL,
       component: () => import('@/views/customer/detail.vue'),
       meta: {
-        permissions: [],
         depth: 2,
         isCache: true,
+        permissions: ['CUSTOMER_MANAGEMENT:READ'],
       },
     },
     {
@@ -38,8 +38,8 @@ const customer: AppRouteRecordRaw = {
       name: CustomerRouteEnum.CUSTOMER_TRANSFER,
       component: () => import('@/views/customer/transfer.vue'),
       meta: {
-        permissions: [],
         depth: 3,
+        permissions: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
     },
     {
@@ -47,8 +47,8 @@ const customer: AppRouteRecordRaw = {
       name: CustomerRouteEnum.CUSTOMER_DISTRIBUTE,
       component: () => import('@/views/customer/openSea/distribute.vue'),
       meta: {
-        permissions: [],
         depth: 3,
+        permissions: ['CUSTOMER_MANAGEMENT_POOL:ASSIGN'],
       },
     },
     {
@@ -56,8 +56,8 @@ const customer: AppRouteRecordRaw = {
       name: CustomerRouteEnum.CUSTOMER_OPENSEA_DETAIL,
       component: () => import('@/views/customer/openSea/detail.vue'),
       meta: {
-        permissions: [],
         depth: 2,
+        permissions: ['CUSTOMER_MANAGEMENT_POOL:READ'],
       },
     },
     {
@@ -65,8 +65,8 @@ const customer: AppRouteRecordRaw = {
       name: CustomerRouteEnum.CUSTOMER_RELATION,
       component: () => import('@/views/customer/relation.vue'),
       meta: {
-        permissions: [],
         depth: 3,
+        permissions: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
     },
     {
@@ -74,8 +74,8 @@ const customer: AppRouteRecordRaw = {
       name: CustomerRouteEnum.CUSTOMER_COLLABORATOR,
       component: () => import('@/views/customer/collaborator.vue'),
       meta: {
-        permissions: [],
         depth: 3,
+        permissions: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
     },
   ],

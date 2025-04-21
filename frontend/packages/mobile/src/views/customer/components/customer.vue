@@ -1,7 +1,15 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden">
     <div class="flex items-center gap-[12px] bg-[var(--text-n10)] p-[8px_16px]">
-      <van-button plain icon="plus" type="primary" size="small" @click="goCreate"> </van-button>
+      <van-button
+        v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+        plain
+        icon="plus"
+        type="primary"
+        size="small"
+        @click="goCreate"
+      >
+      </van-button>
       <van-search
         v-model="keyword"
         shape="round"
@@ -101,7 +109,7 @@
     {
       label: t('common.edit'),
       icon: 'iconicon_handwritten_signature',
-      permission: [],
+      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       action: (item: any) => {
         router.push({
           name: CommonRouteEnum.FORM_CREATE,
@@ -116,7 +124,7 @@
     {
       label: t('common.transfer'),
       icon: 'iconicon_jump',
-      permission: [],
+      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       action: (item: any) => {
         router.push({
           name: CustomerRouteEnum.CUSTOMER_TRANSFER,
@@ -130,7 +138,7 @@
     {
       label: t('common.writeRecord'),
       icon: 'iconicon_edit1',
-      permission: [],
+      permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       action: (item: any) => {
         router.push({
           name: CommonRouteEnum.FORM_CREATE,
@@ -145,7 +153,7 @@
     {
       label: t('common.delete'),
       icon: 'iconicon_delete',
-      permission: [],
+      permission: ['CUSTOMER_MANAGEMENT:DELETE'],
       action: (item: any) => {
         showConfirmDialog({
           title: t('customer.deleteTitle'),

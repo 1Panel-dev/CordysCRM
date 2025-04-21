@@ -24,6 +24,7 @@
           {{ t('common.cancel') }}
         </van-button>
         <van-button
+          v-permission="['CUSTOMER_MANAGEMENT_POOL:ASSIGN']"
           type="primary"
           :loading="loading"
           :disabled="!selectedRows.length"

@@ -41,29 +41,30 @@
   position: relative;
   &::before {
     position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    border-bottom: 1px solid var(--van-cell-border-color);
+    top: -50%;
+    right: -50%;
+    bottom: -50%;
+    left: -50%;
+    border-top: solid 1px var(--van-border-color);
+    content: '';
+    transform: scale(0.5);
     box-sizing: border-box;
-    content: ' ';
     pointer-events: none;
-    transform: scaleY(0.5);
   }
 }
 .half-px-border-bottom() {
   position: relative;
   &::after {
     position: absolute;
+    top: -50%;
+    right: -50%;
+    bottom: -50%;
+    left: -50%;
+    border-bottom: solid 1px var(--van-border-color);
+    content: '';
+    transform: scale(0.5);
     box-sizing: border-box;
-    content: ' ';
     pointer-events: none;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    border: 0 solid var(--van-border-color);
-    transform: scaleY(0.5);
-    border-width: var(--van-border-width) 0;
   }
 }
 

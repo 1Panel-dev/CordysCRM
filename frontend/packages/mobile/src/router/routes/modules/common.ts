@@ -8,7 +8,16 @@ const common: AppRouteRecordRaw = {
   name: CommonRouteEnum.COMMON,
   component: DEFAULT_LAYOUT,
   meta: {
-    permissions: [],
+    permissions: [
+      'CLUE_MANAGEMENT:ADD',
+      'CLUE_MANAGEMENT:UPDATE',
+      'CUSTOMER_MANAGEMENT:ADD',
+      'CUSTOMER_MANAGEMENT:UPDATE',
+      'CUSTOMER_MANAGEMENT_CONTACT:ADD',
+      'CUSTOMER_MANAGEMENT_CONTACT:UPDATE',
+      'OPPORTUNITY_MANAGEMENT:ADD',
+      'OPPORTUNITY_MANAGEMENT:UPDATE',
+    ],
   },
   children: [
     {
@@ -16,7 +25,16 @@ const common: AppRouteRecordRaw = {
       name: CommonRouteEnum.FORM_CREATE,
       component: () => import('@/components/business/crm-form-create/index.vue'),
       meta: {
-        permissions: [],
+        permissions: [
+          'CLUE_MANAGEMENT:ADD',
+          'CLUE_MANAGEMENT:UPDATE',
+          'CUSTOMER_MANAGEMENT:ADD',
+          'CUSTOMER_MANAGEMENT:UPDATE',
+          'CUSTOMER_MANAGEMENT_CONTACT:ADD',
+          'CUSTOMER_MANAGEMENT_CONTACT:UPDATE',
+          'OPPORTUNITY_MANAGEMENT:ADD',
+          'OPPORTUNITY_MANAGEMENT:UPDATE',
+        ],
         depth: 9,
       },
     },
@@ -25,7 +43,7 @@ const common: AppRouteRecordRaw = {
       name: CommonRouteEnum.CONTACT_DETAIL,
       component: () => import('@/components/business/crm-contact-list/detail.vue'),
       meta: {
-        permissions: [],
+        permissions: ['CUSTOMER_MANAGEMENT:READ'],
         depth: 9,
       },
     },
@@ -34,7 +52,7 @@ const common: AppRouteRecordRaw = {
       name: CommonRouteEnum.FOLLOW_DETAIL,
       component: () => import('@/components/business/crm-follow-list/followDetail.vue'),
       meta: {
-        permissions: [],
+        permissions: ['CUSTOMER_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ'],
         depth: 9,
       },
     },

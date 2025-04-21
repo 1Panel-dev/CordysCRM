@@ -9,7 +9,7 @@ const opportunity: AppRouteRecordRaw = {
   redirect: '/opportunity/index',
   component: DEFAULT_LAYOUT,
   meta: {
-    permissions: [],
+    permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
   },
   children: [
     {
@@ -18,7 +18,7 @@ const opportunity: AppRouteRecordRaw = {
       component: () => import('@/views/opportunity/index.vue'),
       meta: {
         locale: 'menu.opportunity',
-        permissions: [],
+        permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
         depth: 1,
         isCache: true,
       },
@@ -28,7 +28,7 @@ const opportunity: AppRouteRecordRaw = {
       name: OpportunityRouteEnum.OPPORTUNITY_DETAIL,
       component: () => import('@/views/opportunity/detail.vue'),
       meta: {
-        permissions: [],
+        permissions: ['OPPORTUNITY_MANAGEMENT:READ'],
         depth: 2,
         isCache: true,
       },

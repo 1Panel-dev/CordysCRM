@@ -12,12 +12,14 @@
             <div class="flex-1 text-[16px] text-[var(--text-n1)]">{{ item.userName }}</div>
             <div class="flex items-center gap-[16px]">
               <CrmTextButton
+                v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
                 icon="iconicon_delete"
                 icon-size="16px"
                 color="var(--error-red)"
                 @click="() => handleDelete(item.id)"
               />
               <CrmTextButton
+                v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
                 icon="iconicon_handwritten_signature"
                 color="var(--primary-8)"
                 icon-size="16px"
@@ -36,7 +38,7 @@
         </div>
       </div>
     </div>
-    <div class="bg-[var(--text-n10)] p-[16px]">
+    <div v-permission="['CUSTOMER_MANAGEMENT:UPDATE']" class="bg-[var(--text-n10)] p-[16px]">
       <van-button type="primary" class="rounded-[var(--border-radius-small)]" block plain @click="goCollaborator">
         {{ t('customer.addCollaborator') }}
       </van-button>

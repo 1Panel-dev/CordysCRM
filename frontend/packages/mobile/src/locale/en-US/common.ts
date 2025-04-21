@@ -58,7 +58,7 @@ export default {
   'common.notNull': '{value} cannot be empty',
   'common.required': 'Required',
   'common.onlyOne': 'Not allowed to repeat value',
-  'common.customerContact': 'Contact',
+  'common.contact': 'Contact',
   'common.confirmDelete': 'Confirm delete',
   'common.copySuccess': 'Copy success',
   'common.copyNotSupport': 'Current device does not support copy, please copy manually',

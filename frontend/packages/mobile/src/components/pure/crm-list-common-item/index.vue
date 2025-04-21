@@ -27,6 +27,7 @@
       <CrmTextButton
         v-for="btn of props.actions"
         :key="btn.label"
+        v-permission="btn.permission"
         :text="btn.label"
         :icon="btn.icon"
         @click="btn.action(item)"

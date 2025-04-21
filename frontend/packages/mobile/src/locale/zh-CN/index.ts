@@ -1,4 +1,5 @@
 import common from './common';
+import sys from './sys';
 import dayjsLocale from 'dayjs/locale/zh-cn';
 
 const _Cmodules: any = import.meta.glob('../../components/**/locale/zh-CN.ts', { eager: true });
@@ -26,6 +27,7 @@ export default {
     'menu.openSea': '公海',
     'menu.mine': '我的',
     'navbar.action.locale': '切换为中文',
+    ...sys,
     ...result,
     ...common,
   },

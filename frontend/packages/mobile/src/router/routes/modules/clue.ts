@@ -9,7 +9,7 @@ const clue: AppRouteRecordRaw = {
   redirect: '/clue/index',
   component: DEFAULT_LAYOUT,
   meta: {
-    permissions: [],
+    permissions: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'],
   },
   children: [
     {
@@ -18,7 +18,7 @@ const clue: AppRouteRecordRaw = {
       component: () => import('@/views/clue/index.vue'),
       meta: {
         locale: 'menu.clue',
-        permissions: [],
+        permissions: ['CLUE_MANAGEMENT:READ'],
         depth: 1,
         isCache: true,
       },
@@ -28,7 +28,7 @@ const clue: AppRouteRecordRaw = {
       name: ClueRouteEnum.CLUE_DETAIL,
       component: () => import('@/views/clue/clue/detail.vue'),
       meta: {
-        permissions: [],
+        permissions: ['CLUE_MANAGEMENT:READ'],
         depth: 2,
       },
     },
@@ -37,7 +37,7 @@ const clue: AppRouteRecordRaw = {
       name: ClueRouteEnum.CLUE_POOL_DETAIL,
       component: () => import('@/views/clue/pool/detail.vue'),
       meta: {
-        permissions: [],
+        permissions: ['CLUE_MANAGEMENT_POOL:READ'],
         depth: 2,
       },
     },

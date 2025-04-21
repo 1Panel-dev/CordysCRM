@@ -43,6 +43,7 @@
           {{ t('common.cancel') }}
         </van-button>
         <van-button
+          v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
           type="primary"
           class="!rounded-[var(--border-radius-small)] !text-[16px]"
           :loading="loading"

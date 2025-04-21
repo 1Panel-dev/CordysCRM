@@ -12,6 +12,7 @@ import { setupI18n } from '@lib/shared/locale';
 import useLocale from '@lib/shared/locale/useLocale';
 
 import App from './App.vue';
+import directive from './directive/index';
 
 // eslint-disable-next-line import/no-unresolved
 import 'virtual:svg-icons-register';
@@ -35,6 +36,7 @@ async function setupApp() {
   }
 
   app.use(router);
+  app.use(directive);
   app.mount('#app');
 }
 

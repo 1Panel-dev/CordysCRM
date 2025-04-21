@@ -1,7 +1,7 @@
 <template>
   <CrmPageWrapper :title="t('common.message')">
     <div class="flex h-full flex-col overflow-hidden">
-      <van-tabs v-model:active="activeName" border class="customer-tabs" @change="changeResourceTab">
+      <van-tabs v-model:active="activeName" border class="detail-tabs" @change="changeResourceTab">
         <van-tab v-for="tab of tabList" :key="tab.name" :name="tab.name">
           <template #title>
             <div class="text-[16px]" :class="activeName === tab.name ? 'text-[var(--primary-8)]' : ''">
@@ -193,6 +193,11 @@
 </script>
 
 <style lang="less" scoped>
+  .detail-tabs {
+    :deep(.van-hairline--top-bottom) {
+      margin-top: -0.5px;
+    }
+  }
   .filter-buttons {
     @apply flex;
 

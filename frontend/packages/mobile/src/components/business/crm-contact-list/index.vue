@@ -2,7 +2,12 @@
   <div class="flex h-full flex-col overflow-hidden bg-[var(--text-n9)]">
     <div class="top-bar">
       <van-button plain icon="plus" type="primary" size="small" @click="goCreate"> </van-button>
-      <van-search v-model="keyword" shape="round" :placeholder="t('customer.searchPlaceholder')" class="flex-1 !p-0" />
+      <van-search
+        v-model="keyword"
+        shape="round"
+        :placeholder="t('customer.searchContactPlaceholder')"
+        class="flex-1 !p-0"
+      />
     </div>
     <CrmList
       ref="crmListRef"
