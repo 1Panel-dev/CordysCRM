@@ -54,9 +54,9 @@
         (
         #{request.status} = 'ALL'
         OR ( #{request.status} = 'CANCELLED' AND STATUS = 'CANCELLED' )
-        OR ( #{request.status} = 'PREPARED' AND UNIX_TIMESTAMP(CURDATE())*1000 <![CDATA[<]]> estimated_time AND STATUS != 'CANCELLED' )
-        OR ( #{request.status} = 'UNDERWAY' AND UNIX_TIMESTAMP(CURDATE())*1000 = estimated_time AND STATUS != 'CANCELLED' )
-        OR ( #{request.status} = 'COMPLETED' AND UNIX_TIMESTAMP(CURDATE())*1000 > estimated_time AND STATUS != 'CANCELLED' )
+        OR ( #{request.status} = 'PREPARED' AND UNIX_TIMESTAMP(CURDATE())*1000 <![CDATA[<]]> estimated_time AND (<![CDATA[ STATUS <> 'CANCELLED' ]]>  or STATUS is NULL) )
+        OR ( #{request.status} = 'UNDERWAY' AND UNIX_TIMESTAMP(CURDATE())*1000 = estimated_time AND (<![CDATA[ STATUS <> 'CANCELLED' ]]> or STATUS is NULL) )
+        OR ( #{request.status} = 'COMPLETED' AND UNIX_TIMESTAMP(CURDATE())*1000 > estimated_time AND (<![CDATA[ STATUS <> 'CANCELLED' ]]> or STATUS is NULL) )
         )
 
         <if test="customerData != null and !customerData.all and customerData.owner">
