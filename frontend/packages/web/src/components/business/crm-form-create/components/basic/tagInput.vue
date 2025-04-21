@@ -23,7 +23,7 @@
       :input-props="{
         maxlength: 64,
       }"
-      :fallback-option="value.length < 10 ? fallbackOption : false"
+      :fallback-option="value?.length < 10 ? fallbackOption : false"
       :render-tag="renderTag"
       clearable
       @update-value="($event) => emit('change', $event)"
@@ -88,7 +88,7 @@
   }
 
   function handleInputEnter() {
-    if (value.value.length >= 10) {
+    if (value.value?.length >= 10) {
       Message.warning(t('crmFormCreate.basic.tagInputLimitTip'));
     }
   }

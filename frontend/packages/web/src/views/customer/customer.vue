@@ -38,7 +38,7 @@
     :save-api="batchTransferCustomer"
     @load-list="loadList"
   />
-  <customerOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeSourceId" />
+  <customerOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeSourceId" @saved="loadList" />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
     :form-key="activeFormKey"

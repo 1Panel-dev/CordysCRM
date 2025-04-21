@@ -29,6 +29,7 @@
         :render-source-list="renderSourceList"
         source-filterable
         class="addMemberTransfer"
+        :class="props.multiple ? '' : 'addMemberTransfer--single'"
       />
     </div>
   </CrmDrawer>
@@ -246,6 +247,11 @@
     @apply flex-1;
     :deep(.n-transfer-list) {
       @apply h-full;
+    }
+  }
+  .addMemberTransfer--single {
+    :deep(.n-transfer-list-header__button) {
+      @apply hidden;
     }
   }
 </style>

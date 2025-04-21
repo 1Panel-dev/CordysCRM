@@ -103,7 +103,7 @@
   watch(
     () => selectedList.value,
     (newVal) => {
-      modelValue.value = newVal.map((item) => item.id);
+      modelValue.value = newVal?.map((item) => item.id);
     },
     {
       immediate: true,

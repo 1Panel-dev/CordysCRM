@@ -25,4 +25,5 @@ export default {
   'role.batchRemove': 'Batch remove',
   'role.batchRemoveTip': 'Are you sure you want to remove {count} members?',
   'role.batchRemoveConfirm': 'Confirm Removal',
+  'role.newRole': 'New Role',
 };

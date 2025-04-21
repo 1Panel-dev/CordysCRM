@@ -1,8 +1,9 @@
 <template>
-  <div class="relative h-full px-[24px]">
+  <div class="relative flex h-full flex-col">
     <n-scrollbar
       x-scrollable
-      :content-style="{ 'min-width': '600px', 'width': '100%', 'min-height': '500px', 'margin-bottom': '96px' }"
+      class="flex-1 px-[24px]"
+      :content-style="{ 'min-width': '600px', 'width': '100%', 'height': '100%', 'min-height': '500px' }"
     >
       <div class="group-title">{{ t('role.dataPermission') }}</div>
       <div class="mb-[24px] flex h-[32px] items-center gap-[8px]">
@@ -399,10 +400,8 @@
     background-color: var(--text-n9);
   }
   .tab-footer {
-    @apply absolute z-10 flex w-full items-center justify-end;
+    @apply flex w-full items-center justify-end;
 
-    bottom: 0;
-    left: 0;
     padding: 24px;
     background-color: var(--text-n10);
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #00000000), var(--tw-ring-shadow, 0 0 #00000000), var(--tw-shadow);
@@ -410,5 +409,8 @@
 
     --tw-shadow: 0 -1px 4px rgb(2 2 2 / 10%);
     --tw-shadow-colored: 0 -1px 4px var(--tw-shadow-color);
+  }
+  :deep(.n-data-table-th--fixed-left) {
+    background-color: var(--text-n9) !important;
   }
 </style>

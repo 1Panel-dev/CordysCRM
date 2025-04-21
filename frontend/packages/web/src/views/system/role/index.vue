@@ -111,6 +111,7 @@
     );
   }
 
+  const activeRole = computed(() => roles.value.find((e) => e.id === selectedKeys.value[0]));
   const nodeMoreActions: ActionsItem[] = [
     {
       key: 'rename',
@@ -137,13 +138,15 @@
     if (node.internal || !hasAnyPermission(['SYSTEM_ROLE:UPDATE'])) {
       return [];
     }
-    if (node.isNew) {
-      return [
-        {
-          key: 'rename',
-          label: t('common.rename'),
-        },
-      ];
+    if (activeRole.value?.isNew) {
+      return node.id === activeRole.value?.id
+        ? [
+            {
+              key: 'rename',
+              label: t('common.rename'),
+            },
+          ]
+        : [];
     }
     return items;
   }
@@ -199,7 +202,6 @@
     }
   }
 
-  const activeRole = computed(() => roles.value.find((e) => e.id === selectedKeys.value[0]));
   const renameStatic = computed(() => activeRole.value?.isNew);
 
   const activeTab = ref('permission');
@@ -213,7 +215,7 @@
     const id = getGenerateId();
     roles.value.push({
       id,
-      name: '新角色',
+      name: t('role.newRole'),
       internal: false,
       dataScope: 'ALL',
       description: '',
@@ -222,6 +224,7 @@
     selectedKeys.value = [id];
     nextTick(() => {
       roleTreeRef.value?.toggleEdit(id);
+      console.log(renameStatic.value);
     });
   }
 

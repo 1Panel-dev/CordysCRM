@@ -25,4 +25,5 @@ export default {
   'role.batchRemove': '批量移除',
   'role.batchRemoveTip': '确认移除 {count} 名成员吗？',
   'role.batchRemoveConfirm': '确认移除',
+  'role.newRole': '新角色',
 };

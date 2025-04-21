@@ -187,7 +187,7 @@
 
   const { toggleEdit, createEditInput, editingKey } = useRenameNode(
     props.renameApi,
-    toRef(props.renameStatic),
+    toRefs(props).renameStatic,
     props.fieldNames
   );
 

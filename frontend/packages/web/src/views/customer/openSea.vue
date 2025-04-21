@@ -32,7 +32,12 @@
       </template>
     </CrmTable>
   </CrmCard>
-  <addOrEditPoolDrawer v-model:visible="drawerVisible" :type="ModuleConfigEnum.CUSTOMER_MANAGEMENT" :row="openSeaRow" />
+  <addOrEditPoolDrawer
+    v-model:visible="drawerVisible"
+    :type="ModuleConfigEnum.CUSTOMER_MANAGEMENT"
+    :row="openSeaRow"
+    @refresh="init"
+  />
   <openSeaOverviewDrawer
     v-model:show="showOverviewDrawer"
     :source-id="activeCustomerId"
@@ -84,6 +89,7 @@
   } from '@/api/modules';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 
@@ -102,17 +108,19 @@
   const batchTableQueryParams = ref<TableQueryParams>({});
 
   function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
-    (node.children as Array<VNode>)?.push(
-      h(CrmIcon, {
-        type: 'iconicon_set_up',
-        class: 'openSea-setting-icon',
-        onClick: (e: Event) => {
-          e.stopPropagation();
-          openSeaRow.value = option;
-          drawerVisible.value = true;
-        },
-      })
-    );
+    if (hasAnyPermission(['MODULE_SETTING:UPDATE'])) {
+      (node.children as Array<VNode>)?.push(
+        h(CrmIcon, {
+          type: 'iconicon_set_up',
+          class: 'openSea-setting-icon',
+          onClick: (e: Event) => {
+            e.stopPropagation();
+            openSeaRow.value = option;
+            drawerVisible.value = true;
+          },
+        })
+      );
+    }
     return h(node);
   }
 
@@ -424,9 +432,13 @@
     openSea.value = openSeaOptions.value[0]?.value || '';
   }
 
-  onBeforeMount(async () => {
+  async function init() {
     await initOpenSeaOptions();
     searchData();
+  }
+
+  onBeforeMount(() => {
+    init();
   });
 </script>
 

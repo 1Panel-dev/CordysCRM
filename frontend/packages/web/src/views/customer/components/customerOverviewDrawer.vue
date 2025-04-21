@@ -11,7 +11,7 @@
     :initial-source-name="sourceName"
     show-tab-setting
     @button-select="handleButtonSelect"
-    @saved="() => (refreshKey += 1)"
+    @saved="handleSaved"
   >
     <template #transferPopContent>
       <TransferForm
@@ -86,6 +86,9 @@
 
   const props = defineProps<{
     sourceId: string;
+  }>();
+  const emit = defineEmits<{
+    (e: 'saved'): void;
   }>();
 
   const { t } = useI18n();
@@ -250,9 +253,14 @@
   function handleButtonSelect(key: string) {
     if (key === 'delete') {
       handleDelete();
-    } else if (key === 'transfer') {
+    } else if (key === 'pop-transfer') {
       transfer();
     }
+  }
+
+  function handleSaved() {
+    refreshKey.value += 1;
+    emit('saved');
   }
 
   function handleDescriptionInit(_collaborationType?: CollaborationType, _sourceName?: string) {

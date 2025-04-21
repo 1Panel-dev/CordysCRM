@@ -38,7 +38,7 @@ export default function useRenameNode(
   /** 处理重命名逻辑 */
   const loading = ref<boolean>(false);
   async function handleRenameMode(node: CrmTreeNodeData) {
-    if (!renameApi || renameStatic?.value) return;
+    if (!renameApi) return;
 
     loading.value = true;
     try {
@@ -60,7 +60,7 @@ export default function useRenameNode(
   function handleEdit(node: CrmTreeNodeData, newLabel: string, notChange: boolean) {
     const key = node[keyField];
     // 有改变且为重命名
-    if (!notChange && getEditingMode(key) === 'rename') {
+    if (!notChange && getEditingMode(key) === 'rename' && !renameStatic?.value) {
       node[labelField] = newLabel;
       handleRenameMode(node);
       // 否则切换预览模式
