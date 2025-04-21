@@ -190,6 +190,7 @@ public class ClueService {
     public ClueGetResponse get(String id, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
         ClueGetResponse clueGetResponse = BeanUtils.copyBean(new ClueGetResponse(), clue);
+        clueGetResponse = baseService.setCreateUpdateOwnerUserName(clueGetResponse);
 
         // 获取模块字段
         List<BaseModuleFieldValue> clueFields = clueFieldService.getModuleFieldValuesByResourceId(id);
@@ -214,7 +215,7 @@ public class ClueService {
             }
         }
 
-        return baseService.setCreateUpdateOwnerUserName(clueGetResponse);
+        return clueGetResponse;
     }
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD, resourceName = "{#request.name}")

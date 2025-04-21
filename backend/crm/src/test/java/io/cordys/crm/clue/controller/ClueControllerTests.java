@@ -207,6 +207,7 @@ class ClueControllerTests extends BaseTest {
         Assertions.assertNotNull(getResponse.getOwnerName());
         Assertions.assertNotNull(getResponse.getDepartmentId());
         Assertions.assertNotNull(getResponse.getDepartmentName());
+        Assertions.assertNotNull(getResponse.getOptionMap().get("owner"));
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, DEFAULT_GET, addClue.getId());
