@@ -1,7 +1,7 @@
 <template>
   <CrmPageWrapper :title="detailTitle">
-    <van-form ref="formRef" required>
-      <van-cell-group v-if="route.query.type === 'phone'" inset class="mine-van-cell">
+    <van-form ref="formRef" required class="crm-form">
+      <van-cell-group v-if="route.query.type === 'phone'" inset>
         <van-field
           v-model="form.phone"
           name="phone"
@@ -14,7 +14,7 @@
           class="!text-[16px]"
         />
       </van-cell-group>
-      <van-cell-group v-else inset class="mine-van-cell">
+      <van-cell-group v-else-if="route.query.type === 'email'" inset>
         <van-field
           v-model="form.email"
           name="email"
@@ -28,7 +28,20 @@
         />
       </van-cell-group>
       <div v-if="route.query.type === 'resetPassWord'">
-        <van-cell-group inset class="mine-van-cell">
+        <van-cell-group inset>
+          <van-field
+            v-model="form.email"
+            name="email"
+            :label="t('mine.email')"
+            :placeholder="t('common.pleaseInput')"
+            :rules="[
+              { required: true, message: t('common.notNull', { value: `${t('mine.email')}` }) },
+              { validator: validateUserEmail },
+            ]"
+            class="!text-[16px]"
+          />
+        </van-cell-group>
+        <van-cell-group inset>
           <van-field
             v-model="form.code"
             name="code"
@@ -50,7 +63,7 @@
             </template>
           </van-field>
         </van-cell-group>
-        <van-cell-group inset class="mine-van-cell">
+        <van-cell-group inset>
           <CrmPasswordInput
             v-model:value="form.password"
             name="password"
@@ -60,7 +73,7 @@
             class="!text-[16px]"
           />
         </van-cell-group>
-        <van-cell-group inset class="mine-van-cell">
+        <van-cell-group inset>
           <CrmPasswordInput
             v-model:value="form.confirmPassword"
             name="confirmPassword"
@@ -275,8 +288,4 @@
   });
 </script>
 
-<style lang="less" scoped>
-  .mine-van-cell {
-    border-bottom: 1px solid var(--text-n8);
-  }
-</style>
+<style lang="less" scoped></style>

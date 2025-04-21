@@ -1,11 +1,9 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden">
-    <div class="personal-title p-[11px_16px] text-[18px] text-[var(--text-n1)]">
-      {{ t('menu.mine') }}
-    </div>
-    <div class="flex flex-1 flex-col gap-[16px] overflow-auto p-[16px]">
+    <CrmPageHeader :title="t('menu.mine')" hide-back />
+    <div class="mt-[48px] flex flex-1 flex-col gap-[16px] overflow-auto p-[16px]">
       <div class="personal-header-info info-item gap-[16px] p-[16px]">
-        <van-image round width="64px" height="64px" src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg" />
+        <van-image round width="64px" height="64px" :src="userStore.userInfo?.avatar" />
         <div class="flex w-[calc(100%-80px)] flex-1 flex-col justify-evenly">
           <div class="one-line-text text-[16px] font-semibold text-[var(--text-n1)]">
             {{ personalInfo?.userName }}
@@ -35,7 +33,6 @@
             </div>
           </template>
         </van-cell>
-        <div class="person-bottom-border"></div>
       </van-cell-group>
       <van-cell-group inset class="info-item">
         <van-cell :title="t('common.message')" is-link class="!p-[16px]" @click="handleEditInfo('message')">
@@ -45,7 +42,6 @@
             </div>
           </template>
         </van-cell>
-        <div class="person-bottom-border"></div>
       </van-cell-group>
       <van-cell-group inset class="info-item">
         <van-cell
@@ -55,7 +51,6 @@
           is-link
           @click="handleEditInfo('resetPassWord')"
         />
-        <div class="person-bottom-border"></div>
       </van-cell-group>
     </div>
   </div>
@@ -67,13 +62,17 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { OrgUserInfo } from '@lib/shared/models/system/org';
 
+  import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
+
   import { getNotificationCount, getPersonalUrl } from '@/api/modules';
   import { defaultUserInfo } from '@/config/mine';
+  import useUserStore from '@/store/modules/user';
 
   import { MineRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const router = useRouter();
+  const userStore = useUserStore();
 
   const routeKey = ref('');
 
@@ -125,12 +124,6 @@
 </script>
 
 <style lang="less" scoped>
-  .personal-title {
-    @apply flex items-center justify-center font-semibold;
-
-    background-color: var(--text-n10);
-    .half-px-border-bottom();
-  }
   .personal-header-info {
     @apply flex;
 

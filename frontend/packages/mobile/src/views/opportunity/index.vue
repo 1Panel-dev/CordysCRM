@@ -1,9 +1,7 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden">
-    <div class="opportunity-title p-[11px_16px]">
-      {{ t('common.opportunity') }}
-    </div>
-    <div class="flex items-center gap-[12px] bg-[var(--text-n10)] p-[8px_16px]">
+    <CrmPageHeader :title="t('common.opportunity')" hide-back />
+    <div class="mt-[48px] flex items-center gap-[12px] bg-[var(--text-n10)] p-[8px_16px]">
       <van-button plain icon="plus" type="primary" size="small" @click="goCreate"> </van-button>
       <van-search
         v-model="keyword"
@@ -60,6 +58,7 @@
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
+  import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
 
   import { deleteOpt, getOpportunityList } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
@@ -238,13 +237,6 @@
 </script>
 
 <style lang="less" scoped>
-  .opportunity-title {
-    font-size: 18px;
-    color: var(--text-n1);
-    background: var(--text-n10);
-    @apply flex items-center justify-center font-semibold;
-    .half-px-border-bottom();
-  }
   .filter-buttons {
     @apply flex;
 
