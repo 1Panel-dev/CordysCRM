@@ -81,15 +81,7 @@ public class DataScopeService {
         }
 
         // 从 sessionUser 中获取角色数据权限
-        Map<String, List<RoleDataScopeDTO>> dataScopeRoleMap;
-        SessionUser user = SessionUtils.getUser();
-        if (user != null) {
-            dataScopeRoleMap = user.getRoles()
-                    .stream()
-                    .collect(Collectors.groupingBy(RoleDataScopeDTO::getDataScope, Collectors.toList()));
-        } else {
-            dataScopeRoleMap = getDataScopeRoleMap(userId);
-        }
+        Map<String, List<RoleDataScopeDTO>> dataScopeRoleMap = getDataScopeRoleMap(userId);
 
         if (CollectionUtils.isNotEmpty(dataScopeRoleMap.get(RoleDataScope.ALL.name()))) {
             // 可以查看所有数据
