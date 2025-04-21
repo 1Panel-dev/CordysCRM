@@ -237,7 +237,7 @@ class ProductControllerTests extends BaseTest {
         Assertions.assertEquals(BigDecimal.valueOf(300,2), getResponse.getPrice());
         for (BaseModuleFieldValue moduleField : getResponse.getModuleFields()) {
             if (StringUtils.equalsAnyIgnoreCase(moduleField.getFieldId(), moduleFieldStatusId)) {
-                Assertions.assertEquals("2",moduleField.getFieldValue());
+                Assertions.assertEquals("1",moduleField.getFieldValue());
             }
         }
         // 校验权限

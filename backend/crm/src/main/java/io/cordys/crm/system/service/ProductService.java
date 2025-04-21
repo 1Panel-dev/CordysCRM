@@ -218,7 +218,7 @@ public class ProductService {
         product.setUpdateUser(userId);
         product.setOrganizationId(orgId);
         extProductMapper.updateProduct(request.getIds(),product);
-        batchUpdateModuleField(request.getIds(),request.getModuleFields());
+       // batchUpdateModuleField(request.getIds(),request.getModuleFields());
         List<LogDTO> logDTOList = getLogDTOList(request, userId, products);
         logService.batchAdd(logDTOList);
     }
@@ -226,6 +226,7 @@ public class ProductService {
     @NotNull
     private static List<LogDTO> getLogDTOList(ProductBatchEditRequest request, String userId, List<Product> products) {
         List<LogDTO>logDTOList = new ArrayList<>();
+        //目前只记录批量上下架
         for (Product oldProduct : products) {
             LogDTO logDTO = new LogDTO(oldProduct.getOrganizationId(), oldProduct.getId(), userId, LogType.UPDATE, LogModule.PRODUCT_MANAGEMENT, oldProduct.getName());
             Map<String, String> oldMap = new HashMap<>();
