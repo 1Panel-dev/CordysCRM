@@ -47,9 +47,13 @@
           window.history.replaceState({}, document.title, newUrl);
         }
       } else {
-        const res = await getThirdConfigByType('WECOM');
+        const res = await getThirdConfigByType('WE_COM_OAUTH2');
         const redirectUrl = `${window.location.origin}/mobile/#/workbench/index`;
-        const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${res.corpId}&response_type=code&redirect_uri=${redirectUrl}&scope=snsapi_privateinfo&agentid=${res.agentId}#wechat_redirect`;
+        const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
+          res.corpId
+        }&response_type=code&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=snsapi_privateinfo&agentid=${
+          res.agentId
+        }#wechat_redirect`;
         window.location.href = url;
       }
     } catch (error) {
