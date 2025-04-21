@@ -62,6 +62,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const internalColumnMap: Record<FormKey, CrmDataTableColumn[]> = {
     [FormDesignKeyEnum.CUSTOMER]: [
       {
+        title: t('org.department'),
+        width: 120,
+        key: 'departmentName',
+        ellipsis: {
+          tooltip: true,
+        },
+      },
+      {
         title: t('customer.recycleOpenSea'),
         width: 120,
         key: 'recyclePoolName',

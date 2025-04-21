@@ -55,7 +55,7 @@ const useUserStore = defineStore('user', {
     setInfo(info: UserInfo) {
       this.$patch({ userInfo: info });
     },
-    qrCodeLogin(res: UserInfo) {
+    setLoginInfo(res: UserInfo) {
       try {
         if (!res) {
           return false;
@@ -80,11 +80,7 @@ const useUserStore = defineStore('user', {
         if (!res) {
           return false;
         }
-        setToken(res.sessionId, res.csrfToken);
-        this.setInfo(res);
-        const appStore = useAppStore();
-        const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
-        appStore.setOrgId(lastOrganizationId);
+        this.setLoginInfo(res);
         return true;
       } catch (err) {
         // eslint-disable-next-line no-console

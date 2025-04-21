@@ -217,4 +217,4 @@ export const {
   getThirdConfigByType,
 } = businessApi;
 
-export const { isLogin, getWeComCallback } = loginApi;
+export const { isLogin, getWeComOauthCallback, getWeComCallback } = loginApi;
