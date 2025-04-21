@@ -48,7 +48,7 @@
         }
       } else {
         const res = await getThirdConfigByType('WE_COM_OAUTH2');
-        const redirectUrl = `${window.location.origin}/mobile/#/`;
+        const redirectUrl = `${window.location.origin}/mobile`;
         const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${
           res.corpId
         }&response_type=code&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=snsapi_privateinfo&agentid=${
