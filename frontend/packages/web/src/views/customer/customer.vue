@@ -65,9 +65,10 @@
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
+  import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
-  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -87,6 +88,7 @@
     batchMoveCustomer,
     batchTransferCustomer,
     deleteCustomer,
+    getFieldDeptTree,
     updateCustomer,
   } from '@/api/modules';
   import { filterConfigList as clueFilterConfigList } from '@/config/clue';
@@ -386,14 +388,37 @@
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
-  const filterConfigList = [
+  const department = ref<DeptUserTreeNode[]>([]);
+  async function initDepartList() {
+    try {
+      department.value = await getFieldDeptTree();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  const filterConfigList = computed<FilterFormItem[]>(() => [
     {
       title: t('common.head'),
       dataIndex: 'ownerName',
       type: FieldTypeEnum.USER_SELECT,
     },
+    {
+      title: t('opportunity.department'),
+      dataIndex: 'departmentId',
+      type: FieldTypeEnum.TREE_SELECT,
+      treeSelectProps: {
+        labelField: 'name',
+        keyField: 'id',
+        multiple: true,
+        clearFilterAfterSelect: false,
+        options: department.value,
+        checkable: true,
+      },
+    },
     ...clueFilterConfigList,
-  ];
+  ]);
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';
     setAdvanceFilter(filter);
@@ -418,6 +443,7 @@
 
   onMounted(() => {
     searchData();
+    initDepartList();
   });
 </script>
 
