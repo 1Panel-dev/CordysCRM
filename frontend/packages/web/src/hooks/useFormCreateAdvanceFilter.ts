@@ -32,7 +32,7 @@ export default function useFormCreateFilter(formKey: FormDesignKeyEnum) {
         return {
           selectProps: {
             options: field.options,
-            multiple: field.multiple,
+            multiple: true,
           },
         };
       }

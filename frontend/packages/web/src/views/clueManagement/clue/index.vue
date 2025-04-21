@@ -16,7 +16,7 @@
     >
       <template #actionLeft>
         <div class="flex items-center">
-          <n-button v-permission="['CLUE_MANAGEMENT:ADD']" class="mr-[12px]" type="primary" @click="handleAddOrEdit">
+          <n-button v-permission="['CLUE_MANAGEMENT:ADD']" class="mr-[12px]" type="primary" @click="handleAdd">
             {{ t('clueManagement.newClue') }}
           </n-button>
         </div>
@@ -83,7 +83,7 @@
   import ClueOverviewDrawer from './components/clueOverviewDrawer.vue';
   import ToCluePoolResultModel from './components/toCluePoolResultModel.vue';
 
-  import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue, updateClue } from '@/api/modules';
+  import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue } from '@/api/modules';
   import { filterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -254,9 +254,9 @@
       if (!error) {
         try {
           transferLoading.value = true;
-          await updateClue({
-            id: row.id,
-            owner: transferForm.value.owner as string,
+          await batchTransferClue({
+            ...transferForm.value,
+            ids: [row.id],
           });
           Message.success(t('common.transferSuccess'));
           transferForm.value = { ...defaultTransferForm };
@@ -272,8 +272,9 @@
   }
 
   // 新增
-  function handleAddOrEdit() {
+  function handleAdd() {
     formKey.value = FormDesignKeyEnum.CLUE;
+    activeClueId.value = '';
     formCreateDrawerVisible.value = true;
   }
 
@@ -290,7 +291,8 @@
       case 'edit':
         otherFollowRecordSaveParams.value.id = row.id;
         needInitDetail.value = true;
-        handleAddOrEdit();
+        formKey.value = FormDesignKeyEnum.CLUE;
+        formCreateDrawerVisible.value = true;
         break;
       case 'followUp':
         formKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CLUE;

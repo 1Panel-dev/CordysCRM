@@ -401,7 +401,7 @@
   const filterConfigList = computed<FilterFormItem[]>(() => [
     {
       title: t('common.head'),
-      dataIndex: 'ownerName',
+      dataIndex: 'owner',
       type: FieldTypeEnum.USER_SELECT,
     },
     {

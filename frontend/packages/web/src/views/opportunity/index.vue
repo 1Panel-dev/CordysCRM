@@ -423,6 +423,7 @@
         type: FieldTypeEnum.SELECT,
         selectProps: {
           options: lastOpportunitySteps,
+          multiple: true,
         },
       },
       {
