@@ -75,13 +75,15 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
             throw new GenericException(Translator.get("user_import_table_header_missing"));
         }
         Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
-        UserExcelData userExcelData = parseDataToModel(data);
-        //校验数据
-        buildUpdateOrErrorList(rowIndex, userExcelData);
-        if (list.size() > BATCH_COUNT) {
-            saveData();
-            this.successCount += list.size();
-            list.clear();
+        if (rowIndex >= 3) {
+            UserExcelData userExcelData = parseDataToModel(data);
+            //校验数据
+            buildUpdateOrErrorList(rowIndex, userExcelData);
+            if (list.size() > BATCH_COUNT) {
+                saveData();
+                this.successCount += list.size();
+                list.clear();
+            }
         }
     }
 

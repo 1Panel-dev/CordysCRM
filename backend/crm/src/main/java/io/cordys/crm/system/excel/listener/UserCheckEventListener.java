@@ -66,9 +66,12 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
             throw new GenericException(Translator.get("user_import_table_header_missing"));
         }
         Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
-        UserExcelData userExcelData = parseDataToModel(data);
-        //校验数据
-        buildUpdateOrErrorList(rowIndex, userExcelData);
+        if (rowIndex >= 3) {
+            UserExcelData userExcelData = parseDataToModel(data);
+            //校验数据
+            buildUpdateOrErrorList(rowIndex, userExcelData);
+        }
+
     }
 
 
