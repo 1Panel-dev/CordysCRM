@@ -140,7 +140,8 @@
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'name' and condition.name != 'owner'">
+                <if test="condition.name not in
+                {'name', 'owner', 'createTime', 'updateTime', 'follower', 'followTime', 'createUser', 'updateUser'}">
                     inner join customer_field ${tablePrefix}_${i}
                     on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                 </if>
@@ -149,7 +150,8 @@
     </sql>
 
     <sql id="fieldSortJoin">
-        <if test="${sort} != null and ${sort}.valid() and ${sort}.name != 'name' and ${sort}.name != 'owner'">
+        <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
+                {'name', 'owner', 'createTime', 'updateTime', 'follower', 'followTime', 'createUser', 'updateUser'}">
             <bind name="sortName" value="${sort}.name"/>
             left join customer_field sort_table
             on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
@@ -211,6 +213,18 @@
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="c.follow_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.create_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.update_time"/>
                 </include>
             </when>
             <otherwise>
