@@ -60,7 +60,7 @@ export default {
   'org.outsourcingUser': '外包',
   'org.checkIsOpenConfig': '请检查企业设置-同步组织架构功能配置!',
   'org.syncSuccess': '同步成功',
-  'org.batchResetPsdTip': '确认重置 {number} 名员工的密吗？',
+  'org.batchResetPsdTip': '确认重置 {number} 名员工的密码？',
   'org.batchToggleStatusTip': '确认 {enable} {number} 名员工吗？',
   'org.batchDeleteUserTip': '确认删除 {number} 名员工吗？',
   'org.checkSyncUserHoverTip': '当前组织架构为企业微信同步数据，请通过“同步组织架构”进行添加成员操作！',
