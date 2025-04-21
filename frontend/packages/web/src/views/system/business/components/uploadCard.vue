@@ -11,6 +11,7 @@
         v-model:file-list="fileList"
         accept="image"
         class="w-[auto]"
+        :default-content="false"
         :max-size="props.maxSize"
         :size-unit="props.sizeUnit"
       >

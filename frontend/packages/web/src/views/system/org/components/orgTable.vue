@@ -99,14 +99,14 @@
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
   import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
+  import ImportModal from '@/components/business/crm-import-button/components/importModal.vue';
+  import ValidateModal from '@/components/business/crm-import-button/components/validateModal.vue';
+  import ValidateResult from '@/components/business/crm-import-button/components/validateResult.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddMember from './addMember.vue';
   import batchEditModal from './batchEditModal.vue';
   import MemberDetail from './memberDetail.vue';
   import EditIntegrationModal from '@/views/system/business/components/editIntegrationModal.vue';
-  import ImportModal from '@/views/system/org/components/import/importModal.vue';
-  import ValidateModal from '@/views/system/org/components/import/validateModal.vue';
-  import ValidateResult from '@/views/system/org/components/import/validateResult.vue';
 
   import {
     batchResetUserPassword,

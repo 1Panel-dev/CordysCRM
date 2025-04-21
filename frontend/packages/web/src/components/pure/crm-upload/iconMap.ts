@@ -19,7 +19,7 @@ export const FileIconMap: FileIconMapping = {
   },
   excel: {
     [UploadStatus.init]: 'iconicon_file-excel_colorful_ash',
-    [UploadStatus.done]: 'iconicon_file-excel_colorful1',
+    [UploadStatus.done]: 'iconicon_file-excel_colorful',
   },
   image: {
     [UploadStatus.init]: 'iconicon_file-image_colorful_ash',

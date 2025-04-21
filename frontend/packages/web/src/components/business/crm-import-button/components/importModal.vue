@@ -17,7 +17,7 @@
         <div class="flex items-center gap-[16px]">
           {{ t('crmImportButton.importAlertDesc') }}
           <div class="flex cursor-pointer items-center gap-[8px]" @click="downLoadTemplate">
-            <CrmIcon type="iconicon_file-excel_colorful1" :size="16" />
+            <CrmIcon type="iconicon_file-excel_colorful" :size="16" />
             <div class="text-[var(--primary-8)]">{{ t('crmImportButton.downloadTemplate') }}</div>
           </div>
         </div>
@@ -28,6 +28,7 @@
         accept="excel"
         :max-size="100"
         size-unit="MB"
+        directory-dnd
         :disabled="validateLoading"
       />
     </div>

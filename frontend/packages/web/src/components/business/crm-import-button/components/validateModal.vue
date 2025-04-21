@@ -7,7 +7,7 @@
   >
     <div class="flex items-center gap-[12px]">
       <div class="flex items-center justify-center bg-[var(--text-n9)] p-[4px]">
-        <CrmIcon type="iconicon_file-excel_colorful1" :size="32" />
+        <CrmIcon type="iconicon_file-excel_colorful" :size="32" />
       </div>
       <div class="flex w-full flex-col">
         <div class="text-[var(--text-n1)]">

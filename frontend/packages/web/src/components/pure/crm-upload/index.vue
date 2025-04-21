@@ -13,56 +13,56 @@
     @change="({ file, fileList }) => handleChange(file as CrmFileItem, fileList as CrmFileItem[])"
     @before-upload="({ file, fileList })=>beforeUpload(file as CrmFileItem, fileList as CrmFileItem[])"
   >
-    <slot>
-      <n-upload-dragger class="crm-upload-dragger-wrapper">
-        <div class="crm-upload-area-wrapper">
-          <div
-            class="crm-upload-area"
-            :class="[
-              props.isAllScreen && showDropArea
-                ? 'crm-upload-area-dotted-border h-[100vh]'
-                : 'crm-upload-area-thin-border h-[154px]',
-            ]"
-          >
-            <div class="crm-upload-icon-box">
-              <CrmIcon
-                v-if="props.accept !== UploadAcceptEnum.none"
-                :type="fileIconType"
-                :size="32"
-                class="crm-upload-icon text-[var(--text-n4)]"
-              />
-              <div v-else class="crm-upload-icon crm-upload-icon--default"></div>
-            </div>
-            <template v-if="innerFileList.length === 0 || props.multiple">
-              <div class="crm-upload-main-text mb-[4px]">
-                {{ t(props.mainText || 'crm.upload.importModalDragText') }}
-              </div>
-              <div v-if="showSubText" class="crm-upload-sub-text">
-                <slot name="subText">
-                  {{
-                    t(props.subText || 'crm.upload.importModalFileTip', {
-                      type: UploadAcceptEnum[props.accept],
-                      size: props.maxSize || 50,
-                    })
-                  }}
-                </slot>
-              </div>
-            </template>
-            <template v-else>
-              <div class="crm-upload-main-text w-full">
-                <n-tooltip :content="innerFileList[0]?.name">
-                  <template #trigger>
-                    <span class="one-line-text w-[80%] text-center"> {{ innerFileList[0]?.name }}</span>
-                  </template>
-                  <span class="one-line-text w-[80%] text-center"> {{ innerFileList[0]?.name }}</span>
-                </n-tooltip>
-              </div>
-              <div class="crm-upload-sub-text">{{ formatFileSize(innerFileList[0]?.file?.size || 0) }}</div>
-            </template>
+    <n-upload-dragger class="crm-upload-dragger-wrapper">
+      <div v-if="props.defaultContent" class="crm-upload-area-wrapper">
+        <div
+          class="crm-upload-area"
+          :class="[
+            props.isAllScreen && showDropArea
+              ? 'crm-upload-area-dotted-border h-[100vh]'
+              : 'crm-upload-area-thin-border h-[154px]',
+          ]"
+        >
+          <div class="crm-upload-icon-box">
+            <CrmIcon
+              v-if="props.accept !== UploadAcceptEnum.none"
+              :type="fileIconType"
+              :size="32"
+              class="crm-upload-icon text-[var(--text-n4)]"
+            />
+            <div v-else class="crm-upload-icon crm-upload-icon--default"></div>
           </div>
+          <template v-if="innerFileList.length === 0 || props.multiple">
+            <div class="crm-upload-main-text mb-[4px]">
+              {{ t(props.mainText || 'crm.upload.importModalDragText') }}
+            </div>
+            <div v-if="showSubText" class="crm-upload-sub-text">
+              <slot name="subText">
+                {{
+                  t(props.subText || 'crm.upload.importModalFileTip', {
+                    type: UploadAcceptEnum[props.accept],
+                    size: props.maxSize || 50,
+                  })
+                }}
+              </slot>
+            </div>
+          </template>
+          <template v-else>
+            <div class="crm-upload-main-text w-full">
+              <n-tooltip :content="innerFileList[0]?.name">
+                <template #trigger>
+                  <span class="one-line-text w-[80%] text-center"> {{ innerFileList[0]?.name }}</span>
+                </template>
+                <span class="one-line-text w-[80%] text-center"> {{ innerFileList[0]?.name }}</span>
+              </n-tooltip>
+            </div>
+            <div class="crm-upload-sub-text">{{ formatFileSize(innerFileList[0]?.file?.size || 0) }}</div>
+          </template>
         </div>
-      </n-upload-dragger>
-    </slot>
+      </div>
+      <!-- 注：直接slot包裹不能正确识别拖拽区域-->
+      <slot v-else></slot>
+    </n-upload-dragger>
   </n-upload>
 </template>
 
@@ -97,6 +97,7 @@
     limit: number; // 限制上传文件数量
     allowRepeat?: boolean; // 自定义上传文件框，是否允许重复文件名替换
     isAllScreen?: boolean; // 是否是全屏显示拖拽上传
+    defaultContent?: boolean; // 是否是默认上传内容
   }> & {
     accept: UploadType;
   };
@@ -108,6 +109,7 @@
     allowRepeat: false,
     sizeUnit: 'MB',
     showFileList: false,
+    defaultContent: true,
   });
 
   const emit = defineEmits<{
