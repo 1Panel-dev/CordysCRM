@@ -52,7 +52,14 @@
         require-mark-placement="right"
       >
         <n-form-item path="reason" :label="t('common.deactivationReason')">
-          <n-input v-model:value="form.reason" type="textarea" :placeholder="t('common.pleaseInput')" allow-clear />
+          <n-input
+            v-model:value="form.reason"
+            type="textarea"
+            :placeholder="t('common.pleaseInput')"
+            allow-clear
+            maxlength="200"
+            show-count
+          />
         </n-form-item>
       </n-form>
     </CrmModal>
@@ -60,6 +67,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useRouter } from 'vue-router';
   import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, NSwitch, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -85,6 +93,8 @@
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
+  import { AppRouteEnum } from '@/enums/routeEnum';
+
   const props = defineProps<{
     customerId?: string;
     refreshKey?: number;
@@ -93,6 +103,7 @@
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
+  const router = useRouter();
 
   const keyword = ref('');
   const formCreateDrawerVisible = ref(false);
@@ -159,6 +170,13 @@
             // eslint-disable-next-line no-console
             console.log(error);
           }
+        }
+      },
+      onNegativeClick: () => {
+        if (hasData) {
+          router.push({
+            name: AppRouteEnum.OPPORTUNITY,
+          });
         }
       },
     });

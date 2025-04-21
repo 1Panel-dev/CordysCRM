@@ -23,6 +23,11 @@
 
   const { t } = useI18n();
 
+  const platformOption = [
+    { label: t('log.platform.web'), value: 'WEB' },
+    { label: t('log.platform.mobile'), value: 'MOBILE' },
+  ];
+
   const columns: CrmDataTableColumn[] = [
     {
       title: t('log.operator'),
@@ -43,6 +48,15 @@
       width: 100,
       sortOrder: false,
       sorter: true,
+    },
+    {
+      title: t('log.platform'),
+      key: 'platform',
+      width: 80,
+      render: (row) => {
+        const item = platformOption.find((e) => e.value === row.platform);
+        return item ? item.label : '-';
+      },
     },
   ];
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(loginLogList, {

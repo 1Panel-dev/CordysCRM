@@ -32,6 +32,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
+  import { useRouter } from 'vue-router';
   import { NButton, NSwitch, useMessage } from 'naive-ui';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
@@ -50,9 +51,12 @@
   import { deleteModuleCluePool, getCluePoolPage, noPickCluePool, switchCluePoolStatus } from '@/api/modules';
   import useModal from '@/hooks/useModal';
 
+  import { AppRouteEnum } from '@/enums/routeEnum';
+
   const { openModal } = useModal();
   const Message = useMessage();
   const { t } = useI18n();
+  const router = useRouter();
 
   const visible = defineModel<boolean>('visible', {
     required: true,
@@ -113,6 +117,14 @@
             // eslint-disable-next-line no-console
             console.log(error);
           }
+        }
+      },
+      onNegativeClick: () => {
+        if (hasData) {
+          visible.value = false;
+          router.push({
+            name: AppRouteEnum.CLUE_MANAGEMENT_POOL,
+          });
         }
       },
     });

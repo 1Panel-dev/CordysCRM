@@ -185,9 +185,12 @@ export default function useTable<T>(
     },
     // 修改每页显示条数触发
     pageSizeChange: async (pageSize: number) => {
-      // 如果表格设置了tableKey，缓存分页大小
-      if (propsRes.value.tableKey) {
-        await tableStore.setPageSize(propsRes.value.tableKey, pageSize);
+      if (propsRes.value.crmPagination && typeof propsRes.value.crmPagination === 'object') {
+        propsRes.value.crmPagination.pageSize = pageSize;
+        // 如果表格设置了tableKey，缓存分页大小
+        if (propsRes.value.tableKey) {
+          await tableStore.setPageSize(propsRes.value.tableKey, pageSize);
+        }
       }
       loadList();
     },

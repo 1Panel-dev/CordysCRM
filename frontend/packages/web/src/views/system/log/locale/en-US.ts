@@ -7,5 +7,8 @@ export default {
   'log.operator': 'Operator',
   'log.loginLocation': 'Login location',
   'log.loginTime': 'Login time',
+  'log.platform': 'Platform',
+  'log.platform.web': 'Web',
+  'log.platform.mobile': 'Mobile',
   'log.detail': 'Log detail',
 };

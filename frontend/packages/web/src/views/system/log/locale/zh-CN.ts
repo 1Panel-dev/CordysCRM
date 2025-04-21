@@ -7,5 +7,8 @@ export default {
   'log.operator': '登录人',
   'log.loginLocation': '登录地',
   'log.loginTime': '登录时间',
+  'log.platform': '登录平台',
+  'log.platform.web': '电脑',
+  'log.platform.mobile': '手机',
   'log.detail': '日志详情',
 };

@@ -11,6 +11,8 @@ export default {
   'customer.batchMoveTitleTip': 'Confirm to move {number} customers to high seas?',
   'customer.batchMoveContentTip': 'After the move, the customer will have no person in charge',
   'customer.confirmMove': 'Confirm move',
+  'customer.moveToOpenSeaFailedContent':
+    'Successfully transferred customers will enter the open sea, while failed customers will not enter the open sea. Please transfer again!',
   'customer.moveSuccess': 'Move success',
   'customer.contact.deleteContentTip':
     'After deletion, the contact cannot be queried and cannot be recovered. Please proceed with caution!',

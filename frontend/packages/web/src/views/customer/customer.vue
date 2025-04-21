@@ -48,6 +48,13 @@
     :other-save-params="otherFollowRecordSaveParams"
     @saved="loadList"
   />
+  <ToCluePoolResultModel
+    v-model:show="showToCluePoolResultModel"
+    :fail-count="failCount"
+    :success-count="successCount"
+    :title="t('customer.moveToOpenSea')"
+    :failed-content="t('customer.moveToOpenSeaFailedContent')"
+  />
 </template>
 
 <script setup lang="ts">
@@ -73,6 +80,7 @@
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import customerOverviewDrawer from './components/customerOverviewDrawer.vue';
+  import ToCluePoolResultModel from '@/views/clueManagement/clue/components/toCluePoolResultModel.vue';
 
   import {
     batchDeleteCustomer,
@@ -176,6 +184,9 @@
   // 批量转移
   const showTransferModal = ref<boolean>(false);
 
+  const showToCluePoolResultModel = ref(false);
+  const successCount = ref<number>(0);
+  const failCount = ref<number>(0);
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
       case 'batchTransfer':
@@ -193,10 +204,12 @@
           negativeText: t('common.cancel'),
           onPositiveClick: async () => {
             try {
-              await batchMoveCustomer(checkedRowKeys.value);
+              const { success, fail } = await batchMoveCustomer(checkedRowKeys.value);
+              successCount.value = success;
+              failCount.value = fail;
+              showToCluePoolResultModel.value = true;
               checkedRowKeys.value = [];
               tableRefreshId.value += 1;
-              Message.success(t('common.moveInSuccess'));
             } catch (error) {
               // eslint-disable-next-line no-console
               console.error(error);

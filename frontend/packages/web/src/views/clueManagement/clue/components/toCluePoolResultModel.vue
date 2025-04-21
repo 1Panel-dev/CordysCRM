@@ -1,5 +1,5 @@
 <template>
-  <CrmModal v-model:show="show" size="small" :footer="false" :title="t('clue.moveIntoCluePool')">
+  <CrmModal v-model:show="show" size="small" :footer="false" :title="props.title ?? t('clue.moveIntoCluePool')">
     <div class="text-center">
       <CrmIcon :size="32" :type="getTipType?.icon" :class="`${getTipType?.color}`" />
       <div class="my-2 text-[16px] font-medium text-[var(--text-n1)]">{{ t(getTipType?.message ?? '') }}</div>
@@ -16,7 +16,7 @@
         </span>
       </div>
       <div v-if="props.failCount > 0" class="text-[var(--text-n4)]">
-        {{ t('clue.moveIntoCluePoolFailedContent') }}
+        {{ props.failedContent ?? t('clue.moveIntoCluePoolFailedContent') }}
       </div>
     </div>
   </CrmModal>
@@ -34,6 +34,8 @@
   const props = defineProps<{
     failCount: number;
     successCount: number;
+    title?: string;
+    failedContent?: string;
   }>();
 
   const show = defineModel<boolean>('show', {

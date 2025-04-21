@@ -11,7 +11,7 @@ export interface LoginLogItem {
   createTime: number;
   operator: string;
   loginAddress: string;
-  platform: string;
+  platform: 'WEB' | 'MOBILE'; // 平台,WEB\MOBILE
   operatorName: string;
 }
 
