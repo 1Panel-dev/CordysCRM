@@ -138,7 +138,7 @@ CREATE TABLE customer_contact
     `customer_id`     VARCHAR(32)  NOT NULL COMMENT '客户id',
     `name`            VARCHAR(255) NOT NULL COMMENT '联系人姓名',
     `phone`           VARCHAR(30) COMMENT '联系人电话',
-    `owner`           VARCHAR(255) NOT NULL COMMENT '责任人',
+    `owner`           VARCHAR(32) NOT NULL COMMENT '责任人',
     `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
