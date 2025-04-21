@@ -86,6 +86,8 @@ public class ClueService {
     private CommonNoticeSendService commonNoticeSendService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private PoolClueService poolClueService;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -220,6 +222,7 @@ public class ClueService {
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Clue add(ClueAddRequest request, String userId, String orgId) {
+        poolClueService.validateCapacity(1, request.getOwner(), orgId);
         Clue clue = BeanUtils.copyBean(new Clue(), request);
         clue.setCreateTime(System.currentTimeMillis());
         clue.setUpdateTime(System.currentTimeMillis());
@@ -247,6 +250,7 @@ public class ClueService {
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Clue update(ClueUpdateRequest request, String userId, String orgId) {
+        poolClueService.validateCapacity(1, request.getOwner(), orgId);
         Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
         dataScopeService.checkDataPermission(userId, orgId, originClue.getOwner());
 
@@ -387,6 +391,7 @@ public class ClueService {
     }
 
     public void batchTransfer(ClueBatchTransferRequest request, String userId, String orgId) {
+        poolClueService.validateCapacity(request.getIds().size(), request.getOwner(), orgId);
         List<Clue> clues = clueMapper.selectByIds(request.getIds());
         List<String> ownerIds = getOwners(clues);
         dataScopeService.checkDataPermission(userId, orgId, ownerIds);

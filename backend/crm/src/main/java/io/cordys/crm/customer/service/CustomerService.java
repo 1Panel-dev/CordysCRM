@@ -86,6 +86,8 @@ public class CustomerService {
     private LogService logService;
     @Resource
     private CommonNoticeSendService commonNoticeSendService;
+    @Resource
+    private PoolCustomerService poolCustomerService;
 
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
@@ -234,6 +236,7 @@ public class CustomerService {
 
     @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Customer add(CustomerAddRequest request, String userId, String orgId) {
+        poolCustomerService.validateCapacity(1, request.getOwner(), orgId);
         Customer customer = BeanUtils.copyBean(new Customer(), request);
         customer.setCreateTime(System.currentTimeMillis());
         customer.setUpdateTime(System.currentTimeMillis());
@@ -261,6 +264,7 @@ public class CustomerService {
 
     @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Customer update(CustomerUpdateRequest request, String userId, String orgId) {
+        poolCustomerService.validateCapacity(1, request.getOwner(), orgId);
         Customer originCustomer = customerMapper.selectByPrimaryKey(request.getId());
         dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner());
 
@@ -340,6 +344,7 @@ public class CustomerService {
     }
 
     public void batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
+        poolCustomerService.validateCapacity(request.getIds().size(), request.getOwner(), orgId);
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
         List<String> owners = getOwners(originCustomers);
 
