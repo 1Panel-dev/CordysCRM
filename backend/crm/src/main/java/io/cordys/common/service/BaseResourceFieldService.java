@@ -171,7 +171,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
      * @param resourceIds
      * @return
      */
-    private Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
+    public Map<String, List<BaseModuleFieldValue>> getResourceFieldMap(List<String> resourceIds, boolean withBlob) {
         if (CollectionUtils.isEmpty(resourceIds)) {
             return Map.of();
         }

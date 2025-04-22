@@ -207,7 +207,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
     private void buildListData(List<FollowUpRecordListResponse> list, String orgId) {
         List<String> ids = list.stream().map(FollowUpRecordListResponse::getId).toList();
-        Map<String, List<BaseModuleFieldValue>> recordCustomFieldMap = followUpRecordFieldService.getResourceFieldMap(ids);
+        Map<String, List<BaseModuleFieldValue>> recordCustomFieldMap = followUpRecordFieldService.getResourceFieldMap(ids, true);
 
         List<String> createUserIds = list.stream().map(FollowUpRecordListResponse::getCreateUser).toList();
         List<String> updateUserIds = list.stream().map(FollowUpRecordListResponse::getUpdateUser).toList();
