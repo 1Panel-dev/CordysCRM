@@ -1,16 +1,14 @@
 <template>
   <div class="page">
     <router-view v-slot="{ Component, route }">
-      <transition :name="transitionName" mode="out-in" appear>
-        <!-- transition内必须有且只有一个根元素，不然会导致二级路由的组件无法渲染 -->
-        <div class="page-content">
-          <transition :name="transitionName">
-            <keep-alive :include="Array.from(appStore.getCacheRoutes)">
-              <component :is="Component" :key="route.name" />
-            </keep-alive>
-          </transition>
-        </div>
-      </transition>
+      <!-- transition内必须有且只有一个根元素，不然会导致二级路由的组件无法渲染 -->
+      <div class="page-content">
+        <transition :name="transitionName">
+          <keep-alive :include="Array.from(appStore.getCacheRoutes)">
+            <component :is="Component" :key="route.name" />
+          </keep-alive>
+        </transition>
+      </div>
     </router-view>
     <van-tabbar
       v-if="isModuleRouteIndex"
