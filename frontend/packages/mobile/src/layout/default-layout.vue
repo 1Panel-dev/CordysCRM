@@ -57,9 +57,10 @@
   const router = useRouter();
   const appStore = useAppStore();
 
+  function isIOS(): boolean {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
   const transitionName = ref('slide-left');
-  let isPopState = false; // 标记是否是IOS手势后退
-
   // 路由深度判断，决定是前进还是返回
   let isForward = true;
   router.beforeEach((to, from, next) => {
@@ -67,10 +68,9 @@
     const fromDepth = from.meta.depth || 0;
     isForward = toDepth >= fromDepth;
     transitionName.value = isForward ? 'slide-left' : 'slide-right';
-    // 如果是手势后退，禁用动画
-    if (isPopState) {
+    // 如果是IOS手势后退，禁用动画
+    if (!isForward && isIOS() && !appStore.getManualBack) {
       transitionName.value = '';
-      isPopState = false; // 重置标记
     } else if (toDepth === 1 && fromDepth === 1) {
       // 如果是一级页面之间切换，则无需动画
       transitionName.value = '';
@@ -85,7 +85,9 @@
     }
     next();
   });
-
+  router.afterEach(() => {
+    appStore.setManualBack(false);
+  });
   const active = ref<string>(AppRouteEnum.WORKBENCH_INDEX);
   const menuList = [
     {
@@ -132,19 +134,6 @@
       }
     });
   }, true);
-
-  // 监听 popstate 事件
-  function handlePopState() {
-    isPopState = true;
-  }
-
-  onMounted(() => {
-    window.addEventListener('popstate', handlePopState);
-  });
-
-  onBeforeUnmount(() => {
-    window.removeEventListener('popstate', handlePopState);
-  });
 </script>
 
 <style lang="less">

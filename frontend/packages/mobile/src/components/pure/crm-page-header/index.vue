@@ -11,6 +11,8 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
+  import useAppStore from '@/store/modules/app';
+
   const props = defineProps<{
     title: string;
     hideBack?: boolean;
@@ -18,8 +20,10 @@
   }>();
 
   const router = useRouter();
+  const appStore = useAppStore();
 
   function handleBack() {
+    appStore.setManualBack(true);
     if (props.backRouteName) {
       router.replace({ name: props.backRouteName });
     } else {

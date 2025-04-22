@@ -10,4 +10,5 @@ export interface AppState {
   messageInfo: MessageInfo; // 消息通知和公告
   eventSource: null | EventSource; // 事件流资源
   cacheRoutes: Set<string>; // 缓存路由列表
+  isManualBack: boolean; // 是否手动触发的返回
 }

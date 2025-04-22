@@ -24,6 +24,7 @@ const useAppStore = defineStore('app', {
     },
     eventSource: null,
     cacheRoutes: new Set([]),
+    isManualBack: false,
   }),
   getters: {
     getOrgId(state: AppState) {
@@ -31,6 +32,9 @@ const useAppStore = defineStore('app', {
     },
     getCacheRoutes(state: AppState) {
       return state.cacheRoutes;
+    },
+    getManualBack(state: AppState) {
+      return state.isManualBack;
     },
   },
   actions: {
@@ -42,6 +46,9 @@ const useAppStore = defineStore('app', {
     },
     removeCacheRoute(route: string) {
       this.cacheRoutes.delete(route);
+    },
+    setManualBack(val: boolean) {
+      this.isManualBack = val;
     },
     /**
      * 初始化模块配置
