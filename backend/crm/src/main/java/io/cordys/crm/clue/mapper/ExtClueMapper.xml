@@ -113,7 +113,8 @@
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'name' and condition.name != 'owner'">
+                <if test="condition.name != 'name' and condition.name != 'owner' and condition.name != 'follower'
+                    and condition.name != 'followTime' and condition.name != 'createTime' and condition.name != 'updateUser' and condition.name != 'updateTime'">
                     inner join clue_field ${tablePrefix}_${i}
                     on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                 </if>
@@ -184,6 +185,24 @@
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="c.follow_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.create_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateUser'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.update_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.update_time"/>
                 </include>
             </when>
             <otherwise>
