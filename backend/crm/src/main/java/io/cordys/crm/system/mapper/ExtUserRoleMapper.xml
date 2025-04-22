@@ -25,8 +25,64 @@
              on sur.user_id = su.id and sur.role_id = #{request.roleId}
         join sys_organization_user sou
              on su.id = sou.user_id and sou.organization_id = #{orgId}
-        where su.name like concat('%', #{request.keyword},'%')
+        <where>
+            1=1
+            <if test="request.keyword != null and request.keyword != ''">
+                and su.name like concat('%', #{request.keyword},'%')
+            </if>
+
+            <include refid="filters">
+                <property name="filters" value="request.filters"/>
+            </include>
+        </where>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
     </select>
+
+    <sql id="filters">
+        <if test="${filters} != null and ${filters}.size() > 0">
+            <trim prefix="and">
+                <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
+                    <choose>
+                        <when test="condition.name == 'enable'">
+                            <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                                <property name="condition" value="condition"/>
+                                <property name="column" value="sou.enable"/>
+                            </include>
+                        </when>
+                    </choose>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="sort">
+        <choose>
+            <when test="${sort} != null and ${sort}.valid()">
+                <bind name="sortType" value="${sort}.type" />
+                order by
+                <choose>
+                    <when test="${sort}.name == 'name'">
+                        su.`name` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'departmentId'">
+                        sou.`department_id` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'position'">
+                        sou.`position` ${sortType}
+                    </when>
+                    <otherwise>
+                        sur.create_time ${sortType}
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by sur.create_time desc
+            </otherwise>
+        </choose>
+    </sql>
 
     <select id="selectUserDeptForRelevance" resultType="io.cordys.common.dto.DeptUserTreeNode">
         select temp.id, temp.name, temp.department_id as parentId, if(sur.id, 0, 1) as enable, 'USER' as nodeType

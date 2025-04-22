@@ -103,11 +103,11 @@
       filterOptions: [
         {
           label: t('common.enable'),
-          value: 'enable',
+          value: true,
         },
         {
           label: t('common.disable'),
-          value: 'disabled',
+          value: false,
         },
       ],
       filter: true,
@@ -117,13 +117,16 @@
     },
     {
       title: t('role.department'),
-      key: 'departmentName',
+      key: 'departmentId',
       width: 100,
       ellipsis: {
         tooltip: true,
       },
       sorter: true,
       sortOrder: false,
+      render: (row: RoleMemberItem) => {
+        return row.departmentName || '-';
+      }
     },
     {
       title: t('role.job'),
