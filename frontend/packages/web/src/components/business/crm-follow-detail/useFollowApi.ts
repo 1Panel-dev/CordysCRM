@@ -286,7 +286,6 @@ export default function useFollowApi(followProps: {
       if (type.value === 'followRecord') {
         res = await getCustomerFollowRecordFormConfig();
       } else {
-        if (followApiKey === 'myPlan') return;
         res = await getCustomerFollowPlanFormConfig();
       }
       fieldList.value = res.fields;

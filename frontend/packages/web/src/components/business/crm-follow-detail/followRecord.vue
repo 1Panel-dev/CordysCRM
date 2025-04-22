@@ -59,7 +59,8 @@
   import { NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
 
-  import type { FollowDetailItem } from '@lib/shared/models/customer';
+  import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
+  import type { CustomerFollowPlanListItem, FollowDetailItem } from '@lib/shared/models/customer';
 
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';
@@ -85,7 +86,16 @@
 
   function getFutureClass(item: FollowDetailItem) {
     const time = 'estimatedTime' in item ? item.estimatedTime : item.followTime;
-    return new Date(time).valueOf() > Date.now() ? 'crm-follow-dot-future' : '';
+    const isFuture = new Date(time).getTime() > Date.now();
+
+    if (!isFuture) return '';
+
+    if (props.type === 'followPlan') {
+      const isCancelled = (item as CustomerFollowPlanListItem).status === CustomerFollowPlanStatusEnum.CANCELLED;
+      return isCancelled ? '' : 'crm-follow-dot-future';
+    }
+
+    return 'crm-follow-dot-future';
   }
 
   function getShowTime(item: FollowDetailItem) {
