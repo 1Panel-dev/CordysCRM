@@ -2,8 +2,7 @@ import { showFailToast } from 'vant';
 
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
-// import router from '@/router';
-// import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
+import useLogin from '@/hooks/useLogin';
 
 export default function checkStatus(status: number, msg: string, code?: number): void {
   const { t } = useI18n();
@@ -19,9 +18,8 @@ export default function checkStatus(status: number, msg: string, code?: number):
     }
     case 403:
       errMessage = msg || t('api.errMsg403');
-      // if (router.currentRoute.value.name !== NO_RESOURCE_ROUTE_NAME) {
-      //   router.push({ name: NO_RESOURCE_ROUTE_NAME });
-      // }
+      const { oAuthLogin } = useLogin();
+      oAuthLogin();
       break;
     // 404请求不存在
     case 404:

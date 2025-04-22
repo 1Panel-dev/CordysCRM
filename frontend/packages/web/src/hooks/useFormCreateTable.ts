@@ -343,6 +343,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     if (field.showThousandsSeparator) {
       return value ? Number(value).toLocaleString('en-us') : '-';
     }
+    return value;
   }
 
   async function initFormConfig() {
@@ -507,15 +508,15 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         let name: string | string[] = '';
         if (dataSourceFieldIds.value.includes(fieldId)) {
           // 处理数据源字段，需要赋值为数组
-          if (typeof item[fieldId] === 'string') {
+          if (typeof item[fieldId] === 'string' || typeof item[fieldId] === 'number') {
             // 单选
             name = [options?.find((e) => e.id === item[fieldId])?.name];
           } else {
             // 多选
             name = options?.filter((e) => item[fieldId].includes(e.id)).map((e) => e.name) || [];
           }
-        } else if (typeof item[fieldId] === 'string') {
-          // 若值是单个字符串
+        } else if (typeof item[fieldId] === 'string' || typeof item[fieldId] === 'number') {
+          // 若值是单个字符串/数字
           name = options?.find((e) => e.id === item[fieldId])?.name;
         } else {
           // 若值是数组
@@ -535,15 +536,15 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         let name: string | string[] = '';
         if (dataSourceFieldIds.value.includes(field.fieldId)) {
           // 处理数据源字段，需要赋值为数组
-          if (typeof field.fieldValue === 'string') {
+          if (typeof field.fieldValue === 'string' || typeof field.fieldValue === 'number') {
             // 单选
             name = [options?.find((e) => e.id === field.fieldValue)?.name];
           } else {
             // 多选
             name = options?.filter((e) => field.fieldValue?.includes(e.id)).map((e) => e.name) || [];
           }
-        } else if (typeof field.fieldValue === 'string') {
-          // 若值是单个字符串
+        } else if (typeof field.fieldValue === 'string' || typeof field.fieldValue === 'number') {
+          // 若值是单个字符串/数字
           name = options?.find((e) => e.id === field.fieldValue)?.name;
         } else {
           // 若值是数组
