@@ -61,9 +61,13 @@ public class LogModule {
      */
     public static final String CUSTOMER_INDEX = "CUSTOMER_INDEX";
     /**
-     * 线索管理
+     * 线索-线索
      */
-    public static final String CLUE_INDEX = "CLUE_INDEX";
+    public static final String CLUE_INDEX = "CLUE_MANAGEMENT_CLUE";
+    /**
+     * 线索-线索池
+     */
+    public static final String CLUE_POOL_INDEX = "CLUE_MANAGEMENT_POOL";
 
     /**
      * 客户联系人

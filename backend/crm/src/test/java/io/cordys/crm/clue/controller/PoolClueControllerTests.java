@@ -178,10 +178,8 @@ public class PoolClueControllerTests extends BaseTest {
 	@Test
 	@Order(10)
 	void batchDeleteSuccess() throws Exception {
-		PoolBatchRequest request = new PoolBatchRequest();
-		request.setBatchIds(List.of(testDataId));
-		this.requestPostWithOk(BATCH_DELETE, request);
-		requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE, BATCH_DELETE, request);
+		this.requestPostWithOk(BATCH_DELETE, List.of(testDataId));
+		requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE, BATCH_DELETE, List.of(testDataId));
 	}
 
 	private Clue createClue() {

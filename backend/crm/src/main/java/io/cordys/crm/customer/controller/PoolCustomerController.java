@@ -18,6 +18,7 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +60,7 @@ public class PoolCustomerController {
 	@Operation(summary = "分配客户")
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN})
 	public void assign(@Validated @RequestBody PoolCustomerAssignRequest request) {
-		poolCustomerService.assign(request.getCustomerId(), request.getAssignUserId(), OrganizationContext.getOrganizationId());
+		poolCustomerService.assign(request.getCustomerId(), request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
 	}
 
 	@GetMapping("/delete/{id}")
@@ -87,13 +88,13 @@ public class PoolCustomerController {
 	@Operation(summary = "批量分配客户")
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_ASSIGN})
 	public void batchAssign(@Validated @RequestBody PoolBatchAssignRequest request) {
-		poolCustomerService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId());
+		poolCustomerService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
 	}
 
 	@PostMapping("/batch-delete")
 	@Operation(summary = "批量删除客户")
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE})
 	public void batchDelete(@Validated @RequestBody PoolBatchRequest request) {
-		poolCustomerService.batchDelete(request.getBatchIds());
+		poolCustomerService.batchDelete(request.getBatchIds(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 }

@@ -1,6 +1,10 @@
 package io.cordys.crm.customer.service;
 
-import io.cordys.common.dto.OptionDTO;
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
@@ -16,6 +20,7 @@ import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
+import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -50,6 +55,8 @@ public class PoolCustomerService {
 	private ExtCustomerCapacityMapper extCustomerCapacityMapper;
 	@Resource
 	private UserExtendService userExtendService;
+	@Resource
+	private LogService logService;
 
 	public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
 
@@ -129,7 +136,7 @@ public class PoolCustomerService {
 		List<CustomerPoolPickRule> customerPoolPickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
 		CustomerPoolPickRule pickRule = customerPoolPickRules.getFirst();
 		validateDailyPickNum(1, currentUser, pickRule);
-		ownCustomer(request.getCustomerId(), currentUser, pickRule);
+		ownCustomer(request.getCustomerId(), currentUser, pickRule, currentUser, LogType.PICK, currentOrgId);
 	}
 
 	/**
@@ -137,19 +144,24 @@ public class PoolCustomerService {
 	 * @param id 客户ID
 	 * @param assignUserId 分配用户ID
 	 */
-	public void assign(String id, String assignUserId, String currentOrgId) {
+	public void assign(String id, String assignUserId, String currentOrgId, String currentUser) {
 		validateCapacity(1, assignUserId, currentOrgId);
-		ownCustomer(id, assignUserId, null);
+		ownCustomer(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId);
 	}
 
 	/**
 	 * 删除客户
 	 * @param id 客户ID
 	 */
+	@OperationLog(module = LogModule.CUSTOMER_POOL, type = LogType.DELETE, resourceId = "{#id}")
 	public void delete(String id) {
+		Customer customer = customerMapper.selectByPrimaryKey(id);
 		LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
 		customerWrapper.eq(Customer::getId, id);
 		customerMapper.deleteByLambda(customerWrapper);
+
+		// 设置操作对象
+		OperationLogContext.setResourceName(customer.getName());
 	}
 
 	/**
@@ -165,7 +177,7 @@ public class PoolCustomerService {
 		List<CustomerPoolPickRule> customerPoolPickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
 		CustomerPoolPickRule pickRule = customerPoolPickRules.getFirst();
 		validateDailyPickNum(request.getBatchIds().size(), currentUser, pickRule);
-		request.getBatchIds().forEach(id -> ownCustomer(id, currentUser, pickRule));
+		request.getBatchIds().forEach(id -> ownCustomer(id, currentUser, pickRule, currentUser, LogType.PICK, currentOrgId));
 	}
 
 	/**
@@ -174,19 +186,27 @@ public class PoolCustomerService {
 	 * @param assignUserId 分配用户ID
 	 * @param currentOrgId 当前组织ID
 	 */
-	public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId) {
+	public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId, String currentUser) {
 		validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
-		request.getBatchIds().forEach(id -> ownCustomer(id, assignUserId, null));
+		request.getBatchIds().forEach(id -> ownCustomer(id, assignUserId, null, currentUser, LogType.PICK, currentOrgId));
 	}
 
 	/**
 	 * 批量删除客户
 	 * @param ids 客户ID集合
 	 */
-	public void batchDelete(List<String> ids) {
+	public void batchDelete(List<String> ids, String userId, String orgId) {
+		List<Customer> customers = customerMapper.selectByIds(ids);
 		LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
 		customerWrapper.in(Customer::getId, ids);
 		customerMapper.deleteByLambda(customerWrapper);
+
+		List<LogDTO> logs = customers.stream()
+				.map(customer ->
+						new LogDTO(orgId, customer.getId(), userId, LogType.DELETE, LogModule.CUSTOMER_POOL, customer.getName())
+				)
+				.toList();
+		logService.batchAdd(logs);
 	}
 
 	/**
@@ -245,7 +265,7 @@ public class PoolCustomerService {
 	 * @param customerId 客户ID
 	 * @param ownerId 拥有人ID
 	 */
-	private void ownCustomer(String customerId, String ownerId, CustomerPoolPickRule pickRule) {
+	private void ownCustomer(String customerId, String ownerId, CustomerPoolPickRule pickRule, String operateUserId, String logType, String currentOrgId) {
 		Customer customer = customerMapper.selectByPrimaryKey(customerId);
 		if (customer == null) {
 			throw new IllegalArgumentException(Translator.get("customer.not.exist"));
@@ -269,5 +289,9 @@ public class PoolCustomerService {
 		customer.setCollectionTime(System.currentTimeMillis());
 		customer.setUpdateTime(System.currentTimeMillis());
 		customerMapper.updateById(customer);
+
+		// 日志
+		LogDTO logDTO = new LogDTO(currentOrgId, customer.getId(), operateUserId, logType, LogModule.CUSTOMER_POOL, customer.getName());
+		logService.add(logDTO);
 	}
 }

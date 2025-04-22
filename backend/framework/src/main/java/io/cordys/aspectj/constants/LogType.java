@@ -43,6 +43,14 @@ public final class LogType {
      * 同步
      */
     public static final String SYNC = "SYNC";
+    /**
+     * 领取
+     */
+    public static final String PICK = "PICK";
+    /**
+     * 分配
+     */
+    public static final String ASSIGN = "ASSIGN";
 
     private LogType() {
         // 私有构造函数防止实例化

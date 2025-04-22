@@ -1,7 +1,6 @@
 package io.cordys.crm.clue.controller;
 
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.dto.CluePoolDTO;
@@ -14,11 +13,11 @@ import io.cordys.crm.clue.service.ClueService;
 import io.cordys.crm.clue.service.PoolClueService;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
-import io.cordys.crm.system.dto.request.PoolBatchRequest;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -60,7 +59,7 @@ public class PoolClueController {
 	@Operation(summary = "分配线索")
 	@RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_ASSIGN})
 	public void assign(@Validated @RequestBody PoolClueAssignRequest request) {
-		poolClueService.assign(request.getClueId(), request.getAssignUserId(), OrganizationContext.getOrganizationId());
+		poolClueService.assign(request.getClueId(), request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
 	}
 
 	@GetMapping("/delete/{id}")
@@ -88,13 +87,13 @@ public class PoolClueController {
 	@Operation(summary = "批量分配线索")
 	@RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_ASSIGN})
 	public void batchAssign(@Validated @RequestBody PoolBatchAssignRequest request) {
-		poolClueService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId());
+		poolClueService.batchAssign(request, request.getAssignUserId(), OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
 	}
 
 	@PostMapping("/batch-delete")
 	@Operation(summary = "批量删除线索")
 	@RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_DELETE})
-	public void batchDelete(@Validated @RequestBody PoolBatchRequest request) {
-		poolClueService.batchDelete(request.getBatchIds());
+	public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
+		poolClueService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 }
