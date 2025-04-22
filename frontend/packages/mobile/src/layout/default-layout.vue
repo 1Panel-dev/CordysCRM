@@ -135,39 +135,33 @@
 </script>
 
 <style lang="less">
-  .slide-left-enter-active,
-  .slide-left-leave-active,
-  .slide-right-enter-active,
-  .slide-right-leave-active {
-    position: absolute !important;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1;
-    background-color: white;
-    transition: all 0.3s;
-  }
-  .slide-left-enter-from,
-  .slide-right-leave-to {
-    opacity: 1;
-    transform: translateX(100%);
-  }
-  .slide-right-enter-from,
-  .slide-left-leave-to {
-    opacity: 1;
-    transform: translateX(-100%);
-  }
-  .slide-left-leave-to,
-  .slide-right-leave-to {
-    opacity: 0.3;
-  }
-
-  /* 禁用动画时 */
-  .transition-none-enter-active,
-  .transition-none-leave-active {
-    transition: none;
-  }
+  // .slide-left-enter-active,
+  // .slide-left-leave-active,
+  // .slide-right-enter-active,
+  // .slide-right-leave-active {
+  //   position: absolute !important;
+  //   top: 0;
+  //   right: 0;
+  //   bottom: 0;
+  //   left: 0;
+  //   z-index: 1;
+  //   background-color: white;
+  //   transition: all 0.3s;
+  // }
+  // .slide-left-enter-from,
+  // .slide-right-leave-to {
+  //   opacity: 1;
+  //   transform: translateX(100%);
+  // }
+  // .slide-right-enter-from,
+  // .slide-left-leave-to {
+  //   opacity: 1;
+  //   transform: translateX(-100%);
+  // }
+  // .slide-left-leave-to,
+  // .slide-right-leave-to {
+  //   opacity: 0.3;
+  // }
 </style>
 
 <style lang="less" scoped>

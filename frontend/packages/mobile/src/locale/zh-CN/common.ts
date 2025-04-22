@@ -59,6 +59,7 @@ export default {
   'common.required': '必填',
   'common.onlyOne': '不允许重复值',
   'common.contact': '联系人',
+  'common.customerContact': '联系人',
   'common.confirmDelete': '确认删除',
   'common.copySuccess': '复制成功',
   'common.copyNotSupport': '当前设备不支持复制，请手动复制',

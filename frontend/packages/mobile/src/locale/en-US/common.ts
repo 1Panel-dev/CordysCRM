@@ -59,6 +59,7 @@ export default {
   'common.required': 'Required',
   'common.onlyOne': 'Not allowed to repeat value',
   'common.contact': 'Contact',
+  'common.customerContact': 'Contact',
   'common.confirmDelete': 'Confirm delete',
   'common.copySuccess': 'Copy success',
   'common.copyNotSupport': 'Current device does not support copy, please copy manually',
