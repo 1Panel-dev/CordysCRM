@@ -1,11 +1,12 @@
 package io.cordys.crm.customer.controller;
 
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
-import io.cordys.crm.customer.dto.request.*;
+import io.cordys.crm.customer.dto.request.CustomerPageRequest;
+import io.cordys.crm.customer.dto.request.PoolCustomerAssignRequest;
+import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
