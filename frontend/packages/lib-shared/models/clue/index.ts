@@ -84,9 +84,3 @@ export interface BatchAssignClueParams {
   batchIds: (string | number)[];
   assignUserId: string;
 }
-
-// 线索池选项
-export interface PoolOption {
-  id: string;
-  name: string;
-}

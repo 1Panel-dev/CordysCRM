@@ -46,7 +46,6 @@ import type {
   ClueTransitionCustomerParams,
   ClueTransitionOpportunityParams,
   PickClueParams,
-  PoolOption,
   SaveClueParams,
   UpdateClueParams,
 } from '@lib/shared/models/clue';
@@ -63,7 +62,7 @@ import type {
   UpdateCustomerFollowPlanParams,
   UpdateCustomerFollowRecordParams,
 } from '@lib/shared/models/customer';
-import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import type { CluePoolItem, FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 添加线索
@@ -218,7 +217,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 获取当前用户线索池选项
   function getPoolOptions() {
-    return CDR.get<PoolOption[]>({ url: GetPoolOptionsUrl });
+    return CDR.get<CluePoolItem[]>({ url: GetPoolOptionsUrl });
   }
 
   // 删除线索池线索

@@ -50,7 +50,8 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
-  import type { CluePoolListItem, PoolOption } from '@lib/shared/models/clue';
+  import type { CluePoolListItem } from '@lib/shared/models/clue';
+  import type { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
@@ -66,7 +67,7 @@
   const keyword = ref('');
 
   const activeFilter = ref('');
-  const filterButtons = ref<PoolOption[]>([]);
+  const filterButtons = ref<CluePoolItem[]>([]);
   async function getCluePoolOptions() {
     try {
       showLoadingToast(t('common.loading'));

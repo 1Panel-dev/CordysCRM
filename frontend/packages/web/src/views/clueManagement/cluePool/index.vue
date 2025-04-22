@@ -26,6 +26,8 @@
             v-model:value="poolId"
             :options="cluePoolOptions"
             value-field="id"
+            :render-option="renderOption"
+            :show-checkmark="false"
             label-field="name"
             class="w-[240px]"
             @update-value="(e) => searchData(undefined, e)"
@@ -55,19 +57,29 @@
     :detail="activeClue"
     @refresh="handleRefresh"
   />
+  <addOrEditPoolDrawer
+    v-model:visible="drawerVisible"
+    :type="ModuleConfigEnum.CLUE_MANAGEMENT"
+    :row="cluePoolRow"
+    @refresh="init"
+  />
 </template>
 
 <script setup lang="ts">
+  import { VNodeChild } from 'vue';
   import { DataTableRowKey, NSelect, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { CluePoolListItem, PoolOption } from '@lib/shared/models/clue';
+  import type { CluePoolListItem } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer/index';
+  import type { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
@@ -78,6 +90,7 @@
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CluePoolOverviewDrawer from './components/cluePoolOverviewDrawer.vue';
+  import addOrEditPoolDrawer from '@/views/system/module/components/addOrEditPoolDrawer.vue';
 
   import {
     assignClue,
@@ -92,13 +105,34 @@
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const { openModal } = useModal();
   const Message = useMessage();
 
   const poolId = ref('');
-  const cluePoolOptions = ref<PoolOption[]>([]);
+  const cluePoolOptions = ref<CluePoolItem[]>([]);
+  const cluePoolRow = ref<CluePoolItem>();
+  const drawerVisible = ref(false);
+
+  function renderOption({ node, option }: { node: VNode; option: CluePoolItem }): VNodeChild {
+    if (hasAnyPermission(['MODULE_SETTING:UPDATE'])) {
+      (node.children as Array<VNode>)?.push(
+        h(CrmIcon, {
+          type: 'iconicon_set_up',
+          class: 'openSea-setting-icon',
+          onClick: (e: Event) => {
+            e.stopPropagation();
+            cluePoolRow.value = { ...option };
+            drawerVisible.value = true;
+          },
+        })
+      );
+    }
+    return h(node);
+  }
+
   async function getCluePoolOptions() {
     try {
       cluePoolOptions.value = await getPoolOptions();
@@ -394,8 +428,31 @@
     }
   );
 
-  onMounted(async () => {
+  async function init() {
     await getCluePoolOptions();
     searchData();
+  }
+
+  onBeforeMount(() => {
+    init();
   });
 </script>
+
+<style lang="less">
+  .n-base-select-option {
+    @apply justify-between;
+  }
+  .n-base-select-option:hover {
+    .openSea-setting-icon {
+      @apply visible;
+    }
+  }
+  .openSea-setting-icon {
+    @apply invisible cursor-pointer;
+
+    color: var(--text-n4);
+    &:hover {
+      color: var(--primary-8);
+    }
+  }
+</style>

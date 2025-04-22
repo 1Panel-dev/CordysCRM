@@ -115,7 +115,7 @@
           class: 'openSea-setting-icon',
           onClick: (e: Event) => {
             e.stopPropagation();
-            openSeaRow.value = { ...option, enable: false };
+            openSeaRow.value = { ...option };
             drawerVisible.value = true;
           },
         })
