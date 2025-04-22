@@ -71,6 +71,9 @@ public class UserExtendService {
 	 * @return 范围集合
 	 */
 	public List<ScopeNameDTO> getScope(List<String> scopeIds) {
+		if (CollectionUtils.isEmpty(scopeIds)) {
+			return new ArrayList<>();
+		}
 		return extUserExtendMapper.groupByScopeIds(scopeIds);
 	}
 
