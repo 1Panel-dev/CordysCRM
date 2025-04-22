@@ -22,10 +22,7 @@ public class SseController {
      */
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "客户端订阅 SSE 事件流")
-    @CrossOrigin(
-            origins = "*",
-            allowCredentials = "true"
-    )
+    @CrossOrigin
     public SseEmitter subscribe(@RequestParam String userId, @RequestParam String clientId) {
         return sseService.addEmitter(userId, clientId);
     }
