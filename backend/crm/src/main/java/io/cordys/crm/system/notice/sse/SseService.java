@@ -155,8 +155,15 @@ public class SseService {
             }
             // 创建新的 emitter
             SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+            // 注册生命周期回调
+            Runnable remove = () -> removeEmitter(userId, clientId);
+            emitter.onCompletion(remove);
+            emitter.onTimeout(remove);
+            emitter.onError(e -> remove.run());
+
             SseEmitterWrapper wrapper = new SseEmitterWrapper(emitter);
             inner.put(clientId, wrapper);
+
             // 限制同一用户最大 3 个客户端
             if (inner.size() > 3) {
                 Iterator<String> it = inner.keySet().iterator();
@@ -164,12 +171,6 @@ public class SseService {
                 SseEmitterWrapper old = inner.remove(oldest);
                 old.complete();
             }
-
-            // 注册生命周期回调
-            Runnable remove = () -> removeEmitter(userId, clientId);
-            emitter.onCompletion(remove);
-            emitter.onTimeout(remove);
-            emitter.onError(e -> remove.run());
 
             // 首次心跳，客户端建立连接后立即推送
             sendHeartbeat(wrapper, clientId);
@@ -191,7 +192,7 @@ public class SseService {
      * @param clientId 客户端 ID
      */
     private void sendHeartbeat(SseEmitterWrapper wrapper, String clientId) {
-        wrapper.sendEvent(SseEmitter.event()
+        wrapper.sendEvent(SseEmitter.event().comment(" ".repeat(1024 * 1024))
                 .id(clientId)
                 .name("SYSTEM_HEARTBEAT")
                 .reconnectTime(10000)
