@@ -112,10 +112,12 @@
 
       if (column.isTag) {
         render = (row: Record<string, any>) =>
-          h(CrmTagGroup, {
-            tags: row[column.key as string] || [],
-            ...column.tagGroupProps,
-          });
+          row[column.key as string]?.length
+            ? h(CrmTagGroup, {
+                tags: row[column.key as string] || [],
+                ...column.tagGroupProps,
+              })
+            : '-';
       }
 
       // 选择列
