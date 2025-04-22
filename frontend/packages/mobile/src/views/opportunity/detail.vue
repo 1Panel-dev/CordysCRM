@@ -28,11 +28,13 @@
           v-else-if="tab.name === 'record'"
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS"
+          :readonly="!hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS"
+          :readonly="!hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
         />
       </van-tab>
     </van-tabs>
@@ -55,6 +57,7 @@
 
   import { baseStepList } from '@/config/opportunity';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import { hasAllPermission } from '@/utils/permission';
 
   import { OpportunityRouteEnum } from '@/enums/routeEnum';
 

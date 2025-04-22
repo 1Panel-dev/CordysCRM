@@ -1,13 +1,7 @@
 <template>
   <div class="flex h-full flex-col gap-[16px] overflow-hidden">
     <div class="flex items-center gap-[12px] bg-[var(--text-n10)] px-[12px] py-[4px]">
-      <van-image
-        round
-        width="40px"
-        height="40px"
-        src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg"
-        @click="goMine"
-      />
+      <van-image round width="40px" height="40px" :src="userStore.userInfo?.avatar" @click="goMine" />
       <van-search
         v-model="keyword"
         shape="round"
@@ -15,7 +9,7 @@
         class="flex-1 !p-0"
         @click="goDuplicateCheck"
       />
-      <van-badge :dot="showBadge">
+      <van-badge v-permission="['SYSTEM_NOTICE:READ']" :dot="showBadge">
         <CrmIcon name="iconicon_notification" width="21px" height="21px" @click="goMineMessage" />
       </van-badge>
     </div>
@@ -37,7 +31,7 @@
         <template #title>
           <div class="font-semibold text-[var(--text-n1)]">{{ t('common.message') }}</div>
         </template>
-        <template #value>
+        <template v-if="hasAnyPermission(['SYSTEM_NOTICE:READ'])" #value>
           <div class="text-[var(--text-n4)]" @click="goMineMessage">
             {{ t('common.checkMore') }}
           </div>
@@ -64,8 +58,12 @@
   import CrmMessageItem from '@/components/business/crm-message-item/index.vue';
 
   import useAppStore from '@/store/modules/app';
+  import useUserStore from '@/store/modules/user';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum, MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
+
+  const userStore = useUserStore();
 
   const appStore = useAppStore();
 

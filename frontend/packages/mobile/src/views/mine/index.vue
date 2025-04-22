@@ -34,7 +34,7 @@
           </template>
         </van-cell>
       </van-cell-group>
-      <van-cell-group inset class="info-item">
+      <van-cell-group v-permission="['SYSTEM_NOTICE:READ']" inset class="info-item">
         <van-cell :title="t('common.message')" is-link class="!p-[16px]" @click="handleEditInfo('message')">
           <template #value>
             <div v-if="messageTotal > 0" class="absolute right-[16px] top-[8px]">
@@ -67,6 +67,7 @@
   import { getNotificationCount, getPersonalUrl } from '@/api/modules';
   import { defaultUserInfo } from '@/config/mine';
   import useUserStore from '@/store/modules/user';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { MineRouteEnum } from '@/enums/routeEnum';
 
@@ -101,6 +102,9 @@
 
   const messageTotal = ref(0);
   async function initMessageCount() {
+    if (!hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
+      return;
+    }
     try {
       const result = await getNotificationCount({
         type: '',

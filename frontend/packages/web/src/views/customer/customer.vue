@@ -15,7 +15,7 @@
     >
       <template #actionLeft>
         <div class="flex items-center">
-          <n-button v-permission="['CUSTOMER_MANAGEMENT:ADD']" class="mr-[12px]" type="primary" @click="handleNewClick">
+          <n-button v-permission="['CUSTOMER_MANAGEMENT:ADD']" type="primary" @click="handleNewClick">
             {{ t('customer.new') }}
           </n-button>
         </div>

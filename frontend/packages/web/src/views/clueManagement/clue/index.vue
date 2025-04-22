@@ -16,7 +16,7 @@
     >
       <template #actionLeft>
         <div class="flex items-center">
-          <n-button v-permission="['CLUE_MANAGEMENT:ADD']" class="mr-[12px]" type="primary" @click="handleAdd">
+          <n-button v-permission="['CLUE_MANAGEMENT:ADD']" type="primary" @click="handleAdd">
             {{ t('clueManagement.newClue') }}
           </n-button>
         </div>

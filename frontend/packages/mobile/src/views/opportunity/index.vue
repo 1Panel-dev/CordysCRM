@@ -2,7 +2,15 @@
   <div class="flex h-full flex-col overflow-hidden">
     <CrmPageHeader :title="t('common.opportunity')" hide-back />
     <div class="mt-[48px] flex items-center gap-[12px] bg-[var(--text-n10)] p-[8px_16px]">
-      <van-button plain icon="plus" type="primary" size="small" @click="goCreate"> </van-button>
+      <van-button
+        v-permission="['OPPORTUNITY_MANAGEMENT:ADD']"
+        plain
+        icon="plus"
+        type="primary"
+        size="small"
+        @click="goCreate"
+      >
+      </van-button>
       <van-search
         v-model="keyword"
         shape="round"

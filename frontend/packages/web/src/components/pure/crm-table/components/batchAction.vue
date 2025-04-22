@@ -30,6 +30,7 @@
       </div>
 
       <n-button
+        v-if="moreAction?.length || baseAction.length"
         ref="clearButtonRef"
         :size="props.size"
         quaternary
@@ -110,6 +111,9 @@
     return { wrapperWidth, moreButtonWidth, clearButtonWidth, leftContentWidth, rightContentWidth };
   }
 
+  const filterActionList = (list: ActionsItem[] = []) =>
+    list.filter((e) => hasAllPermission(e.permission) && hasAnyPermission(e?.anyPermission));
+
   const computedLastVisibleIndex = () => {
     if (!actionContainerRef.value) {
       return;
@@ -156,8 +160,8 @@
       menuItemIndex++;
     }
 
-    moreAction.value = props.actionConfig?.moreAction || [];
-    baseAction.value = props.actionConfig?.baseAction || [];
+    moreAction.value = filterActionList(props.actionConfig?.moreAction || []);
+    baseAction.value = filterActionList(props.actionConfig?.baseAction || []);
     handleMoreActionLength();
   };
 
@@ -173,10 +177,8 @@
     () => props.actionConfig,
     (newVal) => {
       if (newVal) {
-        const newBaseAction = newVal.baseAction.filter(
-          (e) => hasAllPermission(e.permission) && hasAnyPermission(e?.anyPermission)
-        );
-        const newMoreAction = (newVal.moreAction ?? []).filter((e) => hasAllPermission(e.permission));
+        const newBaseAction = filterActionList(newVal.baseAction);
+        const newMoreAction = filterActionList(newVal.moreAction ?? []);
 
         allAction.value = [...newBaseAction, ...newMoreAction];
         baseAction.value = [...newBaseAction];
