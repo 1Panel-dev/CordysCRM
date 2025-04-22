@@ -62,6 +62,10 @@
                 and condition.name != 'createTime'
                 and condition.name != 'updateTime'
                 and condition.name != 'createUser'
+                and condition.name != 'update_user'
+                and condition.name != 'create_time'
+                and condition.name != 'update_time'
+                and condition.name != 'create_user'
                 ">
                     inner join product_field ${tablePrefix}_${i}
                     on p.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -71,7 +75,14 @@
     </sql>
 
     <sql id="fieldSortJoin">
-        <if test="${sort} != null and ${sort}.name != 'name'">
+        <if test="${sort} != null and ${sort}.name != 'name'
+                and ${sort}.name != 'status'
+                and ${sort}.name != 'price'
+                and ${sort}.name != 'create_user'
+                and ${sort}.name != 'create_time'
+                and ${sort}.name != 'update_time'
+                and ${sort}.name != 'update_user'
+               ">
             <bind name="sortName" value="${sort}.name"/>
             left join product_field sort_table
             on p.id = sort_table.resource_id and sort_table.field_id = #{sortName}
@@ -93,8 +104,17 @@
                     <when test="${sort}.name == 'status'">
                         p.`status` ${sortType}
                     </when>
-                    <when test="${sort}.name == 'createTime'">
+                    <when test="${sort}.name == 'create_time'">
                         p.`create_time` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'update_time'">
+                        p.`update_time` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'create_user'">
+                        p.`create_user` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'update_user'">
+                        p.`update_user` ${sortType}
                     </when>
                     <otherwise>
                         sort_table.field_value ${sortType}
