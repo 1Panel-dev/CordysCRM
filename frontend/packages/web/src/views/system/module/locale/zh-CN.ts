@@ -65,4 +65,6 @@ export default {
   'module.clueFormSetting': '线索表单设置',
   'module.opportunityFormSetting': '商机表单设置',
   'module.productFormSetting': '产品表单设置',
+  'module.followRecordFormSetting': '跟进记录表单设置',
+  'module.followPlanFormSetting': '跟进计划表单设置',
 };

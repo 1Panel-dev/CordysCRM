@@ -67,4 +67,6 @@ export default {
   'module.clueFormSetting': 'Clue form set',
   'module.opportunityFormSetting': 'Business opportunity form set',
   'module.productFormSetting': 'Product form set',
+  'module.followRecordFormSetting': 'Follow record form set',
+  'module.followPlanFormSetting': 'Follow plan form set',
 };

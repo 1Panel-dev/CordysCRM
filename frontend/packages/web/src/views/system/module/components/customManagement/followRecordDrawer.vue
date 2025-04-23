@@ -15,7 +15,7 @@
     required: true,
   });
 
-  const title = ref(t('module.customer.followRecord'));
+  const title = ref(t('module.followRecordFormSetting'));
 </script>
 
 <style lang="less" scoped></style>

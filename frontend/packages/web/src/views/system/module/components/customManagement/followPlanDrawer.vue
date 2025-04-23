@@ -15,7 +15,7 @@
     required: true,
   });
 
-  const title = ref(t('module.customer.followPlan'));
+  const title = ref(t('module.followPlanFormSetting'));
 </script>
 
 <style lang="less" scoped></style>

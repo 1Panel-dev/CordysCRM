@@ -189,11 +189,11 @@
   const moreOptions = [
     {
       key: 'followRecord',
-      label: t('module.customer.followRecord'),
+      label: t('module.followRecordFormSetting'),
     },
     {
       key: 'followPlan',
-      label: t('module.customer.followPlan'),
+      label: t('module.followPlanFormSetting'),
     },
     {
       key: 'capacitySet',
