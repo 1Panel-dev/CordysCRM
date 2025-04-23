@@ -424,10 +424,9 @@
       {
         title: t('opportunity.opportunityStage'),
         dataIndex: 'stage',
-        type: FieldTypeEnum.SELECT,
+        type: FieldTypeEnum.SELECT_MULTIPLE,
         selectProps: {
           options: lastOpportunitySteps,
-          multiple: true,
         },
       },
       {

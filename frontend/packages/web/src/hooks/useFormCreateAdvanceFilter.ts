@@ -28,7 +28,7 @@ export default function useFormCreateFilter(formKey: FormDesignKeyEnum) {
   // 获取配置属性
   function getFilterListConfig(res: FormDesignConfigDetailParams) {
     const getConfigProps = (field: FormCreateField) => {
-      if (field.type === FieldTypeEnum.SELECT) {
+      if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(field.type)) {
         return {
           selectProps: {
             options: field.options,

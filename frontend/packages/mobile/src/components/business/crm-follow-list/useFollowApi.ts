@@ -26,9 +26,12 @@ export default function useFollowApi(followProps: {
     (e.moduleFields || []).forEach((moduleField) => {
       const fieldVal = fieldList.value.find((field) => moduleField.fieldId === field.id);
       if (fieldVal) {
-        const isSelectableField = [FieldTypeEnum.SELECT, FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO].includes(
-          fieldVal.type
-        );
+        const isSelectableField = [
+          FieldTypeEnum.SELECT,
+          FieldTypeEnum.SELECT_MULTIPLE,
+          FieldTypeEnum.CHECKBOX,
+          FieldTypeEnum.RADIO,
+        ].includes(fieldVal.type);
         if (isSelectableField && fieldVal.options?.length) {
           const option = fieldVal.options.find((item) => item.value === moduleField.fieldValue);
           tmpObject[fieldVal.internalKey as string] = option ? option.label : '-';

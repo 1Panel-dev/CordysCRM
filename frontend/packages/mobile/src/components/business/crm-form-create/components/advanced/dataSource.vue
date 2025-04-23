@@ -8,7 +8,7 @@
     :rules="props.fieldConfig.rules as FieldRule[]"
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseSelect')"
     :disabled="props.fieldConfig.editable === false"
-    :multiple="props.fieldConfig.multiple"
+    :multiple="props.fieldConfig.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
     @change="($event) => emit('change', $event)"
   >
   </CrmDataSource>
@@ -17,6 +17,7 @@
 <script setup lang="ts">
   import { FieldRule } from 'vant';
 
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmDataSource from '@/components/business/crm-datasource/index.vue';

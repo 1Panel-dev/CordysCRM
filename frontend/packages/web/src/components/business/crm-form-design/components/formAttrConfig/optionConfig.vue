@@ -125,7 +125,15 @@
     default: null,
   });
 
-  const isMultiple = computed(() => fieldConfig.value.type === FieldTypeEnum.CHECKBOX || fieldConfig.value.multiple);
+  const isMultiple = computed(() =>
+    [
+      FieldTypeEnum.CHECKBOX,
+      FieldTypeEnum.SELECT_MULTIPLE,
+      FieldTypeEnum.MEMBER_MULTIPLE,
+      FieldTypeEnum.DEPARTMENT_MULTIPLE,
+      FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+    ].includes(fieldConfig.value.type)
+  );
 
   const getComponent = computed(() => {
     if (isMultiple.value) {

@@ -30,6 +30,7 @@
         source-filterable
         class="addMemberTransfer"
         :class="props.multiple ? '' : 'addMemberTransfer--single'"
+        @update-value="handleUpdateValue"
       />
     </div>
   </CrmDrawer>
@@ -230,6 +231,10 @@
       },
     });
   };
+
+  function handleUpdateValue(value: Array<string | number>) {
+    selectedNodes.value = selectedNodes.value.filter((e) => value.includes(e.id));
+  }
 
   watch(
     () => visible.value,

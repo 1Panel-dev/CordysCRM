@@ -4,7 +4,7 @@
       <van-cell-group inset>
         <template v-for="item in mobileFieldList" :key="item.id">
           <component
-            :is="getItemComponent(item.type, item.multiple)"
+            :is="getItemComponent(item.type)"
             v-if="item.show !== false"
             v-model:value="formDetail[item.id]"
             :field-config="item"
@@ -77,7 +77,7 @@
     return fieldList.value.filter((item) => item.mobile !== false);
   });
 
-  function getItemComponent(type: FieldTypeEnum, multiple?: boolean) {
+  function getItemComponent(type: FieldTypeEnum) {
     if (type === FieldTypeEnum.INPUT) {
       return CrmFormCreateComponents.basicComponents.singleText;
     }
@@ -88,14 +88,15 @@
       return CrmFormCreateComponents.basicComponents.datePicker;
     }
     if (type === FieldTypeEnum.SELECT) {
-      return multiple
-        ? CrmFormCreateComponents.basicComponents.multiplePick
-        : CrmFormCreateComponents.basicComponents.pick;
+      return CrmFormCreateComponents.basicComponents.pick;
+    }
+    if (type === FieldTypeEnum.SELECT_MULTIPLE) {
+      return CrmFormCreateComponents.basicComponents.multiplePick;
     }
     if (type === FieldTypeEnum.PHONE) {
       return CrmFormCreateComponents.advancedComponents.phone;
     }
-    if (type === FieldTypeEnum.DATA_SOURCE) {
+    if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(type)) {
       return CrmFormCreateComponents.advancedComponents.dataSource;
     }
   }
@@ -123,8 +124,8 @@
       const result = cloneDeep(formDetail.value);
       mobileFieldList.value.forEach((item) => {
         if (item.type === FieldTypeEnum.DATA_SOURCE) {
-          // 处理数据源字段，单选传单个值，多选传数组
-          result[item.id] = item.multiple ? result[item.id] : result[item.id]?.[0];
+          // 处理数据源字段，单选传单个值
+          result[item.id] = result[item.id]?.[0];
         }
       });
       saveForm(result, () => router.back());
@@ -143,12 +144,12 @@
 
   function getRuleType(item: FormCreateField) {
     if (
-      (item.type === FieldTypeEnum.SELECT && item.multiple) ||
+      item.type === FieldTypeEnum.SELECT_MULTIPLE ||
       item.type === FieldTypeEnum.CHECKBOX ||
       item.type === FieldTypeEnum.MULTIPLE_INPUT ||
-      (item.type === FieldTypeEnum.MEMBER && item.multiple) ||
-      (item.type === FieldTypeEnum.DEPARTMENT && item.multiple) ||
-      item.type === FieldTypeEnum.DATA_SOURCE ||
+      item.type === FieldTypeEnum.MEMBER_MULTIPLE ||
+      item.type === FieldTypeEnum.DEPARTMENT_MULTIPLE ||
+      [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type) ||
       item.type === FieldTypeEnum.PICTURE
     ) {
       return 'array';
@@ -185,14 +186,14 @@
             staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
             staticRule.message = t(staticRule.message as string, { value: t(item.name) });
             staticRule.type = getRuleType(item);
-            if (item.type === FieldTypeEnum.DATA_SOURCE) {
+            if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
               staticRule.trigger = 'none';
             }
             fullRules.push(staticRule);
           }
         });
         item.rules = fullRules;
-        if (item.type === FieldTypeEnum.MEMBER && item.hasCurrentUser) {
+        if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
           item.defaultValue = userStore.userInfo.id;
           item.initialOptions = [
             {
@@ -201,7 +202,10 @@
             },
           ];
         }
-        if (item.type === FieldTypeEnum.DEPARTMENT && item.hasCurrentUserDept) {
+        if (
+          [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(item.type) &&
+          item.hasCurrentUserDept
+        ) {
           item.defaultValue = userStore.userInfo.departmentId;
           item.initialOptions = [
             {

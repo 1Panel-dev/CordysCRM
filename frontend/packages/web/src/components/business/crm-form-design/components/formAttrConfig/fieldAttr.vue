@@ -31,12 +31,15 @@
         v-if="
           ![
             FieldTypeEnum.MEMBER,
+            FieldTypeEnum.MEMBER_MULTIPLE,
             FieldTypeEnum.DEPARTMENT,
+            FieldTypeEnum.DEPARTMENT_MULTIPLE,
             FieldTypeEnum.DIVIDER,
             FieldTypeEnum.PICTURE,
             FieldTypeEnum.LOCATION,
             FieldTypeEnum.PHONE,
             FieldTypeEnum.DATA_SOURCE,
+            FieldTypeEnum.DATA_SOURCE_MULTIPLE,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -114,7 +117,10 @@
       </div>
       <!-- date End -->
       <!-- 数据源属性 -->
-      <div v-if="fieldConfig.type === FieldTypeEnum.DATA_SOURCE" class="crm-form-design-config-item">
+      <div
+        v-if="[FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(fieldConfig.type)"
+        class="crm-form-design-config-item"
+      >
         <div class="crm-form-design-config-item-title">
           {{ t('common.type') }}
         </div>
@@ -126,7 +132,7 @@
       </div>
       <!-- 数据源属性 End -->
       <!-- 选项属性 -->
-      <div
+      <!-- <div
         v-if="
           [FieldTypeEnum.SELECT, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE].includes(
             fieldConfig.type
@@ -151,7 +157,7 @@
             {{ t('crmFormDesign.multiple') }}
           </n-radio-button>
         </n-radio-group>
-      </div>
+      </div> -->
       <div v-if="fieldConfig.options" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.option') }}
@@ -467,19 +473,29 @@
         class="crm-form-design-config-item"
       >
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.defaultValue') }}</div>
-        <div v-if="fieldConfig.type === FieldTypeEnum.MEMBER" class="flex items-center gap-[8px]">
+        <div
+          v-if="[FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(fieldConfig.type)"
+          class="flex items-center gap-[8px]"
+        >
           <n-switch
             v-model:value="fieldConfig.hasCurrentUser"
             :disabled="fieldConfig.disabledProps?.includes('hasCurrentUser')"
-            @update-value="handleHasCurrentChange"
+            @update-value="
+              ($event) => handleHasCurrentChange($event, fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE)
+            "
           />
           {{ t('crmFormDesign.loginUser') }}
         </div>
-        <div v-else-if="fieldConfig.type === FieldTypeEnum.DEPARTMENT" class="flex items-center gap-[8px]">
+        <div
+          v-else-if="[FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(fieldConfig.type)"
+          class="flex items-center gap-[8px]"
+        >
           <n-switch
             v-model:value="fieldConfig.hasCurrentUserDept"
             :disabled="fieldConfig.disabledProps?.includes('hasCurrentUserDept')"
-            @update-value="handleHasCurrentChange"
+            @update-value="
+              ($event) => handleHasCurrentChange($event, fieldConfig.type === FieldTypeEnum.DEPARTMENT_MULTIPLE)
+            "
           />
           {{ t('crmFormDesign.loginUserDept') }}
         </div>
@@ -498,11 +514,11 @@
           class="w-full"
         ></n-date-picker>
         <CrmUserTagSelector
-          v-else-if="fieldConfig.type === FieldTypeEnum.MEMBER"
-          v-show="fieldConfig.multiple || !fieldConfig.hasCurrentUser"
+          v-else-if="[FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(fieldConfig.type)"
+          v-show="fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE || !fieldConfig.hasCurrentUser"
           v-model:selected-list="fieldConfig.initialOptions"
           v-model:value="fieldConfig.defaultValue"
-          :multiple="fieldConfig.multiple"
+          :multiple="fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE"
           :drawer-title="t('crmFormDesign.selectMember')"
           :ok-text="t('common.confirm')"
           :member-types="[]"
@@ -510,11 +526,11 @@
           :disabled-node-types="[DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]"
         />
         <CrmUserTagSelector
-          v-else-if="fieldConfig.type === FieldTypeEnum.DEPARTMENT"
-          v-show="fieldConfig.multiple || !fieldConfig.hasCurrentUserDept"
+          v-else-if="[FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(fieldConfig.type)"
+          v-show="fieldConfig.type === FieldTypeEnum.DEPARTMENT_MULTIPLE || !fieldConfig.hasCurrentUserDept"
           v-model:selected-list="fieldConfig.initialOptions"
           v-model:value="fieldConfig.defaultValue"
-          :multiple="fieldConfig.multiple"
+          :multiple="fieldConfig.type === FieldTypeEnum.DEPARTMENT_MULTIPLE"
           :drawer-title="t('crmFormDesign.selectMember')"
           :ok-text="t('common.confirm')"
           :member-types="[]"
@@ -522,10 +538,10 @@
           :disabled-node-types="[DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]"
         />
         <CrmDataSource
-          v-else-if="fieldConfig.type === FieldTypeEnum.DATA_SOURCE"
+          v-else-if="[FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(fieldConfig.type)"
           v-model:value="fieldConfig.defaultValue"
           v-model:rows="fieldConfig.initialOptions"
-          :multiple="fieldConfig.multiple"
+          :multiple="fieldConfig.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
           :data-source-type="fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
         />
@@ -689,7 +705,15 @@
       return [];
     }
     return rules.filter((rule) => {
-      if (fieldConfig.value.multiple) {
+      if (
+        [
+          FieldTypeEnum.SELECT_MULTIPLE,
+          FieldTypeEnum.MEMBER_MULTIPLE,
+          FieldTypeEnum.CHECKBOX,
+          FieldTypeEnum.DEPARTMENT_MULTIPLE,
+          FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+        ].includes(fieldConfig.value.type)
+      ) {
         // 多选时不显示唯一性校验
         return rule.key && showRulesMap[fieldConfig.value.type].includes(rule.key) && rule.key !== FieldRuleEnum.UNIQUE;
       }
@@ -718,16 +742,16 @@
       .filter((e) => e !== null) as FormCreateFieldRule[];
   }
 
-  function handleMultipleChange(val: boolean) {
-    if (val || [FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(fieldConfig.value.type)) {
-      fieldConfig.value.defaultValue = [];
-    } else {
-      fieldConfig.value.defaultValue = null;
-    }
-  }
+  // function handleMultipleChange(val: boolean) {
+  //   if (val || [FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(fieldConfig.value.type)) {
+  //     fieldConfig.value.defaultValue = [];
+  //   } else {
+  //     fieldConfig.value.defaultValue = null;
+  //   }
+  // }
 
-  function handleHasCurrentChange(val: boolean) {
-    if (val && !fieldConfig.value.multiple) {
+  function handleHasCurrentChange(val: boolean, multiple: boolean) {
+    if (val && !multiple) {
       fieldConfig.value.defaultValue = [];
     }
   }
@@ -814,10 +838,7 @@
   const showRuleConfigVisible = ref(false);
   const tempShowRules = ref<FormCreateFieldShowControlRule[]>([]);
   const isShowRuleField = computed(() => {
-    return (
-      fieldConfig.value.type === FieldTypeEnum.RADIO ||
-      (fieldConfig.value.type === FieldTypeEnum.SELECT && !fieldConfig.value.multiple)
-    );
+    return fieldConfig.value.type === FieldTypeEnum.RADIO || fieldConfig.value.type === FieldTypeEnum.SELECT_MULTIPLE;
   });
   // 显隐规则可选字段
   const showRuleFields = computed(() => {

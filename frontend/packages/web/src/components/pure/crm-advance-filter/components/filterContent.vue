@@ -56,12 +56,13 @@
             />
 
             <n-select
-              v-else-if="item.type === FieldTypeEnum.SELECT"
+              v-else-if="[FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(item.type)"
               v-model:value="item.value"
               clearable
               :disabled="isValueDisabled(item)"
               :placeholder="t('common.pleaseSelect')"
               v-bind="item.selectProps"
+              :multiple="item.type === FieldTypeEnum.SELECT_MULTIPLE"
             />
 
             <n-tree-select
@@ -185,6 +186,12 @@
 
   function valueIsArray(listItem: FilterFormItem) {
     return (
+      [
+        FieldTypeEnum.SELECT_MULTIPLE,
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+        FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+      ].includes(listItem.type) ||
       listItem.selectProps?.multiple ||
       listItem.cascaderProps?.multiple ||
       (listItem.type === FieldTypeEnum.MULTIPLE_INPUT &&

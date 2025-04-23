@@ -12,11 +12,11 @@
     ></div>
     <CrmUserTagSelector
       v-model:selected-list="selectedUsers"
-      :multiple="fieldConfig.multiple"
+      :multiple="[FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(fieldConfig.type)"
       :drawer-title="t('crmFormDesign.selectDataSource', { type: props.fieldConfig.name })"
       :api-type-key="MemberApiTypeEnum.FORM_FIELD"
       :member-types="
-        props.fieldConfig.type === FieldTypeEnum.MEMBER
+        [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(props.fieldConfig.type)
           ? [
               {
                 label: t('menu.settings.org'),
@@ -31,7 +31,7 @@
             ]
       "
       :disabled-node-types="
-        props.fieldConfig.type === FieldTypeEnum.MEMBER
+        [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(props.fieldConfig.type)
           ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
           : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
       "
@@ -91,7 +91,7 @@
     () => selectedUsers.value,
     (val) => {
       const ids = val.map((item) => item.id);
-      value.value = props.fieldConfig.multiple ? ids : ids[0];
+      value.value = props.fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE ? ids : ids[0];
       emit('change', ids);
     },
     {

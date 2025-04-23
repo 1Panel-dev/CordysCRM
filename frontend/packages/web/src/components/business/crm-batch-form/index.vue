@@ -51,12 +51,13 @@
                 v-bind="model.numberProps"
               />
               <n-select
-                v-if="model.type === FieldTypeEnum.SELECT"
+                v-if="[FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(model.type)"
                 v-model:value="element[model.path]"
                 clearable
                 :placeholder="t('common.pleaseSelect')"
                 v-bind="model.selectProps"
                 :options="getSelectOptions(element, model)"
+                :multiple="model.type === FieldTypeEnum.SELECT_MULTIPLE"
               />
               <CrmUserTagSelector
                 v-if="model.type === FieldTypeEnum.USER_TAG_SELECTOR"

@@ -165,6 +165,22 @@ export const selectDefaultFieldConfig: FormCreateField = {
   fieldWidth: 1,
   showLabel: true,
   options: [],
+  defaultValue: '',
+  description: '',
+  readable: true,
+  editable: true,
+  rules: [],
+  multiple: false,
+};
+
+export const selectMultipleDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.SELECT_MULTIPLE,
+  icon: 'iconicon_pull_down_single_choice',
+  name: 'crmFormDesign.selectMultiple',
+  fieldWidth: 1,
+  showLabel: true,
+  options: [],
   defaultValue: [],
   description: '',
   readable: true,
@@ -189,11 +205,43 @@ export const memberDefaultFieldConfig: FormCreateField = {
   multiple: false,
 };
 
+export const memberMultipleDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.MEMBER_MULTIPLE,
+  icon: 'iconicon_member_single_choice',
+  name: 'crmFormDesign.memberSelectMultiple',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  readable: true,
+  editable: true,
+  rules: [],
+  defaultValue: [],
+  initialOptions: [],
+  multiple: false,
+};
+
 export const departmentDefaultFieldConfig: FormCreateField = {
   id: '',
   type: FieldTypeEnum.DEPARTMENT,
   icon: 'iconicon_department_single_choice',
   name: 'crmFormDesign.departmentSelect',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  readable: true,
+  editable: true,
+  rules: [],
+  defaultValue: [],
+  initialOptions: [],
+  multiple: false,
+};
+
+export const departmentMultipleDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.DEPARTMENT_MULTIPLE,
+  icon: 'iconicon_department_single_choice',
+  name: 'crmFormDesign.departmentSelectMultiple',
   fieldWidth: 1,
   showLabel: true,
   description: '',
@@ -243,8 +291,11 @@ export const basicFields: FormCreateField[] = [
   radioDefaultFieldConfig,
   checkboxDefaultFieldConfig,
   selectDefaultFieldConfig,
+  selectMultipleDefaultFieldConfig,
   memberDefaultFieldConfig,
+  memberMultipleDefaultFieldConfig,
   departmentDefaultFieldConfig,
+  departmentMultipleDefaultFieldConfig,
   dividerDefaultFieldConfig,
   tagInputDefaultFieldConfig,
 ];
@@ -314,11 +365,29 @@ export const dataSourceDefaultFieldConfig: FormCreateField = {
   dataSourceType: FieldDataSourceTypeEnum.CUSTOMER,
 };
 
+export const dataSourceMultipleDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+  icon: 'iconicon_select_data',
+  name: 'crmFormDesign.dataSourceMultiple',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  readable: true,
+  editable: true,
+  rules: [],
+  multiple: false,
+  defaultValue: [],
+  initialOptions: [],
+  dataSourceType: FieldDataSourceTypeEnum.CUSTOMER,
+};
+
 export const advancedFields: FormCreateField[] = [
   pictureDefaultFieldConfig,
   locationDefaultFieldConfig,
   phoneDefaultFieldConfig,
   dataSourceDefaultFieldConfig,
+  dataSourceMultipleDefaultFieldConfig,
 ];
 
 export const rules: FormCreateFieldRule[] = [
@@ -345,8 +414,11 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.RADIO]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
   [FieldTypeEnum.CHECKBOX]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.SELECT]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+  [FieldTypeEnum.SELECT_MULTIPLE]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.MEMBER]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+  [FieldTypeEnum.MEMBER_MULTIPLE]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.DEPARTMENT]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+  [FieldTypeEnum.DEPARTMENT_MULTIPLE]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.DIVIDER]: [],
   [FieldTypeEnum.USER_TAG_SELECTOR]: [],
   [FieldTypeEnum.USER_SELECT]: [],
@@ -357,6 +429,7 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.LOCATION]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.PHONE]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
   [FieldTypeEnum.DATA_SOURCE]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
+  [FieldTypeEnum.DATA_SOURCE_MULTIPLE]: [FieldRuleEnum.REQUIRED],
 };
 
 export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {

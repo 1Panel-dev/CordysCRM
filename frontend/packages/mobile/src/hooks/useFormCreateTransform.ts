@@ -23,7 +23,7 @@ export default async function useFormCreateTransform(formKey: FormDesignKeyEnum)
       fieldList.value = res.fields.map((field) => {
         if (field.type === FieldTypeEnum.LOCATION) {
           addressFieldIds.value.push(field.businessKey || field.id);
-        } else if (field.type === FieldTypeEnum.DATA_SOURCE) {
+        } else if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)) {
           dataSourceFieldIds.value.push(field.businessKey || field.id);
         }
         if (field.businessKey) {

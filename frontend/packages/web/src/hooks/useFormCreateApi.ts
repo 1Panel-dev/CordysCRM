@@ -135,7 +135,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   }
 
   function initFieldValue(field: FormCreateField, value: string | number | (string | number)[]) {
-    if (field.type === FieldTypeEnum.DATA_SOURCE && typeof value === 'string') {
+    if (
+      [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type) &&
+      typeof value === 'string'
+    ) {
       return [value];
     }
     return value;
@@ -151,7 +154,16 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
           const options = res.optionMap?.[item.businessKey];
-          if ([FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE].includes(item.type)) {
+          if (
+            [
+              FieldTypeEnum.MEMBER,
+              FieldTypeEnum.MEMBER_MULTIPLE,
+              FieldTypeEnum.DEPARTMENT,
+              FieldTypeEnum.DEPARTMENT_MULTIPLE,
+              FieldTypeEnum.DATA_SOURCE,
+              FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+            ].includes(item.type)
+          ) {
             // 处理成员和数据源类型的字段
             item.initialOptions = options;
           }
@@ -159,7 +171,16 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           formDetail.value[item.id] = initFieldValue(item, res[item.businessKey]);
         } else {
           const options = res.optionMap?.[item.id];
-          if ([FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE].includes(item.type)) {
+          if (
+            [
+              FieldTypeEnum.MEMBER,
+              FieldTypeEnum.MEMBER_MULTIPLE,
+              FieldTypeEnum.DEPARTMENT,
+              FieldTypeEnum.DEPARTMENT_MULTIPLE,
+              FieldTypeEnum.DATA_SOURCE,
+              FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+            ].includes(item.type)
+          ) {
             // 处理成员和数据源类型的字段
             item.initialOptions = options;
           }
@@ -252,7 +273,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
-    if (field.type === FieldTypeEnum.DATA_SOURCE) {
+    if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)) {
       // 数据源类型的字段，默认值需要转为数组
       return {
         defaultValue: typeof field.defaultValue === 'string' ? [field.defaultValue] : field.defaultValue,
@@ -290,7 +311,19 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
 
   function getNormalFieldValue(item: FormCreateField, value: any) {
     if (item.type === FieldTypeEnum.DATA_SOURCE && !value) {
-      return item.multiple ? [] : '';
+      return '';
+    }
+    if (
+      [
+        FieldTypeEnum.SELECT_MULTIPLE,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+        FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+        FieldTypeEnum.MULTIPLE_INPUT,
+      ].includes(item.type) &&
+      !value
+    ) {
+      return [];
     }
     if (item.type === FieldTypeEnum.MULTIPLE_INPUT && !value) {
       return [];

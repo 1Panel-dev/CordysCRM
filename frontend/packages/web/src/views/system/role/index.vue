@@ -224,7 +224,6 @@
     selectedKeys.value = [id];
     nextTick(() => {
       roleTreeRef.value?.toggleEdit(id);
-      console.log(renameStatic.value);
     });
   }
 
@@ -262,8 +261,10 @@
     }
   }
 
-  function handleCreated() {
+  async function handleCreated(id: string) {
     if (activeRole.value) {
+      await init();
+      selectedKeys.value = [id];
       activeRole.value.isNew = false;
       activeRole.value.unsave = false;
     }

@@ -59,9 +59,9 @@ export default function useRenameNode(
   // 处理编辑
   function handleEdit(node: CrmTreeNodeData, newLabel: string, notChange: boolean) {
     const key = node[keyField];
+    node[labelField] = newLabel;
     // 有改变且为重命名
     if (!notChange && getEditingMode(key) === 'rename' && !renameStatic?.value) {
-      node[labelField] = newLabel;
       handleRenameMode(node);
       // 否则切换预览模式
     } else {

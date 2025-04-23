@@ -15,7 +15,7 @@
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
       :options="props.fieldConfig.options"
-      :multiple="props.fieldConfig.multiple"
+      :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
       :placeholder="props.fieldConfig.placeholder"
       clearable
       @update-value="emit('change', $event)"
@@ -25,6 +25,8 @@
 
 <script setup lang="ts">
   import { NFormItem, NSelect } from 'naive-ui';
+
+  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
   import { FormCreateField } from '../../types';
 

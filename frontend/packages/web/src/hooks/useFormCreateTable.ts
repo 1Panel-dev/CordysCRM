@@ -380,7 +380,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           if (field.type === FieldTypeEnum.LOCATION) {
             addressFieldIds.value.push(field.businessKey || field.id);
           } else if (
-            field.type === FieldTypeEnum.DATA_SOURCE &&
+            [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type) &&
             !props.excludeFieldIds?.includes(field.businessKey || field.id)
           ) {
             dataSourceFieldIds.value.push(field.businessKey || field.id);
@@ -388,7 +388,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           if (field.businessKey && !props.excludeFieldIds?.includes(field.businessKey)) {
             businessFieldIds.value.push(field.businessKey);
           }
-          if ([FieldTypeEnum.RADIO, FieldTypeEnum.CHECKBOX, FieldTypeEnum.SELECT].includes(field.type)) {
+          if (
+            [FieldTypeEnum.RADIO, FieldTypeEnum.CHECKBOX, FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(
+              field.type
+            )
+          ) {
             // 带筛选的列
             return {
               title: field.name,
@@ -397,11 +401,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               ellipsis: {
                 tooltip: true,
               },
-              isTag:
-                field.type === FieldTypeEnum.CHECKBOX ||
-                (field.type === FieldTypeEnum.SELECT && field.multiple) ||
-                (field.type === FieldTypeEnum.MEMBER && field.multiple) ||
-                (field.type === FieldTypeEnum.DEPARTMENT && field.multiple),
+              isTag: field.type === FieldTypeEnum.CHECKBOX || field.type === FieldTypeEnum.SELECT_MULTIPLE,
               filterOptions: field.options || field.initialOptions?.map((e: any) => ({ label: e.name, value: e.id })),
               filter: true,
             };
@@ -429,7 +429,10 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             };
           }
 
-          if (field.type === FieldTypeEnum.DATA_SOURCE || field.type === FieldTypeEnum.MULTIPLE_INPUT) {
+          if (
+            [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type) ||
+            field.type === FieldTypeEnum.MULTIPLE_INPUT
+          ) {
             return {
               title: field.name,
               width: 150,

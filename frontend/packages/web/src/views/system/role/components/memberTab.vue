@@ -126,7 +126,7 @@
       sortOrder: false,
       render: (row: RoleMemberItem) => {
         return row.departmentName || '-';
-      }
+      },
     },
     {
       title: t('role.job'),

@@ -132,13 +132,17 @@
     if (type === FieldTypeEnum.CHECKBOX) {
       return CrmFormCreateComponents.basicComponents.checkbox;
     }
-    if (type === FieldTypeEnum.SELECT) {
+    if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(type)) {
       return CrmFormCreateComponents.basicComponents.select;
     }
-    if (type === FieldTypeEnum.MEMBER) {
-      return CrmFormCreateComponents.basicComponents.memberSelect;
-    }
-    if (type === FieldTypeEnum.DEPARTMENT) {
+    if (
+      [
+        FieldTypeEnum.MEMBER,
+        FieldTypeEnum.MEMBER_MULTIPLE,
+        FieldTypeEnum.DEPARTMENT,
+        FieldTypeEnum.DEPARTMENT_MULTIPLE,
+      ].includes(type)
+    ) {
       return CrmFormCreateComponents.basicComponents.memberSelect;
     }
     if (type === FieldTypeEnum.DIVIDER) {
@@ -156,7 +160,7 @@
     if (type === FieldTypeEnum.PHONE) {
       return CrmFormCreateComponents.advancedComponents.phone;
     }
-    if (type === FieldTypeEnum.DATA_SOURCE) {
+    if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(type)) {
       return CrmFormCreateComponents.advancedComponents.dataSource;
     }
   }
@@ -167,7 +171,11 @@
       id: getGenerateId(),
       name: t(item.name),
     };
-    if ([FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT].includes(item.type)) {
+    if (
+      [FieldTypeEnum.CHECKBOX, FieldTypeEnum.RADIO, FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(
+        item.type
+      )
+    ) {
       res.options = [
         {
           label: t('crmFormDesign.option', { i: 1 }),
