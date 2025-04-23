@@ -13,13 +13,12 @@ export default function checkStatus(status: number, msg: string, code?: number):
       break;
     case 401: {
       errMessage = msg || t('api.errMsg401');
-      // TODO: 401处理
+      const { oAuthLogin } = useLogin();
+      oAuthLogin();
       break;
     }
     case 403:
       errMessage = msg || t('api.errMsg403');
-      const { oAuthLogin } = useLogin();
-      oAuthLogin();
       break;
     // 404请求不存在
     case 404:
