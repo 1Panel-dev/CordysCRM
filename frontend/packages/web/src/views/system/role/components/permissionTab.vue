@@ -55,6 +55,7 @@
         v-permission="['SYSTEM_ROLE:ADD', 'SYSTEM_ROLE:UPDATE']"
         :loading="loading"
         type="primary"
+        :disabled="isDisabled"
         @click="handleSave"
       >
         {{ t(props.isNew ? 'common.create' : 'common.update') }}
@@ -89,7 +90,6 @@
   } from '@lib/shared/models/system/role';
 
   import { createRole, getPermissions, getRoleDeptTree, getRoleDetail, updateRole } from '@/api/modules';
-  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
@@ -105,7 +105,6 @@
 
   const { t } = useI18n();
   const message = useMessage();
-  const userStore = useUserStore();
 
   const dataPermission = ref('ALL');
   const dataPermissionOptions = [
@@ -136,7 +135,7 @@
   }
 
   const isDisabled = computed(() => {
-    if (userStore.userInfo.id.includes('org_admin')) {
+    if (props.activeRoleId === 'org_admin') {
       return true;
     }
     if (props.isNew) {
