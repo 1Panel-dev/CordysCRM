@@ -6,9 +6,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@JsonTypeName(value = "MULTIPLE_INPUT")
+@JsonTypeName(value = "INPUT_MULTIPLE")
 @EqualsAndHashCode(callSuper = true)
-public class MultipleInputField extends BaseField {
+public class InputMultipleField extends BaseField {
 
 
 }

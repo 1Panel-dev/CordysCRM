@@ -96,6 +96,10 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
         return value == null ? null : JSON.parseArray(value);
     }
 
+    protected String getJsonString(Object value) {
+        return value == null ? null :JSON.toJSONString(value);
+    }
+
     private boolean hasValidatorKey(List<RuleProp> rules, String validatorKey) {
         if (CollectionUtils.isEmpty(rules)) {
             return false;

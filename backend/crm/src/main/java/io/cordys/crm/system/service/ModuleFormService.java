@@ -379,12 +379,16 @@ public class ModuleFormService {
 	 */
 	private void handleInitialOption(BaseField field) {
 		if (field instanceof MemberField memberField) {
-			List<String> initialIds = memberField.getDefaultValue();
-			memberField.setInitialOptions(userExtendService.getUserOptionByIds(initialIds));
+			memberField.setInitialOptions(userExtendService.getUserOptionById(memberField.getDefaultValue()));
+		}
+		if (field instanceof MemberMultipleField memberMultipleField) {
+			memberMultipleField.setInitialOptions(userExtendService.getUserOptionByIds(memberMultipleField.getDefaultValue()));
 		}
 		if (field instanceof DepartmentField departmentField) {
-			List<String> initialIds = departmentField.getDefaultValue();
-			departmentField.setInitialOptions(departmentService.getDepartmentOptionsByIds(initialIds));
+			departmentField.setInitialOptions(departmentService.getDepartmentOptionsById(departmentField.getDefaultValue()));
+		}
+		if (field instanceof DepartmentMultipleField departmentMultipleField) {
+			departmentMultipleField.setInitialOptions(departmentService.getDepartmentOptionsByIds(departmentMultipleField.getDefaultValue()));
 		}
 	}
 

@@ -9,9 +9,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@JsonTypeName(value = "DATA_SOURCE")
+@JsonTypeName(value = "DATA_SOURCE_MULTIPLE")
 @EqualsAndHashCode(callSuper = true)
-public class DatasourceField extends BaseField {
+public class DatasourceMultipleField extends BaseField {
 	@EnumValue(enumClass = FieldSourceType.class)
 	@Schema(description = "数据源类型")
 	private String dataSourceType;

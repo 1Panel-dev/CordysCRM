@@ -319,13 +319,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         FieldTypeEnum.MEMBER_MULTIPLE,
         FieldTypeEnum.DEPARTMENT_MULTIPLE,
         FieldTypeEnum.DATA_SOURCE_MULTIPLE,
-        FieldTypeEnum.MULTIPLE_INPUT,
+        FieldTypeEnum.INPUT_MULTIPLE,
       ].includes(item.type) &&
       !value
     ) {
       return [];
     }
-    if (item.type === FieldTypeEnum.MULTIPLE_INPUT && !value) {
+    if (item.type === FieldTypeEnum.INPUT_MULTIPLE && !value) {
       return [];
     }
     if (item.multiple && !value) {

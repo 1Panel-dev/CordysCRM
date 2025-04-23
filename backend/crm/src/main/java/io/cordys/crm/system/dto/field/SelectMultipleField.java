@@ -2,14 +2,21 @@ package io.cordys.crm.system.dto.field;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.cordys.crm.system.dto.field.base.BaseField;
+import io.cordys.crm.system.dto.field.base.OptionProp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 @Data
-@JsonTypeName(value = "TEXTAREA")
+@JsonTypeName(value = "SELECT_MULTIPLE")
 @EqualsAndHashCode(callSuper = true)
-public class TextAreaField extends BaseField {
+public class SelectMultipleField extends BaseField {
+
 	@Schema(description = "默认值")
-	private String defaultValue;
+	private List<String> defaultValue;
+
+	@Schema(description = "选项值")
+	private List<OptionProp> options;
 }

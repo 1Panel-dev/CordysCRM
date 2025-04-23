@@ -100,7 +100,7 @@
     if (type === FieldTypeEnum.DIVIDER) {
       return CrmFormCreateComponents.basicComponents.divider;
     }
-    if (type === FieldTypeEnum.MULTIPLE_INPUT) {
+    if (type === FieldTypeEnum.INPUT_MULTIPLE) {
       return CrmFormCreateComponents.basicComponents.tagInput;
     }
     if (type === FieldTypeEnum.PICTURE) {
@@ -153,7 +153,7 @@
     if (
       item.type === FieldTypeEnum.SELECT_MULTIPLE ||
       item.type === FieldTypeEnum.CHECKBOX ||
-      item.type === FieldTypeEnum.MULTIPLE_INPUT ||
+      item.type === FieldTypeEnum.INPUT_MULTIPLE ||
       item.type === FieldTypeEnum.MEMBER_MULTIPLE ||
       item.type === FieldTypeEnum.DEPARTMENT_MULTIPLE ||
       item.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE ||

@@ -7,15 +7,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@JsonTypeName(value = "MEMBER")
+@JsonTypeName(value = "MEMBER_MULTIPLE")
 @EqualsAndHashCode(callSuper = true)
-public class MemberField extends BaseField {
+public class MemberMultipleField extends BaseField {
 
     @Schema(description = "默认值")
-    private String defaultValue;
+    private List<String> defaultValue = new ArrayList<>();
 
     @Schema(description = "是否当前用户")
     private Boolean hasCurrentUser;

@@ -13,12 +13,7 @@ public class ModuleFieldResolverFactory {
 
     private static final DefaultModuleFieldResolver defaultModuleFieldResolver = new DefaultModuleFieldResolver();
 
-    public static final String MULTI_SELECT = "MULTI_SELECT";
-    public static final String MULTI_MEMBER = "MULTI_MEMBER";
-    public static final String MULTI_DEPARTMENT = "MULTI_DEPARTMENT";
-
     static {
-        resolverMap.put(FieldType.SELECT.name(), new SelectResolver());
         resolverMap.put(FieldType.RADIO.name(), new RadioResolver());
 
         resolverMap.put(FieldType.CHECKBOX.name(), new CheckBoxResolver());
@@ -26,20 +21,24 @@ public class ModuleFieldResolverFactory {
         resolverMap.put(FieldType.INPUT.name(), new TextResolver());
         resolverMap.put(FieldType.TEXTAREA.name(), new TextResolver());
 
-        resolverMap.put(FieldType.MULTIPLE_INPUT.name(), new MultipleTextResolver());
+        resolverMap.put(FieldType.INPUT_MULTIPLE.name(), new TextMultipleResolver());
 
         resolverMap.put(FieldType.DATE_TIME.name(), new DateTimeResolver());
-
-        resolverMap.put(FieldType.MEMBER.name(), new MemberResolver());
 
         resolverMap.put(FieldType.INPUT_NUMBER.name(), new NumberResolver());
         resolverMap.put(FieldType.PICTURE.name(), new PictureResolver());
 
-        resolverMap.put(MULTI_SELECT, new MultipleSelectResolver());
+        resolverMap.put(FieldType.SELECT.name(), new SelectResolver());
+        resolverMap.put(FieldType.SELECT_MULTIPLE.name(), new SelectMultipleResolver());
+
+        resolverMap.put(FieldType.MEMBER.name(), new MemberResolver());
+        resolverMap.put(FieldType.MEMBER_MULTIPLE.name(), new MemberMultipleResolver());
+
         resolverMap.put(FieldType.DATA_SOURCE.name(), new DatasourceResolver());
-        resolverMap.put(MULTI_MEMBER, new MultipleMemberResolver());
+        resolverMap.put(FieldType.DATA_SOURCE_MULTIPLE.name(), new DatasourceMultipleResolver());
+
         resolverMap.put(FieldType.DEPARTMENT.name(), new DepartmentResolver());
-        resolverMap.put(MULTI_DEPARTMENT, new MultipleDepartmentResolver());
+        resolverMap.put(FieldType.DEPARTMENT_MULTIPLE.name(), new DepartmentMultipleResolver());
     }
 
     public static AbstractModuleFieldResolver getResolver(String type) {

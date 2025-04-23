@@ -146,7 +146,7 @@
     if (
       item.type === FieldTypeEnum.SELECT_MULTIPLE ||
       item.type === FieldTypeEnum.CHECKBOX ||
-      item.type === FieldTypeEnum.MULTIPLE_INPUT ||
+      item.type === FieldTypeEnum.INPUT_MULTIPLE ||
       item.type === FieldTypeEnum.MEMBER_MULTIPLE ||
       item.type === FieldTypeEnum.DEPARTMENT_MULTIPLE ||
       [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type) ||

@@ -33,17 +33,29 @@ public enum FieldType {
 	 */
 	SELECT,
 	/**
+	 * 多选下拉
+	 */
+	SELECT_MULTIPLE,
+	/**
 	 * 多值输入
 	 */
-	MULTIPLE_INPUT,
+	INPUT_MULTIPLE,
 	/**
 	 * 成员
 	 */
 	MEMBER,
 	/**
+	 * 多选成员
+	 */
+	MEMBER_MULTIPLE,
+	/**
 	 * 部门
 	 */
 	DEPARTMENT,
+	/**
+	 * 多选部门
+	 */
+	DEPARTMENT_MULTIPLE,
 	/**
 	 * 分割线
 	 */
@@ -64,4 +76,8 @@ public enum FieldType {
 	 * 数据源
 	 */
 	DATA_SOURCE,
+	/**
+	 * 多选数据源
+	 */
+	DATA_SOURCE_MULTIPLE,
 }

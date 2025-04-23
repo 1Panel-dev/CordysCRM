@@ -14,11 +14,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class SelectField extends BaseField {
 
-	@Schema(description = "是否是多选")
-	private Boolean multiple;
-
 	@Schema(description = "默认值")
-	private Object defaultValue;
+	private String defaultValue;
 
 	@Schema(description = "选项值")
 	private List<OptionProp> options;

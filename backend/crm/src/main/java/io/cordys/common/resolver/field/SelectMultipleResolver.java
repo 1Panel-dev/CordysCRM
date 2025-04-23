@@ -1,19 +1,17 @@
 package io.cordys.common.resolver.field;
 
 
-import io.cordys.common.util.JSON;
-import io.cordys.crm.system.dto.field.SelectField;
-
+import io.cordys.crm.system.dto.field.SelectMultipleField;
 
 import java.util.List;
 
 /**
  * @author jianxing
  */
-public class MultipleSelectResolver extends AbstractModuleFieldResolver<SelectField> {
+public class SelectMultipleResolver extends AbstractModuleFieldResolver<SelectMultipleField> {
 
     @Override
-    public void validate(SelectField selectField, Object value) {
+    public void validate(SelectMultipleField selectField, Object value) {
         // 校验必填
         validateRequired(selectField, value);
 
@@ -27,12 +25,12 @@ public class MultipleSelectResolver extends AbstractModuleFieldResolver<SelectFi
     }
 
     @Override
-    public String parse2String(SelectField selectField, Object value) {
-        return JSON.toJSONString(value);
+    public String parse2String(SelectMultipleField selectField, Object value) {
+        return getJsonString(value);
     }
 
     @Override
-    public Object parse2Value(SelectField selectField, String value) {
+    public Object parse2Value(SelectMultipleField selectField, String value) {
         return parse2Array(value);
     }
 }

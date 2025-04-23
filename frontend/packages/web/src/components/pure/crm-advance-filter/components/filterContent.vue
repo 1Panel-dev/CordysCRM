@@ -194,7 +194,7 @@
       ].includes(listItem.type) ||
       listItem.selectProps?.multiple ||
       listItem.cascaderProps?.multiple ||
-      (listItem.type === FieldTypeEnum.MULTIPLE_INPUT &&
+      (listItem.type === FieldTypeEnum.INPUT_MULTIPLE &&
         ![OperatorEnum.COUNT_LT, OperatorEnum.COUNT_GT].includes(listItem.operator as OperatorEnum)) ||
       (listItem.type === FieldTypeEnum.DATE_TIME && listItem.operator === OperatorEnum.BETWEEN)
     );

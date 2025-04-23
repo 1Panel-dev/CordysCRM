@@ -271,7 +271,7 @@ export const dividerDefaultFieldConfig: FormCreateField = {
 
 export const tagInputDefaultFieldConfig: FormCreateField = {
   id: '',
-  type: FieldTypeEnum.MULTIPLE_INPUT,
+  type: FieldTypeEnum.INPUT_MULTIPLE,
   icon: 'iconicon_books',
   name: 'common.tag',
   fieldWidth: 1,
@@ -424,7 +424,7 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.USER_SELECT]: [],
   [FieldTypeEnum.TIME_RANGE_PICKER]: [],
   [FieldTypeEnum.TREE_SELECT]: [],
-  [FieldTypeEnum.MULTIPLE_INPUT]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.INPUT_MULTIPLE]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.PICTURE]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.LOCATION]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.PHONE]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],

@@ -467,7 +467,7 @@
             FieldTypeEnum.PICTURE,
             FieldTypeEnum.LOCATION,
             FieldTypeEnum.PHONE,
-            FieldTypeEnum.MULTIPLE_INPUT,
+            FieldTypeEnum.INPUT_MULTIPLE,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"

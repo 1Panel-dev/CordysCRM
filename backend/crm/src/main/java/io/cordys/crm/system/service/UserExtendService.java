@@ -195,4 +195,11 @@ public class UserExtendService {
 		}
 		return userMapper.selectByIds(ids.toArray(new String[0]));
 	}
+
+	public List<User> getUserOptionById(String id) {
+		if (StringUtils.isBlank(id)) {
+			return List.of();
+		}
+		return getUserOptionByIds(List.of(id));
+	}
 }

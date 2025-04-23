@@ -148,7 +148,7 @@
     if (type === FieldTypeEnum.DIVIDER) {
       return CrmFormCreateComponents.basicComponents.divider;
     }
-    if (type === FieldTypeEnum.MULTIPLE_INPUT) {
+    if (type === FieldTypeEnum.INPUT_MULTIPLE) {
       return CrmFormCreateComponents.basicComponents.tagInput;
     }
     if (type === FieldTypeEnum.PICTURE) {

@@ -23,14 +23,18 @@ import java.util.Set;
 		@JsonSubTypes.Type(value = RadioField.class, name = "RADIO"),
 		@JsonSubTypes.Type(value = CheckBoxField.class, name = "CHECKBOX"),
 		@JsonSubTypes.Type(value = SelectField.class, name = "SELECT"),
-		@JsonSubTypes.Type(value = MultipleInputField.class, name = "MULTIPLE_INPUT"),
+		@JsonSubTypes.Type(value = SelectMultipleField.class, name = "SELECT_MULTIPLE"),
+		@JsonSubTypes.Type(value = InputMultipleField.class, name = "INPUT_MULTIPLE"),
 		@JsonSubTypes.Type(value = MemberField.class, name = "MEMBER"),
+		@JsonSubTypes.Type(value = MemberMultipleField.class, name = "MEMBER_MULTIPLE"),
 		@JsonSubTypes.Type(value = DepartmentField.class, name = "DEPARTMENT"),
+		@JsonSubTypes.Type(value = DepartmentMultipleField.class, name = "DEPARTMENT_MULTIPLE"),
 		@JsonSubTypes.Type(value = DividerField.class, name = "DIVIDER"),
 		@JsonSubTypes.Type(value = PictureField.class, name = "PICTURE"),
 		@JsonSubTypes.Type(value = LocationField.class, name = "LOCATION"),
 		@JsonSubTypes.Type(value = PhoneField.class, name = "PHONE"),
 		@JsonSubTypes.Type(value = DatasourceField.class, name = "DATA_SOURCE"),
+		@JsonSubTypes.Type(value = DatasourceMultipleField.class, name = "DATA_SOURCE_MULTIPLE"),
 })
 public abstract class BaseField {
 

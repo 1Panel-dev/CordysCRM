@@ -497,6 +497,7 @@ public class DepartmentService extends MoveNodeService {
 
     /**
      * 获取部门选项
+     *
      * @param ids 部门ID集合
      * @return 部门选项
      */
@@ -505,5 +506,12 @@ public class DepartmentService extends MoveNodeService {
             return new ArrayList<>();
         }
         return departmentMapper.selectByIds(ids.toArray(new String[0]));
+    }
+
+    public List<Department> getDepartmentOptionsById(String id) {
+        if (StringUtils.isBlank(id)) {
+            return List.of();
+        }
+        return getDepartmentOptionsByIds(List.of(id));
     }
 }

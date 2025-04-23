@@ -431,7 +431,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
 
           if (
             [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type) ||
-            field.type === FieldTypeEnum.MULTIPLE_INPUT
+            field.type === FieldTypeEnum.INPUT_MULTIPLE
           ) {
             return {
               title: field.name,
