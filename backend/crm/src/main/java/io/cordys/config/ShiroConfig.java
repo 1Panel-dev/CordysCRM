@@ -1,6 +1,7 @@
 package io.cordys.config;
 
 import io.cordys.common.security.ApiKeyFilter;
+import io.cordys.common.security.AuthFilter;
 import io.cordys.common.security.CsrfFilter;
 import io.cordys.common.security.realm.LocalRealm;
 import io.cordys.security.ShiroFilter;
@@ -59,6 +60,7 @@ public class ShiroConfig {
         // 添加自定义过滤器
         shiroFilterFactoryBean.getFilters().put("apikey", new ApiKeyFilter());
         shiroFilterFactoryBean.getFilters().put("csrf", new CsrfFilter());
+        shiroFilterFactoryBean.getFilters().put("authc", new AuthFilter());
 
         // 配置过滤器链
         Map<String, String> filterChainDefinitionMap = shiroFilterFactoryBean.getFilterChainDefinitionMap();
