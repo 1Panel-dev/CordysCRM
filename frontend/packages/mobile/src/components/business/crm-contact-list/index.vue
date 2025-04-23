@@ -1,7 +1,15 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden bg-[var(--text-n9)]">
     <div class="top-bar">
-      <van-button plain icon="plus" type="primary" size="small" @click="goCreate"> </van-button>
+      <van-button
+        v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']"
+        plain
+        icon="plus"
+        type="primary"
+        size="small"
+        @click="goCreate"
+      >
+      </van-button>
       <van-search
         v-model="keyword"
         shape="round"
@@ -37,6 +45,7 @@
                 </van-tag>
               </div>
               <CrmTextButton
+                v-permission="['CUSTOMER_MANAGEMENT_CONTACT:DELETE']"
                 icon="iconicon_delete"
                 icon-size="16px"
                 color="var(--error-red)"

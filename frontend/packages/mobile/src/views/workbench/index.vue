@@ -1,8 +1,9 @@
 <template>
   <div class="flex h-full flex-col gap-[16px] overflow-hidden">
-    <div class="flex items-center gap-[12px] bg-[var(--text-n10)] px-[12px] py-[4px]">
+    <div class="flex items-center justify-between gap-[12px] bg-[var(--text-n10)] px-[12px] py-[4px]">
       <van-image round width="40px" height="40px" :src="userStore.userInfo?.avatar" @click="goMine" />
       <van-search
+        v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT_READ', 'CLUE_MANAGEMENT_READ'])"
         v-model="keyword"
         shape="round"
         :placeholder="t('workbench.searchPlaceholder')"

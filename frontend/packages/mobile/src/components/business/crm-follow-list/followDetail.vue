@@ -11,7 +11,7 @@
         </van-cell-group>
       </div>
     </div>
-    <template #footer>
+    <template v-if="route.query.readonly?.toString() !== 'true'" #footer>
       <div class="flex items-center justify-center gap-[16px]">
         <div class="flex w-[100px] items-center">
           <CrmTextButton

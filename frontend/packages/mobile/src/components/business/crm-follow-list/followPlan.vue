@@ -62,10 +62,11 @@
     formKey: props.type,
     sourceId: props.sourceId,
     initialSourceName: props.initialSourceName,
+    readonly: props.readonly,
   });
 
-  onBeforeMount(async () => {
-    await initFollowFormConfig();
+  onBeforeMount(() => {
+    initFollowFormConfig();
   });
 
   async function handleDelete(item: FollowDetailItem) {

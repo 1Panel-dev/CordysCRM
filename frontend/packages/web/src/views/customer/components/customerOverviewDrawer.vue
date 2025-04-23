@@ -49,6 +49,7 @@
           :follow-api-key="FormDesignKeyEnum.CUSTOMER"
           :source-id="props.sourceId"
           :refresh-key="refreshKey"
+          :show-action="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
         />
         <CrmHeaderTable
           v-else-if="activeTab === 'headRecord'"
@@ -84,6 +85,7 @@
 
   import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId: string;

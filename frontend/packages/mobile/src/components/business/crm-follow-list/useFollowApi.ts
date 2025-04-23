@@ -15,6 +15,7 @@ export default function useFollowApi(followProps: {
   formKey: PlanEnumType | RecordEnumType;
   sourceId: string;
   initialSourceName?: string;
+  readonly?: boolean;
 }) {
   const router = useRouter();
 
@@ -86,6 +87,7 @@ export default function useFollowApi(followProps: {
         formKey: followProps.formKey,
         id: item.id,
         needInitDetail: 'Y',
+        readonly: String(followProps.readonly),
       },
     });
   }

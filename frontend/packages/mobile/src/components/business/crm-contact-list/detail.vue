@@ -3,7 +3,7 @@
     <div class="relative h-full bg-[var(--text-n9)] pt-[16px]">
       <CrmDescription :description="descriptions" />
     </div>
-    <template #footer>
+    <template v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:DELETE'])" #footer>
       <van-button
         type="danger"
         class="!rounded-[var(--border-radius-small)] !text-[16px]"
@@ -31,6 +31,7 @@
 
   import { deleteCustomerContact } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const route = useRoute();
   const router = useRouter();

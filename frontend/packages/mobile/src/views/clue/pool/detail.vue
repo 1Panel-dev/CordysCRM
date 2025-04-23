@@ -14,6 +14,7 @@
           v-else-if="tab.name === 'record'"
           :source-id="sourceId"
           :type="FormDesignKeyEnum.CLUE_POOL"
+          readonly
         />
         <CrmHeaderList v-else-if="tab.name === 'header'" :source-id="sourceId" :load-list-api="getClueHeaderList" />
       </van-tab>

@@ -20,12 +20,11 @@
         <div class="text-[12px] text-[var(--text-n1)]">{{ desc.value }}</div>
       </div>
     </div>
-    <van-divider v-if="props.actions?.length" class="!m-0" />
-    <div v-if="props.actions?.length" class="crm-list-common-item-actions">
+    <van-divider v-if="actionList?.length" class="!m-0" />
+    <div v-if="actionList?.length" class="crm-list-common-item-actions">
       <CrmTextButton
-        v-for="btn of props.actions"
+        v-for="btn of actionList"
         :key="btn.label"
-        v-permission="btn.permission"
         :text="btn.label"
         :icon="btn.icon"
         @click="btn.action(item)"
@@ -41,11 +40,13 @@
 
   import { clueBaseSteps } from '@/config/clue';
   import { lastOpportunitySteps, opportunityResultSteps } from '@/config/opportunity';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   export interface CrmListCommonItemActionsItem {
     label: string;
     icon: string;
     permission: string[];
+    allPermission?: boolean;
     action: (data: any) => void;
   }
   const props = defineProps<{
@@ -63,6 +64,12 @@
       (item) => item.value === stage
     ) as Record<string, any>;
   }
+
+  const actionList = computed(() => {
+    return props.actions?.filter((e) =>
+      e.allPermission ? hasAllPermission(e.permission) : hasAnyPermission(e.permission)
+    );
+  });
 </script>
 
 <style lang="less" scoped>

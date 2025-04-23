@@ -63,6 +63,7 @@
   import { getClueHeaderList } from '@/api/modules';
   import { clueBaseSteps } from '@/config/clue';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const route = useRoute();
   const { t } = useI18n();
@@ -101,8 +102,10 @@
 
   const currentStatus = ref<string>(ClueStatusEnum.NEW);
   const lastOptStage = ref<string>(ClueStatusEnum.NEW);
-  const readonly = computed(() =>
-    ([StageResultEnum.FAIL, StageResultEnum.SUCCESS] as string[]).includes(currentStatus.value)
+  const readonly = computed(
+    () =>
+      ([StageResultEnum.FAIL, StageResultEnum.SUCCESS] as string[]).includes(currentStatus.value) ||
+      !hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])
   );
 
   const workflowList = [

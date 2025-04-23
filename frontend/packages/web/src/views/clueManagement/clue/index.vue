@@ -382,11 +382,13 @@
                     label: t('clue.convertToCustomer'),
                     key: 'convertToCustomer',
                     permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+                    allPermission: true,
                   },
                   {
                     label: t('clue.convertToOpportunity'),
                     key: 'convertToOpportunity',
                     permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
+                    allPermission: true,
                   },
                   ...([CustomerSearchTypeEnum.DEPARTMENT, CustomerSearchTypeEnum.SELF].includes(activeTab.value) ||
                   [StageResultEnum.FAIL, StageResultEnum.SUCCESS].includes(row.stage as StageResultEnum)

@@ -89,6 +89,7 @@
   import { clueBaseSteps } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     detail?: ClueListItem;
@@ -194,7 +195,10 @@
   const currentStatus = ref<string>(ClueStatusEnum.NEW);
   const lastStage = ref<string>(ClueStatusEnum.NEW);
   const showAction = computed(
-    () => currentStatus.value !== StageResultEnum.FAIL && currentStatus.value !== StageResultEnum.SUCCESS
+    () =>
+      currentStatus.value !== StageResultEnum.FAIL &&
+      currentStatus.value !== StageResultEnum.SUCCESS &&
+      hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])
   );
   const workflowList: SelectOption[] = [
     ...clueBaseSteps,

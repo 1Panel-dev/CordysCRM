@@ -1,7 +1,15 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden">
     <div class="flex items-center gap-[12px] bg-[var(--text-n10)] p-[8px_16px]">
-      <van-button plain icon="plus" type="primary" size="small" @click="goCreate"> </van-button>
+      <van-button
+        v-permission="['CLUE_MANAGEMENT:ADD']"
+        plain
+        icon="plus"
+        type="primary"
+        size="small"
+        @click="goCreate"
+      >
+      </van-button>
       <van-search
         v-model="keyword"
         shape="round"
@@ -45,7 +53,7 @@
     <van-action-sheet
       v-model:show="moreActionShow"
       :actions="moreActions"
-      :cancel-text="t('common.delete')"
+      :cancel-text="hasAnyPermission(['CLUE_MANAGEMENT:DELETE']) ? t('common.delete') : ''"
       @cancel="handleDelete"
     />
   </div>
@@ -65,6 +73,7 @@
 
   import { deleteClue, getClueList } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import { ClueRouteEnum, CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
@@ -162,6 +171,39 @@
     });
   }
 
+  const moreActions: ActionSheetAction[] = [
+    {
+      name: t('common.edit'),
+      permission: ['CLUE_MANAGEMENT:UPDATE'],
+      callback: () => {
+        handleEdit(activeClueId.value);
+      },
+    },
+    {
+      name: t('common.transfer'),
+      permission: ['CLUE_MANAGEMENT:UPDATE'],
+      callback: () => {
+        handleTransfer(activeClueId.value);
+      },
+    },
+    {
+      name: t('common.convertToOpportunity'),
+      permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
+      allPermission: true,
+      callback: () => {
+        convertTo(activeClueId.value, FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS);
+      },
+    },
+    {
+      name: t('common.convertToCustomer'),
+      permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+      allPermission: true,
+      callback: () => {
+        convertTo(activeClueId.value, FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER);
+      },
+    },
+  ].filter((e) => (e.allPermission ? hasAllPermission(e.permission) : hasAnyPermission(e.permission)));
+
   const actions = computed(() => {
     return (row: ClueListItem) => {
       if (row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)) return [];
@@ -169,7 +211,7 @@
         {
           label: t('common.edit'),
           icon: 'iconicon_handwritten_signature',
-          permission: [],
+          permission: ['CLUE_MANAGEMENT:UPDATE'],
           action: (item: ClueListItem) => {
             handleEdit(item.id);
           },
@@ -177,7 +219,7 @@
         {
           label: t('common.transfer'),
           icon: 'iconicon_jump',
-          permission: [],
+          permission: ['CLUE_MANAGEMENT:UPDATE'],
           action: (item: ClueListItem) => {
             handleTransfer(item.id);
           },
@@ -185,50 +227,28 @@
         {
           label: t('common.convertToOpportunity'),
           icon: 'iconicon_edit1',
-          permission: [],
+          permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
+          allPermission: true,
           action: (item: ClueListItem) => {
             convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS);
           },
         },
-        {
-          label: t('common.more'),
-          icon: 'iconicon_ellipsis',
-          permission: [],
-          action: (item: ClueListItem) => {
-            moreActionShow.value = true;
-            activeClue.value = item;
-          },
-        },
+        ...(moreActions.length
+          ? [
+              {
+                label: t('common.more'),
+                icon: 'iconicon_ellipsis',
+                permission: [],
+                action: (item: ClueListItem) => {
+                  moreActionShow.value = true;
+                  activeClue.value = item;
+                },
+              },
+            ]
+          : []),
       ];
     };
   });
-
-  const moreActions: ActionSheetAction[] = [
-    {
-      name: t('common.edit'),
-      callback: () => {
-        handleEdit(activeClueId.value);
-      },
-    },
-    {
-      name: t('common.transfer'),
-      callback: () => {
-        handleTransfer(activeClueId.value);
-      },
-    },
-    {
-      name: t('common.convertToOpportunity'),
-      callback: () => {
-        convertTo(activeClueId.value, FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS);
-      },
-    },
-    {
-      name: t('common.convertToCustomer'),
-      callback: () => {
-        convertTo(activeClueId.value, FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER);
-      },
-    },
-  ];
 
   function search() {
     crmListRef.value?.loadList(true);

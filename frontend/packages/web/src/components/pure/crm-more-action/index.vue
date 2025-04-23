@@ -44,7 +44,7 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
-  import { hasAnyPermission } from '@/utils/permission';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import type { ActionsItem } from './type';
 
@@ -182,7 +182,9 @@
   }
 
   const moreOptions = computed(() => {
-    const filtered = props.options.filter((e) => e.type === 'divider' || hasAnyPermission(e.permission));
+    const filtered = props.options.filter((e) =>
+      e.type === 'divider' || e.allPermission ? hasAllPermission(e.permission) : hasAnyPermission(e.permission)
+    );
     return cleanDividers(filtered);
   });
 

@@ -139,7 +139,7 @@
     {
       label: t('common.pick'),
       icon: 'iconicon_user_add',
-      permission: [],
+      permission: ['CLUE_MANAGEMENT_POOL:PICK'],
       action: (item: CluePoolListItem) => {
         handlePick(item.id);
       },
@@ -147,7 +147,7 @@
     {
       label: t('common.distribute'),
       icon: 'iconicon_swap',
-      permission: [],
+      permission: ['CLUE_MANAGEMENT_POOL:ASSIGN'],
       action: (item: CluePoolListItem) => {
         handleDistribute(item.id);
       },
@@ -155,7 +155,7 @@
     {
       label: t('common.delete'),
       icon: 'iconicon_delete',
-      permission: [],
+      permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
       action: (item: CluePoolListItem) => {
         handleDelete(item.id);
       },

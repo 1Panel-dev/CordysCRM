@@ -17,6 +17,7 @@
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER"
           :initial-source-name="sourceName"
+          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
@@ -24,6 +25,7 @@
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER"
           :initial-source-name="sourceName"
+          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
         />
         <relation v-else-if="tab.name === 'relation'" ref="relationListRef" :source-id="sourceId" />
         <collaborator v-else-if="tab.name === 'collaborator'" ref="collaboratorListRef" :source-id="sourceId" />
@@ -50,6 +52,7 @@
 
   import { getCustomerHeaderList } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { CustomerRouteEnum } from '@/enums/routeEnum';
 
