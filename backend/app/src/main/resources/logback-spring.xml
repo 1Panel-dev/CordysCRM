@@ -173,4 +173,8 @@
         <appender-ref ref="console"/>
     </logger>
 
+    <!-- 容器日志记录调整 -->
+    <logger name="org.eclipse.jetty.ee10.servlet.ServletChannel" level="ERROR"/>
+
+
 </configuration>

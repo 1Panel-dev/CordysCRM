@@ -192,7 +192,7 @@ public class SseService {
      * @param clientId 客户端 ID
      */
     private void sendHeartbeat(SseEmitterWrapper wrapper, String clientId) {
-        wrapper.sendEvent(SseEmitter.event().comment(" ".repeat(1024 * 1024))
+        wrapper.sendEvent(SseEmitter.event()
                 .id(clientId)
                 .name("SYSTEM_HEARTBEAT")
                 .reconnectTime(10000)

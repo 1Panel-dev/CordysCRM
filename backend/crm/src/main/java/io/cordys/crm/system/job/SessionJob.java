@@ -35,6 +35,9 @@ public class SessionJob {
      * <p>
      * 该方法使用 {@link QuartzScheduled} 注解定时执行，并使用 {@link ScanOptions} 扫描 Redis 中的会话。
      * </p>
+     *
+     * spring.session.timeout=30d
+     * server.servlet.session.timeout=30d
      */
     @QuartzScheduled(cron = "0 2 0 * * ?")
     public void cleanSession() {
