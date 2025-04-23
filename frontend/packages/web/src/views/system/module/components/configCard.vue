@@ -110,7 +110,7 @@
       icon: 'iconicon_customer',
       groupList: [
         {
-          label: t('module.newForm'),
+          label: t('module.customerFormSetting'),
           key: 'newForm',
         },
         {
@@ -134,7 +134,7 @@
       icon: 'iconicon_clue',
       groupList: [
         {
-          label: t('module.newForm'),
+          label: t('module.clueFormSetting'),
           key: 'newForm',
         },
         {
@@ -155,7 +155,7 @@
       enable: true,
       groupList: [
         {
-          label: t('module.newForm'),
+          label: t('module.opportunityFormSetting'),
           key: 'newForm',
         },
         {
@@ -178,7 +178,7 @@
       icon: 'iconicon_product',
       groupList: [
         {
-          label: t('module.newForm'),
+          label: t('module.productFormSetting'),
           key: 'newForm',
         },
       ],

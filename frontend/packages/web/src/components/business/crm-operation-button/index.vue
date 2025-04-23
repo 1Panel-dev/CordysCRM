@@ -1,6 +1,6 @@
 <template>
   <!-- 按钮组 -->
-  <CrmButtonGroup :list="props.groupList" @select="handleSelect" @cancel="emit('cancel')">
+  <CrmButtonGroup :list="buttonGroupList" @select="handleSelect" @cancel="emit('cancel')">
     <template v-if="props.moreList?.length" #more>
       <!-- 更多操作 -->
       <CrmMoreAction :options="props.moreList" @select="handleMoreSelect">
@@ -23,6 +23,8 @@
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
 
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
+
   const props = defineProps<{
     groupList: ActionsItem[]; // 按钮组数据
     moreList?: ActionsItem[]; // 更多操作下拉选项
@@ -44,4 +46,17 @@
   const hasPopContentSlot = computed(() => {
     return props.groupList.filter((e) => e.popSlotContent) as ActionsItem & { popSlotContent: string; key: string }[];
   });
+
+  const hasPermissionMore = computed(
+    () =>
+      (props.moreList || []).filter((e) =>
+        e.allPermission ? hasAllPermission(e.permission) : hasAnyPermission(e.permission)
+      ).length > 0
+  );
+
+  const buttonGroupList = computed(() =>
+    props.groupList.filter((e) =>
+      hasPermissionMore.value ? hasAllPermission(e.permission) : hasAllPermission(e.permission) && e.slotName !== 'more'
+    )
+  );
 </script>

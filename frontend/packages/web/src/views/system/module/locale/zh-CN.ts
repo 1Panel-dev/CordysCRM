@@ -5,7 +5,6 @@ export default {
   'module.businessManagement': '商机',
   'module.dataManagement': '数据',
   'module.productManagement': '产品',
-  'module.newForm': '新建表单设置',
   'module.newContactForm': '联系人表单设置',
   'module.autoRecycle': '自动回收',
   'module.expirationReminder': '到期提醒',
@@ -62,4 +61,8 @@ export default {
   'module.personal.info': '个人信息',
   'module.personal.plan': '我的计划',
   'module.logout': '退出系统',
+  'module.customerFormSetting': '客户表单设置',
+  'module.clueFormSetting': '线索表单设置',
+  'module.opportunityFormSetting': '商机表单设置',
+  'module.productFormSetting': '产品表单设置',
 };

@@ -5,7 +5,6 @@ export default {
   'module.businessManagement': 'Business',
   'module.dataManagement': 'Data',
   'module.productManagement': 'Product',
-  'module.newForm': 'New form settings',
   'module.newContactForm': 'Contact form settings',
   'module.autoRecycle': 'Auto recycle',
   'module.expirationReminder': 'Expiration reminder',
@@ -64,4 +63,8 @@ export default {
   'module.personal.info': 'Personal information',
   'module.personal.plan': 'My plan',
   'module.logout': 'Exit',
+  'module.customerFormSetting': 'Customer form set',
+  'module.clueFormSetting': 'Clue form set',
+  'module.opportunityFormSetting': 'Business opportunity form set',
+  'module.productFormSetting': 'Product form set',
 };

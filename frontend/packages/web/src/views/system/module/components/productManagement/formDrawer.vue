@@ -14,7 +14,7 @@
     required: true,
   });
 
-  const title = ref(t('productManagement.newProduct'));
+  const title = ref(t('module.productFormSetting'));
 </script>
 
 <style lang="less" scoped></style>

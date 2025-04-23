@@ -14,7 +14,7 @@
     required: true,
   });
 
-  const title = ref(t('clueManagement.newClue'));
+  const title = ref(t('module.clueFormSetting'));
 </script>
 
 <style lang="less" scoped></style>

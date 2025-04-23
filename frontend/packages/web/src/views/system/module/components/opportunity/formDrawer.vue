@@ -14,7 +14,7 @@
     required: true,
   });
 
-  const title = ref(t('opportunity.newOpportunity'));
+  const title = ref(t('module.opportunityFormSetting'));
 </script>
 
 <style lang="less" scoped></style>

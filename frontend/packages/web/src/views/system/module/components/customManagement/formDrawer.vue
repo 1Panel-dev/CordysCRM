@@ -14,7 +14,7 @@
     required: true,
   });
 
-  const title = ref(t('customManagement.newCustomer'));
+  const title = ref(t('module.customerFormSetting'));
 </script>
 
 <style lang="less" scoped></style>

@@ -63,7 +63,7 @@
         </div>
       </VueDraggable>
     </n-scrollbar>
-    <div class="crm-form-design--composition-footer" :class="props.formConfig.optBtnPos">
+    <!-- <div class="crm-form-design--composition-footer" :class="props.formConfig.optBtnPos">
       <n-button v-if="formConfig.optBtnContent[0].enable" type="primary">
         {{ formConfig.optBtnContent[0].text }}
       </n-button>
@@ -74,12 +74,12 @@
         {{ formConfig.optBtnContent[2].text }}
       </n-button>
       <div class="crm-form-design--composition-footer-mask"></div>
-    </div>
+    </div> -->
   </n-form>
 </template>
 
 <script setup lang="ts">
-  import { NButton, NForm, NScrollbar, NTooltip } from 'naive-ui';
+  import { NForm, NScrollbar, NTooltip } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
   import { VueDraggable } from 'vue-draggable-plus';
 
@@ -292,16 +292,16 @@
         line-height: 22px;
       }
     }
-    .crm-form-design--composition-footer {
-      @apply relative flex w-full;
+    // .crm-form-design--composition-footer {
+    //   @apply relative flex w-full;
 
-      padding: 12px 0;
-      border-top: 1px solid var(--text-n8);
-      gap: 8px;
-      .crm-form-design--composition-footer-mask {
-        @apply absolute bottom-0 left-0 right-0 top-0 z-10 bg-transparent;
-      }
-    }
+    //   padding: 12px 0;
+    //   border-top: 1px solid var(--text-n8);
+    //   gap: 8px;
+    //   .crm-form-design--composition-footer-mask {
+    //     @apply absolute bottom-0 left-0 right-0 top-0 z-10 bg-transparent;
+    //   }
+    // }
   }
   .crm-form-design--composition-item-tools-tip {
     padding: 0 4px !important;
