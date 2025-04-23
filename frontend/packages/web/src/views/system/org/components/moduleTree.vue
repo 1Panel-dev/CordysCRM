@@ -9,13 +9,19 @@
     </n-input>
     <n-tooltip v-if="hasAnyPermission(['SYS_ORGANIZATION:ADD'])" trigger="hover" :delay="300">
       <template #trigger>
-        <n-button type="primary" ghost class="n-btn-outline-primary px-[7px]" @click="addDepart">
+        <n-button
+          type="primary"
+          :disabled="props.isSyncFromThirdChecked"
+          ghost
+          class="n-btn-outline-primary px-[7px]"
+          @click="addDepart"
+        >
           <template #icon>
             <n-icon><Add /></n-icon>
           </template>
         </n-button>
       </template>
-      {{ t('org.addDepartment') }}
+      {{ props.isSyncFromThirdChecked ? t('org.checkSyncUserHoverTip') : t('org.addDepartment') }}
     </n-tooltip>
   </div>
   <CrmTree
@@ -76,6 +82,10 @@
   const Message = useMessage();
 
   const { t } = useI18n();
+
+  const props = defineProps<{
+    isSyncFromThirdChecked: boolean;
+  }>();
 
   const emit = defineEmits<{
     (e: 'selectNode', _selectedKeys: Array<string | number>, offspringIds: string[]): void;
@@ -240,23 +250,25 @@
     if (hasAnyPermission(['SYS_ORGANIZATION:ADD'])) {
       const { option } = infoProps;
       // 额外的节点
-      return h(
-        NButton,
-        {
-          type: 'primary',
-          size: 'small',
-          bordered: false,
-          class: `crm-suffix-btn !p-[4px] ml-[4px] h-[24px] h-[24px]  mr-[4px] rounded`,
-          onClick: () => handleAdd(option),
-        },
-        () => {
-          return h(CrmIcon, {
-            size: 18,
-            type: 'iconicon_add',
-            class: `text-[var(--primary-8)] hover:text-[var(--primary-8)]`,
-          });
-        }
-      );
+      return props.isSyncFromThirdChecked
+        ? null
+        : h(
+            NButton,
+            {
+              type: 'primary',
+              size: 'small',
+              bordered: false,
+              class: `crm-suffix-btn !p-[4px] ml-[4px] h-[24px] h-[24px]  mr-[4px] rounded`,
+              onClick: () => handleAdd(option),
+            },
+            () => {
+              return h(CrmIcon, {
+                size: 18,
+                type: 'iconicon_add',
+                class: `text-[var(--primary-8)] hover:text-[var(--primary-8)]`,
+              });
+            }
+          );
     }
     return null;
   }

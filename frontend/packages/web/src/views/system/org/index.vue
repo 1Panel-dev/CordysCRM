@@ -3,11 +3,20 @@
     <CrmSplitPanel :max="0.5" :min="0.2" :default-size="0.2">
       <template #1>
         <div class="org-tree-wrapper">
-          <OrgModuleTree ref="orgModuleTreeRef" @select-node="selectNode" />
+          <OrgModuleTree
+            ref="orgModuleTreeRef"
+            :is-sync-from-third-checked="isSyncFromThirdChecked"
+            @select-node="selectNode"
+          />
         </div>
       </template>
       <template #2>
-        <OrgTable :active-node="activeNodeId" :offspring-ids="offspringIds" @add-success="addSuccess" />
+        <OrgTable
+          :is-sync-from-third-checked="isSyncFromThirdChecked"
+          :active-node="activeNodeId"
+          :offspring-ids="offspringIds"
+          @add-success="addSuccess"
+        />
       </template>
     </CrmSplitPanel>
   </CrmCard>
@@ -18,6 +27,8 @@
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
   import OrgModuleTree from './components/moduleTree.vue';
   import OrgTable from '@/views/system/org/components/orgTable.vue';
+
+  import { checkSyncUserFromThird } from '@/api/modules';
 
   const activeNodeId = ref<string | number>('');
   const offspringIds = ref<string[]>([]);
@@ -31,6 +42,20 @@
   function addSuccess() {
     orgModuleTreeRef.value?.initTree();
   }
+
+  const isSyncFromThirdChecked = ref(false);
+  async function initCheckSyncType() {
+    try {
+      isSyncFromThirdChecked.value = await checkSyncUserFromThird();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  onBeforeMount(() => {
+    initCheckSyncType();
+  });
 </script>
 
 <style lang="less" scoped>

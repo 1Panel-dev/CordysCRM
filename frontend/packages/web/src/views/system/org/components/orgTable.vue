@@ -16,7 +16,7 @@
             <template #trigger>
               <n-button
                 v-permission="['SYS_ORGANIZATION:ADD']"
-                :disabled="isSyncFromThirdChecked"
+                :disabled="props.isSyncFromThirdChecked"
                 class="mr-[12px]"
                 type="primary"
                 @click="addOrEditMember(false)"
@@ -111,7 +111,6 @@
   import {
     batchResetUserPassword,
     batchToggleStatusUser,
-    checkSyncUserFromThird,
     deleteUser,
     deleteUserCheck,
     getConfigSynchronization,
@@ -135,6 +134,7 @@
   const props = defineProps<{
     activeNode: string | number;
     offspringIds: string[];
+    isSyncFromThirdChecked: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -217,8 +217,6 @@
 
   const renderSyncResult = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
 
-  const isSyncFromThirdChecked = ref(false);
-
   const moreActions = computed(() => {
     return [
       {
@@ -229,8 +227,8 @@
       {
         label: t('common.import'),
         key: 'import',
-        tooltipContent: isSyncFromThirdChecked.value ? t('org.checkSyncUserHoverTip') : '',
-        disabled: isSyncFromThirdChecked.value,
+        tooltipContent: props.isSyncFromThirdChecked ? t('org.checkSyncUserHoverTip') : '',
+        disabled: props.isSyncFromThirdChecked,
         permission: ['SYS_ORGANIZATION:IMPORT'],
       },
       // TOTO  不上
@@ -240,15 +238,6 @@
       // },
     ];
   });
-
-  async function initCheckSyncType() {
-    try {
-      isSyncFromThirdChecked.value = await checkSyncUserFromThird();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
 
   // 初始化企业微信配置
   async function initIntegration() {
@@ -920,7 +909,6 @@
     if (isHasConfigPermission.value) {
       initIntegration();
     }
-    initCheckSyncType();
   });
 
   onMounted(() => {
