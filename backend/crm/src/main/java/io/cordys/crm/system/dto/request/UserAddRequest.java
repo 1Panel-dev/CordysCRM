@@ -44,6 +44,9 @@ public class UserAddRequest {
     @Schema(description = "直属上级")
     private String supervisorId;
 
+    @Schema(description = "职位")
+    private String position;
+
     @Schema(description = "工作城市")
     private String workCity;
 

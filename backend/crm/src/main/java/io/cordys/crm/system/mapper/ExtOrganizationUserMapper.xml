@@ -30,7 +30,8 @@
             sou.create_time,
             sou.update_time,
             sou.create_user,
-            sou.update_user
+            sou.update_user,
+            sou.position
         FROM
             sys_organization_user sou
                 INNER JOIN sys_user su ON sou.user_id = su.id
