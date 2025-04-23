@@ -78,12 +78,13 @@
 </template>
 
 <script setup lang="ts">
-  import { useRouter } from 'vue-router';
+  import { RouteLocationNormalizedGeneric, useRouter } from 'vue-router';
   import { NDivider, NLayoutSider, NMenu, NPopover, NScrollbar, NTag, NText, NTooltip } from 'naive-ui';
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { mapTree } from '@lib/shared/method';
+  import { listenerRouteChange } from '@lib/shared/method/route-listener';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
@@ -188,13 +189,24 @@
     }) as unknown as MenuOption[];
   });
 
-  onBeforeMount(() => {
-    if (router.currentRoute.value.meta.isTopMenu || router.currentRoute.value.meta.hideChildrenInMenu) {
-      menuValue.value = router.currentRoute.value.matched[0].name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+  function setMenuValue(route: RouteLocationNormalizedGeneric) {
+    if (route.meta.isTopMenu || route.meta.hideChildrenInMenu) {
+      menuValue.value = route.matched[0].name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
     } else {
-      menuValue.value = router.currentRoute.value.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
+      menuValue.value = route.name as (typeof AppRouteEnum)[keyof typeof AppRouteEnum];
     }
+  }
+
+  onBeforeMount(() => {
+    setMenuValue(router.currentRoute.value);
   });
+
+  /**
+   * 监听路由变化，切换菜单选中
+   */
+  listenerRouteChange((newRoute) => {
+    setMenuValue(newRoute);
+  }, true);
 
   watch(
     () => appStore.orgId,

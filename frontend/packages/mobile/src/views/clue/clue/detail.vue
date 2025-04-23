@@ -65,6 +65,11 @@
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { hasAnyPermission } from '@/utils/permission';
 
+  import { ClueRouteEnum } from '@/enums/routeEnum';
+
+  defineOptions({
+    name: ClueRouteEnum.CLUE_DETAIL,
+  });
   const route = useRoute();
   const { t } = useI18n();
 

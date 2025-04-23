@@ -36,6 +36,11 @@
   import { getCustomerHeaderList } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
+  import { CustomerRouteEnum } from '@/enums/routeEnum';
+
+  defineOptions({
+    name: CustomerRouteEnum.CUSTOMER_OPENSEA_DETAIL,
+  });
   const route = useRoute();
   const { t } = useI18n();
 

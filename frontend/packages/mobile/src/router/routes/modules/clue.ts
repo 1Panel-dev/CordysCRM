@@ -39,6 +39,7 @@ const clue: AppRouteRecordRaw = {
       component: () => import('@/views/clue/pool/detail.vue'),
       meta: {
         permissions: ['CLUE_MANAGEMENT_POOL:READ'],
+        isCache: true,
         depth: 2,
       },
     },

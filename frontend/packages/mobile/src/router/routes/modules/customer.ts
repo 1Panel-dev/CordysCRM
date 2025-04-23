@@ -57,6 +57,7 @@ const customer: AppRouteRecordRaw = {
       component: () => import('@/views/customer/openSea/detail.vue'),
       meta: {
         depth: 2,
+        isCache: true,
         permissions: ['CUSTOMER_MANAGEMENT_POOL:READ'],
       },
     },

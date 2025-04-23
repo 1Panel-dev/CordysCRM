@@ -36,6 +36,11 @@
   import { getClueHeaderList } from '@/api/modules';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
+  import { ClueRouteEnum } from '@/enums/routeEnum';
+
+  defineOptions({
+    name: ClueRouteEnum.CLUE_POOL_DETAIL,
+  });
   const route = useRoute();
   const { t } = useI18n();
 
