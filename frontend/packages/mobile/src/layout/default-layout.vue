@@ -166,15 +166,20 @@
   /* 禁用动画时 */
   .transition-none-enter-active,
   .transition-none-leave-active {
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 999;
     transition: none;
   }
 </style>
 
 <style lang="less" scoped>
   .page {
-    @apply flex flex-col;
+    @apply flex h-full flex-col;
 
-    height: 100vh;
     background-color: var(--text-n9);
     .page-content {
       @apply relative flex-1 overflow-hidden;

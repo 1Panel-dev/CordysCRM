@@ -20,11 +20,11 @@
   onBeforeMount(async () => {
     const loginStatus = await userStore.checkIsLogin();
     if (loginStatus) {
-      router.push({
+      router.replace({
         name: AppRouteEnum.WORKBENCH,
       });
     } else if (import.meta.env.DEV) {
-      router.push({
+      router.replace({
         name: AppRouteEnum.WORKBENCH,
       });
     } else {
