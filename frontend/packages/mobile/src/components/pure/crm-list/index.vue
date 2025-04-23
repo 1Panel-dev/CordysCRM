@@ -35,7 +35,7 @@
     errorText?: string;
     isReturnNativeResponse?: boolean;
     loadListApi?: (...args: any) => Promise<CommonList<Record<string, any>> | Record<string, any>>;
-    transform?: (item: Record<string, any>, optionMap?: Record<string, any[]>) => Record<string, any>;
+    transform?: (item: any, optionMap?: Record<string, any[]>) => Record<string, any>;
   }>();
 
   const { t } = useI18n();

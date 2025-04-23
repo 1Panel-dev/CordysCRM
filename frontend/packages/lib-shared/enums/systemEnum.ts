@@ -35,4 +35,6 @@ export enum OperationTypeEnum {
   EXPORT = 'EXPORT',
   SYNC = 'SYNC',
   MOVE_TO_CUSTOMER_POOL = 'MOVE_TO_CUSTOMER_POOL',
+  PICK = 'PICK',
+  ASSIGN = 'ASSIGN',
 }

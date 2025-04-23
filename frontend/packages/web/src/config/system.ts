@@ -32,6 +32,14 @@ export const logTypeOption = [
     value: OperationTypeEnum.MOVE_TO_CUSTOMER_POOL,
     label: t('customer.moveToOpenSea'),
   },
+  {
+    value: OperationTypeEnum.PICK,
+    label: t('common.claim'),
+  },
+  {
+    value: OperationTypeEnum.ASSIGN,
+    label: t('customer.distribute'),
+  },
 ];
 
 export default {};

@@ -13,6 +13,7 @@
         sourceId: props.sourceId,
       }"
       :load-list-api="followRecordApiMap.list[props.type]"
+      :transform="transformField"
     >
       <template #item="{ item }">
         <listItem
@@ -29,7 +30,6 @@
 </template>
 
 <script setup lang="ts">
-  import { useRouter } from 'vue-router';
   import { showSuccessToast } from 'vant';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -40,7 +40,7 @@
 
   import { followRecordApiMap, RecordEnumType } from '@/config/follow';
 
-  import { CommonRouteEnum } from '@/enums/routeEnum';
+  import useFollowApi from './useFollowApi';
 
   const props = defineProps<{
     type: RecordEnumType;
@@ -51,9 +51,19 @@
 
   const { t } = useI18n();
   const keyword = ref('');
-  const router = useRouter();
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
+
+  const { transformField, initFollowFormConfig, goCreate, handleEdit, goDetail } = useFollowApi({
+    type: 'followRecord',
+    formKey: props.type,
+    sourceId: props.sourceId,
+    initialSourceName: props.initialSourceName,
+  });
+
+  onBeforeMount(async () => {
+    await initFollowFormConfig();
+  });
 
   async function handleDelete(item: FollowDetailItem) {
     try {
@@ -64,38 +74,6 @@
       // eslint-disable-next-line no-console
       console.log(error);
     }
-  }
-
-  function goCreate() {
-    router.push({
-      name: CommonRouteEnum.FORM_CREATE,
-      query: {
-        formKey: props.type,
-        id: props.sourceId,
-        initialSourceName: props.initialSourceName,
-      },
-    });
-  }
-
-  function handleEdit(item: FollowDetailItem) {
-    router.push({
-      name: CommonRouteEnum.FORM_CREATE,
-      query: {
-        formKey: props.type,
-        id: item.id,
-        needInitDetail: 'Y',
-      },
-    });
-  }
-  function goDetail(item: FollowDetailItem) {
-    router.push({
-      name: CommonRouteEnum.FOLLOW_DETAIL,
-      query: {
-        formKey: props.type,
-        id: item.id,
-        needInitDetail: 'Y',
-      },
-    });
   }
 
   defineExpose({

@@ -36,10 +36,14 @@ export const opportunityResultSteps = [
   {
     value: StageResultEnum.SUCCESS,
     label: t('common.success'),
+    bgColor: 'var(--success-5)',
+    color: 'var(--success-green)',
   },
   {
     value: StageResultEnum.FAIL,
     label: t('common.fail'),
+    bgColor: 'var(--error-5)',
+    color: 'var(--error-red)',
   },
 ];
 

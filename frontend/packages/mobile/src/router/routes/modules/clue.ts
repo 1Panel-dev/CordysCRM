@@ -30,6 +30,7 @@ const clue: AppRouteRecordRaw = {
       meta: {
         permissions: ['CLUE_MANAGEMENT:READ'],
         depth: 2,
+        isCache: true,
       },
     },
     {

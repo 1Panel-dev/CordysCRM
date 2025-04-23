@@ -44,7 +44,7 @@
           <n-form-item
             require-mark-placement="left"
             label-placement="left"
-            path="userId"
+            path="scopeIds"
             :label="t('opportunity.members')"
           >
             <CrmUserTagSelector v-model:selected-list="form.scopeIds" :member-types="memberTypes" />

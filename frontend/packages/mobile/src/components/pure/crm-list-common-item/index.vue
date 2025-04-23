@@ -2,14 +2,12 @@
   <div class="crm-list-common-item" @click="emit('click', item)">
     <div class="crm-list-common-item-header">
       <div class="text-[14px] font-semibold text-[var(--text-n1)]">{{ props.item.name }}</div>
-      <van-tag
-        v-if="item.tag"
-        :color="item.tagBgColor"
-        :text-color="item.tagColor"
-        class="rounded-[var(--border-radius-small)] !p-[2px_6px]"
-      >
-        {{ item.tag }}
-      </van-tag>
+      <CrmTag
+        v-if="item.stage"
+        :bg-color="getStage(item.stage)?.bgColor ?? 'var(--info-5)'"
+        :tag="t(getStage(item.stage)?.label)"
+        :text-color="getStage(item.stage)?.color ?? 'var(--info-blue)'"
+      />
     </div>
     <div class="crm-list-common-item-content">
       <div
@@ -37,7 +35,12 @@
 </template>
 
 <script setup lang="ts">
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
+
+  import { clueBaseSteps } from '@/config/clue';
+  import { lastOpportunitySteps, opportunityResultSteps } from '@/config/opportunity';
 
   export interface CrmListCommonItemActionsItem {
     label: string;
@@ -52,6 +55,14 @@
   const emit = defineEmits<{
     (e: 'click', item: Record<string, any>): void;
   }>();
+
+  const { t } = useI18n();
+
+  function getStage(stage: string): Record<string, any> {
+    return [...clueBaseSteps, ...lastOpportunitySteps, ...opportunityResultSteps].find(
+      (item) => item.value === stage
+    ) as Record<string, any>;
+  }
 </script>
 
 <style lang="less" scoped>

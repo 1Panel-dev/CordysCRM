@@ -25,15 +25,19 @@
         </div>
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
+          ref="recordListRef"
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_CLUE"
           :readonly="readonly"
+          :initial-source-name="sourceName"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
+          ref="planListRef"
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_PLAN_CLUE"
           :readonly="readonly"
+          :initial-source-name="sourceName"
         />
         <CrmHeaderList v-else-if="tab.name === 'header'" :load-list-api="getClueHeaderList" :source-id="sourceId" />
       </van-tab>
@@ -85,7 +89,7 @@
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
 
-  const { descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
+  const { sourceName, descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CLUE,
     sourceId: sourceId.value,
     needInitDetail: true,
@@ -121,6 +125,16 @@
 
   watch([() => detail.value.stage, () => detail.value.lastStage], () => {
     initStage(false);
+  });
+
+  const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
+  const planListRef = ref<InstanceType<typeof CrmFollowPlanList>[]>();
+  onActivated(() => {
+    if (activeTab.value === 'record') {
+      recordListRef.value?.[0].loadList();
+    } else if (activeTab.value === 'plan') {
+      planListRef.value?.[0].loadList();
+    }
   });
 </script>
 
