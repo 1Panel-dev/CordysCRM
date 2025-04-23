@@ -68,10 +68,10 @@
     transitionName.value = isForward ? 'slide-left' : 'slide-right';
     // 如果是IOS手势后退，禁用动画
     if (!isForward && isIOS() && !appStore.getManualBack) {
-      transitionName.value = '';
+      transitionName.value = 'transition-none';
     } else if (toDepth === 1 && fromDepth === 1) {
       // 如果是一级页面之间切换，则无需动画
-      transitionName.value = '';
+      transitionName.value = 'transition-none';
     }
     // 处理路由缓存
     if ((toDepth === 1 && fromDepth === 1) || (from.meta.isCache && toDepth < fromDepth)) {
@@ -161,6 +161,12 @@
   .slide-left-leave-to,
   .slide-right-leave-to {
     opacity: 0.3;
+  }
+
+  /* 禁用动画时 */
+  .transition-none-enter-active,
+  .transition-none-leave-active {
+    transition: none;
   }
 </style>
 

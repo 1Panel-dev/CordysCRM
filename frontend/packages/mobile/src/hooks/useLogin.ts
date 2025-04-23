@@ -48,7 +48,7 @@ export default function useLogin() {
         }&response_type=code&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=snsapi_privateinfo&agentid=${
           res.agentId
         }#wechat_redirect`;
-        window.location.href = url;
+        window.location.replace(url);
       }
     } catch (error) {
       // eslint-disable-next-line no-console
