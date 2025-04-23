@@ -29,7 +29,7 @@ public class ClueFollowPlanController {
     private FollowUpPlanService followUpPlanService;
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_ADD)
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "添加线索跟进计划")
     public FollowUpPlan add(@Validated @RequestBody FollowUpPlanAddRequest request) {
         return followUpPlanService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -70,7 +70,7 @@ public class ClueFollowPlanController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "线索删除跟进计划")
-    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_DELETE)
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     public void deletePlan(@PathVariable String id) {
         followUpPlanService.delete(id);
     }

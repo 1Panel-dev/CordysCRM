@@ -34,7 +34,7 @@ public class OpportunityFollowRecordController {
     private FollowUpRecordService followUpRecordService;
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD)
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
     @Operation(summary = "添加商机跟进记录")
     public FollowUpRecord add(@Validated @RequestBody FollowUpRecordAddRequest request) {
         return followUpRecordService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -63,7 +63,7 @@ public class OpportunityFollowRecordController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "客户删除跟进记录")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE)
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
     public void deleteRecord(@PathVariable String id) {
         followUpRecordService.delete(id);
     }

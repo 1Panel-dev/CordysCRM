@@ -29,7 +29,7 @@ public class OpportunityFollowPlanController {
     private FollowUpPlanService followUpPlanService;
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD)
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
     @Operation(summary = "添加商机跟进计划")
     public FollowUpPlan add(@Validated @RequestBody FollowUpPlanAddRequest request) {
         return followUpPlanService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -70,7 +70,7 @@ public class OpportunityFollowPlanController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "商机删除跟进计划")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_DELETE)
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
     public void deletePlan(@PathVariable String id) {
         followUpPlanService.delete(id);
     }

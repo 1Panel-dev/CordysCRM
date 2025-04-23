@@ -30,7 +30,7 @@ public class CustomerFollowPlanController {
     private FollowUpPlanService followUpPlanService;
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_ADD)
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "添加客户跟进计划")
     public FollowUpPlan add(@Validated @RequestBody FollowUpPlanAddRequest request) {
         return followUpPlanService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
@@ -71,7 +71,7 @@ public class CustomerFollowPlanController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "客户删除跟进计划")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE)
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     public void deletePlan(@PathVariable String id) {
         followUpPlanService.delete(id);
     }
