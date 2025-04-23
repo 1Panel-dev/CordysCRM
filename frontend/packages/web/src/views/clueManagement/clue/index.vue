@@ -1,6 +1,6 @@
 <template>
   <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="searchData()" />
+    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="changeActiveTab" />
   </CrmCard>
 
   <CrmCard hide-footer :special-height="64">
@@ -441,6 +441,11 @@
   function searchData(val?: string) {
     setLoadListParams({ keyword: val ?? keyword.value, searchType: activeTab.value });
     loadList();
+  }
+
+  function changeActiveTab() {
+    checkedRowKeys.value = [];
+    searchData();
   }
 
   watch(

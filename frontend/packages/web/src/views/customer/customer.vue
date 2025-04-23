@@ -431,6 +431,7 @@
   }
 
   function handleTabChange() {
+    checkedRowKeys.value = [];
     searchData();
   }
 

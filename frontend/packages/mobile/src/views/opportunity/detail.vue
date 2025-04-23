@@ -26,15 +26,19 @@
         </div>
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
+          ref="recordListRef"
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS"
-          :readonly="!hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+          :readonly="readonly"
+          :initial-source-name="sourceName"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
+          ref="planListRef"
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS"
-          :readonly="!hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+          :readonly="readonly"
+          :initial-source-name="sourceName"
         />
       </van-tab>
     </van-tabs>
@@ -46,7 +50,7 @@
   import { useRoute } from 'vue-router';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { OpportunityStatusEnum } from '@lib/shared/enums/opportunityEnum';
+  import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
@@ -85,15 +89,15 @@
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
 
-  const { descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
+  const { sourceName, descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
     formKey: FormDesignKeyEnum.BUSINESS,
     sourceId: sourceId.value,
     needInitDetail: true,
   });
 
-  const currentStatus = ref(route.query.stage?.toString());
+  const currentStatus = ref<string>(OpportunityStatusEnum.CREATE);
 
-  const lastOptStage = ref(route.query.lastStage?.toString() ?? OpportunityStatusEnum.CREATE);
+  const lastOptStage = ref<string>(OpportunityStatusEnum.CREATE);
 
   async function initStage(isInit = false) {
     if (isInit) {
@@ -104,6 +108,23 @@
     currentStatus.value = stage;
     lastOptStage.value = lastStage;
   }
+
+  const readonly = computed(
+    () =>
+      ([StageResultEnum.FAIL, StageResultEnum.SUCCESS] as string[]).includes(currentStatus.value) ||
+      !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])
+  );
+
+  const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
+  const planListRef = ref<InstanceType<typeof CrmFollowPlanList>[]>();
+
+  onActivated(() => {
+    if (activeTab.value === 'record') {
+      recordListRef.value?.[0].loadList();
+    } else if (activeTab.value === 'plan') {
+      planListRef.value?.[0].loadList();
+    }
+  });
 
   onBeforeMount(async () => {
     await initFormConfig();

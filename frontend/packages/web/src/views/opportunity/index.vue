@@ -1,6 +1,6 @@
 <template>
   <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="() => searchData()" />
+    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="changeActiveTab" />
   </CrmCard>
   <CrmCard hide-footer>
     <CrmTable
@@ -19,12 +19,7 @@
             v-permission="['OPPORTUNITY_MANAGEMENT:ADD']"
             class="mr-[12px]"
             type="primary"
-            @click="
-              {
-                activeSourceId = '';
-                formCreateDrawerVisible = true;
-              }
-            "
+            @click="handleCreate"
           >
             {{ t('opportunity.createOpportunity') }}
           </n-button>
@@ -67,6 +62,7 @@
       :form-key="realFormKey"
       :other-save-params="otherFollowRecordSaveParams"
       :source-id="activeSourceId"
+      :initial-source-name="initialSourceName"
       :need-init-detail="!!activeSourceId"
       @saved="searchData"
     />
@@ -207,6 +203,13 @@
   const activeOpportunity = ref<OpportunityItem>();
   const formCreateDrawerVisible = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.BUSINESS);
+  const initialSourceName = ref('');
+
+  function handleCreate() {
+    realFormKey.value = FormDesignKeyEnum.BUSINESS;
+    activeSourceId.value = '';
+    formCreateDrawerVisible.value = true;
+  }
 
   const otherFollowRecordSaveParams = ref({
     type: 'BUSINESS',
@@ -223,10 +226,11 @@
   }
 
   // 跟进
-  function handleFollowUp(id: string) {
+  function handleFollowUp(row: OpportunityItem) {
     activeSourceId.value = '';
     realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
-    otherFollowRecordSaveParams.value.opportunityId = id;
+    initialSourceName.value = row.name;
+    otherFollowRecordSaveParams.value.opportunityId = row.id;
     formCreateDrawerVisible.value = true;
   }
 
@@ -289,7 +293,7 @@
         handleEdit(row.id);
         break;
       case 'followUp':
-        handleFollowUp(row.id);
+        handleFollowUp(row);
         break;
       case 'pop-transfer':
         handleTransfer(row, done);
@@ -458,6 +462,11 @@
       searchType: activeTab.value,
     });
     loadList();
+  }
+
+  function changeActiveTab() {
+    checkedRowKeys.value = [];
+    searchData();
   }
 
   watch(
