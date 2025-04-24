@@ -3,6 +3,7 @@ package io.cordys.crm.system.service;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.util.Translator;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,10 @@ import java.util.Map;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class OrganizationLogService extends BaseModuleLogService {
+    @Resource
+    private DepartmentService departmentService;
+    @Resource
+    private OrganizationUserService organizationUserService;
 
     @Override
     public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId) {
@@ -26,6 +31,14 @@ public class OrganizationLogService extends BaseModuleLogService {
 
             if (StringUtils.equals(differ.getColumnName(), Translator.get("log.commander"))) {
                 setUserFieldName(differ);
+            }
+
+            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.departmentId"))) {
+                setDepartmentName(differ);
+            }
+
+            if (StringUtils.equals(differ.getColumnName(), Translator.get("log.supervisorId"))) {
+                setSupervisorName(differ);
             }
 
             if (StringUtils.equals(differ.getColumnName(), Translator.get("log.enable"))) {
@@ -43,6 +56,30 @@ public class OrganizationLogService extends BaseModuleLogService {
                 differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
             }
         });
+    }
+
+
+    protected void setDepartmentName(JsonDifferenceDTO differ) {
+        if (differ.getOldValue() != null) {
+            String userName = departmentService.getDepartmentName(differ.getOldValue().toString());
+            differ.setOldValueName(userName);
+        }
+        if (differ.getNewValue() != null) {
+            String userName = departmentService.getDepartmentName(differ.getNewValue().toString());
+            differ.setNewValueName(userName);
+        }
+    }
+
+
+    protected void setSupervisorName(JsonDifferenceDTO differ) {
+        if (differ.getOldValue() != null) {
+            String userName = organizationUserService.getSupervisorName(differ.getOldValue().toString());
+            differ.setOldValueName(userName);
+        }
+        if (differ.getNewValue() != null) {
+            String userName = organizationUserService.getSupervisorName(differ.getNewValue().toString());
+            differ.setNewValueName(userName);
+        }
     }
 
 

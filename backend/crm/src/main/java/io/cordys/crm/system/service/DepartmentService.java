@@ -8,7 +8,6 @@ import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.NodeSortDTO;
-import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -513,5 +512,10 @@ public class DepartmentService extends MoveNodeService {
             return List.of();
         }
         return getDepartmentOptionsByIds(List.of(id));
+    }
+
+    public String getDepartmentName(String id) {
+        Department department = departmentMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(department).map(Department::getName).orElse(null);
     }
 }

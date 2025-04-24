@@ -46,6 +46,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -550,8 +551,21 @@ public class OrganizationUserService {
      * @param organizationId
      */
     public void batchEditUser(UserBatchEditRequest request, String operatorId, String organizationId) {
+        List<UserResponse> originUser = extOrganizationUserMapper.selectByIds(request.getIds());
         extOrganizationUserMapper.updateUserByIds(request, operatorId, organizationId);
-        //todo 日志
+        List<UserResponse> modifiedUser = extOrganizationUserMapper.selectByIds(request.getIds());
+        Map<String, UserResponse> userMap = modifiedUser.stream().collect(Collectors.toMap(UserResponse::getUserId, Function.identity()));
+
+
+        List<LogDTO> logs = originUser.stream()
+                .map(origUser -> {
+                    LogDTO logDTO = new LogDTO(organizationId, origUser.getUserId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, origUser.getUserName());
+                    logDTO.setOriginalValue(origUser);
+                    logDTO.setModifiedValue(userMap.get(origUser.getUserId()));
+                    return logDTO;
+                }).toList();
+        logService.batchAdd(logs);
+
     }
 
 
@@ -857,5 +871,10 @@ public class OrganizationUserService {
             }
 
         }
+    }
+
+    public String getSupervisorName(String id) {
+        User user = userMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(user).map(User::getName).orElse(null);
     }
 }

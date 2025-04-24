@@ -255,4 +255,14 @@
             #{userId}
         </foreach>
     </select>
+
+    <select id="selectByIds" resultType="io.cordys.crm.system.dto.response.UserResponse">
+        select su.name as userName, sou.user_id, sou.department_id, sou.supervisor_id, sou.work_city
+        from sys_organization_user sou
+        inner join sys_user su on sou.user_id = su.id
+        where sou.id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

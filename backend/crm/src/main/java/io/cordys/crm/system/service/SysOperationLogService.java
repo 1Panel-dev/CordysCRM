@@ -139,6 +139,7 @@ public class SysOperationLogService {
     /**
      * 过滤掉日志对比无需显示的字段
      * 例如：organizationId
+     *
      * @param differenceDTOS
      * @return
      */
@@ -146,7 +147,7 @@ public class SysOperationLogService {
         differenceDTOS = differenceDTOS.stream()
                 .filter(differ -> {
                     if (StringUtils.equalsAny(differ.getColumn(),
-                            "organizationId", "createUser", "updateUser", "createTime", "updateTime","departmentId","supervisorId","lastStage")) {
+                            "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName", "supervisorName", "lastStage")) {
                         return false;
                     }
                     return true;
