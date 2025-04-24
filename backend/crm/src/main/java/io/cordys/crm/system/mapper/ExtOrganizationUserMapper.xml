@@ -45,6 +45,7 @@
             or su.phone like concat('%', #{request.keyword},'%')
             )
         </if>
+        and <![CDATA[ su.id <> 'admin' ]]>
         <include refid="sorts">
             <property name="sort" value="request.sort"/>
         </include>
