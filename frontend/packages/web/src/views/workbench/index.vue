@@ -28,10 +28,12 @@
         />
       </CrmCard>
     </div>
-    <CrmCard v-permission="['SYSTEM_NOTICE:READ']" hide-footer class="ml-[16px] w-[400px]">
+    <CrmCard hide-footer class="ml-[16px] w-[400px]">
       <div class="title !mb-[8px]">
         <div class="title-name">{{ t('system.message.notify') }}</div>
-        <div class="title-right" @click="showMessageDrawer = true">{{ t('common.ViewMore') }}</div>
+        <div v-permission="['SYSTEM_NOTICE:READ']" class="title-right" @click="showMessageDrawer = true">
+          {{ t('common.ViewMore') }}
+        </div>
       </div>
       <CrmMessageList
         ref="messageListRef"

@@ -28,6 +28,7 @@ export const WHITE_LIST_NAME = WHITE_LIST.map((el) => el.name);
 
 // 无资源/权限路由
 export const NO_RESOURCE_ROUTE_NAME = 'no-resource';
+export const NO_RESOURCE_ROUTE_NAME_INDEX = 'no-resource-index';
 
 // 首页路由
 export const DEFAULT_ROUTE_NAME = 'workbench';

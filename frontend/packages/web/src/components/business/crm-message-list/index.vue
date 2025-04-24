@@ -80,7 +80,7 @@
       </template>
     </CrmList>
     <div v-else class="w-full p-[16px] text-center text-[var(--text-n4)]">
-      {{ props.emptyText || t('common.noData') }}
+      {{ !hasAnyPermission(['SYSTEM_NOTICE:READ']) ? t('common.noPermission') : props.emptyText || t('common.noData') }}
     </div>
   </n-spin>
 </template>
@@ -131,6 +131,8 @@
   }
 
   async function loadMessageList(refresh = true) {
+    if (!hasAnyPermission(['SYSTEM_NOTICE:READ'])) return;
+
     try {
       if (!props.loadParams) return;
       loading.value = true;
