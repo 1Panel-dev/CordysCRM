@@ -213,14 +213,25 @@ public class ModuleFormService {
 			if (StringUtils.equalsAny(field.getType(), FieldType.CHECKBOX.name()) && field instanceof CheckBoxField checkBoxField) {
 				optionMap.put(field.getBusinessKey() != null ? field.getBusinessKey() : field.getId(), optionPropToDto(checkBoxField.getOptions()));
 			}
-			if (StringUtils.equalsAny(field.getType(), FieldType.SELECT.name()) && field instanceof SelectField selectField) {
-				optionMap.put(field.getBusinessKey() != null ? field.getBusinessKey() : field.getId(), optionPropToDto(selectField.getOptions()));
+			if (StringUtils.equalsAny(field.getType(), FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name()) ) {
+				if (field instanceof SelectField selectField) {
+					optionMap.put(field.getBusinessKey() != null ? field.getBusinessKey() : field.getId(), optionPropToDto(selectField.getOptions()));
+				} else if (field instanceof SelectMultipleField selectMultipleField) {
+					optionMap.put(field.getBusinessKey() != null ? field.getBusinessKey() : field.getId(), optionPropToDto(selectMultipleField.getOptions()));
+				}
 			}
-			if (StringUtils.equals(field.getType(), FieldType.DATA_SOURCE.name()) && field instanceof DatasourceField sourceField) {
-				idTypeMap.put(field.getId(), sourceField.getDataSourceType());
+			if (StringUtils.equalsAny(field.getType(), FieldType.DATA_SOURCE.name(), FieldType.DATA_SOURCE_MULTIPLE.name())) {
+				if (field instanceof DatasourceField sourceField) {
+					idTypeMap.put(field.getId(), sourceField.getDataSourceType());
+				} else if (field instanceof DatasourceMultipleField sourceMultipleField) {
+					idTypeMap.put(field.getId(), sourceMultipleField.getDataSourceType());
+				}
 			}
-			if (StringUtils.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.DEPARTMENT.name())) {
-				idTypeMap.put(field.getId(), field.getType());
+			if (StringUtils.equalsAny(field.getType(), FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name())) {
+				idTypeMap.put(field.getId(), FieldType.MEMBER.name());
+			}
+			if (StringUtils.equalsAny(field.getType(), FieldType.DEPARTMENT.name(), FieldType.DEPARTMENT_MULTIPLE.name())) {
+				idTypeMap.put(field.getId(), FieldType.DEPARTMENT.name());
 			}
 		});
 
@@ -256,6 +267,9 @@ public class ModuleFormService {
 	 * @return 选项DTO集合
 	 */
 	public List<OptionDTO> optionPropToDto(List<OptionProp> options) {
+		if (options == null || options.isEmpty()) {
+			return new ArrayList<>();
+		}
 		return options.stream().map(option -> {
 			OptionDTO optionDTO = new OptionDTO();
 			optionDTO.setName(option.getLabel());
