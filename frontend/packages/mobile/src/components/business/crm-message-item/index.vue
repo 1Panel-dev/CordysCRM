@@ -1,5 +1,5 @@
 <template>
-  <div class="border-b border-[var(--text-n8)] px-[20px] py-[12px]">
+  <div class="crm-message-item">
     <div class="mb-[4px] flex items-center justify-between">
       <div class="flex items-center gap-[4px]">
         <van-tag
@@ -96,6 +96,10 @@
 </script>
 
 <style lang="less" scoped>
+  .crm-message-item {
+    padding: 12px 20px;
+    .half-px-border-bottom();
+  }
   .crm-message-item-title {
     &--normal {
       color: var(--text-n1);

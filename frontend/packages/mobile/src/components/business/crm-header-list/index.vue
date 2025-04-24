@@ -22,7 +22,7 @@
         <div
           class="flex w-full items-center gap-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[16px]"
         >
-          <van-image round width="40px" height="40px" src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg" />
+          <CrmAvatar :text="item.ownerName" />
           <div class="flex flex-1 flex-col gap-[2px] overflow-hidden">
             <div class="flex justify-between">
               <div class="one-line-text flex-1 text-[16px] text-[var(--text-n1)]">{{ item.ownerName }}</div>
@@ -59,6 +59,7 @@
   import type { CustomerContractTableParams, HeaderHistoryItem } from '@lib/shared/models/customer';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
+  import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   const props = defineProps<{
     loadListApi: (data: CustomerContractTableParams) => Promise<HeaderHistoryItem>;

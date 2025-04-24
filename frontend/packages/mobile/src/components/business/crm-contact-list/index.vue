@@ -31,7 +31,7 @@
           class="flex w-full items-center gap-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[16px]"
           @click="goDetail(item)"
         >
-          <van-image round width="40px" height="40px" src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg" />
+          <CrmAvatar :text="item.name" />
           <div class="flex flex-1 flex-col gap-[2px]">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-[8px]">
@@ -87,6 +87,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
+  import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { deleteCustomerContact, getCustomerContactList } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';

@@ -28,7 +28,7 @@
       </div>
       <div class="flex flex-1 flex-col gap-[12px] rounded-[var(--border-radius-large)] bg-[var(--text-n10)] p-[16px]">
         <div class="flex items-center justify-between gap-[16px]">
-          <van-image round width="40px" height="40px" src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg" />
+          <CrmAvatar :text="item.ownerName" />
           <div class="flex flex-1 flex-wrap items-center overflow-hidden">
             <div class="one-line-text flex-1 text-[16px] font-semibold">{{ item.ownerName }}</div>
             <div v-if="!props.readonly" class="flex items-center gap-[16px]">
@@ -67,6 +67,7 @@
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
+  import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { statusMap, StatusTagKey } from '@/config/follow';
 

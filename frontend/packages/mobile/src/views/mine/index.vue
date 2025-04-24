@@ -3,7 +3,7 @@
     <CrmPageHeader :title="t('menu.mine')" hide-back />
     <div class="mt-[48px] flex flex-1 flex-col gap-[16px] overflow-auto p-[16px]">
       <div class="personal-header-info info-item gap-[16px] p-[16px]">
-        <van-image round width="64px" height="64px" :src="userStore.userInfo?.avatar" />
+        <CrmAvatar :size="64" :is-word="false" />
         <div class="flex w-[calc(100%-80px)] flex-1 flex-col justify-evenly">
           <div class="one-line-text text-[16px] font-semibold text-[var(--text-n1)]" @click="handleUserNameClick">
             {{ personalInfo?.userName }}
@@ -63,17 +63,16 @@
   import { OrgUserInfo } from '@lib/shared/models/system/org';
 
   import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
+  import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { getNotificationCount, getPersonalUrl } from '@/api/modules';
   import { defaultUserInfo } from '@/config/mine';
-  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { MineRouteEnum } from '@/enums/routeEnum';
 
   const { t } = useI18n();
   const router = useRouter();
-  const userStore = useUserStore();
 
   const routeKey = ref('');
 

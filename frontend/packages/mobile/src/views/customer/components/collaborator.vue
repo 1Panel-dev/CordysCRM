@@ -6,7 +6,7 @@
         :key="item.id"
         class="mb-[16px] flex w-full items-center gap-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[16px]"
       >
-        <van-image round width="40px" height="40px" src="https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg" />
+        <CrmAvatar :text="item.userName" />
         <div class="flex flex-1 flex-col gap-[2px]">
           <div class="flex items-center justify-between">
             <div class="flex-1 text-[16px] text-[var(--text-n1)]">{{ item.userName }}</div>
@@ -55,6 +55,7 @@
   import { CollaborationItem } from '@lib/shared/models/customer';
 
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { deleteCustomerCollaboration, getCustomerCollaborationList } from '@/api/modules';
 

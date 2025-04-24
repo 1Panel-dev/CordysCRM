@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col gap-[16px] overflow-hidden">
     <div class="flex items-center justify-between gap-[12px] bg-[var(--text-n10)] px-[12px] py-[4px]">
-      <van-image round width="40px" height="40px" :src="userStore.userInfo?.avatar" @click="goMine" />
+      <CrmAvatar :is-word="false" @click="goMine" />
       <van-search
         v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT_READ', 'CLUE_MANAGEMENT_READ'])"
         v-model="keyword"
@@ -56,15 +56,13 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
+  import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import CrmMessageItem from '@/components/business/crm-message-item/index.vue';
 
   import useAppStore from '@/store/modules/app';
-  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum, MineRouteEnum, WorkbenchRouteEnum } from '@/enums/routeEnum';
-
-  const userStore = useUserStore();
 
   const appStore = useAppStore();
 
