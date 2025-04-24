@@ -16,7 +16,7 @@ export default {
   'api.responseError': '接口返回错误，请重试',
   'api.requestError': '请求错误',
   'api.errMsg401': '用户没有权限（令牌、用户名、密码错误）!',
-  'api.errMsg403': '用户得到授权，但是访问是被禁止的!',
+  'api.errMsg403': '无权访问，请联系管理员!',
   'api.errMsg404': '网络请求错误,未找到该资源!',
   'api.errMsg405': '网络请求错误,请求方法未允许!',
   'api.errMsg408': '网络请求超时!',

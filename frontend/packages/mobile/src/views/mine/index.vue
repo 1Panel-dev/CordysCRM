@@ -5,7 +5,7 @@
       <div class="personal-header-info info-item gap-[16px] p-[16px]">
         <van-image round width="64px" height="64px" :src="userStore.userInfo?.avatar" />
         <div class="flex w-[calc(100%-80px)] flex-1 flex-col justify-evenly">
-          <div class="one-line-text text-[16px] font-semibold text-[var(--text-n1)]">
+          <div class="one-line-text text-[16px] font-semibold text-[var(--text-n1)]" @click="handleUserNameClick">
             {{ personalInfo?.userName }}
           </div>
           <div>
@@ -118,6 +118,27 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    }
+  }
+
+  const clickCount = ref(0); // 记录点击次数
+  let clickTimer: NodeJS.Timeout | null = null; // 定时器
+
+  function handleUserNameClick() {
+    clickCount.value++;
+
+    // 如果 1 秒内没有连续点击，重置计数
+    if (clickTimer) {
+      clearTimeout(clickTimer);
+    }
+    clickTimer = setTimeout(() => {
+      clickCount.value = 0;
+    }, 1000);
+
+    // 如果点击次数达到 10 次，加载 eruda 调试工具
+    if (clickCount.value >= 10) {
+      import('eruda').then((eruda) => eruda.default.init());
+      clickCount.value = 0; // 重置计数
     }
   }
 

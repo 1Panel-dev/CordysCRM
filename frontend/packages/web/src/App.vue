@@ -19,6 +19,8 @@
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method/index';
 
+  import CrmSysUpgradeTip from '@/components/pure/crm-sys-upgrade-tip/index.vue';
+
   import { getWeComOauthCallback } from '@/api/modules';
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
@@ -87,5 +89,31 @@
 
   onBeforeUnmount(() => {
     appStore.disconnectSystemMessageSSE();
+  });
+
+  function showUpdateMessage() {
+    message.warning(() => h(CrmSysUpgradeTip), {
+      duration: 0,
+      closable: false,
+    });
+  }
+
+  onMounted(() => {
+    window.onerror = (_message) => {
+      if (typeof _message === 'string' && _message.includes('Failed to fetch dynamically imported')) {
+        showUpdateMessage();
+      }
+    };
+
+    window.onunhandledrejection = (event: PromiseRejectionEvent) => {
+      if (
+        event &&
+        event.reason &&
+        event.reason.message &&
+        event.reason.message.includes('Failed to fetch dynamically imported')
+      ) {
+        showUpdateMessage();
+      }
+    };
   });
 </script>
