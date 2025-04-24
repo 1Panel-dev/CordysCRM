@@ -58,6 +58,7 @@
         v-model:visible="formDrawerVisible"
         :other-save-params="otherFollowRecordSaveParams"
         :form-key="realFormKey"
+        :initial-source-name="sourceName"
         @saved="closeAndRefresh"
       />
     </template>

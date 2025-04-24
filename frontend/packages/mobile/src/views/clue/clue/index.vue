@@ -139,6 +139,7 @@
       query: {
         id: '',
         formKey,
+        initialSourceName: activeClue.value?.name,
       },
       state: {
         params: JSON.stringify({ clueId: id }),
@@ -230,6 +231,7 @@
           permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
           allPermission: true,
           action: (item: ClueListItem) => {
+            activeClue.value = item;
             convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS);
           },
         },

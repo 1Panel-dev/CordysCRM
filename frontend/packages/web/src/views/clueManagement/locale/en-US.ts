@@ -5,6 +5,8 @@ export default {
   'clue.departmentClues': 'Department clues',
   'clue.convertedTo': 'Converted',
   'clue.convertedToCustomer': 'Converted to customer',
+  'clue.transferredToCustomer': 'Transferred to customer',
+  'clue.transferredToOpportunity': 'Transferred to opportunity',
   'clue.convertedToOpportunity': 'Converted to opportunity',
   'clue.clueProgress': 'Clue progress',
   'clue.clueSource': 'Clue source',

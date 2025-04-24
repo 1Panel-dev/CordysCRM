@@ -273,6 +273,18 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
+    if (
+      [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER, FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS].includes(
+        props.formKey.value
+      )
+    ) {
+      // 线索转商机转客户带入名称
+      if (field.businessKey === 'name') {
+        return {
+          defaultValue: props.initialSourceName?.value,
+        };
+      }
+    }
     if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)) {
       // 数据源类型的字段，默认值需要转为数组
       return {

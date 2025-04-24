@@ -307,6 +307,7 @@
       case 'convertToCustomer':
         activeClueId.value = '';
         formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
+        activeRowName.value = row.name;
         otherFollowRecordSaveParams.value.clueId = row.id;
         needInitDetail.value = false;
         formCreateDrawerVisible.value = true;
@@ -314,6 +315,7 @@
       case 'convertToOpportunity':
         activeClueId.value = '';
         formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS;
+        activeRowName.value = row.name;
         otherFollowRecordSaveParams.value.clueId = row.id;
         needInitDetail.value = false;
         formCreateDrawerVisible.value = true;

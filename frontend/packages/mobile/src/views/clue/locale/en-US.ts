@@ -8,4 +8,6 @@ export default {
   'clue.followingUp': 'Following up',
   'clue.interested': 'Interested',
   'clue.clueProgress': 'Clue progress',
+  'clue.transferredToCustomer': 'Transferred to customer',
+  'clue.transferredToOpportunity': 'Transferred to opportunity',
 };

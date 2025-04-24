@@ -8,4 +8,6 @@ export default {
   'clue.followingUp': '跟进中',
   'clue.interested': '感兴趣',
   'clue.clueProgress': '线索进度',
+  'clue.transferredToCustomer': '已转为客户',
+  'clue.transferredToOpportunity': '已转为商机',
 };
