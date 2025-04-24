@@ -41,7 +41,7 @@
   import { NButton, NIcon, useMessage } from 'naive-ui';
   import { ChevronBackOutline } from '@vicons/ionicons5';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { safeFractionConvert } from '@lib/shared/method';
   import { FormConfig } from '@lib/shared/models/system/module';
@@ -131,7 +131,15 @@
       await saveFormDesignConfig({
         formKey: props.formKey,
         formProp: formConfig.value,
-        fields: fieldList.value,
+        fields: fieldList.value.map((e) => ({
+          ...e,
+          defaultValue:
+            [FieldTypeEnum.SELECT, FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(
+              e.type
+            ) && Array.isArray(e.defaultValue)
+              ? e.defaultValue[0] || ''
+              : e.defaultValue,
+        })),
       });
       Message.success(t('common.saveSuccess'));
       visible.value = false;
@@ -162,6 +170,11 @@
         name: t(item.name),
         placeholder: t(item.placeholder || ''),
         fieldWidth: safeFractionConvert(item.fieldWidth),
+        defaultValue:
+          [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
+          typeof item.defaultValue === 'string'
+            ? [item.defaultValue]
+            : item.defaultValue,
       }));
       formConfig.value = res.formProp;
       nextTick(() => {

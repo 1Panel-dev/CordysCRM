@@ -139,7 +139,10 @@
       if (!errors) {
         const result = cloneDeep(form.value);
         list.value.forEach((item) => {
-          if (item.type === FieldTypeEnum.DATA_SOURCE) {
+          if (
+            [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(item.type) &&
+            Array.isArray(result[item.id])
+          ) {
             // 处理数据源字段，单选传单个值
             result[item.id] = result[item.id]?.[0];
           }
@@ -156,6 +159,7 @@
       item.type === FieldTypeEnum.INPUT_MULTIPLE ||
       item.type === FieldTypeEnum.MEMBER_MULTIPLE ||
       item.type === FieldTypeEnum.DEPARTMENT_MULTIPLE ||
+      item.type === FieldTypeEnum.DATA_SOURCE ||
       item.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE ||
       item.type === FieldTypeEnum.PICTURE
     ) {
@@ -183,7 +187,11 @@
           if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
             defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
           } else if (getRuleType(item) === 'array') {
-            defaultValue = defaultValue || [];
+            defaultValue =
+              [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
+              typeof item.defaultValue === 'string'
+                ? [defaultValue]
+                : defaultValue || [];
           }
           form.value[item.id] = defaultValue;
         }

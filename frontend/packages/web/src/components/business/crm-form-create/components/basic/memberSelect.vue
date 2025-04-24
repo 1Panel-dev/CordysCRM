@@ -91,8 +91,15 @@
     () => selectedUsers.value,
     (val) => {
       const ids = val.map((item) => item.id);
-      value.value = props.fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE ? ids : ids[0];
-      emit('change', ids);
+      value.value = [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)
+        ? ids
+        : ids[0];
+      emit(
+        'change',
+        [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)
+          ? ids
+          : ids[0]
+      );
     },
     {
       deep: true,

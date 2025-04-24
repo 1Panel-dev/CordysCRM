@@ -10,11 +10,11 @@
       :show-arrow="false"
       :show="false"
       :disabled="props.disabled"
-      @click="handleShowAddAdmin"
+      @click="handleShowSelectDrawer"
     />
     <CrmSelectUserDrawer
       ref="crmSelectUserDrawerRef"
-      v-model:visible="showSelectAdminDrawer"
+      v-model:visible="showSelectDrawer"
       :loading="false"
       :title="props.drawerTitle || t('role.addMember')"
       :api-type-key="props.apiTypeKey"
@@ -23,7 +23,7 @@
       :ok-text="props.okText"
       :member-types="props.memberTypes"
       :disabled-node-types="props.disabledNodeTypes"
-      @confirm="handleAddAdminConfirm"
+      @confirm="handleSelectConfirm"
     />
   </div>
 </template>
@@ -67,19 +67,19 @@
     (e: 'deleteTag'): void;
   }>();
 
-  const showSelectAdminDrawer = ref(false);
+  const showSelectDrawer = ref(false);
   const crmSelectUserDrawerRef = ref<InstanceType<typeof CrmSelectUserDrawer>>();
-  function handleShowAddAdmin() {
-    showSelectAdminDrawer.value = true;
+  function handleShowSelectDrawer() {
+    showSelectDrawer.value = true;
   }
 
-  function handleAddAdminConfirm(params: SelectedUsersItem[]) {
+  function handleSelectConfirm(params: SelectedUsersItem[]) {
     if (props.multiple) {
       selectedList.value = [...(selectedList.value || []), ...params];
     } else {
       selectedList.value = params;
     }
-    showSelectAdminDrawer.value = false;
+    showSelectDrawer.value = false;
   }
   const renderTag = ({ option, handleClose }: { option: SelectOption; handleClose: () => void }) => {
     return h(
