@@ -84,7 +84,18 @@
   }
   :deep(.van-radio) {
     @apply overflow-visible;
-    .van-radio__label {
+    .van-radio__label,
+    .van-checkbox__label {
+      @apply w-full;
+
+      padding: 16px 16px 16px 0;
+    }
+  }
+  :deep(.van-checkbox) {
+    &:not(:first-child) {
+      .half-px-border-top();
+    }
+    .van-checkbox__label {
       @apply w-full;
 
       padding: 16px 16px 16px 0;
