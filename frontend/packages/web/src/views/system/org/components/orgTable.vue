@@ -774,7 +774,7 @@
       render: (row: MemberItem) =>
         h(CrmOperationButton, {
           groupList,
-          moreList: moreOperationList,
+          moreList: props.isSyncFromThirdChecked ? undefined : moreOperationList,
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },

@@ -59,13 +59,13 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 组织架构-删除部门
-  function deleteDepartment(id: string) {
-    return CDR.get({ url: `${deleteDepartmentUrl}/${id}` });
+  function deleteDepartment(data: (string | number)[]) {
+    return CDR.post({ url: deleteDepartmentUrl, data });
   }
 
   // 组织架构-删除部门校验
-  function checkDeleteDepartment(id: string) {
-    return CDR.get({ url: `${checkDeleteDepartmentUrl}/${id}` });
+  function checkDeleteDepartment(data: (string | number)[]) {
+    return CDR.post({ url: checkDeleteDepartmentUrl, data });
   }
 
   // 组织架构-部门排序

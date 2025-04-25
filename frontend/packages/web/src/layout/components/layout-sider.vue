@@ -95,6 +95,7 @@
   import type { AppRouteRecordRaw } from '@/router/routes/types';
   import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
+  import { getFirstRouterNameByCurrentRoute } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -145,8 +146,10 @@
     },
   ];
 
-  function menuChange(key: string) {
-    router.push({ name: key });
+  function menuChange(key: string, item: MenuOption) {
+    const routeItem = item as unknown as AppRouteRecordRaw;
+    const name = routeItem.meta?.hideChildrenInMenu ? getFirstRouterNameByCurrentRoute(routeItem.name as string) : key;
+    router.push({ name });
   }
 
   async function personalMenuChange(key: string) {
@@ -175,12 +178,14 @@
       ? () => h('div', { class: `flex flex-nowrap text-[14px]` }, t(e?.meta?.collapsedLocale ?? ''))
       : null;
   }
+
   const menuOptions = computed<MenuOption[]>(() => {
     return mapTree(menuTree.value, (e: any) => {
       const menuChildren = mapTree(e.children);
       return e.meta.isTopMenu
         ? null
         : {
+            ...e,
             label: t(e?.meta?.locale ?? ''),
             key: e.name,
             children: menuChildren.length ? menuChildren : undefined,

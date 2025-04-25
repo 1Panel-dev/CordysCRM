@@ -31,7 +31,7 @@
     v-model:checked-keys="checkedKeys"
     v-model:expanded-keys="expandedKeys"
     v-model:default-expand-all="expandAll"
-    draggable
+    :draggable="hasAnyPermission(['SYS_ORGANIZATION:UPDATE']) && !props.isSyncFromThirdChecked"
     :keyword="keyword"
     :render-prefix="renderPrefixDom"
     :node-more-actions="nodeMoreOptions"
@@ -153,7 +153,9 @@
   }
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
-    return node.parentId === 'NONE' ? items.filter((e) => e.key !== 'delete' && !e.type) : items;
+    return node.parentId === 'NONE' || props.isSyncFromThirdChecked
+      ? items.filter((e) => e.key !== 'delete' && !e.type)
+      : items;
   }
 
   // 获取模块树
@@ -315,10 +317,11 @@
   }
 
   /**
-   * 删除  TODO 接口有问题
+   * 删除
    */
   async function handleDelete(option: CrmTreeNodeData) {
-    const isNotAllow = await checkDeleteDepartment(option.id);
+    const offspringIds = [option.id, ...getSpringIds((option as CrmTreeNodeData).children)];
+    const isNotAllow = await checkDeleteDepartment(offspringIds);
     openModal({
       type: 'error',
       title: t('common.deleteConfirmTitle', { name: characterLimit(option.name) }),
@@ -332,7 +335,7 @@
       onPositiveClick: async () => {
         try {
           if (isNotAllow) {
-            await deleteDepartment(option.id);
+            await deleteDepartment(offspringIds);
             Message.success(t('common.deleteSuccess'));
             initTree(true);
           }
