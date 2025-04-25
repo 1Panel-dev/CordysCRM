@@ -4,10 +4,13 @@
 <mapper namespace="io.cordys.crm.system.mapper.ExtOrganizationUserMapper">
 
 
-    <select id="countUserByDepartmentId" resultType="java.lang.Integer">
+    <select id="countUserByDepartmentIds" resultType="java.lang.Integer">
         select count(user_id)
         from sys_organization_user
-        where department_id = #{departmentId}
+        where department_id in
+        <foreach collection="departmentIds" item="departmentId" index="index" open="(" close=")" separator=",">
+            #{departmentId}
+        </foreach>
           and organization_id = #{orgId}
     </select>
 

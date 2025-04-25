@@ -14,6 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 
+import java.util.List;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -76,14 +78,14 @@ public class DepartmentControllerTests extends BaseTest {
     @Test
     @Order(5)
     public void departmentDeleteCHeck() throws Exception {
-        this.requestGet(DEPARTMENT_DELETE_CHECK + "7");
+        this.requestPost(DEPARTMENT_DELETE_CHECK, List.of("7"));
     }
 
     @Test
     @Order(6)
     public void departmentDelete() throws Exception {
-        this.requestGet(DEPARTMENT_DELETE + "7");
-        this.requestGet(DEPARTMENT_DELETE + "8");
+        this.requestPost(DEPARTMENT_DELETE, List.of("7"));
+        this.requestPost(DEPARTMENT_DELETE, List.of("8"));
     }
 
 

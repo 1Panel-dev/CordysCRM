@@ -5,6 +5,7 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.NodeSortDTO;
@@ -54,6 +55,8 @@ public class DepartmentService extends MoveNodeService {
     private ExtOrganizationUserMapper extOrganizationUserMapper;
     @Resource
     private SqlSessionFactory sqlSessionFactory;
+    @Resource
+    private LogService logService;
 
     /**
      * 获取部门树
@@ -217,18 +220,22 @@ public class DepartmentService extends MoveNodeService {
     /**
      * 刪除部门
      *
-     * @param id
+     * @param ids
      */
-    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.DELETE, resourceId = "{#id}")
     @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
-    public void delete(String id, String orgId) {
-        Department department = checkDepartment(id);
-        if (deleteCheck(id, orgId)) {
+    public void delete(List<String> ids, String operator, String orgId) {
+        if (deleteCheck(ids, orgId)) {
+            List<Department> departmentList = departmentMapper.selectByIds(ids);
             //刪除部門
-            departmentMapper.deleteByPrimaryKey(id);
-            //todo 部门&责任人关系是否需要删除？ 部门&角色关系是否需要删除？
+            departmentMapper.deleteByIds(ids);
+            List<LogDTO> logs = new ArrayList<>();
             // 添加日志上下文
-            OperationLogContext.setResourceName(department.getName());
+            departmentList.forEach(department -> {
+                LogDTO logDTO = new LogDTO(department.getOrganizationId(), department.getId(), operator, LogType.DELETE, LogModule.SYSTEM_ORGANIZATION, department.getName());
+                logDTO.setOriginalValue(department);
+                logs.add(logDTO);
+            });
+            logService.batchAdd(logs);
         }
     }
 
@@ -236,17 +243,23 @@ public class DepartmentService extends MoveNodeService {
     /**
      * 删除部门前校验
      *
-     * @param id
+     * @param ids
      * @param orgId
      * @return
      */
-    public boolean deleteCheck(String id, String orgId) {
-        Department department = checkDepartment(id);
-        if (StringUtils.equalsAnyIgnoreCase(department.getResource(), DepartmentConstants.INTERNAL.name())
-                && StringUtils.equalsAnyIgnoreCase(department.getParentId(), "NONE")) {
-            throw new GenericException(Translator.get("department.internal"));
+    public boolean deleteCheck(List<String> ids, String orgId) {
+        List<Department> departmentList = departmentMapper.selectByIds(ids);
+        if (CollectionUtils.isNotEmpty(departmentList)) {
+            departmentList.forEach(department -> {
+                if (StringUtils.equalsAnyIgnoreCase(department.getResource(), DepartmentConstants.INTERNAL.name())
+                        && StringUtils.equalsAnyIgnoreCase(department.getParentId(), "NONE")) {
+                    throw new GenericException(Translator.get("department.internal"));
+                }
+            });
+
         }
-        return extOrganizationUserMapper.countUserByDepartmentId(id, orgId) <= 0;
+
+        return extOrganizationUserMapper.countUserByDepartmentIds(ids, orgId) <= 0;
     }
 
 

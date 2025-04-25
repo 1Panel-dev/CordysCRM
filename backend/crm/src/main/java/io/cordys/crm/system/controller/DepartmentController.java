@@ -13,6 +13,7 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -58,20 +59,20 @@ public class DepartmentController {
         departmentService.setCommander(request, SessionUtils.getUserId());
     }
 
-    @GetMapping("/delete/check/{id}")
+    @PostMapping("/delete/check")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_UPDATE)
     @Operation(summary = "组织架构-删除部门校验")
-    public boolean deleteCheck(@PathVariable String id) {
-        return departmentService.deleteCheck(id, OrganizationContext.getOrganizationId());
+    public boolean deleteCheck(@RequestBody @NotEmpty List<String> ids) {
+        return departmentService.deleteCheck(ids, OrganizationContext.getOrganizationId());
 
     }
 
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_DELETE)
     @Operation(summary = "组织架构-删除部门")
-    public void deleteDepartment(@PathVariable String id) {
-        departmentService.delete(id, OrganizationContext.getOrganizationId());
+    public void deleteDepartment(@RequestBody @NotEmpty List<String> ids) {
+        departmentService.delete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 
     }
 

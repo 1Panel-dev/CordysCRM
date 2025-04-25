@@ -23,7 +23,7 @@ import java.util.Set;
  */
 public interface ExtOrganizationUserMapper {
 
-    int countUserByDepartmentId(@Param("departmentId") String departmentId, @Param("orgId") String orgId);
+    int countUserByDepartmentIds(@Param("departmentIds") List<String> departmentIds, @Param("orgId") String orgId);
 
     List<UserPageResponse> list(@Param("request") UserPageRequest request);
 
