@@ -1,14 +1,9 @@
 <template>
   <CrmCard hide-footer>
     <div class="mb-[16px] flex justify-between">
-      <div>
-        <div v-if="props.customerId" class="font-medium text-[var(--text-n1)]">
-          {{ t('opportunity.contactInfo') }}
-        </div>
-        <n-button v-else v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']" type="primary" @click="handleCreate">
-          {{ t('overviewDrawer.addContract') }}
-        </n-button>
-      </div>
+      <n-button v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']" type="primary" @click="handleCreate">
+        {{ t('overviewDrawer.addContract') }}
+      </n-button>
       <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
     </div>
     <CrmTable
@@ -23,6 +18,7 @@
       :form-key="FormDesignKeyEnum.CONTACT"
       :source-id="activeContactId"
       :need-init-detail="needInitDetail"
+      :initial-source-name="props.initialSourceName"
       @saved="loadList"
     />
     <!-- 停用 -->
@@ -98,6 +94,7 @@
   const props = defineProps<{
     customerId?: string;
     refreshKey?: number;
+    initialSourceName?: string;
   }>();
 
   const Message = useMessage();
@@ -126,7 +123,11 @@
   ];
 
   function handleCreate() {
-    activeContactId.value = '';
+    if (props.customerId) {
+      activeContactId.value = props.customerId;
+    } else {
+      activeContactId.value = '';
+    }
     needInitDetail.value = false;
     formCreateDrawerVisible.value = true;
   }
@@ -271,6 +272,7 @@
           value: row.enable,
           disabled: !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']),
           onClick: () => {
+            if (!hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])) return;
             handleToggleStatus(row);
           },
         });

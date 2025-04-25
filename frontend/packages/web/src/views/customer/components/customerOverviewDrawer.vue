@@ -39,6 +39,7 @@
           :refresh-key="refreshKey"
           class="h-[calc(100vh-161px)]"
           :customer-id="props.sourceId"
+          :initial-source-name="sourceName"
         />
         <FollowDetail
           v-else-if="['followRecord', 'followPlan'].includes(activeTab)"
@@ -113,14 +114,6 @@
       {
         label: t('common.edit'),
         key: 'edit',
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
-        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('overviewDrawer.addContract'),
-        key: 'addContract',
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',

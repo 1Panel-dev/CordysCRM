@@ -129,11 +129,6 @@
 
   function handleButtonClick(key: string, done?: () => void) {
     switch (key) {
-      case 'addContract':
-        realFormKey.value = FormDesignKeyEnum.CONTACT;
-        needInitDetail.value = false;
-        formDrawerVisible.value = true;
-        return;
       case 'followRecord':
         if (props.formKey === FormDesignKeyEnum.CLUE) {
           realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CLUE;

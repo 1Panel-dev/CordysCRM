@@ -4,7 +4,7 @@
     :title="props.title ?? ''"
     icon-type="error"
     :content="content"
-    :disabled="!props.title || !props.value"
+    :disabled="!props.title || !props.value || !hasAnyPermission(['SYSTEM_NOTICE:UPDATE'])"
     :positive-text="t('system.message.confirmClose')"
     placement="bottom-end"
     :loading="props.loading"

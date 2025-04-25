@@ -614,6 +614,7 @@
           value: row.enable,
           disabled: !hasAnyPermission(['SYS_ORGANIZATION:UPDATE']),
           onClick: () => {
+            if (!hasAnyPermission(['SYS_ORGANIZATION:UPDATE'])) return;
             handleToggleStatus(row);
           },
         });
