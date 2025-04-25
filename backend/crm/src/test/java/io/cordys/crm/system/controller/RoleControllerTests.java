@@ -315,7 +315,7 @@ class RoleControllerTests extends BaseTest {
         });
 
         // @@校验权限
-        requestPostPermissionTest(PermissionConstants.SYSTEM_ROLE_ADD_USER, USER_PAGE, request);
+        requestPostPermissionTest(PermissionConstants.SYSTEM_ROLE_READ, USER_PAGE, request);
     }
 
     @Test

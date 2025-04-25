@@ -89,7 +89,7 @@ public class RoleController {
 
     @PostMapping("/user/page")
     @Operation(summary = "查看拥有该权限的用户")
-    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
+    @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_READ)
     public Pager<List<RoleUserListResponse>> listUser(@Validated @RequestBody RoleUserPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, userRoleService.listUserByRoleId(request, OrganizationContext.getOrganizationId()));
