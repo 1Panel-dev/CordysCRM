@@ -54,6 +54,7 @@
 
   import { deleteOpportunity, getOpportunityRuleList, switchOpportunityStatus } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
   const Message = useMessage();
@@ -134,6 +135,7 @@
         try {
           await switchOpportunityStatus(row.id);
           Message.success(t(isEnabling ? 'common.opened' : 'common.disabled'));
+          tableRefreshId.value += 1;
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error(error);
@@ -175,6 +177,7 @@
         return h(NSwitch, {
           value: row.enable,
           onClick: () => {
+            if (!hasAnyPermission(['MODULE_SETTING:UPDATE'])) return;
             handleToggleRuleStatus(row);
           },
         });

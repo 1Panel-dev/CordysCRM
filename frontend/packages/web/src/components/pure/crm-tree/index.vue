@@ -10,7 +10,7 @@
       height: `${props.virtualScrollProps?.virtualScrollHeight}`,
     }"
     :class="['crm-tree', containerStatusClass]"
-    v-bind="{ ...props, ...props.fieldNames }"
+    v-bind="{ ...props, ...props.fieldNames, draggable: editingKey ? false : props.draggable }"
     :data="filterTreeData"
     :node-props="nodeProps"
     :allow-drop="handleAllowDrop"
@@ -185,7 +185,28 @@
 
   const filterTreeData = ref<CrmTreeNodeData[]>([]); // 初始化时全量的树数据或在非搜索情况下更新后的全量树数据
 
+  function getSiblingLabels(key: string | number): string[] {
+    const option = findNodeByKey<CrmTreeNodeData>(data.value, key, props.fieldNames.keyField);
+    if (option) {
+      // 获取同层节点列表（树结构 or 列表结构）
+      const siblings = option.parentId
+        ? findNodeByKey<CrmTreeNodeData>(data.value, option.parentId, props.fieldNames.keyField)?.[
+            props.fieldNames.childrenField
+          ] ?? []
+        : data.value;
+      // 排除自己节点在内
+      return siblings.reduce((siblingsLabels: string[], node: CrmTreeNodeData) => {
+        if (node[props.fieldNames.keyField] !== option[props.fieldNames.keyField]) {
+          siblingsLabels.push(node[props.fieldNames.labelField]);
+        }
+        return siblingsLabels;
+      }, []);
+    }
+    return [];
+  }
+
   const { toggleEdit, createEditInput, editingKey } = useRenameNode(
+    getSiblingLabels,
     props.renameApi,
     toRefs(props).renameStatic,
     props.fieldNames
@@ -214,35 +235,18 @@
     const options = props.multiple ? _option : (meta.node as CrmTreeNodeData);
     emit('expand', _expandKeys, options, meta);
   }
-  function getSiblingLabels(option: CrmTreeNodeData): string[] {
-    // 获取同层节点列表（树结构 or 列表结构）
-    const siblings = option.parentId
-      ? findNodeByKey<CrmTreeNodeData>(data.value, option.parentId, props.fieldNames.keyField)?.[
-          props.fieldNames.childrenField
-        ] ?? []
-      : data.value;
-    // 排除自己节点在内
-    return siblings.reduce((siblingsLabels: string[], node: CrmTreeNodeData) => {
-      if (node[props.fieldNames.keyField] !== option[props.fieldNames.keyField]) {
-        siblingsLabels.push(node[props.fieldNames.labelField]);
-      }
-      return siblingsLabels;
-    }, []);
-  }
 
   /**
    * 渲染label
    */
   function renderLabelDom(info: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     const { option, selected, checked } = info;
-    const siblingLabels = getSiblingLabels(option);
     return createEditInput(
       { option, selected, checked },
       {
         name: option[props.fieldNames.labelField],
         rules: props.editRules,
       },
-      siblingLabels,
       props.renderLabel,
       { titleTooltipPosition: props.titleTooltipPosition, titleClass: props.titleClass }
     );

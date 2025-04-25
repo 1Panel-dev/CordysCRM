@@ -50,6 +50,7 @@
 
   import { deleteModuleCluePool, getCluePoolPage, noPickCluePool, switchCluePoolStatus } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -200,6 +201,7 @@
         return h(NSwitch, {
           value: row.enable,
           onClick: () => {
+            if (!hasAnyPermission(['MODULE_SETTING:UPDATE'])) return;
             handleToggleStatus(row);
           },
         });

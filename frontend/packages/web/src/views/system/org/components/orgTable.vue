@@ -159,102 +159,6 @@
     showSyncWeChatModal.value = true;
   }
 
-  const isHasConfigPermission = computed(() => hasAnyPermission(['SYSTEM_SETTING:UPDATE'])); // 有配置权限
-  const isHasConfig = ref<boolean>(false); // 已配置
-
-  async function handleSync() {
-    if (!isHasConfig.value) {
-      return false;
-    }
-    try {
-      await syncOrg(CompanyTypeEnum.WECOM);
-      Message.success(t('org.syncSuccess'));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  function renderSync() {
-    if (!hasAnyPermission(['SYS_ORGANIZATION:SYNC']) && !isHasConfigPermission.value) {
-      return null;
-    }
-    return h(
-      'div',
-      {
-        class: `flex items-center ${
-          isHasConfigPermission.value && isHasConfig.value ? 'text-[var(--text-n1)]' : 'text-[var(--text-n6)]'
-        }`,
-        onClick: () => handleSync(),
-      },
-      [
-        h(
-          NTooltip,
-          {
-            delay: 300,
-            flip: true,
-            disabled: isHasConfigPermission.value && isHasConfig.value,
-          },
-          {
-            trigger: () => {
-              return t('org.enterpriseWhatSync');
-            },
-            default: () => t('org.checkIsOpenConfig'),
-          }
-        ),
-        // 有同步微信配置权限则都展示
-        isHasConfigPermission.value
-          ? h(CrmIcon, {
-              type: 'iconicon_set_up',
-              size: 16,
-              class: 'ml-2 text-[var(--primary-8)]',
-              onClick: (e: MouseEvent) => settingWeChat(e),
-            })
-          : null,
-      ]
-    );
-  }
-
-  const renderSyncResult = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
-
-  const moreActions = computed(() => {
-    return [
-      {
-        label: t('org.enterpriseWhatSync'),
-        key: 'sync',
-        render: renderSyncResult.value,
-      },
-      {
-        label: t('common.import'),
-        key: 'import',
-        tooltipContent: props.isSyncFromThirdChecked ? t('org.checkSyncUserHoverTip') : '',
-        disabled: props.isSyncFromThirdChecked,
-        permission: ['SYS_ORGANIZATION:IMPORT'],
-      },
-      // TOTO  不上
-      // {
-      //   label: t('common.export'),
-      //   key: 'export',
-      // },
-    ];
-  });
-
-  // 初始化企业微信配置
-  async function initIntegration() {
-    try {
-      const res = await getConfigSynchronization();
-      if (res) {
-        const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
-        currentIntegration.value = { ...currentIntegration.value, ...weChatConfig };
-        isHasConfig.value = !!weChatConfig && weChatConfig.syncEnable && !!weChatConfig.verify;
-        renderSyncResult.value = renderSync();
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   const tableRefreshId = ref(0);
 
   const actionConfig: BatchActionConfig = {
@@ -697,7 +601,7 @@
       showInTable: false,
     },
     {
-      title: t('org.Position'),
+      title: t('org.position'),
       key: 'position',
       width: 100,
       ellipsis: {
@@ -801,6 +705,73 @@
     }
   );
 
+  async function handleSyncFromThird() {
+    try {
+      await syncOrg(CompanyTypeEnum.WECOM);
+      Message.success(t('org.syncSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  // 同步二次确认
+  function handleSyncConfirm() {
+    openModal({
+      type: 'error',
+      title: t('org.syncUserTipTitle'),
+      content: t('org.syncUserTipContent'),
+      positiveText: t('common.confirm'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          handleSyncFromThird();
+          tableRefreshId.value += 1;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
+      },
+    });
+  }
+  const isHasConfigPermission = computed(() => hasAnyPermission(['SYSTEM_SETTING:UPDATE'])); // 有配置权限
+  const isHasConfig = ref<boolean>(false); // 已配置
+  const renderSyncResult = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
+
+  const moreActions = computed(() => {
+    return [
+      {
+        label: t('org.enterpriseWhatSync'),
+        key: 'sync',
+        render: renderSyncResult.value,
+      },
+      {
+        label: t('common.import'),
+        key: 'import',
+        tooltipContent: props.isSyncFromThirdChecked ? t('org.checkSyncUserHoverTip') : '',
+        disabled: props.isSyncFromThirdChecked,
+        permission: ['SYS_ORGANIZATION:IMPORT'],
+      },
+      // TOTO  不上
+      // {
+      //   label: t('common.export'),
+      //   key: 'export',
+      // },
+    ];
+  });
+
+  async function handleSync() {
+    if (!isHasConfig.value) {
+      return false;
+    }
+
+    if (propsRes.value.data.length) {
+      handleSyncConfirm();
+    } else {
+      handleSyncFromThird();
+    }
+  }
+
   const keyword = ref('');
 
   function initOrgList() {
@@ -903,6 +874,62 @@
       console.log(error);
     } finally {
       importLoading.value = false;
+    }
+  }
+
+  function renderSync() {
+    if (!hasAnyPermission(['SYS_ORGANIZATION:SYNC']) && !isHasConfigPermission.value) {
+      return null;
+    }
+    return h(
+      'div',
+      {
+        class: `flex items-center ${
+          isHasConfigPermission.value && isHasConfig.value ? 'text-[var(--text-n1)]' : 'text-[var(--text-n6)]'
+        }`,
+        onClick: () => handleSync(),
+      },
+      [
+        h(
+          NTooltip,
+          {
+            delay: 300,
+            flip: true,
+            disabled: isHasConfigPermission.value && isHasConfig.value,
+          },
+          {
+            trigger: () => {
+              return t('org.enterpriseWhatSync');
+            },
+            default: () => t('org.checkIsOpenConfig'),
+          }
+        ),
+        // 有同步微信配置权限则都展示
+        isHasConfigPermission.value
+          ? h(CrmIcon, {
+              type: 'iconicon_set_up',
+              size: 16,
+              class: 'ml-2 text-[var(--primary-8)]',
+              onClick: (e: MouseEvent) => settingWeChat(e),
+            })
+          : null,
+      ]
+    );
+  }
+
+  // 初始化企业微信配置
+  async function initIntegration() {
+    try {
+      const res = await getConfigSynchronization();
+      if (res) {
+        const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
+        currentIntegration.value = { ...currentIntegration.value, ...weChatConfig };
+        isHasConfig.value = !!weChatConfig && weChatConfig.syncEnable && !!weChatConfig.verify;
+        renderSyncResult.value = renderSync();
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
     }
   }
 

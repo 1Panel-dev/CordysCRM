@@ -14,6 +14,7 @@ import type { CrmInfoNode, CrmTreeFieldNames, CrmTreeNodeData, FieldConfig } fro
  * @returns
  */
 export default function useRenameNode(
+  getSiblingLabelsFun: (key: string | number) => string[],
   renameApi?: (node: CrmTreeNodeData) => Promise<boolean>,
   renameStatic?: Ref<boolean>,
   fieldNames: CrmTreeFieldNames = { keyField: 'key', labelField: 'label', childrenField: 'children' }
@@ -70,11 +71,14 @@ export default function useRenameNode(
     }
   }
 
+  const siblingLabels = computed(() => {
+    return getSiblingLabelsFun(editingKey.value);
+  });
+
   /** 生成 NodeTitle  */
   function createEditInput(
     infoProps: { option: CrmTreeNodeData; selected: boolean; checked: boolean },
     fieldConfig: FieldConfig,
-    siblingLabels: string[],
     renderLabel?: (info: CrmInfoNode) => VNodeChild,
     titleProps?: {
       titleTooltipPosition?:
@@ -100,7 +104,7 @@ export default function useRenameNode(
       {
         mode,
         fieldConfig,
-        allNames: siblingLabels,
+        allNames: siblingLabels.value,
         loading: loading.value,
         class: selected ? 'crm-select-label' : '',
         ...titleProps,

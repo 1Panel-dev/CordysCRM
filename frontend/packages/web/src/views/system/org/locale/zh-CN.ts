@@ -15,7 +15,7 @@ export default {
   'org.directSuperior': '直属上级',
   'org.role': '角色',
   'org.employeeNumber': '工号',
-  'org.Position': '职位',
+  'org.position': '职位',
   'org.employeeType': '员工类型',
   'org.workingCity': '工作城市',
   'org.userGroup': '用户组',
@@ -64,4 +64,6 @@ export default {
   'org.batchToggleStatusTip': '确认 {enable} {number} 名员工吗？',
   'org.batchDeleteUserTip': '确认删除 {number} 名员工吗？',
   'org.checkSyncUserHoverTip': '当前组织架构为企业微信同步数据，请通过“同步组织架构”进行添加成员操作！',
+  'org.syncUserTipTitle': '确定从企业微信同步吗？',
+  'org.syncUserTipContent': '同步后，将覆盖手动创建的数据，请谨慎操作',
 };

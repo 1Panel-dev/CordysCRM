@@ -20,6 +20,9 @@
       <template #gender="{ item }">
         {{ item.value ? t('org.female') : t('org.male') }}
       </template>
+      <template #employeeType="{ item }">
+        {{ getEmployeeType(item.value as string) }}
+      </template>
     </CrmDescription>
   </CrmDrawer>
 </template>
@@ -84,10 +87,11 @@
     { label: t('org.userEmail'), value: 'email' },
     { label: t('org.department'), value: 'department' },
     { label: t('org.employeeNumber'), value: 'employeeId' },
-    { label: t('org.employeeType'), value: 'employeeType' },
+    { label: t('org.employeeType'), value: 'employeeType', valueSlotName: 'employeeType' },
     { label: t('org.directSuperior'), value: 'supervisorId' },
     { label: t('org.workingCity'), value: 'workCity' },
     { label: t('org.role'), value: 'roles', tagProps: { labelKey: 'name' } },
+    { label: t('org.position'), value: 'position' },
     // TODO 不上
     // { label: t('org.userGroup'), value: 'userGroup' },
   ];
@@ -111,6 +115,19 @@
       console.log(error);
     }
   }
+
+  const getEmployeeType = (value: string) => {
+    switch (value) {
+      case 'formal':
+        return t('org.formalUser');
+      case 'internship':
+        return t('org.internshipUser');
+      case 'outsourcing':
+        return t('org.outsourcingUser');
+      default:
+        return '-';
+    }
+  };
 
   watch(
     () => showDetailDrawer.value,

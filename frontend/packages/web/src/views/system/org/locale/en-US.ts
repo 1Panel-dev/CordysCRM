@@ -16,7 +16,7 @@ export default {
   'org.directSuperior': 'Direct Superior',
   'org.role': 'Role',
   'org.employeeNumber': 'Employee Number',
-  'org.Position': 'Position',
+  'org.position': 'Position',
   'org.employeeType': 'Employee Type',
   'org.workingCity': 'Working City',
   'org.userGroup': 'User Group',
@@ -67,4 +67,6 @@ export default {
   'org.batchDeleteUserTip': 'Confirm delete {number} employees?',
   'org.checkSyncUserHoverTip':
     'The organization structure is enterprise WeChat synchronization data, please add members through "Synchronize organization structure"!',
+  'org.syncUserTipTitle': 'Synchronize from enterprise wechat?',
+  'org.syncUserTipContent': 'After synchronization, the manually created data will be overwritten, so be careful',
 };

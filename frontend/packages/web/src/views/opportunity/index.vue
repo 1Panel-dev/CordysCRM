@@ -238,7 +238,7 @@
   function handleDelete(row: OpportunityItem) {
     openModal({
       type: 'error',
-      title: t('common.deleteConfirmTitle', { name: characterLimit(row.opportunityName) }),
+      title: t('common.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('opportunity.batchDeleteContentTip'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),

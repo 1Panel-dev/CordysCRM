@@ -153,9 +153,15 @@
   }
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
-    return node.parentId === 'NONE' || props.isSyncFromThirdChecked
-      ? items.filter((e) => e.key !== 'delete' && !e.type)
-      : items;
+    return items.filter((e) => {
+      if (props.isSyncFromThirdChecked) {
+        return e.key !== 'delete' && e.key !== 'rename';
+      }
+      if (node.parentId === 'NONE') {
+        return e.key !== 'delete';
+      }
+      return true;
+    });
   }
 
   // 获取模块树
@@ -214,6 +220,7 @@
       });
 
       const newNode: CrmTreeNodeData = {
+        ...data,
         id: data.id,
         name: data.name,
         children: undefined,

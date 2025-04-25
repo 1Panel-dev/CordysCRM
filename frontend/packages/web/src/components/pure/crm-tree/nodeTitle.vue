@@ -88,6 +88,11 @@
   // 校验名称是否重复
   const tooltipContent = ref('');
   const validateName = (rule: FormItemRule, value: string) => {
+    if (value.trim().length === 0) {
+      tooltipContent.value = t('common.nameNotNull');
+      return new Error(t('common.nameNotNull'));
+    }
+
     if ((props.allNames || []).includes(value)) {
       tooltipContent.value = t('common.nameExists');
       return new Error(t(props.fieldConfig?.nameExistTipText || 'common.nameExists'));

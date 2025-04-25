@@ -106,7 +106,7 @@
               :fetch-api="getUserOptions"
             />
           </n-form-item>
-          <n-form-item require-mark-placement="left" label-placement="left" path="position" :label="t('org.Position')">
+          <n-form-item require-mark-placement="left" label-placement="left" path="position" :label="t('org.position')">
             <n-input v-model:value="form.position" type="text" :placeholder="t('common.pleaseInput')" />
           </n-form-item>
           <n-form-item
@@ -261,10 +261,12 @@
   }
 
   const rules: FormRules = {
-    name: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }) }],
+    name: [
+      { required: true, message: t('common.notNull', { value: `${t('org.userName')}` }), trigger: ['input', 'blur'] },
+    ],
     phone: [{ required: true, validator: validateUserPhone, trigger: ['input', 'blur'] }],
     email: [{ required: true, validator: validateUserEmail, trigger: ['input', 'blur'] }],
-    departmentId: [{ required: true, message: t('common.pleaseSelect') }],
+    departmentId: [{ required: true, message: t('common.pleaseSelect'), trigger: ['input', 'blur'] }],
   };
 
   const showForm = ref(false);

@@ -21,10 +21,22 @@
     <!-- 显示 "+n" -->
     <n-tooltip trigger="hover" :disabled="hiddenItemsCount < 1" flip :delay="300" :placement="props.placement">
       <template #trigger>
-        <div ref="moreButtonRef" :class="`more-items ${hiddenItemsCount > 0 ? 'visible' : 'invisible'}`">
-          <CrmTag :tooltip-disabled="true" :size="props.size" :type="props.type" :theme="props.theme" class="tag">
+        <div
+          ref="moreButtonRef"
+          :class="`more-items ${hiddenItemsCount > 0 ? 'visible' : 'invisible'}`"
+          aria-hidden="true"
+        >
+          <CrmTag
+            v-if="hiddenItemsCount > 0"
+            :tooltip-disabled="true"
+            :size="props.size"
+            :type="props.type"
+            :theme="props.theme"
+            class="tag"
+          >
             +{{ hiddenItemsCount }}
           </CrmTag>
+          <span v-else class="tag-placeholder"></span>
         </div>
       </template>
       {{ tagsTooltip }}
@@ -163,5 +175,14 @@
     flex-wrap: nowrap;
     pointer-events: none;
     gap: 4px;
+  }
+  .more-items {
+    display: inline-block;
+  }
+  .tag-placeholder {
+    display: inline-block;
+    border: 1px solid transparent;
+    visibility: hidden;
+    box-sizing: border-box;
   }
 </style>
