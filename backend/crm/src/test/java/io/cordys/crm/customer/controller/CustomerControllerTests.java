@@ -77,7 +77,7 @@ class CustomerControllerTests extends BaseTest {
          this.requestGetWithOkAndReturn(MODULE_FORM);
 
          // 校验权限
-         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, MODULE_FORM);
+         requestGetPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ), MODULE_FORM);
      }
 
     @Test

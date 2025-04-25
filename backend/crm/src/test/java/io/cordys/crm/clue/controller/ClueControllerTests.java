@@ -69,7 +69,7 @@ class ClueControllerTests extends BaseTest {
          this.requestGetWithOkAndReturn(MODULE_FORM);
 
          // 校验权限
-         requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, MODULE_FORM);
+         requestGetPermissionsTest(List.of(PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ), MODULE_FORM);
      }
 
     @Test
