@@ -292,6 +292,7 @@
 
     overflow: auto;
     padding: 8px 4px;
+    min-height: 48px;
     white-space: nowrap;
     background-color: var(--text-n10);
     gap: 8px;

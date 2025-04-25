@@ -87,6 +87,7 @@
       ],
       formItemClass: 'w-[120px] flex-initial',
       numberProps: {
+        min: 0,
         placeholder: t('module.capacitySet.MaximumPlaceholder'),
       },
     },

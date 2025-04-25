@@ -2,7 +2,7 @@ import { showSuccessToast } from 'vant';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { getCityPath, safeFractionConvert } from '@lib/shared/method';
+import { formatTimeValue, getCityPath, safeFractionConvert } from '@lib/shared/method';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
 
 import type { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
@@ -51,7 +51,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           const name = options?.find((e) => e.id === form[item.businessKey as string])?.name;
           descriptions.value.push({
             label: item.name,
-            value: name || form[item.businessKey],
+            value:
+              item.type === FieldTypeEnum.DATE_TIME
+                ? formatTimeValue(name || form[item.businessKey], item.dateType)
+                : name || form[item.businessKey],
             isTag: item.type === FieldTypeEnum.INPUT_MULTIPLE,
           });
           if (item.businessKey === 'name') {
