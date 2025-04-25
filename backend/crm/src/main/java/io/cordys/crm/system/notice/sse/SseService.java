@@ -99,7 +99,8 @@ public class SseService {
             if (completed.compareAndSet(false, true)) {
                 try {
                     emitter.complete();
-                } catch (Exception ignore) {
+                } catch (Exception e) {
+                    completeWithError(e);
                 }
             }
         }
@@ -268,6 +269,7 @@ public class SseService {
     public void broadcastPeriodically(String userId, String sendType) {
         SseMessageDTO msg = buildMessage(userId, sendType);
         sendToUser(userId, "message", JSON.toJSONString(msg));
+
         LogUtils.info("Broadcast to user {} at {}", userId, System.currentTimeMillis());
     }
 
