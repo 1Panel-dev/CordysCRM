@@ -4,6 +4,9 @@
     <select id="list" parameterType="io.cordys.common.dto.BasePageRequest" resultType="io.cordys.crm.opportunity.dto.OpportunityRuleDTO">
         select * from opportunity_rule
         where organization_id = #{orgId}
+        <if test="request.keyword != null and request.keyword != ''">
+            and name like concat('%', #{request.keyword},'%')
+        </if>
         <include refid="filters">
             <property name="filters" value="request.filters"/>
         </include>
