@@ -28,6 +28,7 @@
         v-model:last-stage="lastStage"
         class="mb-[16px]"
         show-error-btn
+        :readonly="isConverted"
         :base-steps="workflowList"
         :source-id="sourceId"
         :update-api="updateClueStatus"
@@ -230,8 +231,12 @@
     }
   }
 
+  const isConverted = computed(
+    () => props.detail?.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(props.detail.transitionType)
+  );
+
   const buttonList = computed<ActionsItem[]>(() => {
-    if (props.detail?.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(props.detail.transitionType)) {
+    if (isConverted.value) {
       return [];
     }
     return [
@@ -283,6 +288,9 @@
   });
 
   const buttonMoreList = computed<ActionsItem[]>(() => {
+    if (isConverted.value) {
+      return [];
+    }
     return [
       {
         label: t('clue.convertToCustomer'),

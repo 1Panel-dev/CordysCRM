@@ -17,6 +17,7 @@
               show-error-btn
               :base-steps="workflowList"
               :source-id="sourceId"
+              :readonly="isConverted"
               :operation-permission="['CLUE_MANAGEMENT:UPDATE']"
               @load-detail="() => initStage(true)"
             />
@@ -134,6 +135,12 @@
   watch([() => detail.value.stage, () => detail.value.lastStage], () => {
     initStage(false);
   });
+
+  const isConverted = computed<boolean>(
+    () =>
+      !!route.query?.transitionType?.toString().length &&
+      ['CUSTOMER', 'OPPORTUNITY'].includes(route.query?.transitionType?.toString())
+  );
 
   const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
   const planListRef = ref<InstanceType<typeof CrmFollowPlanList>[]>();

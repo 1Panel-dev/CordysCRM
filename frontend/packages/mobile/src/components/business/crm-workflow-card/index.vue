@@ -3,7 +3,11 @@
     <div class="flex items-center justify-between">
       <div class="font-semibold text-[var(--text-n1)]"> {{ props.title }}</div>
       <div
-        v-if="currentStageIndex !== workflowList.length - 1 && hasAnyPermission(props.operationPermission)"
+        v-if="
+          currentStageIndex !== workflowList.length - 1 &&
+          hasAnyPermission(props.operationPermission) &&
+          !props.readonly
+        "
         class="flex items-center gap-[8px]"
       >
         <van-button v-if="props.showErrorBtn" plain type="danger" size="small" @click="handleUpdateStage(true)">
@@ -95,6 +99,7 @@
     formStageKey: WorkStageTypeKey;
     operationPermission?: string[];
     showErrorBtn?: boolean;
+    readonly?: boolean;
   }>();
 
   const emit = defineEmits<{

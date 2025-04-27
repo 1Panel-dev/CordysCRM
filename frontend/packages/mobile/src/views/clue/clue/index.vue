@@ -280,6 +280,7 @@
       query: {
         id: item.id,
         name: item.name,
+        transitionType: item.transitionType,
         needInitDetail: 'Y',
       },
     });

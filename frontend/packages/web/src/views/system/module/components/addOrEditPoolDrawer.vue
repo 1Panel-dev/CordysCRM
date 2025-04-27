@@ -70,7 +70,7 @@
           class="crm-reminder-advance-input"
           :placeholder="t('common.pleaseInput')"
           min="1"
-          max="100"
+          max="10000"
           :precision="0"
         />
       </n-form-item>
@@ -96,7 +96,7 @@
           class="crm-reminder-advance-input"
           :placeholder="t('common.pleaseInput')"
           min="1"
-          max="100"
+          max="10000"
           :precision="0"
         />
         <div class="flex flex-nowrap"> {{ t('module.clue.receiveDay') }}</div>
