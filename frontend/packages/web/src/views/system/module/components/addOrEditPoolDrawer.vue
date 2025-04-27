@@ -69,6 +69,9 @@
           v-model:value="form.pickRule.pickNumber"
           class="crm-reminder-advance-input"
           :placeholder="t('common.pleaseInput')"
+          min="1"
+          max="100"
+          :precision="0"
         />
       </n-form-item>
       <n-form-item path="pickRule.limitPreOwner" :label="t('module.clue.ownerCollection')">
@@ -92,6 +95,9 @@
           v-model:value="form.pickRule.pickIntervalDays"
           class="crm-reminder-advance-input"
           :placeholder="t('common.pleaseInput')"
+          min="1"
+          max="100"
+          :precision="0"
         />
         <div class="flex flex-nowrap"> {{ t('module.clue.receiveDay') }}</div>
       </n-form-item>

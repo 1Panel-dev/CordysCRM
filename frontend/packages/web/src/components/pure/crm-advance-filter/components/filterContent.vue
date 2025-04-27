@@ -62,7 +62,7 @@
               :disabled="isValueDisabled(item)"
               :placeholder="t('common.pleaseSelect')"
               v-bind="item.selectProps"
-              :multiple="item.type === FieldTypeEnum.SELECT_MULTIPLE"
+              :multiple="item.type === FieldTypeEnum.SELECT_MULTIPLE || item.selectProps?.multiple"
             />
 
             <n-tree-select

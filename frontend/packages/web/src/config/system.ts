@@ -38,7 +38,7 @@ export const logTypeOption = [
   },
   {
     value: OperationTypeEnum.ASSIGN,
-    label: t('customer.distribute'),
+    label: t('common.distribute'),
   },
 ];
 

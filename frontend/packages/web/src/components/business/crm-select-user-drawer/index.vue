@@ -96,10 +96,6 @@
         label: t('role.role'),
         value: MemberSelectTypeEnum.ROLE,
       },
-      {
-        label: t('role.member'),
-        value: MemberSelectTypeEnum.MEMBER,
-      },
     ]
   );
 

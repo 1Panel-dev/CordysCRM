@@ -266,7 +266,7 @@
     },
     {
       title: t('common.updateUserName'),
-      key: 'updateUser',
+      key: 'updateUserName',
       width: 100,
     },
     {

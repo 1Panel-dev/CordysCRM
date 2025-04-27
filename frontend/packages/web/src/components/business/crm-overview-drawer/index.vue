@@ -29,6 +29,17 @@
           <slot :name="item.popSlotContent"></slot>
         </template>
       </CrmButtonGroup>
+      <CrmMoreAction
+        v-if="props.buttonMoreList?.length"
+        :options="props.buttonMoreList"
+        trigger="click"
+        @select="(item:ActionsItem) => emit('buttonSelect', item.key as string)"
+      >
+        <n-button type="primary" ghost class="n-btn-outline-primary ml-[12px]">
+          {{ t('common.more') }}
+          <CrmIcon class="ml-[8px]" type="iconicon_chevron_down" :size="16" />
+        </n-button>
+      </CrmMoreAction>
     </template>
     <div class="h-full w-full overflow-hidden">
       <CrmSplitPanel :max="0.5" :min="0.2" :default-size="0.2" disabled>
@@ -73,12 +84,14 @@
 </template>
 
 <script lang="ts" setup>
-  import { NScrollbar, NTooltip, TabPaneProps } from 'naive-ui';
+  import { NButton, NScrollbar, NTooltip, TabPaneProps } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
@@ -91,6 +104,7 @@
     subtitle?: string;
     tabList: TabContentItem[];
     buttonList: ActionsItem[];
+    buttonMoreList?: ActionsItem[];
     formKey: FormDesignKeyEnum;
     sourceId?: string;
     showTabSetting?: boolean;
@@ -113,6 +127,8 @@
   const cachedList = defineModel<TabContentItem[]>('cachedList', {
     required: true,
   });
+
+  const { t } = useI18n();
 
   const showTabList = computed(() => {
     return cachedList.value.reduce((acc: TabPaneProps[], e: TabContentItem) => {

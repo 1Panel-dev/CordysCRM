@@ -5,6 +5,7 @@
     v-model:cached-list="cachedList"
     :tab-list="tabList"
     :button-list="buttonList"
+    :button-more-list="buttonMoreList"
     :source-id="sourceId"
     :initial-source-name="sourceName"
     :title="props.detail?.name"
@@ -278,21 +279,25 @@
         popSlotName: 'transferPopTitle',
         popSlotContent: 'transferPopContent',
       },
+    ];
+  });
+
+  const buttonMoreList = computed<ActionsItem[]>(() => {
+    return [
       {
         label: t('clue.convertToCustomer'),
         key: 'convertToCustomer',
         permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
+        allPermission: true,
       },
       {
         label: t('clue.convertToOpportunity'),
         key: 'convertToOpportunity',
         permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
+        allPermission: true,
+      },
+      {
+        type: 'divider',
       },
       ...(showAction.value
         ? [
@@ -300,9 +305,7 @@
               label: t('common.delete'),
               key: 'delete',
               permission: ['CLUE_MANAGEMENT:DELETE'],
-              text: false,
-              ghost: true,
-              class: 'n-btn-outline-primary',
+              danger: true,
             },
           ]
         : []),
