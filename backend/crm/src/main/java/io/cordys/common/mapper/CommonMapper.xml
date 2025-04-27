@@ -26,28 +26,28 @@
                 <when test="${condition}.operator == 'CONTAINS'">
                     JSON_OVERLAPS(${column}, JSON_ARRAY(
                     <foreach collection="${condition}.value" item="valueItem" separator=",">
-                        CAST(#{valueItem} AS SIGNED)
+                        #{valueItem}
                     </foreach>))
                 </when>
 
                 <when test="${condition}.operator == 'NOT_CONTAINS'">
                     NOT JSON_OVERLAPS(${column}, JSON_ARRAY(
                     <foreach collection="${condition}.value" item="valueItem" separator=",">
-                        CAST(#{valueItem} AS SIGNED)
+                       #{valueItem}
                     </foreach>))
                 </when>
 
                 <when test="${condition}.operator == 'IN'">
                     JSON_OVERLAPS(${column}, JSON_ARRAY(
                     <foreach collection="${condition}.value" item="tag" separator=",">
-                        CAST(#{tag} AS SIGNED)
+                        #{tag}
                     </foreach>))
                 </when>
 
                 <when test="${condition}.operator == 'NOT_IN'">
                     NOT JSON_OVERLAPS(${column}, JSON_ARRAY(
                     <foreach collection="${condition}.value" item="tag" separator=",">
-                        CAST(#{tag} AS SIGNED)
+                        #{tag}
                     </foreach>))
                 </when>
 
