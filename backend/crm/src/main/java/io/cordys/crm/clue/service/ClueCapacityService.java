@@ -4,6 +4,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.clue.domain.ClueCapacity;
 import io.cordys.crm.clue.dto.ClueCapacityDTO;
+import io.cordys.crm.customer.domain.CustomerCapacity;
 import io.cordys.crm.system.dto.request.CapacityRequest;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
@@ -33,7 +34,7 @@ public class ClueCapacityService {
 	public List<ClueCapacityDTO> list(String currentOrgId) {
 		List<ClueCapacityDTO> capacityData = new ArrayList<>();
 		LambdaQueryWrapper<ClueCapacity> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ClueCapacity::getOrganizationId, currentOrgId);
+		wrapper.eq(ClueCapacity::getOrganizationId, currentOrgId).orderByDesc(ClueCapacity::getCreateTime);;
 		List<ClueCapacity> capacities = clueCapacityMapper.selectListByLambda(wrapper);
 		if (CollectionUtils.isEmpty(capacities)) {
 			return new ArrayList<>();

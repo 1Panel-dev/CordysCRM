@@ -147,7 +147,11 @@ public class CluePoolService {
         recycleRule.setPoolId(pool.getId());
         recycleRule.setCreateTime(System.currentTimeMillis());
         recycleRule.setCreateUser(currentUserId);
-        recycleRule.setCondition(JSON.toJSONString(request.getRecycleRule().getConditions()));
+        try {
+            recycleRule.setCondition(JSON.toJSONString(request.getRecycleRule().getConditions()));
+        } catch (Exception e) {
+            throw new GenericException(Translator.get("customer_rule_condition_error"));
+        }
         recycleRule.setUpdateTime(System.currentTimeMillis());
         recycleRule.setUpdateUser(currentUserId);
 
@@ -183,7 +187,11 @@ public class CluePoolService {
         CluePoolRecycleRule recycleRule = new CluePoolRecycleRule();
         BeanUtils.copyBean(recycleRule, request.getRecycleRule());
         recycleRule.setPoolId(pool.getId());
-        recycleRule.setCondition(JSON.toJSONString(request.getRecycleRule().getConditions()));
+        try {
+            recycleRule.setCondition(JSON.toJSONString(request.getRecycleRule().getConditions()));
+        } catch (Exception e) {
+            throw new GenericException(Translator.get("customer_rule_condition_error"));
+        }
         recycleRule.setUpdateTime(System.currentTimeMillis());
         recycleRule.setUpdateUser(currentUserId);
 

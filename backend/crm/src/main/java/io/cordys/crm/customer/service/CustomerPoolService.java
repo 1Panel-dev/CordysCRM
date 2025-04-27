@@ -144,7 +144,11 @@ public class CustomerPoolService {
 		CustomerPoolRecycleRule recycleRule = new CustomerPoolRecycleRule();
 		BeanUtils.copyBean(recycleRule, request.getRecycleRule());
 		recycleRule.setId(IDGenerator.nextStr());
-		recycleRule.setCondition(JSON.toJSONString(request.getRecycleRule().getConditions()));
+		try {
+			recycleRule.setCondition(JSON.toJSONString(request.getRecycleRule().getConditions()));
+		} catch (Exception e) {
+			throw new GenericException(Translator.get("customer_rule_condition_error"));
+		}
 		recycleRule.setPoolId(pool.getId());
 		recycleRule.setCreateUser(currentUserId);
 		recycleRule.setCreateTime(System.currentTimeMillis());
@@ -184,7 +188,11 @@ public class CustomerPoolService {
 		CustomerPoolRecycleRule recycleRule = new CustomerPoolRecycleRule();
 		BeanUtils.copyBean(recycleRule, request.getRecycleRule());
 		recycleRule.setPoolId(pool.getId());
-		recycleRule.setCondition(JSON.toJSONString(request.getRecycleRule().getConditions()));
+		try {
+			recycleRule.setCondition(JSON.toJSONString(request.getRecycleRule().getConditions()));
+		} catch (Exception e) {
+			throw new GenericException(Translator.get("customer_rule_condition_error"));
+		}
 		recycleRule.setUpdateUser(currentUserId);
 		recycleRule.setUpdateTime(System.currentTimeMillis());
 		extCustomerPoolMapper.updateRecycleRule(recycleRule);

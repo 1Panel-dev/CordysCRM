@@ -1,6 +1,8 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.constants.InternalRole;
 import io.cordys.common.dto.BaseTreeNode;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.ScopeKey;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
@@ -74,7 +76,12 @@ public class UserExtendService {
 		if (CollectionUtils.isEmpty(scopeIds)) {
 			return new ArrayList<>();
 		}
-		return extUserExtendMapper.groupByScopeIds(scopeIds);
+		List<ScopeNameDTO> scopeNameDTOS = extUserExtendMapper.groupByScopeIds(scopeIds);
+		return scopeNameDTOS.stream().peek(scope -> {
+			if (StringUtils.equalsAny(scope.getName(), InternalRole.ORG_ADMIN.getValue(), InternalRole.SALES_MANAGER.getValue(), InternalRole.SALES_STAFF.getValue())) {
+				scope.setName(Translator.get("role." + scope.getName()));
+			}
+		}).toList();
 	}
 
 	/**

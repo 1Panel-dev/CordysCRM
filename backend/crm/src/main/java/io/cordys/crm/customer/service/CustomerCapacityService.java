@@ -32,7 +32,7 @@ public class CustomerCapacityService {
 	public List<CustomerCapacityDTO> list(String currentOrgId) {
 		List<CustomerCapacityDTO> capacityDTOS = new ArrayList<>();
 		LambdaQueryWrapper<CustomerCapacity> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(CustomerCapacity::getOrganizationId, currentOrgId);
+		wrapper.eq(CustomerCapacity::getOrganizationId, currentOrgId).orderByDesc(CustomerCapacity::getCreateTime);
 		List<CustomerCapacity> capacities = customerCapacityMapper.selectListByLambda(wrapper);
 		if (CollectionUtils.isEmpty(capacities)) {
 			return new ArrayList<>();
