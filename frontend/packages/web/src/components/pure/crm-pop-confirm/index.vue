@@ -13,7 +13,9 @@
     @negative-click="handleNegativeClick"
   >
     <template #trigger>
-      <slot></slot>
+      <div v-permission="props.permission">
+        <slot></slot>
+      </div>
     </template>
     <template #default>
       <div v-permission="props.permission" class="crm-pop-confirm-content-wrapper">

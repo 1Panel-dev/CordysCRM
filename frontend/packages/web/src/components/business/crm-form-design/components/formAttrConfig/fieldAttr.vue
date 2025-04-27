@@ -838,7 +838,7 @@
   const showRuleConfigVisible = ref(false);
   const tempShowRules = ref<FormCreateFieldShowControlRule[]>([]);
   const isShowRuleField = computed(() => {
-    return fieldConfig.value.type === FieldTypeEnum.RADIO || fieldConfig.value.type === FieldTypeEnum.SELECT_MULTIPLE;
+    return fieldConfig.value.type === FieldTypeEnum.RADIO || fieldConfig.value.type === FieldTypeEnum.SELECT;
   });
   // 显隐规则可选字段
   const showRuleFields = computed(() => {

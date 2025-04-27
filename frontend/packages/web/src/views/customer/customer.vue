@@ -347,7 +347,8 @@
       width: 200,
       fixed: 'right',
       render: (row: any) =>
-        ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value)
+        ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value) ||
+        row.collaborationType === 'READ_ONLY'
           ? '-'
           : h(
               CrmOperationButton,
