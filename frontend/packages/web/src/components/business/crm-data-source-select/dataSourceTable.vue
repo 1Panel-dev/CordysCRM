@@ -101,8 +101,8 @@
 
   const keyword = ref('');
 
-  function searchData() {
-    setLoadListParams({ keyword: keyword.value });
+  function searchData(_keyword?: string) {
+    setLoadListParams({ keyword: _keyword !== undefined ? _keyword : keyword.value });
     loadList();
   }
 

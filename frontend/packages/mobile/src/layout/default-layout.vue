@@ -180,6 +180,9 @@
   .page {
     @apply flex h-full flex-col;
 
+    padding-bottom: env(safe-area-inset-bottom);
+    /* stylelint-disable-next-line function-no-unknown */
+    padding-bottom: constant(safe-area-inset-bottom);
     background-color: var(--text-n9);
     .page-content {
       @apply relative flex-1 overflow-hidden;

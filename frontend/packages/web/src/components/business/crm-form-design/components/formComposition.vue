@@ -4,7 +4,7 @@
     :require-mark-placement="props.formConfig.labelPos === 'left' ? 'left' : 'right'"
     class="crm-form-design--composition"
   >
-    <n-scrollbar>
+    <n-scrollbar class="px-[24px] pt-[24px]">
       <VueDraggable
         v-model="list"
         :animation="150"
@@ -240,8 +240,6 @@
 <style lang="less">
   .crm-form-design--composition {
     @apply relative flex h-full flex-col;
-
-    padding: 24px 24px 0;
     .crm-form-design--composition-drag-wrapper {
       @apply flex h-full w-full flex-wrap content-start;
 

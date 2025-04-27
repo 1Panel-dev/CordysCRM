@@ -430,7 +430,12 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           }
 
           if (
-            [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type) ||
+            [
+              FieldTypeEnum.DATA_SOURCE,
+              FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+              FieldTypeEnum.MEMBER_MULTIPLE,
+              FieldTypeEnum.DEPARTMENT_MULTIPLE,
+            ].includes(field.type) ||
             field.type === FieldTypeEnum.INPUT_MULTIPLE
           ) {
             return {
@@ -454,6 +459,16 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               width: 100,
               key: field.businessKey || field.id,
               render: (row: any) => formatNumberValue(row[field.businessKey || field.id], field),
+            };
+          }
+          if ([FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(field.type)) {
+            return {
+              title: field.name,
+              width: 150,
+              key: field.businessKey || field.id,
+              ellipsis: {
+                tooltip: true,
+              },
             };
           }
           return {

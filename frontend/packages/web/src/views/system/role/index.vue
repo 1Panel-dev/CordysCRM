@@ -263,7 +263,7 @@
 
   async function handleCreated(id: string) {
     if (activeRole.value) {
-      await init();
+      roles.value = await getRoles();
       selectedKeys.value = [id];
       activeRole.value.isNew = false;
       activeRole.value.unsave = false;
