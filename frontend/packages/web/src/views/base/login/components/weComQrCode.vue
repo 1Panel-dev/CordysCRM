@@ -49,7 +49,7 @@
         const boolean = userStore.qrCodeLogin(await weComCallback);
         if (boolean) {
           setLoginExpires();
-          setLoginType('QR_CODE');
+          setLoginType('WECOM');
           Message.success(t('login.form.login.success'));
           goUserHasPermissionPage();
         }

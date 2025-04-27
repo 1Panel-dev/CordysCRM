@@ -49,6 +49,7 @@
 <script lang="ts" setup>
   import { ref } from 'vue';
   import { useI18n } from 'vue-i18n';
+  import { NRadioButton, NRadioGroup } from 'naive-ui';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import dingTalkQr from './dingTalkQrCode.vue';
