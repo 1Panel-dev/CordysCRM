@@ -38,7 +38,7 @@ jobs:
       - name: Prepare
         id: prepare
         run: |
-          DOCKER_IMAGE=${{ secrets.FIT2CLOUD_REGISTRY_HOST }}/cordys/cordys-crm
+          DOCKER_IMAGE=${{ secrets.FIT2CLOUD_REGISTRY_HOST }}/cordys/cordys-crm-ce
           DOCKER_PLATFORMS=${{ github.event.inputs.architecture }}
           TAG_NAME=${{ github.event.inputs.dockerImageTag }}
           if [[ ${TAG_NAME} == *dev* ]]; then
