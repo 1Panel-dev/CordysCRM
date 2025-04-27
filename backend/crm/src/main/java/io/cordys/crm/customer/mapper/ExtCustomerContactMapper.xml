@@ -22,11 +22,14 @@
         </include>
 
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
-            left join sys_organization_user sou on cc.owner = sou.user_id
-            and sou.department_id in
-            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
-                #{deptId}
-            </foreach>
+            join sys_organization_user sou on cc.owner = sou.user_id
+            and (
+                sou.department_id in
+                <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                    #{deptId}
+                </foreach>
+                or sou.user_id = #{userId}
+            )
         </if>
 
         where cc.organization_id = #{orgId}

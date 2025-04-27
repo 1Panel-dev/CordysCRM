@@ -11,13 +11,10 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.response.result.CrmHttpResultCode;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.system.domain.OrganizationUser;
-
 import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.RoleService;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.security.SessionUser;
-import io.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,7 +42,7 @@ public class DataScopeService {
 
     public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String searchType) {
         DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
-
+        deptDataPermission.setSearchType(searchType);
         if (BusinessSearchType.isSelf(searchType)) {
             // 只查看自己的数据
             deptDataPermission.setSelf(true);
@@ -56,6 +53,7 @@ public class DataScopeService {
             return deptDataPermission;
         } else {
             deptDataPermission = getDeptDataPermission(userId, orgId);
+            deptDataPermission.setSearchType(searchType);
             if (deptDataPermission.getAll() && BusinessSearchType.isDepartment(searchType)) {
                 // 数据权限是全部,但是查询条件是部门,则按照部门查询
                 return getDeptDataPermissionForDeptSearchType(userId, orgId);
@@ -237,7 +235,9 @@ public class DataScopeService {
                 UserDeptDTO customerOwnerDept = userDeptMapByUserIds.get(owner);
                 // 部门权限是否有该客户的权限
                 if (customerOwnerDept == null || !deptDataPermission.getDeptIds().contains(customerOwnerDept.getDeptId())) {
-                    return false;
+                    if (!StringUtils.equals(owner, userId)) {
+                        return false;
+                    }
                 }
             }
             return true;
