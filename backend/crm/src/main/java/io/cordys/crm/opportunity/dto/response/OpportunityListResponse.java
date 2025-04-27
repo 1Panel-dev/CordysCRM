@@ -22,6 +22,9 @@ public class OpportunityListResponse {
     @Schema(description = "客户名称")
     private String customerName;
 
+    @Schema(description = "关联的客户是否在公海")
+    private Boolean inCustomerPool;
+
     @Schema(description = "负责人")
     private String owner;
 
