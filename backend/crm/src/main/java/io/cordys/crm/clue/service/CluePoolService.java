@@ -160,8 +160,7 @@ public class CluePoolService {
      * @param request 修改参数
      */
     public void update(CluePoolUpdateRequest request, String currentUserId, String currentOrgId) {
-        CluePool oldPool = checkPoolExist(request.getId());
-        checkPoolOwner(oldPool, currentUserId);
+        checkPoolExist(request.getId());
 
         CluePool pool = new CluePool();
         BeanUtils.copyBean(pool, request);
@@ -209,9 +208,8 @@ public class CluePoolService {
      *
      * @param id 线索池ID
      */
-    public void delete(String id, String currentUserId) {
-        CluePool pool = checkPoolExist(id);
-        checkPoolOwner(pool, currentUserId);
+    public void delete(String id) {
+        checkPoolExist(id);
 
         cluePoolMapper.deleteByPrimaryKey(id);
 
@@ -233,7 +231,6 @@ public class CluePoolService {
      */
     public void switchStatus(String id, String currentUserId) {
         CluePool pool = checkPoolExist(id);
-        checkPoolOwner(pool, currentUserId);
 
         pool.setEnable(!pool.getEnable());
         pool.setUpdateTime(System.currentTimeMillis());

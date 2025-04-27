@@ -166,8 +166,7 @@ public class CustomerPoolService {
 	 * @param currentUserId 当前用户ID
 	 */
 	public void update(CustomerPoolUpdateRequest request, String currentUserId, String organizationId) {
-		CustomerPool oldPool = checkPoolExist(request.getId());
-		checkPoolOwner(oldPool, currentUserId);
+		checkPoolExist(request.getId());
 		CustomerPool pool = new CustomerPool();
 		BeanUtils.copyBean(pool, request);
 		pool.setOrganizationId(organizationId);
@@ -207,9 +206,8 @@ public class CustomerPoolService {
 	/**
 	 * 删除公海池
 	 */
-	public void delete(String id, String currentUserId) {
-		CustomerPool pool = checkPoolExist(id);
-		checkPoolOwner(pool, currentUserId);
+	public void delete(String id) {
+		checkPoolExist(id);
 		customerPoolMapper.deleteByPrimaryKey(id);
 		CustomerPoolPickRule pickRule = new CustomerPoolPickRule();
 		pickRule.setPoolId(id);
@@ -225,7 +223,6 @@ public class CustomerPoolService {
 	 */
 	public void switchStatus(String id, String currentUserId) {
 		CustomerPool pool = checkPoolExist(id);
-		checkPoolOwner(pool, currentUserId);
 		pool.setEnable(!pool.getEnable());
 		pool.setUpdateTime(System.currentTimeMillis());
 		pool.setUpdateUser(currentUserId);
@@ -243,22 +240,6 @@ public class CustomerPoolService {
 			throw new GenericException(Translator.get("customer_pool_not_exist"));
 		}
 		return pool;
-	}
-
-	/**
-	 * 校验是否公海池的管理员
-	 * @param pool 公海池
-	 * @param accessUserId 访问用户ID
-	 */
-	private void checkPoolOwner(CustomerPool pool, String accessUserId) {
-		if (StringUtils.equals(accessUserId, InternalUser.ADMIN.getValue())) {
-			return;
-		}
-		List<String> ownerIds = JSON.parseArray(pool.getOwnerId(), String.class);
-		List<String> ownerUserIds = userExtendService.getScopeOwnerIds(ownerIds, pool.getOrganizationId());
-		if (!ownerUserIds.contains(accessUserId)) {
-			throw new GenericException(Translator.get("customer_pool_access_fail"));
-		}
 	}
 
 	/**

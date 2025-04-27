@@ -51,6 +51,12 @@ public class CluePoolController {
 		cluePoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
 
+	@PostMapping("/quick-update")
+	@Operation(summary = "编辑线索池")
+	public void quickUpdate(@Validated @RequestBody CluePoolUpdateRequest request) {
+		cluePoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
+
 	@GetMapping("/no-pick/{id}")
 	@Operation(summary = "线索池是否存在未领取线索")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
@@ -62,7 +68,7 @@ public class CluePoolController {
 	@Operation(summary = "删除线索池")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
 	public void delete(@PathVariable String id) {
-		cluePoolService.delete(id, SessionUtils.getUserId());
+		cluePoolService.delete(id);
 	}
 
 	@GetMapping("/switch/{id}")

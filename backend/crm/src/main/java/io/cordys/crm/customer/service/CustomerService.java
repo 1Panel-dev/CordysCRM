@@ -264,8 +264,10 @@ public class CustomerService {
 
     @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Customer update(CustomerUpdateRequest request, String userId, String orgId) {
-        poolCustomerService.validateCapacity(1, request.getOwner(), orgId);
         Customer originCustomer = customerMapper.selectByPrimaryKey(request.getId());
+        if (!StringUtils.equals(originCustomer.getOwner(), request.getOwner())) {
+            poolCustomerService.validateCapacity(1, request.getOwner(), orgId);
+        }
         dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner());
 
         Customer customer = BeanUtils.copyBean(new Customer(), request);
@@ -344,9 +346,10 @@ public class CustomerService {
     }
 
     public void batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
-        poolCustomerService.validateCapacity(request.getIds().size(), request.getOwner(), orgId);
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
         List<String> owners = getOwners(originCustomers);
+        long processCount = owners.stream().filter(owner -> !StringUtils.equals(owner, request.getOwner())).count();
+        poolCustomerService.validateCapacity((int) processCount, request.getOwner(), orgId);
 
         dataScopeService.checkDataPermission(userId, orgId, owners);
         // 添加责任人历史

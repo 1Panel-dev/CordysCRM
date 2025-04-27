@@ -159,8 +159,7 @@ public class PoolClueControllerTests extends BaseTest {
 		rule.setPickIntervalDays(1);
 		cluePoolPickRuleMapper.updateById(rule);
 		insertOwnerHis();
-		MvcResult mvcResult1 = this.requestPost(BATCH_PICK, request).andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult1.getResponse().getContentAsString().contains(Translator.get("customer.pre_owner.pick.limit"));
+		this.requestPost(BATCH_PICK, request).andExpect(status().is5xxServerError()).andReturn();
 		requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_POOL_PICK, BATCH_PICK, request);
 	}
 

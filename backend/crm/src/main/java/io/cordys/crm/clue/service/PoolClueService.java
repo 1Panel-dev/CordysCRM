@@ -29,6 +29,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -98,9 +102,9 @@ public class PoolClueService {
 		Map<String, CluePoolRecycleRule> recycleRuleMap = recycleRules.stream()
 				.collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, recycleRule -> recycleRule));
 		pools.forEach(pool -> {
-			List<String> scopeIds = JSON.parseArray(pool.getScopeId(), String.class);
-			List<String> ownerUserIds = userExtendService.getScopeOwnerIds(scopeIds, pool.getOrganizationId());
-			if (ownerUserIds.contains(currentUser)) {
+			List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), currentOrgId);
+			List<String> ownerIds = userExtendService.getScopeOwnerIds(scopeIds, currentOrgId);
+			if (scopeIds.contains(currentUser)) {
 				CluePoolDTO poolDTO = new CluePoolDTO();
 				BeanUtils.copyBean(poolDTO, pool);
 				poolDTO.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
@@ -117,6 +121,7 @@ public class PoolClueService {
 
 				poolDTO.setPickRule(pickRule);
 				poolDTO.setRecycleRule(recycleRule);
+				poolDTO.setEditable(ownerIds.contains(currentUser));
 				options.add(poolDTO);
 			}
 		});
@@ -279,8 +284,11 @@ public class PoolClueService {
 				clueOwners.sort(Comparator.comparingLong(ClueOwner::getCollectionTime).reversed());
 				ClueOwner lastOwner = clueOwners.getFirst();
 				if (StringUtils.equals(lastOwner.getOwner(), ownerId) &&
-						System.currentTimeMillis() - lastOwner.getCollectionTime() < pickRule.getPickIntervalDays() * DAY_MILLIS) {
-					throw new GenericException(Translator.get("customer.pre_owner.pick.limit"));
+						System.currentTimeMillis()  < pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getCollectionTime()) {
+					LocalDateTime nextPickTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getCollectionTime()),
+							ZoneId.systemDefault());
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+					throw new GenericException(Translator.getWithArgs("customer.pre_owner.pick.limit", nextPickTime.format(formatter)));
 				}
 			}
 		}

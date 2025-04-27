@@ -22,4 +22,7 @@ public class CustomerPoolDTO extends CustomerPool {
 	private CustomerPoolPickRuleDTO pickRule;
 	@Schema(description = "回收规则")
 	private CustomerPoolRecycleRuleDTO recycleRule;
+
+	@Schema(description = "是否可编辑")
+	private Boolean editable;
 }

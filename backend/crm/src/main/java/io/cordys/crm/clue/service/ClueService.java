@@ -250,8 +250,10 @@ public class ClueService {
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Clue update(ClueUpdateRequest request, String userId, String orgId) {
-        poolClueService.validateCapacity(1, request.getOwner(), orgId);
         Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
+        if (!StringUtils.equals(originClue.getOwner(), request.getOwner())) {
+            poolClueService.validateCapacity(1, request.getOwner(), orgId);
+        }
         dataScopeService.checkDataPermission(userId, orgId, originClue.getOwner());
 
         Clue clue = BeanUtils.copyBean(new Clue(), request);
@@ -391,9 +393,10 @@ public class ClueService {
     }
 
     public void batchTransfer(ClueBatchTransferRequest request, String userId, String orgId) {
-        poolClueService.validateCapacity(request.getIds().size(), request.getOwner(), orgId);
         List<Clue> clues = clueMapper.selectByIds(request.getIds());
         List<String> ownerIds = getOwners(clues);
+        long processCount = ownerIds.stream().filter(owner -> !StringUtils.equals(owner, request.getOwner())).count();
+        poolClueService.validateCapacity((int) processCount, request.getOwner(), orgId);
         dataScopeService.checkDataPermission(userId, orgId, ownerIds);
 
         // 添加责任人历史

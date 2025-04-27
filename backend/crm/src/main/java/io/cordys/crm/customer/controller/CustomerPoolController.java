@@ -51,6 +51,12 @@ public class CustomerPoolController {
         customerPoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+    @PostMapping("/quick-update")
+    @Operation(summary = "编辑公海池")
+    public void quickUpdate(@Validated @RequestBody CustomerPoolUpdateRequest request) {
+        customerPoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
     @GetMapping("/no-pick/{id}")
     @Operation(summary = "公海池是否存在未领取线索")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
@@ -62,7 +68,7 @@ public class CustomerPoolController {
     @Operation(summary = "删除公海池")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
     public void delete(@PathVariable String id) {
-        customerPoolService.delete(id, SessionUtils.getUserId());
+        customerPoolService.delete(id);
     }
 
     @GetMapping("/switch/{id}")
