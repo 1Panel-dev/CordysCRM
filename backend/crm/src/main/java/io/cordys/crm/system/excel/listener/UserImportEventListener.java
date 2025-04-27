@@ -205,6 +205,8 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
                 errMsg.append(Translator.get("top_department_not_exist"))
                         .append(ERROR_MSG_SEPARATOR);
             }
+        } else {
+            data.setDepartment(departmentTree.getFirst().getName());
         }
     }
 

@@ -41,6 +41,7 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionUtils;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -670,6 +671,7 @@ public class OrganizationUserService {
      * @param operatorId
      * @param orgId
      */
+    @CacheEvict(value = "dept_tree_cache", key = "#orgId", beforeInvocation = true)
     public void saveImportData(List<UserExcelData> list, List<BaseTreeNode> departmentTree, Map<String, String> departmentMap, String operatorId, String orgId) {
         //部门
         List<String> departmentPath = list.stream().map(UserExcelData::getDepartment).toList();
