@@ -5,7 +5,9 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.request.LoginRequest;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.CodingUtils;
+import io.cordys.common.util.ServletUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.constants.LoginType;
 import io.cordys.crm.system.domain.LoginLog;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
@@ -117,10 +119,30 @@ public class UserLoginService {
         LoginLog loginLog = new LoginLog();
         loginLog.setId(IDGenerator.nextStr());
         loginLog.setLoginAddress(request.getLoginAddress());
-        loginLog.setPlatform(request.getPlatform());
+        setPlatform(loginLog);
         loginLog.setOperator(SessionUtils.getUserId());
         loginLog.setCreateTime(System.currentTimeMillis());
         loginLogMapper.insert(loginLog);
+    }
+
+    private void setPlatform(LoginLog loginLog) {
+        String userAgent = ServletUtils.getUserAgent();
+        if (StringUtils.isBlank(userAgent)) {
+            loginLog.setPlatform(LoginType.WEB.getName());
+        }else {
+            if (userAgent.contains("miniprogram") || userAgent.contains("MicroMessenger")) {
+                //小程序
+                loginLog.setPlatform(LoginType.MOBILE.getName());
+            }else
+            if (userAgent.contains("Android")) {
+                loginLog.setPlatform(LoginType.MOBILE.getName());
+            } else if (userAgent.contains("iPhone") || userAgent.contains("iPad") || userAgent.contains("ipod")) {
+                loginLog.setPlatform(LoginType.MOBILE.getName());
+            }  else {
+                loginLog.setPlatform(LoginType.WEB.getName());
+            }
+        }
+
     }
 
     public boolean checkUserPassword(String userId, String password) {
