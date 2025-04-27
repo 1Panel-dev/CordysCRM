@@ -238,6 +238,7 @@
         dataIndex: 'storageTime',
         type: FieldTypeEnum.TIME_RANGE_PICKER,
         showScope: true,
+        scope: ['Created', 'Picked'],
       },
       {
         title: t('module.clue.followUpTime'),

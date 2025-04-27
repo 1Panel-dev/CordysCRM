@@ -88,6 +88,7 @@
   import { FormInst, FormRules, NForm, NFormItem, NInput, NRadio, NRadioGroup, NSpace, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -148,6 +149,10 @@
         dataIndex: 'createTime',
         type: FieldTypeEnum.TIME_RANGE_PICKER,
         showScope: true,
+        scope: ['Created'],
+        scopeProps: {
+          disabled: true,
+        },
       },
       {
         title: t('opportunity.opportunityStage'),
@@ -172,8 +177,21 @@
 
   const defaultFormModel: FilterForm = {
     searchMode: 'AND',
-    list: [],
+    list: [
+      {
+        dataIndex: 'createTime',
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+        operator: OperatorEnum.DYNAMICS,
+        value: '6,month',
+        showScope: true,
+        scope: ['Created'],
+        scopeProps: {
+          disabled: true,
+        },
+      },
+    ],
   };
+
   const recycleFormItemModel = ref<FilterForm>(cloneDeep(defaultFormModel));
 
   function cancelHandler() {

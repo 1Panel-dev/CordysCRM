@@ -1,14 +1,14 @@
 <template>
   <div class="flex rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
-    <div class="all-or">
+    <div class="and-or">
       <CrmTag
         type="primary"
         theme="light"
         :color="{ color: 'var(--primary-6)' }"
-        class="z-[1] w-[34px]"
+        class="z-[1] w-[38px]"
         @click="changeAllOr"
       >
-        {{ formModel.searchMode === 'AND' ? 'all' : 'or' }}
+        {{ formModel.searchMode === 'AND' ? 'and' : 'or' }}
       </CrmTag>
     </div>
     <div class="flex-1">
@@ -112,7 +112,12 @@
             :path="`list[${listIndex}].scope`"
             class="block w-[150px] flex-initial overflow-hidden"
           >
-            <n-select v-model:value="item.scope" :options="scopeOptions" multiple />
+            <n-select
+              v-model:value="item.scope"
+              :disabled="item.scopeProps?.disabled"
+              :options="scopeOptions"
+              multiple
+            />
           </n-form-item>
           <n-button
             :disabled="props.keepOneLine && formModel.list.length === 1"
@@ -264,7 +269,7 @@
     const currentListItem: FilterFormItem = {
       ...listItem,
       value: isArray ? [] : undefined,
-      ...(listItem.showScope ? { scope: ['Created', 'Picked'] } : undefined),
+      ...(listItem.showScope ? { scope: listItem.scope } : undefined),
     };
 
     // 显式类型注解，避免类型过深
@@ -323,7 +328,7 @@
 </script>
 
 <style lang="less" scoped>
-  .all-or {
+  .and-or {
     position: relative;
     display: flex;
     justify-content: center;

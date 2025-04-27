@@ -5,6 +5,10 @@ import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
 import { UserTagSelectorProps } from '@/components/business/crm-user-tag-selector/index.vue';
 
+export interface ScopeProps {
+  disabled: boolean;
+}
+
 export type AccordBelowType = 'AND' | 'OR';
 
 export interface FilterFormItem {
@@ -22,6 +26,7 @@ export interface FilterFormItem {
   treeSelectProps?: Partial<TreeSelectProps>;
   userTagSelectorProps?: Partial<UserTagSelectorProps>;
   cascaderProps?: Partial<CascaderProps>;
+  scopeProps?: Partial<ScopeProps>;
 }
 
 export type CombineItem = Pick<FilterFormItem, 'value' | 'operator'>;

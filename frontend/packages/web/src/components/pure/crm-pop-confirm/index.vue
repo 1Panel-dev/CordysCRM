@@ -13,9 +13,12 @@
     @negative-click="handleNegativeClick"
   >
     <template #trigger>
-      <div v-permission="props.permission">
+      <template v-if="hasAnyPermission(props.permission)">
         <slot></slot>
-      </div>
+      </template>
+      <template v-else>
+        <span class="hidden"></span>
+      </template>
     </template>
     <template #default>
       <div v-permission="props.permission" class="crm-pop-confirm-content-wrapper">
@@ -71,6 +74,8 @@
   import { ButtonProps, NButton, NPopconfirm } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
 
