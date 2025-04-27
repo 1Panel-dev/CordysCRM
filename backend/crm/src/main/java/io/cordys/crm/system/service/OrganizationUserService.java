@@ -103,12 +103,12 @@ public class OrganizationUserService {
      */
     public List<UserPageResponse> list(UserPageRequest request) {
         List<UserPageResponse> list = extOrganizationUserMapper.list(request);
-        handleData(list);
+        handleData(list, request.getDepartmentIds().getFirst());
         return list;
     }
 
 
-    private void handleData(List<UserPageResponse> list) {
+    private void handleData(List<UserPageResponse> list, String departmentId) {
         if (CollectionUtils.isNotEmpty(list)) {
             String orgId = list.stream().
                     map(UserPageResponse::getOrganizationId)
@@ -147,7 +147,7 @@ public class OrganizationUserService {
             Map<String, String> departmentMap = departmentList.stream()
                     .collect(Collectors.toMap(Department::getId, Department::getName));
             //部门负责人
-            List<String> commanderIds = extDepartmentCommanderMapper.selectCommander(userIds, list.getFirst().getOrganizationId());
+            List<String> commanderIds = extDepartmentCommanderMapper.selectCommander(departmentId, list.getFirst().getOrganizationId());
 
             //todo 暂无用户组 后续需求再处理
             list.forEach(user -> {

@@ -19,10 +19,7 @@
             sys_department_commander sdc
                 INNER JOIN sys_department sd ON sdc.department_id = sd.id
         WHERE
-            sdc.user_id in
-            <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
-                #{userId}
-            </foreach>
+           sdc.department_id = #{departmentId}
           AND sd.organization_id = #{orgId}
     </select>
 </mapper>
