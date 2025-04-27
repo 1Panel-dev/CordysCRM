@@ -59,6 +59,8 @@ public class OpportunityRuleControllerTests extends BaseTest {
 	@Order(3)
 	void page() throws Exception {
 		BasePageRequest request = new BasePageRequest();
+		request.setCurrent(1);
+		request.setPageSize(10);
 		request.setSort(new SortRequest("name", "desc"));
 		MvcResult mvcResult = this.requestPostWithOkAndReturn("/opportunity-rule/page", request);
 		Pager<List<OpportunityRuleDTO>> result = getPageResult(mvcResult, OpportunityRuleDTO.class);

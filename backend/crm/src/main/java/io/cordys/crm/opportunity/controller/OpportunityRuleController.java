@@ -32,7 +32,7 @@ public class OpportunityRuleController {
 	@PostMapping("/page")
 	@Operation(summary = "分页获取商机规则")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public Pager<List<OpportunityRuleDTO>> page(BasePageRequest request) {
+	public Pager<List<OpportunityRuleDTO>> page(@Validated @RequestBody BasePageRequest request) {
 		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
 		return PageUtils.setPageInfo(page, opportunityRuleService.page(request, OrganizationContext.getOrganizationId()));
 	}
