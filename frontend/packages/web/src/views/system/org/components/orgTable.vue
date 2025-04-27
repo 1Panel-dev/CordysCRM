@@ -97,6 +97,7 @@
   import { BatchActionConfig, CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import type { CrmFileItem } from '@/components/pure/crm-upload/types';
   import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
   import ImportModal from '@/components/business/crm-import-button/components/importModal.vue';
@@ -482,11 +483,38 @@
           {
             default: () => {
               return h(
-                CrmTableButton,
+                'div',
                 {
-                  onClick: () => showDetail(row.id),
+                  class: 'w-full flex items-center',
                 },
-                { default: () => row.userName, trigger: () => row.userName }
+                [
+                  h(
+                    'div',
+                    {
+                      class: 'one-line-text max-w-[calc(100%-44px)] inline-block',
+                    },
+                    [
+                      h(
+                        CrmTableButton,
+                        {
+                          onClick: () => showDetail(row.id),
+                        },
+                        { default: () => row.userName, trigger: () => row.userName }
+                      ),
+                    ]
+                  ),
+                  row.commander
+                    ? h(
+                        CrmTag,
+                        {
+                          type: 'primary',
+                          theme: 'lightOutLine',
+                          class: 'ml-[8px]',
+                        },
+                        { default: () => t('common.head') }
+                      )
+                    : null,
+                ]
               );
             },
           }
@@ -949,6 +977,10 @@
       initOrgList();
     }
   );
+
+  defineExpose({
+    initOrgList,
+  });
 </script>
 
 <style scoped></style>

@@ -7,11 +7,13 @@
             ref="orgModuleTreeRef"
             :is-sync-from-third-checked="isSyncFromThirdChecked"
             @select-node="selectNode"
+            @load-list="() => orgTableRef?.initOrgList()"
           />
         </div>
       </template>
       <template #2>
         <OrgTable
+          ref="orgTableRef"
           :is-sync-from-third-checked="isSyncFromThirdChecked"
           :active-node="activeNodeId"
           :offspring-ids="offspringIds"
@@ -52,6 +54,8 @@
       console.log(error);
     }
   }
+
+  const orgTableRef = ref<InstanceType<typeof OrgTable>>();
 
   onBeforeMount(() => {
     initCheckSyncType();

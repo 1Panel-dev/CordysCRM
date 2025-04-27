@@ -50,7 +50,12 @@
     @select="handleNodeSelect"
     @more-action-select="handleFolderMoreSelect"
   />
-  <SetDepHeadModal v-model:show="showSetHeadModal" :department-id="departmentId" @close="closeSetCommanderId" />
+  <SetDepHeadModal
+    v-model:show="showSetHeadModal"
+    :department-id="departmentId"
+    @close="closeSetCommanderId"
+    @load-list="() => emit('loadList')"
+  />
 </template>
 
 <script setup lang="ts">
@@ -89,6 +94,7 @@
 
   const emit = defineEmits<{
     (e: 'selectNode', _selectedKeys: Array<string | number>, offspringIds: string[]): void;
+    (e: 'loadList'): void;
   }>();
 
   const orgModuleTree = ref<CrmTreeNodeData[]>([]);

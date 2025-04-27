@@ -22,7 +22,7 @@
       :disabled="props.tooltipDisabled"
     >
       <template #trigger>
-        <div class="one-line-text">
+        <div class="one-line-text !leading-none">
           <slot></slot>
         </div>
       </template>

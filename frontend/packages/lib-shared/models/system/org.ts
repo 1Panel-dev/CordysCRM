@@ -59,6 +59,7 @@ export interface MemberItem extends BaseMemberInfo {
   updateTime: number;
   departmentName: string;
   supervisorName: string; // 直属上级名称
+  commander: boolean; // 是否是负责人
 }
 
 export interface MemberParams extends BaseMemberInfo {

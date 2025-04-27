@@ -49,6 +49,7 @@
 
   const emit = defineEmits<{
     (e: 'close'): void;
+    (e: 'loadList'): void;
   }>();
 
   const showModal = defineModel<boolean>('show', {
@@ -122,6 +123,7 @@
             ...form.value,
             departmentId: props.departmentId,
           });
+          emit('loadList');
           closeHandler();
           Message.success(t('org.setupSuccess'));
         } catch (e) {
