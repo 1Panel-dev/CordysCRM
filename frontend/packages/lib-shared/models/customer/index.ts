@@ -310,4 +310,5 @@ export interface UpdateCustomerRelationItemParams extends AddCustomerRelationIte
 export interface CustomerOptionsItem {
   id: string | number;
   name: string;
+  editable: boolean; // 是否可编辑
 }

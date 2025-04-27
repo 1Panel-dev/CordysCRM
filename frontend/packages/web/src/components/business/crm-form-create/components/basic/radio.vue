@@ -14,7 +14,7 @@
       v-model:value="value"
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
-      @update-value="($event) => emit('change', [$event])"
+      @update-value="($event) => emit('change', $event)"
     >
       <n-space :item-class="props.fieldConfig.direction === 'horizontal' ? '' : 'w-full'">
         <n-radio v-for="item in props.fieldConfig.options" :key="item.value" :value="item.value">
@@ -35,7 +35,7 @@
     path: string;
   }>();
   const emit = defineEmits<{
-    (e: 'change', value: (string | number)[]): void;
+    (e: 'change', value: string | number): void;
   }>();
 
   const value = defineModel<string>('value', {

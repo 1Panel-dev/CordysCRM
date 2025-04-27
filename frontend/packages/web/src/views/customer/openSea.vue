@@ -89,7 +89,6 @@
   } from '@/api/modules';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
-  import { hasAnyPermission } from '@/utils/permission';
 
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 
@@ -108,7 +107,7 @@
   const batchTableQueryParams = ref<TableQueryParams>({});
 
   function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
-    if (hasAnyPermission(['MODULE_SETTING:UPDATE'])) {
+    if (option.editable) {
       (node.children as Array<VNode>)?.push(
         h(CrmIcon, {
           type: 'iconicon_set_up',
