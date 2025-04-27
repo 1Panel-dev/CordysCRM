@@ -38,7 +38,7 @@
           v-model:value="keyword"
           class="!w-[240px]"
           :placeholder="t('opportunity.searchPlaceholder')"
-          @search="searchData"
+          @search="searchByKeyword"
         />
         <CrmAdvanceFilter
           ref="msAdvanceFilterRef"
@@ -461,6 +461,11 @@
       searchType: activeTab.value,
     });
     loadList();
+  }
+
+  function searchByKeyword(val: string) {
+    keyword.value = val;
+    searchData();
   }
 
   function changeActiveTab() {

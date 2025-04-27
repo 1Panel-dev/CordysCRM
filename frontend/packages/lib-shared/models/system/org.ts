@@ -1,5 +1,6 @@
 import type { TableQueryParams } from '../common';
 import { UserInfo } from '../user';
+import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
 // 添加部门
 export interface DepartmentItemParams {
@@ -16,6 +17,10 @@ export interface UpdateDepartmentItemParams {
 export interface SetCommanderParams {
   departmentId: string;
   commanderId: string | null;
+}
+
+export interface SetCommanderForm extends SetCommanderParams {
+  ownerIds: SelectedUsersItem[];
 }
 
 export interface MemberRoleItem {

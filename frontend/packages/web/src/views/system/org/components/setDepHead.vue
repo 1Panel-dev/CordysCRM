@@ -9,17 +9,18 @@
   >
     <div>
       <n-form ref="formRef" :model="form" :rules="rules">
-        <n-form-item require-mark-placement="left" label-placement="left" path="commanderId" :label="t('common.head')">
-          <CrmUserSelect
-            v-model:value="form.commanderId"
-            :placeholder="t('org.selectHeadPlaceholder')"
-            value-field="id"
-            label-field="name"
-            mode="remote"
-            :fetch-api="getUserOptions"
-            :render-label="renderLabel"
-            :render-tag="renderTag"
-            max-tag-count="responsive"
+        <n-form-item require-mark-placement="left" label-placement="left" path="ownerIds" :label="t('common.head')">
+          <CrmUserTagSelector
+            v-model:selected-list="form.ownerIds"
+            :member-types="[
+              {
+                label: t('menu.settings.org'),
+                value: MemberSelectTypeEnum.ORG,
+              },
+            ]"
+            :multiple="false"
+            :drawer-title="t('org.setDepartmentHead')"
+            :disabled-node-types="[DeptNodeTypeEnum.ORG]"
           />
         </n-form-item>
       </n-form>
@@ -29,16 +30,18 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { FormInst, FormRules, NForm, NFormItem, NTooltip, SelectOption, useMessage } from 'naive-ui';
+  import { FormInst, FormRules, NForm, NFormItem, useMessage } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
+  import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { SetCommanderParams } from '@lib/shared/models/system/org';
+  import type { SetCommanderForm } from '@lib/shared/models/system/org';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
-  import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
+  import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
-  import { getUserOptions, setCommander } from '@/api/modules';
+  import { setCommander } from '@/api/modules';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -57,58 +60,22 @@
     default: false,
   });
 
-  const form = ref<SetCommanderParams>({
+  const defaultForm: SetCommanderForm = {
     commanderId: null,
     departmentId: '',
-  });
+    ownerIds: [],
+  };
+
+  const form = ref<SetCommanderForm>(cloneDeep(defaultForm));
 
   const rules: FormRules = {
     commanderId: [{ required: true, message: t('org.selectHeadPlaceholder') }],
   };
 
-  function renderLabel(option: SelectOption) {
-    return h(
-      NTooltip,
-      {
-        delay: 300,
-        flip: true,
-      },
-      {
-        trigger: () => {
-          return h(
-            'div',
-            {
-              class: `option-content ${option.id === form.value.commanderId ? 'option-content-selected' : ''}`,
-            },
-            [
-              h('div', { class: 'option-label' }, { default: () => option.name }),
-              h('div', { class: 'option-email' }, { default: () => option.id }),
-            ]
-          );
-        },
-        default: () => option.name,
-      }
-    );
-  }
-
-  function renderTag(infoProps: { option: SelectOption; handleClose: () => void }) {
-    const { option, handleClose } = infoProps;
-    return h(
-      CrmTag,
-      {
-        closable: true,
-        onClose: () => handleClose(),
-      },
-      {
-        default: () => option.name,
-      }
-    );
-  }
-
   const formRef = ref<FormInst | null>(null);
 
   function closeHandler() {
-    form.value.commanderId = null;
+    form.value = cloneDeep(defaultForm);
     emit('close');
   }
 
@@ -119,8 +86,9 @@
       if (!error) {
         try {
           loading.value = true;
+          const [commanderItem] = form.value.ownerIds;
           await setCommander({
-            ...form.value,
+            commanderId: commanderItem.id,
             departmentId: props.departmentId,
           });
           emit('loadList');
