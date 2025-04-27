@@ -70,5 +70,5 @@ VOLUME [ "/opt/cordys/data", "/opt/cordys/logs", "/opt/cordys/conf" ]
 ARG EXECUTE_START_SCRIPT=true
 ENV EXECUTE_START_SCRIPT=${EXECUTE_START_SCRIPT}
 
-# 修改ENTRYPOINT使用条件判断
-ENTRYPOINT ["/bin/sh", "-c", "if [ \"$EXECUTE_START_SCRIPT\" = \"true\" ]; then sh /shells/start-all.sh; else echo 'Startup script execution skipped' && tail -f /dev/null; fi"]
+# 修改ENTRYPOINT使用条件判断（支持多种true值形式）
+ENTRYPOINT ["/bin/sh", "-c", "if [ \"${EXECUTE_START_SCRIPT}\" = \"true\" ] || [ \"${EXECUTE_START_SCRIPT}\" = \"TRUE\" ] || [ \"${EXECUTE_START_SCRIPT}\" = \"1\" ]; then sh /shells/start-all.sh; else echo 'Startup script execution skipped' && tail -f /dev/null; fi"]
