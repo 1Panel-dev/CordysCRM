@@ -230,6 +230,18 @@
                     <property name="column" value="c.update_time"/>
                 </include>
             </when>
+            <when test="condition.name == 'createUser'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.create_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateUser'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.update_user"/>
+                </include>
+            </when>
             <when test="condition.name == 'departmentId'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
