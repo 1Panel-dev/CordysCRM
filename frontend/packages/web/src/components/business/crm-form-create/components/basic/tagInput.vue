@@ -18,12 +18,11 @@
       :placeholder="props.fieldConfig.placeholder || t('common.tagsInputPlaceholder')"
       :show-arrow="false"
       :show="false"
-      :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
       :input-props="{
         maxlength: 64,
       }"
-      :fallback-option="value?.length < 10 ? fallbackOption : false"
+      :fallback-option="value?.length <= 10 ? fallbackOption : false"
       :render-tag="renderTag"
       clearable
       @update-value="($event) => emit('change', $event)"
@@ -58,7 +57,7 @@
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
-      value.value = val;
+      value.value = val || value.value;
     },
     {
       immediate: true,
@@ -88,7 +87,8 @@
   }
 
   function handleInputEnter() {
-    if (value.value?.length >= 10) {
+    if (value.value?.length > 10) {
+      value.value = value.value.slice(0, 10);
       Message.warning(t('crmFormCreate.basic.tagInputLimitTip'));
     }
   }

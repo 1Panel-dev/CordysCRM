@@ -89,12 +89,13 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('customer.lastFollowUps'),
         width: 150,
-        key: 'followerName',
+        key: 'follower',
         ellipsis: {
           tooltip: true,
         },
         sortOrder: false,
         sorter: true,
+        render: (row: any) => row.followerName || '-',
       },
       {
         title: t('customer.lastFollowUpDate'),
@@ -141,12 +142,13 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('org.department'),
         width: 120,
-        key: 'departmentName',
+        key: 'department',
         ellipsis: {
           tooltip: true,
         },
         sortOrder: false,
         sorter: true,
+        render: (row: any) => row.departmentName || '-',
       },
     ],
     [FormDesignKeyEnum.CUSTOMER_CONTACT]: [
@@ -182,12 +184,13 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('org.department'),
         width: 120,
-        key: 'departmentName',
+        key: 'department',
         ellipsis: {
           tooltip: true,
         },
         sortOrder: false,
         sorter: 'default',
+        render: (row: any) => row.departmentName || '-',
       },
     ],
     [FormDesignKeyEnum.BUSINESS]: [
@@ -296,13 +299,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const staticColumns: CrmDataTableColumn[] = [
     {
       title: t('common.creator'),
-      key: 'createUserName',
+      key: 'createUser',
       width: 120,
       ellipsis: {
         tooltip: true,
       },
       sortOrder: false,
       sorter: columnsSorter,
+      render: (row: any) => row.createUserName || '-',
     },
     {
       title: t('common.createTime'),
@@ -316,13 +320,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     },
     {
       title: t('common.updateUserName'),
-      key: 'updateUserName',
+      key: 'updateUser',
       width: 120,
       ellipsis: {
         tooltip: true,
       },
       sortOrder: false,
       sorter: columnsSorter,
+      render: (row: any) => row.updateUserName || '-',
     },
     {
       title: t('common.updateTime'),
