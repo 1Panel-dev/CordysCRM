@@ -435,14 +435,11 @@ public class PersonalCenterService {
             String userId,
             String organizationId) {
 
-        // 1. 初始化分页
-        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-
-        // 2. 获取用户权限和模块信息
+        // 1. 获取用户权限和模块信息
         List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
         boolean isAdmin = StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue());
 
-        // 3. 查询已启用的模块
+        // 2. 查询已启用的模块
         List<String> enabledModules = moduleMapper.selectListByLambda(
                         new LambdaQueryWrapper<Module>()
                                 .eq(Module::getOrganizationId, organizationId)
@@ -451,9 +448,11 @@ public class PersonalCenterService {
                 .map(Module::getModuleKey)
                 .toList();
 
-        // 4. 构建可访问的资源类型列表
+        // 3. 构建可访问的资源类型列表
         List<String> resourceTypeList = buildAccessibleResourceTypes(permissions, isAdmin, enabledModules);
 
+        // 4. 初始化分页
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         // 5. 查询跟进计划基础数据
         List<FollowUpPlanListResponse> planList = extFollowUpPlanMapper.selectList(
                 request, userId, organizationId, null, null, null, resourceTypeList);
