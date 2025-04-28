@@ -67,11 +67,14 @@
                     <when test="${sort}.name == 'name'">
                         su.`name` ${sortType}
                     </when>
-                    <when test="${sort}.name == 'departmentId'">
+                    <when test="${sort}.name == 'department_id'">
                         sou.`department_id` ${sortType}
                     </when>
                     <when test="${sort}.name == 'position'">
                         sou.`position` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'enable'">
+                        sou.`enable` ${sortType}
                     </when>
                     <otherwise>
                         sur.create_time ${sortType}
