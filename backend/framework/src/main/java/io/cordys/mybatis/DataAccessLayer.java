@@ -251,24 +251,21 @@ public class DataAccessLayer implements ApplicationContextAware {
             SqlSessionFactory sqlSessionFactory = applicationContext.getBean(SqlSessionFactory.class);
 
             // 使用 try-with-resources 确保 SqlSession 关闭
-            try (SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH, false)) {
+            SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH, false);
 
-                // 执行批量插入操作
-                entities.forEach(entity -> sqlSession.insert(msId, entity));
+            // 执行批量插入操作
+            entities.forEach(entity -> sqlSession.insert(msId, entity));
 
-                // 刷新批处理中的所有语句
-                sqlSession.flushStatements();
+            // 刷新批处理中的所有语句
+            sqlSession.flushStatements();
 
-                // 提交事务，确保批量操作生效
-                sqlSession.commit();
+            // 提交事务，确保批量操作生效
+            sqlSession.commit();
 
-                // 返回成功插入的记录数
-                return entities.size();
-            } catch (Exception e) {
-                // 记录异常信息
-                LogUtils.error("Error occurred during batch insert: ", e);
-                return 0;
-            }
+            sqlSession.close();
+
+            // 返回成功插入的记录数
+            return entities.size();
         }
     }
 
