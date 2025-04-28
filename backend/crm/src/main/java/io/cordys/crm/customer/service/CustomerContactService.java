@@ -232,7 +232,7 @@ public class CustomerContactService {
 
         CustomerContact originCustomerContact = customerContactMapper.selectByPrimaryKey(customerContact.getId());
         // 获取模块字段
-        List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
+        List<BaseModuleFieldValue> originCustomerFields = customerContactFieldService.getModuleFieldValuesByResourceId(request.getId());
 
         customerContactMapper.update(customerContact);
 
