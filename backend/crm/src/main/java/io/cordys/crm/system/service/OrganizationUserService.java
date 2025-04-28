@@ -304,6 +304,7 @@ public class OrganizationUserService {
         }
         //获取用户角色
         List<UserRoleConvert> userRoles = extUserMapper.getUserRole(List.of(userDetail.getUserId()), userDetail.getOrganizationId());
+        userRoles.forEach(role -> role.setName(roleService.translateInternalRole(role.getName())));
         userDetail.setRoles(userRoles);
         return userDetail;
     }
