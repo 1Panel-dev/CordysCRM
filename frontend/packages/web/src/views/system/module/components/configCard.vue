@@ -293,6 +293,7 @@
         customerManagementFollowPlanVisible.value = true;
         break;
       case 'capacitySet':
+        selectKey.value = ModuleConfigEnum.CUSTOMER_MANAGEMENT;
         capacitySetVisible.value = true;
         break;
       default:

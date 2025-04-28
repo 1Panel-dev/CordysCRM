@@ -207,7 +207,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('customer.lastFollowUps'),
         width: 150,
-        key: 'lastFollowUps',
+        key: 'followerName',
         ellipsis: {
           tooltip: true,
         },
@@ -217,12 +217,13 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('customer.lastFollowUpDate'),
         width: 160,
-        key: 'lastFollowUpDate',
+        key: 'followTime',
         ellipsis: {
           tooltip: true,
         },
         sortOrder: false,
         sorter: true,
+        render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
       },
       {
         title: t('customer.remainingVesting'),
