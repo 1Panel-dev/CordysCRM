@@ -64,11 +64,4 @@ RUN echo -n "${CRM_VERSION}" > /tmp/CRM_VERSION
 
 VOLUME [ "/opt/cordys/data", "/opt/cordys/logs", "/opt/cordys/conf" ]
 
-#ENTRYPOINT ["sh", "/shells/start-all.sh"]
-
-# 添加环境变量，默认为true表示执行启动脚本
-ARG EXECUTE_START_SCRIPT=true
-ENV EXECUTE_START_SCRIPT=${EXECUTE_START_SCRIPT}
-
-# 修改ENTRYPOINT使用条件判断（支持多种true值形式）
-ENTRYPOINT ["/bin/sh", "-c", "if [ \"${EXECUTE_START_SCRIPT}\" = \"true\" ] || [ \"${EXECUTE_START_SCRIPT}\" = \"TRUE\" ] || [ \"${EXECUTE_START_SCRIPT}\" = \"1\" ]; then sh /shells/start-all.sh; else echo 'Startup script execution skipped' && tail -f /dev/null; fi"]
+ENTRYPOINT ["sh", "/shells/start-all.sh"]
