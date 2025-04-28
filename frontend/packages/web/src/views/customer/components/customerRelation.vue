@@ -167,7 +167,7 @@
   }
 
   function disabledSelection(row: RowData) {
-    return row.id === props.sourceId;
+    return row.id === props.sourceId || relations.value.some((e) => e.customerId.includes(row.id));
   }
 
   onBeforeMount(() => {

@@ -444,7 +444,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
 
           if (
             [
-              FieldTypeEnum.DATA_SOURCE,
               FieldTypeEnum.DATA_SOURCE_MULTIPLE,
               FieldTypeEnum.MEMBER_MULTIPLE,
               FieldTypeEnum.DEPARTMENT_MULTIPLE,
