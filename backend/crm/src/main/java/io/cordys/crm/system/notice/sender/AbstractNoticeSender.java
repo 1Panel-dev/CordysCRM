@@ -3,6 +3,7 @@ package io.cordys.crm.system.notice.sender;
 
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.MessageDetailDTO;
@@ -16,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public abstract class AbstractNoticeSender implements NoticeSender {
 
@@ -37,13 +39,14 @@ public abstract class AbstractNoticeSender implements NoticeSender {
     }
 
     protected String getSubjectText(MessageDetailDTO messageDetailDTO, NoticeModel noticeModel) {
-        //目前只有公告有标题
-
+        //目前只有公告有标题消息通知使用事件+“通知”
         // 如果配置了模版就直接使用模版
         if (StringUtils.isNotBlank(messageDetailDTO.getSubject())) {
             return MessageTemplateUtils.getContent(messageDetailDTO.getSubject(), noticeModel.getParamMap());
         }
-        String context = StringUtils.EMPTY;
+        Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
+        String eventText = eventMap.get(messageDetailDTO.getEvent());
+        String context = eventText + Translator.get("notice.event.subject");
         if (StringUtils.isBlank(context)) {
             context = noticeModel.getSubject();
         }
