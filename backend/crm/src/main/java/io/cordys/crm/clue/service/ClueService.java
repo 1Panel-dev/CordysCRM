@@ -6,6 +6,7 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
@@ -36,6 +37,7 @@ import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
+import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
@@ -88,6 +90,8 @@ public class ClueService {
     private DataScopeService dataScopeService;
     @Resource
     private PoolClueService poolClueService;
+    @Resource
+    private LogService logService;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -402,6 +406,21 @@ public class ClueService {
         // 添加责任人历史
         clueOwnerHistoryService.batchAdd(request, userId);
         extClueMapper.batchTransfer(request);
+
+        // 记录日志
+        List<LogDTO> logs = clues.stream()
+                .map(clue -> {
+                    Customer originCustomer = new Customer();
+                    originCustomer.setOwner(clue.getOwner());
+                    Customer modifieCustomer = new Customer();
+                    modifieCustomer.setOwner(request.getOwner());
+                    LogDTO logDTO = new LogDTO(orgId, clue.getId(), userId, LogType.UPDATE, LogModule.CLUE_INDEX, clue.getName());
+                    logDTO.setOriginalValue(originCustomer);
+                    logDTO.setModifiedValue(modifieCustomer);
+                    return logDTO;
+                }).toList();
+
+        logService.batchAdd(logs);
 
         sendTransferNotice(clues, request.getOwner(), userId, orgId);
     }

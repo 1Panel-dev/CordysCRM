@@ -2,6 +2,7 @@ package io.cordys.crm.system.service;
 
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.common.util.CommonBeanFactory;
+import io.cordys.crm.clue.service.ClueLogService;
 import io.cordys.crm.customer.service.CustomerContactLogService;
 import io.cordys.crm.customer.service.CustomerLogService;
 import io.cordys.crm.opportunity.service.OpportunityLogService;
@@ -18,6 +19,7 @@ public class ModuleLogServiceFactory {
         logServiceMap.put(LogModule.OPPORTUNITY, CommonBeanFactory.getBean(OpportunityLogService.class));
         logServiceMap.put(LogModule.SYSTEM_ORGANIZATION, CommonBeanFactory.getBean(OrganizationLogService.class));
         logServiceMap.put(LogModule.PRODUCT_MANAGEMENT, CommonBeanFactory.getBean(ProductLogService.class));
+        logServiceMap.put(LogModule.CLUE_INDEX, CommonBeanFactory.getBean(ClueLogService.class));
 
     }
 
