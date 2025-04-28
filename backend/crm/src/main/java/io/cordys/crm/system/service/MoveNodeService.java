@@ -11,6 +11,7 @@ import io.cordys.crm.system.dto.request.NodeMoveRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 public abstract class MoveNodeService {
@@ -64,6 +65,9 @@ public abstract class MoveNodeService {
             previousNode = selectPosNodeFunc.apply(sortParam);
         } else {
             parentModule = selectIdNodeFunc.apply(dropNode.getParentId());
+            if(parentModule == null) {
+                throw new GenericException(Translator.get("illegal_operation"));
+            }
             if (request.getDropPosition() == 1) {
                 //dropPosition=1: 放到dropNode节点后，原dropNode后面的节点之前
                 previousNode = dropNode;
