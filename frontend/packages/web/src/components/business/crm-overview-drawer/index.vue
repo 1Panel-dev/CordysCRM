@@ -62,7 +62,7 @@
                   <CrmTabSetting
                     v-model:cached-list="cachedList"
                     :tab-list="props.tabList"
-                    :setting-key="'settingKey'"
+                    :setting-key="`${props.formKey}-settingKey`"
                   />
                 </div>
               </div>
