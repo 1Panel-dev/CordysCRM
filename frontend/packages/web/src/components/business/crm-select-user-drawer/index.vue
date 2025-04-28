@@ -147,10 +147,6 @@
     addMembers.value = [];
   }
 
-  async function handleAddConfirm() {
-    emit('confirm', selectedNodes.value);
-  }
-
   const options = computed(() => {
     if ([MemberSelectTypeEnum.ORG, MemberSelectTypeEnum.ONLY_ORG].includes(addMemberType.value)) {
       return mapTree(departmentOptions.value, (item) => {
@@ -185,6 +181,17 @@
       };
     });
   });
+
+  async function handleAddConfirm() {
+    const _selectedNodes: any[] = [];
+    mapTree(options.value, (item) => {
+      if (addMembers.value.includes(item.id)) {
+        _selectedNodes.push(item);
+      }
+      return item;
+    });
+    emit('confirm', _selectedNodes);
+  }
 
   const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
     return h(NTree, {
