@@ -23,6 +23,9 @@
       <template #employeeType="{ item }">
         {{ getEmployeeType(item.value as string) }}
       </template>
+      <template #workCity="{ item }">
+        {{ getCityPath(item.value as string) || '-' }}
+      </template>
     </CrmDescription>
   </CrmDrawer>
 </template>
@@ -33,6 +36,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getCityPath } from '@lib/shared/method';
   import type { MemberParams } from '@lib/shared/models/system/org';
 
   import CrmDescription, { Description } from '@/components/pure/crm-description/index.vue';
@@ -85,11 +89,11 @@
     },
     { label: t('org.gender'), value: 'gender', valueSlotName: 'gender' },
     { label: t('org.userEmail'), value: 'email' },
-    { label: t('org.department'), value: 'department' },
+    { label: t('org.department'), value: 'departmentName' },
     { label: t('org.employeeNumber'), value: 'employeeId' },
     { label: t('org.employeeType'), value: 'employeeType', valueSlotName: 'employeeType' },
     { label: t('org.directSuperior'), value: 'supervisorId' },
-    { label: t('org.workingCity'), value: 'workCity' },
+    { label: t('org.workingCity'), value: 'workCity', valueSlotName: 'workCity' },
     { label: t('org.role'), value: 'roles', tagProps: { labelKey: 'name' } },
     { label: t('org.position'), value: 'position' },
     // TODO 不上
