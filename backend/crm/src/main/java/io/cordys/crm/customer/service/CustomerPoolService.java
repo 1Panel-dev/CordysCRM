@@ -169,8 +169,9 @@ public class CustomerPoolService {
 	 * @param request 请求参数
 	 * @param currentUserId 当前用户ID
 	 */
+	@OperationLog(module = LogModule.CUSTOMER_POOL, type = LogType.UPDATE, resourceId = "{#request.id}")
 	public void update(CustomerPoolUpdateRequest request, String currentUserId, String organizationId) {
-		checkPoolExist(request.getId());
+		CustomerPool originCustomerPool = checkPoolExist(request.getId());
 		CustomerPool pool = new CustomerPool();
 		BeanUtils.copyBean(pool, request);
 		pool.setOrganizationId(organizationId);
@@ -196,6 +197,14 @@ public class CustomerPoolService {
 		recycleRule.setUpdateUser(currentUserId);
 		recycleRule.setUpdateTime(System.currentTimeMillis());
 		extCustomerPoolMapper.updateRecycleRule(recycleRule);
+
+		OperationLogContext.setContext(
+				LogContextInfo.builder()
+						.resourceName(originCustomerPool.getName())
+						.originalValue(originCustomerPool)
+						.modifiedValue(customerPoolMapper.selectByPrimaryKey(request.getId()))
+						.build()
+		);
 	}
 
 	/**
@@ -214,8 +223,9 @@ public class CustomerPoolService {
 	/**
 	 * 删除公海池
 	 */
+	@OperationLog(module = LogModule.CUSTOMER_POOL, type = LogType.DELETE, resourceId = "{#id}")
 	public void delete(String id) {
-		checkPoolExist(id);
+		CustomerPool originCustomerPool = checkPoolExist(id);
 		customerPoolMapper.deleteByPrimaryKey(id);
 		CustomerPoolPickRule pickRule = new CustomerPoolPickRule();
 		pickRule.setPoolId(id);
@@ -223,6 +233,9 @@ public class CustomerPoolService {
 		CustomerPoolRecycleRule recycleRule = new CustomerPoolRecycleRule();
 		recycleRule.setPoolId(id);
 		customerPoolRecycleRuleMapper.delete(recycleRule);
+
+		// 设置操作对象
+		OperationLogContext.setResourceName(originCustomerPool.getName());
 	}
 
 	/**
