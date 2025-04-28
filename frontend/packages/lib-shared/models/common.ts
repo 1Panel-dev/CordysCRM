@@ -41,5 +41,5 @@ export interface FilterConditionItem {
   name: string;
   value: any; // 期望值，若操作符为 BETWEEN, IN, NOT_IN 时为数组，其他操作符为单个值
   operator: OperatorEnum;
-  multipleValue: boolean;
+  multipleValue?: boolean;
 }

@@ -64,6 +64,15 @@ import {
 
 import type { FormCreateField, FormCreateFieldRule, FormDetail } from './types';
 
+export const multipleValueTypeList = [
+  FieldTypeEnum.MEMBER_MULTIPLE,
+  FieldTypeEnum.DEPARTMENT_MULTIPLE,
+  FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+  FieldTypeEnum.CHECKBOX,
+  FieldTypeEnum.SELECT_MULTIPLE,
+  FieldTypeEnum.INPUT_MULTIPLE,
+];
+
 export const inputDefaultFieldConfig: FormCreateField = {
   id: '',
   type: FieldTypeEnum.INPUT,

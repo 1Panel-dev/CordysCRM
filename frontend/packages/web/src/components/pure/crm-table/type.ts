@@ -41,6 +41,7 @@ export type CrmDataTableColumn<T = any> = (
     value: string | number | boolean;
     label: string;
   }[];
+  filterMultipleValue?: boolean; // 给后端传的筛选参数
   disabled?: (rowData: T) => boolean;
 };
 

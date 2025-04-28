@@ -10,7 +10,11 @@ import type { ModuleField } from '@lib/shared/models/customer';
 
 import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
 import useTable from '@/components/pure/crm-table/useTable';
-import { getFormConfigApiMap, getFormListApiMap } from '@/components/business/crm-form-create/config';
+import {
+  getFormConfigApiMap,
+  getFormListApiMap,
+  multipleValueTypeList,
+} from '@/components/business/crm-form-create/config';
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
 import { lastOpportunitySteps } from '@/config/opportunity';
@@ -275,22 +279,24 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('customer.lastFollowUps'),
         width: 120,
-        key: 'lastFollowUps',
+        key: 'follower',
         ellipsis: {
           tooltip: true,
         },
         sortOrder: false,
         sorter: true,
+        render: (row: any) => row.followerName || '-',
       },
       {
         title: t('customer.lastFollowUpDate'),
         width: 120,
-        key: 'lastFollowUpDate',
+        key: 'followTime',
         ellipsis: {
           tooltip: true,
         },
         sortOrder: false,
         sorter: true,
+        render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
       },
     ],
     [FormDesignKeyEnum.PRODUCT]: [],
@@ -410,6 +416,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               isTag: field.type === FieldTypeEnum.CHECKBOX || field.type === FieldTypeEnum.SELECT_MULTIPLE,
               filterOptions: field.options || field.initialOptions?.map((e: any) => ({ label: e.name, value: e.id })),
               filter: true,
+              filterMultipleValue: multipleValueTypeList.includes(field.type),
             };
           }
           if (field.businessKey === 'name') {

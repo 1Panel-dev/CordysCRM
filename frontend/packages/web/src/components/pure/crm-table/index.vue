@@ -48,9 +48,10 @@
   import { NDataTable } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { SortParams } from '@lib/shared/models/common';
+  import type { FilterConditionItem, SortParams } from '@lib/shared/models/common';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -63,7 +64,7 @@
   import useTableStore from '@/hooks/useTableStore';
 
   import { BatchActionConfig } from './type';
-  import type { DataTableFilterState, DataTableRowKey, DataTableSortState } from 'naive-ui';
+  import type { DataTableBaseColumn, DataTableFilterState, DataTableRowKey, DataTableSortState } from 'naive-ui';
   import type { InternalRowData, TableColumns } from 'naive-ui/es/data-table/src/interface';
 
   const props = defineProps<{
@@ -74,7 +75,7 @@
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;
     (e: 'pageSizeChange', value: number): void;
-    (e: 'filterChange', value: DataTableFilterState): void;
+    (e: 'filterChange', value: FilterConditionItem[]): void;
     (e: 'batchAction', value: ActionsItem): void;
     (e: 'sorterChange', value: SortParams): void;
     (e: 'rowKeyChange', keys: DataTableRowKey[], rows: InternalRowData[]): void;
@@ -236,9 +237,18 @@
     emit('sorterChange', !sorter.order ? {} : { name: sorter.columnKey as string, type: sortOrder });
   }
 
-  function handleFiltersChange(filters: DataTableFilterState) {
+  function handleFiltersChange(filters: DataTableFilterState, initiatorColumn: DataTableBaseColumn) {
     if (!attrs.showPagination) return;
-    emit('filterChange', filters);
+    const filterList = Object.entries(filters)
+      .filter(([, value]) => (value as string[])?.length > 0)
+      .map(([key, value]) => ({
+        name: key,
+        value,
+        multipleValue:
+          initiatorColumn.key === key ? !!(initiatorColumn as CrmDataTableColumn).filterMultipleValue : undefined,
+        operator: OperatorEnum.IN,
+      }));
+    emit('filterChange', filterList);
   }
 
   function handleClear() {

@@ -2,7 +2,6 @@ import { UnwrapRef } from 'vue';
 import { cloneDeep } from 'lodash-es';
 import dayjs from 'dayjs';
 
-import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import type { CommonList, FilterConditionItem, SortParams, TableQueryParams } from '@lib/shared/models/common';
 
 import { FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -11,7 +10,7 @@ import useTableStore from '@/hooks/useTableStore';
 import useAppStore from '@/store/modules/app';
 
 import type { CrmTableDataItem, CrmTableProps } from './type';
-import type { DataTableFilterState, PaginationProps } from 'naive-ui';
+import type { PaginationProps } from 'naive-ui';
 
 const tableStore = useTableStore();
 const appStore = useAppStore();
@@ -200,12 +199,10 @@ export default function useTable<T>(
       loadList();
     },
     // 筛选触发
-    filterChange: (filters: DataTableFilterState) => {
-      filterItem.value = Object.entries(filters).map(([key, value]) => ({
-        name: key,
-        value,
-        operator: OperatorEnum.IN,
-        multipleValue: Array.isArray(value),
+    filterChange: (filters: FilterConditionItem[]) => {
+      filterItem.value = filters.map((item) => ({
+        ...item,
+        multipleValue: item.multipleValue ?? filterItem.value.find((i) => i.name === item.name)?.multipleValue ?? false,
       }));
       loadList();
     },

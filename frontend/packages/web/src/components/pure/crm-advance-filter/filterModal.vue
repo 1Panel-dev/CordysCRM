@@ -28,6 +28,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
   import FilterContent from './components/filterContent.vue';
 
   import { ConditionsItem, FilterForm, FilterFormItem, FilterResult } from './type';
@@ -65,7 +66,7 @@
       value: item.value,
       operator: item.operator,
       name: item.dataIndex ?? '',
-      multipleValue: Array.isArray(item.value),
+      multipleValue: multipleValueTypeList.includes(item.type),
     }));
 
     return {
