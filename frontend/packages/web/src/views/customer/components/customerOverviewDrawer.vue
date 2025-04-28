@@ -23,6 +23,7 @@
     <template #left>
       <div class="h-full overflow-hidden">
         <CrmFormDescription
+          ref="descriptionRef"
           :form-key="FormDesignKeyEnum.CUSTOMER"
           :source-id="props.sourceId"
           :refresh-key="refreshKey"
@@ -106,6 +107,7 @@
   const transferLoading = ref(false);
   const collaborationType = ref<CollaborationType>();
   const sourceName = ref('');
+  const descriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
   const buttonList = computed<ActionsItem[]>(() => {
     if (collaborationType.value === 'READ_ONLY') {
       return [];
@@ -217,6 +219,8 @@
         owner: transferForm.value.owner,
       });
       Message.success(t('common.transferSuccess'));
+      descriptionRef.value?.initFormDescription();
+      emit('saved');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -237,6 +241,7 @@
         try {
           await deleteCustomer(props.sourceId);
           Message.success(t('common.deleteSuccess'));
+          emit('saved');
           show.value = false;
         } catch (error) {
           // eslint-disable-next-line no-console

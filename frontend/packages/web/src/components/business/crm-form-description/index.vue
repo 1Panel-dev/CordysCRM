@@ -56,6 +56,10 @@
     await initFormDescription();
     emit('init', collaborationType.value, sourceName.value);
   });
+
+  defineExpose({
+    initFormDescription,
+  });
 </script>
 
 <style lang="less" scoped></style>
