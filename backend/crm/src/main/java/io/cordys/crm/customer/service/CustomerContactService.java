@@ -78,8 +78,6 @@ public class CustomerContactService {
     private ModuleFormService moduleFormService;
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;
-    @Resource
-    private CustomerFieldService customerFieldService;
 
     public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());

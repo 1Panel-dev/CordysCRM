@@ -102,16 +102,15 @@
         <choose>
             <when test="${sort} != null and ${sort}.valid()">
                 <bind name="sortType" value="${sort}.type" />
+                <bind name="sortName" value="${sort}.name" />
                 order by
                 <choose>
-                    <when test="${sort}.name == 'name'">
-                        cc.`name` ${sortType}
+                    <when test="${sort}.name == 'department_id'">
+                        souc.department_id ${sortType}
                     </when>
-                    <when test="${sort}.name == 'customerId'">
-                        cc.`customer_id` ${sortType}
-                    </when>
-                    <when test="${sort}.name == 'owner'">
-                        cc.`owner` ${sortType}
+                    <when test="${sort}.name in
+                        {'name', 'owner', 'create_time', 'update_time', 'phone', 'create_user', 'update_user', 'enable', 'customer_id'}">
+                        cc.${sortName} ${sortType}
                     </when>
                     <otherwise>
                         sort_table.field_value ${sortType}
@@ -128,7 +127,7 @@
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
                 <if test="condition.name != 'name' and condition.name != 'owner'">
-                    inner join customer_field ${tablePrefix}_${i}
+                    inner join customer_contact_field ${tablePrefix}_${i}
                     on cc.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                 </if>
             </foreach>
@@ -136,10 +135,15 @@
     </sql>
 
     <sql id="fieldSortJoin">
-        <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'owner'">
+        <if test="${sort} != null and ${sort}.name not in
+             {'name', 'owner', 'create_time', 'update_time', 'phone', 'create_user', 'update_user', 'department_id', 'enable', 'customer_id'}">
             <bind name="sortName" value="${sort}.name"/>
-            left join customer_field sort_table
+            left join customer_contact_field sort_table
             on cc.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+        </if>
+        <if test="${sort}.name == 'department_id'">
+            inner join sys_organization_user souc
+            on souc.user_id = cc.owner
         </if>
     </sql>
 

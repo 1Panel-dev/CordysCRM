@@ -146,7 +146,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('org.department'),
         width: 120,
-        key: 'department',
+        key: 'departmentId',
         ellipsis: {
           tooltip: true,
         },
