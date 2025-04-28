@@ -96,6 +96,10 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
         return value == null ? null : JSON.parseArray(value);
     }
 
+    protected Object parse2Long(String value) {
+        return value == null ? null : Long.valueOf(value);
+    }
+
     protected String getJsonString(Object value) {
         return value == null ? null :JSON.toJSONString(value);
     }

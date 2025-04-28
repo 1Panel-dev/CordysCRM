@@ -7,10 +7,12 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.service.CustomerService;
+import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import org.apache.commons.lang3.StringUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ public abstract class BaseModuleLogService {
     /**
      * 处理非业务字段的自定义字段
      * 同时会翻译其他字段的 ColumnName
+     *
      * @param differenceDTOS
      * @param orgId
      * @param formKey
@@ -65,7 +68,7 @@ public abstract class BaseModuleLogService {
             if (moduleField != null) {
                 differ.setColumnName(moduleField.getName());
                 // 设置字段值名称
-                setColumnValueName(optionMap, differ);
+                setColumnValueName(optionMap, differ, moduleField);
             } else {
                 translatorDifferInfo(differ);
             }
@@ -75,6 +78,7 @@ public abstract class BaseModuleLogService {
     /**
      * 翻译字段名称
      * 赋值旧值名称和新值名称
+     *
      * @param differ
      */
     public static void translatorDifferInfo(JsonDifferenceDTO differ) {
@@ -84,15 +88,21 @@ public abstract class BaseModuleLogService {
         differ.setNewValueName(differ.getNewValue());
     }
 
-    private void setColumnValueName(Map<String, List<OptionDTO>> optionMap, JsonDifferenceDTO differ) {
+    private void setColumnValueName(Map<String, List<OptionDTO>> optionMap, JsonDifferenceDTO differ, BaseField moduleField) {
         List<OptionDTO> options = optionMap.get(differ.getColumn());
         if (options == null) {
-            differ.setOldValueName(differ.getOldValue());
-            differ.setNewValueName(differ.getNewValue());
+            if (moduleField != null && StringUtils.equalsAnyIgnoreCase(moduleField.getType(), FieldType.DATE_TIME.name())) {
+                // 日期时间类型
+                differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getOldValue().toString())));
+                differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getNewValue().toString())));
+            } else {
+                differ.setOldValueName(differ.getOldValue());
+                differ.setNewValueName(differ.getNewValue());
+            }
             return;
         }
-        List<String>oldNameList =new ArrayList<>();
-        List<String>newNameList =new ArrayList<>();
+        List<String> oldNameList = new ArrayList<>();
+        List<String> newNameList = new ArrayList<>();
         for (OptionDTO option : options) {
             if (differ.getOldValue() instanceof String strValue && StringUtils.equals(option.getId(), strValue)) {
                 // 设置旧值名称
@@ -146,6 +156,7 @@ public abstract class BaseModuleLogService {
 
     /**
      * 客户名称
+     *
      * @param differ
      */
     protected void setCustomerName(JsonDifferenceDTO differ) {

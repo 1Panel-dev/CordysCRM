@@ -19,4 +19,9 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
             throwValidateException(name);
         }
     }
+
+    @Override
+    public Object parse2Value(DateTimeField dateTimeField, String value) {
+        return parse2Long(value);
+    }
 }
