@@ -52,7 +52,7 @@ public class CluePoolController {
 	}
 
 	@PostMapping("/quick-update")
-	@Operation(summary = "编辑线索池")
+	@Operation(summary = "快捷保存线索池")
 	public void quickUpdate(@Validated @RequestBody CluePoolUpdateRequest request) {
 		cluePoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}

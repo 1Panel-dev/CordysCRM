@@ -4,7 +4,8 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.dto.CustomerCapacityDTO;
 import io.cordys.crm.customer.service.CustomerCapacityService;
-import io.cordys.crm.system.dto.request.CapacityRequest;
+import io.cordys.crm.system.dto.request.CapacityAddRequest;
+import io.cordys.crm.system.dto.request.CapacityUpdateRequest;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,10 +31,24 @@ public class CustomerCapacityController {
         return customerCapacityService.list(OrganizationContext.getOrganizationId());
     }
 
-    @PostMapping("/save")
-    @Operation(summary = "保存客户库容设置")
+    @PostMapping("/add")
+    @Operation(summary = "添加客户库容设置")
     @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-    public void save(@Validated @RequestBody List<CapacityRequest> capacities) {
-        customerCapacityService.save(capacities, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public void add(@Validated @RequestBody CapacityAddRequest request) {
+        customerCapacityService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/update")
+    @Operation(summary = "修改客户库容设置")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void update(@Validated @RequestBody CapacityUpdateRequest request) {
+        customerCapacityService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/delete/{id}")
+    @Operation(summary = "删除客户库容设置")
+    @RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+    public void delete(@PathVariable("id") @Validated String id) {
+        customerCapacityService.delete(id);
     }
 }

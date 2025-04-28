@@ -52,7 +52,7 @@ public class CustomerPoolController {
     }
 
     @PostMapping("/quick-update")
-    @Operation(summary = "编辑公海池")
+    @Operation(summary = "快捷保存公海池")
     public void quickUpdate(@Validated @RequestBody CustomerPoolUpdateRequest request) {
         customerPoolService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }

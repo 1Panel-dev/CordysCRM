@@ -19,6 +19,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserExtendService {
@@ -42,7 +43,7 @@ public class UserExtendService {
 	 */
 	public List<String> getScopeOwnerIds(List<String> scopeIds, String  orgId) {
 		List<ScopeNameDTO> scopes = getScope(scopeIds);
-		List<String> ownerIds = new ArrayList<>(scopes.stream().filter(scope -> StringUtils.equals(scope.getScope(), ScopeKey.USER.name())).map(ScopeNameDTO::getId).toList());
+		List<String> ownerIds = scopes.stream().filter(scope -> StringUtils.equals(scope.getScope(), ScopeKey.USER.name())).map(ScopeNameDTO::getId).collect(Collectors.toList());
 		List<ScopeNameDTO> roleList = scopes.stream().filter(scope -> StringUtils.equals(scope.getScope(), ScopeKey.ROLE.name())).toList();
 		List<ScopeNameDTO> dptList = scopes.stream().filter(scope -> StringUtils.equals(scope.getScope(), ScopeKey.DEPARTMENT.name())).toList();
 		if (!CollectionUtils.isEmpty(roleList)) {
@@ -64,7 +65,7 @@ public class UserExtendService {
 			List<OrganizationUser> organizationUsers = organizationUserMapper.selectListByLambda(queryWrapper);
 			ownerIds.addAll(organizationUsers.stream().map(OrganizationUser::getUserId).toList());
 		}
-		return ownerIds.stream().distinct().toList();
+		return ownerIds.stream().distinct().collect(Collectors.toList());
 	}
 
 	/**
@@ -208,5 +209,19 @@ public class UserExtendService {
 			return List.of();
 		}
 		return getUserOptionByIds(List.of(id));
+	}
+
+	/**
+	 * 是否含有重复对象元素
+	 * @param scopeIds 原始范围ID集合
+	 * @param targetScopeIds 目标范围ID集合
+	 * @param currentOrgId 当前组织ID
+	 * @return 是否含有重复对象元素
+	 */
+	public boolean hasDuplicateScopeObj(List<String> scopeIds, List<String> targetScopeIds, String currentOrgId) {
+		List<String> ownerIds = getScopeOwnerIds(scopeIds, currentOrgId);
+		List<String> targetOwnerIds = getScopeOwnerIds(targetScopeIds, currentOrgId);
+		ownerIds.retainAll(targetOwnerIds);
+		return !ownerIds.isEmpty();
 	}
 }

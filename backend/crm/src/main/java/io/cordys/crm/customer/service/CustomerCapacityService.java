@@ -1,10 +1,13 @@
 package io.cordys.crm.customer.service;
 
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.CustomerCapacity;
 import io.cordys.crm.customer.dto.CustomerCapacityDTO;
-import io.cordys.crm.system.dto.request.CapacityRequest;
+import io.cordys.crm.system.dto.request.CapacityAddRequest;
+import io.cordys.crm.system.dto.request.CapacityUpdateRequest;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -47,31 +51,49 @@ public class CustomerCapacityService {
 		return capacityDTOS;
 	}
 
-	/**
-	 * 保存客户库容设置
-	 * @param capacities 容量集合
-	 * @param currentUserId 当前用户ID
-	 */
-	public void save(List<CapacityRequest> capacities, String currentUserId, String currentOrgId) {
-		LambdaQueryWrapper<CustomerCapacity> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(CustomerCapacity::getOrganizationId, currentOrgId);
-		List<CustomerCapacity> oldCapacities = customerCapacityMapper.selectListByLambda(wrapper);
-		if (CollectionUtils.isNotEmpty(oldCapacities)) {
-			oldCapacities.forEach(capacity -> customerCapacityMapper.deleteByPrimaryKey(capacity.getId()));
+	public void add(CapacityAddRequest request, String currentUserId, String currentOrgId) {
+		List<CustomerCapacity> oldCapacities = customerCapacityMapper.selectAll(null);
+		List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
+				.collect(Collectors.toList());
+		boolean duplicate = userExtendService.hasDuplicateScopeObj(request.getScopeIds(), targetScopeIds, currentOrgId);
+		if (duplicate) {
+			throw new GenericException(Translator.get("capacity.scope.duplicate"));
 		}
-		List<CustomerCapacity> newCapacities = new ArrayList<>();
-		capacities.forEach(capacityRequest -> {
-			CustomerCapacity capacity = new CustomerCapacity();
-			capacity.setId(IDGenerator.nextStr());
-			capacity.setOrganizationId(currentOrgId);
-			capacity.setCapacity(capacityRequest.getCapacity());
-			capacity.setScopeId(JSON.toJSONString(capacityRequest.getScopeIds()));
-			capacity.setCreateTime(System.currentTimeMillis());
-			capacity.setCreateUser(currentUserId);
-			capacity.setUpdateTime(System.currentTimeMillis());
-			capacity.setUpdateUser(currentUserId);
-			newCapacities.add(capacity);
-		});
-		customerCapacityMapper.batchInsert(newCapacities);
+
+		CustomerCapacity capacity = new CustomerCapacity();
+		capacity.setId(IDGenerator.nextStr());
+		capacity.setOrganizationId(currentOrgId);
+		capacity.setCapacity(request.getCapacity());
+		capacity.setScopeId(JSON.toJSONString(request.getScopeIds()));
+		capacity.setCreateTime(System.currentTimeMillis());
+		capacity.setCreateUser(currentUserId);
+		capacity.setUpdateTime(System.currentTimeMillis());
+		capacity.setUpdateUser(currentUserId);
+		customerCapacityMapper.insert(capacity);
+	}
+
+	public void update(CapacityUpdateRequest request, String currentUserId, String currentOrgId) {
+		CustomerCapacity oldCapacity = customerCapacityMapper.selectByPrimaryKey(request.getId());
+		if (oldCapacity == null) {
+			throw new GenericException(Translator.get("capacity.not.exist"));
+		}
+		LambdaQueryWrapper<CustomerCapacity> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(CustomerCapacity::getOrganizationId, currentOrgId).nq(CustomerCapacity::getId, request.getId());
+		List<CustomerCapacity> oldCapacities = customerCapacityMapper.selectListByLambda(wrapper);
+		List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
+				.collect(Collectors.toList());
+		boolean duplicate = userExtendService.hasDuplicateScopeObj(request.getScopeIds(), targetScopeIds, currentOrgId);
+		if (duplicate) {
+			throw new GenericException(Translator.get("capacity.scope.duplicate"));
+		}
+		oldCapacity.setScopeId(JSON.toJSONString(request.getScopeIds()));
+		oldCapacity.setCapacity(request.getCapacity());
+		oldCapacity.setUpdateTime(System.currentTimeMillis());
+		oldCapacity.setUpdateUser(currentUserId);
+		customerCapacityMapper.updateById(oldCapacity);
+	}
+
+	public void delete(String id) {
+		customerCapacityMapper.deleteByPrimaryKey(id);
 	}
 }

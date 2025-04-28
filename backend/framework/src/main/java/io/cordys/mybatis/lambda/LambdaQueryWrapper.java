@@ -29,6 +29,18 @@ public class LambdaQueryWrapper<T> {
     }
 
     /**
+     * 添加不等值条件（!=）。
+     *
+     * @param column 列名的 Lambda 表达式
+     * @param value  值
+     * @return 当前 LambdaQueryWrapper 实例
+     */
+    public LambdaQueryWrapper<T> nq(XFunction<T, ?> column, Object value) {
+        addCondition(columnToString(column) + " != " + formatValue(value));
+        return this;
+    }
+
+    /**
      * 添加模糊匹配条件（LIKE）。
      *
      * @param column 列名的 Lambda 表达式

@@ -1,20 +1,21 @@
 package io.cordys.crm.system.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-public class CapacityRequest {
+public class CapacityUpdateRequest {
 
+	@Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
+	@NotBlank
+	private String id;
 	@NotNull
 	@Schema(description = "范围ID集合")
 	private List<String> scopeIds;
 	@Schema(description = "容量")
 	private Integer capacity;
-
 }
