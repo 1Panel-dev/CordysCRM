@@ -296,7 +296,7 @@ public class CustomerContactService {
 
         if (!originCustomerContact.getEnable().equals(customerContact.getEnable())) {
             CustomerContact originResourceLog = new CustomerContact();
-            originResourceLog.setEnable(originResourceLog.getEnable());
+            originResourceLog.setEnable(!enable);
             CustomerContact modifiedResourceLog = new CustomerContact();
             modifiedResourceLog.setEnable(customerContact.getEnable());
             OperationLogContext.setContext(
