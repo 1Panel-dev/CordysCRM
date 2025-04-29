@@ -42,7 +42,7 @@
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
-      value.value = val || null;
+      value.value = val || value.value || null;
     },
     {
       immediate: true,

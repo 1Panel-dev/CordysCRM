@@ -44,7 +44,7 @@
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
-      value.value = val || [];
+      value.value = val || value.value || [];
     },
     {
       immediate: true,
