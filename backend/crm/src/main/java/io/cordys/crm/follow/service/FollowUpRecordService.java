@@ -24,7 +24,6 @@ import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpRecordAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
-import io.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpRecordDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
@@ -131,12 +130,13 @@ public class FollowUpRecordService extends BaseFollowUpService {
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(followUpRecord).ifPresentOrElse(record -> {
             //更新跟进记录
-            updateRecord(record, request, userId);
+            FollowUpRecord newRecord = BeanUtils.copyBean(new FollowUpRecord(), record);
+            updateRecord(newRecord, request, userId);
             // 获取模块字段
             List<BaseModuleFieldValue> originCustomerFields = followUpRecordFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
-            baseService.handleUpdateLog(followUpRecord, record, originCustomerFields, request.getModuleFields(), followUpRecord.getId(), Translator.get("update_follow_up_record"));
+            baseService.handleUpdateLog(followUpRecord, newRecord, originCustomerFields, request.getModuleFields(), followUpRecord.getId(), Translator.get("update_follow_up_record"));
         }, () -> {
             throw new GenericException("record_not_found");
         });

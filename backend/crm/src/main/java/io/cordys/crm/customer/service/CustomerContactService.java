@@ -46,6 +46,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -394,5 +395,10 @@ public class CustomerContactService {
         Opportunity example = new Opportunity();
         example.setContactId(id);
         return opportunityMapper.countByExample(example) > 0;
+    }
+
+    public String getContactName(String id) {
+        CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(customerContact).map(CustomerContact::getName).orElse(null);
     }
 }

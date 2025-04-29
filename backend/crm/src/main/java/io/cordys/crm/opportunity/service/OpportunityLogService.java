@@ -34,22 +34,23 @@ public class OpportunityLogService extends BaseModuleLogService {
         for (JsonDifferenceDTO differ : differenceDTOS) {
             if (StringUtils.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
-                break;
+                continue;
             }
 
             if (StringUtils.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())) {
                 setProductFieldName(differ);
-                break;
+                continue;
             }
 
             if (StringUtils.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_CONTACT.getBusinessKey())) {
                 setContactFieldName(differ);
-                break;
+                continue;
             }
 
             if (StringUtils.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_CUSTOMER_NAME.getBusinessKey())) {
+                differ.setColumnName(Translator.get("log.customerId"));
                 setCustomerName(differ);
-                break;
+                continue;
             }
 
             if (StringUtils.equals(differ.getColumnName(), Translator.get("log.stage"))) {
@@ -63,19 +64,6 @@ public class OpportunityLogService extends BaseModuleLogService {
                 differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.opportunity.status.true") : Translator.get("log.opportunity.status.false"));
             }
         }
-    }
-
-
-    /**
-     * 联系人
-     *
-     * @param differ
-     */
-    private void setContactFieldName(JsonDifferenceDTO differ) {
-        CustomerContact oldCustomerContact = customerContactMapper.selectByPrimaryKey(differ.getOldValue().toString());
-        differ.setOldValueName(Optional.ofNullable(oldCustomerContact).map(CustomerContact::getName).orElse(null));
-        CustomerContact newCustomerContact = customerContactMapper.selectByPrimaryKey(differ.getNewValue().toString());
-        differ.setNewValueName(Optional.ofNullable(newCustomerContact).map(CustomerContact::getName).orElse(null));
     }
 
     /**

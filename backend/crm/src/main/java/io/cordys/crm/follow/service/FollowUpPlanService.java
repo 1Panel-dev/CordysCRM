@@ -97,12 +97,13 @@ public class FollowUpPlanService extends BaseFollowUpService {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(followUpPlan).ifPresentOrElse(plan -> {
             //更新跟进计划
-            updatePlan(plan, request, userId);
+            FollowUpPlan newPlan = BeanUtils.copyBean(new FollowUpPlan(), plan);
+            updatePlan(newPlan, request, userId);
             // 获取模块字段
             List<BaseModuleFieldValue> originCustomerFields = followUpPlanFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
             updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
-            baseService.handleUpdateLog(followUpPlan, plan, originCustomerFields, request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));
+            baseService.handleUpdateLog(followUpPlan, newPlan, originCustomerFields, request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));
         }, () -> {
             throw new GenericException("plan_not_found");
         });

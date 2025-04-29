@@ -5,11 +5,16 @@ import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.util.CommonBeanFactory;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.system.constants.FieldType;
+import io.cordys.crm.system.dto.field.DatasourceMultipleField;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.SimpleDateFormat;
@@ -20,6 +25,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class BaseModuleLogService {
+
+    @Resource
+    private ExtModuleFieldMapper extModuleFieldMapper;
 
     abstract public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId);
 
@@ -91,14 +99,8 @@ public abstract class BaseModuleLogService {
     private void setColumnValueName(Map<String, List<OptionDTO>> optionMap, JsonDifferenceDTO differ, BaseField moduleField) {
         List<OptionDTO> options = optionMap.get(differ.getColumn());
         if (options == null) {
-            if (moduleField != null && StringUtils.equalsAnyIgnoreCase(moduleField.getType(), FieldType.DATE_TIME.name())) {
-                // 日期时间类型
-                differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getOldValue().toString())));
-                differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getNewValue().toString())));
-            } else {
-                differ.setOldValueName(differ.getOldValue());
-                differ.setNewValueName(differ.getNewValue());
-            }
+            //解析各种数据
+            parseValue(moduleField, differ);
             return;
         }
         List<String> oldNameList = new ArrayList<>();
@@ -141,6 +143,27 @@ public abstract class BaseModuleLogService {
 
     }
 
+    private void parseValue(BaseField moduleField, JsonDifferenceDTO differ) {
+        if (moduleField != null) {
+            if (StringUtils.equalsAnyIgnoreCase(moduleField.getType(), FieldType.DATE_TIME.name())) {
+                // 日期时间类型
+                differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getOldValue().toString())));
+                differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getNewValue().toString())));
+            }
+            if (StringUtils.equalsAnyIgnoreCase(moduleField.getType(), FieldType.DATA_SOURCE_MULTIPLE.name(), FieldType.DATA_SOURCE.name(),
+                    FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT.name(), FieldType.DEPARTMENT_MULTIPLE.name())) {
+                List<OptionDTO> oldOptions = extModuleFieldMapper.getSourceOptionsByIds(((DatasourceMultipleField) moduleField).getDataSourceType(), JSON.parseArray(differ.getOldValue().toString(), String.class));
+                differ.setOldValueName(oldOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
+                List<OptionDTO> newOptions = extModuleFieldMapper.getSourceOptionsByIds(((DatasourceMultipleField) moduleField).getDataSourceType(), JSON.parseArray(differ.getNewValue().toString(), String.class));
+                differ.setNewValueName(newOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
+            }
+
+        } else {
+            differ.setOldValueName(differ.getOldValue());
+            differ.setNewValueName(differ.getNewValue());
+        }
+    }
+
     protected void setUserFieldName(JsonDifferenceDTO differ) {
         BaseService baseService = CommonBeanFactory.getBean(BaseService.class);
         if (differ.getOldValue() != null) {
@@ -167,6 +190,24 @@ public abstract class BaseModuleLogService {
         }
         if (differ.getNewValue() != null) {
             String userName = customerService.getCustomerName(differ.getNewValue().toString());
+            differ.setNewValueName(userName);
+        }
+    }
+
+
+    /**
+     * 联系人
+     *
+     * @param differ
+     */
+    protected void setContactFieldName(JsonDifferenceDTO differ) {
+        CustomerContactService customerContactService = CommonBeanFactory.getBean(CustomerContactService.class);
+        if (differ.getOldValue() != null) {
+            String customerName = customerContactService.getContactName(differ.getOldValue().toString());
+            differ.setOldValueName(customerName);
+        }
+        if (differ.getNewValue() != null) {
+            String userName = customerContactService.getContactName(differ.getNewValue().toString());
             differ.setNewValueName(userName);
         }
     }
