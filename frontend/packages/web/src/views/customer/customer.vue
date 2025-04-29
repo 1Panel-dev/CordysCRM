@@ -426,8 +426,8 @@
     loadList();
   }
 
-  function searchData() {
-    setLoadListParams({ keyword: keyword.value, searchType: activeTab.value });
+  function searchData(val?: string) {
+    setLoadListParams({ keyword: val ?? keyword.value, searchType: activeTab.value });
     loadList();
   }
 

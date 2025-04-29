@@ -193,8 +193,8 @@
   };
 
   const keyword = ref('');
-  function searchData() {
-    setLoadListParams({ keyword: keyword.value, roleId: props.activeRoleId });
+  function searchData(val?: string) {
+    setLoadListParams({ keyword: val ?? keyword.value, roleId: props.activeRoleId });
     loadList();
   }
 

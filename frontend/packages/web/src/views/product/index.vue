@@ -216,8 +216,8 @@
   });
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
 
-  function searchData() {
-    setLoadListParams({ keyword: keyword.value });
+  function searchData(val?: string) {
+    setLoadListParams({ keyword: val ?? keyword.value });
     loadList();
   }
 
