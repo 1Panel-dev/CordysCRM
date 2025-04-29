@@ -8,7 +8,6 @@
     :title="sourceName"
     :form-key="FormDesignKeyEnum.CUSTOMER"
     :source-id="props.sourceId"
-    :initial-source-name="sourceName"
     show-tab-setting
     @button-select="handleButtonSelect"
     @saved="handleSaved"
@@ -51,6 +50,8 @@
           :follow-api-key="FormDesignKeyEnum.CUSTOMER"
           :source-id="props.sourceId"
           :refresh-key="refreshKey"
+          :initial-source-name="sourceName"
+          :show-add="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
           :show-action="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
         />
         <CrmHeaderTable
@@ -116,22 +117,6 @@
       {
         label: t('common.edit'),
         key: 'edit',
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
-        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('overviewDrawer.followRecord'),
-        key: 'followRecord',
-        text: false,
-        ghost: true,
-        class: 'n-btn-outline-primary',
-        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('overviewDrawer.followPlan'),
-        key: 'followPlan',
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',

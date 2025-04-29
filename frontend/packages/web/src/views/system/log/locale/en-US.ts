@@ -5,7 +5,6 @@ export default {
   'log.operationType': 'Operation type',
   'log.operationScope': 'Operation scope',
   'log.operator': 'Operator',
-  'log.loginLocation': 'Login location',
   'log.loginTime': 'Login time',
   'log.platform': 'Platform',
   'log.platform.web': 'Web',

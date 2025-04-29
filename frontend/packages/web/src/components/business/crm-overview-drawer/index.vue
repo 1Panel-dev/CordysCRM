@@ -78,7 +78,6 @@
     :form-key="realFormKey"
     :source-id="sourceId"
     :need-init-detail="needInitDetail"
-    :initial-source-name="props.initialSourceName"
     @saved="emit('saved')"
   />
 </template>
@@ -108,7 +107,6 @@
     formKey: FormDesignKeyEnum;
     sourceId?: string;
     showTabSetting?: boolean;
-    initialSourceName?: string;
   }>();
 
   const emit = defineEmits<{
@@ -145,28 +143,6 @@
 
   function handleButtonClick(key: string, done?: () => void) {
     switch (key) {
-      case 'followRecord':
-        if (props.formKey === FormDesignKeyEnum.CLUE) {
-          realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CLUE;
-        } else if (props.formKey === FormDesignKeyEnum.CUSTOMER) {
-          realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER;
-        } else {
-          realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
-        }
-        needInitDetail.value = false;
-        formDrawerVisible.value = true;
-        return;
-      case 'followPlan':
-        if (props.formKey === FormDesignKeyEnum.CLUE) {
-          realFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN_CLUE;
-        } else if (props.formKey === FormDesignKeyEnum.CUSTOMER) {
-          realFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER;
-        } else {
-          realFormKey.value = FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS;
-        }
-        needInitDetail.value = false;
-        formDrawerVisible.value = true;
-        return;
       case 'edit':
         realFormKey.value = props.formKey;
         needInitDetail.value = true;

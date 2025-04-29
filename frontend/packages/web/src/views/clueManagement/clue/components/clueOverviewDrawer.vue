@@ -7,7 +7,6 @@
     :button-list="buttonList"
     :button-more-list="buttonMoreList"
     :source-id="sourceId"
-    :initial-source-name="sourceName"
     :title="props.detail?.name"
     :form-key="FormDesignKeyEnum.CLUE"
     :show-tab-setting="true"
@@ -45,6 +44,8 @@
         wrapper-class="h-[calc(100vh-290px)]"
         virtual-scroll-height="calc(100vh - 382px)"
         :follow-api-key="FormDesignKeyEnum.CLUE"
+        :initial-source-name="sourceName"
+        :show-add="hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])"
         :source-id="sourceId"
         :show-action="showAction"
       />
@@ -170,9 +171,7 @@
 
   const formDrawerVisible = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD_CLUE);
-  const otherFollowRecordSaveParams = ref({
-    clueId: '',
-  });
+  const otherFollowRecordSaveParams = computed(() => ({ clueId: sourceId.value }));
   function handleSelect(key: string) {
     switch (key) {
       case 'pop-transfer':
@@ -183,12 +182,10 @@
         break;
       case 'convertToCustomer':
         realFormKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
-        otherFollowRecordSaveParams.value.clueId = sourceId.value;
         formDrawerVisible.value = true;
         break;
       case 'convertToOpportunity':
         realFormKey.value = FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS;
-        otherFollowRecordSaveParams.value.clueId = sourceId.value;
         formDrawerVisible.value = true;
         break;
       default:
@@ -245,22 +242,6 @@
             {
               label: t('common.edit'),
               key: 'edit',
-              text: false,
-              ghost: true,
-              class: 'n-btn-outline-primary',
-              permission: ['CLUE_MANAGEMENT:UPDATE'],
-            },
-            {
-              label: t('common.plan'),
-              key: 'followPlan',
-              text: false,
-              ghost: true,
-              class: 'n-btn-outline-primary',
-              permission: ['CLUE_MANAGEMENT:UPDATE'],
-            },
-            {
-              label: t('crmFollowRecord.followRecord'),
-              key: 'followRecord',
               text: false,
               ghost: true,
               class: 'n-btn-outline-primary',

@@ -1,24 +1,28 @@
 <template>
   <div :class="`crm-follow-detail p-[24px] ${props.wrapperClass}`">
     <div class="mb-[16px] flex items-center justify-between">
-      <div v-if="props.activeType === 'followRecord'" class="font-medium text-[var(--text-n1)]">
-        {{ t('crmFollowRecord.followRecord') }}
+      <div>
+        <n-button v-if="showAdd" type="primary" @click="handleAdd">
+          {{ t(props.activeType === 'followPlan' ? 'crmFollowRecord.writePlan' : 'crmFollowRecord.writeRecord') }}
+        </n-button>
       </div>
-      <CrmTab
-        v-if="props.activeType === 'followPlan'"
-        v-model:active-tab="activeStatus"
-        no-content
-        :tab-list="statusTabList"
-        type="segment"
-        @change="() => loadFollowList()"
-      >
-      </CrmTab>
-      <CrmSearchInput
-        v-model:value="followKeyword"
-        :placeholder="t('common.byKeywordSearch')"
-        class="!w-[240px]"
-        @search="(val) => searchData(val)"
-      />
+      <div class="flex">
+        <CrmTab
+          v-if="props.activeType === 'followPlan'"
+          v-model:active-tab="activeStatus"
+          no-content
+          :tab-list="statusTabList"
+          type="segment"
+          @change="() => loadFollowList()"
+        >
+        </CrmTab>
+        <CrmSearchInput
+          v-model:value="followKeyword"
+          :placeholder="t('common.byKeywordSearch')"
+          class="!w-[240px]"
+          @search="(val) => searchData(val)"
+        />
+      </div>
     </div>
     <n-spin :show="loading" class="h-full">
       <FollowRecord
@@ -77,7 +81,8 @@
       v-model:visible="formDrawerVisible"
       :form-key="realFormKey"
       :source-id="realFollowSourceId"
-      need-init-detail
+      :initial-source-name="props.initialSourceName"
+      :need-init-detail="needInitDetail"
       @saved="() => loadFollowList()"
     />
   </div>
@@ -112,6 +117,8 @@
     sourceId: string; // 资源id
     refreshKey: number;
     showAction?: boolean; // 显示操作
+    initialSourceName?: string; // 初始化详情时的名称
+    showAdd?: boolean; // 显示增加按钮
   }
 
   const props = withDefaults(defineProps<FollowDetailProps>(), {
@@ -211,12 +218,23 @@
   // 编辑记录或计划
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER);
   const realFollowSourceId = ref<string | undefined>('');
+  const needInitDetail = ref(false);
+
+  function handleAdd() {
+    realFormKey.value = followFormKeyMap[props.followApiKey as keyof typeof followFormKeyMap]?.[
+      props.activeType
+    ] as FormDesignKeyEnum;
+    realFollowSourceId.value = props.sourceId;
+    needInitDetail.value = false;
+    formDrawerVisible.value = true;
+  }
 
   function handleEdit(item: FollowDetailItem) {
     realFormKey.value = followFormKeyMap[getApiKey(item) as keyof typeof followFormKeyMap]?.[
       props.activeType
     ] as FormDesignKeyEnum;
     realFollowSourceId.value = item.id;
+    needInitDetail.value = true;
     formDrawerVisible.value = true;
   }
 

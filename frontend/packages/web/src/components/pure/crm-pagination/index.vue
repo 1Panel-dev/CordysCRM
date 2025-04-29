@@ -13,6 +13,7 @@
       :display-order="displayOrder"
       :show-size-picker="props.showSizePicker"
       :page-sizes="pageSizes"
+      :page-slot="props.pageSlot"
       :show-quick-jumper="props.showQuickJumper"
       @update:page="handlePageChange"
       @update:page-size="handlePageSizeChange"
@@ -46,6 +47,7 @@
       showQuickJumper?: boolean; // 是否显示快速跳转
       showTotal?: boolean; // 显示总量
       isSimple?: boolean; // 新增简易模式控制
+      pageSlot?: number; // 页码显示的个数
     }>(),
     {
       size: 'medium',
@@ -53,6 +55,7 @@
       showQuickJumper: true,
       showTotal: true,
       isSimple: false,
+      pageSlot: 6,
     }
   );
   const emit = defineEmits<{

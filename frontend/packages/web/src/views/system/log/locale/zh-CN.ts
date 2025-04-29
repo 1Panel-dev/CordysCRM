@@ -5,7 +5,6 @@ export default {
   'log.operationType': '操作类型',
   'log.operationScope': '操作范围',
   'log.operator': '登录人',
-  'log.loginLocation': '登录地',
   'log.loginTime': '登录时间',
   'log.platform': '登录平台',
   'log.platform.web': '电脑',

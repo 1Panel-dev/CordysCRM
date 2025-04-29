@@ -38,11 +38,6 @@
       },
     },
     {
-      title: t('log.loginLocation'),
-      key: 'loginAddress',
-      width: 100,
-    },
-    {
       title: t('log.loginTime'),
       key: 'createTime',
       width: 100,

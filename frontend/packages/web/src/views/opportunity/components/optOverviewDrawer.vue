@@ -41,6 +41,7 @@
         virtual-scroll-height="calc(100vh - 382px)"
         :follow-api-key="FormDesignKeyEnum.BUSINESS"
         :source-id="sourceId"
+        :show-add="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
         :show-action="showAction && hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
       />
     </template>
@@ -130,22 +131,6 @@
           {
             label: t('common.edit'),
             key: 'edit',
-            text: false,
-            ghost: true,
-            class: 'n-btn-outline-primary',
-            permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-          },
-          {
-            label: t('common.plan'),
-            key: 'followPlan',
-            text: false,
-            ghost: true,
-            class: 'n-btn-outline-primary',
-            permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-          },
-          {
-            label: t('crmFollowRecord.followRecord'),
-            key: 'followRecord',
             text: false,
             ghost: true,
             class: 'n-btn-outline-primary',

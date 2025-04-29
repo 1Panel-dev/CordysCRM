@@ -132,7 +132,7 @@
 
   function handleSave(form: Record<string, any>, isContinue: boolean) {
     saveForm(form, isContinue, () => {
-      visible.value = false;
+      visible.value = isContinue;
       emit('saved');
     });
   }
