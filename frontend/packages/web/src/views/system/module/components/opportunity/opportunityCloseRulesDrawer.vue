@@ -161,7 +161,6 @@
       },
       sortOrder: false,
       sorter: true,
-      showInTable: true,
       filterOptions: [
         {
           label: t('common.enable'),
@@ -204,9 +203,22 @@
     {
       title: t('opportunity.autoClose'),
       key: 'auto',
+      sortOrder: false,
+      sorter: true,
       ellipsis: {
         tooltip: true,
       },
+      filterOptions: [
+        {
+          label: t('common.yes'),
+          value: true,
+        },
+        {
+          label: t('common.no'),
+          value: false,
+        },
+      ],
+      filter: true,
       render: (row: OpportunityItem) => {
         return row.auto ? t('common.yes') : t('common.no');
       },
@@ -216,6 +228,8 @@
       title: t('common.createTime'),
       key: 'createTime',
       width: 100,
+      sortOrder: false,
+      sorter: true,
       ellipsis: {
         tooltip: true,
       },
@@ -235,6 +249,8 @@
       title: t('common.updateTime'),
       key: 'updateTime',
       width: 100,
+      sortOrder: false,
+      sorter: true,
       ellipsis: {
         tooltip: true,
       },

@@ -674,9 +674,6 @@
       title: t('common.creator'),
       key: 'createUser',
       width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
       render: (row: MemberItem) => {
         return h(CrmNameTooltip, { text: row.createUserName });
       },
@@ -693,9 +690,6 @@
       title: t('common.updateUserName'),
       key: 'updateUser',
       width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
       render: (row: MemberItem) => {
         return h(CrmNameTooltip, { text: row.updateUserName });
       },
@@ -745,15 +739,17 @@
 
   // 同步二次确认
   function handleSyncConfirm() {
+    const content = props.isSyncFromThirdChecked ? t('org.firstSyncUserTipContent') : t('org.syncUserTipContent');
     openModal({
       type: 'error',
       title: t('org.syncUserTipTitle'),
-      content: t('org.syncUserTipContent'),
+      content,
       positiveText: t('common.confirm'),
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
           handleSyncFromThird();
+          emit('addSuccess');
           tableRefreshId.value += 1;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -772,6 +768,7 @@
         label: t('org.enterpriseWhatSync'),
         key: 'sync',
         render: renderSyncResult.value,
+        disabled: !isHasConfig.value,
       },
       {
         label: t('common.import'),

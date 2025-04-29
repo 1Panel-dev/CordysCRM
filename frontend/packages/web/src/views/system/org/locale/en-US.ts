@@ -68,5 +68,7 @@ export default {
   'org.checkSyncUserHoverTip':
     'The organization structure is enterprise WeChat synchronization data, please add members through "Synchronize organization structure"!',
   'org.syncUserTipTitle': 'Synchronize from enterprise wechat?',
-  'org.syncUserTipContent': 'After synchronization, the manually created data will be overwritten, so be careful',
+  'org.syncUserTipContent': 'After synchronization, the manually created data will be overwritten, so be careful!',
+  'org.firstSyncUserTipContent':
+    'Synchronizing organization structure will reset existing members and their resource data to the latest state. This operation is irreversible. Continue?',
 };
