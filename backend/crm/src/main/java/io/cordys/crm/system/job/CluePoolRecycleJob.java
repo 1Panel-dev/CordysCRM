@@ -36,7 +36,7 @@ public class CluePoolRecycleJob {
 	private ClueOwnerHistoryService clueOwnerHistoryService;
 
 	/**
-	 * 回收线索 每天凌晨一点执行
+	 * 回收线索
 	 */
 	@QuartzScheduled(cron = "0 0 1 * * ?")
 	public void recycle() {
@@ -78,6 +78,6 @@ public class CluePoolRecycleJob {
 				}
 			}
 		}));
-		LogUtils.info("Finish recycle clue resource");
+		LogUtils.info("Recycle clue resource done");
 	}
 }

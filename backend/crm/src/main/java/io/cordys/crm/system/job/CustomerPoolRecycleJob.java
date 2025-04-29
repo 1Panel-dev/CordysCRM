@@ -36,7 +36,7 @@ public class CustomerPoolRecycleJob {
 	private CustomerOwnerHistoryService customerOwnerHistoryService;
 
 	/**
-	 * 回收客户, 每天凌晨一点执行
+	 * 回收客户
 	 */
 	@QuartzScheduled(cron = "0 0 1 * * ?")
 	public void recycle() {
@@ -78,6 +78,6 @@ public class CustomerPoolRecycleJob {
 				}
 			}
 		}));
-		LogUtils.info("Finish recycle customer resource");
+		LogUtils.info("Recycle customer resource done");
 	}
 }

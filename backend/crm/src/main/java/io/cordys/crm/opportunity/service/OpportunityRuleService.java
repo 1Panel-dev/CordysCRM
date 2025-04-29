@@ -1,12 +1,18 @@
 package io.cordys.crm.opportunity.service;
 
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.common.dto.condition.CombineSearch;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
+import io.cordys.crm.customer.constants.RecycleConditionColumnKey;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerPool;
+import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
+import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;
 import io.cordys.crm.opportunity.dto.request.OpportunityRuleAddRequest;
@@ -19,13 +25,11 @@ import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -165,6 +169,55 @@ public class OpportunityRuleService {
 		// 判断商机是否存在创建时间
 		List<RuleConditionDTO> conditions = JSON.parseArray(rule.getCondition(), RuleConditionDTO.class);
 		return RecycleConditionUtils.calcRecycleDays(conditions, opportunity.getCreateTime());
+	}
+
+	/**
+	 * 获取负责人最佳匹配规则
+	 * @param rules 规则列表
+	 * @return 匹配集合
+	 */
+	public Map<List<String>, OpportunityRule> getOwnersBestMatchRuleMap(List<OpportunityRule> rules) {
+		Map<List<String>, OpportunityRule> ruleMap = new HashMap<>(4);
+		rules.sort(Comparator.comparing(OpportunityRule::getCreateTime).reversed());
+		for (OpportunityRule rule : rules) {
+			List<String> exitOwnerIds = ruleMap.keySet().stream().flatMap(List::stream).toList();
+			List<String> scopeIds = JSON.parseArray(rule.getScopeId(), String.class);
+			List<String> ownerIds = userExtendService.getScopeOwnerIds(scopeIds, rule.getOrganizationId());
+			List<String> defaultOwnerIds = ownerIds.stream().distinct().filter(ownerId -> !exitOwnerIds.contains(ownerId)).toList();
+			if (CollectionUtils.isEmpty(defaultOwnerIds)) {
+				continue;
+			}
+			ruleMap.put(defaultOwnerIds, rule);
+		}
+		return ruleMap;
+	}
+
+	/**
+	 * 判断客户是否需要回收
+	 * @return 是否回收
+	 */
+	public boolean checkClosed(Opportunity opportunity, OpportunityRule rule) {
+		boolean allMatch = StringUtils.equals(CombineSearch.SearchMode.AND.name(), rule.getOperator());
+		List<RuleConditionDTO> conditions = JSON.parseArray(rule.getCondition(), RuleConditionDTO.class);
+		if (allMatch) {
+			return conditions.stream().allMatch(condition -> isConditionMatched(condition, opportunity));
+		} else {
+			return conditions.stream().anyMatch(condition -> isConditionMatched(condition, opportunity));
+		}
+	}
+
+	/**
+	 * 是否条件匹配
+	 * @param condition 条件
+	 * @param opportunity 商机
+	 * @return 是否匹配
+	 */
+	private boolean isConditionMatched(RuleConditionDTO condition, Opportunity opportunity) {
+		if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.OPPORTUNITY_STAGE)) {
+			return condition.getValue().contains(opportunity.getStage());
+		} else {
+			return RecycleConditionUtils.matchTime(condition, opportunity.getCreateTime());
+		}
 	}
 
 	/**
