@@ -94,6 +94,13 @@ public class OrganizationUserController {
         organizationUserService.batchResetPassword(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
+    @PostMapping("/update/name")
+    @Operation(summary = "用户(员工)-更新名称")
+    @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_UPDATE)
+    public void updateName(@Validated @RequestBody UserUpdateName request) {
+        organizationUserService.updateUserName(request, SessionUtils.getUserId());
+    }
+
 
     @PostMapping("/batch/edit")
     @Operation(summary = "用户(员工)-批量编辑")

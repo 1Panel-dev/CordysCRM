@@ -42,6 +42,7 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_SYNC_CHECK = "/user/sync-check";
     public static final String USER_DELETE = "/user/delete/";
     public static final String USER_DELETE_CHECK = "/user/delete/check/";
+    public static final String USER_UPDATE_NAME = "/user/update/name";
 
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
@@ -101,6 +102,15 @@ public class OrganizationUserControllerTests extends BaseTest {
         request.setRoleIds(List.of("1", "2", "3"));
         request.setId("u_1");
         this.requestPost(USER_UPDATE, request).andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(4)
+    public void userUpdateName() throws Exception {
+        UserUpdateName request = new UserUpdateName();
+        request.setName("更新名称");
+        request.setUserId("5");
+        this.requestPost(USER_UPDATE_NAME, request).andExpect(status().isOk());
     }
 
 

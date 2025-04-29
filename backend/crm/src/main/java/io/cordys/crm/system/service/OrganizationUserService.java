@@ -880,4 +880,27 @@ public class OrganizationUserService {
         User user = userMapper.selectByPrimaryKey(id);
         return Optional.ofNullable(user).map(User::getName).orElse(null);
     }
+
+
+    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, operator = "{#operatorId}")
+    public void updateUserName(UserUpdateName request, String operatorId) {
+        User originUser = userMapper.selectByPrimaryKey(request.getUserId());
+
+        User user = new User();
+        user.setName(request.getName());
+        user.setId(request.getUserId());
+        userMapper.update(user);
+
+        Map<String, String> originalVal = new HashMap<>(1);
+        originalVal.put("name", originUser.getName());
+        Map<String, String> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("name", request.getName());
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .originalValue(originalVal)
+                .resourceName(request.getName())
+                .modifiedValue(modifiedVal)
+                .resourceId(request.getUserId())
+                .build());
+
+    }
 }
