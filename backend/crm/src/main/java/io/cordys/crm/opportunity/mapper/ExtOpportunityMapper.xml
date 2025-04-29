@@ -282,6 +282,24 @@
                     <property name="column" value="sys_organization_user.department_id"/>
                 </include>
             </when>
+            <when test="condition.name == 'createTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.create_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.update_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'lastFollowUpDate'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.follow_time"/>
+                </include>
+            </when>
             <otherwise>
                 <include refid="io.cordys.common.mapper.CommonMapper.moduleFieldCondition">
                     <property name="condition" value="condition"/>

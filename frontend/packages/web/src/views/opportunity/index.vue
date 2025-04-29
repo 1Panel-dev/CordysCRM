@@ -449,7 +449,7 @@
       },
       {
         title: t('customer.lastFollowUpDate'),
-        dataIndex: 'lastFollowUpDate',
+        dataIndex: 'followTime',
         type: FieldTypeEnum.DATE_TIME,
       },
     ];
