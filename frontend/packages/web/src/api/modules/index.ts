@@ -271,6 +271,7 @@ export const {
   checkSyncUserFromThird,
   checkDeleteDepartment,
   sortDepartment,
+  updateOrgUserName,
 } = orgApi;
 
 export const {

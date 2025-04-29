@@ -23,3 +23,4 @@ export const importUserUrl = '/user/import'; // 用户(员工)-excel导入
 export const deleteUserUrl = '/user/delete'; // 用户(员工)-删除
 export const deleteUserCheckUrl = '/user/delete/check'; // 用户(员工)-删除校验
 export const checkSyncUserFromThirdUrl = '/user/sync-check'; // 用户(员工)-是否为第三方同步数据
+export const updateUserNameUrl = '/user/update/name'; // 用户(员工)-更新用户名称

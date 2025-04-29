@@ -23,6 +23,7 @@ import {
   setCommanderUrl,
   sortDepartmentUrl,
   syncOrgUrl,
+  updateUserNameUrl,
   updateUserUrl,
 } from '@lib/shared/api/requrls/system/org';
 import type { CommonList } from '@lib/shared/models/common';
@@ -81,6 +82,11 @@ export default function useProductApi(CDR: CordysAxios) {
   // 用户(员工)-更新员工
   function updateUser(data: MemberParams) {
     return CDR.post({ url: updateUserUrl, data });
+  }
+
+  // 用户(员工)-更新员工姓名
+  function updateOrgUserName(data: { userId: string; name: string }) {
+    return CDR.post({ url: updateUserNameUrl, data });
   }
 
   // 用户(员工)-列表查询
@@ -175,5 +181,6 @@ export default function useProductApi(CDR: CordysAxios) {
     checkSyncUserFromThird,
     checkDeleteDepartment,
     sortDepartment,
+    updateOrgUserName,
   };
 }

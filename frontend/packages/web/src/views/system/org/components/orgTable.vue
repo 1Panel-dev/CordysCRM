@@ -120,6 +120,7 @@
     importUsers,
     resetUserPassword,
     syncOrg,
+    updateOrgUserName,
     updateUser,
   } from '@/api/modules';
   import useModal from '@/hooks/useModal';
@@ -447,8 +448,8 @@
 
   async function updateUserName(row: MemberItem, newVal: string) {
     try {
-      await updateUser({
-        ...row,
+      await updateOrgUserName({
+        userId: row.userId,
         name: newVal,
       });
       return Promise.resolve(true);
@@ -707,6 +708,19 @@
     },
   ];
 
+  const getEmployeeType = (value: string) => {
+    switch (value) {
+      case 'formal':
+        return t('org.formalUser');
+      case 'internship':
+        return t('org.internshipUser');
+      case 'outsourcing':
+        return t('org.outsourcingUser');
+      default:
+        return '-';
+    }
+  };
+
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
     getUserList,
     {
@@ -723,6 +737,7 @@
         workCityName: getCityPath(row.workCity) || '-',
         phone: row.phone || '-',
         email: row.email || '-',
+        employeeType: getEmployeeType(row.employeeType ?? ''),
       };
     }
   );
