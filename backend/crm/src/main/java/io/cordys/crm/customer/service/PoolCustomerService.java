@@ -285,8 +285,8 @@ public class PoolCustomerService {
 				customerOwners.sort(Comparator.comparingLong(CustomerOwner::getCollectionTime).reversed());
 				CustomerOwner lastOwner = customerOwners.getFirst();
 				if (StringUtils.equals(lastOwner.getOwner(), ownerId) &&
-						System.currentTimeMillis() < pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getCollectionTime()) {
-					LocalDateTime nextPickTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getCollectionTime()),
+						System.currentTimeMillis() < pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getEndTime()) {
+					LocalDateTime nextPickTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(pickRule.getPickIntervalDays() * DAY_MILLIS + lastOwner.getEndTime()),
 							ZoneId.systemDefault());
 					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 					throw new GenericException(Translator.getWithArgs("customer.pre_owner.pick.limit", nextPickTime.format(formatter)));
