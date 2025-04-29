@@ -97,6 +97,9 @@
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(sourceApi[props.sourceType], {
     columns,
     showSetting: false,
+    crmPagination: {
+      showSizePicker: false,
+    },
   });
 
   const keyword = ref('');

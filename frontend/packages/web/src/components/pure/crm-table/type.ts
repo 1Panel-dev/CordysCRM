@@ -5,6 +5,7 @@ import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import type { ActionsItem } from '@/components/pure/crm-more-action/type';
 import type { CrmTagGroupProps } from '@/components/pure/crm-tag-group/index.vue';
 
+import type { CrmPaginationProps } from '../crm-pagination/index.vue';
 import type { DataTableColumnKey, DataTableProps, DataTableRowData, DataTableRowKey, PaginationProps } from 'naive-ui';
 import type {
   RenderFilterMenu,
@@ -52,7 +53,7 @@ export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
   'data': CrmTableDataItem<T>[];
   'showSetting'?: boolean; // 是否显示表格配置
   'showPagination'?: boolean; // 是否显示分页
-  'crmPagination'?: PaginationProps; // 分页配置
+  'crmPagination'?: PaginationProps & CrmPaginationProps; // 分页配置
   'onUpdate:checkedRowKeys'?: (key: DataTableRowKey[]) => void; // 覆写类型防止报错
   'isReturnNativeResponse'?: boolean;
 };

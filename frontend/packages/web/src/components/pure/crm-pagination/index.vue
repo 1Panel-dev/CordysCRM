@@ -39,25 +39,24 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
-  const props = withDefaults(
-    defineProps<{
-      itemCount?: number; // 总条数
-      size?: 'small' | 'medium';
-      showSizePicker?: boolean; // 是否显示每页条数的选择器
-      showQuickJumper?: boolean; // 是否显示快速跳转
-      showTotal?: boolean; // 显示总量
-      isSimple?: boolean; // 新增简易模式控制
-      pageSlot?: number; // 页码显示的个数
-    }>(),
-    {
-      size: 'medium',
-      showSizePicker: true,
-      showQuickJumper: true,
-      showTotal: true,
-      isSimple: false,
-      pageSlot: 6,
-    }
-  );
+  export interface CrmPaginationProps {
+    itemCount?: number;
+    size?: 'small' | 'medium' | 'large';
+    showSizePicker?: boolean;
+    showQuickJumper?: boolean;
+    showTotal?: boolean;
+    isSimple?: boolean;
+    pageSlot?: number;
+  }
+
+  const props = withDefaults(defineProps<CrmPaginationProps>(), {
+    size: 'medium',
+    showSizePicker: true,
+    showQuickJumper: true,
+    showTotal: true,
+    isSimple: false,
+    pageSlot: 6,
+  });
   const emit = defineEmits<{
     (e: 'handlePageChange', value: number): void;
     (e: 'handlePageSizeChange', value: number): void;
