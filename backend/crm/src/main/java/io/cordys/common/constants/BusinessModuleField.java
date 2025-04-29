@@ -106,7 +106,7 @@ public enum BusinessModuleField {
     /**
      * 跟进类型
      */
-    FOLLOW_RECORD_TYPE("recordType", "type", FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_TYPE("recordType", "type", Set.of("options"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 客户id
      */
@@ -140,9 +140,9 @@ public enum BusinessModuleField {
 
     /*------ start: FOLLOW_UP_PLAN ------*/
     /**
-     * 客户id
+     * 跟进类型
      */
-    FOLLOW_PLAN_TYPE("planType", "type", FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_TYPE("planType", "type", Set.of("options"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 客户id
      */
