@@ -29,6 +29,7 @@
               <div v-if="!collapsed" class="one-line-text">
                 <div class="one-line-text">{{ userStore.userInfo.name }}</div>
                 <n-tag
+                  v-if="userStore.userInfo.id === 'admin' || (userStore.userInfo.roles[0] as any)?.name"
                   :bordered="false"
                   size="small"
                   :color="{

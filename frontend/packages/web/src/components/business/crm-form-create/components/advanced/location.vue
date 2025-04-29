@@ -60,7 +60,7 @@
   const detail = ref('');
 
   function handleCityAndDetailChange() {
-    value.value = `${city.value}-${detail.value}`;
+    value.value = `${city.value || ''}-${detail.value || ''}`;
     emit('change', value.value);
   }
 
