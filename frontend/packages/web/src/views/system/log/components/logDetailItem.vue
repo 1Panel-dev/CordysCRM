@@ -7,7 +7,7 @@
     <div class="mb-4 flex w-full flex-col gap-[8px]">
       <div>{{ dayjs(props.detail?.createTime).format('YYYY-MM-DD HH:mm:ss') }}</div>
       <div class="flex items-center gap-[8px]">
-        <CrmAvatar :size="24" :word="props.detail?.operatorName" />
+        <CrmAvatar :size="24" :word="props.detail?.operatorName" :is-user="false" />
         <n-tooltip :delay="300">
           <template #trigger>
             <div class="one-line-text max-w-[300px]">{{ props.detail?.operatorName }} </div>

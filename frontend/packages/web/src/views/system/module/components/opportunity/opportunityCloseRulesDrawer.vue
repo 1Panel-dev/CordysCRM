@@ -196,8 +196,6 @@
       title: t('role.member'),
       key: 'members',
       width: 150,
-      sortOrder: false,
-      sorter: true,
       isTag: true,
       tagGroupProps: {
         labelKey: 'name',
