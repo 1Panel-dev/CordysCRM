@@ -39,15 +39,13 @@
   }>();
 
   const value = defineModel<string | number | (string | number)[]>('value', {
-    required: true,
+    default: '',
   });
 
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
-      if (!value.value || (Array.isArray(value.value) && value.value.length === 0)) {
-        value.value = val || props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE ? [] : '';
-      }
+      value.value = val || (props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE ? [] : '');
     },
     {
       immediate: true,

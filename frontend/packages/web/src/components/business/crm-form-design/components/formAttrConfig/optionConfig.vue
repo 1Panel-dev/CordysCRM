@@ -145,6 +145,8 @@
   function handleRadioOptionClick(val: string | number) {
     if (fieldConfig.value.defaultValue === val) {
       fieldConfig.value.defaultValue = '';
+    } else {
+      fieldConfig.value.defaultValue = val;
     }
   }
 
