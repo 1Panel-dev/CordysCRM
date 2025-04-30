@@ -114,7 +114,7 @@ public class OpportunityService {
         }
         List<String> opportunityIds = list.stream().map(OpportunityListResponse::getId)
                 .collect(Collectors.toList());
-        Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = opportunityFieldService.getResourceFieldMap(opportunityIds);
+        Map<String, List<BaseModuleFieldValue>> opportunityFiledMap = opportunityFieldService.getResourceFieldMap(opportunityIds, true);
 
         List<String> ownerIds = list.stream()
                 .map(OpportunityListResponse::getOwner)

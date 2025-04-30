@@ -17,7 +17,6 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.opportunity.service.OpportunityFieldService;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.request.ProductBatchEditRequest;
 import io.cordys.crm.system.dto.request.ProductEditRequest;
@@ -62,8 +61,6 @@ public class ProductService {
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
-    private OpportunityFieldService opportunityFieldService;
-    @Resource
     private ModuleFormService moduleFormService;
 
     public PagerWithOption<List<ProductListResponse>> list(ProductPageRequest request, String orgId) {
@@ -83,7 +80,7 @@ public class ProductService {
         List<String> productIds = list.stream().map(ProductListResponse::getId)
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> productFiledMap = productFieldService.getResourceFieldMap(productIds);
+        Map<String, List<BaseModuleFieldValue>> productFiledMap = productFieldService.getResourceFieldMap(productIds, true);
 
         list.forEach(productListResponse -> {
             // 获取自定义字段

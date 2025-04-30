@@ -43,12 +43,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/customer")
 public class CustomerController {
+
     @Resource
     private CustomerService customerService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private DataScopeService dataScopeService;
+
     @GetMapping("/module/form")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ}, logical = Logical.OR)
     @Operation(summary = "获取表单配置")

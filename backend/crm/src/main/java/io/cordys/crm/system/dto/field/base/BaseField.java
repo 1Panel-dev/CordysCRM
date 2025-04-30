@@ -87,8 +87,9 @@ public abstract class BaseField {
 	private Set<String> disabledProps;
 
 	@JsonIgnore
-	public boolean isTextArea() {
-		return StringUtils.equals(type, FieldType.TEXTAREA.name());
+	public boolean isBlob() {
+		return StringUtils.equalsAny(type, FieldType.TEXTAREA.name(), FieldType.INPUT_MULTIPLE.name(),
+				FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name());
 	}
 
 	@JsonIgnore

@@ -110,7 +110,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     // 将参数值转换成字符串入库
                     String strValue = customFieldResolver.parse2String(fieldConfig, fieldValue.getFieldValue());
 
-                    if (fieldConfig.isTextArea()) {
+                    if (fieldConfig.isBlob()) {
                         V resourceField = newResourceFieldBlob();
                         resourceField.setId(IDGenerator.nextStr());
                         resourceField.setResourceId(resourceId);
@@ -209,9 +209,16 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         resourceFieldBlobs.forEach(resourceFieldBlob -> {
             // 处理大文本
             if (resourceFieldBlob != null && resourceFieldBlob.getFieldValue() instanceof byte[] byteValue) {
+                BaseField fieldConfig = fieldConfigMap.get(resourceFieldBlob.getFieldId());
+                if (fieldConfig == null) {
+                    return;
+                }
+                AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+                Object objectValue = customFieldResolver.parse2Value(fieldConfig, new String(byteValue));
+
                 String resourceId = resourceFieldBlob.getResourceId();
                 resourceMap.putIfAbsent(resourceId, new ArrayList<>());
-                resourceMap.get(resourceId).add(new BaseModuleFieldValue(resourceFieldBlob.getFieldId(), new String(byteValue)));
+                resourceMap.get(resourceId).add(new BaseModuleFieldValue(resourceFieldBlob.getFieldId(), objectValue));
             }
         });
 
@@ -332,7 +339,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     // 将参数值转换成字符串入库
                     String strValue = customFieldResolver.parse2String(fieldConfig, fieldValue.getFieldValue());
                     for (String resourceId : resourceIds) {
-                        if (fieldConfig.isTextArea()) {
+                        if (fieldConfig.isBlob()) {
                             V resourceField = newResourceFieldBlob();
                             resourceField.setId(IDGenerator.nextStr());
                             resourceField.setResourceId(resourceId);

@@ -123,7 +123,7 @@ public class ClueService {
         List<String> clueIds = list.stream().map(ClueListResponse::getId)
                 .collect(Collectors.toList());
 
-        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = clueFieldService.getResourceFieldMap(clueIds);
+        Map<String, List<BaseModuleFieldValue>> caseCustomFiledMap = clueFieldService.getResourceFieldMap(clueIds, true);
 
         List<String> ownerIds = list.stream()
                 .map(ClueListResponse::getOwner)
