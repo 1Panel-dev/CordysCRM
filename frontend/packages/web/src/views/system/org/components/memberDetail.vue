@@ -92,7 +92,7 @@
     { label: t('org.department'), value: 'departmentName' },
     { label: t('org.employeeNumber'), value: 'employeeId' },
     { label: t('org.employeeType'), value: 'employeeType', valueSlotName: 'employeeType' },
-    { label: t('org.directSuperior'), value: 'supervisorId' },
+    { label: t('org.directSuperior'), value: 'supervisorName' },
     { label: t('org.workingCity'), value: 'workCity', valueSlotName: 'workCity' },
     { label: t('org.role'), value: 'roles', tagProps: { labelKey: 'name' } },
     { label: t('org.position'), value: 'position' },
@@ -141,6 +141,10 @@
       }
     }
   );
+
+  defineExpose({
+    getDetail,
+  });
 </script>
 
 <style scoped></style>

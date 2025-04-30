@@ -19,7 +19,7 @@
                 :disabled="props.isSyncFromThirdChecked"
                 class="mr-[12px]"
                 type="primary"
-                @click="addOrEditMember(false)"
+                @click="() => addOrEditMember()"
               >
                 {{ t('org.addStaff') }}
               </n-button>
@@ -39,7 +39,7 @@
       </template>
     </CrmTable>
 
-    <AddMember v-model:show="showDrawer" :user-id="currentUserId" @brash="initOrgList()" @close="cancelHandler" />
+    <AddMember v-model:show="showDrawer" :user-id="currentUserId" @brash="brashHandler" @close="cancelHandler" />
     <EditIntegrationModal
       v-model:show="showSyncWeChatModal"
       :title="t('system.business.WE_COM')"
@@ -47,9 +47,10 @@
       @init-sync="initIntegration()"
     />
     <MemberDetail
+      ref="memberDetailRef"
       v-model:show="showDetailModal"
       :user-id="currentUserId"
-      @edit="addOrEditMember(true)"
+      @edit="addOrEditMember"
       @cancel="cancelHandler"
     />
     <batchEditModal v-model:show="showEditModal" :user-ids="checkedRowKeys" @load-list="handleLoadList" />
@@ -321,11 +322,9 @@
   const showDrawer = ref<boolean>(false);
 
   const currentUserId = ref<string>('');
-  function addOrEditMember(isEdit: boolean, row?: MemberItem) {
+  function addOrEditMember(id?: string) {
     showDrawer.value = true;
-    if (isEdit && row) {
-      currentUserId.value = row.id;
-    }
+    currentUserId.value = id ?? '';
   }
 
   function cancelHandler() {
@@ -433,7 +432,7 @@
   function handleActionSelect(row: MemberItem, actionKey: string) {
     switch (actionKey) {
       case 'edit':
-        addOrEditMember(true, row);
+        addOrEditMember(row.id);
         break;
       case 'resetPassWord':
         handleResetPassWord(row);
@@ -631,7 +630,7 @@
     },
     {
       title: t('org.position'),
-      key: 'position',
+      key: 'positionName',
       width: 100,
       ellipsis: {
         tooltip: true,
@@ -732,7 +731,7 @@
     (row: MemberItem) => {
       return {
         ...row,
-        position: row.position || '-',
+        positionName: row.position || '-',
         departmentName: row.departmentName || '-',
         workCityName: getCityPath(row.workCity) || '-',
         phone: row.phone || '-',
@@ -817,6 +816,12 @@
   function initOrgList() {
     setLoadListParams({ keyword: keyword.value, departmentIds: [props.activeNode, ...props.offspringIds] });
     loadList();
+  }
+
+  const memberDetailRef = ref<InstanceType<typeof MemberDetail>>();
+  function brashHandler() {
+    initOrgList();
+    memberDetailRef.value?.getDetail();
   }
 
   function searchData(val: string) {
