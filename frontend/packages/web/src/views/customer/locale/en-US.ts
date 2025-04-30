@@ -7,7 +7,7 @@ export default {
   'customer.deleteTitleTip': 'Are you sure to delete this customer?',
   'customer.batchDeleteTitleTip': 'Are you sure to delete {number} customers?',
   'customer.batchDeleteContentTip': 'After deletion, members cannot find this customer, please operate with caution!',
-  'customer.moveToOpenSea': 'Move to Open Sea',
+  'customer.moveToOpenSea': 'Move to Open Sea/Lead Pool',
   'customer.batchMoveTitleTip': 'Confirm to move {number} customers to high seas?',
   'customer.batchMoveContentTip': 'After the move, the customer will have no person in charge',
   'customer.confirmMove': 'Confirm move',

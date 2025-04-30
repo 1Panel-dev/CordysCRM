@@ -445,16 +445,25 @@ public class CustomerService {
 
         List<String> ownerIds = getOwners(customers);
         Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
-        Map<String, String> customerOwnerMap = new HashMap<>();
 
         int success = 0;
+        List<LogDTO> logs = new ArrayList<>();
         for (Customer customer : customers) {
             CustomerPool customerPool = ownersDefaultPoolMap.get(customer.getOwner());
             if (customerPool == null) {
                 // 未找到默认公海，不移入
                 continue;
             }
-            customerOwnerMap.put(customer.getId(), customer.getOwner());
+            // 日志
+            LogDTO logDTO = new LogDTO(orgId, customer.getId(), currentUser, LogType.MOVE_TO_CUSTOMER_POOL, LogModule.CUSTOMER_INDEX, customer.getName());
+            String detail = Translator.getWithArgs("customer.to.pool", customer.getName(),
+                    customerPool.getName());
+            logDTO.setDetail(detail);
+            logs.add(logDTO);
+            // 消息通知
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                    NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, customer.getName(), currentUser,
+                    orgId, List.of(customer.getOwner()), true);
             // 插入责任人历史
             customerOwnerHistoryService.add(customer, currentUser);
             customer.setPoolId(customerPool.getId());
@@ -468,24 +477,7 @@ public class CustomerService {
             success++;
         }
 
-        // 记录日志
-        List<LogDTO> logs = new ArrayList<>();
-        customers.forEach(customer -> {
-            CustomerPool customerPool = ownersDefaultPoolMap.get(customerOwnerMap.get(customer.getId()));
-            if (customerPool != null) {
-                LogDTO logDTO = new LogDTO(orgId, customer.getId(), currentUser, LogType.MOVE_TO_CUSTOMER_POOL, LogModule.CUSTOMER_INDEX, customer.getName());
-                String detail = Translator.getWithArgs("customer.to.pool", customer.getName(),
-                        customerPool.getName());
-                logDTO.setDetail(detail);
-                logs.add(logDTO);
-            }
-        });
-
         logService.batchAdd(logs);
-
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, getCustomerNames(customers), currentUser,
-                orgId, List.of(currentUser), true);
 
         return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
     }

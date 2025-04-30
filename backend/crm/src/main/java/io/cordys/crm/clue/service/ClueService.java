@@ -20,6 +20,7 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.clue.constants.ClueResultCode;
 import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.clue.domain.Clue;
@@ -48,6 +49,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -469,12 +471,22 @@ public class ClueService {
 
         Map<String, CluePool> ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
         int success = 0;
+        List<LogDTO> logs = new ArrayList<>();
         for (Clue clue : clues) {
             CluePool cluePool = ownersDefaultPoolMap.get(clue.getOwner());
             if (cluePool == null) {
                 // 未找到默认公海，不移入
                 continue;
             }
+            // 日志
+            LogDTO logDTO = new LogDTO(orgId, clue.getId(), currentUser, LogType.MOVE_TO_CUSTOMER_POOL, LogModule.CLUE_INDEX, clue.getName());
+            String detail = Translator.getWithArgs("clue.to.pool", clue.getName(), cluePool.getName());
+            logDTO.setDetail(detail);
+            logs.add(logDTO);
+            // 消息通知
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+                    NotificationConstants.Event.CLUE_MOVED_POOL, clue.getName(), currentUser,
+                    orgId, List.of(clue.getOwner()), true);
             // 插入责任人历史
             clueOwnerHistoryService.add(clue, currentUser);
             clue.setPoolId(cluePool.getId());
@@ -486,6 +498,7 @@ public class ClueService {
             extClueMapper.moveToPool(clue);
             success++;
         }
+        logService.batchAdd(logs);
         return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
     }
 }
