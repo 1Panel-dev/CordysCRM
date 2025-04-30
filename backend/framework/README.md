@@ -1,40 +1,63 @@
-通用模块使用说明
+# 框架通用模块使用说明
 
-本项目是一个企业级应用框架，包含多种常用的功能模块，包括 AOP 支持、公共功能类、MyBatis 配置、文件处理、安全性管理等。以下是如何使用这些模块的详细说明。
+## 目录
 
-1. AOP 支持
+- [概述](#概述)
+- [模块结构](#模块结构)
+- [使用指南](#使用指南)
+    - [AOP 支持](#aop-支持)
+    - [公共功能](#公共功能)
+    - [MyBatis 配置](#mybatis-配置)
+    - [文件处理](#文件处理)
+    - [安全性管理](#安全性管理)
 
-AOP 模块包含多个子模块，包括注解、切面、构建器、常量、DTO 和事件。
+## 概述
 
-- **annotation**：定义了用于 AOP 功能的注解。
-- **aspect**：定义了具体的切面逻辑。
-- **builder**：提供了构建 AOP 相关对象的构建器模式。
-- **constants**：定义了常量类，避免硬编码。
-- **dto**：用于 AOP 事件的数据传输对象。
-- **event**：定义了与 AOP 相关的事件。
+本框架是一个企业级应用开发基础设施，提供了多种常用功能模块，包括 AOP 支持、公共工具类、MyBatis 增强、文件处理、安全性管理等。框架旨在简化开发流程，提高代码质量和开发效率。
 
-使用示例
+## 模块结构
 
-设计思路来源：https://github.com/mouzt/mzt-biz-log 
+```
+framework/
+├── aop/            # AOP 相关功能
+├── common/         # 公共功能
+├── config/         # 配置相关
+├── file/           # 文件处理
+├── mybatis/        # MyBatis 增强
+└── security/       # 安全性管理
+```
 
-1. 普通的记录日志
+## 使用指南
 
-- `resourceId`：业务资源的 ID
-- `success`：方法调用成功后记录的日志内容
-- SpEL 表达式：用双大括号包围的表达式（例如：`{{#user.username}}`）是 SpEL 表达式，Spring 支持的表达式都能在此使用，如调用静态方法、三目表达式等。
+### AOP 支持
+
+AOP 模块提供了面向切面编程的基础设施，包含以下子模块：
+
+| 子模块 | 说明 |
+|--------|------|
+| annotation | 定义 AOP 功能的注解 |
+| aspect | 实现切面逻辑 |
+| builder | 提供构建器模式工具 |
+| constants | 定义常量，避免硬编码 |
+| dto | 数据传输对象 |
+| event | 定义 AOP 相关事件 |
+
+#### 使用示例
+
+##### 1. 基础日志记录
 
 ```java
 @OperationLog(
-        module = LogModule.SYSTEM,
-        type = LogType.ADD,
-        operator = "{{#user.name}}",
-        resourceId = "{{#user.id}}",
-        success = "添加用户成功",
-        extra = "{{#newUser}}"
+    module = LogModule.SYSTEM,
+    type = LogType.ADD,
+    operator = "{{#user.name}}",
+    resourceId = "{{#user.id}}",
+    success = "添加用户成功",
+    extra = "{{#newUser}}"
 )
 public void addUser(User user) {
     // 业务代码
-
+    
     // 添加日志上下文
     OperationLogContext.putVariable("newUser", LogExtraDTO.builder()
             .originalValue(null)
@@ -43,17 +66,20 @@ public void addUser(User user) {
 }
 ```
 
-2. 记录失败的日志
+说明：
+- `resourceId`：业务资源的 ID
+- `success`：方法调用成功后记录的日志内容
+- 双大括号 `{{}}` 中的内容是 SpEL 表达式，支持调用静态方法、三目表达式等
 
-如果抛出异常则记录失败日志，未抛出异常则记录成功日志。
+##### 2. 成功/失败日志记录
 
 ```java
 @OperationLog(
-        fail = "业务操作失败，失败原因：「{{#_errorMsg}}」",
-        success = "业务操作成功",
-        operator = "{{#user.name}}",
-        type = LogType.ADD,
-        resourceId = "{{#biz.id}}"
+    fail = "业务操作失败，失败原因：「{{#_errorMsg}}」",
+    success = "业务操作成功",
+    operator = "{{#user.name}}",
+    type = LogType.ADD,
+    resourceId = "{{#biz.id}}"
 )
 public boolean create(BizObj obj) {
     OperationLogContext.putVariable("innerOrder", LogExtraDTO.builder()
@@ -64,33 +90,31 @@ public boolean create(BizObj obj) {
 }
 ```
 
-- `#_errorMsg` 是方法抛出异常后的错误信息。
+- `#_errorMsg` 是方法抛出异常后自动获取的错误信息
 
-3. 方法记录多条日志
-
-若希望一个方法记录多条日志，可以在方法上重复写两个注解，前提是两个注解不相同。
+##### 3. 多条日志记录
 
 ```java
 @OperationLog(
-        module = LogModule.SYSTEM,
-        type = LogType.UPDATE,
-        operator = "{{#user.name}}",
-        resourceId = "{{#user.id}}",
-        success = "更新用户成功",
-        extra = "{{#upUser}}"
+    module = LogModule.SYSTEM,
+    type = LogType.UPDATE,
+    operator = "{{#user.name}}",
+    resourceId = "{{#user.id}}",
+    success = "更新用户基本信息成功",
+    extra = "{{#upUser}}"
 )
 @OperationLog(
-        module = LogModule.SYSTEM,
-        type = LogType.UPDATE,
-        operator = "{{#user.name}}",
-        resourceId = "{{#user.id}}",
-        success = "更新用户成功",
-        extra = "{{#upUser}}"
+    module = LogModule.SYSTEM,
+    type = LogType.UPDATE,
+    operator = "{{#user.name}}",
+    resourceId = "{{#user.id}}",
+    success = "更新用户权限成功",
+    extra = "{{#upPermission}}"
 )
 public void updateUser(User user) {
     // 更新用户
     User preUser = userMapper.selectByPrimaryKey(user.getId());
-
+    
     // 添加日志上下文
     OperationLogContext.putVariable("upUser", LogExtraDTO.builder()
             .originalValue(preUser)
@@ -99,47 +123,58 @@ public void updateUser(User user) {
 }
 ```
 
-2. 公共功能模块
+### 公共功能
 
-该模块提供了常用的公共工具和功能，包括：
+公共功能模块提供了常用工具和基础功能：
 
-- **constants**：常量类，避免魔法值。
-- **exception**：自定义异常处理。
-- **groups**：分组管理。
-- **pager**：分页查询功能。
-- **response**：统一的响应格式和响应处理。
-- **uid**：生成唯一标识符。
-- **util**：工具类，包含常用的加密方法（如 RSA 加密）。
+- **constants**：常量定义，避免魔法值
+- **exception**：自定义异常体系
+- **groups**：分组管理
+- **pager**：分页查询功能
+- **response**：统一响应格式
+- **uid**：唯一标识符生成
+- **util**：工具类（包含加密、编码等）
 
-3. 配置模块
+### MyBatis 配置
 
-配置模块主要用于配置项目中的各种常量、参数和配置信息。
+MyBatis 配置模块增强了 MyBatis 的功能：
 
-4. 文件处理模块
+- **interceptor**：自定义拦截器
+- **lambda**：Lambda 表达式支持，简化查询构建
 
-该模块用于处理与文件相关的操作，包括文件上传、下载、存储等。
+#### 使用示例
 
-- **engine**：文件引擎，用于文件的操作和管理。
+```java
+@Resource
+private BaseMapper<User> userMapper;
 
-5. MyBatis 配置
-
-MyBatis 配置模块提供了对 MyBatis 配置的支持，包括拦截器和 Lambda 表达式支持。
-
-- **interceptor**：自定义拦截器，用于扩展 MyBatis 的功能。
-- **lambda**：Lambda 支持，简化 MyBatis 查询语句的构建。
--  Use it like this:
+// Lambda 查询示例
+List<User> userList = userMapper.selectListByLambda(
+    new LambdaQueryWrapper<User>()
+        .eq(User::getId, "admin")
+);
 ```
-    @Resource
-    private BaseMapper<User> userMapper;
 
-    List<User> userList = userMapper.selectListByLambda(
-            new LambdaQueryWrapper<User>()
-                    .eq(User::getId, "admin")
-    );
+自动生成的 SQL：
+```sql
+SELECT * FROM user WHERE id = 'admin'
 ```
-- 自动生成SQL
-`  SELECT * FROM user WHERE id = 'admin'
 
-`6. 安全性管理模块
+### 文件处理
 
-该模块用于实现安全性相关功能，如身份验证、授权、加密等。
+文件处理模块提供了文件操作相关功能：
+
+- **engine**：文件引擎，支持文件上传、下载、存储等操作
+
+### 安全性管理
+
+安全性管理模块提供了身份验证、授权和加密等功能：
+
+- 身份验证
+- 权限控制
+- 数据加密
+- 安全审计
+
+## 更多信息
+
+更多详细信息和高级用法，请参阅各模块的详细文档或源代码注释。
