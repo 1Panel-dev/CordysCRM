@@ -35,11 +35,11 @@
 <script setup lang="ts">
   import { NButton, NScrollbar, NSwitch, useMessage } from 'naive-ui';
 
-  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { MemberApiTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { SelectedUsersItem } from '@lib/shared/models/system/module';
-  import { RoleMemberItem } from '@lib/shared/models/system/role';
+  import { DeptUserTreeNode, RoleMemberItem } from '@lib/shared/models/system/role';
 
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmRemoveButton from '@/components/pure/crm-remove-button/index.vue';
@@ -244,19 +244,19 @@
   }
 
   const addMemberLoading = ref(false);
-  async function handleAddConfirm(params: SelectedUsersItem[]) {
+  async function handleAddConfirm(params: DeptUserTreeNode[]) {
     try {
       addMemberLoading.value = true;
       const categorizedIds = params.reduce(
         (acc, item) => {
-          switch (item.scope) {
-            case MemberSelectTypeEnum.MEMBER:
+          switch (item.nodeType) {
+            case DeptNodeTypeEnum.USER:
               acc.userIds.push(item.id);
               break;
-            case MemberSelectTypeEnum.ROLE:
+            case DeptNodeTypeEnum.ROLE:
               acc.roleIds.push(item.id);
               break;
-            case MemberSelectTypeEnum.ORG:
+            case DeptNodeTypeEnum.ORG:
               acc.deptIds.push(item.id);
               break;
             default:

@@ -76,7 +76,7 @@
   );
 
   const emit = defineEmits<{
-    (e: 'confirm', params: SelectedUsersItem[]): void;
+    (e: 'confirm', params: any[]): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
