@@ -16,10 +16,12 @@ import io.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
 import io.cordys.crm.customer.dto.CustomerPoolRecycleRuleDTO;
 import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerCapacityMapper;
+import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
+import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
@@ -63,6 +65,8 @@ public class PoolCustomerService {
 	private UserExtendService userExtendService;
 	@Resource
 	private LogService logService;
+	@Resource
+	private CommonNoticeSendService commonNoticeSendService;
 
 	public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
 
@@ -303,5 +307,11 @@ public class PoolCustomerService {
 		// 日志
 		LogDTO logDTO = new LogDTO(currentOrgId, customer.getId(), operateUserId, logType, LogModule.CUSTOMER_POOL, customer.getName());
 		logService.add(logDTO);
+
+		// 分配通知
+		if (StringUtils.equals(logType, LogType.ASSIGN)) {
+			commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.HIGH_SEAS_CUSTOMER_DISTRIBUTED,
+					customer.getName(), operateUserId, currentOrgId, List.of(customer.getOwner()), true);
+		}
 	}
 }

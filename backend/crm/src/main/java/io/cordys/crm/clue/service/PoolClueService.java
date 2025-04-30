@@ -16,10 +16,12 @@ import io.cordys.crm.clue.dto.CluePoolPickRuleDTO;
 import io.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import io.cordys.crm.clue.dto.request.PoolCluePickRequest;
 import io.cordys.crm.clue.mapper.ExtClueCapacityMapper;
+import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
+import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
@@ -61,6 +63,8 @@ public class PoolClueService {
 	private UserExtendService userExtendService;
 	@Resource
 	private LogService logService;
+	@Resource
+	private CommonNoticeSendService commonNoticeSendService;
 
 	public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
 
@@ -302,5 +306,11 @@ public class PoolClueService {
 		// 日志
 		LogDTO logDTO = new LogDTO(currentOrgId, clue.getId(), operateUserId, logType, LogModule.CLUE_POOL_INDEX, clue.getName());
 		logService.add(logDTO);
+
+		// 分配通知
+		if (StringUtils.equals(logType, LogType.ASSIGN)) {
+			commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_DISTRIBUTED,
+					clue.getName(), operateUserId, currentOrgId, List.of(clue.getOwner()), true);
+		}
 	}
 }

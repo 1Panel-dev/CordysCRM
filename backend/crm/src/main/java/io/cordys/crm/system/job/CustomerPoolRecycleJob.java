@@ -9,6 +9,8 @@ import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.customer.service.CustomerOwnerHistoryService;
 import io.cordys.crm.customer.service.CustomerPoolService;
+import io.cordys.crm.system.constants.NotificationConstants;
+import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -34,6 +36,8 @@ public class CustomerPoolRecycleJob {
 	private CustomerPoolService customerPoolService;
 	@Resource
 	private CustomerOwnerHistoryService customerOwnerHistoryService;
+	@Resource
+	private CommonNoticeSendService commonNoticeSendService;
 
 	/**
 	 * 回收客户
@@ -65,6 +69,10 @@ public class CustomerPoolRecycleJob {
 				CustomerPoolRecycleRule rule = recycleRuleMap.get(pool.getId());
 				boolean recycle = customerPoolService.checkRecycled(customer, rule);
 				if (recycle) {
+					// 消息通知
+					commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+							NotificationConstants.Event.CUSTOMER_AUTOMATIC_MOVE_HIGH_SEAS, customer.getName(), InternalUser.ADMIN.getValue(), 
+							customer.getOrganizationId(), List.of(customer.getOwner()), true);
 					// 插入责任人历史
 					customerOwnerHistoryService.add(customer, InternalUser.ADMIN.getValue());
 					customer.setPoolId(pool.getId());

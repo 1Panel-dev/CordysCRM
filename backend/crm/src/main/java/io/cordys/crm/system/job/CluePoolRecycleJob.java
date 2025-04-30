@@ -9,6 +9,8 @@ import io.cordys.crm.clue.domain.CluePoolRecycleRule;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.clue.service.ClueOwnerHistoryService;
 import io.cordys.crm.clue.service.CluePoolService;
+import io.cordys.crm.system.constants.NotificationConstants;
+import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -34,6 +36,8 @@ public class CluePoolRecycleJob {
 	private CluePoolService cluePoolService;
 	@Resource
 	private ClueOwnerHistoryService clueOwnerHistoryService;
+	@Resource
+	private CommonNoticeSendService commonNoticeSendService;
 
 	/**
 	 * 回收线索
@@ -65,6 +69,10 @@ public class CluePoolRecycleJob {
 				CluePoolRecycleRule rule = recycleRuleMap.get(pool.getId());
 				boolean recycle = cluePoolService.checkRecycled(clue, rule);
 				if (recycle) {
+					// 消息通知
+					commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+							NotificationConstants.Event.CLUE_AUTOMATIC_MOVE_POOL, clue.getName(), InternalUser.ADMIN.getValue(),
+							clue.getOrganizationId(), List.of(clue.getOwner()), true);
 					// 插入责任人历史
 					clueOwnerHistoryService.add(clue, InternalUser.ADMIN.getValue());
 					clue.setPoolId(pool.getId());
