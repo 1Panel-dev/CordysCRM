@@ -102,14 +102,14 @@ class CustomerControllerTests extends BaseTest {
         example.setFormId(moduleForm.getId());
         ModuleField moduleField = moduleFieldMapper.select(example)
                 .stream()
-                .filter(field -> StringUtils.equals(field.getInternalKey(), "customerTag"))
+                .filter(field -> StringUtils.equals(field.getInternalKey(), "customerLevel"))
                 .findFirst().orElse(null);
 
         // 请求成功
         CustomerAddRequest request = new CustomerAddRequest();
         request.setName("aa");
         request.setOwner("bb");
-        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleField.getId(), List.of("value"))));
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleField.getId(), "1")));
 
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Customer resultData = getResultData(mvcResult, Customer.class);
@@ -121,7 +121,7 @@ class CustomerControllerTests extends BaseTest {
         List<BaseModuleFieldValue> fieldValues = getCustomerFields(customer.getId())
                 .stream().map(customerField -> {
                     BaseModuleFieldValue baseModuleFieldValue = BeanUtils.copyBean(new BaseModuleFieldValue(), customerField);
-                    baseModuleFieldValue.setFieldValue(JSON.parseArray(customerField.getFieldValue().toString(), String.class));
+                    baseModuleFieldValue.setFieldValue(customerField.getFieldValue().toString());
                     return baseModuleFieldValue;
                 })
                 .toList();

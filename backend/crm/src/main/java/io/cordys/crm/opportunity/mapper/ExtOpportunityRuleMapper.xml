@@ -10,8 +10,10 @@
         <include refid="filters">
             <property name="filters" value="request.filters"/>
         </include>
-        <include refid="sort">
+        <include refid="io.cordys.common.mapper.CommonMapper.sort">
             <property name="sort" value="request.sort"/>
+            <property name="prefix" value=""/>
+            <property name="defaultSort" value="create_time desc"/>
         </include>
     </select>
 
@@ -49,7 +51,7 @@
         <if test="${filters} != null and ${filters}.size() > 0">
             <trim prefix="and">
                 <foreach collection="${filters}" item="condition" open="(" close=")" index="i" separator="and">
-                    <if test="condition.name == 'recycled'">
+                    <if test="condition.name == 'auto'">
                         <include refid="io.cordys.common.mapper.CommonMapper.condition">
                             <property name="condition" value="condition"/>
                             <property name="column" value="opportunity_rule.auto"/>
