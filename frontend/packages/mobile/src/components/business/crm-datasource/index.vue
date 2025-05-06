@@ -21,6 +21,7 @@
     position="bottom"
     safe-area-inset-top
     safe-area-inset-bottom
+    class="h-[100vh]"
   >
     <CrmPageWrapper
       :title="

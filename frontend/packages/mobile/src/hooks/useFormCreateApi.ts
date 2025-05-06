@@ -55,7 +55,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               item.type === FieldTypeEnum.DATE_TIME
                 ? formatTimeValue(name || form[item.businessKey], item.dateType)
                 : name || form[item.businessKey],
-            isTag: item.type === FieldTypeEnum.INPUT_MULTIPLE,
+            isTag: [FieldTypeEnum.INPUT_MULTIPLE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type),
           });
           if (item.businessKey === 'name') {
             sourceName.value = name || form[item.businessKey];
@@ -86,7 +86,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             }
             descriptions.value.push({
               label: item.name,
-              isTag: item.type === FieldTypeEnum.INPUT_MULTIPLE,
+              isTag: [FieldTypeEnum.INPUT_MULTIPLE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type),
               value,
             });
           }
