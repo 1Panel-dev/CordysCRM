@@ -2,7 +2,7 @@ import { showSuccessToast } from 'vant';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatTimeValue, getCityPath, safeFractionConvert } from '@lib/shared/method';
+import { formatTimeValue, getCityPath, safeFractionConvert, sleep } from '@lib/shared/method';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
 
 import type { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
@@ -315,6 +315,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         }
       }
       if (callback) {
+        await sleep(300);
         callback();
       }
     } catch (error) {

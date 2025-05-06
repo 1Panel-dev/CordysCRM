@@ -47,7 +47,7 @@
           type="primary"
           class="!rounded-[var(--border-radius-small)] !text-[16px]"
           :loading="loading"
-          :disabled="customerId.length === 0"
+          :disabled="customerId?.length === 0"
           block
           @click="save"
         >
