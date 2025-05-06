@@ -17,8 +17,7 @@
     <select id="getSyncFlag" resultType="java.lang.Integer">
         select count(soc.id)
         from sys_organization_config soc
-            INNER JOIN sys_organization_config_detail socd on socd.config_id = soc.id
-        where soc.organization_id = #{organizationId} and soc.sync = true and socd.`enable` = true
+        where soc.organization_id = #{organizationId} and soc.sync = true
     </select>
 
     <select id="getSyncStatus" resultType="io.cordys.crm.system.domain.OrganizationConfig">
