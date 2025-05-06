@@ -15,6 +15,7 @@
         shape="round"
         :placeholder="t('customer.searchContactPlaceholder')"
         class="flex-1 !p-0"
+        @search="loadList"
       />
     </div>
     <CrmList
@@ -165,8 +166,12 @@
     });
   }
 
-  onActivated(() => {
+  function loadList() {
     crmListRef.value?.loadList(true);
+  }
+
+  onActivated(() => {
+    loadList();
   });
 </script>
 

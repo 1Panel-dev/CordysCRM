@@ -7,7 +7,7 @@
             {{ tab.title }}
           </div>
         </template>
-        <div v-if="tab.name === 'info'" class="relative h-full bg-[var(--text-n9)] pt-[16px]">
+        <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)] pt-[16px]">
           <CrmDescription :description="descriptions" />
         </div>
         <CrmFollowRecordList

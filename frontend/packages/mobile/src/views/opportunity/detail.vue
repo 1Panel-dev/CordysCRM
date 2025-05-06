@@ -7,21 +7,20 @@
             {{ tab.title }}
           </div>
         </template>
-        <div class="bg-[var(--text-n9)] p-[16px]">
-          <CrmWorkflowCard
-            v-if="tab.name === 'info'"
-            v-model:stage="currentStatus"
-            v-model:last-stage="lastOptStage"
-            :form-stage-key="FormDesignKeyEnum.BUSINESS"
-            :show-confirm-status="true"
-            :title="t('opportunity.progress')"
-            :base-steps="baseStepList"
-            :source-id="sourceId"
-            :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
-            @load-detail="() => initStage(true)"
-          />
-        </div>
-        <div v-if="tab.name === 'info'" class="relative h-full bg-[var(--text-n9)]">
+        <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)]">
+          <div class="bg-[var(--text-n9)] p-[16px]">
+            <CrmWorkflowCard
+              v-model:stage="currentStatus"
+              v-model:last-stage="lastOptStage"
+              :form-stage-key="FormDesignKeyEnum.BUSINESS"
+              :show-confirm-status="true"
+              :title="t('opportunity.progress')"
+              :base-steps="baseStepList"
+              :source-id="sourceId"
+              :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
+              @load-detail="() => initStage(true)"
+            />
+          </div>
           <CrmDescription :description="descriptions" />
         </div>
         <CrmFollowRecordList

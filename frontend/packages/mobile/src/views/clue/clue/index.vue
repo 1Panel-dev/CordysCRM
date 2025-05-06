@@ -256,6 +256,10 @@
     crmListRef.value?.loadList(true);
   }
 
+  onActivated(() => {
+    search();
+  });
+
   watch(
     () => activeFilter.value,
     () => {

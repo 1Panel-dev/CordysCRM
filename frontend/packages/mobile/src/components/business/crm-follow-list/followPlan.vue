@@ -2,7 +2,13 @@
   <div class="flex h-full flex-col overflow-hidden bg-[var(--text-n9)]">
     <div class="top-bar">
       <van-button v-if="!props.readonly" plain icon="plus" type="primary" size="small" @click="goCreate"> </van-button>
-      <van-search v-model="keyword" shape="round" :placeholder="t('common.pleaseInputKeyword')" class="flex-1 !p-0" />
+      <van-search
+        v-model="keyword"
+        shape="round"
+        :placeholder="t('common.pleaseInputKeyword')"
+        class="flex-1 !p-0"
+        @search="loadList"
+      />
     </div>
     <CrmList
       ref="crmListRef"
@@ -91,8 +97,12 @@
     }
   }
 
+  function loadList() {
+    crmListRef.value?.loadList(true);
+  }
+
   defineExpose({
-    loadList: () => crmListRef.value?.loadList(true),
+    loadList,
   });
 </script>
 

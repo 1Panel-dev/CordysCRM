@@ -7,13 +7,13 @@
             {{ tab.title }}
           </div>
         </template>
-        <div v-if="tab.name === 'info'" class="relative h-full bg-[var(--text-n9)] pt-[16px]">
+        <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)] pt-[16px]">
           <CrmDescription :description="descriptions" />
         </div>
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
           :source-id="sourceId"
-          :type="FormDesignKeyEnum.CLUE_POOL"
+          :type="FormDesignKeyEnum.FOLLOW_RECORD_CLUE"
           readonly
         />
         <CrmHeaderList v-else-if="tab.name === 'header'" :source-id="sourceId" :load-list-api="getClueHeaderList" />

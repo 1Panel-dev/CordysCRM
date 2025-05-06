@@ -7,7 +7,7 @@
             {{ tab.title }}
           </div>
         </template>
-        <div v-if="tab.name === 'info'" class="relative h-full bg-[var(--text-n9)]">
+        <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)]">
           <div class="bg-[var(--text-n9)] p-[16px]">
             <CrmWorkflowCard
               v-model:stage="currentStatus"

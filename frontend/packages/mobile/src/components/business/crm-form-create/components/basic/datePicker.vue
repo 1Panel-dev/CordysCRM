@@ -15,9 +15,9 @@
   </van-field>
   <van-popup v-model:show="showPicker" destroy-on-close round position="bottom">
     <van-picker-group
-      :title="t('formCreate .pickDate')"
-      :tabs="[t('formCreate .pickDate'), t('formCreate .pickTime')]"
-      :next-step-text="t('formCreate .next')"
+      :title="t('formCreate.pickDate')"
+      :tabs="[t('formCreate.pickDate'), t('formCreate.pickTime')]"
+      :next-step-text="t('formCreate.next')"
       @confirm="onConfirm"
       @cancel="showPicker = false"
     >
