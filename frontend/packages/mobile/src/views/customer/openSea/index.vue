@@ -150,6 +150,10 @@
     crmListRef.value?.loadList(true);
   }
 
+  onActivated(() => {
+    search();
+  });
+
   function goDetail(item: any) {
     router.push({
       name: CustomerRouteEnum.CUSTOMER_OPENSEA_DETAIL,

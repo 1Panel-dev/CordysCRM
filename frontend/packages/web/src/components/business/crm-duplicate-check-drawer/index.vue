@@ -93,7 +93,7 @@
     detailType.value = type;
     showDetailDrawer.value = true;
     nextTick(() => {
-      detailTableRef.value?.searchData(keyword.value, row.id);
+      detailTableRef.value?.searchData(row.name, row.id);
     });
   }
 

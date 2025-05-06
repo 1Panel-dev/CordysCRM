@@ -190,6 +190,10 @@
     }
   );
 
+  onActivated(() => {
+    crmListRef.value?.loadList(true);
+  });
+
   async function search() {
     showLoadingToast(t('common.searching'));
     await crmListRef.value?.loadList(true);

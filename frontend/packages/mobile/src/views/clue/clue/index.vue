@@ -53,6 +53,7 @@
     <van-action-sheet
       v-model:show="moreActionShow"
       :actions="moreActions"
+      close-on-click-action
       :cancel-text="hasAnyPermission(['CLUE_MANAGEMENT:DELETE']) ? t('common.delete') : ''"
       @cancel="handleDelete"
     />

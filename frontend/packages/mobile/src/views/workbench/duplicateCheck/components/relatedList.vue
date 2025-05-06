@@ -85,7 +85,7 @@
     router.push({
       name: WorkbenchRouteEnum.WORKBENCH_DUPLICATE_CHECK_DETAIL,
       query: {
-        keyword: props.keyword,
+        keyword: listItem.name,
         id: listItem.id,
         detailType: item.key.includes('clue') ? 'clue' : 'opportunity',
         customerName: listItem.name,

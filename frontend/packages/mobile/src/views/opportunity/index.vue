@@ -242,6 +242,10 @@
       });
     }
   );
+
+  onActivated(() => {
+    crmListRef.value?.loadList(true);
+  });
 </script>
 
 <style lang="less" scoped>
