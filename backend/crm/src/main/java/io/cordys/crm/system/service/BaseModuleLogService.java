@@ -149,13 +149,15 @@ public abstract class BaseModuleLogService {
                 // 日期时间类型
                 differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getOldValue().toString())));
                 differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getNewValue().toString())));
-            }
-            if (StringUtils.equalsAnyIgnoreCase(moduleField.getType(), FieldType.DATA_SOURCE_MULTIPLE.name(), FieldType.DATA_SOURCE.name(),
+            } else if (StringUtils.equalsAnyIgnoreCase(moduleField.getType(), FieldType.DATA_SOURCE_MULTIPLE.name(), FieldType.DATA_SOURCE.name(),
                     FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT.name(), FieldType.DEPARTMENT_MULTIPLE.name())) {
                 List<OptionDTO> oldOptions = extModuleFieldMapper.getSourceOptionsByIds(((DatasourceMultipleField) moduleField).getDataSourceType(), JSON.parseArray(differ.getOldValue().toString(), String.class));
                 differ.setOldValueName(oldOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
                 List<OptionDTO> newOptions = extModuleFieldMapper.getSourceOptionsByIds(((DatasourceMultipleField) moduleField).getDataSourceType(), JSON.parseArray(differ.getNewValue().toString(), String.class));
                 differ.setNewValueName(newOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
+            } else {
+                differ.setOldValueName(differ.getOldValue());
+                differ.setNewValueName(differ.getNewValue());
             }
 
         } else {

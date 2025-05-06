@@ -284,6 +284,7 @@ public class ClueService {
 
         // 更新模块字段
         updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+        clue = clueMapper.selectByPrimaryKey(request.getId());
         baseService.handleUpdateLog(originClue, clue, originCustomerFields, request.getModuleFields(), originClue.getId(), originClue.getName());
         return clueMapper.selectByPrimaryKey(clue.getId());
     }
