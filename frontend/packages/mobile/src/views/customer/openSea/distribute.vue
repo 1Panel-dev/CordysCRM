@@ -1,11 +1,13 @@
 <template>
   <CrmPageWrapper :title="t('common.distribute')">
     <div class="flex h-full flex-col">
-      <van-search v-model="keyword" shape="round" :placeholder="t('customer.searchNamePlaceholder')" />
+      <van-search v-model="keyword" shape="round" :placeholder="t('customer.searchNamePlaceholder')" @search="search" />
       <div class="flex-1 overflow-hidden px-[16px]">
         <CrmSelectList
+          ref="crmSelectListRef"
           v-model:value="value"
           v-model:selected-rows="selectedRows"
+          :keyword="keyword"
           :load-list-api="getUserOptions"
           :multiple="false"
           no-page-nation
@@ -59,6 +61,7 @@
   const value = ref<string | string[]>([]);
   const selectedRows = ref<Record<string, any>[]>([]);
   const loading = ref(false);
+  const crmSelectListRef = ref<InstanceType<typeof CrmSelectList>>();
 
   const loadListApi: Record<string, (data: any) => Promise<any>> = {
     [FormDesignKeyEnum.CUSTOMER]: assignOpenSeaCustomer,
@@ -81,6 +84,10 @@
     } finally {
       loading.value = false;
     }
+  }
+
+  function search() {
+    crmSelectListRef.value?.loadList(true);
   }
 </script>
 

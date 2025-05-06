@@ -65,6 +65,10 @@
     }
   }
 
+  function loadList(refresh = false) {
+    crmListRef.value?.loadList(refresh);
+  }
+
   onBeforeMount(() => {
     if (!props.multiple && Array.isArray(value.value)) {
       [value.value] = value.value;
@@ -73,8 +77,13 @@
 
   onMounted(() => {
     if (!props.multiple) {
-      crmListRef.value?.loadList(true);
+      // 单选容器包裹 list 组件导致创建 list 组件时不会触发组件初始化加载，需要手动调用一下
+      loadList(true);
     }
+  });
+
+  defineExpose({
+    loadList,
   });
 </script>
 

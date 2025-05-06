@@ -41,13 +41,16 @@
               name: props.dataSourceType ? t(typeLocaleMap[props.dataSourceType]) : '',
             })
           "
+          @search="search"
         />
         <div class="flex-1 overflow-hidden px-[16px]">
           <CrmSelectList
             v-if="props.dataSourceType"
+            ref="crmSelectListRef"
             v-model:value="value"
             v-model:selected-rows="selectedRows"
             :multiple="props.multiple"
+            :keyword="keyword"
             :load-list-api="sourceApi[props.dataSourceType]"
             :transform="disabledTransform"
             :no-page-nation="props.noPageNation"
@@ -125,7 +128,7 @@
   });
 
   const fieldValue = ref('');
-
+  const crmSelectListRef = ref<InstanceType<typeof CrmSelectList>>();
   const showPicker = ref(false);
   const keyword = ref('');
 
@@ -161,6 +164,10 @@
       ...item,
       disabled: props.disabledSelection ? props.disabledSelection(item) : false,
     };
+  }
+
+  function search() {
+    crmSelectListRef.value?.loadList(true);
   }
 
   onBeforeMount(() => {
