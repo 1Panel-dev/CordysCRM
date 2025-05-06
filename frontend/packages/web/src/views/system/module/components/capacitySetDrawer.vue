@@ -5,7 +5,7 @@
     :title="props.title"
     :ok-text="t('common.save')"
     :loading="loading"
-    @confirm="confirm"
+    :footer="false"
   >
     <CrmBatchForm
       ref="batchFormRef"
@@ -13,27 +13,26 @@
       :default-list="form.list"
       :add-text="t('module.businessManage.addRules')"
       validate-when-add
+      @delete-row="handleDelete"
+      @save-row="handleSave"
     ></CrmBatchForm>
   </CrmDrawer>
 </template>
 
 <script setup lang="ts">
-  import { useMessage } from 'naive-ui';
-
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberSelectTypeEnum, ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
   import type { FormItemModel } from '@/components/business/crm-batch-form/types';
 
-  import { getCapacityPage, saveCapacity } from '@/api/modules';
-
-  const Message = useMessage();
+  import { addCapacity, deleteCapacity, getCapacityPage, updateCapacity } from '@/api/modules';
+  import useModal from '@/hooks/useModal';
 
   const { t } = useI18n();
+  const { openModal } = useModal();
 
   const props = defineProps<{
     title: string;
@@ -79,12 +78,6 @@
       path: 'capacity',
       type: FieldTypeEnum.INPUT_NUMBER,
       label: t('module.capacitySet.Maximum'),
-      rule: [
-        {
-          required: true,
-          message: t('common.notNull', { value: t('module.capacitySet.Maximum') }),
-        },
-      ],
       formItemClass: 'w-[120px] flex-initial',
       numberProps: {
         min: 0,
@@ -93,40 +86,43 @@
     },
   ]);
 
-  function userFormValidate(cb: () => Promise<any>) {
-    batchFormRef.value?.formValidate(async (batchForm?: Record<string, any>) => {
-      try {
-        loading.value = true;
-        form.value.list = batchForm?.list;
-        await cb();
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
-      } finally {
-        loading.value = false;
-      }
+  function handleDelete(index: number, id: string, done: () => void) {
+    openModal({
+      type: 'error',
+      title: t('module.confirmDeleteCapacity'),
+      content: t('module.confirmDeleteCapacityContent'),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await deleteCapacity(id, props.type);
+          done();
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
     });
   }
 
-  async function capacitySet() {
+  async function handleSave(element: any, done: () => void) {
     try {
-      const capacities = form.value.list.map((item: Record<string, any>) => {
-        return {
-          scopeIds: item.members.map((memberItem: SelectedUsersItem) => memberItem.id),
-          capacity: item.capacity,
-        };
-      });
-      await saveCapacity(capacities, props.type);
-      Message.success(t('common.saveSuccess'));
-      visible.value = false;
+      const params = {
+        id: element.id,
+        scopeIds: element.members.map((m: any) => m.id),
+        capacity: element.capacity,
+      };
+
+      if (element.id) {
+        await updateCapacity(params, props.type);
+      } else {
+        await addCapacity(params, props.type);
+      }
+      done();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     }
-  }
-
-  function confirm() {
-    userFormValidate(capacitySet);
   }
 
   watch(

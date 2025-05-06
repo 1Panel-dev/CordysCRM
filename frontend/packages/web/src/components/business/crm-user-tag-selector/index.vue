@@ -70,6 +70,7 @@
   const showSelectDrawer = ref(false);
   const crmSelectUserDrawerRef = ref<InstanceType<typeof CrmSelectUserDrawer>>();
   function handleShowSelectDrawer() {
+    if (props.disabled) return;
     showSelectDrawer.value = true;
   }
 
@@ -87,7 +88,7 @@
       {
         type: props.userErrorTagIds?.includes(option.value as string) ? 'error' : 'default',
         theme: 'light',
-        closable: true,
+        closable: !props.disabled,
         onClose: () => {
           handleClose();
           selectedList.value = selectedList.value.filter((item) => item.id !== option.value);

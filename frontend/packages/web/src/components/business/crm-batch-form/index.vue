@@ -22,15 +22,15 @@
               :label="index === 0 && model.label ? model.label : ''"
               :path="`list[${index}].${model.path}`"
               :rule="
-              model.rule?.map((e) => {
-                if (e.notRepeat) {
-                  return {
-                    validator: (rule: FormItemRule, value: string) => fieldNotRepeat(value,  index, model.path, e.message as string),
-                  };
-                }
-                return e;
-              })
-            "
+                model.rule?.map((e) => {
+                  if (e.notRepeat) {
+                    return {
+                    validator: (rule: FormItemRule, value: string) => fieldNotRepeat(value, index, model.path, e.message as string),
+                    };
+                  }
+                  return e;
+                })
+              "
               class="block flex-1"
               :class="model.formItemClass"
             >
@@ -40,6 +40,7 @@
                 allow-clear
                 :max-length="255"
                 :placeholder="t('common.pleaseInput')"
+                :disabled="!element.editing"
                 v-bind="model.inputProps"
               />
               <n-input-number
@@ -48,6 +49,7 @@
                 class="w-full"
                 clearable
                 :placeholder="t('common.pleaseInput')"
+                :disabled="!element.editing"
                 v-bind="model.numberProps"
               />
               <n-select
@@ -55,6 +57,7 @@
                 v-model:value="element[model.path]"
                 clearable
                 :placeholder="t('common.pleaseSelect')"
+                :disabled="!element.editing"
                 v-bind="model.selectProps"
                 :options="getSelectOptions(element, model)"
                 :multiple="model.type === FieldTypeEnum.SELECT_MULTIPLE"
@@ -63,21 +66,40 @@
                 v-if="model.type === FieldTypeEnum.USER_TAG_SELECTOR"
                 v-model:selected-list="element[model.path]"
                 :user-error-tag-ids="userErrorTagIds"
+                :disabled="!element.editing"
                 v-bind="model.userTagSelectorProps"
                 @delete-tag="handleUserTagSelectValidate"
               />
             </n-form-item>
-            <n-button
-              :disabled="form.list.length === 1"
-              ghost
-              class="px-[7px]"
+            <div
+              class="flex gap-[8px]"
               :style="{ 'margin-top': index === 0 && props.models.some((item) => item.label) ? '26px' : '' }"
-              @click="handleDeleteListItem(index)"
             >
-              <template #icon>
-                <CrmIcon type="iconicon_minus_circle1" :size="16" />
+              <template v-if="element.editing">
+                <n-button type="success" ghost class="px-[7px]" @click="handleSaveRow(element, index)">
+                  <template #icon>
+                    <CrmIcon type="iconicon_check" :size="16" />
+                  </template>
+                </n-button>
+                <n-button ghost type="error" class="px-[7px]" @click="handleCancelEdit(index)">
+                  <template #icon>
+                    <CrmIcon type="iconicon_close" :size="16" />
+                  </template>
+                </n-button>
               </template>
-            </n-button>
+              <template v-else>
+                <n-button ghost class="px-[7px]" @click="handleEditRow(index)">
+                  <template #icon>
+                    <CrmIcon type="iconicon_edit" :size="16" />
+                  </template>
+                </n-button>
+                <n-button ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
+                  <template #icon>
+                    <CrmIcon type="iconicon_delete" :size="16" />
+                  </template>
+                </n-button>
+              </template>
+            </div>
           </div>
         </n-scrollbar>
       </n-form>
@@ -142,6 +164,11 @@
     }
   );
 
+  const emit = defineEmits<{
+    (e: 'deleteRow', index: number, id: string, done: () => void): void;
+    (e: 'saveRow', element: Record<string, any>, done: () => void): void;
+  }>();
+
   const formRef = ref<FormInst | null>(null);
   const form = ref<Record<string, any>>({ list: [], allOr: 'AND' });
   const formItemRefs = ref<Record<string, Map<string, any>>>({});
@@ -173,7 +200,12 @@
         formItem[e.path] = valueIsArray(e) ? [] : undefined;
       }
     });
-    form.value.list = props.defaultList?.length ? cloneDeep(props.defaultList) : [{ ...formItem }];
+    form.value.list = props.defaultList?.length
+      ? cloneDeep(props.defaultList).map((item) => ({
+          ...item,
+          editing: false,
+        }))
+      : [{ ...formItem, editing: true }];
   }
 
   watchEffect(() => {
@@ -273,24 +305,68 @@
   }
 
   // 删除一行
-  function handleDeleteListItem(i: number) {
-    form.value.list.splice(i, 1);
+  async function handleDeleteListItem(i: number, id?: string) {
+    if (id) {
+      emit('deleteRow', i, id, () => {
+        form.value.list.splice(i, 1);
+      });
+    } else {
+      form.value.list.splice(i, 1);
+    }
+  }
+
+  const rowBackups = ref<Record<number, any>>({});
+  // 编辑一行
+  function handleEditRow(index: number) {
+    rowBackups.value[index] = cloneDeep(form.value.list[index]);
+    form.value.list[index].editing = true;
+  }
+
+  // 取消编辑
+  function handleCancelEdit(index: number) {
+    if (rowBackups.value[index]) {
+      form.value.list[index] = cloneDeep(rowBackups.value[index]);
+    } else {
+      form.value.list[index] = { ...formItem, capacity: null };
+    }
+    form.value.list[index].editing = false;
+    delete rowBackups.value[index];
+  }
+
+  // 单行校验
+  async function validateRowFields(index: number): Promise<boolean> {
+    const fieldRefs = props.models.map((model) => formItemRefs.value[model.path]?.get(`${index}`)).filter(Boolean);
+
+    const results = await Promise.allSettled(fieldRefs.map((ref) => ref?.validate?.()));
+
+    const hasError = results.some((r) => r.status === 'rejected');
+    if (hasError) {
+      scrollIntoView(document.querySelector('.n-form-item-blank--error'), { block: 'center' });
+      return false;
+    }
+    return true;
+  }
+
+  // 保存编辑
+  async function handleSaveRow(element: Record<string, any>, index: number) {
+    const isValid = await validateRowFields(index);
+    if (!isValid) return;
+    emit('saveRow', element, () => {
+      form.value.list[index].editing = false;
+      delete rowBackups.value[index];
+    });
   }
 
   // 增加一行
   function handleAddListItem() {
     if (props.validateWhenAdd) {
       formValidate(() => {
-        form.value.list.push({ ...formItem });
+        form.value.list.push({ ...formItem, editing: true });
       }, false);
     } else {
-      form.value.list.push({ ...formItem });
+      form.value.list.push({ ...formItem, editing: true });
     }
   }
-
-  defineExpose({
-    formValidate,
-  });
 </script>
 
 <style lang="less" scoped>

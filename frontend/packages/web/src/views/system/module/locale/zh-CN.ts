@@ -14,6 +14,8 @@ export default {
   'module.openModuleTipContent': '模块开启后，模块出现在主导航菜单',
   'module.remainingDays': '剩余归属天数',
   'module.openSea': '公海',
+  'module.confirmDeleteCapacity': '确认删除库容吗？',
+  'module.confirmDeleteCapacityContent': '删除后成员库容将不受限制',
   'module.customer.openSea': '公海设置',
   'module.customer.followRecord': '跟进记录',
   'module.customer.followPlan': '跟进计划',

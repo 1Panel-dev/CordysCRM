@@ -143,13 +143,13 @@
 
   function cityFormat(val: string) {
     const address = val?.split('-');
-    return address ? `${getCityPath(address[0])}-${address[1]}` : '-';
+    return address ? `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}` : '-';
   }
 
   const moduleFormKeyMap: Record<string, FormDesignKeyEnum> = {
     PRODUCT_MANAGEMENT: FormDesignKeyEnum.PRODUCT,
     CUSTOMER_INDEX: FormDesignKeyEnum.CUSTOMER,
-    CLUE_MANAGEMENT: FormDesignKeyEnum.CLUE,
+    CLUE_MANAGEMENT_CLUE: FormDesignKeyEnum.CLUE,
     OPPORTUNITY: FormDesignKeyEnum.BUSINESS,
     FOLLOW_UP_RECORD: FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER,
     FOLLOW_UP_PLAN: FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER,
@@ -158,6 +158,7 @@
   async function getLogDetail(id: string) {
     try {
       activeLogDetail.value = await operationLogDetail(id);
+      const locationIds = ['workCity'];
       // 处理地址字段的值
       const matchedKey = Object.keys(moduleFormKeyMap).find((module) => activeLogDetail.value?.module === module);
       if (matchedKey) {
@@ -166,13 +167,16 @@
         });
         await initFormConfig();
         const locationId = fieldList.value.find((item) => item.type === FieldTypeEnum.LOCATION)?.id;
-        activeLogDetail.value.diffs?.forEach((item) => {
-          if (item.column === locationId) {
-            item.newValueName = cityFormat(item.newValueName);
-            item.oldValueName = cityFormat(item.oldValueName);
-          }
-        });
+        if (locationId) {
+          locationIds.push(locationId);
+        }
       }
+      activeLogDetail.value.diffs?.forEach((item) => {
+        if (locationIds.includes(item.column)) {
+          item.newValueName = cityFormat(item.newValue);
+          item.oldValueName = cityFormat(item.oldValue);
+        }
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);

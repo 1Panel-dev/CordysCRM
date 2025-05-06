@@ -131,7 +131,7 @@ export interface CluePoolItem {
 // 库容参数
 export interface CapacityParams {
   scopeIds: string[]; // 范围ID集合
-  capacity: number; // 容量
+  capacity?: number; // 容量
 }
 
 // 库容列表项

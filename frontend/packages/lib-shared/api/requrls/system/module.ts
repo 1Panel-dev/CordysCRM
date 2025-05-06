@@ -22,11 +22,15 @@ export const NoPickCluePoolUrl = '/clue-pool/no-pick'; // 未领取线索
 
 // 模块-线索库容
 export const GetClueCapacityPageUrl = '/clue-capacity/get'; // 获取线索库容规则
-export const SaveClueCapacityUrl = '/clue-capacity/save'; // 保存线索库容规则
+export const AddClueCapacityUrl = '/clue-capacity/add'; // 添加线索库容规则
+export const UpdateClueCapacityUrl = '/clue-capacity/update'; // 更新线索库容规则
+export const DeleteClueCapacityUrl = '/clue-capacity/delete'; // 删除线索库容规则
 
 // 模块-客户库容
 export const GetCustomerCapacityPageUrl = '/customer-capacity/get'; // 获取客户库容
-export const SaveCustomerCapacityUrl = '/customer-capacity/save'; // 保存客户库容
+export const AddCustomerCapacityUrl = '/customer-capacity/add'; // 添加客户库容规则
+export const UpdateCustomerCapacityUrl = '/customer-capacity/update'; // 更新客户库容规则
+export const DeleteCustomerCapacityUrl = '/customer-capacity/delete'; // 删除客户库容规则
 
 // 模块-公海池
 export const GetCustomerPoolPageUrl = '/customer-pool/page'; // 分页获取公海池

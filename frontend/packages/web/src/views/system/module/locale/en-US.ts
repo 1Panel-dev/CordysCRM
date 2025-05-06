@@ -15,6 +15,8 @@ export default {
   'module.openModuleTipContent': 'After opening, the module appears in the main navigation menu',
   'module.remainingDays': 'Remaining ownership days',
   'module.openSea': 'Open Sea',
+  'module.confirmDeleteCapacity': 'Confirm to delete capacity?',
+  'module.confirmDeleteCapacityContent': 'Members will have unlimited capacity after deletion',
   'module.customer.openSea': 'Open Sea Settings',
   'module.customer.followRecord': 'Follow-up record',
   'module.customer.followPlan': 'Follow-up plan',

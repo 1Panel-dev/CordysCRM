@@ -1,9 +1,13 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
+  AddClueCapacityUrl,
   AddCluePoolUrl,
+  AddCustomerCapacityUrl,
   AddCustomerPoolUrl,
   addOpportunityRuleUrl,
+  DeleteClueCapacityUrl,
   DeleteCluePoolUrl,
+  DeleteCustomerCapacityUrl,
   DeleteCustomerPoolUrl,
   deleteOpportunityUrl,
   DownloadPictureUrl,
@@ -27,14 +31,14 @@ import {
   NoPickCluePoolUrl,
   NoPickCustomerPoolUrl,
   PreviewPictureUrl,
-  SaveClueCapacityUrl,
-  SaveCustomerCapacityUrl,
   SaveFormDesignConfigUrl,
   SwitchCluePoolStatusUrl,
   SwitchCustomerPoolStatusUrl,
   switchOpportunityStatusUrl,
   toggleModuleNavStatusUrl,
+  UpdateClueCapacityUrl,
   UpdateCluePoolUrl,
+  UpdateCustomerCapacityUrl,
   UpdateCustomerPoolUrl,
   updateOpportunityRuleUrl,
   UploadTempFileUrl,
@@ -142,9 +146,22 @@ export default function useProductApi(CDR: CordysAxios) {
     });
   }
 
-  function saveCapacity(data: CapacityParams[], type: ModuleConfigEnum) {
+  function deleteCapacity(id: string, type: ModuleConfigEnum) {
+    return CDR.get({
+      url: `${type === ModuleConfigEnum.CLUE_MANAGEMENT ? DeleteClueCapacityUrl : DeleteCustomerCapacityUrl}/${id}`,
+    });
+  }
+
+  function updateCapacity(data: CapacityParams, type: ModuleConfigEnum) {
     return CDR.post({
-      url: type === ModuleConfigEnum.CLUE_MANAGEMENT ? SaveClueCapacityUrl : SaveCustomerCapacityUrl,
+      url: type === ModuleConfigEnum.CLUE_MANAGEMENT ? UpdateClueCapacityUrl : UpdateCustomerCapacityUrl,
+      data,
+    });
+  }
+
+  function addCapacity(data: CapacityParams, type: ModuleConfigEnum) {
+    return CDR.post({
+      url: type === ModuleConfigEnum.CLUE_MANAGEMENT ? AddClueCapacityUrl : AddCustomerCapacityUrl,
       data,
     });
   }
@@ -241,7 +258,9 @@ export default function useProductApi(CDR: CordysAxios) {
     deleteModuleCluePool,
     noPickCluePool,
     getCapacityPage,
-    saveCapacity,
+    updateCapacity,
+    addCapacity,
+    deleteCapacity,
     getCustomerPoolPage,
     addCustomerPool,
     updateCustomerPool,
