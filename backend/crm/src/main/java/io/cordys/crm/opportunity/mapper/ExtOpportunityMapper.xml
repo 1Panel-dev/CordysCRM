@@ -151,8 +151,14 @@
                 and condition.name != 'createUser'
                 and condition.name != 'follower'
                 and condition.name != 'departmentId'">
-                    inner join opportunity_field ${tablePrefix}_${i}
-                    on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    <if test="condition.multipleValue">
+                        inner join opportunity_field_blob ${tablePrefix}_${i}
+                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
+                    <if test="!condition.multipleValue">
+                        inner join opportunity_field ${tablePrefix}_${i}
+                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                    </if>
                 </if>
             </foreach>
         </if>

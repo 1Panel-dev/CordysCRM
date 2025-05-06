@@ -117,7 +117,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('common.status'),
         width: 120,
-        key: 'status',
+        key: 'enable',
         ellipsis: {
           tooltip: true,
         },
@@ -159,7 +159,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('common.status'),
         width: 120,
-        key: 'status',
+        key: 'enable',
         ellipsis: {
           tooltip: true,
         },
