@@ -94,6 +94,7 @@ const useAppStore = defineStore('app', {
     },
     eventSource: null,
     menuIconStatus: {},
+    restoreMenuTimeStamp: 0,
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -121,6 +122,9 @@ const useAppStore = defineStore('app', {
     getMenuIconStatus(state: AppState) {
       const userId = useUserStore().userInfo.id;
       return state.menuIconStatus[userId] ?? true;
+    },
+    getRestoreMenuTimeStamp(state: AppState) {
+      return state.restoreMenuTimeStamp;
     },
   },
   actions: {
@@ -266,6 +270,9 @@ const useAppStore = defineStore('app', {
         // eslint-disable-next-line no-console
         console.log(error);
       }
+    },
+    setRestoreMenuTimeStamp(timeStamp: number) {
+      this.restoreMenuTimeStamp = timeStamp;
     },
   },
   persist: {

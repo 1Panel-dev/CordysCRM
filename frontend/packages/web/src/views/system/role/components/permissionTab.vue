@@ -81,6 +81,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { sleep } from '@lib/shared/method';
   import {
     DeptTreeNode,
     PermissionItem,
@@ -96,6 +97,8 @@
     activeRoleId: string;
     roleName?: string;
     isNew: boolean;
+    isCopy: boolean;
+    copyFrom?: string;
   }>();
   const emit = defineEmits<{
     (e: 'cancelCreate'): void;
@@ -148,7 +151,23 @@
     try {
       loading.value = true;
       data.value = [];
-      if (props.isNew) {
+      if (props.isCopy && props.copyFrom) {
+        const res = await getRoleDetail(props.copyFrom);
+        dataPermission.value = res.dataScope || 'ALL';
+        departments.value = res.deptIds || [];
+        res.permissions.forEach((item) => {
+          item.children.forEach((child, index) => {
+            data.value.push({
+              id: child.id,
+              feature: item.name,
+              operator: child.name,
+              rowSpan: index === 0 ? item.children?.length || 1 : undefined,
+              permissions: child.permissions,
+              enable: child.enable,
+            });
+          });
+        });
+      } else if (props.isNew) {
         const res = await getPermissions();
         res.forEach((item) => {
           item.children.forEach((child, index) => {
@@ -246,7 +265,8 @@
                         permission.enable = value;
                       }
                     });
-                  } else if (((rowData.permissions as []) || []).every((permission: any) => permission.enable)) {
+                  }
+                  if (((rowData.permissions as []) || []).every((permission: any) => permission.enable)) {
                     // 判断当前功能对象所有的权限是否全部选中/取消选中，并设置当前行的选中状态
                     rowData.enable = true;
                     rowData.indeterminate = false;
@@ -321,6 +341,7 @@
   }
 
   async function handleSave() {
+    await sleep(100);
     try {
       loading.value = true;
       const permissions: RolePermissionItem[] = [];

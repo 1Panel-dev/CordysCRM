@@ -44,7 +44,7 @@ export interface FormCreateField {
   min?: number;
   numberFormat?: 'number' | 'percent'; // 数字格式, number: 数字, percent: 百分比
   decimalPlaces?: boolean; // 保留小数点位
-  precision?: number | null; // 精度
+  precision?: number; // 精度
   showThousandsSeparator?: boolean; // 是否显示千分位
   // 日期输入属性
   dateType?: FormCreateFieldDateType;

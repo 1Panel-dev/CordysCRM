@@ -21,6 +21,7 @@
       :parse="parse"
       :format="format"
       :show-button="false"
+      :precision="props.fieldConfig.precision"
       button-placement="both"
       clearable
       class="w-full"
@@ -44,7 +45,7 @@
     (e: 'change', value: number | null): void;
   }>();
 
-  const value = defineModel<number>('value', {
+  const value = defineModel<number | null>('value', {
     default: null,
   });
 
@@ -58,6 +59,17 @@
     }
   );
 
+  watch(
+    () => [props.fieldConfig.numberFormat, props.fieldConfig.showThousandsSeparator],
+    () => {
+      const temp = value.value;
+      value.value = null;
+      nextTick(() => {
+        value.value = temp;
+      });
+    }
+  );
+
   function parse(val: string) {
     const nums = val.replace(/,/g, '').trim();
     if (!props.fieldConfig.showThousandsSeparator || /^\d+(\.(\d+)?)?$/.test(nums)) {
@@ -68,7 +80,10 @@
 
   function format(val: number | null) {
     if (val === null) return '';
-    return val.toLocaleString('en-US');
+    if (props.fieldConfig.numberFormat === 'number' && props.fieldConfig.showThousandsSeparator) {
+      return val.toLocaleString('en-US');
+    }
+    return val.toString();
   }
 </script>
 

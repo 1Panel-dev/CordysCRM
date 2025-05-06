@@ -215,6 +215,15 @@
   }, true);
 
   watch(
+    () => appStore.getRestoreMenuTimeStamp,
+    (value) => {
+      if (value) {
+        setMenuValue(router.currentRoute.value);
+      }
+    }
+  );
+
+  watch(
     () => appStore.orgId,
     (orgId) => {
       if (orgId) {

@@ -4,6 +4,7 @@
     :model="form"
     :label-placement="props.formConfig.labelPos"
     :require-mark-placement="props.formConfig.labelPos === 'left' ? 'left' : 'right'"
+    label-width="auto"
     class="crm-form-create"
   >
     <n-scrollbar>

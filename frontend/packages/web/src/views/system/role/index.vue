@@ -2,8 +2,8 @@
   <CrmCard :loading="loading" hide-footer no-content-padding>
     <CrmSplitPanel class="h-full" :max="0.5" :min="0.25" :default-size="0.25">
       <template #1>
-        <div class="flex h-full flex-col p-[24px]">
-          <div class="mb-[8px] flex items-center justify-between gap-[8px]">
+        <div class="flex h-full flex-col overflow-hidden">
+          <div class="mb-[8px] flex items-center justify-between gap-[8px] px-[24px] pt-[24px]">
             <CrmSearchInput v-model:value="keyword" :placeholder="t('common.searchByName')" />
             <n-tooltip trigger="hover" :delay="300">
               <template #trigger>
@@ -22,21 +22,23 @@
               {{ t('role.addRole') }}
             </n-tooltip>
           </div>
-          <CrmTree
-            ref="roleTreeRef"
-            v-model:selected-keys="selectedKeys"
-            v-model:data="roles"
-            :keyword="keyword"
-            :render-prefix="renderPrefix"
-            :node-more-actions="nodeMoreActions"
-            title-tooltip-position="top-start"
-            :filter-more-action-func="filterMoreActionFunc"
-            :field-names="{ keyField: 'id', labelField: 'name', childrenField: 'children' }"
-            :rename-api="updateRoleName"
-            :rename-static="renameStatic"
-            :selectable="roleTreeSelectable"
-            @more-action-select="handleMoreActionSelect"
-          />
+          <n-scrollbar class="px-[24px] pb-[24px]">
+            <CrmTree
+              ref="roleTreeRef"
+              v-model:selected-keys="selectedKeys"
+              v-model:data="roles"
+              :keyword="keyword"
+              :render-prefix="renderPrefix"
+              :node-more-actions="nodeMoreActions"
+              title-tooltip-position="top-start"
+              :filter-more-action-func="filterMoreActionFunc"
+              :field-names="{ keyField: 'id', labelField: 'name', childrenField: 'children' }"
+              :rename-api="updateRoleName"
+              :rename-static="renameStatic"
+              :selectable="roleTreeSelectable"
+              @more-action-select="handleMoreActionSelect"
+            />
+          </n-scrollbar>
         </div>
       </template>
       <template #2>
@@ -47,6 +49,8 @@
                 v-if="activeRole"
                 :active-role-id="selectedKeys[0]"
                 :is-new="!!activeRole.isNew"
+                :is-copy="!!activeRole.isCopy"
+                :copy-from="activeRole.copyFrom"
                 :role-name="activeRole.name"
                 @create-success="handleCreated"
                 @cancel-create="handleCancelCreate"
@@ -64,7 +68,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { NButton, NIcon, NTooltip, TabPaneProps, useMessage } from 'naive-ui';
+  import { NButton, NIcon, NScrollbar, NTooltip, TabPaneProps, useMessage } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -83,12 +87,15 @@
   import permissionTab from './components/permissionTab.vue';
 
   import { deleteRole, getRoles, updateRole } from '@/api/modules';
+  import useLeaveUnSaveTip from '@/hooks/useLeaveUnSaveTip';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const { openModal } = useModal();
   const message = useMessage();
+  const { setIsSave } = useLeaveUnSaveTip();
+  setIsSave(false);
 
   const loading = ref(false);
   const keyword = ref('');
@@ -135,7 +142,7 @@
   ];
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
-    if (node.internal || !hasAnyPermission(['SYSTEM_ROLE:UPDATE'])) {
+    if (node.internal && !hasAnyPermission(['SYSTEM_ROLE:UPDATE', 'SYSTEM_ROLE:ADD', 'SYSTEM_ROLE:DELETE'])) {
       return [];
     }
     if (activeRole.value?.isNew) {
@@ -148,7 +155,13 @@
           ]
         : [];
     }
-    return items;
+    return items.filter((item) => {
+      const { permission } = item;
+      if (permission && !hasAnyPermission(permission)) {
+        return false;
+      }
+      return true;
+    });
   }
 
   const roleTreeSelectable = computed(() => !roles.value.some((role) => role.isNew || role.unsave));
@@ -168,6 +181,8 @@
           name: `${node.name}Copy`,
           internal: false,
           isNew: true,
+          isCopy: true,
+          copyFrom: node.id,
           id,
         });
         selectedKeys.value = [id];
@@ -222,6 +237,7 @@
       isNew: true,
     });
     selectedKeys.value = [id];
+    setIsSave(false);
     nextTick(() => {
       roleTreeRef.value?.toggleEdit(id);
     });
@@ -267,6 +283,7 @@
       selectedKeys.value = [id];
       activeRole.value.isNew = false;
       activeRole.value.unsave = false;
+      setIsSave(true);
     }
   }
 

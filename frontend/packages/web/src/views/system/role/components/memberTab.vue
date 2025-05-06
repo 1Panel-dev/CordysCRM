@@ -90,6 +90,8 @@
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
     },
     {
       title: t('common.status'),
@@ -131,6 +133,9 @@
     {
       title: t('role.job'),
       key: 'position',
+      ellipsis: {
+        tooltip: true,
+      },
       sortOrder: false,
       sorter: true,
       width: 100,
@@ -148,6 +153,8 @@
       title: t('common.addTime'),
       key: 'createTime',
       width: 160,
+      sortOrder: false,
+      sorter: true,
     },
     {
       key: 'operation',
