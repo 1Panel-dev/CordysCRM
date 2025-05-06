@@ -115,7 +115,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                         resourceField.setId(IDGenerator.nextStr());
                         resourceField.setResourceId(resourceId);
                         resourceField.setFieldId(fieldValue.getFieldId());
-                        resourceField.setFieldValue(strValue.getBytes());
+                        resourceField.setFieldValue(strValue);
                         customerFieldBlobs.add(resourceField);
                     } else {
                         T resourceField = newResourceField();
@@ -208,13 +208,13 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         List<V> resourceFieldBlobs = getResourceFieldBlob(resourceIds);
         resourceFieldBlobs.forEach(resourceFieldBlob -> {
             // 处理大文本
-            if (resourceFieldBlob != null && resourceFieldBlob.getFieldValue() instanceof byte[] byteValue) {
+            if (resourceFieldBlob != null && resourceFieldBlob.getFieldValue() != null) {
                 BaseField fieldConfig = fieldConfigMap.get(resourceFieldBlob.getFieldId());
                 if (fieldConfig == null) {
                     return;
                 }
                 AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
-                Object objectValue = customFieldResolver.parse2Value(fieldConfig, new String(byteValue));
+                Object objectValue = customFieldResolver.parse2Value(fieldConfig, resourceFieldBlob.getFieldValue().toString());
 
                 String resourceId = resourceFieldBlob.getResourceId();
                 resourceMap.putIfAbsent(resourceId, new ArrayList<>());
@@ -344,7 +344,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                             resourceField.setId(IDGenerator.nextStr());
                             resourceField.setResourceId(resourceId);
                             resourceField.setFieldId(fieldValue.getFieldId());
-                            resourceField.setFieldValue(strValue.getBytes());
+                            resourceField.setFieldValue(strValue);
                             customerFieldBlobs.add(resourceField);
                         } else {
                             T resourceField = newResourceField();
