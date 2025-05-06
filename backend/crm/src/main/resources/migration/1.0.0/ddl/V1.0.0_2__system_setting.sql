@@ -471,7 +471,7 @@ CREATE INDEX idx_organization_id ON sys_module_form (organization_id ASC);
 CREATE TABLE sys_module_form_blob
 (
     `id`   VARCHAR(32) NOT NULL COMMENT 'id',
-    `prop` BLOB COMMENT '属性',
+    `prop` TEXT COMMENT '属性',
     PRIMARY KEY (id)
 ) COMMENT = '模块表单属性配置'
     ENGINE = InnoDB
@@ -560,7 +560,7 @@ CREATE TABLE product_field_blob
     `id`          VARCHAR(32) NOT NULL COMMENT 'id',
     `resource_id` VARCHAR(32) NOT NULL COMMENT '产品id',
     `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
-    `field_value` BLOB        NOT NULL COMMENT '自定义属性值',
+    `field_value` TEXT        NOT NULL COMMENT '自定义属性值',
     PRIMARY KEY (id)
 ) COMMENT = '客户自定义属性大文本'
     ENGINE = InnoDB

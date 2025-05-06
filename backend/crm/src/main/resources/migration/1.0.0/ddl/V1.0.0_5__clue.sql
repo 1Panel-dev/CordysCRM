@@ -65,7 +65,7 @@ CREATE TABLE clue_capacity
     `id`              VARCHAR(32) NOT NULL COMMENT 'id',
     `organization_id` VARCHAR(32) NOT NULL COMMENT '组织架构ID',
     `scope_id`        TEXT        NOT NULL COMMENT '范围ID',
-    `capacity`        INT         NOT NULL DEFAULT 0 COMMENT '库容;0:不限制',
+    `capacity`        INT         COMMENT '库容;NULL:不限制',
     `create_time`     BIGINT      NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT      NOT NULL COMMENT '更新时间',
     `create_user`     VARCHAR(32) NOT NULL COMMENT '创建人',
@@ -129,7 +129,7 @@ CREATE TABLE clue_field_blob
     `id`          VARCHAR(32) NOT NULL COMMENT 'id',
     `resource_id` VARCHAR(32) NOT NULL COMMENT '客户联系人id',
     `field_id`    VARCHAR(32) NOT NULL COMMENT '自定义属性id',
-    `field_value` BLOB        NOT NULL COMMENT '自定义属性值',
+    `field_value` TEXT        NOT NULL COMMENT '自定义属性值',
     PRIMARY KEY (id)
 ) COMMENT = '线索自定义属性大文本'
 ENGINE = InnoDB

@@ -89,7 +89,7 @@ public abstract class BaseField {
 	@JsonIgnore
 	public boolean isBlob() {
 		return StringUtils.equalsAny(type, FieldType.TEXTAREA.name(), FieldType.INPUT_MULTIPLE.name(),
-				FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name());
+				FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name(), FieldType.SELECT_MULTIPLE.name(), FieldType.CHECKBOX.name());
 	}
 
 	@JsonIgnore
