@@ -9,7 +9,9 @@
     :placeholder="props.placeholder || t('common.pleaseSelect')"
     :disabled="props.disabled"
     :class="props.class"
-    clearable
+    type="textarea"
+    rows="1"
+    autosize
     @click="showPicker = true"
     @update:model-value="($event) => emit('change', $event)"
   >
@@ -52,7 +54,7 @@
             :multiple="props.multiple"
             :keyword="keyword"
             :load-list-api="sourceApi[props.dataSourceType]"
-            :transform="disabledTransform"
+            :transform="selectListTransform"
             :no-page-nation="props.noPageNation"
           ></CrmSelectList>
         </div>
@@ -159,10 +161,11 @@
     emit('change', value.value);
   }
 
-  function disabledTransform(item: Record<string, any>) {
+  function selectListTransform(item: Record<string, any>) {
     return {
       ...item,
       disabled: props.disabledSelection ? props.disabledSelection(item) : false,
+      checked: selectedRows.value.some((row) => row.id === item.id),
     };
   }
 
@@ -170,9 +173,15 @@
     crmSelectListRef.value?.loadList(true);
   }
 
-  onBeforeMount(() => {
-    fieldValue.value = selectedRows.value.map((item) => item.name).join('；');
-  });
+  watch(
+    () => selectedRows.value,
+    (val) => {
+      fieldValue.value = val.map((item) => item.name).join('；');
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less" scoped>

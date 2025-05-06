@@ -117,7 +117,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       const res = await asyncApi(props.sourceId);
       collaborationType.value = res.collaborationType;
       sourceName.value = res.name;
-      fieldList.value.forEach((item) => {
+      fieldList.value = fieldList.value.map((item) => {
         if (item.businessKey) {
           const options = res.optionMap?.[item.businessKey];
           if (
@@ -160,6 +160,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           // 处理时间类型的字段
           formDetail.value[item.id] = formDetail.value[item.id] ? Number(formDetail.value[item.id]) : '';
         }
+        return item;
       });
       nextTick(() => {
         unsaved.value = false;

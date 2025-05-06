@@ -47,6 +47,16 @@
       immediate: true,
     }
   );
+
+  watch(
+    () => props.fieldConfig.initialOptions,
+    (val) => {
+      selectedRows.value = val;
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>

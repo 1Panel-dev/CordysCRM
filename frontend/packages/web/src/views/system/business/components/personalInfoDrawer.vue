@@ -17,7 +17,7 @@
       </div>
       <div class="flex w-full items-center gap-[8px] py-[16px]">
         <CrmAvatar />
-        <div>
+        <div class="flex-1">
           <div class="text-[var(--text-n1)]">{{ personalInfo.userName }}</div>
           <n-tag
             v-if="showRoleTag"

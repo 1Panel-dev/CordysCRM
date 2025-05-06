@@ -195,8 +195,7 @@
               name: userStore.userInfo.name,
             },
           ];
-        }
-        if (
+        } else if (
           [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(item.type) &&
           item.hasCurrentUserDept
         ) {
