@@ -24,7 +24,7 @@
   .crm-page-wrapper {
     @apply flex flex-col;
 
-    height: 100vh;
+    height: 100%;
     background-color: var(--text-n10);
     .crm-page-content {
       @apply flex flex-1 flex-col;
