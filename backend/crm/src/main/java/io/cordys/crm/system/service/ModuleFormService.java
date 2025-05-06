@@ -82,7 +82,7 @@ public class ModuleFormService {
 		}
 		ModuleForm form = forms.getFirst();
 		ModuleFormBlob formBlob = moduleFormBlobMapper.selectByPrimaryKey(form.getId());
-		formConfig.setFormProp(JSON.parseObject(new String(formBlob.getProp()), FormProp.class));
+		formConfig.setFormProp(JSON.parseObject(formBlob.getProp(), FormProp.class));
 		// set fields
 		formConfig.setFields(getAllFields(form.getId()));
 		return formConfig;
@@ -111,7 +111,7 @@ public class ModuleFormService {
 		moduleFormMapper.updateById(form);
 		ModuleFormBlob formBlob = new ModuleFormBlob();
 		formBlob.setId(form.getId());
-		formBlob.setProp(JSON.toJSONBytes(saveParam.getFormProp()));
+		formBlob.setProp(JSON.toJSONString(saveParam.getFormProp()));
 		moduleFormBlobMapper.updateById(formBlob);
 
 		// 处理字段
@@ -301,7 +301,7 @@ public class ModuleFormService {
 			formBlob.setId(form.getId());
 			try {
 				FormProp formProp = JSON.parseObject(formResource.getInputStream(), FormProp.class);
-				formBlob.setProp(JSON.toJSONBytes(formProp));
+				formBlob.setProp(JSON.toJSONString(formProp));
 			} catch (IOException e) {
 				throw new GenericException("表单属性初始化失败", e);
 			}

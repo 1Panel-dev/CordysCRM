@@ -13,5 +13,5 @@ public class ModuleFormBlob {
 	private String id;
 
 	@Schema(description = "属性")
-	private byte[] prop;
+	private String prop;
 }
