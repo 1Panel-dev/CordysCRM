@@ -103,6 +103,7 @@
   const descriptions = ref<Description[]>(cloneDeep(initDescriptions));
 
   async function getDetail() {
+    if (!props.userId) return;
     descriptions.value = cloneDeep(initDescriptions);
     try {
       detail.value = await getUserDetail(props.userId);

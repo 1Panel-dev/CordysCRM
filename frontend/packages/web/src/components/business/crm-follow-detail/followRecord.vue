@@ -36,7 +36,7 @@
                     <template #trigger>
                       <div class="one-line-text max-w-[300px]">{{ item.ownerName }} </div>
                     </template>
-                    {{ item.ownerName }}
+                    {{ item.ownerName || '-' }}
                   </n-tooltip>
                 </div>
               </template>
