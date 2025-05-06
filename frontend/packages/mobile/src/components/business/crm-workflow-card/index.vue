@@ -24,7 +24,7 @@
         :key="item.value"
         :class="`crm-workflow-item ${index === workflowList.length - 1 ? '' : 'flex-1'}`"
       >
-        <div class="flex flex-nowrap items-center justify-center">
+        <div class="relative -left-[16px] flex flex-nowrap items-center justify-center">
           <div
             class="crm-workflow-item-line"
             :class="{
@@ -42,7 +42,9 @@
               height="16px"
               :color="item.value === StageResultEnum.FAIL ? 'var(--error-red)' : 'var(--primary-8)'"
             />
-            <div v-else class="flex items-center justify-center">{{ index + 1 }} </div>
+            <div v-else class="flex items-center justify-center">
+              {{ index + 1 }}
+            </div>
           </div>
           <div
             class="crm-workflow-item-line"
@@ -54,7 +56,7 @@
           >
           </div>
         </div>
-        <div class="crm-workflow-item-name one-line-text" :class="statusClass(index, item)">
+        <div class="crm-workflow-item-name one-line-text relative -left-[16px]" :class="statusClass(index, item)">
           {{ item.label }}
         </div>
       </div>
@@ -209,10 +211,10 @@
     border-radius: @border-radius-large;
     background: var(--text-n10);
     .crm-workflow-step {
-      padding: 16px;
+      padding: 16px 0;
       border-radius: var(--border-radius-medium);
 
-      @apply flex flex-nowrap;
+      @apply flex flex-nowrap justify-start;
       .crm-workflow-item {
         gap: 8px;
         @apply flex flex-col;
