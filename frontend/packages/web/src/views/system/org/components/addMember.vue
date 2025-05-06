@@ -16,7 +16,7 @@
         require-mark-placement="left"
       >
         <n-form-item require-mark-placement="left" label-placement="left" path="name" :label="t('org.userName')">
-          <n-input v-model:value="form.name" type="text" :placeholder="t('common.pleaseInput')" />
+          <n-input v-model:value="form.name" type="text" :placeholder="t('common.pleaseInput')" :max-length="255" />
         </n-form-item>
         <n-form-item require-mark-placement="left" label-placement="left" path="gender" :label="t('org.gender')">
           <n-radio-group v-model:value="form.gender" name="radiogroup">
@@ -75,7 +75,12 @@
           path="employeeId"
           :label="t('org.employeeNumber')"
         >
-          <n-input v-model:value="form.employeeId" type="text" :placeholder="t('common.pleaseInput')" />
+          <n-input
+            v-model:value="form.employeeId"
+            type="text"
+            :placeholder="t('common.pleaseInput')"
+            :max-length="255"
+          />
         </n-form-item>
         <CrmExpandButton v-model:expand="showForm">
           <n-form-item
@@ -107,7 +112,12 @@
             />
           </n-form-item>
           <n-form-item require-mark-placement="left" label-placement="left" path="position" :label="t('org.position')">
-            <n-input v-model:value="form.position" type="text" :placeholder="t('common.pleaseInput')" />
+            <n-input
+              v-model:value="form.position"
+              type="text"
+              :placeholder="t('common.pleaseInput')"
+              :max-length="255"
+            />
           </n-form-item>
           <n-form-item
             require-mark-placement="left"

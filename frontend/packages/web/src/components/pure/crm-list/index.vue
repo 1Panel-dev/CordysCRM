@@ -185,7 +185,7 @@
     const target = event.target as HTMLElement;
     const { scrollTop, scrollHeight, clientHeight } = target;
     // 判断是否触底
-    if (scrollTop + clientHeight >= scrollHeight) {
+    if (scrollTop + clientHeight >= scrollHeight - 24) {
       handleReachBottom();
     }
   }
