@@ -9,7 +9,11 @@
     <n-scrollbar>
       <div class="flex h-full w-full flex-wrap content-start">
         <template v-for="item in list" :key="item.id">
-          <div v-if="item.show !== false" class="crm-form-create-item" :style="{ width: `${item.fieldWidth * 100}%` }">
+          <div
+            v-if="item.show !== false && item.readable"
+            class="crm-form-create-item"
+            :style="{ width: `${item.fieldWidth * 100}%` }"
+          >
             <component
               :is="getItemComponent(item.type)"
               v-model:value="form[item.id]"

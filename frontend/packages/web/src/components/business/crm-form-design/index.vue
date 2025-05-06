@@ -7,7 +7,7 @@
       </div>
     </div>
     <div class="crm-form-design--right">
-      <formAttrConfig v-model:field="field" :list="list" :form-config="formConfig" />
+      <formAttrConfig v-model:field="field" v-model:field-list="list" :form-config="formConfig" />
     </div>
   </n-scrollbar>
 </template>
@@ -38,15 +38,6 @@
   function handleFieldSelect(item: FormCreateField) {
     formCompositionRef.value?.addItem(item);
   }
-
-  watch(
-    () => formConfig.value.layout,
-    (layout) => {
-      list.value.forEach((item) => {
-        item.fieldWidth = 1 / layout;
-      });
-    }
-  );
 
   watch(
     () => list.value,

@@ -740,6 +740,9 @@
         return null;
       })
       .filter((e) => e !== null) as FormCreateFieldRule[];
+    nextTick(() => {
+      console.log(fieldConfig.value.rules);
+    });
   }
 
   // function handleMultipleChange(val: boolean) {

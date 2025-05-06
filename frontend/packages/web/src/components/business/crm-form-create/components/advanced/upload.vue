@@ -4,6 +4,7 @@
     :show-label="props.fieldConfig.showLabel"
     :path="props.path"
     :rule="props.fieldConfig.rules"
+    :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
   >
     <div
       v-if="props.fieldConfig.description"
@@ -16,6 +17,7 @@
       :accept="props.fieldConfig.type === FieldTypeEnum.PICTURE ? 'image/*' : '*/*'"
       :list-type="props.fieldConfig.pictureShowType === 'card' ? 'image-card' : 'text'"
       :custom-request="customRequest"
+      :disabled="props.fieldConfig.editable === false"
       multiple
       directory-dnd
       @before-upload="beforeUpload"

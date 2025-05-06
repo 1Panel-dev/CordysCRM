@@ -2,7 +2,7 @@
   <div class="p-[16px]">
     <div class="crm-form-design-config-item">
       <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.formLayout') }}</div>
-      <n-radio-group v-model:value="formConfig.layout">
+      <n-radio-group v-model:value="formConfig.layout" @change="handleLayoutChange">
         <n-radio-button :value="1">
           {{ t('crmFormDesign.formLayout1') }}
         </n-radio-button>
@@ -123,12 +123,23 @@
   import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import { FormCreateField } from '@/components/business/crm-form-create/types';
 
   const { t } = useI18n();
+
+  const list = defineModel<FormCreateField[]>('fieldList', {
+    required: true,
+  });
 
   const formConfig = defineModel<FormConfig>('formConfig', {
     required: true,
   });
+
+  function handleLayoutChange(layout: number) {
+    list.value.forEach((item) => {
+      item.fieldWidth = 1 / layout;
+    });
+  }
 </script>
 
 <style lang="less" scoped>

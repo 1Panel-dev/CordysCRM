@@ -59,7 +59,7 @@
   <div class="flex items-center justify-center gap-[8px]">
     <div
       class="cursor-pointer text-[var(--primary-8)]"
-      :class="props.disabled ? 'text-[var(--primary-4)]' : ''"
+      :class="props.disabled ? '!text-[var(--primary-4)]' : ''"
       @click="handleAddOption"
     >
       {{ t('crmFormDesign.addOption') }}
@@ -78,7 +78,7 @@
     <n-divider vertical class="!m-0" />
     <div
       class="cursor-pointer text-[var(--primary-8)]"
-      :class="props.disabled ? 'text-[var(--primary-4)]' : ''"
+      :class="props.disabled ? '!text-[var(--primary-4)]' : ''"
       @click="handleShowBatchEditModal"
     >
       {{ t('crmFormDesign.batchEdit') }}

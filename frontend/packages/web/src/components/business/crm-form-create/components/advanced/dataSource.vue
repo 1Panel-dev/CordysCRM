@@ -4,6 +4,7 @@
     :show-label="props.fieldConfig.showLabel"
     :path="props.path"
     :rule="props.fieldConfig.rules"
+    :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
   >
     <div
       v-if="props.fieldConfig.description"
@@ -15,6 +16,7 @@
       :rows="props.fieldConfig.initialOptions"
       :multiple="fieldConfig.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
       :data-source-type="props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
+      :disabled="props.fieldConfig.editable === false"
       @change="($event) => emit('change', $event)"
     />
   </n-form-item>

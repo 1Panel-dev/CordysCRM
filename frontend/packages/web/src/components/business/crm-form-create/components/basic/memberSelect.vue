@@ -4,6 +4,7 @@
     :show-label="props.fieldConfig.showLabel"
     :path="props.path"
     :rule="props.fieldConfig.rules"
+    :required="props.fieldConfig.rules.some((rule) => rule.key === 'required')"
   >
     <div
       v-if="props.fieldConfig.description"
@@ -15,6 +16,7 @@
       :multiple="[FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(fieldConfig.type)"
       :drawer-title="t('crmFormDesign.selectDataSource', { type: props.fieldConfig.name })"
       :api-type-key="MemberApiTypeEnum.FORM_FIELD"
+      :disabled="props.fieldConfig.editable === false"
       :member-types="
         [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(props.fieldConfig.type)
           ? [
