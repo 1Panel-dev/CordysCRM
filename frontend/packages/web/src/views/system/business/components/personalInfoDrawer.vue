@@ -57,27 +57,21 @@
         </n-button>
       </div>
     </CrmCard>
-    <CrmCard v-if="activeTab === PersonalEnum.MY_PLAN" hide-footer :special-height="64">
-      <n-button type="primary" @click="formCreateDrawerVisible = true">
-        {{ t('common.plan') }}
-      </n-button>
+    <CrmCard v-if="activeTab === PersonalEnum.MY_PLAN" no-content-padding hide-footer :special-height="64">
       <FollowDetail
+        :show-add="
+          hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE', 'CLUE_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:UPDATE'])
+        "
         :refresh-key="refreshKey"
-        class="mt-[16px] p-[0px]"
         active-type="followPlan"
-        wrapper-class="h-[calc(100vh-239px)]"
-        virtual-scroll-height="calc(100vh - 332px)"
+        wrapper-class="h-[calc(100vh-155px)]"
+        virtual-scroll-height="calc(100vh - 252px)"
         follow-api-key="myPlan"
         source-id="NULL"
         show-action
       />
     </CrmCard>
   </CrmDrawer>
-  <CrmFormCreateDrawer
-    v-model:visible="formCreateDrawerVisible"
-    :form-key="FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS"
-    @saved="() => (refreshKey += 1)"
-  />
   <EditPersonalInfoModal v-model:show="showEditPersonalModal" :integration="currentInfo" @init-sync="searchData()" />
   <EditPasswordModal v-model:show="showEditPasswordModal" :integration="currentPassword" @init-sync="searchData()" />
 </template>
@@ -86,7 +80,6 @@
   import { ref } from 'vue';
   import { NButton, NP, NTag, TabPaneProps } from 'naive-ui';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { PersonalInfoRequest, PersonalPassword } from '@lib/shared/models/system/business';
@@ -97,12 +90,12 @@
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
-  import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import EditPasswordModal from '@/views/system/business/components/editPasswordModal.vue';
   import EditPersonalInfoModal from '@/views/system/business/components/editPersonalInfoModal.vue';
 
   import { getPersonalUrl } from '@/api/modules';
   import { defaultUserInfo } from '@/config/business';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
 
@@ -173,7 +166,6 @@
   });
 
   const refreshKey = ref(0);
-  const formCreateDrawerVisible = ref(false);
 </script>
 
 <style scoped lang="less"></style>

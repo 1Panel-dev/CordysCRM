@@ -6,7 +6,7 @@
           {{ t(props.activeType === 'followPlan' ? 'crmFollowRecord.writePlan' : 'crmFollowRecord.writeRecord') }}
         </n-button>
       </div>
-      <div class="flex">
+      <div class="flex gap-[12px]">
         <CrmTab
           v-if="props.activeType === 'followPlan'"
           v-model:active-tab="activeStatus"
@@ -216,14 +216,15 @@
   }
 
   // 编辑记录或计划
-  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER);
+  const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS);
   const realFollowSourceId = ref<string | undefined>('');
   const needInitDetail = ref(false);
 
   function handleAdd() {
-    realFormKey.value = followFormKeyMap[props.followApiKey as keyof typeof followFormKeyMap]?.[
-      props.activeType
-    ] as FormDesignKeyEnum;
+    realFormKey.value =
+      (followFormKeyMap[props.followApiKey as keyof typeof followFormKeyMap]?.[
+        props.activeType
+      ] as FormDesignKeyEnum) ?? realFormKey.value;
     realFollowSourceId.value = props.sourceId;
     needInitDetail.value = false;
     formDrawerVisible.value = true;
@@ -259,5 +260,8 @@
 
     border-radius: @border-radius-medium;
     background: var(--text-n10);
+  }
+  :deep(.n-tabs) {
+    width: auto;
   }
 </style>
