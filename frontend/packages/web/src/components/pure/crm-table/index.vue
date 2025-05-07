@@ -17,7 +17,7 @@
     </template>
   </BatchAction>
   <n-data-table
-    v-bind="{ ...$attrs }"
+    v-bind="{ scrollX: scrollXWidth, ...$attrs }"
     v-model:checked-row-keys="checkedRowKeys"
     :columns="currentColumns as TableColumns"
     :row-key="getRowKey"
@@ -134,6 +134,7 @@
       if (column.key === SpecialColumnEnum.OPERATION) {
         return {
           ...column,
+          resizable: false,
           title() {
             const children = [h('div', t('common.operation'))];
             if (attrs.showSetting) {
@@ -262,6 +263,8 @@
   function handleCheck(rowKeys: DataTableRowKey[], rows: InternalRowData[]) {
     emit('rowKeyChange', rowKeys, rows);
   }
+
+  const scrollXWidth = computed(() => currentColumns.value.reduce((prev, curr) => prev + (curr.width as number), 0));
 </script>
 
 <style lang="less">

@@ -125,7 +125,7 @@
       title: t('system.message.receiver'),
       key: 'receiver',
       isTag: true,
-      width: 100,
+      width: 200,
       tagGroupProps: {
         labelKey: 'name',
       },
@@ -133,7 +133,7 @@
     {
       title: t('common.createTime'),
       key: 'createTime',
-      width: 150,
+      width: 200,
       sortOrder: false,
       sorter: true,
       ellipsis: {
@@ -146,7 +146,7 @@
       ellipsis: {
         tooltip: true,
       },
-      width: 100,
+      width: 200,
       render: (row: AnnouncementItemDetail) => {
         return h(CrmNameTooltip, { text: row.createUserName });
       },
@@ -162,7 +162,7 @@
     {
       title: t('common.updateUserName'),
       key: 'updateUser',
-      width: 150,
+      width: 200,
       ellipsis: {
         tooltip: true,
       },
@@ -172,7 +172,7 @@
     },
     {
       key: 'operation',
-      width: 120,
+      minWidth: 120,
       fixed: 'right',
       render: (row: AnnouncementItemDetail) =>
         h(CrmOperationButton, {
@@ -206,7 +206,6 @@
       tableKey: TableKeyEnum.SYSTEM_ANNOUNCEMENT_TABLE,
       showSetting: true,
       columns,
-      scrollX: 1800,
     },
     (row: AnnouncementItemDetail) => {
       return {

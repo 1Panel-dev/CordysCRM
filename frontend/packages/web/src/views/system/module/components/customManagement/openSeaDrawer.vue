@@ -182,7 +182,7 @@
     {
       title: t('common.status'),
       key: 'enable',
-      width: 120,
+      width: 150,
       sortOrder: false,
       sorter: true,
       filterOptions: [
@@ -208,7 +208,7 @@
     {
       title: t('opportunity.admin'),
       key: 'owners',
-      width: 100,
+      width: 200,
       isTag: true,
       tagGroupProps: {
         labelKey: 'name',
@@ -217,7 +217,7 @@
     {
       title: t('role.member'),
       key: 'members',
-      width: 150,
+      width: 200,
       isTag: true,
       tagGroupProps: {
         labelKey: 'name',
@@ -226,7 +226,7 @@
     {
       title: t('module.clue.autoRecycle'),
       key: 'auto',
-      width: 100,
+      width: 150,
       sortOrder: false,
       sorter: true,
       filterOptions: [
@@ -247,7 +247,7 @@
     {
       title: t('common.createTime'),
       key: 'createTime',
-      width: 100,
+      width: 200,
       ellipsis: {
         tooltip: true,
       },
@@ -255,9 +255,17 @@
       sorter: true,
     },
     {
+      title: t('common.creator'),
+      key: 'createUserName',
+      width: 200,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
       title: t('common.updateTime'),
       key: 'updateTime',
-      width: 100,
+      width: 200,
       ellipsis: {
         tooltip: true,
       },
@@ -267,11 +275,11 @@
     {
       title: t('common.updateUserName'),
       key: 'updateUserName',
-      width: 100,
+      width: 200,
     },
     {
       key: 'operation',
-      width: 80,
+      minWidth: 120,
       fixed: 'right',
       render: (row: CluePoolItem) =>
         h(CrmOperationButton, {
@@ -300,7 +308,6 @@
     tableKey: TableKeyEnum.MODULE_CLUE_POOL,
     showSetting: true,
     columns,
-    scrollX: 1600,
   });
 
   watch(

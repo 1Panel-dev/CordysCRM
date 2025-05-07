@@ -146,10 +146,13 @@
 
 // tooltip 最大限制
 .n-tooltip {
-  overflow-y: scroll;
   max-width: 300px;
-  max-height: 400px;
-  .crm-scroll-bar();
+  .n-popover__content {
+    @apply overflow-y-auto break-all;
+
+    max-height: 400px;
+    .crm-scroll-bar();
+  }
 }
 
 // 表格

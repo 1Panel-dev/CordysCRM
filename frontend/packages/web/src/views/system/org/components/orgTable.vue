@@ -462,11 +462,13 @@
   const columns: CrmDataTableColumn[] = [
     {
       type: 'selection',
+      fixed: 'left',
     },
     {
       title: t('org.userName'),
       key: 'userName',
       width: 200,
+      fixed: 'left',
       sortOrder: false,
       sorter: true,
       render: (row: MemberItem) => {
@@ -580,7 +582,7 @@
       ellipsis: {
         tooltip: true,
       },
-      width: 100,
+      width: 120,
     },
     {
       title: t('org.userEmail'),
@@ -588,7 +590,7 @@
       ellipsis: {
         tooltip: true,
       },
-      width: 100,
+      width: 120,
     },
     {
       title: t('org.department'),
@@ -596,7 +598,7 @@
       ellipsis: {
         tooltip: true,
       },
-      width: 100,
+      width: 120,
     },
     {
       title: t('org.directSuperior'),
@@ -604,7 +606,7 @@
       ellipsis: {
         tooltip: true,
       },
-      width: 100,
+      width: 120,
       showInTable: false,
       render: (row: MemberItem) => {
         return h(CrmNameTooltip, { text: row.supervisorName });
@@ -622,7 +624,7 @@
     {
       title: t('org.employeeNumber'),
       key: 'employeeId',
-      width: 100,
+      width: 120,
       ellipsis: {
         tooltip: true,
       },
@@ -631,7 +633,7 @@
     {
       title: t('org.position'),
       key: 'positionName',
-      width: 100,
+      width: 120,
       ellipsis: {
         tooltip: true,
       },
@@ -640,7 +642,7 @@
     {
       title: t('org.employeeType'),
       key: 'employeeType',
-      width: 80,
+      width: 120,
       ellipsis: {
         tooltip: true,
       },
@@ -649,7 +651,7 @@
     {
       title: t('org.workingCity'),
       key: 'workCityName',
-      width: 100,
+      width: 120,
       ellipsis: {
         tooltip: true,
       },
@@ -665,7 +667,7 @@
     {
       title: t('common.createTime'),
       key: 'createTime',
-      width: 100,
+      width: 120,
       ellipsis: {
         tooltip: true,
       },
@@ -673,7 +675,7 @@
     {
       title: t('common.creator'),
       key: 'createUser',
-      width: 100,
+      width: 120,
       render: (row: MemberItem) => {
         return h(CrmNameTooltip, { text: row.createUserName });
       },
@@ -681,7 +683,7 @@
     {
       title: t('common.updateTime'),
       key: 'updateTime',
-      width: 100,
+      width: 120,
       ellipsis: {
         tooltip: true,
       },
@@ -689,14 +691,14 @@
     {
       title: t('common.updateUserName'),
       key: 'updateUser',
-      width: 100,
+      width: 120,
       render: (row: MemberItem) => {
         return h(CrmNameTooltip, { text: row.updateUserName });
       },
     },
     {
       key: 'operation',
-      width: 150,
+      minWidth: 150,
       fixed: 'right',
       render: (row: MemberItem) =>
         h(CrmOperationButton, {
@@ -726,7 +728,6 @@
       tableKey: TableKeyEnum.SYSTEM_ORG_TABLE,
       showSetting: true,
       columns,
-      scrollX: 2000,
     },
     (row: MemberItem) => {
       return {

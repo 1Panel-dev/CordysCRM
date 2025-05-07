@@ -85,7 +85,7 @@
     {
       title: t('role.memberName'),
       key: 'userName',
-      width: 100,
+      width: 200,
       fixed: 'left',
       ellipsis: {
         tooltip: true,
@@ -120,7 +120,7 @@
     {
       title: t('role.department'),
       key: 'departmentId',
-      width: 100,
+      width: 200,
       ellipsis: {
         tooltip: true,
       },
@@ -138,12 +138,12 @@
       },
       sortOrder: false,
       sorter: true,
-      width: 100,
+      width: 200,
     },
     {
       title: t('role.role'),
       key: 'roles',
-      width: 100,
+      width: 200,
       isTag: true,
       tagGroupProps: {
         labelKey: 'name',
@@ -152,13 +152,13 @@
     {
       title: t('common.addTime'),
       key: 'createTime',
-      width: 160,
+      width: 200,
       sortOrder: false,
       sorter: true,
     },
     {
       key: 'operation',
-      width: 80,
+      minWidth: 100,
       fixed: 'right',
       render: (row) =>
         h(CrmRemoveButton, {
@@ -177,7 +177,6 @@
       tableKey: TableKeyEnum.ROLE_MEMBER,
       showSetting: true,
       columns,
-      scrollX: 1000,
       maxHeight: 600,
     },
     (item) => {

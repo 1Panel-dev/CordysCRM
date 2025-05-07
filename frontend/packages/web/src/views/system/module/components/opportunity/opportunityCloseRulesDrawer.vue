@@ -185,7 +185,7 @@
     {
       title: t('opportunity.admin'),
       key: 'owners',
-      width: 150,
+      width: 200,
       isTag: true,
       tagGroupProps: {
         labelKey: 'name',
@@ -194,7 +194,7 @@
     {
       title: t('role.member'),
       key: 'members',
-      width: 150,
+      width: 200,
       isTag: true,
       tagGroupProps: {
         labelKey: 'name',
@@ -222,12 +222,12 @@
       render: (row: OpportunityItem) => {
         return row.auto ? t('common.yes') : t('common.no');
       },
-      width: 100,
+      width: 150,
     },
     {
       title: t('common.createTime'),
       key: 'createTime',
-      width: 100,
+      width: 200,
       sortOrder: false,
       sorter: true,
       ellipsis: {
@@ -237,7 +237,7 @@
     {
       title: t('common.creator'),
       key: 'createUser',
-      width: 100,
+      width: 200,
       ellipsis: {
         tooltip: true,
       },
@@ -248,7 +248,7 @@
     {
       title: t('common.updateTime'),
       key: 'updateTime',
-      width: 100,
+      width: 200,
       sortOrder: false,
       sorter: true,
       ellipsis: {
@@ -258,7 +258,7 @@
     {
       title: t('common.updateUserName'),
       key: 'updateUser',
-      width: 100,
+      width: 200,
       ellipsis: {
         tooltip: true,
       },
@@ -268,7 +268,7 @@
     },
     {
       key: 'operation',
-      width: 100,
+      minWidth: 150,
       fixed: 'right',
       render: (row: OpportunityItem) =>
         h(CrmOperationButton, {
@@ -297,7 +297,6 @@
     tableKey: TableKeyEnum.MODULE_OPPORTUNITY_RULE_TABLE,
     showSetting: true,
     columns,
-    scrollX: 1600,
   });
 
   function handleCancel() {
