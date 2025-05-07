@@ -9,4 +9,10 @@
         </foreach>
         order by create_time desc limit 1
     </select>
+
+    <update id="updateCapacity" parameterType="io.cordys.crm.clue.domain.ClueCapacity">
+        update clue_capacity set scope_id = #{capacity.scopeId}, capacity = #{capacity.capacity},
+                                     update_user = #{capacity.updateUser}, update_time = #{capacity.updateTime}
+        where id = #{capacity.id}
+    </update>
 </mapper>

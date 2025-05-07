@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.mapper;
 
+import io.cordys.crm.customer.domain.CustomerCapacity;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -13,4 +14,10 @@ public interface ExtCustomerCapacityMapper {
 	 * @return 容量
 	 */
 	Integer getCapacityByScopeIds(@Param("ids") List<String> scopeIds, @Param("orgId") String organizationId);
+
+	/**
+	 * 更新容量
+	 * @param capacity 容量
+	 */
+	void updateCapacity(@Param("capacity") CustomerCapacity capacity);
 }

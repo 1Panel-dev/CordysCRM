@@ -6,6 +6,7 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.CustomerCapacity;
 import io.cordys.crm.customer.dto.CustomerCapacityDTO;
+import io.cordys.crm.customer.mapper.ExtCustomerCapacityMapper;
 import io.cordys.crm.system.dto.request.CapacityAddRequest;
 import io.cordys.crm.system.dto.request.CapacityUpdateRequest;
 import io.cordys.crm.system.service.UserExtendService;
@@ -28,6 +29,8 @@ public class CustomerCapacityService {
 	private UserExtendService userExtendService;
 	@Resource
 	private BaseMapper<CustomerCapacity> customerCapacityMapper;
+	@Resource
+	private ExtCustomerCapacityMapper extCustomerCapacityMapper;
 
 	/**
 	 * 获取客户库容设置
@@ -90,7 +93,7 @@ public class CustomerCapacityService {
 		oldCapacity.setCapacity(request.getCapacity());
 		oldCapacity.setUpdateTime(System.currentTimeMillis());
 		oldCapacity.setUpdateUser(currentUserId);
-		customerCapacityMapper.updateById(oldCapacity);
+		extCustomerCapacityMapper.updateCapacity(oldCapacity);
 	}
 
 	public void delete(String id) {

@@ -135,6 +135,10 @@ public enum BusinessModuleField {
      * 跟进时间
      */
     FOLLOW_RECORD_TIME("recordTime", "followTime", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
+    /**
+     * 跟进方式
+     */
+    FOLLOW_METHOD("recordMethod", "followMethod", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
     /*------ end: FOLLOW_UP_RECORD ------*/
 
 
@@ -146,15 +150,15 @@ public enum BusinessModuleField {
     /**
      * 客户id
      */
-    FOLLOW_PLAN_CUSTOMER("planCustomer", "customerId", FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_CUSTOMER("planCustomer", "customerId", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 商机id
      */
-    FOLLOW_PLAN_OPPORTUNITY("planOpportunity", "opportunityId", FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_OPPORTUNITY("planOpportunity", "opportunityId", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 线索id
      */
-    FOLLOW_PLAN_CLUE("planClue", "clueId", FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_CLUE("planClue", "clueId", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 责任人id
      */
@@ -171,6 +175,10 @@ public enum BusinessModuleField {
      * 预计沟通内容
      */
     FOLLOW_PLAN_CONTENT("planContent", "content", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
+    /**
+     * 跟进方式
+     */
+    FOLLOW_PLAN_METHOD("planMethod", "method", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
 
 
     /*------ end: FOLLOW_UP_PLAN ------*/

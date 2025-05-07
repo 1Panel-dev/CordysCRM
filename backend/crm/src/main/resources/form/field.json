@@ -642,7 +642,8 @@
       "editable": true,
       "fieldWidth": 0.5,
       "rules": [
-        {"key":  "required"}
+        {"key":  "required"},
+        {"key":  "unique"}
       ],
       "mobile": true
     },

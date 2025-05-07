@@ -16,5 +16,5 @@ public class ClueCapacity extends BaseModel {
 	private String scopeId;
 
 	@Schema(description = "库容")
-	private int capacity;
+	private Integer capacity;
 }
