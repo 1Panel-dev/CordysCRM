@@ -105,6 +105,26 @@
       enable: true,
     },
     {
+      label: t('module.clueManagement'),
+      key: ModuleConfigEnum.CLUE_MANAGEMENT,
+      icon: 'iconicon_clue',
+      groupList: [
+        {
+          label: t('module.clueFormSetting'),
+          key: 'newForm',
+        },
+        {
+          label: t('module.clue.cluePool'),
+          key: 'cluePool',
+        },
+        {
+          label: t('module.clue.capacitySet'),
+          key: 'capacitySet',
+        },
+      ],
+      enable: true,
+    },
+    {
       label: t('module.customerManagement'),
       key: ModuleConfigEnum.CUSTOMER_MANAGEMENT,
       icon: 'iconicon_customer',
@@ -128,26 +148,7 @@
       ],
       enable: true,
     },
-    {
-      label: t('module.clueManagement'),
-      key: ModuleConfigEnum.CLUE_MANAGEMENT,
-      icon: 'iconicon_clue',
-      groupList: [
-        {
-          label: t('module.clueFormSetting'),
-          key: 'newForm',
-        },
-        {
-          label: t('module.clue.cluePool'),
-          key: 'cluePool',
-        },
-        {
-          label: t('module.clue.capacitySet'),
-          key: 'capacitySet',
-        },
-      ],
-      enable: true,
-    },
+
     {
       label: t('module.businessManagement'),
       key: ModuleConfigEnum.BUSINESS_MANAGEMENT,

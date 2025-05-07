@@ -5,6 +5,12 @@ const { t } = useI18n();
 
 export const quickAccessList = [
   {
+    key: FormDesignKeyEnum.CLUE,
+    icon: 'newClue',
+    label: t('clueManagement.newClue'),
+    permission: ['CLUE_MANAGEMENT:ADD'],
+  },
+  {
     key: FormDesignKeyEnum.CUSTOMER,
     icon: 'newCustomer',
     label: t('customer.new'),
@@ -15,12 +21,6 @@ export const quickAccessList = [
     icon: 'newContact',
     label: t('customManagement.newContact'),
     permission: ['CUSTOMER_MANAGEMENT_CONTACT:ADD'],
-  },
-  {
-    key: FormDesignKeyEnum.CLUE,
-    icon: 'newClue',
-    label: t('clueManagement.newClue'),
-    permission: ['CLUE_MANAGEMENT:ADD'],
   },
   {
     key: FormDesignKeyEnum.BUSINESS,
