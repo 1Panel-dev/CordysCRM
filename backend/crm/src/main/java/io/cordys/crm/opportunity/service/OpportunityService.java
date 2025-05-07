@@ -309,7 +309,7 @@ public class OpportunityService {
      * @param request
      */
     public void transfer(OpportunityTransferRequest request, String userId, String orgId) {
-        extOpportunityMapper.batchTransfer(request);
+        extOpportunityMapper.batchTransfer(request, userId, System.currentTimeMillis());
         List<Opportunity> opportunityList = opportunityMapper.selectByIds(request.getIds());
         // 记录日志
         List<LogDTO> logs = new ArrayList<>();

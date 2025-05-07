@@ -334,7 +334,7 @@
 
     <update id="batchTransfer">
         update opportunity
-        set owner = #{request.owner}
+        set owner = #{request.owner}, stage = 'CREATE', last_stage = Null, update_user = #{userId}, update_time = #{updateTime}, status = 1
         where id in
         <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
             #{id}

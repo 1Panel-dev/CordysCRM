@@ -25,7 +25,7 @@ public interface ExtOpportunityMapper {
 
     List<String> selectByProducts(@Param("request") OpportunityAddRequest request, @Param("orgId") String orgId, @Param("id") String id);
 
-    void batchTransfer(@Param("request") OpportunityTransferRequest request);
+    void batchTransfer(@Param("request") OpportunityTransferRequest request, @Param("userId") String userId, @Param("updateTime") long updateTime);
 
     OpportunityDetailResponse getDetail(@Param("id") String id);
 
