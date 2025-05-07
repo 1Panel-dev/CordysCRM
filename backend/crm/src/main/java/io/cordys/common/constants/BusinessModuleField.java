@@ -52,7 +52,7 @@ public enum BusinessModuleField {
     /**
      * 联系人客户id
      */
-    CUSTOMER_CONTACT_CUSTOMER("contactCustomer", "customerId", FormKey.CONTACT.getKey()),
+    CUSTOMER_CONTACT_CUSTOMER("contactCustomer", "customerId", Set.of("rules"), FormKey.CONTACT.getKey()),
     /**
      * 联系人责任人
      */
@@ -64,7 +64,7 @@ public enum BusinessModuleField {
     /**
      * 联系人电话
      */
-    CUSTOMER_CONTACT_PHONE("contactPhone", "phone", FormKey.CONTACT.getKey()),
+    CUSTOMER_CONTACT_PHONE("contactPhone", "phone", Set.of("rules"), FormKey.CONTACT.getKey()),
     /*------ end: CUSTOMER_MANAGEMENT_CONTACT ------*/
 
 
