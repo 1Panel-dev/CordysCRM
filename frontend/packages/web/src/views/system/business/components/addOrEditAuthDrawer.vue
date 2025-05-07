@@ -21,14 +21,14 @@
           v-model:value="form.name"
           class="!w-[80%]"
           allow-clear
-          :max-length="255"
+          :maxlength="255"
           :placeholder="t('common.pleaseInput')"
         />
       </n-form-item>
       <n-form-item path="description" :label="t('common.desc')">
         <n-input
           v-model:value="form.description"
-          :max-length="1000"
+          :maxlength="1000"
           class="!w-[80%]"
           type="textarea"
           :placeholder="t('common.pleaseInput')"
@@ -46,7 +46,7 @@
           <n-input
             v-model:value="form.configuration[item.key]"
             allow-clear
-            :max-length="255"
+            :maxlength="255"
             :placeholder="item.placeholder ?? t('common.pleaseInput')"
             v-bind="item.inputProps"
           />

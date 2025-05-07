@@ -41,7 +41,7 @@
           <n-input
             v-model:value="userInfo.username"
             class="login-input"
-            :max-length="64"
+            :maxlength="64"
             size="large"
             :placeholder="
               userInfo.authenticate !== 'LOCAL'
@@ -57,7 +57,7 @@
             class="login-password-input"
             :placeholder="t('login.form.password.placeholder')"
             clearable
-            :max-length="64"
+            :maxlength="64"
             size="large"
             show-password-on="click"
             @keydown.enter="handleSubmit"

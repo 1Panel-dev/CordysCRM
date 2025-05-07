@@ -16,7 +16,7 @@
         require-mark-placement="left"
       >
         <n-form-item require-mark-placement="left" label-placement="left" path="name" :label="t('org.userName')">
-          <n-input v-model:value="form.name" type="text" :placeholder="t('common.pleaseInput')" :max-length="255" />
+          <n-input v-model:value="form.name" type="text" :placeholder="t('common.pleaseInput')" :maxlength="255" />
         </n-form-item>
         <n-form-item require-mark-placement="left" label-placement="left" path="gender" :label="t('org.gender')">
           <n-radio-group v-model:value="form.gender" name="radiogroup">
@@ -79,7 +79,7 @@
             v-model:value="form.employeeId"
             type="text"
             :placeholder="t('common.pleaseInput')"
-            :max-length="255"
+            :maxlength="255"
           />
         </n-form-item>
         <CrmExpandButton v-model:expand="showForm">
@@ -116,7 +116,7 @@
               v-model:value="form.position"
               type="text"
               :placeholder="t('common.pleaseInput')"
-              :max-length="255"
+              :maxlength="255"
             />
           </n-form-item>
           <n-form-item

@@ -38,7 +38,7 @@
                 v-if="model.type === FieldTypeEnum.INPUT"
                 v-model:value="element[model.path]"
                 allow-clear
-                :max-length="255"
+                :maxlength="255"
                 :placeholder="t('common.pleaseInput')"
                 :disabled="!element.editing"
                 v-bind="model.inputProps"

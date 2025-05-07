@@ -72,7 +72,7 @@
               <n-input
                 v-model:value="pageConfig.slogan"
                 allow-clear
-                :max-length="255"
+                :maxlength="255"
                 :placeholder="t('common.pleaseInput')"
               />
               <div class="text-[12px] text-[var(--text-n4)]">{{ t('system.config.page.sloganTip') }}</div>
@@ -81,7 +81,7 @@
               <n-input
                 v-model:value="pageConfig.title"
                 allow-clear
-                :max-length="255"
+                :maxlength="255"
                 :placeholder="t('common.pleaseInput')"
               />
               <div class="text-[12px] text-[var(--text-n4)]">{{ t('system.config.page.titleTip') }}</div>
@@ -153,7 +153,7 @@
               <n-input
                 v-model:value="pageConfig.platformName"
                 allow-clear
-                :max-length="255"
+                :maxlength="255"
                 :placeholder="t('common.pleaseInput')"
               />
               <div class="text-[12px] text-[var(--text-n4)]">{{ t('system.config.page.platformNameTip') }}</div>
@@ -162,7 +162,7 @@
               <n-input
                 v-model:value="pageConfig.helpDoc"
                 allow-clear
-                :max-length="255"
+                :maxlength="255"
                 :placeholder="t('common.pleaseInput')"
               />
               <div class="text-[12px] text-[var(--text-n4)]">{{ t('system.config.page.helpDocTip') }}</div>

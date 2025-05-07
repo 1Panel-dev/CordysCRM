@@ -3,7 +3,7 @@
     v-if="isEditing"
     ref="inputRef"
     v-model:value="inputValue"
-    :max-length="255"
+    :maxlength="255"
     clearable
     @keydown.enter="confirmEdit"
     @blur="handleBlur"

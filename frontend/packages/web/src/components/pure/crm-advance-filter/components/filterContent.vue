@@ -102,7 +102,7 @@
               v-model:value="item.value"
               allow-clear
               :disabled="isValueDisabled(item)"
-              :max-length="255"
+              :maxlength="255"
               :placeholder="t('advanceFilter.inputPlaceholder')"
               v-bind="item.inputProps"
             />
