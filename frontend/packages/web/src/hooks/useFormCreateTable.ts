@@ -427,6 +427,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               sortOrder: false,
               sorter: true,
               fixed: 'left',
+              columnSelectorDisabled: true,
               render: props.specialRender?.[field.businessKey],
             };
           }

@@ -228,6 +228,7 @@
       },
       sortOrder: false,
       sorter: true,
+      columnSelectorDisabled: true,
     },
     {
       title: t('role.department'),

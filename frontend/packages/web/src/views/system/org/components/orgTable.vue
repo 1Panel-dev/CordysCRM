@@ -471,6 +471,7 @@
       fixed: 'left',
       sortOrder: false,
       sorter: true,
+      columnSelectorDisabled: true,
       render: (row: MemberItem) => {
         return h(
           CrmEditableText,

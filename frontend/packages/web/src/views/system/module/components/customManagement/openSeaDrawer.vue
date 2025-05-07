@@ -178,6 +178,7 @@
       ellipsis: {
         tooltip: true,
       },
+      columnSelectorDisabled: true,
     },
     {
       title: t('common.status'),

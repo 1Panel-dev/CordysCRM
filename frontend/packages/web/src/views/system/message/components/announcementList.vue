@@ -101,6 +101,7 @@
       ellipsis: {
         tooltip: true,
       },
+      columnSelectorDisabled: true,
     },
     {
       title: t('system.message.content'),

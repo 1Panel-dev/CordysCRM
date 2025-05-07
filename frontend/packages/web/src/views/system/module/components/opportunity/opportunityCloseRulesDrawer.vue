@@ -151,6 +151,7 @@
       width: 200,
       sortOrder: false,
       sorter: true,
+      columnSelectorDisabled: true,
     },
     {
       title: t('common.status'),

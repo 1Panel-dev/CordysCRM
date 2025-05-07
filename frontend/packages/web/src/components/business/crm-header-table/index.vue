@@ -50,6 +50,7 @@
       render: (row: HeaderHistoryItem) => {
         return h(CrmNameTooltip, { text: row.ownerName });
       },
+      columnSelectorDisabled: true,
     },
     {
       title: t('opportunity.department'),

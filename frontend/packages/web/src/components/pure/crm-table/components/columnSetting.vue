@@ -22,9 +22,26 @@
           {{ t('crmTable.columnSetting.resetDefault') }}
         </n-button>
       </div>
-      <VueDraggable v-model="cachedColumns" handle=".sort-handle" @change="handleChange">
+      <div
+        v-for="element in notAllowSortCachedColumns"
+        :key="element.key"
+        class="mb-[4px] flex w-[175px] items-center justify-between py-[3px]"
+      >
+        <div class="flex flex-1 items-center overflow-hidden pl-[12px]">
+          <span class="one-line-text ml-[8px] text-[12px]">
+            {{ t(element.title as string) }}
+          </span>
+        </div>
+        <n-switch
+          v-model:value="element.showInTable"
+          :disabled="element.columnSelectorDisabled"
+          size="small"
+          @update:value="handleChange"
+        />
+      </div>
+      <VueDraggable v-model="allowSortCachedColumns" handle=".sort-handle" @change="handleChange">
         <div
-          v-for="element in cachedColumns"
+          v-for="element in allowSortCachedColumns"
           :key="element.key"
           class="mb-[4px] flex w-[175px] items-center justify-between py-[3px]"
         >
@@ -65,11 +82,14 @@
 
   const popoverVisible = ref(false);
   const hasChange = ref(false); // 是否有改动
-  const cachedColumns = ref<CrmDataTableColumn[]>([]);
+
+  const notAllowSortCachedColumns = ref<CrmDataTableColumn[]>([]);
+  const allowSortCachedColumns = ref<CrmDataTableColumn[]>([]);
 
   async function getCachedColumns() {
     const columns = await tableStore.getCanSetColumns(props.tableKey);
-    cachedColumns.value = columns;
+    notAllowSortCachedColumns.value = columns.filter((e) => e.columnSelectorDisabled);
+    allowSortCachedColumns.value = columns.filter((e) => !e.columnSelectorDisabled);
   }
 
   onBeforeMount(() => {
@@ -90,7 +110,10 @@
   async function handleUpdateShow(show: boolean) {
     if (!show) {
       if (hasChange.value) {
-        await tableStore.setColumns(props.tableKey, [...cachedColumns.value]);
+        await tableStore.setColumns(props.tableKey, [
+          ...notAllowSortCachedColumns.value,
+          ...allowSortCachedColumns.value,
+        ]);
         emit('changeColumnsSetting');
         hasChange.value = false;
       }

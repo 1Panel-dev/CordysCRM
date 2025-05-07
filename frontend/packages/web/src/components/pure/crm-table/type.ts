@@ -28,7 +28,8 @@ export type CrmDataTableColumn<T = any> = (
   | TableSelectionColumn<T>
   | TableExpandColumn<T>
 ) & {
-  showInTable?: boolean; // 是否展示在表格上
+  showInTable?: boolean; // 是否展示在表格上、
+  columnSelectorDisabled?: boolean; // 表头字段不可拖拽排序
   key?: DataTableColumnKey; // 这一列的 key，不可重复
   title?: string | (() => VNodeChild);
   sorter?: boolean | 'default'; // true是只展示图标，'default'是使用内置排序
