@@ -100,7 +100,7 @@ public class PersonalCenterService {
         String email = emailDTO.getEmail();
         String redisKey = PREFIX + email;
         if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(redisKey))) {
-            throw new GenericException(Translator.get("email_setting_reset_error"));
+            stringRedisTemplate.delete(redisKey); // 验证通过后删除验证码
         }
         String code = generateCode();
         saveCode(email, code);
