@@ -10,6 +10,7 @@ import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.dto.RoleDataScopeDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.permission.Permission;
+import io.cordys.common.permission.PermissionCache;
 import io.cordys.common.permission.PermissionDefinitionItem;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
@@ -26,6 +27,7 @@ import io.cordys.crm.system.dto.request.RoleUpdateRequest;
 import io.cordys.crm.system.dto.response.RoleGetResponse;
 import io.cordys.crm.system.dto.response.RoleListResponse;
 import io.cordys.crm.system.mapper.ExtRoleMapper;
+import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -58,6 +60,8 @@ public class RoleService {
     @Resource
     private ExtRoleMapper extRoleMapper;
     @Resource
+    private ExtUserRoleMapper extUserRoleMapper;
+    @Resource
     private BaseMapper<UserRole> userRoleMapper;
     @Resource
     private BaseMapper<RoleScopeDept> roleScopeDeptMapper;
@@ -65,6 +69,8 @@ public class RoleService {
     private BaseMapper<RolePermission> rolePermissionMapper;
     @Resource
     private BaseService baseService;
+    @Resource
+    private PermissionCache permissionCache;
 
     public List<RoleListResponse> list(String orgId) {
         Role role = new Role();
@@ -181,7 +187,7 @@ public class RoleService {
     }
 
     @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.UPDATE, resourceId = "{#request.id}")
-    public Role update(RoleUpdateRequest request, String userId) {
+    public Role update(RoleUpdateRequest request, String userId, String orgId) {
         Role originRole = roleMapper.selectByPrimaryKey(request.getId());
         if (originRole == null) {
             throw new GenericException(Translator.get("role.not_exist"));
@@ -222,6 +228,8 @@ public class RoleService {
         // 更新权限设置
         updatePermissionSetting(request.getPermissions(), role.getId(), userId);
 
+        clearPermissionCacheByRoleId(role.getId(), orgId);
+
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceName(roleGetResponse.getName())
@@ -231,6 +239,14 @@ public class RoleService {
         );
 
         return roleGetResponse;
+    }
+
+    private void clearPermissionCacheByRoleId(String roleId, String orgId) {
+        List<String> userIds = extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId));
+        userIds.forEach(userId -> {
+            // 清除用户的权限缓存
+            permissionCache.clearCache(userId, orgId);
+        });
     }
 
     private void deleteRoleScopeDeptByRoleId(String roleId) {
@@ -262,7 +278,7 @@ public class RoleService {
     }
 
     @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.DELETE, resourceId = "{#id}")
-    public void delete(String id) {
+    public void delete(String id, String orgId) {
         Role role = roleMapper.selectByPrimaryKey(id);
         if (role == null) {
             throw new GenericException(Translator.get("role.not_exist"));
@@ -276,6 +292,10 @@ public class RoleService {
         // 删除与部门的关联关系
         deleteRoleScopeDeptByRoleId(id);
 
+        clearPermissionCacheByRoleId(role.getId(), orgId);
+        // 删除与用户的关联关系
+        deleteUserRoleByRoleId(id);
+
         // 设置操作对象
         OperationLogContext.setResourceName(role.getName());
     }
@@ -284,6 +304,12 @@ public class RoleService {
         RolePermission example = new RolePermission();
         example.setRoleId(id);
         rolePermissionMapper.delete(example);
+    }
+
+    private void deleteUserRoleByRoleId(String id) {
+        UserRole example = new UserRole();
+        example.setRoleId(id);
+        userRoleMapper.delete(example);
     }
 
     public List<PermissionDefinitionItem> getPermissionSetting(String id) {
@@ -482,12 +508,14 @@ public class RoleService {
         return roleMapper.selectByIds(ids.toArray(new String[0]));
     }
 
-    public List<RoleDataScopeDTO> getRoleOptions(List<String> roleIds) {
+    public List<RoleDataScopeDTO> getRoleOptions(String userId, String orgId) {
+        List<String> roleIds = getRoleIdsByUserId(userId);
         if (CollectionUtils.isEmpty(roleIds)) {
             return List.of();
         }
         List<Role> roles = getByIds(roleIds);
         return roles.stream()
+                .filter(role -> StringUtils.equals(role.getOrganizationId(), orgId))
                 .map(role -> {
                     role = translateInternalRole(role);
                     return BeanUtils.copyBean(new RoleDataScopeDTO(), role);

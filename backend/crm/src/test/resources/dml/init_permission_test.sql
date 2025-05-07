@@ -8,7 +8,7 @@ VALUES ('permission_test', 'permission_test', 'permission_test@cordys-crm.io', M
 INSERT INTO `sys_role`(id, name, internal, data_scope, create_time, update_time, create_user, update_user,
                        description, organization_id)
 VALUES('permission_test', 'permission_test', 0, 'ALL', UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin',
-       'permission_test', '1');
+       'permission_test', '100001');
 
 -- 初始化用户和角色的关系
 INSERT INTO `sys_user_role` (id, role_id, user_id, create_time, update_time, create_user, update_user)

@@ -2,11 +2,13 @@ package io.cordys.crm.system.service;
 
 import io.cordys.common.dto.RoleDataScopeDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.permission.PermissionCache;
 import io.cordys.common.request.LoginRequest;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.ServletUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.constants.LoginType;
 import io.cordys.crm.system.domain.LoginLog;
 import io.cordys.crm.system.domain.OrganizationUser;
@@ -46,6 +48,8 @@ public class UserLoginService {
     private BaseMapper<LoginLog> loginLogMapper;
     @Resource
     private BaseMapper<OrganizationUser> organizationUserBaseMapper;
+    @Resource
+    private PermissionCache permissionCache;
 
     public UserDTO authenticateUser(String userId) {
         UserDTO userDTO = extUserMapper.selectByPhoneOrEmail(userId);
@@ -64,12 +68,14 @@ public class UserLoginService {
             }
         }
 
-        List<String> roleIds = roleService.getRoleIdsByUserId(userDTO.getId());
-        List<RoleDataScopeDTO> roleOptions = roleService.getRoleOptions(roleIds);
+        String organizationId = OrganizationContext.getOrganizationId();
+
+        List<RoleDataScopeDTO> roleOptions = roleService.getRoleOptions(userDTO.getId(), organizationId);
+        userDTO.setLastOrganizationId(organizationId);
         // 设置角色信息，供前端展示
         userDTO.setRoles(roleOptions);
         // 设置权限
-        userDTO.setPermissionIds(roleService.getPermissionIds(roleIds));
+        userDTO.setPermissionIds(permissionCache.getPermissionIds(userId, organizationId));
         // 设置组织ID
         userDTO.setOrganizationIds(getOrgIdsByUserId(userDTO.getId()));
         return userDTO;

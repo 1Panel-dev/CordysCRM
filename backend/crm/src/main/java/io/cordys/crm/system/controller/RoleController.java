@@ -70,14 +70,14 @@ public class RoleController {
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_UPDATE)
     @Operation(summary = "更新角色")
     public Role update(@Validated @RequestBody RoleUpdateRequest request){
-        return roleService.update(request, SessionUtils.getUserId());
+        return roleService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "删除角色")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_DELETE)
     public void delete(@PathVariable String id){
-        roleService.delete(id);
+        roleService.delete(id, OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/permission/setting")
@@ -127,20 +127,20 @@ public class RoleController {
     @Operation(summary = "角色关联添加用户")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_ADD_USER)
     public void relateUser(@Validated @RequestBody RoleUserRelateRequest request) {
-        userRoleService.relateUser(request, SessionUtils.getUserId());
+        userRoleService.relateUser(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/user/delete/{id}")
     @Operation(summary = "角色移除用户")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_REMOVE_USER)
     public void deleteRoleUser(@PathVariable String id) {
-        userRoleService.deleteRoleUser(id);
+        userRoleService.deleteRoleUser(id, OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/user/batch/delete")
     @Operation(summary = "角色批量移除用户")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_REMOVE_USER)
     public void batchDeleteRoleUser(@RequestBody List<String> ids) {
-        userRoleService.batchDeleteRoleUser(ids);
+        userRoleService.batchDeleteRoleUser(ids, OrganizationContext.getOrganizationId());
     }
 }

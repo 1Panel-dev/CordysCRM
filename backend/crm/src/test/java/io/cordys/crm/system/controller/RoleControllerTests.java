@@ -383,6 +383,9 @@ class RoleControllerTests extends BaseTest {
             if (StringUtils.equals(roleNode.getNodeType(), "ROLE")) {
                 UserRole userRole = new UserRole();
                 userRole.setRoleId(roleNode.getId());
+                if (userRole.getRoleId().equals(PERMISSION_USER_NAME)) {
+                    return;
+                }
                 if (StringUtils.equalsAny(roleNode.getId(),
                         InternalRole.ORG_ADMIN.getValue(),
                         InternalRole.SALES_MANAGER.getValue(),

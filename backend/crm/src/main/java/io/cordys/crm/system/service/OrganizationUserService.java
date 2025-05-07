@@ -11,6 +11,7 @@ import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.permission.PermissionCache;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.*;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
@@ -95,6 +96,8 @@ public class OrganizationUserService {
     private ExtCustomerMapper extCustomerMapper;
     @Resource
     private ExtClueMapper extClueMapper;
+    @Resource
+    private PermissionCache permissionCache;
 
     /**
      * 员工列表查询
@@ -316,7 +319,7 @@ public class OrganizationUserService {
      * @param operatorId
      */
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, operator = "{#operatorId}")
-    public void updateUser(UserUpdateRequest request, String operatorId) {
+    public void updateUser(UserUpdateRequest request, String operatorId, String orgId) {
         UserResponse oldUser = getUserDetail(request.getId());
         //邮箱和手机号唯一性校验
         checkEmailAndPhone(request.getEmail(), request.getPhone(), oldUser.getUserId());
@@ -325,7 +328,7 @@ public class OrganizationUserService {
         //update user base
         updateUserBaseData(request, operatorId, oldUser.getUserId());
         //update user role
-        updateUserRole(request.getRoleIds(), oldUser, operatorId);
+        updateUserRole(request.getRoleIds(), oldUser, operatorId, orgId);
         if (!request.getEnable()) {
             SessionUtils.kickOutUser(oldUser.getUserId());
         }
@@ -346,13 +349,14 @@ public class OrganizationUserService {
      * @param oldUser
      * @param operatorId
      */
-    private void updateUserRole(List<String> roleIds, UserResponse oldUser, String operatorId) {
+    private void updateUserRole(List<String> roleIds, UserResponse oldUser, String operatorId, String orgId) {
         Optional.ofNullable(roleIds).ifPresent(ids -> {
             extUserRoleMapper.deleteUserRoleByUserId(oldUser.getUserId());
         });
         if (CollectionUtils.isNotEmpty(roleIds)) {
             addUserRole(roleIds, oldUser.getUserId(), operatorId);
         }
+        permissionCache.clearCache(oldUser.getUserId(), orgId);
     }
 
     /**
@@ -802,7 +806,7 @@ public class OrganizationUserService {
             throw new GenericException(Translator.get("user_resource_exist"));
         }
 
-
+        permissionCache.clearCache(user.getUserId(), orgId);
     }
 
 

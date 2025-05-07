@@ -1,6 +1,8 @@
 package io.cordys.common.permission;
 
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.util.CommonBeanFactory;
+import io.cordys.context.OrganizationContext;
 import io.cordys.security.SessionUser;
 import io.cordys.security.SessionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,8 +15,11 @@ import java.util.Set;
  */
 public class PermissionUtils {
     public static boolean hasPermission(String permission) {
+        PermissionCache permissionCache = CommonBeanFactory.getBean(PermissionCache.class);
+        String userId = SessionUtils.getUserId();
+        String organizationId = OrganizationContext.getOrganizationId();
+        Set<String> permissionIds = permissionCache.getPermissionIds(userId, organizationId);
         SessionUser user = Objects.requireNonNull(SessionUtils.getUser());
-        Set<String> permissionIds = user.getPermissionIds();
         if (StringUtils.equals(InternalUser.ADMIN.getValue(), user.getId())) {
             // admin 用户拥有所有权限
             return true;

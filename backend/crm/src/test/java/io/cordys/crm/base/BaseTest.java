@@ -5,6 +5,7 @@ import io.cordys.common.constants.InternalUser;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.exception.IResultCode;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.permission.PermissionCache;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
@@ -73,6 +74,8 @@ public abstract class BaseTest {
     protected String getBasePath() {
         return StringUtils.EMPTY;
     }
+    @Resource
+    protected PermissionCache permissionCache;
 
     @BeforeEach
     public void login() throws Exception {
@@ -335,10 +338,8 @@ public abstract class BaseTest {
      *
      * @throws Exception
      */
-    private void refreshUserPermission() throws Exception {
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/is-login");
-        requestBuilder = setRequestBuilderHeader(requestBuilder, permissionAuthInfo);
-        mockMvc.perform(requestBuilder);
+    private void refreshUserPermission() {
+        permissionCache.clearCache(PERMISSION_USER_NAME, DEFAULT_ORGANIZATION_ID);
     }
 
     @Data

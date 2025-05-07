@@ -68,7 +68,7 @@ public class OrganizationUserController {
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_UPDATE)
     @Operation(summary = "用户(员工)-更新")
     public void updateUser(@Validated @RequestBody UserUpdateRequest request) {
-        organizationUserService.updateUser(request, SessionUtils.getUserId());
+        organizationUserService.updateUser(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

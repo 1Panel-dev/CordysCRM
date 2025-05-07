@@ -3,6 +3,7 @@ package io.cordys.crm.system.service;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.dto.RoleUserTreeNode;
+import io.cordys.common.permission.PermissionCache;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.SubListUtils;
 import io.cordys.crm.system.domain.Department;
@@ -51,6 +52,8 @@ public class UserRoleService {
     private BaseMapper<Department> departmentMapper;
     @Resource
     private BaseMapper<UserExtend> userExtendMapper;
+    @Resource
+    private PermissionCache permissionCache;
 
     public void delete(String id) {
         userRoleMapper.deleteByPrimaryKey(id);
@@ -144,7 +147,7 @@ public class UserRoleService {
         return BaseTreeNode.buildTree(treeNodes);
     }
 
-    public void relateUser(RoleUserRelateRequest request, String operator) {
+    public void relateUser(RoleUserRelateRequest request, String operator, String orgId) {
         Set<String> userSet = new HashSet<>();
         if (CollectionUtils.isNotEmpty(request.getRoleIds())) {
             userSet.addAll(extUserRoleMapper.getUserIdsByRoleIds(request.getRoleIds()));
@@ -174,15 +177,23 @@ public class UserRoleService {
                     })
                     .collect(Collectors.toList());
             userRoleMapper.batchInsert(userRoles);
+            userRoles.forEach(u -> {
+                // 清除权限缓存
+                permissionCache.clearCache(u.getUserId(), orgId);
+            });
         });
     }
 
-    public void deleteRoleUser(String id) {
+    public void deleteRoleUser(String id, String orgId) {
+        UserRole userRole = userRoleMapper.selectByPrimaryKey(id);
         userRoleMapper.deleteByPrimaryKey(id);
+        permissionCache.clearCache(userRole.getUserId(), orgId);
     }
 
-    public void batchDeleteRoleUser(List<String> ids) {
+    public void batchDeleteRoleUser(List<String> ids, String orgId) {
+        List<UserRole> userRoles = userRoleMapper.selectByIds(ids);
         extUserRoleMapper.deleteByIds(ids);
+        userRoles.forEach(userRole -> permissionCache.clearCache(userRole.getUserId(), orgId));
     }
 
     public List<RoleUserOptionResponse> getUserOptionByRoleId(String organizationId, String roleId) {
