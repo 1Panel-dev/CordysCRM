@@ -10,13 +10,13 @@ public enum ModuleKey {
 	 */
 	HOME("home"),
 	/**
-	 * 客户管理
-	 */
-	CUSTOMER("customer"),
-	/**
 	 * 线索管理
 	 */
 	CLUE("clue"),
+	/**
+	 * 客户管理
+	 */
+	CUSTOMER("customer"),
 	/**
 	 * 商机管理
 	 */
