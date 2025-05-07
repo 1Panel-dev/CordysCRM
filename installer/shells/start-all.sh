@@ -51,7 +51,7 @@ main() {
     fi
 
     # 检查Redis配置并启动
-    redisHost=$(grep 'spring.data.redis.host:' /opt/cordys/conf/cordys-crm.properties)
+    redisHost=$(grep 'spring.data.redis.host' /opt/cordys/conf/cordys-crm.properties)
     if [[ "${redisHost}" == *"127.0.0.1"* ]]; then
         log_info "检测到本地 Redis 配置"
         start_redis
