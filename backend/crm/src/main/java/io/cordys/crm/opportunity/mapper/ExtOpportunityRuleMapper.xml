@@ -22,6 +22,7 @@
         <foreach collection="ids" item="id" open="(" close=")" separator="or">
             scope_id like concat('%', #{id}, '%')
         </foreach>
+        and enable = 1
     </select>
 
     <sql id="sort">
