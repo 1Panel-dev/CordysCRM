@@ -209,9 +209,11 @@
   }
 
   function handlePageChange(page: number) {
+    checkedRowKeys.value = [];
     emit('pageChange', page);
   }
   function handlePageSizeChange(pageSize: number) {
+    checkedRowKeys.value = [];
     emit('pageSizeChange', pageSize);
   }
 

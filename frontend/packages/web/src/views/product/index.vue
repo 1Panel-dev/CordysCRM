@@ -49,6 +49,7 @@
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
@@ -212,6 +213,11 @@
           groupList: operationGroupList,
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
+    },
+    specialRender: {
+      name: (row: ProductListItem) => {
+        return h(CrmNameTooltip, { text: row.name });
+      },
     },
   });
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;

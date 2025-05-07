@@ -321,26 +321,33 @@
         permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
     ];
-    return [StageResultEnum.FAIL, StageResultEnum.SUCCESS].includes(row.stage as StageResultEnum)
-      ? transferAction
-      : [
-          {
-            label: t('common.edit'),
-            key: 'edit',
-            permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-          },
-          {
-            label: t('opportunity.followUp'),
-            key: 'followUp',
-            permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-          },
-          ...transferAction,
-          {
-            label: t('common.delete'),
-            key: 'delete',
-            permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
-          },
-        ];
+
+    if (row.stage === StageResultEnum.FAIL) {
+      return transferAction;
+    }
+
+    if (row.stage === StageResultEnum.SUCCESS) {
+      return [];
+    }
+
+    return [
+      {
+        label: t('common.edit'),
+        key: 'edit',
+        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+      },
+      {
+        label: t('opportunity.followUp'),
+        key: 'followUp',
+        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+      },
+      ...transferAction,
+      {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+      },
+    ];
   }
 
   const showCustomerOverviewDrawer = ref(false);

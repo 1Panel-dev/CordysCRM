@@ -126,27 +126,34 @@
         permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
     ];
-    return showAction.value
-      ? [
-          {
-            label: t('common.edit'),
-            key: 'edit',
-            text: false,
-            ghost: true,
-            class: 'n-btn-outline-primary',
-            permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-          },
-          ...transferAction,
-          {
-            label: t('common.delete'),
-            key: 'delete',
-            text: false,
-            ghost: true,
-            class: 'n-btn-outline-primary',
-            permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
-          },
-        ]
-      : transferAction;
+
+    if (currentStatus.value === StageResultEnum.FAIL) {
+      return transferAction;
+    }
+
+    if (currentStatus.value === StageResultEnum.SUCCESS) {
+      return [];
+    }
+
+    return [
+      {
+        label: t('common.edit'),
+        key: 'edit',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+      },
+      ...transferAction,
+      {
+        label: t('common.delete'),
+        key: 'delete',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+      },
+    ];
   });
 
   const baseStepList = computed(() => [

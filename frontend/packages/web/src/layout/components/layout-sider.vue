@@ -36,6 +36,7 @@
                     color: 'var(--primary-6)',
                     textColor: 'var(--primary-8)',
                   }"
+                  class="max-w-[110px]"
                 >
                   {{
                     userStore.userInfo.id === 'admin' ? t('common.admin') : (userStore.userInfo.roles[0] as any)?.name
