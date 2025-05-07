@@ -79,7 +79,7 @@
             <n-date-picker
               v-else-if="item.type === FieldTypeEnum.DATE_TIME"
               v-model:value="item.value"
-              :type="item.operator === OperatorEnum.BETWEEN ? 'daterange' : 'datetime'"
+              :type="item.operator === OperatorEnum.BETWEEN ? 'datetimerange' : 'datetime'"
               clearable
               :disabled="isValueDisabled(item)"
               class="w-full"

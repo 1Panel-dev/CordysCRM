@@ -463,6 +463,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               width: 180,
               key: field.businessKey || field.id,
               render: (row: any) => formatTimeValue(row[field.businessKey || field.id], field.dateType),
+              sortOrder: false,
+              sorter: true,
             };
           }
           if (field.type === FieldTypeEnum.INPUT_NUMBER) {
@@ -471,6 +473,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               width: 100,
               key: field.businessKey || field.id,
               render: (row: any) => formatNumberValue(row[field.businessKey || field.id], field),
+              sortOrder: false,
+              sorter: true,
             };
           }
           if ([FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(field.type)) {
@@ -491,7 +495,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               tooltip: true,
             },
             sortOrder: false,
-            sorter: ![FieldTypeEnum.TEXTAREA, FieldTypeEnum.LOCATION, FieldTypeEnum.PICTURE].includes(field.type),
+            sorter: [FieldTypeEnum.INPUT, FieldTypeEnum.PHONE].includes(field.type),
           };
         });
       columns = [
