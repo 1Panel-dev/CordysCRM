@@ -273,7 +273,7 @@
     <select id="getSimilarClueList" resultType="io.cordys.crm.clue.dto.response.ClueRepeatListResponse">
         select c.id, c.name, c.owner, c.stage, su.name as ownerName from clue c
         left join sys_user su on c.owner = su.id
-        where c.name like concat('%', #{customerName}, '%') and c.name != #{customerName} and c.organization_id = #{orgId}  
+        where c.name like concat('%', #{customerName}, '%') and  c.organization_id = #{orgId}
         order by c.create_time desc 
     </select>
 
