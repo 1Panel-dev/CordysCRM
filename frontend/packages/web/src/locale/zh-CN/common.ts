@@ -285,4 +285,5 @@ export default {
   'common.required': '必填',
   'common.onlyOne': '不允许重复值',
   'common.dayUnit': '天',
+  'common.optionNotExist': '选项不存在',
 };

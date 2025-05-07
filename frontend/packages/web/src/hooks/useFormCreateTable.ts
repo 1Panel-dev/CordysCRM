@@ -538,7 +538,10 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       const businessFieldAttr: Record<string, any> = {};
       const customFieldAttr: Record<string, any> = {};
       businessFieldIds.value.forEach((fieldId) => {
-        const options = originalData?.optionMap?.[fieldId];
+        const options = originalData?.optionMap?.[fieldId]?.map((e) => ({
+          ...e,
+          name: e.name || t('common.optionNotExist'),
+        }));
         let name: string | string[] = '';
         if (dataSourceFieldIds.value.includes(fieldId)) {
           // 处理数据源字段，需要赋值为数组
@@ -566,7 +569,10 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         }
       });
       item.moduleFields?.forEach((field: ModuleField) => {
-        const options = originalData?.optionMap?.[field.fieldId];
+        const options = originalData?.optionMap?.[field.fieldId]?.map((e) => ({
+          ...e,
+          name: e.name || t('common.optionNotExist'),
+        }));
         let name: string | string[] = '';
         if (dataSourceFieldIds.value.includes(field.fieldId)) {
           // 处理数据源字段，需要赋值为数组

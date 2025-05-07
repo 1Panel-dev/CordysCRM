@@ -17,6 +17,7 @@
           >
             <component
               :is="getItemComponent(item.type)"
+              :id="item.id"
               v-model:value="form[item.id]"
               :field-config="item"
               :path="item.id"
@@ -136,6 +137,16 @@
           }
         });
       });
+      nextTick(() => {
+        const labelNodes = Array.from(document.querySelectorAll('.n-form-item-label'));
+        const noWidthLabelNodes = labelNodes.filter((e) => (e as HTMLElement).style.width === '');
+        const hasWidthLabelNode = labelNodes.filter((e) => (e as HTMLElement).style.width !== '')[0];
+        if (noWidthLabelNodes.length > 0) {
+          noWidthLabelNodes.forEach((e) => {
+            (e as HTMLElement).style.width = `${hasWidthLabelNode?.clientWidth}px`;
+          });
+        }
+      });
     }
   }
 
@@ -153,6 +164,13 @@
           }
         });
         emit('save', result, isContinue);
+      } else {
+        // 滚动到报错的位置
+        const firstErrorId = errors[0]?.[0]?.field;
+        if (firstErrorId) {
+          const fieldElement = document.getElementById(firstErrorId);
+          fieldElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
     });
   }
@@ -179,65 +197,72 @@
     return 'string';
   }
 
+  function initForm() {
+    list.value.forEach((item) => {
+      if (!form.value[item.id] && !props.formDetail?.[item.id]) {
+        let defaultValue = item.defaultValue || '';
+        if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
+          defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
+        } else if (getRuleType(item) === 'array') {
+          defaultValue =
+            [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
+            typeof item.defaultValue === 'string'
+              ? [defaultValue]
+              : defaultValue || [];
+        }
+        form.value[item.id] = defaultValue;
+      }
+      const fullRules: FormCreateFieldRule[] = [];
+      (item.rules || []).forEach((rule) => {
+        // 遍历规则集合，将全量的规则配置载入
+        const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
+        if (staticRule) {
+          staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
+          staticRule.message = t(staticRule.message as string, { value: t(item.name) });
+          staticRule.type = getRuleType(item);
+          if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
+            staticRule.trigger = 'none';
+          }
+          fullRules.push(staticRule);
+        }
+      });
+      item.rules = fullRules;
+      if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
+        item.defaultValue = userStore.userInfo.id;
+        item.initialOptions = [
+          {
+            id: userStore.userInfo.id,
+            name: userStore.userInfo.name,
+          },
+        ];
+      }
+      if (
+        [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(item.type) &&
+        item.hasCurrentUserDept
+      ) {
+        item.defaultValue = userStore.userInfo.departmentId;
+        item.initialOptions = [
+          {
+            id: userStore.userInfo.departmentId,
+            name: userStore.userInfo.departmentName,
+          },
+        ];
+      }
+    });
+  }
+
   function resetForm() {
     form.value = {};
+    list.value.forEach((item) => {
+      item.initialOptions = [];
+    });
+    initForm();
   }
 
   watch(
     () => list.value,
     () => {
-      list.value.forEach((item) => {
-        if (!form.value[item.id]) {
-          let defaultValue = item.defaultValue || '';
-          if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
-            defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
-          } else if (getRuleType(item) === 'array') {
-            defaultValue =
-              [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
-              typeof item.defaultValue === 'string'
-                ? [defaultValue]
-                : defaultValue || [];
-          }
-          form.value[item.id] = defaultValue;
-        }
-        handleFieldChange(form.value[item.id], item); // 初始化时，根据字段值控制显示
-        const fullRules: FormCreateFieldRule[] = [];
-        (item.rules || []).forEach((rule) => {
-          // 遍历规则集合，将全量的规则配置载入
-          const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
-          if (staticRule) {
-            staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
-            staticRule.message = t(staticRule.message as string, { value: t(item.name) });
-            staticRule.type = getRuleType(item);
-            if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
-              staticRule.trigger = 'none';
-            }
-            fullRules.push(staticRule);
-          }
-        });
-        item.rules = fullRules;
-        if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
-          item.defaultValue = userStore.userInfo.id;
-          item.initialOptions = [
-            {
-              id: userStore.userInfo.id,
-              name: userStore.userInfo.name,
-            },
-          ];
-        }
-        if (
-          [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(item.type) &&
-          item.hasCurrentUserDept
-        ) {
-          item.defaultValue = userStore.userInfo.departmentId;
-          item.initialOptions = [
-            {
-              id: userStore.userInfo.departmentId,
-              name: userStore.userInfo.departmentName,
-            },
-          ];
-        }
-      });
+      initForm();
     },
     { immediate: true }
   );

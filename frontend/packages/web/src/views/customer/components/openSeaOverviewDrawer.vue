@@ -15,10 +15,11 @@
       <TransferForm ref="distributeFormRef" v-model:form="distributeForm" />
     </template>
     <template #left>
-      <div class="p-[16px_24px]">
+      <div class="h-full overflow-hidden">
         <CrmFormDescription
           :form-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
           :source-id="props.sourceId"
+          class="p-[16px_24px]"
           @init="handleDescriptionInit"
         />
       </div>

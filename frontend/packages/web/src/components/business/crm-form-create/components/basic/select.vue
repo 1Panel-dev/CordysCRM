@@ -19,7 +19,6 @@
       :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
       :placeholder="props.fieldConfig.placeholder"
       clearable
-      @update-value="emit('change', $event)"
     />
   </n-form-item>
 </template>
@@ -47,9 +46,17 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       value.value = val || (props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE ? [] : '');
+      emit('change', value.value);
     },
     {
       immediate: true,
+    }
+  );
+
+  watch(
+    () => value.value,
+    (val) => {
+      emit('change', val);
     }
   );
 </script>

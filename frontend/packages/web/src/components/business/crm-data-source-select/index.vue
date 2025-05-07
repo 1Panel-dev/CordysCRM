@@ -27,7 +27,7 @@
       v-model:selected-rows="selectedRows"
       :multiple="props.multiple"
       :source-type="props.dataSourceType"
-      :disabled-selection="props.disabledSelection"
+      :disabled-selection="tableDisabledSelection"
     />
   </CrmModal>
 </template>
@@ -112,7 +112,7 @@
       },
       {
         default: () => {
-          return (rows.value || []).find((item) => item.id === option.value)?.name;
+          return (rows.value || []).find((item) => item?.id === option.value)?.name;
         },
       }
     );
@@ -121,6 +121,13 @@
   function showDataSourcesModal() {
     selectedKeys.value = value.value;
     dataSourcesModalVisible.value = true;
+  }
+
+  function tableDisabledSelection(row: RowData) {
+    if (props.disabledSelection) {
+      return props.disabledSelection(row);
+    }
+    return value.value.includes(row.id);
   }
 </script>
 

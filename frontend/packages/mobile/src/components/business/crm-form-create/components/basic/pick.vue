@@ -53,7 +53,16 @@
   watch(
     () => props.fieldConfig.defaultValue,
     (val) => {
-      value.value = val;
+      value.value = val || value.value;
+    },
+    {
+      immediate: true,
+    }
+  );
+
+  watch(
+    () => value.value,
+    (val) => {
       if (props.fieldConfig.options) {
         const opt = props.fieldConfig.options.find((item) => item.value === val);
         if (opt) {

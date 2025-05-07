@@ -15,7 +15,6 @@
       v-model:value="value"
       :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
-      @update-value="($event) => emit('change', $event)"
     >
       <n-space :item-class="props.fieldConfig.direction === 'horizontal' ? '' : 'w-full'">
         <n-radio v-for="item in props.fieldConfig.options" :key="item.value" :value="item.value">
@@ -47,9 +46,17 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       value.value = val || value.value;
+      emit('change', value.value);
     },
     {
       immediate: true,
+    }
+  );
+
+  watch(
+    () => value.value,
+    (val) => {
+      emit('change', val);
     }
   );
 </script>

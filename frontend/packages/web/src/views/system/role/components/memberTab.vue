@@ -1,6 +1,6 @@
 <template>
   <div class="relative h-full">
-    <n-scrollbar x-scrollable :content-style="{ 'min-width': '600px', 'width': '100%', 'padding': '0 24px' }">
+    <n-scrollbar x-scrollable :content-style="{ 'min-width': '600px', 'width': '100%', 'padding': '0 24px 24px' }">
       <CrmTable
         v-model:checked-row-keys="checkedRowKeys"
         v-bind="propsRes"
@@ -51,6 +51,7 @@
 
   import { batchRemoveRoleMember, getRoleMember, relateRoleMember, removeRoleMember } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     activeRoleId: string;
@@ -78,10 +79,6 @@
   }
 
   const columns: CrmDataTableColumn<RoleMemberItem>[] = [
-    {
-      type: 'selection',
-      fixed: 'left',
-    },
     {
       title: t('role.memberName'),
       key: 'userName',
@@ -170,6 +167,13 @@
         }),
     },
   ];
+
+  if (hasAnyPermission(['SYSTEM_ROLE:REMOVE_USER'])) {
+    columns.unshift({
+      type: 'selection',
+      fixed: 'left',
+    });
+  }
 
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
     getRoleMember,

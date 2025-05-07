@@ -13,6 +13,7 @@ import {
   getFormDetailApiMap,
   updateFormApi,
 } from '@/components/business/crm-form-create/config';
+import type CrmFormCreate from '@/components/business/crm-form-create/index.vue';
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
 export interface FormCreateApiProps {
@@ -21,6 +22,7 @@ export interface FormCreateApiProps {
   needInitDetail?: Ref<boolean>;
   initialSourceName?: Ref<string | undefined>; // 特殊字段初始化需要的资源名称
   otherSaveParams?: Ref<Record<string, any> | undefined>;
+  formCreateRef?: Ref<InstanceType<typeof CrmFormCreate> | undefined>;
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -165,7 +167,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             ].includes(item.type)
           ) {
             // 处理成员和数据源类型的字段
-            item.initialOptions = options;
+            item.initialOptions = options?.map((e) => ({
+              ...e,
+              name: e.name || t('common.optionNotExist'),
+            }));
           }
           // 业务标准字段读取最外层
           formDetail.value[item.id] = initFieldValue(item, res[item.businessKey]);
@@ -182,7 +187,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             ].includes(item.type)
           ) {
             // 处理成员和数据源类型的字段
-            item.initialOptions = options;
+            item.initialOptions = options?.map((e) => ({
+              ...e,
+              name: e.name || t('common.optionNotExist'),
+            }));
           }
           // 其他的字段读取moduleFields
           const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
@@ -378,6 +386,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           Message.success(t('common.createSuccess'));
         }
       }
+      props.formCreateRef?.value?.resetForm();
       if (callback) {
         callback(isContinue);
       }
@@ -400,10 +409,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     return `${prefix}${t(`crmFormCreate.drawer.${props.formKey.value}`)}`;
   });
 
-  function resetForm() {
-    formDetail.value = {};
-  }
-
   return {
     descriptions,
     fieldList,
@@ -418,6 +423,5 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     initFormConfig,
     initFormDetail,
     saveForm,
-    resetForm,
   };
 }

@@ -21,7 +21,13 @@
         </template>
       </van-cell>
       <div class="flex flex-wrap">
-        <div v-for="card of entryCardList" :key="card.name" class="quick-entry-card" @click="goCardRoute(card.name)">
+        <div
+          v-for="card of entryCardList"
+          :key="card.name"
+          v-permission="card.permission"
+          class="quick-entry-card"
+          @click="goCardRoute(card.name)"
+        >
           <CrmIcon :name="card.icon" width="30px" height="30px" />
           <div class="text-[12px] text-[var(--text-n1)]">{{ card.label }}</div>
         </div>
@@ -75,21 +81,25 @@
       icon: 'icon-newCustomer',
       label: t('common.newCustomer'),
       name: FormDesignKeyEnum.CUSTOMER,
+      permission: ['CUSTOMER_MANAGEMENT:ADD'],
     },
     {
       icon: 'icon-newContact',
       label: t('common.newContact'),
       name: FormDesignKeyEnum.CUSTOMER_CONTACT,
+      permission: ['CUSTOMER_MANAGEMENT_CONTACT:ADD'],
     },
     {
       icon: 'icon-newOpportunity',
       label: t('common.newOpportunity'),
       name: FormDesignKeyEnum.BUSINESS,
+      permission: ['OPPORTUNITY_MANAGEMENT:ADD'],
     },
     {
       icon: 'icon-newClue',
       label: t('common.newClue'),
       name: FormDesignKeyEnum.CLUE,
+      permission: ['CLUE_MANAGEMENT:ADD'],
     },
     // {
     //   icon: 'icon-newRecord',

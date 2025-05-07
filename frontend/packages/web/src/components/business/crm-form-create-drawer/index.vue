@@ -19,6 +19,7 @@
     </template>
     <CrmFormCreate
       v-if="visible"
+      ref="formCreateRef"
       v-model:list="fieldList"
       :form-detail="formDetail"
       :form-config="formConfig"
@@ -60,6 +61,7 @@
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
+  const formCreateRef = ref<InstanceType<typeof CrmFormCreate>>();
 
   const {
     fieldList,
@@ -71,13 +73,13 @@
     initFormConfig,
     initFormDetail,
     saveForm,
-    resetForm,
   } = useFormCreateApi({
     formKey: toRefs(props).formKey,
     sourceId: toRefs(props).sourceId,
     needInitDetail: toRefs(props).needInitDetail,
     initialSourceName: toRefs(props).initialSourceName,
     otherSaveParams: toRefs(props).otherSaveParams,
+    formCreateRef,
   });
 
   watch(
@@ -121,8 +123,6 @@
         if (props.sourceId && props.needInitDetail) {
           initFormDetail();
         }
-      } else {
-        resetForm();
       }
     },
     {

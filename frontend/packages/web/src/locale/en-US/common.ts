@@ -284,4 +284,5 @@ export default {
   'common.required': 'Required',
   'common.onlyOne': 'Not allowed to repeat value',
   'common.dayUnit': 'Day',
+  'common.optionNotExist': 'Option does not exist',
 };

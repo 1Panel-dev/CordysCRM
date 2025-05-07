@@ -1,5 +1,5 @@
 <template>
-  <CrmModal v-model:show="showModal" size="small" :title="t('common.update')">
+  <CrmModal v-model:show="showModal" size="small" :title="t('common.update')" @cancel="cancel">
     <n-form
       ref="formRef"
       :model="form"
@@ -63,7 +63,9 @@
   watch(
     () => props.integration,
     (val) => {
-      form.value = { ...(val as PersonalInfoRequest) };
+      if (val) {
+        form.value = { ...val };
+      }
     },
     { deep: true }
   );
@@ -75,6 +77,9 @@
 
   const formRef = ref<FormInst | null>(null);
   function cancel() {
+    if (props.integration) {
+      form.value = { ...props.integration };
+    }
     showModal.value = false;
   }
   /** *

@@ -1,5 +1,5 @@
 <template>
-  <CrmModal v-model:show="showModal" size="small" :title="t('system.personal.changePassword')">
+  <CrmModal v-model:show="showModal" size="small" :title="t('system.personal.changePassword')" @cancel="cancel">
     <n-form
       ref="formRef"
       :model="form"
@@ -17,6 +17,7 @@
           <n-input
             v-model:value="form.code"
             :placeholder="t('common.pleaseInput')"
+            :maxlength="6"
             class="codeInput"
             @keydown.enter.prevent
           />
@@ -44,7 +45,7 @@
           type="password"
           show-password-on="click"
           :input-props="{ autocomplete: 'new-password' }"
-          :placeholder="t('common.pleaseInput')"
+          :placeholder="t('login.form.password.placeholder')"
           @keydown.enter.prevent
         />
       </n-form-item>
@@ -54,7 +55,7 @@
           type="password"
           show-password-on="click"
           :input-props="{ autocomplete: 'new-password' }"
-          :placeholder="t('common.pleaseInput')"
+          :placeholder="t('login.form.password.placeholder')"
           @keydown.enter.prevent
         />
       </n-form-item>
@@ -93,16 +94,18 @@
   } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import {PersonalPassword, SendEmailDTO} from '@lib/shared/models/system/business';
+  import { PersonalPassword, SendEmailDTO } from '@lib/shared/models/system/business';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
   import { sendEmailCode, updateUserPassword } from '@/api/modules';
+  import useUserStore from '@/store/modules/user';
 
   import type { CountdownProps } from 'naive-ui';
 
   const { t } = useI18n();
   const Message = useMessage();
+  const userStore = useUserStore();
 
   const props = defineProps<{
     integration?: PersonalPassword;
@@ -112,10 +115,6 @@
     required: true,
     default: false,
   });
-
-  const emit = defineEmits<{
-    (e: 'initSync'): void;
-  }>();
 
   const form = ref<PersonalPassword>({
     email: '',
@@ -127,10 +126,13 @@
   watch(
     () => props.integration,
     (val) => {
-      form.value = { ...(val as PersonalPassword) };
+      if (val) {
+        form.value = { ...val };
+      }
     },
     { deep: true }
   );
+
   function validatePasswordStartWith(rule: FormItemRule, value: string): boolean {
     return !!form.value.password && form.value.password.startsWith(value) && form.value.password.length >= value.length;
   }
@@ -180,6 +182,12 @@
 
   function cancel() {
     showRetryCode.value = 1;
+    form.value = {
+      email: props.integration?.email || '',
+      code: '',
+      password: '',
+      confirmPassword: '',
+    };
     showModal.value = false;
   }
 
@@ -196,7 +204,7 @@
           await updateUserPassword(form.value);
           Message.success(t('common.updateSuccess'));
           showModal.value = false;
-          emit('initSync');
+          userStore.logout();
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
@@ -208,9 +216,9 @@
   }
   async function sendCode() {
     showRetryCode.value = 2;
-    const emailData:SendEmailDTO = {
+    const emailData: SendEmailDTO = {
       email: form.value.email,
-    }
+    };
     await sendEmailCode(emailData);
   }
   function sendCodeTip() {

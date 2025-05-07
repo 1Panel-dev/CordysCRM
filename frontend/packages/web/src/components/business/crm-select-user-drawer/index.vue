@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NTabPane, NTabs, NTransfer, NTree, TransferRenderSourceList } from 'naive-ui';
+  import { NTabPane, NTabs, NTooltip, NTransfer, NTree, TransferRenderSourceList } from 'naive-ui';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
@@ -125,6 +125,9 @@
   const departmentOptions = ref<DeptTreeNode[]>([]);
 
   async function loadData(value: MemberSelectTypeEnum) {
+    departmentOptions.value = [];
+    roleOptions.value = [];
+    userOptions.value = [];
     let params = { ...props.baseParams };
     switch (value) {
       case MemberSelectTypeEnum.ORG:
@@ -188,6 +191,7 @@
       if (addMembers.value.includes(item.id)) {
         _selectedNodes.push(item);
       }
+      delete item.parent;
       return item;
     });
     emit('confirm', _selectedNodes);
@@ -197,6 +201,7 @@
     return h(NTree, {
       keyField: 'value',
       blockLine: true,
+      blockNode: true,
       multiple: props.multiple,
       selectable: true,
       data: options.value,
@@ -208,6 +213,26 @@
         if (node.option.internal) {
           return h(roleTreeNodePrefix);
         }
+      },
+      renderLabel({ option }) {
+        return h(
+          NTooltip,
+          {
+            trigger: 'hover',
+            placement: 'top',
+            showArrow: true,
+            content: option.label,
+            delay: 300,
+          },
+          {
+            default: () => {
+              return h('div', {}, { default: () => option.label });
+            },
+            trigger: () => {
+              return h('div', { class: 'one-line-text' }, { default: () => option.label });
+            },
+          }
+        );
       },
       onUpdateSelectedKeys: (selectedKeys: Array<string | number>, nodes) => {
         onCheck(selectedKeys);

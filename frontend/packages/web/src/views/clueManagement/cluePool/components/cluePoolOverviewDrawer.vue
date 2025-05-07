@@ -13,8 +13,8 @@
     @saved="() => (refreshKey += 1)"
   >
     <template #left>
-      <div class="p-[16px_24px]">
-        <CrmFormDescription :form-key="FormDesignKeyEnum.CLUE_POOL" :source-id="sourceId" />
+      <div class="h-full overflow-hidden">
+        <CrmFormDescription :form-key="FormDesignKeyEnum.CLUE_POOL" :source-id="sourceId" class="p-[16px_24px]" />
       </div>
     </template>
     <template #distributePopContent>

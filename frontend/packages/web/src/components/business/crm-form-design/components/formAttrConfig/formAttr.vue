@@ -2,7 +2,7 @@
   <div class="p-[16px]">
     <div class="crm-form-design-config-item">
       <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.formLayout') }}</div>
-      <n-radio-group v-model:value="formConfig.layout" @change="handleLayoutChange">
+      <n-radio-group v-model:value="formConfig.layout" @update-value="handleLayoutChange">
         <n-radio-button :value="1">
           {{ t('crmFormDesign.formLayout1') }}
         </n-radio-button>

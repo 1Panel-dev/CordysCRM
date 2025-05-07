@@ -122,6 +122,12 @@
     try {
       await formRef.value?.validate();
       const result = cloneDeep(formDetail.value);
+      mobileFieldList.value.forEach((item) => {
+        if (item.type === FieldTypeEnum.DATA_SOURCE && Array.isArray(result[item.id])) {
+          // 处理数据源字段，单选传单个值
+          result[item.id] = result[item.id]?.[0];
+        }
+      });
       saveForm(result, () => router.back());
     } catch (error) {
       // eslint-disable-next-line no-console
