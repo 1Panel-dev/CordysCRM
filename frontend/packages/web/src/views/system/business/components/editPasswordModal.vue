@@ -138,6 +138,10 @@
   function validatePasswordSame(rule: FormItemRule, value: string): boolean {
     return value === form.value.password;
   }
+  function validatePasswordStyle(rule: FormItemRule, value: string): boolean {
+    const reg = /^(?=.*\d)(?=.*[A-Za-z])[\S\s]{1,64}$/;
+    return reg.test(value);
+  }
   const formRef = ref<FormInst | null>(null);
   const rPasswordFormItemRef = ref<FormItemInst | null>(null);
   const rules: FormRules = {
@@ -154,6 +158,11 @@
       {
         validator: validatePasswordSame,
         message: t('system.personal.password.diff'),
+        trigger: ['blur', 'password-input'],
+      },
+      {
+        validator: validatePasswordStyle,
+        message: t('system.personal.password.style'),
         trigger: ['blur', 'password-input'],
       },
     ],
