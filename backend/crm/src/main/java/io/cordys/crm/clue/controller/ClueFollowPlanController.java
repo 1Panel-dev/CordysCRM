@@ -64,7 +64,7 @@ public class ClueFollowPlanController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "取消线索跟进计划")
     public void cancelPlan(@PathVariable String id) {
-        followUpPlanService.cancelPlan(id);
+        followUpPlanService.cancelPlan(id, SessionUtils.getUserId());
     }
 
 

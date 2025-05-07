@@ -51,6 +51,10 @@ public final class LogType {
      * 分配
      */
     public static final String ASSIGN = "ASSIGN";
+    /**
+     * 取消
+     */
+    public static final String CANCEL = "CANCEL";
 
     private LogType() {
         // 私有构造函数防止实例化

@@ -40,6 +40,10 @@ export const logTypeOption = [
     value: OperationTypeEnum.ASSIGN,
     label: t('common.distribute'),
   },
+  {
+    value: OperationTypeEnum.CANCEL,
+    label: t('common.cancel'),
+  },
 ];
 
 export default {};

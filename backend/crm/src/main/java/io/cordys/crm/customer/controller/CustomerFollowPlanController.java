@@ -65,7 +65,7 @@ public class CustomerFollowPlanController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "取消客户跟进计划")
     public void cancelPlan(@PathVariable String id) {
-        followUpPlanService.cancelPlan(id);
+        followUpPlanService.cancelPlan(id, SessionUtils.getUserId());
     }
 
 

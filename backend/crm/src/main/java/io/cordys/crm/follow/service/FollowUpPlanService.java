@@ -6,6 +6,7 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
@@ -35,10 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -279,7 +277,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
      *
      * @param id
      */
-    public void cancelPlan(String id) {
+    @OperationLog(module = LogModule.FOLLOW_UP_PLAN, type = LogType.CANCEL, resourceId = "{#id}")
+    public void cancelPlan(String id,String operator) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
         if (followUpPlan == null) {
             throw new GenericException("plan_not_found");
@@ -287,7 +286,10 @@ public class FollowUpPlanService extends BaseFollowUpService {
         FollowUpPlan plan = new FollowUpPlan();
         plan.setId(followUpPlan.getId());
         plan.setStatus("CANCELLED");
+        plan.setUpdateUser(operator);
+        plan.setUpdateTime(System.currentTimeMillis());
         followUpPlanMapper.updateById(plan);
+        OperationLogContext.setResourceName(Translator.get("cancel_follow_up_plan"));
     }
 
 

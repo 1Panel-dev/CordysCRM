@@ -64,7 +64,7 @@ public class OpportunityFollowPlanController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
     @Operation(summary = "取消商机跟进计划")
     public void cancelPlan(@PathVariable String id) {
-        followUpPlanService.cancelPlan(id);
+        followUpPlanService.cancelPlan(id, SessionUtils.getUserId());
     }
 
 

@@ -37,4 +37,5 @@ export enum OperationTypeEnum {
   MOVE_TO_CUSTOMER_POOL = 'MOVE_TO_CUSTOMER_POOL',
   PICK = 'PICK',
   ASSIGN = 'ASSIGN',
+  CANCEL = 'CANCEL',
 }
