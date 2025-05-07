@@ -2,7 +2,7 @@ export default {
   'workbench.searchPlaceholder': 'Customer name duplication check',
   'workbench.quickEntry': 'Quick Entry',
   'workbench.duplicateCheck': 'Duplicate Check',
-  'workbench.duplicateCheck.result': 'Query results',
+  'workbench.duplicateCheck.result': 'Customer related',
   'workbench.duplicateCheck.status': 'Duplicate status',
   'workbench.duplicateCheck.relatedOpportunity': 'Related opportunity',
   'workbench.duplicateCheck.relatedClue': 'Related clue',

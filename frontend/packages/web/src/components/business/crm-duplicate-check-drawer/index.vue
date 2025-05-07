@@ -3,6 +3,7 @@
     <CrmSearchInput
       v-model:value="keyword"
       class="mb-[24px] !w-full"
+      auto-search
       :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
       @search="(val) => searchData(val)"
     />
@@ -99,7 +100,7 @@
 
   const clueColumns: CrmDataTableColumn[] = [
     {
-      title: t('opportunity.customerName'),
+      title: t('workbench.duplicateCheck.company'),
       key: 'name',
       width: 100,
       ellipsis: {

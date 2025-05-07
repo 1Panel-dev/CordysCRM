@@ -1,11 +1,12 @@
 export default {
   'workbench.duplicateCheck': '查重',
   'workbench.duplicateCheck.inputPlaceholder': '请输入客户名称',
-  'workbench.duplicateCheck.result': '查询结果',
+  'workbench.duplicateCheck.result': '客户相关',
   'workbench.duplicateCheck.status': '重复状态',
   'workbench.duplicateCheck.relatedOpportunity': '对应商机',
   'workbench.duplicateCheck.relatedClue': '对应线索',
   'workbench.duplicateCheck.relatedClues': '线索相关',
+  'workbench.duplicateCheck.company': '公司',
   'workbench.duplicateCheck.clueStage': '线索阶段',
   'workbench.duplicateCheck.noDuplicateCustomers': '无重复客户',
   'workbench.duplicateCheck.moduleNotEnabled': '模块未开启',

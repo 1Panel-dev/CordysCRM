@@ -1,11 +1,12 @@
 export default {
   'workbench.duplicateCheck': 'Duplicate check',
   'workbench.duplicateCheck.inputPlaceholder': 'Enter customer name',
-  'workbench.duplicateCheck.result': 'Results',
+  'workbench.duplicateCheck.result': 'Customer related',
   'workbench.duplicateCheck.status': 'Duplicate status',
   'workbench.duplicateCheck.relatedOpportunity': 'Related opportunity',
   'workbench.duplicateCheck.relatedClue': 'Related clue',
   'workbench.duplicateCheck.relatedClues': 'Clue relations',
+  'workbench.duplicateCheck.company': 'company',
   'workbench.duplicateCheck.clueStage': 'Clue stage',
   'workbench.duplicateCheck.noDuplicateCustomers': 'No duplicate customers',
   'workbench.duplicateCheck.moduleNotEnabled': 'Module not enabled',
