@@ -63,7 +63,10 @@
         </if>
 
         <if test="request.keyword != null and request.keyword != ''">
-            and o.name like concat('%', #{request.keyword},'%')
+            and (
+            o.name like concat('%', #{request.keyword},'%')
+            or c.name like concat('%', #{request.keyword},'%')
+            )
         </if>
 
         <if test="request.searchType != null and request.searchType != '' and request.searchType == 'DEAL'">
