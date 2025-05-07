@@ -64,9 +64,6 @@ RUN echo -n "${CRM_VERSION}" > /tmp/CRM_VERSION
 
 VOLUME [ "/opt/cordys/data", "/opt/cordys/logs", "/opt/cordys/conf" ]
 
-RUN chmod 755  /shells/*.sh && \
-    chmod 755 /opt/cordys/conf/*.sh && \
-    chmod -R 777 /opt/cordys/logs && \
-    chmod -R 777 /opt/cordys/data \
+RUN chmod 755  /shells/*.sh
 
 ENTRYPOINT ["sh", "/shells/start-all.sh"]
