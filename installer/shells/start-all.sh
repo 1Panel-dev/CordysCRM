@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # 启动 CORDYS CRM应用及其依赖服务(MySQL 和 Redis)
-chmod -R 777 /opt/cordys
 
 # 日志函数
 log_info() {
