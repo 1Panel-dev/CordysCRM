@@ -156,11 +156,11 @@
                 and condition.name != 'departmentId'">
                     <if test="condition.multipleValue">
                         inner join opportunity_field_blob ${tablePrefix}_${i}
-                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
                         inner join opportunity_field ${tablePrefix}_${i}
-                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>
             </foreach>
@@ -187,7 +187,7 @@
                 and ${sort}.name != 'departmentId'">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_field sort_table
-            on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+            on o.id = sort_table.resource_id and sort_table.field_id = #{sortName}
         </if>
     </sql>
 
