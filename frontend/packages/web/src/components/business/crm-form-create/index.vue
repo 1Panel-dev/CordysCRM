@@ -28,12 +28,17 @@
       </div>
     </n-scrollbar>
     <div class="crm-form-create-footer" :class="props.formConfig.optBtnPos">
-      <n-button v-if="formConfig.optBtnContent[0].enable" type="primary" @click="handleSave(false)">
-        {{ formConfig.optBtnContent[0].text }}
+      <n-button v-if="props.isEdit" type="primary" @click="handleSave(false)">
+        {{ t('common.update') }}
       </n-button>
-      <n-button v-if="formConfig.optBtnContent[1].enable" type="primary" ghost @click="handleSave(true)">
-        {{ formConfig.optBtnContent[1].text }}
-      </n-button>
+      <template v-else>
+        <n-button v-if="formConfig.optBtnContent[0].enable" type="primary" @click="handleSave(false)">
+          {{ formConfig.optBtnContent[0].text }}
+        </n-button>
+        <n-button v-if="formConfig.optBtnContent[1].enable" type="primary" ghost @click="handleSave(true)">
+          {{ formConfig.optBtnContent[1].text }}
+        </n-button>
+      </template>
       <n-button v-if="formConfig.optBtnContent[2].enable" secondary @click="emit('cancel')">
         {{ formConfig.optBtnContent[2].text }}
       </n-button>
@@ -59,6 +64,7 @@
   const props = defineProps<{
     formConfig: FormConfig;
     formDetail?: Record<string, any>;
+    isEdit?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'cancel'): void;
@@ -199,8 +205,12 @@
 
   function initForm() {
     list.value.forEach((item) => {
-      if (!form.value[item.id] && !props.formDetail?.[item.id]) {
-        let defaultValue = item.defaultValue || '';
+      if (props.isEdit) {
+        item.defaultValue = undefined;
+        item.initialOptions = [];
+      }
+      if (!form.value[item.id]) {
+        let defaultValue = props.isEdit ? '' : item.defaultValue || '';
         if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
           defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
         } else if (getRuleType(item) === 'array') {

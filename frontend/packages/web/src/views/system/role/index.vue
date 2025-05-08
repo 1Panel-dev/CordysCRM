@@ -95,7 +95,6 @@
   const { openModal } = useModal();
   const message = useMessage();
   const { setIsSave } = useLeaveUnSaveTip();
-  setIsSave(false);
 
   const loading = ref(false);
   const keyword = ref('');
@@ -186,6 +185,7 @@
           id,
         });
         selectedKeys.value = [id];
+        setIsSave(false);
         break;
       case 'delete':
         openModal({
@@ -294,6 +294,7 @@
 
   function handleUnsaveChange(val: boolean) {
     if (activeRole.value) {
+      setIsSave(val);
       activeRole.value.unsave = val;
     }
   }

@@ -135,6 +135,7 @@
   });
 
   function handleNewClick() {
+    needInitDetail.value = false;
     activeFormKey.value = FormDesignKeyEnum.CUSTOMER;
     activeSourceId.value = '';
     formCreateDrawerVisible.value = true;

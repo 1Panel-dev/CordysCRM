@@ -16,7 +16,6 @@
       :max="props.fieldConfig.max"
       :min="props.fieldConfig.min"
       :placeholder="props.fieldConfig.placeholder"
-      :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
       :parse="parse"
       :format="format"

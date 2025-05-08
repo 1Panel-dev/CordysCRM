@@ -128,8 +128,6 @@
   async function handleSave() {
     try {
       loading.value = true;
-      console.log(fieldList.value);
-
       await saveFormDesignConfig({
         formKey: props.formKey,
         formProp: formConfig.value,

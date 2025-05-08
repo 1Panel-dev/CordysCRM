@@ -13,7 +13,6 @@
     ></div>
     <n-select
       v-model:value="value"
-      :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
       :options="props.fieldConfig.options"
       :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"

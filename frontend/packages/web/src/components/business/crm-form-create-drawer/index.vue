@@ -23,6 +23,7 @@
       v-model:list="fieldList"
       :form-detail="formDetail"
       :form-config="formConfig"
+      :is-edit="needInitDetail"
       class="pt-[16px]"
       @cancel="handleBack"
       @save="handleSave"
@@ -62,6 +63,7 @@
     required: true,
   });
   const formCreateRef = ref<InstanceType<typeof CrmFormCreate>>();
+  const { needInitDetail, formKey, sourceId, initialSourceName, otherSaveParams } = toRefs(props);
 
   const {
     fieldList,
@@ -74,11 +76,11 @@
     initFormDetail,
     saveForm,
   } = useFormCreateApi({
-    formKey: toRefs(props).formKey,
-    sourceId: toRefs(props).sourceId,
-    needInitDetail: toRefs(props).needInitDetail,
-    initialSourceName: toRefs(props).initialSourceName,
-    otherSaveParams: toRefs(props).otherSaveParams,
+    formKey,
+    sourceId,
+    needInitDetail,
+    initialSourceName,
+    otherSaveParams,
     formCreateRef,
   });
 

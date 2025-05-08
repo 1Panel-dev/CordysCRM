@@ -15,7 +15,6 @@
       v-model:value="value"
       :maxlength="255"
       :placeholder="props.fieldConfig.placeholder"
-      :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
       clearable
       @update-value="($event) => emit('change', $event)"

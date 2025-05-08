@@ -13,7 +13,6 @@
     ></div>
     <n-checkbox-group
       v-model:value="value"
-      :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
       @update-value="($event) => emit('change', $event)"
     >

@@ -24,7 +24,9 @@
       <div class="flex flex-col items-start p-[8px]">
         <n-popover trigger="hover" raw :show-arrow="false" placement="right-end" class="personal-popover">
           <template #trigger>
-            <div class="flex w-full items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)]">
+            <div
+              class="flex w-full items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
+            >
               <CrmAvatar class="flex-shrink-0" />
               <div v-if="!collapsed" class="one-line-text">
                 <div class="one-line-text">{{ userStore.userInfo.name }}</div>
@@ -55,7 +57,7 @@
               </n-tooltip>
             </n-text>
           </template>
-          <div class="personal-menu flex h-full flex-col">
+          <div class="personal-menu mt-[4px] flex h-full flex-col">
             <n-menu
               v-model:value="personalMenuValue"
               :icon-size="16"

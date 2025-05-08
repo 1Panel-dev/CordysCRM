@@ -200,7 +200,9 @@
         });
         backupDetail.value.permissions = cloneDeep(data.value as PermissionTreeNode[]);
       }
-      unsave.value = false;
+      nextTick(() => {
+        unsave.value = false;
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);

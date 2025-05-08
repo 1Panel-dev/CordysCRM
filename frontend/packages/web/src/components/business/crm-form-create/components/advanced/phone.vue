@@ -15,7 +15,6 @@
       v-model:value="value"
       :maxlength="11"
       :placeholder="props.fieldConfig.placeholder"
-      :default-value="props.fieldConfig.defaultValue"
       :disabled="props.fieldConfig.editable === false"
       :allow-input="onlyAllowNumber"
       clearable
