@@ -8,6 +8,7 @@ import io.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.request.UploadTransferRequest;
@@ -101,6 +102,15 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
                     if (fieldConfig.isPic()) {
                         preProcessWithPic(orgId, resourceId, userId, fieldValue.getFieldValue());
+                    }
+
+                    if (fieldConfig.needRepeatCheck()) {
+                        LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
+                        wrapper.eq(BaseResourceField::getFieldId, fieldValue.getFieldId());
+                        wrapper.eq(BaseResourceField::getFieldValue, fieldValue.getFieldValue());
+                        if (!getResourceFieldMapper().selectListByLambda(wrapper).isEmpty()) {
+                            throw new GenericException(Translator.getWithArgs("common.field_value.repeat", fieldConfig.getName()));
+                        }
                     }
 
                     // 获取字段解析器

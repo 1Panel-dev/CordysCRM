@@ -98,6 +98,12 @@ public abstract class BaseField {
 	}
 
 	@JsonIgnore
+	public boolean needRepeatCheck() {
+		return StringUtils.equalsAny(type, FieldType.INPUT.name(), FieldType.PHONE.name())
+				&& rules.stream().filter(rule -> StringUtils.equals(rule.getKey(), "unique")).findAny().isPresent();
+	}
+
+	@JsonIgnore
 	public boolean needInitialOptions() {
 		return StringUtils.equalsAny(type, FieldType.MEMBER.name(), FieldType.DEPARTMENT.name());
 	}
