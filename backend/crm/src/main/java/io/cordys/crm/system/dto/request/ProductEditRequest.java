@@ -2,6 +2,8 @@ package io.cordys.crm.system.dto.request;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -23,6 +25,8 @@ public class ProductEditRequest {
     private String name;
 
     @Schema(description = "价格")
+    @DecimalMin(value = "0.00", inclusive = false, message = "{product.price.min}")
+    @DecimalMax(value = "10000000000.00", inclusive = false, message = "{product.price.max}")
     private BigDecimal price;
 
     @Schema(description = "状态")

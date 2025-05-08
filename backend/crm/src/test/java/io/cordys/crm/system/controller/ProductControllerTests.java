@@ -155,6 +155,14 @@ class ProductControllerTests extends BaseTest {
         batchIds.add(product.getId());
         // 校验权限
         requestPostPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_ADD, DEFAULT_ADD, request);
+
+        request = new ProductEditRequest();
+        request.setName("productFour");
+        request.setPrice(BigDecimal.valueOf(100000000000d));
+        request.setStatus("1");
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleFieldPrice.getId(), 13),new BaseModuleFieldValue(moduleFieldStatus.getId(), "1")));
+        this.requestPost(DEFAULT_ADD, request).andExpect(status().is4xxClientError());
+
     }
 
     @Test
