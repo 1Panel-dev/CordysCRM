@@ -21,6 +21,7 @@ import io.cordys.security.SessionUser;
 import io.cordys.security.SessionUtils;
 import io.cordys.security.UserDTO;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
@@ -52,8 +53,8 @@ public class UserLoginService {
     @Resource
     private PermissionCache permissionCache;
 
-    public UserDTO authenticateUser(String userId) {
-        UserDTO userDTO = extUserMapper.selectByPhoneOrEmail(userId);
+    public UserDTO authenticateUser(String userKey) {
+        UserDTO userDTO = extUserMapper.selectByPhoneOrEmail(userKey);
         if (userDTO == null) {
             throw new AuthenticationException(Translator.get("user_not_exist"));
         }
@@ -69,16 +70,28 @@ public class UserLoginService {
             }
         }
 
+        Set<String> orgIds = getOrgIdsByUserId(userDTO.getId());
         String organizationId = OrganizationContext.getOrganizationId();
+
+        if (StringUtils.isBlank(organizationId) && CollectionUtils.isNotEmpty(orgIds)) {
+            // 如果没有登入且请求头没有组织ID，即上下文获取不到组织ID，则手动选取一个组织ID
+            if (orgIds.contains(userDTO.getLastOrganizationId())) {
+                // 如果上次登入的组织任有权限，则获取该组织ID
+                organizationId = userDTO.getLastOrganizationId();
+            } else {
+                // 获取一个组织ID
+                organizationId = orgIds.iterator().next();
+            }
+        }
 
         List<RoleDataScopeDTO> roleOptions = roleService.getRoleOptions(userDTO.getId(), organizationId);
         userDTO.setLastOrganizationId(organizationId);
         // 设置角色信息，供前端展示
         userDTO.setRoles(roleOptions);
         // 设置权限
-        userDTO.setPermissionIds(permissionCache.getPermissionIds(userId, organizationId));
+        userDTO.setPermissionIds(permissionCache.getPermissionIds(userDTO.getId(), organizationId));
         // 设置组织ID
-        userDTO.setOrganizationIds(getOrgIdsByUserId(userDTO.getId()));
+        userDTO.setOrganizationIds(orgIds);
         return userDTO;
     }
 
