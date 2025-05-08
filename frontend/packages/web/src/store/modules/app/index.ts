@@ -12,6 +12,7 @@ import {
   getHomeMessageList,
   getKey,
   getModuleNavConfigList,
+  getSystemVersion,
   getUnReadAnnouncement,
 } from '@/api/modules';
 import useUserStore from '@/store/modules/user';
@@ -95,6 +96,7 @@ const useAppStore = defineStore('app', {
     eventSource: null,
     menuIconStatus: {},
     restoreMenuTimeStamp: 0,
+    version: '',
   }),
   getters: {
     getMenuCollapsed(state: AppState) {
@@ -273,6 +275,14 @@ const useAppStore = defineStore('app', {
     },
     setRestoreMenuTimeStamp(timeStamp: number) {
       this.restoreMenuTimeStamp = timeStamp;
+    },
+    async getVersion() {
+      try {
+        this.version = await getSystemVersion();
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
     },
   },
   persist: {

@@ -13,17 +13,6 @@
     </div>
     <div class="flex flex-1 items-center justify-between px-[16px]">
       <CrmTopMenu />
-      <!-- <n-breadcrumb>
-        <n-breadcrumb-item>
-          <div class="text-[14px] leading-[22px]">一级页面</div>
-        </n-breadcrumb-item>
-        <n-breadcrumb-item>
-          <div class="text-[14px] leading-[22px]">二级页面</div>
-        </n-breadcrumb-item>
-        <n-breadcrumb-item>
-          <div class="text-[14px] leading-[22px]">三级页面</div>
-        </n-breadcrumb-item>
-      </n-breadcrumb> -->
       <div class="flex items-center gap-[8px]">
         <CrmTag
           v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT_READ', 'CLUE_MANAGEMENT_READ'])"
@@ -51,6 +40,22 @@
             <CrmIcon type="iconicon-alarmclock" :size="16" />
           </n-badge>
         </n-button>
+        <n-popover position="left">
+          <div
+            class="flex cursor-pointer items-center gap-[4px] text-[14px] text-[var(--color-text-1)]"
+            @click="copyVersion"
+          >
+            <div class="text-[var(--color-text-4)]">{{ t('settings.help.version') }}：</div>
+            {{ appStore.version }}
+          </div>
+          <template #trigger>
+            <n-button class="p-[8px]" quaternary>
+              <template #icon>
+                <InformationCircleOutline />
+              </template>
+            </n-button>
+          </template>
+        </n-popover>
       </div>
     </div>
     <MessageDrawer v-model:show="showMessageDrawer" />
@@ -60,14 +65,16 @@
 
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
-  import { NBadge, NButton, NLayoutHeader, NPopselect, NTooltip, useMessage } from 'naive-ui';
-  import { LanguageOutline } from '@vicons/ionicons5';
+  import { useClipboard } from '@vueuse/core';
+  import { NBadge, NButton, NLayoutHeader, NPopover, NPopselect, NTooltip, useMessage } from 'naive-ui';
+  import { InformationCircleOutline, LanguageOutline } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { LOCALE_OPTIONS } from '@lib/shared/locale';
   import useLocale from '@lib/shared/locale/useLocale';
   import { LocaleType } from '@lib/shared/types/global';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmDuplicateCheckDrawer from '@/components/business/crm-duplicate-check-drawer/index.vue';
   import CrmTopMenu from '@/components/business/crm-top-menu/index.vue';
@@ -86,7 +93,7 @@
     name?: string;
   }>();
 
-  const { loading } = useMessage();
+  const { success, warning, loading } = useMessage();
   const { t } = useI18n();
   const { changeLocale, currentLocale } = useLocale(loading);
 
@@ -108,7 +115,18 @@
 
   const showDuplicateCheckDrawer = ref(false);
 
+  const { copy, isSupported } = useClipboard({ legacy: true });
+  function copyVersion() {
+    if (isSupported) {
+      copy(appStore.version);
+      success(t('common.copySuccess'));
+    } else {
+      warning(t('common.copyNotSupport'));
+    }
+  }
+
   onBeforeMount(() => {
+    appStore.getVersion();
     if (route.name !== WorkbenchRouteEnum.WORKBENCH_INDEX) {
       appStore.initMessage();
     }

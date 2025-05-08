@@ -3,6 +3,7 @@ import useClueApi from '@lib/shared/api/modules/clue';
 import useCustomerApi from '@lib/shared/api/modules/customer';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
 import useProductApi from '@lib/shared/api/modules/product';
+import useSysApi from '@lib/shared/api/modules/sys';
 import useBusinessApi from '@lib/shared/api/modules/system/business';
 import useLoginApi from '@lib/shared/api/modules/system/login';
 import useMessageApi from '@lib/shared/api/modules/system/message';
@@ -31,6 +32,7 @@ const moduleApi = useModuleApi(CDR);
 const orgApi = useOrgApi(CDR);
 const roleApi = useRoleApi(CDR);
 const loginApi = useLoginApi(CDR);
+const sysApi = useSysApi(CDR);
 
 export const {
   addProduct,
@@ -294,3 +296,5 @@ export const {
 } = roleApi;
 
 export const { login, signout, isLogin, getKey, getWeComCallback, getWeComOauthCallback } = loginApi;
+
+export const { getSystemVersion } = sysApi;

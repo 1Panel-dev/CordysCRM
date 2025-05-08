@@ -61,4 +61,5 @@ export interface AppState {
   eventSource: null | EventSource; // 事件流资源
   menuIconStatus: Record<string, boolean>;
   restoreMenuTimeStamp: number; // 恢复菜单激活状态，用于跳转拦截导致的菜单激活状态与路由不一致
+  version: string; // 版本号
 }
