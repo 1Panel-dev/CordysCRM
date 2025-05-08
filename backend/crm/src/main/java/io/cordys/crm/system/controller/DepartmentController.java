@@ -60,7 +60,7 @@ public class DepartmentController {
     }
 
     @PostMapping("/delete/check")
-    @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_UPDATE)
+    @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_DELETE)
     @Operation(summary = "组织架构-删除部门校验")
     public boolean deleteCheck(@RequestBody @NotEmpty List<String> ids) {
         return departmentService.deleteCheck(ids, OrganizationContext.getOrganizationId());
