@@ -129,6 +129,7 @@ public class UserExtendService {
 		path.add(node.getId());
 		// 命中目标节点返回
 		if (StringUtils.equals(node.getId(), targetNode)) {
+			path.add(targetNode);
 			return;
 		}
 		// 递归子节点
