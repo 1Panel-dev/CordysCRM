@@ -1,6 +1,6 @@
 package io.cordys.mybatis;
 
-import io.cordys.common.util.LogUtils;
+import io.cordys.common.uid.IDGenerator;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultMap;
@@ -279,7 +279,7 @@ public class DataAccessLayer implements ApplicationContextAware {
      * @return MappedStatement 的 ID。
      */
     private String execute(String sql, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
-        String msId = sqlCommandType.toString() + "." + parameterType.getName() + "." + sql.hashCode();
+        String msId = sqlCommandType.toString() + "." + parameterType.getName() + "." + IDGenerator.nextStr();
         if (configuration.hasStatement(msId, false)) {
             return msId;
         }
