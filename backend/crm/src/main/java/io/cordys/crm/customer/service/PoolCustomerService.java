@@ -109,8 +109,8 @@ public class PoolCustomerService {
 
 		pools.forEach(pool -> {
 			List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), currentOrgId);
-			List<String> ownerIds = userExtendService.getScopeOwnerIds(scopeIds, currentOrgId);
-			if (scopeIds.contains(currentUser)) {
+			List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), currentOrgId);
+			if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser)) {
 				CustomerPoolDTO poolDTO = new CustomerPoolDTO();
 				BeanUtils.copyBean(poolDTO, pool);
 

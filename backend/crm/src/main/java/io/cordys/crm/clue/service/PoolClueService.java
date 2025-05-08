@@ -107,8 +107,8 @@ public class PoolClueService {
 				.collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, recycleRule -> recycleRule));
 		pools.forEach(pool -> {
 			List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), currentOrgId);
-			List<String> ownerIds = userExtendService.getScopeOwnerIds(scopeIds, currentOrgId);
-			if (scopeIds.contains(currentUser)) {
+			List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), currentOrgId);
+			if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser)) {
 				CluePoolDTO poolDTO = new CluePoolDTO();
 				BeanUtils.copyBean(poolDTO, pool);
 				poolDTO.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
