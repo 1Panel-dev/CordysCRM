@@ -126,7 +126,10 @@
   } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
+  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
+
+  const userStore = useUserStore();
 
   const Message = useMessage();
 
@@ -704,7 +707,8 @@
       render: (row: MemberItem) =>
         h(CrmOperationButton, {
           groupList,
-          moreList: props.isSyncFromThirdChecked ? undefined : moreOperationList,
+          moreList:
+            props.isSyncFromThirdChecked || row.userId === userStore.userInfo.id ? undefined : moreOperationList,
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
