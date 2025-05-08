@@ -4,4 +4,5 @@ export default {
   'crmFormCreate.advanced.selectLocation': 'Please select the address',
   'crmFormCreate.advanced.inputLocationDetail': 'Please enter the detailed address',
   'crmFormCreate.basic.tagInputLimitTip': 'The maximum number of tags is 10',
+  'crmFormCreate.basic.tagInputRepeatTip': 'The same tag already exists, please check',
 };

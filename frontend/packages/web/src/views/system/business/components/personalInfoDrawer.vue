@@ -147,7 +147,7 @@
     if (activeTab.value === PersonalEnum.INFO) {
       personalInfo.value = await getPersonalUrl();
       showRoleTag.value =
-        personalInfo.value.roles.some((role) => role.id === 'org_admin') || personalInfo.value.userId === 'admin';
+        personalInfo.value.roles?.some((role) => role.id === 'org_admin') || personalInfo.value.userId === 'admin';
     }
   }
   function edit() {

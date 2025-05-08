@@ -3,7 +3,7 @@
     <div class="title">
       <div class="title-name">{{ t('workbench.quickAccess') }}</div>
     </div>
-    <div class="flex gap-[16px]">
+    <div class="flex justify-between gap-[16px]">
       <div
         v-for="item in quickAccessList"
         :key="item.key"

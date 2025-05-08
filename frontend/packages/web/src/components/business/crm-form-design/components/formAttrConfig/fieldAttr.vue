@@ -571,13 +571,30 @@
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldPermission') }}
         </div>
-        <n-checkbox v-model:checked="fieldConfig.readable" :disabled="fieldConfig.disabledProps?.includes('readable')">
+        <n-checkbox
+          v-model:checked="fieldConfig.readable"
+          :disabled="fieldConfig.disabledProps?.includes('readable')"
+          @update-checked="
+            ($event) => {
+              if ($event === false) {
+                fieldConfig.editable = false;
+              }
+            }
+          "
+        >
           {{ t('crmFormDesign.readable') }}
         </n-checkbox>
         <n-checkbox
           v-if="![FieldTypeEnum.DIVIDER].includes(fieldConfig.type)"
           v-model:checked="fieldConfig.editable"
           :disabled="fieldConfig.disabledProps?.includes('editable')"
+          @update-checked="
+            ($event) => {
+              if ($event === true) {
+                fieldConfig.readable = true;
+              }
+            }
+          "
         >
           {{ t('crmFormDesign.editable') }}
         </n-checkbox>

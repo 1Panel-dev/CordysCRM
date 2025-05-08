@@ -176,6 +176,7 @@
         }
       });
     }
+    unsaved.value = true;
   }
 
   function handleSave(isContinue = false) {
@@ -191,7 +192,7 @@
             result[item.id] = result[item.id]?.[0];
           }
         });
-        saveForm(formDetail.value, isContinue, () => {
+        saveForm(result, isContinue, () => {
           emit('saved', isContinue);
         });
       } else {
@@ -216,16 +217,6 @@
     () => unsaved.value,
     (val) => {
       formUnsaved.value = val;
-    }
-  );
-
-  watch(
-    () => [fieldList.value, formConfig.value],
-    () => {
-      unsaved.value = true;
-    },
-    {
-      deep: true,
     }
   );
 

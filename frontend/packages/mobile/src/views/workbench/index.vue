@@ -78,6 +78,12 @@
   const keyword = ref('');
   const entryCardList = [
     {
+      icon: 'icon-newClue',
+      label: t('common.newClue'),
+      name: FormDesignKeyEnum.CLUE,
+      permission: ['CLUE_MANAGEMENT:ADD'],
+    },
+    {
       icon: 'icon-newCustomer',
       label: t('common.newCustomer'),
       name: FormDesignKeyEnum.CUSTOMER,
@@ -94,12 +100,6 @@
       label: t('common.newOpportunity'),
       name: FormDesignKeyEnum.BUSINESS,
       permission: ['OPPORTUNITY_MANAGEMENT:ADD'],
-    },
-    {
-      icon: 'icon-newClue',
-      label: t('common.newClue'),
-      name: FormDesignKeyEnum.CLUE,
-      permission: ['CLUE_MANAGEMENT:ADD'],
     },
     // {
     //   icon: 'icon-newRecord',

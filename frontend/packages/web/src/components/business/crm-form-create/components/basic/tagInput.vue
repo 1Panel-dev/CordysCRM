@@ -12,6 +12,7 @@
       v-html="props.fieldConfig.description"
     ></div>
     <n-select
+      ref="selectRef"
       v-model:value="value"
       filterable
       multiple
@@ -87,10 +88,14 @@
     );
   }
 
+  const selectRef = ref<InstanceType<typeof NSelect>>();
+
   function handleInputEnter() {
     if (value.value?.length > 10) {
       value.value = value.value.slice(0, 10);
       Message.warning(t('crmFormCreate.basic.tagInputLimitTip'));
+    } else if (value.value?.includes(selectRef.value?.$el.querySelector('.n-base-selection-input-tag__input').value)) {
+      Message.warning(t('crmFormCreate.basic.tagInputRepeatTip'));
     }
   }
 </script>
