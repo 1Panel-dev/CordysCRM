@@ -413,6 +413,9 @@ public class OrganizationUserService {
         user.setUpdateUser(operatorId);
         userMapper.updateById(user);
 
+        //重置后被重置用户需要登出
+        SessionUtils.kickOutUser(userId);
+
         // 日志详情对比需要有差异，并且脱敏
         User originPasswdUser = new User();
         originPasswdUser.setPassword("############");
@@ -489,6 +492,8 @@ public class OrganizationUserService {
             logDTO.setOriginalValue(originPasswdUser);
             logDTO.setModifiedValue(newPasswdUser);
             logDTOS.add(logDTO);
+            //重置后被重置用户需要登出
+            SessionUtils.kickOutUser(user.getId());
         });
         extUserMapper.batchUpdatePassword(userList);
         logService.batchAdd(logDTOS);
