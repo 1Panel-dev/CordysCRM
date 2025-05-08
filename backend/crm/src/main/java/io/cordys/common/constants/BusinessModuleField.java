@@ -41,11 +41,11 @@ public enum BusinessModuleField {
     /**
      * 联系人
      */
-    CLUE_CONTACT("clueContactName", "contact", FormKey.CLUE.getKey()),
+    CLUE_CONTACT("clueContactName", "contact", Set.of("rules"), FormKey.CLUE.getKey()),
     /**
      * 联系人电话
      */
-    CLUE_CONTACT_PHONE("clueContactPhone", "phone", FormKey.CLUE.getKey()),
+    CLUE_CONTACT_PHONE("clueContactPhone", "phone", Set.of("rules"), FormKey.CLUE.getKey()),
     /*------ end: CUSTOMER ------*/
 
     /*------ start: CUSTOMER_MANAGEMENT_CONTACT ------*/
@@ -106,19 +106,19 @@ public enum BusinessModuleField {
     /**
      * 跟进类型
      */
-    FOLLOW_RECORD_TYPE("recordType", "type", Set.of("options"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_TYPE("recordType", "type", Set.of("options", "rules"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 客户id
      */
-    FOLLOW_RECORD_CUSTOMER("recordCustomer", "customerId", FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_CUSTOMER("recordCustomer", "customerId", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 商机id
      */
-    FOLLOW_RECORD_OPPORTUNITY("recordOpportunity", "opportunityId", FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_OPPORTUNITY("recordOpportunity", "opportunityId", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 线索id
      */
-    FOLLOW_RECORD_CLUE("recordClue", "clueId", FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_CLUE("recordClue", "clueId", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 责任人id
      */
@@ -146,7 +146,7 @@ public enum BusinessModuleField {
     /**
      * 跟进类型
      */
-    FOLLOW_PLAN_TYPE("planType", "type", Set.of("options"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_TYPE("planType", "type", Set.of("options", "rules"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 客户id
      */
