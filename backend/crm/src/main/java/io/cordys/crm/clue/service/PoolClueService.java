@@ -78,6 +78,7 @@ public class PoolClueService {
 		List<CluePoolDTO> options = new ArrayList<>();
 		LambdaQueryWrapper<CluePool> poolWrapper = new LambdaQueryWrapper<>();
 		poolWrapper.eq(CluePool::getEnable, true).eq(CluePool::getOrganizationId, currentOrgId);
+		poolWrapper.orderByDesc(CluePool::getUpdateTime);
 		List<CluePool> pools = poolMapper.selectListByLambda(poolWrapper);
 		if (CollectionUtils.isEmpty(pools)) {
 			return new ArrayList<>();

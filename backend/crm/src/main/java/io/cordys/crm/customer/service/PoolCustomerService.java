@@ -80,6 +80,7 @@ public class PoolCustomerService {
 		List<CustomerPoolDTO> options = new ArrayList<>();
 		LambdaQueryWrapper<CustomerPool> poolWrapper = new LambdaQueryWrapper<>();
 		poolWrapper.eq(CustomerPool::getEnable, true).eq(CustomerPool::getOrganizationId, currentOrgId);
+		poolWrapper.orderByDesc(CustomerPool::getUpdateTime);
 		List<CustomerPool> pools = poolMapper.selectListByLambda(poolWrapper);
 		if (CollectionUtils.isEmpty(pools)) {
 			return new ArrayList<>();
