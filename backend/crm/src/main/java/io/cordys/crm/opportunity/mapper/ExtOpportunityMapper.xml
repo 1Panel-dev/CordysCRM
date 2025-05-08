@@ -330,6 +330,7 @@
         </foreach>
           AND organization_id = #{orgId}
           AND customer_id = #{request.customerId}
+          AND status = 1
         <if test="id != null and id != ''">
             AND id != #{id}
         </if>
