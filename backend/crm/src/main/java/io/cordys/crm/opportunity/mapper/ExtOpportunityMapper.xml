@@ -97,7 +97,7 @@
                     <when test="${sort}.name == 'name'">
                         o.`name` ${sortType}
                     </when>
-                    <when test="${sort}.name == 'customerName'">
+                    <when test="${sort}.name == 'customer_id'">
                         c.`name` ${sortType}
                     </when>
                     <when test="${sort}.name == 'owner'">
@@ -112,16 +112,16 @@
                     <when test="${sort}.name == 'status'">
                         o.`status` ${sortType}
                     </when>
-                    <when test="${sort}.name == 'createTime'">
+                    <when test="${sort}.name == 'create_time'">
                         o.`create_time` ${sortType}
                     </when>
-                    <when test="${sort}.name == 'updateTime'">
+                    <when test="${sort}.name == 'update_time'">
                         o.`update_time` ${sortType}
                     </when>
-                    <when test="${sort}.name == 'createUserName'">
+                    <when test="${sort}.name == 'create_user'">
                         o.`create_user` ${sortType}
                     </when>
-                    <when test="${sort}.name == 'updateUserName'">
+                    <when test="${sort}.name == 'update_user'">
                         o.`update_user` ${sortType}
                     </when>
                     <otherwise>
@@ -168,23 +168,9 @@
     </sql>
 
     <sql id="fieldSortJoin">
-        <if test="${sort} != null
-                and ${sort}.name != 'name'
-                and ${sort}.name != 'owner'
-                and ${sort}.name != 'customerId'
-                and ${sort}.name != 'stage'
-                and ${sort}.name != 'amount'
-                and ${sort}.name != 'possible'
-                and ${sort}.name != 'products'
-                and ${sort}.name != 'contactId'
-                and ${sort}.name != 'followTime'
-                and ${sort}.name != 'status'
-                and ${sort}.name != 'updateUser'
-                and ${sort}.name != 'createTime'
-                and ${sort}.name != 'updateTime'
-                and ${sort}.name != 'createUser'
-                and ${sort}.name != 'follower'
-                and ${sort}.name != 'departmentId'">
+        <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
+                {'name', 'owner', 'customer_id', 'stage', 'amount', 'possible', 'products', 'contact_id', 'follow_time', 'status',
+                 'update_user', 'create_time', 'update_time', 'create_user', 'follower', 'department_id'}">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_field sort_table
             on o.id = sort_table.resource_id and sort_table.field_id = #{sortName}
