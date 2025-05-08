@@ -9,11 +9,12 @@ log() {
 # 创建必要目录
 log "创建 Redis 数据目录..."
 mkdir -p /opt/cordys/data/redis
+mkdir -p /opt/cordys/conf/redis
 
 # 检查 Redis 密码
-if [ -z "${CORDYS_REDIS_PASSWORD}" ]; then
+if [ -z "${REDIS_PASSWORD}" ]; then
     log "警告：CORDYS_REDIS_PASSWORD 环境变量未设置，使用默认密码 CordysCRM@redis"
-    CORDYS_REDIS_PASSWORD="CordysCRM@redis"
+    REDIS_PASSWORD="CordysCRM@redis"
 fi
 
 # 启动 Redis 服务器
