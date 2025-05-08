@@ -95,7 +95,6 @@ class CustomerOwnerHistoryControllerTests extends BaseTest {
             Assertions.assertEquals(customerOwner.getOperator(), InternalUser.ADMIN.getValue());
             Assertions.assertEquals(customerOwner.getCollectionTime(), addCustomer.getCollectionTime());
             Assertions.assertEquals(customerOwner.getOwner(), addCustomer.getOwner());
-            Assertions.assertNotNull(customerOwner.getDepartmentName());
             Assertions.assertNotNull(customerOwner.getOwnerName());
             Assertions.assertNotNull(customerOwner.getOwnerName());
         });

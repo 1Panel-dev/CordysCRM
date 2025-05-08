@@ -195,8 +195,10 @@ class CustomerControllerTests extends BaseTest {
         responseCustomer.setCollectionTime(addCustomer.getCollectionTime());
         Assertions.assertEquals(responseCustomer, customer);
         Assertions.assertNotNull(getResponse.getOwnerName());
-        Assertions.assertNotNull(getResponse.getDepartmentId());
-        Assertions.assertNotNull(getResponse.getDepartmentName());
+        if (!getResponse.getOwner().equals(InternalUser.ADMIN.getValue())) {
+            Assertions.assertNotNull(getResponse.getDepartmentId());
+            Assertions.assertNotNull(getResponse.getDepartmentName());
+        }
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, DEFAULT_GET, addCustomer.getId());
@@ -229,8 +231,10 @@ class CustomerControllerTests extends BaseTest {
             responseCustomer.setInSharedPool(false);
             Assertions.assertEquals(customer, responseCustomer);
             Assertions.assertNotNull(customerListResponse.getOwnerName());
-            Assertions.assertNotNull(customerListResponse.getDepartmentId());
-            Assertions.assertNotNull(customerListResponse.getDepartmentName());
+            if (!customerListResponse.getOwner().equals(InternalUser.ADMIN.getValue())) {
+                Assertions.assertNotNull(customerListResponse.getDepartmentId());
+                Assertions.assertNotNull(customerListResponse.getDepartmentName());
+            }
         });
 
         request.setSearchType(BusinessSearchType.SELF.name());

@@ -9,10 +9,6 @@ VALUES
 
 SET @internal_department_id = UUID_SHORT();-- 初始化用户基本信息
 
-INSERT INTO `sys_organization_user` ( `id`, `organization_id`, `department_id`, `resource_user_id`, `user_id`, `enable`, `employee_id`, `position`, `employee_type`, `supervisor_id`, `work_city`, `create_user`, `update_user`, `create_time`, `update_time` )
-VALUES
-    ( UUID_SHORT(), '100001', @internal_department_id, '', 'admin', TRUE, '', '', '', '', '', 'admin', 'admin', 1716175907000, 1716175907000 );-- 初始化默认部门
-
 INSERT INTO `sys_department` ( `id`, `name`, `organization_id`, `parent_id`, `pos`, `create_time`, `update_time`, `create_user`, `update_user`, `resource`, `resource_id` )
 VALUES
     ( @internal_department_id, '公司名称', '100001', 'NONE', 100001, 1736240043609, 1736240043609, 'admin', 'admin', 'INTERNAL', NULL );-- 初始化默认组织

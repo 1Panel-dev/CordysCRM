@@ -1,5 +1,6 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.RoleDataScopeDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.permission.PermissionCache;
@@ -57,7 +58,7 @@ public class UserLoginService {
             throw new AuthenticationException(Translator.get("user_not_exist"));
         }
         // 检查用户是否被禁用
-        if (StringUtils.isNotBlank(userDTO.getLastOrganizationId())) {
+        if (StringUtils.isNotBlank(userDTO.getLastOrganizationId()) && !StringUtils.equals(userDTO.getId(), InternalUser.ADMIN.getValue())) {
             var userLambdaQueryWrapper = new LambdaQueryWrapper<OrganizationUser>()
                     .eq(OrganizationUser::getUserId, userDTO.getId())
                     .eq(OrganizationUser::getOrganizationId, userDTO.getLastOrganizationId())

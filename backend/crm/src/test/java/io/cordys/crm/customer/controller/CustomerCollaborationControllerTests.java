@@ -98,7 +98,6 @@ class CustomerCollaborationControllerTests extends BaseTest {
             CustomerCollaboration result = BeanUtils.copyBean(new CustomerCollaboration(), customerCollaborationListResponse);
             Assertions.assertEquals(customerCollaboration, result);
             Assertions.assertNotNull(customerCollaborationListResponse.getUpdateUserName());
-            Assertions.assertNotNull(customerCollaborationListResponse.getDepartmentName());
         });
         
         // 校验权限

@@ -15,6 +15,7 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.context.OrganizationContext;
@@ -89,6 +90,9 @@ public class PersonalCenterService {
 
 
     public UserResponse getUserDetail(String id, String orgId) {
+        if (StringUtils.equals(id, InternalUser.ADMIN.getValue())) {
+            return BeanUtils.copyBean(new UserResponse(), userBaseMapper.selectByPrimaryKey(id));
+        }
         String orgUserIdByUserId = extOrganizationUserMapper.getOrgUserIdByUserId(orgId, id);
         return organizationUserService.getUserDetail(orgUserIdByUserId);
     }
@@ -174,8 +178,8 @@ public class PersonalCenterService {
         user.setEmail(personalInfoRequest.getEmail());
         userBaseMapper.update(user);
 
-        String orgUserIdByUserId = extOrganizationUserMapper.getOrgUserIdByUserId(orgId, userId);
-        UserResponse userDetail = organizationUserService.getUserDetail(orgUserIdByUserId);
+        UserResponse userDetail = getUserDetail(userId, orgId);
+
         //添加日志上下文
         OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(oldUser)

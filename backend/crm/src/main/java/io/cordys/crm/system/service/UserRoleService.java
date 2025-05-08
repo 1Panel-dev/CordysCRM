@@ -128,8 +128,8 @@ public class UserRoleService {
     public List<DeptUserTreeNode> getDeptUserTree(String orgId, String roleId) {
         List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
         List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForRelevance(orgId, roleId);
-        treeNodes.addAll(userNodes);
-        return BaseTreeNode.buildTree(treeNodes);
+        userNodes.addAll(treeNodes);
+        return BaseTreeNode.buildTree(userNodes);
     }
 
     public List<RoleUserTreeNode> getRoleUserTree(String orgId, String roleId) {

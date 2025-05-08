@@ -95,7 +95,6 @@ class ClueOwnerHistoryControllerTests extends BaseTest {
             Assertions.assertEquals(clueOwner.getOperator(), InternalUser.ADMIN.getValue());
             Assertions.assertEquals(clueOwner.getCollectionTime(), addClue.getCollectionTime());
             Assertions.assertEquals(clueOwner.getOwner(), addClue.getOwner());
-            Assertions.assertNotNull(clueOwner.getDepartmentName());
             Assertions.assertNotNull(clueOwner.getOwnerName());
             Assertions.assertNotNull(clueOwner.getOwnerName());
         });

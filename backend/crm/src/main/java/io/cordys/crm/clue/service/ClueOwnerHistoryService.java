@@ -62,7 +62,7 @@ public class ClueOwnerHistoryService {
                     ClueOwnerListResponse clueOwner =
                             BeanUtils.copyBean(new ClueOwnerListResponse(), item);
                     UserDeptDTO userDeptDTO = userDeptMap.get(clueOwner.getOwner());
-                    if (userDeptMap != null) {
+                    if (userDeptDTO != null) {
                         clueOwner.setDepartmentId(userDeptDTO.getDeptId());
                         clueOwner.setDepartmentName(userDeptDTO.getDeptName());
                     }

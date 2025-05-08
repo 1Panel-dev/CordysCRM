@@ -205,8 +205,10 @@ class ClueControllerTests extends BaseTest {
         responseClue.setCollectionTime(addClue.getCollectionTime());
         Assertions.assertEquals(responseClue, clue);
         Assertions.assertNotNull(getResponse.getOwnerName());
-        Assertions.assertNotNull(getResponse.getDepartmentId());
-        Assertions.assertNotNull(getResponse.getDepartmentName());
+        if (!getResponse.getOwner().equals(InternalUser.ADMIN.getValue())) {
+            Assertions.assertNotNull(getResponse.getDepartmentId());
+            Assertions.assertNotNull(getResponse.getDepartmentName());
+        }
         Assertions.assertNotNull(getResponse.getOptionMap().get("owner"));
 
         // 校验权限
@@ -240,8 +242,10 @@ class ClueControllerTests extends BaseTest {
             responseClue.setInSharedPool(false);
             Assertions.assertEquals(clue, responseClue);
             Assertions.assertNotNull(clueListResponse.getOwnerName());
-            Assertions.assertNotNull(clueListResponse.getDepartmentId());
-            Assertions.assertNotNull(clueListResponse.getDepartmentName());
+            if (!responseClue.getOwner().equals(InternalUser.ADMIN.getValue())) {
+                Assertions.assertNotNull(clueListResponse.getDepartmentId());
+                Assertions.assertNotNull(clueListResponse.getDepartmentName());
+            }
         });
 
         request.setSearchType(BusinessSearchType.SELF.name());

@@ -73,7 +73,7 @@ public class CustomerCollaborationService {
                     CustomerCollaborationListResponse customerCollaboration =
                             BeanUtils.copyBean(new CustomerCollaborationListResponse(), item);
                     UserDeptDTO userDeptDTO = userDeptMap.get(customerCollaboration.getUserId());
-                    if (userDeptMap != null) {
+                    if (userDeptDTO != null) {
                         customerCollaboration.setDepartmentId(userDeptDTO.getDeptId());
                         customerCollaboration.setDepartmentName(userDeptDTO.getDeptName());
                     }

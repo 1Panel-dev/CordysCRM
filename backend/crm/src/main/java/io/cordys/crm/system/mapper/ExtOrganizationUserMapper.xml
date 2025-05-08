@@ -48,7 +48,6 @@
             or su.phone like concat('%', #{request.keyword},'%')
             )
         </if>
-        and <![CDATA[ su.id <> 'admin' ]]>
         <include refid="filters">
             <property name="filters" value="request.filters"/>
         </include>
@@ -158,7 +157,7 @@
     </select>
 
     <delete id="deleteUserByOrgId">
-        DELETE FROM sys_organization_user WHERE organization_id  = #{orgId} and user_id != 'admin'
+        DELETE FROM sys_organization_user WHERE organization_id  = #{orgId}
     </delete>
 
     <select id="selectEnableOrgUser" resultType="io.cordys.common.dto.OptionDTO">
@@ -209,7 +208,7 @@
     </select>
 
     <select id="getUserByOrgId" resultType="io.cordys.crm.system.domain.OrganizationUser">
-        select * from sys_organization_user where organization_id = #{orgId} and user_id != 'admin'
+        select * from sys_organization_user where organization_id = #{orgId}
     </select>
 
     <select id="getOrgUserIdByUserId" resultType="java.lang.String">
