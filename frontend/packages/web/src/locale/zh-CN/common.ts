@@ -29,6 +29,8 @@ export default {
   'common.distribute': '分配',
   'common.distributeSuccess': '分配成功',
   'common.batchDistribute': '批量分配',
+  'common.addUser': '添加用户',
+  'common.removeUser': '移除用户',
   'common.update': '更新',
   'common.all': '全部',
   'common.operation': '操作',

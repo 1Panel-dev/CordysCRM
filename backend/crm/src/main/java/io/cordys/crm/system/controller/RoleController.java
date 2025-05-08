@@ -134,13 +134,13 @@ public class RoleController {
     @Operation(summary = "角色移除用户")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_REMOVE_USER)
     public void deleteRoleUser(@PathVariable String id) {
-        userRoleService.deleteRoleUser(id, OrganizationContext.getOrganizationId());
+        userRoleService.deleteRoleUser(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/user/batch/delete")
     @Operation(summary = "角色批量移除用户")
     @RequiresPermissions(PermissionConstants.SYSTEM_ROLE_REMOVE_USER)
     public void batchDeleteRoleUser(@RequestBody List<String> ids) {
-        userRoleService.batchDeleteRoleUser(ids, OrganizationContext.getOrganizationId());
+        userRoleService.batchDeleteRoleUser(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

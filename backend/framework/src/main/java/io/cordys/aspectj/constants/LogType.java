@@ -55,6 +55,14 @@ public final class LogType {
      * 取消
      */
     public static final String CANCEL = "CANCEL";
+    /**
+     * 添加用户
+     */
+    public static final String ADD_USER = "ADD_USER";
+    /**
+     * 移除用户
+     */
+    public static final String REMOVE_USER = "REMOVE_USER";
 
     private LogType() {
         // 私有构造函数防止实例化

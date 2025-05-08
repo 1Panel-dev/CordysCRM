@@ -1,12 +1,18 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.dto.RoleUserTreeNode;
 import io.cordys.common.permission.PermissionCache;
+import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.SubListUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Department;
+import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.UserExtend;
 import io.cordys.crm.system.domain.UserRole;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
@@ -54,6 +60,12 @@ public class UserRoleService {
     private BaseMapper<UserExtend> userExtendMapper;
     @Resource
     private PermissionCache permissionCache;
+    @Resource
+    private BaseMapper<Role> roleMapper;
+    @Resource
+    private BaseService baseService;
+    @Resource
+    private LogService logService;
 
     public void delete(String id) {
         userRoleMapper.deleteByPrimaryKey(id);
@@ -177,23 +189,68 @@ public class UserRoleService {
                     })
                     .collect(Collectors.toList());
             userRoleMapper.batchInsert(userRoles);
+
+            Role role = roleMapper.selectByPrimaryKey(request.getRoleId());
+            role.setName(roleService.translateInternalRole(role.getName()));
+            List<LogDTO> logs = new ArrayList<>();
+            Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
             userRoles.forEach(u -> {
+                // 记录日志
+                LogDTO logDTO = new LogDTO(orgId, u.getRoleId(), operator, LogType.ADD_USER, LogModule.SYSTEM_ROLE, role.getName());
+                String detail = Translator.getWithArgs("role.add_user", role.getName(),
+                        userNameMap.get(u.getUserId()));
+                logDTO.setDetail(detail);
+                logs.add(logDTO);
+
                 // 清除权限缓存
                 permissionCache.clearCache(u.getUserId(), orgId);
             });
+
+            logService.batchAdd(logs);
         });
     }
 
-    public void deleteRoleUser(String id, String orgId) {
+    public void deleteRoleUser(String id, String userId, String orgId) {
         UserRole userRole = userRoleMapper.selectByPrimaryKey(id);
         userRoleMapper.deleteByPrimaryKey(id);
         permissionCache.clearCache(userRole.getUserId(), orgId);
+
+        Role role = roleMapper.selectByPrimaryKey(userRole.getRoleId());
+        role.setName(roleService.translateInternalRole(role.getName()));
+        String userName = baseService.getUserName(userRole.getUserId());
+        // 记录日志
+        LogDTO logDTO = new LogDTO(orgId, role.getId(), userId, LogType.REMOVE_USER, LogModule.SYSTEM_ROLE, role.getName());
+        String detail = Translator.getWithArgs("role.remove_user", role.getName(),
+                userName);
+        logDTO.setDetail(detail);
+        logService.add(logDTO);
     }
 
-    public void batchDeleteRoleUser(List<String> ids, String orgId) {
+    public void batchDeleteRoleUser(List<String> ids, String userId, String orgId) {
         List<UserRole> userRoles = userRoleMapper.selectByIds(ids);
         extUserRoleMapper.deleteByIds(ids);
-        userRoles.forEach(userRole -> permissionCache.clearCache(userRole.getUserId(), orgId));
+
+        List<String> userIds = userRoles.stream()
+                .map(UserRole::getUserId)
+                .toList();
+        Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
+
+        Role role = roleMapper.selectByPrimaryKey(userRoles.getFirst().getRoleId());
+        role.setName(roleService.translateInternalRole(role.getName()));
+        List<LogDTO> logs = new ArrayList<>();
+        userRoles.forEach(userRole -> {
+            // 记录日志
+            LogDTO logDTO = new LogDTO(orgId, userRole.getRoleId(), userId, LogType.REMOVE_USER, LogModule.SYSTEM_ROLE, role.getName());
+            String detail = Translator.getWithArgs("role.remove_user", role.getName(),
+                    userNameMap.get(userRole.getUserId()));
+            logDTO.setDetail(detail);
+            logs.add(logDTO);
+
+            // 清除权限缓存
+            permissionCache.clearCache(userRole.getUserId(), orgId);
+        });
+
+        logService.batchAdd(logs);
     }
 
     public List<RoleUserOptionResponse> getUserOptionByRoleId(String organizationId, String roleId) {

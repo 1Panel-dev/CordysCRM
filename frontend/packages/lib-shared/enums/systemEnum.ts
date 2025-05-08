@@ -38,4 +38,6 @@ export enum OperationTypeEnum {
   PICK = 'PICK',
   ASSIGN = 'ASSIGN',
   CANCEL = 'CANCEL',
+  ADD_USER = 'ADD_USER',
+  REMOVE_USER = 'REMOVE_USER',
 }

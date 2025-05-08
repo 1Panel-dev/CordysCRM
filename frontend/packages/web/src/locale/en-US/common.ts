@@ -29,6 +29,8 @@ export default {
   'common.distribute': 'Distribute',
   'common.distributeSuccess': 'Distribute success',
   'common.batchDistribute': 'Batch distribute',
+  'common.addUser': 'Add user',
+  'common.removeUser': 'Remove user',
   'common.update': 'Update',
   'common.all': 'All',
   'common.operation': 'Operation',

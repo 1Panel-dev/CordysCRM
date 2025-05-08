@@ -44,6 +44,14 @@ export const logTypeOption = [
     value: OperationTypeEnum.CANCEL,
     label: t('common.cancel'),
   },
+  {
+    value: OperationTypeEnum.ADD_USER,
+    label: t('common.addUser'),
+  },
+  {
+    value: OperationTypeEnum.REMOVE_USER,
+    label: t('common.removeUser'),
+  },
 ];
 
 export default {};
