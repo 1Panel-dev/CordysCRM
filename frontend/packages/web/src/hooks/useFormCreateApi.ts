@@ -1,4 +1,5 @@
 import { useMessage } from 'naive-ui';
+import { cloneDeep } from 'lodash-es';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -11,10 +12,12 @@ import {
   createFormApi,
   getFormConfigApiMap,
   getFormDetailApiMap,
+  rules,
   updateFormApi,
 } from '@/components/business/crm-form-create/config';
-import type CrmFormCreate from '@/components/business/crm-form-create/index.vue';
-import type { FormCreateField } from '@/components/business/crm-form-create/types';
+import type { FormCreateField, FormCreateFieldRule } from '@/components/business/crm-form-create/types';
+
+import useUserStore from '@/store/modules/user';
 
 export interface FormCreateApiProps {
   sourceId?: Ref<string | undefined>;
@@ -22,12 +25,12 @@ export interface FormCreateApiProps {
   needInitDetail?: Ref<boolean>;
   initialSourceName?: Ref<string | undefined>; // 特殊字段初始化需要的资源名称
   otherSaveParams?: Ref<Record<string, any> | undefined>;
-  formCreateRef?: Ref<InstanceType<typeof CrmFormCreate> | undefined>;
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
   const { t } = useI18n();
   const Message = useMessage();
+  const userStore = useUserStore();
 
   const sourceName = ref(props.initialSourceName?.value); // 资源名称
   const collaborationType = ref<CollaborationType>(); // 协作类型-客户独有
@@ -354,6 +357,94 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     return value;
   }
 
+  function getRuleType(item: FormCreateField) {
+    if (
+      item.type === FieldTypeEnum.SELECT_MULTIPLE ||
+      item.type === FieldTypeEnum.CHECKBOX ||
+      item.type === FieldTypeEnum.INPUT_MULTIPLE ||
+      item.type === FieldTypeEnum.MEMBER_MULTIPLE ||
+      item.type === FieldTypeEnum.DEPARTMENT_MULTIPLE ||
+      item.type === FieldTypeEnum.DATA_SOURCE ||
+      item.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE ||
+      item.type === FieldTypeEnum.PICTURE
+    ) {
+      return 'array';
+    }
+    if (item.type === FieldTypeEnum.DATE_TIME) {
+      return 'date';
+    }
+    if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+      return 'number';
+    }
+    return 'string';
+  }
+
+  function initForm() {
+    fieldList.value.forEach((item) => {
+      if (props.needInitDetail?.value) {
+        item.defaultValue = undefined;
+        item.initialOptions = [];
+      }
+      if (!formDetail.value[item.id]) {
+        let defaultValue = props.needInitDetail?.value ? '' : item.defaultValue || '';
+        if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
+          defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
+        } else if (getRuleType(item) === 'array') {
+          defaultValue =
+            [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
+            typeof item.defaultValue === 'string'
+              ? [defaultValue]
+              : defaultValue || [];
+        }
+        formDetail.value[item.id] = defaultValue;
+      }
+      const fullRules: FormCreateFieldRule[] = [];
+      (item.rules || []).forEach((rule) => {
+        // 遍历规则集合，将全量的规则配置载入
+        const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
+        if (staticRule) {
+          staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
+          staticRule.message = t(staticRule.message as string, { value: t(item.name) });
+          staticRule.type = getRuleType(item);
+          if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
+            staticRule.trigger = 'none';
+          }
+          fullRules.push(staticRule);
+        }
+      });
+      item.rules = fullRules;
+      if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
+        item.defaultValue = userStore.userInfo.id;
+        item.initialOptions = [
+          {
+            id: userStore.userInfo.id,
+            name: userStore.userInfo.name,
+          },
+        ];
+      }
+      if (
+        [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(item.type) &&
+        item.hasCurrentUserDept
+      ) {
+        item.defaultValue = userStore.userInfo.departmentId;
+        item.initialOptions = [
+          {
+            id: userStore.userInfo.departmentId,
+            name: userStore.userInfo.departmentName,
+          },
+        ];
+      }
+    });
+  }
+
+  function resetForm() {
+    formDetail.value = {};
+    fieldList.value.forEach((item) => {
+      item.initialOptions = [];
+    });
+    initForm();
+  }
+
   async function saveForm(form: Record<string, any>, isContinue: boolean, callback?: (_isContinue: boolean) => void) {
     try {
       loading.value = true;
@@ -386,7 +477,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           Message.success(t('common.createSuccess'));
         }
       }
-      props.formCreateRef?.value?.resetForm();
+      resetForm();
       if (callback) {
         callback(isContinue);
       }
@@ -423,5 +514,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     initFormConfig,
     initFormDetail,
     saveForm,
+    initForm,
+    resetForm,
   };
 }

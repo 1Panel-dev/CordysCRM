@@ -20,13 +20,18 @@
     <CrmFormCreate
       v-if="visible"
       ref="formCreateRef"
-      v-model:list="fieldList"
-      :form-detail="formDetail"
-      :form-config="formConfig"
+      v-model:loading="loading"
+      v-model:unsaved="unsaved"
+      :source-id="props.sourceId"
+      :form-key="props.formKey"
+      :need-init-detail="props.needInitDetail"
+      :initial-source-name="props.initialSourceName"
+      :other-save-params="props.otherSaveParams"
       :is-edit="needInitDetail"
       class="pt-[16px]"
       @cancel="handleBack"
-      @save="handleSave"
+      @saved="handleSaved"
+      @init="($event) => (formCreateTitle = $event)"
     />
   </CrmDrawer>
 </template>
@@ -40,7 +45,6 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
-  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useModal from '@/hooks/useModal';
 
   const CrmFormCreate = defineAsyncComponent(() => import('@/components/business/crm-form-create/index.vue'));
@@ -62,37 +66,9 @@
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
-  const formCreateRef = ref<InstanceType<typeof CrmFormCreate>>();
-  const { needInitDetail, formKey, sourceId, initialSourceName, otherSaveParams } = toRefs(props);
-
-  const {
-    fieldList,
-    formConfig,
-    formDetail,
-    unsaved,
-    loading,
-    formCreateTitle,
-    initFormConfig,
-    initFormDetail,
-    saveForm,
-  } = useFormCreateApi({
-    formKey,
-    sourceId,
-    needInitDetail,
-    initialSourceName,
-    otherSaveParams,
-    formCreateRef,
-  });
-
-  watch(
-    () => [fieldList.value, formConfig.value],
-    () => {
-      unsaved.value = true;
-    },
-    {
-      deep: true,
-    }
-  );
+  const formCreateTitle = ref('');
+  const loading = ref(false);
+  const unsaved = ref(false);
 
   function showUnsavedLeaveTip() {
     openModal({
@@ -117,26 +93,9 @@
     }
   }
 
-  watch(
-    () => visible.value,
-    async (val) => {
-      if (val) {
-        await initFormConfig();
-        if (props.sourceId && props.needInitDetail) {
-          initFormDetail();
-        }
-      }
-    },
-    {
-      immediate: true,
-    }
-  );
-
-  function handleSave(form: Record<string, any>, isContinue: boolean) {
-    saveForm(form, isContinue, () => {
-      visible.value = isContinue;
-      emit('saved');
-    });
+  function handleSaved(isContinue: boolean) {
+    visible.value = isContinue;
+    emit('saved');
   }
 </script>
 

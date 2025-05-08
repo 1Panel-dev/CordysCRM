@@ -1,15 +1,15 @@
 <template>
   <n-form
     ref="formRef"
-    :model="form"
-    :label-placement="props.formConfig.labelPos"
-    :require-mark-placement="props.formConfig.labelPos === 'left' ? 'left' : 'right'"
+    :model="formDetail"
+    :label-placement="formConfig.labelPos"
+    :require-mark-placement="formConfig.labelPos === 'left' ? 'left' : 'right'"
     label-width="auto"
     class="crm-form-create"
   >
     <n-scrollbar>
       <div class="flex h-full w-full flex-wrap content-start">
-        <template v-for="item in list" :key="item.id">
+        <template v-for="item in fieldList" :key="item.id">
           <div
             v-if="item.show !== false && item.readable"
             class="crm-form-create-item"
@@ -18,7 +18,7 @@
             <component
               :is="getItemComponent(item.type)"
               :id="item.id"
-              v-model:value="form[item.id]"
+              v-model:value="formDetail[item.id]"
               :field-config="item"
               :path="item.id"
               @change="($event: any) => handleFieldChange($event, item)"
@@ -27,7 +27,7 @@
         </template>
       </div>
     </n-scrollbar>
-    <div class="crm-form-create-footer" :class="props.formConfig.optBtnPos">
+    <div class="crm-form-create-footer" :class="formConfig.optBtnPos">
       <n-button v-if="props.isEdit" type="primary" @click="handleSave(false)">
         {{ t('common.update') }}
       </n-button>
@@ -50,36 +50,58 @@
   import { FormInst, NButton, NForm, NScrollbar } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FormConfig } from '@lib/shared/models/system/module';
 
   import CrmFormCreateComponents from '@/components/business/crm-form-create/components';
-  import { FormCreateField, FormCreateFieldRule } from '@/components/business/crm-form-create/types';
+  import { FormCreateField } from '@/components/business/crm-form-create/types';
 
-  import useUserStore from '@/store/modules/user';
-
-  import { rules } from './config';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   const props = defineProps<{
-    formConfig: FormConfig;
-    formDetail?: Record<string, any>;
     isEdit?: boolean;
+    sourceId?: string;
+    formKey: FormDesignKeyEnum;
+    needInitDetail?: boolean; // 是否需要初始化详情
+    initialSourceName?: string; // 初始化详情时的名称
+    otherSaveParams?: Record<string, any>;
   }>();
   const emit = defineEmits<{
     (e: 'cancel'): void;
-    (e: 'save', form: Record<string, any>, isContinue: boolean): void;
+    (e: 'init', title: string): void;
+    (e: 'saved', isContinue: boolean): void;
   }>();
 
   const { t } = useI18n();
-  const userStore = useUserStore();
 
-  const list = defineModel<FormCreateField[]>('list', {
-    required: true,
+  const formLoading = defineModel<boolean>('loading', {
+    default: false,
+  });
+  const formUnsaved = defineModel<boolean>('unsaved', {
+    default: false,
   });
 
   const formRef = ref<FormInst>();
-  const form = ref<Record<string, any>>(props.formDetail || {});
+  const { needInitDetail, formKey, sourceId, initialSourceName, otherSaveParams } = toRefs(props);
+
+  const {
+    fieldList,
+    formConfig,
+    formDetail,
+    unsaved,
+    loading,
+    formCreateTitle,
+    initFormConfig,
+    initFormDetail,
+    saveForm,
+    initForm,
+  } = useFormCreateApi({
+    formKey,
+    sourceId,
+    needInitDetail,
+    initialSourceName,
+    otherSaveParams,
+  });
 
   function getItemComponent(type: FieldTypeEnum) {
     if (type === FieldTypeEnum.INPUT) {
@@ -133,7 +155,7 @@
     // 控制显示规则
     if (item.showControlRules?.length) {
       item.showControlRules.forEach((rule) => {
-        list.value.forEach((e) => {
+        fieldList.value.forEach((e) => {
           // 若配置了该值的显示规则，且该字段在显示规则中，则显示
           if (rule.value === value && rule.fieldIds.includes(e.id)) {
             e.show = true;
@@ -159,8 +181,8 @@
   function handleSave(isContinue = false) {
     formRef.value?.validate((errors) => {
       if (!errors) {
-        const result = cloneDeep(form.value);
-        list.value.forEach((item) => {
+        const result = cloneDeep(formDetail.value);
+        fieldList.value.forEach((item) => {
           if (
             [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(item.type) &&
             Array.isArray(result[item.id])
@@ -169,7 +191,9 @@
             result[item.id] = result[item.id]?.[0];
           }
         });
-        emit('save', result, isContinue);
+        saveForm(formDetail.value, isContinue, () => {
+          emit('saved', isContinue);
+        });
       } else {
         // 滚动到报错的位置
         const firstErrorId = errors[0]?.[0]?.field;
@@ -181,104 +205,37 @@
     });
   }
 
-  function getRuleType(item: FormCreateField) {
-    if (
-      item.type === FieldTypeEnum.SELECT_MULTIPLE ||
-      item.type === FieldTypeEnum.CHECKBOX ||
-      item.type === FieldTypeEnum.INPUT_MULTIPLE ||
-      item.type === FieldTypeEnum.MEMBER_MULTIPLE ||
-      item.type === FieldTypeEnum.DEPARTMENT_MULTIPLE ||
-      item.type === FieldTypeEnum.DATA_SOURCE ||
-      item.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE ||
-      item.type === FieldTypeEnum.PICTURE
-    ) {
-      return 'array';
-    }
-    if (item.type === FieldTypeEnum.DATE_TIME) {
-      return 'date';
-    }
-    if (item.type === FieldTypeEnum.INPUT_NUMBER) {
-      return 'number';
-    }
-    return 'string';
-  }
-
-  function initForm() {
-    list.value.forEach((item) => {
-      if (props.isEdit) {
-        item.defaultValue = undefined;
-        item.initialOptions = [];
-      }
-      if (!form.value[item.id]) {
-        let defaultValue = props.isEdit ? '' : item.defaultValue || '';
-        if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
-          defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
-        } else if (getRuleType(item) === 'array') {
-          defaultValue =
-            [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
-            typeof item.defaultValue === 'string'
-              ? [defaultValue]
-              : defaultValue || [];
-        }
-        form.value[item.id] = defaultValue;
-      }
-      const fullRules: FormCreateFieldRule[] = [];
-      (item.rules || []).forEach((rule) => {
-        // 遍历规则集合，将全量的规则配置载入
-        const staticRule = cloneDeep(rules.find((e) => e.key === rule.key));
-        if (staticRule) {
-          staticRule.regex = rule.regex; // 正则表达式(目前没有)是配置到后台存储的，需要读取
-          staticRule.message = t(staticRule.message as string, { value: t(item.name) });
-          staticRule.type = getRuleType(item);
-          if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)) {
-            staticRule.trigger = 'none';
-          }
-          fullRules.push(staticRule);
-        }
-      });
-      item.rules = fullRules;
-      if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
-        item.defaultValue = userStore.userInfo.id;
-        item.initialOptions = [
-          {
-            id: userStore.userInfo.id,
-            name: userStore.userInfo.name,
-          },
-        ];
-      }
-      if (
-        [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(item.type) &&
-        item.hasCurrentUserDept
-      ) {
-        item.defaultValue = userStore.userInfo.departmentId;
-        item.initialOptions = [
-          {
-            id: userStore.userInfo.departmentId,
-            name: userStore.userInfo.departmentName,
-          },
-        ];
-      }
-    });
-  }
-
-  function resetForm() {
-    form.value = {};
-    list.value.forEach((item) => {
-      item.initialOptions = [];
-    });
-    initForm();
-  }
-
   watch(
-    () => list.value,
-    () => {
-      initForm();
-    },
-    { immediate: true }
+    () => loading.value,
+    (val) => {
+      formLoading.value = val;
+    }
   );
 
-  defineExpose({
-    resetForm,
+  watch(
+    () => unsaved.value,
+    (val) => {
+      formUnsaved.value = val;
+    }
+  );
+
+  watch(
+    () => [fieldList.value, formConfig.value],
+    () => {
+      unsaved.value = true;
+    },
+    {
+      deep: true,
+    }
+  );
+
+  onBeforeMount(async () => {
+    await initFormConfig();
+    emit('init', formCreateTitle.value);
+    if (props.sourceId && props.needInitDetail) {
+      initFormDetail();
+    }
+    initForm();
   });
 </script>
 
