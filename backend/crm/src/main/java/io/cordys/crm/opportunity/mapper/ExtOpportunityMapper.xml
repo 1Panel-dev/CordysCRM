@@ -375,7 +375,7 @@
     </select>
 
     <select id="getRepeatCountMap" resultType="io.cordys.common.dto.OptionDTO">
-        select customer_id as id, count(id) as name from opportunity where customer_id in
+        select customer_id as id, count(opportunity.id) as name from opportunity  INNER JOIN sys_user u ON opportunity.owner = u.id where customer_id in
         <foreach collection="customerIds" item="customerId" open="(" close=")" separator=",">
             #{customerId}
         </foreach>
