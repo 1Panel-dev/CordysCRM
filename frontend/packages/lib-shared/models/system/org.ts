@@ -99,5 +99,5 @@ export interface OrgUserInfo extends Omit<UserInfo, 'roles'> {
 export interface DragNodeParams {
   dragNodeId: string;
   dropNodeId: string;
-  dropPosition: -1 | 1; // -1：dropNodeId节点之前。 1：dropNodeId节点后）
+  dropPosition: -1 | 0 | 1; // -1：dropNodeId节点之前。 1：dropNodeId节点后） 0：dropNodeId节点内）
 }

@@ -301,11 +301,16 @@
     dropNode: CrmTreeNodeData,
     dropPosition: 'before' | 'inside' | 'after'
   ) {
+    const positionMap: Record<'before' | 'inside' | 'after', 0 | -1 | 1> = {
+      before: -1,
+      inside: 0,
+      after: 1,
+    };
     try {
       await sortDepartment({
         dragNodeId: dragNode.id,
         dropNodeId: dropNode.id,
-        dropPosition: dropPosition === 'after' ? 1 : -1,
+        dropPosition: positionMap[dropPosition],
       });
       initTree();
     } catch (e) {

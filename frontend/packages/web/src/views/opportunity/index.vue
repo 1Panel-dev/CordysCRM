@@ -63,7 +63,7 @@
       :other-save-params="otherFollowRecordSaveParams"
       :source-id="activeSourceId"
       :initial-source-name="initialSourceName"
-      :need-init-detail="!!activeSourceId"
+      :need-init-detail="needInitDetail"
       @saved="searchData"
     />
     <customerOverviewDrawer v-model:show="showCustomerOverviewDrawer" :source-id="activeSourceId" />
@@ -204,6 +204,7 @@
   const formCreateDrawerVisible = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.BUSINESS);
   const initialSourceName = ref('');
+  const needInitDetail = ref(false);
 
   function handleCreate() {
     realFormKey.value = FormDesignKeyEnum.BUSINESS;
@@ -219,18 +220,19 @@
 
   // 编辑
   function handleEdit(id: string) {
-    activeSourceId.value = id;
     realFormKey.value = FormDesignKeyEnum.BUSINESS;
     otherFollowRecordSaveParams.value.id = id;
+    needInitDetail.value = true;
     formCreateDrawerVisible.value = true;
   }
 
   // 跟进
+
   function handleFollowUp(row: OpportunityItem) {
-    activeSourceId.value = '';
     realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
-    initialSourceName.value = row.name;
     otherFollowRecordSaveParams.value.opportunityId = row.id;
+    initialSourceName.value = row.name;
+    needInitDetail.value = false;
     formCreateDrawerVisible.value = true;
   }
 
@@ -288,6 +290,7 @@
   }
 
   function handleActionSelect(row: OpportunityItem, actionKey: string, done?: () => void) {
+    activeSourceId.value = row.id;
     switch (actionKey) {
       case 'edit':
         handleEdit(row.id);
@@ -415,6 +418,7 @@
         return step ? step.label : '-';
       },
     },
+    permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE'],
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 

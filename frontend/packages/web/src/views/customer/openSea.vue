@@ -387,6 +387,7 @@
         );
       },
     },
+    permission: ['CUSTOMER_MANAGEMENT_POOL:PICK', 'CUSTOMER_MANAGEMENT_POOL:ASSIGN', 'CUSTOMER_MANAGEMENT_POOL:DELETE'],
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   batchTableQueryParams.value = tableQueryParams;

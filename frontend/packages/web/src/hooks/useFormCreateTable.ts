@@ -37,6 +37,7 @@ export interface FormCreateTableProps {
   specialRender?: Record<string, (row: any) => void>;
   showPagination?: boolean;
   excludeFieldIds?: string[]; // 规避某些字段的文字替换
+  permission?: string[];
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
@@ -533,6 +534,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       showPagination,
       columns,
       scrollX: columns.reduce((prev, curr) => prev + (curr.width as number), 0) + 46,
+      permission: props.permission,
       maxHeight: 600,
     },
     (item, originalData) => {

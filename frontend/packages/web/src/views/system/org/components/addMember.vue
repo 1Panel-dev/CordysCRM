@@ -92,6 +92,7 @@
             <n-select
               v-model:value="form.employeeType"
               :placeholder="t('common.pleaseSelect')"
+              clearable
               :options="employeeTypeOptions"
             />
           </n-form-item>
@@ -108,6 +109,7 @@
               label-field="name"
               mode="remote"
               filterable
+              clearable
               :fetch-api="getUserOptions"
             />
           </n-form-item>

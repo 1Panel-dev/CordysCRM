@@ -62,6 +62,7 @@
   import ColumnSetting from './components/columnSetting.vue';
 
   import useTableStore from '@/hooks/useTableStore';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { BatchActionConfig } from './type';
   import type { DataTableBaseColumn, DataTableFilterState, DataTableRowKey, DataTableSortState } from 'naive-ui';
@@ -89,8 +90,15 @@
   const currentColumns = ref<CrmDataTableColumn[]>([]);
 
   async function initColumn(hasInitStore = false) {
+    const hasSelectedColumn = props.columns.find((e) => e.type === SpecialColumnEnum.SELECTION);
+    // 无任何权限不展示选择列
+    const propsColumns =
+      !hasAnyPermission((attrs?.permission || []) as string[]) && hasSelectedColumn
+        ? props.columns.filter((e) => e.type !== SpecialColumnEnum.SELECTION)
+        : props.columns;
+
     // 将render去掉，防止报错
-    let columns = cloneDeep(props.columns).map((column: CrmDataTableColumn) => {
+    let columns = cloneDeep(propsColumns).map((column: CrmDataTableColumn) => {
       const _col = { ...column };
       Object.keys(_col).forEach((key) => {
         if (typeof _col[key as keyof CrmDataTableColumn] === 'function' && attrs.showSetting) {
@@ -265,6 +273,10 @@
   function handleCheck(rowKeys: DataTableRowKey[], rows: InternalRowData[]) {
     emit('rowKeyChange', rowKeys, rows);
   }
+
+  onMounted(() => {
+    checkedRowKeys.value = [];
+  });
 
   const scrollXWidth = computed(() => currentColumns.value.reduce((prev, curr) => prev + (curr.width as number), 0));
 </script>

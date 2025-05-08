@@ -729,6 +729,7 @@
       tableKey: TableKeyEnum.SYSTEM_ORG_TABLE,
       showSetting: true,
       columns,
+      permission: ['SYS_ORGANIZATION:UPDATE', 'SYS_ORGANIZATION_USER:RESET_PASSWORD'],
     },
     (row: MemberItem) => {
       return {

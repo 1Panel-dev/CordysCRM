@@ -57,6 +57,7 @@ export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
   'crmPagination'?: PaginationProps & CrmPaginationProps; // 分页配置
   'onUpdate:checkedRowKeys'?: (key: DataTableRowKey[]) => void; // 覆写类型防止报错
   'isReturnNativeResponse'?: boolean;
+  'permission'?: string[];
 };
 
 // 表格存储

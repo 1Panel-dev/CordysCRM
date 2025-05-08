@@ -407,6 +407,7 @@
         );
       },
     },
+    permission: ['CLUE_MANAGEMENT_POOL:PICK', 'CLUE_MANAGEMENT_POOL:ASSIGN', 'CLUE_MANAGEMENT_POOL:DELETE'],
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
