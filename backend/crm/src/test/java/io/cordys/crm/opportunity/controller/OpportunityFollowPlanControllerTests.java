@@ -61,6 +61,7 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         request.setOwner("admin");
         request.setContactId("123456");
         request.setType("CUSTOMER");
+        request.setMethod("1");
         request.setContent("计划一下");
         request.setEstimatedTime(timestamp);
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
@@ -83,6 +84,7 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         request.setOpportunityId("wx_12345");
         request.setOwner("admin");
         request.setContactId("1234567");
+        request.setMethod("2");
         request.setType("CUSTOMER");
         request.setContent("计划两下");
         request.setEstimatedTime(timestamp);

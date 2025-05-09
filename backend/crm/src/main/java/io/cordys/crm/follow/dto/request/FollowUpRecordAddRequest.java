@@ -36,6 +36,10 @@ public class FollowUpRecordAddRequest {
     private Long followTime;
 
     @Size(max = 32)
+    @Schema(description = "跟进方式", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String followMethod;
+
+    @Size(max = 32)
     @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED)
     private String owner;
 

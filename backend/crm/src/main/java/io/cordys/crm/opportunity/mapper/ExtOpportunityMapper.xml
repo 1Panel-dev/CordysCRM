@@ -24,14 +24,10 @@
             o.last_stage,
             o.stage,
             o.status,
-            o.contact_id,
-            sys_organization_user.department_id,
-            sys_department.name as departmentName
+            o.contact_id
         FROM
             opportunity o
                 INNER JOIN customer c ON o.customer_id = c.id
-        inner join sys_organization_user on o.owner = sys_organization_user.user_id
-        inner join sys_department on sys_department.id = sys_organization_user.department_id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -47,6 +43,7 @@
         where o.organization_id = #{orgId}
 
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user on o.owner = sys_organization_user.user_id
             and (
                 sys_organization_user.department_id in
                 <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">

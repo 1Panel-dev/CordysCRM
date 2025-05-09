@@ -47,6 +47,7 @@ public class CustomerFollowPlanControllerTests extends BaseTest {
         request.setOwner("admin");
         request.setContactId("123456");
         request.setType("CUSTOMER");
+        request.setMethod("1");
         request.setContent("计划一下");
         request.setEstimatedTime(System.currentTimeMillis());
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
@@ -65,6 +66,7 @@ public class CustomerFollowPlanControllerTests extends BaseTest {
         request.setCustomerId("123");
         request.setOpportunityId("12345");
         request.setOwner("admin");
+        request.setMethod("2");
         request.setContactId("1234567");
         request.setType("CUSTOMER");
         request.setContent("计划两下");

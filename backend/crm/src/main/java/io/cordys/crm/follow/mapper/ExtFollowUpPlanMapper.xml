@@ -18,6 +18,7 @@
         update_time,
         create_user,
         update_user,
+        method,
         CASE
         WHEN `status` = 'CANCELLED' THEN 'CANCELLED'
         WHEN UNIX_TIMESTAMP(CURDATE())*1000 <![CDATA[<]]> estimated_time THEN 'PREPARED'

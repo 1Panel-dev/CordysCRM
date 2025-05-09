@@ -46,6 +46,7 @@ public class OpportunityFollowRecordControllerTests extends BaseTest {
         request.setContactId("123456");
         request.setType("CUSTOMER");
         request.setContent("跟进一下");
+        request.setFollowMethod("1");
         request.setFollowTime(System.currentTimeMillis());
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
@@ -63,6 +64,7 @@ public class OpportunityFollowRecordControllerTests extends BaseTest {
         request.setOpportunityId("12345");
         request.setOwner("admin");
         request.setContactId("1234567");
+        request.setFollowMethod("2");
         request.setType("CUSTOMER");
         request.setContent("跟进两下");
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));

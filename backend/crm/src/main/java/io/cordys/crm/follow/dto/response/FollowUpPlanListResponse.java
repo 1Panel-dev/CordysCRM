@@ -84,6 +84,9 @@ public class FollowUpPlanListResponse {
     @Schema(description = "电话")
     private String phone;
 
+    @Schema(description = "跟进方式")
+    private String method;
+
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
 }

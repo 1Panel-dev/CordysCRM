@@ -7,6 +7,7 @@ import io.cordys.crm.follow.domain.FollowUpPlan;
 import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
+import io.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
@@ -40,7 +41,7 @@ public class CustomerFollowPlanController {
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     @Operation(summary = "更新客户跟进计划")
-    public FollowUpPlan update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
+    public FollowUpPlan update(@Validated @RequestBody FollowUpPlanUpdateRequest request) {
         return followUpPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

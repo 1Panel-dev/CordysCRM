@@ -13,6 +13,7 @@ import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
@@ -146,6 +147,7 @@ public class OpportunityService {
         Map<String, String> contactMap = baseService.getContactMap(contactIds);
 
         Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(ownerIds, orgId);
+        Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
         list.forEach(opportunityListResponse -> {
             // 获取自定义字段
@@ -159,6 +161,12 @@ public class OpportunityService {
             opportunityListResponse.setUpdateUserName(userNameMap.get(opportunityListResponse.getUpdateUser()));
             opportunityListResponse.setOwnerName(userNameMap.get(opportunityListResponse.getOwner()));
             opportunityListResponse.setContactName(contactMap.get(opportunityListResponse.getContactId()));
+
+            UserDeptDTO userDeptDTO = userDeptMap.get(opportunityListResponse.getOwner());
+            if (userDeptDTO != null) {
+                opportunityListResponse.setDepartmentId(userDeptDTO.getDeptId());
+                opportunityListResponse.setDepartmentName(userDeptDTO.getDeptName());
+            }
 
         });
         return baseService.setCreateAndUpdateUserName(list);

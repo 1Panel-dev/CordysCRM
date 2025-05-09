@@ -60,7 +60,8 @@
         create_time,
         update_time,
         create_user,
-        update_user
+        update_user,
+        follow_method
         FROM
         follow_up_record
         <where>

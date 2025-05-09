@@ -6,6 +6,7 @@ import io.cordys.context.OrganizationContext;
 import io.cordys.crm.follow.domain.FollowUpPlan;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
+import io.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
@@ -39,7 +40,7 @@ public class ClueFollowPlanController {
     @PostMapping("/update")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "更新线索跟进计划")
-    public FollowUpPlan update(@Validated @RequestBody FollowUpRecordUpdateRequest request) {
+    public FollowUpPlan update(@Validated @RequestBody FollowUpPlanUpdateRequest request) {
         return followUpPlanService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 

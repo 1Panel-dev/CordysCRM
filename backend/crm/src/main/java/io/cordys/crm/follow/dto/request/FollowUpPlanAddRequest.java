@@ -44,6 +44,11 @@ public class FollowUpPlanAddRequest {
     @Schema(description = "预计开始时间")
     private Long estimatedTime;
 
+    @Size(max = 32)
+    @NotBlank
+    @Schema(description = "跟进方式", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String method;
+
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 }

@@ -31,6 +31,9 @@ public class FollowUpRecord extends BaseModel {
 	@Schema(description = "跟进时间")
 	private Long followTime;
 
+	@Schema(description = "跟进方式")
+	private String followMethod;
+
 	@Schema(description = "负责人")
 	private String owner;
 

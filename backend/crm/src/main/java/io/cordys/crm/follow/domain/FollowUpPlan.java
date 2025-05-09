@@ -37,6 +37,9 @@ public class FollowUpPlan extends BaseModel {
 	@Schema(description = "预计开始时间")
 	private Long estimatedTime;
 
+	@Schema(description = "跟进方式")
+	private String method;
+
 	@Schema(description = "状态")
 	private String status;
 }

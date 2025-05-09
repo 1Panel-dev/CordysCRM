@@ -22,6 +22,7 @@ import io.cordys.crm.follow.domain.FollowUpPlan;
 import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
+import io.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
@@ -91,7 +92,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @return
      */
     @OperationLog(module = LogModule.FOLLOW_UP_PLAN, type = LogType.UPDATE, resourceId = "{#request.id}")
-    public FollowUpPlan update(FollowUpRecordUpdateRequest request, String userId, String orgId) {
+    public FollowUpPlan update(FollowUpPlanUpdateRequest request, String userId, String orgId) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(followUpPlan).ifPresentOrElse(plan -> {
             //更新跟进计划
@@ -119,7 +120,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         followUpPlanFieldService.saveModuleField(id, orgId, userId, moduleFields);
     }
 
-    private void updatePlan(FollowUpPlan plan, FollowUpRecordUpdateRequest request, String userId) {
+    private void updatePlan(FollowUpPlan plan, FollowUpPlanUpdateRequest request, String userId) {
         plan.setCustomerId(request.getCustomerId());
         plan.setOpportunityId(request.getOpportunityId());
         plan.setType(request.getType());
@@ -127,6 +128,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         plan.setOwner(request.getOwner());
         plan.setContactId(request.getContactId());
         plan.setContent(request.getContent());
+        plan.setMethod(request.getMethod());
         plan.setEstimatedTime(request.getEstimatedTime());
         plan.setUpdateTime(System.currentTimeMillis());
         plan.setUpdateUser(userId);

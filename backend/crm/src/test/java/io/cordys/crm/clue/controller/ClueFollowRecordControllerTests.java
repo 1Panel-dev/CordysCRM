@@ -46,6 +46,7 @@ public class ClueFollowRecordControllerTests extends BaseTest {
         request.setClueId("123456");
         request.setOwner("admin");
         request.setContactId("123456");
+        request.setFollowMethod("1");
         request.setType("CUSTOMER");
         request.setContent("跟进一下");
         request.setFollowTime(System.currentTimeMillis());
@@ -66,6 +67,7 @@ public class ClueFollowRecordControllerTests extends BaseTest {
         request.setOpportunityId("12345");
         request.setClueId("123456");
         request.setOwner("admin");
+        request.setFollowMethod("2");
         request.setContactId("1234567");
         request.setType("CUSTOMER");
         request.setContent("跟进两下");
