@@ -180,7 +180,16 @@
   }>();
 
   const rules: FormRules = {
-    name: [{ required: true, message: t('common.notNull', { value: `${t('module.clue.name')}` }) }],
+    name: [
+      {
+        required: true,
+        message: t('common.notNull', {
+          value: `${
+            props.type === ModuleConfigEnum.CLUE_MANAGEMENT ? t('module.clue.name') : t('module.customer.openSeaName')
+          }`,
+        }),
+      },
+    ],
     adminIds: [{ required: true, message: t('common.pleaseSelect') }],
     userIds: [{ required: true, message: t('common.pleaseSelect') }],
     [`pickRule.pickIntervalDays`]: [{ required: true, message: t('common.pleaseInput') }],

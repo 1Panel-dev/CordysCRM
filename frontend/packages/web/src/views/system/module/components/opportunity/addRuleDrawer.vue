@@ -137,7 +137,9 @@
   ];
 
   const rules: FormRules = {
-    name: [{ required: true, message: t('common.notNull', { value: `${t('org.userName')}` }), trigger: ['blur'] }],
+    name: [
+      { required: true, message: t('common.notNull', { value: `${t('opportunity.ruleName')}` }), trigger: ['blur'] },
+    ],
     ownerIds: [{ required: true, message: t('common.pleaseSelect') }],
     scopeIds: [{ required: true, message: t('common.pleaseSelect') }],
   };

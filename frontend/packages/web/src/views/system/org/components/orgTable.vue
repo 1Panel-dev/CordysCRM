@@ -733,6 +733,7 @@
       tableKey: TableKeyEnum.SYSTEM_ORG_TABLE,
       showSetting: true,
       columns,
+      maxHeight: 'calc(100vh - 296px)',
       permission: ['SYS_ORGANIZATION:UPDATE', 'SYS_ORGANIZATION_USER:RESET_PASSWORD'],
     },
     (row: MemberItem) => {
