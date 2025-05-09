@@ -465,6 +465,7 @@
         userId: row.userId,
         name: newVal,
       });
+      tableRefreshId.value += 1;
       return Promise.resolve(true);
     } catch (error) {
       // eslint-disable-next-line no-console
