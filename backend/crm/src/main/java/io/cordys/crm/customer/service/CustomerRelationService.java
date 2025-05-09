@@ -2,7 +2,9 @@ package io.cordys.crm.customer.service;
 
 import com.alibaba.excel.util.StringUtils;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.constants.CustomerRelationType;
 import io.cordys.crm.customer.domain.CustomerRelation;
 import io.cordys.crm.customer.dto.request.CustomerRelationSaveRequest;
@@ -90,8 +92,44 @@ public class CustomerRelationService {
                     return customerRelation;
                 }).toList();
 
+        checkTargetCustomer(customerId, relations);
+
         if (CollectionUtils.isNotEmpty(relations)) {
             customerRelationMapper.batchInsert(relations);
+        }
+    }
+
+    /**
+     * 校验添加的子公司是否已经有所属的集团了
+     * 一个公司只能有一个集团
+     * @param customerId
+     * @param relations
+     */
+    private void checkTargetCustomer(String customerId, List<CustomerRelation> relations) {
+        List<String> targetCustomerIds = relations.stream()
+                .filter(item -> !StringUtils.equals(item.getTargetCustomerId(), customerId))
+                .map(CustomerRelation::getTargetCustomerId).toList();
+
+        if (CollectionUtils.isEmpty(targetCustomerIds)) {
+            return;
+        }
+
+        LambdaQueryWrapper<CustomerRelation> customerRelation = new LambdaQueryWrapper<>();
+        customerRelation.in(CustomerRelation::getSourceCustomerId, targetCustomerIds);
+        List<CustomerRelation> customerRelations = customerRelationMapper.selectListByLambda(customerRelation)
+                .stream()
+                .filter(item -> !StringUtils.equals(item.getSourceCustomerId(), customerId))
+                .collect(Collectors.toList());
+        if (!customerRelations.isEmpty()) {
+            List<String> sourceIds = customerRelations.stream()
+                    .map(CustomerRelation::getSourceCustomerId)
+                    .collect(Collectors.toList());
+            List<OptionDTO> customers = extCustomerMapper.getCustomerOptionsByIds(sourceIds);
+            String userNames = customers.stream()
+                    .map(OptionDTO::getName)
+                    .distinct()
+                    .collect(Collectors.joining(","));
+            throw new GenericException(Translator.getWithArgs("customer.relation.target_customer.exist", userNames));
         }
     }
 
@@ -114,6 +152,7 @@ public class CustomerRelationService {
 
     public CustomerRelation add(CustomerRelationSaveRequest request, String customerId) {
         CustomerRelation customerRelation = getCustomerRelation(request, customerId);
+        checkTargetCustomer(customerId, List.of(customerRelation));
         customerRelationMapper.insert(customerRelation);
         return customerRelation;
     }
@@ -143,6 +182,7 @@ public class CustomerRelationService {
             customerRelation.setSourceCustomerId(customerId);
             customerRelation.setTargetCustomerId(request.getCustomerId());
         }
+        checkTargetCustomer(customerId, List.of(customerRelation));
         customerRelationMapper.update(customerRelation);
         return customerRelationMapper.selectByPrimaryKey(request.getId());
     }
