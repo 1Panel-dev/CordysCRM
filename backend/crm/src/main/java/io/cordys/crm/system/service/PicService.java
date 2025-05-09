@@ -1,5 +1,6 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.LogUtils;
 import io.cordys.crm.system.domain.Attachment;
@@ -11,6 +12,7 @@ import io.cordys.file.engine.StorageType;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -42,6 +44,16 @@ public class PicService {
 	 * @param pics 上传图片集合
 	 */
 	public List<String> uploadTempPic(List<MultipartFile> pics) {
+		pics.forEach(pic -> {
+			String filename = pic.getOriginalFilename();
+			if (StringUtils.isBlank(filename)) {
+				throw new GenericException("图片类型不支持!");
+			}
+			if (!filename.endsWith(".jpg") && !filename.endsWith(".png") && !filename.endsWith(".jpeg") && !filename.endsWith(".gif")
+					&& !filename.endsWith(".bmp") && !filename.endsWith(".svg") && !filename.endsWith(".webp")) {
+				throw new GenericException("图片类型不支持!");
+			}
+		});
 		List<String> tempPicIds = new ArrayList<>();
 		FileRequest tempRequest = new FileRequest(null, StorageType.LOCAL.name(), null);
 		pics.forEach(pic -> {

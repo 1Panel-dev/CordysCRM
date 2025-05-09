@@ -129,7 +129,7 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
-      Message.error(t('crm.upload.uploadFail'));
+      // Message.error(t('crm.upload.uploadFail'));
       clearInterval(timer as unknown as number);
       onError();
     }
