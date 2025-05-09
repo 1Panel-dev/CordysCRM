@@ -180,6 +180,12 @@ public class UserRoleService {
 
         List<String> userIds = new ArrayList<>(userSet);
         SubListUtils.dealForSubList(userIds, 50, (subUserIds) -> {
+            Map<String, String> userNameMap = baseService.getUserNameMap(subUserIds);
+            // 过滤掉已删除的用户
+            subUserIds = subUserIds.stream()
+                    .filter(userId -> userNameMap.get(userId) != null)
+                    .toList();
+
             List<String> currentRoleUserIds = extUserRoleMapper.getUserIdsByRoleIds(List.of(request.getRoleId()));
             // 去除已关联的用户，添加未关联的用户
             List<UserRole> userRoles = ListUtils.subtract(subUserIds, currentRoleUserIds).stream()
@@ -200,7 +206,6 @@ public class UserRoleService {
             Role role = roleMapper.selectByPrimaryKey(request.getRoleId());
             role.setName(roleService.translateInternalRole(role.getName()));
             List<LogDTO> logs = new ArrayList<>();
-            Map<String, String> userNameMap = baseService.getUserNameMap(userIds);
             userRoles.forEach(u -> {
                 // 记录日志
                 LogDTO logDTO = new LogDTO(orgId, u.getRoleId(), operator, LogType.ADD_USER, LogModule.SYSTEM_ROLE, role.getName());
