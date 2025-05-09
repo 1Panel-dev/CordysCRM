@@ -6,6 +6,7 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.clue.domain.ClueCapacity;
 import io.cordys.crm.clue.dto.ClueCapacityDTO;
+import io.cordys.crm.clue.mapper.ExtClueCapacityMapper;
 import io.cordys.crm.system.dto.request.CapacityAddRequest;
 import io.cordys.crm.system.dto.request.CapacityUpdateRequest;
 import io.cordys.crm.system.service.UserExtendService;
@@ -29,6 +30,8 @@ public class ClueCapacityService {
 	private BaseMapper<ClueCapacity> clueCapacityMapper;
 	@Resource
 	private UserExtendService userExtendService;
+	@Resource
+	private ExtClueCapacityMapper extClueCapacityMapper;
 
 	/**
 	 * 分页获取线索库容设置
@@ -90,7 +93,7 @@ public class ClueCapacityService {
 		oldCapacity.setCapacity(request.getCapacity());
 		oldCapacity.setUpdateTime(System.currentTimeMillis());
 		oldCapacity.setUpdateUser(currentUserId);
-		clueCapacityMapper.updateById(oldCapacity);
+		extClueCapacityMapper.updateCapacity(oldCapacity);
 	}
 
 	public void delete(String id) {
