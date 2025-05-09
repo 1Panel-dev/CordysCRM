@@ -53,16 +53,20 @@
         :rule="[{ required: true, message: t('common.value.notNull') }]"
         require-mark-placement="left"
         label-placement="left"
-        path="value"
+        path="headers"
         :label="t('common.batchUpdate')"
       >
-        <CrmUserSelect
-          v-model:value="form.value"
-          value-field="id"
-          label-field="name"
-          mode="remote"
-          filterable
-          :fetch-api="getUserOptions"
+        <CrmUserTagSelector
+          v-model:selected-list="form.headers"
+          :member-types="[
+            {
+              label: t('menu.settings.org'),
+              value: MemberSelectTypeEnum.ORG,
+            },
+          ]"
+          :multiple="false"
+          :drawer-title="t('org.setDepartmentHead')"
+          :disabled-node-types="[DeptNodeTypeEnum.ORG]"
         />
       </n-form-item>
       <n-form-item
@@ -102,15 +106,19 @@
     SelectOption,
     useMessage,
   } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
+  import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import CrmCitySelect from '@/components/business/crm-city-select/index.vue';
-  import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
+  import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
-  import { batchEditUser, getDepartmentTree, getUserOptions } from '@/api/modules';
+  import { batchEditUser, getDepartmentTree } from '@/api/modules';
 
   const Message = useMessage();
   const { t } = useI18n();
@@ -128,13 +136,17 @@
     default: false,
   });
 
+  const initForm = {
+    attributes: null,
+    value: null,
+    headers: [],
+  };
+
   const form = ref<{
     attributes: string | null;
     value: string | null;
-  }>({
-    attributes: null,
-    value: null,
-  });
+    headers: SelectedUsersItem[];
+  }>(cloneDeep(initForm));
 
   const attributesOptions = ref<SelectOption[]>([
     {
@@ -154,8 +166,7 @@
   const valueOptions = ref([]);
 
   function cancelHandler() {
-    form.value.attributes = null;
-    form.value.value = null;
+    form.value = cloneDeep(initForm);
     showEditDrawer.value = false;
   }
 
@@ -165,7 +176,7 @@
     formRef.value?.validate(async (error) => {
       if (!error) {
         try {
-          const { value, attributes } = form.value;
+          const { value, attributes, headers } = form.value;
 
           if (!attributes) {
             return;
@@ -173,7 +184,7 @@
           loading.value = true;
           await batchEditUser({
             ids: props.userIds,
-            [attributes]: value,
+            [attributes]: attributes === 'supervisorId' ? headers[0]?.id : value,
           });
           cancelHandler();
           emit('loadList');
