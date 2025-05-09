@@ -11,7 +11,7 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
-    <n-input-number
+    <CrmInputNumber
       v-model:value="value"
       :max="props.fieldConfig.max"
       :min="props.fieldConfig.min"
@@ -21,18 +21,19 @@
       :format="format"
       :show-button="false"
       :precision="props.fieldConfig.precision"
-      button-placement="both"
       clearable
       class="w-full"
-      @update-value="($event) => emit('change', $event)"
+      @update-value="($event:number | null) => emit('change', $event)"
     >
       <template v-if="props.fieldConfig.numberFormat === 'percent'" #suffix> % </template>
-    </n-input-number>
+    </CrmInputNumber>
   </n-form-item>
 </template>
 
 <script setup lang="ts">
-  import { NFormItem, NInputNumber } from 'naive-ui';
+  import { NFormItem } from 'naive-ui';
+
+  import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
 
   import { FormCreateField } from '../../types';
 

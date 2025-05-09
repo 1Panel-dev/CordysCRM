@@ -2,7 +2,7 @@
   <n-date-picker v-if="isFixed" v-model:value="fixedValue" class="w-full" type="datetimerange" clearable />
   <div v-else class="w-full">
     <div class="flex items-center gap-[8px]">
-      <n-input-number v-model:value="dynamicValue[0]" max="10000" :precision="0" class="flex-1" :min="1" />
+      <CrmInputNumber v-model:value="dynamicValue[0]" max="10000" :precision="0" class="flex-1" :min="1" />
       <n-select
         v-model:value="dynamicValue[1]"
         class="flex-1"
@@ -15,11 +15,13 @@
 </template>
 
 <script setup lang="ts">
-  import { NDatePicker, NInputNumber, NSelect } from 'naive-ui';
+  import { NDatePicker, NSelect } from 'naive-ui';
   import dayjs, { ManipulateType } from 'dayjs';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+
+  import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
 
   const props = defineProps<{
     timeRangeType?: OperatorEnum.FIXED | OperatorEnum.DYNAMICS;

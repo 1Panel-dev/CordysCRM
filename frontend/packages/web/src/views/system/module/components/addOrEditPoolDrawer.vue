@@ -65,7 +65,7 @@
         path="pickRule.pickNumber"
         :label="t('module.clue.limitQuantity')"
       >
-        <n-input-number
+        <CrmInputNumber
           v-model:value="form.pickRule.pickNumber"
           class="crm-reminder-advance-input"
           :placeholder="t('common.pleaseInput')"
@@ -91,7 +91,7 @@
         path="pickRule.pickIntervalDays"
         :label="t('module.clue.formerOwner')"
       >
-        <n-input-number
+        <CrmInputNumber
           v-model:value="form.pickRule.pickIntervalDays"
           class="crm-reminder-advance-input"
           :placeholder="t('common.pleaseInput')"
@@ -123,7 +123,7 @@
       <FilterContent
         v-if="form.auto"
         ref="filterContentRef"
-        v-model:form-model="recycleFormItemModel"
+        v-model:form-model="recycleFormItemModel as FilterForm"
         keep-one-line
         :config-list="filterConfigList"
       />
@@ -133,18 +133,7 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import {
-    FormInst,
-    FormRules,
-    NForm,
-    NFormItem,
-    NInput,
-    NInputNumber,
-    NRadio,
-    NRadioGroup,
-    NSpace,
-    useMessage,
-  } from 'naive-ui';
+  import { FormInst, FormRules, NForm, NFormItem, NInput, NRadio, NRadioGroup, NSpace, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
@@ -156,6 +145,7 @@
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
   import { AccordBelowType, FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { addCluePool, addCustomerPool, updateCluePool, updateCustomerPool } from '@/api/modules';

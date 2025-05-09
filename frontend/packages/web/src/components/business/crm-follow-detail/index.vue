@@ -115,7 +115,7 @@
     virtualScrollHeight?: string; // 虚拟高度
     wrapperClass?: string;
     sourceId: string; // 资源id
-    refreshKey: number;
+    refreshKey?: number;
     showAction?: boolean; // 显示操作
     initialSourceName?: string; // 初始化详情时的名称
     showAdd?: boolean; // 显示增加按钮

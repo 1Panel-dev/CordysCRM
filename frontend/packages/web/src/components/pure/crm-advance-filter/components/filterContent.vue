@@ -45,13 +45,15 @@
               v-model:value="item.value"
               :time-range-type="item.operator as (OperatorEnum.DYNAMICS | OperatorEnum.FIXED)"
             />
-            <n-input-number
+            <CrmInputNumber
               v-else-if="item.type === FieldTypeEnum.INPUT_NUMBER"
               v-model:value="item.value"
-              allow-clear
+              clearable
               :disabled="isValueDisabled(item)"
-              :placeholder="t('common.pleaseInput')"
-              v-bind="item.numberProps"
+              :placeholder="item.numberProps?.placeholder ?? t('common.pleaseInput')"
+              v-bind="{
+                min: item.numberProps?.min,
+              }"
               class="w-full"
             />
 
@@ -148,24 +150,14 @@
 </template>
 
 <script lang="ts" setup>
-  import {
-    FormInst,
-    NButton,
-    NDatePicker,
-    NForm,
-    NFormItem,
-    NIcon,
-    NInput,
-    NInputNumber,
-    NSelect,
-    NTreeSelect,
-  } from 'naive-ui';
+  import { FormInst, NButton, NDatePicker, NForm, NFormItem, NIcon, NInput, NSelect, NTreeSelect } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
+  import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTimeRangePicker from '@/components/business/crm-time-range-picker/index.vue';
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
@@ -348,8 +340,5 @@
     :deep(.n-tag__content) {
       margin: 0 auto;
     }
-  }
-  :deep(.n-input__suffix .n-button) {
-    display: none;
   }
 </style>

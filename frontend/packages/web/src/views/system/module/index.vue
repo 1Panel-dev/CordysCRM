@@ -201,9 +201,5 @@
       margin-right: 8px;
       width: 96px;
     }
-    // input-number
-    .n-input__suffix .n-button {
-      display: none;
-    }
   }
 </style>

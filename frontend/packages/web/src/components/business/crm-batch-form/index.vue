@@ -43,14 +43,16 @@
                 :disabled="!element.editing"
                 v-bind="model.inputProps"
               />
-              <n-input-number
+              <CrmInputNumber
                 v-if="model.type === FieldTypeEnum.INPUT_NUMBER"
                 v-model:value="element[model.path]"
                 class="w-full"
                 clearable
-                :placeholder="t('common.pleaseInput')"
                 :disabled="!element.editing"
-                v-bind="model.numberProps"
+                :placeholder="model.numberProps?.placeholder ?? t('common.pleaseInput')"
+                v-bind="{
+                  min: model.numberProps?.min,
+                }"
               />
               <n-select
                 v-if="[FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(model.type)"
@@ -120,18 +122,7 @@
 </template>
 
 <script setup lang="ts">
-  import {
-    FormInst,
-    FormItemRule,
-    NButton,
-    NForm,
-    NFormItem,
-    NIcon,
-    NInput,
-    NInputNumber,
-    NScrollbar,
-    NSelect,
-  } from 'naive-ui';
+  import { FormInst, FormItemRule, NButton, NForm, NFormItem, NIcon, NInput, NScrollbar, NSelect } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
   import { cloneDeep } from 'lodash-es';
 
@@ -140,6 +131,7 @@
   import { scrollIntoView } from '@lib/shared/method/dom';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
+  import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
@@ -390,8 +382,5 @@
     :deep(.n-tag__content) {
       margin: 0 auto;
     }
-  }
-  :deep(.n-input__suffix .n-button) {
-    display: none;
   }
 </style>

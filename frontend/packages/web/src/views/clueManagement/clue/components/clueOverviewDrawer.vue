@@ -7,7 +7,7 @@
     :button-list="buttonList"
     :button-more-list="buttonMoreList"
     :source-id="sourceId"
-    :title="props.detail?.name"
+    :title="sourceName"
     :form-key="FormDesignKeyEnum.CLUE"
     :show-tab-setting="true"
     @button-select="handleSelect"
@@ -16,6 +16,7 @@
     <template #left>
       <div class="h-full overflow-hidden">
         <CrmFormDescription
+          :refresh-key="refreshKey"
           :form-key="FormDesignKeyEnum.CLUE"
           :source-id="sourceId"
           class="p-[16px_24px]"
@@ -43,7 +44,6 @@
     <template #right>
       <FollowDetail
         v-if="['followRecord', 'followPlan'].includes(activeTab)"
-        :refresh-key="refreshKey"
         class="mt-[16px]"
         :active-type="(activeTab as 'followRecord'| 'followPlan')"
         wrapper-class="h-[calc(100vh-290px)]"
@@ -117,6 +117,7 @@
   const Message = useMessage();
 
   const sourceId = computed(() => props.detail?.id ?? '');
+  const sourceName = ref('');
   const refreshKey = ref(0);
 
   const transferForm = ref<TransferParams>({
@@ -157,7 +158,7 @@
   function handleDelete() {
     openModal({
       type: 'error',
-      title: t('common.deleteConfirmTitle', { name: characterLimit(props.detail?.name) }),
+      title: t('common.deleteConfirmTitle', { name: characterLimit(sourceName.value) }),
       content: t('clue.batchDeleteContentTip'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
@@ -330,7 +331,6 @@
     },
   ];
 
-  const sourceName = ref('');
   function handleDescriptionInit(_collaborationType?: CollaborationType, _sourceName?: string) {
     sourceName.value = _sourceName || '';
   }

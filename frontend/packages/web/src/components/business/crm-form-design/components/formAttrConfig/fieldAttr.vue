@@ -87,7 +87,7 @@
           {{ t('crmFormDesign.showThousandSeparator') }}
         </n-checkbox>
         <div v-if="fieldConfig.decimalPlaces || fieldConfig.showThousandsSeparator" class="flex items-center gap-[8px]">
-          <n-input-number
+          <CrmInputNumber
             v-if="fieldConfig.decimalPlaces"
             v-model:value="fieldConfig.precision"
             :disabled="fieldConfig.disabledProps?.includes('precision')"
@@ -392,19 +392,18 @@
             >
               {{ t('crmFormDesign.pictureNumLimit') }}
             </n-checkbox>
-            <n-input-number
+            <CrmInputNumber
               v-if="fieldConfig.uploadLimitEnable"
               v-model:value="fieldConfig.uploadLimit"
               :step="1"
               :min="1"
               :max="10"
               class="w-[130px]"
-              button-placement="both"
             >
               <template #suffix>
                 <div class="text-[var(--text-n4)]">{{ t('crmFormDesign.pictureNumUnit') }}</div>
               </template>
-            </n-input-number>
+            </CrmInputNumber>
           </div>
           <div class="flex flex-col gap-[8px]">
             <n-checkbox
@@ -421,19 +420,18 @@
                 </n-tooltip>
               </div>
             </n-checkbox>
-            <n-input-number
+            <CrmInputNumber
               v-if="fieldConfig.uploadSizeLimitEnable"
               v-model:value="fieldConfig.uploadSizeLimit"
               :step="1"
               :min="0"
               :max="20"
               class="w-[130px]"
-              button-placement="both"
             >
               <template #suffix>
                 <div class="text-[var(--text-n4)]">MB</div>
               </template>
-            </n-input-number>
+            </CrmInputNumber>
           </div>
         </div>
       </template>
@@ -499,7 +497,7 @@
           />
           {{ t('crmFormDesign.loginUserDept') }}
         </div>
-        <n-input-number
+        <CrmInputNumber
           v-if="fieldConfig.type === FieldTypeEnum.INPUT_NUMBER"
           v-model:value="fieldConfig.defaultValue"
           :show-button="false"
@@ -675,7 +673,6 @@
     NCheckboxGroup,
     NDatePicker,
     NInput,
-    NInputNumber,
     NPopover,
     NRadioButton,
     NRadioGroup,
@@ -692,6 +689,7 @@
 
   import CrmColorSelect from '@/components/pure/crm-color-select/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
