@@ -128,6 +128,13 @@ public class UserRoleService {
     public List<DeptUserTreeNode> getDeptUserTree(String orgId, String roleId) {
         List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
         List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForRelevance(orgId, roleId);
+        // 如果已经关联的用户，设置为 disable
+        Set<String> currentRoleUserIds = new HashSet<>(extUserRoleMapper.getUserIdsByRoleIds(List.of(roleId)));
+        userNodes.forEach(userNode -> {
+            if (currentRoleUserIds.contains(userNode.getId())) {
+                userNode.setEnabled(false);
+            }
+        });
         userNodes.addAll(treeNodes);
         return BaseTreeNode.buildTree(userNodes);
     }
