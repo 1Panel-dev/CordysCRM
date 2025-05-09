@@ -101,6 +101,7 @@
   async function initTab() {
     const res = await getTabsFromLocal();
     cachedData.value = res.length ? res : props.tabList.map((tab) => ({ ...tab, enable: true }));
+    await nextTick();
     saveTabsToLocal(cachedData.value);
   }
 
@@ -131,6 +132,7 @@
   }
 
   onBeforeMount(() => {
+    console.log(111);
     loadTab();
     initTab();
   });
