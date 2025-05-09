@@ -220,6 +220,9 @@ VALUES ('1120660046954506', 'sales_manager', 'OPPORTUNITY_MANAGEMENT:ADD');
 INSERT INTO sys_role_permission
     (id, role_id, permission_id)
 VALUES ('1120660046954507', 'sales_manager', 'OPPORTUNITY_MANAGEMENT:UPDATE');
+INSERT INTO sys_role_permission
+(id, role_id, permission_id)
+VALUES ('1120660046954508', 'sales_manager', 'CLUE_MANAGEMENT:RECYCLE');
 
 -- 销售专员
 INSERT INTO sys_role_permission
@@ -276,7 +279,9 @@ VALUES ('1117962807492624', 'sales_staff', 'OPPORTUNITY_MANAGEMENT:ADD');
 INSERT INTO sys_role_permission
     (id, role_id, permission_id)
 VALUES ('1117962807492625', 'sales_staff', 'OPPORTUNITY_MANAGEMENT:UPDATE');
-
+INSERT INTO sys_role_permission
+(id, role_id, permission_id)
+VALUES ('1117962807492626', 'sales_staff', 'CLUE_MANAGEMENT:RECYCLE');
 
 
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
