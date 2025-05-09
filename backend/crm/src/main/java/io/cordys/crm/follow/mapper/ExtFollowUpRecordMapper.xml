@@ -106,6 +106,6 @@
                 AND owner = #{userId}
             </if>
         </where>
-        ORDER BY follow_time, create_time DESC
+        ORDER BY follow_time DESC, create_time DESC
     </select>
 </mapper>
