@@ -21,7 +21,7 @@
                 type="primary"
                 @click="() => addOrEditMember()"
               >
-                {{ t('org.addStaff') }}
+                {{ t('org.addMember') }}
               </n-button>
             </template>
             {{ t('org.checkSyncUserHoverTip') }}
@@ -35,7 +35,12 @@
         </div>
       </template>
       <template #actionRight>
-        <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+        <CrmSearchInput
+          v-model:value="keyword"
+          class="!w-[240px]"
+          :placeholder="t('org.searchByNameAndPhone')"
+          @search="searchData"
+        />
       </template>
     </CrmTable>
 
@@ -465,13 +470,11 @@
   const columns: CrmDataTableColumn[] = [
     {
       type: 'selection',
-      fixed: 'left',
     },
     {
       title: t('org.userName'),
       key: 'userName',
       width: 200,
-      fixed: 'left',
       sortOrder: false,
       sorter: true,
       columnSelectorDisabled: true,
@@ -675,6 +678,8 @@
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
     },
     {
       title: t('common.creator'),
@@ -691,6 +696,8 @@
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
     },
     {
       title: t('common.updateUserName'),

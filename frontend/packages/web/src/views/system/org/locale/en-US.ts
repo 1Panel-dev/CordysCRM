@@ -71,4 +71,5 @@ export default {
   'org.syncUserTipContent': 'After synchronization, the manually created data will be overwritten, so be careful!',
   'org.firstSyncUserTipContent':
     'Synchronizing organization structure will reset existing members and their resource data to the latest state. This operation is irreversible. Continue?',
+  'org.searchByNameAndPhone': 'Search by name/mobile number',
 };
