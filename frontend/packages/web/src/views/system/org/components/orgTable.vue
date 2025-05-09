@@ -181,11 +181,6 @@
   const actionConfig: BatchActionConfig = {
     baseAction: [
       {
-        label: t('common.batchEdit'),
-        key: 'batchEdit',
-        permission: ['SYS_ORGANIZATION:UPDATE'],
-      },
-      {
         label: t('common.enable'),
         key: 'enabled',
         permission: ['SYS_ORGANIZATION:UPDATE'],
@@ -193,6 +188,11 @@
       {
         label: t('common.disable'),
         key: 'disable',
+        permission: ['SYS_ORGANIZATION:UPDATE'],
+      },
+      {
+        label: t('common.edit'),
+        key: 'batchEdit',
         permission: ['SYS_ORGANIZATION:UPDATE'],
       },
       {

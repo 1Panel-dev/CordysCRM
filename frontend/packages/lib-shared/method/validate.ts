@@ -1,5 +1,5 @@
 // 邮箱校验
-export const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+export const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 // 手机号校验，11位
 export const phoneRegex = /^\d{11}$/;
 // 密码校验，8-32位
