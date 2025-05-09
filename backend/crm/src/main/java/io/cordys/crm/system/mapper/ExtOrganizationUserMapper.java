@@ -56,4 +56,6 @@ public interface ExtOrganizationUserMapper {
     List<UserResponse> selectByIds(@Param("ids") List<String> ids);
 
     void updateById(@Param("organizationUser") OrganizationUser organizationUser);
+
+    void disableUser(@Param("organizationUser") OrganizationUser organizationUser);
 }

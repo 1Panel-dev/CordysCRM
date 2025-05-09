@@ -39,25 +39,24 @@
         <include refid="fieldSortJoin">
             <property name="sort" value="request.sort"/>
         </include>
-
-        where o.organization_id = #{orgId}
-
         <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
             join sys_organization_user on o.owner = sys_organization_user.user_id
             and (
-                sys_organization_user.department_id in
-                <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
-                    #{deptId}
-                </foreach>
-                <if test="dataPermission.searchType == 'ALL'">
-                    or sys_organization_user.user_id = #{userId}
-                </if>
+            sys_organization_user.department_id in
+            <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            <if test="dataPermission.searchType == 'ALL'">
+                or sys_organization_user.user_id = #{userId}
+            </if>
             )
         </if>
 
         <if test="dataPermission != null and dataPermission.self">
             and o.owner = #{userId}
         </if>
+
+        where o.organization_id = #{orgId}
 
         <if test="request.keyword != null and request.keyword != ''">
             and (

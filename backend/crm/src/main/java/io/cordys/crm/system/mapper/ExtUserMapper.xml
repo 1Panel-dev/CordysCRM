@@ -234,4 +234,9 @@
         </set>
         where id = #{user.id}
     </update>
+
+
+    <update id="updateUserInfo" parameterType="io.cordys.crm.system.domain.OrganizationUser">
+        update sys_user set email = #{user.id} where id = #{user.userId}
+    </update>
 </mapper>

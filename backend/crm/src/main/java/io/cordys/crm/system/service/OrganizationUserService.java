@@ -536,6 +536,16 @@ public class OrganizationUserService {
         departmentCommanderMapper.batchInsert(departmentCommanders);
     }
 
+    public void disableUsers(List<OrganizationUser> userList) {
+        SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+        ExtUserMapper extUserMapper = sqlSession.getMapper(ExtUserMapper.class);
+        ExtOrganizationUserMapper extOrganizationUserMapper = sqlSession.getMapper(ExtOrganizationUserMapper.class);
+        userList.forEach(extUserMapper::updateUserInfo);
+        userList.forEach(extOrganizationUserMapper::disableUser);
+        sqlSession.flushStatements();
+        SqlSessionUtils.closeSqlSession(sqlSession, sqlSessionFactory);
+    }
+
 
     /**
      * 更新同步信息
