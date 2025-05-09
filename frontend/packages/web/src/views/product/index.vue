@@ -219,6 +219,7 @@
         return h(CrmNameTooltip, { text: row.name });
       },
     },
+    permission: ['PRODUCT_MANAGEMENT:UPDATE', 'PRODUCT_MANAGEMENT:DELETE'],
   });
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
 

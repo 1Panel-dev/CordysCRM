@@ -34,10 +34,10 @@
     class?: string;
   }>();
   const emit = defineEmits<{
-    (e: 'init', collaborationType?: CollaborationType, sourceName?: string): void;
+    (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
   }>();
 
-  const { descriptions, loading, collaborationType, sourceName, initFormConfig, initFormDescription } =
+  const { descriptions, loading, collaborationType, sourceName, detail, initFormConfig, initFormDescription } =
     useFormCreateApi({
       formKey: toRefs(props).formKey,
       sourceId: toRefs(props).sourceId,
@@ -47,14 +47,14 @@
     () => props.refreshKey,
     async () => {
       await initFormDescription();
-      emit('init', collaborationType.value, sourceName.value);
+      emit('init', collaborationType.value, sourceName.value, detail.value);
     }
   );
 
   onBeforeMount(async () => {
     await initFormConfig();
     await initFormDescription();
-    emit('init', collaborationType.value, sourceName.value);
+    emit('init', collaborationType.value, sourceName.value, detail.value);
   });
 
   defineExpose({

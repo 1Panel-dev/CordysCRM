@@ -231,7 +231,12 @@
   function handleFollowUp(row: OpportunityItem) {
     realFormKey.value = FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS;
     otherFollowRecordSaveParams.value.opportunityId = row.id;
-    initialSourceName.value = row.name;
+    const { customerName, customerId, name } = row;
+    initialSourceName.value = JSON.stringify({
+      name,
+      customerName,
+      customerId,
+    });
     needInitDetail.value = false;
     formCreateDrawerVisible.value = true;
   }

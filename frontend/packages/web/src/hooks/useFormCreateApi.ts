@@ -60,6 +60,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     optBtnPos: 'flex-row',
   }); // 表单属性配置
   const formDetail = ref<Record<string, any>>({});
+  // 详情
+  const detail = ref<Record<string, any>>({});
 
   async function initFormDescription() {
     try {
@@ -67,6 +69,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (!asyncApi || !props.sourceId?.value) return;
       const form = await asyncApi(props.sourceId?.value);
       descriptions.value = [];
+      detail.value = form;
       collaborationType.value = form.collaborationType;
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
@@ -265,6 +268,49 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         ];
         return {
           defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          initialOptions: specialInitialOptions.value,
+        };
+      }
+    }
+    if (
+      [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS, FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS].includes(
+        props.formKey.value
+      ) &&
+      props.sourceId?.value
+    ) {
+      // 商机跟进计划和记录，需要赋予默认跟进类型、商机、商机对应客户
+      if (field.businessKey === 'type') {
+        return {
+          defaultValue: 'CUSTOMER',
+        };
+      }
+
+      const defaultParsedSource = props.initialSourceName?.value ? JSON.parse(props.initialSourceName.value) : {};
+
+      if (field.businessKey === 'opportunityId') {
+        specialInitialOptions.value = [
+          {
+            id: props.sourceId?.value,
+            name: defaultParsedSource?.name ?? '',
+          },
+        ];
+        return {
+          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+          initialOptions: specialInitialOptions.value,
+        };
+      }
+
+      if (field.businessKey === 'customerId') {
+        const defaultCustomerId = defaultParsedSource?.[field.businessKey] ?? '';
+        specialInitialOptions.value = [
+          {
+            id: defaultCustomerId,
+            name: defaultParsedSource?.customerName ?? '',
+          },
+        ];
+
+        return {
+          defaultValue: initFieldValue(field, defaultCustomerId || ''),
           initialOptions: specialInitialOptions.value,
         };
       }
@@ -516,5 +562,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     saveForm,
     initForm,
     resetForm,
+    detail,
   };
 }

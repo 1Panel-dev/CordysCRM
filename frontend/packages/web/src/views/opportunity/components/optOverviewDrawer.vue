@@ -5,8 +5,8 @@
     v-model:cached-list="cachedList"
     :tab-list="tabList"
     :button-list="buttonList"
-    :title="props.detail?.name"
-    :subtitle="props.detail?.customerName"
+    :title="titleName"
+    :subtitle="subTitleName"
     :form-key="FormDesignKeyEnum.BUSINESS"
     :show-tab-setting="true"
     :source-id="sourceId"
@@ -20,6 +20,7 @@
           :source-id="sourceId"
           :refresh-key="refreshKey"
           class="p-[16px_24px]"
+          @init="handleDescriptionInit"
         />
       </div>
     </template>
@@ -33,7 +34,7 @@
         :source-id="sourceId"
         :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
         :update-api="updateOptStage"
-        @load-detail="loadDetail"
+        @load-detail="() => (refreshKey += 1)"
       />
     </template>
     <template #right>
@@ -46,6 +47,7 @@
         virtual-scroll-height="calc(100vh - 382px)"
         :follow-api-key="FormDesignKeyEnum.BUSINESS"
         :source-id="sourceId"
+        :initial-source-name="initialSourceName"
         :show-add="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
         :show-action="showAction && hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
       />
@@ -64,7 +66,7 @@
   import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
-  import type { TransferParams } from '@lib/shared/models/customer';
+  import type { CollaborationType, TransferParams } from '@lib/shared/models/customer';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -75,7 +77,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
-  import { deleteOpt, getOpportunityDetail, transferOpt, updateOptStage } from '@/api/modules';
+  import { deleteOpt, transferOpt, updateOptStage } from '@/api/modules';
   import { defaultTransferForm, opportunityBaseSteps } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -236,20 +238,6 @@
 
   const lastOptStage = ref<string>(OpportunityStatusEnum.CREATE);
 
-  async function loadDetail() {
-    try {
-      const result = await getOpportunityDetail(sourceId.value);
-      const { stage, lastStage } = result;
-
-      currentStatus.value = stage;
-      lastOptStage.value = lastStage;
-      emit('refresh');
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   function handleSelect(key: string, done?: () => void) {
     switch (key) {
       case 'pop-transfer':
@@ -263,13 +251,29 @@
     }
   }
 
-  watch(
-    () => props.detail,
-    () => {
-      if (props.detail) {
-        currentStatus.value = props.detail.stage;
-        lastOptStage.value = props.detail.lastStage;
-      }
+  const titleName = ref('');
+  const subTitleName = ref('');
+  const initialSourceName = ref('');
+
+  function handleDescriptionInit(
+    _collaborationType?: CollaborationType,
+    _sourceName?: string,
+    detail?: Record<string, any>
+  ) {
+    if (detail) {
+      const { customerName, customerId, name, lastStage, stage } = detail;
+      // 商机阶段
+      currentStatus.value = stage;
+      lastOptStage.value = lastStage;
+      // 用于回显跟进类型、商机、商机对应客户
+      titleName.value = _sourceName || '';
+      subTitleName.value = customerName;
+      initialSourceName.value =
+        JSON.stringify({
+          name,
+          customerName,
+          customerId,
+        }) || '';
     }
-  );
+  }
 </script>
