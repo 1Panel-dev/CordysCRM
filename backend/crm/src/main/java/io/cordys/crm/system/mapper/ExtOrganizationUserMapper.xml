@@ -308,4 +308,19 @@
             #{id}
         </foreach>
     </select>
+
+
+    <update id="updateById" parameterType="io.cordys.crm.system.domain.OrganizationUser">
+        update sys_organization_user
+        set department_id = #{organizationUser.departmentId},
+            `enable` = #{organizationUser.enable},
+            employee_id = #{organizationUser.employeeId},
+            `position` = #{organizationUser.position},
+            employee_type = #{organizationUser.employeeType},
+            supervisor_id = #{organizationUser.supervisorId},
+            work_city = #{organizationUser.workCity},
+            update_time = #{organizationUser.updateTime},
+            update_user = #{organizationUser.updateUser}
+        where id = #{organizationUser.id}
+    </update>
 </mapper>

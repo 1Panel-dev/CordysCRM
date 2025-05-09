@@ -54,4 +54,6 @@ public interface ExtOrganizationUserMapper {
     String getOrgUserIdByUserId(@Param("orgId") String orgId, @Param("userId") String userId);
 
     List<UserResponse> selectByIds(@Param("ids") List<String> ids);
+
+    void updateById(@Param("organizationUser") OrganizationUser organizationUser);
 }
