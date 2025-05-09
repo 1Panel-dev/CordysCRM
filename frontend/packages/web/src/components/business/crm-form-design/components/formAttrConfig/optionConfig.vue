@@ -198,7 +198,7 @@
 
   function handleBatchEditConfirm() {
     const resArr = Array.from(new Set(batchEditValue.value.split('\n')));
-    if (resArr.length === 0 || resArr[0] === '') {
+    if (resArr.length === 0) {
       fieldConfig.value.options = [
         {
           label: t('crmFormDesign.option', { i: 1 }),

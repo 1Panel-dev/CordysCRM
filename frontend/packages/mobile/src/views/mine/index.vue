@@ -65,7 +65,7 @@
   import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
-  import { getNotificationCount, getPersonalUrl } from '@/api/modules';
+  import { getNotificationCount, getPersonalInfo } from '@/api/modules';
   import { defaultUserInfo } from '@/config/mine';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -92,7 +92,7 @@
 
   async function initPersonInfo() {
     try {
-      personalInfo.value = await getPersonalUrl();
+      personalInfo.value = await getPersonalInfo();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

@@ -37,7 +37,8 @@
 </template>
 
 <script setup lang="ts">
-  import { NTabPane, NTabs, NTooltip, NTransfer, NTree, TransferRenderSourceList } from 'naive-ui';
+  import { NIcon, NTabPane, NTabs, NTooltip, NTransfer, NTree, TransferRenderSourceList } from 'naive-ui';
+  import { FolderOutline } from '@vicons/ionicons5';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
@@ -212,6 +213,11 @@
       renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
         if (node.option.internal) {
           return h(roleTreeNodePrefix);
+        }
+        if ([DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE].includes(node.option.nodeType)) {
+          return h(NIcon, null, {
+            default: () => h(FolderOutline),
+          });
         }
       },
       renderLabel({ option }) {

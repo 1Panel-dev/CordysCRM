@@ -181,7 +181,7 @@ export const {
   updateAuthStatus,
   updateAuthName,
   deleteAuth,
-  getPersonalUrl,
+  getPersonalInfo,
   updatePersonalInfo,
   sendEmailCode,
   updateUserPassword,

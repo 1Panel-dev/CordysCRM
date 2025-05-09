@@ -207,7 +207,7 @@ export const {
 
 export const {
   updatePersonalInfo,
-  getPersonalUrl,
+  getPersonalInfo,
   sendEmailCode,
   updateUserPassword,
   GetRepeatClueDetailList,

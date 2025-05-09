@@ -136,7 +136,7 @@
   import CrmPasswordInput from '@/components/pure/crm-password-input/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
-  import { getPersonalUrl, sendEmailCode, updatePersonalInfo, updateUserPassword } from '@/api/modules/index';
+  import { getPersonalInfo, sendEmailCode, updatePersonalInfo, updateUserPassword } from '@/api/modules/index';
   import { defaultUserInfo } from '@/config/mine';
 
   const { t } = useI18n();
@@ -275,7 +275,7 @@
 
   async function initPersonInfo() {
     try {
-      personalInfo.value = await getPersonalUrl();
+      personalInfo.value = await getPersonalInfo();
       form.value = { ...form.value, ...personalInfo.value };
     } catch (error) {
       // eslint-disable-next-line no-console

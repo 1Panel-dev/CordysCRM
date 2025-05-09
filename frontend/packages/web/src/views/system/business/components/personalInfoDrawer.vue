@@ -19,17 +19,33 @@
         <CrmAvatar />
         <div class="flex-1">
           <div class="text-[var(--text-n1)]">{{ personalInfo.userName }}</div>
-          <n-tag
-            v-if="showRoleTag"
-            :bordered="false"
-            size="small"
-            :color="{
-              color: 'var(--primary-6)',
-              textColor: 'var(--primary-8)',
-            }"
-          >
-            {{ personalInfo.userId === 'admin' ? t('common.admin') : t('opportunity.admin') }}
-          </n-tag>
+          <div class="flex items-center gap-[4px]">
+            <n-tag
+              v-if="personalInfo.userId === 'admin'"
+              :bordered="false"
+              size="small"
+              :color="{
+                color: 'var(--primary-6)',
+                textColor: 'var(--primary-8)',
+              }"
+            >
+              {{ t('common.admin') }}
+            </n-tag>
+            <template v-else>
+              <CrmTag
+                v-for="role in personalInfo.roles"
+                :key="role.id"
+                :bordered="false"
+                size="small"
+                :color="{
+                  color: 'var(--primary-6)',
+                  textColor: 'var(--primary-8)',
+                }"
+              >
+                {{ role.name }}
+              </CrmTag>
+            </template>
+          </div>
         </div>
       </div>
       <div
@@ -88,12 +104,13 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import EditPasswordModal from '@/views/system/business/components/editPasswordModal.vue';
   import EditPersonalInfoModal from '@/views/system/business/components/editPersonalInfoModal.vue';
 
-  import { getPersonalUrl } from '@/api/modules';
+  import { getPersonalInfo } from '@/api/modules';
   import { defaultUserInfo } from '@/config/business';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -128,7 +145,6 @@
 
   const showEditPersonalModal = ref<boolean>(false); // 已配置
   const showEditPasswordModal = ref<boolean>(false); // 已配置
-  const showRoleTag = ref<boolean>(false);
 
   const tabList = computed<TabPaneProps[]>(() => {
     return [
@@ -145,9 +161,7 @@
 
   async function searchData() {
     if (activeTab.value === PersonalEnum.INFO) {
-      personalInfo.value = await getPersonalUrl();
-      showRoleTag.value =
-        personalInfo.value.roles?.some((role) => role.id === 'org_admin') || personalInfo.value.userId === 'admin';
+      personalInfo.value = await getPersonalInfo();
     }
   }
   function edit() {

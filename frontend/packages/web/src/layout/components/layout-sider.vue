@@ -22,31 +22,29 @@
         />
       </n-scrollbar>
       <div class="flex flex-col items-start p-[8px]">
-        <n-popover trigger="hover" raw :show-arrow="false" placement="right-end" class="personal-popover">
-          <template #trigger>
-            <div
-              class="flex w-full items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
-            >
-              <CrmAvatar class="flex-shrink-0" />
-              <div v-if="!collapsed" class="one-line-text">
-                <div class="one-line-text">{{ userStore.userInfo.name }}</div>
-                <n-tag
-                  v-if="userStore.userInfo.id === 'admin' || (userStore.userInfo.roles[0] as any)?.name"
-                  :bordered="false"
-                  size="small"
-                  :color="{
-                    color: 'var(--primary-6)',
-                    textColor: 'var(--primary-8)',
-                  }"
-                  class="max-w-[110px]"
-                >
-                  {{
-                    userStore.userInfo.id === 'admin' ? t('common.admin') : (userStore.userInfo.roles[0] as any)?.name
-                  }}
-                </n-tag>
-              </div>
+        <n-dropdown trigger="hover" placement="right-end" :options="personalMenuOptions" @select="personalMenuChange">
+          <div
+            class="flex w-full items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
+          >
+            <CrmAvatar class="flex-shrink-0" />
+            <div v-if="!collapsed" class="one-line-text">
+              <div class="one-line-text">{{ userStore.userInfo.name }}</div>
+              <n-tag
+                v-if="userStore.userInfo.id === 'admin' || (userStore.userInfo.roles[0] as any)?.name"
+                :bordered="false"
+                size="small"
+                :color="{
+                  color: 'var(--primary-6)',
+                  textColor: 'var(--primary-8)',
+                }"
+                class="max-w-[110px]"
+              >
+                {{ userStore.userInfo.id === 'admin' ? t('common.admin') : (userStore.userInfo.roles[0] as any)?.name }}
+              </n-tag>
             </div>
-          </template>
+          </div>
+        </n-dropdown>
+        <!-- <n-popover trigger="hover" raw :show-arrow="false" placement="right-end" class="personal-popover">
           <template #header>
             <n-text strong depth="1">
               <n-tooltip trigger="hover" :delay="300">
@@ -70,7 +68,7 @@
               @update-value="personalMenuChange"
             />
           </div>
-        </n-popover>
+        </n-popover> -->
         <n-divider />
         <div class="ml-[8px] w-full cursor-pointer px-[8px]" @click="() => appStore.setMenuCollapsed(!collapsed)">
           <CrmIcon :type="collapsed ? 'iconicon_menu_fold1' : 'iconicon_menu_unfold1'" :size="16" />
@@ -83,7 +81,7 @@
 
 <script setup lang="ts">
   import { RouteLocationNormalizedGeneric, useRouter } from 'vue-router';
-  import { NDivider, NLayoutSider, NMenu, NPopover, NScrollbar, NTag, NText, NTooltip } from 'naive-ui';
+  import { NDivider, NDropdown, NLayoutSider, NMenu, NScrollbar, NTag } from 'naive-ui';
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -133,6 +131,15 @@
   }
 
   const personalMenuOptions = [
+    {
+      key: 'header',
+      type: 'render',
+      render: () => h('div', { class: 'personal-name' }, { default: () => userStore.userInfo.name }),
+    },
+    {
+      key: 'header-divider',
+      type: 'divider',
+    },
     {
       label: t('module.personal.info'),
       key: AppRouteEnum.PERSONAL_INFO,
@@ -286,6 +293,7 @@
     }
   }
   .personal-name {
+    padding: 4px 8px;
     font-size: 14px;
     font-weight: 500;
     color: var(--text-n1);

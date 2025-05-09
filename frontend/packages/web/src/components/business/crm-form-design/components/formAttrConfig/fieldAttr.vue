@@ -7,7 +7,7 @@
           v-model:value="fieldConfig.name"
           :disabled="fieldConfig.disabledProps?.includes('name')"
           :maxlength="255"
-          :placeholder="t('common.placeholder')"
+          :placeholder="t('common.pleaseInput')"
           clearable
         />
         <n-checkbox

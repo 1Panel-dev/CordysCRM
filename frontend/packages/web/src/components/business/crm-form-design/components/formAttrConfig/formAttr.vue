@@ -75,7 +75,7 @@
         <n-input
           v-model:value="formConfig.optBtnContent[0].text"
           type="text"
-          :placeholder="t('common.placeholder')"
+          :placeholder="t('common.pleaseInput')"
           clearable
         />
         <n-switch v-model:value="formConfig.optBtnContent[0].enable" />
@@ -84,7 +84,7 @@
         <n-input
           v-model:value="formConfig.optBtnContent[1].text"
           type="text"
-          :placeholder="t('common.placeholder')"
+          :placeholder="t('common.pleaseInput')"
           clearable
         />
         <n-switch v-model:value="formConfig.optBtnContent[1].enable" />
@@ -93,7 +93,7 @@
         <n-input
           v-model:value="formConfig.optBtnContent[2].text"
           type="text"
-          :placeholder="t('common.placeholder')"
+          :placeholder="t('common.pleaseInput')"
           clearable
         />
         <n-switch v-model:value="formConfig.optBtnContent[2].enable" />

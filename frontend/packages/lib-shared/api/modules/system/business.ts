@@ -119,7 +119,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取个人信息
-  function getPersonalUrl() {
+  function getPersonalInfo() {
     return CDR.get<OrgUserInfo>({ url: GetPersonalUrl });
   }
   // 更新个人信息
@@ -176,7 +176,7 @@ export default function useProductApi(CDR: CordysAxios) {
     updateAuthStatus,
     updateAuthName,
     deleteAuth,
-    getPersonalUrl,
+    getPersonalInfo,
     updatePersonalInfo,
     sendEmailCode,
     updateUserPassword,
