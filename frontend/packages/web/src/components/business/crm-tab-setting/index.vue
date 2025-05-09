@@ -132,7 +132,6 @@
   }
 
   onBeforeMount(() => {
-    console.log(111);
     loadTab();
     initTab();
   });

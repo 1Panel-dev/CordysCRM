@@ -225,6 +225,7 @@
 
   const props = defineProps<{
     userId: string;
+    activeDepId: string; // 激活部门id
   }>();
 
   const showDrawer = defineModel<boolean>('show', {
@@ -372,6 +373,8 @@
           name: detail.userName,
           roleIds: detail.roles.map((e) => e.id),
         };
+      } else {
+        form.value.departmentId = props.activeDepId;
       }
     } catch (error) {
       // eslint-disable-next-line no-console

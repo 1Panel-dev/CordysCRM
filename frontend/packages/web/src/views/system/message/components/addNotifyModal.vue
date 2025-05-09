@@ -88,7 +88,7 @@
         <n-form-item
           require-mark-placement="left"
           label-placement="left"
-          path="userIds"
+          path="ownerIds"
           :label="t('system.message.receiver')"
         >
           <CrmUserTagSelector

@@ -25,7 +25,7 @@
           <div :class="getValueClass()" :style="{ textAlign: props.valueAlign }">
             <slot :name="item.valueSlotName" :item="item">
               <CrmTagGroup
-                v-if="Array.isArray(item.value)"
+                v-if="Array.isArray(item.value) && item.value?.length"
                 :tags="item.value"
                 :label-key="item.tagProps?.labelKey"
                 :class="`justify-${props.valueAlign}`"

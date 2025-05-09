@@ -44,7 +44,13 @@
       </template>
     </CrmTable>
 
-    <AddMember v-model:show="showDrawer" :user-id="currentUserId" @brash="brashHandler" @close="cancelHandler" />
+    <AddMember
+      v-model:show="showDrawer"
+      :user-id="currentUserId"
+      :active-dep-id="activeNode as string"
+      @brash="brashHandler"
+      @close="cancelHandler"
+    />
     <EditIntegrationModal
       v-model:show="showSyncWeChatModal"
       :title="t('system.business.WE_COM')"
