@@ -99,7 +99,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           tooltip: true,
         },
         sortOrder: false,
-        sorter: true,
+        sorter: false,
         render: (row: any) => row.followerName || '-',
       },
       {
@@ -133,7 +133,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           },
         ],
         sortOrder: false,
-        sorter: true,
+        sorter: false,
         render: props.specialRender?.status,
       },
       {
@@ -152,7 +152,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           tooltip: true,
         },
         sortOrder: false,
-        sorter: true,
+        sorter: false,
         render: (row: any) => row.departmentName || '-',
       },
     ],
@@ -175,7 +175,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           },
         ],
         sortOrder: false,
-        sorter: 'default',
+        sorter: false,
         render: props.specialRender?.status,
       },
       {
@@ -189,12 +189,12 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('org.department'),
         width: 120,
-        key: 'department',
+        key: 'departmentId',
         ellipsis: {
           tooltip: true,
         },
         sortOrder: false,
-        sorter: 'default',
+        sorter: false,
         render: (row: any) => row.departmentName || '-',
       },
     ],
@@ -313,7 +313,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         tooltip: true,
       },
       sortOrder: false,
-      sorter: columnsSorter,
+      sorter: false,
       render: (row: any) => row.createUserName || '-',
     },
     {
@@ -334,7 +334,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         tooltip: true,
       },
       sortOrder: false,
-      sorter: columnsSorter,
+      sorter: false,
       render: (row: any) => row.updateUserName || '-',
     },
     {

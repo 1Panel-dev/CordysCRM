@@ -106,10 +106,13 @@
                 order by
                 <choose>
                     <when test="${sort}.name == 'department_id'">
-                        souc.department_id ${sortType}
+                        sort_table.department_id ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'customer_id'">
+                        sort_table.name ${sortType}
                     </when>
                     <when test="${sort}.name in
-                        {'name', 'owner', 'create_time', 'update_time', 'phone', 'create_user', 'update_user', 'enable', 'customer_id'}">
+                        {'name', 'owner', 'create_time', 'update_time', 'phone', 'create_user', 'update_user', 'enable'}">
                         cc.${sortName} ${sortType}
                     </when>
                     <otherwise>
@@ -129,11 +132,11 @@
                 <if test="condition.name != 'name' and condition.name != 'owner'">
                     <if test="condition.multipleValue">
                         inner join customer_contact_field_blob ${tablePrefix}_${i}
-                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        on cc.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
                         inner join customer_contact_field ${tablePrefix}_${i}
-                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        on cc.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>
             </foreach>
@@ -148,8 +151,12 @@
             on cc.id = sort_table.resource_id and sort_table.field_id = #{sortName}
         </if>
         <if test="${sort}.name == 'department_id'">
-            inner join sys_organization_user souc
-            on souc.user_id = cc.owner
+            inner join sys_organization_user sort_table
+            on sort_table.user_id = cc.owner
+        </if>
+        <if test="${sort}.name == 'customer_id'">
+            inner join customer sort_table
+            on sort_table.id = cc.customer_id
         </if>
     </sql>
 
