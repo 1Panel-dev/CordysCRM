@@ -42,7 +42,7 @@ public class CluePoolRecycleJob {
 	/**
 	 * 回收线索
 	 */
-	@QuartzScheduled(cron = "0 0 1 * * ?")
+	@QuartzScheduled(cron = "* * 0/1 * * ? ")
 	public void recycle() {
 		LogUtils.info("Start recycle clue resource");
 		LambdaQueryWrapper<CluePool> queryWrapper = new LambdaQueryWrapper<>();

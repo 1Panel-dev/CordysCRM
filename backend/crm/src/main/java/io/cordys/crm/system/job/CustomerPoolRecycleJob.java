@@ -42,7 +42,7 @@ public class CustomerPoolRecycleJob {
 	/**
 	 * 回收客户
 	 */
-	@QuartzScheduled(cron = "0 0 1 * * ?")
+	@QuartzScheduled(cron = "* * 0/1 * * ? ")
 	public void recycle() {
 		LogUtils.info("Start recycle customer resource");
 		LambdaQueryWrapper<CustomerPool> queryWrapper = new LambdaQueryWrapper<>();
