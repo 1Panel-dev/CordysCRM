@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.service;
 
+import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.permission.Permission;
 import io.cordys.common.permission.PermissionDefinitionItem;
@@ -32,6 +33,14 @@ public class RoleLogService extends BaseModuleLogService {
                 handleDeptIdsLogDetail(differ);
             } else if (StringUtils.equals(differ.getColumn(), "permissions")) {
                 handlePermissionSettingLogDetail(differ);
+            } else if (StringUtils.equals(differ.getColumn(), "dataScope")) {
+                if (differ.getOldValue() != null) {
+                    differ.setOldValueName(Translator.get("role.data_permission." + differ.getOldValue().toString().toLowerCase()));
+                }
+                if (differ.getNewValue() != null) {
+                    differ.setNewValueName(Translator.get("role.data_permission." + differ.getNewValue().toString().toLowerCase()));
+                }
+                differ.setColumnName(Translator.get("log.dataScope"));
             } else {
                 BaseModuleLogService.translatorDifferInfo(differ);
             }
