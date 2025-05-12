@@ -36,6 +36,7 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
     protected static final int NAME_LENGTH = 255;
     protected static final int PHONE_LENGTH = 20;
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+    private static final String PHONE_REGEX = "^1[0-9]\\d{9}$";
     private final List<BaseTreeNode> departmentTree;
     private final OrganizationUserService organizationUserService;
 
@@ -180,6 +181,11 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
         }
         if (organizationUserService.checkPhone(data.getPhone())) {
             errMsg.append(Translator.get("phone.exist"))
+                    .append(ERROR_MSG_SEPARATOR);
+        }
+
+        if (!data.getPhone().matches(PHONE_REGEX)) {
+            errMsg.append(Translator.get("import_phone_validate"))
                     .append(ERROR_MSG_SEPARATOR);
         }
     }

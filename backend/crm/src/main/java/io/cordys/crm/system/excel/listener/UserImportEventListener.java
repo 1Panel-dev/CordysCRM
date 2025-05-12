@@ -37,6 +37,7 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
     protected static final int NAME_LENGTH = 255;
     protected static final int PHONE_LENGTH = 20;
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+    private static final String PHONE_REGEX = "^1[0-9]\\d{9}$";
     private final DepartmentService departmentService;
     private final String operatorId;
     private final String orgId;
@@ -164,8 +165,12 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
      */
     private void handleEmployeeType(UserExcelData data) {
         if (StringUtils.isNotEmpty(data.getEmployeeType())) {
-            if (StringUtils.equalsAnyIgnoreCase(data.getEmployeeType(), Translator.get("formal"), Translator.get("internship"), Translator.get("outsourcing"))) {
-                data.setEmployeeType(data.getEmployeeType());
+            if (StringUtils.equalsIgnoreCase(data.getEmployeeType(), Translator.get("formal"))) {
+                data.setEmployeeType("formal");
+            } else if (StringUtils.equalsIgnoreCase(data.getEmployeeType(), Translator.get("internship"))) {
+                data.setEmployeeType("internship");
+            } else if (StringUtils.equalsIgnoreCase(data.getEmployeeType(), Translator.get("outsourcing"))) {
+                data.setEmployeeType("outsourcing");
             } else {
                 data.setEmployeeType(null);
             }
@@ -242,6 +247,11 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         }
         if (organizationUserService.checkPhone(data.getPhone())) {
             errMsg.append(Translator.get("phone.exist"))
+                    .append(ERROR_MSG_SEPARATOR);
+        }
+
+        if (!data.getPhone().matches(PHONE_REGEX)) {
+            errMsg.append(Translator.get("import_phone_validate"))
                     .append(ERROR_MSG_SEPARATOR);
         }
     }
