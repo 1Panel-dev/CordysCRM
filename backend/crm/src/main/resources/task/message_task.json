@@ -41,6 +41,12 @@
         "sysEnable":false
       },
       {
+        "event": "HIGH_SEAS_CUSTOMER_DISTRIBUTED",
+        "eventName": "",
+        "emailEnable":false,
+        "sysEnable":false
+      },
+      {
         "event": "CUSTOMER_FOLLOW_UP_PLAN_DUE",
         "eventName": "",
         "emailEnable":false,
