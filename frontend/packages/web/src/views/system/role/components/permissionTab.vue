@@ -396,6 +396,7 @@
           permissions,
         });
         message.success(t('common.saveSuccess'));
+        init();
       }
       unsave.value = false;
     } catch (error) {

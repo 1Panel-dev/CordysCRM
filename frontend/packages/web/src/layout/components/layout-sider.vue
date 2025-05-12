@@ -35,7 +35,7 @@
             <CrmAvatar class="flex-shrink-0" />
             <div v-if="!collapsed" class="one-line-text">
               <div class="one-line-text max-w-[110px]">{{ userStore.userInfo.name }}</div>
-              <n-tag
+              <!-- <n-tag
                 v-if="userStore.userInfo.id === 'admin' || (userStore.userInfo.roles[0] as any)?.name"
                 :bordered="false"
                 size="small"
@@ -46,7 +46,7 @@
                 class="max-w-[110px]"
               >
                 {{ userStore.userInfo.id === 'admin' ? t('common.admin') : (userStore.userInfo.roles[0] as any)?.name }}
-              </n-tag>
+              </n-tag> -->
             </div>
           </div>
         </n-dropdown>
@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
   import { RouteLocationNormalizedGeneric, useRouter } from 'vue-router';
-  import { NDivider, NDropdown, NLayoutSider, NMenu, NScrollbar, NTag, NTooltip } from 'naive-ui';
+  import { NDivider, NDropdown, NLayoutSider, NMenu, NScrollbar, NTooltip } from 'naive-ui';
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';

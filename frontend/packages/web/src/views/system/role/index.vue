@@ -294,7 +294,7 @@
 
   function handleUnsaveChange(val: boolean) {
     if (activeRole.value) {
-      setIsSave(val);
+      setIsSave(!val);
       activeRole.value.unsave = val;
     }
   }

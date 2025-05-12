@@ -175,9 +175,14 @@
     showEditPasswordModal.value = true;
   }
 
-  onMounted(() => {
-    searchData();
-  });
+  watch(
+    () => visible.value,
+    (val) => {
+      if (val) {
+        searchData();
+      }
+    }
+  );
 
   const refreshKey = ref(0);
 </script>

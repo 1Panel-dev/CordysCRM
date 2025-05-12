@@ -359,19 +359,23 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     };
   }
 
+  function initFormFieldConfig(fields: FormCreateField[]) {
+    fieldList.value = fields.map((item) => {
+      const { defaultValue, initialOptions } = specialFormFieldInit(item);
+      return {
+        ...item,
+        defaultValue,
+        initialOptions,
+        fieldWidth: safeFractionConvert(item.fieldWidth),
+      };
+    });
+  }
+
   async function initFormConfig() {
     try {
       loading.value = true;
       const res = await getFormConfigApiMap[props.formKey.value]();
-      fieldList.value = res.fields.map((item) => {
-        const { defaultValue, initialOptions } = specialFormFieldInit(item);
-        return {
-          ...item,
-          defaultValue,
-          initialOptions,
-          fieldWidth: safeFractionConvert(item.fieldWidth),
-        };
-      });
+      initFormFieldConfig(res.fields);
       formConfig.value = res.formProp;
       nextTick(() => {
         unsaved.value = false;
@@ -495,6 +499,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     fieldList.value.forEach((item) => {
       item.initialOptions = [];
     });
+    initFormFieldConfig(fieldList.value);
     initForm();
   }
 
@@ -530,10 +535,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           Message.success(t('common.createSuccess'));
         }
       }
-      resetForm();
       if (callback) {
         callback(isContinue);
       }
+      resetForm();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
