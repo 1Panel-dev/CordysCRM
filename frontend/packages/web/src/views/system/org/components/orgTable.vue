@@ -48,6 +48,7 @@
       v-model:show="showDrawer"
       :user-id="currentUserId"
       :active-dep-id="activeNode as string"
+      :is-sync-from-third-checked="props.isSyncFromThirdChecked"
       @brash="brashHandler"
       @close="cancelHandler"
     />
@@ -800,12 +801,16 @@
 
   const moreActions = computed(() => {
     return [
-      {
-        label: t('org.enterpriseWhatSync'),
-        key: 'sync',
-        render: renderSyncResult.value,
-        disabled: !isHasConfig.value,
-      },
+      ...(hasAnyPermission(['SYS_ORGANIZATION:SYNC'])
+        ? [
+            {
+              label: t('org.enterpriseWhatSync'),
+              key: 'sync',
+              render: renderSyncResult.value,
+              disabled: !isHasConfig.value,
+            },
+          ]
+        : []),
       {
         label: t('common.import'),
         key: 'import',
