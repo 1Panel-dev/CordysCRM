@@ -446,7 +446,7 @@ public class OrganizationUserService {
             List<OptionDTO> orgUsers = extOrganizationUserMapper.selectEnableOrgUser(ids, !request.isEnable());
             List<LogDTO> logs = new ArrayList<>();
             orgUsers.forEach(orgUser -> {
-                permissionCache.clearCache(orgUser.getId(), orgId);
+                SessionUtils.kickOutUser(orgUser.getId());
                 LogDTO logDTO = new LogDTO(orgId, orgUser.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, orgUser.getName());
                 logDTO.setOriginalValue(originUser);
                 logDTO.setModifiedValue(newUser);
@@ -455,11 +455,6 @@ public class OrganizationUserService {
 
             logService.batchAdd(logs);
         });
-
-        // 踢出用户
-        if (!request.isEnable()) {
-            request.getIds().forEach(SessionUtils::kickOutUser);
-        }
     }
 
 
