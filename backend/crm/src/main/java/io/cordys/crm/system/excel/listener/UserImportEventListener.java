@@ -164,7 +164,7 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
      */
     private void handleEmployeeType(UserExcelData data) {
         if (StringUtils.isNotEmpty(data.getEmployeeType())) {
-            if (StringUtils.equalsAnyIgnoreCase(data.getEmployeeType(), Translator.get("formal"), Translator.get("internship"), Translator.get("outsource"))) {
+            if (StringUtils.equalsAnyIgnoreCase(data.getEmployeeType(), Translator.get("formal"), Translator.get("internship"), Translator.get("outsourcing"))) {
                 data.setEmployeeType(data.getEmployeeType());
             } else {
                 data.setEmployeeType(null);
