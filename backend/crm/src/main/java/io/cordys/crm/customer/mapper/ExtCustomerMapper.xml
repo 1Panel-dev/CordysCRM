@@ -100,7 +100,7 @@
         left join customer_collaboration cc on c.id = cc.customer_id
         where c.organization_id = #{orgId} and c.in_shared_pool is false
         <if test="userId != 'admin'">
-            and ( cc.user_id = #{userId} or c.owner = #{userId} )
+            and ( (cc.user_id = #{userId} and collaboration_type = 'COLLABORATION') or c.owner = #{userId} )
         </if>
         <if test="request.keyword != null and request.keyword != ''">
             and c.name like concat('%', #{request.keyword},'%')
