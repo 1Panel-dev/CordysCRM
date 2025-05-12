@@ -29,6 +29,7 @@
         :max-size="100"
         size-unit="MB"
         directory-dnd
+        :file-type-tip="t('crmImportButton.onlyAllowFileTypeTip')"
         :disabled="validateLoading"
       />
     </div>

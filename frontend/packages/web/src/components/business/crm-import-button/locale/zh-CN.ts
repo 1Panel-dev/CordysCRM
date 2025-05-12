@@ -17,4 +17,5 @@ export default {
   'crmImportButton.successImportActionTip': '点击 导入 可录入系统',
   'crmImportButton.importErrorData': '导入失败数据',
   'crmImportButton.formExcelImport': '从 Excel 文件导入',
+  'crmImportButton.onlyAllowFileTypeTip': '仅支持 xls/xlsx 格式的文件',
 };

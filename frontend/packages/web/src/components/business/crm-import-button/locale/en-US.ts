@@ -18,4 +18,5 @@ export default {
   'crmImportButton.successImportActionTip': 'Click Import to enter into system',
   'crmImportButton.importErrorData': 'Import failed data',
   'crmImportButton.formExcelImport': 'Import from Excel file',
+  'crmImportButton.onlyAllowFileTypeTip': 'Only files in xls/xlsx format are supported',
 };

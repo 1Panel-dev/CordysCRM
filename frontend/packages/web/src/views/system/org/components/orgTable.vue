@@ -777,7 +777,7 @@
   function handleSyncConfirm() {
     const content = props.isSyncFromThirdChecked ? t('org.firstSyncUserTipContent') : t('org.syncUserTipContent');
     openModal({
-      type: 'error',
+      type: 'warning',
       title: t('org.syncUserTipTitle'),
       content,
       positiveText: t('common.confirm'),
