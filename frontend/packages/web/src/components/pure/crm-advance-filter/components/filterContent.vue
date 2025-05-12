@@ -20,7 +20,7 @@
         >
           <n-form-item
             :path="`list[${listIndex}].dataIndex`"
-            :rule="[{ required: true, message: t('advanceFilter.conditionRequired') }]"
+            :rule="[{ required: true, message: t('common.value.nameNotNull') }]"
             class="dataIndex-col block flex-1 overflow-hidden"
           >
             <n-select
@@ -39,11 +39,16 @@
               @update:value="operatorChange(item, listIndex)"
             />
           </n-form-item>
-          <n-form-item :path="`list[${listIndex}].value`" class="block flex-[1.5] overflow-hidden">
+          <n-form-item
+            :path="`list[${listIndex}].value`"
+            class="block flex-[1.5] overflow-hidden"
+            :rule="getRules(item)"
+          >
             <CrmTimeRangePicker
               v-if="item.type === FieldTypeEnum.TIME_RANGE_PICKER"
               v-model:value="item.value"
               :time-range-type="item.operator as (OperatorEnum.DYNAMICS | OperatorEnum.FIXED)"
+              @update:value="valueChange"
             />
             <CrmInputNumber
               v-else-if="item.type === FieldTypeEnum.INPUT_NUMBER"
@@ -55,6 +60,7 @@
                 min: item.numberProps?.min,
               }"
               class="w-full"
+              @update:value="valueChange"
             />
 
             <n-select
@@ -65,6 +71,7 @@
               :placeholder="t('common.pleaseSelect')"
               v-bind="item.selectProps"
               :multiple="item.type === FieldTypeEnum.SELECT_MULTIPLE || item.selectProps?.multiple"
+              @update:value="valueChange"
             />
 
             <n-tree-select
@@ -76,6 +83,7 @@
               max-tag-count="responsive"
               :placeholder="t('common.pleaseSelect')"
               v-bind="item.treeSelectProps"
+              @update:value="valueChange"
             />
 
             <n-date-picker
@@ -85,6 +93,7 @@
               clearable
               :disabled="isValueDisabled(item)"
               class="w-full"
+              @update:value="valueChange"
             />
 
             <CrmUserSelect
@@ -97,6 +106,7 @@
               multiple
               :fetch-api="getUserOptions"
               max-tag-count="responsive"
+              @update:value="valueChange"
             />
 
             <n-input
@@ -107,6 +117,7 @@
               :maxlength="255"
               :placeholder="t('advanceFilter.inputPlaceholder')"
               v-bind="item.inputProps"
+              @update:value="valueChange"
             />
           </n-form-item>
           <n-form-item
@@ -156,6 +167,7 @@
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { scrollIntoView } from '@lib/shared/method/dom';
 
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
@@ -302,20 +314,57 @@
   // 符号变化
   function operatorChange(item: FilterFormItem, index: number) {
     formModel.value.list[index].value = valueIsArray(item) ? [] : undefined;
+    if (isValueDisabled(item)) {
+      formRef.value?.restoreValidation();
+    }
+  }
+
+  function valueChange() {
+    formRef.value?.validate();
+  }
+
+  // 获取校验规则
+  function getRules(item: FilterFormItem) {
+    if (isValueDisabled(item)) {
+      return undefined;
+    }
+    return (
+      item.rule ?? [
+        {
+          required: true,
+          message: t('common.value.notNull'),
+        },
+      ]
+    );
+  }
+
+  function validateForm(cb: (res?: Record<string, any>) => void) {
+    formRef.value?.validate(async (errors) => {
+      if (errors) {
+        scrollIntoView(document.querySelector('.n-form-item-blank--error'), { block: 'center' });
+        return;
+      }
+      if (typeof cb === 'function') {
+        cb();
+      }
+    });
   }
 
   // 添加筛选项
   function handleAddItem() {
-    const item = {
-      key: '',
-      type: FieldTypeEnum.INPUT,
-      value: null,
-    };
-    formModel.value.list.push(item);
+    validateForm(() => {
+      const item = {
+        key: '',
+        type: FieldTypeEnum.INPUT,
+        value: null,
+      };
+      formModel.value.list.push(item);
+    });
   }
 
   defineExpose({
     formRef,
+    validateForm,
   });
 </script>
 

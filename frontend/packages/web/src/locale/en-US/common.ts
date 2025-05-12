@@ -179,6 +179,7 @@ export default {
   'common.execute': 'Execute',
   'common.replace': 'Replace',
   'common.notNull': '{value} cannot be empty',
+  'common.value.nameNotNull': 'The attribute cannot be empty',
   'common.value.notNull': 'The attribute value cannot be empty',
   'common.nameNotNull': 'Name cannot be empty',
   'common.namePlaceholder': 'Please enter the name and press Enter to save',

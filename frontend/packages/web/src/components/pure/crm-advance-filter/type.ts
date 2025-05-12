@@ -1,4 +1,4 @@
-import { CascaderProps, InputNumberProps, InputProps, SelectProps, TreeSelectProps } from 'naive-ui';
+import { CascaderProps, FormItemRule, InputNumberProps, InputProps, SelectProps, TreeSelectProps } from 'naive-ui';
 
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
@@ -27,6 +27,7 @@ export interface FilterFormItem {
   userTagSelectorProps?: Partial<UserTagSelectorProps>;
   cascaderProps?: Partial<CascaderProps>;
   scopeProps?: Partial<ScopeProps>;
+  rule?: FormItemRule[];
 }
 
 export type CombineItem = Pick<FilterFormItem, 'value' | 'operator'>;

@@ -150,11 +150,6 @@
         title: t('common.createTime'),
         dataIndex: 'createTime',
         type: FieldTypeEnum.TIME_RANGE_PICKER,
-        showScope: true,
-        scope: ['Created'],
-        scopeProps: {
-          disabled: true,
-        },
       },
       {
         title: t('opportunity.opportunityStage'),
@@ -185,11 +180,6 @@
         type: FieldTypeEnum.TIME_RANGE_PICKER,
         operator: OperatorEnum.DYNAMICS,
         value: '6,month',
-        showScope: true,
-        scope: ['Created'],
-        scopeProps: {
-          disabled: true,
-        },
       },
     ],
   };
