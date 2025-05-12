@@ -457,6 +457,7 @@
         />
       </div>
       <!-- 地址属性 End -->
+      <!-- 默认值 -->
       <div
         v-if="
           (!fieldConfig.options || fieldConfig.options.length === 0) &&
@@ -466,6 +467,8 @@
             FieldTypeEnum.LOCATION,
             FieldTypeEnum.PHONE,
             FieldTypeEnum.INPUT_MULTIPLE,
+            FieldTypeEnum.DATA_SOURCE,
+            FieldTypeEnum.DATA_SOURCE_MULTIPLE,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -551,6 +554,8 @@
           clearable
         />
       </div>
+      <!-- 默认值 End -->
+      <!-- 校验规则 -->
       <div v-if="showRules.length > 0" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.validator') }}</div>
         <n-checkbox-group
@@ -565,6 +570,8 @@
           </n-space>
         </n-checkbox-group>
       </div>
+      <!-- 校验规则 End -->
+      <!-- 字段权限 -->
       <div class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldPermission') }}
@@ -597,6 +604,7 @@
           {{ t('crmFormDesign.editable') }}
         </n-checkbox>
       </div>
+      <!-- 字段权限 End -->
       <div class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">
           {{ t('crmFormDesign.fieldWidth') }}

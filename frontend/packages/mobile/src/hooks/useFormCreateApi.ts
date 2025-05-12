@@ -185,6 +185,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (field.businessKey === 'type') {
         return {
           defaultValue: 'CUSTOMER',
+          initialOptions: field.initialOptions,
         };
       }
       if (field.businessKey === 'customerId') {
@@ -208,6 +209,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (field.businessKey === 'type') {
         return {
           defaultValue: 'CLUE',
+          initialOptions: field.initialOptions,
         };
       }
       if (field.businessKey === 'clueId') {
@@ -245,6 +247,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (field.businessKey === 'name') {
         return {
           defaultValue: props.initialSourceName,
+          initialOptions: field.initialOptions,
         };
       }
     }
@@ -252,10 +255,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       // 数据源类型的字段，默认值需要转为数组
       return {
         defaultValue: typeof field.defaultValue === 'string' ? [field.defaultValue] : field.defaultValue,
+        initialOptions: field.initialOptions,
       };
     }
     return {
       defaultValue: field.defaultValue,
+      initialOptions: field.initialOptions,
     };
   }
 

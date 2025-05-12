@@ -196,22 +196,24 @@
         if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type) && item.hasCurrentUser) {
           item.defaultValue = userStore.userInfo.id;
           item.initialOptions = [
+            ...(item.initialOptions || []),
             {
               id: userStore.userInfo.id,
               name: userStore.userInfo.name,
             },
-          ];
+          ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
         } else if (
           [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(item.type) &&
           item.hasCurrentUserDept
         ) {
           item.defaultValue = userStore.userInfo.departmentId;
           item.initialOptions = [
+            ...(item.initialOptions || []),
             {
               id: userStore.userInfo.departmentId,
               name: userStore.userInfo.departmentName,
             },
-          ];
+          ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
         }
       });
     }

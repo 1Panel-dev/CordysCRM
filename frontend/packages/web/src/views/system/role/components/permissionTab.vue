@@ -25,6 +25,7 @@
           :placeholder="t('role.pleaseSelectDepartment')"
           :loading="departmentLoading"
           :disabled="isDisabled"
+          :render-label="renderLabel"
           key-field="id"
           label-field="name"
           @update-value="() => (unsave = true)"
@@ -75,7 +76,9 @@
     NRadioGroup,
     NScrollbar,
     NSpace,
+    NTooltip,
     NTreeSelect,
+    TreeOption,
     useMessage,
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
@@ -146,6 +149,26 @@
     }
     return !hasAnyPermission(['SYSTEM_ROLE:UPDATE']);
   });
+
+  function renderLabel({ option }: { option: TreeOption; checked: boolean; selected: boolean }) {
+    return h(
+      NTooltip,
+      {
+        delay: 300,
+      },
+      {
+        default: () => h('div', {}, { default: () => option.name }),
+        trigger: () =>
+          h(
+            'div',
+            {
+              class: 'one-line-text max-w-[200px]',
+            },
+            { default: () => option.name }
+          ),
+      }
+    );
+  }
 
   async function init() {
     try {

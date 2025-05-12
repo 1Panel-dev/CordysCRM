@@ -119,8 +119,10 @@
   };
 
   function showDataSourcesModal() {
-    selectedKeys.value = value.value;
-    dataSourcesModalVisible.value = true;
+    if (!props.disabled) {
+      selectedKeys.value = value.value;
+      dataSourcesModalVisible.value = true;
+    }
   }
 
   function tableDisabledSelection(row: RowData) {
