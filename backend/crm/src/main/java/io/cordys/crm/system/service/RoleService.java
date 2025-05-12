@@ -21,6 +21,7 @@ import io.cordys.crm.system.domain.Role;
 import io.cordys.crm.system.domain.RolePermission;
 import io.cordys.crm.system.domain.RoleScopeDept;
 import io.cordys.crm.system.domain.UserRole;
+import io.cordys.crm.system.dto.log.RoleLogDTO;
 import io.cordys.crm.system.dto.request.PermissionUpdateRequest;
 import io.cordys.crm.system.dto.request.RoleAddRequest;
 import io.cordys.crm.system.dto.request.RoleUpdateRequest;
@@ -214,6 +215,16 @@ public class RoleService {
             deleteRoleScopeDeptByRoleId(role.getId());
         }
 
+        List<String> originDeptIds = null;
+        if (request.getDeptIds() != null) {
+            originDeptIds = getDeptIdsByRoleId(request.getId());
+        }
+
+        List<String> originPermissionIds = null;
+        if (request.getPermissions() != null) {
+            originPermissionIds = getPermissionIds(List.of(role.getId())).stream().toList();
+        }
+
         // 配置指定部门权限
         if (StringUtils.equals(dataScope, RoleDataScope.DEPT_CUSTOM.name()) && request.getDeptIds() != null) {
             // 先删除
@@ -230,11 +241,26 @@ public class RoleService {
 
         clearPermissionCacheByRoleId(role.getId(), orgId);
 
+        RoleLogDTO originRoleLogDTO = BeanUtils.copyBean(new RoleLogDTO(), originRole);
+        RoleLogDTO modifiedRoleLogDTO = BeanUtils.copyBean(new RoleLogDTO(), roleMapper.selectByPrimaryKey(request.getId()));
+        if (request.getDeptIds() != null) {
+            modifiedRoleLogDTO.setDeptIds(request.getDeptIds());
+            originRoleLogDTO.setDeptIds(originDeptIds);
+        }
+
+        if (request.getPermissions() != null) {
+            List<String> newPermissionIds = request.getPermissions().stream().filter(PermissionUpdateRequest::getEnable)
+                    .map(PermissionUpdateRequest::getId)
+                    .toList();
+            modifiedRoleLogDTO.setPermissions(newPermissionIds);
+            originRoleLogDTO.setPermissions(originPermissionIds);
+        }
+
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceName(roleGetResponse.getName())
-                        .originalValue(originRole)
-                        .modifiedValue(roleMapper.selectByPrimaryKey(request.getId()))
+                        .originalValue(originRoleLogDTO)
+                        .modifiedValue(modifiedRoleLogDTO)
                         .build()
         );
 
@@ -401,7 +427,7 @@ public class RoleService {
      * @param p
      * @return
      */
-    private String translateDefaultPermissionName(Permission p) {
+    public String translateDefaultPermissionName(Permission p) {
         if (StringUtils.isNotBlank(p.getName())) {
             p.getName();
         }

@@ -5,6 +5,7 @@ import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.crm.clue.service.ClueLogService;
 import io.cordys.crm.customer.service.CustomerContactLogService;
 import io.cordys.crm.customer.service.CustomerLogService;
+import io.cordys.crm.customer.service.RoleLogService;
 import io.cordys.crm.follow.service.FollowUpPlanLogService;
 import io.cordys.crm.follow.service.FollowUpRecordLogService;
 import io.cordys.crm.opportunity.service.OpportunityLogService;
@@ -24,6 +25,7 @@ public class ModuleLogServiceFactory {
         logServiceMap.put(LogModule.CLUE_INDEX, CommonBeanFactory.getBean(ClueLogService.class));
         logServiceMap.put(LogModule.FOLLOW_UP_RECORD, CommonBeanFactory.getBean(FollowUpRecordLogService.class));
         logServiceMap.put(LogModule.FOLLOW_UP_PLAN, CommonBeanFactory.getBean(FollowUpPlanLogService.class));
+        logServiceMap.put(LogModule.SYSTEM_ROLE, CommonBeanFactory.getBean(RoleLogService.class));
 
     }
 
