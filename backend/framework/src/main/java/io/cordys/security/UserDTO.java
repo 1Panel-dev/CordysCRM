@@ -81,4 +81,10 @@ public class UserDTO implements java.io.Serializable {
 
     @Schema(description = "所在的组织ID")
     private Set<String> organizationIds;
+
+    @Schema(description = "部门id")
+    private String departmentId;
+
+    @Schema(description = "部门名称")
+    private String departmentName;
 }

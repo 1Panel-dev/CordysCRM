@@ -20,4 +20,9 @@ INSERT INTO sys_organization_user
 VALUES ('permission_test', '100001', '100001', '', 'permission_test', true, '', '', '', '', '', 'admin', 'admin', UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000);
 
 
+INSERT INTO `sys_department`(`id`, `name`, `organization_id`, `parent_id`, `pos`, `create_time`, `update_time`, `create_user`, `update_user`, `resource`, `resource_id`)
+VALUES
+    ('100001', 'permission_test_department', '100001', 'NONE', 1, 1736240043609, 1736240043609, 'admin', 'admin', 'INTERNAL', NULL);
+
+
 

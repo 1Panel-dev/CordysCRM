@@ -11,6 +11,7 @@ import io.cordys.common.util.ServletUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.constants.LoginType;
+import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.LoginLog;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
@@ -52,6 +53,8 @@ public class UserLoginService {
     private BaseMapper<OrganizationUser> organizationUserBaseMapper;
     @Resource
     private PermissionCache permissionCache;
+    @Resource
+    private BaseMapper<Department> departmentBaseMapper;
 
     public UserDTO authenticateUser(String userKey) {
         UserDTO userDTO = extUserMapper.selectByPhoneOrEmail(userKey);
@@ -65,9 +68,15 @@ public class UserLoginService {
                     .eq(OrganizationUser::getOrganizationId, userDTO.getLastOrganizationId())
                     .eq(OrganizationUser::getEnable, true);
 
-            if (organizationUserBaseMapper.selectListByLambda(userLambdaQueryWrapper).isEmpty()) {
+            List<OrganizationUser> organizationUsers = organizationUserBaseMapper.selectListByLambda(userLambdaQueryWrapper);
+            if (CollectionUtils.isEmpty(organizationUsers)) {
                 throw new DisabledAccountException(Translator.get("user_has_been_disabled"));
             }
+            // 设置部门id
+            userDTO.setDepartmentId(organizationUsers.getFirst().getDepartmentId());
+            Department department = departmentBaseMapper.selectByPrimaryKey(organizationUsers.getFirst().getDepartmentId());
+            userDTO.setDepartmentName(department.getName());
+
         }
 
         Set<String> orgIds = getOrgIdsByUserId(userDTO.getId());
