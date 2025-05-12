@@ -458,6 +458,10 @@ public class PersonalCenterService {
         // 4. 初始化分页
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         // 5. 查询跟进计划基础数据
+        if (CollectionUtils.isEmpty(resourceTypeList)) {
+            return PageUtils.setPageInfoWithOption(page, new ArrayList<>(), new HashMap<>());
+
+        }
         List<FollowUpPlanListResponse> planList = extFollowUpPlanMapper.selectList(
                 request, userId, organizationId, null, null, null, resourceTypeList);
 
