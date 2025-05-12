@@ -209,10 +209,11 @@ const useAppStore = defineStore('app', {
       if (this.eventSource) {
         this.eventSource.onmessage = (event: MessageEvent) => {
           try {
-            const data = JSON.parse(event.data);
-            if (data.type === 'SYSTEM_HEARTBEAT') {
+            if (event.data && event.data.includes('HEARTBEAT')) {
               return;
             }
+
+            const data = JSON.parse(event.data);
 
             this.messageInfo = { ...data };
             callback();

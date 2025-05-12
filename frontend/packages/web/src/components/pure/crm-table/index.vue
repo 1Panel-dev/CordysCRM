@@ -217,11 +217,9 @@
   }
 
   function handlePageChange(page: number) {
-    checkedRowKeys.value = [];
     emit('pageChange', page);
   }
   function handlePageSizeChange(pageSize: number) {
-    checkedRowKeys.value = [];
     emit('pageSizeChange', pageSize);
   }
 
@@ -270,8 +268,17 @@
     emit('batchAction', item);
   };
 
+  const selectedRows = ref<InternalRowData[]>([]);
+
   function handleCheck(rowKeys: DataTableRowKey[], rows: InternalRowData[]) {
-    emit('rowKeyChange', rowKeys, rows);
+    const rowKeySet = new Set(rowKeys);
+    // 去掉被取消选中的项
+    selectedRows.value = selectedRows.value.filter((row) => row && rowKeySet.has(getRowKey(row)));
+    const existingIds = new Set(selectedRows.value.map((row) => row.id));
+    const newRows = rows.filter((row) => row && !existingIds.has(row.id));
+    // 追加新项
+    selectedRows.value = [...selectedRows.value, ...newRows];
+    emit('rowKeyChange', rowKeys, selectedRows.value);
   }
 
   onMounted(() => {

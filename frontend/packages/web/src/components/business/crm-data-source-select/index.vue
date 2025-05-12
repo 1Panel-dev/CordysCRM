@@ -34,7 +34,6 @@
 
 <script setup lang="ts">
   import { DataTableRowKey, NSelect, SelectOption } from 'naive-ui';
-  import { cloneDeep } from 'lodash-es';
 
   import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -43,7 +42,7 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import dataSourceTable from './dataSourceTable.vue';
 
-  import { InternalRowData, RowData } from 'naive-ui/es/data-table/src/interface';
+  import { InternalRowData, RowData, RowKey } from 'naive-ui/es/data-table/src/interface';
 
   const props = withDefaults(
     defineProps<{
@@ -86,8 +85,8 @@
   const dataSourcesModalVisible = ref(false);
 
   function handleDataSourceConfirm() {
-    value.value = cloneDeep(selectedKeys.value);
-    rows.value = cloneDeep(selectedRows.value);
+    rows.value = rows.value.concat(selectedRows.value);
+    value.value = rows.value.map((e) => e.id) as RowKey[];
     dataSourcesModalVisible.value = false;
     emit('change', value.value);
   }
