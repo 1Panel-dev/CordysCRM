@@ -122,7 +122,7 @@
     if (val.length) {
       const lowerCaseVal = val.toLowerCase();
       propsRes.value.data = propsRes.value.data.filter((item: HeaderHistoryItem) => {
-        return item.ownerName.toLowerCase().includes(lowerCaseVal);
+        return item.ownerName?.toLowerCase().includes(lowerCaseVal);
       });
     } else {
       initData();
