@@ -446,6 +446,7 @@ public class OrganizationUserService {
             List<OptionDTO> orgUsers = extOrganizationUserMapper.selectEnableOrgUser(ids, !request.isEnable());
             List<LogDTO> logs = new ArrayList<>();
             orgUsers.forEach(orgUser -> {
+                permissionCache.clearCache(orgUser.getId(), orgId);
                 LogDTO logDTO = new LogDTO(orgId, orgUser.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, orgUser.getName());
                 logDTO.setOriginalValue(originUser);
                 logDTO.setModifiedValue(newUser);
