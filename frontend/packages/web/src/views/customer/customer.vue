@@ -7,6 +7,7 @@
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
       :action-config="actionConfig"
+      :columns="tableColumns"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -390,6 +391,12 @@
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const tableColumns = computed(() => {
+    if (activeTab.value === CustomerSearchTypeEnum.VISIBLE) {
+      return propsRes.value.columns.filter((e) => e.type !== 'selection');
+    }
+    return propsRes.value.columns;
+  });
 
   const department = ref<DeptUserTreeNode[]>([]);
   async function initDepartList() {

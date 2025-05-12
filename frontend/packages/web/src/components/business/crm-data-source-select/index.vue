@@ -102,7 +102,7 @@
       {
         type: 'default',
         theme: 'light',
-        closable: true,
+        closable: !props.disabled,
         onClose: () => {
           handleClose();
           rows.value = rows.value.filter((item) => item.id !== option.value);

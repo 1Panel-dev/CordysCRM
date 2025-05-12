@@ -6,15 +6,21 @@
         <div class="flex-1">{{ t('customer.selectCustomer') }}</div>
       </div>
       <div v-for="(relation, index) in relations" :key="relation.customerId" class="flex items-center gap-[8px]">
-        <n-select v-model:value="relation.relationType" :options="getRelationOptions(relation)" />
+        <n-select
+          v-model:value="relation.relationType"
+          :options="getRelationOptions(relation)"
+          :disabled="props.readonly"
+        />
         <CrmDataSource
           v-model:value="relation.customerId"
           v-model:rows="relation.customerName"
           :data-source-type="FieldDataSourceTypeEnum.CUSTOMER_OPTIONS"
           :multiple="false"
           :disabled-selection="disabledSelection"
+          :disabled="props.readonly"
         />
         <n-button
+          v-if="!props.readonly"
           v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
           class="bg-[var(--text-n10)] p-[8px]"
           @click="deleteRelation(index)"
@@ -26,6 +32,7 @@
       </div>
       <div class="flex justify-center">
         <n-button
+          v-if="!props.readonly"
           v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
           type="primary"
           text
@@ -39,7 +46,7 @@
         </n-button>
       </div>
     </div>
-    <div class="mt-[16px] flex items-center justify-end gap-[16px]">
+    <div v-if="!props.readonly" class="mt-[16px] flex items-center justify-end gap-[16px]">
       <n-button v-permission="['CUSTOMER_MANAGEMENT:UPDATE']" :disabled="loading" @click="reset">
         {{ t('common.reset') }}
       </n-button>
@@ -67,6 +74,7 @@
 
   const props = defineProps<{
     sourceId: string;
+    readonly?: boolean;
   }>();
 
   const { t } = useI18n();

@@ -1,7 +1,12 @@
 <template>
   <CrmCard hide-footer>
     <div class="mb-[16px] flex justify-between">
-      <n-button v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']" type="primary" @click="handleCreate">
+      <n-button
+        v-if="!props.readonly"
+        v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']"
+        type="primary"
+        @click="handleCreate"
+      >
         {{ t('overviewDrawer.addContract') }}
       </n-button>
       <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
@@ -95,6 +100,7 @@
     customerId?: string;
     refreshKey?: number;
     initialSourceName?: string;
+    readonly?: boolean;
   }>();
 
   const Message = useMessage();
@@ -256,13 +262,14 @@
   const { useTableRes } = await useFormCreateTable({
     formKey: !props.customerId ? FormDesignKeyEnum.CONTACT : FormDesignKeyEnum.CUSTOMER_CONTACT,
     showPagination: !props.customerId,
+    readonly: props.readonly,
     operationColumn: {
       key: 'operation',
       width: 100,
       fixed: 'right',
       render: (row: CustomerContractListItem) =>
         h(CrmOperationButton, {
-          groupList: operationGroupList,
+          groupList: props.readonly ? [] : operationGroupList,
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
@@ -270,7 +277,7 @@
       status: (row: CustomerContractListItem) => {
         return h(NSwitch, {
           value: row.enable,
-          disabled: !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']),
+          disabled: !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']) || props.readonly,
           onClick: () => {
             if (!hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])) return;
             handleToggleStatus(row);

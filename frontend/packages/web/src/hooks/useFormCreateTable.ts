@@ -38,6 +38,7 @@ export interface FormCreateTableProps {
   showPagination?: boolean;
   excludeFieldIds?: string[]; // 规避某些字段的文字替换
   permission?: string[];
+  readonly?: boolean;
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
@@ -500,18 +501,17 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             sorter: [FieldTypeEnum.INPUT, FieldTypeEnum.PHONE].includes(field.type),
           };
         });
-      columns = [
-        {
+      columns = [...columns, ...(internalColumnMap[props.formKey] || []), ...staticColumns];
+      if (!props.readonly) {
+        columns.unshift({
           type: 'selection',
           fixed: 'left',
           disabled(row) {
             return props.disabledSelection ? props.disabledSelection(row) : false;
           },
-        },
-        ...columns,
-        ...(internalColumnMap[props.formKey] || []),
-        ...staticColumns,
-      ];
+        });
+      }
+
       if (props.operationColumn) {
         columns.push(props.operationColumn);
       }

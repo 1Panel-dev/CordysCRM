@@ -3,7 +3,7 @@
     <CrmTable
       v-bind="propsRes"
       v-model:checked-row-keys="checkedRowKeys"
-      :action-config="actionConfig"
+      :action-config="props.readonly ? undefined : actionConfig"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -11,7 +11,12 @@
       @batch-action="handleBatchAction"
     >
       <template #actionLeft>
-        <n-button v-permission="['CUSTOMER_MANAGEMENT:UPDATE']" type="primary" @click="handleAddClick">
+        <n-button
+          v-if="!props.readonly"
+          v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
+          type="primary"
+          @click="handleAddClick"
+        >
           {{ t('role.addMember') }}
         </n-button>
       </template>
@@ -96,6 +101,7 @@
 
   const props = defineProps<{
     sourceId: string; // 资源id
+    readonly?: boolean; // 是否只读
   }>();
 
   const { t } = useI18n();
@@ -270,23 +276,25 @@
       fixed: 'right',
       render: (row) =>
         h(CrmOperationButton, {
-          groupList: [
-            {
-              key: 'edit',
-              label: t('common.edit'),
-            },
-            {
-              label: t('common.delete'),
-              key: 'delete',
-              danger: true,
-              popConfirmProps: {
-                loading: removeLoading.value,
-                title: t('common.removeConfirmTitle', { name: row.userName }),
-                content: t('customer.deleteMemberTip'),
-                positiveText: t('common.delete'),
-              },
-            },
-          ],
+          groupList: props.readonly
+            ? []
+            : [
+                {
+                  key: 'edit',
+                  label: t('common.edit'),
+                },
+                {
+                  label: t('common.delete'),
+                  key: 'delete',
+                  danger: true,
+                  popConfirmProps: {
+                    loading: removeLoading.value,
+                    title: t('common.removeConfirmTitle', { name: row.userName }),
+                    content: t('customer.deleteMemberTip'),
+                    positiveText: t('common.delete'),
+                  },
+                },
+              ],
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },

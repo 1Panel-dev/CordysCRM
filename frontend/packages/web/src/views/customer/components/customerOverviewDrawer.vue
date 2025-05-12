@@ -40,6 +40,7 @@
           class="h-[calc(100vh-161px)]"
           :customer-id="props.sourceId"
           :initial-source-name="sourceName"
+          :readonly="collaborationType === 'READ_ONLY'"
         />
         <FollowDetail
           v-else-if="['followRecord', 'followPlan'].includes(activeTab)"
@@ -51,8 +52,8 @@
           :source-id="props.sourceId"
           :refresh-key="refreshKey"
           :initial-source-name="sourceName"
-          :show-add="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
-          :show-action="hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
+          :show-add="collaborationType !== 'READ_ONLY' && hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
+          :show-action="collaborationType !== 'READ_ONLY' && hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
         />
         <CrmHeaderTable
           v-else-if="activeTab === 'headRecord'"
@@ -60,8 +61,16 @@
           :source-id="props.sourceId"
           :load-list-api="getCustomerHeaderList"
         />
-        <customerRelation v-else-if="activeTab === 'relation'" :source-id="props.sourceId" />
-        <collaborator v-else-if="activeTab === 'collaborator'" :source-id="props.sourceId" />
+        <customerRelation
+          v-else-if="activeTab === 'relation'"
+          :source-id="props.sourceId"
+          :readonly="collaborationType === 'READ_ONLY'"
+        />
+        <collaborator
+          v-else-if="activeTab === 'collaborator'"
+          :source-id="props.sourceId"
+          :readonly="collaborationType === 'READ_ONLY'"
+        />
       </div>
     </template>
   </CrmOverviewDrawer>
