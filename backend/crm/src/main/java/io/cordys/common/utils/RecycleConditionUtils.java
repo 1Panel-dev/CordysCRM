@@ -17,6 +17,8 @@ import java.util.List;
  */
 public class RecycleConditionUtils {
 
+	private static final int FIX_TIME_LEN = 2;
+
 	/**
 	 * 计算回收天数
 	 * @param conditions 回收条件
@@ -52,10 +54,12 @@ public class RecycleConditionUtils {
 	 */
 	public static boolean matchTime(RuleConditionDTO condition, Long matchTime) {
 		boolean match = false;
-		if (StringUtils.equals(condition.getOperator(), RecycleConditionTimeOperator.FIXED.name())) {
+		if (StringUtils.equals(condition.getOperator(), RecycleConditionTimeOperator.FIXED.name()) && StringUtils.isNotBlank(condition.getValue())) {
 			// 固定时间
 			String[] split = StringUtils.split(condition.getValue(), ",");
-			match = matchTime >= Long.parseLong(split[0]) && matchTime <= Long.parseLong(split[1]);
+			if (split.length == FIX_TIME_LEN) {
+				match = matchTime >= Long.parseLong(split[0]) && matchTime <= Long.parseLong(split[1]);
+			}
 		} else {
 			// 动态时间
 			LocalDateTime dynamicTime = condition.getDynamicTime();

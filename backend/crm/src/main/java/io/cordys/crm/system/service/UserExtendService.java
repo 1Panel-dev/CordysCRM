@@ -117,27 +117,30 @@ public class UserExtendService {
 		String departmentId = organizationUsers.getFirst().getDepartmentId();
 		List<BaseTreeNode> departmentTree = departmentService.getTree(currentOrgId);
 		List<String> deptPath = new ArrayList<>();
-		findDeptPathWithDfs(departmentTree.getFirst(), departmentId, deptPath);
-		return deptPath;
+		boolean found = findDeptPathWithDfs(departmentTree.getFirst(), departmentId, deptPath);
+		// not found, department has been removed
+		return found ? deptPath : new ArrayList<>();
 	}
 
 	/**
 	 * 递归获取叶子部门的路径
 	 */
-	private void findDeptPathWithDfs(BaseTreeNode node, String targetNode, List<String> path) {
+	private boolean findDeptPathWithDfs(BaseTreeNode node, String targetNode, List<String> path) {
 		// 加入当前节点
 		path.add(node.getId());
 		// 命中目标节点返回
 		if (StringUtils.equals(node.getId(), targetNode)) {
-			path.add(targetNode);
-			return;
+			return true;
 		}
 		// 递归子节点
 		for (BaseTreeNode treeNode : node.getChildren()) {
-			findDeptPathWithDfs(treeNode, targetNode, path);
+			if (findDeptPathWithDfs(treeNode, targetNode, path)) {
+				return true;
+			};
 		}
 		// 未命中, 回退当前节点
 		path.removeLast();
+		return false;
 	}
 
 	/**
