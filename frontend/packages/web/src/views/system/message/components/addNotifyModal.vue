@@ -21,10 +21,10 @@
           path="subject"
           :label="t('system.message.announcementTitle')"
         >
-          <n-input v-model:value="form.subject" type="text" :placeholder="t('common.pleaseInput')" />
+          <n-input v-model:value="form.subject" type="text" :maxlength="255" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
         <n-form-item require-mark-placement="left" label-placement="left" path="url" :label="t('system.message.href')">
-          <n-input v-model:value="form.url" type="text" :placeholder="t('common.pleaseInput')" />
+          <n-input v-model:value="form.url" :maxlength="255" type="text" :placeholder="t('common.pleaseInput')" />
           <div class="text-[var(--text-n4)]">{{ t('system.message.descContent') }}</div>
         </n-form-item>
         <n-form-item
@@ -37,6 +37,7 @@
             v-model:value="form.renameUrl"
             :disabled="!form.url"
             type="text"
+            :maxlength="255"
             :placeholder="t('system.message.hrefRename')"
           />
         </n-form-item>
@@ -107,6 +108,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { AnnouncementSaveParams } from '@lib/shared/models/system/message';
 
@@ -141,10 +143,6 @@
     {
       label: t('menu.settings.org'),
       value: MemberSelectTypeEnum.ORG,
-    },
-    {
-      label: t('role.member'),
-      value: MemberSelectTypeEnum.MEMBER,
     },
   ];
 
@@ -189,8 +187,8 @@
         try {
           loading.value = true;
           const { ownerIds, range } = form.value;
-          const deptIds = ownerIds.filter((item) => item.scope === MemberSelectTypeEnum.ORG).map((item) => item.id);
-          const userIds = ownerIds.filter((item) => item.scope !== MemberSelectTypeEnum.ORG).map((item) => item.id);
+          const deptIds = ownerIds.filter((item: any) => item.nodeType === DeptNodeTypeEnum.ORG).map((item) => item.id);
+          const userIds = ownerIds.filter((item: any) => item.nodeType !== DeptNodeTypeEnum.ORG).map((item) => item.id);
           const [startTime, endTime] = range || [0, 0];
           const params = {
             ...form.value,

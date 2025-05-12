@@ -147,6 +147,8 @@
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
       width: 200,
       render: (row: AnnouncementItemDetail) => {
         return h(CrmNameTooltip, { text: row.createUserName });
@@ -159,6 +161,8 @@
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
     },
     {
       title: t('common.updateUserName'),
@@ -167,6 +171,8 @@
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
       render: (row: AnnouncementItemDetail) => {
         return h(CrmNameTooltip, { text: row.updateUserName });
       },
@@ -207,6 +213,7 @@
       tableKey: TableKeyEnum.SYSTEM_ANNOUNCEMENT_TABLE,
       showSetting: true,
       columns,
+      maxHeight: 600,
     },
     (row: AnnouncementItemDetail) => {
       return {
