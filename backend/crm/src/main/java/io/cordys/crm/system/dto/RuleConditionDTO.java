@@ -1,6 +1,6 @@
 package io.cordys.crm.system.dto;
 
-import io.cordys.crm.customer.constants.RecycleConditionTimeOperator;
+import io.cordys.crm.customer.constants.RecycleConditionOperator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,7 +29,7 @@ public class RuleConditionDTO {
 	 * @return 动态时间
 	 */
 	public LocalDateTime getDynamicTime() {
-		if (!StringUtils.equals(this.operator, RecycleConditionTimeOperator.DYNAMICS.name())) {
+		if (!StringUtils.equals(this.operator, RecycleConditionOperator.DYNAMICS.name())) {
 			return null;
 		}
 		LocalDateTime now = LocalDateTime.now();

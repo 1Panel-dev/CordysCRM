@@ -1,7 +1,7 @@
 package io.cordys.common.utils;
 
 import io.cordys.crm.customer.constants.RecycleConditionColumnKey;
-import io.cordys.crm.customer.constants.RecycleConditionTimeOperator;
+import io.cordys.crm.customer.constants.RecycleConditionOperator;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +31,7 @@ public class RecycleConditionUtils {
 			return null;
 		}
 		RuleConditionDTO condition = reservedConditions.getFirst();
-		if (StringUtils.equals(condition.getOperator(), RecycleConditionTimeOperator.FIXED.name())) {
+		if (StringUtils.equals(condition.getOperator(), RecycleConditionOperator.FIXED.name())) {
 			return null;
 		}
 		LocalDateTime dynamicTime = condition.getDynamicTime();
@@ -54,7 +54,7 @@ public class RecycleConditionUtils {
 	 */
 	public static boolean matchTime(RuleConditionDTO condition, Long matchTime) {
 		boolean match = false;
-		if (StringUtils.equals(condition.getOperator(), RecycleConditionTimeOperator.FIXED.name()) && StringUtils.isNotBlank(condition.getValue())) {
+		if (StringUtils.equals(condition.getOperator(), RecycleConditionOperator.FIXED.name()) && StringUtils.isNotBlank(condition.getValue())) {
 			// 固定时间
 			String[] split = StringUtils.split(condition.getValue(), ",");
 			if (split.length == FIX_TIME_LEN) {

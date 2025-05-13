@@ -9,6 +9,7 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
 import io.cordys.crm.customer.constants.RecycleConditionColumnKey;
+import io.cordys.crm.customer.constants.RecycleConditionOperator;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
@@ -213,8 +214,11 @@ public class OpportunityRuleService {
 	 * @return 是否匹配
 	 */
 	private boolean isConditionMatched(RuleConditionDTO condition, Opportunity opportunity) {
+		if (StringUtils.isEmpty(condition.getValue())) {
+			return false;
+		}
 		if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.OPPORTUNITY_STAGE)) {
-			return condition.getValue().contains(opportunity.getStage());
+			return StringUtils.equals(condition.getOperator(), RecycleConditionOperator.EQUALS.name()) == StringUtils.equals(condition.getValue(), opportunity.getStage());
 		} else {
 			return RecycleConditionUtils.matchTime(condition, opportunity.getCreateTime());
 		}
