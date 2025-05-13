@@ -62,13 +62,15 @@ public class UserLoginService {
             throw new AuthenticationException(Translator.get("user_not_exist"));
         }
         // 检查用户是否被禁用
-        if (StringUtils.isNotBlank(userDTO.getLastOrganizationId()) && !StringUtils.equals(userDTO.getId(), InternalUser.ADMIN.getValue())) {
-            var userLambdaQueryWrapper = new LambdaQueryWrapper<OrganizationUser>()
-                    .eq(OrganizationUser::getUserId, userDTO.getId())
-                    .eq(OrganizationUser::getOrganizationId, userDTO.getLastOrganizationId())
-                    .eq(OrganizationUser::getEnable, true);
+        if (!StringUtils.equals(userDTO.getId(), InternalUser.ADMIN.getValue())) {
+            LambdaQueryWrapper<OrganizationUser> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(OrganizationUser::getUserId, userDTO.getId());
+            queryWrapper.eq(OrganizationUser::getEnable, true);
+            if (StringUtils.isNotBlank(userDTO.getLastOrganizationId())) {
+                queryWrapper.eq(OrganizationUser::getOrganizationId, userDTO.getLastOrganizationId());
+            }
+            List<OrganizationUser> organizationUsers = organizationUserBaseMapper.selectListByLambda(queryWrapper);
 
-            List<OrganizationUser> organizationUsers = organizationUserBaseMapper.selectListByLambda(userLambdaQueryWrapper);
             if (CollectionUtils.isEmpty(organizationUsers)) {
                 throw new DisabledAccountException(Translator.get("user_has_been_disabled"));
             }
