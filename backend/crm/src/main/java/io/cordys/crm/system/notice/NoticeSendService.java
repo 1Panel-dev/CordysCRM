@@ -92,12 +92,7 @@ public class NoticeSendService {
                     .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
                     .toList();
 
-            if (messageDetailDTOS.isEmpty()) {
-                MessageDetailDTO messageDetail = messageDetailDTOService.buildMessageTailDTO(module, noticeModel, organizationId);
-                inSiteNoticeSender.send(messageDetail, noticeModel);
-            } else {
-                messageDetailDTOS.forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
-            }
+            messageDetailDTOS.forEach(messageDetail -> sendNotification(messageDetail, noticeModel));
 
         } catch (Exception e) {
             LogUtils.error("Error sending other notifications", e);

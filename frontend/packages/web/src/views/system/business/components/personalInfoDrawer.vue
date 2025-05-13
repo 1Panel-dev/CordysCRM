@@ -184,6 +184,15 @@
     }
   );
 
+  watch(
+      () => activeTab.value,
+      (val) => {
+        if (val === PersonalEnum.INFO) {
+          searchData();
+        }
+      }
+  );
+
   const refreshKey = ref(0);
 </script>
 
