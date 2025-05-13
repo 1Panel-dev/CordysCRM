@@ -1,6 +1,5 @@
-package io.cordys.crm.system.job;
+package io.cordys.crm.system.job.listener;
 
-import com.fit2cloud.quartz.anno.QuartzScheduled;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.crm.system.dto.response.AnnouncementDTO;
@@ -8,6 +7,8 @@ import io.cordys.crm.system.mapper.ExtAnnouncementMapper;
 import io.cordys.crm.system.service.AnnouncementService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class AnnounceToNotifyJob {
+public class NotifyOnListener implements ApplicationListener<ExecuteEvent> {
     @Resource
     private ExtAnnouncementMapper extAnnouncementMapper;
     @Resource
@@ -27,10 +28,19 @@ public class AnnounceToNotifyJob {
 
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
 
+    @Override
+    public void onApplicationEvent(@NotNull ExecuteEvent event) {
+        try {
+            this.addNotification();
+
+        } catch (Exception e) {
+            LogUtils.error(e);
+        }
+    }
+
     /**
-     * 将到期发布的公告转成通知  每天凌晨三点执行
+     * 将到期发布的公告转成通知
      */
-    @QuartzScheduled(cron = "0 0 3 * * ?")
     public void addNotification() {
         LogUtils.info("add notification start.");
         LocalDateTime dateTime = LocalDateTime.now();
@@ -60,9 +70,9 @@ public class AnnounceToNotifyJob {
         long startStamp = startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
         List<String> expiredIds = extAnnouncementMapper.selectFixTimeExpiredIds(startStamp, expiredStamp);
-        if (CollectionUtils.isNotEmpty(expiredIds)){
+        if (CollectionUtils.isNotEmpty(expiredIds)) {
             for (String expiredId : expiredIds) {
-                stringRedisTemplate.delete(ANNOUNCE_PREFIX+expiredId);
+                stringRedisTemplate.delete(ANNOUNCE_PREFIX + expiredId);
             }
         }
     }

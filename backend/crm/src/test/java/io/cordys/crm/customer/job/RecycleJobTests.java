@@ -1,8 +1,8 @@
 package io.cordys.crm.customer.job;
 
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.system.job.CluePoolRecycleJob;
-import io.cordys.crm.system.job.CustomerPoolRecycleJob;
+import io.cordys.crm.system.job.listener.CluePoolRecycleListener;
+import io.cordys.crm.system.job.listener.CustomerPoolRecycleListener;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -19,10 +19,10 @@ import org.springframework.test.context.jdbc.SqlConfig;
 public class RecycleJobTests extends BaseTest {
 
 	@Resource
-	private CustomerPoolRecycleJob customerPoolRecycleJob;
+	private CustomerPoolRecycleListener customerPoolRecycleListener;
 
 	@Resource
-	private CluePoolRecycleJob cluePoolRecycleJob;
+	private CluePoolRecycleListener cluePoolRecycleListener;
 
 	@Test
 	@Order(1)
@@ -33,7 +33,7 @@ public class RecycleJobTests extends BaseTest {
 			config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
 			executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 	public void testCustomerRecycle() {
-		customerPoolRecycleJob.recycle();
+		customerPoolRecycleListener.recycle();
 	}
 
 	@Test
@@ -45,6 +45,6 @@ public class RecycleJobTests extends BaseTest {
 			config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
 			executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 	public void testClueRecycle() {
-		cluePoolRecycleJob.recycle();
+		cluePoolRecycleListener.recycle();
 	}
 }

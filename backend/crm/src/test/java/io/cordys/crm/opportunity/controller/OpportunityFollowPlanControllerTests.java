@@ -9,7 +9,7 @@ import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.opportunity.domain.Opportunity;
-import io.cordys.crm.system.job.FollowUpPlanRemindJob;
+import io.cordys.crm.system.job.listener.FollowUpPlanRemindListener;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
@@ -43,7 +43,7 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
     @Resource
     private BaseMapper<FollowUpPlan> followUpPlanMapper;
     @Resource
-    private FollowUpPlanRemindJob followUpPlanRemindJob;
+    private FollowUpPlanRemindListener followUpPlanRemindListener;
     @Resource
     private BaseMapper<Customer> customerMapper;
     @Resource
@@ -154,7 +154,7 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         opportunity.setUpdateUser("admin");
         opportunity.setUpdateTime(System.currentTimeMillis());
         opportunityMapper.insert(opportunity);
-        followUpPlanRemindJob.followUpPlanRemind();
+        followUpPlanRemindListener.followUpPlanRemind();
 
         customerMapper.deleteByPrimaryKey("wx_123");
         opportunityMapper.deleteByPrimaryKey("wx_123");
