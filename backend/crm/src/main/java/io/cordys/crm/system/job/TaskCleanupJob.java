@@ -31,9 +31,9 @@ public class TaskCleanupJob {
 
 
     public void runAll() {
-        LogUtils.info("Start executing all tasks");
+        LogUtils.info("开始执行所有清理任务");
         publisher.publishEvent(new ExecuteEvent(this));
-        LogUtils.info("All tasks executed successfully");
+        LogUtils.info("所有清理任务执行完成");
     }
 
 }

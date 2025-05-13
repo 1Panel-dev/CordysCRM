@@ -59,7 +59,7 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
         try {
             this.recycle();
         } catch (Exception e) {
-            LogUtils.error("Error occurred during customer pool recycle", e);
+            LogUtils.error("回收客户资源异常: ", e.getMessage());
         }
     }
 
@@ -73,11 +73,12 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
      * </p>
      */
     public void recycle() {
-        LogUtils.info("Start recycle customer resource");
+        LogUtils.info("开始回收客户资源");
 
         // 获取启用了自动回收的客户池
         List<CustomerPool> pools = getEnabledAutomaticPools();
         if (CollectionUtils.isEmpty(pools)) {
+            LogUtils.info("没有启用的自动回收公海，回收任务结束");
             return;
         }
 
@@ -88,6 +89,7 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
         // 查询符合条件的客户
         List<Customer> customers = getCustomersForRecycle(recycleOwnersIds);
         if (CollectionUtils.isEmpty(customers)) {
+            LogUtils.info("没有需要回收的客户，回收任务结束");
             return;
         }
 
@@ -97,7 +99,7 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
         // 执行回收操作
         recycleCustomers(customers, ownersDefaultPoolMap, recycleRuleMap);
 
-        LogUtils.info("Recycle customer resource done");
+        LogUtils.info("客户资源回收完成");
     }
 
     /**

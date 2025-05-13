@@ -48,7 +48,7 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
         try {
             execute();
         } catch (Exception e) {
-            LogUtils.error(e);
+            LogUtils.error("商机资源回收异常: " , e.getMessage());
         }
     }
 
@@ -64,13 +64,14 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
      * </p>
      */
     public void execute() {
-        LogUtils.info("Start closed opportunity resource");
+        LogUtils.info("开始回收商机资源");
 
         // 查询已启用的自动执行规则
         LambdaQueryWrapper<OpportunityRule> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(OpportunityRule::getEnable, true).eq(OpportunityRule::getAuto, true);
         List<OpportunityRule> rules = opportunityRuleMapper.selectListByLambda(queryWrapper);
         if (CollectionUtils.isEmpty(rules)) {
+            LogUtils.info("没有启用的自动回收商机规则，回收任务结束");
             return;
         }
 
@@ -83,6 +84,7 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
         opportunityWrapper.in(Opportunity::getOwner, handleOwnerIds);
         List<Opportunity> opportunities = opportunityMapper.selectListByLambda(opportunityWrapper);
         if (CollectionUtils.isEmpty(opportunities)) {
+            LogUtils.info("没有需要回收的商机，回收任务结束");
             return;
         }
 
@@ -97,6 +99,6 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
             }
         }));
 
-        LogUtils.info("Closed opportunity resource done");
+        LogUtils.info("商机资源回收完成");
     }
 }

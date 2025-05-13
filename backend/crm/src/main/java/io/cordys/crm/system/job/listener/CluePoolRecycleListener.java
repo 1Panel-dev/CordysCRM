@@ -49,7 +49,7 @@ public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent
         try {
             recycle();
         } catch (Exception e) {
-            LogUtils.error("定时回收线索池异常：", e);
+            LogUtils.error("定时回收线索池异常：", e.getMessage());
         }
     }
 

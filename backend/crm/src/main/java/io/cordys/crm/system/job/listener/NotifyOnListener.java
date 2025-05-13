@@ -34,7 +34,7 @@ public class NotifyOnListener implements ApplicationListener<ExecuteEvent> {
             this.addNotification();
 
         } catch (Exception e) {
-            LogUtils.error(e);
+            LogUtils.error("公告通知异常: ", e.getMessage());
         }
     }
 
@@ -42,11 +42,11 @@ public class NotifyOnListener implements ApplicationListener<ExecuteEvent> {
      * 将到期发布的公告转成通知
      */
     public void addNotification() {
-        LogUtils.info("add notification start.");
+        LogUtils.info("公告通知");
         LocalDateTime dateTime = LocalDateTime.now();
         long timestamp = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         this.doAddNotification(timestamp);
-        LogUtils.info("add notification end.");
+        LogUtils.info("公告通知完成");
     }
 
     private void doAddNotification(long timestamp) {

@@ -57,7 +57,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
         try {
             this.followUpPlanRemind();
         } catch (Exception e) {
-            LogUtils.error("FollowUpPlanRemindListener error", e);
+            LogUtils.error("跟进计划到期提醒异常: ", e.getMessage());
         }
     }
 
@@ -68,7 +68,7 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
      * </p>
      */
     public void followUpPlanRemind() {
-        LogUtils.info("follow up plan remind job start");
+        LogUtils.info("跟进计划到期提醒");
         // 获取当天零点的时间戳（毫秒）
         long timestamp = LocalDate.now()
                 .atStartOfDay(ZoneId.systemDefault())
@@ -150,6 +150,6 @@ public class FollowUpPlanRemindListener implements ApplicationListener<ExecuteEv
             }
         }
 
-        LogUtils.info("follow up plan remind job end");
+        LogUtils.info("跟进计划到期提醒完成");
     }
 }

@@ -297,7 +297,7 @@ public class CustomerPoolService {
 
 		// 判断公海是否存在入库条件
 		List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
-		return RecycleConditionUtils.calcRecycleDays(conditions, customer.getCollectionTime());
+		return RecycleConditionUtils.calcRecycleDays(conditions, Math.min(customer.getCollectionTime(), customer.getCreateTime()));
 	}
 
 	/**
@@ -329,12 +329,23 @@ public class CustomerPoolService {
 		boolean allMatch = StringUtils.equals(CombineSearch.SearchMode.AND.name(), recycleRule.getOperator());
 		List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
 		if (allMatch) {
-			return conditions.stream().allMatch(condition -> RecycleConditionUtils.matchTime(condition, StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME) ?
-					customer.getCollectionTime() : customer.getFollowTime()));
+			return conditions.stream().allMatch(condition -> matchTime(condition, customer));
 		} else {
-			return conditions.stream().anyMatch(condition -> RecycleConditionUtils.matchTime(condition, StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME) ?
-					customer.getCollectionTime() : customer.getFollowTime()));
+			return conditions.stream().anyMatch(condition -> matchTime(condition, customer));
 		}
+	}
 
+	/**
+	 * 是否匹配时间规则
+	 * @param condition 规则
+	 * @param customer 客户
+	 * @return 是否匹配
+	 */
+	private boolean matchTime(RuleConditionDTO condition, Customer customer) {
+		if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME)) {
+			return RecycleConditionUtils.matchTime(condition, customer.getCreateTime()) || RecycleConditionUtils.matchTime(condition, customer.getCollectionTime());
+		} else {
+			return RecycleConditionUtils.matchTime(condition, customer.getFollowTime());
+		}
 	}
 }

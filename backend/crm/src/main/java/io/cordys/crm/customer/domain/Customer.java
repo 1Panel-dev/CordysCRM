@@ -22,7 +22,7 @@ public class Customer extends BaseModel {
 	@Schema(description = "负责人")
 	private String owner;
 
-	@Schema(description = "创建时间")
+	@Schema(description = "领取时间")
 	private Long collectionTime;
 
 	@Schema(description = "公海ID")

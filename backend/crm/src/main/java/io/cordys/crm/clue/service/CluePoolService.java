@@ -22,6 +22,7 @@ import io.cordys.crm.clue.dto.request.CluePoolUpdateRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtCluePoolMapper;
 import io.cordys.crm.customer.constants.RecycleConditionColumnKey;
+import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.service.UserExtendService;
@@ -281,7 +282,7 @@ public class CluePoolService {
 
         // 判断线索池是否存在入库条件
         List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
-        return RecycleConditionUtils.calcRecycleDays(conditions, clue.getCollectionTime());
+        return RecycleConditionUtils.calcRecycleDays(conditions, Math.min(clue.getCollectionTime(), clue.getCreateTime()));
     }
 
     /**
@@ -347,11 +348,23 @@ public class CluePoolService {
         boolean allMatch = StringUtils.equals(CombineSearch.SearchMode.AND.name(), recycleRule.getOperator());
         List<RuleConditionDTO> conditions = JSON.parseArray(recycleRule.getCondition(), RuleConditionDTO.class);
         if (allMatch) {
-            return conditions.stream().allMatch(condition -> RecycleConditionUtils.matchTime(condition, StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME) ?
-                    clue.getCollectionTime() : clue.getFollowTime()));
+            return conditions.stream().allMatch(condition -> matchTime(condition, clue));
         } else {
-            return conditions.stream().anyMatch(condition -> RecycleConditionUtils.matchTime(condition, StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME) ?
-                    clue.getCollectionTime() : clue.getFollowTime()));
+            return conditions.stream().anyMatch(condition -> matchTime(condition, clue));
+        }
+    }
+
+    /**
+     * 是否匹配时间规则
+     * @param condition 规则
+     * @param clue 线索
+     * @return 是否匹配
+     */
+    private boolean matchTime(RuleConditionDTO condition, Clue clue) {
+        if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME)) {
+            return RecycleConditionUtils.matchTime(condition, clue.getCreateTime()) || RecycleConditionUtils.matchTime(condition, clue.getCollectionTime());
+        } else {
+            return RecycleConditionUtils.matchTime(condition, clue.getFollowTime());
         }
     }
 }
