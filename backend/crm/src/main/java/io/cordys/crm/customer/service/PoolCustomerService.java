@@ -200,7 +200,7 @@ public class PoolCustomerService {
 	 */
 	public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId, String currentUser) {
 		validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
-		request.getBatchIds().forEach(id -> ownCustomer(id, assignUserId, null, currentUser, LogType.PICK, currentOrgId));
+		request.getBatchIds().forEach(id -> ownCustomer(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId));
 	}
 
 	/**
