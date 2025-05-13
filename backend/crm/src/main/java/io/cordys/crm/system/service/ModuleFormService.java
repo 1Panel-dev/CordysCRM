@@ -89,6 +89,37 @@ public class ModuleFormService {
 	}
 
 	/**
+	 * 获取业务表单配置
+	 * @param formKey 表单Key
+	 * @param organizationId 组织ID
+	 * @return 表单配置
+	 */
+	public ModuleFormConfigDTO getBusinessFormConfig(String formKey, String organizationId) {
+		ModuleFormConfigDTO config = getConfig(formKey, organizationId);
+		ModuleFormConfigDTO businessModuleFormConfig = new ModuleFormConfigDTO();
+		businessModuleFormConfig.setFormProp(config.getFormProp());
+
+		// 获取特殊的业务字段
+		Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
+				collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
+
+		businessModuleFormConfig.setFields(
+				config.getFields()
+						.stream()
+						.peek(moduleFieldDTO -> {
+							BusinessModuleField businessModuleFieldEnum = businessModuleFieldMap.get(moduleFieldDTO.getInternalKey());
+							if (businessModuleFieldEnum != null) {
+								// 设置特殊的业务字段 key
+								moduleFieldDTO.setBusinessKey(businessModuleFieldEnum.getBusinessKey());
+								moduleFieldDTO.setDisabledProps(businessModuleFieldEnum.getDisabledProps());
+							}
+						})
+						.toList()
+		);
+		return businessModuleFormConfig;
+	}
+
+	/**
 	 * 保存表单配置
 	 * @param saveParam 保存参数
 	 * @return 表单配置

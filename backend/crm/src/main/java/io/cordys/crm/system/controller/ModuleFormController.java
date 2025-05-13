@@ -5,6 +5,7 @@ import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.request.ModuleFormSaveRequest;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
+import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +21,8 @@ public class ModuleFormController {
 
 	@Resource
 	private ModuleFormCacheService moduleFormCacheService;
+	@Resource
+	private ModuleFormService moduleFormService;
 
 	@PostMapping("/save")
 	@Operation(summary = "保存")
@@ -32,6 +35,6 @@ public class ModuleFormController {
 	@Operation(summary = "获取表单配置")
 	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
 	public ModuleFormConfigDTO getFieldList(@PathVariable String formKey) {
-		return moduleFormCacheService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
+		return moduleFormService.getBusinessFormConfig(formKey, OrganizationContext.getOrganizationId());
 	}
 }

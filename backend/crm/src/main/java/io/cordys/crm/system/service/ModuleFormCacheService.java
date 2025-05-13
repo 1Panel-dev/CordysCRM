@@ -60,14 +60,13 @@ public class ModuleFormCacheService {
 		businessModuleFormConfig.setFields(
 				config.getFields()
 						.stream()
-						.map(moduleFieldDTO -> {
+						.peek(moduleFieldDTO -> {
 							BusinessModuleField businessModuleFieldEnum = businessModuleFieldMap.get(moduleFieldDTO.getInternalKey());
 							if (businessModuleFieldEnum != null) {
 								// 设置特殊的业务字段 key
 								moduleFieldDTO.setBusinessKey(businessModuleFieldEnum.getBusinessKey());
 								moduleFieldDTO.setDisabledProps(businessModuleFieldEnum.getDisabledProps());
 							}
-							return moduleFieldDTO;
 						})
 						.toList()
 		);
