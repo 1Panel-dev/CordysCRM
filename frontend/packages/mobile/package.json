@@ -1,8 +1,8 @@
 {
-  "name": "mobile",
+  "name": "@cordys/mobile",
   "private": true,
   "version": "1.0.0",
-  "author": "MeterSphere Team",
+  "author": "",
   "license": "MIT",
   "type": "module",
   "scripts": {
