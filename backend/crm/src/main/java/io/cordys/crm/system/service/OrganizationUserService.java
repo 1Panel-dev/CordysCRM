@@ -736,7 +736,7 @@ public class OrganizationUserService {
         organizationUser.setEmployeeId(userData.getEmployeeId());
         organizationUser.setPosition(userData.getPosition());
         organizationUser.setEmployeeType(userData.getEmployeeType());
-        organizationUser.setSupervisorId(handleSupervisor(supervisorList, userData.getDepartment(), userData.getSupervisor()));
+        organizationUser.setSupervisorId(handleSupervisor(supervisorList, organizationUser.getDepartmentId(), userData.getSupervisor()));
         organizationUser.setWorkCity(userData.getWorkCity());
         organizationUser.setCreateTime(System.currentTimeMillis());
         organizationUser.setCreateUser(operatorId);
@@ -756,9 +756,14 @@ public class OrganizationUserService {
      * @return
      */
     private String handleSupervisor(List<UserImportDTO> supervisorList, String departmentId, String name) {
-        List<UserImportDTO> list = supervisorList.stream().filter(supervisor -> StringUtils.equalsIgnoreCase(supervisor.getName(), name) && StringUtils.equalsIgnoreCase(supervisor.getDepartmentId(), departmentId)).toList();
-        if (CollectionUtils.isNotEmpty(list)) {
-            return list.getFirst().getUserId();
+        List<UserImportDTO> departmentUsers = supervisorList.stream().filter(supervisor -> StringUtils.equalsIgnoreCase(supervisor.getName(), name) && StringUtils.equalsIgnoreCase(supervisor.getDepartmentId(), departmentId)).toList();
+        if (CollectionUtils.isNotEmpty(departmentUsers)) {
+            List<String> userIds = departmentUsers.stream().map(UserImportDTO::getUserId).toList();
+            List<DepartmentCommander> commanders = extDepartmentCommanderMapper.selectCommanderByUsers(departmentId, userIds);
+            if (CollectionUtils.isNotEmpty(commanders)) {
+                return commanders.getFirst().getUserId();
+            }
+            return departmentUsers.getFirst().getUserId();
         }
         if (CollectionUtils.isNotEmpty(supervisorList)) {
             return supervisorList.getFirst().getUserId();

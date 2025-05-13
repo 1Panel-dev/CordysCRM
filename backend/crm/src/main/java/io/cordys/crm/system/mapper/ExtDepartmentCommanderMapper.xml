@@ -22,4 +22,15 @@
            sdc.department_id = #{departmentId}
           AND sd.organization_id = #{orgId}
     </select>
+
+
+    <select id="selectCommanderByUsers" resultType="io.cordys.crm.system.domain.DepartmentCommander">
+        select id, user_id, department_id
+        from sys_department_commander
+        where department_id = #{departmentId}
+        and user_id in
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </select>
 </mapper>
