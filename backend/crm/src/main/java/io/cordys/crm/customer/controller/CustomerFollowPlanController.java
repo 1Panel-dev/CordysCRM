@@ -50,7 +50,8 @@ public class CustomerFollowPlanController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户跟进计划列表")
     public PagerWithOption<List<FollowUpPlanListResponse>> list(@Validated @RequestBody FollowUpPlanPageRequest request) {
-        CustomerDataDTO customerData = followUpPlanService.getCustomerPermission(SessionUtils.getUserId(), request.getSourceId());
+        CustomerDataDTO customerData = followUpPlanService.getCustomerPermission(SessionUtils.getUserId(),
+                request.getSourceId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return followUpPlanService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER", customerData);
     }
 

@@ -9,6 +9,7 @@ import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
@@ -192,7 +193,7 @@ public class CustomerService {
     public CustomerGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
         CustomerGetResponse getResponse = get(id, orgId);
 
-        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner());
+        boolean hasPermission = dataScopeService.hasDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         if (!hasPermission) {
             List<CustomerCollaboration> collaborations = customerCollaborationService.selectByCustomerIdAndUserId(getResponse.getId(), userId);
             if (CollectionUtils.isEmpty(collaborations)) {
@@ -268,7 +269,7 @@ public class CustomerService {
         if (!StringUtils.equals(originCustomer.getOwner(), request.getOwner())) {
             poolCustomerService.validateCapacity(1, request.getOwner(), orgId);
         }
-        dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner());
+        dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);
 
         Customer customer = BeanUtils.copyBean(new Customer(), request);
         customer.setUpdateTime(System.currentTimeMillis());
@@ -324,7 +325,7 @@ public class CustomerService {
     @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {
         Customer originCustomer = customerMapper.selectByPrimaryKey(id);
-        dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner());
+        dataScopeService.checkDataPermission(userId, orgId, originCustomer.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_DELETE);
         checkOpportunityRef(List.of(id));
         // 删除客户
         customerMapper.deleteByPrimaryKey(id);
@@ -351,7 +352,7 @@ public class CustomerService {
         long processCount = owners.stream().filter(owner -> !StringUtils.equals(owner, request.getOwner())).count();
         poolCustomerService.validateCapacity((int) processCount, request.getOwner(), orgId);
 
-        dataScopeService.checkDataPermission(userId, orgId, owners);
+        dataScopeService.checkDataPermission(userId, orgId, owners, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);
         // 添加责任人历史
         customerOwnerHistoryService.batchAdd(request, userId);
         extCustomerMapper.batchTransfer(request);
@@ -385,7 +386,7 @@ public class CustomerService {
     public void batchDelete(List<String> ids, String userId, String orgId) {
         List<Customer> customers = customerMapper.selectByIds(ids);
         List<String> owners = getOwners(customers);
-        dataScopeService.checkDataPermission(userId, orgId, owners);
+        dataScopeService.checkDataPermission(userId, orgId, owners, PermissionConstants.CUSTOMER_MANAGEMENT_DELETE);
 
         checkOpportunityRef(ids);
 
@@ -441,7 +442,7 @@ public class CustomerService {
     public BatchAffectResponse batchToPool(List<String> ids, String currentUser, String orgId) {
         List<Customer> customers = customerMapper.selectByIds(ids);
         List<String> owners = getOwners(customers);
-        dataScopeService.checkDataPermission(currentUser, orgId, owners);
+        dataScopeService.checkDataPermission(currentUser, orgId, owners, PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE);
 
         List<String> ownerIds = getOwners(customers);
         Map<String, CustomerPool> ownersDefaultPoolMap = customerPoolService.getOwnersDefaultPoolMap(ownerIds, orgId);

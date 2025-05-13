@@ -287,7 +287,7 @@ class ClueControllerTests extends BaseTest {
         this.requestPostWithOk(TRANSITION_CUSTOMER, request);
 
         // 校验权限
-        requestPostPermissionsTest(List.of(PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_ADD), TRANSITION_CUSTOMER, request);
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_ADD, TRANSITION_CUSTOMER, request);
     }
 
     @Test
@@ -305,7 +305,7 @@ class ClueControllerTests extends BaseTest {
         this.requestPostWithOk(TRANSITION_OPPORTUNITY, request);
 
         // 校验权限
-        requestPostPermissionsTest(List.of(PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD), TRANSITION_OPPORTUNITY, request);
+        requestPostPermissionTest(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD, TRANSITION_OPPORTUNITY, request);
     }
 
     @Test

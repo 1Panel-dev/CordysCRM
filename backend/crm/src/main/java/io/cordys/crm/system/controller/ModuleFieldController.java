@@ -2,7 +2,6 @@ package io.cordys.crm.system.controller;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import io.cordys.common.constants.BusinessSearchType;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.DeptUserTreeNode;
@@ -81,7 +80,8 @@ public class ModuleFieldController {
 		if (StringUtils.equals(SessionUtils.getUserId(), InternalUser.ADMIN.getValue())) {
 			deptDataPermission = null;
 		} else {
-			deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), BusinessSearchType.SELF.name());
+			deptDataPermission = new DeptDataPermissionDTO();
+			deptDataPermission.setSelf(true);
 		}
 		return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}
@@ -107,7 +107,8 @@ public class ModuleFieldController {
 		if (StringUtils.equals(SessionUtils.getUserId(), InternalUser.ADMIN.getValue())) {
 			deptDataPermission = null;
 		} else {
-			deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), BusinessSearchType.SELF.name());
+			deptDataPermission = new DeptDataPermissionDTO();
+			deptDataPermission.setSelf(true);
 		}
 		return  opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}

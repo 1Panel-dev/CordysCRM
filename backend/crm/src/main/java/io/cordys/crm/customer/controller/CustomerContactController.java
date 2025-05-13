@@ -56,8 +56,8 @@ public class CustomerContactController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
     @Operation(summary = "联系人列表")
     public PagerWithOption<List<CustomerContactListResponse>> list(@Validated @RequestBody CustomerContactPageRequest request) {
-        DeptDataPermissionDTO deptDataPermission =
-                dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                        OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
         return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
@@ -65,8 +65,8 @@ public class CustomerContactController {
     @Operation(summary = "客户下的联系人列表")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     public CustomerContactListAllResponse list(@Validated @PathVariable String customerId) {
-        DeptDataPermissionDTO deptDataPermission =
-                dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return customerContactService.listByCustomerId(customerId, SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), deptDataPermission);
     }

@@ -57,7 +57,8 @@ public class CustomerFollowRecordController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户跟进记录列表")
     public PagerWithOption<List<FollowUpRecordListResponse>> list(@Validated @RequestBody FollowUpRecordPageRequest request) {
-        CustomerDataDTO customerData = followUpRecordService.getCustomerPermission(SessionUtils.getUserId(), request.getSourceId());
+        CustomerDataDTO customerData = followUpRecordService.getCustomerPermission(SessionUtils.getUserId(),
+                request.getSourceId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return followUpRecordService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "CUSTOMER", "CUSTOMER", customerData);
     }
 

@@ -33,9 +33,10 @@ public class BaseFollowUpService {
     @Resource
     private ExtOrganizationUserMapper extOrganizationUserMapper;
 
-    public CustomerDataDTO getCustomerPermission(String userId, String sourceId) {
+    public CustomerDataDTO getCustomerPermission(String userId, String sourceId, String permission) {
         CustomerDataDTO customerDataDTO = new CustomerDataDTO();
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), permission);
 
         //全部数据
         if (deptDataPermission.getAll() || StringUtils.equalsAnyIgnoreCase(userId, InternalUser.ADMIN.getValue())) {

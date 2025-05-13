@@ -48,7 +48,8 @@ public class ClueController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索列表")
     public PagerWithOption<List<ClueListResponse>> list(@Validated @RequestBody CluePageRequest request) {
-        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), request.getSearchType());
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.CLUE_MANAGEMENT_READ);
         return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
@@ -88,14 +89,14 @@ public class ClueController {
     }
 
     @PostMapping("/transition/customer")
-    @RequiresPermissions({PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_ADD})
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_ADD)
     @Operation(summary = "转移客户")
     public void transitionCustomer(@Validated @RequestBody ClueTransitionCustomerRequest request) {
         clueService.transitionCustomer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/transition/opportunity")
-    @RequiresPermissions({PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD})
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD)
     @Operation(summary = "转移商机")
     public void transitionOpportunity(@Validated @RequestBody ClueTransitionOpportunityRequest request) {
         clueService.transitionOpportunity(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());

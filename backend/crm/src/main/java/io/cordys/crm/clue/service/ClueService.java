@@ -9,6 +9,7 @@ import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
@@ -191,7 +192,7 @@ public class ClueService {
 
     public ClueGetResponse getWithDataPermissionCheck(String id, String userId, String orgId) {
         ClueGetResponse getResponse = get(id, orgId);
-        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner());
+        dataScopeService.checkDataPermission(userId, orgId, getResponse.getOwner(), PermissionConstants.CLUE_MANAGEMENT_READ);
         return getResponse;
     }
 
@@ -260,7 +261,7 @@ public class ClueService {
         if (!StringUtils.equals(originClue.getOwner(), request.getOwner())) {
             poolClueService.validateCapacity(1, request.getOwner(), orgId);
         }
-        dataScopeService.checkDataPermission(userId, orgId, originClue.getOwner());
+        dataScopeService.checkDataPermission(userId, orgId, originClue.getOwner(), PermissionConstants.CLUE_MANAGEMENT_UPDATE);
 
         Clue clue = BeanUtils.copyBean(new Clue(), request);
         clue.setUpdateTime(System.currentTimeMillis());
@@ -308,7 +309,7 @@ public class ClueService {
     public void updateStatus(ClueStatusUpdateRequest request, String userId, String orgId) {
         Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
         Clue clue = BeanUtils.copyBean(new Clue(), request);
-        dataScopeService.checkDataPermission(userId, orgId, originClue.getOwner());
+        dataScopeService.checkDataPermission(userId, orgId, originClue.getOwner(), PermissionConstants.CLUE_MANAGEMENT_UPDATE);
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setUpdateUser(userId);
         // 记录修改前的状态
@@ -348,7 +349,7 @@ public class ClueService {
     public void transitionCustomer(ClueTransitionCustomerRequest request, String userId, String orgId) {
         Customer customer = customerService.add(request, userId, orgId);
         Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
-        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner());
+        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner(), PermissionConstants.CUSTOMER_MANAGEMENT_ADD);
         clue.setTransitionId(customer.getId());
         clue.setTransitionType(FormKey.CUSTOMER.name());
         clue.setUpdateTime(System.currentTimeMillis());
@@ -369,7 +370,7 @@ public class ClueService {
     public void transitionOpportunity(ClueTransitionOpportunityRequest request, String userId, String orgId) {
         Opportunity opportunity = opportunityService.add(request, userId, orgId);
         Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
-        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner());
+        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD);
 
         clue.setTransitionId(opportunity.getId());
         clue.setTransitionType(FormKey.OPPORTUNITY.name());
@@ -381,7 +382,7 @@ public class ClueService {
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {
         Clue clue = clueMapper.selectByPrimaryKey(id);
-        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner());
+        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner(), PermissionConstants.CLUE_MANAGEMENT_DELETE);
         // 删除客户
         clueMapper.deleteByPrimaryKey(id);
         // 删除客户模块字段
@@ -404,7 +405,7 @@ public class ClueService {
         List<String> ownerIds = getOwners(clues);
         long processCount = ownerIds.stream().filter(owner -> !StringUtils.equals(owner, request.getOwner())).count();
         poolClueService.validateCapacity((int) processCount, request.getOwner(), orgId);
-        dataScopeService.checkDataPermission(userId, orgId, ownerIds);
+        dataScopeService.checkDataPermission(userId, orgId, ownerIds, PermissionConstants.CLUE_MANAGEMENT_UPDATE);
 
         // 添加责任人历史
         clueOwnerHistoryService.batchAdd(request, userId);
@@ -431,7 +432,7 @@ public class ClueService {
     public void batchDelete(List<String> ids, String userId, String orgId) {
         List<Clue> clues = clueMapper.selectByIds(ids);
         List<String> owners = getOwners(clues);
-        dataScopeService.checkDataPermission(userId, orgId, owners);
+        dataScopeService.checkDataPermission(userId, orgId, owners, PermissionConstants.CLUE_MANAGEMENT_DELETE);
 
         // 删除客户
         clueMapper.deleteByIds(ids);
@@ -468,7 +469,7 @@ public class ClueService {
         wrapper.in(Clue::getId, ids);
         List<Clue> clues = clueMapper.selectListByLambda(wrapper);
         List<String> ownerIds = getOwners(clues);
-        dataScopeService.checkDataPermission(currentUser, orgId, ownerIds);
+        dataScopeService.checkDataPermission(currentUser, orgId, ownerIds, PermissionConstants.CLUE_MANAGEMENT_RECYCLE);
 
         Map<String, CluePool> ownersDefaultPoolMap = cluePoolService.getOwnersDefaultPoolMap(ownerIds, orgId);
         int success = 0;
