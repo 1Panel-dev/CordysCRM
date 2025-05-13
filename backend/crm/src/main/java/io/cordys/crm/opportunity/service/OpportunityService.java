@@ -42,6 +42,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -153,7 +154,7 @@ public class OpportunityService {
             // 获取自定义字段
             List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
 
-            opportunityListResponse.setReservedDays(StringUtils.equals("0", opportunityListResponse.getStatus()) ? null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
+            opportunityListResponse.setReservedDays(BooleanUtils.isFalse(opportunityListResponse.getStatus()) ? null : opportunityRuleService.calcReservedDay(ownersDefaultRuleMap.get(opportunityListResponse.getOwner()), opportunityListResponse));
             opportunityListResponse.setModuleFields(opportunityFields);
 
             opportunityListResponse.setFollowerName(userNameMap.get(opportunityListResponse.getFollower()));

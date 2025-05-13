@@ -53,7 +53,7 @@ public class OpportunityListResponse {
     private String stage;
 
     @Schema(description = "商机状态")
-    private String status;
+    private Boolean status;
 
     @Schema(description = "创建人")
     private String createUser;
