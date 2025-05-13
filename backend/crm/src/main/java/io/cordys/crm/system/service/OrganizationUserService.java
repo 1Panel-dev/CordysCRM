@@ -691,8 +691,10 @@ public class OrganizationUserService {
     public void saveImportData(List<UserExcelData> list, List<BaseTreeNode> departmentTree, Map<String, String> departmentMap, String operatorId, String orgId) {
         //部门
         List<String> departmentPath = list.stream().map(UserExcelData::getDepartment).toList();
+        // 记录日志
+        List<LogDTO> logs = new ArrayList<>();
         //构建部门树
-        Map<String, String> departmentPathMap = departmentService.createDepartment(departmentPath, orgId, departmentTree, operatorId, departmentMap);
+        Map<String, String> departmentPathMap = departmentService.createDepartment(departmentPath, orgId, departmentTree, operatorId, departmentMap, logs);
         List<String> nameList = list.stream().map(UserExcelData::getSupervisor).filter(StringUtils::isNotBlank).toList();
         List<UserImportDTO> supervisorList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(nameList)) {
@@ -703,15 +705,16 @@ public class OrganizationUserService {
         List<OrganizationUser> organizationUsers = new ArrayList<>();
         List<UserImportDTO> finalSupervisorList = supervisorList;
         list.forEach(userData -> {
-            buildUser(userData, operatorId, userList, departmentPathMap, orgId, organizationUsers, finalSupervisorList);
+            buildUser(userData, operatorId, userList, departmentPathMap, orgId, organizationUsers, finalSupervisorList, logs);
         });
 
         userMapper.batchInsert(userList);
         organizationUserMapper.batchInsert(organizationUsers);
 
+        logService.batchAdd(logs);
     }
 
-    private void buildUser(UserExcelData userData, String operatorId, List<User> userList, Map<String, String> departmentPathMap, String orgId, List<OrganizationUser> organizationUsers, List<UserImportDTO> supervisorList) {
+    private void buildUser(UserExcelData userData, String operatorId, List<User> userList, Map<String, String> departmentPathMap, String orgId, List<OrganizationUser> organizationUsers, List<UserImportDTO> supervisorList, List<LogDTO> logs) {
         User user = new User();
         user.setId(IDGenerator.nextStr());
         user.setLastOrganizationId(orgId);
@@ -743,6 +746,11 @@ public class OrganizationUserService {
         organizationUser.setUpdateTime(System.currentTimeMillis());
         organizationUser.setUpdateUser(operatorId);
         organizationUsers.add(organizationUser);
+
+
+        LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.ADD, LogModule.SYSTEM_ORGANIZATION, userData.getName());
+        logDTO.setModifiedValue(user);
+        logs.add(logDTO);
 
     }
 

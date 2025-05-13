@@ -292,7 +292,7 @@ public class DepartmentService extends MoveNodeService {
      * @param departmentMap
      * @return
      */
-    public Map<String, String> createDepartment(List<String> departmentPath, String orgId, List<BaseTreeNode> departmentTree, String operatorId, Map<String, String> departmentMap) {
+    public Map<String, String> createDepartment(List<String> departmentPath, String orgId, List<BaseTreeNode> departmentTree, String operatorId, Map<String, String> departmentMap, List<LogDTO> logs) {
         departmentPath.forEach(path -> {
             path = "/" + path;
             List<String> depNames = new ArrayList<>(List.of(path.split("/")));
@@ -311,26 +311,26 @@ public class DepartmentService extends MoveNodeService {
                     if (StringUtils.equalsIgnoreCase(currentDepName, department.getName())) {
                         hasNode.set(true);
                         //根节点存在，检查子节点是否存在
-                        createDepByPathIterator(itemIterator, "/" + currentDepName, department, departmentMap, orgId, operatorId);
+                        createDepByPathIterator(itemIterator, "/" + currentDepName, department, departmentMap, orgId, operatorId, logs);
                     }
                 });
             }
             if (!hasNode.get()) {
                 //获取顶级部门id
                 BaseTreeNode top = extDepartmentMapper.selectDepartment(currentDepName, orgId);
-                createDepByPath(itemIterator, currentDepName, top, orgId, StringUtils.EMPTY, departmentMap, operatorId);
+                createDepByPath(itemIterator, currentDepName, top, orgId, StringUtils.EMPTY, departmentMap, operatorId, logs);
             }
         });
         return departmentMap;
     }
 
-    private void createDepByPathIterator(Iterator<String> itemIterator, String currentDepPath, BaseTreeNode departmentTreeNode, Map<String, String> departmentMap, String orgId, String operatorId) {
+    private void createDepByPathIterator(Iterator<String> itemIterator, String currentDepPath, BaseTreeNode departmentTreeNode, Map<String, String> departmentMap, String orgId, String operatorId, List<LogDTO> logs) {
         List<BaseTreeNode> children = departmentTreeNode.getChildren();
         if (CollectionUtils.isEmpty(children) || !itemIterator.hasNext()) {
             //没有子节点，根据当前部门创建部门节点
             departmentMap.put(currentDepPath, departmentTreeNode.getId());
             if (itemIterator.hasNext()) {
-                createDepByPath(itemIterator, itemIterator.next().trim(), departmentTreeNode, orgId, currentDepPath, departmentMap, operatorId);
+                createDepByPath(itemIterator, itemIterator.next().trim(), departmentTreeNode, orgId, currentDepPath, departmentMap, operatorId, logs);
             }
             return;
         }
@@ -339,17 +339,17 @@ public class DepartmentService extends MoveNodeService {
         children.forEach(child -> {
             if (StringUtils.equalsIgnoreCase(nodeName, child.getName())) {
                 hasNode.set(true);
-                createDepByPathIterator(itemIterator, currentDepPath + "/" + child.getName(), child, departmentMap, orgId, operatorId);
+                createDepByPathIterator(itemIterator, currentDepPath + "/" + child.getName(), child, departmentMap, orgId, operatorId, logs);
             }
         });
 
         //若子节点中不包含该目标节点，则在该节点下创建
         if (!hasNode.get()) {
-            createDepByPath(itemIterator, nodeName, departmentTreeNode, orgId, currentDepPath, departmentMap, operatorId);
+            createDepByPath(itemIterator, nodeName, departmentTreeNode, orgId, currentDepPath, departmentMap, operatorId, logs);
         }
     }
 
-    private void createDepByPath(Iterator<String> itemIterator, String departmentName, BaseTreeNode parentDep, String orgId, String currentDepPath, Map<String, String> departmentMap, String operatorId) {
+    private void createDepByPath(Iterator<String> itemIterator, String departmentName, BaseTreeNode parentDep, String orgId, String currentDepPath, Map<String, String> departmentMap, String operatorId, List<LogDTO> logs) {
         StringBuilder path = new StringBuilder(currentDepPath);
         path.append("/").append(departmentName.trim());
 
@@ -359,7 +359,7 @@ public class DepartmentService extends MoveNodeService {
             //如果创建过，直接获取模块ID
             pid = departmentMap.get(path.toString());
         } else {
-            pid = insertNode(departmentName, parentDep.getId(), orgId, operatorId);
+            pid = insertNode(departmentName, parentDep.getId(), orgId, operatorId, logs);
             departmentMap.put(path.toString(), pid);
         }
 
@@ -369,13 +369,13 @@ public class DepartmentService extends MoveNodeService {
             if (departmentMap.get(path.toString()) != null) {
                 pid = departmentMap.get(path.toString());
             } else {
-                pid = insertNode(nextDepName, pid, orgId, operatorId);
+                pid = insertNode(nextDepName, pid, orgId, operatorId, logs);
                 departmentMap.put(path.toString(), pid);
             }
         }
     }
 
-    private String insertNode(String departmentName, String parentId, String orgId, String operatorId) {
+    private String insertNode(String departmentName, String parentId, String orgId, String operatorId, List<LogDTO> logs) {
         String id = IDGenerator.nextStr();
         Department department = new Department();
         department.setId(id);
@@ -389,6 +389,11 @@ public class DepartmentService extends MoveNodeService {
         department.setUpdateUser(operatorId);
         department.setResource(DepartmentConstants.INTERNAL.name());
         departmentMapper.insert(department);
+
+        LogDTO logDTO = new LogDTO(orgId, department.getId(), operatorId, LogType.ADD, LogModule.SYSTEM_ORGANIZATION, departmentName);
+        logDTO.setModifiedValue(department);
+        logs.add(logDTO);
+
         return id;
     }
 
