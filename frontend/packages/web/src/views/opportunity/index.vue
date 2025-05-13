@@ -2,7 +2,7 @@
   <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
     <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="changeActiveTab" />
   </CrmCard>
-  <CrmCard hide-footer>
+  <CrmCard hide-footer :special-height="64">
     <CrmTable
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
@@ -16,7 +16,7 @@
       <template #actionLeft>
         <div class="flex items-center">
           <n-button
-            v-permission="['OPPORTUNITY_MANAGEMENT:ADD']"
+            v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD']) && activeTab !== OpportunitySearchTypeEnum.DEAL"
             class="mr-[12px]"
             type="primary"
             @click="handleCreate"
@@ -104,6 +104,7 @@
   import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const Message = useMessage();
   const { openModal } = useModal();
@@ -419,7 +420,7 @@
         );
       },
       status: (row: OpportunityItem) => {
-        return row.status === '1' ? t('common.open') : t('common.close');
+        return row.status ? t('common.open') : t('common.close');
       },
       stage: (row: OpportunityItem) => {
         const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);

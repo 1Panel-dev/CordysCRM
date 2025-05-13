@@ -259,11 +259,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         filterOptions: [
           {
             label: t('common.open'),
-            value: '1',
+            value: true,
           },
           {
             label: t('common.close'),
-            value: '0',
+            value: false,
           },
         ],
         filter: true,

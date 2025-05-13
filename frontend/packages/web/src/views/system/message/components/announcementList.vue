@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer auto-height>
+  <CrmCard hide-footer :special-height="64">
     <div class="mb-[16px] flex items-center justify-between">
       <n-button v-permission="['SYSTEM_NOTICE:ADD']" type="primary" @click="handleAdd">
         {{ t('system.message.newAnnouncement') }}
@@ -213,7 +213,7 @@
       tableKey: TableKeyEnum.SYSTEM_ANNOUNCEMENT_TABLE,
       showSetting: true,
       columns,
-      maxHeight: 600,
+      maxHeight: 'calc(100vh - 342px)',
     },
     (row: AnnouncementItemDetail) => {
       return {
