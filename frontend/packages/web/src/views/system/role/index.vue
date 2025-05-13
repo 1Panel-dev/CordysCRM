@@ -141,7 +141,7 @@
   ];
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
-    if (node.internal && !hasAnyPermission(['SYSTEM_ROLE:UPDATE', 'SYSTEM_ROLE:ADD', 'SYSTEM_ROLE:DELETE'])) {
+    if (node.internal || !hasAnyPermission(['SYSTEM_ROLE:UPDATE', 'SYSTEM_ROLE:ADD', 'SYSTEM_ROLE:DELETE'])) {
       return [];
     }
     if (activeRole.value?.isNew) {
