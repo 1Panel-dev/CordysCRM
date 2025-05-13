@@ -151,6 +151,8 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         validateEmail(data, errMsg);
         //校验顶级部门
         validateDepartment(data, errMsg);
+        //校验字段长度
+        validateLength(data, errMsg);
         //处理性别
         handleGender(data);
         //处理员工类型
@@ -194,6 +196,30 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
             }
         }
 
+    }
+
+
+    /**
+     * 校验字段长度
+     * @param data
+     * @param errMsg
+     */
+    private void validateLength(UserExcelData data, StringBuilder errMsg) {
+        String employeeId = data.getEmployeeId();
+        if (StringUtils.isNotBlank(employeeId)) {
+            if (employeeId.length() > 255) {
+                errMsg.append(Translator.get("employee_length"))
+                        .append(ERROR_MSG_SEPARATOR);
+            }
+        }
+
+        String position = data.getPosition();
+        if (StringUtils.isNotBlank(position)) {
+            if (position.length() > 255) {
+                errMsg.append(Translator.get("position_length"))
+                        .append(ERROR_MSG_SEPARATOR);
+            }
+        }
     }
 
     /**

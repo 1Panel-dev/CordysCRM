@@ -15,6 +15,7 @@ import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.OrganizationUserService;
 import io.cordys.excel.domain.ExcelErrData;
 import io.cordys.excel.utils.ExcelValidateHelper;
+import lombok.Data;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -129,7 +130,32 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
         validateEmail(data, errMsg);
         //校验顶级部门
         validateDepartment(data, errMsg);
+        //校验字段长度
+        validateLength(data, errMsg);
 
+    }
+
+    /**
+     * 校验字段长度
+     * @param data
+     * @param errMsg
+     */
+    private void validateLength(UserExcelData data, StringBuilder errMsg) {
+        String employeeId = data.getEmployeeId();
+        if (StringUtils.isNotBlank(employeeId)) {
+            if (employeeId.length() > 255) {
+                errMsg.append(Translator.get("employee_length"))
+                        .append(ERROR_MSG_SEPARATOR);
+            }
+        }
+
+        String position = data.getPosition();
+        if (StringUtils.isNotBlank(position)) {
+            if (position.length() > 255) {
+                errMsg.append(Translator.get("position_length"))
+                        .append(ERROR_MSG_SEPARATOR);
+            }
+        }
     }
 
     /**
