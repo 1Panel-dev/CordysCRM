@@ -1,5 +1,7 @@
 package io.cordys.crm.opportunity.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.cordys.common.util.BigDecimalNoTrailingZeroSerializer;
 import jakarta.persistence.Table;
 import io.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,9 +22,11 @@ public class Opportunity extends BaseModel {
 	private String name;
 
 	@Schema(description = "金额")
+	@JsonSerialize(using = BigDecimalNoTrailingZeroSerializer.class)
 	private BigDecimal amount;
 
 	@Schema(description = "可能性")
+	@JsonSerialize(using = BigDecimalNoTrailingZeroSerializer.class)
 	private BigDecimal possible;
 
 	@Schema(description = "意向产品id")
