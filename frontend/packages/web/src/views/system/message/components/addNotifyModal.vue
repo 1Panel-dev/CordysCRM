@@ -47,7 +47,12 @@
           path="content"
           :label="t('system.message.announcementContent')"
         >
-          <n-input v-model:value="form.content" type="textarea" :placeholder="t('common.pleaseInput')" />
+          <n-input
+            v-model:value="form.content"
+            :maxlength="1000"
+            type="textarea"
+            :placeholder="t('common.pleaseInput')"
+          />
           <CrmPopConfirm
             v-model:show="showPopModal"
             :title="form.subject"
@@ -64,9 +69,16 @@
             <template #content>
               <div class="p-[16px]">
                 {{ form.content }}
-                <n-button class="!inline" text type="primary" @click="goUrl">
+                <n-tooltip trigger="hover" :delay="300" :disabled="!(form.renameUrl || form.url)?.length">
+                  <template #trigger>
+                    <n-button class="inline-block" text type="primary" @click="goUrl">
+                      <div class="one-line-text max-w-[300px]">
+                        {{ form.renameUrl || form.url }}
+                      </div>
+                    </n-button>
+                  </template>
                   {{ form.renameUrl ?? form.url }}
-                </n-button>
+                </n-tooltip>
               </div>
             </template>
           </CrmPopConfirm>
@@ -77,7 +89,14 @@
           path="range"
           :label="t('system.message.timeOfPublication')"
         >
-          <n-date-picker v-model:value="form.range" class="w-[240px]" type="daterange" clearable>
+          <n-date-picker
+            v-model:value="form.range"
+            :is-date-disabled="isRangeDateDisabled"
+            :is-time-disabled="isRangeTimeDisabled"
+            class="w-[340px]"
+            type="datetimerange"
+            clearable
+          >
             <template #date-icon>
               <CrmIcon class="text-[var(--text-n4)]" type="iconicon_time" :size="16" />
             </template>
@@ -104,7 +123,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { FormInst, FormRules, NButton, NDatePicker, NForm, NFormItem, NInput, useMessage } from 'naive-ui';
+  import { FormInst, FormRules, NButton, NDatePicker, NForm, NFormItem, NInput, NTooltip, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -145,6 +164,49 @@
       value: MemberSelectTypeEnum.ORG,
     },
   ];
+
+  // 禁用当前时间之前的日期
+  const isRangeDateDisabled = (currentTimestamp: number, _type: 'start' | 'end', _range: [number, number] | null) => {
+    const now = new Date();
+    const target = new Date(currentTimestamp);
+
+    // 禁用今天之前的所有日期
+    return target < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  };
+
+  // 禁用当前时间之前的小时/分钟/秒
+  const isRangeTimeDisabled = (current: number, type: 'start' | 'end', range: [number, number]) => {
+    const now = new Date();
+    const currentDate = new Date(current);
+
+    const isToday =
+      currentDate.getFullYear() === now.getFullYear() &&
+      currentDate.getMonth() === now.getMonth() &&
+      currentDate.getDate() === now.getDate();
+
+    if (!isToday) {
+      // 今天以外的时间不限制
+      return {
+        isHourDisabled: () => false,
+        isMinuteDisabled: () => false,
+        isSecondDisabled: () => false,
+      };
+    }
+
+    const nowHour = now.getHours();
+    const nowMinute = now.getMinutes();
+    const nowSecond = now.getSeconds();
+
+    return {
+      isHourDisabled: (hour: number) => hour < nowHour,
+      isMinuteDisabled: (minute: number) => {
+        return currentDate.getHours() === nowHour && minute < nowMinute;
+      },
+      isSecondDisabled: (second: number) => {
+        return currentDate.getHours() === nowHour && currentDate.getMinutes() === nowMinute && second < nowSecond;
+      },
+    };
+  };
 
   const rules: FormRules = {
     subject: [{ required: true, message: t('common.notNull', { value: `${t('system.message.announcementTitle')}` }) }],

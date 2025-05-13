@@ -11,12 +11,18 @@
         </n-tooltip>
       </div>
     </div>
-
     <div class="py-[16px]">
       {{ parsedContent?.content }}
-      <n-button class="!inline !text-[var(--primary-8)]" text type="primary" @click="goUrl">
-        {{ parsedContent?.renameUrl ?? parsedContent?.url }}
-      </n-button>
+      <n-tooltip trigger="hover" :delay="300" :disabled="!(parsedContent.renameUrl || parsedContent.url)?.length">
+        <template #trigger>
+          <n-button class="inline-block" text type="primary" @click="goUrl">
+            <div class="one-line-text max-w-[300px]">
+              {{ parsedContent?.renameUrl || parsedContent?.url }}
+            </div>
+          </n-button>
+        </template>
+        {{ parsedContent?.renameUrl || parsedContent?.url }}
+      </n-tooltip>
     </div>
     <div :class="`flex items-center ${total > 1 ? 'justify-between' : 'justify-end'}`">
       <div v-if="total > 1" class="flex items-center gap-[8px]">

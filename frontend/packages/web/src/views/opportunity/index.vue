@@ -363,6 +363,9 @@
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.BUSINESS,
     excludeFieldIds: ['customerId'],
+    disabledSelection: (row) => {
+      return row.stage === StageResultEnum.SUCCESS;
+    },
     operationColumn: {
       key: 'operation',
       width: 200,
