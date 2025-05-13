@@ -3,7 +3,10 @@ import dayjs from 'dayjs';
 import JSEncrypt from 'jsencrypt';
 
 import { isObject } from './is';
-import type { FormCreateFieldDateType } from '@cordys/web/src/components/business/crm-form-create/types';
+import type {
+  FormCreateField,
+  FormCreateFieldDateType,
+} from '@cordys/web/src/components/business/crm-form-create/types';
 import { getLocalStorage } from '@lib/shared/method/local-storage';
 import { regionData } from 'element-china-area-data';
 
@@ -108,8 +111,8 @@ export const apiSSE = (url: string, host?: string): EventSource => {
   // 解析 URL，自动适配 host
   const uri = protocol + (host?.split('://')[1] || window.location.host) + url;
 
-  return new EventSource(uri,  {
-    withCredentials: true
+  return new EventSource(uri, {
+    withCredentials: true,
   });
 };
 
@@ -510,6 +513,24 @@ export function formatTimeValue(value: string | number, type?: FormCreateFieldDa
       default:
         return date.format('YYYY-MM-DD HH:mm:ss');
     }
+  }
+  return '-';
+}
+
+/**
+ * 格式化数字
+ * @param value 数字
+ * @param type 类型
+ */
+export function formatNumberValue(value: string | number, item: FormCreateField) {
+  if (value) {
+    if (item.numberFormat === 'percent') {
+      return item.precision ? `${Number(value).toFixed(item.precision)}%` : `${value}%`;
+    }
+    if (item.showThousandsSeparator) {
+      return (item.precision ? Number(Number(value).toFixed(item.precision)) : Number(value)).toLocaleString('en-US');
+    }
+    return item.precision ? Number(value).toFixed(item.precision) : value.toString();
   }
   return '-';
 }

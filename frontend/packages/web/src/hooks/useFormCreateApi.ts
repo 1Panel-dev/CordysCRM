@@ -3,7 +3,7 @@ import { cloneDeep } from 'lodash-es';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatTimeValue, getCityPath, safeFractionConvert } from '@lib/shared/method';
+import { formatNumberValue, formatTimeValue, getCityPath, safeFractionConvert } from '@lib/shared/method';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
 import type { FormConfig } from '@lib/shared/models/system/module';
 
@@ -85,13 +85,22 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               name = options.find((e) => e.id === value)?.name;
             }
           }
-          descriptions.value.push({
-            label: item.name,
-            value:
-              item.type === FieldTypeEnum.DATE_TIME
-                ? formatTimeValue(name || form[item.businessKey], item.dateType)
-                : name || form[item.businessKey],
-          });
+          if (item.type === FieldTypeEnum.DATE_TIME) {
+            descriptions.value.push({
+              label: item.name,
+              value: formatTimeValue(name || form[item.businessKey], item.dateType),
+            });
+          } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+            descriptions.value.push({
+              label: item.name,
+              value: formatNumberValue(name || form[item.businessKey], item),
+            });
+          } else {
+            descriptions.value.push({
+              label: item.name,
+              value: name || form[item.businessKey],
+            });
+          }
           if (item.businessKey === 'name') {
             sourceName.value = name || form[item.businessKey];
           }
@@ -124,6 +133,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             } else if (item.type === FieldTypeEnum.LOCATION) {
               const address = (field?.fieldValue as string)?.split('-');
               value = address ? `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}` : '-';
+            } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+              value = formatNumberValue(field?.fieldValue as string, item);
             } else if (item.type === FieldTypeEnum.DATE_TIME) {
               value = formatTimeValue(field?.fieldValue as string, item.dateType);
             }

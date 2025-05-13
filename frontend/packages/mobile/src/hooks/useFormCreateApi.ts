@@ -2,7 +2,7 @@ import { showSuccessToast } from 'vant';
 
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { formatTimeValue, getCityPath, safeFractionConvert, sleep } from '@lib/shared/method';
+import { formatNumberValue, formatTimeValue, getCityPath, safeFractionConvert, sleep } from '@lib/shared/method';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
 
 import type { CrmDescriptionItem } from '@/components/pure/crm-description/index.vue';
@@ -49,14 +49,22 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           const options = form.optionMap?.[item.businessKey];
           // 业务标准字段读取最外层，读取form[item.businessKey]取到 id 值，然后去 options 里取 name
           const name = options?.find((e) => e.id === form[item.businessKey as string])?.name;
-          descriptions.value.push({
-            label: item.name,
-            value:
-              item.type === FieldTypeEnum.DATE_TIME
-                ? formatTimeValue(name || form[item.businessKey], item.dateType)
-                : name || form[item.businessKey],
-            isTag: [FieldTypeEnum.INPUT_MULTIPLE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type),
-          });
+          if (item.type === FieldTypeEnum.DATE_TIME) {
+            descriptions.value.push({
+              label: item.name,
+              value: formatTimeValue(name || form[item.businessKey], item.dateType),
+            });
+          } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+            descriptions.value.push({
+              label: item.name,
+              value: formatNumberValue(name || form[item.businessKey], item),
+            });
+          } else {
+            descriptions.value.push({
+              label: item.name,
+              value: name || form[item.businessKey],
+            });
+          }
           if (item.businessKey === 'name') {
             sourceName.value = name || form[item.businessKey];
           }
@@ -83,6 +91,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             } else if (item.type === FieldTypeEnum.LOCATION) {
               const address = (field?.fieldValue as string)?.split('-');
               value = address ? `${getCityPath(address[0])}-${address[1]}` : '-';
+            } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
+              value = formatNumberValue(field?.fieldValue as string, item);
+            } else if (item.type === FieldTypeEnum.DATE_TIME) {
+              value = formatTimeValue(field?.fieldValue as string, item.dateType);
             }
             descriptions.value.push({
               label: item.name,

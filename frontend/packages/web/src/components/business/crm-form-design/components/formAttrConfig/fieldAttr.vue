@@ -783,18 +783,18 @@
     const tempVal = 9999;
     if (fieldConfig.value.numberFormat === 'percent') {
       if (fieldConfig.value.decimalPlaces && fieldConfig.value.precision) {
-        return `99.${'0'.repeat(fieldConfig.value.precision)}%`;
+        return `99.${'1'.repeat(fieldConfig.value.precision)}%`;
       }
       return '99%';
     }
     if (fieldConfig.value.showThousandsSeparator && fieldConfig.value.decimalPlaces && fieldConfig.value.precision) {
-      return `${tempVal.toLocaleString('en-US')}.${'0'.repeat(fieldConfig.value.precision)}`;
+      return `${tempVal.toLocaleString('en-US')}.${'1'.repeat(fieldConfig.value.precision)}`;
     }
     if (fieldConfig.value.showThousandsSeparator) {
       return tempVal.toLocaleString('en-US');
     }
     if (fieldConfig.value.decimalPlaces && fieldConfig.value.precision) {
-      return `9999.${'0'.repeat(fieldConfig.value.precision)}`;
+      return `9999.${'1'.repeat(fieldConfig.value.precision)}`;
     }
     return 9999;
   });
