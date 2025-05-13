@@ -105,7 +105,8 @@
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
-  import { hasAnyPermission } from '@/utils/permission';
+
+  import { SelectOption } from 'naive-ui/es/select/src/interface';
 
   const { t } = useI18n();
   const { openModal } = useModal();
@@ -113,11 +114,11 @@
 
   const poolId = ref('');
   const cluePoolOptions = ref<CluePoolItem[]>([]);
-  const cluePoolRow = ref<CluePoolItem>();
+  const cluePoolRow = ref<any>({});
   const drawerVisible = ref(false);
 
-  function renderOption({ node, option }: { node: VNode; option: CluePoolItem }): VNodeChild {
-    if (hasAnyPermission(['MODULE_SETTING:UPDATE'])) {
+  function renderOption({ node, option }: { node: VNode; option: SelectOption }): VNodeChild {
+    if (option.editable) {
       (node.children as Array<VNode>)?.push(
         h(CrmIcon, {
           type: 'iconicon_set_up',

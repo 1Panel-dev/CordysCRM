@@ -231,6 +231,9 @@
       title: t('role.operator'),
       key: 'resourceName',
       width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
     },
     {
       title: t('log.operationTime'),

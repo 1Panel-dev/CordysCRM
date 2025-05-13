@@ -22,30 +22,14 @@
           class="flex flex-col gap-[8px] rounded-[var(--border-radius-small)] border border-solid border-[var(--text-n8)] p-[12px] text-[12px]"
         >
           <div> {{ item.columnName }}: </div>
-          <CrmTag
-            v-if="item.oldValueName?.length"
-            theme="light"
-            type="error"
-            :color="{
-              color: 'var(--error-5)',
-              textColor: 'var(--text-n1)',
-            }"
-            class="w-fit"
-          >
-            <span class="line-through">{{ item.oldValueName }}</span>
-          </CrmTag>
-          <CrmTag
-            v-if="item.newValueName?.length"
-            theme="light"
-            type="success"
-            :color="{
-              color: 'var(--success-5)',
-              textColor: 'var(--text-n1)',
-            }"
-            class="w-fit"
-          >
-            {{ item.newValueName }}
-          </CrmTag>
+          <div v-if="item.oldValueName?.length" class="value-name bg-[var(--error-5)]">
+            <span class="line-through">
+              {{ Array.isArray(item.oldValueName) ? item.oldValueName.join('；') : item.oldValueName }}
+            </span>
+          </div>
+          <div v-if="item.newValueName?.length" class="value-name bg-[var(--success-5)]">
+            {{ Array.isArray(item.newValueName) ? item.newValueName.join('；') : item.newValueName }}
+          </div>
         </div>
       </div>
       <div v-else class="rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[12px]">
@@ -67,7 +51,6 @@
   import { OperationTypeEnum } from '@lib/shared/enums/systemEnum';
   import type { OperationLogDetail } from '@lib/shared/models/system/log';
 
-  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { logTypeOption } from '@/config/system';
@@ -97,5 +80,11 @@
       background: var(--text-n8);
       @apply h-full;
     }
+  }
+  .value-name {
+    padding: 2px 8px;
+    border-radius: var(--border-radius-small);
+    color: var(--text-n1);
+    @apply w-fit whitespace-pre-line;
   }
 </style>
