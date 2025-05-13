@@ -52,7 +52,7 @@ public class OperationLogAopAdvisor extends AbstractBeanFactoryPointcutAdvisor i
         public boolean matches(@NotNull Method method, Class<?> targetClass) {
             // 定义支持通配符的包名模式
             // todo: 后续需要修改
-            String packagePattern = "io.cordys.crm\\..*\\.service";
+            String packagePattern = "io.cordys\\..*\\.service";
 
             // 获取目标类的包名
             String targetPackage = targetClass.getPackage().getName();
