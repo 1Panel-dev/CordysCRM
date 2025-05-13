@@ -302,7 +302,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           tooltip: true,
         },
         sortOrder: false,
-        sorter: true,
+        sorter: false,
         render: (row: any) => row.followerName || '-',
       },
       {
