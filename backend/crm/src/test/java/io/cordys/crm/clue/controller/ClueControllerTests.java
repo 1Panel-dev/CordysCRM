@@ -347,7 +347,7 @@ class ClueControllerTests extends BaseTest {
         addRequest.setName("aa");
         addRequest.setOwner("admin");
         addRequest.setContact("test");
-        addRequest.setPhone("18750920048");
+        addRequest.setPhone("11111111111");
         this.requestPostWithOk(DEFAULT_ADD, addRequest);
         CluePageRequest request = new CluePageRequest();
         request.setCurrent(1);
