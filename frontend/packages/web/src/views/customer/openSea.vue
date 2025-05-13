@@ -189,6 +189,7 @@
       checkedRowKeys.value = [];
       Message.success(t('common.distributeSuccess'));
       showDistributeModal.value = false;
+      tableRefreshId.value += 1;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -418,7 +419,7 @@
   watch(
     () => tableRefreshId.value,
     () => {
-      loadList();
+      searchData();
     }
   );
 

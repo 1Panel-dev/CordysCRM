@@ -179,12 +179,12 @@
         dataPermission.value = res.dataScope || 'ALL';
         departments.value = res.deptIds || [];
         res.permissions.forEach((item) => {
-          item.children.forEach((child, index) => {
+          item.children.forEach((child) => {
             data.value.push({
               id: child.id,
               feature: item.name,
               operator: child.name,
-              rowSpan: index === 0 ? item.children?.length || 1 : undefined,
+              rowSpan: item.children?.length || 1,
               permissions: child.permissions,
               enable: child.enable,
             });
@@ -193,12 +193,12 @@
       } else if (props.isNew) {
         const res = await getPermissions();
         res.forEach((item) => {
-          item.children.forEach((child, index) => {
+          item.children.forEach((child) => {
             data.value.push({
               id: child.id,
               feature: item.name,
               operator: child.name,
-              rowSpan: index === 0 ? item.children?.length || 1 : undefined,
+              rowSpan: item.children?.length || 1,
               permissions: child.permissions,
               enable: false,
             });
@@ -210,12 +210,12 @@
         dataPermission.value = res.dataScope || 'ALL';
         departments.value = res.deptIds || [];
         res.permissions.forEach((item) => {
-          item.children.forEach((child, index) => {
+          item.children.forEach((child) => {
             data.value.push({
               id: child.id,
               feature: item.name,
               operator: child.name,
-              rowSpan: index === 0 ? item.children?.length || 1 : undefined,
+              rowSpan: item.children?.length || 1,
               permissions: child.permissions,
               enable: child.enable,
             });
@@ -252,7 +252,7 @@
       width: 150,
       className: 'feature-column',
       fixed: 'left',
-      rowSpan: (rowData, rowIndex) => (rowIndex === 0 ? (rowData.rowSpan as number) : 1),
+      rowSpan: (rowData) => rowData.rowSpan as number,
     },
     {
       title: t('role.operator'),
