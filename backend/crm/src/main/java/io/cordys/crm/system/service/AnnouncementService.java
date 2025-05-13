@@ -139,7 +139,7 @@ public class AnnouncementService {
         oldLogDTO.setReceiver(receiverName);
         oldLogDTO.setContent(new String(originalAnnouncement.getContent(), StandardCharsets.UTF_8));
         oldLogDTO.setStartTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(originalAnnouncement.getStartTime()));
-        oldLogDTO.setEndTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(originalAnnouncement.getStartTime()));
+        oldLogDTO.setEndTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(originalAnnouncement.getEndTime()));
         return oldLogDTO;
     }
 
@@ -254,17 +254,20 @@ public class AnnouncementService {
                 notification.setCreateTime(System.currentTimeMillis());
                 notification.setUpdateTime(System.currentTimeMillis());
                 notifications.add(notification);
-                NotificationDTO notificationDTO = new NotificationDTO();
-                BeanUtils.copyBean(notificationDTO, notification);
-                notificationDTO.setContentText(JSON.toJSONString(announcementContentDTO));
-                String messageText = JSON.toJSONString(notificationDTO);
+                //根据公告的有效时间判断是否需要发送通知
+                if (announcement.getStartTime() <= System.currentTimeMillis() && announcement.getEndTime() >= System.currentTimeMillis()) {
+                    NotificationDTO notificationDTO = new NotificationDTO();
+                    BeanUtils.copyBean(notificationDTO, notification);
+                    notificationDTO.setContentText(JSON.toJSONString(announcementContentDTO));
+                    String messageText = JSON.toJSONString(notificationDTO);
 
-                stringRedisTemplate.opsForZSet().add(USER_ANNOUNCE_PREFIX + subUserId, id, System.currentTimeMillis());
-                stringRedisTemplate.opsForValue().set(ANNOUNCE_PREFIX + id, messageText);
-                //更新用户的已读全部消息状态 0 为未读，1为已读
-                stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + subUserId, "False");
-                // 发送消息
-                sseService.broadcastPeriodically(subUserId, NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString());
+                    stringRedisTemplate.opsForZSet().add(USER_ANNOUNCE_PREFIX + subUserId, id, System.currentTimeMillis());
+                    stringRedisTemplate.opsForValue().set(ANNOUNCE_PREFIX + id, messageText);
+                    //更新用户的已读全部消息状态 0 为未读，1为已读
+                    stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + subUserId, "False");
+                    // 发送消息
+                    sseService.broadcastPeriodically(subUserId, NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString());
+                }
             }
             notificationBaseMapper.batchInsert(notifications);
         });
