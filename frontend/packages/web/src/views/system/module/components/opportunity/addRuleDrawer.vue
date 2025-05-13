@@ -103,6 +103,7 @@
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { addOpportunityRule, updateOpportunityRule } from '@/api/modules';
+  import { lastOpportunitySteps } from '@/config/opportunity';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -154,8 +155,11 @@
       {
         title: t('opportunity.opportunityStage'),
         dataIndex: 'opportunityStage',
-        type: FieldTypeEnum.INPUT,
+        type: FieldTypeEnum.SELECT,
         operatorOption: [EQUAL, NOT_EQUAL],
+        selectProps: {
+          options: lastOpportunitySteps,
+        },
       },
     ];
   });
@@ -276,6 +280,13 @@
               scope: item.scope,
               showScope: filterConfigItem?.showScope,
               type: filterConfigItem?.type,
+              ...(item.column === 'opportunityStage'
+                ? {
+                    selectProps: {
+                      options: lastOpportunitySteps,
+                    },
+                  }
+                : {}),
             } as FilterFormItem;
           });
           recycleFormItemModel.value.searchMode = val.operator as AccordBelowType;

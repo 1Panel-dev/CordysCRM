@@ -144,6 +144,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ],
         sortOrder: false,
         sorter: false,
+        filter: true,
         render: props.specialRender?.status,
       },
       {
@@ -184,6 +185,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             value: false,
           },
         ],
+        filter: true,
         render: props.specialRender?.status,
       },
       {
@@ -214,6 +216,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
+        filter: true,
         filterOptions: lastOpportunitySteps,
         render: props.specialRender?.stage,
       },
@@ -255,14 +258,15 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         },
         filterOptions: [
           {
-            label: t('common.enable'),
+            label: t('common.open'),
             value: '1',
           },
           {
-            label: t('common.disable'),
+            label: t('common.close'),
             value: '0',
           },
         ],
+        filter: true,
         sortOrder: false,
         sorter: true,
         render: props.specialRender?.status,
