@@ -233,7 +233,7 @@
         tooltip: true,
       },
       sortOrder: false,
-      sorter: true,
+      sorter: 'default',
       columnSelectorDisabled: true,
     },
     {
@@ -244,7 +244,7 @@
         tooltip: true,
       },
       sortOrder: false,
-      sorter: true,
+      sorter: 'default',
     },
     {
       title: t('role.permission'),

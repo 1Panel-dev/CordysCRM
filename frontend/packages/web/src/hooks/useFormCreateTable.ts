@@ -58,6 +58,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.PRODUCT]: TableKeyEnum.PRODUCT,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: TableKeyEnum.CUSTOMER_OPEN_SEA,
   };
+  const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
   // 存储地址类型字段集合
   const addressFieldIds = ref<string[]>([]);
   // 业务字段集合
@@ -183,8 +184,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             value: false,
           },
         ],
-        sortOrder: false,
-        sorter: false,
         render: props.specialRender?.status,
       },
       {
@@ -203,7 +202,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           tooltip: true,
         },
         sortOrder: false,
-        sorter: false,
+        sorter: 'default',
         render: (row: any) => row.departmentName || '-',
       },
     ],
@@ -378,6 +377,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
 
   async function initFormConfig() {
     try {
+      const sorter = noPaginationKey.includes(props.formKey) ? 'default' : true;
       loading.value = true;
       const res = await getFormConfigApiMap[props.formKey]();
       columns = res.fields
@@ -443,7 +443,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               width: 200,
               key: field.businessKey,
               sortOrder: false,
-              sorter: true,
+              sorter,
               fixed: 'left',
               columnSelectorDisabled: true,
               render: props.specialRender?.[field.businessKey],
@@ -456,7 +456,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               width: 200,
               key: field.businessKey,
               sortOrder: false,
-              sorter: true,
+              sorter,
               render: props.specialRender?.[field.businessKey],
             };
           }
@@ -483,7 +483,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               key: field.businessKey || field.id,
               render: (row: any) => formatTimeValue(row[field.businessKey || field.id], field.dateType),
               sortOrder: false,
-              sorter: true,
+              sorter,
             };
           }
           if (field.type === FieldTypeEnum.INPUT_NUMBER) {
@@ -493,7 +493,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               key: field.businessKey || field.id,
               render: (row: any) => formatNumberValue(row[field.businessKey || field.id], field),
               sortOrder: false,
-              sorter: true,
+              sorter,
             };
           }
           if ([FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(field.type)) {
@@ -514,7 +514,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               tooltip: true,
             },
             sortOrder: false,
-            sorter: [FieldTypeEnum.INPUT, FieldTypeEnum.PHONE].includes(field.type),
+            sorter: [FieldTypeEnum.INPUT, FieldTypeEnum.PHONE].includes(field.type) ? sorter : false,
           };
         });
       columns = [...columns, ...(internalColumnMap[props.formKey] || []), ...staticColumns];
