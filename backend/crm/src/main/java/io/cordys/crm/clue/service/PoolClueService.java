@@ -10,6 +10,7 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.clue.domain.*;
 import io.cordys.crm.clue.dto.CluePoolDTO;
 import io.cordys.crm.clue.dto.CluePoolPickRuleDTO;
@@ -301,6 +302,7 @@ public class PoolClueService {
 		clue.setInSharedPool(false);
 		clue.setOwner(ownerId);
 		clue.setCollectionTime(System.currentTimeMillis());
+		clue.setStage(ClueStatus.FOLLOWING.name());
 		clue.setUpdateTime(System.currentTimeMillis());
 		clueMapper.updateById(clue);
 
