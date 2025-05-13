@@ -16,7 +16,12 @@
     >
       <template #actionLeft>
         <div class="flex items-center">
-          <n-button v-permission="['CUSTOMER_MANAGEMENT:ADD']" type="primary" @click="handleNewClick">
+          <n-button
+            v-if="activeTab !== CustomerSearchTypeEnum.VISIBLE"
+            v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+            type="primary"
+            @click="handleNewClick"
+          >
             {{ t('customer.new') }}
           </n-button>
         </div>
