@@ -20,7 +20,7 @@
               <StatusTag v-if="item.status" :status="item.status" />
               <div class="text-[var(--text-n1)]">{{ getShowTime(item) }}</div>
               <div class="crm-follow-record-method">
-                {{ (props.type === 'followRecord' ? item.recordMethod : item.planMethod) ?? '-' }}
+                {{ (props.type === 'followRecord' ? item.followMethod : item.method) ?? '-' }}
               </div>
             </div>
 

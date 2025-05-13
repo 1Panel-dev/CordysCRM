@@ -31,9 +31,7 @@
         :get-description-fun="getDescriptionFun"
         key-field="id"
         :type="props.activeType"
-        :empty-text="
-          props.activeType === 'followPlan' ? t('crmFollowRecord.noFollowPlan') : t('crmFollowRecord.noFollowRecord')
-        "
+        :empty-text="emptyText"
         @reach-bottom="handleReachBottom"
       >
         <template #headerAction="{ item }">
@@ -103,6 +101,8 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import FollowRecord from './followRecord.vue';
 
+  import { hasAnyPermission } from '@/utils/permission';
+
   import useFollowApi, { type followEnumType } from './useFollowApi';
 
   const { t } = useI18n();
@@ -119,6 +119,7 @@
     showAction?: boolean; // 显示操作
     initialSourceName?: string; // 初始化详情时的名称
     showAdd?: boolean; // 显示增加按钮
+    anyPermission?: string[]; // 无任一权限展示无权限
   }
 
   const props = withDefaults(defineProps<FollowDetailProps>(), {
@@ -139,7 +140,6 @@
     followFormKeyMap,
     handleDelete,
     getApiKey,
-    initFollowFormConfig,
   } = useFollowApi({
     type: toRef(props, 'activeType'),
     followApiKey: props.followApiKey,
@@ -239,8 +239,14 @@
     formDrawerVisible.value = true;
   }
 
+  const emptyText = computed(() => {
+    if (!hasAnyPermission(props.anyPermission)) {
+      return t('common.noPermission');
+    }
+    return props.activeType === 'followPlan' ? t('crmFollowRecord.noFollowPlan') : t('crmFollowRecord.noFollowRecord');
+  });
+
   onBeforeMount(() => {
-    initFollowFormConfig();
     loadFollowList();
   });
 

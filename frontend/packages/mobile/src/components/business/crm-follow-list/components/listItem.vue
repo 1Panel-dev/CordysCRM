@@ -23,7 +23,7 @@
           <div>{{ getShowTime(item) }} </div>
         </div>
         <div class="text-[14px] font-semibold text-[var(--text-n1)]">
-          {{ (!isPlan ? item.recordMethod : item.planMethod) ?? '-' }}
+          {{ (!isPlan ? item.followMethod : item.method) ?? '-' }}
         </div>
       </div>
       <div class="flex flex-1 flex-col gap-[12px] rounded-[var(--border-radius-large)] bg-[var(--text-n10)] p-[16px]">

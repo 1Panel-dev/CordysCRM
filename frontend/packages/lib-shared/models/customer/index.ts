@@ -91,7 +91,7 @@ export interface CustomerFollowRecordListItem {
   createTime: number;
   updateTime: number;
   followTime: number;
-  recordMethod: string;
+  followMethod: string;
   departmentId: string;
   departmentName: string;
   moduleFields: ModuleField[];
@@ -114,7 +114,7 @@ export interface CustomerFollowPlanTableParams extends TableQueryParams {
 export interface CustomerFollowPlanListItem extends CustomerFollowRecordListItem {
   estimatedTime: number;
   status: string;
-  planMethod: string;
+  method: string;
 }
 
 export interface SaveCustomerContractParams {

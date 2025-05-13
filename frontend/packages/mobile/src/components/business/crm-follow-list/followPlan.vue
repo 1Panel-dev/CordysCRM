@@ -63,16 +63,12 @@
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
 
-  const { transformField, initFollowFormConfig, goCreate, handleEdit, goDetail } = useFollowApi({
+  const { transformField, goCreate, handleEdit, goDetail } = useFollowApi({
     type: 'followPlan',
     formKey: props.type,
     sourceId: props.sourceId,
     initialSourceName: props.initialSourceName,
     readonly: props.readonly,
-  });
-
-  onBeforeMount(() => {
-    initFollowFormConfig();
   });
 
   async function handleDelete(item: FollowDetailItem) {

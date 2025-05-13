@@ -166,30 +166,16 @@ export default function useFollowApi(followProps: {
 
   const apis = followApiMap[followApiKey];
 
-  const fieldList = ref<FormCreateField[]>([]);
-
-  function transformField(e: FollowDetailItem) {
-    const tmpObject: Record<string, any> = {};
-    (e.moduleFields || []).forEach((moduleField) => {
-      const fieldVal = fieldList.value.find((field) => moduleField.fieldId === field.id);
-      if (fieldVal) {
-        const isSelectableField = [
-          FieldTypeEnum.SELECT,
-          FieldTypeEnum.SELECT_MULTIPLE,
-          FieldTypeEnum.CHECKBOX,
-          FieldTypeEnum.RADIO,
-        ].includes(fieldVal.type);
-        if (isSelectableField && fieldVal.options?.length) {
-          const option = fieldVal.options.find((item) => item.value === moduleField.fieldValue);
-          tmpObject[fieldVal.internalKey as string] = option ? option.label : '-';
-        } else {
-          tmpObject[fieldVal.internalKey as string] = moduleField.fieldValue;
-        }
-      }
-    });
+  function transformField(item: FollowDetailItem, optionMap?: Record<string, any>) {
+    const methodKey = type.value === 'followPlan' ? 'method' : 'followMethod';
+    let followMethod;
+    if (optionMap) {
+      followMethod =
+        optionMap[methodKey]?.find((e: any) => e.id === item[methodKey as keyof FollowDetailItem])?.name || '-';
+    }
     return {
-      ...e,
-      ...tmpObject,
+      ...item,
+      [methodKey]: followMethod,
     };
   }
 
@@ -210,7 +196,7 @@ export default function useFollowApi(followProps: {
       };
       const res = await apis.list[type.value]?.(params);
       if (res) {
-        const newList = res.list.map((item) => transformField(item));
+        const newList = res.list.map((item: FollowDetailItem) => transformField(item, res?.optionMap));
         data.value = data.value.concat(newList);
         pageNation.value.total = res.total;
       }
@@ -283,26 +269,10 @@ export default function useFollowApi(followProps: {
     }
   }
 
-  async function initFollowFormConfig() {
-    try {
-      let res;
-      if (type.value === 'followRecord') {
-        res = await getCustomerFollowRecordFormConfig();
-      } else {
-        res = await getCustomerFollowPlanFormConfig();
-      }
-      fieldList.value = res.fields;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
   watch(
     () => type.value,
     (val) => {
       if (['followPlan', 'followRecord'].includes(val)) {
-        initFollowFormConfig();
         loadFollowList();
       }
     }
@@ -320,6 +290,5 @@ export default function useFollowApi(followProps: {
     handleDelete,
     activeStatus,
     getApiKey,
-    initFollowFormConfig,
   };
 }

@@ -16,7 +16,7 @@ import router from '@/router';
 import { getFirstRouteNameByPermission } from '@/utils/permission';
 
 import useAppStore from '../app';
-import type { NotificationOptions } from 'naive-ui';
+import type { NotificationOptions, NotificationReactive } from 'naive-ui';
 
 const { notification, message } = useDiscreteApi();
 
@@ -24,6 +24,7 @@ export interface UserState {
   loginType: string[];
   userInfo: UserInfo;
   clientIdRandomId: string; // 客户端随机id
+  notify: NotificationReactive | null;
 }
 
 const useUserStore = defineStore('user', {
@@ -55,6 +56,7 @@ const useUserStore = defineStore('user', {
       departmentName: '',
     },
     clientIdRandomId: '',
+    notify: null,
   }),
 
   getters: {
@@ -85,9 +87,11 @@ const useUserStore = defineStore('user', {
     logoutCallBack() {
       const appStore = useAppStore();
       appStore.disconnectSystemMessageSSE();
+      this.destroySystemNotify();
       // 重置用户信息
       this.$reset();
       clearToken();
+
       removeRouteListener();
       appStore.hideLoading();
     },
@@ -169,18 +173,20 @@ const useUserStore = defineStore('user', {
     showSystemNotify() {
       const appStore = useAppStore();
       if (appStore.messageInfo.announcementDTOList?.length) {
-        const notify = ref();
-        notify.value = notification.create({
+        this.notify = notification.create({
           title: '',
           content: () => {
             return h(NotifyContent, {
-              onClose: () => notify.value.destroy(),
+              onClose: () => this.destroySystemNotify(),
             });
           },
           duration: undefined,
           maxCount: 1,
         } as NotificationOptions);
       }
+    },
+    destroySystemNotify() {
+      this.notify?.destroy();
     },
   },
 });
