@@ -7,8 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.regex.Matcher;
-
 /**
  * @author jianxing
  */
@@ -41,6 +39,7 @@ public class SortRequest {
 
     /**
      * mapper 中调用
+     *
      * @return
      */
     public boolean valid() {
@@ -65,6 +64,7 @@ public class SortRequest {
 
     /**
      * 返回 true 表示存在 SQL 注入风险
+     *
      * @param script
      * @return
      */
@@ -72,8 +72,17 @@ public class SortRequest {
         if (StringUtils.isEmpty(script)) {
             return false;
         }
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("^[\\w|\\-]+$");
-        Matcher matcher = pattern.matcher(script.toLowerCase());
-        return !matcher.find();
+        // 只允许字母、数字、下划线和连字符的安全模式
+        java.util.regex.Pattern safePattern = java.util.regex.Pattern.compile("^[\\w\\-]+$");
+        boolean isSafe = safePattern.matcher(script).matches();
+
+        // 检测危险SQL模式
+        java.util.regex.Pattern dangerousPattern = java.util.regex.Pattern.compile(
+                "(;|--|#|'|\"|/\\*|\\*/|\\b(select|insert|update|delete|drop|alter|truncate|exec|union|xp_)\\b)",
+                java.util.regex.Pattern.CASE_INSENSITIVE);
+        boolean hasDangerousPattern = dangerousPattern.matcher(script).find();
+
+        // 返回true表示存在注入风险
+        return !isSafe || hasDangerousPattern;
     }
 }
