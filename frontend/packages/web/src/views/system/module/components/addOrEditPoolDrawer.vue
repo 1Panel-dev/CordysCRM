@@ -178,12 +178,17 @@
             props.type === ModuleConfigEnum.CLUE_MANAGEMENT ? t('module.clue.name') : t('module.customer.openSeaName')
           }`,
         }),
+        trigger: ['input', 'blur'],
       },
     ],
     adminIds: [{ required: true, message: t('common.pleaseSelect') }],
     userIds: [{ required: true, message: t('common.pleaseSelect') }],
-    [`pickRule.pickIntervalDays`]: [{ required: true, message: t('common.pleaseInput') }],
-    [`pickRule.pickNumber`]: [{ required: true, message: t('common.pleaseInput') }],
+    [`pickRule.pickIntervalDays`]: [
+      { required: true, type: 'number', message: t('common.pleaseInput'), trigger: ['input', 'blur'] },
+    ],
+    [`pickRule.pickNumber`]: [
+      { required: true, type: 'number', message: t('common.pleaseInput'), trigger: ['input', 'blur'] },
+    ],
   };
 
   const initForm: CluePoolForm = {
