@@ -66,9 +66,6 @@ const useAppStore = defineStore('app', {
      * 连接SSE消息订阅流
      */
     async connectSystemMessageSSE() {
-      if (!hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
-        return;
-      }
       const userStore = useUserStore();
 
       await this.disconnectSystemMessageSSE();
@@ -119,9 +116,6 @@ const useAppStore = defineStore('app', {
      * 初始化首页消息
      */
     async initMessage() {
-      if (!hasAnyPermission(['SYSTEM_NOTICE:READ'])) {
-        return;
-      }
       try {
         const [notifications, announcements] = await Promise.all([getHomeMessageList(), getUnReadAnnouncement()]);
         this.messageInfo.notificationDTOList = notifications;

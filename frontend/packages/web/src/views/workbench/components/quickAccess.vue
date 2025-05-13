@@ -14,6 +14,12 @@
         <CrmSvg width="40px" height="40px" :name="item.icon" />
         {{ item.label }}
       </div>
+      <div
+        v-if="!hasAnyPermission(quickAccessPermissionList)"
+        class="w-full p-[24px] text-center text-[var(--text-n4)]"
+      >
+        {{ t('common.noPermission') }}
+      </div>
     </div>
   </CrmCard>
   <CrmFormCreateDrawer
@@ -32,6 +38,7 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
 
   import { quickAccessList } from '@/config/workbench';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const emit = defineEmits<{
     (e: 'refresh', activeFormKey: FormDesignKeyEnum): void;
@@ -46,6 +53,8 @@
     activeFormKey.value = actionKey;
     formCreateDrawerVisible.value = true;
   }
+
+  const quickAccessPermissionList = computed(() => quickAccessList.flatMap((item) => item.permission));
 </script>
 
 <style lang="less" scoped>

@@ -8,8 +8,8 @@
   </CrmCard> -->
   <div class="flex h-full w-full">
     <div class="h-full flex-1">
-      <QuickAccess v-if="hasAnyPermission(quickAccessPermissionList)" @refresh="refresh" />
-      <CrmCard hide-footer :special-height="hasAnyPermission(quickAccessPermissionList) ? 177 : 0">
+      <QuickAccess @refresh="refresh" />
+      <CrmCard hide-footer :special-height="hasAnyPermission(quickAccessPermissionList) ? 177 : 160">
         <div class="title">
           <div class="title-name">{{ t('system.personal.plan') }}</div>
           <div class="title-right" @click="showPersonalInfo = true">{{ t('common.ViewMore') }}</div>

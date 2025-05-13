@@ -51,7 +51,7 @@
               v-if="timeDays === 'custom'"
               v-model:value="range"
               class="w-[240px]"
-              type="daterange"
+              type="datetimerange"
               @confirm="confirmTimePicker"
             >
               <template #date-icon>
@@ -78,6 +78,7 @@
           :load-params="loadParams"
           virtual-scroll-height="calc(100vh - 147px)"
           key-field="id"
+          @refresh-count="() => initMessageCount()"
         />
       </div>
     </div>

@@ -79,8 +79,8 @@
         </div>
       </template>
     </CrmList>
-    <div v-else class="w-full p-[16px] text-center text-[var(--text-n4)]">
-      {{ !hasAnyPermission(['SYSTEM_NOTICE:READ']) ? t('common.noPermission') : props.emptyText || t('common.noData') }}
+    <div v-else-if="!loading && finished" class="w-full p-[16px] text-center text-[var(--text-n4)]">
+      {{ props.emptyText || t('common.noData') }}
     </div>
   </n-spin>
 </template>
@@ -112,6 +112,10 @@
     messageList?: MessageCenterItem[];
   }>();
 
+  const emit = defineEmits<{
+    (e: 'refreshCount'): void;
+  }>();
+
   const innerKeyword = defineModel<string>('keyword', {
     required: false,
     default: null,
@@ -130,6 +134,7 @@
     return JSON.parse(item.contentText || '{}');
   }
 
+  const finished = ref(false);
   async function loadMessageList(refresh = true) {
     if (!hasAnyPermission(['SYSTEM_NOTICE:READ'])) return;
 
@@ -138,6 +143,7 @@
       loading.value = true;
 
       if (refresh) {
+        finished.value = false;
         pageNation.value.current = 1;
         list.value = [];
       }
@@ -156,6 +162,7 @@
       console.log(error);
     } finally {
       loading.value = false;
+      finished.value = true;
     }
   }
 
@@ -165,6 +172,7 @@
       await setNotificationRead(item.id);
       loadMessageList();
       appStore.initMessage();
+      emit('refreshCount');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
