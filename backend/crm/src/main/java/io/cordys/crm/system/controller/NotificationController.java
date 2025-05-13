@@ -31,7 +31,6 @@ public class NotificationController {
 
     @PostMapping(value = "/list/all/page")
     @Operation(summary = "消息中心-获取消息中心所有消息列表")
-    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public Pager<List<NotificationDTO>> listNotification(@Validated @RequestBody NotificationRequest notificationRequest) {
         Page<Object> page = PageHelper.startPage(notificationRequest.getCurrent(), notificationRequest.getPageSize(), true);
         return PageUtils.setPageInfo(page, notificationService.listNotification(notificationRequest, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
@@ -40,35 +39,30 @@ public class NotificationController {
 
     @GetMapping(value = "/last/list")
     @Operation(summary = "消息中心-获取消息中未读的最新部分消息")
-    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public List<NotificationDTO> listLastNotification() {
         return notificationService.listLastNotification(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping(value = "/last/announcement/list")
     @Operation(summary = "消息中心-获取用户未读的公告列表")
-    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public List<NotificationDTO> listLastAnnouncement() {
         return notificationService.listLastAnnouncement(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping(value = "/read/{id}")
     @Operation(summary = "消息中心-将消息设置为已读")
-    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
     public Integer read(@PathVariable String id) {
         return notificationService.read(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping(value = "/read/all")
     @Operation(summary = "消息中心-将消息中心所有信息设置为已读消息")
-    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
     public Integer readAll() {
         return notificationService.readAll(OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
     @PostMapping(value = "/count")
     @Operation(summary = "消息中心-获取消息中心消息具体类型具体状态的数量")
-    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public List<OptionCountDTO> countNotification(@RequestBody NotificationRequest notificationRequest) {
         return notificationService.countNotification(notificationRequest, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }

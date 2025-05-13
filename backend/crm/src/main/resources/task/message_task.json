@@ -29,18 +29,6 @@
         "sysEnable":false
       },
       {
-        "event": "HIGH_SEAS_CUSTOMER_RECEIVE_SUCCESS",
-        "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false
-      },
-      {
-        "event": "HIGH_SEAS_CUSTOMER_RECEIVE_ERROR",
-        "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false
-      },
-      {
         "event": "HIGH_SEAS_CUSTOMER_DISTRIBUTED",
         "eventName": "",
         "emailEnable":false,
@@ -91,18 +79,6 @@
       },
       {
         "event": "CLUE_DISTRIBUTED",
-        "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false
-      },
-      {
-        "event": "CLUE_RECEIVE_SUCCESS",
-        "eventName": "",
-        "emailEnable":false,
-        "sysEnable":false
-      },
-      {
-        "event": "CLUE_RECEIVE_ERROR",
         "eventName": "",
         "emailEnable":false,
         "sysEnable":false

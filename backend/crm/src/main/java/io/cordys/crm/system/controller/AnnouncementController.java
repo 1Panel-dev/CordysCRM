@@ -51,6 +51,7 @@ public class AnnouncementController {
      */
     @GetMapping(value = "/announcement/get/{announcementId}")
     @Operation(summary = "获取公告")
+    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public AnnouncementDTO addAnnouncement(@PathVariable String announcementId) {
         return announcementService.detail(announcementId);
     }

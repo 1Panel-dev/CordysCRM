@@ -43,7 +43,7 @@ public class MessageTaskController {
 
     @GetMapping("get")
     @Operation(summary = "项目管理-消息管理-消息设置-获取消息设置")
-    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_UPDATE)
+    @RequiresPermissions(PermissionConstants.SYSTEM_NOTICE_READ)
     public List<MessageTaskDTO> getMessageList() {
         return messageTaskService.getMessageList(OrganizationContext.getOrganizationId());
     }

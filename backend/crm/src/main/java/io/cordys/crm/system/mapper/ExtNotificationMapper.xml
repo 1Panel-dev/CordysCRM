@@ -9,6 +9,9 @@
         <if test='request.subject != null and request.subject != ""'>
             AND ( sys_notification.subject LIKE #{request.subject} OR sys_notification.content LIKE #{request.subject} )
         </if>
+        <if test='request.keyword != null and request.keyword != ""'>
+            AND ( sys_notification.subject LIKE #{request.keyword} OR sys_notification.resource_name LIKE #{request.keyword} )
+        </if>
         <if test='request.type != null and request.type != ""'>
             AND sys_notification.type = #{request.type}
         </if>

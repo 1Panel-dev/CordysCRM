@@ -46,17 +46,6 @@ SET @customer_deletedID = UUID_SHORT();-- 初始化消息通知
 INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
     VALUE (@customer_deletedID, 'CUSTOMER_DELETED', 'CUSTOMER', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
 
-
-SET @high_seas_customer_receive_successID = UUID_SHORT();-- 初始化消息通知
-INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
-    VALUE (@high_seas_customer_receive_successID, 'HIGH_SEAS_CUSTOMER_RECEIVE_SUCCESS', 'CUSTOMER', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
-
-
-SET @high_seas_customer_receive_errorID = UUID_SHORT();-- 初始化消息通知
-INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
-    VALUE (@high_seas_customer_receive_errorID, 'HIGH_SEAS_CUSTOMER_RECEIVE_ERROR', 'CUSTOMER', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
-
-
 SET @high_seas_customer_distributedID = UUID_SHORT();-- 初始化消息通知
 INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
     VALUE (@high_seas_customer_distributedID, 'HIGH_SEAS_CUSTOMER_DISTRIBUTED', 'CUSTOMER', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
@@ -88,14 +77,6 @@ INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, or
 SET @clue_distributedID = UUID_SHORT();-- 初始化消息通知
 INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
     VALUE (@clue_distributedID, 'CLUE_DISTRIBUTED', 'CLUE', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
-
-SET @clue_receive_successID = UUID_SHORT();-- 初始化消息通知
-INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
-    VALUE (@clue_receive_successID, 'CLUE_RECEIVE_SUCCESS', 'CLUE', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
-
-SET @clue_receive_errorID = UUID_SHORT();-- 初始化消息通知
-INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
-    VALUE (@clue_receive_errorID, 'CLUE_RECEIVE_ERROR', 'CLUE', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
 
 SET @clue_importID = UUID_SHORT();-- 初始化消息通知
 INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)

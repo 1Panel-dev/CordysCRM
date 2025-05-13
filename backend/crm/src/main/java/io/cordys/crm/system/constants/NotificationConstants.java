@@ -46,12 +46,6 @@ public class NotificationConstants {
         //客户被删除
         @Schema(description = "message.customer_deleted")
         String CUSTOMER_DELETED="CUSTOMER_DELETED";
-        //公海客户领取 成功
-        @Schema(description = "message.high_seas_customer_receive_success")
-        String HIGH_SEAS_CUSTOMER_RECEIVE_SUCCESS="HIGH_SEAS_CUSTOMER_RECEIVE_SUCCESS";
-        //公海客户领取 失败
-        @Schema(description = "message.high_seas_customer_receive_error")
-        String HIGH_SEAS_CUSTOMER_RECEIVE_ERROR="HIGH_SEAS_CUSTOMER_RECEIVE_ERROR";
         //公海客户被分配
         @Schema(description = "message.high_seas_customer_distributed")
         String HIGH_SEAS_CUSTOMER_DISTRIBUTED="HIGH_SEAS_CUSTOMER_DISTRIBUTED";
@@ -77,12 +71,6 @@ public class NotificationConstants {
         //分配线索
         @Schema(description = "message.clue_distributed")
         String CLUE_DISTRIBUTED="CLUE_DISTRIBUTED";
-        //领取线索成功
-        @Schema(description = "message.clue_receive_success")
-        String CLUE_RECEIVE_SUCCESS="CLUE_RECEIVE_SUCCESS";
-        //领取线索失败
-        @Schema(description = "message.clue_receive_error")
-        String CLUE_RECEIVE_ERROR="CLUE_RECEIVE_ERROR";
         //导入线索
         @Schema(description = "message.clue_import")
         String CLUE_IMPORT="CLUE_IMPORT";
@@ -127,14 +115,6 @@ public class NotificationConstants {
         @Schema(description = "message.customer_deleted_text")
         String CUSTOMER_DELETED_TEXT = "CUSTOMER_DELETED_TEXT";
 
-        //您已成功从公海领取${customerName}请及时跟进处理！
-        @Schema(description = "message.high_seas_customer_receive_success_text")
-        String HIGH_SEAS_CUSTOMER_RECEIVE_SUCCESS_TEXT = "HIGH_SEAS_CUSTOMER_RECEIVE_SUCCESS_TEXT";
-
-        //您从公海领取${customerName}领取失败，请重新领取或选择其他客户！
-        @Schema(description = "message.high_seas_customer_receive_error_text")
-        String HIGH_SEAS_CUSTOMER_RECEIVE_ERROR_TEXT = "HIGH_SEAS_CUSTOMER_RECEIVE_ERROR_TEXT";
-
         //请注意！${customerName}已由公海分配给您，请及时跟进处理！
         @Schema(description = "message.high_seas_customer_distributed_text")
         String HIGH_SEAS_CUSTOMER_DISTRIBUTED_TEXT = "HIGH_SEAS_CUSTOMER_DISTRIBUTED_TEXT";
@@ -166,14 +146,6 @@ public class NotificationConstants {
         //请注意！${clueName}由线索，已由线索池分配给您，请及时跟进处理！
         @Schema(description = "message.clue_distributed_text")
         String CLUE_DISTRIBUTED_TEXT = "CLUE_DISTRIBUTED_TEXT";
-
-        //您已经成功从线索池领取${clueName}线索，请及时跟进处理！
-        @Schema(description = "message.clue_receive_success_text")
-        String CLUE_RECEIVE_SUCCESS_TEXT = "CLUE_RECEIVE_SUCCESS_TEXT";
-
-        //您从线索池领取的${clueName}线索领取失败！请重新领取或选择其他线索！
-        @Schema(description = "message.clue_receive_error_text")
-        String CLUE_RECEIVE_ERROR_TEXT = "CLUE_RECEIVE_ERROR_TEXT";
 
         //请注意！${OPERATOR}已成功导入${count}条线索，请及时领取！
         @Schema(description = "message.clue_import_text")
