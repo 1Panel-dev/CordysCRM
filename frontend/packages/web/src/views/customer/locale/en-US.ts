@@ -19,6 +19,7 @@ export default {
   'customer.contact.deleteTitle':
     'There is a bound business opportunity, please change the contact person for the business opportunity binding before deleting it!',
   'customer.recycleOpenSea': 'Recycle Open Sea',
+  'customer.collectionTime': 'Collection time',
   'customer.remainingVesting': 'Remaining vesting',
   'customer.lastFollowUps': 'Last follow-up personnel',
   'customer.lastFollowUpDate': 'Last follow-up date',

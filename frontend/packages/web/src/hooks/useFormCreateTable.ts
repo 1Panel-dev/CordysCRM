@@ -76,6 +76,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         },
       },
       {
+        title: t('customer.collectionTime'),
+        width: 160,
+        key: 'collectionTime',
+        sortOrder: false,
+        sorter: true,
+        render: (row: any) => (row.collectionTime ? dayjs(row.collectionTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
+      },
+      {
         title: t('customer.recycleOpenSea'),
         width: 120,
         key: 'recyclePoolName',
@@ -262,6 +270,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
     ],
     [FormDesignKeyEnum.CLUE]: [
+      {
+        title: t('customer.collectionTime'),
+        width: 160,
+        key: 'collectionTime',
+        sortOrder: false,
+        sorter: true,
+        render: (row: any) => (row.collectionTime ? dayjs(row.collectionTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
+      },
       {
         title: t('clue.recyclePool'),
         width: 120,
