@@ -107,11 +107,16 @@ public class UserLoginService {
     }
 
     private Set<String> getOrgIdsByUserId(String userId) {
-        OrganizationUser example = new OrganizationUser();
-        example.setUserId(userId);
-        example.setEnable(true);
-        return organizationUserMapper.select(example).stream()
-                .map(OrganizationUser::getOrganizationId).collect(Collectors.toSet());
+        if (StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
+            return organizationUserMapper.selectListByLambda(new LambdaQueryWrapper<>()).stream()
+                    .map(OrganizationUser::getOrganizationId).collect(Collectors.toSet());
+        } else {
+            OrganizationUser example = new OrganizationUser();
+            example.setUserId(userId);
+            example.setEnable(true);
+            return organizationUserMapper.select(example).stream()
+                    .map(OrganizationUser::getOrganizationId).collect(Collectors.toSet());
+        }
     }
 
     public SessionUser login(LoginRequest request) {

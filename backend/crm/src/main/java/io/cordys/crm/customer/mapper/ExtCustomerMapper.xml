@@ -82,7 +82,7 @@
 
     <select id="sourceList" resultType="io.cordys.crm.customer.dto.response.CustomerListResponse">
         select distinct c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
-        c.follower, c.follow_time, cc.collaboration_type
+        c.follower, c.follow_time
         from customer c
 
         <include refid="fieldConditionJoin">
