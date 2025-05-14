@@ -85,8 +85,9 @@
   const dataSourcesModalVisible = ref(false);
 
   function handleDataSourceConfirm() {
-    rows.value = rows.value.concat(selectedRows.value);
-    value.value = rows.value.map((e) => e.id) as RowKey[];
+    const newRows = rows.value.concat(selectedRows.value);
+    rows.value = newRows;
+    value.value = newRows.map((e) => e.id) as RowKey[];
     dataSourcesModalVisible.value = false;
     emit('change', value.value);
   }
