@@ -37,8 +37,7 @@ public class FollowUpPlanAddRequest {
     private String owner;
 
     @Size(max = 32)
-    @NotBlank
-    @Schema(description = "联系人", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "联系人")
     private String contactId;
 
     @Schema(description = "预计开始时间")
