@@ -43,7 +43,6 @@ class ClueControllerTests extends BaseTest {
     protected static final String BATCH_TRANSFER = "batch/transfer";
     protected static final String BATCH_TO_POOL = "batch/to-pool";
     protected static final String TRANSITION_CUSTOMER = "transition/customer";
-    protected static final String TRANSITION_OPPORTUNITY = "transition/opportunity";
 
     private static Clue addClue;
     private static Clue anotherClue;
@@ -101,7 +100,7 @@ class ClueControllerTests extends BaseTest {
         ClueAddRequest request = new ClueAddRequest();
         request.setName("aa");
         request.setOwner("bb");
-        request.setContact("test");
+        request.setContact("test111");
         request.setPhone("18750920048");
 //        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleField.getId(), "1")));
 
@@ -288,24 +287,6 @@ class ClueControllerTests extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_ADD, TRANSITION_CUSTOMER, request);
-    }
-
-    @Test
-    @Order(5)
-    void transitionOpportunity() throws Exception {
-        ClueTransitionOpportunityRequest request = new ClueTransitionOpportunityRequest();
-        request.setClueId(addClue.getId());
-        request.setName("cc");
-        request.setOwner("admin");
-        request.setAmount(BigDecimal.valueOf(100000));
-        request.setContactId("test_contact");
-        request.setCustomerId("test_customer");
-        request.setPossible(BigDecimal.valueOf(0.5));
-        request.setProducts(List.of("test_product"));
-        this.requestPostWithOk(TRANSITION_OPPORTUNITY, request);
-
-        // 校验权限
-        requestPostPermissionTest(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD, TRANSITION_OPPORTUNITY, request);
     }
 
     @Test

@@ -173,7 +173,7 @@
       "titleColor": "#323535"
     },
     {
-      "name": "客户名称",
+      "name": "公司名称",
       "internalKey": "clueName",
       "type": "INPUT",
       "showLabel": true,
@@ -628,9 +628,6 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 0.5,
-      "rules": [
-        {"key":  "required"}
-      ],
       "mobile": true
     },
     {
@@ -677,7 +674,7 @@
         {"key":  "required"}
       ],
       "showControlRules": [
-          {"value": "CUSTOMER", "fieldIds": ["recordCustomer", "recordOpportunity"]},
+          {"value": "CUSTOMER", "fieldIds": ["recordCustomer", "recordOpportunity", "recordContact"]},
           {"value": "CLUE", "fieldIds": ["recordClue"]}
       ],
       "mobile": true
@@ -697,7 +694,7 @@
       "mobile": true
     },
     {
-      "name": "线索名称",
+      "name": "公司名称",
       "internalKey": "recordClue",
       "type": "DATA_SOURCE",
       "dataSourceType": "CLUE",
@@ -822,7 +819,7 @@
         {"key":  "required"}
       ],
       "showControlRules": [
-        {"value": "CUSTOMER", "fieldIds": ["planCustomer", "planOpportunity"]},
+        {"value": "CUSTOMER", "fieldIds": ["planCustomer", "planOpportunity", "planContact"]},
         {"value": "CLUE", "fieldIds": ["planClue"]}
       ],
       "mobile": true
@@ -842,7 +839,7 @@
       "mobile": true
     },
     {
-      "name": "线索名称",
+      "name": "公司名称",
       "internalKey": "planClue",
       "type": "DATA_SOURCE",
       "dataSourceType": "CLUE",

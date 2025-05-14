@@ -61,10 +61,7 @@ class CustomerContactControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
 
-        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
-        Pager<List<CustomerContactListResponse>> pageResult = getPageResult(mvcResult, CustomerContactListResponse.class);
-        List<CustomerContactListResponse> customerContactList = pageResult.getList();
-        Assertions.assertTrue(CollectionUtils.isEmpty(customerContactList));
+        this.requestPostWithOk(DEFAULT_PAGE, request);
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, DEFAULT_PAGE, request);

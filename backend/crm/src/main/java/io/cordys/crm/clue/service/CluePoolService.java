@@ -1,5 +1,10 @@
 package io.cordys.crm.clue.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.condition.CombineSearch;
@@ -117,6 +122,7 @@ public class CluePoolService {
      *
      * @param request 添加参数
      */
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD, resourceName = "{#request.name}")
     public void add(CluePoolAddRequest request, String currentUserId, String currentOrgId) {
         CluePool pool = new CluePool();
         BeanUtils.copyBean(pool, request);
@@ -157,6 +163,13 @@ public class CluePoolService {
         recycleRule.setUpdateUser(currentUserId);
 
         cluePoolRecycleRuleMapper.insert(recycleRule);
+
+        // 添加日志上下文
+        OperationLogContext.setContext(LogContextInfo.builder()
+                .modifiedValue(pool)
+                .resourceId(pool.getId())
+                .resourceName(pool.getName())
+                .build());
     }
 
     /**
@@ -164,8 +177,9 @@ public class CluePoolService {
      *
      * @param request 修改参数
      */
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void update(CluePoolUpdateRequest request, String currentUserId, String currentOrgId) {
-        checkPoolExist(request.getId());
+        CluePool originPool = checkPoolExist(request.getId());
 
         CluePool pool = new CluePool();
         BeanUtils.copyBean(pool, request);
@@ -197,6 +211,14 @@ public class CluePoolService {
         recycleRule.setUpdateUser(currentUserId);
 
         extCluePoolMapper.updateRecycleRule(recycleRule);
+
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(originPool.getName())
+                        .originalValue(originPool)
+                        .modifiedValue(cluePoolMapper.selectByPrimaryKey(request.getId()))
+                        .build()
+        );
     }
 
     /**
@@ -217,20 +239,18 @@ public class CluePoolService {
      *
      * @param id 线索池ID
      */
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
-        checkPoolExist(id);
-
+        CluePool originPool = checkPoolExist(id);
         cluePoolMapper.deleteByPrimaryKey(id);
-
         CluePoolPickRule pickRule = new CluePoolPickRule();
         pickRule.setPoolId(id);
-
         cluePoolPickRuleMapper.delete(pickRule);
-
         CluePoolRecycleRule recycleRule = new CluePoolRecycleRule();
         recycleRule.setPoolId(id);
-
         cluePoolRecycleRuleMapper.delete(recycleRule);
+        // 设置操作对象
+        OperationLogContext.setResourceName(originPool.getName());
     }
 
     /**
@@ -238,6 +258,7 @@ public class CluePoolService {
      *
      * @param id 线索池ID
      */
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void switchStatus(String id, String currentUserId) {
         CluePool pool = checkPoolExist(id);
 
@@ -246,6 +267,14 @@ public class CluePoolService {
         pool.setUpdateUser(currentUserId);
 
         cluePoolMapper.updateById(pool);
+
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(pool.getName())
+                        .originalValue(pool)
+                        .modifiedValue(cluePoolMapper.selectByPrimaryKey(id))
+                        .build()
+        );
     }
 
     /**

@@ -119,7 +119,7 @@ public class CustomerPoolService {
 	 * @param request 请求参数
 	 * @param currentUserId 当前用户ID
 	 */
-	@OperationLog(module = LogModule.CUSTOMER_POOL, type = LogType.ADD, resourceName = "{#request.name}")
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD, resourceName = "{#request.name}")
 	public void add(CustomerPoolAddRequest request, String currentUserId, String organizationId) {
 		CustomerPool pool = new CustomerPool();
 		BeanUtils.copyBean(pool, request);
@@ -169,7 +169,7 @@ public class CustomerPoolService {
 	 * @param request 请求参数
 	 * @param currentUserId 当前用户ID
 	 */
-	@OperationLog(module = LogModule.CUSTOMER_POOL, type = LogType.UPDATE, resourceId = "{#request.id}")
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#request.id}")
 	public void update(CustomerPoolUpdateRequest request, String currentUserId, String organizationId) {
 		CustomerPool originCustomerPool = checkPoolExist(request.getId());
 		CustomerPool pool = new CustomerPool();
@@ -223,7 +223,7 @@ public class CustomerPoolService {
 	/**
 	 * 删除公海池
 	 */
-	@OperationLog(module = LogModule.CUSTOMER_POOL, type = LogType.DELETE, resourceId = "{#id}")
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
 	public void delete(String id) {
 		CustomerPool originCustomerPool = checkPoolExist(id);
 		customerPoolMapper.deleteByPrimaryKey(id);
@@ -242,12 +242,21 @@ public class CustomerPoolService {
 	 * 启用/禁用公海池
 	 * @param id 线索池ID
 	 */
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#request.id}")
 	public void switchStatus(String id, String currentUserId) {
 		CustomerPool pool = checkPoolExist(id);
 		pool.setEnable(!pool.getEnable());
 		pool.setUpdateTime(System.currentTimeMillis());
 		pool.setUpdateUser(currentUserId);
 		customerPoolMapper.updateById(pool);
+
+		OperationLogContext.setContext(
+				LogContextInfo.builder()
+						.resourceName(pool.getName())
+						.originalValue(pool)
+						.modifiedValue(customerPoolMapper.selectByPrimaryKey(id))
+						.build()
+		);
 	}
 
 	/**

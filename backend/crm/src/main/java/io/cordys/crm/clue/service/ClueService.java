@@ -32,9 +32,8 @@ import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerContact;
 import io.cordys.crm.customer.service.CustomerService;
-import io.cordys.crm.opportunity.domain.Opportunity;
-import io.cordys.crm.opportunity.service.OpportunityService;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -74,8 +73,6 @@ public class ClueService {
     @Resource
     private CustomerService customerService;
     @Resource
-    private OpportunityService opportunityService;
-    @Resource
     private ClueFieldService clueFieldService;
     @Resource
     private CluePoolService cluePoolService;
@@ -95,6 +92,8 @@ public class ClueService {
     private PoolClueService poolClueService;
     @Resource
     private LogService logService;
+    @Resource
+    private BaseMapper<CustomerContact> customerContactMapper;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -356,28 +355,32 @@ public class ClueService {
         clue.setUpdateUser(userId);
         clueMapper.update(clue);
 
+        // 同步添加联系人
+        LambdaQueryWrapper<CustomerContact> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CustomerContact::getPhone, clue.getPhone());
+        List<CustomerContact> contacts = customerContactMapper.selectListByLambda(wrapper);
+        if (CollectionUtils.isEmpty(contacts)) {
+            CustomerContact contact = new CustomerContact();
+            contact.setId(IDGenerator.nextStr());
+            contact.setCustomerId(customer.getId());
+            contact.setOwner(customer.getOwner());
+            contact.setName(clue.getContact());
+            contact.setPhone(clue.getPhone());
+            contact.setEnable(true);
+            contact.setOrganizationId(orgId);
+            contact.setCreateUser(userId);
+            contact.setCreateTime(System.currentTimeMillis());
+            contact.setUpdateUser(userId);
+            contact.setUpdateTime(System.currentTimeMillis());
+            customerContactMapper.insert(contact);
+        }
+
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
                 NotificationConstants.Event.CLUE_CONVERT_CUSTOMER, customer.getName(), userId,
                 orgId, List.of(customer.getOwner()), true);
     }
 
-    /**
-     * 转移商机
-     * @param request 请求参数
-     * @param userId 用户ID
-     * @param orgId 组织ID
-     */
-    public void transitionOpportunity(ClueTransitionOpportunityRequest request, String userId, String orgId) {
-        Opportunity opportunity = opportunityService.add(request, userId, orgId);
-        Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
-        dataScopeService.checkDataPermission(userId, orgId, clue.getOwner(), PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD);
 
-        clue.setTransitionId(opportunity.getId());
-        clue.setTransitionType(FormKey.OPPORTUNITY.name());
-        clue.setUpdateTime(System.currentTimeMillis());
-        clue.setUpdateUser(userId);
-        clueMapper.update(clue);
-    }
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id, String userId, String orgId) {

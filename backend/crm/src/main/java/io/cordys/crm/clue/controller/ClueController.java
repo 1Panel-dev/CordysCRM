@@ -95,13 +95,6 @@ public class ClueController {
         clueService.transitionCustomer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
-    @PostMapping("/transition/opportunity")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_ADD)
-    @Operation(summary = "转移商机")
-    public void transitionOpportunity(@Validated @RequestBody ClueTransitionOpportunityRequest request) {
-        clueService.transitionOpportunity(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
-    }
-
     @PostMapping("/batch/transfer")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
     @Operation(summary = "批量转移线索")
