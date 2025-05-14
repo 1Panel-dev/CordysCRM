@@ -1,10 +1,10 @@
 <template>
-  <div class="h-full min-w-[1200px]">
+  <n-scrollbar x-scrollable :content-style="{ 'min-width': '1000px', 'width': '100%', 'height': '100%' }">
     <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
       <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
     </CrmCard>
 
-    <CrmCard hide-footer auto-height class="form-card mb-[16px]">
+    <CrmCard hide-footer auto-height class="form-card mb-[16px] min-w-[1000px]">
       <n-form ref="formRef" label-placement="left" inline label-width="auto" :model="form" class="flex-wrap">
         <n-form-item :label="t('common.operator')" path="operator">
           <CrmUserSelect
@@ -63,7 +63,7 @@
       />
     </CrmCard>
     <LoginLog v-if="activeTab === 'login'" ref="loginLogRef" />
-  </div>
+  </n-scrollbar>
 
   <CrmDrawer v-model:show="showDetailDrawer" :footer="false" :show-mask="false" :title="t('log.detail')" :width="680">
     <LogDetailItem :detail="activeLogDetail" />
@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-  import { CascaderOption, NButton, NCascader, NDatePicker, NForm, NFormItem, NSelect } from 'naive-ui';
+  import { CascaderOption, NButton, NCascader, NDatePicker, NForm, NFormItem, NScrollbar, NSelect } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';

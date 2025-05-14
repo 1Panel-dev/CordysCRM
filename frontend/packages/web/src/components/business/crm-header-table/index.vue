@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer :special-height="64">
+  <CrmCard hide-footer>
     <div class="mb-[16px] flex items-center justify-between">
       <div class="font-medium text-[var(--text-n1)]"> {{ t('opportunity.headRecordPage') }} </div>
       <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
@@ -100,6 +100,7 @@
       showSetting: true,
       showPagination: false,
       columns,
+      specialHeight: 48,
     },
     (row: HeaderHistoryItem) => {
       return {

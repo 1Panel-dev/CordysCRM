@@ -309,6 +309,7 @@
     tableKey: TableKeyEnum.MODULE_CLUE_POOL,
     showSetting: true,
     columns,
+    specialHeight: 48,
   });
 
   watch(

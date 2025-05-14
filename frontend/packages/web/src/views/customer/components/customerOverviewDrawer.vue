@@ -32,19 +32,16 @@
       </div>
     </template>
     <template #right>
-      <div class="mt-[16px]">
-        <div v-if="activeTab === 'overview'" class="mt-[16px] h-[100px] bg-[var(--text-n10)]"></div>
+      <div class="h-full pt-[16px]">
         <ContactTable
-          v-else-if="activeTab === 'contact'"
+          v-if="activeTab === 'contact'"
           :refresh-key="refreshKey"
-          class="h-[calc(100vh-161px)]"
           :customer-id="props.sourceId"
           :initial-source-name="sourceName"
           :readonly="collaborationType === 'READ_ONLY'"
         />
         <FollowDetail
           v-else-if="['followRecord', 'followPlan'].includes(activeTab)"
-          class="mt-[16px]"
           :active-type="(activeTab as 'followRecord'| 'followPlan')"
           wrapper-class="h-[calc(100vh-162px)]"
           virtual-scroll-height="calc(100vh - 254px)"
@@ -57,7 +54,6 @@
         />
         <CrmHeaderTable
           v-else-if="activeTab === 'headRecord'"
-          class="h-[calc(100vh-161px)]"
           :source-id="props.sourceId"
           :load-list-api="getCustomerHeaderList"
         />

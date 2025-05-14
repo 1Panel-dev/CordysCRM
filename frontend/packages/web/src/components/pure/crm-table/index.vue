@@ -21,6 +21,8 @@
     v-model:checked-row-keys="checkedRowKeys"
     :columns="currentColumns as TableColumns"
     :row-key="getRowKey"
+    flex-height
+    :style="{ height: tableHeight }"
     @update:sorter="handleSorterChange"
     @update:filters="handleFiltersChange"
     @update:checked-row-keys="handleCheck"
@@ -88,6 +90,17 @@
   const checkedRowKeys = defineModel<DataTableRowKey[]>('checkedRowKeys', { default: [] });
 
   const currentColumns = ref<CrmDataTableColumn[]>([]);
+
+  const tableHeight = computed(() => {
+    let other = props.actionConfig ? 48 : 0;
+    if (attrs.showPagination) {
+      other += 48;
+    }
+    if (attrs.specialHeight) {
+      other += attrs.specialHeight as number;
+    }
+    return `calc(100% - ${other}px)`;
+  });
 
   async function initColumn(hasInitStore = false) {
     const hasSelectedColumn = props.columns.find((e) => e.type === SpecialColumnEnum.SELECTION);

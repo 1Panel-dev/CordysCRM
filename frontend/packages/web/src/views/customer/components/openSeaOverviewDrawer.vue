@@ -25,24 +25,23 @@
       </div>
     </template>
     <template #right>
-      <div v-if="activeTab === 'overview'" class="mt-[16px] h-[100px] bg-[var(--text-n10)]"></div>
-      <CrmHeaderTable
-        v-else-if="activeTab === 'headRecord'"
-        class="mt-[16px]"
-        :source-id="props.sourceId"
-        :load-list-api="getCustomerHeaderList"
-      />
-      <FollowDetail
-        v-else-if="['followRecord'].includes(activeTab)"
-        class="mt-[16px]"
-        :active-type="(activeTab as 'followRecord')"
-        wrapper-class="h-[calc(100vh-162px)]"
-        virtual-scroll-height="calc(100vh - 258px)"
-        :follow-api-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
-        :source-id="sourceId"
-        :show-action="false"
-        :refresh-key="refreshKey"
-      />
+      <div class="h-full pt-[16px]">
+        <CrmHeaderTable
+          v-if="activeTab === 'headRecord'"
+          :source-id="props.sourceId"
+          :load-list-api="getCustomerHeaderList"
+        />
+        <FollowDetail
+          v-else-if="['followRecord'].includes(activeTab)"
+          :active-type="(activeTab as 'followRecord')"
+          wrapper-class="h-[calc(100vh-162px)]"
+          virtual-scroll-height="calc(100vh - 258px)"
+          :follow-api-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
+          :source-id="sourceId"
+          :show-action="false"
+          :refresh-key="refreshKey"
+        />
+      </div>
     </template>
   </CrmOverviewDrawer>
 </template>

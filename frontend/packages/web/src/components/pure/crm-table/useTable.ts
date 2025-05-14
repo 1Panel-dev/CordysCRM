@@ -31,6 +31,7 @@ export default function useTable<T>(
     columns: [],
     tableRowKey: 'id', // 表格行的key
     showPagination: true, // 是否显示分页
+    specialHeight: 0,
     ...props,
     crmPagination: {
       page: 1,

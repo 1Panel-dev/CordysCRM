@@ -21,23 +21,19 @@
       <TransferForm ref="distributeFormRef" v-model:form="distributeForm" class="mt-[16px] w-[320px]" />
     </template>
     <template #right>
-      <FollowDetail
-        v-if="['followRecord'].includes(activeTab)"
-        class="mt-[16px]"
-        :active-type="(activeTab as 'followRecord')"
-        wrapper-class="h-[calc(100vh-162px)]"
-        virtual-scroll-height="calc(100vh - 258px)"
-        :follow-api-key="FormDesignKeyEnum.CLUE_POOL"
-        :source-id="sourceId"
-        :show-action="false"
-        :refresh-key="refreshKey"
-      />
-      <CrmHeaderTable
-        v-if="activeTab === 'headRecord'"
-        class="mt-[16px] h-[calc(100vh-258px)]"
-        :source-id="sourceId"
-        :load-list-api="getClueHeaderList"
-      />
+      <div class="h-full pt-[16px]">
+        <FollowDetail
+          v-if="['followRecord'].includes(activeTab)"
+          :active-type="(activeTab as 'followRecord')"
+          wrapper-class="h-[calc(100vh-162px)]"
+          virtual-scroll-height="calc(100vh - 258px)"
+          :follow-api-key="FormDesignKeyEnum.CLUE_POOL"
+          :source-id="sourceId"
+          :show-action="false"
+          :refresh-key="refreshKey"
+        />
+        <CrmHeaderTable v-if="activeTab === 'headRecord'" :source-id="sourceId" :load-list-api="getClueHeaderList" />
+      </div>
     </template>
   </CrmOverviewDrawer>
 </template>

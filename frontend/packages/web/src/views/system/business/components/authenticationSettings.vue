@@ -359,6 +359,7 @@
     tableKey: TableKeyEnum.AUTH,
     showSetting: true,
     columns,
+    specialHeight: 48,
   });
 
   function searchData() {

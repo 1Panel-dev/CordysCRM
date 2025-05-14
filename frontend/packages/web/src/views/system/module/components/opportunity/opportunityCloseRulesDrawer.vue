@@ -298,6 +298,7 @@
     tableKey: TableKeyEnum.MODULE_OPPORTUNITY_RULE_TABLE,
     showSetting: true,
     columns,
+    specialHeight: 48,
   });
 
   function handleCancel() {

@@ -1,6 +1,9 @@
 <template>
   <div class="relative h-full">
-    <n-scrollbar x-scrollable :content-style="{ 'min-width': '600px', 'width': '100%', 'padding': '0 24px 24px' }">
+    <n-scrollbar
+      x-scrollable
+      :content-style="{ 'min-width': '600px', 'width': '100%', 'padding': '0 24px 24px', 'height': '100%' }"
+    >
       <CrmTable
         v-model:checked-row-keys="checkedRowKeys"
         v-bind="propsRes"

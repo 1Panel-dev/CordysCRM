@@ -42,26 +42,21 @@
       />
     </template>
     <template #right>
-      <FollowDetail
-        v-if="['followRecord', 'followPlan'].includes(activeTab)"
-        class="mt-[16px]"
-        :active-type="(activeTab as 'followRecord'| 'followPlan')"
-        wrapper-class="h-[calc(100vh-290px)]"
-        virtual-scroll-height="calc(100vh - 382px)"
-        :follow-api-key="FormDesignKeyEnum.CLUE"
-        :initial-source-name="sourceName"
-        :show-add="hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])"
-        :source-id="sourceId"
-        :show-action="showAction"
-      />
+      <div class="h-full pt-[16px]">
+        <FollowDetail
+          v-if="['followRecord', 'followPlan'].includes(activeTab)"
+          :active-type="(activeTab as 'followRecord'| 'followPlan')"
+          wrapper-class="h-[calc(100vh-290px)]"
+          virtual-scroll-height="calc(100vh - 382px)"
+          :follow-api-key="FormDesignKeyEnum.CLUE"
+          :initial-source-name="sourceName"
+          :show-add="hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])"
+          :source-id="sourceId"
+          :show-action="showAction"
+        />
 
-      <CrmHeaderTable
-        v-if="activeTab === 'headRecord'"
-        class="mt-[16px] h-[calc(100vh-258px)]"
-        :source-id="sourceId"
-        :load-list-api="getClueHeaderList"
-      />
-
+        <CrmHeaderTable v-if="activeTab === 'headRecord'" :source-id="sourceId" :load-list-api="getClueHeaderList" />
+      </div>
       <CrmFormCreateDrawer
         v-model:visible="formDrawerVisible"
         :other-save-params="otherFollowRecordSaveParams"

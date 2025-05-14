@@ -47,27 +47,27 @@
           <slot name="left" />
         </template>
         <template #2>
-          <div class="h-full w-full bg-[var(--text-n9)]">
-            <n-scrollbar class="p-[16px]">
-              <slot name="rightTop" />
-              <div class="relative bg-[var(--text-n10)]">
-                <CrmTab
-                  v-if="showTabList.length"
-                  v-model:active-tab="activeTab"
-                  no-content
-                  :tab-list="showTabList"
-                  type="line"
+          <div class="flex h-full w-full flex-col bg-[var(--text-n9)] p-[16px]">
+            <slot name="rightTop" />
+            <div class="relative bg-[var(--text-n10)]">
+              <CrmTab
+                v-if="showTabList.length"
+                v-model:active-tab="activeTab"
+                no-content
+                :tab-list="showTabList"
+                type="line"
+              />
+              <div v-if="props.showTabSetting" class="absolute right-4 top-2">
+                <CrmTabSetting
+                  v-model:cached-list="cachedList"
+                  :tab-list="props.tabList"
+                  :setting-key="`${props.formKey}-settingKey`"
                 />
-                <div v-if="props.showTabSetting" class="absolute right-4 top-2">
-                  <CrmTabSetting
-                    v-model:cached-list="cachedList"
-                    :tab-list="props.tabList"
-                    :setting-key="`${props.formKey}-settingKey`"
-                  />
-                </div>
               </div>
+            </div>
+            <div class="flex-1 overflow-hidden">
               <slot name="right" />
-            </n-scrollbar>
+            </div>
           </div>
         </template>
       </CrmSplitPanel>

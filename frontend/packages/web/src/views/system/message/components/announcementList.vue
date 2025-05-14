@@ -213,7 +213,7 @@
       tableKey: TableKeyEnum.SYSTEM_ANNOUNCEMENT_TABLE,
       showSetting: true,
       columns,
-      maxHeight: 'calc(100vh - 342px)',
+      specialHeight: 48,
     },
     (row: AnnouncementItemDetail) => {
       return {
