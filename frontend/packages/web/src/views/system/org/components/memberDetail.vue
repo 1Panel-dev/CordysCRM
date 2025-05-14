@@ -16,7 +16,7 @@
         {{ t('common.edit') }}
       </n-button>
     </template>
-    <CrmDescription class="m-[8px]" label-width="90px" :descriptions="descriptions" label-align="end">
+    <CrmDescription class="p-[8px]" label-width="90px" :descriptions="descriptions" label-align="end">
       <template #gender="{ item }">
         {{ item.value ? t('org.female') : t('org.male') }}
       </template>

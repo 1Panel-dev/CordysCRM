@@ -129,6 +129,15 @@
     }
   }
 
+  watch(
+    () => keyword.value,
+    (val) => {
+      if (!val.length) {
+        initData();
+      }
+    }
+  );
+
   onBeforeMount(() => {
     initData();
   });

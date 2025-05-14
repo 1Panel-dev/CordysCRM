@@ -60,8 +60,8 @@ export interface MessageConfigItem extends MessageTaskDetailDTOItem {
 export interface SaveMessageConfigParams {
   module: string;
   event: string;
-  emailEnable: boolean;
-  sysEnable: boolean;
+  emailEnable?: boolean;
+  sysEnable?: boolean;
 }
 
 export interface MessageCenterItem {

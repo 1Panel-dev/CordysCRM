@@ -785,7 +785,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          handleSyncFromThird();
+          await handleSyncFromThird();
           emit('addSuccess');
           tableRefreshId.value += 1;
         } catch (error) {

@@ -70,7 +70,7 @@
               v-if="item.status === SystemMessageStatusEnum.UNREAD"
               type="primary"
               text
-              class="flex-shrink-0"
+              class="set-read-button flex-shrink-0"
               @click="setMessageRead(item)"
             >
               {{ t('system.message.setRead') }}
@@ -226,6 +226,14 @@
         }
         &--read {
           color: var(--text-n4);
+        }
+      }
+      .set-read-button {
+        opacity: 0;
+      }
+      &:hover {
+        .set-read-button {
+          opacity: 1;
         }
       }
     }

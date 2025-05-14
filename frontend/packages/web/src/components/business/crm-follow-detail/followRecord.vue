@@ -14,7 +14,7 @@
           <div :class="`crm-follow-time-dot ${getFutureClass(item)}`"></div>
           <div class="crm-follow-time-line"></div>
         </div>
-        <div class="mb-4 flex w-full flex-col gap-[16px]">
+        <div class="mb-[24px] flex w-full flex-col gap-[16px]">
           <div class="crm-follow-record-title">
             <div class="flex items-center gap-[16px]">
               <StatusTag v-if="item.status" :status="item.status" />

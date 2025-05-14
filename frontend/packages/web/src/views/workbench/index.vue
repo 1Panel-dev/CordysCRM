@@ -29,19 +29,21 @@
         />
       </CrmCard>
     </div>
-    <CrmCard hide-footer class="ml-[16px] w-[400px]">
-      <div class="title !mb-[8px]">
-        <div class="title-name">{{ t('system.message.notify') }}</div>
-        <div v-permission="['SYSTEM_NOTICE:READ']" class="title-right" @click="showMessageDrawer = true">
-          {{ t('common.ViewMore') }}
+    <CrmCard hide-footer no-content-padding class="ml-[16px] w-[400px]">
+      <div class="h-full p-[24px]">
+        <div class="title !mb-[8px]">
+          <div class="title-name">{{ t('system.message.notify') }}</div>
+          <div v-permission="['SYSTEM_NOTICE:READ']" class="title-right" @click="showMessageDrawer = true">
+            {{ t('common.ViewMore') }}
+          </div>
         </div>
+        <CrmMessageList
+          ref="messageListRef"
+          :message-list="messageList"
+          virtual-scroll-height="calc(100vh - 168px)"
+          key-field="id"
+        />
       </div>
-      <CrmMessageList
-        ref="messageListRef"
-        :message-list="messageList"
-        virtual-scroll-height="calc(100vh - 156px)"
-        key-field="id"
-      />
     </CrmCard>
     <PersonalInfoDrawer v-model:visible="showPersonalInfo" v-model:active-tab-value="personalTab" />
     <MessageDrawer v-model:show="showMessageDrawer" />

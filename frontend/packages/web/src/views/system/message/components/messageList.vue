@@ -83,10 +83,22 @@
   async function toggleGlobalMessage(type: string, cancel?: () => void) {
     try {
       enableSystemLoading.value = true;
-      await batchSaveMessageTask({
-        sysEnable: type === 'system' ? !enableSystemMessage.value : enableSystemMessage.value,
-        emailEnable: type === 'email' ? !enableEmailMessage.value : enableEmailMessage.value,
-      });
+
+      const params: {
+        sysEnable: boolean | undefined;
+        emailEnable: boolean | undefined;
+      } = {
+        sysEnable: undefined,
+        emailEnable: undefined,
+      };
+
+      if (type === 'system') {
+        params.sysEnable = !enableSystemMessage.value;
+      } else if (type === 'email') {
+        params.emailEnable = !enableEmailMessage.value;
+      }
+
+      await batchSaveMessageTask(params);
       Message.success(t('common.saveSuccess'));
       cancel?.();
       initMessageList();
