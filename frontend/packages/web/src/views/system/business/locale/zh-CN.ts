@@ -112,5 +112,6 @@ export default {
   'system.personal.reInput.password': '请再次输入密码',
   'system.personal.password.diff': '两次密码不一致',
   'system.personal.password.style': '密码需要包含数字和字母',
+  'system.personal.password.length': '密码长度不得超过64位字符',
   'system.personal.countdown': '倒计时结束后可重新获取',
 };

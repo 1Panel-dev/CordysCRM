@@ -94,6 +94,7 @@ public class OrganizationConfigService {
         OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(emailDTOOld)
                 .resourceName(Translator.get("email.setting"))
+                .resourceId(organizationConfigDetail.getId())
                 .modifiedValue(emailDTO)
                 .build());
 

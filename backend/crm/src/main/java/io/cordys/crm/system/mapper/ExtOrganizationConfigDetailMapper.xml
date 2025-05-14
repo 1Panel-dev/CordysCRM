@@ -54,5 +54,18 @@
             and type = #{type}
         </if>
     </select>
+    <select id="getOrganizationConfigDetailList"
+            parameterType="io.cordys.crm.system.dto.request.AuthSourceRequest"
+            resultType="io.cordys.crm.system.domain.OrganizationConfigDetail">
+        SELECT * FROM sys_organization_config_detail WHERE config_id = #{request.configId}
+        <if test="request.keyword != null">
+            and name like concat('%', #{request.keyword},'%')
+        </if>
+        <include refid="io.cordys.common.mapper.CommonMapper.sort">
+            <property name="sort" value="request.sort"/>
+            <property name="prefix" value="sys_organization_config_detail"/>
+            <property name="defaultSort" value="create_time desc"/>
+        </include>
+    </select>
 
 </mapper>

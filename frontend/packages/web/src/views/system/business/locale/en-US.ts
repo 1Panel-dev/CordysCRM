@@ -117,5 +117,6 @@ export default {
   'system.personal.reInput.password': 'Please enter password again',
   'system.personal.password.diff': 'Two passwords are inconsistent',
   'system.personal.password.style': 'The password must contain numbers and letters',
+  'system.personal.password.length': 'Password length must not exceed 64 characters',
   'system.personal.countdown': 'You can get it again after the countdown ends',
 };

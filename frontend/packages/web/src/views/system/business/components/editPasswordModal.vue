@@ -141,7 +141,11 @@
     return value === form.value.password;
   }
   function validatePasswordStyle(rule: FormItemRule, value: string): boolean {
-    const reg = /^(?=.*\d)(?=.*[A-Za-z])[\S\s]{1,64}$/;
+    const reg = /^(?=.*\d)(?=.*[A-Za-z]).*$/;
+    return reg.test(value);
+  }
+  function validatePasswordLength(rule: FormItemRule, value: string): boolean {
+    const reg = /^.{1,64}$/;
     return reg.test(value);
   }
   const formRef = ref<FormInst | null>(null);
@@ -165,6 +169,11 @@
       {
         validator: validatePasswordStyle,
         message: t('system.personal.password.style'),
+        trigger: ['blur', 'password-input'],
+      },
+      {
+        validator: validatePasswordLength,
+        message: t('system.personal.password.length'),
         trigger: ['blur', 'password-input'],
       },
     ],
