@@ -53,7 +53,6 @@ export default {
   'common.recordClue': '跟进记录',
   'common.planClue': '跟进计划',
   'common.convertToCustomer': '转为客户',
-  'common.convertToOpportunity': '转为商机',
   'common.confirm': '确认',
   'common.notNull': '{value}不能为空',
   'common.required': '必填',

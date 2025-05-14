@@ -101,10 +101,6 @@
       name: CustomerSearchTypeEnum.CUSTOMER_TRANSITION,
       tab: t('clue.convertedToCustomer'),
     },
-    {
-      name: CustomerSearchTypeEnum.OPPORTUNITY_TRANSITION,
-      tab: t('clue.convertedToOpportunity'),
-    },
   ];
 
   const activeClue = ref<ClueListItem>();
@@ -189,14 +185,6 @@
       },
     },
     {
-      name: t('common.convertToOpportunity'),
-      permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
-      allPermission: true,
-      callback: () => {
-        convertTo(activeClueId.value, FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS);
-      },
-    },
-    {
       name: t('common.convertToCustomer'),
       permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
       allPermission: true,
@@ -224,16 +212,6 @@
           permission: ['CLUE_MANAGEMENT:UPDATE'],
           action: (item: ClueListItem) => {
             handleTransfer(item.id);
-          },
-        },
-        {
-          label: t('common.convertToOpportunity'),
-          icon: 'iconicon_edit1',
-          permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
-          allPermission: true,
-          action: (item: ClueListItem) => {
-            activeClue.value = item;
-            convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS);
           },
         },
         ...(moreActions.length

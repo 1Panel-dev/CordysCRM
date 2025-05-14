@@ -62,7 +62,6 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ClueListItem } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer/index';
@@ -112,10 +111,6 @@
       {
         name: CustomerSearchTypeEnum.CUSTOMER_TRANSITION,
         tab: t('clue.convertedToCustomer'),
-      },
-      {
-        name: CustomerSearchTypeEnum.OPPORTUNITY_TRANSITION,
-        tab: t('clue.convertedToOpportunity'),
       },
     ];
   });
@@ -312,14 +307,6 @@
         needInitDetail.value = false;
         formCreateDrawerVisible.value = true;
         break;
-      case 'convertToOpportunity':
-        activeClueId.value = '';
-        formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS;
-        activeRowName.value = row.name;
-        otherFollowRecordSaveParams.value.clueId = row.id;
-        needInitDetail.value = false;
-        formCreateDrawerVisible.value = true;
-        break;
       case 'delete':
         handleDelete(row);
         break;
@@ -334,14 +321,14 @@
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE,
     disabledSelection: (row) => {
-      return row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType);
+      return row.transitionType && ['CUSTOMER'].includes(row.transitionType);
     },
     operationColumn: {
       key: 'operation',
       width: 200,
       fixed: 'right',
       render: (row: ClueListItem) =>
-        row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)
+        row.transitionType && ['CUSTOMER'].includes(row.transitionType)
           ? '-'
           : h(
               CrmOperationButton,
@@ -380,12 +367,6 @@
                     label: t('clue.convertToCustomer'),
                     key: 'convertToCustomer',
                     permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-                    allPermission: true,
-                  },
-                  {
-                    label: t('clue.convertToOpportunity'),
-                    key: 'convertToOpportunity',
-                    permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
                     allPermission: true,
                   },
                   ...([CustomerSearchTypeEnum.DEPARTMENT, CustomerSearchTypeEnum.SELF].includes(activeTab.value)

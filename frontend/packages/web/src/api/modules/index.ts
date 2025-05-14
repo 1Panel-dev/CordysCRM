@@ -79,7 +79,6 @@ export const {
   getClueFormConfig,
   getClue,
   deleteClue,
-  ClueTransitionOpportunity,
   ClueTransitionCustomer,
   addClueFollowRecord,
   updateClueFollowRecord,

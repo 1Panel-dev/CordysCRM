@@ -12,7 +12,6 @@ import {
   BatchTransferClueUrl,
   CancelClueFollowPlanUrl,
   ClueTransitionCustomerUrl,
-  ClueTransitionOpportunityUrl,
   DeleteClueFollowPlanUrl,
   DeleteClueFollowRecordUrl,
   DeleteCluePoolUrl,
@@ -44,7 +43,6 @@ import type {
   CluePoolListItem,
   CluePoolTableParams,
   ClueTransitionCustomerParams,
-  ClueTransitionOpportunityParams,
   PickClueParams,
   SaveClueParams,
   UpdateClueParams,
@@ -113,11 +111,6 @@ export default function useProductApi(CDR: CordysAxios) {
   // 删除线索
   function deleteClue(id: string) {
     return CDR.get({ url: `${DeleteClueUrl}/${id}` });
-  }
-
-  // 转为商机
-  function ClueTransitionOpportunity(data: ClueTransitionOpportunityParams) {
-    return CDR.post({ url: ClueTransitionOpportunityUrl, data });
   }
 
   // 转为客户
@@ -246,7 +239,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getClueFormConfig,
     getClue,
     deleteClue,
-    ClueTransitionOpportunity,
     ClueTransitionCustomer,
     addClueFollowRecord,
     updateClueFollowRecord,

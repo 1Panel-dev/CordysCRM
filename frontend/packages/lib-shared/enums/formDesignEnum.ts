@@ -1,6 +1,5 @@
 export enum FormDesignKeyEnum {
   CLUE = 'clue', // 线索
-  CLUE_TRANSITION_BUSINESS = 'clueTransitionOpportunity', // 转为商机
   CLUE_TRANSITION_CUSTOMER = 'clueTransitionCustomer', // 转为客户
   CLUE_POOL = 'cluePool', // 线索池
   FOLLOW_PLAN_CLUE = 'planClue', // 线索跟进计划

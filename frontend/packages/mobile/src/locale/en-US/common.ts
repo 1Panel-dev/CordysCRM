@@ -53,7 +53,6 @@ export default {
   'common.recordClue': 'Follow-up record',
   'common.planClue': 'Follow-up plan',
   'common.convertToCustomer': 'Convert to customer',
-  'common.convertToOpportunity': 'Convert to opportunity',
   'common.confirm': 'Confirm',
   'common.notNull': '{value} cannot be empty',
   'common.required': 'Required',

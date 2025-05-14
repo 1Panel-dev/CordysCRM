@@ -344,12 +344,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
-    if (
-      [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER, FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS].includes(
-        props.formKey.value
-      )
-    ) {
-      // 线索转商机转客户带入名称
+    if ([FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER].includes(props.formKey.value)) {
+      // 线索转客户带入名称
       if (field.businessKey === 'name') {
         return {
           defaultValue: props.initialSourceName?.value,
@@ -540,8 +536,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         await createFormApi[props.formKey.value](params);
         if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
           Message.success(t('clue.transferredToCustomer'));
-        } else if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS) {
-          Message.success(t('clue.transferredToOpportunity'));
         } else {
           Message.success(t('common.createSuccess'));
         }
@@ -561,9 +555,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   const formCreateTitle = computed(() => {
     if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
       return t('clue.convertToCustomer');
-    }
-    if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS) {
-      return t('clue.convertToOpportunity');
     }
     const prefix = props.sourceId?.value && props.needInitDetail?.value ? t('common.edit') : t('common.newCreate');
     return `${prefix}${t(`crmFormCreate.drawer.${props.formKey.value}`)}`;

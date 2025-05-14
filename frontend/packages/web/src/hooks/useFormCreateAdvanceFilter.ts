@@ -7,7 +7,6 @@ import type { FormCreateField } from '@/components/business/crm-form-create/type
 const internalFilterKeyMap: Record<FormDesignKeyEnum, string[]> = {
   [FormDesignKeyEnum.BUSINESS]: ['opportunityName', 'opportunityCustomer', 'opportunitySource'],
   [FormDesignKeyEnum.CLUE]: ['clueName', 'clueSource', 'clueProgress'],
-  [FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS]: [],
   [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: [],
   [FormDesignKeyEnum.CLUE_POOL]: ['clueName', 'clueSource', 'clueProgress'],
   [FormDesignKeyEnum.CONTACT]: [],

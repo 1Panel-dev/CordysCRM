@@ -1,7 +1,6 @@
 import type { CustomerSearchTypeEnum } from '../../enums/customerEnum';
 import type { TableQueryParams } from '../common';
 import type { ModuleField, SaveCustomerParams } from '@lib/shared/models/customer';
-import type { SaveOpportunityParams } from '@lib/shared/models/opportunity';
 
 export interface SaveClueParams extends SaveCustomerParams {
   contact?: string;
@@ -13,10 +12,6 @@ export interface UpdateClueParams extends SaveClueParams {
 }
 
 export interface ClueTransitionCustomerParams extends SaveCustomerParams {
-  clueId: string;
-}
-
-export interface ClueTransitionOpportunityParams extends SaveOpportunityParams {
   clueId: string;
 }
 

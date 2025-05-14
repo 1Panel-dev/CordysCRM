@@ -190,10 +190,6 @@
         realFormKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
         formDrawerVisible.value = true;
         break;
-      case 'convertToOpportunity':
-        realFormKey.value = FormDesignKeyEnum.CLUE_TRANSITION_BUSINESS;
-        formDrawerVisible.value = true;
-        break;
       default:
         break;
     }
@@ -235,7 +231,7 @@
   }
 
   const isConverted = computed(
-    () => props.detail?.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(props.detail.transitionType)
+    () => props.detail?.transitionType && ['CUSTOMER'].includes(props.detail.transitionType)
   );
 
   const buttonList = computed<ActionsItem[]>(() => {
@@ -283,12 +279,6 @@
         label: t('clue.convertToCustomer'),
         key: 'convertToCustomer',
         permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-        allPermission: true,
-      },
-      {
-        label: t('clue.convertToOpportunity'),
-        key: 'convertToOpportunity',
-        permission: ['CLUE_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:ADD'],
         allPermission: true,
       },
       {
