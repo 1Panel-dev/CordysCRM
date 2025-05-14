@@ -58,7 +58,7 @@ public class PermissionCache {
                                     .collect(Collectors.toSet())
                     );
                     return rolePermission;
-                }).toList();
+                }).collect(Collectors.toList());
     }
 
     public Set<String> getPermissionIds(String userId, String orgId) {
