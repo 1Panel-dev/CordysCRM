@@ -60,12 +60,7 @@
     </div>
     <template #footer>
       <div class="flex justify-end">
-        <n-button
-          v-if="!validateResultInfo.successCount || !validateResultInfo.failCount"
-          quaternary
-          class="text-btn-secondary"
-          @click="backList"
-        >
+        <n-button v-if="!validateResultInfo.successCount || !validateResultInfo.failCount" quaternary @click="backList">
           {{ t('crmImportButton.backList') }}
         </n-button>
 
@@ -96,7 +91,6 @@
           :loading="props.importLoading"
           quaternary
           type="primary"
-          class="text-btn-primary"
           @click="confirmImport"
         >
           {{ t('crmImportButton.ignoreErrorContinueImporting') }}

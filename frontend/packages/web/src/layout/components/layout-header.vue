@@ -29,13 +29,13 @@
           trigger="hover"
           @update-value="changeLanguage"
         >
-          <n-button class="text-btn-secondary p-[8px]" quaternary>
+          <n-button class="p-[8px]" quaternary>
             <template #icon>
               <LanguageOutline />
             </template>
           </n-button>
         </n-popselect>
-        <n-button class="text-btn-secondary p-[8px]" quaternary @click="showMessage">
+        <n-button class="p-[8px]" quaternary @click="showMessage">
           <n-badge value="1" dot :show="showBadge">
             <CrmIcon type="iconicon-alarmclock" :size="16" />
           </n-badge>
@@ -49,7 +49,7 @@
             {{ appStore.version }}
           </div>
           <template #trigger>
-            <n-button class="text-btn-secondary p-[8px]" quaternary>
+            <n-button class="p-[8px]" quaternary>
               <template #icon>
                 <InformationCircleOutline />
               </template>

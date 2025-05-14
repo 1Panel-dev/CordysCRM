@@ -324,19 +324,33 @@
 }
 // 次要文本按钮
 .btn-text-sec-hover() {
-  &:not(:disabled):hover {
-    background-color: var(--text-n9) !important;
+  &:not(.n-button--disabled):hover {
+    background: var(--text-n9) !important;
   }
 }
+
 .btn-text-sec-active() {
-  &:not(:disabled):active {
-    background-color: var(--text-n8) !important;
+  &:not(.n-button--disabled):active {
+    background: var(--text-n8) !important;
   }
 }
+
+.btn-text-sec-focus() {
+  &:not(.n-button--disabled):focus {
+    background: none !important;
+  }
+}
+
+.btn-text-sec-focus() {
+  &:not(.n-button--disabled):focus {
+    background: none !important;
+  }
+}
+
 .btn-text-sec-disabled() {
   &:disabled {
     color: var(--text-n6) !important;
-    background-color: var(--text-n10) !important;
+    background: var(--text-n10) !important;
   }
 }
 

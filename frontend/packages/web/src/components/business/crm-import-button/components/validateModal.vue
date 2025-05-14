@@ -31,7 +31,7 @@
     </div>
     <template #footer>
       <div class="flex items-center justify-end">
-        <n-button quaternary class="text-btn-secondary" @click="handleCancel"> {{ t('common.cancel') }} </n-button>
+        <n-button quaternary @click="handleCancel"> {{ t('common.cancel') }} </n-button>
       </div>
     </template>
   </CrmModal>

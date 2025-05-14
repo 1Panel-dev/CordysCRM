@@ -1,4 +1,13 @@
 @import url('./var.less');
+// 重置默认按钮聚焦
+.n-button {
+  &.n-button--default-type {
+    .btn-text-sec-focus();
+    .btn-text-sec-hover();
+    .btn-text-sec-active();
+    .btn-text-sec-disabled();
+  }
+}
 // 主要 outline 按钮
 .n-button--tertiary-type {
   border: 1px solid var(--primary-8) !important;
@@ -14,15 +23,6 @@
   .btn-outline-sec-hover();
   .btn-outline-sec-active();
   .btn-outline-sec-disabled();
-}
-
-// 次要文本按钮
-.text-btn-secondary {
-  &.n-button--default-type {
-    .btn-text-sec-hover();
-    .btn-text-sec-active();
-    .btn-text-sec-disabled();
-  }
 }
 
 // 次要文本主题按钮
@@ -276,6 +276,22 @@
 .n-modal {
   .n-dialog__title {
     .crm-modal-title();
+  }
+}
+
+// 对话框
+.n-dialog,
+.n-drawer {
+  .n-base-close:not(.n-base-close--disabled) {
+    &:focus::before {
+      background: none;
+    }
+    &:hover::before {
+      background: var(--text-n9);
+    }
+    &:active::before {
+      background: var(--text-n8);
+    }
   }
 }
 

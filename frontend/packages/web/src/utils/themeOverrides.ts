@@ -86,7 +86,7 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       borderPressedPrimary: `1px solid ${getLessVariableValue('--primary-0')}`,
       borderFocusPrimary: `1px solid ${getLessVariableValue('--primary-8')}`,
       borderDisabledPrimary: `1px solid ${getLessVariableValue('--primary-4')}`,
-
+      // 注意: 该全局配置有的可能没有聚焦配置，设置hover后，聚焦和hover的主题一致
       colorPrimary: getLessVariableValue('--primary-8'),
       colorHoverPrimary: getLessVariableValue('--primary-1'),
       colorPressedPrimary: getLessVariableValue('--primary-0'),
@@ -273,7 +273,7 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       titleFontSize: '16px',
       titleFontWeight: 600,
       closeIconColor: getLessVariableValue('--text-n2'),
-      closeIconSize: '16px',
+      closeIconSize: '14px',
     },
     Switch: {
       railColor: getLessVariableValue('--text-n7'),
