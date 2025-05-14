@@ -33,9 +33,10 @@ public class ClueOwnerHistoryService {
     private ExtClueOwnerMapper extClueOwnerMapper;
 
     public List<ClueOwnerListResponse> list(String clueId, String orgId) {
-        ClueOwner example = new ClueOwner();
-        example.setClueId(clueId);
-        List<ClueOwner> owners = clueOwnerMapper.select(example);
+        LambdaQueryWrapper<ClueOwner> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ClueOwner::getClueId, clueId);
+        wrapper.orderByDesc(ClueOwner::getEndTime);
+        List<ClueOwner> owners = clueOwnerMapper.selectListByLambda(wrapper);
         return buildListData(orgId, owners);
     }
 

@@ -33,9 +33,10 @@ public class CustomerOwnerHistoryService {
     private ExtCustomerOwnerMapper extCustomerOwnerMapper;
 
     public List<CustomerOwnerListResponse> list(String customerId, String orgId) {
-        CustomerOwner example = new CustomerOwner();
-        example.setCustomerId(customerId);
-        List<CustomerOwner> owners = customerOwnerMapper.select(example);
+        LambdaQueryWrapper<CustomerOwner> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CustomerOwner::getCustomerId, customerId);
+        wrapper.orderByDesc(CustomerOwner::getEndTime);
+        List<CustomerOwner> owners = customerOwnerMapper.selectListByLambda(wrapper);
         return buildListData(orgId, owners);
     }
 
