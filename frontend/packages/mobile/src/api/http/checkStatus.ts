@@ -13,8 +13,10 @@ export default function checkStatus(status: number, msg: string, code?: number):
       break;
     case 401: {
       errMessage = msg || t('api.errMsg401');
-      const { oAuthLogin } = useLogin();
-      oAuthLogin();
+      if (!import.meta.env.DEV) {
+        const { oAuthLogin } = useLogin();
+        oAuthLogin();
+      }
       break;
     }
     case 403:

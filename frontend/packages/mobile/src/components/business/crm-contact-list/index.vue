@@ -22,10 +22,11 @@
       ref="crmListRef"
       :list-params="listParams"
       :keyword="keyword"
-      :load-list-api="getCustomerContactList"
+      :load-list-api="props.customerId ? getContactListUnderCustomer : getCustomerContactList"
       class="p-[16px]"
       :item-gap="16"
       :transform="transformFormData"
+      :no-page-nation="!!props.customerId"
     >
       <template #item="{ item }">
         <div
@@ -90,16 +91,23 @@
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
-  import { deleteCustomerContact, getCustomerContactList } from '@/api/modules';
+  import { deleteCustomerContact, getContactListUnderCustomer, getCustomerContactList } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
+
+  const props = defineProps<{
+    customerId?: string;
+    customerName?: string;
+  }>();
 
   const { t } = useI18n();
   const router = useRouter();
   const { copy, isSupported } = useClipboard({ legacy: true });
 
-  const { transformFormData } = await useFormCreateTransform(FormDesignKeyEnum.CUSTOMER_CONTACT);
+  const { transformFormData } = await useFormCreateTransform(
+    props.customerId ? FormDesignKeyEnum.CUSTOMER_CONTACT : FormDesignKeyEnum.CONTACT
+  );
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
   const keyword = ref('');
@@ -108,6 +116,7 @@
     return {
       searchType: activeFilter.value,
       keyword: keyword.value,
+      id: props.customerId,
     };
   });
 
@@ -150,7 +159,9 @@
     router.push({
       name: CommonRouteEnum.FORM_CREATE,
       query: {
-        formKey: FormDesignKeyEnum.CONTACT,
+        id: props.customerId,
+        formKey: props.customerId ? FormDesignKeyEnum.CUSTOMER_CONTACT : FormDesignKeyEnum.CONTACT,
+        initialSourceName: props.customerName,
       },
     });
   }

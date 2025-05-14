@@ -10,7 +10,11 @@
         <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)] pt-[16px]">
           <CrmDescription :description="descriptions" />
         </div>
-        <CrmContactList v-else-if="tab.name === 'contact'" />
+        <CrmContactList
+          v-else-if="tab.name === 'contact'"
+          :customer-id="route.query.id?.toString()"
+          :customer-name="route.query.name?.toString()"
+        />
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
           ref="recordListRef"

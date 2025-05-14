@@ -237,7 +237,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
-    if (props.formKey === FormDesignKeyEnum.CONTACT && props.sourceId) {
+    if (props.formKey === FormDesignKeyEnum.CUSTOMER_CONTACT && props.sourceId) {
       // 联系人表单，赋予客户字段默认值为当前客户
       if (field.businessKey === 'customerId') {
         specialInitialOptions.value = [
