@@ -60,7 +60,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 同步组织设置-测试连接
   function testConfigSynchronization(data: ConfigSynchronization) {
-    return CDR.post({ url: TestConfigSynchronizationUrl, data });
+    return CDR.post({ url: TestConfigSynchronizationUrl, data }, { isReturnNativeResponse: true });
   }
 
   // 获取同步组织设置
@@ -70,7 +70,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 更新同步组织设置
   function updateConfigSynchronization(data: ConfigSynchronization) {
-    return CDR.post({ url: UpdateConfigSynchronizationUrl, data });
+    return CDR.post({ url: UpdateConfigSynchronizationUrl, data }, { isReturnNativeResponse: true });
   }
 
   // 根据类型获取开启的三方扫码设置

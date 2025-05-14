@@ -34,7 +34,7 @@
     </CrmDescription>
     <n-divider class="!m-0" />
     <div class="my-[12px] mr-[24px] flex justify-end">
-      <n-button type="primary" ghost @click="testLink(false)">
+      <n-button type="primary" :loading="linkLoading" ghost @click="testLink(false)">
         {{ t('system.business.mailSettings.testLink') }}
       </n-button>
       <n-button v-permission="['SYSTEM_SETTING:UPDATE']" type="primary" class="ml-[8px]" @click="showDrawer = true">
@@ -112,7 +112,7 @@
         </div>
       </n-form-item>
       <n-form-item label=" ">
-        <n-button type="primary" ghost @click="testLink(true)">
+        <n-button type="primary" :loading="linkLoading" ghost @click="testLink(true)">
           {{ t('system.business.mailSettings.testLink') }}
         </n-button>
       </n-form-item>
@@ -242,8 +242,10 @@
     form.value = { ...originForm.value };
   }
 
+  const linkLoading = ref(false);
   async function testLink(isDrawer: boolean) {
     try {
+      linkLoading.value = true;
       if (isDrawer) {
         await formRef.value?.validate();
       }
@@ -257,6 +259,8 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    } finally {
+      linkLoading.value = false;
     }
   }
 

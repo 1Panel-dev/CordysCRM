@@ -39,7 +39,7 @@
                 <n-tooltip :disabled="item.hasConfig">
                   <template #trigger>
                     <n-button
-                      :disabled="!item.hasConfig"
+                      :disabled="!item.hasConfig || !item.response.verify"
                       size="small"
                       type="default"
                       class="outline--secondary"
@@ -62,7 +62,7 @@
                 <n-switch
                   size="small"
                   :value="item.response.qrcodeEnable"
-                  :disabled="(!item.hasConfig && !item.response.verify) || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
+                  :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
                   @update:value="handleChangeEnable(item, 'qrcodeEnable')"
                 />
               </template>
@@ -77,7 +77,7 @@
                 <n-switch
                   size="small"
                   :value="item.response.syncEnable"
-                  :disabled="!item.hasConfig || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
+                  :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
                   @update:value="handleChangeEnable(item, 'syncEnable')"
                 />
               </template>
@@ -186,10 +186,16 @@
 
   async function handleChangeEnable(item: IntegrationItem, key: 'syncEnable' | 'qrcodeEnable') {
     try {
-      loading.value = true;
-      await updateConfigSynchronization({ ...item.response, [key]: !item.response[key] });
-      Message.success(item.response[key] ? t('common.disableSuccess') : t('common.enableSuccess'));
-      initSyncList();
+      updateConfigSynchronization({ ...item.response, [key]: !item.response[key] })
+        .then(() => {
+          Message.success(item.response[key] ? t('common.disableSuccess') : t('common.enableSuccess'));
+          initSyncList();
+        })
+        .catch(() => {
+          item.response.verify = false;
+          item.response.qrcodeEnable = true;
+          item.response.syncEnable = true;
+        });
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
@@ -198,13 +204,15 @@
 
   async function testLink(item: IntegrationItem) {
     try {
-      const res = await testConfigSynchronization(item.response);
-      if (!res) {
-        item.response.verify = res;
-        item.response.qrcodeEnable = true;
-        item.response.syncEnable = true;
-      }
-      Message.success(t('org.testConnectionSuccess'));
+      testConfigSynchronization(item.response)
+        .then(() => {
+          Message.success(t('org.testConnectionSuccess'));
+        })
+        .catch(() => {
+          item.response.verify = false;
+          item.response.qrcodeEnable = true;
+          item.response.syncEnable = true;
+        });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

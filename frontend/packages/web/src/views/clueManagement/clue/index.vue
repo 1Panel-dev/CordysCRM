@@ -347,20 +347,16 @@
               CrmOperationButton,
               {
                 groupList: [
-                  ...([StageResultEnum.FAIL, StageResultEnum.SUCCESS].includes(row.stage as StageResultEnum)
-                    ? []
-                    : [
-                        {
-                          label: t('common.edit'),
-                          key: 'edit',
-                          permission: ['CLUE_MANAGEMENT:UPDATE'],
-                        },
-                        {
-                          label: t('opportunity.followUp'),
-                          key: 'followUp',
-                          permission: ['CLUE_MANAGEMENT:UPDATE'],
-                        },
-                      ]),
+                  {
+                    label: t('common.edit'),
+                    key: 'edit',
+                    permission: ['CLUE_MANAGEMENT:UPDATE'],
+                  },
+                  {
+                    label: t('opportunity.followUp'),
+                    key: 'followUp',
+                    permission: ['CLUE_MANAGEMENT:UPDATE'],
+                  },
                   {
                     label: t('common.transfer'),
                     key: 'transfer',
