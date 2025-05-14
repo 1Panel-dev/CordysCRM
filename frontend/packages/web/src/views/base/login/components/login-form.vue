@@ -270,10 +270,12 @@
         showQrCodeTab.value = true;
         activeName.value = getLoginType() || 'WE_COM';
       }
-      orgOptions.value = res.map((e) => ({
-        label: e.name,
-        value: e.id,
-      }));
+      orgOptions.value = res
+        .filter((e) => e.name === 'true')
+        .map((e) => ({
+          label: e.name,
+          value: e.id,
+        }));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

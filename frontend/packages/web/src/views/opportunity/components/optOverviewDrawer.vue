@@ -48,7 +48,7 @@
         :follow-api-key="FormDesignKeyEnum.BUSINESS"
         :source-id="sourceId"
         :initial-source-name="initialSourceName"
-        :show-add="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+        :show-add="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']) && currentStatus !== StageResultEnum.SUCCESS"
         :show-action="showAction && hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
       />
     </template>
