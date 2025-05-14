@@ -10,7 +10,7 @@
         class="flex-1 !p-0"
         @click="goDuplicateCheck"
       />
-      <van-badge v-permission="['SYSTEM_NOTICE:READ']" :dot="showBadge">
+      <van-badge :dot="showBadge">
         <CrmIcon name="iconicon_notification" width="21px" height="21px" @click="goMineMessage" />
       </van-badge>
     </div>
@@ -38,7 +38,7 @@
         <template #title>
           <div class="font-semibold text-[var(--text-n1)]">{{ t('common.message') }}</div>
         </template>
-        <template v-if="hasAnyPermission(['SYSTEM_NOTICE:READ'])" #value>
+        <template #value>
           <div class="text-[var(--text-n4)]" @click="goMineMessage">
             {{ t('common.checkMore') }}
           </div>

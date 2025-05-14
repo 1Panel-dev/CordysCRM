@@ -67,7 +67,7 @@
               </div>
             </div>
             <n-button
-              v-if="item.status === SystemMessageStatusEnum.UNREAD && hasAnyPermission(['SYSTEM_NOTICE:UPDATE'])"
+              v-if="item.status === SystemMessageStatusEnum.UNREAD"
               type="primary"
               text
               class="flex-shrink-0"

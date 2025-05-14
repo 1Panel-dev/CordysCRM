@@ -22,7 +22,7 @@
         </van-badge>
       </div>
       <div
-        v-if="props.item.status === SystemMessageStatusEnum.UNREAD && hasAnyPermission(['SYSTEM_NOTICE:UPDATE'])"
+        v-if="props.item.status === SystemMessageStatusEnum.UNREAD"
         class="text-[var(--primary-8)]"
         @click="setMessageRead"
       >
