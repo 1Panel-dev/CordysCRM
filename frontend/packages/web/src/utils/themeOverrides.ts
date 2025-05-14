@@ -290,6 +290,9 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       buttonWidthMedium: '15px',
       buttonWidthLarge: '18px',
     },
+    Menu: {
+      itemTextColor: getLessVariableValue('--text-n1'),
+    },
   };
 }
 

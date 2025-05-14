@@ -83,7 +83,7 @@
         <tab-qr-code :tab-name="activeName ? activeName : orgOptions[0].value"></tab-qr-code>
       </div>
       <template v-if="hasMoreLoginWay">
-        <n-divider orientation="center" type="dashed" class="!m-0 !mb-2">
+        <n-divider orientation="center" dashed class="!m-0 !mb-2">
           <span class="text-[12px] font-normal text-[var(--text-n4)]">{{ t('login.form.modeLoginMethods') }}</span>
         </n-divider>
         <div class="mt-4 flex items-center justify-center">
@@ -92,13 +92,13 @@
             class="loginType"
             @click="switchLoginType('QR_CODE')"
           >
-            <CrmIcon type="iconicon_scan" class="text-[var(--primary-8)]" />
+            <CrmIcon type="iconicon_scan" class="text-[var(--primary-8)]" :size="20" />
           </div>
           <div v-if="userInfo.authenticate !== 'LDAP' && isShowLDAP" class="loginType" @click="switchLoginType('LDAP')">
             <span class="type-text text-[10px]">LDAP</span>
           </div>
           <div v-if="userInfo.authenticate !== 'LOCAL'" class="loginType" @click="switchLoginType('LOCAL')">
-            <CrmSvg width="18px" height="18px" name="userLogin"></CrmSvg>
+            <CrmIcon type="iconicon_that_person" class="text-[var(--primary-8)]" :size="20" />
           </div>
           <div v-if="isShowOIDC && userInfo.authenticate !== 'OIDC'" class="loginType" @click="redirectAuth('OIDC')">
             <span class="type-text text-[10px]">OIDC</span>

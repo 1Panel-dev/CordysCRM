@@ -106,9 +106,9 @@
   function renderIcon(type: string) {
     return () =>
       h(CrmIcon, {
-        size: 16,
+        size: 18,
         type,
-        class: 'text-[var(--text-n2)]',
+        class: 'text-[var(--text-n1)]',
       });
   }
 
@@ -239,11 +239,18 @@
 
 <style lang="less">
   .crm-layout-sider {
+    font-weight: 500;
     .n-scrollbar-content {
       @apply h-full;
     }
     .n-divider:not(.n-divider--vertical) {
       margin: 12px 0;
+    }
+  }
+  .n-menu-item-content--selected,
+  .n-menu-item-content--child-active {
+    .n-icon {
+      color: var(--n-item-text-color-active) !important;
     }
   }
   .personal-menu {

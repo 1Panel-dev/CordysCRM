@@ -134,9 +134,6 @@
 
       padding: 0 24px 16px;
     }
-    &:hover {
-      box-shadow: @box-middle-shadow;
-    }
   }
   .n-card--no-padding {
     .n-card__content {

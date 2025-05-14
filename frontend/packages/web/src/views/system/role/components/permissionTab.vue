@@ -2,8 +2,8 @@
   <div class="relative flex h-full flex-col">
     <n-scrollbar
       x-scrollable
-      class="flex-1 px-[24px]"
-      :content-style="{ 'min-width': '600px', 'width': '100%', 'height': '100%', 'min-height': '500px' }"
+      class="flex-1 px-[24px] pb-[24px]"
+      :content-style="{ 'min-width': '600px', 'width': '100%' }"
     >
       <div class="group-title">{{ t('role.dataPermission') }}</div>
       <div class="mb-[24px] flex h-[32px] items-center gap-[8px]">
@@ -40,7 +40,6 @@
         :pagination="false"
         :loading="loading"
         :scroll-x="500"
-        :max-height="500"
       />
     </n-scrollbar>
     <div class="tab-footer">
