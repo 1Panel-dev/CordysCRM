@@ -7,7 +7,6 @@
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
       :action-config="actionConfig"
-      :columns="tableColumns"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -349,6 +348,9 @@
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER,
+    disabledSelection: (row: any) => {
+      return row.collaborationType === 'READ_ONLY';
+    },
     operationColumn: {
       key: 'operation',
       width: 200,
@@ -396,12 +398,6 @@
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
-  const tableColumns = computed(() => {
-    if (activeTab.value === CustomerSearchTypeEnum.VISIBLE) {
-      return propsRes.value.columns.filter((e) => e.type !== 'selection');
-    }
-    return propsRes.value.columns;
-  });
 
   const department = ref<DeptUserTreeNode[]>([]);
   async function initDepartList() {
