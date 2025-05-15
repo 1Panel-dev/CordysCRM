@@ -1,4 +1,4 @@
-package io.cordys.crm.customer.constants;
+package io.cordys.crm.system.constants;
 
 import org.apache.commons.lang3.StringUtils;
 

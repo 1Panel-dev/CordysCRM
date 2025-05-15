@@ -1,6 +1,6 @@
 package io.cordys.crm.system.dto;
 
-import io.cordys.crm.customer.constants.RecycleConditionOperator;
+import io.cordys.crm.system.constants.RecycleConditionOperator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;

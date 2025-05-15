@@ -1,4 +1,4 @@
-package io.cordys.crm.customer.constants;
+package io.cordys.crm.system.constants;
 
 public enum RecycleConditionOperator {
 

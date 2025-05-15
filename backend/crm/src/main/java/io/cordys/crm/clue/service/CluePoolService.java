@@ -26,8 +26,8 @@ import io.cordys.crm.clue.dto.request.CluePoolAddRequest;
 import io.cordys.crm.clue.dto.request.CluePoolUpdateRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtCluePoolMapper;
-import io.cordys.crm.customer.constants.RecycleConditionColumnKey;
-import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.system.constants.RecycleConditionColumnKey;
+import io.cordys.crm.system.constants.RecycleConditionScopeKey;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.service.UserExtendService;
@@ -391,7 +391,13 @@ public class CluePoolService {
      */
     private boolean matchTime(RuleConditionDTO condition, Clue clue) {
         if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME)) {
-            return RecycleConditionUtils.matchTime(condition, clue.getCreateTime()) || RecycleConditionUtils.matchTime(condition, clue.getCollectionTime());
+            if (condition.getScope().contains(RecycleConditionScopeKey.CREATED)) {
+                return RecycleConditionUtils.matchTime(condition, clue.getCreateTime());
+            } else if (condition.getScope().contains(RecycleConditionScopeKey.PICKED)) {
+                return RecycleConditionUtils.matchTime(condition, clue.getCollectionTime());
+            } else {
+                return RecycleConditionUtils.matchTime(condition, clue.getCreateTime()) || RecycleConditionUtils.matchTime(condition, clue.getCollectionTime());
+            }
         } else {
             return RecycleConditionUtils.matchTime(condition, clue.getFollowTime());
         }

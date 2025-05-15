@@ -5,7 +5,6 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
-import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.condition.CombineSearch;
 import io.cordys.common.exception.GenericException;
@@ -14,7 +13,7 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
-import io.cordys.crm.customer.constants.RecycleConditionColumnKey;
+import io.cordys.crm.system.constants.RecycleConditionColumnKey;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
@@ -26,6 +25,7 @@ import io.cordys.crm.customer.dto.request.CustomerPoolAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerPoolUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
+import io.cordys.crm.system.constants.RecycleConditionScopeKey;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.service.UserExtendService;
@@ -352,7 +352,13 @@ public class CustomerPoolService {
 	 */
 	private boolean matchTime(RuleConditionDTO condition, Customer customer) {
 		if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME)) {
-			return RecycleConditionUtils.matchTime(condition, customer.getCreateTime()) || RecycleConditionUtils.matchTime(condition, customer.getCollectionTime());
+			if (condition.getScope().contains(RecycleConditionScopeKey.CREATED)) {
+				return RecycleConditionUtils.matchTime(condition, customer.getCreateTime());
+			} else if (condition.getScope().contains(RecycleConditionScopeKey.PICKED)) {
+				return RecycleConditionUtils.matchTime(condition, customer.getCollectionTime());
+			} else {
+				return RecycleConditionUtils.matchTime(condition, customer.getCreateTime()) || RecycleConditionUtils.matchTime(condition, customer.getCollectionTime());
+			}
 		} else {
 			return RecycleConditionUtils.matchTime(condition, customer.getFollowTime());
 		}
