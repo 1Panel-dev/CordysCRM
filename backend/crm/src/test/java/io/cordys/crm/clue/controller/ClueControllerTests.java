@@ -4,6 +4,7 @@ import io.cordys.common.constants.BusinessSearchType;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
@@ -41,6 +42,7 @@ class ClueControllerTests extends BaseTest {
     protected static final String MODULE_FORM = "module/form";
     protected static final String STATUS_UPDATE = "status/update";
     protected static final String BATCH_TRANSFER = "batch/transfer";
+    protected static final String TAB = "tab";
     protected static final String BATCH_TO_POOL = "batch/to-pool";
     protected static final String TRANSITION_CUSTOMER = "transition/customer";
 
@@ -276,6 +278,18 @@ class ClueControllerTests extends BaseTest {
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_UPDATE, BATCH_TRANSFER, request);
     }
 
+    @Test
+    @Order(4)
+    void testTab() throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(TAB);
+        ResourceTabEnableDTO resultData = getResultData(mvcResult, ResourceTabEnableDTO.class);
+        // 校验请求成功数据
+        Assertions.assertTrue(resultData.getAll());
+        Assertions.assertTrue(resultData.getDept());
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, TAB);
+    }
     @Test
     @Order(5)
     void transitionCustomer() throws Exception {

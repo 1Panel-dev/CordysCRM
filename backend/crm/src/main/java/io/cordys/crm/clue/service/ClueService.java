@@ -11,12 +11,12 @@ import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
-import io.cordys.common.dto.DeptDataPermissionDTO;
-import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.dto.UserDeptDTO;
+import io.cordys.common.dto.*;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
+import io.cordys.common.permission.PermissionCache;
+import io.cordys.common.permission.PermissionUtils;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
@@ -49,10 +49,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -94,6 +91,8 @@ public class ClueService {
     private LogService logService;
     @Resource
     private BaseMapper<CustomerContact> customerContactMapper;
+    @Resource
+    private PermissionCache permissionCache;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -505,5 +504,10 @@ public class ClueService {
         }
         logService.batchAdd(logs);
         return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
+    }
+
+    public ResourceTabEnableDTO getTabEnableConfig(String userId, String organizationId) {
+        List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, organizationId);
+        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CLUE_MANAGEMENT_READ, rolePermissions);
     }
 }

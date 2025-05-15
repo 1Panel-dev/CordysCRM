@@ -11,12 +11,12 @@ import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
-import io.cordys.common.dto.DeptDataPermissionDTO;
-import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.dto.UserDeptDTO;
+import io.cordys.common.dto.*;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
+import io.cordys.common.permission.PermissionCache;
+import io.cordys.common.permission.PermissionUtils;
 import io.cordys.common.response.result.CrmHttpResultCode;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
@@ -89,7 +89,8 @@ public class CustomerService {
     private CommonNoticeSendService commonNoticeSendService;
     @Resource
     private PoolCustomerService poolCustomerService;
-
+    @Resource
+    private PermissionCache permissionCache;
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -498,5 +499,10 @@ public class CustomerService {
     public String getCustomerName(String id) {
         Customer customer = customerMapper.selectByPrimaryKey(id);
         return Optional.ofNullable(customer).map(Customer::getName).orElse(null);
+    }
+
+    public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
+        List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
+        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
     }
 }

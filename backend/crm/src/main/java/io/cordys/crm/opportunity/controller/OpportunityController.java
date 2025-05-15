@@ -3,6 +3,7 @@ package io.cordys.crm.opportunity.controller;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
@@ -106,5 +107,12 @@ public class OpportunityController {
     @Operation(summary = "更新商机阶段")
     public void updateStage(@RequestBody OpportunityStageRequest request) {
         opportunityService.updateStage(request);
+    }
+
+    @GetMapping("/tab")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @Operation(summary = "所有商机和部门商机tab是否显示")
+    public ResourceTabEnableDTO getTabEnableConfig() {
+        return opportunityService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

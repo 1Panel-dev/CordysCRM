@@ -7,9 +7,9 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.JSON;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
@@ -48,6 +48,7 @@ class CustomerControllerTests extends BaseTest {
     protected static final String MODULE_FORM = "module/form";
 
     protected static final String BATCH_TRANSFER = "batch/transfer";
+    protected static final String TAB = "tab";
     protected static final String BATCH_TO_POOL = "batch/to-pool";
     protected static final String OPTION = "option";
 
@@ -290,6 +291,19 @@ class CustomerControllerTests extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, OPTION, request);
+    }
+
+    @Test
+    @Order(4)
+    void testTab() throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(TAB);
+        ResourceTabEnableDTO resultData = getResultData(mvcResult, ResourceTabEnableDTO.class);
+        // 校验请求成功数据
+        Assertions.assertTrue(resultData.getAll());
+        Assertions.assertTrue(resultData.getDept());
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, TAB);
     }
 
     @Test

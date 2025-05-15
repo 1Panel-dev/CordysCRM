@@ -2,16 +2,14 @@ package io.cordys.crm.opportunity.controller;
 
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
@@ -29,6 +27,7 @@ public class OpportunityControllerTests extends BaseTest {
     private static final String BASE_PATH = "/opportunity/";
     protected static final String MODULE_FORM = "module/form";
     protected static final String BATCH_TRANSFER = "batch/transfer";
+    protected static final String TAB = "tab";
     protected static final String UPDATE_STAGE = "update/stage";
 
     private static Opportunity addOpportunity;
@@ -109,6 +108,19 @@ public class OpportunityControllerTests extends BaseTest {
         request.setIds(List.of("1234"));
         request.setOwner("12345");
         this.requestPostWithOk(BATCH_TRANSFER, request);
+    }
+
+    @Test
+    @Order(4)
+    void testTab() throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(TAB);
+        ResourceTabEnableDTO resultData = getResultData(mvcResult, ResourceTabEnableDTO.class);
+        // 校验请求成功数据
+        Assertions.assertTrue(resultData.getAll());
+        Assertions.assertTrue(resultData.getDept());
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, TAB);
     }
 
 

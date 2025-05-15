@@ -3,6 +3,7 @@ package io.cordys.crm.clue.controller;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
@@ -114,5 +115,12 @@ public class ClueController {
     @Operation(summary = "批量移入线索池")
     public BatchAffectResponse batchToPool(@RequestBody @NotEmpty List<String> ids) {
         return clueService.batchToPool(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/tab")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
+    @Operation(summary = "所有线索和部门线索tab是否显示")
+    public ResourceTabEnableDTO getTabEnableConfig() {
+        return clueService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

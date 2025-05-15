@@ -7,6 +7,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
@@ -122,5 +123,12 @@ public class CustomerController {
     public Pager<List<OptionDTO>> getCustomerOptions(@Validated @RequestBody BasePageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, customerService.getCustomerOptions(request.getKeyword(), OrganizationContext.getOrganizationId()));
+    }
+
+    @GetMapping("/tab")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
+    @Operation(summary = "所有客户和部门客户tab是否显示")
+    public ResourceTabEnableDTO getTabEnableConfig() {
+        return customerService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
