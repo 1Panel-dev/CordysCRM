@@ -10,7 +10,7 @@
     @confirm="handleAddConfirm"
   >
     <div class="flex h-full w-full flex-col gap-[16px]">
-      <div v-if="addMemberTypes.length > 0" class="flex items-center gap-[16px]">
+      <div v-if="addMemberTypes.length > 1" class="flex items-center gap-[16px]">
         <div class="whitespace-nowrap">{{ t('role.addMemberType') }}</div>
         <n-tabs
           v-model:value="addMemberType"
@@ -37,8 +37,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NIcon, NSkeleton, NTabPane, NTabs, NTooltip, NTransfer, NTree, TransferRenderSourceList } from 'naive-ui';
-  import { FolderOutline } from '@vicons/ionicons5';
+  import { NSkeleton, NTabPane, NTabs, NTooltip, NTransfer, NTree, TransferRenderSourceList } from 'naive-ui';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
@@ -48,6 +47,7 @@
   import { DeptTreeNode, RoleItem } from '@lib/shared/models/system/role';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import { Option } from '@/components/business/crm-select-user-drawer/type';
   import roleTreeNodePrefix from './roleTreeNodePrefix.vue';
@@ -151,14 +151,13 @@
     addMembers.value = [];
   }
 
-  const options = computed(() => {
+  const options = computed<Record<string, any>[]>(() => {
     if ([MemberSelectTypeEnum.ORG, MemberSelectTypeEnum.ONLY_ORG].includes(addMemberType.value)) {
       return mapTree(departmentOptions.value, (item) => {
         return {
           label: item.name,
           value: item.id,
-          disabled:
-            !item.enabled || props.disabledList?.includes(item.id) || props.disabledNodeTypes?.includes(item.nodeType),
+          disabled: !item.enabled,
           ...item,
           children: item.children?.length ? item.children : undefined,
         };
@@ -169,8 +168,7 @@
         return {
           label: item.name,
           value: item.id,
-          disabled:
-            !item.enabled || props.disabledList?.includes(item.id) || props.disabledNodeTypes?.includes(item.nodeType),
+          disabled: !item.enabled,
           ...item,
           children: item.children?.length ? item.children : undefined,
         };
@@ -180,7 +178,7 @@
       return {
         label: item.name,
         value: item.id,
-        disabled: !item.enabled || props.disabledList?.includes(item.id),
+        disabled: !item.enabled,
         ...item,
       };
     });
@@ -211,14 +209,32 @@
         pattern,
         selectedKeys: addMembers.value,
         showIrrelevantNodes: false,
-        defaultExpandAll: true,
+        defaultExpandedKeys: [
+          options.value[0]?.value,
+          ...(options.value[0]?.children || []).map((item: Record<string, any>) => item.value),
+        ],
+        overrideDefaultNodeClickBehavior: ({ option }: { option: CrmTreeNodeData }) => {
+          if (!props.disabledList?.includes(option.id) && !props.disabledNodeTypes?.includes(option.nodeType)) {
+            return 'toggleSelect';
+          }
+          return 'toggleExpand';
+        },
         renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
           if (node.option.internal) {
             return h(roleTreeNodePrefix);
           }
+          if (node.option.nodeType === DeptNodeTypeEnum.ORG && node.option.parentId === 'NONE') {
+            return h(CrmIcon, {
+              type: 'iconicon_enterprise',
+              class: 'text-[var(--primary-8)]',
+              size: 16,
+            });
+          }
           if ([DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE].includes(node.option.nodeType)) {
-            return h(NIcon, null, {
-              default: () => h(FolderOutline),
+            return h(CrmIcon, {
+              type: 'iconicon_file1',
+              class: 'text-[var(--text-n4)]',
+              size: 16,
             });
           }
         },
@@ -306,6 +322,50 @@
     @apply flex-1;
     :deep(.n-transfer-list) {
       @apply h-full;
+      .n-transfer-list-header {
+        padding: 16px;
+        .n-transfer-list-header__button {
+          padding: 2px 8px;
+          height: auto;
+          .n-button__content {
+            line-height: 20px;
+          }
+        }
+        .n-transfer-list-header__extra {
+          font-size: 14px;
+        }
+      }
+      .n-transfer-list-body {
+        padding: 0 16px;
+      }
+      .n-transfer-filter {
+        padding: 0 0 16px;
+        .n-input {
+          padding: 4px 8px;
+          font-size: 14px;
+          line-height: 22px;
+        }
+      }
+      .n-tree-node-wrapper {
+        padding: 1px 0;
+        .n-tree-node {
+          padding: 5px 0;
+        }
+        .n-tree-node--selected {
+          .n-tree-node-content__text {
+            color: var(--primary-8);
+          }
+        }
+      }
+      .n-transfer-list-item--target {
+        margin-bottom: 8px;
+        .n-transfer-list-item__background {
+          background-color: var(--primary-7) !important;
+        }
+        .n-transfer-list-item__close {
+          opacity: 1 !important;
+        }
+      }
     }
   }
   .addMemberTransfer--single {
