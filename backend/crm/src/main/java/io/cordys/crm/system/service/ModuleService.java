@@ -46,6 +46,8 @@ public class ModuleService {
 	private ExtUserRoleMapper extUserRoleMapper;
 	@Resource
 	private RoleService roleService;
+	@Resource
+	private DepartmentService departmentService;
 
 	private static final String DEFAULT_ORGANIZATION_ID = "100001";
 
@@ -136,6 +138,7 @@ public class ModuleService {
 	public List<DeptUserTreeNode> getDeptUserTree(String orgId) {
 		List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
 		List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForOrg(orgId);
+		userNodes = departmentService.sortByCommander(orgId, userNodes);
 		userNodes.addAll(treeNodes);
 		return BaseTreeNode.buildTree(userNodes);
 	}

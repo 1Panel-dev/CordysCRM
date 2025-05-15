@@ -11,10 +11,7 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.SubListUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.domain.Department;
-import io.cordys.crm.system.domain.Role;
-import io.cordys.crm.system.domain.UserExtend;
-import io.cordys.crm.system.domain.UserRole;
+import io.cordys.crm.system.domain.*;
 import io.cordys.crm.system.dto.convert.UserRoleConvert;
 import io.cordys.crm.system.dto.request.RoleUserPageRequest;
 import io.cordys.crm.system.dto.request.RoleUserRelateRequest;
@@ -66,6 +63,8 @@ public class UserRoleService {
     private BaseService baseService;
     @Resource
     private LogService logService;
+    @Resource
+    private DepartmentService departmentService;
 
     public void delete(String id) {
         userRoleMapper.deleteByPrimaryKey(id);
@@ -135,6 +134,9 @@ public class UserRoleService {
                 userNode.setEnabled(false);
             }
         });
+
+        userNodes = departmentService.sortByCommander(orgId, userNodes);
+
         userNodes.addAll(treeNodes);
         return BaseTreeNode.buildTree(userNodes);
     }

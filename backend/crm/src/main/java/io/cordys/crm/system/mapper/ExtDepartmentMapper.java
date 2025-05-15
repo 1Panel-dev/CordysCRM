@@ -49,4 +49,6 @@ public interface ExtDepartmentMapper {
     List<DepartmentCommander> getDepartmentCommander(@Param("userIds") List<String> userIds);
 
     void deleteDepartmentByIds(@Param("ids") List<String> ids);
+
+    List<DepartmentCommander> selectByOrgId(@Param("orgId")  String orgId);
 }

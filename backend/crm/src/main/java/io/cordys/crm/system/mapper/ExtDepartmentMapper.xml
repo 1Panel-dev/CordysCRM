@@ -186,6 +186,12 @@
             #{id}
         </foreach>
     </select>
+    <select id="selectByOrgId" resultType="io.cordys.crm.system.domain.DepartmentCommander">
+        select user_id, department_id
+        from sys_department_commander sdc
+        join sys_department sd on sdc.department_id = sd.id
+        where sd.organization_id = #{orgId}
+    </select>
 
     <delete id="deleteDepartmentByIds">
         DELETE FROM sys_department WHERE id in

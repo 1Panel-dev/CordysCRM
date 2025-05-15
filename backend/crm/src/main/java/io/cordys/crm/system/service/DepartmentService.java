@@ -8,7 +8,9 @@ import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.dto.BaseTreeNode;
+import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.dto.NodeSortDTO;
+import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -39,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 
 @Service("departmentService")
@@ -535,5 +538,34 @@ public class DepartmentService extends MoveNodeService {
     public String getDepartmentName(String id) {
         Department department = departmentMapper.selectByPrimaryKey(id);
         return Optional.ofNullable(department).map(Department::getName).orElse(null);
+    }
+
+    public List<DepartmentCommander> selectByOrgId(String orgId) {
+        return extDepartmentMapper.selectByOrgId(orgId);
+    }
+
+    /**
+     * 按照部门负责人优先排序
+     * 并且设置上负责人标识
+     * @param orgId
+     * @param userNodes
+     * @return
+     */
+    public List<DeptUserTreeNode> sortByCommander(String orgId, List<DeptUserTreeNode> userNodes) {
+        Set<String> commanders = selectByOrgId(orgId)
+                .stream()
+                .map(DepartmentCommander::getUserId)
+                .collect(Collectors.toSet());
+
+        userNodes = userNodes.stream()
+                .sorted(Comparator.comparing(userNode -> {
+                    if (commanders.contains(userNode.getId())) {
+                        userNode.setCommander(true);
+                        return 0;
+                    }
+                    return 1;
+                }))
+                .collect(Collectors.toList());
+        return userNodes;
     }
 }

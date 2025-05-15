@@ -17,4 +17,7 @@ public class DeptUserTreeNode extends BaseTreeNode {
 
     @Schema(description = "是否启用")
     private Boolean enabled = true;
+
+    @Schema(description = "是否部门负责人")
+    private Boolean commander = false;
 }
