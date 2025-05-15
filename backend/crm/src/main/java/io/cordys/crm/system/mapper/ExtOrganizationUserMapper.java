@@ -13,9 +13,7 @@ import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.security.UserDTO;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author jianxing
@@ -25,7 +23,7 @@ public interface ExtOrganizationUserMapper {
 
     int countUserByDepartmentIds(@Param("departmentIds") List<String> departmentIds, @Param("orgId") String orgId);
 
-    List<UserPageResponse> list(@Param("request") UserPageRequest request);
+    List<UserPageResponse> list(@Param("request") UserPageRequest request, @Param("orderByClause") String orderByClause);
 
     void enable(@Param("request") UserBatchEnableRequest request, @Param("operatorId") String operatorId, @Param("time") long time);
 

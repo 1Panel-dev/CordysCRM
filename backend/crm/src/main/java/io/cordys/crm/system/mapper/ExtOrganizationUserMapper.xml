@@ -38,6 +38,13 @@
         FROM
             sys_organization_user sou
                 INNER JOIN sys_user su ON sou.user_id = su.id
+        left JOIN (
+        SELECT
+        user_id,
+        1 AS is_commander
+        FROM
+        sys_department_commander
+        ) uc ON su.id = uc.user_id
         where sou.department_id in
         <foreach collection="request.departmentIds" item="departmentId" open="(" separator="," close=")">
             #{departmentId}
@@ -65,15 +72,19 @@
                 order by
                 <choose>
                     <when test="sortName == 'user_name'">
-                        su.name ${sortType}
+                        su.name ${sortType},
                     </when>
                     <otherwise>
-                        sou.${sortName} ${sortType}
+                        sou.${sortName} ${sortType},
                     </otherwise>
                 </choose>
+                ${orderByClause},
+                is_commander DESC
             </when>
             <otherwise>
                 order by
+                ${orderByClause},
+                is_commander DESC,
                 sou.create_time desc
             </otherwise>
         </choose>

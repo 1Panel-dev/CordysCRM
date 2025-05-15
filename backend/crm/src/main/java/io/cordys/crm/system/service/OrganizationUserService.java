@@ -106,9 +106,21 @@ public class OrganizationUserService {
      * @return
      */
     public List<UserPageResponse> list(UserPageRequest request) {
-        List<UserPageResponse> list = extOrganizationUserMapper.list(request);
+        String orderByClause = buildOrderByFieldClause(request.getDepartmentIds());
+        List<UserPageResponse> list = extOrganizationUserMapper.list(request, orderByClause);
         handleData(list, request.getDepartmentIds().getFirst());
         return list;
+    }
+
+    private String buildOrderByFieldClause(List<String> departmentIds) {
+        if (departmentIds == null || departmentIds.isEmpty()) {
+            return "1"; // 默认排序，如果无部门ID传入
+        }
+        StringJoiner sj = new StringJoiner(",", "FIELD(department_id, ", ")");
+        for (String deptId : departmentIds) {
+            sj.add("'" + deptId + "'");
+        }
+        return sj.toString();
     }
 
 
