@@ -7,7 +7,6 @@ import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
-import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
@@ -48,8 +47,6 @@ public class ModuleFieldController {
 	private ModuleService moduleService;
 	@Resource
 	private ModuleFieldService moduleFieldService;
-	@Resource
-	private DataScopeService dataScopeService;
 	@Resource
 	private CustomerService customerService;
 	@Resource

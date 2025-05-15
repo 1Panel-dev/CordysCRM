@@ -136,8 +136,8 @@ public class ModuleService {
 	public List<DeptUserTreeNode> getDeptUserTree(String orgId) {
 		List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
 		List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForOrg(orgId);
-		treeNodes.addAll(userNodes);
-		return BaseTreeNode.buildTree(treeNodes);
+		userNodes.addAll(treeNodes);
+		return BaseTreeNode.buildTree(userNodes);
 	}
 
 	/**
