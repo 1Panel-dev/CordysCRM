@@ -122,7 +122,6 @@
 
 <script lang="ts" setup>
   import { computed, ref } from 'vue';
-  import { useStorage } from '@vueuse/core';
   import { FormInst, NButton, NDivider, NForm, NFormItem, NInput, NSpin, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -130,7 +129,6 @@
   import { encrypted } from '@lib/shared/method/index';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
-  import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import TabQrCode from './tabQrCode.vue';
 
   // import { getAuthDetailByType } from '@/api/modules/setting/config';
@@ -175,12 +173,6 @@
 
   const { loading, setLoading } = useLoading();
 
-  const loginConfig = useStorage('login-config', {
-    rememberPassword: true,
-    username: '',
-    password: '',
-  });
-
   const userInfo = ref<{
     authenticate: string;
     username: string;
@@ -224,10 +216,6 @@
           setLoginExpires();
           setLoginType(userInfo.value.authenticate);
           Message.success(t('login.form.login.success'));
-          const { rememberPassword } = loginConfig.value;
-          const { username, password } = userInfo.value;
-          loginConfig.value.username = rememberPassword ? username : '';
-          loginConfig.value.password = rememberPassword ? password : '';
           goUserHasPermissionPage();
         } catch (err) {
           // eslint-disable-next-line no-console
@@ -293,9 +281,9 @@
     }
     if (!res.enable) {
       Message.error(t('login.auth_not_enable'));
-      return;
+      // return;
     }
-    const authId = res.id;
+    // const authId = res.id;
     // openModal({
     //   type: 'info',
     //   title: t('common.auth_redirect_tip'),

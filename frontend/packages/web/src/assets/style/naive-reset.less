@@ -399,7 +399,11 @@
 }
 
 // 下拉选择框
-.n-base-selection {
+.n-base-selection,
+.n-tree-select,
+.n-cascader {
+  --n-border-focus: none !important;
+  --n-box-shadow-focus: none !important;
   .n-base-selection-tags {
     padding-left: 4px;
   }
