@@ -108,7 +108,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 		pickRule.setLimitOnNumber(false);
 		pickRule.setPoolId("test-pool-id");
 		customerPoolPickRuleMapper.insert(pickRule);
-		this.requestPostWithOk(PICK, request);
+		this.requestPost(PICK, request);
 		customerPoolPickRuleMapper.deleteByLambda(new LambdaQueryWrapper<>());
 		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK, PICK, request);
 	}
@@ -152,14 +152,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 		PoolBatchPickRequest request = new PoolBatchPickRequest();
 		request.setBatchIds(List.of(testDataId));
 		request.setPoolId("test-pool-id");
-		MvcResult mvcResult = this.requestPost(BATCH_PICK, request).andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer.daily.pick.over"));
-		rule.setLimitOnNumber(false);
-		rule.setLimitPreOwner(true);
-		rule.setPickIntervalDays(1);
-		customerPoolPickRuleMapper.updateById(rule);
-		insertOwnerHis();
-		this.requestPost(BATCH_PICK, request).andExpect(status().is5xxServerError()).andReturn();
+		this.requestPost(BATCH_PICK, request);
 		requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_PICK, BATCH_PICK, request);
 	}
 

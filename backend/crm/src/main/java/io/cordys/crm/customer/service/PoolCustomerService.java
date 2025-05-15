@@ -142,13 +142,17 @@ public class PoolCustomerService {
 	 * @param currentOrgId 当前组织ID
 	 */
 	public void pick(PoolCustomerPickRequest request, String currentUser, String currentOrgId) {
+		CustomerPool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
 		validateCapacity(1, currentUser, currentOrgId);
 		LambdaQueryWrapper<CustomerPoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
 		pickRuleWrapper.eq(CustomerPoolPickRule::getPoolId, request.getPoolId());
 		List<CustomerPoolPickRule> customerPoolPickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
 		CustomerPoolPickRule pickRule = customerPoolPickRules.getFirst();
-		validateDailyPickNum(1, currentUser, pickRule);
-		ownCustomer(request.getCustomerId(), currentUser, pickRule, currentUser, LogType.PICK, currentOrgId);
+		boolean poolAdmin = userExtendService.isPoolAdmin(JSON.parseArray(pool.getOwnerId(), String.class), currentUser, currentOrgId);
+		if (!poolAdmin) {
+			validateDailyPickNum(1, currentUser, pickRule);
+		}
+		ownCustomer(request.getCustomerId(), currentUser, pickRule, currentUser, LogType.PICK, currentOrgId, poolAdmin);
 	}
 
 	/**
@@ -158,7 +162,7 @@ public class PoolCustomerService {
 	 */
 	public void assign(String id, String assignUserId, String currentOrgId, String currentUser) {
 		validateCapacity(1, assignUserId, currentOrgId);
-		ownCustomer(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId);
+		ownCustomer(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false);
 	}
 
 	/**
@@ -183,13 +187,17 @@ public class PoolCustomerService {
 	 * @param currentOrgId 当前组织ID
 	 */
 	public void batchPick(PoolBatchPickRequest request, String currentUser, String currentOrgId) {
+		CustomerPool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
 		validateCapacity(request.getBatchIds().size(), currentUser, currentOrgId);
 		LambdaQueryWrapper<CustomerPoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
 		pickRuleWrapper.eq(CustomerPoolPickRule::getPoolId, request.getPoolId());
 		List<CustomerPoolPickRule> customerPoolPickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
 		CustomerPoolPickRule pickRule = customerPoolPickRules.getFirst();
-		validateDailyPickNum(request.getBatchIds().size(), currentUser, pickRule);
-		request.getBatchIds().forEach(id -> ownCustomer(id, currentUser, pickRule, currentUser, LogType.PICK, currentOrgId));
+		boolean poolAdmin = userExtendService.isPoolAdmin(JSON.parseArray(pool.getOwnerId(), String.class), currentUser, currentOrgId);
+		if (!poolAdmin) {
+			validateDailyPickNum(request.getBatchIds().size(), currentUser, pickRule);
+		}
+		request.getBatchIds().forEach(id -> ownCustomer(id, currentUser, pickRule, currentUser, LogType.PICK, currentOrgId, poolAdmin));
 	}
 
 	/**
@@ -200,7 +208,7 @@ public class PoolCustomerService {
 	 */
 	public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId, String currentUser) {
 		validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
-		request.getBatchIds().forEach(id -> ownCustomer(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId));
+		request.getBatchIds().forEach(id -> ownCustomer(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false));
 	}
 
 	/**
@@ -277,12 +285,13 @@ public class PoolCustomerService {
 	 * @param customerId 客户ID
 	 * @param ownerId 拥有人ID
 	 */
-	private void ownCustomer(String customerId, String ownerId, CustomerPoolPickRule pickRule, String operateUserId, String logType, String currentOrgId) {
+	private void ownCustomer(String customerId, String ownerId, CustomerPoolPickRule pickRule,
+							 String operateUserId, String logType, String currentOrgId, boolean isPoolAdmin) {
 		Customer customer = customerMapper.selectByPrimaryKey(customerId);
 		if (customer == null) {
 			throw new IllegalArgumentException(Translator.get("customer.not.exist"));
 		}
-		if (pickRule != null && pickRule.getLimitPreOwner()) {
+		if (!isPoolAdmin && pickRule != null && pickRule.getLimitPreOwner()) {
 			LambdaQueryWrapper<CustomerOwner> queryWrapper = new LambdaQueryWrapper<>();
 			queryWrapper.eq(CustomerOwner::getCustomerId, customerId);
 			List<CustomerOwner> customerOwners = ownerMapper.selectListByLambda(queryWrapper);

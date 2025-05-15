@@ -228,4 +228,16 @@ public class UserExtendService {
 		ownerIds.retainAll(targetOwnerIds);
 		return !ownerIds.isEmpty();
 	}
+
+	/**
+	 * 是否池子管理员
+	 * @param scopeIds 范围ID集合
+	 * @param ownerId 操作人ID
+	 * @param orgId 组织ID
+	 * @return 是否管理员
+	 */
+	public boolean isPoolAdmin(List<String> scopeIds, String ownerId, String orgId) {
+		List<String> adminIds = getScopeOwnerIds(scopeIds, orgId);
+		return adminIds.contains(ownerId);
+	}
 }
