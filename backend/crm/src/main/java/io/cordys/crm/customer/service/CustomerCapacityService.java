@@ -1,5 +1,10 @@
 package io.cordys.crm.customer.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
@@ -54,6 +59,7 @@ public class CustomerCapacityService {
 		return capacityDTOS;
 	}
 
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
 	public void add(CapacityAddRequest request, String currentUserId, String currentOrgId) {
 		List<CustomerCapacity> oldCapacities = customerCapacityMapper.selectAll(null);
 		List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
@@ -73,8 +79,16 @@ public class CustomerCapacityService {
 		capacity.setUpdateTime(System.currentTimeMillis());
 		capacity.setUpdateUser(currentUserId);
 		customerCapacityMapper.insert(capacity);
+
+		// 添加日志上下文
+		OperationLogContext.setContext(LogContextInfo.builder()
+				.modifiedValue(capacity)
+				.resourceId(capacity.getId())
+				.resourceName(Translator.get("module.customer.capacity.setting"))
+				.build());
 	}
 
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
 	public void update(CapacityUpdateRequest request, String currentUserId, String currentOrgId) {
 		CustomerCapacity oldCapacity = customerCapacityMapper.selectByPrimaryKey(request.getId());
 		if (oldCapacity == null) {
@@ -94,9 +108,21 @@ public class CustomerCapacityService {
 		oldCapacity.setUpdateTime(System.currentTimeMillis());
 		oldCapacity.setUpdateUser(currentUserId);
 		extCustomerCapacityMapper.updateCapacity(oldCapacity);
+
+		OperationLogContext.setContext(
+				LogContextInfo.builder()
+						.resourceId(request.getId())
+						.resourceName(Translator.get("module.customer.capacity.setting"))
+						.originalValue(oldCapacity)
+						.modifiedValue(customerCapacityMapper.selectByPrimaryKey(request.getId()))
+						.build()
+		);
 	}
 
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
 	public void delete(String id) {
 		customerCapacityMapper.deleteByPrimaryKey(id);
+		// 设置操作对象
+		OperationLogContext.setResourceName(Translator.get("module.customer.capacity.setting"));
 	}
 }

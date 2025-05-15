@@ -1,5 +1,10 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
@@ -124,6 +129,7 @@ public class ModuleFormService {
 	 * @param saveParam 保存参数
 	 * @return 表单配置
 	 */
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#saveParam.formKey}")
 	public ModuleFormConfigDTO save(ModuleFormSaveRequest saveParam, String currentUserId, String currentOrgId) {
 		// 处理表单
 		LambdaQueryWrapper<ModuleForm> queryWrapper = new LambdaQueryWrapper<>();
@@ -146,6 +152,14 @@ public class ModuleFormService {
 		moduleFormBlobMapper.updateById(formBlob);
 
 		// 处理字段
+		OperationLogContext.setContext(
+				LogContextInfo.builder()
+						.resourceName(Translator.get(saveParam.getFormKey()) + Translator.get("module.form.setting"))
+						.originalValue(getAllFields(saveParam.getFormKey(), currentOrgId))
+						.modifiedValue(saveParam.getFields())
+						.build()
+		);
+
 		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
 		fieldWrapper.eq(ModuleField::getFormId, form.getId());
 		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);

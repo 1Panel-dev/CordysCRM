@@ -119,7 +119,7 @@ public class CustomerPoolService {
 	 * @param request 请求参数
 	 * @param currentUserId 当前用户ID
 	 */
-	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD, resourceName = "{#request.name}")
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
 	public void add(CustomerPoolAddRequest request, String currentUserId, String organizationId) {
 		CustomerPool pool = new CustomerPool();
 		BeanUtils.copyBean(pool, request);
@@ -160,7 +160,7 @@ public class CustomerPoolService {
 		OperationLogContext.setContext(LogContextInfo.builder()
 				.modifiedValue(pool)
 				.resourceId(pool.getId())
-				.resourceName(pool.getName())
+				.resourceName(Translator.get("module.customer.pool.setting") + ": " + pool.getName())
 				.build());
 	}
 
@@ -200,7 +200,7 @@ public class CustomerPoolService {
 
 		OperationLogContext.setContext(
 				LogContextInfo.builder()
-						.resourceName(originCustomerPool.getName())
+						.resourceName(Translator.get("module.customer.pool.setting") + ": " + originCustomerPool.getName())
 						.originalValue(originCustomerPool)
 						.modifiedValue(customerPoolMapper.selectByPrimaryKey(request.getId()))
 						.build()
@@ -235,14 +235,14 @@ public class CustomerPoolService {
 		customerPoolRecycleRuleMapper.delete(recycleRule);
 
 		// 设置操作对象
-		OperationLogContext.setResourceName(originCustomerPool.getName());
+		OperationLogContext.setResourceName(Translator.get("module.customer.pool.setting") + ": " + originCustomerPool.getName());
 	}
 
 	/**
 	 * 启用/禁用公海池
 	 * @param id 线索池ID
 	 */
-	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#request.id}")
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#id}")
 	public void switchStatus(String id, String currentUserId) {
 		CustomerPool pool = checkPoolExist(id);
 		pool.setEnable(!pool.getEnable());
@@ -252,7 +252,7 @@ public class CustomerPoolService {
 
 		OperationLogContext.setContext(
 				LogContextInfo.builder()
-						.resourceName(pool.getName())
+						.resourceName(Translator.get("module.customer.pool.setting") + ": " + pool.getName())
 						.originalValue(pool)
 						.modifiedValue(customerPoolMapper.selectByPrimaryKey(id))
 						.build()

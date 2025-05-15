@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 模块字段配置;
+ * 模块字段配置
  */
 @Data
 @Builder

@@ -1,5 +1,10 @@
 package io.cordys.crm.opportunity.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.condition.CombineSearch;
 import io.cordys.common.exception.GenericException;
@@ -72,6 +77,7 @@ public class OpportunityRuleService {
 	 * @param currentUserId 当前用户ID
 	 * @param organizationId 当前组织ID
 	 */
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
 	public void add(OpportunityRuleAddRequest request, String currentUserId, String organizationId) {
 		OpportunityRule rule = new OpportunityRule();
 		BeanUtils.copyBean(rule, request);
@@ -85,6 +91,13 @@ public class OpportunityRuleService {
 		rule.setUpdateTime(System.currentTimeMillis());
 		rule.setUpdateUser(currentUserId);
 		opportunityRuleMapper.insert(rule);
+
+		// 添加日志上下文
+		OperationLogContext.setContext(LogContextInfo.builder()
+				.modifiedValue(rule)
+				.resourceId(rule.getId())
+				.resourceName(Translator.get("module.opportunity.rule.setting") + ": " + rule.getName())
+				.build());
 	}
 
 	/**
@@ -93,9 +106,9 @@ public class OpportunityRuleService {
 	 * @param currentUserId 当前用户ID
 	 * @param organizationId 当前组织ID
 	 */
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#request.id}")
 	public void update(OpportunityRuleUpdateRequest request, String currentUserId, String organizationId) {
 		OpportunityRule oldRule = checkRuleExit(request.getId());
-		checkRuleOwner(oldRule, currentUserId);
 		OpportunityRule rule = new OpportunityRule();
 		BeanUtils.copyBean(rule, request);
 		rule.setOrganizationId(organizationId);
@@ -105,6 +118,14 @@ public class OpportunityRuleService {
 		rule.setUpdateTime(System.currentTimeMillis());
 		rule.setUpdateUser(currentUserId);
 		opportunityRuleMapper.updateById(rule);
+
+		OperationLogContext.setContext(
+				LogContextInfo.builder()
+						.resourceName(Translator.get("module.opportunity.rule.setting") + ": " + oldRule.getName())
+						.originalValue(oldRule)
+						.modifiedValue(opportunityRuleMapper.selectByPrimaryKey(request.getId()))
+						.build()
+		);
 	}
 
 	/**
@@ -112,10 +133,13 @@ public class OpportunityRuleService {
 	 * @param id 规则ID
 	 * @param currentUserId 当前用户ID
 	 */
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
 	public void delete(String id, String currentUserId) {
 		OpportunityRule rule = checkRuleExit(id);
-		checkRuleOwner(rule, currentUserId);
 		opportunityRuleMapper.deleteByPrimaryKey(id);
+
+		// 设置操作对象
+		OperationLogContext.setResourceName(Translator.get("module.opportunity.rule.setting") + ": " + rule.getName());
 	}
 
 	/**
@@ -123,13 +147,21 @@ public class OpportunityRuleService {
 	 * @param id 规则ID
 	 * @param currentUserId 当前用户ID
 	 */
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#id}")
 	public void switchStatus(String id, String currentUserId) {
 		OpportunityRule rule = checkRuleExit(id);
-		checkRuleOwner(rule, currentUserId);
 		rule.setEnable(!rule.getEnable());
 		rule.setUpdateUser(currentUserId);
 		rule.setUpdateTime(System.currentTimeMillis());
 		opportunityRuleMapper.updateById(rule);
+
+		OperationLogContext.setContext(
+				LogContextInfo.builder()
+						.resourceName(Translator.get("module.opportunity.rule.setting") + ": " + rule.getName())
+						.originalValue(rule)
+						.modifiedValue(opportunityRuleMapper.selectByPrimaryKey(id))
+						.build()
+		);
 	}
 
 	/**

@@ -1,5 +1,10 @@
 package io.cordys.crm.clue.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
@@ -55,6 +60,7 @@ public class ClueCapacityService {
 		return capacityData;
 	}
 
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
 	public void add(CapacityAddRequest request, String currentUserId, String currentOrgId) {
 		List<ClueCapacity> oldCapacities = clueCapacityMapper.selectAll(null);
 		List<String> targetScopeIds = oldCapacities.stream().flatMap(capacity -> JSON.parseArray(capacity.getScopeId(), String.class).stream())
@@ -73,8 +79,16 @@ public class ClueCapacityService {
 		capacity.setUpdateTime(System.currentTimeMillis());
 		capacity.setUpdateUser(currentUserId);
 		clueCapacityMapper.insert(capacity);
+
+		// 添加日志上下文
+		OperationLogContext.setContext(LogContextInfo.builder()
+				.modifiedValue(capacity)
+				.resourceId(capacity.getId())
+				.resourceName(Translator.get("module.clue.capacity.setting"))
+				.build());
 	}
 
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
 	public void update(CapacityUpdateRequest request, String currentUserId, String currentOrgId) {
 		ClueCapacity oldCapacity = clueCapacityMapper.selectByPrimaryKey(request.getId());
 		if (oldCapacity == null) {
@@ -94,9 +108,21 @@ public class ClueCapacityService {
 		oldCapacity.setUpdateTime(System.currentTimeMillis());
 		oldCapacity.setUpdateUser(currentUserId);
 		extClueCapacityMapper.updateCapacity(oldCapacity);
+
+		OperationLogContext.setContext(
+				LogContextInfo.builder()
+						.resourceId(request.getId())
+						.resourceName(Translator.get("module.clue.capacity.setting"))
+						.originalValue(oldCapacity)
+						.modifiedValue(clueCapacityMapper.selectByPrimaryKey(request.getId()))
+						.build()
+		);
 	}
 
+	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
 	public void delete(String id) {
 		clueCapacityMapper.deleteByPrimaryKey(id);
+		// 设置操作对象
+		OperationLogContext.setResourceName(Translator.get("module.clue.capacity.setting"));
 	}
 }

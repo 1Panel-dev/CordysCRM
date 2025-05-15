@@ -83,9 +83,9 @@ public class ModuleService {
 		modifiedVal.put("module.switch", module.getEnable() ? Translator.get("log.enable.true") : Translator.get("log.enable.false"));
 		OperationLogContext.setContext(LogContextInfo.builder()
 				.originalValue(originalVal)
-				.resourceName(module.getModuleKey())
+				.resourceName(Translator.get(module.getModuleKey()) + "模块开关")
 				.modifiedValue(modifiedVal)
-				.resourceId(id)
+				.resourceId(module.getId())
 				.build());
 	}
 
@@ -117,14 +117,14 @@ public class ModuleService {
 
 		//添加日志上下文
 		Map<String, List<String>> originalVal = new HashMap<>(1);
-		originalVal.put("module.main.nav", beforeKeys);
+		originalVal.put(Translator.get("module.main.nav"), beforeKeys);
 		Map<String, Boolean> modifiedVal = new HashMap<>(1);
-		originalVal.put("module.main.nav", afterKeys);
+		originalVal.put(Translator.get("module.main.nav"), afterKeys);
 		OperationLogContext.setContext(LogContextInfo.builder()
 				.originalValue(originalVal)
-				.resourceName("module.main.nav")
+				.resourceName(Translator.get("module.main.nav"))
 				.modifiedValue(modifiedVal)
-				.resourceId(StringUtils.EMPTY)
+				.resourceId(module.getId())
 				.build());
 	}
 

@@ -122,7 +122,7 @@ public class CluePoolService {
      *
      * @param request 添加参数
      */
-    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD, resourceName = "{#request.name}")
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.ADD)
     public void add(CluePoolAddRequest request, String currentUserId, String currentOrgId) {
         CluePool pool = new CluePool();
         BeanUtils.copyBean(pool, request);
@@ -168,7 +168,7 @@ public class CluePoolService {
         OperationLogContext.setContext(LogContextInfo.builder()
                 .modifiedValue(pool)
                 .resourceId(pool.getId())
-                .resourceName(pool.getName())
+                .resourceName(Translator.get("module.clue.pool.setting") + ": " + pool.getName())
                 .build());
     }
 
@@ -177,7 +177,7 @@ public class CluePoolService {
      *
      * @param request 修改参数
      */
-    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE)
     public void update(CluePoolUpdateRequest request, String currentUserId, String currentOrgId) {
         CluePool originPool = checkPoolExist(request.getId());
 
@@ -214,7 +214,8 @@ public class CluePoolService {
 
         OperationLogContext.setContext(
                 LogContextInfo.builder()
-                        .resourceName(originPool.getName())
+                        .resourceId(pool.getId())
+                        .resourceName(Translator.get("module.clue.pool.setting") + ": " + originPool.getName())
                         .originalValue(originPool)
                         .modifiedValue(cluePoolMapper.selectByPrimaryKey(request.getId()))
                         .build()
@@ -250,7 +251,7 @@ public class CluePoolService {
         recycleRule.setPoolId(id);
         cluePoolRecycleRuleMapper.delete(recycleRule);
         // 设置操作对象
-        OperationLogContext.setResourceName(originPool.getName());
+        OperationLogContext.setResourceName(Translator.get("module.clue.pool.setting") + ": " + originPool.getName());
     }
 
     /**
@@ -258,7 +259,7 @@ public class CluePoolService {
      *
      * @param id 线索池ID
      */
-    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#request.id}")
+    @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.UPDATE, resourceId = "{#id}")
     public void switchStatus(String id, String currentUserId) {
         CluePool pool = checkPoolExist(id);
 
@@ -270,7 +271,7 @@ public class CluePoolService {
 
         OperationLogContext.setContext(
                 LogContextInfo.builder()
-                        .resourceName(pool.getName())
+                        .resourceName(Translator.get("module.clue.pool.setting") + ": " + pool.getName())
                         .originalValue(pool)
                         .modifiedValue(cluePoolMapper.selectByPrimaryKey(id))
                         .build()

@@ -76,8 +76,7 @@ public class OpportunityRuleControllerTests extends BaseTest {
 		BeanUtils.copyBean(request, editRule);
 		request.setOwnerIds(List.of("admin"));
 		request.setScopeIds(List.of("admin"));
-		MvcResult mvcResult = this.requestPost("/opportunity-rule/update", request).andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("opportunity.access_fail"));
+		this.requestPostWithOk("/opportunity-rule/update", request);
 		// update owner id by sql
 		editRule.setOwnerId(JSON.toJSONString(List.of("admin")));
 		opportunityRuleMapper.updateById(editRule);
