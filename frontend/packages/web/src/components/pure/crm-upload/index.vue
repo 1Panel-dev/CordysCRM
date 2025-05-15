@@ -143,7 +143,7 @@
 
   // 判断文件是否重复
   function isFileRepeat(file: CrmFileItem, fileList: CrmFileItem[], allowRepeat: boolean): boolean {
-    if (!allowRepeat) {
+    if (!allowRepeat && props.multiple) {
       const isRepeat = fileList.some((item: CrmFileItem) => item.name === file.name && item.local);
       return isRepeat;
     }

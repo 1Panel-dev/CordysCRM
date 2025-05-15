@@ -61,7 +61,7 @@
                     {{ parseMessageContent(item)?.renameUrl ?? parseMessageContent(item)?.url }}
                   </div>
                 </div>
-                <div :class="`message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
+                <div class="text-[var(--text-n4)]">
                   {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
                 </div>
               </div>

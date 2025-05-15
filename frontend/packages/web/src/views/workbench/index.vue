@@ -16,9 +16,9 @@
         </div>
         <FollowDetail
           :refresh-key="refreshKey"
-          class="mt-[16px] p-0"
+          class="mt-[16px]"
           active-type="followPlan"
-          wrapper-class="h-[calc(100%-38px)] !p-[0px]"
+          wrapper-class="h-[calc(100%-38px)] !p-[0px] !pr-[1px]"
           :virtual-scroll-height="`${
             hasAnyPermission(quickAccessPermissionList) ? 'calc(100vh - 402px)' : 'calc(100vh - 235px)'
           }`"
@@ -138,6 +138,9 @@
     .title-right {
       color: var(--text-n4);
       cursor: pointer;
+      &:hover {
+        color: var(--text-n1);
+      }
     }
   }
   :deep(.crm-message-item) {

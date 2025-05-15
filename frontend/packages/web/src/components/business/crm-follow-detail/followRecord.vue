@@ -9,7 +9,7 @@
     @reach-bottom="emit('reachBottom')"
   >
     <template #item="{ item }">
-      <div class="crm-follow-record-item mr-[8px]">
+      <div class="crm-follow-record-item">
         <div class="crm-follow-time-line">
           <div :class="`crm-follow-time-dot ${getFutureClass(item)}`"></div>
           <div class="crm-follow-time-line"></div>

@@ -433,7 +433,7 @@
       negativeText: t('common.cancel'),
       onPositiveClick: async () => {
         try {
-          await updateUser({ ...row, name: row.userName, enable });
+          await batchToggleStatusUser({ ids: [row.id], enable });
           tableRefreshId.value += 1;
           Message.success(t(enable ? 'common.opened' : 'common.disabled'));
         } catch (error) {

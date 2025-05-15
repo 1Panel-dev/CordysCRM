@@ -38,7 +38,7 @@
       </div>
 
       <div class="message-content p-[24px]">
-        <div class="flex items-center justify-between">
+        <div class="mb-[16px] flex items-center justify-between">
           <div class="flex items-center gap-[8px]">
             <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
             <n-select
@@ -76,7 +76,7 @@
           ref="messageListRef"
           v-model:keyword="keyword"
           :load-params="loadParams"
-          virtual-scroll-height="calc(100vh - 147px)"
+          virtual-scroll-height="calc(100vh - 162px)"
           key-field="id"
           @refresh-count="() => initMessageCount()"
         />
@@ -333,18 +333,18 @@
   .message-wrapper {
     @apply flex h-full;
     .message-count {
-      width: 22%;
+      width: 268px;
       border-right: 1px solid var(--text-n8);
       @apply h-full;
     }
     .message-footer {
       position: absolute;
       bottom: 0;
-      width: 22%;
+      width: 268px;
       height: 56px;
     }
     .message-content {
-      width: 78%;
+      width: calc(100% - 268px);
       @apply h-full;
     }
   }

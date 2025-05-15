@@ -13,6 +13,7 @@ export function getThemeOverrides(): GlobalThemeOverrides {
     common: {
       fontSize: '14px',
       borderRadiusSmall: '4px',
+      borderColor: getLessVariableValue('--text-n7'), // 边框颜色
       primaryColor: getLessVariableValue('--primary-8'), // 主题品牌色
       primaryColorHover: getLessVariableValue('--primary-1'), // 主题hover颜色
       primaryColorPressed: getLessVariableValue('--primary-0'), // 主题按下颜色
@@ -258,12 +259,12 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       tabTextColorActiveSegment: getLessVariableValue('--text-n1'),
       colorSegment: getLessVariableValue('--text-n8'),
       fontWeightStrong: 400,
-      tabPaddingSmallSegment: '0 8px',
-      tabPaddingMediumSegment: '3px 16px',
-      tabPaddingLargeSegment: '6px 24px',
       tabFontSizeSmall: '12px',
       tabFontSizeMedium: '14px',
       tabFontSizeLarge: '16px',
+      tabPaddingSmallSegment: '0 8px',
+      tabPaddingMediumSegment: '3px 16px',
+      tabPaddingLargeSegment: '6px 24px',
     },
     Drawer: {
       bodyPadding: '16px',
@@ -292,6 +293,10 @@ export function getThemeOverrides(): GlobalThemeOverrides {
     },
     Menu: {
       itemTextColor: getLessVariableValue('--text-n1'),
+    },
+    Scrollbar: {
+      color: getLessVariableValue('--text-n8'),
+      colorHover: getLessVariableValue('--text-n8'),
     },
   };
 }

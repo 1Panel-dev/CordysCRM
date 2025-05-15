@@ -24,7 +24,7 @@
         />
       </div>
     </div>
-    <n-spin :show="loading" class="h-full">
+    <n-spin :show="loading" class="h-full pr-[8px]">
       <FollowRecord
         v-model:data="data"
         :virtual-scroll-height="`${props.virtualScrollHeight || '1000px'}`"
@@ -39,7 +39,8 @@
             <n-button
               v-if="props.activeType === 'followPlan' && item.status !== CustomerFollowPlanStatusEnum.CANCELLED"
               type="primary"
-              text
+              quaternary
+              class="text-btn-primary"
               @click="handleCancelPlan(item)"
             >
               {{ t('common.cancelPlan') }}
@@ -53,12 +54,13 @@
                   ))
               "
               type="primary"
-              text
+              class="text-btn-primary"
+              quaternary
               @click="handleEdit(item)"
             >
               {{ t('common.edit') }}
             </n-button>
-            <n-button type="error" text @click="handleDelete(item)">
+            <n-button type="error" class="text-btn-error" quaternary @click="handleDelete(item)">
               {{ t('common.delete') }}
             </n-button>
           </div>
