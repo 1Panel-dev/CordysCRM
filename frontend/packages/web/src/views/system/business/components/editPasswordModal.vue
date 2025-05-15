@@ -94,6 +94,7 @@
   } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { validateEmail } from '@lib/shared/method/validate';
   import { PersonalPassword, SendEmailDTO } from '@lib/shared/models/system/business';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -145,7 +146,7 @@
     return reg.test(value);
   }
   function validatePasswordLength(rule: FormItemRule, value: string): boolean {
-    const reg = /^.{1,64}$/;
+    const reg = /^1[3-9]\d{9}$/;
     return reg.test(value);
   }
   const formRef = ref<FormInst | null>(null);
@@ -224,6 +225,14 @@
     });
   }
   async function sendCode() {
+    if (form.value.email === '') {
+      Message.error(t('system.personal.email.empty'));
+      return;
+    }
+    if (!validateEmail(form.value.email)){
+      Message.error(t('system.personal.email.style'));
+      return;
+    }
     showRetryCode.value = 2;
     const emailData: SendEmailDTO = {
       email: form.value.email,

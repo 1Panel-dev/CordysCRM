@@ -172,6 +172,14 @@ public class PersonalCenterService {
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, operator = "{#userId}")
     public UserResponse updateInfo(PersonalInfoRequest personalInfoRequest, String userId, String orgId) {
         User oldUser = userBaseMapper.selectByPrimaryKey(userId);
+        int countByPhone = extUserMapper.countByPhone(personalInfoRequest.getPhone(), userId);
+        if (countByPhone>0) {
+            throw new GenericException(Translator.get("phone.exist"));
+        }
+        int countByEmail = extUserMapper.countByEmail(personalInfoRequest.getEmail(), userId);
+        if (countByEmail>0) {
+            throw new GenericException(Translator.get("email.exist"));
+        }
         User user = new User();
         user.setId(userId);
         user.setPhone(personalInfoRequest.getPhone());

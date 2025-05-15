@@ -30,14 +30,16 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, useMessage } from 'naive-ui';
+  import { FormInst, FormItemRule, FormRules, NButton, NForm, NFormItem, NInput, useMessage } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { validateEmail, validatePhone } from '@lib/shared/method/validate';
   import { PersonalInfoRequest } from '@lib/shared/models/system/business';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
 
   import { updatePersonalInfo } from '@/api/modules';
+  import useUserStore from '@/store/modules/user';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -60,6 +62,8 @@
     email: '',
   });
 
+  const userStore = useUserStore();
+
   watch(
     () => props.integration,
     (val) => {
@@ -70,9 +74,37 @@
     { deep: true }
   );
 
+  function validatePhoneLength(rule: FormItemRule, value: string): boolean {
+    if (userStore.isAdmin) {
+      return true;
+    }
+    return validatePhone(value);
+  }
+
+  function validateEmailStyle(rule: FormItemRule, value: string): boolean {
+    if (userStore.isAdmin) {
+      return true;
+    }
+    return validateEmail(value);
+  }
+
   const rules: FormRules = {
-    phone: [{ required: true, message: t('common.notNull', { value: `${t('system.personal.phone')} ` }) }],
-    email: [{ required: true, message: t('common.notNull', { value: `${t('system.personal.email')} ` }) }],
+    phone: [
+      { required: true, message: t('common.notNull', { value: `${t('system.personal.phone')} ` }) },
+      {
+        validator: validatePhoneLength,
+        message: t('system.personal.phone.length'),
+        trigger: 'input',
+      },
+    ],
+    email: [
+      { required: true, message: t('common.notNull', { value: `${t('system.personal.email')} ` }) },
+      {
+        validator: validateEmailStyle,
+        message: t('system.personal.email.style'),
+        trigger: 'input',
+      },
+    ],
   };
 
   const formRef = ref<FormInst | null>(null);
