@@ -374,7 +374,7 @@ public class CustomerContactService {
             if (isCustomerOwner) {
                 // 本人数据权限，则过滤协作人的联系人
                 list = list.stream()
-                        .filter(item -> !collaborationUserIds.contains(item.getOwner()) && !StringUtils.equals(item.getOwner(), userId))
+                        .filter(item -> !collaborationUserIds.contains(item.getOwner()) || StringUtils.equals(item.getOwner(), userId))
                         .collect(Collectors.toList());
             } else if (isCollaborationUser) {
                 // 没有权限，只是协作人，则只能看自己的
