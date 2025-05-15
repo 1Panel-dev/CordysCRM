@@ -105,6 +105,18 @@
     });
   }
 
+  async function getCapacity() {
+    try {
+      loading.value = true;
+      form.value.list = await getCapacityPage(props.type);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
   async function handleSave(element: any, done: () => void) {
     try {
       const params = {
@@ -115,10 +127,12 @@
 
       if (element.id) {
         await updateCapacity(params, props.type);
+        done();
       } else {
         await addCapacity(params, props.type);
+        done();
+        await getCapacity();
       }
-      done();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -127,17 +141,9 @@
 
   watch(
     () => visible.value,
-    async (newVal) => {
+    (newVal) => {
       if (newVal) {
-        try {
-          loading.value = true;
-          form.value.list = await getCapacityPage(props.type);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
-        } finally {
-          loading.value = false;
-        }
+        getCapacity();
       } else {
         form.value.list = [];
       }

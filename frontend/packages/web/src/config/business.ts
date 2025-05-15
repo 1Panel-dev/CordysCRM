@@ -78,7 +78,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
         },
       ],
       placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<keyclock>auth/realms/<metersphere>/protocol/openid-connect/auth',
+        url: 'http://<keyclock>auth/realms/<cordys>/protocol/openid-connect/auth',
       }),
     },
     {
@@ -91,7 +91,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
         },
       ],
       placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<keyclock>auth/realms/<metersphere>/protocol/openid-connect/token',
+        url: 'http://<keyclock>auth/realms/<cordys>/protocol/openid-connect/token',
       }),
     },
     {
@@ -104,7 +104,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
         },
       ],
       placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<keyclock>auth/realms/<metersphere>/protocol/openid-connect/userinfo',
+        url: 'http://<keyclock>auth/realms/<cordys>/protocol/openid-connect/userinfo',
       }),
     },
     {
@@ -117,7 +117,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
         },
       ],
       placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<metersphere-endpoint>/sso/callback or http://<metersphere-endpoint>/sso/callback/authld',
+        url: 'http://<cordys-endpoint>/sso/callback or http://<cordys-endpoint>/sso/callback/authld',
       }),
     },
     {
@@ -172,7 +172,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
         },
       ],
       placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<keyclock>auth/realms/<metersphere>/protocol/openid-connect/auth',
+        url: 'http://<keyclock>auth/realms/<cordys>/protocol/openid-connect/auth',
       }),
     },
     {
@@ -185,7 +185,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
         },
       ],
       placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<keyclock>auth/realms/<metersphere>/protocol/openid-connect/token',
+        url: 'http://<keyclock>auth/realms/<cordys>/protocol/openid-connect/token',
       }),
     },
     {
@@ -198,7 +198,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
         },
       ],
       placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<keyclock>auth/realms/<metersphere>/protocol/openid-connect/userinfo',
+        url: 'http://<keyclock>auth/realms/<cordys>/protocol/openid-connect/userinfo',
       }),
     },
     {
@@ -211,7 +211,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
         },
       ],
       placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<metersphere-endpoint>/sso/callback or http://<metersphere-endpoint>/sso/callback/authld',
+        url: 'http://<cordys-endpoint>/sso/callback or http://<cordys-endpoint>/sso/callback/authld',
       }),
     },
     {
@@ -312,7 +312,7 @@ export const authTypeFieldMap: Record<string, AuthField[]> = {
         },
       ],
       placeholder: t('system.business.authenticationSettings.commonUrlPlaceholder', {
-        url: 'http://<metersphere-endpoint>/sso/callback or http://<metersphere-endpoint>/sso/callback/authld',
+        url: 'http://<cordys-endpoint>/sso/callback or http://<cordys-endpoint>/sso/callback/authld',
       }),
     },
   ],
