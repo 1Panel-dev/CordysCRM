@@ -213,7 +213,7 @@
     } else {
       openModal({
         type: 'default',
-        title: t('common.confirmEnableTitle', { name: row.name }),
+        title: t('common.confirmEnableTitle', { name: characterLimit(row.name) }),
         positiveText: t('common.enable'),
         negativeText: t('common.cancel'),
         onPositiveClick: async () => {

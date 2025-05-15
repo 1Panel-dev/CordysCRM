@@ -24,6 +24,7 @@
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import type { AnnouncementItemDetail } from '@lib/shared/models/system/message';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -195,7 +196,7 @@
               key: 'delete',
               popConfirmProps: {
                 loading: deleteLoading.value,
-                title: t('system.message.deleteAnnouncementTitle', { name: row.subject }),
+                title: t('system.message.deleteAnnouncementTitle', { name: characterLimit(row.subject) }),
                 content: t('system.message.deleteAnnouncementContent'),
                 positiveText: t('common.confirm'),
                 iconType: 'error',

@@ -72,7 +72,7 @@
   import { Add } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getGenerateId } from '@lib/shared/method';
+  import { characterLimit, getGenerateId } from '@lib/shared/method';
   import type { RoleItem } from '@lib/shared/models/system/role';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -190,7 +190,7 @@
       case 'delete':
         openModal({
           type: 'error',
-          title: t('common.deleteConfirmTitle', { name: node.name }),
+          title: t('common.deleteConfirmTitle', { name: characterLimit(node.name) }),
           content: t('role.deleteConfirmContent'),
           positiveText: t('common.confirmDelete'),
           negativeText: t('common.cancel'),

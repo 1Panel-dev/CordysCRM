@@ -79,7 +79,7 @@
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { desensitize } from '@lib/shared/method';
+  import { characterLimit, desensitize } from '@lib/shared/method';
   import type { AuthForm, AuthItem } from '@lib/shared/models/system/business';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -186,7 +186,7 @@
   function handleDelete(row: AuthItem) {
     openModal({
       type: 'error',
-      title: t('system.business.authenticationSettings.deleteConfirmTitle', { name: row.name }),
+      title: t('system.business.authenticationSettings.deleteConfirmTitle', { name: characterLimit(row.name) }),
       content: t('common.deleteConfirmContent'),
       positiveText: t('common.confirmDelete'),
       negativeText: t('common.cancel'),
@@ -219,7 +219,7 @@
   function handleEnable(row: AuthItem) {
     openModal({
       type: 'default',
-      title: t('system.business.authenticationSettings.enableConfirmTitle', { name: row.name }),
+      title: t('system.business.authenticationSettings.enableConfirmTitle', { name: characterLimit(row.name) }),
       content: t('system.business.authenticationSettings.enableConfirmContent'),
       positiveText: t('common.confirmStart'),
       negativeText: t('common.cancel'),
@@ -239,7 +239,7 @@
   function handleDisable(row: AuthItem) {
     openModal({
       type: 'default',
-      title: t('system.business.authenticationSettings.disableConfirmTitle', { name: row.name }),
+      title: t('system.business.authenticationSettings.disableConfirmTitle', { name: characterLimit(row.name) }),
       content: t('system.business.authenticationSettings.disableConfirmContent'),
       positiveText: t('common.confirmDisable'),
       negativeText: t('common.cancel'),

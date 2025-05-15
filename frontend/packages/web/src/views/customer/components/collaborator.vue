@@ -78,6 +78,7 @@
 
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -289,7 +290,7 @@
                   danger: true,
                   popConfirmProps: {
                     loading: removeLoading.value,
-                    title: t('common.removeConfirmTitle', { name: row.userName }),
+                    title: t('common.removeConfirmTitle', { name: characterLimit(row.userName) }),
                     content: t('customer.deleteMemberTip'),
                     positiveText: t('common.delete'),
                   },

@@ -42,6 +42,7 @@
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import { DeptUserTreeNode, RoleMemberItem } from '@lib/shared/models/system/role';
 
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -164,7 +165,7 @@
       render: (row) =>
         h(CrmRemoveButton, {
           loading: removeLoading.value,
-          title: t('common.removeConfirmTitle', { name: row.userName }),
+          title: t('common.removeConfirmTitle', { name: characterLimit(row.userName) }),
           content: t('role.removeMemberTip'),
           permission: ['SYSTEM_ROLE:REMOVE_USER'],
           onConfirm: (cancel) => removeMember(row, cancel),
