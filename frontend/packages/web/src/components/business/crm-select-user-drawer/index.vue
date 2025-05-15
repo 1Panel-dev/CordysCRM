@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NIcon, NTabPane, NTabs, NTooltip, NTransfer, NTree, TransferRenderSourceList } from 'naive-ui';
+  import { NIcon, NSkeleton, NTabPane, NTabs, NTooltip, NTransfer, NTree, TransferRenderSourceList } from 'naive-ui';
   import { FolderOutline } from '@vicons/ionicons5';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -199,71 +199,91 @@
   }
 
   const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
-    return h(NTree, {
-      keyField: 'value',
-      blockLine: true,
-      blockNode: true,
-      multiple: props.multiple,
-      selectable: true,
-      data: options.value,
-      pattern,
-      selectedKeys: addMembers.value,
-      showIrrelevantNodes: false,
-      defaultExpandAll: true,
-      renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
-        if (node.option.internal) {
-          return h(roleTreeNodePrefix);
-        }
-        if ([DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE].includes(node.option.nodeType)) {
-          return h(NIcon, null, {
-            default: () => h(FolderOutline),
-          });
-        }
-      },
-      renderLabel({ option }) {
-        return h(
-          NTooltip,
-          {
-            trigger: 'hover',
-            placement: 'top',
-            showArrow: true,
-            content: option.label,
-            delay: 300,
-          },
-          {
-            default: () => {
-              return h('div', {}, { default: () => option.label });
-            },
-            trigger: () => {
-              return h('div', { class: 'one-line-text' }, { default: () => option.label });
-            },
+    return h(
+      NTree,
+      {
+        keyField: 'value',
+        blockLine: true,
+        blockNode: true,
+        multiple: props.multiple,
+        selectable: true,
+        data: options.value,
+        pattern,
+        selectedKeys: addMembers.value,
+        showIrrelevantNodes: false,
+        defaultExpandAll: true,
+        renderPrefix(node: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
+          if (node.option.internal) {
+            return h(roleTreeNodePrefix);
           }
-        );
-      },
-      onUpdateSelectedKeys: (selectedKeys: Array<string | number>, nodes) => {
-        onCheck(selectedKeys);
-        selectedNodes.value = [];
-
-        nodes.forEach((node) => {
-          if (!node) return;
-
-          let type: MemberSelectTypeEnum;
-          if (node.nodeType === DeptNodeTypeEnum.USER || addMemberType.value === MemberSelectTypeEnum.MEMBER) {
-            type = MemberSelectTypeEnum.MEMBER;
-          } else if (node.nodeType === DeptNodeTypeEnum.ROLE) {
-            type = MemberSelectTypeEnum.ROLE;
-          } else {
-            type = MemberSelectTypeEnum.ORG;
+          if ([DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE].includes(node.option.nodeType)) {
+            return h(NIcon, null, {
+              default: () => h(FolderOutline),
+            });
           }
+        },
+        renderLabel({ option }) {
+          return h(
+            NTooltip,
+            {
+              trigger: 'hover',
+              placement: 'top',
+              showArrow: true,
+              content: option.label,
+              delay: 300,
+            },
+            {
+              default: () => {
+                return h('div', {}, { default: () => option.label });
+              },
+              trigger: () => {
+                return h('div', { class: 'one-line-text' }, { default: () => option.label });
+              },
+            }
+          );
+        },
+        onUpdateSelectedKeys: (selectedKeys: Array<string | number>, nodes) => {
+          onCheck(selectedKeys);
+          selectedNodes.value = [];
 
-          selectedNodes.value.push({
-            id: node.value as string,
-            name: node.label as string,
-            scope: type,
+          nodes.forEach((node) => {
+            if (!node) return;
+
+            let type: MemberSelectTypeEnum;
+            if (node.nodeType === DeptNodeTypeEnum.USER || addMemberType.value === MemberSelectTypeEnum.MEMBER) {
+              type = MemberSelectTypeEnum.MEMBER;
+            } else if (node.nodeType === DeptNodeTypeEnum.ROLE) {
+              type = MemberSelectTypeEnum.ROLE;
+            } else {
+              type = MemberSelectTypeEnum.ORG;
+            }
+
+            selectedNodes.value.push({
+              id: node.value as string,
+              name: node.label as string,
+              scope: type,
+            });
           });
-        });
+        },
       },
-    });
+      {
+        empty: () => {
+          return h(
+            'div',
+            {
+              class: 'px-[12px] h-full',
+            },
+            [
+              h(NSkeleton, {
+                text: true,
+                repeat: 20,
+                height: 24,
+              }),
+            ]
+          );
+        },
+      }
+    );
   };
 
   function handleUpdateValue(value: Array<string | number>) {

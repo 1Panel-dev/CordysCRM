@@ -22,7 +22,7 @@ export default function useLogin() {
           setLoginExpires();
           setLoginType('WE_COM_OAUTH2');
           const { redirect, ...othersQuery } = router.currentRoute.value.query;
-          await router.push({
+          await router.replace({
             name: (redirect as string) || AppRouteEnum.WORKBENCH,
             query: {
               ...othersQuery,

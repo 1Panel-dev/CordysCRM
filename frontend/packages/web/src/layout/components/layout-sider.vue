@@ -32,7 +32,7 @@
           <div
             class="flex w-full items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
           >
-            <CrmAvatar class="flex-shrink-0" />
+            <CrmAvatar :size="collapsed ? 25 : 40" class="flex-shrink-0 transition-all" />
             <div v-if="!collapsed" class="one-line-text">
               <div class="one-line-text max-w-[110px]">{{ userStore.userInfo.name }}</div>
               <!-- <n-tag
