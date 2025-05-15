@@ -31,6 +31,8 @@ import {
   NoPickCluePoolUrl,
   NoPickCustomerPoolUrl,
   PreviewPictureUrl,
+  QuickUpdateCluePoolUrl,
+  QuickUpdateCustomerPoolUrl,
   SaveFormDesignConfigUrl,
   SwitchCluePoolStatusUrl,
   SwitchCustomerPoolStatusUrl,
@@ -123,8 +125,8 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: AddCluePoolUrl, data });
   }
 
-  function updateCluePool(data: CluePoolParams) {
-    return CDR.post({ url: UpdateCluePoolUrl, data });
+  function updateCluePool(data: CluePoolParams, quick = false) {
+    return CDR.post({ url: quick ? QuickUpdateCluePoolUrl : UpdateCluePoolUrl, data });
   }
 
   function switchCluePoolStatus(id: string) {
@@ -175,8 +177,8 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: AddCustomerPoolUrl, data });
   }
 
-  function updateCustomerPool(data: CluePoolParams) {
-    return CDR.post({ url: UpdateCustomerPoolUrl, data });
+  function updateCustomerPool(data: CluePoolParams, quick = false) {
+    return CDR.post({ url: quick ? QuickUpdateCustomerPoolUrl : UpdateCustomerPoolUrl, data });
   }
 
   function switchCustomerPoolStatus(id: string) {

@@ -155,6 +155,7 @@
 
   const props = defineProps<{
     type: ModuleConfigEnum;
+    quick?: boolean;
   }>();
 
   const visible = defineModel<boolean>('visible', {
@@ -288,8 +289,8 @@
       }
       if (form.value.id) {
         await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT
-          ? updateCustomerPool(params)
-          : updateCluePool(params));
+          ? updateCustomerPool(params, props.quick)
+          : updateCluePool(params, props.quick));
         Message.success(t('common.updateSuccess'));
       } else {
         await (props.type === ModuleConfigEnum.CUSTOMER_MANAGEMENT ? addCustomerPool(params) : addCluePool(params));

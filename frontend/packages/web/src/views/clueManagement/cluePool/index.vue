@@ -61,6 +61,7 @@
     v-model:visible="drawerVisible"
     :type="ModuleConfigEnum.CLUE_MANAGEMENT"
     :row="cluePoolRow"
+    quick
     @refresh="init"
   />
 </template>

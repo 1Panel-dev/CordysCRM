@@ -36,6 +36,7 @@
     v-model:visible="drawerVisible"
     :type="ModuleConfigEnum.CUSTOMER_MANAGEMENT"
     :row="openSeaRow"
+    quick
     @refresh="init"
   />
   <openSeaOverviewDrawer
