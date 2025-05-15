@@ -146,7 +146,7 @@
     return reg.test(value);
   }
   function validatePasswordLength(rule: FormItemRule, value: string): boolean {
-    const reg = /^1[3-9]\d{9}$/;
+    const reg = /^.{1,64}$/;
     return reg.test(value);
   }
   const formRef = ref<FormInst | null>(null);
