@@ -1,5 +1,5 @@
 <template>
-  <n-spin :show="loading">
+  <n-spin :show="loading" class="min-h-[300px]">
     <CrmList
       v-if="list.length"
       v-model:data="list"
@@ -79,7 +79,10 @@
         </div>
       </template>
     </CrmList>
-    <div v-else-if="!loading && finished" class="w-full p-[16px] text-center text-[var(--text-n4)]">
+    <div
+      v-else-if="props.messageList ? !list.length : !loading && finished"
+      class="w-full p-[16px] text-center text-[var(--text-n4)]"
+    >
       {{ props.emptyText || t('common.noData') }}
     </div>
   </n-spin>
@@ -98,7 +101,6 @@
 
   import { getNotificationList, setNotificationRead } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
-  import { hasAnyPermission } from '@/utils/permission';
 
   const appStore = useAppStore();
 
@@ -136,8 +138,6 @@
 
   const finished = ref(false);
   async function loadMessageList(refresh = true) {
-    if (!hasAnyPermission(['SYSTEM_NOTICE:READ'])) return;
-
     try {
       if (!props.loadParams) return;
       loading.value = true;
