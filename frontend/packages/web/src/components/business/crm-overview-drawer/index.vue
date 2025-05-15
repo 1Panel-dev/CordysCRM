@@ -83,7 +83,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { NButton, NScrollbar, NTooltip, TabPaneProps } from 'naive-ui';
+  import { NButton, NTooltip, TabPaneProps } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';

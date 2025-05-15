@@ -1,49 +1,51 @@
 <template>
-  <BatchAction
-    v-if="props.actionConfig"
-    :select-row-count="checkedRowKeys.length"
-    size="medium"
-    :action-config="props.actionConfig"
-    @clear="handleClear"
-    @batch-action="handleBatchAction"
-  >
-    <template #actionLeft>
-      <slot name="actionLeft"></slot>
-    </template>
-    <template #actionRight>
-      <div class="flex items-center gap-[8px]">
-        <slot name="actionRight"></slot>
-      </div>
-    </template>
-  </BatchAction>
-  <n-data-table
-    v-bind="{ scrollX: scrollXWidth, ...$attrs }"
-    v-model:checked-row-keys="checkedRowKeys"
-    :columns="currentColumns as TableColumns"
-    :row-key="getRowKey"
-    flex-height
-    :style="{ height: tableHeight }"
-    @update:sorter="handleSorterChange"
-    @update:filters="handleFiltersChange"
-    @update:checked-row-keys="handleCheck"
-  >
-    <template #empty>
-      <div class="w-full">
-        <slot name="empty">
-          <div class="flex items-center justify-center">
-            <span class="text-[14px] text-[var(--text-n4)]">{{ t('common.noData') }}</span>
-          </div>
-        </slot>
-      </div>
-    </template>
-  </n-data-table>
-  <CrmPagination
-    v-if="!!attrs.showPagination"
-    class="mt-[16px]"
-    v-bind="{ ...(attrs.crmPagination || {}) }"
-    @handle-page-change="handlePageChange"
-    @handle-page-size-change="handlePageSizeChange"
-  />
+  <div class="flex h-full flex-col overflow-hidden">
+    <BatchAction
+      v-if="props.actionConfig"
+      :select-row-count="checkedRowKeys.length"
+      size="medium"
+      :action-config="props.actionConfig"
+      @clear="handleClear"
+      @batch-action="handleBatchAction"
+    >
+      <template #actionLeft>
+        <slot name="actionLeft"></slot>
+      </template>
+      <template #actionRight>
+        <div class="flex items-center gap-[8px]">
+          <slot name="actionRight"></slot>
+        </div>
+      </template>
+    </BatchAction>
+    <n-data-table
+      v-bind="{ scrollX: scrollXWidth, ...$attrs }"
+      v-model:checked-row-keys="checkedRowKeys"
+      :columns="currentColumns as TableColumns"
+      :row-key="getRowKey"
+      flex-height
+      class="flex-1"
+      @update:sorter="handleSorterChange"
+      @update:filters="handleFiltersChange"
+      @update:checked-row-keys="handleCheck"
+    >
+      <template #empty>
+        <div class="w-full">
+          <slot name="empty">
+            <div class="flex items-center justify-center">
+              <span class="text-[14px] text-[var(--text-n4)]">{{ t('common.noData') }}</span>
+            </div>
+          </slot>
+        </div>
+      </template>
+    </n-data-table>
+    <CrmPagination
+      v-if="!!attrs.showPagination"
+      class="mt-[16px]"
+      v-bind="{ ...(attrs.crmPagination || {}) }"
+      @handle-page-change="handlePageChange"
+      @handle-page-size-change="handlePageSizeChange"
+    />
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -90,17 +92,6 @@
   const checkedRowKeys = defineModel<DataTableRowKey[]>('checkedRowKeys', { default: [] });
 
   const currentColumns = ref<CrmDataTableColumn[]>([]);
-
-  const tableHeight = computed(() => {
-    let other = props.actionConfig ? 48 : 0;
-    if (attrs.showPagination) {
-      other += 48;
-    }
-    if (attrs.specialHeight) {
-      other += attrs.specialHeight as number;
-    }
-    return `calc(100% - ${other}px)`;
-  });
 
   async function initColumn(hasInitStore = false) {
     const hasSelectedColumn = props.columns.find((e) => e.type === SpecialColumnEnum.SELECTION);

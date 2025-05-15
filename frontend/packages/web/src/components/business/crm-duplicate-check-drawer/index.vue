@@ -19,6 +19,7 @@
       <div v-show="code !== 101003" class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
         <CrmTable
           v-bind="propsRes"
+          class="!h-[400px]"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
@@ -203,38 +204,47 @@
       title: t('workbench.duplicateCheck.relatedOpportunity'),
       key: 'opportunityCount',
       width: 70,
-      render: (row: RepeatCustomerItem) =>
-        h(
-          NButton,
-          {
-            text: true,
-            type: 'primary',
-            disabled: !row.opportunityCount || !row.opportunityModuleEnable,
-            onClick: () => showDetail(row, 'opportunity'),
-          },
-          { default: () => row.opportunityCount }
-        ),
+      render: (row: RepeatCustomerItem) => {
+        return !row.opportunityCount
+          ? row.opportunityCount
+          : h(
+              NButton,
+              {
+                text: true,
+                type: 'primary',
+                disabled: !row.opportunityModuleEnable,
+                onClick: () => showDetail(row, 'opportunity'),
+              },
+              { default: () => row.opportunityCount }
+            );
+      },
     },
     {
       title: t('workbench.duplicateCheck.relatedClue'),
       key: 'clueCount',
       width: 70,
-      render: (row: RepeatCustomerItem) =>
-        h(
-          NButton,
-          {
-            text: true,
-            type: 'primary',
-            disabled: !row.clueCount || !row.clueModuleEnable,
-            onClick: () => showDetail(row, 'clue'),
-          },
-          { default: () => row.clueCount }
-        ),
+      render: (row: RepeatCustomerItem) => {
+        return !row.clueCount
+          ? row.clueCount
+          : h(
+              NButton,
+              {
+                text: true,
+                type: 'primary',
+                disabled: !row.clueModuleEnable,
+                onClick: () => showDetail(row, 'clue'),
+              },
+              { default: () => row.clueCount }
+            );
+      },
     },
     {
       title: t('common.createTime'),
       key: 'createTime',
       width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
     },
   ];
 

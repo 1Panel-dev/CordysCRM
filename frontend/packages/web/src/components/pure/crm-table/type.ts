@@ -58,7 +58,6 @@ export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
   'onUpdate:checkedRowKeys'?: (key: DataTableRowKey[]) => void; // 覆写类型防止报错
   'isReturnNativeResponse'?: boolean;
   'permission'?: string[];
-  'specialHeight'?: number; // 特殊高度
 };
 
 // 表格存储

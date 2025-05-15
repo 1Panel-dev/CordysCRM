@@ -7,6 +7,7 @@
     <div v-show="code !== 101003" class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
       <CrmTable
         v-bind="propsRes"
+        class="!h-[400px]"
         @page-change="propsEvent.pageChange"
         @page-size-change="propsEvent.pageSizeChange"
         @sorter-change="propsEvent.sorterChange"
