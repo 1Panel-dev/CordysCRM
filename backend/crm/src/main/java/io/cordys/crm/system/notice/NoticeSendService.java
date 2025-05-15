@@ -81,9 +81,7 @@ public class NoticeSendService {
 
     @Async("threadPoolTaskExecutor")
     public void sendOther(String module, NoticeModel noticeModel, boolean excludeSelf) {
-        if (excludeSelf) {
-            setLanguage(noticeModel.getParamMap().get("Language"));
-        }
+        setLanguage(noticeModel.getParamMap().get("Language"));
         noticeModel.setExcludeSelf(excludeSelf);
         try {
             String organizationId = (String) noticeModel.getParamMap().get("organizationId");
