@@ -9,7 +9,12 @@
       >
         {{ t('overviewDrawer.addContract') }}
       </n-button>
-      <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+      <CrmSearchInput
+        v-model:value="keyword"
+        class="!w-[240px]"
+        :placeholder="t('common.searchName')"
+        @search="searchData"
+      />
     </div>
     <CrmTable
       v-bind="propsRes"
