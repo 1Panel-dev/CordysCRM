@@ -134,7 +134,6 @@
     resetUserPassword,
     syncOrg,
     updateOrgUserName,
-    updateUser,
   } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
@@ -717,7 +716,7 @@
     },
     {
       key: 'operation',
-      minWidth: 150,
+      minWidth: 170,
       fixed: 'right',
       render: (row: MemberItem) =>
         h(CrmOperationButton, {
