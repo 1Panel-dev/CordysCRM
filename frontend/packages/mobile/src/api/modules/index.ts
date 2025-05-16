@@ -157,7 +157,7 @@ export const {
   addCustomerCollaboration,
   deleteCustomerCollaboration,
   getCustomerOptions,
-  GetCustomerOpenSeaFollowRecordList,
+  getCustomerOpenSeaFollowRecordList,
   updateCustomerRelationItem,
   deleteCustomerRelationItem,
   addCustomerRelationItem,

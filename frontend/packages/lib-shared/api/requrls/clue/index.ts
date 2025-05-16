@@ -41,3 +41,5 @@ export const ClueTransitionCustomerUrl = '/clue/transition/customer'; // 转为�
 
 // 线索池跟进记录
 export const GetCluePoolFollowRecordListUrl = '/clue/follow/record/pool/page'; // 获取跟进记录列表
+
+export const GetClueTabUrl = '/clue/tab'; // 线索tab显隐

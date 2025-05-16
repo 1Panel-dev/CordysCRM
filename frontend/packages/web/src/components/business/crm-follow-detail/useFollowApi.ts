@@ -2,13 +2,11 @@ import { ref } from 'vue';
 import { useMessage } from 'naive-ui';
 
 import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
-import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { sleep } from '@lib/shared/method';
 import type { CommonList } from '@lib/shared/models/common';
 import type { FollowDetailItem } from '@lib/shared/models/customer';
-
-import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
 import {
   cancelClueFollowPlan,
@@ -23,11 +21,9 @@ import {
   getClueFollowPlanList,
   getClueFollowRecordList,
   getCluePoolFollowRecordList,
-  getCustomerFollowPlanFormConfig,
   getCustomerFollowPlanList,
-  getCustomerFollowRecordFormConfig,
   getCustomerFollowRecordList,
-  GetCustomerOpenSeaFollowRecordList,
+  getCustomerOpenSeaFollowRecordList,
   getOptFollowPlanList,
   getOptFollowRecordList,
   getPersonalFollow,
@@ -107,7 +103,7 @@ const followApiMap: FollowApiMapType = {
   },
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: {
     list: {
-      followRecord: GetCustomerOpenSeaFollowRecordList,
+      followRecord: getCustomerOpenSeaFollowRecordList,
     },
   },
   myPlan: {

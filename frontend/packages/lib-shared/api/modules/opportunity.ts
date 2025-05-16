@@ -9,6 +9,7 @@ import {
   GetOptFollowPlanUrl,
   GetOptFollowRecordUrl,
   GetOptFormConfigUrl,
+  GetOptTabUrl,
   OptAddUrl,
   OptBatchDeleteUrl,
   OptBatchTransferUrl,
@@ -25,6 +26,7 @@ import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import type {
   CustomerFollowPlanTableParams,
   CustomerFollowRecordTableParams,
+  CustomerTabHidden,
   FollowDetailItem,
   SaveCustomerFollowPlanParams,
   SaveCustomerFollowRecordParams,
@@ -141,6 +143,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: OptUpdateStageUrl, data });
   }
 
+  // 获取商机tab显隐藏
+  function getOptTab() {
+    return CDR.get<CustomerTabHidden>({ url: GetOptTabUrl });
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -162,5 +169,6 @@ export default function useProductApi(CDR: CordysAxios) {
     batchDeleteOpt,
     deleteOpt,
     updateOptStage,
+    getOptTab,
   };
 }

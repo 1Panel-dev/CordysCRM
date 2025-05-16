@@ -45,6 +45,7 @@ import {
   GetCustomerOpenSeaListUrl,
   GetCustomerOptionsUrl,
   GetCustomerRelationListUrl,
+  GetCustomerTabUrl,
   GetCustomerUrl,
   GetOpenSeaCustomerListUrl,
   GetOpenSeaCustomerUrl,
@@ -79,6 +80,7 @@ import type {
   CustomerListItem,
   CustomerOpenSeaListItem,
   CustomerOptionsItem,
+  CustomerTabHidden,
   CustomerTableParams,
   FollowDetailItem,
   OpenSeaCustomerTableParams,
@@ -398,8 +400,13 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 获取客户公海跟进记录列表
-  function GetCustomerOpenSeaFollowRecordList(data: CustomerFollowRecordTableParams) {
+  function getCustomerOpenSeaFollowRecordList(data: CustomerFollowRecordTableParams) {
     return CDR.post<CommonList<CustomerFollowRecordListItem>>({ url: GetCustomerOpenSeaFollowRecordListUrl, data });
+  }
+
+  // 获取客户tab显隐藏
+  function getCustomerTab() {
+    return CDR.get<CustomerTabHidden>({ url: GetCustomerTabUrl });
   }
 
   return {
@@ -459,9 +466,10 @@ export default function useProductApi(CDR: CordysAxios) {
     addCustomerCollaboration,
     deleteCustomerCollaboration,
     getCustomerOptions,
-    GetCustomerOpenSeaFollowRecordList,
+    getCustomerOpenSeaFollowRecordList,
     updateCustomerRelationItem,
     addCustomerRelationItem,
     deleteCustomerRelationItem,
+    getCustomerTab,
   };
 }

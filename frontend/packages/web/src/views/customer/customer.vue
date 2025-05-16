@@ -98,33 +98,32 @@
   } from '@/api/modules';
   import { filterConfigList as clueFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
 
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
 
-  const activeTab = ref(CustomerSearchTypeEnum.ALL);
-  const tabList = computed<TabPaneProps[]>(() => {
-    return [
-      {
-        name: CustomerSearchTypeEnum.ALL,
-        tab: t('customer.all'),
-      },
-      {
-        name: CustomerSearchTypeEnum.SELF,
-        tab: t('customer.mine'),
-      },
-      {
-        name: CustomerSearchTypeEnum.DEPARTMENT,
-        tab: t('customer.deptCustomer'),
-      },
-      {
-        name: CustomerSearchTypeEnum.VISIBLE,
-        tab: t('customer.cooperationCustomer'),
-      },
-    ];
-  });
+  const allTabList: TabPaneProps[] = [
+    {
+      name: CustomerSearchTypeEnum.ALL,
+      tab: t('customer.all'),
+    },
+    {
+      name: CustomerSearchTypeEnum.SELF,
+      tab: t('customer.mine'),
+    },
+    {
+      name: CustomerSearchTypeEnum.DEPARTMENT,
+      tab: t('customer.deptCustomer'),
+    },
+    {
+      name: CustomerSearchTypeEnum.VISIBLE,
+      tab: t('customer.cooperationCustomer'),
+    },
+  ];
+  const { tabList, activeTab } = useHiddenTab(allTabList, FormDesignKeyEnum.CUSTOMER);
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const keyword = ref('');

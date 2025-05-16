@@ -312,3 +312,8 @@ export interface CustomerOptionsItem {
   name: string;
   editable: boolean; // 是否可编辑
 }
+
+export interface CustomerTabHidden {
+  all: boolean; // 是否显示所有数据tab
+  dept: boolean; // 是否显示部门数据tab
+}

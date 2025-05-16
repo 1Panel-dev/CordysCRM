@@ -25,6 +25,7 @@ import {
   GetClueListUrl,
   GetCluePoolFollowRecordListUrl,
   GetCluePoolListUrl,
+  GetClueTabUrl,
   GetClueUrl,
   GetPoolClueUrl,
   GetPoolOptionsUrl,
@@ -52,6 +53,7 @@ import type {
   CustomerContractTableParams,
   CustomerFollowPlanTableParams,
   CustomerFollowRecordTableParams,
+  CustomerTabHidden,
   CustomerTableParams,
   FollowDetailItem,
   SaveCustomerFollowPlanParams,
@@ -228,6 +230,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<ClueDetail>({ url: `${GetPoolClueUrl}/${id}` });
   }
 
+  // 获取线索tab显隐藏
+  function getClueTab() {
+    return CDR.get<CustomerTabHidden>({ url: GetClueTabUrl });
+  }
+
   return {
     addClue,
     updateClue,
@@ -262,5 +269,6 @@ export default function useProductApi(CDR: CordysAxios) {
     deleteCluePool,
     getCluePoolFollowRecordList,
     getPoolClue,
+    getClueTab,
   };
 }

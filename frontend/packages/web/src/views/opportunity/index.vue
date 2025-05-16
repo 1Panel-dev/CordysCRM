@@ -103,6 +103,7 @@
   import { batchDeleteOpt, deleteOpt, getFieldDeptTree, transferOpt } from '@/api/modules';
   import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -130,29 +131,27 @@
   };
 
   const tableRefreshId = ref(0);
-  const activeTab = ref(OpportunitySearchTypeEnum.ALL);
 
-  const tabList = computed<TabPaneProps[]>(() => {
-    // TODO 根据不同的用户展示tab
-    return [
-      {
-        name: OpportunitySearchTypeEnum.ALL,
-        tab: t('opportunity.allOpportunities'),
-      },
-      {
-        name: OpportunitySearchTypeEnum.SELF,
-        tab: t('opportunity.myOpportunities'),
-      },
-      {
-        name: OpportunitySearchTypeEnum.DEPARTMENT,
-        tab: t('opportunity.departmentOpportunities'),
-      },
-      {
-        name: OpportunitySearchTypeEnum.DEAL,
-        tab: t('opportunity.convertedOpportunities'),
-      },
-    ];
-  });
+  const allTabList: TabPaneProps[] = [
+    {
+      name: OpportunitySearchTypeEnum.ALL,
+      tab: t('opportunity.allOpportunities'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.SELF,
+      tab: t('opportunity.myOpportunities'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.DEPARTMENT,
+      tab: t('opportunity.departmentOpportunities'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.DEAL,
+      tab: t('opportunity.convertedOpportunities'),
+    },
+  ];
+
+  const { tabList, activeTab } = useHiddenTab(allTabList, FormDesignKeyEnum.BUSINESS);
 
   function handleRefresh() {
     checkedRowKeys.value = [];

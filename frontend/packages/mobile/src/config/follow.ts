@@ -18,7 +18,7 @@ import {
   getCluePoolFollowRecordList,
   getCustomerFollowPlanList,
   getCustomerFollowRecordList,
-  GetCustomerOpenSeaFollowRecordList,
+  getCustomerOpenSeaFollowRecordList,
   getOptFollowPlanList,
   getOptFollowRecordList,
 } from '@/api/modules';
@@ -78,7 +78,7 @@ export const followRecordApiMap: {
     [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: getClueFollowRecordList,
     [FormDesignKeyEnum.CLUE_POOL]: getCluePoolFollowRecordList,
     [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: getOptFollowRecordList,
-    [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: GetCustomerOpenSeaFollowRecordList,
+    [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getCustomerOpenSeaFollowRecordList,
   },
   delete: {
     [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: deleteCustomerFollowRecord,

@@ -87,34 +87,33 @@
   import { filterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
 
   const Message = useMessage();
   const { openModal } = useModal();
   const { t } = useI18n();
 
-  const activeTab = ref(CustomerSearchTypeEnum.ALL);
-  const tabList = computed<TabPaneProps[]>(() => {
-    // TODO lmy 根据不同的用户展示tab
-    return [
-      {
-        name: CustomerSearchTypeEnum.ALL,
-        tab: t('clue.allClues'),
-      },
-      {
-        name: CustomerSearchTypeEnum.SELF,
-        tab: t('clue.myClues'),
-      },
-      {
-        name: CustomerSearchTypeEnum.DEPARTMENT,
-        tab: t('clue.departmentClues'),
-      },
-      {
-        name: CustomerSearchTypeEnum.CUSTOMER_TRANSITION,
-        tab: t('clue.convertedToCustomer'),
-      },
-    ];
-  });
+  const allTabList: TabPaneProps[] = [
+    {
+      name: CustomerSearchTypeEnum.ALL,
+      tab: t('clue.allClues'),
+    },
+    {
+      name: CustomerSearchTypeEnum.SELF,
+      tab: t('clue.myClues'),
+    },
+    {
+      name: CustomerSearchTypeEnum.DEPARTMENT,
+      tab: t('clue.departmentClues'),
+    },
+    {
+      name: CustomerSearchTypeEnum.CUSTOMER_TRANSITION,
+      tab: t('clue.convertedToCustomer'),
+    },
+  ];
+
+  const { tabList, activeTab } = useHiddenTab(allTabList, FormDesignKeyEnum.CLUE);
 
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
   const keyword = ref('');

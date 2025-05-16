@@ -66,6 +66,7 @@ export const {
   batchDeleteOpt,
   deleteOpt,
   updateOptStage,
+  getOptTab,
 } = opportunityApi;
 
 export const {
@@ -102,6 +103,7 @@ export const {
   deleteCluePool,
   getCluePoolFollowRecordList,
   getPoolClue,
+  getClueTab,
 } = clueApi;
 
 export const {
@@ -161,7 +163,8 @@ export const {
   addCustomerCollaboration,
   deleteCustomerCollaboration,
   getCustomerOptions,
-  GetCustomerOpenSeaFollowRecordList,
+  getCustomerOpenSeaFollowRecordList,
+  getCustomerTab,
 } = customerApi;
 
 export const {
