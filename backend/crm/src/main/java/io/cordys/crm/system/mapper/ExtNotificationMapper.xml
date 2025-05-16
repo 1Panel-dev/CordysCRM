@@ -7,10 +7,10 @@
         SELECT * FROM sys_notification
         WHERE sys_notification.receiver = #{request.receiver} and sys_notification.organization_id = #{organizationId}
         <if test='request.subject != null and request.subject != ""'>
-            AND ( sys_notification.subject LIKE #{request.subject} OR sys_notification.content LIKE #{request.subject} )
+            AND ( sys_notification.subject LIKE CONCAT('%', #{request.subject},'%') OR sys_notification.content LIKE CONCAT('%', #{request.subject},'%') )
         </if>
         <if test='request.keyword != null and request.keyword != ""'>
-            AND ( sys_notification.subject LIKE #{request.keyword} OR sys_notification.resource_name LIKE #{request.keyword} )
+            AND ( sys_notification.subject LIKE  CONCAT('%', #{request.keyword},'%')  OR sys_notification.resource_name LIKE  CONCAT('%', #{request.keyword},'%')  )
         </if>
         <if test='request.type != null and request.type != ""'>
             AND sys_notification.type = #{request.type}
@@ -19,7 +19,7 @@
             AND sys_notification.status = #{request.status}
         </if>
         <if test='request.resourceType != null and request.resourceType != ""'>
-            AND sys_notification.resource_type LIKE #{request.resourceType}
+            AND sys_notification.resource_type LIKE CONCAT('%', #{request.resourceType},'%')
         </if>
         <if test='request.createTime != null and request.endTime == null'>
             AND sys_notification.create_time &gt;= #{request.createTime}

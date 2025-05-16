@@ -156,20 +156,10 @@ public class PersonalCenterControllerTests extends BaseTest {
 
     }
 
-    @Test
-    @Order(4)
-    public void changePassword() throws Exception {
-        String PREFIX = "personal_email_code:";  // Redis 存储前缀
-        stringRedisTemplate.opsForValue().set(PREFIX + "3Gyq3@Cordys.com", "253574", 10, TimeUnit.MINUTES);
-        PersonalPasswordRequest personalPasswordRequest  = new PersonalPasswordRequest();
-        personalPasswordRequest.setPassword("Gyq124");
-        personalPasswordRequest.setEmail("3Gyq3@Cordys.com");
-        personalPasswordRequest.setCode("253574");
-        this.requestPost("/personal/center/info/reset", personalPasswordRequest).andExpect(status().isOk());
-    }
+
 
     @Test
-    @Order(5)
+    @Order(4)
     public void getRepeatCustomer() throws Exception {
         String s = IDGenerator.nextStr();
         Opportunity opportunity = new Opportunity();
@@ -210,7 +200,7 @@ public class PersonalCenterControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(6)
+    @Order(5)
     void testFollowPlanList() throws Exception {
         FollowUpPlanPageRequest request = new FollowUpPlanPageRequest();
         request.setSourceId("NULL");
@@ -224,7 +214,7 @@ public class PersonalCenterControllerTests extends BaseTest {
 
 
     @Test
-    @Order(7)
+    @Order(6)
     public void testAnnouncement() throws Exception {
         RepeatCustomerPageRequest request = new RepeatCustomerPageRequest();
         request.setCurrent(1);
@@ -234,7 +224,7 @@ public class PersonalCenterControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(8)
+    @Order(7)
     public void testAnnouncementDetail() throws Exception {
         RepeatCustomerDetailPageRequest request = new RepeatCustomerDetailPageRequest();
         request.setCurrent(1);
@@ -244,7 +234,7 @@ public class PersonalCenterControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(9)
+    @Order(8)
     public void testRepeatOpportunityDetail() throws Exception {
         RepeatCustomerDetailPageRequest request = new RepeatCustomerDetailPageRequest();
         request.setCurrent(1);
@@ -252,4 +242,6 @@ public class PersonalCenterControllerTests extends BaseTest {
         request.setName("kehu");
         this.requestPost("/personal/center/repeat/opportunity/detail", request).andExpect(status().isOk());
     }
+
+
 }

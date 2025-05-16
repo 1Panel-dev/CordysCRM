@@ -44,6 +44,7 @@ import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.crm.system.utils.MailSender;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
+import io.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -163,6 +164,8 @@ public class PersonalCenterService {
         boolean verify = verifyCode(personalPasswordRequest.getEmail(), personalPasswordRequest.getCode());
         if (verify) {
             extUserMapper.updateUserPassword(CodingUtils.md5(personalPasswordRequest.getPassword()), operatorId);
+            //重置后被重置用户需要登出
+            SessionUtils.kickOutUser(operatorId);
         } else {
             throw new GenericException(Translator.get("email_setting_verify_error"));
         }
