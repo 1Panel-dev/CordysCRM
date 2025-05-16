@@ -22,7 +22,7 @@
     </div>
     <div class="filter-buttons">
       <van-button
-        v-for="item of filterButtons"
+        v-for="item of tabList"
         :key="item.name"
         round
         size="small"
@@ -70,6 +70,7 @@
 
   import { deleteOpt, getOpportunityList } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
+  import useHiddenTab from '@/hooks/useHiddenTab';
 
   import { CommonRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
@@ -81,8 +82,6 @@
 
   const keyword = ref('');
   const crmListRef = ref<InstanceType<typeof CrmList>>();
-
-  const activeFilter = ref(OpportunitySearchTypeEnum.ALL);
 
   const filterButtons = [
     {
@@ -102,6 +101,7 @@
       tab: t('opportunity.convertedOpportunities'),
     },
   ];
+  const { tabList, activeFilter } = useHiddenTab(filterButtons, FormDesignKeyEnum.BUSINESS);
 
   const listParams = computed(() => {
     return {
@@ -122,7 +122,6 @@
 
   const actions = computed(() => {
     return (row: OpportunityItem) => {
-      const showAction = row.stage !== StageResultEnum.FAIL && row.stage !== StageResultEnum.SUCCESS;
       const transferAction = [
         {
           label: t('common.transfer'),
@@ -133,70 +132,77 @@
           },
         },
       ];
-      return showAction
-        ? [
-            {
-              label: t('common.edit'),
-              icon: 'iconicon_handwritten_signature',
-              permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-              action: (item: OpportunityItem) => {
-                router.push({
-                  name: CommonRouteEnum.FORM_CREATE,
-                  query: {
-                    id: item.id,
-                    formKey: FormDesignKeyEnum.BUSINESS,
-                    needInitDetail: 'Y',
-                  },
-                });
+
+      if (row.stage === StageResultEnum.FAIL) {
+        return transferAction;
+      }
+
+      if (row.stage === StageResultEnum.SUCCESS) {
+        return [];
+      }
+
+      return [
+        {
+          label: t('common.edit'),
+          icon: 'iconicon_handwritten_signature',
+          permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+          action: (item: OpportunityItem) => {
+            router.push({
+              name: CommonRouteEnum.FORM_CREATE,
+              query: {
+                id: item.id,
+                formKey: FormDesignKeyEnum.BUSINESS,
+                needInitDetail: 'Y',
               },
-            },
-            {
-              label: t('common.writeRecord'),
-              icon: 'iconicon_handwritten_signature',
-              permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-              action: (item: OpportunityItem) => {
-                router.push({
-                  name: CommonRouteEnum.FORM_CREATE,
-                  query: {
-                    id: item.id,
-                    formKey: FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS,
-                    initialSourceName: item.name,
-                  },
-                });
+            });
+          },
+        },
+        {
+          label: t('common.writeRecord'),
+          icon: 'iconicon_handwritten_signature',
+          permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+          action: (item: OpportunityItem) => {
+            router.push({
+              name: CommonRouteEnum.FORM_CREATE,
+              query: {
+                id: item.id,
+                formKey: FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS,
+                initialSourceName: item.name,
               },
-            },
-            ...transferAction,
-            {
-              label: t('common.delete'),
-              icon: 'iconicon_delete',
-              permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
-              action: (item: OpportunityItem) => {
-                showConfirmDialog({
-                  title: t('customer.deleteTitle'),
-                  message: t('opportunity.deleteContentTip'),
-                  confirmButtonText: t('common.confirmDelete'),
-                  confirmButtonColor: 'var(--error-red)',
-                  beforeClose: async (action) => {
-                    if (action === 'confirm') {
-                      try {
-                        await deleteOpt(item.id);
-                        showSuccessToast(t('common.deleteSuccess'));
-                        crmListRef.value?.loadList(true);
-                        return Promise.resolve(true);
-                      } catch (error) {
-                        // eslint-disable-next-line no-console
-                        console.log(error);
-                        return Promise.resolve(false);
-                      }
-                    } else {
-                      return Promise.resolve(true);
-                    }
-                  },
-                });
+            });
+          },
+        },
+        ...transferAction,
+        {
+          label: t('common.delete'),
+          icon: 'iconicon_delete',
+          permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+          action: (item: OpportunityItem) => {
+            showConfirmDialog({
+              title: t('opportunity.deleteTitle'),
+              message: t('opportunity.deleteContentTip'),
+              confirmButtonText: t('common.confirmDelete'),
+              confirmButtonColor: 'var(--error-red)',
+              beforeClose: async (action) => {
+                if (action === 'confirm') {
+                  try {
+                    await deleteOpt(item.id);
+                    showSuccessToast(t('common.deleteSuccess'));
+                    crmListRef.value?.loadList(true);
+                    return Promise.resolve(true);
+                  } catch (error) {
+                    // eslint-disable-next-line no-console
+                    console.log(error);
+                    return Promise.resolve(false);
+                  }
+                } else {
+                  return Promise.resolve(true);
+                }
               },
-            },
-          ]
-        : transferAction;
+            });
+          },
+        },
+      ];
     };
   });
 

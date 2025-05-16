@@ -4,6 +4,7 @@ export default {
   'opportunity.mine': 'My opportunities',
   'opportunity.deptOpportunities': 'Department opportunities',
   'opportunity.convertedOpportunities': 'Converted opportunities',
+  'opportunity.deleteTitle': 'Confirm delete opportunity?',
   'opportunity.deleteContentTip': 'Deleted, members cannot find this opportunity, please be careful!',
   'opportunity.info': 'Opportunity Information',
   'opportunity.newCreate': 'New create',

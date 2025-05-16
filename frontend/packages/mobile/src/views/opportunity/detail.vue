@@ -109,9 +109,7 @@
   }
 
   const readonly = computed(
-    () =>
-      ([StageResultEnum.FAIL, StageResultEnum.SUCCESS] as string[]).includes(currentStatus.value) ||
-      !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])
+    () => currentStatus.value === StageResultEnum.SUCCESS || !hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])
   );
 
   const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();

@@ -4,6 +4,7 @@ export default {
   'opportunity.mine': '我的',
   'opportunity.deptOpportunities': '部门',
   'opportunity.convertedOpportunities': '成交',
+  'opportunity.deleteTitle': '确认删除商机吗？',
   'opportunity.deleteContentTip': '删除后，成员无法查到该商机，请谨慎操作！',
   'opportunity.info': '商机信息',
   'opportunity.newCreate': '新建',

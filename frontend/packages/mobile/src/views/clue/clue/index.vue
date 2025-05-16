@@ -20,7 +20,7 @@
     </div>
     <div class="filter-buttons">
       <van-button
-        v-for="item of filterButtons"
+        v-for="item of tabList"
         :key="item.name"
         round
         size="small"
@@ -74,6 +74,7 @@
 
   import { deleteClue, getClueList } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
+  import useHiddenTab from '@/hooks/useHiddenTab';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import { ClueRouteEnum, CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
@@ -83,7 +84,6 @@
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
   const keyword = ref('');
-  const activeFilter = ref(CustomerSearchTypeEnum.ALL);
   const filterButtons = [
     {
       name: CustomerSearchTypeEnum.ALL,
@@ -102,6 +102,7 @@
       tab: t('clue.convertedToCustomer'),
     },
   ];
+  const { tabList, activeFilter } = useHiddenTab(filterButtons, FormDesignKeyEnum.CLUE);
 
   const activeClue = ref<ClueListItem>();
   const activeClueId = computed(() => activeClue.value?.id ?? '');
