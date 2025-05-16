@@ -15,6 +15,7 @@ import io.cordys.crm.system.domain.Department;
 import io.cordys.crm.system.domain.LoginLog;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.mapper.ExtOrganizationMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -43,6 +44,8 @@ public class UserLoginService {
     private BaseMapper<User> sysUserMapper;
     @Resource
     private BaseMapper<OrganizationUser> organizationUserMapper;
+    @Resource
+    private ExtOrganizationMapper extOrganizationMapper;
     @Resource
     private ExtUserMapper extUserMapper;
     @Resource
@@ -108,8 +111,7 @@ public class UserLoginService {
 
     private Set<String> getOrgIdsByUserId(String userId) {
         if (StringUtils.equals(userId, InternalUser.ADMIN.getValue())) {
-            return organizationUserMapper.selectListByLambda(new LambdaQueryWrapper<>()).stream()
-                    .map(OrganizationUser::getOrganizationId).collect(Collectors.toSet());
+            return extOrganizationMapper.selectAllOrganizationIds();
         } else {
             OrganizationUser example = new OrganizationUser();
             example.setUserId(userId);
