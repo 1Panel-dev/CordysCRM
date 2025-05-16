@@ -91,8 +91,7 @@
         >
           <n-date-picker
             v-model:value="form.range"
-            :is-date-disabled="isRangeDateDisabled"
-            :is-time-disabled="isRangeTimeDisabled"
+            :default-value="getDefaultRange()"
             class="w-[340px]"
             type="datetimerange"
             clearable
@@ -123,7 +122,18 @@
 </template>
 
 <script lang="ts" setup>
-  import { FormInst, FormRules, NButton, NDatePicker, NForm, NFormItem, NInput, NTooltip, useMessage } from 'naive-ui';
+  import {
+    FormInst,
+    FormItemRule,
+    FormRules,
+    NButton,
+    NDatePicker,
+    NForm,
+    NFormItem,
+    NInput,
+    NTooltip,
+    useMessage,
+  } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
@@ -165,55 +175,24 @@
     },
   ];
 
-  // 禁用当前时间之前的日期
-  const isRangeDateDisabled = (currentTimestamp: number, _type: 'start' | 'end', _range: [number, number] | null) => {
-    const now = new Date();
-    const target = new Date(currentTimestamp);
-
-    // 禁用今天之前的所有日期
-    return target < new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  };
-
-  // 禁用当前时间之前的小时/分钟/秒
-  const isRangeTimeDisabled = (current: number, type: 'start' | 'end', range: [number, number]) => {
-    const now = new Date();
-    const currentDate = new Date(current);
-
-    const isToday =
-      currentDate.getFullYear() === now.getFullYear() &&
-      currentDate.getMonth() === now.getMonth() &&
-      currentDate.getDate() === now.getDate();
-
-    if (!isToday) {
-      // 今天以外的时间不限制
-      return {
-        isHourDisabled: () => false,
-        isMinuteDisabled: () => false,
-        isSecondDisabled: () => false,
-      };
+  function validateTimeRange(rule: FormItemRule, value: string) {
+    if (!value) {
+      return new Error(t('common.notNull', { value: `${t('system.message.timeOfPublication')}` }));
     }
-
-    const nowHour = now.getHours();
-    const nowMinute = now.getMinutes();
-    const nowSecond = now.getSeconds();
-
-    return {
-      isHourDisabled: (hour: number) => hour < nowHour,
-      isMinuteDisabled: (minute: number) => {
-        return currentDate.getHours() === nowHour && minute < nowMinute;
-      },
-      isSecondDisabled: (second: number) => {
-        return currentDate.getHours() === nowHour && currentDate.getMinutes() === nowMinute && second < nowSecond;
-      },
-    };
-  };
+    const [start, end] = value;
+    const now = Date.now();
+    if (Number(start) < now || Number(end) < now) {
+      return new Error(t('common.dateCannotBeInPast'));
+    }
+    return true;
+  }
 
   const rules: FormRules = {
     subject: [{ required: true, message: t('common.notNull', { value: `${t('system.message.announcementTitle')}` }) }],
     content: [
       { required: true, message: t('common.notNull', { value: `${t('system.message.announcementContent')}` }) },
     ],
-    range: [{ required: true, message: t('common.pleaseSelect') }],
+    range: [{ required: true, validator: validateTimeRange }],
     ownerIds: [{ required: true, message: t('common.pleaseSelect') }],
   };
 
@@ -305,6 +284,11 @@
       }
     }
   }
+
+  const getDefaultRange = () => {
+    const now = Date.now();
+    return [now, now + 24 * 60 * 60 * 1000] as [number, number];
+  };
 
   const showPopModal = ref(false);
 
