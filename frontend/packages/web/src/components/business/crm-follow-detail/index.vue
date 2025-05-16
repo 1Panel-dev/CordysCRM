@@ -35,7 +35,7 @@
         @reach-bottom="handleReachBottom"
       >
         <template #headerAction="{ item }">
-          <div v-if="props.showAction" class="flex items-center gap-[12px]">
+          <div v-if="getShowAction(item)" class="flex items-center gap-[12px]">
             <n-button
               v-if="props.activeType === 'followPlan' && item.status !== CustomerFollowPlanStatusEnum.CANCELLED"
               type="primary"
@@ -247,6 +247,20 @@
     }
     return props.activeType === 'followPlan' ? t('crmFollowRecord.noFollowPlan') : t('crmFollowRecord.noFollowRecord');
   });
+
+  const planPermission: Partial<Record<followEnumType, string[]>> = {
+    [FormDesignKeyEnum.CLUE]: ['CLUE_MANAGEMENT:UPDATE'],
+    [FormDesignKeyEnum.CUSTOMER]: ['CUSTOMER_MANAGEMENT:UPDATE'],
+    [FormDesignKeyEnum.BUSINESS]: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+  };
+
+  function getShowAction(item: FollowDetailItem) {
+    if (props.followApiKey === 'myPlan') {
+      const permission = planPermission[getApiKey(item) as keyof typeof followFormKeyMap];
+      return hasAnyPermission(permission);
+    }
+    return props.showAction;
+  }
 
   onBeforeMount(() => {
     loadFollowList();

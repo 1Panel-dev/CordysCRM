@@ -18,7 +18,7 @@ import { getFirstRouteNameByPermission } from '@/utils/permission';
 import useAppStore from '../app';
 import type { NotificationOptions, NotificationReactive } from 'naive-ui';
 
-const { notification, message } = useDiscreteApi();
+const { notification } = useDiscreteApi();
 
 export interface UserState {
   loginType: string[];
@@ -157,7 +157,6 @@ const useUserStore = defineStore('user', {
     },
     async checkIsLogin() {
       const { isLoginPage } = useUser();
-      const { t } = useI18n();
       const isLoginStatus = await this.isLogin();
       if (isLoginStatus) {
         if (isLoginPage()) {
@@ -165,7 +164,6 @@ const useUserStore = defineStore('user', {
           await router.push({ name: currentRouteName });
         }
       } else if (!isLoginPage()) {
-        message.warning(t('message.loginExpired'));
         router.push({ name: 'login' });
       }
     },

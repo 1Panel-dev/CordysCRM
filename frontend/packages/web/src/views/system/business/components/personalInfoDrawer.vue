@@ -84,7 +84,6 @@
         virtual-scroll-height="calc(100vh - 252px)"
         follow-api-key="myPlan"
         source-id="NULL"
-        show-action
         :any-permission="['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ']"
       />
     </CrmCard>

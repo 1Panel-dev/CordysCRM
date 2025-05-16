@@ -300,33 +300,34 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       }
 
       const defaultParsedSource = props.initialSourceName?.value ? JSON.parse(props.initialSourceName.value) : {};
+      if (Object.keys(defaultParsedSource).length) {
+        if (field.businessKey === 'opportunityId') {
+          specialInitialOptions.value = [
+            {
+              id: props.sourceId?.value,
+              name: defaultParsedSource?.name ?? '',
+            },
+          ];
+          return {
+            defaultValue: initFieldValue(field, props.sourceId?.value || ''),
+            initialOptions: specialInitialOptions.value,
+          };
+        }
 
-      if (field.businessKey === 'opportunityId') {
-        specialInitialOptions.value = [
-          {
-            id: props.sourceId?.value,
-            name: defaultParsedSource?.name ?? '',
-          },
-        ];
-        return {
-          defaultValue: initFieldValue(field, props.sourceId?.value || ''),
-          initialOptions: specialInitialOptions.value,
-        };
-      }
+        if (field.businessKey === 'customerId') {
+          const defaultCustomerId = defaultParsedSource?.[field.businessKey] ?? '';
+          specialInitialOptions.value = [
+            {
+              id: defaultCustomerId,
+              name: defaultParsedSource?.customerName ?? '',
+            },
+          ];
 
-      if (field.businessKey === 'customerId') {
-        const defaultCustomerId = defaultParsedSource?.[field.businessKey] ?? '';
-        specialInitialOptions.value = [
-          {
-            id: defaultCustomerId,
-            name: defaultParsedSource?.customerName ?? '',
-          },
-        ];
-
-        return {
-          defaultValue: initFieldValue(field, defaultCustomerId || ''),
-          initialOptions: specialInitialOptions.value,
-        };
+          return {
+            defaultValue: initFieldValue(field, defaultCustomerId || ''),
+            initialOptions: specialInitialOptions.value,
+          };
+        }
       }
     }
     if (props.formKey.value === FormDesignKeyEnum.CONTACT && props.sourceId?.value) {

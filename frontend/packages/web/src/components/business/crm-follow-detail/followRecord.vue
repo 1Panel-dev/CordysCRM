@@ -31,7 +31,7 @@
             <CrmDetailCard :description="props.getDescriptionFun(item)">
               <template #prefix>
                 <div class="flex items-center gap-[8px]">
-                  <CrmAvatar :size="24" :word="item.ownerName" />
+                  <CrmAvatar :is-user="item.owner === userStore.userInfo.id" :size="24" :word="item.ownerName" />
                   <n-tooltip :delay="300">
                     <template #trigger>
                       <div class="one-line-text max-w-[300px]">{{ item.ownerName }} </div>
@@ -67,6 +67,10 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import StatusTag from './statusTag.vue';
+
+  import useUserStore from '@/store/modules/user';
+
+  const userStore = useUserStore();
 
   const props = defineProps<{
     type: 'followRecord' | 'followPlan';
