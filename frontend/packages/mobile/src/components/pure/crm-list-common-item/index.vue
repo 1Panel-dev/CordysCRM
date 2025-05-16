@@ -1,9 +1,10 @@
 <template>
   <div class="crm-list-common-item" @click="emit('click', item)">
     <div class="crm-list-common-item-header">
-      <div class="text-[14px] font-semibold text-[var(--text-n1)]">{{ props.item.name }}</div>
+      <div class="one-line-text text-[14px] font-semibold text-[var(--text-n1)]">{{ props.item.name }}</div>
       <CrmTag
         v-if="item.stage"
+        class="flex-shrink-0"
         :bg-color="getStage(item.stage)?.bgColor ?? 'var(--info-5)'"
         :tag="t(getStage(item.stage)?.label)"
         :text-color="getStage(item.stage)?.color ?? 'var(--info-blue)'"
@@ -17,7 +18,7 @@
         :class="desc.fullLine ? 'basis-full' : ''"
       >
         <div class="whitespace-nowrap text-[12px] text-[var(--text-n4)]">{{ desc.label }}</div>
-        <div class="text-[12px] text-[var(--text-n1)]">{{ desc.value }}</div>
+        <div class="break-words text-[12px] text-[var(--text-n1)]">{{ desc.value }}</div>
       </div>
     </div>
     <van-divider v-if="actionList?.length" class="!m-0" />

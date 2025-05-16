@@ -9,7 +9,7 @@
             {{ personalInfo?.userName }}
           </div>
           <div>
-            <van-tag color="var(--text-n9)" text-color="var(--text-n1)" size="medium">
+            <van-tag color="var(--text-n9)" class="one-line-text !block" text-color="var(--text-n1)" size="medium">
               {{ personalInfo?.departmentName }}
             </van-tag>
           </div>
@@ -26,7 +26,14 @@
           :value="personalInfo?.phone"
           @click="handleEditInfo('phone')"
         />
-        <van-cell center class="!p-[16px]" :title="t('mine.email')" is-link @click="handleEditInfo('email')">
+        <van-cell
+          center
+          class="email-cell !p-[16px]"
+          :title="t('mine.email')"
+          is-link
+          title-class="email-title-class"
+          @click="handleEditInfo('email')"
+        >
           <template #value>
             <div class="one-line-text text-[var(--text-n4)]">
               {{ personalInfo?.email }}
@@ -62,6 +69,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { OrgUserInfo } from '@lib/shared/models/system/org';
 
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
@@ -160,5 +168,18 @@
   .person-bottom-border {
     margin: 0 16px;
     .half-px-border-bottom();
+  }
+</style>
+
+<style lang="less">
+  .email-cell {
+    &.van-cell {
+      display: flex;
+      justify-content: space-between;
+      .email-title-class {
+        min-width: 60px;
+        @apply flex-grow-0;
+      }
+    }
   }
 </style>

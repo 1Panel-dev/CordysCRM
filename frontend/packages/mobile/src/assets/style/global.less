@@ -1,3 +1,4 @@
+@import url('./var.less');
 html,
 body {
   padding-bottom: env(safe-area-inset-bottom);
@@ -46,6 +47,19 @@ body {
         border-bottom: 1px solid var(--van-cell-border-color);
         transform: scaleY(0.5);
       }
+    }
+  }
+}
+// 设置列表下label溢出省略
+.van-list {
+  .van-radio {
+    .van-radio__label {
+      .one-line-text();
+    }
+  }
+  .van-checkbox {
+    .van-checkbox__label {
+      .one-line-text();
     }
   }
 }

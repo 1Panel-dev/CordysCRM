@@ -88,4 +88,5 @@ export default {
   'common.head': 'Head',
   'common.createTime': 'Created time',
   'common.login': 'Login...',
+  'common.searchByName': 'Search by name',
 };

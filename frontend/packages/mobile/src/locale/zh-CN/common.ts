@@ -89,4 +89,5 @@ export default {
   'common.head': '负责人',
   'common.createTime': '创建时间',
   'common.login': '登录中...',
+  'common.searchByName': '通过名称搜索',
 };

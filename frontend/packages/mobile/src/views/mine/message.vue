@@ -13,7 +13,7 @@
               <van-search
                 v-model="keyword"
                 shape="round"
-                :placeholder="t('mine.messageSearchPlaceholder')"
+                :placeholder="t('common.searchByName')"
                 class="flex-1 !p-0"
                 @search="() => refreshMessageList()"
                 @clear="() => refreshMessageList()"
