@@ -5,6 +5,7 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.common.constants.InternalUser;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
@@ -86,6 +87,7 @@ public class PoolCustomerService {
 			return new ArrayList<>();
 		}
 
+
 		List<String> userIds = pools.stream().flatMap(pool -> Stream.of(pool.getCreateUser(), pool.getUpdateUser())).toList();
 		List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
 		Map<String, String> userMap = createOrUpdateUsers.stream()
@@ -111,7 +113,7 @@ public class PoolCustomerService {
 		pools.forEach(pool -> {
 			List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), currentOrgId);
 			List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), currentOrgId);
-			if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser)) {
+			if (scopeIds.contains(currentUser) || ownerIds.contains(currentUser) || StringUtils.equals(currentUser, InternalUser.ADMIN.getValue())) {
 				CustomerPoolDTO poolDTO = new CustomerPoolDTO();
 				BeanUtils.copyBean(poolDTO, pool);
 
