@@ -242,7 +242,7 @@ public class CustomerService {
         if (StringUtils.isBlank(request.getOwner())) {
             customer.setOwner(userId);
         }
-        poolCustomerService.validateCapacity(1, request.getOwner(), orgId);
+        poolCustomerService.validateCapacity(1, customer.getOwner(), orgId);
         customer.setCreateTime(System.currentTimeMillis());
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setCollectionTime(customer.getCreateTime());

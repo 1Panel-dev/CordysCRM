@@ -231,7 +231,7 @@ public class ClueService {
         if (StringUtils.isBlank(request.getOwner())) {
             clue.setOwner(userId);
         }
-        poolClueService.validateCapacity(1, request.getOwner(), orgId);
+        poolClueService.validateCapacity(1, clue.getOwner(), orgId);
         clue.setCreateTime(System.currentTimeMillis());
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setCollectionTime(clue.getCreateTime());
