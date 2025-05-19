@@ -2,6 +2,7 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.pager.Pager;
 import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.CodingUtils;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
@@ -243,5 +244,28 @@ public class PersonalCenterControllerTests extends BaseTest {
         this.requestPost("/personal/center/repeat/opportunity/detail", request).andExpect(status().isOk());
     }
 
+    @Test
+    @Order(9)
+    public void changePassword() throws Exception {
+        PersonalInfoRequest personalInfoRequest = new PersonalInfoRequest();
+        personalInfoRequest.setPhone("4000520755");
+        personalInfoRequest.setEmail("admin@cordys-crm.io");
 
+        this.requestPost("/personal/center/update", personalInfoRequest).andExpect(status().isOk());
+        String PREFIX = "personal_email_code:";  // Redis 存储前缀
+        stringRedisTemplate.opsForValue().set(PREFIX + "3Gyq3@Cordys.com", "253574", 10, TimeUnit.MINUTES);
+        PersonalPasswordRequest personalPasswordRequest  = new PersonalPasswordRequest();
+        personalPasswordRequest.setPassword("Gyq124");
+        personalPasswordRequest.setEmail("3Gyq3@Cordys.com");
+        personalPasswordRequest.setCode("253574");
+        this.requestPost("/personal/center/info/reset", personalPasswordRequest).andExpect(status().isOk());
+        extUserMapper.updateUserPassword(CodingUtils.md5(DEFAULT_USER_PASSWORD), "admin");
+       // personalPasswordRequest.setPassword(DEFAULT_USER_PASSWORD);
+        adminAuthInfo=null;
+        permissionAuthInfo=null;
+        //DEFAULT_USER_PASSWORD=CodingUtils.md5("Gyq124");
+        login();
+
+
+    }
 }
