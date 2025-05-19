@@ -78,7 +78,7 @@
   const tabList = [
     {
       name: 'info',
-      title: t('customer.info'),
+      title: t('clue.info'),
     },
     {
       name: 'record',

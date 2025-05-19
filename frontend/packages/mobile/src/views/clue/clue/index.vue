@@ -13,7 +13,7 @@
       <van-search
         v-model="keyword"
         shape="round"
-        :placeholder="t('customer.searchPlaceholder')"
+        :placeholder="t('clue.searchPlaceholder')"
         class="flex-1 !p-0"
         @search="search"
       />
@@ -50,19 +50,12 @@
         <CrmListCommonItem :item="item" :actions="actions(item)" @click="goDetail"></CrmListCommonItem>
       </template>
     </CrmList>
-    <van-action-sheet
-      v-model:show="moreActionShow"
-      :actions="moreActions"
-      close-on-click-action
-      :cancel-text="hasAnyPermission(['CLUE_MANAGEMENT:DELETE']) ? t('common.delete') : ''"
-      @cancel="handleDelete"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { ActionSheetAction, showConfirmDialog, showSuccessToast } from 'vant';
+  import { showConfirmDialog, showSuccessToast } from 'vant';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -75,7 +68,6 @@
   import { deleteClue, getClueList } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
   import useHiddenTab from '@/hooks/useHiddenTab';
-  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import { ClueRouteEnum, CommonRouteEnum, CustomerRouteEnum } from '@/enums/routeEnum';
 
@@ -105,10 +97,7 @@
   const { tabList, activeFilter } = useHiddenTab(filterButtons, FormDesignKeyEnum.CLUE);
 
   const activeClue = ref<ClueListItem>();
-  const activeClueId = computed(() => activeClue.value?.id ?? '');
   const { transformFormData } = await useFormCreateTransform(FormDesignKeyEnum.CLUE);
-
-  const moreActionShow = ref(false);
 
   function handleEdit(id: string) {
     router.push({
@@ -145,7 +134,7 @@
     });
   }
 
-  function handleDelete() {
+  function handleDelete(id: string) {
     showConfirmDialog({
       title: t('clue.deleteTitle'),
       message: t('clue.batchDeleteContentTip'),
@@ -154,7 +143,7 @@
       beforeClose: async (action) => {
         if (action === 'confirm') {
           try {
-            await deleteClue(activeClueId.value);
+            await deleteClue(id);
             showSuccessToast(t('common.deleteSuccess'));
             crmListRef.value?.loadList(true);
             return Promise.resolve(true);
@@ -169,31 +158,6 @@
       },
     });
   }
-
-  const moreActions: ActionSheetAction[] = [
-    {
-      name: t('common.edit'),
-      permission: ['CLUE_MANAGEMENT:UPDATE'],
-      callback: () => {
-        handleEdit(activeClueId.value);
-      },
-    },
-    {
-      name: t('common.transfer'),
-      permission: ['CLUE_MANAGEMENT:UPDATE'],
-      callback: () => {
-        handleTransfer(activeClueId.value);
-      },
-    },
-    {
-      name: t('common.convertToCustomer'),
-      permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-      allPermission: true,
-      callback: () => {
-        convertTo(activeClueId.value, FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER);
-      },
-    },
-  ].filter((e) => (e.allPermission ? hasAllPermission(e.permission) : hasAnyPermission(e.permission)));
 
   const actions = computed(() => {
     return (row: ClueListItem) => {
@@ -215,19 +179,23 @@
             handleTransfer(item.id);
           },
         },
-        ...(moreActions.length
-          ? [
-              {
-                label: t('common.more'),
-                icon: 'iconicon_ellipsis',
-                permission: [],
-                action: (item: ClueListItem) => {
-                  moreActionShow.value = true;
-                  activeClue.value = item;
-                },
-              },
-            ]
-          : []),
+        {
+          label: t('common.convertToCustomer'),
+          icon: 'iconicon_edit1',
+          permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+          allPermission: true,
+          action: (item: ClueListItem) => {
+            convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER);
+          },
+        },
+        {
+          label: t('common.delete'),
+          icon: 'iconicon_delete',
+          permission: ['CLUE_MANAGEMENT:DELETE'],
+          action: (item: ClueListItem) => {
+            handleDelete(item.id);
+          },
+        },
       ];
     };
   });

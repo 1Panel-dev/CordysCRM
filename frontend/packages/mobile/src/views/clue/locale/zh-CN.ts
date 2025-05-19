@@ -1,5 +1,6 @@
 export default {
   'clue.department': '部门',
+  'clue.info': '线索信息',
   'clue.convertedToCustomer': '已转客户',
   'clue.batchDeleteContentTip': '删除后，成员无法查到该线索，请谨慎操作！',
   'clue.deleteTitle': '确认删除线索吗？',
@@ -8,4 +9,5 @@ export default {
   'clue.interested': '感兴趣',
   'clue.clueProgress': '线索进度',
   'clue.transferredToCustomer': '已转为客户',
+  'clue.searchPlaceholder': '请输入公司名称',
 };

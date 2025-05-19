@@ -234,18 +234,14 @@
       return [];
     }
     return [
-      ...(showAction.value
-        ? [
-            {
-              label: t('common.edit'),
-              key: 'edit',
-              text: false,
-              ghost: true,
-              class: 'n-btn-outline-primary',
-              permission: ['CLUE_MANAGEMENT:UPDATE'],
-            },
-          ]
-        : []),
+      {
+        label: t('common.edit'),
+        key: 'edit',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CLUE_MANAGEMENT:UPDATE'],
+      },
       {
         label: t('common.transfer'),
         key: 'transfer',
@@ -279,16 +275,12 @@
       {
         type: 'divider',
       },
-      ...(showAction.value
-        ? [
-            {
-              label: t('common.delete'),
-              key: 'delete',
-              permission: ['CLUE_MANAGEMENT:DELETE'],
-              danger: true,
-            },
-          ]
-        : []),
+      {
+        label: t('common.delete'),
+        key: 'delete',
+        permission: ['CLUE_MANAGEMENT:DELETE'],
+        danger: true,
+      },
     ];
   });
 

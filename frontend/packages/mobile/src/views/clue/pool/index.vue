@@ -4,7 +4,7 @@
       <van-search
         v-model="keyword"
         shape="round"
-        :placeholder="t('customer.searchPlaceholder')"
+        :placeholder="t('clue.searchPlaceholder')"
         class="flex-1 !p-0"
         @search="search"
       />
