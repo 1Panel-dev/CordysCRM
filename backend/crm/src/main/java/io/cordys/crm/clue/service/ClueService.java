@@ -227,8 +227,11 @@ public class ClueService {
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Clue add(ClueAddRequest request, String userId, String orgId) {
-        poolClueService.validateCapacity(1, request.getOwner(), orgId);
         Clue clue = BeanUtils.copyBean(new Clue(), request);
+        if (StringUtils.isBlank(request.getOwner())) {
+            clue.setOwner(userId);
+        }
+        poolClueService.validateCapacity(1, request.getOwner(), orgId);
         clue.setCreateTime(System.currentTimeMillis());
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setCollectionTime(clue.getCreateTime());
@@ -238,9 +241,6 @@ public class ClueService {
         clue.setId(IDGenerator.nextStr());
         clue.setStage(ClueStatus.NEW.name());
         clue.setInSharedPool(false);
-        if (StringUtils.isBlank(request.getOwner())) {
-            clue.setOwner(userId);
-        }
 
         // 校验名称重复
         checkAddExist(clue);

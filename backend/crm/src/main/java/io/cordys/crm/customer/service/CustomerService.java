@@ -238,8 +238,11 @@ public class CustomerService {
 
     @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Customer add(CustomerAddRequest request, String userId, String orgId) {
-        poolCustomerService.validateCapacity(1, request.getOwner(), orgId);
         Customer customer = BeanUtils.copyBean(new Customer(), request);
+        if (StringUtils.isBlank(request.getOwner())) {
+            customer.setOwner(userId);
+        }
+        poolCustomerService.validateCapacity(1, request.getOwner(), orgId);
         customer.setCreateTime(System.currentTimeMillis());
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setCollectionTime(customer.getCreateTime());
@@ -248,9 +251,6 @@ public class CustomerService {
         customer.setOrganizationId(orgId);
         customer.setId(IDGenerator.nextStr());
         customer.setInSharedPool(false);
-        if (StringUtils.isBlank(request.getOwner())) {
-            customer.setOwner(userId);
-        }
 
         // 校验名称重复
         checkAddExist(customer);
