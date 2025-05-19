@@ -23,7 +23,7 @@
                 icon="iconicon_handwritten_signature"
                 color="var(--primary-8)"
                 icon-size="16px"
-                @click="() => handleEdit(item.id)"
+                @click="() => handleEdit(item)"
               />
             </div>
           </div>
@@ -109,15 +109,21 @@
     });
   }
 
-  function handleEdit(id: string) {
+  function handleEdit(item: CollaborationItem) {
     router.push({
       name: CustomerRouteEnum.CUSTOMER_COLLABORATOR,
       query: {
         sourceId: props.sourceId,
-        id,
+        id: item.id,
       },
       state: {
-        params: JSON.stringify({ userIds: collaborators.value.map((e) => e.userId) }),
+        params: JSON.stringify({
+          userIds: collaborators.value.map((e) => e.userId),
+          collaborator: {
+            id: item.userId,
+            name: item.userName,
+          },
+        }),
       },
     });
   }

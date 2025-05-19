@@ -77,18 +77,18 @@
   const { t } = useI18n();
 
   const formRef = ref<FormInstance>();
+  const lastPageParams = window.history.state.params ? JSON.parse(window.history.state.params) : null; // 获取上个页面带过来的参数
   const form = ref<{
     id: string;
-    member: string | string[];
+    member: string;
     permission: CollaborationType;
   }>({
     id: '',
-    member: '',
+    member: lastPageParams.collaborator?.id || '',
     permission: 'READ_ONLY',
   });
-  const selectedRows = ref([]);
+  const selectedRows = ref(lastPageParams.collaborator ? [lastPageParams.collaborator] : []);
   const loading = ref(false);
-  const lastPageParams = window.history.state.params ? JSON.parse(window.history.state.params) : null; // 获取上个页面带过来的参数
 
   function disabledSelection(row: Record<string, any>) {
     return lastPageParams.userIds?.includes(row.id);
@@ -107,7 +107,7 @@
       } else {
         await addCustomerCollaboration({
           customerId: route.query.sourceId as string,
-          userId: form.value.member[0],
+          userId: form.value.member,
           collaborationType: form.value.permission,
         });
         showSuccessToast(t('common.addSuccess'));

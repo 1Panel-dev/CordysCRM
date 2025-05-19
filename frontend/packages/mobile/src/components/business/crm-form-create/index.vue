@@ -1,6 +1,6 @@
 <template>
   <CrmPageWrapper :title="formCreateTitle">
-    <van-form ref="formRef" class="crm-form" required>
+    <van-form ref="formRef" class="crm-form" required="auto">
       <van-cell-group inset>
         <template v-for="item in mobileFieldList" :key="item.id">
           <component
@@ -31,7 +31,7 @@
           block
           @click="handleSave"
         >
-          {{ route.query.id ? t('common.update') : t('common.create') }}
+          {{ route.query.needInitDetail === 'Y' ? t('common.update') : t('common.create') }}
         </van-button>
       </div>
     </template>

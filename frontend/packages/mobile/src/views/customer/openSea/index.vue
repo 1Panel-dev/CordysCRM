@@ -142,7 +142,9 @@
   watch(
     () => activeOpenSea.value,
     () => {
-      crmListRef.value?.loadList(true);
+      nextTick(() => {
+        crmListRef.value?.loadList(true);
+      });
     }
   );
 

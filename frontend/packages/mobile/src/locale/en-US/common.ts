@@ -89,4 +89,5 @@ export default {
   'common.createTime': 'Created time',
   'common.login': 'Login...',
   'common.searchByName': 'Search by name',
+  'common.optionNotExist': 'Option does not exist',
 };

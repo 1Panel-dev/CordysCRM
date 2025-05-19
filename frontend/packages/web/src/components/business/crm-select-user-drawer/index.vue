@@ -48,6 +48,7 @@
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import { Option } from '@/components/business/crm-select-user-drawer/type';
   import roleTreeNodePrefix from './roleTreeNodePrefix.vue';
@@ -209,6 +210,7 @@
         pattern,
         selectedKeys: addMembers.value,
         showIrrelevantNodes: false,
+        class: 'px-[16px] overflow-hidden',
         defaultExpandedKeys: [
           options.value[0]?.value,
           ...(options.value[0]?.children || []).map((item: Record<string, any>) => item.value),
@@ -250,10 +252,37 @@
             },
             {
               default: () => {
-                return h('div', {}, { default: () => option.label });
+                return h(
+                  'div',
+                  {},
+                  {
+                    default: () => option.label,
+                  }
+                );
               },
               trigger: () => {
-                return h('div', { class: 'one-line-text' }, { default: () => option.label });
+                return h(
+                  'div',
+                  { class: 'one-line-text' },
+                  {
+                    default: () => [
+                      option.label,
+                      option.commander
+                        ? h(
+                            CrmTag,
+                            {
+                              type: 'primary',
+                              theme: 'lightOutLine',
+                              class: 'ml-[8px]',
+                              size: 'small',
+                              tooltipDisabled: true,
+                            },
+                            { default: () => t('common.head') }
+                          )
+                        : null,
+                    ],
+                  }
+                );
               },
             }
           );
@@ -335,11 +364,8 @@
           font-size: 14px;
         }
       }
-      .n-transfer-list-body {
-        padding: 0 16px;
-      }
       .n-transfer-filter {
-        padding: 0 0 16px;
+        padding: 0 16px 16px;
         .n-input {
           padding: 4px 8px;
           font-size: 14px;
@@ -356,15 +382,24 @@
             color: var(--primary-8);
           }
         }
+        .n-tree-node-content__text {
+          @apply overflow-hidden;
+        }
       }
       .n-transfer-list-item--target {
         margin-bottom: 8px;
         .n-transfer-list-item__background {
-          background-color: var(--primary-7) !important;
+          background-color: var(--text-n9) !important;
         }
         .n-transfer-list-item__close {
+          font-size: 14px;
           opacity: 1 !important;
         }
+      }
+    }
+    :deep(.n-transfer-list--target) {
+      .n-transfer-list-body {
+        padding: 0 16px;
       }
     }
   }

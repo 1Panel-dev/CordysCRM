@@ -208,13 +208,14 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       thFontWeight: 500,
       tdColorHover: getLessVariableValue('--text-n9'),
       tdTextColor: getLessVariableValue('--text-n1'),
+      tdColorHoverModal: getLessVariableValue('--text-n9'),
       emptyPadding: '12px',
     },
     Input: {
       fontSizeSmall: '12px',
       fontSizeMedium: '14px',
       fontSizeLarge: '16px',
-      placeholderColor: getLessVariableValue('--text-n6'),
+      placeholderColor: getLessVariableValue('--text-n4'),
       border: `1px solid ${getLessVariableValue('--text-n7')}`,
       paddingSmall: '8px',
       paddingMedium: '8px',
@@ -297,6 +298,10 @@ export function getThemeOverrides(): GlobalThemeOverrides {
     Scrollbar: {
       color: getLessVariableValue('--text-n8'),
       colorHover: getLessVariableValue('--text-n8'),
+    },
+    Transfer: {
+      borderColor: getLessVariableValue('--text-n8'),
+      dividerColor: getLessVariableValue('--text-n8'),
     },
   };
 }

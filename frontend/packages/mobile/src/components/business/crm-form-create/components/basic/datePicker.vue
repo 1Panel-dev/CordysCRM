@@ -16,13 +16,24 @@
   <van-popup v-model:show="showPicker" destroy-on-close round position="bottom">
     <van-picker-group
       :title="t('formCreate.pickDate')"
-      :tabs="[t('formCreate.pickDate'), t('formCreate.pickTime')]"
+      :tabs="
+        props.fieldConfig.dateType === 'datetime'
+          ? [t('formCreate.pickDate'), t('formCreate.pickTime')]
+          : [t('formCreate.pickDate')]
+      "
       :next-step-text="t('formCreate.next')"
       @confirm="onConfirm"
       @cancel="showPicker = false"
     >
-      <van-date-picker v-model="currentDate" />
-      <van-time-picker v-model="currentTime" :columns-type="['hour', 'minute', 'second']" />
+      <van-date-picker
+        v-model="currentDate"
+        :columns-type="props.fieldConfig.dateType === 'month' ? ['year', 'month'] : ['year', 'month', 'day']"
+      />
+      <van-time-picker
+        v-if="props.fieldConfig.dateType === 'datetime'"
+        v-model="currentTime"
+        :columns-type="['hour', 'minute', 'second']"
+      />
     </van-picker-group>
   </van-popup>
 </template>
@@ -73,8 +84,9 @@
         currentDate.value = date.format('YYYY-MM-DD').split('-');
         currentTime.value = date.format('HH:mm:ss').split(':');
       } else {
-        currentDate.value = [];
-        currentTime.value = [];
+        const date = dayjs();
+        currentDate.value = date.format('YYYY-MM-DD').split('-');
+        currentTime.value = date.format('HH:mm:ss').split(':');
       }
     },
     {

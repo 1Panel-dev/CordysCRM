@@ -30,18 +30,18 @@
     >
       <template #item="{ item }">
         <div
-          class="flex w-full items-center gap-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[16px]"
+          class="flex w-full items-center gap-[16px] overflow-hidden rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[16px]"
           @click="goDetail(item)"
         >
           <CrmAvatar :text="item.name" />
-          <div class="flex flex-1 flex-col gap-[2px]">
+          <div class="flex flex-1 flex-col gap-[2px] overflow-hidden">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-[8px]">
-                <div class="text-[16px] text-[var(--text-n1)]">{{ item.name }}</div>
+              <div class="flex items-center gap-[8px] overflow-hidden">
+                <div class="one-line-text text-[16px] text-[var(--text-n1)]">{{ item.name }}</div>
                 <van-tag
                   color="var(--success-5)"
                   text-color="var(--success-green)"
-                  class="rounded-[var(--border-radius-small)] !p-[2px_6px]"
+                  class="min-w-[36px] rounded-[var(--border-radius-small)] !p-[2px_6px]"
                 >
                   {{ t('common.normal') }}
                 </van-tag>

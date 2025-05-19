@@ -1,6 +1,7 @@
 <template>
   <CrmList
     v-if="props.multiple"
+    ref="crmListRef"
     v-model:model-value="list"
     :keyword="props.keyword"
     :list-params="props.listParams"
@@ -69,6 +70,10 @@
     crmListRef.value?.loadList(refresh);
   }
 
+  function filterListByKeyword(keywordKey: string) {
+    crmListRef.value?.filterListByKeyword(keywordKey);
+  }
+
   onBeforeMount(() => {
     if (!props.multiple && Array.isArray(value.value)) {
       [value.value] = value.value;
@@ -84,6 +89,7 @@
 
   defineExpose({
     loadList,
+    filterListByKeyword,
   });
 </script>
 

@@ -21,6 +21,7 @@
               v-model:value="formDetail[item.id]"
               :field-config="item"
               :path="item.id"
+              :need-init-detail="needInitDetail"
               @change="($event: any) => handleFieldChange($event, item)"
             />
           </div>
@@ -224,7 +225,7 @@
     await initFormConfig();
     emit('init', formCreateTitle.value);
     if (props.sourceId && props.needInitDetail) {
-      initFormDetail();
+      await initFormDetail();
     }
     initForm();
   });

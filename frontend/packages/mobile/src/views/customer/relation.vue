@@ -95,13 +95,13 @@
       if (route.query.id) {
         await updateCustomerRelationItem(route.query.sourceId as string, {
           id: route.query.id as string,
-          customerId: customerId.value[0],
+          customerId: customerId.value,
           relationType: relationType.value,
         });
         showSuccessToast(t('common.updateSuccess'));
       } else {
         await addCustomerRelationItem(route.query.sourceId as string, {
-          customerId: customerId.value[0],
+          customerId: customerId.value,
           relationType: relationType.value,
         });
         showSuccessToast(t('common.addSuccess'));

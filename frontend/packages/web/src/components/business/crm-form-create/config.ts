@@ -462,7 +462,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.CUSTOMER]: addCustomer,
   [FormDesignKeyEnum.BUSINESS]: addOpportunity,
   [FormDesignKeyEnum.CONTACT]: addCustomerContact,
-  [FormDesignKeyEnum.CUSTOMER_CONTACT]: async () => ({}),
+  [FormDesignKeyEnum.CUSTOMER_CONTACT]: addCustomerContact,
   [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: addCustomerFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: addCustomerFollowRecord,
   [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: addClueFollowPlan,

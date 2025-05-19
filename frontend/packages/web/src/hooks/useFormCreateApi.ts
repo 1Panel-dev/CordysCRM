@@ -63,6 +63,33 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   // 详情
   const detail = ref<Record<string, any>>({});
 
+  /**
+   * 表单描述显示规则处理
+   * @param form 表单数据
+   */
+  function formDescriptionShowControlRulesSet(form: Record<string, any>) {
+    fieldList.value.forEach((item) => {
+      item.showControlRules?.forEach((rule) => {
+        fieldList.value.forEach((e) => {
+          // 若配置了该值的显示规则，且该字段在显示规则中，则显示
+          let value = '';
+          if (item.businessKey) {
+            value = form[item.businessKey];
+          } else {
+            const field = form.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
+            value = field?.fieldValue || '';
+          }
+          if (rule.value === value && rule.fieldIds.includes(e.id)) {
+            e.show = true;
+          } else if (rule.fieldIds.includes(e.id)) {
+            // 若该字段在显示规则中，但值不符合，则隐藏该字段
+            e.show = false;
+          }
+        });
+      });
+    });
+  }
+
   async function initFormDescription() {
     try {
       const asyncApi = getFormDetailApiMap[props.formKey.value];
@@ -71,7 +98,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       descriptions.value = [];
       detail.value = form;
       collaborationType.value = form.collaborationType;
+      formDescriptionShowControlRulesSet(form);
+
       fieldList.value.forEach((item) => {
+        if (item.show === false) return;
         if (item.businessKey) {
           const options = form.optionMap?.[item.businessKey];
           // 业务标准字段读取最外层，读取form[item.businessKey]取到 id 值，然后去 options 里取 name
@@ -172,6 +202,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       sourceName.value = res.name;
       fieldList.value.forEach((item) => {
         if (item.businessKey) {
+          // 业务标准字段读取最外层
+          formDetail.value[item.id] = initFieldValue(item, res[item.businessKey]);
           const options = res.optionMap?.[item.businessKey];
           if (
             [
@@ -184,14 +216,19 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             ].includes(item.type)
           ) {
             // 处理成员和数据源类型的字段
-            item.initialOptions = options?.map((e) => ({
-              ...e,
-              name: e.name || t('common.optionNotExist'),
-            }));
+            item.initialOptions = options
+              ?.filter((e) => formDetail.value[item.id]?.includes(e.id))
+              .map((e) => ({
+                ...e,
+                name: e.name || t('common.optionNotExist'),
+              }));
           }
-          // 业务标准字段读取最外层
-          formDetail.value[item.id] = initFieldValue(item, res[item.businessKey]);
         } else {
+          // 其他的字段读取moduleFields
+          const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
+          if (field) {
+            formDetail.value[item.id] = initFieldValue(item, field.fieldValue);
+          }
           const options = res.optionMap?.[item.id];
           if (
             [
@@ -204,15 +241,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             ].includes(item.type)
           ) {
             // 处理成员和数据源类型的字段
-            item.initialOptions = options?.map((e) => ({
-              ...e,
-              name: e.name || t('common.optionNotExist'),
-            }));
-          }
-          // 其他的字段读取moduleFields
-          const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
-          if (field) {
-            formDetail.value[item.id] = initFieldValue(item, field.fieldValue);
+            item.initialOptions = options
+              ?.filter((e) => formDetail.value[item.id].includes(e.id))
+              .map((e) => ({
+                ...e,
+                name: e.name || t('common.optionNotExist'),
+              }));
           }
         }
         if (item.type === FieldTypeEnum.DATE_TIME) {
@@ -448,8 +482,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (props.needInitDetail?.value) {
         item.defaultValue = undefined;
         item.initialOptions = [];
-      }
-      if (!formDetail.value[item.id]) {
+      } else if (!formDetail.value[item.businessKey || item.id]) {
         let defaultValue = props.needInitDetail?.value ? '' : item.defaultValue || '';
         if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
           defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
@@ -460,7 +493,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               ? [defaultValue]
               : defaultValue || [];
         }
-        formDetail.value[item.id] = defaultValue;
+        formDetail.value[item.businessKey || item.id] = defaultValue;
       }
       const fullRules: FormCreateFieldRule[] = [];
       (item.rules || []).forEach((rule) => {

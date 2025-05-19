@@ -10,6 +10,7 @@
           v-model:value="relation.relationType"
           :options="getRelationOptions(relation)"
           :disabled="props.readonly"
+          :placeholder="t('common.pleaseSelect')"
         />
         <CrmDataSource
           v-model:value="relation.customerId"
@@ -30,7 +31,7 @@
           </template>
         </n-button>
       </div>
-      <div class="flex justify-center">
+      <div class="flex">
         <n-button
           v-if="!props.readonly"
           v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
@@ -81,9 +82,9 @@
   const Message = useMessage();
 
   const originRelations = ref<Record<string, any>[]>([
-    { relationType: 'GROUP', customerId: [], id: '', customerName: [] },
+    { relationType: undefined, customerId: [], id: '', customerName: [] },
   ]);
-  const relations = ref<Record<string, any>[]>([{ relationType: 'GROUP', customerId: [], id: '', customerName: [] }]);
+  const relations = ref<Record<string, any>[]>([{ relationType: undefined, customerId: [], id: '', customerName: [] }]);
   const relationOptions = [
     {
       label: t('customer.group'),
@@ -146,7 +147,7 @@
       if (res.length === 0) {
         relations.value = [
           {
-            relationType: 'GROUP',
+            relationType: undefined,
             customerId: [],
             id: '',
             customerName: [],

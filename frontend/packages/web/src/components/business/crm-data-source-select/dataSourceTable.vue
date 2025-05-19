@@ -3,7 +3,7 @@
   <CrmTable
     v-model:checked-row-keys="selectedKeys"
     v-bind="propsRes"
-    class="!h-[400px]"
+    class="!h-[60vh]"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
@@ -69,7 +69,6 @@
     {
       title: t('common.name'),
       key: 'name',
-      width: 200,
       ellipsis: {
         tooltip: true,
       },

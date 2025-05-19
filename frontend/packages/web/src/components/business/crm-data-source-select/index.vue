@@ -67,7 +67,7 @@
     [FieldDataSourceTypeEnum.BUSINESS]: 'crmFormDesign.business',
     [FieldDataSourceTypeEnum.PRODUCT]: 'crmFormDesign.product',
     [FieldDataSourceTypeEnum.CLUE]: 'crmFormDesign.clue',
-    [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: '',
+    [FieldDataSourceTypeEnum.CUSTOMER_OPTIONS]: 'crmFormDesign.customer',
     [FieldDataSourceTypeEnum.USER_OPTIONS]: '',
   };
 

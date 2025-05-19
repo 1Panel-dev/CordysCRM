@@ -36,7 +36,7 @@
                 :placement="item.tooltipPosition ?? 'top-start'"
               >
                 <template #trigger>
-                  <div>
+                  <div class="one-line-text">
                     {{
                       item.value === undefined || item.value === null || item.value?.toString() === ''
                         ? '-'

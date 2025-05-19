@@ -49,8 +49,8 @@
           <CrmSelectList
             v-if="props.dataSourceType"
             ref="crmSelectListRef"
-            v-model:value="value"
-            v-model:selected-rows="selectedRows"
+            v-model:value="pickerValue"
+            v-model:selected-rows="pickerSelectedRows"
             :multiple="props.multiple"
             :keyword="keyword"
             :load-list-api="sourceApi[props.dataSourceType]"
@@ -65,7 +65,7 @@
             type="default"
             class="crm-button-primary--secondary !rounded-[var(--border-radius-small)] !text-[16px]"
             block
-            @click="showPicker = false"
+            @click="onCancel"
           >
             {{ t('common.cancel') }}
           </van-button>
@@ -73,7 +73,7 @@
             type="primary"
             class="!rounded-[var(--border-radius-small)] !text-[16px]"
             block
-            :disabled="!selectedRows.length"
+            :disabled="!pickerSelectedRows.length"
             @click="onConfirm"
           >
             {{ t('common.confirm') }}
@@ -130,6 +130,8 @@
   });
 
   const fieldValue = ref('');
+  const pickerValue = ref<string[]>([]);
+  const pickerSelectedRows = ref<Record<string, any>[]>([]);
   const crmSelectListRef = ref<InstanceType<typeof CrmSelectList>>();
   const showPicker = ref(false);
   const keyword = ref('');
@@ -156,27 +158,47 @@
 
   function onConfirm() {
     showPicker.value = false;
-    fieldValue.value = selectedRows.value.map((item) => item.name).join('；');
-    value.value = props.multiple ? selectedRows.value.map((item) => item.id) : selectedRows.value[0].id;
+    selectedRows.value = pickerSelectedRows.value;
+    fieldValue.value = pickerSelectedRows.value.map((item) => item.name).join('；');
+    value.value = props.multiple ? pickerSelectedRows.value.map((item) => item.id) : pickerSelectedRows.value[0].id;
     emit('change', value.value);
+  }
+
+  function onCancel() {
+    pickerValue.value = Array.isArray(value.value) ? value.value : [value.value];
+    showPicker.value = false;
   }
 
   function selectListTransform(item: Record<string, any>) {
     return {
       ...item,
       disabled: props.disabledSelection ? props.disabledSelection(item) : false,
-      checked: selectedRows.value.some((row) => row.id === item.id),
+      checked: pickerSelectedRows.value.some((row) => row.id === item.id),
     };
   }
 
   function search() {
-    crmSelectListRef.value?.loadList(true);
+    crmSelectListRef.value?.filterListByKeyword('name');
   }
 
   watch(
     () => selectedRows.value,
     (val) => {
-      fieldValue.value = val.map((item) => item.name).join('；');
+      fieldValue.value = val
+        .filter((e) => value.value.includes(e.id))
+        .map((item) => item.name)
+        .join('；');
+      pickerSelectedRows.value = val;
+    },
+    {
+      immediate: true,
+    }
+  );
+
+  watch(
+    () => value.value,
+    (val) => {
+      pickerValue.value = Array.isArray(val) ? val : [val];
     },
     {
       immediate: true,

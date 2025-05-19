@@ -273,7 +273,7 @@
     },
     {
       key: 'operation',
-      width: 100,
+      width: 80,
       fixed: 'right',
       render: (row) =>
         h(CrmOperationButton, {

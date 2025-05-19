@@ -48,7 +48,16 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         if (item.businessKey) {
           const options = form.optionMap?.[item.businessKey];
           // 业务标准字段读取最外层，读取form[item.businessKey]取到 id 值，然后去 options 里取 name
-          const name = options?.find((e) => e.id === form[item.businessKey as string])?.name;
+          let name: string | string[] = '';
+          const value = form[item.businessKey];
+          // 若字段值是选项值，则取选项值的name
+          if (options) {
+            if (Array.isArray(value)) {
+              name = options.filter((e) => value.includes(e.id)).map((e) => e.name);
+            } else {
+              name = options.find((e) => e.id === value)?.name;
+            }
+          }
           if (item.type === FieldTypeEnum.DATE_TIME) {
             descriptions.value.push({
               label: item.name,
@@ -78,6 +87,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               value: field?.fieldValue || [],
               isTitle: true,
               fieldInfo: item,
+            });
+          } else if (item.type === FieldTypeEnum.PICTURE) {
+            descriptions.value.push({
+              label: item.name,
+              value: field?.fieldValue || [],
+              valueSlotName: 'image',
             });
           } else {
             let value = field?.fieldValue || '';
@@ -131,6 +146,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       sourceName.value = res.name;
       fieldList.value = fieldList.value.map((item) => {
         if (item.businessKey) {
+          // 业务标准字段读取最外层
+          formDetail.value[item.id] = initFieldValue(item, res[item.businessKey]);
           const options = res.optionMap?.[item.businessKey];
           if (
             [
@@ -143,11 +160,19 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             ].includes(item.type)
           ) {
             // 处理成员和数据源类型的字段
-            item.initialOptions = options;
+            item.initialOptions = options
+              ?.filter((e) => formDetail.value[item.id].includes(e.id))
+              .map((e) => ({
+                ...e,
+                name: e.name || t('common.optionNotExist'),
+              }));
           }
-          // 业务标准字段读取最外层
-          formDetail.value[item.id] = initFieldValue(item, res[item.businessKey]);
         } else {
+          // 其他的字段读取moduleFields
+          const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
+          if (field) {
+            formDetail.value[item.id] = initFieldValue(item, field.fieldValue);
+          }
           const options = res.optionMap?.[item.id];
           if (
             [
@@ -160,12 +185,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             ].includes(item.type)
           ) {
             // 处理成员和数据源类型的字段
-            item.initialOptions = options;
-          }
-          // 其他的字段读取moduleFields
-          const field = res.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
-          if (field) {
-            formDetail.value[item.id] = initFieldValue(item, field.fieldValue);
+            item.initialOptions = options
+              ?.filter((e) => formDetail.value[item.id].includes(e.id))
+              .map((e) => ({
+                ...e,
+                name: e.name || t('common.optionNotExist'),
+              }));
           }
         }
         if (item.type === FieldTypeEnum.DATE_TIME) {

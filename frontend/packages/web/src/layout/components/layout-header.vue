@@ -23,7 +23,7 @@
         >
           {{ t('workbench.duplicateCheck') }}
         </CrmTag>
-        <n-popselect
+        <!-- <n-popselect
           v-model:value="currentLocale"
           :options="LOCALE_OPTIONS"
           trigger="hover"
@@ -34,7 +34,7 @@
               <LanguageOutline />
             </template>
           </n-button>
-        </n-popselect>
+        </n-popselect> -->
         <n-button class="p-[8px]" quaternary @click="showMessage">
           <n-badge value="1" dot :show="showBadge">
             <CrmIcon type="iconicon-alarmclock" :size="16" />
@@ -70,10 +70,10 @@
   import { InformationCircleOutline, LanguageOutline } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { LOCALE_OPTIONS } from '@lib/shared/locale';
-  import useLocale from '@lib/shared/locale/useLocale';
-  import { LocaleType } from '@lib/shared/types/global';
 
+  // import { LOCALE_OPTIONS } from '@lib/shared/locale';
+  // import useLocale from '@lib/shared/locale/useLocale';
+  // import { LocaleType } from '@lib/shared/types/global';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmDuplicateCheckDrawer from '@/components/business/crm-duplicate-check-drawer/index.vue';
@@ -95,14 +95,14 @@
 
   const { success, warning, loading } = useMessage();
   const { t } = useI18n();
-  const { changeLocale, currentLocale } = useLocale(loading);
+  // const { changeLocale, currentLocale } = useLocale(loading);
 
   const appStore = useAppStore();
   const userStore = useUserStore();
 
-  function changeLanguage(locale: LocaleType) {
-    changeLocale(locale);
-  }
+  // function changeLanguage(locale: LocaleType) {
+  //   changeLocale(locale);
+  // }
 
   const showBadge = computed(() => {
     return !appStore.messageInfo.read;

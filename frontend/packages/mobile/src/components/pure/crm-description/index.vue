@@ -7,7 +7,7 @@
           <div class="crm-description-label">{{ item.label }}</div>
           <div class="crm-description-value">
             <slot :name="item.valueSlotName" :item="item">
-              <CrmTag v-if="item.isTag && item.value" :tag="item.value || ''" />
+              <CrmTag v-if="Array.isArray(item.value) && item.value?.length" :tag="item.value || ''" />
               <div v-else>{{ item.value || '-' }}</div>
             </slot>
           </div>
