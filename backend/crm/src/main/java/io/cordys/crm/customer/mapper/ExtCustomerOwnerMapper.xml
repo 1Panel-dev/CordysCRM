@@ -3,13 +3,13 @@
 
 <mapper namespace="io.cordys.crm.customer.mapper.ExtCustomerOwnerMapper">
 
-    <update id="batchAdd">
-        insert into customer_owner (id, owner, operator, customer_id, collection_time, end_time)
+    <insert id="batchAdd">
+        insert into customer_owner (id, owner, customer_id, operator, collection_time, end_time)
         select UUID_SHORT() as id, customer.owner, customer.id as customer_id, '${userId}' as operator, customer.collection_time, UNIX_TIMESTAMP() * 1000 as end_time
         from customer
         where customer.owner != #{request.owner} and id in
         <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
-    </update>
+    </insert>
 </mapper>
