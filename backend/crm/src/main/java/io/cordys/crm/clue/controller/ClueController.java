@@ -31,6 +31,7 @@ import java.util.List;
 @Tag(name = "线索")
 @RequestMapping("/clue")
 public class ClueController {
+
     @Resource
     private ClueService clueService;
     @Resource

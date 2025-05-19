@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+import java.util.List;
+
 
 /**
  * 线索
@@ -33,6 +35,9 @@ public class Clue extends BaseModel {
 
 	@Schema(description = "联系人电话")
 	private String phone;
+
+	@Schema(description = "意向产品id")
+	private List<String> products;
 
 	@Schema(description = "组织id")
 	private String organizationId;

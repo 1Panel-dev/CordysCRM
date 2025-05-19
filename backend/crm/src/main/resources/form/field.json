@@ -268,6 +268,20 @@
       "mobile": true
     },
     {
+      "name": "意向产品",
+      "internalKey": "clueProduct",
+      "type": "DATA_SOURCE_MULTIPLE",
+      "dataSourceType": "PRODUCT",
+      "showLabel": true,
+      "readable": true,
+      "editable": true,
+      "fieldWidth": 0.5,
+      "rules": [
+        {"key":  "required"}
+      ],
+      "mobile": true
+    },
+    {
       "name": "地址信息",
       "internalKey": "clueAddressInfo",
       "type": "DIVIDER",

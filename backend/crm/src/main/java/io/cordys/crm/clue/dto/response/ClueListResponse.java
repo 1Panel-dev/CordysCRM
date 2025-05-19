@@ -37,6 +37,9 @@ public class ClueListResponse {
     @Schema(description = "联系人电话")
     private String phone;
 
+    @Schema(description = "意向产品")
+    private List<String> products;
+
     @Schema(description = "是否在线索池")
     private Boolean inSharedPool;
 

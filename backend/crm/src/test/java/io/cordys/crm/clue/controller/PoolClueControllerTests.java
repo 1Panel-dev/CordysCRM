@@ -181,6 +181,7 @@ public class PoolClueControllerTests extends BaseTest {
 		clue.setStage("test");
 		clue.setName("ct");
 		clue.setOwner("cc");
+		clue.setProducts(List.of("cc"));
 		clue.setCollectionTime(System.currentTimeMillis());
 		clue.setPoolId("test-pool-id");
 		clue.setInSharedPool(true);

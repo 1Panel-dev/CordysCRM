@@ -46,6 +46,10 @@ public enum BusinessModuleField {
      * 联系人电话
      */
     CLUE_CONTACT_PHONE("clueContactPhone", "phone", Set.of("rules"), FormKey.CLUE.getKey()),
+    /**
+     * 意向产品
+     */
+    CLUE_PRODUCTS("clueProduct", "products", Set.of("rules"), FormKey.CLUE.getKey()),
     /*------ end: CUSTOMER ------*/
 
     /*------ start: CUSTOMER_MANAGEMENT_CONTACT ------*/

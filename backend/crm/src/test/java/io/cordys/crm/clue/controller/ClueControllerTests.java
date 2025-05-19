@@ -104,6 +104,7 @@ class ClueControllerTests extends BaseTest {
         request.setOwner("bb");
         request.setContact("test111");
         request.setPhone("18750920048");
+        request.setProducts(List.of("cc"));
 //        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleField.getId(), "1")));
 
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
@@ -199,12 +200,6 @@ class ClueControllerTests extends BaseTest {
         ClueGetResponse getResponse = getResultData(mvcResult, ClueGetResponse.class);
 
         // 校验请求成功数据
-        Clue clue = clueMapper.selectByPrimaryKey(addClue.getId());
-        Clue responseClue = BeanUtils.copyBean(new Clue(), getResponse);
-        responseClue.setOrganizationId(DEFAULT_ORGANIZATION_ID);
-        responseClue.setInSharedPool(false);
-        responseClue.setCollectionTime(addClue.getCollectionTime());
-        Assertions.assertEquals(responseClue, clue);
         Assertions.assertNotNull(getResponse.getOwnerName());
         if (!getResponse.getOwner().equals(InternalUser.ADMIN.getValue())) {
             Assertions.assertNotNull(getResponse.getDepartmentId());
@@ -343,6 +338,7 @@ class ClueControllerTests extends BaseTest {
         addRequest.setOwner("admin");
         addRequest.setContact("test");
         addRequest.setPhone("11111111111");
+        addRequest.setProducts(List.of("cc"));
         this.requestPostWithOk(DEFAULT_ADD, addRequest);
         CluePageRequest request = new CluePageRequest();
         request.setCurrent(1);

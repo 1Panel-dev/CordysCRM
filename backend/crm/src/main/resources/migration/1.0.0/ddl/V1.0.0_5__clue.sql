@@ -87,6 +87,7 @@ CREATE TABLE clue(
      `collection_time` BIGINT    COMMENT '领取时间' ,
      `contact` VARCHAR(255)    COMMENT '联系人名称' ,
      `phone` VARCHAR(30)    COMMENT '联系人电话' ,
+     `products`        VARCHAR(1000)   NOT NULL COMMENT '意向产品',
      `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织id' ,
      `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
      `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,

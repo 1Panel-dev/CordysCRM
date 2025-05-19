@@ -37,6 +37,7 @@ import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
@@ -93,6 +94,8 @@ public class ClueService {
     private BaseMapper<CustomerContact> customerContactMapper;
     @Resource
     private PermissionCache permissionCache;
+    @Resource
+    private ExtProductMapper extProductMapper;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -111,6 +114,10 @@ public class ClueService {
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(buildList,
                 ClueListResponse::getOwner, ClueListResponse::getOwnerName);
         optionMap.put(BusinessModuleField.CLUE_OWNER.getBusinessKey(), ownerFieldOption);
+
+        // 意向产品选项
+        List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
 
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
@@ -210,6 +217,11 @@ public class ClueService {
         List<OptionDTO> ownerFieldOption = moduleFormService.getBusinessFieldOption(clueGetResponse,
                 ClueGetResponse::getOwner, ClueGetResponse::getOwnerName);
         optionMap.put(BusinessModuleField.CLUE_OWNER.getBusinessKey(), ownerFieldOption);
+
+        // 意向产品选项
+        List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
+        optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
+
 
         clueGetResponse.setOptionMap(optionMap);
         clueGetResponse.setModuleFields(clueFields);

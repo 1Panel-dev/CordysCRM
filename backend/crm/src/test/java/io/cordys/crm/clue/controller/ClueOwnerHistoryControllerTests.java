@@ -56,6 +56,7 @@ class ClueOwnerHistoryControllerTests extends BaseTest {
         ClueAddRequest clueAddRequest = new ClueAddRequest();
         clueAddRequest.setName(UUID.randomUUID().toString());
         clueAddRequest.setOwner(InternalUser.ADMIN.getValue());
+        clueAddRequest.setProducts(List.of("cc"));
         addClue = clueService.add(clueAddRequest, InternalUser.ADMIN.getValue(), DEFAULT_ORGANIZATION_ID);
 
         ClueOwner clueOwner = clueOwnerHistoryService.add(addClue, InternalUser.ADMIN.getValue());

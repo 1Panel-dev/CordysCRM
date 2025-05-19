@@ -38,6 +38,9 @@ public class ClueUpdateRequest {
     @Schema(description = "联系人电话")
     private String phone;
 
+    @Schema(description = "意向产品", requiredMode = Schema.RequiredMode.REQUIRED)
+    private List<String> products;
+
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 }
