@@ -96,7 +96,7 @@
     getFieldDeptTree,
     updateCustomer,
   } from '@/api/modules';
-  import { filterConfigList as clueFilterConfigList } from '@/config/clue';
+  import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
@@ -427,7 +427,17 @@
         checkable: true,
       },
     },
-    ...clueFilterConfigList,
+    {
+      title: t('customer.lastFollowUps'),
+      dataIndex: 'follower',
+      type: FieldTypeEnum.USER_SELECT,
+    },
+    {
+      title: t('customer.lastFollowUpDate'),
+      dataIndex: 'followTime',
+      type: FieldTypeEnum.DATE_TIME,
+    },
+    ...baseFilterConfigList,
   ]);
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';

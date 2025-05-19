@@ -6,7 +6,12 @@ import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
 
 const { t } = useI18n();
 
-export const filterConfigList: FilterFormItem[] = [
+export const baseFilterConfigList: FilterFormItem[] = [
+  {
+    title: t('common.creator'),
+    dataIndex: 'createUser',
+    type: FieldTypeEnum.USER_SELECT,
+  },
   {
     title: t('common.createTime'),
     dataIndex: 'createTime',

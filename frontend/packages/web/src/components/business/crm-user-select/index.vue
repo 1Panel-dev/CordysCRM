@@ -6,6 +6,7 @@
       labelField: props.labelField,
       ...$attrs,
     }"
+    max-tag-count="responsive"
     :options="computedOptions"
     :placeholder="props.placeholder || t('common.pleaseSelect')"
     @search="handleSearch"

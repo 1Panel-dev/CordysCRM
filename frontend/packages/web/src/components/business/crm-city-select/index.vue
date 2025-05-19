@@ -9,6 +9,7 @@
       checkStrategy: 'child',
       ...$attrs,
     }"
+    max-tag-count="responsive"
     :placeholder="props.placeholder"
     @update:value="handleChange"
   />

@@ -25,7 +25,7 @@
         <CrmAdvanceFilter
           ref="msAdvanceFilterRef"
           v-model:keyword="keyword"
-          :custom-fields-config-list="filterConfigList"
+          :custom-fields-config-list="baseFilterConfigList"
           :filter-config-list="customFieldsFilterConfig"
           @adv-search="handleAdvSearch"
         />
@@ -58,7 +58,7 @@
   import { VNodeChild } from 'vue';
   import { DataTableRowKey, NSelect, useMessage } from 'naive-ui';
 
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
@@ -88,6 +88,7 @@
     getOpenSeaOptions,
     pickOpenSeaCustomer,
   } from '@/api/modules';
+  import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
 
@@ -394,18 +395,6 @@
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   batchTableQueryParams.value = tableQueryParams;
 
-  const filterConfigList = [
-    {
-      title: t('common.createTime'),
-      dataIndex: 'createTime',
-      type: FieldTypeEnum.DATE_TIME,
-    },
-    {
-      title: t('common.updateTime'),
-      dataIndex: 'updateTime',
-      type: FieldTypeEnum.DATE_TIME,
-    },
-  ];
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';
     setAdvanceFilter(filter);

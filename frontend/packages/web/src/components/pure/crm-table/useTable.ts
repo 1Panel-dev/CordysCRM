@@ -95,6 +95,7 @@ export default function useTable<T>(
 
     // 基础筛选都清空
     loadListParams.value.filter = {};
+    loadListParams.value.keyword = '';
     keyword.value = '';
     resetFilterParams();
   }

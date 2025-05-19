@@ -61,14 +61,14 @@
   import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { ClueListItem } from '@lib/shared/models/clue';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
-  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
+  import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -84,7 +84,7 @@
   import ToCluePoolResultModel from './components/toCluePoolResultModel.vue';
 
   import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue } from '@/api/modules';
-  import { filterConfigList } from '@/config/clue';
+  import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useHiddenTab from '@/hooks/useHiddenTab';
@@ -412,6 +412,20 @@
     permission: ['CLUE_MANAGEMENT:RECYCLE', 'CLUE_MANAGEMENT:DELETE', 'CLUE_MANAGEMENT:UPDATE'],
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  const filterConfigList = computed<FilterFormItem[]>(() => [
+    {
+      title: t('customer.lastFollowUps'),
+      dataIndex: 'follower',
+      type: FieldTypeEnum.USER_SELECT,
+    },
+    {
+      title: t('customer.lastFollowUpDate'),
+      dataIndex: 'followTime',
+      type: FieldTypeEnum.DATE_TIME,
+    },
+    ...baseFilterConfigList,
+  ]);
 
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';

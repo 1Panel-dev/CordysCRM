@@ -10,6 +10,7 @@
       :show-arrow="false"
       :show="false"
       :disabled="props.disabled"
+      max-tag-count="responsive"
       @click="handleShowSelectDrawer"
     />
     <CrmSelectUserDrawer
@@ -57,7 +58,7 @@
     apiTypeKey: MemberApiTypeEnum.MODULE_ROLE,
   });
   const selectedList = defineModel<SelectedUsersItem[]>('selectedList', {
-    required: true,
+    required: false,
   });
   const modelValue = defineModel<string[]>('value', {
     default: [],
@@ -91,12 +92,12 @@
         closable: !props.disabled,
         onClose: () => {
           handleClose();
-          selectedList.value = selectedList.value.filter((item) => item.id !== option.value);
+          selectedList.value = selectedList.value?.filter((item) => item.id !== option.value);
           emit('deleteTag');
         },
       },
       {
-        default: () => selectedList.value.find((item) => item.id === option.value)?.name,
+        default: () => selectedList.value?.find((item) => item.id === option.value)?.name,
       }
     );
   };
@@ -104,7 +105,9 @@
   watch(
     () => selectedList.value,
     (newVal) => {
-      modelValue.value = newVal?.map((item) => item.id);
+      if (newVal) {
+        modelValue.value = newVal?.map((item) => item.id);
+      }
     },
     {
       immediate: true,

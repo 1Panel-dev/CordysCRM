@@ -36,7 +36,7 @@
           <CrmAdvanceFilter
             ref="msAdvanceFilterRef"
             v-model:keyword="keyword"
-            :custom-fields-config-list="filterConfigList"
+            :custom-fields-config-list="baseFilterConfigList"
             :filter-config-list="customFieldsFilterConfig"
             @adv-search="handleAdvSearch"
           />
@@ -103,7 +103,7 @@
     getPoolOptions,
     pickClue,
   } from '@/api/modules';
-  import { filterConfigList } from '@/config/clue';
+  import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';

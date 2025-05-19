@@ -43,7 +43,7 @@ export interface FormCreateTableProps {
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
   const { t } = useI18n();
-  const { getFilterListConfig, customFieldsFilterConfig } = useFormCreateAdvanceFilter(props.formKey);
+  const { getFilterListConfig, customFieldsFilterConfig } = useFormCreateAdvanceFilter();
   const loading = ref(false);
   const showPagination = props.showPagination ?? true;
   let columns: CrmDataTableColumn[] = [];

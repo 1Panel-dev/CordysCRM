@@ -4,25 +4,7 @@ import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/mod
 import type { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
-const internalFilterKeyMap: Record<FormDesignKeyEnum, string[]> = {
-  [FormDesignKeyEnum.BUSINESS]: ['opportunityName', 'opportunityCustomer', 'opportunitySource'],
-  [FormDesignKeyEnum.CLUE]: ['clueName', 'clueSource', 'clueProgress'],
-  [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: [],
-  [FormDesignKeyEnum.CLUE_POOL]: ['clueName', 'clueSource', 'clueProgress'],
-  [FormDesignKeyEnum.CONTACT]: [],
-  [FormDesignKeyEnum.CUSTOMER_CONTACT]: [],
-  [FormDesignKeyEnum.CUSTOMER]: ['customerName', 'customerLevel', 'customerSource', 'customerType'],
-  [FormDesignKeyEnum.FOLLOW_RECORD_CLUE]: [],
-  [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: [],
-  [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: [],
-  [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: [],
-  [FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS]: [],
-  [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: [],
-  [FormDesignKeyEnum.PRODUCT]: [],
-  [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: ['customerName', 'customerLevel', 'customerSource', 'customerType'],
-};
-
-export default function useFormCreateFilter(formKey: FormDesignKeyEnum) {
+export default function useFormCreateFilter() {
   const customFieldsFilterConfig = ref<FilterFormItem[]>([]);
   // 获取配置属性
   function getFilterListConfig(res: FormDesignConfigDetailParams) {
@@ -39,7 +21,7 @@ export default function useFormCreateFilter(formKey: FormDesignKeyEnum) {
       return {};
     };
     return (res.fields || []).reduce((acc: FilterFormItem[], field: FormCreateField) => {
-      if (internalFilterKeyMap[formKey].includes(field.internalKey ?? '')) {
+      if (![FieldTypeEnum.TEXTAREA, FieldTypeEnum.PICTURE, FieldTypeEnum.DIVIDER].includes(field.type)) {
         acc.push({
           title: field.name,
           dataIndex: field.businessKey ?? field.id,

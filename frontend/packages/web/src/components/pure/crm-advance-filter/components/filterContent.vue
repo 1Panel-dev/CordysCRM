@@ -64,16 +64,66 @@
             />
 
             <n-select
-              v-else-if="[FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(item.type)"
+              v-else-if="
+                [
+                  FieldTypeEnum.SELECT,
+                  FieldTypeEnum.SELECT_MULTIPLE,
+                  FieldTypeEnum.RADIO,
+                  FieldTypeEnum.CHECKBOX,
+                ].includes(item.type)
+              "
               v-model:value="item.value"
               clearable
+              max-tag-count="responsive"
               :disabled="isValueDisabled(item)"
               :placeholder="t('common.pleaseSelect')"
               v-bind="item.selectProps"
               :multiple="item.type === FieldTypeEnum.SELECT_MULTIPLE || item.selectProps?.multiple"
               @update:value="valueChange"
             />
-
+            <CrmCitySelect
+              v-else-if="item.type === FieldTypeEnum.LOCATION"
+              v-model:value="item.value"
+              :placeholder="t('common.pleaseInput')"
+              :disabled="isValueDisabled(item)"
+              clearable
+              multiple
+              @update:value="valueChange"
+            />
+            <CrmUserTagSelector
+              v-else-if="
+                [
+                  FieldTypeEnum.DEPARTMENT,
+                  FieldTypeEnum.DEPARTMENT_MULTIPLE,
+                  FieldTypeEnum.MEMBER,
+                  FieldTypeEnum.MEMBER_MULTIPLE,
+                ].includes(item.type)
+              "
+              v-model:value="item.value"
+              multiple
+              :drawer-title="t('crmFormDesign.selectDataSource')"
+              :api-type-key="MemberApiTypeEnum.FORM_FIELD"
+              :member-types="
+                [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type)
+                  ? [
+                      {
+                        label: t('menu.settings.org'),
+                        value: MemberSelectTypeEnum.ORG,
+                      },
+                    ]
+                  : [
+                      {
+                        label: t('menu.settings.org'),
+                        value: MemberSelectTypeEnum.ONLY_ORG,
+                      },
+                    ]
+              "
+              :disabled-node-types="
+                [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(item.type)
+                  ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
+                  : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
+              "
+            />
             <n-tree-select
               v-else-if="item.type === FieldTypeEnum.TREE_SELECT"
               v-model:value="item.value"
@@ -166,13 +216,17 @@
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { scrollIntoView } from '@lib/shared/method/dom';
 
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmCitySelect from '@/components/business/crm-city-select/index.vue';
   import CrmTimeRangePicker from '@/components/business/crm-time-range-picker/index.vue';
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
+  import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { getUserOptions } from '@/api/modules';
 
@@ -298,7 +352,7 @@
   // 获取操作符号
   function getOperatorOptions(type: FieldTypeEnum, dataIndex: string) {
     const listItem = getListItemByDataIndex(dataIndex);
-    return (listItem?.operatorOption?.length ? listItem.operatorOption : operatorOptionsMap[type]).map((e) => {
+    return (listItem?.operatorOption?.length ? listItem.operatorOption : operatorOptionsMap[type])?.map((e) => {
       return {
         ...e,
         label: t(e.label),

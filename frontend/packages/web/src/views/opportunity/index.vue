@@ -101,6 +101,7 @@
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
 
   import { batchDeleteOpt, deleteOpt, getFieldDeptTree, transferOpt } from '@/api/modules';
+  import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useHiddenTab from '@/hooks/useHiddenTab';
@@ -462,15 +463,11 @@
         },
       },
       {
-        title: t('common.createTime'),
-        dataIndex: 'createTime',
-        type: FieldTypeEnum.DATE_TIME,
-      },
-      {
         title: t('customer.lastFollowUpDate'),
         dataIndex: 'followTime',
         type: FieldTypeEnum.DATE_TIME,
       },
+      ...baseFilterConfigList,
     ];
   });
 
