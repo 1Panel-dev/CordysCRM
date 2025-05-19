@@ -44,10 +44,10 @@ import io.cordys.crm.system.mapper.ExtUserRoleMapper;
 import io.cordys.crm.system.utils.MailSender;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
-import io.cordys.security.SessionUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -160,27 +160,43 @@ public class PersonalCenterService {
 
     }
 
+    /**
+     * 重置用户密码
+     *
+     * @param personalPasswordRequest 包含邮箱、验证码和新密码的请求对象
+     * @param operatorId              操作者用户ID
+     * @throws GenericException 验证码错误或密码重置失败时抛出
+     */
     public void resetUserPassword(PersonalPasswordRequest personalPasswordRequest, String operatorId) {
-        boolean verify = verifyCode(personalPasswordRequest.getEmail(), personalPasswordRequest.getCode());
-        if (verify) {
-            extUserMapper.updateUserPassword(CodingUtils.md5(personalPasswordRequest.getPassword()), operatorId);
-            //重置后被重置用户需要登出
-            SessionUtils.kickOutUser(operatorId);
-        } else {
+        String email = personalPasswordRequest.getEmail();
+        String code = personalPasswordRequest.getCode();
+        String password = personalPasswordRequest.getPassword();
+
+        // 验证邮箱验证码
+        if (!verifyCode(email, code)) {
             throw new GenericException(Translator.get("email_setting_verify_error"));
         }
-    }
 
+        try {
+            // 更新用户密码
+            extUserMapper.updateUserPassword(CodingUtils.md5(password), operatorId);
+            // 登出当前用户
+            SecurityUtils.getSubject().logout();
+        } catch (Exception e) {
+            // 记录异常并重新抛出
+            throw new GenericException(Translator.get("password_reset_failed"), e);
+        }
+    }
 
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, operator = "{#userId}")
     public UserResponse updateInfo(PersonalInfoRequest personalInfoRequest, String userId, String orgId) {
         User oldUser = userBaseMapper.selectByPrimaryKey(userId);
         int countByPhone = extUserMapper.countByPhone(personalInfoRequest.getPhone(), userId);
-        if (countByPhone>0) {
+        if (countByPhone > 0) {
             throw new GenericException(Translator.get("phone.exist"));
         }
         int countByEmail = extUserMapper.countByEmail(personalInfoRequest.getEmail(), userId);
-        if (countByEmail>0) {
+        if (countByEmail > 0) {
             throw new GenericException(Translator.get("email.exist"));
         }
         User user = new User();

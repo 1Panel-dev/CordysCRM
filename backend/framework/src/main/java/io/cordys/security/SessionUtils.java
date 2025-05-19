@@ -3,6 +3,7 @@ package io.cordys.security;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
@@ -78,6 +79,25 @@ public class SessionUtils {
                 sessionRepository.getSessionRedisOperations().delete("spring:session:sessions:" + k);
             });
         }
+    }
+
+    /**
+     * 踢除指定用户（从 Redis 会话中删除）。
+     *
+     * @param operatorId 操作用户 ID
+     * @param kickUserId 被踢用户 ID
+     */
+    public static void kickOutUser(String operatorId, String kickUserId) {
+        // 处理用户会话
+        boolean isSelfReset = StringUtils.equals(operatorId, kickUserId);
+        if (isSelfReset) {
+            // 当前用户重置自己的密码，直接登出
+            SecurityUtils.getSubject().logout();
+        } else {
+            // 管理员重置他人密码，踢出该用户
+            SessionUtils.kickOutUser(kickUserId);
+        }
+
     }
 
     /**

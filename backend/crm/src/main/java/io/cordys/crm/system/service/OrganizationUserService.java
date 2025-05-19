@@ -342,7 +342,8 @@ public class OrganizationUserService {
         //update user role
         updateUserRole(request.getRoleIds(), oldUser, operatorId, orgId);
         if (!request.getEnable()) {
-            SessionUtils.kickOutUser(oldUser.getUserId());
+            // 踢出该用户
+            SessionUtils.kickOutUser(operatorId, oldUser.getUserId());
         }
 
         //添加日志上下文
@@ -425,8 +426,8 @@ public class OrganizationUserService {
         user.setUpdateUser(operatorId);
         userMapper.updateById(user);
 
-        //重置后被重置用户需要登出
-        SessionUtils.kickOutUser(userId);
+        // 踢出该用户
+        SessionUtils.kickOutUser(operatorId, userId);
 
         // 日志详情对比需要有差异，并且脱敏
         User originPasswdUser = new User();
@@ -458,7 +459,9 @@ public class OrganizationUserService {
             List<OptionDTO> orgUsers = extOrganizationUserMapper.selectEnableOrgUser(ids, !request.isEnable());
             List<LogDTO> logs = new ArrayList<>();
             orgUsers.forEach(orgUser -> {
-                SessionUtils.kickOutUser(orgUser.getId());
+                // 踢出该用户
+                SessionUtils.kickOutUser(operatorId, orgUser.getId());
+
                 LogDTO logDTO = new LogDTO(orgId, orgUser.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, orgUser.getName());
                 logDTO.setOriginalValue(originUser);
                 logDTO.setModifiedValue(newUser);
@@ -500,8 +503,8 @@ public class OrganizationUserService {
             logDTO.setOriginalValue(originPasswdUser);
             logDTO.setModifiedValue(newPasswdUser);
             logDTOS.add(logDTO);
-            //重置后被重置用户需要登出
-            SessionUtils.kickOutUser(user.getId());
+            // 踢出该用户
+            SessionUtils.kickOutUser(operatorId, user.getId());
         });
         extUserMapper.batchUpdatePassword(userList);
         logService.batchAdd(logDTOS);
@@ -835,7 +838,8 @@ public class OrganizationUserService {
         if (checkUserResource(user.getUserId())) {
             //删除后该员工在系统上的全部数据将会被清理
             deleteUserAllData(user.getUserId(), id, orgId);
-            SessionUtils.kickOutUser(user.getUserId());
+            // 踢出该用户
+            SessionUtils.kickOutUser(SessionUtils.getUserId(), user.getUserId());
             // 添加日志上下文
             OperationLogContext.setResourceName(user.getUserName());
         } else {
