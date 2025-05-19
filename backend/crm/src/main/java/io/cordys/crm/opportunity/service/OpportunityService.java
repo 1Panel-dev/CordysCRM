@@ -186,7 +186,7 @@ public class OpportunityService {
      */
     @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.ADD, resourceName = "{#request.name}")
     public Opportunity add(OpportunityAddRequest request, String operatorId, String orgId) {
-        checkOpportunity(request, orgId, null);
+        checkOpportunity(request, orgId, null, Translator.get("opportunity.add"));
         Opportunity opportunity = new Opportunity();
         String id = IDGenerator.nextStr();
         opportunity.setId(id);
@@ -224,7 +224,7 @@ public class OpportunityService {
      * @param orgId
      * @param id
      */
-    private void checkOpportunity(OpportunityAddRequest request, String orgId, String id) {
+    private void checkOpportunity(OpportunityAddRequest request, String orgId, String id, String type) {
         List<String> products = extOpportunityMapper.selectByProducts(request, orgId, id);
         if (CollectionUtils.isNotEmpty(products)) {
             List<String> ids = JSON.parseArray(products.getFirst(), String.class);
@@ -233,7 +233,7 @@ public class OpportunityService {
                     .toList().getFirst();
             Product product = productMapper.selectByPrimaryKey(projectId);
 
-            throw new GenericException(String.format(Translator.get("opportunity_exist"), product.getName()));
+            throw new GenericException(String.format(Translator.get("opportunity_exist"), product.getName(), type));
         }
     }
 
@@ -250,7 +250,7 @@ public class OpportunityService {
         Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(oldOpportunity).ifPresentOrElse(item -> {
             Opportunity newOpportunity = BeanUtils.copyBean(new Opportunity(), item);
-            checkOpportunity(request, orgId, request.getId());
+            checkOpportunity(request, orgId, request.getId(), Translator.get("opportunity.update"));
             //更新商机
             updateOpportunity(newOpportunity, request, userId);
             // 获取模块字段
