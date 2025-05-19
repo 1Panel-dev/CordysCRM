@@ -54,7 +54,7 @@ public class DataScopeService {
             deptDataPermission.setSearchType(searchType);
             if (deptDataPermission.getAll() && BusinessSearchType.isDepartment(searchType)) {
                 // 数据权限是全部,但是查询条件是部门,则按照部门查询
-                return getDeptDataPermissionForDeptSearchType(userId, orgId, permission);
+                return getDeptDataPermissionForAllPermission(userId, orgId);
             }
         }
 
@@ -97,6 +97,19 @@ public class DataScopeService {
         }
 
         return getDeptDataPermissionForDept(userId, orgId, dataScopeRoleMap, permission);
+    }
+
+    private DeptDataPermissionDTO getDeptDataPermissionForAllPermission(String userId, String orgId) {
+        DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
+        // 查询部门树
+        List<BaseTreeNode> tree = departmentService.getTree(orgId);
+        OrganizationUser organizationUser = getOrganizationUser(userId, orgId);
+        if (organizationUser == null) {
+            return deptDataPermission;
+        }
+        List<String> deptIds = getDeptIdsWithChild(tree, Set.of(organizationUser.getDepartmentId()));
+        deptDataPermission.getDeptIds().addAll(deptIds);
+        return deptDataPermission;
     }
 
     private DeptDataPermissionDTO getDeptDataPermissionForDept(String userId, String orgId,
