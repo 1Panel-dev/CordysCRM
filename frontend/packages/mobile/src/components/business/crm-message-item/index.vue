@@ -1,44 +1,46 @@
 <template>
   <div class="crm-message-item">
-    <div class="mb-[4px] flex items-center justify-between">
-      <div class="flex items-center gap-[4px]">
+    <div class="mb-[4px] flex flex-nowrap items-center justify-between">
+      <div class="flex w-[calc(100%-60px)] flex-nowrap items-center gap-[4px]">
         <van-tag
           :color="isSystemMessage ? 'var(--info-5)' : 'var(--warning-5)'"
           :text-color="isSystemMessage ? 'var(--info-blue)' : 'var(--warning-yellow)'"
-          class="!p-[2px_8px]"
+          class="flex-shrink-0 !p-[2px_8px]"
         >
           {{ item.type === SystemMessageTypeEnum.SYSTEM_NOTICE ? t('common.system') : t('common.announcementMessage') }}
         </van-tag>
-        <van-badge :dot="item.status === SystemMessageStatusEnum.UNREAD">
-          <div
-            :class="`w-full crm-message-item-title--${
-              item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'
-            } font-medium`"
-          >
-            {{
-              item.type === SystemMessageTypeEnum.SYSTEM_NOTICE ? t('common.systemNotification') : item.subject ?? '-'
-            }}
-          </div>
-        </van-badge>
+        <div class="flex max-w-[calc(100%-40px)] items-center">
+          <van-badge :dot="item.status === SystemMessageStatusEnum.UNREAD" class="relative z-10 w-[calc(100%-16px)]">
+            <div
+              :class="` one-line-text crm-message-item-title--${
+                item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'
+              } font-medium`"
+            >
+              {{
+                item.type === SystemMessageTypeEnum.SYSTEM_NOTICE ? t('common.systemNotification') : item.subject ?? '-'
+              }}
+            </div>
+          </van-badge>
+        </div>
       </div>
       <div
         v-if="props.item.status === SystemMessageStatusEnum.UNREAD"
-        class="text-[var(--primary-8)]"
+        class="flex-shrink-0 text-[var(--primary-8)]"
         @click="setMessageRead"
       >
         {{ t('common.signRead') }}
       </div>
     </div>
     <div class="flex flex-col gap-[4px] text-[12px]">
-      <div :class="`flex message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
+      <div :class="`break-words message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
         {{ item.type === SystemMessageTypeEnum.SYSTEM_NOTICE ? item.contentText : parseMessageContent?.content ?? '-' }}
-        <div
+        <span
           v-if="item.type === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE"
           class="ml-[8px] cursor-pointer text-[var(--primary-8)]"
           @click="goUrl"
         >
           {{ parseMessageContent?.renameUrl ?? parseMessageContent?.url }}
-        </div>
+        </span>
       </div>
       <div class="text-[var(--text-n2)]">
         {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
@@ -57,7 +59,6 @@
 
   import { setNotificationRead } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
-  import { hasAnyPermission } from '@/utils/permission';
 
   const appStore = useAppStore();
   const { t } = useI18n();

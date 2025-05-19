@@ -162,12 +162,18 @@
           icon: 'iconicon_handwritten_signature',
           permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
           action: (item: OpportunityItem) => {
+            const { customerName, customerId, name } = item;
+            const initialSourceName = JSON.stringify({
+              name,
+              customerName,
+              customerId,
+            });
             router.push({
               name: CommonRouteEnum.FORM_CREATE,
               query: {
                 id: item.id,
                 formKey: FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS,
-                initialSourceName: item.name,
+                initialSourceName,
               },
             });
           },

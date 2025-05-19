@@ -237,6 +237,50 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         };
       }
     }
+
+    if (
+      [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS, FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS].includes(props.formKey) &&
+      props.sourceId
+    ) {
+      // 商机跟进计划和记录，需要赋予默认跟进类型、商机、商机对应客户
+      if (field.businessKey === 'type') {
+        return {
+          defaultValue: 'CUSTOMER',
+          initialOptions: field.initialOptions,
+        };
+      }
+
+      const defaultParsedSource = props.initialSourceName ? JSON.parse(props.initialSourceName) : {};
+      if (Object.keys(defaultParsedSource).length) {
+        if (field.businessKey === 'opportunityId') {
+          specialInitialOptions.value = [
+            {
+              id: props.sourceId,
+              name: defaultParsedSource?.name ?? '',
+            },
+          ];
+          return {
+            defaultValue: initFieldValue(field, props.sourceId || ''),
+            initialOptions: specialInitialOptions.value,
+          };
+        }
+
+        if (field.businessKey === 'customerId') {
+          const defaultCustomerId = defaultParsedSource?.[field.businessKey] ?? '';
+          specialInitialOptions.value = [
+            {
+              id: defaultCustomerId,
+              name: defaultParsedSource?.customerName ?? '',
+            },
+          ];
+
+          return {
+            defaultValue: initFieldValue(field, defaultCustomerId || ''),
+            initialOptions: specialInitialOptions.value,
+          };
+        }
+      }
+    }
     if (props.formKey === FormDesignKeyEnum.CUSTOMER_CONTACT && props.sourceId) {
       // 联系人表单，赋予客户字段默认值为当前客户
       if (field.businessKey === 'customerId') {

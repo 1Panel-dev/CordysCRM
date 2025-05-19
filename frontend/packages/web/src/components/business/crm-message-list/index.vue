@@ -45,21 +45,19 @@
                 </n-badge>
               </div>
               <div class="flex flex-col pl-[48px]">
-                <div
-                  :class="`flex message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`"
-                >
+                <div :class="`message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
                   {{
                     item.type === SystemMessageTypeEnum.SYSTEM_NOTICE
                       ? item.contentText
                       : parseMessageContent(item)?.content ?? '-'
                   }}
-                  <div
+                  <span
                     v-if="item.type === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE"
                     class="ml-[8px] cursor-pointer text-[var(--primary-8)]"
                     @click="goUrl(item.contentText)"
                   >
                     {{ parseMessageContent(item)?.renameUrl ?? parseMessageContent(item)?.url }}
-                  </div>
+                  </span>
                 </div>
                 <div class="text-[var(--text-n4)]">
                   {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}

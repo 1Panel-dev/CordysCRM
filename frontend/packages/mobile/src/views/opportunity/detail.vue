@@ -29,7 +29,7 @@
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_BUSINESS"
           :readonly="readonly"
-          :initial-source-name="sourceName"
+          :initial-source-name="initialSourceName"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
@@ -37,7 +37,7 @@
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS"
           :readonly="readonly"
-          :initial-source-name="sourceName"
+          :initial-source-name="initialSourceName"
         />
       </van-tab>
     </van-tabs>
@@ -88,10 +88,20 @@
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
 
-  const { sourceName, descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
+  const { descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
     formKey: FormDesignKeyEnum.BUSINESS,
     sourceId: sourceId.value,
     needInitDetail: true,
+  });
+
+  const initialSourceName = computed(() => {
+    const { customerName, customerId, name } = detail.value;
+
+    return JSON.stringify({
+      name,
+      customerName,
+      customerId,
+    });
   });
 
   const currentStatus = ref<string>(OpportunityStatusEnum.CREATE);
