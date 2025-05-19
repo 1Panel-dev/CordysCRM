@@ -180,7 +180,7 @@ public class LocalRepository implements FileRepository {
     public List<File> getFolderFiles(FileRequest request) {
         File file = new File(getFilePath(request));
         if (!file.isDirectory()) {
-            throw new GenericException("The specified path is not a directory.");
+            return List.of();
         }
         File[] files = file.listFiles();
         return files != null ? List.of(files) : null;
