@@ -6,6 +6,41 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "44384502",
+      "name": "icon_phone_outgoing",
+      "font_class": "icon_phone_outgoing",
+      "unicode": "e743",
+      "unicode_decimal": 59203
+    },
+    {
+      "icon_id": "36511677",
+      "name": "icon_that_person",
+      "font_class": "icon_that_person",
+      "unicode": "e66a",
+      "unicode_decimal": 58986
+    },
+    {
+      "icon_id": "44245520",
+      "name": "icon_file",
+      "font_class": "icon_file1",
+      "unicode": "e742",
+      "unicode_decimal": 59202
+    },
+    {
+      "icon_id": "44245480",
+      "name": "icon_enterprise",
+      "font_class": "icon_enterprise",
+      "unicode": "e732",
+      "unicode_decimal": 59186
+    },
+    {
+      "icon_id": "38020829",
+      "name": "icon_send_colorful",
+      "font_class": "icon_send_colorful",
+      "unicode": "e7d4",
+      "unicode_decimal": 59348
+    },
+    {
       "icon_id": "43908817",
       "name": "icon_edit",
       "font_class": "icon_edit1",

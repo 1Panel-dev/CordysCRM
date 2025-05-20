@@ -13,7 +13,7 @@
     ></div>
     <CrmInputNumber
       v-model:value="value"
-      :max="props.fieldConfig.max"
+      :max="10000000000"
       :min="props.fieldConfig.min"
       :placeholder="props.fieldConfig.placeholder"
       :disabled="props.fieldConfig.editable === false"

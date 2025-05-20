@@ -56,10 +56,12 @@
             </div>
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-[4px]">
-                <CrmIcon name="iconicon_mobile" width="12px" height="12px" color="var(--text-n2)" />
-                <div class="text-[12px] text-[var(--text-n2)]">
+                <a :href="`tel:${item.phone}`" class="flex items-center" @click.stop>
+                  <CrmIcon name="iconicon_phone_outgoing" width="14px" height="14px" color="var(--primary-8)" />
+                </a>
+                <a :href="`tel:${item.phone}`" class="text-[12px] text-[var(--primary-8)]" @click.stop>
                   {{ item.phone?.replace(/(\d{3})(\d{4})(\d{4})/, '$1 $2 $3') }}
-                </div>
+                </a>
                 <CrmIcon
                   name="iconicon_file_copy"
                   width="12px"
