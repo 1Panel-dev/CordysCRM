@@ -50,7 +50,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 添加商机
   function addOpportunity(data: SaveOpportunityParams) {
-    return CDR.post({ url: OptAddUrl, data });
+    return CDR.post({ url: OptAddUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
   }
 
   // 更新商机
@@ -80,7 +80,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 添加商机跟进记录
   function addOptFollowRecord(data: SaveCustomerFollowRecordParams) {
-    return CDR.post({ url: AddOptFollowRecordUrl, data });
+    return CDR.post({ url: AddOptFollowRecordUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
   }
 
   // 更新商机跟进记录
@@ -100,7 +100,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 添加商机跟进计划
   function addOptFollowPlan(data: SaveCustomerFollowPlanParams) {
-    return CDR.post({ url: AddOptFollowPlanUrl, data });
+    return CDR.post({ url: AddOptFollowPlanUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
   }
 
   // 更新商机跟进计划

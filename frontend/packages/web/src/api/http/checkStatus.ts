@@ -5,7 +5,7 @@ import useUser from '@/hooks/useUser';
 import router from '@/router';
 import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
 
-export default function checkStatus(status: number, msg: string, code?: number): void {
+export default function checkStatus(status: number, msg: string, code?: number, noErrorTip?: boolean): void {
   const { message } = useDiscreteApi();
   const { t } = useI18n();
   const { logout, isLoginPage, isWhiteListPage } = useUser();
@@ -62,7 +62,7 @@ export default function checkStatus(status: number, msg: string, code?: number):
       break;
     default:
   }
-  if (errMessage) {
+  if (errMessage && !noErrorTip) {
     message.error(errMessage);
   }
 }

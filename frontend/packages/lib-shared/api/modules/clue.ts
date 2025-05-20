@@ -67,7 +67,7 @@ import type { CluePoolItem, FormDesignConfigDetailParams } from '@lib/shared/mod
 export default function useProductApi(CDR: CordysAxios) {
   // 添加线索
   function addClue(data: SaveClueParams) {
-    return CDR.post({ url: AddClueUrl, data });
+    return CDR.post({ url: AddClueUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
   }
 
   // 更新线索
@@ -117,12 +117,12 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 转为客户
   function ClueTransitionCustomer(data: ClueTransitionCustomerParams) {
-    return CDR.post({ url: ClueTransitionCustomerUrl, data });
+    return CDR.post({ url: ClueTransitionCustomerUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
   }
 
   // 添加线索跟进记录
   function addClueFollowRecord(data: SaveCustomerFollowRecordParams) {
-    return CDR.post({ url: AddClueFollowRecordUrl, data });
+    return CDR.post({ url: AddClueFollowRecordUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
   }
 
   // 更新线索跟进记录
@@ -147,7 +147,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 添加线索跟进计划
   function addClueFollowPlan(data: SaveCustomerFollowPlanParams) {
-    return CDR.post({ url: AddClueFollowPlanUrl, data });
+    return CDR.post({ url: AddClueFollowPlanUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
   }
 
   // 更新线索跟进计划

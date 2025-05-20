@@ -121,7 +121,7 @@ export default function createAxios(opt: Partial<CreateAxiosOptions>) {
      */
     responseInterceptorsCatch: (error: any) => {
       const { t } = useI18n();
-      const { response, code, message } = error || {};
+      const { response, code, message, config } = error || {};
       const msg: string = response?.data?.message ?? '';
       const err: string = error?.toString?.() ?? '';
       let errMessage = '';
@@ -141,7 +141,7 @@ export default function createAxios(opt: Partial<CreateAxiosOptions>) {
       } catch (e) {
         throw new Error(e as unknown as string);
       }
-      opt.checkStatus?.(response?.status, msg, response?.data?.code);
+      opt.checkStatus?.(response?.status, msg, response?.data?.code, config?.requestOptions?.noErrorTip);
       return Promise.reject(
         response?.config?.requestOptions?.isReturnNativeResponse ? response?.data : response?.data?.message || error
       );
