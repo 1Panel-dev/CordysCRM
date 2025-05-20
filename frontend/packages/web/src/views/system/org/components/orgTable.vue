@@ -491,9 +491,11 @@
           {
             value: row.userName,
             permission: ['SYS_ORGANIZATION:UPDATE'],
-            onHandleEdit: (val: string) => {
-              updateUserName(row, val);
-              row.userName = val;
+            onHandleEdit: async (val: string, done?: () => void) => {
+              const res = await updateUserName(row, val);
+              if (res) {
+                done?.();
+              }
             },
           },
           {

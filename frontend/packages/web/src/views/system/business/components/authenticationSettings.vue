@@ -89,6 +89,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmEditableText from '@/components/business/crm-editable-text/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
@@ -260,9 +261,11 @@
     try {
       await updateAuthName(id, name);
       Message.success(t('common.updateSuccess'));
+      return Promise.resolve(true);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
+      return Promise.resolve(false);
     }
   }
 
@@ -278,21 +281,28 @@
           {
             value: row.name,
             permission: ['SYSTEM_SETTING:UPDATE'],
-            onHandleEdit: async (val: string) => {
-              await handleChangeName(row.id, val);
-              row.name = val;
+            onHandleEdit: async (val: string, done?: () => void) => {
+              const res = await handleChangeName(row.id, val);
+              if (res) {
+                done?.();
+                tableRefreshId.value += 1;
+              }
             },
           },
           {
             default: () =>
               h(
-                NButton,
+                'div',
                 {
-                  text: true,
-                  type: 'primary',
-                  onClick: () => openAuthDetail(row.id as string),
+                  class: 'max-w-[calc(100%-24px)] w-[fit-content]',
                 },
-                { default: () => row.name }
+                h(
+                  CrmTableButton,
+                  {
+                    onClick: () => openAuthDetail(row.id as string),
+                  },
+                  { default: () => row.name, trigger: () => row.name }
+                )
               ),
           }
         );

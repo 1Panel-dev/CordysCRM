@@ -31,7 +31,7 @@
   }>();
 
   const emit = defineEmits<{
-    (e: 'handleEdit', value: string): void;
+    (e: 'handleEdit', value: string, done?: () => void): void;
   }>();
 
   const { t } = useI18n();
@@ -54,8 +54,9 @@
       Message.warning(t('common.value.notNull'));
       return;
     }
-    emit('handleEdit', inputValue.value);
-    isEditing.value = false;
+    emit('handleEdit', inputValue.value, () => {
+      isEditing.value = false;
+    });
   }
 
   function handleBlur() {
