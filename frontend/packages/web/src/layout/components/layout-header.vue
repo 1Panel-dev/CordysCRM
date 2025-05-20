@@ -51,7 +51,7 @@
           <template #trigger>
             <n-button class="p-[8px]" quaternary>
               <template #icon>
-                <InformationCircleOutline />
+                <CrmIcon type="iconicon_info_circle" :size="16" />
               </template>
             </n-button>
           </template>
