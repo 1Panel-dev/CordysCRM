@@ -197,6 +197,13 @@
     emit('confirm', _selectedNodes);
   }
 
+  const defaultExpandedKeys = computed(() => {
+    if ([MemberSelectTypeEnum.ORG, MemberSelectTypeEnum.ONLY_ORG].includes(addMemberType.value)) {
+      return [options.value[0]?.value];
+    }
+    return [];
+  });
+
   const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
     return h(
       NTree,
@@ -211,10 +218,7 @@
         selectedKeys: addMembers.value,
         showIrrelevantNodes: false,
         class: 'px-[16px] overflow-hidden',
-        defaultExpandedKeys: [
-          options.value[0]?.value,
-          ...(options.value[0]?.children || []).map((item: Record<string, any>) => item.value),
-        ],
+        defaultExpandedKeys: defaultExpandedKeys.value,
         overrideDefaultNodeClickBehavior: ({ option }: { option: CrmTreeNodeData }) => {
           if (!props.disabledList?.includes(option.id) && !props.disabledNodeTypes?.includes(option.nodeType)) {
             return 'toggleSelect';
