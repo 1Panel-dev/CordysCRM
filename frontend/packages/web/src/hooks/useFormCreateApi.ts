@@ -480,18 +480,22 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   function initForm() {
     fieldList.value.forEach((item) => {
       if (props.needInitDetail?.value) {
+        // 详情页编辑时，从详情获取值，不需要默认值
         item.defaultValue = undefined;
-      } else if (!formDetail.value[item.id]) {
-        let defaultValue = props.needInitDetail?.value ? '' : item.defaultValue || '';
-        if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
-          defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
-        } else if (getRuleType(item) === 'array') {
-          defaultValue =
-            [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
-            typeof item.defaultValue === 'string'
-              ? [defaultValue]
-              : defaultValue || [];
-        }
+      }
+      let defaultValue = item.defaultValue || '';
+      if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
+        defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
+      } else if (getRuleType(item) === 'array') {
+        defaultValue =
+          [FieldTypeEnum.DEPARTMENT, FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER].includes(item.type) &&
+          typeof item.defaultValue === 'string'
+            ? [defaultValue]
+            : defaultValue || [];
+      } else if (item.type === FieldTypeEnum.PICTURE) {
+        defaultValue = defaultValue || [];
+      }
+      if (!formDetail.value[item.id]) {
         formDetail.value[item.id] = defaultValue;
       }
       const fullRules: FormCreateFieldRule[] = [];

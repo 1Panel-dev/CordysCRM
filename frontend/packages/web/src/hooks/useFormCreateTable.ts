@@ -401,8 +401,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
                       row[field.businessKey || field.id]?.length
                         ? (row[field.businessKey || field.id] || []).map((key: string) =>
                             h(NImage, {
-                              width: 40,
-                              height: 40,
+                              class: 'h-[40px] w-[40px]',
                               src: `${PreviewPictureUrl}/${key}`,
                             })
                           )

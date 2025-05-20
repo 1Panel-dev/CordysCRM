@@ -4,6 +4,7 @@ import { showLoadingToast } from 'vant';
 
 import 'vant/es/toast/style'; // 解决toast样式被popup覆盖的问题
 import 'vant/es/dialog/style'; // 解决dialog样式被popup覆盖的问题
+import 'vant/es/image-preview/style'; // 解决image-preview样式被popup覆盖的问题
 import '@/assets/icon-font/iconfont';
 import '@/assets/icon-font/iconfont.css';
 import '@/assets/style/index.less';

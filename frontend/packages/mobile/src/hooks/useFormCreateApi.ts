@@ -92,7 +92,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             descriptions.value.push({
               label: item.name,
               value: field?.fieldValue || [],
-              valueSlotName: 'image',
+              isImage: true,
             });
           } else {
             let value = field?.fieldValue || '';

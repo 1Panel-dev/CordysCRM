@@ -7,7 +7,27 @@
           <div class="crm-description-label">{{ item.label }}</div>
           <div class="crm-description-value">
             <slot :name="item.valueSlotName" :item="item">
-              <CrmTag v-if="Array.isArray(item.value) && item.value?.length" :tag="item.value || ''" />
+              <template v-if="item.isImage">
+                <div v-if="(item.value as string[])?.length === 0">-</div>
+                <van-image
+                  v-for="img of item.value"
+                  v-else
+                  :key="img"
+                  width="40"
+                  height="40"
+                  :src="`${PreviewPictureUrl}/${img}`"
+                  @click="
+                  () => {
+                    showImagePreview({
+                      images: (item.value as string[]).map((img) => `${PreviewPictureUrl}/${img}`),
+                      closeable: true,
+                      startPosition: (item.value as string[]).findIndex((image) => image === img),
+                    });
+                  }
+                "
+                />
+              </template>
+              <CrmTag v-else-if="Array.isArray(item.value) && item.value?.length" :tag="item.value || ''" />
               <div v-else>{{ item.value || '-' }}</div>
             </slot>
           </div>
@@ -18,12 +38,17 @@
 </template>
 
 <script setup lang="ts">
+  import { showImagePreview } from 'vant';
+
+  import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
+
   import CrmTag from '@/components/pure/crm-tag/index.vue';
 
   export interface CrmDescriptionItem {
     label: string;
     value?: string | number | (string | number)[];
     isTag?: boolean;
+    isImage?: boolean;
     isTitle?: boolean;
     slotName?: string;
     valueSlotName?: string;
