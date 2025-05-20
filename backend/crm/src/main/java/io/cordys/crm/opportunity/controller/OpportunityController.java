@@ -7,6 +7,7 @@ import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
@@ -114,5 +115,12 @@ public class OpportunityController {
     @Operation(summary = "所有商机和部门商机tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
         return opportunityService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/contact/list/{opportunityId}")
+    @Operation(summary = "商机下的联系人列表")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    public CustomerContactListAllResponse list(@Validated @PathVariable String opportunityId) {
+        return opportunityService.getContactList(opportunityId, OrganizationContext.getOrganizationId());
     }
 }

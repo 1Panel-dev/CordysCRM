@@ -2,21 +2,20 @@ package io.cordys.crm.customer.mapper;
 
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
-import io.cordys.crm.customer.dto.request.*;
-import io.cordys.crm.customer.dto.response.*;
-import org.apache.ibatis.annotations.Param;
 import io.cordys.crm.customer.domain.CustomerContact;
+import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
+import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 /**
- *
  * @author jianxing
  * @date 2025-02-24 11:06:10
  */
 public interface ExtCustomerContactMapper {
 
-    List<CustomerContactListResponse> list(@Param("request") CustomerContactPageRequest request, @Param("userId")  String userId, @Param("orgId") String orgId,
+    List<CustomerContactListResponse> list(@Param("request") CustomerContactPageRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
                                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
     List<CustomerContactListResponse> sourceList(@Param("request") CustomerContactPageRequest request, @Param("orgId") String orgId,
@@ -29,4 +28,6 @@ public interface ExtCustomerContactMapper {
     List<OptionDTO> selectContactOptionByIds(List<String> contactIds);
 
     List<CustomerContactListResponse> listByCustomerId(@Param("customerId") String customerId);
+
+    List<CustomerContactListResponse> getById(@Param("id") String id);
 }

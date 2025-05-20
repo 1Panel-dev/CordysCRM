@@ -246,4 +246,11 @@
         from customer_contact cc
         where cc.customer_id = #{customerId}
     </select>
+
+    <select id="getById" resultType="io.cordys.crm.customer.dto.response.CustomerContactListResponse">
+        select cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user,
+               cc.enable, cc.owner, cc.disable_reason, cc.phone
+        from customer_contact cc
+        where cc.id = #{id}
+    </select>
 </mapper>

@@ -24,6 +24,9 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerContact;
+import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
+import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
@@ -81,6 +84,10 @@ public class OpportunityService {
     private CommonNoticeSendService commonNoticeSendService;
     @Resource
     private PermissionCache permissionCache;
+    @Resource
+    private BaseMapper<CustomerContact> customerContactMapper;
+    @Resource
+    private CustomerContactService customerContactService;
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
                                                                DeptDataPermissionDTO deptDataPermission) {
@@ -464,5 +471,14 @@ public class OpportunityService {
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, rolePermissions);
+    }
+
+    public CustomerContactListAllResponse getContactList(String opportunityId, String orgId) {
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(opportunityId);
+        if (opportunity == null) {
+            throw new GenericException("opportunity_not_found");
+        }
+        CustomerContactListAllResponse response = customerContactService.getOpportunityContactList(opportunity.getContactId(), orgId);
+        return response;
     }
 }

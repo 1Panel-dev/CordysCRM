@@ -29,6 +29,7 @@ public class OpportunityControllerTests extends BaseTest {
     protected static final String BATCH_TRANSFER = "batch/transfer";
     protected static final String TAB = "tab";
     protected static final String UPDATE_STAGE = "update/stage";
+    protected static final String CONTACT_LIST = "contact/list/{0}";
 
     private static Opportunity addOpportunity;
     @Resource
@@ -162,7 +163,7 @@ public class OpportunityControllerTests extends BaseTest {
     @Sql(scripts = {"/dml/cleanup_opportunity_rule_test.sql"},
             config = @SqlConfig(encoding = "utf-8", transactionMode = SqlConfig.TransactionMode.ISOLATED),
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void testPageReservedDay() throws Exception{
+    void testPageReservedDay() throws Exception {
         OpportunityAddRequest request = new OpportunityAddRequest();
         request.setName("商机1");
         request.setCustomerId("123");
@@ -177,5 +178,13 @@ public class OpportunityControllerTests extends BaseTest {
         pageRequest.setCurrent(1);
         pageRequest.setPageSize(10);
         this.requestPostWithOk(DEFAULT_PAGE, pageRequest);
+    }
+
+
+    @Test
+    @Order(2)
+    void testGetContactList() throws Exception {
+        this.requestGet(CONTACT_LIST, addOpportunity.getId());
+        this.requestGet(CONTACT_LIST, "1234567");
     }
 }

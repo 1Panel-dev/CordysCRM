@@ -401,4 +401,14 @@ public class CustomerContactService {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(id);
         return Optional.ofNullable(customerContact).map(CustomerContact::getName).orElse(null);
     }
+
+    public CustomerContactListAllResponse getOpportunityContactList(String contactId, String orgId) {
+        CustomerContactListAllResponse response = new CustomerContactListAllResponse();
+        List<CustomerContactListResponse> list = extCustomerContactMapper.getById(contactId);
+        list = buildListData(list, orgId);
+        Map<String, List<OptionDTO>> optionMap = getListOptionMap(orgId, list);
+        response.setList(list);
+        response.setOptionMap(optionMap);
+        return response;
+    }
 }
