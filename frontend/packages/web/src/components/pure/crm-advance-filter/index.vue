@@ -1,4 +1,11 @@
 <template>
+  <CrmSearchInput
+    v-if="!props.notShowInputSearch && !isAdvancedSearchMode"
+    v-model:value="keyword"
+    class="!w-[240px]"
+    :placeholder="props.searchPlaceholder"
+    @search="emit('keywordSearch', keyword)"
+  />
   <div class="flex flex-row items-center gap-[8px]">
     <n-button
       :type="isAdvancedSearchMode ? 'primary' : 'default'"
@@ -28,6 +35,7 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
+  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import FilterModal from './filterModal.vue';
 
   import { ConditionsItem, FilterFormItem, FilterResult } from './type';
@@ -37,10 +45,12 @@
   const props = defineProps<{
     filterConfigList: FilterFormItem[]; // 系统字段
     customFieldsConfigList?: FilterFormItem[]; // 自定义字段
+    notShowInputSearch?: boolean;
+    searchPlaceholder?: string;
   }>();
 
   const emit = defineEmits<{
-    (e: 'keywordSearch', value: string | undefined): void;
+    (e: 'keywordSearch', value: string): void;
     (e: 'advSearch', value: FilterResult, isAdvancedSearchMode: boolean): void;
     (e: 'refresh', value: FilterResult): void;
   }>();

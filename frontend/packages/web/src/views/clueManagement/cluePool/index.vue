@@ -3,6 +3,7 @@
     <CrmTable
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
+      :not-show-table-filter="isAdvancedSearchMode"
       :action-config="actionConfig"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -32,13 +33,13 @@
             class="w-[240px]"
             @update-value="(e) => searchData(undefined, e)"
           />
-          <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
           <CrmAdvanceFilter
             ref="msAdvanceFilterRef"
             v-model:keyword="keyword"
             :custom-fields-config-list="baseFilterConfigList"
             :filter-config-list="customFieldsFilterConfig"
             @adv-search="handleAdvSearch"
+            @keyword-search="searchData"
           />
         </div>
       </template>
@@ -83,7 +84,6 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
@@ -419,6 +419,9 @@
     setAdvanceFilter(filter);
     loadList();
   }
+
+  const msAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
+  const isAdvancedSearchMode = computed(() => msAdvanceFilterRef.value?.isAdvancedSearchMode);
 
   function searchData(_keyword?: string, id?: string) {
     setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: id || poolId.value });

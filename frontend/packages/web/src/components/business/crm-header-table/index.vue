@@ -88,6 +88,7 @@
       title: t('common.operator'),
       key: 'operator',
       width: 150,
+      resizable: false,
       render: (row: HeaderHistoryItem) => {
         return h(CrmNameTooltip, { text: row.operatorName });
       },

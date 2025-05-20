@@ -18,12 +18,13 @@
       </template>
     </BatchAction>
     <n-data-table
+      ref="tableRef"
       v-bind="{ scrollX: scrollXWidth, ...$attrs }"
       v-model:checked-row-keys="checkedRowKeys"
       :columns="currentColumns as TableColumns"
       :row-key="getRowKey"
       flex-height
-      class="flex-1"
+      :class="`${props.notShowTableFilter ? 'not-show-filter' : ''} flex-1`"
       @update:sorter="handleSorterChange"
       @update:filters="handleFiltersChange"
       @update:checked-row-keys="handleCheck"
@@ -76,6 +77,7 @@
     columns: CrmDataTableColumn[];
     tableRowKey?: string;
     actionConfig?: BatchActionConfig; // 批量操作
+    notShowTableFilter?: boolean; // 不显示表头筛选
   }>();
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;
@@ -216,6 +218,16 @@
     { immediate: true }
   );
 
+  const tableRef = ref();
+  watch(
+    () => props.notShowTableFilter,
+    (val: boolean) => {
+      if (val) {
+        tableRef.value?.filter(null);
+      }
+    }
+  );
+
   function getRowKey(rowData: Record<string, any>) {
     return props.tableRowKey ? rowData[props.tableRowKey] : rowData.id;
   }
@@ -304,5 +316,10 @@
   }
   :deep(.sort-down-icon) {
     transform: translateY(-11px);
+  }
+  .not-show-filter {
+    :deep(.n-data-table-filter) {
+      display: none;
+    }
   }
 </style>

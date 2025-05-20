@@ -48,6 +48,7 @@
       title: t('log.platform'),
       key: 'platform',
       width: 80,
+      resizable: false,
       render: (row) => {
         const item = platformOption.find((e) => e.value === row.platform);
         return item ? item.label : '-';

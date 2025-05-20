@@ -241,6 +241,7 @@
       width: 100,
       sortOrder: false,
       sorter: true,
+      resizable: false,
     },
   ];
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(operationLogList, {
