@@ -481,8 +481,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     fieldList.value.forEach((item) => {
       if (props.needInitDetail?.value) {
         item.defaultValue = undefined;
-        item.initialOptions = [];
-      } else if (!formDetail.value[item.businessKey || item.id]) {
+      } else if (!formDetail.value[item.id]) {
         let defaultValue = props.needInitDetail?.value ? '' : item.defaultValue || '';
         if ([FieldTypeEnum.DATE_TIME, FieldTypeEnum.INPUT_NUMBER].includes(item.type)) {
           defaultValue = Number.isNaN(Number(defaultValue)) || defaultValue === '' ? null : Number(defaultValue);
@@ -493,7 +492,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               ? [defaultValue]
               : defaultValue || [];
         }
-        formDetail.value[item.businessKey || item.id] = defaultValue;
+        formDetail.value[item.id] = defaultValue;
       }
       const fullRules: FormCreateFieldRule[] = [];
       (item.rules || []).forEach((rule) => {

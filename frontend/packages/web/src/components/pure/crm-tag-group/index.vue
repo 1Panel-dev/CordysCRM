@@ -4,7 +4,7 @@
     <div v-if="innerTags.length > 0" ref="measureRef" class="crm-measure-tag-item">
       <template v-for="(item, index) in tags" :key="`crm-measure-tag-item-${index}`">
         <CrmTag :size="props.size" :type="props.type" :theme="props.theme">
-          {{ typeof item === 'string' ? item : item[props.labelKey] }}
+          {{ typeof item === 'string' ? item : item?.[props.labelKey] }}
         </CrmTag>
       </template>
     </div>
