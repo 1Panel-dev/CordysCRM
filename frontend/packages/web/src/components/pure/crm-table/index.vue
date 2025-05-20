@@ -133,6 +133,8 @@
                 ...column.tagGroupProps,
               })
             : '-';
+        // 预留标签组最小列宽
+        column.minWidth = 90;
       }
 
       // 选择列

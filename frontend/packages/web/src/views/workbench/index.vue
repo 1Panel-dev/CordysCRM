@@ -32,7 +32,7 @@
       <div class="h-full p-[24px]">
         <div class="title !mb-[8px]">
           <div class="title-name">{{ t('system.message.notify') }}</div>
-          <div v-permission="['SYSTEM_NOTICE:READ']" class="title-right" @click="showMessageDrawer = true">
+          <div class="title-right" @click="showMessageDrawer = true">
             {{ t('common.ViewMore') }}
           </div>
         </div>

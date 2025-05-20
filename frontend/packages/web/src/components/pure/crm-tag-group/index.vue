@@ -99,6 +99,11 @@
       visibleCount++;
     }
 
+    // 至少保留一个标签
+    if (visibleCount === 0 && innerTags.value.length > 0) {
+      visibleCount = 1;
+    }
+
     visibleItems.value = innerTags.value.slice(0, visibleCount);
     hiddenItemsCount.value = innerTags.value.length - visibleCount;
   };
@@ -168,5 +173,10 @@
     flex-wrap: nowrap;
     pointer-events: none;
     gap: 4px;
+  }
+  .crm-overflow-tag-list {
+    .n-tag {
+      min-width: 0;
+    }
   }
 </style>
