@@ -36,7 +36,7 @@ export default {
   'customer.readOnly': 'Read Only',
   'customer.cooperation': 'Cooperation',
   'customer.cooperationTip':
-    'Read Only: Support viewing customer basic information and responsible person-related data; Cooperation: Support viewing customer basic information and creating and editing customer-related data',
+    'Read Only: Support viewing customer basic information and responsible person-related data; Cooperation: Support viewing customer basic information and following up customers',
   'customer.deleteMemberTip': 'After deletion, the member will no longer have the customer permission',
   'customer.batchDeleteMemberTip': 'Are you sure to delete {count} members?',
 };

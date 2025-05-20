@@ -6,6 +6,7 @@
     <CrmTable
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
+      :columns="tableColumns"
       :action-config="actionConfig"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -76,6 +77,7 @@
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import { CrmPopConfirmIconType } from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
@@ -312,26 +314,26 @@
         key: 'followUp',
         permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
-      {
-        label: t('common.edit'),
-        key: 'edit',
-        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('common.transfer'),
-        key: 'transfer',
-        popConfirmProps: {
-          loading: transferLoading.value,
-          title: t('common.transfer'),
-          positiveText: t('common.confirm'),
-          iconType: 'primary',
-        },
-        popSlotName: 'transferPopTitle',
-        popSlotContent: 'transferPopContent',
-        permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-      },
       ...(activeTab.value === CustomerSearchTypeEnum.ALL
         ? [
+            {
+              label: t('common.edit'),
+              key: 'edit',
+              permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+            },
+            {
+              label: t('common.transfer'),
+              key: 'transfer',
+              popConfirmProps: {
+                loading: transferLoading.value,
+                title: t('common.transfer'),
+                positiveText: t('common.confirm'),
+                iconType: 'primary' as CrmPopConfirmIconType,
+              },
+              popSlotName: 'transferPopTitle',
+              popSlotContent: 'transferPopContent',
+              permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+            },
             {
               label: t('common.delete'),
               key: 'delete',
@@ -397,6 +399,22 @@
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const tableColumns = computed(() => {
+    if (activeTab.value === CustomerSearchTypeEnum.VISIBLE) {
+      return propsRes.value.columns
+        .filter((item: any) => item.type !== 'selection')
+        .map((e) => {
+          if (e.key === 'operation') {
+            return {
+              ...e,
+              width: 80,
+            };
+          }
+          return e;
+        });
+    }
+    return propsRes.value.columns;
+  });
 
   const department = ref<DeptUserTreeNode[]>([]);
   async function initDepartList() {

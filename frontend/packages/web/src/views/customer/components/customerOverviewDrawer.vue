@@ -115,7 +115,7 @@
   const sourceName = ref('');
   const descriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
   const buttonList = computed<ActionsItem[]>(() => {
-    if (collaborationType.value === 'READ_ONLY') {
+    if (collaborationType.value) {
       return [];
     }
     return [
@@ -155,44 +155,50 @@
 
   const activeTab = ref('contact');
   const cachedList = ref([]);
-  const tabList: TabContentItem[] = [
-    {
-      name: 'contact',
-      tab: t('opportunity.contactInfo'),
-      enable: true,
-      allowClose: true,
-    },
-    {
-      name: 'followRecord',
-      tab: t('crmFollowRecord.followRecord'),
-      enable: true,
-      allowClose: true,
-    },
-    {
-      name: 'followPlan',
-      tab: t('common.plan'),
-      enable: true,
-      allowClose: true,
-    },
-    {
-      name: 'headRecord',
-      tab: t('common.headRecord'),
-      enable: true,
-      allowClose: true,
-    },
-    {
-      name: 'relation',
-      tab: t('customer.relation'),
-      enable: true,
-      allowClose: true,
-    },
-    {
-      name: 'collaborator',
-      tab: t('customer.collaborator'),
-      enable: true,
-      allowClose: true,
-    },
-  ];
+  const tabList = computed<TabContentItem[]>(() => {
+    const fullList = [
+      {
+        name: 'contact',
+        tab: t('opportunity.contactInfo'),
+        enable: true,
+        allowClose: true,
+      },
+      {
+        name: 'followRecord',
+        tab: t('crmFollowRecord.followRecord'),
+        enable: true,
+        allowClose: true,
+      },
+      {
+        name: 'followPlan',
+        tab: t('common.plan'),
+        enable: true,
+        allowClose: true,
+      },
+      {
+        name: 'headRecord',
+        tab: t('common.headRecord'),
+        enable: true,
+        allowClose: true,
+      },
+      {
+        name: 'relation',
+        tab: t('customer.relation'),
+        enable: true,
+        allowClose: true,
+      },
+      {
+        name: 'collaborator',
+        tab: t('customer.collaborator'),
+        enable: true,
+        allowClose: true,
+      },
+    ];
+    if (collaborationType.value) {
+      return fullList.filter((item) => item.name !== 'collaborator');
+    }
+    return fullList;
+  });
 
   const transferFormRef = ref<InstanceType<typeof TransferForm>>();
   const transferForm = ref<any>({

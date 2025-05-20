@@ -79,11 +79,13 @@
 
   const { t } = useI18n();
 
+  export type CrmPopConfirmIconType = 'error' | 'warning' | 'primary';
+
   export type CrmPopConfirmProps = {
     loading?: boolean;
     title: string; // 标题
     content?: string; // 内容
-    iconType?: 'error' | 'warning' | 'primary'; // 图标类型
+    iconType?: CrmPopConfirmIconType; // 图标类型
     negativeButtonProps?: ButtonProps; // 取消按钮文字
     positiveButtonProps?: ButtonProps; // 确定按钮的属性
     positiveText?: string | null; // 确定按钮文本

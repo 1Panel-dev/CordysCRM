@@ -12,7 +12,7 @@
     type="textarea"
     rows="1"
     autosize
-    @click="showPicker = true"
+    @click="handleClick"
     @update:model-value="($event) => emit('change', $event)"
   >
   </van-field>
@@ -179,6 +179,12 @@
 
   function search() {
     crmSelectListRef.value?.filterListByKeyword('name');
+  }
+
+  function handleClick() {
+    if (!props.disabled) {
+      showPicker.value = true;
+    }
   }
 
   watch(

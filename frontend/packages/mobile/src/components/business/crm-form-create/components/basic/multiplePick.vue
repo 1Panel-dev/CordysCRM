@@ -9,7 +9,7 @@
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseSelect')"
     :disabled="props.fieldConfig.editable === false"
     clearable
-    @click="showPicker = true"
+    @click="handleClick"
     @update:model-value="($event) => emit('change', $event)"
   >
   </van-field>
@@ -49,6 +49,12 @@
       immediate: true,
     }
   );
+
+  function handleClick() {
+    if (props.fieldConfig.editable) {
+      showPicker.value = true;
+    }
+  }
 </script>
 
 <style lang="less" scoped></style>

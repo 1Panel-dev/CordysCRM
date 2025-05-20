@@ -73,7 +73,7 @@
       loading.value = true;
       await loadListApi[route.query.apiKey as string]({
         [route.query.apiKey === FormDesignKeyEnum.CUSTOMER ? 'customerId' : 'clueId']: route.query.id as string,
-        assignUserId: value.value[0],
+        assignUserId: value.value,
       });
       showSuccessToast(t('common.distributeSuccess'));
       await sleep(300);

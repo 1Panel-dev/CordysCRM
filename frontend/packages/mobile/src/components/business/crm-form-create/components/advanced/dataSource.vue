@@ -7,7 +7,7 @@
     :label="props.fieldConfig.showLabel ? props.fieldConfig.name : ''"
     :rules="props.fieldConfig.rules as FieldRule[]"
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseSelect')"
-    :disabled="props.fieldConfig.editable === false"
+    :disabled="!props.fieldConfig.editable"
     :multiple="props.fieldConfig.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
     @change="($event) => emit('change', $event)"
   >

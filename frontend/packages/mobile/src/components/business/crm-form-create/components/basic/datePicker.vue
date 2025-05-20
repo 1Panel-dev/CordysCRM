@@ -9,7 +9,7 @@
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseSelect')"
     :disabled="props.fieldConfig.editable === false"
     clearable
-    @click="showPicker = true"
+    @click="handleClick"
     @update:model-value="($event) => emit('change', $event)"
   >
   </van-field>
@@ -98,6 +98,12 @@
     showPicker.value = false;
     value.value = dayjs(`${currentDate.value.join('-')} ${currentTime.value.join(':')}`).unix() * 1000;
     emit('change', value.value);
+  }
+
+  function handleClick() {
+    if (props.fieldConfig.editable) {
+      showPicker.value = true;
+    }
   }
 </script>
 

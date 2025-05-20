@@ -9,7 +9,7 @@
     :placeholder="props.fieldConfig.placeholder || t('common.pleaseSelect')"
     :disabled="props.fieldConfig.editable === false"
     clearable
-    @click="showPicker = true"
+    @click="handleClick"
   >
   </van-field>
   <van-popup v-model:show="showPicker" destroy-on-close round position="bottom">
@@ -80,6 +80,12 @@
     [value.value] = selectedValues;
     fieldValue.value = selectedOptions[0].text;
     emit('change', selectedValues[0]);
+  }
+
+  function handleClick() {
+    if (props.fieldConfig.editable) {
+      showPicker.value = true;
+    }
   }
 </script>
 
