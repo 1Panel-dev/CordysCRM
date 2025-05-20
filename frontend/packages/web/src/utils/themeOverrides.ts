@@ -187,6 +187,7 @@ export function getThemeOverrides(): GlobalThemeOverrides {
       closeIconColor: getLessVariableValue('--text-n2'),
       iconColor: getLessVariableValue('--primary-8'),
       closeIconSize: '14px',
+      textColor: getLessVariableValue('--text-n2'),
     },
     Tree: {
       nodeColorHover: getLessVariableValue('--primary-7'),

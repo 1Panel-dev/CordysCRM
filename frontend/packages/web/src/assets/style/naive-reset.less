@@ -8,6 +8,17 @@
     .btn-text-sec-disabled();
   }
 }
+// secondary背景按钮
+.n-button {
+  &.n-button--default-type {
+    &.n-button--secondary {
+      .btn-base-sec-focus();
+      .btn-base-sec-hover();
+      .btn-base-sec-active();
+      .btn-base-sec-disabled();
+    }
+  }
+}
 // 主要 outline 按钮
 .n-button--tertiary-type {
   border: 1px solid var(--primary-8) !important;
@@ -222,6 +233,11 @@
         color: var(--primary-8);
       }
     }
+    &.n-data-table-th--last {
+      .n-data-table-resize-button {
+        display: none;
+      }
+    }
   }
   .n-data-table-td {
     padding-top: 0;
@@ -296,6 +312,17 @@
       background: var(--text-n8);
     }
   }
+}
+.n-modal,
+.dialog {
+  position: fixed;
+  top: 40vh;
+  right: 0;
+  bottom: 52vh;
+  left: 0;
+  margin: auto;
+  width: fit-content;
+  height: fit-content;
 }
 
 // small-modal

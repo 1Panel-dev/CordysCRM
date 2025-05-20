@@ -9,7 +9,7 @@
     :source-id="sourceId"
     :title="sourceName"
     :form-key="FormDesignKeyEnum.CLUE"
-    :show-tab-setting="true"
+    :show-tab-setting="false"
     @button-select="handleSelect"
     @saved="() => (refreshKey += 1)"
   >

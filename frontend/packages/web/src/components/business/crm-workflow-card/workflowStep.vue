@@ -1,28 +1,30 @@
 <template>
   <div class="crm-workflow-step">
-    <div
-      v-for="(item, index) of workflowData"
-      :key="item.value"
-      :class="`crm-workflow-item ${index === workflowData.length - 1 ? '' : 'flex-1'}`"
-    >
-      <div class="crm-workflow-item-status" :class="statusClass(index, item)">
-        <CrmIcon
-          v-if="index < currentStatusIndex || item.value === StageResultEnum.FAIL"
-          :type="item.value === StageResultEnum.FAIL ? 'iconicon_close' : 'iconicon_check'"
-          :size="16"
-        />
-        <div v-else class="flex items-center justify-center">{{ index + 1 }} </div>
-      </div>
-      <div class="crm-workflow-item-name" :class="statusClass(index, item)">
-        {{ item.label }}
-      </div>
+    <div class="flex flex-1 gap-[16px]">
       <div
-        v-if="index !== workflowData.length - 1"
-        class="crm-workflow-item-line"
-        :class="{
-          'in-progress': index < currentStatusIndex,
-        }"
+        v-for="(item, index) of workflowData"
+        :key="item.value"
+        :class="`crm-workflow-item ${index === workflowData.length - 1 ? '' : 'flex-1'}`"
       >
+        <div class="crm-workflow-item-status" :class="statusClass(index, item)">
+          <CrmIcon
+            v-if="index < currentStatusIndex || item.value === StageResultEnum.FAIL"
+            :type="item.value === StageResultEnum.FAIL ? 'iconicon_close' : 'iconicon_check'"
+            :size="16"
+          />
+          <div v-else class="flex items-center justify-center">{{ index + 1 }} </div>
+        </div>
+        <div class="crm-workflow-item-name" :class="statusClass(index, item)">
+          {{ item.label }}
+        </div>
+        <div
+          v-if="index !== workflowData.length - 1"
+          class="crm-workflow-item-line"
+          :class="{
+            'in-progress': index < currentStatusIndex,
+          }"
+        >
+        </div>
       </div>
     </div>
     <slot
@@ -65,7 +67,7 @@
     padding: 24px;
     border-radius: var(--border-radius-medium);
     background: var(--text-n9);
-    gap: 16px;
+    gap: 24px;
     @apply flex;
     .crm-workflow-item {
       gap: 16px;

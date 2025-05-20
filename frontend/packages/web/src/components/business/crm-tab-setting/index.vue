@@ -8,7 +8,7 @@
   >
     <template #trigger>
       <n-button secondary>
-        <CrmIcon class="mr-[4px]" type="iconicon_set_up" :size="16" />
+        <CrmIcon class="mr-[4px] text-[var(--text-n1)]" type="iconicon_set_up" :size="16" />
         {{ t('common.tabConfig') }}
       </n-button>
     </template>

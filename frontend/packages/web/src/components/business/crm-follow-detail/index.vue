@@ -19,12 +19,12 @@
         <CrmSearchInput
           v-model:value="followKeyword"
           :placeholder="t('common.byKeywordSearch')"
-          class="!w-[240px]"
+          class="mr-[1px] !w-[240px]"
           @search="(val) => searchData(val)"
         />
       </div>
     </div>
-    <n-spin :show="loading" class="h-full pr-[8px]">
+    <n-spin :show="loading" class="h-full">
       <FollowRecord
         v-model:data="data"
         :virtual-scroll-height="`${props.virtualScrollHeight || '1000px'}`"

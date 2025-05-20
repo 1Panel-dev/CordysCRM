@@ -8,7 +8,7 @@
     :title="titleName"
     :subtitle="subTitleName"
     :form-key="FormDesignKeyEnum.BUSINESS"
-    :show-tab-setting="true"
+    :show-tab-setting="false"
     :source-id="sourceId"
     @button-select="handleSelect"
     @saved="() => (refreshKey += 1)"

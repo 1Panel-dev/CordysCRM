@@ -197,10 +197,10 @@
 
 <style lang="less">
   .crm-list {
-    width: calc(100% + 8px);
+    width: calc(100% + 5px);
     .crm-container--shadow-y();
     .v-vl-visible-items {
-      padding-right: 8px;
+      padding-right: 5px;
     }
     .crm-list-item {
       border-radius: var(--border-radius-small);

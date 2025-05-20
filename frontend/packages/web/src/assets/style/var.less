@@ -357,6 +357,36 @@
   }
 }
 
+// 基础second背景按钮
+.btn-base-sec-default() {
+  background: var(--text-n8) !important;
+}
+
+.btn-base-sec-hover() {
+  &:not(.n-button--disabled):hover {
+    background: var(--text-n9) !important;
+  }
+}
+
+.btn-base-sec-focus() {
+  &:not(.n-button--disabled):focus {
+    background: none !important;
+  }
+}
+.btn-base-sec-active {
+  &:not(.n-button--disabled):active {
+    color: var(--text-n1) !important;
+    background: var(--text-n7) !important;
+  }
+}
+
+.btn-base-sec-disabled() {
+  &:disabled {
+    color: var(--text-n6) !important;
+    background: var(--text-n9) !important;
+  }
+}
+
 // error状态的文本按钮
 .btn-text-error-hover() {
   &:not(:disabled):hover {

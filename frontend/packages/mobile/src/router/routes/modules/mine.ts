@@ -28,7 +28,6 @@ const mine: AppRouteRecordRaw = {
       component: () => import('@/views/mine/message.vue'),
       meta: {
         locale: 'menu.message',
-        permissions: ['SYSTEM_NOTICE:READ'],
         depth: 2,
       },
     },

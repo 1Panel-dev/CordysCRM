@@ -57,7 +57,7 @@
                 :tab-list="showTabList"
                 type="line"
               />
-              <div v-if="props.showTabSetting" class="absolute right-4 top-2">
+              <div v-if="props.showTabSetting" class="absolute right-[24px] top-2">
                 <CrmTabSetting
                   v-model:cached-list="cachedList"
                   :tab-list="props.tabList"
@@ -129,12 +129,15 @@
   const { t } = useI18n();
 
   const showTabList = computed(() => {
-    return cachedList.value.reduce((acc: TabPaneProps[], e: TabContentItem) => {
-      if (e.enable) {
-        acc.push({ name: e.name, tab: e.tab });
-      }
-      return acc;
-    }, []);
+    if (props.showTabSetting) {
+      return cachedList.value.reduce((acc: TabPaneProps[], e: TabContentItem) => {
+        if (e.enable) {
+          acc.push({ name: e.name, tab: e.tab });
+        }
+        return acc;
+      }, []);
+    }
+    return props.tabList;
   });
 
   const formDrawerVisible = ref(false);
