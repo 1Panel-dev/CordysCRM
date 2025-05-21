@@ -42,6 +42,7 @@ import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
+import io.cordys.crm.system.service.ProductService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -96,6 +97,8 @@ public class ClueService {
     private PermissionCache permissionCache;
     @Resource
     private ExtProductMapper extProductMapper;
+    @Resource
+    private ProductService productService;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -239,6 +242,7 @@ public class ClueService {
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.ADD, resourceName = "{#request.name}")
     public Clue add(ClueAddRequest request, String userId, String orgId) {
+        productService.checkProductList(request.getProducts());
         Clue clue = BeanUtils.copyBean(new Clue(), request);
         if (StringUtils.isBlank(request.getOwner())) {
             clue.setOwner(userId);
@@ -267,6 +271,7 @@ public class ClueService {
 
     @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public Clue update(ClueUpdateRequest request, String userId, String orgId) {
+        productService.checkProductList(request.getProducts());
         Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
         if (!StringUtils.equals(originClue.getOwner(), request.getOwner())) {
             poolClueService.validateCapacity(1, request.getOwner(), orgId);

@@ -155,6 +155,7 @@ class ClueControllerTests extends BaseTest {
         request.setId(addClue.getId());
         request.setName("aa11");
         request.setOwner(InternalUser.ADMIN.getValue());
+        request.setProducts(List.of("cc", "dd"));
         this.requestPostWithOk(DEFAULT_UPDATE, request);
         // 校验请求成功数据
         Clue clueResult = clueMapper.selectByPrimaryKey(request.getId());
@@ -164,6 +165,7 @@ class ClueControllerTests extends BaseTest {
         // 不修改信息
         ClueUpdateRequest emptyRequest = new ClueUpdateRequest();
         emptyRequest.setId(addClue.getId());
+        emptyRequest.setProducts(List.of("cc", "dd"));
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
 
         // 校验重名异常

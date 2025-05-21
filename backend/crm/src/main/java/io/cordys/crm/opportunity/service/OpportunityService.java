@@ -42,6 +42,7 @@ import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
+import io.cordys.crm.system.service.ProductService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -85,9 +86,9 @@ public class OpportunityService {
     @Resource
     private PermissionCache permissionCache;
     @Resource
-    private BaseMapper<CustomerContact> customerContactMapper;
-    @Resource
     private CustomerContactService customerContactService;
+    @Resource
+    private ProductService productService;
 
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
                                                                DeptDataPermissionDTO deptDataPermission) {
@@ -194,6 +195,7 @@ public class OpportunityService {
     @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.ADD, resourceName = "{#request.name}")
     public Opportunity add(OpportunityAddRequest request, String operatorId, String orgId) {
         checkOpportunity(request, orgId, null, Translator.get("opportunity.add"));
+        productService.checkProductList(request.getProducts());
         Opportunity opportunity = new Opportunity();
         String id = IDGenerator.nextStr();
         opportunity.setId(id);
@@ -258,6 +260,7 @@ public class OpportunityService {
         Optional.ofNullable(oldOpportunity).ifPresentOrElse(item -> {
             Opportunity newOpportunity = BeanUtils.copyBean(new Opportunity(), item);
             checkOpportunity(request, orgId, request.getId(), Translator.get("opportunity.update"));
+            productService.checkProductList(request.getProducts());
             //更新商机
             updateOpportunity(newOpportunity, request, userId);
             // 获取模块字段

@@ -257,4 +257,13 @@ public class ProductService {
         });
         logService.batchAdd(logs);
     }
+
+    public void checkProductList(List<String> products) {
+        int totalLength = products.stream()
+                .mapToInt(s -> s == null ? 0 : s.length())
+                .sum();
+        if (totalLength > 500) {
+            throw new GenericException(Translator.get("product.length"));
+        }
+    }
 }
