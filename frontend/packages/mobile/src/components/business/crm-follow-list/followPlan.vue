@@ -8,6 +8,7 @@
         :placeholder="t('common.pleaseInputKeyword')"
         class="flex-1 !p-0"
         @search="loadList"
+        @clear="loadList"
       />
     </div>
     <CrmList
@@ -94,7 +95,9 @@
   }
 
   function loadList() {
-    crmListRef.value?.loadList(true);
+    nextTick(() => {
+      crmListRef.value?.loadList(true);
+    });
   }
 
   defineExpose({

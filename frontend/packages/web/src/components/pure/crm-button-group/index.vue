@@ -29,7 +29,7 @@
             text
             v-bind="item"
             :class="item.text === false ? '' : '!p-0'"
-            type="primary"
+            :type="item.danger ? 'error' : 'primary'"
             @click="() => emit('select', item.key as string)"
           >
             {{ item.label }}

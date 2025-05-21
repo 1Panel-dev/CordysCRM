@@ -16,6 +16,7 @@
         :placeholder="t('clue.searchPlaceholder')"
         class="flex-1 !p-0"
         @search="search"
+        @clear="search"
       />
     </div>
     <div class="filter-buttons">
@@ -59,6 +60,7 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ClueListItem } from '@lib/shared/models/clue';
 
@@ -179,15 +181,19 @@
             handleTransfer(item.id);
           },
         },
-        {
-          label: t('common.convertToCustomer'),
-          icon: 'iconicon_edit1',
-          permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-          allPermission: true,
-          action: (item: ClueListItem) => {
-            convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER);
-          },
-        },
+        ...(row.stage !== StageResultEnum.FAIL
+          ? [
+              {
+                label: t('common.convertToCustomer'),
+                icon: 'iconicon_edit1',
+                permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+                allPermission: true,
+                action: (item: ClueListItem) => {
+                  convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER);
+                },
+              },
+            ]
+          : []),
         {
           label: t('common.delete'),
           icon: 'iconicon_delete',
@@ -201,7 +207,9 @@
   });
 
   function search() {
-    crmListRef.value?.loadList(true);
+    nextTick(() => {
+      crmListRef.value?.loadList(true);
+    });
   }
 
   onActivated(() => {

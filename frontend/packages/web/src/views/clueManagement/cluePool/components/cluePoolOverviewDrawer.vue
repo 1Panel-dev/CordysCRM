@@ -119,6 +119,7 @@
       permission: ['CLUE_MANAGEMENT_POOL:DELETE'],
       text: false,
       ghost: true,
+      danger: true,
       class: 'n-btn-outline-primary',
     },
   ];

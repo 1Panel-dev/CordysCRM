@@ -125,6 +125,7 @@
       key: 'delete',
       text: false,
       ghost: true,
+      danger: true,
       class: 'n-btn-outline-primary',
       permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
     },

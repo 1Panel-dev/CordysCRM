@@ -16,6 +16,7 @@
         :placeholder="t('customer.searchPlaceholder')"
         class="flex-1 !p-0"
         @search="search"
+        @clear="search"
       />
     </div>
     <div class="filter-buttons">
@@ -197,9 +198,11 @@
   });
 
   async function search() {
-    showLoadingToast(t('common.searching'));
-    await crmListRef.value?.loadList(true);
-    closeToast();
+    nextTick(async () => {
+      showLoadingToast(t('common.searching'));
+      await crmListRef.value?.loadList(true);
+      closeToast();
+    });
   }
 
   function goCreate() {

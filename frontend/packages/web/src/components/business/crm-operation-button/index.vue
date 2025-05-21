@@ -5,9 +5,9 @@
       <!-- 更多操作 -->
       <CrmMoreAction :options="props.moreList" @select="handleMoreSelect">
         <template #default>
-          <div class="flex items-center justify-center">
-            <CrmIcon class="cursor-pointer" type="iconicon_ellipsis" :size="16" />
-          </div>
+          <n-button text type="primary">
+            {{ t('common.more') }}
+          </n-button>
         </template>
       </CrmMoreAction>
     </template>
@@ -19,6 +19,10 @@
 </template>
 
 <script setup lang="ts">
+  import { NButton } from 'naive-ui';
+
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -34,6 +38,8 @@
     (e: 'select', key: string, done?: () => void): void;
     (e: 'cancel'): void;
   }>();
+
+  const { t } = useI18n();
 
   function handleSelect(key: string, done?: () => void) {
     emit('select', key, done);

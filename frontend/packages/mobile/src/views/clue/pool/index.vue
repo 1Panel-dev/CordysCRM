@@ -7,6 +7,7 @@
         :placeholder="t('clue.searchPlaceholder')"
         class="flex-1 !p-0"
         @search="search"
+        @clear="search"
       />
     </div>
     <div v-if="filterButtons.length" class="filter-buttons">
@@ -163,7 +164,9 @@
   ];
 
   function search() {
-    crmListRef.value?.loadList(true);
+    nextTick(() => {
+      crmListRef.value?.loadList(true);
+    });
   }
 
   onActivated(() => {

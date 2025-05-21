@@ -1,6 +1,12 @@
 <template>
   <CrmPageWrapper :title="t('workbench.duplicateCheck')">
-    <van-search v-model="keyword" shape="round" :placeholder="t('workbench.searchPlaceholder')" @search="searchData" />
+    <van-search
+      v-model="keyword"
+      shape="round"
+      :placeholder="t('workbench.searchPlaceholder')"
+      @clear="searchData"
+      @search="searchData"
+    />
     <div v-show="noDuplicateCustomers" class="text-center text-[var(--text-n4)]">
       {{ t('workbench.duplicateCheck.noDuplicateCustomers') }}
     </div>
@@ -89,13 +95,15 @@
   const clueRelatedListRef = ref<InstanceType<typeof RelatedList>>();
 
   async function searchData() {
-    customerRelatedListRef.value?.loadList().finally(() => {
-      showResult.value = !!customerList.value.length || customerRelatedListRef.value?.code === 101003;
-      noDuplicateCustomers.value = !showResult.value && !showClue.value;
-    });
-    clueRelatedListRef.value?.loadList().finally(() => {
-      showClue.value = !!clueList.value.length || clueRelatedListRef.value?.code === 101003;
-      noDuplicateCustomers.value = !showResult.value && !showClue.value;
+    nextTick(() => {
+      customerRelatedListRef.value?.loadList().finally(() => {
+        showResult.value = !!customerList.value.length || customerRelatedListRef.value?.code === 101003;
+        noDuplicateCustomers.value = !showResult.value && !showClue.value;
+      });
+      clueRelatedListRef.value?.loadList().finally(() => {
+        showClue.value = !!clueList.value.length || clueRelatedListRef.value?.code === 101003;
+        noDuplicateCustomers.value = !showResult.value && !showClue.value;
+      });
     });
   }
 </script>

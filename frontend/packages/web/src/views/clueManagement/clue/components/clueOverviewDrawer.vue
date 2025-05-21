@@ -266,12 +266,16 @@
       return [];
     }
     return [
-      {
-        label: t('clue.convertToCustomer'),
-        key: 'convertToCustomer',
-        permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-        allPermission: true,
-      },
+      ...(currentStatus.value !== StageResultEnum.FAIL
+        ? [
+            {
+              label: t('clue.convertToCustomer'),
+              key: 'convertToCustomer',
+              permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+              allPermission: true,
+            },
+          ]
+        : []),
       {
         type: 'divider',
       },

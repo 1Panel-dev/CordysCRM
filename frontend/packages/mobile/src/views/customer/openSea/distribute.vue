@@ -1,7 +1,13 @@
 <template>
   <CrmPageWrapper :title="t('common.distribute')">
     <div class="flex h-full flex-col">
-      <van-search v-model="keyword" shape="round" :placeholder="t('customer.searchNamePlaceholder')" @search="search" />
+      <van-search
+        v-model="keyword"
+        shape="round"
+        :placeholder="t('customer.searchNamePlaceholder')"
+        @clear="search"
+        @search="search"
+      />
       <div class="flex-1 overflow-hidden px-[16px]">
         <CrmSelectList
           ref="crmSelectListRef"
@@ -87,7 +93,9 @@
   }
 
   function search() {
-    crmSelectListRef.value?.filterListByKeyword('name');
+    nextTick(() => {
+      crmSelectListRef.value?.filterListByKeyword('name');
+    });
   }
 </script>
 

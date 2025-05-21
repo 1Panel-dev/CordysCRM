@@ -7,6 +7,7 @@
         :placeholder="t('customer.searchPlaceholder')"
         class="flex-1 !p-0"
         @search="search"
+        @clear="search"
       />
     </div>
     <CrmList
@@ -72,7 +73,9 @@
   const keyword = ref('');
 
   function search() {
-    crmListRef.value?.filterListByKeyword('ownerName');
+    nextTick(() => {
+      crmListRef.value?.filterListByKeyword('ownerName');
+    });
   }
 
   onMounted(() => {

@@ -63,6 +63,7 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { ClueListItem } from '@lib/shared/models/clue';
@@ -363,18 +364,23 @@
                   },
                 ],
                 moreList: [
-                  {
-                    label: t('clue.convertToCustomer'),
-                    key: 'convertToCustomer',
-                    permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-                    allPermission: true,
-                  },
+                  ...(row.stage !== StageResultEnum.FAIL
+                    ? [
+                        {
+                          label: t('clue.convertToCustomer'),
+                          key: 'convertToCustomer',
+                          permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+                          allPermission: true,
+                        },
+                      ]
+                    : []),
                   ...([CustomerSearchTypeEnum.DEPARTMENT, CustomerSearchTypeEnum.SELF].includes(activeTab.value)
                     ? []
                     : [
                         {
                           label: t('common.delete'),
                           key: 'delete',
+                          danger: true,
                           permission: ['CLUE_MANAGEMENT:DELETE'],
                         },
                       ]),
