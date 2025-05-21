@@ -7,6 +7,7 @@ import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,4 +31,6 @@ public interface ExtCustomerContactMapper {
     List<CustomerContactListResponse> listByCustomerId(@Param("customerId") String customerId);
 
     List<CustomerContactListResponse> getById(@Param("id") String id);
+
+    List<OptionDTO> selectContactPhoneOptionByIds(@Param("contactIds") List<String> contactIds);
 }

@@ -329,4 +329,18 @@ public class BaseService {
                 .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
 
     }
+
+    /**
+     * 联系人id和电话映射
+     * @param contactIds
+     * @return
+     */
+    public Map<String, String> getContactPhone(List<String> contactIds) {
+        if (CollectionUtils.isEmpty(contactIds)) {
+            return Collections.emptyMap();
+        }
+        return extCustomerContactMapper.selectContactPhoneOptionByIds(contactIds)
+                .stream()
+                .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+    }
 }
