@@ -252,8 +252,11 @@ public class RoleService {
             List<String> newPermissionIds = request.getPermissions().stream().filter(PermissionUpdateRequest::getEnable)
                     .map(PermissionUpdateRequest::getId)
                     .toList();
-            modifiedRoleLogDTO.setPermissions(newPermissionIds);
-            originRoleLogDTO.setPermissions(originPermissionIds);
+            if (!(newPermissionIds.containsAll(originPermissionIds) && originPermissionIds.containsAll(newPermissionIds))) {
+                // 如果权限有变更，则记录权限
+                modifiedRoleLogDTO.setPermissions(newPermissionIds);
+                originRoleLogDTO.setPermissions(originPermissionIds);
+            }
         }
 
         OperationLogContext.setContext(
