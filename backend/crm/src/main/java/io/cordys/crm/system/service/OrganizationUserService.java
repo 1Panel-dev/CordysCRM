@@ -9,6 +9,7 @@ import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.BaseTreeNode;
+import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.permission.PermissionCache;
@@ -946,5 +947,24 @@ public class OrganizationUserService {
                 .resourceId(request.getUserId())
                 .build());
 
+    }
+
+    /**
+     * 获取单个部门下的用户
+     *
+     * @param departmentId
+     * @param orgId
+     * @return
+     */
+    public List<DeptUserTreeNode> getUserTreeByDepId(String departmentId, String orgId) {
+        List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
+        List<DeptUserTreeNode> userNodes = extUserRoleMapper.selectUserDeptForOrg(orgId);
+        userNodes.forEach(userNode -> {
+            if (!StringUtils.equals(userNode.getParentId(), departmentId)) {
+                userNode.setEnabled(false);
+            }
+        });
+        userNodes.addAll(treeNodes);
+        return BaseTreeNode.buildTree(userNodes);
     }
 }

@@ -43,6 +43,7 @@ public class OrganizationUserControllerTests extends BaseTest {
     public static final String USER_DELETE = "/user/delete/";
     public static final String USER_DELETE_CHECK = "/user/delete/check/";
     public static final String USER_UPDATE_NAME = "/user/update/name";
+    public static final String USER_GET = "/user/get/";
 
 
     @Sql(scripts = {"/dml/init_user_test.sql"},
@@ -214,4 +215,11 @@ public class OrganizationUserControllerTests extends BaseTest {
     public void testUserDeleteCheck() throws Exception {
         this.requestGet(USER_DELETE_CHECK + "u_5").andExpect(status().isOk());
     }
+
+    @Test
+    @Order(15)
+    public void testUserGet() throws Exception {
+        this.requestGet(USER_GET + "9").andExpect(status().isOk());
+    }
+
 }

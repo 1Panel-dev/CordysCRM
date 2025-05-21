@@ -3,6 +3,7 @@ package io.cordys.crm.system.controller;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
@@ -170,5 +171,13 @@ public class OrganizationUserController {
     @Operation(summary = "用户(员工)-删除校验")
     public boolean deleteCheck(@PathVariable String id) {
         return organizationUserService.deleteCheck(id);
+    }
+
+
+    @GetMapping("/get/{departmentId}")
+    @Operation(summary = "获取指定部门下用户")
+    @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_READ)
+    public List<DeptUserTreeNode> getDepartMentUser(@PathVariable String departmentId) {
+        return organizationUserService.getUserTreeByDepId(departmentId, OrganizationContext.getOrganizationId());
     }
 }
