@@ -404,7 +404,7 @@ export const rules: FormCreateFieldRule[] = [
     required: true,
     message: 'common.notNull',
     label: 'common.required',
-    trigger: 'input',
+    trigger: 'change',
   },
   {
     key: FieldRuleEnum.UNIQUE,
