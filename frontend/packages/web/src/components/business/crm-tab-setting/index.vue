@@ -98,27 +98,38 @@
     }
   }
 
-  async function initTab() {
-    const res = await getTabsFromLocal();
-    cachedData.value = res.length ? res : props.tabList.map((tab) => ({ ...tab, enable: true }));
-    await nextTick();
-    saveTabsToLocal(cachedData.value);
+  async function loadTab() {
+    try {
+      const localTabs = await getTabsFromLocal();
+      const currentTabNames = props.tabList.map((tab) => tab.name);
+
+      const validLocalTabs = localTabs.filter((tab) => currentTabNames.includes(tab.name));
+
+      const mergedTabs = props.tabList.map((tab) => {
+        const localTab = validLocalTabs.find((e) => e.name === tab.name);
+        return {
+          ...tab,
+          enable: localTab ? localTab.enable : true,
+        };
+      });
+
+      cachedData.value = mergedTabs;
+
+      if (!isArraysEqualWithOrder(localTabs, mergedTabs)) {
+        await saveTabsToLocal(mergedTabs);
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
+      cachedData.value = props.tabList.map((tab) => ({ ...tab, enable: true }));
+    }
   }
 
-  const loadTab = async () => {
-    const res = await getTabsFromLocal();
-    const nonCloseTab = res.filter((item) => !item.allowClose);
-    const couldCloseTab = res.filter((item) => item.allowClose);
-    cachedData.value = [...nonCloseTab, ...couldCloseTab];
-  };
-
-  const hasChange = ref<boolean>(false);
+  const hasChange = ref(false);
   function handleUpdateShow(show: boolean) {
-    if (!show) {
-      if (hasChange.value) {
-        saveTabsToLocal(cachedData.value);
-        hasChange.value = false;
-      }
+    if (!show && hasChange.value) {
+      saveTabsToLocal(cachedData.value);
+      hasChange.value = false;
     }
   }
 
@@ -133,8 +144,15 @@
 
   onBeforeMount(() => {
     loadTab();
-    initTab();
   });
+
+  watch(
+    () => props.tabList,
+    () => {
+      loadTab();
+    },
+    { deep: true }
+  );
 </script>
 
 <style lang="less">

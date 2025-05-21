@@ -163,7 +163,7 @@
         name: 'contact',
         tab: t('opportunity.contactInfo'),
         enable: true,
-        allowClose: true,
+        allowClose: false,
       },
       {
         name: 'followRecord',

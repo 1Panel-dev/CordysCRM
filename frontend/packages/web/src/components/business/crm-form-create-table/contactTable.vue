@@ -1,6 +1,10 @@
 <template>
   <CrmCard hide-footer>
-    <div class="mb-[16px] flex justify-between">
+    <div
+      :class="`mb-[16px] flex  ${
+        !props.readonly && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:ADD']) ? 'justify-between' : 'justify-end'
+      }`"
+    >
       <n-button
         v-if="!props.readonly"
         v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']"
