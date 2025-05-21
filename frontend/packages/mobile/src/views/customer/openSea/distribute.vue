@@ -87,7 +87,7 @@
   }
 
   function search() {
-    crmSelectListRef.value?.loadList(true);
+    crmSelectListRef.value?.filterListByKeyword('name');
   }
 </script>
 
