@@ -83,7 +83,7 @@
     member: string;
     permission: CollaborationType;
   }>({
-    id: '',
+    id: route.query.id as string,
     member: lastPageParams.collaborator?.id || '',
     permission: 'READ_ONLY',
   });
