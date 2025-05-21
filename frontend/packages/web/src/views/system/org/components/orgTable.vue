@@ -503,18 +503,19 @@
               return h(
                 'div',
                 {
-                  class: 'w-full flex items-center',
+                  class: 'flex items-center one-line-text',
                 },
                 [
                   h(
                     'div',
                     {
-                      class: 'one-line-text max-w-[calc(100%-44px)] inline-block',
+                      class: 'one-line-text  inline-block',
                     },
                     [
                       h(
                         CrmTableButton,
                         {
+                          class: 'inline-block',
                           onClick: () => showDetail(row.id),
                         },
                         { default: () => row.userName, trigger: () => row.userName }

@@ -125,6 +125,7 @@
                   delay: 300,
                   flip: true,
                   disabled: !option.tooltipContent,
+                  to: 'body',
                 },
                 {
                   trigger: () => {

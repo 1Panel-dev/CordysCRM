@@ -257,6 +257,11 @@
     });
   }
 
+  const getDefaultRange = () => {
+    const now = Date.now();
+    return [now + 5 * 60 * 1000, now + 24 * 60 * 60 * 1000] as [number, number];
+  };
+
   async function getDetail() {
     if (props.id) {
       try {
@@ -282,13 +287,10 @@
         // eslint-disable-next-line no-console
         console.log(error);
       }
+    } else {
+      form.value.range = getDefaultRange();
     }
   }
-
-  const getDefaultRange = () => {
-    const now = Date.now();
-    return [now, now + 24 * 60 * 60 * 1000] as [number, number];
-  };
 
   const showPopModal = ref(false);
 

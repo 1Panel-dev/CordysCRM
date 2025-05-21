@@ -71,6 +71,7 @@
     }
     .n-data-table-tr:not(.n-data-table-tr--summary):hover {
       .table-row-edit {
+        color: var(--primary-8);
         @apply visible;
       }
     }

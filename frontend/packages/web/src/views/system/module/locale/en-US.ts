@@ -8,10 +8,10 @@ export default {
   'module.newContactForm': 'Contact form settings',
   'module.autoRecycle': 'Auto recycle',
   'module.expirationReminder': 'Expiration reminder',
-  'module.closeModuleTip': 'Confirm to close module {name}?',
+  'module.closeModuleTip': 'Confirm to close module{name}?',
   'module.closeModuleTipContent':
     'After closing, members will not find the module in the main navigation, please be careful!',
-  'module.openModuleTip': 'Confirm to open module {name}?',
+  'module.openModuleTip': 'Confirm to open module{name}?',
   'module.openModuleTipContent': 'After opening, the module appears in the main navigation menu',
   'module.remainingDays': 'Remaining ownership days',
   'module.openSea': 'Open Sea',

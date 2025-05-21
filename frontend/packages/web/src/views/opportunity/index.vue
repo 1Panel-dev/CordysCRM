@@ -368,25 +368,27 @@
       width: 200,
       fixed: 'right',
       render: (row: OpportunityItem) =>
-        h(
-          CrmOperationButton,
-          {
-            groupList: getOperationGroupList(row),
-            onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
-            onCancel: () => {
-              transferForm.value = { ...defaultTransferForm };
-            },
-          },
-          {
-            transferPopContent: () => {
-              return h(TransferForm, {
-                class: 'w-[320px] mt-[16px]',
-                form: transferForm.value,
-                ref: transferFormRef,
-              });
-            },
-          }
-        ),
+        row.stage === StageResultEnum.SUCCESS
+          ? '-'
+          : h(
+              CrmOperationButton,
+              {
+                groupList: getOperationGroupList(row),
+                onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
+                onCancel: () => {
+                  transferForm.value = { ...defaultTransferForm };
+                },
+              },
+              {
+                transferPopContent: () => {
+                  return h(TransferForm, {
+                    class: 'w-[320px] mt-[16px]',
+                    form: transferForm.value,
+                    ref: transferFormRef,
+                  });
+                },
+              }
+            ),
     },
     specialRender: {
       name: (row: OpportunityItem) => {

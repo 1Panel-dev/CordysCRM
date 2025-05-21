@@ -204,7 +204,9 @@
 
   // 切换模块状态
   async function toggleModule(enable: boolean, item: ModuleConfigItem) {
-    const title = enable ? t('module.openModuleTip') : t('module.closeModuleTip');
+    const title = enable
+      ? t('module.openModuleTip', { name: item.label })
+      : t('module.closeModuleTip', { name: item.label });
     const content = enable ? t('module.openModuleTipContent') : t('module.closeModuleTipContent');
     const positiveText = t(enable ? 'common.confirmStart' : 'common.confirmClose');
 

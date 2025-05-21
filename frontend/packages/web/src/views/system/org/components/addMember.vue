@@ -176,7 +176,7 @@
             {{ t('common.saveAndContinue') }}
           </n-button>
           <n-button :loading="loading" type="primary" @click="handleSave(false)">
-            {{ t('common.confirm') }}
+            {{ form.id ? t('common.update') : t('common.confirm') }}
           </n-button>
         </div>
       </div>

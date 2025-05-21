@@ -537,9 +537,10 @@
 
 <style lang="less">
   .crm-tree {
+    width: calc(100% + 5px);
     .crm-container--shadow-y();
     .v-vl-visible-items {
-      padding-right: 10px;
+      padding-right: 5px;
     }
     &.n-tree {
       .n-tree-node-wrapper {
