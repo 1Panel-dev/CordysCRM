@@ -536,6 +536,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
       }
     });
+    nextTick(() => {
+      unsaved.value = false;
+    });
   }
 
   function resetForm() {
