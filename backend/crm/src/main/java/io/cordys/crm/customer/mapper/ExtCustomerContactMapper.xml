@@ -129,7 +129,7 @@
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'name' and condition.name != 'owner'">
+                <if test="condition.name != 'name' and condition.name != 'owner' and condition.name != 'enable'">
                     <if test="condition.multipleValue">
                         inner join customer_contact_field_blob ${tablePrefix}_${i}
                         on cc.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -203,6 +203,12 @@
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="cc.customer_id"/>
+                </include>
+            </when>
+            <when test="condition.name == 'enable'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.enable"/>
                 </include>
             </when>
             <otherwise>
