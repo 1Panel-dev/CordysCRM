@@ -314,7 +314,7 @@
         key: 'followUp',
         permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
-      ...(activeTab.value === CustomerSearchTypeEnum.ALL
+      ...(activeTab.value !== CustomerSearchTypeEnum.VISIBLE
         ? [
             {
               label: t('common.edit'),
