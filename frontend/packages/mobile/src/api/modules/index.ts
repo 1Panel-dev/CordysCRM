@@ -61,6 +61,7 @@ export const {
   deleteOpt,
   updateOptStage,
   getOptTab,
+  getOpportunityContactList,
 } = opportunityApi;
 
 export const {

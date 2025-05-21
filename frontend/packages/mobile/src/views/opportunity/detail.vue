@@ -23,6 +23,12 @@
           </div>
           <CrmDescription :description="descriptions" />
         </div>
+        <CrmContactList
+          v-else-if="tab.name === 'contact'"
+          :source-id="route.query.id?.toString()"
+          :form-key="FormDesignKeyEnum.BUSINESS_CONTACT"
+          readonly
+        />
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
           ref="recordListRef"
@@ -54,6 +60,7 @@
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
+  import CrmContactList from '@/components/business/crm-contact-list/index.vue';
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
   import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
@@ -75,6 +82,10 @@
     {
       name: 'info',
       title: t('opportunity.info'),
+    },
+    {
+      name: 'contact',
+      title: t('menu.contact'),
     },
     {
       name: 'record',

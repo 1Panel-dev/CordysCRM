@@ -19,3 +19,4 @@ export const GetOptDetailUrl = '/opportunity/get'; // 获取商机详情
 export const DeleteOptFollowRecordUrl = '/opportunity/follow/record/delete'; // 删除商机跟进记录
 export const DeleteOptFollowPlanUrl = '/opportunity/follow/plan/delete'; // 删除商机跟进计划
 export const GetOptTabUrl = '/opportunity/tab'; // 商机tab显隐
+export const GetOpportunityContactListUrl = 'opportunity/contact/list'; // 商机详情联系人列表

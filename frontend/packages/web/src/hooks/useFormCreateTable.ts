@@ -28,7 +28,8 @@ type FormKey =
   | FormDesignKeyEnum.PRODUCT
   | FormDesignKeyEnum.CUSTOMER_OPEN_SEA
   | FormDesignKeyEnum.CLUE_POOL
-  | FormDesignKeyEnum.CUSTOMER_CONTACT;
+  | FormDesignKeyEnum.CUSTOMER_CONTACT
+  | FormDesignKeyEnum.BUSINESS_CONTACT;
 
 export interface FormCreateTableProps {
   formKey: FormKey;
@@ -52,6 +53,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CUSTOMER]: TableKeyEnum.CUSTOMER,
     [FormDesignKeyEnum.CONTACT]: TableKeyEnum.CUSTOMER_CONTRACT,
     [FormDesignKeyEnum.CUSTOMER_CONTACT]: TableKeyEnum.CUSTOMER_CONTRACT,
+    [FormDesignKeyEnum.BUSINESS_CONTACT]: TableKeyEnum.BUSINESS_CONTRACT,
     [FormDesignKeyEnum.BUSINESS]: TableKeyEnum.BUSINESS,
     [FormDesignKeyEnum.CLUE]: TableKeyEnum.CLUE,
     [FormDesignKeyEnum.CLUE_POOL]: TableKeyEnum.CLUE_POOL,
@@ -175,17 +177,36 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
-        filterOptions: [
-          {
-            label: t('common.enable'),
-            value: true,
-          },
-          {
-            label: t('common.disable'),
-            value: false,
-          },
-        ],
-        filter: true,
+        render: props.specialRender?.status,
+      },
+      {
+        title: t('customer.disableReason'),
+        width: 120,
+        key: 'disableReason',
+        ellipsis: {
+          tooltip: true,
+        },
+      },
+      {
+        title: t('org.department'),
+        width: 120,
+        key: 'departmentId',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: 'default',
+        render: (row: any) => row.departmentName || '-',
+      },
+    ],
+    [FormDesignKeyEnum.BUSINESS_CONTACT]: [
+      {
+        title: t('common.status'),
+        width: 120,
+        key: 'enable',
+        ellipsis: {
+          tooltip: true,
+        },
         render: props.specialRender?.status,
       },
       {

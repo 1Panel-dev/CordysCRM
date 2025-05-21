@@ -12,8 +12,9 @@
         </div>
         <CrmContactList
           v-else-if="tab.name === 'contact'"
-          :customer-id="route.query.id?.toString()"
+          :source-id="route.query.id?.toString()"
           :customer-name="route.query.name?.toString()"
+          :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
         />
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"

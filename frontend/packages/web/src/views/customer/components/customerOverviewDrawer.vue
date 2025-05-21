@@ -36,9 +36,10 @@
         <ContactTable
           v-if="activeTab === 'contact'"
           :refresh-key="refreshKey"
-          :customer-id="props.sourceId"
+          :source-id="props.sourceId"
           :initial-source-name="sourceName"
           :readonly="collaborationType === 'READ_ONLY'"
+          :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
         />
         <FollowDetail
           v-else-if="['followRecord', 'followPlan'].includes(activeTab)"

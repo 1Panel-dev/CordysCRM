@@ -39,6 +39,7 @@ import {
   getCustomerList,
   getOpenSeaCustomer,
   getOpenSeaCustomerList,
+  getOpportunityContactList,
   getOpportunityDetail,
   getOpportunityList,
   getOptFollowPlan,
@@ -456,6 +457,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.CLUE_POOL]: getClueFormConfig,
   [FormDesignKeyEnum.PRODUCT]: getProductFormConfig,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getCustomerFormConfig,
+  [FormDesignKeyEnum.BUSINESS_CONTACT]: getCustomerContactFormConfig,
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -463,6 +465,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.BUSINESS]: addOpportunity,
   [FormDesignKeyEnum.CONTACT]: addCustomerContact,
   [FormDesignKeyEnum.CUSTOMER_CONTACT]: addCustomerContact,
+  [FormDesignKeyEnum.BUSINESS_CONTACT]: addCustomerContact,
   [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: addCustomerFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: addCustomerFollowRecord,
   [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: addClueFollowPlan,
@@ -481,6 +484,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.BUSINESS]: updateOpportunity,
   [FormDesignKeyEnum.CONTACT]: updateCustomerContact,
   [FormDesignKeyEnum.CUSTOMER_CONTACT]: updateCustomerContact,
+  [FormDesignKeyEnum.BUSINESS_CONTACT]: updateCustomerContact,
   [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: updateCustomerFollowPlan,
   [FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER]: updateCustomerFollowRecord,
   [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: updateClueFollowPlan,
@@ -520,4 +524,5 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.CLUE_POOL]: getCluePoolList,
   [FormDesignKeyEnum.PRODUCT]: getProductList,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getOpenSeaCustomerList,
+  [FormDesignKeyEnum.BUSINESS_CONTACT]: getOpportunityContactList,
 };

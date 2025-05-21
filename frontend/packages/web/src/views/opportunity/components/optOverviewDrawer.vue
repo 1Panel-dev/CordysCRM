@@ -51,6 +51,14 @@
         :show-add="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']) && currentStatus !== StageResultEnum.SUCCESS"
         :show-action="showAction && hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
       />
+
+      <ContactTable
+        v-if="activeTab === 'contact'"
+        :form-key="FormDesignKeyEnum.BUSINESS_CONTACT"
+        :refresh-key="refreshKey"
+        readonly
+        :source-id="sourceId"
+      />
     </template>
 
     <template #transferPopContent>
@@ -71,6 +79,7 @@
 
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
+  import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
@@ -185,6 +194,11 @@
       tab: t('common.plan'),
       enable: true,
       allowClose: true,
+    },
+    {
+      name: 'contact',
+      tab: t('opportunity.contactInfo'),
+      enable: true,
     },
   ];
 

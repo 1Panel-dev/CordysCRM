@@ -2,7 +2,7 @@
   <div class="flex h-full flex-col overflow-hidden bg-[var(--text-n9)]">
     <div class="top-bar">
       <van-button
-        v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']"
+        v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:ADD']) && !props.readonly"
         plain
         icon="plus"
         type="primary"
@@ -15,18 +15,19 @@
         shape="round"
         :placeholder="t('customer.searchContactPlaceholder')"
         class="flex-1 !p-0"
-        @search="loadList"
+        @search="searchList"
+        @clear="searchList"
       />
     </div>
     <CrmList
       ref="crmListRef"
       :list-params="listParams"
       :keyword="keyword"
-      :load-list-api="props.customerId ? getContactListUnderCustomer : getCustomerContactList"
+      :load-list-api="loadApiMap[props.formKey]"
       class="p-[16px]"
       :item-gap="16"
       :transform="transformFormData"
-      :no-page-nation="!!props.customerId"
+      :no-page-nation="!!props.sourceId"
     >
       <template #item="{ item }">
         <div
@@ -47,7 +48,7 @@
                 </van-tag>
               </div>
               <CrmTextButton
-                v-permission="['CUSTOMER_MANAGEMENT_CONTACT:DELETE']"
+                v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:DELETE']) && !props.readonly"
                 icon="iconicon_delete"
                 icon-size="16px"
                 color="var(--error-red)"
@@ -87,28 +88,51 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
+  import { CommonList } from '@lib/shared/models/common';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
-  import { deleteCustomerContact, getContactListUnderCustomer, getCustomerContactList } from '@/api/modules';
+  import {
+    deleteCustomerContact,
+    getContactListUnderCustomer,
+    getCustomerContactList,
+    getOpportunityContactList,
+  } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
+  import { hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
 
+  export type ContactFormKey =
+    | FormDesignKeyEnum.CUSTOMER_CONTACT
+    | FormDesignKeyEnum.CONTACT
+    | FormDesignKeyEnum.BUSINESS_CONTACT;
+
   const props = defineProps<{
-    customerId?: string;
+    sourceId?: string;
     customerName?: string;
+    formKey: ContactFormKey;
+    readonly?: boolean;
   }>();
 
   const { t } = useI18n();
   const router = useRouter();
   const { copy, isSupported } = useClipboard({ legacy: true });
 
+  const loadApiMap: Record<
+    ContactFormKey,
+    (...args: any) => Promise<CommonList<Record<string, any>> | Record<string, any>>
+  > = {
+    [FormDesignKeyEnum.CUSTOMER_CONTACT]: getContactListUnderCustomer,
+    [FormDesignKeyEnum.CONTACT]: getCustomerContactList,
+    [FormDesignKeyEnum.BUSINESS_CONTACT]: getOpportunityContactList,
+  };
+
   const { transformFormData } = await useFormCreateTransform(
-    props.customerId ? FormDesignKeyEnum.CUSTOMER_CONTACT : FormDesignKeyEnum.CONTACT
+    props.sourceId ? FormDesignKeyEnum.CUSTOMER_CONTACT : FormDesignKeyEnum.CONTACT
   );
 
   const crmListRef = ref<InstanceType<typeof CrmList>>();
@@ -118,7 +142,7 @@
     return {
       searchType: activeFilter.value,
       keyword: keyword.value,
-      id: props.customerId,
+      id: props.sourceId,
     };
   });
 
@@ -161,8 +185,8 @@
     router.push({
       name: CommonRouteEnum.FORM_CREATE,
       query: {
-        id: props.customerId,
-        formKey: props.customerId ? FormDesignKeyEnum.CUSTOMER_CONTACT : FormDesignKeyEnum.CONTACT,
+        id: props.sourceId,
+        formKey: props.sourceId ? FormDesignKeyEnum.CUSTOMER_CONTACT : FormDesignKeyEnum.CONTACT,
         initialSourceName: props.customerName,
       },
     });
@@ -175,12 +199,23 @@
         id: item.id,
         name: item.name,
         needInitDetail: 'Y',
+        readonly: props.readonly !== false ? 'Y' : 'N',
       },
     });
   }
 
   function loadList() {
     crmListRef.value?.loadList(true);
+  }
+
+  function searchList() {
+    nextTick(() => {
+      if (props.sourceId) {
+        crmListRef.value?.filterListByKeyword('name');
+      } else {
+        loadList();
+      }
+    });
   }
 
   onActivated(() => {

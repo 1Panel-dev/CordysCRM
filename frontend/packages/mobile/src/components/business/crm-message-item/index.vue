@@ -10,9 +10,9 @@
           {{ item.type === SystemMessageTypeEnum.SYSTEM_NOTICE ? t('common.system') : t('common.announcementMessage') }}
         </van-tag>
         <div class="flex max-w-[calc(100%-40px)] items-center">
-          <van-badge :dot="item.status === SystemMessageStatusEnum.UNREAD" class="relative z-10 w-[calc(100%-16px)]">
+          <van-badge :dot="item.status === SystemMessageStatusEnum.UNREAD" class="w-full">
             <div
-              :class="` one-line-text crm-message-item-title--${
+              :class="` one-line-text w-full crm-message-item-title--${
                 item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'
               } font-medium`"
             >

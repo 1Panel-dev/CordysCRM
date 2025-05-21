@@ -85,6 +85,7 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
@@ -103,10 +104,11 @@
   import { AppRouteEnum } from '@/enums/routeEnum';
 
   const props = defineProps<{
-    customerId?: string;
+    sourceId?: string;
     refreshKey?: number;
     initialSourceName?: string;
     readonly?: boolean;
+    formKey: FormDesignKeyEnum.CONTACT | FormDesignKeyEnum.CUSTOMER_CONTACT | FormDesignKeyEnum.BUSINESS_CONTACT;
   }>();
 
   const Message = useMessage();
@@ -135,8 +137,8 @@
   ];
 
   function handleCreate() {
-    if (props.customerId) {
-      activeContactId.value = props.customerId;
+    if (props.sourceId) {
+      activeContactId.value = props.sourceId;
     } else {
       activeContactId.value = '';
     }
@@ -266,8 +268,8 @@
   }
 
   const { useTableRes } = await useFormCreateTable({
-    formKey: !props.customerId ? FormDesignKeyEnum.CONTACT : FormDesignKeyEnum.CUSTOMER_CONTACT,
-    showPagination: !props.customerId,
+    formKey: props.formKey,
+    showPagination: !props.sourceId,
     readonly: props.readonly,
     operationColumn: {
       key: 'operation',
@@ -285,24 +287,30 @@
           value: row.enable,
           disabled: !hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']) || props.readonly,
           onClick: () => {
-            if (!hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE'])) return;
+            if (!hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:UPDATE']) || props.readonly) return;
             handleToggleStatus(row);
           },
         });
+      },
+      customerId: (row: CustomerContractListItem) => {
+        return h(CrmNameTooltip, { text: row.customerName });
+      },
+      name: (row: CustomerContractListItem) => {
+        return h(CrmNameTooltip, { text: row.name });
       },
     },
   });
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
 
   function searchData(val?: string) {
-    if (props.customerId) {
+    if (props.sourceId) {
       if (val) {
         const lowerCaseVal = val.toLowerCase();
         propsRes.value.data = propsRes.value.data.filter((item: CustomerContractListItem) => {
           return item.name.toLowerCase().includes(lowerCaseVal);
         });
       } else {
-        setLoadListParams({ id: props.customerId });
+        setLoadListParams({ id: props.sourceId });
         loadList();
       }
     } else {

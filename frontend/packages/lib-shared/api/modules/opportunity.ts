@@ -5,6 +5,7 @@ import {
   CancelOptFollowPlanUrl,
   DeleteOptFollowPlanUrl,
   DeleteOptFollowRecordUrl,
+  GetOpportunityContactListUrl,
   GetOptDetailUrl,
   GetOptFollowPlanUrl,
   GetOptFollowRecordUrl,
@@ -24,6 +25,7 @@ import {
 } from '@lib/shared/api/requrls/opportunity';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import type {
+  CustomerContractTableParams,
   CustomerFollowPlanTableParams,
   CustomerFollowRecordTableParams,
   CustomerTabHidden,
@@ -148,6 +150,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<CustomerTabHidden>({ url: GetOptTabUrl });
   }
 
+  // 获取商机联系人列表
+  function getOpportunityContactList(data: CustomerContractTableParams) {
+    return CDR.get({ url: `${GetOpportunityContactListUrl}/${data.id}` });
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -170,5 +177,6 @@ export default function useProductApi(CDR: CordysAxios) {
     deleteOpt,
     updateOptStage,
     getOptTab,
+    getOpportunityContactList,
   };
 }
