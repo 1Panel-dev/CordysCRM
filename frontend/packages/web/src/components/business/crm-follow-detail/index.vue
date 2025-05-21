@@ -211,7 +211,13 @@
   ];
 
   function getDescriptionFun(item: FollowDetailItem) {
-    return (descriptionList.map((desc: Description) => ({
+    let lastDescriptionList = [...descriptionList];
+
+    if (item.clueId?.length) {
+      lastDescriptionList = descriptionList.filter((e) => !['contactName', 'phone'].includes(e.key));
+    }
+
+    return (lastDescriptionList.map((desc: Description) => ({
       ...desc,
       value: item[desc.key as keyof FollowDetailItem],
     })) || []) as Description[];
