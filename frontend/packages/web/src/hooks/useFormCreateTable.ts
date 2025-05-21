@@ -583,7 +583,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       columns,
       scrollX: columns.reduce((prev, curr) => prev + (curr.width as number), 0) + 46,
       permission: props.permission,
-      maxHeight: 600,
     },
     (item, originalData) => {
       const businessFieldAttr: Record<string, any> = {};

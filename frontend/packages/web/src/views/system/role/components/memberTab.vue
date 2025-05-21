@@ -187,7 +187,6 @@
       showSetting: true,
       columns,
       permission: ['SYSTEM_ROLE:REMOVE_USER'],
-      maxHeight: 600,
     },
     (item) => {
       return {

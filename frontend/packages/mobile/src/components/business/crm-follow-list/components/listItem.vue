@@ -28,7 +28,7 @@
       </div>
       <div class="flex flex-1 flex-col gap-[12px] rounded-[var(--border-radius-large)] bg-[var(--text-n10)] p-[16px]">
         <div class="flex items-center justify-between gap-[16px]">
-          <CrmAvatar :text="item.ownerName" />
+          <CrmAvatar :is-word="item.owner !== userStore.userInfo.id" :text="item.ownerName" />
           <div class="flex flex-1 flex-wrap items-center overflow-hidden">
             <div class="one-line-text flex-1 text-[16px] font-semibold">{{ item.ownerName }}</div>
             <div v-if="!props.readonly" class="flex items-center gap-[16px]">
@@ -70,6 +70,7 @@
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { statusMap, StatusTagKey } from '@/config/follow';
+  import useUserStore from '@/store/modules/user';
 
   const props = defineProps<{
     item: any;
@@ -83,6 +84,7 @@
   }>();
 
   const { t } = useI18n();
+  const userStore = useUserStore();
 
   const isPlan = computed(() => {
     return props.type === 'plan';
