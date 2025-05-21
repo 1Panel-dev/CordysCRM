@@ -544,6 +544,8 @@
     &.n-tree {
       .n-tree-node-wrapper {
         .n-tree-node {
+          @apply flex items-center;
+
           height: 34px !important;
           .n-tree-node-content {
             .n-tree-node-content__text {
@@ -581,6 +583,9 @@
               }
             }
           }
+          .n-tree-node-content__prefix {
+            margin-right: 0 !important;
+          }
           &.n-tree-node--selected {
             .n-tree-node-content__prefix {
               color: var(--primary-8);
@@ -596,7 +601,8 @@
             }
           }
           .n-tree-node-switcher {
-            height: 100%;
+            width: 16px;
+            height: 16px;
             .n-tree-node-switcher__icon {
               width: 16px;
               height: 16px;

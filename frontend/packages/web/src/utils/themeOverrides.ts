@@ -295,6 +295,7 @@ export function getThemeOverrides(): GlobalThemeOverrides {
     },
     Menu: {
       itemTextColor: getLessVariableValue('--text-n1'),
+      itemColorHover: getLessVariableValue('--primary-7'),
     },
     Scrollbar: {
       color: getLessVariableValue('--text-n8'),

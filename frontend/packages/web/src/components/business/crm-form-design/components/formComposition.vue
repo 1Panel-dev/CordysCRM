@@ -5,7 +5,7 @@
     label-width="auto"
     class="crm-form-design--composition"
   >
-    <n-scrollbar class="px-[24px] pt-[24px]">
+    <n-scrollbar class="p-[24px]">
       <VueDraggable
         v-model="list"
         :animation="150"
@@ -17,6 +17,7 @@
         <template v-for="item in list" :key="item.id">
           <div
             v-if="item.show !== false"
+            :id="item.id"
             class="crm-form-design--composition-item"
             :class="activeItem?.id === item.id ? 'crm-form-design--composition-item--active' : ''"
             :style="{ width: `${item.fieldWidth * 100}%` }"
@@ -51,6 +52,7 @@
                 {{ t('common.delete') }}
               </n-tooltip>
             </div>
+            <div v-if="props.formConfig.labelPos === 'left'" class="h-[30px]"></div>
             <component :is="getItemComponent(item.type)" :field-config="item" :path="item.id" />
             <div class="crm-form-design--composition-item-mask"></div>
           </div>
@@ -192,8 +194,14 @@
         },
       ];
     }
-
     list.value.push(res);
+    activeItem.value = res;
+    nextTick(() => {
+      const el = document.getElementById(res.id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
   }
 
   function copyItem(item: FormCreateField) {
@@ -263,13 +271,15 @@
 
           top: 16px;
           right: 16px;
-          padding: 4px;
+          padding: 3px 4px;
           border: 1px solid var(--text-n7);
           border-radius: var(--border-radius-small);
           background-color: var(--text-n10);
           gap: 8px;
         }
         .n-form-item-label {
+          @apply items-center;
+
           margin-bottom: 4px;
           padding-bottom: 0;
         }

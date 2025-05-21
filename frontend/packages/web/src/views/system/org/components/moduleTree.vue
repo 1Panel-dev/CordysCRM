@@ -111,8 +111,9 @@
     const { option } = infoProps;
     if (option.parentId === 'NONE') {
       return h(CrmIcon, {
-        type: 'iconicon_control_platform1',
+        type: 'iconicon_control_platform',
         size: 16,
+        class: 'mr-[8px]',
       });
     }
     return null;

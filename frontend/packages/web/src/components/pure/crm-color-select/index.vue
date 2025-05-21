@@ -21,6 +21,10 @@
   }
   .color-list {
     width: 100% !important;
+    .color-item {
+      width: 24px !important;
+      height: 24px !important;
+    }
   }
   .color-item:not(:last-child) {
     margin-right: 2px !important;

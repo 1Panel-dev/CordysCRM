@@ -27,6 +27,7 @@
         v-model:value="addMembers"
         :options="flattenTree(options as unknown as Option[])"
         :render-source-list="renderSourceList"
+        :render-target-label="renderTargetLabel"
         source-filterable
         class="addMemberTransfer"
         :class="props.multiple ? '' : 'addMemberTransfer--single'"
@@ -37,7 +38,16 @@
 </template>
 
 <script setup lang="ts">
-  import { NSkeleton, NTabPane, NTabs, NTooltip, NTransfer, NTree, TransferRenderSourceList } from 'naive-ui';
+  import {
+    NSkeleton,
+    NTabPane,
+    NTabs,
+    NTooltip,
+    NTransfer,
+    NTree,
+    TransferOption,
+    TransferRenderSourceList,
+  } from 'naive-ui';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
@@ -203,6 +213,37 @@
     }
     return [];
   });
+
+  function renderTargetLabel({ option }: { option: TransferOption }) {
+    return h(
+      NTooltip,
+      {
+        delay: 300,
+      },
+      {
+        default: () => {
+          return h(
+            'div',
+            {},
+            {
+              default: () => option.label,
+            }
+          );
+        },
+        trigger: () => {
+          return h(
+            'div',
+            {
+              class: 'one-line-text',
+            },
+            {
+              default: () => option.label,
+            }
+          );
+        },
+      }
+    );
+  }
 
   const renderSourceList: TransferRenderSourceList = ({ onCheck, pattern }) => {
     return h(

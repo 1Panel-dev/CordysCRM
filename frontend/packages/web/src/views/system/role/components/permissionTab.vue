@@ -248,10 +248,21 @@
     {
       title: t('role.feature'),
       key: 'feature',
-      width: 150,
+      width: 90,
       className: 'feature-column',
       fixed: 'left',
       rowSpan: (rowData) => rowData.rowSpan as number,
+      render: (rowData) => {
+        return h(
+          'div',
+          {
+            class: 'font-medium',
+          },
+          {
+            default: () => rowData.feature,
+          }
+        );
+      },
     },
     {
       title: t('role.operator'),
@@ -311,7 +322,7 @@
     },
     {
       key: 'enable',
-      width: 60,
+      width: 40,
       fixed: 'right',
       title: () =>
         h(NCheckbox, {
@@ -457,5 +468,9 @@
   }
   :deep(.n-data-table-th--fixed-left) {
     background-color: var(--text-n9) !important;
+  }
+  :deep(.n-data-table-td--fixed-right),
+  :deep(.n-data-table-th--fixed-right) {
+    padding: 0 16px;
   }
 </style>

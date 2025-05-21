@@ -28,9 +28,11 @@
           placement="right-end"
           :options="personalMenuOptions"
           @select="personalMenuChange"
+          @update-show="personalMenuUpdateShow"
         >
           <div
-            class="flex w-full items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px]"
+            class="flex w-full cursor-pointer items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px] hover:bg-[var(--primary-7)]"
+            :class="personalMenuShow ? 'bg-[var(--primary-6)]' : ''"
           >
             <CrmAvatar :size="collapsed ? 25 : 40" class="flex-shrink-0 transition-all" />
             <div v-if="!collapsed" class="one-line-text">
@@ -108,7 +110,7 @@
       h(CrmIcon, {
         size: 18,
         type,
-        class: 'text-[var(--text-n1)]',
+        class: 'text-[var(--text-n2)]',
       });
   }
 
@@ -154,6 +156,11 @@
     const routeItem = item as unknown as AppRouteRecordRaw;
     const name = routeItem.meta?.hideChildrenInMenu ? getFirstRouterNameByCurrentRoute(routeItem.name as string) : key;
     router.push({ name });
+  }
+
+  const personalMenuShow = ref(false);
+  function personalMenuUpdateShow(value: boolean) {
+    personalMenuShow.value = value;
   }
 
   async function personalMenuChange(key: string) {

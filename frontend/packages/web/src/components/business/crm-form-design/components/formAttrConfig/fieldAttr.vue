@@ -48,7 +48,10 @@
           {{ t('crmFormDesign.placeholder') }}
           <n-tooltip trigger="hover">
             <template #trigger>
-              <CrmIcon type="iconicon_help_circle" class="cursor-pointer hover:text-[var(--primary-1)]" />
+              <CrmIcon
+                type="iconicon_help_circle"
+                class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+              />
             </template>
             {{ t('crmFormDesign.placeholderTip') }}
           </n-tooltip>
@@ -710,6 +713,8 @@
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import optionConfig from './optionConfig.vue';
 
+  import useUserStore from '@/store/modules/user';
+
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 
   const props = defineProps<{
@@ -718,6 +723,7 @@
   }>();
 
   const { t } = useI18n();
+  const userStore = useUserStore();
 
   const fieldConfig = defineModel<FormCreateField>('field', {
     default: null,
@@ -775,7 +781,7 @@
 
   function handleHasCurrentChange(val: boolean, multiple: boolean) {
     if (val && !multiple) {
-      fieldConfig.value.defaultValue = [];
+      fieldConfig.value.defaultValue = [{ id: userStore.userInfo.id, name: userStore.userInfo.name }];
     }
   }
 

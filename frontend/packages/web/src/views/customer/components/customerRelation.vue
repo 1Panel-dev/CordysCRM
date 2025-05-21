@@ -23,7 +23,7 @@
         <n-button
           v-if="!props.readonly"
           v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
-          class="bg-[var(--text-n10)] p-[8px]"
+          class="w-[32px] bg-[var(--text-n10)] p-[8px]"
           @click="deleteRelation(index)"
         >
           <template #icon>

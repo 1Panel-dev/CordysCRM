@@ -441,9 +441,20 @@
 .n-base-selection-placeholder {
   padding: 0 8px !important;
 }
+.n-base-select-option--selected {
+  background-color: var(--primary-7) !important;
+  &::before {
+    @apply hidden;
+  }
+}
 // 树
 .n-tree.n-tree--block-line .n-tree-node:not(.n-tree-node--disabled).n-tree-node--pending {
   @apply bg-transparent;
+}
+.n-tree-node--highlight {
+  .n-tree-node-content__text {
+    border-bottom: none !important;
+  }
 }
 .n-tree-node--selected {
   background: var(--n-node-color-active) !important;

@@ -86,7 +86,13 @@
   watch(
     () => props.fieldConfig.initialOptions,
     (val) => {
-      selectedUsers.value = val || [];
+      if ([FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)) {
+        selectedUsers.value = val;
+      } else if (Array.isArray(val) && val.length) {
+        selectedUsers.value = [val[0]];
+      } else {
+        selectedUsers.value = val || [];
+      }
     },
     {
       immediate: true,
@@ -96,16 +102,23 @@
   watch(
     () => selectedUsers.value,
     (val) => {
-      const ids = val.map((item) => item.id);
-      value.value = [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)
-        ? ids
-        : ids[0];
-      emit(
-        'change',
-        [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)
+      if (val) {
+        const ids = val.map((item) => item.id);
+        value.value = [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(
+          props.fieldConfig.type
+        )
           ? ids
-          : ids[0]
-      );
+          : ids[0];
+        emit(
+          'change',
+          [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)
+            ? ids
+            : ids[0]
+        );
+      } else {
+        value.value = [];
+        emit('change', []);
+      }
     },
     {
       deep: true,

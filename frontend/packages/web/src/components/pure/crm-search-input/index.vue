@@ -3,7 +3,7 @@
     v-model:value="keyword"
     :placeholder="t(props.placeholder || 'common.searchByName')"
     clearable
-    class="!w-[240px]"
+    :class="props.class || '!w-[240px]'"
     @keydown="handleKeyDown"
     @input="handleInput"
     @clear="() => emit('search', '')"
@@ -27,6 +27,7 @@
     autoSearch?: boolean;
     debounceTime?: number;
     placeholder?: string;
+    class?: string;
   }>();
   const emit = defineEmits<{
     (e: 'search', value: string): void;

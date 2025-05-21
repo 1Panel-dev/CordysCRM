@@ -12,7 +12,7 @@
     <template #header>
       <div class="flex items-center justify-between">
         <div class="flex items-center">
-          <n-button text class="w-[32px]" @click="handleBack">
+          <n-button text class="mr-[4px] w-[32px]" @click="handleBack">
             <n-icon size="16">
               <ChevronBackOutline />
             </n-icon>

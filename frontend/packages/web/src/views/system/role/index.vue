@@ -4,7 +4,7 @@
       <template #1>
         <div class="flex h-full flex-col overflow-hidden">
           <div class="mb-[8px] flex items-center justify-between gap-[8px] px-[24px] pt-[24px]">
-            <CrmSearchInput v-model:value="keyword" :placeholder="t('common.searchByName')" />
+            <CrmSearchInput v-model:value="keyword" :placeholder="t('common.searchByName')" class="flex-1" />
             <n-tooltip trigger="hover" :delay="300">
               <template #trigger>
                 <n-button

@@ -154,10 +154,17 @@
     if (props.disabled) {
       return;
     }
-    fieldConfig.value.options?.push({
-      label: t('crmFormDesign.option', { i: fieldConfig.value.options.length + 1 }),
-      value: getGenerateId(),
-    });
+    if (!fieldConfig.value.options?.some((e) => e.value === 'other')) {
+      fieldConfig.value.options?.push({
+        label: t('crmFormDesign.option', { i: fieldConfig.value.options.length + 1 }),
+        value: getGenerateId(),
+      });
+    } else {
+      fieldConfig.value.options?.splice(fieldConfig.value.options.length - 1, 0, {
+        label: t('crmFormDesign.option', { i: fieldConfig.value.options.length }),
+        value: getGenerateId(),
+      });
+    }
   }
 
   function handleAddOtherOption() {

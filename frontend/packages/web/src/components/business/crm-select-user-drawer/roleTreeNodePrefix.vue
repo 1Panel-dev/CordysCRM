@@ -2,7 +2,7 @@
   <n-avatar
     size="small"
     round
-    class="box-content h-[16px] w-[16px] border border-solid border-[var(--text-n8)] bg-[var(--text-n9)] text-[12px] leading-[20px] text-[var(--text-n4)]"
+    class="mr-[4px] box-content h-[16px] w-[16px] border border-solid border-[var(--text-n8)] bg-[var(--text-n9)] text-[12px] leading-[20px] text-[var(--text-n4)]"
   >
     <n-tooltip trigger="hover" :delay="300">
       <template #trigger>

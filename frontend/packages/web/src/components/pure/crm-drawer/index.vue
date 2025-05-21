@@ -20,9 +20,11 @@
       <template #header>
         <slot name="header">
           <div class="flex w-full items-center justify-between gap-[8px] overflow-hidden">
-            <div v-if="props.showBack" @click="handleCancel">
-              <CrmIcon class="cursor-pointer" type="iconicon_chevron_left" :size="16" />
-            </div>
+            <n-button v-if="props.showBack" text class="mr-[4px] w-[32px]" @click="handleCancel">
+              <n-icon size="16">
+                <ChevronBackOutline />
+              </n-icon>
+            </n-button>
             <div class="one-line-text flex flex-1 items-center gap-[8px]">
               <slot name="titleLeft"></slot>
               <slot name="title">
@@ -74,7 +76,8 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NDrawer, NDrawerContent, NSpin, NTooltip } from 'naive-ui';
+  import { NButton, NDrawer, NDrawerContent, NIcon, NSpin, NTooltip } from 'naive-ui';
+  import { ChevronBackOutline } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 

@@ -415,19 +415,27 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               key: field.businessKey || field.id,
               render: (row: any) =>
                 h(
-                  NImageGroup,
-                  {},
+                  'div',
                   {
-                    default: () =>
-                      row[field.businessKey || field.id]?.length
-                        ? (row[field.businessKey || field.id] || []).map((key: string) =>
-                            h(NImage, {
-                              class: 'h-[40px] w-[40px]',
-                              src: `${PreviewPictureUrl}/${key}`,
-                            })
-                          )
-                        : '-',
-                  }
+                    class: 'flex items-center',
+                  },
+                  [
+                    h(
+                      NImageGroup,
+                      {},
+                      {
+                        default: () =>
+                          row[field.businessKey || field.id]?.length
+                            ? (row[field.businessKey || field.id] || []).map((key: string) =>
+                                h(NImage, {
+                                  class: 'h-[40px] w-[40px] mr-[4px]',
+                                  src: `${PreviewPictureUrl}/${key}`,
+                                })
+                              )
+                            : '-',
+                      }
+                    ),
+                  ]
                 ),
             };
           }
