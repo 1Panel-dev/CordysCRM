@@ -12,6 +12,7 @@ import {
   deleteUserCheckUrl,
   deleteUserUrl,
   getDepartmentTreeUrl,
+  getOrgDepartmentUserUrl,
   getRoleOptionsUrl,
   getUserDetailUrl,
   getUserListUrl,
@@ -37,6 +38,7 @@ import type {
   UserTableQueryParams,
   ValidateInfo,
 } from '@lib/shared/models/system/org';
+import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 组织架构-部门树查询
@@ -157,6 +159,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: checkSyncUserFromThirdUrl });
   }
 
+  // 获取当前部门下组织架构
+  function getOrgDepartmentUser(data: { id: string }) {
+    return CDR.get<DeptUserTreeNode[]>({ url: `${getOrgDepartmentUserUrl}/${data.id}` });
+  }
+
   return {
     getDepartmentTree,
     addDepartment,
@@ -182,5 +189,6 @@ export default function useProductApi(CDR: CordysAxios) {
     checkDeleteDepartment,
     sortDepartment,
     updateOrgUserName,
+    getOrgDepartmentUser,
   };
 }

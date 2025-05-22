@@ -19,8 +19,10 @@
               },
             ]"
             :multiple="false"
+            :api-type-key="MemberApiTypeEnum.SYSTEM_ORG_USER"
             :drawer-title="t('org.setDepartmentHead')"
             :disabled-node-types="[DeptNodeTypeEnum.ORG]"
+            :base-params="{ id: props.departmentId }"
           />
         </n-form-item>
       </n-form>
@@ -33,7 +35,7 @@
   import { FormInst, FormRules, NForm, NFormItem, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { SetCommanderForm } from '@lib/shared/models/system/org';

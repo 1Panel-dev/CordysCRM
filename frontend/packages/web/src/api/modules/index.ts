@@ -279,6 +279,7 @@ export const {
   checkDeleteDepartment,
   sortDepartment,
   updateOrgUserName,
+  getOrgDepartmentUser,
 } = orgApi;
 
 export const {

@@ -24,6 +24,10 @@
       :ok-text="props.okText"
       :member-types="props.memberTypes"
       :disabled-node-types="props.disabledNodeTypes"
+      :base-params="props.baseParams"
+      :fetch-org-params="props.fetchOrgParams"
+      :fetch-role-params="props.fetchRoleParams"
+      :fetch-member-params="props.fetchMemberParams"
       @confirm="handleSelectConfirm"
     />
   </div>
@@ -52,6 +56,10 @@
     okText?: string;
     memberTypes?: Option[];
     disabled?: boolean;
+    fetchOrgParams?: Record<string, any>; // 组织架构入参
+    fetchRoleParams?: Record<string, any>; // 角色入参
+    fetchMemberParams?: Record<string, any>; // 成员入参
+    baseParams?: Record<string, any>; // 基础公共入参
   };
   const props = withDefaults(defineProps<UserTagSelectorProps>(), {
     multiple: true,

@@ -5,6 +5,7 @@ import {
   getFieldDeptUerTree,
   getModuleRoleTree,
   getModuleUserDeptTree,
+  getOrgDepartmentUser,
   getRoleDeptUserTree,
   getRoleMemberTree,
   getUsers,
@@ -26,6 +27,9 @@ export const getDataApiMap: Record<
   [MemberApiTypeEnum.FORM_FIELD]: {
     [MemberSelectTypeEnum.ORG]: getFieldDeptUerTree,
     [MemberSelectTypeEnum.ONLY_ORG]: getFieldDeptTree,
+  },
+  [MemberApiTypeEnum.SYSTEM_ORG_USER]: {
+    [MemberSelectTypeEnum.ORG]: getOrgDepartmentUser,
   },
 };
 

@@ -26,6 +26,7 @@ export enum MemberApiTypeEnum {
   SYSTEM_ROLE = 'SYSTEM_ROLE',
   MODULE_ROLE = 'MODULE_ROLE',
   FORM_FIELD = 'FORM_FIELD',
+  SYSTEM_ORG_USER = 'SYSTEM_ORG_USER',
 }
 
 // 选择添加
