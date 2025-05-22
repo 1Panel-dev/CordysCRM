@@ -207,7 +207,7 @@
     formKey: FormDesignKeyEnum.PRODUCT,
     operationColumn: {
       key: 'operation',
-      width: 150,
+      width: 100,
       fixed: 'right',
       render: (row: ProductListItem) =>
         h(CrmOperationButton, {
