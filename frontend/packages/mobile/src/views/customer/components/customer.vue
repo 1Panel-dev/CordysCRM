@@ -48,7 +48,7 @@
       <template #item="{ item }">
         <CrmListCommonItem
           :item="item"
-          :actions="item.collaborationType !== 'READ_ONLY' ? actions : []"
+          :actions="getListItemActions(item.collaborationType)"
           name-key="ownerName"
           @click="goDetail"
         ></CrmListCommonItem>
@@ -64,6 +64,7 @@
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
@@ -110,6 +111,7 @@
 
   const actions = [
     {
+      key: 'edit',
       label: t('common.edit'),
       icon: 'iconicon_handwritten_signature',
       permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
@@ -125,6 +127,7 @@
       },
     },
     {
+      key: 'transfer',
       label: t('common.transfer'),
       icon: 'iconicon_jump',
       permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
@@ -139,6 +142,7 @@
       },
     },
     {
+      key: 'writeRecord',
       label: t('common.writeRecord'),
       icon: 'iconicon_edit1',
       permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
@@ -154,6 +158,7 @@
       },
     },
     {
+      key: 'delete',
       label: t('common.delete'),
       icon: 'iconicon_delete',
       permission: ['CUSTOMER_MANAGEMENT:DELETE'],
@@ -183,6 +188,13 @@
       },
     },
   ];
+
+  function getListItemActions(collaborationType: CollaborationType) {
+    if (activeFilter.value === CustomerSearchTypeEnum.VISIBLE) {
+      return collaborationType === 'COLLABORATION' ? actions.filter((item) => item.key === 'writeRecord') : [];
+    }
+    return actions;
+  }
 
   watch(
     () => activeFilter.value,

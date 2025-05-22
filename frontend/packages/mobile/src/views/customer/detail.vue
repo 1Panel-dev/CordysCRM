@@ -15,6 +15,7 @@
           :source-id="route.query.id?.toString()"
           :customer-name="route.query.name?.toString()"
           :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
+          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || collaborationType === 'READ_ONLY'"
         />
         <CrmFollowRecordList
           v-else-if="tab.name === 'record'"
@@ -22,7 +23,7 @@
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER"
           :initial-source-name="sourceName"
-          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
+          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || collaborationType === 'READ_ONLY'"
         />
         <CrmFollowPlanList
           v-else-if="tab.name === 'plan'"
@@ -30,9 +31,14 @@
           :source-id="sourceId"
           :type="FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER"
           :initial-source-name="sourceName"
-          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
+          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || collaborationType === 'READ_ONLY'"
         />
-        <relation v-else-if="tab.name === 'relation'" ref="relationListRef" :source-id="sourceId" />
+        <relation
+          v-else-if="tab.name === 'relation'"
+          ref="relationListRef"
+          :source-id="sourceId"
+          :readonly="!hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) || collaborationType === 'READ_ONLY'"
+        />
         <collaborator v-else-if="tab.name === 'collaborator'" ref="collaboratorListRef" :source-id="sourceId" />
         <CrmHeaderList v-else :source-id="sourceId" :load-list-api="getCustomerHeaderList" />
       </van-tab>
@@ -67,48 +73,54 @@
   const route = useRoute();
   const { t } = useI18n();
 
-  const activeTab = ref('info');
-  const tabList = [
-    {
-      name: 'info',
-      title: t('customer.info'),
-    },
-    {
-      name: 'contact',
-      title: t('menu.contact'),
-    },
-    {
-      name: 'record',
-      title: t('common.record'),
-    },
-    {
-      name: 'plan',
-      title: t('common.plan'),
-    },
-    {
-      name: 'header',
-      title: t('customer.headerRecord'),
-    },
-    {
-      name: 'relation',
-      title: t('customer.relation'),
-    },
-    {
-      name: 'collaborator',
-      title: t('customer.collaborator'),
-    },
-  ];
-  const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
-  const planListRef = ref<InstanceType<typeof CrmFollowPlanList>[]>();
-  const relationListRef = ref<InstanceType<typeof relation>[]>();
-  const collaboratorListRef = ref<InstanceType<typeof collaborator>[]>();
   const sourceId = computed(() => route.query.id?.toString() ?? '');
-
-  const { sourceName, descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
+  const { sourceName, descriptions, collaborationType, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CUSTOMER,
     sourceId: sourceId.value,
     needInitDetail: true,
   });
+
+  const activeTab = ref('info');
+  const tabList = computed(() => {
+    const fullTabList = [
+      {
+        name: 'info',
+        title: t('customer.info'),
+      },
+      {
+        name: 'contact',
+        title: t('menu.contact'),
+      },
+      {
+        name: 'record',
+        title: t('common.record'),
+      },
+      {
+        name: 'plan',
+        title: t('common.plan'),
+      },
+      {
+        name: 'header',
+        title: t('customer.headerRecord'),
+      },
+      {
+        name: 'relation',
+        title: t('customer.relation'),
+      },
+      {
+        name: 'collaborator',
+        title: t('customer.collaborator'),
+      },
+    ];
+    if (collaborationType.value) {
+      return fullTabList.filter((item) => item.name !== 'collaborator');
+    }
+    return fullTabList;
+  });
+  const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
+  const planListRef = ref<InstanceType<typeof CrmFollowPlanList>[]>();
+  const relationListRef = ref<InstanceType<typeof relation>[]>();
+  const collaboratorListRef = ref<InstanceType<typeof collaborator>[]>();
 
   onBeforeMount(async () => {
     await initFormConfig();

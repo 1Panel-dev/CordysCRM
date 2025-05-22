@@ -85,7 +85,7 @@
   }>({
     id: route.query.id as string,
     member: lastPageParams.collaborator?.id || '',
-    permission: 'READ_ONLY',
+    permission: lastPageParams.collaborationType || 'READ_ONLY',
   });
   const selectedRows = ref(lastPageParams.collaborator ? [lastPageParams.collaborator] : []);
   const loading = ref(false);

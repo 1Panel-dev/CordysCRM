@@ -10,7 +10,7 @@
         />
         <CrmTag v-else :tag="t('customer.subsidiary')" bg-color="var(--success-5)" text-color="var(--success-green)" />
         <div class="one-line-text flex-1">{{ item.customerName[0]?.name }}</div>
-        <div class="flex items-center gap-[16px]">
+        <div v-if="!props.readonly" class="flex items-center gap-[16px]">
           <CrmTextButton
             v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
             icon="iconicon_delete"
@@ -28,7 +28,7 @@
         </div>
       </div>
     </div>
-    <div v-permission="['CUSTOMER_MANAGEMENT:UPDATE']" class="bg-[var(--text-n10)] p-[16px]">
+    <div v-if="!props.readonly" v-permission="['CUSTOMER_MANAGEMENT:UPDATE']" class="bg-[var(--text-n10)] p-[16px]">
       <van-button type="primary" class="rounded-[var(--border-radius-small)]" block plain @click="goRelation">
         {{ t('customer.addRelation') }}
       </van-button>
@@ -50,6 +50,7 @@
 
   const props = defineProps<{
     sourceId: string;
+    readonly?: boolean;
   }>();
 
   const { t } = useI18n();

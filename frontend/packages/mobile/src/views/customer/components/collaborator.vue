@@ -119,6 +119,7 @@
       state: {
         params: JSON.stringify({
           userIds: collaborators.value.map((e) => e.userId),
+          collaborationType: item.collaborationType,
           collaborator: {
             id: item.userId,
             name: item.userName,
