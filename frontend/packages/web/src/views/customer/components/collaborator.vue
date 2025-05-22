@@ -99,6 +99,7 @@
     updateCustomerCollaboration,
   } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId: string; // 资源id
@@ -277,25 +278,26 @@
       fixed: 'right',
       render: (row) =>
         h(CrmOperationButton, {
-          groupList: props.readonly
-            ? []
-            : [
-                {
-                  key: 'edit',
-                  label: t('common.edit'),
-                },
-                {
-                  label: t('common.delete'),
-                  key: 'delete',
-                  danger: true,
-                  popConfirmProps: {
-                    loading: removeLoading.value,
-                    title: t('common.removeConfirmTitle', { name: characterLimit(row.userName) }),
-                    content: t('customer.deleteMemberTip'),
-                    positiveText: t('common.delete'),
+          groupList:
+            props.readonly || !hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])
+              ? []
+              : [
+                  {
+                    key: 'edit',
+                    label: t('common.edit'),
                   },
-                },
-              ],
+                  {
+                    label: t('common.delete'),
+                    key: 'delete',
+                    danger: true,
+                    popConfirmProps: {
+                      loading: removeLoading.value,
+                      title: t('common.removeConfirmTitle', { name: characterLimit(row.userName) }),
+                      content: t('customer.deleteMemberTip'),
+                      positiveText: t('common.delete'),
+                    },
+                  },
+                ],
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
