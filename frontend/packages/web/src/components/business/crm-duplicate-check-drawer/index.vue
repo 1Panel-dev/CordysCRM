@@ -131,7 +131,7 @@
     {
       title: t('opportunity.name'),
       key: 'name',
-      width: 150,
+      width: 100,
       ellipsis: {
         tooltip: true,
       },
@@ -139,7 +139,7 @@
     {
       title: t('opportunity.customerName'),
       key: 'customerName',
-      width: 150,
+      width: 100,
       ellipsis: {
         tooltip: true,
       },
@@ -147,7 +147,7 @@
     {
       title: t('opportunity.intendedProducts'),
       key: 'productNames',
-      width: 200,
+      width: 100,
       isTag: true,
     },
     {
@@ -162,7 +162,7 @@
     {
       title: t('common.head'),
       key: 'ownerName',
-      width: 150,
+      width: 100,
       ellipsis: {
         tooltip: true,
       },

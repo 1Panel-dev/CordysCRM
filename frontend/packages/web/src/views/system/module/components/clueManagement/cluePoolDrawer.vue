@@ -23,7 +23,7 @@
       </div>
       <AddOrEditPoolDrawer
         v-model:visible="showAddOrEditDrawer"
-        v-model:row="currentRow"
+        :row="currentRow"
         :type="ModuleConfigEnum.CLUE_MANAGEMENT"
         @refresh="loadList"
       />

@@ -156,14 +156,11 @@
   const props = defineProps<{
     type: ModuleConfigEnum;
     quick?: boolean;
+    row?: CluePoolItem;
   }>();
 
   const visible = defineModel<boolean>('visible', {
     required: true,
-  });
-
-  const row = defineModel<CluePoolItem>('row', {
-    required: false,
   });
 
   const emit = defineEmits<{
@@ -256,7 +253,6 @@
   function cancelHandler() {
     form.value = cloneDeep(initForm);
     recycleFormItemModel.value = cloneDeep(defaultFormModel);
-    row.value = undefined;
     visible.value = false;
   }
 
@@ -329,7 +325,7 @@
   }
 
   watch(
-    () => row.value,
+    () => props.row,
     (val?: CluePoolItem) => {
       if (val) {
         form.value = {
@@ -358,8 +354,7 @@
           recycleFormItemModel.value = cloneDeep(defaultFormModel);
         }
       }
-    },
-    { deep: true }
+    }
   );
 </script>
 
