@@ -259,10 +259,7 @@ public class ProductService {
     }
 
     public void checkProductList(List<String> products) {
-        int totalLength = products.stream()
-                .mapToInt(s -> s == null ? 0 : s.length())
-                .sum();
-        if (totalLength > 500) {
+        if (products.size() > 20) {
             throw new GenericException(Translator.get("product.length"));
         }
     }
