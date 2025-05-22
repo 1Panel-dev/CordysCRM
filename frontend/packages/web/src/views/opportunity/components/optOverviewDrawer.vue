@@ -34,7 +34,7 @@
         :source-id="sourceId"
         :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
         :update-api="updateOptStage"
-        @load-detail="() => (refreshKey += 1)"
+        @load-detail="refreshList"
       />
     </template>
     <template #right>
@@ -264,6 +264,11 @@
       default:
         break;
     }
+  }
+
+  function refreshList() {
+    refreshKey.value += 1;
+    emit('refresh');
   }
 
   const titleName = ref('');
