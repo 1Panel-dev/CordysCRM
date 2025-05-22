@@ -3,7 +3,7 @@
   <CrmButtonGroup :list="buttonGroupList" @select="handleSelect" @cancel="emit('cancel')">
     <template v-if="props.moreList?.length" #more>
       <!-- 更多操作 -->
-      <CrmMoreAction :options="props.moreList" @select="handleMoreSelect">
+      <CrmMoreAction :options="props.moreList" placement="bottom" @select="handleMoreSelect">
         <template #default>
           <n-button text type="primary">
             {{ t('common.more') }}

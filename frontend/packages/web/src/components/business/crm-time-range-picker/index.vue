@@ -1,5 +1,12 @@
 <template>
-  <n-date-picker v-if="isFixed" v-model:value="fixedValue" class="w-full" type="datetimerange" clearable />
+  <n-date-picker
+    v-if="isFixed"
+    v-model:value="fixedValue"
+    class="w-full"
+    type="datetimerange"
+    clearable
+    :default-time="[undefined, '23:59:59']"
+  />
   <div v-else class="w-full">
     <div class="flex items-center gap-[8px]">
       <CrmInputNumber v-model:value="dynamicValue[0]" max="10000" :precision="0" class="flex-1" :min="1" />

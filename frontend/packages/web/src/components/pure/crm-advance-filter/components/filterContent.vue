@@ -143,6 +143,7 @@
               clearable
               :disabled="isValueDisabled(item)"
               class="w-full"
+              :default-time="item.operator === OperatorEnum.BETWEEN ? [undefined, '23:59:59'] : undefined"
               @update:value="valueChange"
             />
 
@@ -367,7 +368,11 @@
 
   // 符号变化
   function operatorChange(item: FilterFormItem, index: number) {
-    formModel.value.list[index].value = valueIsArray(item) ? [] : undefined;
+    if (item.type === FieldTypeEnum.DATE_TIME) {
+      formModel.value.list[index].value = null;
+    } else {
+      formModel.value.list[index].value = valueIsArray(item) ? [] : undefined;
+    }
     if (isValueDisabled(item)) {
       formRef.value?.restoreValidation();
     }

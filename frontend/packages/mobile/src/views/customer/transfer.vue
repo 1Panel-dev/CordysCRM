@@ -49,7 +49,7 @@
 
 <script setup lang="ts">
   import { useRoute, useRouter } from 'vue-router';
-  import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
+  import { showLoadingToast, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -91,7 +91,6 @@
       console.error(error);
     } finally {
       loading.value = false;
-      closeToast();
     }
   }
 
