@@ -379,11 +379,11 @@ public class CustomerService {
     }
 
     private void sendTransferNotice(List<Customer> originCustomers, String toUser, String userId, String orgId) {
-        String customerNames = getCustomerNames(originCustomers);
-
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER, customerNames, userId,
-                orgId, List.of(toUser), true);
+        originCustomers.forEach(customerName -> {
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                    NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER, customerName.getName(), userId,
+                    orgId, List.of(toUser), true);
+        });
     }
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
@@ -413,11 +413,10 @@ public class CustomerService {
 
         // 消息通知
         customers.stream()
-                .collect(Collectors.groupingBy(Customer::getOwner))
-                .forEach((owner, customerList) ->
+                .forEach(customer ->
                     commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                            NotificationConstants.Event.CUSTOMER_DELETED, getCustomerNames(customerList), userId,
-                            orgId, List.of(owner), true)
+                            NotificationConstants.Event.CUSTOMER_DELETED, customer.getName(), userId,
+                            orgId, List.of(customer.getOwner()), true)
                 );
 
     }
@@ -484,14 +483,6 @@ public class CustomerService {
         logService.batchAdd(logs);
 
         return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
-    }
-
-    private String getCustomerNames(List<Customer> customers) {
-        return String.join(";",
-                customers.stream()
-                        .map(Customer::getName)
-                        .toList()
-        );
     }
 
     public List<OptionDTO> getCustomerOptions(String keyword, String organizationId) {
