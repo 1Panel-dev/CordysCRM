@@ -284,6 +284,8 @@ public class CustomerService {
                 // 如果责任人有修改，则添加责任人历史
                 customerOwnerHistoryService.add(originCustomer, userId);
                 sendTransferNotice(List.of(originCustomer), request.getOwner(), userId, orgId);
+                // 重置领取时间
+                customer.setCollectionTime(System.currentTimeMillis());
             }
         }
 
@@ -356,7 +358,7 @@ public class CustomerService {
         dataScopeService.checkDataPermission(userId, orgId, owners, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);
         // 添加责任人历史
         customerOwnerHistoryService.batchAdd(request, userId);
-        extCustomerMapper.batchTransfer(request);
+        extCustomerMapper.batchTransfer(request, userId);
 
         // 记录日志
         List<LogDTO> logs = originCustomers.stream()

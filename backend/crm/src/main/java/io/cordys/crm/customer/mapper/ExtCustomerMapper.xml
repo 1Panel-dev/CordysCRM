@@ -4,7 +4,9 @@
 <mapper namespace="io.cordys.crm.customer.mapper.ExtCustomerMapper">
     <update id="batchTransfer">
         update customer
-        set owner = #{request.owner}
+        set owner = #{request.owner},
+            customer.collection_time = ${@java.lang.System@currentTimeMillis()},
+            customer.update_time = ${@java.lang.System@currentTimeMillis()}, customer.update_user = #{userId}
         where owner != #{request.owner} and id in
         <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
             #{id}
