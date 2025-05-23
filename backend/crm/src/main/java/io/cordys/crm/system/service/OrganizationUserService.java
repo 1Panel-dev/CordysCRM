@@ -413,33 +413,30 @@ public class OrganizationUserService {
      */
     @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, resourceId = "{#userId}", operator = "{#operatorId}")
     public void resetPassword(String userId, String operatorId) {
-        User user = userMapper.selectByPrimaryKey(userId);
-        if (StringUtils.isBlank(user.getPhone())) {
-            throw new GenericException(Translator.get("user_phone_not_exist"));
+        if (!StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
+            User user = userMapper.selectByPrimaryKey(userId);
+            if (StringUtils.isBlank(user.getPhone())) {
+                throw new GenericException(Translator.get("user_phone_not_exist"));
+            }
+            user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
+            user.setUpdateTime(System.currentTimeMillis());
+            user.setUpdateUser(operatorId);
+            userMapper.updateById(user);
+
+            // 踢出该用户
+            SessionUtils.kickOutUser(operatorId, userId);
+
+            // 日志详情对比需要有差异，并且脱敏
+            User originPasswdUser = new User();
+            originPasswdUser.setPassword("############");
+            User newPasswdUser = new User();
+            newPasswdUser.setPassword("************");
+            OperationLogContext.setContext(LogContextInfo.builder()
+                    .originalValue(originPasswdUser)
+                    .modifiedValue(newPasswdUser)
+                    .resourceName(user.getName())
+                    .build());
         }
-
-        user.setPassword(
-                userId.equals(InternalUser.ADMIN.getValue())
-                        ? CodingUtils.md5(DEFAULT_USER_PASSWORD)
-                        : CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6))
-        );
-        user.setUpdateTime(System.currentTimeMillis());
-        user.setUpdateUser(operatorId);
-        userMapper.updateById(user);
-
-        // 踢出该用户
-        SessionUtils.kickOutUser(operatorId, userId);
-
-        // 日志详情对比需要有差异，并且脱敏
-        User originPasswdUser = new User();
-        originPasswdUser.setPassword("############");
-        User newPasswdUser = new User();
-        newPasswdUser.setPassword("************");
-        OperationLogContext.setContext(LogContextInfo.builder()
-                .originalValue(originPasswdUser)
-                .modifiedValue(newPasswdUser)
-                .resourceName(user.getName())
-                .build());
     }
 
     /**
@@ -493,11 +490,9 @@ public class OrganizationUserService {
         User newPasswdUser = new User();
         newPasswdUser.setPassword("************");
         userList.forEach(user -> {
-            user.setPassword(
-                    user.getId().equals(InternalUser.ADMIN.getValue())
-                            ? CodingUtils.md5(DEFAULT_USER_PASSWORD)
-                            : CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6))
-            );
+            if(!StringUtils.equalsIgnoreCase(user.getId(), InternalUser.ADMIN.getValue())){
+                user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
+            }
             user.setUpdateTime(System.currentTimeMillis());
             user.setUpdateUser(operatorId);
             LogDTO logDTO = new LogDTO(orgId, user.getId(), operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, user.getName());
