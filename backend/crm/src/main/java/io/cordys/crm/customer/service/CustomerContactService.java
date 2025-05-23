@@ -10,13 +10,14 @@ import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
-import io.cordys.common.dto.DeptDataPermissionDTO;
-import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.dto.UserDeptDTO;
+import io.cordys.common.dto.*;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
+import io.cordys.common.permission.PermissionCache;
+import io.cordys.common.permission.PermissionUtils;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -79,6 +80,8 @@ public class CustomerContactService {
     private ModuleFormService moduleFormService;
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;
+    @Resource
+    private PermissionCache permissionCache;
 
     public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -410,5 +413,10 @@ public class CustomerContactService {
         response.setList(list);
         response.setOptionMap(optionMap);
         return response;
+    }
+
+    public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
+        List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
+        return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, rolePermissions);
     }
 }

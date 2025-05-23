@@ -2,6 +2,7 @@ package io.cordys.crm.customer.controller;
 
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
@@ -16,7 +17,6 @@ import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,6 +34,7 @@ class CustomerContactControllerTests extends BaseTest {
     protected static final String DISABLE = "disable/{0}";
     protected static final String ENABLE = "enable/{0}";
     protected static final String OPPORTUNITY_CHECK = "opportunity/check/{0}";
+    protected static final String TAB = "tab";
 
     private static CustomerContact addCustomerContact;
 
@@ -187,6 +188,19 @@ class CustomerContactControllerTests extends BaseTest {
 
         // 校验权限
         requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, LIST, "customerId");
+    }
+
+    @Test
+    @Order(4)
+    void testTab() throws Exception {
+        MvcResult mvcResult = this.requestGetWithOkAndReturn(TAB);
+        ResourceTabEnableDTO resultData = getResultData(mvcResult, ResourceTabEnableDTO.class);
+        // 校验请求成功数据
+        Assertions.assertTrue(resultData.getAll());
+        Assertions.assertTrue(resultData.getDept());
+
+        // 校验权限
+        requestGetPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, TAB);
     }
 
     @Test

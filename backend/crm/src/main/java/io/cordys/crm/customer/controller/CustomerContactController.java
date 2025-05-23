@@ -3,6 +3,7 @@ package io.cordys.crm.customer.controller;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
@@ -57,7 +58,7 @@ public class CustomerContactController {
     @Operation(summary = "联系人列表")
     public PagerWithOption<List<CustomerContactListResponse>> list(@Validated @RequestBody CustomerContactPageRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                        OrganizationContext.getOrganizationId(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+                        OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
         return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
@@ -125,5 +126,12 @@ public class CustomerContactController {
     @Operation(summary = "检查客户联系人是否有关联商机")
     public boolean checkOpportunity(@PathVariable String id) {
         return customerContactService.checkOpportunity(id);
+    }
+
+    @GetMapping("/tab")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
+    @Operation(summary = "所有所有和部门联系人tab是否显示")
+    public ResourceTabEnableDTO getTabEnableConfig() {
+        return customerContactService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
