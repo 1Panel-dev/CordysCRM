@@ -131,7 +131,7 @@
     type: null,
     module: null,
     operator: null,
-    time: [dayjs().subtract(1, 'M').hour(0).minute(0).second(1).valueOf(), dayjs().valueOf()],
+    time: [dayjs().subtract(1, 'M').valueOf(), dayjs().valueOf()],
   };
   const form = ref<OperationLogParams>({
     ...defaultForm,

@@ -554,6 +554,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         columns.unshift({
           type: 'selection',
           fixed: 'left',
+          width: 46,
           disabled(row) {
             return props.disabledSelection ? props.disabledSelection(row) : false;
           },
@@ -581,7 +582,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       showSetting: true,
       showPagination,
       columns,
-      scrollX: columns.reduce((prev, curr) => prev + (curr.width as number), 0) + 46,
+      scrollX: columns.reduce((prev, curr) => prev + (curr.width as number), 0),
       permission: props.permission,
     },
     (item, originalData) => {

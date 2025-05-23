@@ -26,6 +26,7 @@
             <n-select
               v-model:value="item.dataIndex"
               value-field="dataIndex"
+              filterable
               :placeholder="t('common.pleaseSelect')"
               :options="currentOptions(item.dataIndex as string)"
               @update:value="(val) => dataIndexChange(val, listIndex)"

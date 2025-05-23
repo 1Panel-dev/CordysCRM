@@ -19,7 +19,6 @@
       :disabled="props.fieldConfig.editable === false"
       :parse="parse"
       :format="format"
-      :show-button="false"
       :precision="props.fieldConfig.precision"
       clearable
       class="w-full"
