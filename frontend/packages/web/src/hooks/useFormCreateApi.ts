@@ -563,7 +563,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         // eslint-disable-next-line no-console
         console.log(_error);
       }
-    } else {
+    } else if (error.message) {
       Message.error(error.message);
     }
   }

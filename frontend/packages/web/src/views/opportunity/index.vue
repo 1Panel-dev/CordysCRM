@@ -207,6 +207,7 @@
     realFormKey.value = FormDesignKeyEnum.BUSINESS;
     activeSourceId.value = '';
     formCreateDrawerVisible.value = true;
+    needInitDetail.value = false;
   }
 
   const otherFollowRecordSaveParams = ref({
