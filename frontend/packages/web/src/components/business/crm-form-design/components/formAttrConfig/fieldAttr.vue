@@ -40,6 +40,7 @@
             FieldTypeEnum.PHONE,
             FieldTypeEnum.DATA_SOURCE,
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+            FieldTypeEnum.SERIAL_NUMBER,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -460,6 +461,28 @@
         />
       </div>
       <!-- 地址属性 End -->
+      <!-- 流水号属性 -->
+      <div v-if="fieldConfig.type === FieldTypeEnum.SERIAL_NUMBER" class="crm-form-design-config-item">
+        <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.serialNumberRule') }}</div>
+        <template v-if="fieldConfig.serialNumberRules">
+          <n-input v-model:value="serialNumberRules1" disabled>
+            <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
+          </n-input>
+          <n-input v-model:value="serialNumberRules2" disabled>
+            <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
+          </n-input>
+          <n-input v-model:value="serialNumberRules3" disabled>
+            <template #prefix>{{ t('crmFormDesign.submitDate') }}</template>
+          </n-input>
+          <n-input v-model:value="serialNumberRules4" disabled>
+            <template #prefix>{{ t('crmFormDesign.fixedChar') }}</template>
+          </n-input>
+          <n-input-number v-model:value="serialNumberRules5" :show-button="false" disabled>
+            <template #prefix>{{ t('crmFormDesign.autoCount') }}</template>
+          </n-input-number>
+        </template>
+      </div>
+      <!-- inputNumber End -->
       <!-- 默认值 -->
       <div
         v-if="
@@ -472,6 +495,7 @@
             FieldTypeEnum.INPUT_MULTIPLE,
             FieldTypeEnum.DATA_SOURCE,
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+            FieldTypeEnum.SERIAL_NUMBER,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -593,7 +617,7 @@
           {{ t('crmFormDesign.readable') }}
         </n-checkbox>
         <n-checkbox
-          v-if="![FieldTypeEnum.DIVIDER].includes(fieldConfig.type)"
+          v-if="![FieldTypeEnum.DIVIDER, FieldTypeEnum.SERIAL_NUMBER].includes(fieldConfig.type)"
           v-model:checked="fieldConfig.editable"
           :disabled="fieldConfig.disabledProps?.includes('editable')"
           @update-checked="
@@ -684,6 +708,7 @@
     NCheckboxGroup,
     NDatePicker,
     NInput,
+    NInputNumber,
     NPopover,
     NRadioButton,
     NRadioGroup,
@@ -755,7 +780,7 @@
   watch(
     () => fieldConfig.value?.rules,
     (arr) => {
-      checkedRules.value = arr.map((e) => e.key);
+      checkedRules.value = arr?.map((e) => e.key);
     }
   );
 
@@ -901,6 +926,12 @@
     showRuleConfigVisible.value = false;
     fieldConfig.value.showControlRules = cloneDeep(tempShowRules.value);
   }
+
+  const serialNumberRules1 = ref(fieldConfig.value?.serialNumberRules?.[0].toString() || 'Opp');
+  const serialNumberRules2 = ref(fieldConfig.value?.serialNumberRules?.[1].toString() || '-');
+  const serialNumberRules3 = ref(fieldConfig.value?.serialNumberRules?.[2].toString() || 'YYMM');
+  const serialNumberRules4 = ref(fieldConfig.value?.serialNumberRules?.[3].toString() || '-');
+  const serialNumberRules5 = ref(Number(fieldConfig.value?.serialNumberRules?.[4] || 6));
 </script>
 
 <style lang="less" scoped>

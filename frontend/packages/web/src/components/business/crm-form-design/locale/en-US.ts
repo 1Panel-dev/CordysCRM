@@ -74,6 +74,7 @@ export default {
   'crmFormDesign.PCDDetail': 'Province-City-District-Detailed Address',
   'crmFormDesign.dataSource': 'Data Single Select',
   'crmFormDesign.dataSourceMultiple': 'Data Multi Select',
+  'crmFormDesign.serialNumber': 'Serial Number',
   'crmFormDesign.selectDataSource': 'Select {type}',
   'crmFormDesign.customer': 'Customer',
   'crmFormDesign.contract': 'Contact',
@@ -99,4 +100,8 @@ export default {
   'crmFormDesign.wholeLine': 'Full Row',
   'crmFormDesign.formActionButton': 'Form Action Buttons',
   'crmFormDesign.formActionButtonPosition': 'Form Action Button Position',
+  'crmFormDesign.serialNumberRule': 'Serial Number Rule',
+  'crmFormDesign.fixedChar': 'Fixed Character',
+  'crmFormDesign.submitDate': 'Submission Date',
+  'crmFormDesign.autoCount': 'Auto Count',
 };

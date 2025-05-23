@@ -150,6 +150,9 @@
     if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(type)) {
       return CrmFormCreateComponents.advancedComponents.dataSource;
     }
+    if (type === FieldTypeEnum.SERIAL_NUMBER) {
+      return CrmFormCreateComponents.advancedComponents.serialNumber;
+    }
   }
 
   function handleFieldChange(value: any, item: FormCreateField) {

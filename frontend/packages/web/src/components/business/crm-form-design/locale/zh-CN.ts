@@ -73,6 +73,7 @@ export default {
   'crmFormDesign.PCDDetail': '省-市-区-详细地址',
   'crmFormDesign.dataSource': '数据单选',
   'crmFormDesign.dataSourceMultiple': '数据多选',
+  'crmFormDesign.serialNumber': '流水号',
   'crmFormDesign.selectDataSource': '选择{type}',
   'crmFormDesign.customer': '客户',
   'crmFormDesign.contract': '联系人',
@@ -98,4 +99,8 @@ export default {
   'crmFormDesign.wholeLine': '整行',
   'crmFormDesign.formActionButton': '表单操作按钮',
   'crmFormDesign.formActionButtonPosition': '表单操作按钮位置',
+  'crmFormDesign.serialNumberRule': '流水号规则',
+  'crmFormDesign.fixedChar': '固定字符',
+  'crmFormDesign.submitDate': '提交日期',
+  'crmFormDesign.autoCount': '自动计数',
 };

@@ -42,6 +42,7 @@ export enum FieldTypeEnum {
   PHONE = 'PHONE',
   DATA_SOURCE = 'DATA_SOURCE',
   DATA_SOURCE_MULTIPLE = 'DATA_SOURCE_MULTIPLE',
+  SERIAL_NUMBER = 'SERIAL_NUMBER', // 流水号
 }
 
 export enum FieldRuleEnum {

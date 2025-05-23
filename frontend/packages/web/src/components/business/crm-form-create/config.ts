@@ -391,12 +391,27 @@ export const dataSourceMultipleDefaultFieldConfig: FormCreateField = {
   dataSourceType: FieldDataSourceTypeEnum.CUSTOMER,
 };
 
+export const serialNumberDefaultFieldConfig: FormCreateField = {
+  id: '',
+  type: FieldTypeEnum.SERIAL_NUMBER,
+  icon: 'iconicon_serial_number',
+  name: 'crmFormDesign.serialNumber',
+  fieldWidth: 1,
+  showLabel: true,
+  description: '',
+  readable: true,
+  editable: false,
+  rules: [],
+  serialNumberRules: ['Opp', '-', 'YYMM', '-', 6],
+};
+
 export const advancedFields: FormCreateField[] = [
   pictureDefaultFieldConfig,
   locationDefaultFieldConfig,
   phoneDefaultFieldConfig,
   dataSourceDefaultFieldConfig,
   dataSourceMultipleDefaultFieldConfig,
+  serialNumberDefaultFieldConfig,
 ];
 
 export const rules: FormCreateFieldRule[] = [
@@ -439,6 +454,7 @@ export const showRulesMap: Record<FieldTypeEnum, FieldRuleEnum[]> = {
   [FieldTypeEnum.PHONE]: [FieldRuleEnum.REQUIRED, FieldRuleEnum.UNIQUE],
   [FieldTypeEnum.DATA_SOURCE]: [FieldRuleEnum.REQUIRED],
   [FieldTypeEnum.DATA_SOURCE_MULTIPLE]: [FieldRuleEnum.REQUIRED],
+  [FieldTypeEnum.SERIAL_NUMBER]: [],
 };
 
 export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDesignConfigDetailParams>> = {

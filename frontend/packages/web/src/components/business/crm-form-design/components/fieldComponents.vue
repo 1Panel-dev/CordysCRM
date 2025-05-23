@@ -30,12 +30,14 @@
       :clone="clone"
       :sort="false"
       class="crm-form-design-field-wrapper"
+      @move="handleMove"
     >
       <div
         v-for="field of advancedFields"
         :key="field.type"
         class="crm-form-design-field-item"
-        draggable="true"
+        :class="getFieldDisable(field) ? 'crm-form-design-field-item--disabled' : ''"
+        :draggable="!getFieldDisable(field)"
         @click="() => handleFieldClick(field)"
       >
         <CrmIcon :type="field.icon" />
@@ -56,11 +58,25 @@
   import { advancedFields, basicFields } from '@/components/business/crm-form-create/config';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
 
+  const props = defineProps<{
+    fieldList: FormCreateField[];
+  }>();
   const emit = defineEmits<{
     (e: 'select', field: FormCreateField): void;
   }>();
 
   const { t } = useI18n();
+
+  function getFieldDisable(item: FormCreateField) {
+    if (item.type === FieldTypeEnum.SERIAL_NUMBER) {
+      return props.fieldList.some((e) => e.type === FieldTypeEnum.SERIAL_NUMBER);
+    }
+    return false;
+  }
+
+  function handleMove(e: any) {
+    return !getFieldDisable(e.data);
+  }
 
   function clone(e: FormCreateField) {
     const res: FormCreateField = {
@@ -100,7 +116,9 @@
   }
 
   function handleFieldClick(field: FormCreateField) {
-    emit('select', field);
+    if (!getFieldDisable(field)) {
+      emit('select', field);
+    }
   }
 </script>
 
@@ -127,6 +145,15 @@
       &:hover {
         border: 1px solid var(--primary-1);
         color: var(--primary-1);
+      }
+    }
+    .crm-form-design-field-item--disabled {
+      @apply cursor-not-allowed;
+
+      color: var(--text-n6);
+      &:hover {
+        border: 1px solid transparent;
+        color: var(--text-n6);
       }
     }
   }

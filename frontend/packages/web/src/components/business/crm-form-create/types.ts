@@ -74,6 +74,8 @@ export interface FormCreateField {
   hasCurrentUserDept?: boolean;
   // 显隐控制属性(该属性是或运算，满足一个值即显示)
   showControlRules?: FormCreateFieldShowControlRule[];
+  // 流水号属性
+  serialNumberRules?: (string | number)[]; // 流水号规则
   // 前端渲染属性
   icon: string;
   show?: boolean; // 是否显示，受控于别的字段的showControlRules

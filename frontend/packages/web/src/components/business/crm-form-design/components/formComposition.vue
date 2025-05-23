@@ -24,7 +24,12 @@
             @click="() => handleItemClick(item)"
           >
             <div class="crm-form-design--composition-item-tools">
-              <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
+              <n-tooltip
+                v-if="item.type !== FieldTypeEnum.SERIAL_NUMBER"
+                :delay="300"
+                :show-arrow="false"
+                class="crm-form-design--composition-item-tools-tip"
+              >
                 <template #trigger>
                   <CrmIcon
                     type="iconicon_file_copy"
@@ -165,6 +170,9 @@
     }
     if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(type)) {
       return CrmFormCreateComponents.advancedComponents.dataSource;
+    }
+    if (type === FieldTypeEnum.SERIAL_NUMBER) {
+      return CrmFormCreateComponents.advancedComponents.serialNumber;
     }
   }
 
