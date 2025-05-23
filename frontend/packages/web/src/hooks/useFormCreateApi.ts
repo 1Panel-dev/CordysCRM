@@ -550,24 +550,6 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     initForm();
   }
 
-  function handleSaveError(error: any) {
-    if (error?.messageDetail) {
-      try {
-        const errMsgs = error.messageDetail;
-        Message.error(
-          Object.values(errMsgs)
-            .map((e) => e)
-            .join('\n')
-        );
-      } catch (_error) {
-        // eslint-disable-next-line no-console
-        console.log(_error);
-      }
-    } else if (error.message) {
-      Message.error(error.message);
-    }
-  }
-
   async function saveForm(form: Record<string, any>, isContinue: boolean, callback?: (_isContinue: boolean) => void) {
     try {
       loading.value = true;
@@ -603,7 +585,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       }
       resetForm();
     } catch (error) {
-      handleSaveError(error);
+      // eslint-disable-next-line no-console
+      console.log(error);
     } finally {
       loading.value = false;
     }

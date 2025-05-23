@@ -106,7 +106,7 @@ import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/mod
 export default function useProductApi(CDR: CordysAxios) {
   // 添加客户
   function addCustomer(data: SaveCustomerParams) {
-    return CDR.post({ url: AddCustomerUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
+    return CDR.post({ url: AddCustomerUrl, data });
   }
 
   // 更新客户
@@ -151,7 +151,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 添加客户跟进记录
   function addCustomerFollowRecord(data: SaveCustomerFollowRecordParams) {
-    return CDR.post({ url: AddCustomerFollowRecordUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
+    return CDR.post({ url: AddCustomerFollowRecordUrl, data });
   }
 
   // 更新客户跟进记录
@@ -181,7 +181,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 添加客户跟进计划
   function addCustomerFollowPlan(data: SaveCustomerFollowPlanParams) {
-    return CDR.post({ url: AddCustomerFollowPlanUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
+    return CDR.post({ url: AddCustomerFollowPlanUrl, data });
   }
 
   // 更新客户跟进计划
@@ -216,7 +216,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 添加客户联系人
   function addCustomerContact(data: SaveCustomerContractParams) {
-    return CDR.post({ url: AddCustomerContactUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
+    return CDR.post({ url: AddCustomerContactUrl, data });
   }
 
   // 获取客户联系人列表

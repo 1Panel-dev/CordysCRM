@@ -21,7 +21,7 @@ import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/mod
 export default function useProductApi(CDR: CordysAxios) {
   // 添加产品
   function addProduct(data: SaveProductParams) {
-    return CDR.post({ url: AddProductUrl, data }, { isReturnNativeResponse: true, noErrorTip: true });
+    return CDR.post({ url: AddProductUrl, data });
   }
 
   // 更新产品

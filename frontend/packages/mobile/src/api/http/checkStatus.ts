@@ -4,7 +4,13 @@ import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import useLogin from '@/hooks/useLogin';
 
-export default function checkStatus(status: number, msg: string, code?: number): void {
+export default function checkStatus(
+  status: number,
+  msg: string,
+  msgDetail: string | Record<string, any>,
+  code?: number,
+  noErrorTip?: boolean
+): void {
   const { t } = useI18n();
   let errMessage = '';
   switch (status) {
@@ -57,7 +63,19 @@ export default function checkStatus(status: number, msg: string, code?: number):
       break;
     default:
   }
-  if (errMessage) {
+  if (msgDetail && !noErrorTip) {
+    if (typeof msgDetail === 'object') {
+      errMessage = Object.values(msgDetail)
+        .map((e) => e)
+        .join('\n');
+    } else {
+      errMessage = msgDetail;
+    }
+    showFailToast({
+      message: errMessage,
+      duration: 5000,
+    });
+  } else if (errMessage && !noErrorTip) {
     showFailToast({
       message: errMessage,
       duration: 5000,

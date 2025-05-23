@@ -5,7 +5,13 @@ import useUser from '@/hooks/useUser';
 import router from '@/router';
 import { NO_RESOURCE_ROUTE_NAME } from '@/router/constants';
 
-export default function checkStatus(status: number, msg: string, code?: number, noErrorTip?: boolean): void {
+export default function checkStatus(
+  status: number,
+  msg: string,
+  msgDetail: string | Record<string, any>,
+  code?: number,
+  noErrorTip?: boolean
+): void {
   const { message } = useDiscreteApi();
   const { t } = useI18n();
   const { logout, isLoginPage, isWhiteListPage } = useUser();
@@ -62,7 +68,17 @@ export default function checkStatus(status: number, msg: string, code?: number, 
       break;
     default:
   }
-  if (errMessage && !noErrorTip) {
+
+  if (msgDetail && !noErrorTip) {
+    if (typeof msgDetail === 'object') {
+      errMessage = Object.values(msgDetail)
+        .map((e) => e)
+        .join('\n');
+    } else {
+      errMessage = msgDetail;
+    }
+    message.error(errMessage);
+  } else if (errMessage && !noErrorTip) {
     message.error(errMessage);
   }
 }

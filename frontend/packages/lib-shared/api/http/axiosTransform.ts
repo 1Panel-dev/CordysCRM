@@ -38,5 +38,11 @@ export interface CreateAxiosOptions extends AxiosRequestConfig {
   requestOptions?: RequestOptions;
   useAppStore?: any;
   showErrorMsg?: (options: any) => void;
-  checkStatus?: (status: number, msg: string, code?: number, noErrorTip?: boolean) => void;
+  checkStatus?: (
+    status: number,
+    msg: string,
+    msgDetail: string | Record<string, any>,
+    code?: number,
+    noErrorTip?: boolean
+  ) => void;
 }
