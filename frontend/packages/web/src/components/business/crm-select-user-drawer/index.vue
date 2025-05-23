@@ -88,7 +88,7 @@
   );
 
   const emit = defineEmits<{
-    (e: 'confirm', params: any[]): void;
+    (e: 'confirm', params: any[], offspringNodes: any[]): void;
   }>();
 
   const visible = defineModel<boolean>('visible', {
@@ -204,7 +204,14 @@
       delete item.parent;
       return item;
     });
-    emit('confirm', _selectedNodes);
+    const offspringNodes: any[] = [];
+    _selectedNodes.forEach((item) => {
+      mapTree(item, (node) => {
+        offspringNodes.push(node);
+        return node;
+      });
+    });
+    emit('confirm', _selectedNodes, offspringNodes);
   }
 
   const defaultExpandedKeys = computed(() => {

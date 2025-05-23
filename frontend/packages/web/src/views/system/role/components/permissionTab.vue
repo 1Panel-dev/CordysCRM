@@ -191,6 +191,8 @@
         });
       } else if (props.isNew) {
         const res = await getPermissions();
+        dataPermission.value = 'ALL';
+        departments.value = [];
         res.forEach((item) => {
           item.children.forEach((child) => {
             data.value.push({

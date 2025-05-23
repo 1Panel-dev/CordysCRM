@@ -259,10 +259,10 @@
   }
 
   const addMemberLoading = ref(false);
-  async function handleAddConfirm(params: DeptUserTreeNode[]) {
+  async function handleAddConfirm(params: DeptUserTreeNode[], offspringNodes: DeptUserTreeNode[]) {
     try {
       addMemberLoading.value = true;
-      const categorizedIds = params.reduce(
+      const categorizedIds = params.concat(offspringNodes).reduce(
         (acc, item) => {
           switch (item.nodeType) {
             case DeptNodeTypeEnum.USER:
