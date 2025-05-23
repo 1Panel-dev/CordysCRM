@@ -24,7 +24,6 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.domain.CustomerContact;
 import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.opportunity.constants.StageType;
@@ -350,11 +349,11 @@ public class OpportunityService {
     }
 
     private void sendTransferNotice(List<Opportunity> opportunityList, String toUser, String userId, String orgId) {
-        String opportunityNames = getOpportunityNames(opportunityList);
-
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-                NotificationConstants.Event.BUSINESS_TRANSFER, opportunityNames, userId,
-                orgId, List.of(toUser), true);
+        opportunityList.forEach(opportunity -> {
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+                    NotificationConstants.Event.BUSINESS_TRANSFER, opportunity.getName(), userId,
+                    orgId, List.of(toUser), true);
+        });
     }
 
     /**
@@ -379,20 +378,11 @@ public class OpportunityService {
 
         // 消息通知
         opportunityList.stream()
-                .collect(Collectors.groupingBy(Opportunity::getOwner))
-                .forEach((owner, opportunity) ->
+                .forEach(opportunity ->
                         commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-                                NotificationConstants.Event.BUSINESS_DELETED, getOpportunityNames(opportunity), userId,
-                                orgId, List.of(owner), true)
+                                NotificationConstants.Event.BUSINESS_DELETED, opportunity.getName(), userId,
+                                orgId, List.of(opportunity.getOwner()), true)
                 );
-    }
-
-    private String getOpportunityNames(List<Opportunity> opportunity) {
-        return String.join(";",
-                opportunity.stream()
-                        .map(Opportunity::getName)
-                        .toList()
-        );
     }
 
 
