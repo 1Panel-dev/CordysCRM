@@ -93,7 +93,7 @@ CREATE TABLE follow_up_record
     `opportunity_id`  VARCHAR(32) COMMENT '商机id',
     `type`            VARCHAR(32)   NOT NULL COMMENT '类型',
     `clue_id`         VARCHAR(32) COMMENT '线索id',
-    `content`         VARCHAR(1000) NOT NULL COMMENT '跟进内容',
+    `content`         VARCHAR(2000) NOT NULL COMMENT '跟进内容',
     `organization_id` VARCHAR(32)   NOT NULL COMMENT '组织id',
     `follow_time`     BIGINT NOT NULL COMMENT '跟进时间',
     `follow_method`   VARCHAR(32)   NOT NULL COMMENT '跟进方式',
