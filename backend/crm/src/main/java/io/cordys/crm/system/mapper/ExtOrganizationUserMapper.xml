@@ -339,4 +339,9 @@
     <update id="disableUser" parameterType="io.cordys.crm.system.domain.OrganizationUser">
         update sys_organization_user set enable = 0 where id = #{organizationUser.id}
     </update>
+
+
+    <update id="updateUserByUserId">
+        update sys_organization_user set update_time = #{time}, update_user = #{operatorId} where user_id = #{userId}
+    </update>
 </mapper>

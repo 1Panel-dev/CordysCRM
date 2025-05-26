@@ -56,4 +56,6 @@ public interface ExtOrganizationUserMapper {
     void updateById(@Param("organizationUser") OrganizationUser organizationUser);
 
     void disableUser(@Param("organizationUser") OrganizationUser organizationUser);
+
+    void updateUserByUserId(@Param("userId") String userId, @Param("time") long time, @Param("operatorId") String operatorId);
 }

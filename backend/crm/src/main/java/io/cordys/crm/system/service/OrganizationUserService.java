@@ -925,8 +925,12 @@ public class OrganizationUserService {
 
         User user = new User();
         user.setName(request.getName());
+        user.setUpdateTime(System.currentTimeMillis());
+        user.setUpdateUser(operatorId);
         user.setId(request.getUserId());
         userMapper.update(user);
+
+        extOrganizationUserMapper.updateUserByUserId(user.getId(), System.currentTimeMillis(), operatorId);
 
         Map<String, String> originalVal = new HashMap<>(1);
         originalVal.put("name", originUser.getName());
