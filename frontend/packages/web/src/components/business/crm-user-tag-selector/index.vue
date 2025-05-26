@@ -73,6 +73,7 @@
   });
 
   const emit = defineEmits<{
+    (e: 'confirm'): void;
     (e: 'deleteTag'): void;
   }>();
 
@@ -90,6 +91,7 @@
       selectedList.value = params;
     }
     showSelectDrawer.value = false;
+    emit('confirm');
   }
   const renderTag = ({ option, handleClose }: { option: SelectOption; handleClose: () => void }) => {
     return h(

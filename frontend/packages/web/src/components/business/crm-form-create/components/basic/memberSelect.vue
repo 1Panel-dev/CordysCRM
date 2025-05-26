@@ -37,6 +37,7 @@
           ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
           : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
       "
+      @confirm="handleConfirm"
     />
   </n-form-item>
 </template>
@@ -99,31 +100,23 @@
     }
   );
 
-  watch(
-    () => selectedUsers.value,
-    (val) => {
-      if (val) {
-        const ids = val.map((item) => item.id);
-        value.value = [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(
-          props.fieldConfig.type
-        )
+  function handleConfirm() {
+    if (selectedUsers.value) {
+      const ids = selectedUsers.value.map((item) => item.id);
+      value.value = [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)
+        ? ids
+        : ids[0];
+      emit(
+        'change',
+        [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)
           ? ids
-          : ids[0];
-        emit(
-          'change',
-          [FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)
-            ? ids
-            : ids[0]
-        );
-      } else {
-        value.value = [];
-        emit('change', []);
-      }
-    },
-    {
-      deep: true,
+          : ids[0]
+      );
+    } else {
+      value.value = [];
+      emit('change', []);
     }
-  );
+  }
 </script>
 
 <style lang="less" scoped></style>
