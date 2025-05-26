@@ -29,6 +29,10 @@ INSERT INTO sys_role ( id, NAME, internal, data_scope, create_time, update_time,
 VALUES
     ( 'sales_staff', 'sales_staff', 1, 'SELF', UNIX_TIMESTAMP() * 1000 + 2, UNIX_TIMESTAMP() * 1000 + 2, 'admin', 'admin', '', '100001' );-- set innodb lock wait timeout to default
 
+SET @customer_addID = UUID_SHORT();-- 初始化消息通知
+INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
+    VALUE (@customer_addID, 'CUSTOMER_ADD', 'CUSTOMER', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );
+
 SET @customer_transferred_customerID = UUID_SHORT();-- 初始化消息通知
 INSERT INTO sys_message_task (id, event, task_type, email_enable, sys_enable, organization_id, template, create_user, create_time, update_user, update_time)
     VALUE (@customer_transferred_customerID, 'CUSTOMER_TRANSFERRED_CUSTOMER', 'CUSTOMER', false, true,'100001', null, 'admin', UNIX_TIMESTAMP() * 1000 + 2, 'admin', UNIX_TIMESTAMP() * 1000 + 2 );

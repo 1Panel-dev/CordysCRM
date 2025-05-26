@@ -5,6 +5,12 @@
     "moduleName": "",
     "messageTaskDetailDTOList": [
       {
+        "event": "CUSTOMER_ADD",
+        "eventName": "",
+        "emailEnable":false,
+        "sysEnable":false
+      },
+      {
         "event": "CUSTOMER_TRANSFERRED_CUSTOMER",
         "eventName": "",
         "emailEnable":false,
