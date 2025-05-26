@@ -126,7 +126,11 @@
           },
           {
             trigger: () =>
-              h('div', { class: 'personal-name max-w-[110px]' }, { default: () => userStore.userInfo.name }),
+              h(
+                'div',
+                { class: 'personal-name one-line-text max-w-[110px]' },
+                { default: () => userStore.userInfo.name }
+              ),
             default: () => h('div', {}, { default: () => userStore.userInfo.name }),
           }
         ),
