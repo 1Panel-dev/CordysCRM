@@ -30,7 +30,7 @@ export const logTypeOption = [
   },
   {
     value: OperationTypeEnum.MOVE_TO_CUSTOMER_POOL,
-    label: t('customer.moveToOpenSea'),
+    label: t('customer.moveToSeaOrPool'),
   },
   {
     value: OperationTypeEnum.PICK,
