@@ -23,6 +23,7 @@
             scope_id like concat('%', #{id}, '%')
         </foreach>
         and enable = 1
+        order by create_time desc
     </select>
 
     <sql id="sort">
