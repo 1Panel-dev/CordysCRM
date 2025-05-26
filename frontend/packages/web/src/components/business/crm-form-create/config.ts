@@ -393,6 +393,7 @@ export const dataSourceMultipleDefaultFieldConfig: FormCreateField = {
 
 export const serialNumberDefaultFieldConfig: FormCreateField = {
   id: '',
+  defaultValue: 'Opp-202501-000001',
   type: FieldTypeEnum.SERIAL_NUMBER,
   icon: 'iconicon_serial_number',
   name: 'crmFormDesign.serialNumber',
@@ -402,7 +403,7 @@ export const serialNumberDefaultFieldConfig: FormCreateField = {
   readable: true,
   editable: false,
   rules: [],
-  serialNumberRules: ['Opp', '-', 'YYMM', '-', 6],
+  serialNumberRules: ['Opp', '-', 'yyyyMM', '-', 6],
 };
 
 export const advancedFields: FormCreateField[] = [

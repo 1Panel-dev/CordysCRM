@@ -5,7 +5,7 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
-    <n-input :placeholder="props.fieldConfig.placeholder" disabled />
+    <n-input :default-value="props.fieldConfig.defaultValue" :placeholder="props.fieldConfig.placeholder" disabled />
   </n-form-item>
 </template>
 

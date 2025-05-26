@@ -738,8 +738,7 @@
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
   import optionConfig from './optionConfig.vue';
 
-  import useUserStore from '@/store/modules/user';
-
+  // import useUserStore from '@/store/modules/user';
   import { SelectOption } from 'naive-ui/es/select/src/interface';
 
   const props = defineProps<{
@@ -748,7 +747,7 @@
   }>();
 
   const { t } = useI18n();
-  const userStore = useUserStore();
+  // const userStore = useUserStore();
 
   const fieldConfig = defineModel<FormCreateField>('field', {
     default: null,
