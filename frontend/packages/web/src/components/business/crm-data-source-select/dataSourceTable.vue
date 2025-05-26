@@ -77,11 +77,18 @@
   ];
 
   if (props.sourceType === FieldDataSourceTypeEnum.CONTACT) {
-    columns.push({
-      title: t('crmFormDesign.phone'),
-      key: 'phone',
-      resizable: false,
-    });
+    columns.push(
+      {
+        title: t('crmFormDesign.phone'),
+        key: 'phone',
+        resizable: false,
+      },
+      {
+        title: t('crmFormDesign.customer'),
+        key: 'customerName',
+        resizable: true,
+      }
+    );
   }
 
   const sourceApi: Record<FieldDataSourceTypeEnum, (data: any) => Promise<CommonList<any>>> = {
