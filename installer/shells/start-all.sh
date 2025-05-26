@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# 启动 CORDYS CRM应用及其依赖服务(MySQL 和 Redis)
-chmod -R 777 /opt/cordys
-
 # 日志函数
 log_info() {
     echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') - $1"
@@ -41,6 +38,7 @@ start_redis() {
 # 主函数
 main() {
     log_info "开始启动CORDYS CRM环境..."
+    chmod -R 777 /opt/cordys
 
     # 检查MySQL配置并启动
     dbUrl=$(grep 'spring.datasource.url' /opt/cordys/conf/cordys-crm.properties)
