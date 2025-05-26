@@ -67,7 +67,7 @@
               {{ t('system.message.preview') }}
             </n-button>
             <template #content>
-              <div class="p-[16px]">
+              <div class="notify-content p-[16px]">
                 {{ form.content }}
                 <n-tooltip trigger="hover" :delay="300" :disabled="!(form.renameUrl || form.url)?.length">
                   <template #trigger>
@@ -308,4 +308,11 @@
   );
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  .notify-content {
+    @apply overflow-y-auto break-all;
+
+    max-height: 400px;
+    .crm-scroll-bar();
+  }
+</style>
