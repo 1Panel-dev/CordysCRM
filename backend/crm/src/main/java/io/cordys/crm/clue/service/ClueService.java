@@ -306,11 +306,11 @@ public class ClueService {
     }
 
     private void sendTransferNotice(List<Clue> originClues, String toUser, String userId, String orgId) {
-        String customerNames = getClueNames(originClues);
-
-        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                NotificationConstants.Event.TRANSFER_CLUE, customerNames, userId,
-                orgId, List.of(toUser), true);
+        originClues.forEach(clue -> {
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+                    NotificationConstants.Event.TRANSFER_CLUE, clue.getName(), userId,
+                    orgId, List.of(toUser), true);
+        });
     }
 
     private String getClueNames(List<Clue> clues) {
@@ -461,13 +461,11 @@ public class ClueService {
         clueOwnerHistoryService.deleteByClueIds(ids);
 
         // 消息通知
-        clues.stream()
-                .collect(Collectors.groupingBy(Clue::getOwner))
-                .forEach((owner, customerList) ->
-                        commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                                NotificationConstants.Event.CLUE_DELETED, getClueNames(customerList), userId,
-                                orgId, List.of(owner), true)
-                );
+        clues.forEach(clue -> {
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+                    NotificationConstants.Event.CLUE_DELETED, clue.getName(), userId,
+                    orgId, List.of(clue.getOwner()), true);
+        });
     }
 
     private List<String> getOwners(List<Clue> clues) {
