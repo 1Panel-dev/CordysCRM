@@ -411,8 +411,7 @@ public class OrganizationUserService {
      * @param userId
      * @param operatorId
      */
-    @OperationLog(module = LogModule.SYSTEM_ORGANIZATION, type = LogType.UPDATE, resourceId = "{#userId}", operator = "{#operatorId}")
-    public void resetPassword(String userId, String operatorId) {
+    public void resetPassword(String userId, String operatorId, String orgId) {
         if (!StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue())) {
             User user = userMapper.selectByPrimaryKey(userId);
             if (StringUtils.isBlank(user.getPhone())) {
@@ -426,16 +425,14 @@ public class OrganizationUserService {
             // 踢出该用户
             SessionUtils.kickOutUser(operatorId, userId);
 
-            // 日志详情对比需要有差异，并且脱敏
-            User originPasswdUser = new User();
-            originPasswdUser.setPassword("############");
-            User newPasswdUser = new User();
-            newPasswdUser.setPassword("************");
-            OperationLogContext.setContext(LogContextInfo.builder()
-                    .originalValue(originPasswdUser)
-                    .modifiedValue(newPasswdUser)
-                    .resourceName(user.getName())
-                    .build());
+            LogDTO logDTO = new LogDTO(orgId, userId, operatorId, LogType.UPDATE, LogModule.SYSTEM_ORGANIZATION, user.getName());
+            Map<String, String> oldMap = new HashMap<>();
+            oldMap.put("userPassword", "############");
+            Map<String, String> newMap = new HashMap<>();
+            newMap.put("userPassword", "************");
+            logDTO.setOriginalValue(oldMap);
+            logDTO.setModifiedValue(newMap);
+            logService.add(logDTO);
         }
     }
 
@@ -490,7 +487,7 @@ public class OrganizationUserService {
         User newPasswdUser = new User();
         newPasswdUser.setPassword("************");
         userList.forEach(user -> {
-            if(!StringUtils.equalsIgnoreCase(user.getId(), InternalUser.ADMIN.getValue())){
+            if (!StringUtils.equalsIgnoreCase(user.getId(), InternalUser.ADMIN.getValue())) {
                 user.setPassword(CodingUtils.md5(user.getPhone().substring(user.getPhone().length() - 6)));
             }
             user.setUpdateTime(System.currentTimeMillis());
