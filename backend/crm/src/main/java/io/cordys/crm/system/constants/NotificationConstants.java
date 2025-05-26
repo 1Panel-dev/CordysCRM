@@ -34,6 +34,9 @@ public class NotificationConstants {
 
     public interface Event {
         // -----客户管理----
+        //新建客户
+        @Schema(description = "message.message.customer_add")
+        String  CUSTOMER_ADD="CUSTOMER_ADD";
        //被转移客户
        @Schema(description = "message.customer_transferred_customer")
         String  CUSTOMER_TRANSFERRED_CUSTOMER="CUSTOMER_TRANSFERRED_CUSTOMER";
@@ -99,6 +102,10 @@ public class NotificationConstants {
 
 
     public interface TemplateText {
+        //请注意！${OPERATOR}新建${customerName}客户给您，请知悉！
+        @Schema(description = "message.customer_add_text")
+        String CUSTOMER_ADD_TEXT = "CUSTOMER_ADD_TEXT";
+
        // 请注意！${OPERATOR}将${customerName}客户转移给您,请知悉！
         @Schema(description = "message.customer_transferred_customer_text")
         String CUSTOMER_TRANSFERRED_CUSTOMER_TEXT = "CUSTOMER_TRANSFERRED_CUSTOMER_TEXT";
