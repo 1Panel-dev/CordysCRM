@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
   import { VNodeChild } from 'vue';
-  import { DataTableRowKey, NSelect, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NSelect, NTooltip, useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
@@ -122,7 +122,10 @@
         })
       );
     }
-    return h(node);
+    return h(NTooltip, null, {
+      trigger: () => node,
+      default: () => option.label,
+    });
   }
 
   const actionConfig: BatchActionConfig = {
