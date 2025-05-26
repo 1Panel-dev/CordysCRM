@@ -466,6 +466,7 @@
         name: newVal,
       });
       tableRefreshId.value += 1;
+      userStore.isLogin();
       return Promise.resolve(true);
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -851,6 +852,7 @@
   function brashHandler() {
     initOrgList();
     memberDetailRef.value?.getDetail();
+    userStore.isLogin();
   }
 
   function searchData(val: string) {
