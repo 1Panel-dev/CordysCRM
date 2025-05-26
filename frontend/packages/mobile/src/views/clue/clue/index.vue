@@ -14,7 +14,7 @@
         v-model="keyword"
         shape="round"
         :placeholder="t('clue.searchPlaceholder')"
-        class="flex-1 !p-0"
+        class="crm-search"
         @search="search"
         @clear="search"
       />

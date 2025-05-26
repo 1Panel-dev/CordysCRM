@@ -6,7 +6,7 @@
         v-model="keyword"
         shape="round"
         :placeholder="t('common.pleaseInputKeyword')"
-        class="flex-1 !p-0"
+        class="crm-search"
         @search="loadList"
         @clear="loadList"
       />

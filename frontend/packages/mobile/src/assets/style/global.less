@@ -63,3 +63,8 @@ body {
     }
   }
 }
+
+// search (在search组件上写class，会影响到van-search__field的padding-right，导致清除按钮样式异常)
+.crm-search.van-search {
+  @apply flex-1 !p-0;
+}

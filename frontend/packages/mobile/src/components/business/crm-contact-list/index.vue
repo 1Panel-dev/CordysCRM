@@ -14,7 +14,7 @@
         v-model="keyword"
         shape="round"
         :placeholder="t('customer.searchContactPlaceholder')"
-        class="flex-1 !p-0"
+        class="crm-search"
         @search="searchList"
         @clear="searchList"
       />
