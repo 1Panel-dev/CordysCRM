@@ -17,6 +17,7 @@
       :options="props.fieldConfig.options"
       :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
       :placeholder="props.fieldConfig.placeholder"
+      :fallback-option="fallbackOption"
       clearable
     />
   </n-form-item>
@@ -26,6 +27,7 @@
   import { NFormItem, NSelect } from 'naive-ui';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import { FormCreateField } from '../../types';
 
@@ -37,6 +39,8 @@
   const emit = defineEmits<{
     (e: 'change', value: string | number | (string | number)[]): void;
   }>();
+
+  const { t } = useI18n();
 
   const value = defineModel<string | number | (string | number)[]>('value', {
     default: '',
@@ -61,6 +65,13 @@
       emit('change', val);
     }
   );
+
+  function fallbackOption(val: string | number) {
+    return {
+      label: t('common.optionNotExist'),
+      value: val,
+    };
+  }
 </script>
 
 <style lang="less" scoped></style>

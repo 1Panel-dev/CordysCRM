@@ -806,7 +806,7 @@
 
   function handleHasCurrentChange(val: boolean, multiple: boolean) {
     if (val && !multiple) {
-      fieldConfig.value.defaultValue = [{ id: userStore.userInfo.id, name: userStore.userInfo.name }];
+      fieldConfig.value.defaultValue = [];
     }
   }
 

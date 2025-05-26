@@ -110,9 +110,15 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           // 若字段值是选项值，则取选项值的name
           if (options) {
             if (Array.isArray(value)) {
-              name = options.filter((e) => value.includes(e.id)).map((e) => e.name);
+              name = value.map((e) => {
+                const option = options.find((opt) => opt.id === e);
+                if (option) {
+                  return option.name || t('common.optionNotExist');
+                }
+                return t('common.optionNotExist');
+              });
             } else {
-              name = options.find((e) => e.id === value)?.name;
+              name = options.find((e) => e.id === value)?.name || t('common.optionNotExist');
             }
           }
           if (item.type === FieldTypeEnum.DATE_TIME) {
@@ -156,9 +162,15 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             if (field && options) {
               // 若字段值是选项值，则取选项值的name
               if (Array.isArray(field.fieldValue)) {
-                value = options.filter((e) => field.fieldValue.includes(e.id)).map((e) => e.name);
+                value = field.fieldValue.map((e) => {
+                  const option = options.find((opt) => opt.id === e);
+                  if (option) {
+                    return option.name || t('common.optionNotExist');
+                  }
+                  return t('common.optionNotExist');
+                });
               } else {
-                value = options.find((e) => e.id === field.fieldValue)?.name;
+                value = options.find((e) => e.id === field.fieldValue)?.name || t('common.optionNotExist');
               }
             } else if (item.type === FieldTypeEnum.LOCATION) {
               const address = (field?.fieldValue as string)?.split('-');
