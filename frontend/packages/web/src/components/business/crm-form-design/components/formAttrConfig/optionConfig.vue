@@ -44,7 +44,7 @@
               quaternary
               type="error"
               size="small"
-              :disabled="props.disabled || fieldConfig.options?.length === 1"
+              :disabled="props.disabled || fieldConfig.options?.length === 1 || fieldConfig.defaultValue === item.value"
               class="text-btn-error p-[4px] text-[var(--text-n1)]"
               @click="handleOptionDelete(i)"
             >

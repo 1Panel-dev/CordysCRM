@@ -315,21 +315,37 @@
               trigger: () => {
                 return h(
                   'div',
-                  { class: 'one-line-text' },
+                  { class: 'w-full flex items-center' },
                   {
                     default: () => [
-                      option.label,
+                      h(
+                        'div',
+                        {
+                          class: 'one-line-text',
+                        },
+                        {
+                          default: () => option.label,
+                        }
+                      ),
                       option.commander
                         ? h(
-                            CrmTag,
+                            'div',
+                            {},
                             {
-                              type: 'primary',
-                              theme: 'lightOutLine',
-                              class: 'ml-[8px]',
-                              size: 'small',
-                              tooltipDisabled: true,
-                            },
-                            { default: () => t('common.head') }
+                              default: () => [
+                                h(
+                                  CrmTag,
+                                  {
+                                    type: 'primary',
+                                    theme: 'lightOutLine',
+                                    class: 'ml-[8px]',
+                                    size: 'small',
+                                    tooltipDisabled: true,
+                                  },
+                                  { default: () => t('common.head') }
+                                ),
+                              ],
+                            }
                           )
                         : null,
                     ],
