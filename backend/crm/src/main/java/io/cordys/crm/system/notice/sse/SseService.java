@@ -147,10 +147,12 @@ public class SseService {
             if (CollectionUtils.isNotEmpty(sysValues)) {
                 dto.setNotificationDTOList(buildDTOList(sysValues, MSG_PREFIX));
             } else {
-                List<NotificationDTO> list = extNotificationMapper
-                        .selectLastList(userId, OrganizationContext.getOrganizationId(), modules);
-                list.forEach(n -> n.setContentText(new String(n.getContent())));
-                dto.setNotificationDTOList(list);
+                if (CollectionUtils.isNotEmpty(modules)) {
+                    List<NotificationDTO> list = extNotificationMapper
+                            .selectLastList(userId, OrganizationContext.getOrganizationId(), modules);
+                    list.forEach(n -> n.setContentText(new String(n.getContent())));
+                    dto.setNotificationDTOList(list);
+                }
             }
         }
         if (StringUtils.equalsIgnoreCase(sendType, NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString())) {

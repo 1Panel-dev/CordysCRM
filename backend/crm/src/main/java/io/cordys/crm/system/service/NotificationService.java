@@ -163,6 +163,9 @@ public class NotificationService {
     public List<NotificationDTO> listLastNotification(String userId, String organizationId) {
         //获取已开启的模块
         List<String> modules = sendModuleService.getNoticeModules();
+        if (CollectionUtils.isEmpty(modules)) {
+            return new ArrayList<>();
+        }
         List<NotificationDTO> notifications = extNotificationMapper.selectLastList(userId, organizationId,modules);
         notifications.forEach(notification -> notification.setContentText(new String(notification.getContent())));
         return notifications;
