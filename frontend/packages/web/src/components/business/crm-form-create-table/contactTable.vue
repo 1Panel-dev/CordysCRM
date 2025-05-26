@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer>
+  <CrmCard hide-footer :special-height="props.specialHeight">
     <div
       :class="`mb-[16px] flex  ${
         !props.readonly && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:ADD']) ? 'justify-between' : 'justify-end'
@@ -81,6 +81,7 @@
   import { useRouter } from 'vue-router';
   import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, NSwitch, useMessage } from 'naive-ui';
 
+  import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
@@ -113,6 +114,8 @@
     initialSourceName?: string;
     readonly?: boolean;
     formKey: FormDesignKeyEnum.CONTACT | FormDesignKeyEnum.CUSTOMER_CONTACT | FormDesignKeyEnum.BUSINESS_CONTACT;
+    searchType?: CustomerSearchTypeEnum;
+    specialHeight?: number;
   }>();
 
   const Message = useMessage();
@@ -318,7 +321,7 @@
         loadList();
       }
     } else {
-      setLoadListParams({ keyword: val ?? keyword.value });
+      setLoadListParams({ keyword: val ?? keyword.value, searchType: props.searchType });
       loadList();
     }
   }
@@ -341,5 +344,10 @@
 
   onMounted(() => {
     searchData();
+  });
+
+  // eslint-disable-next-line vue/no-expose-after-await
+  defineExpose({
+    searchData,
   });
 </script>

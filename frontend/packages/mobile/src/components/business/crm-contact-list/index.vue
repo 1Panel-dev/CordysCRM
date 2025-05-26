@@ -19,6 +19,23 @@
         @clear="searchList"
       />
     </div>
+    <div v-if="!props.sourceId" class="filter-buttons">
+      <van-button
+        v-for="item of tabList"
+        :key="item.name"
+        round
+        size="small"
+        class="!border-none !px-[16px] !py-[4px] !text-[14px]"
+        :class="
+          activeFilter === item.name
+            ? '!bg-[var(--primary-7)] !text-[var(--primary-8)]'
+            : '!bg-[var(--text-n9)] !text-[var(--text-n1)]'
+        "
+        @click="activeFilter = item.name"
+      >
+        {{ item.tab }}
+      </van-button>
+    </div>
     <CrmList
       ref="crmListRef"
       :list-params="listParams"
@@ -102,6 +119,7 @@
     getOpportunityContactList,
   } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
+  import useHiddenTab from '@/hooks/useHiddenTab';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
@@ -135,9 +153,28 @@
     props.sourceId ? FormDesignKeyEnum.CUSTOMER_CONTACT : FormDesignKeyEnum.CONTACT
   );
 
+  const filterButtons = [
+    {
+      name: CustomerSearchTypeEnum.ALL,
+      tab: t('contact.all'),
+    },
+    {
+      name: CustomerSearchTypeEnum.SELF,
+      tab: t('contact.mine'),
+    },
+    {
+      name: CustomerSearchTypeEnum.DEPARTMENT,
+      tab: t('contact.department'),
+    },
+  ];
+
+  const { tabList, activeFilter } = useHiddenTab(
+    filterButtons,
+    !props.sourceId ? FormDesignKeyEnum.CONTACT : undefined
+  );
+
   const crmListRef = ref<InstanceType<typeof CrmList>>();
   const keyword = ref('');
-  const activeFilter = ref(CustomerSearchTypeEnum.ALL);
   const listParams = computed(() => {
     return {
       searchType: activeFilter.value,
@@ -221,6 +258,24 @@
   onActivated(() => {
     loadList();
   });
+
+  watch(
+    () => activeFilter.value,
+    () => {
+      nextTick(() => {
+        crmListRef.value?.loadList(true);
+      });
+    }
+  );
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  .filter-buttons {
+    @apply flex;
+
+    gap: 8px;
+    padding: 8px 4px;
+    background-color: var(--text-n10);
+    .half-px-border-bottom();
+  }
+</style>

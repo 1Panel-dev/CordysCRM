@@ -31,6 +31,7 @@ import {
   GetCustomerCollaborationListUrl,
   GetCustomerContactFormConfigUrl,
   GetCustomerContactListUrl,
+  GetCustomerContactTabUrl,
   GetCustomerContactUrl,
   GetCustomerFollowPlanFormConfigUrl,
   GetCustomerFollowPlanListUrl,
@@ -409,10 +410,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<CustomerTabHidden>({ url: GetCustomerTabUrl });
   }
 
+  // 获取客户联系人tab显隐藏
+  function getCustomerContactTab() {
+    return CDR.get<CustomerTabHidden>({ url: GetCustomerContactTabUrl });
+  }
+
   return {
     addCustomer,
     updateCustomer,
     getCustomerList,
+    getCustomerContactTab,
     getCustomerFormConfig,
     getCustomer,
     deleteCustomer,

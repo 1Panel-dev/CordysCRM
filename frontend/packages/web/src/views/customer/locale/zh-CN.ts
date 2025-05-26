@@ -35,4 +35,7 @@ export default {
   'customer.cooperationTip': '只读:支持查看客户基础信息与负责人的相关数据;协作:支持查看客户基础信息，并跟进客户',
   'customer.deleteMemberTip': '删除后，成员将不再拥有该客户权限',
   'customer.batchDeleteMemberTip': '确认删除 {count} 个成员吗？',
+  'customer.contacts.all': '全部联系人',
+  'customer.contacts.mine': '我的联系人',
+  'customer.contacts.department': '部门联系人',
 };

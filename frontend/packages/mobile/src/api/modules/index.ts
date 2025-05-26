@@ -165,6 +165,7 @@ export const {
   deleteCustomerRelationItem,
   addCustomerRelationItem,
   getCustomerTab,
+  getCustomerContactTab,
 } = customerApi;
 
 export const {

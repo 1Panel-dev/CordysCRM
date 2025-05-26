@@ -131,6 +131,7 @@ export interface UpdateCustomerContractParams extends SaveCustomerContractParams
 
 export interface CustomerContractTableParams extends TableQueryParams {
   sourceId: string; // 客户ID
+  searchType?: CustomerSearchTypeEnum;
 }
 
 export interface CustomerContractListItem {

@@ -3,14 +3,19 @@ import { TabPaneProps } from 'naive-ui';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import type { CustomerTabHidden } from '@lib/shared/models/customer';
 
-import { getClueTab, getCustomerTab, getOptTab } from '@/api/modules';
+import { getClueTab, getCustomerContactTab, getCustomerTab, getOptTab } from '@/api/modules';
 
-export type TabType = FormDesignKeyEnum.CUSTOMER | FormDesignKeyEnum.BUSINESS | FormDesignKeyEnum.CLUE;
+export type TabType =
+  | FormDesignKeyEnum.CUSTOMER
+  | FormDesignKeyEnum.BUSINESS
+  | FormDesignKeyEnum.CLUE
+  | FormDesignKeyEnum.CONTACT;
 export default function useHiddenTab(tabData: TabPaneProps[], type: TabType) {
   const activeTab = ref();
 
   const tabApiMap: Record<TabType, () => Promise<CustomerTabHidden>> = {
     [FormDesignKeyEnum.CUSTOMER]: getCustomerTab,
+    [FormDesignKeyEnum.CONTACT]: getCustomerContactTab,
     [FormDesignKeyEnum.BUSINESS]: getOptTab,
     [FormDesignKeyEnum.CLUE]: getClueTab,
   };

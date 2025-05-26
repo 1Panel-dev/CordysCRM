@@ -166,6 +166,7 @@ export const {
   getCustomerOptions,
   getCustomerOpenSeaFollowRecordList,
   getCustomerTab,
+  getCustomerContactTab,
 } = customerApi;
 
 export const {
