@@ -249,7 +249,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           tooltip: true,
         },
         sortOrder: false,
-        sorter: true,
+        sorter: false,
       },
       {
         title: t('customer.lastFollowUpDate'),

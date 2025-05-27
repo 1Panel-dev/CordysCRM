@@ -119,6 +119,12 @@
                     <when test="${sort}.name == 'update_user'">
                         o.`update_user` ${sortType}
                     </when>
+                    <when test="${sort}.name == 'follow_time'">
+                        o.`follow_time` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'follower_name'">
+                        o.`follower` ${sortType}
+                    </when>
                     <otherwise>
                         sort_table.field_value ${sortType}
                     </otherwise>
@@ -147,7 +153,7 @@
                 and condition.name != 'createTime'
                 and condition.name != 'updateTime'
                 and condition.name != 'createUser'
-                and condition.name != 'follower'
+                and condition.name != 'followerName'
                 and condition.name != 'departmentId'">
                     <if test="condition.multipleValue">
                         inner join opportunity_field_blob ${tablePrefix}_${i}
@@ -165,7 +171,7 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'name', 'owner', 'customer_id', 'stage', 'amount', 'possible', 'products', 'contact_id', 'follow_time', 'status',
-                 'update_user', 'create_time', 'update_time', 'create_user', 'follower', 'department_id'}">
+                 'update_user', 'create_time', 'update_time', 'create_user', 'follower_name', 'department_id'}">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_field sort_table
             on o.id = sort_table.resource_id and sort_table.field_id = #{sortName}
