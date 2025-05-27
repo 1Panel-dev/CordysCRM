@@ -6,16 +6,19 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import io.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.uid.SerialNumGenerator;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.system.dto.field.SerialNumberField;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.request.UploadTransferRequest;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.crm.system.service.PicService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.lang.reflect.ParameterizedType;
@@ -34,6 +37,9 @@ import java.util.stream.Collectors;
  * @date 2025-01-03 12:01:54
  */
 public abstract class BaseResourceFieldService<T extends BaseResourceField, V extends BaseResourceField> {
+
+    @Resource
+    private SerialNumGenerator serialNumGenerator;
 
     protected abstract String getFormKey();
 
@@ -80,7 +86,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     /**
      * @param moduleFieldValues
      */
-    public void saveModuleField(String resourceId, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues) {
+    public void saveModuleField(String resourceId, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
         if (CollectionUtils.isEmpty(moduleFieldValues)) {
             return;
         }
@@ -93,11 +99,19 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         List<T> customerFields = new ArrayList<>();
         List<V> customerFieldBlobs = new ArrayList<>();
         moduleFieldValues.stream()
-                .filter(BaseModuleFieldValue::valid)
+                .filter(item -> {
+                    BaseField fieldConfig = fieldConfigMap.get(item.getFieldId());
+                    return item.valid() || (fieldConfig != null && fieldConfig.isSerialNumber());
+                })
                 .forEach(fieldValue -> {
                     BaseField fieldConfig = fieldConfigMap.get(fieldValue.getFieldId());
                     if (fieldConfig == null) {
                         return;
+                    }
+
+                    if (fieldConfig.isSerialNumber() && !update) {
+                        String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) fieldConfig).getSerialNumberRules());
+                        fieldValue.setFieldValue(serialNo);
                     }
 
                     if (fieldConfig.isPic()) {

@@ -78,7 +78,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         }
         followUpPlanMapper.insert(followUpPlan);
         //保存自定义字段
-        followUpPlanFieldService.saveModuleField(followUpPlan.getId(), orgId, userId, request.getModuleFields());
+        followUpPlanFieldService.saveModuleField(followUpPlan.getId(), orgId, userId, request.getModuleFields(), false);
         return followUpPlan;
     }
 
@@ -117,7 +117,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         // 先删除
         followUpPlanFieldService.deleteByResourceId(id);
         // 再保存
-        followUpPlanFieldService.saveModuleField(id, orgId, userId, moduleFields);
+        followUpPlanFieldService.saveModuleField(id, orgId, userId, moduleFields, true);
     }
 
     private void updatePlan(FollowUpPlan plan, FollowUpPlanUpdateRequest request, String userId) {

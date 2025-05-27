@@ -218,7 +218,7 @@ public class OpportunityService {
         opportunityMapper.insert(opportunity);
 
         //自定义字段
-        opportunityFieldService.saveModuleField(id, orgId, operatorId, request.getModuleFields());
+        opportunityFieldService.saveModuleField(id, orgId, operatorId, request.getModuleFields(), false);
         baseService.handleAddLog(opportunity, request.getModuleFields());
 
         return opportunity;
@@ -296,7 +296,7 @@ public class OpportunityService {
         // 先删除
         opportunityFieldService.deleteByResourceId(id);
         // 再保存
-        opportunityFieldService.saveModuleField(id, orgId, userId, moduleFields);
+        opportunityFieldService.saveModuleField(id, orgId, userId, moduleFields, true);
     }
 
 

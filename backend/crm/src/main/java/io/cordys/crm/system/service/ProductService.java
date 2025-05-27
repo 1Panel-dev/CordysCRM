@@ -125,7 +125,7 @@ public class ProductService {
 
 
         //保存自定义字段
-        productFieldService.saveModuleField(product.getId(), orgId, userId, request.getModuleFields());
+        productFieldService.saveModuleField(product.getId(), orgId, userId, request.getModuleFields(), false);
 
         // 添加日志上下文
         baseService.handleAddLog(product, request.getModuleFields());
@@ -179,7 +179,7 @@ public class ProductService {
         // 先删除
         productFieldService.deleteByResourceId(productId);
         // 再保存
-        productFieldService.saveModuleField(productId, orgId, userId, moduleFields);
+        productFieldService.saveModuleField(productId, orgId, userId, moduleFields, true);
     }
 
     private void batchUpdateModuleField(List<String>  productIds, List<BaseModuleFieldValue> moduleFields) {

@@ -218,7 +218,7 @@ public class CustomerContactService {
         customerContactMapper.insert(customerContact);
 
         //保存自定义字段
-        customerContactFieldService.saveModuleField(customerContact.getId(), orgId, userId, request.getModuleFields());
+        customerContactFieldService.saveModuleField(customerContact.getId(), orgId, userId, request.getModuleFields(), false);
 
         baseService.handleAddLog(customerContact, request.getModuleFields());
         return customerContact;
@@ -254,7 +254,7 @@ public class CustomerContactService {
         // 先删除
         customerContactFieldService.deleteByResourceId(customerId);
         // 再保存
-        customerContactFieldService.saveModuleField(customerId, orgId, userId, moduleFields);
+        customerContactFieldService.saveModuleField(customerId, orgId, userId, moduleFields, true);
     }
 
     private void checkAddExist(CustomerContact customerContact) {

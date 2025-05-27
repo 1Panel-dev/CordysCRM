@@ -264,7 +264,7 @@ public class ClueService {
         clueMapper.insert(clue);
 
         //保存自定义字段
-        clueFieldService.saveModuleField(clue.getId(), orgId, userId, request.getModuleFields());
+        clueFieldService.saveModuleField(clue.getId(), orgId, userId, request.getModuleFields(), false);
         baseService.handleAddLog(clue, request.getModuleFields());
         return clue;
     }
@@ -340,7 +340,7 @@ public class ClueService {
         // 先删除
         clueFieldService.deleteByResourceId(clueId);
         // 再保存
-        clueFieldService.saveModuleField(clueId, orgId, userId, moduleFields);
+        clueFieldService.saveModuleField(clueId, orgId, userId, moduleFields, true);
     }
 
     private void checkAddExist(Clue clue) {

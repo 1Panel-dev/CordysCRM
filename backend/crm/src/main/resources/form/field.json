@@ -367,6 +367,18 @@
       "mobile": true
     },
     {
+      "name": "业务编码",
+      "internalKey": "opportunityNo",
+      "type": "SERIAL_NUMBER",
+      "placeholder": "无需录入, 自动生成",
+      "showLabel": true,
+      "serialNumberRules": ["Opp", "-", "yyyyMM", "-", "6"],
+      "readable": true,
+      "editable": false,
+      "fieldWidth": 1,
+      "disableProps": ["serialNumberRules"]
+    },
+    {
       "name": "商机来源",
       "internalKey": "opportunitySource",
       "type": "SELECT",

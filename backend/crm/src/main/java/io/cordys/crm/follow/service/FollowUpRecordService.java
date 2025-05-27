@@ -89,7 +89,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
         followUpRecordMapper.insert(followUpRecord);
 
         //保存自定义字段
-        followUpRecordFieldService.saveModuleField(followUpRecord.getId(), orgId, userId, request.getModuleFields());
+        followUpRecordFieldService.saveModuleField(followUpRecord.getId(), orgId, userId, request.getModuleFields(), false);
 
         if (StringUtils.isNotBlank(request.getCustomerId())) {
             Customer customer = new Customer();
@@ -152,7 +152,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
         // 先删除
         followUpRecordFieldService.deleteByResourceId(followUpId);
         // 再保存
-        followUpRecordFieldService.saveModuleField(followUpId, orgId, userId, moduleFields);
+        followUpRecordFieldService.saveModuleField(followUpId, orgId, userId, moduleFields, true);
     }
 
 

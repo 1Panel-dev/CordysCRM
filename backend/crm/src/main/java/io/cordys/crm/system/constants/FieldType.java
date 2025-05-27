@@ -80,4 +80,8 @@ public enum FieldType {
 	 * 多选数据源
 	 */
 	DATA_SOURCE_MULTIPLE,
+	/**
+	 * 流水号
+	 */
+	SERIAL_NUMBER,
 }
