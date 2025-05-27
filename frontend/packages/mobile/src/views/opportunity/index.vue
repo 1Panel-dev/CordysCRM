@@ -41,6 +41,7 @@
     <div class="flex-1 overflow-hidden">
       <CrmList
         ref="crmListRef"
+        :close-init-load="!activeFilter"
         :keyword="keyword"
         :load-list-api="getOpportunityList"
         :list-params="listParams"

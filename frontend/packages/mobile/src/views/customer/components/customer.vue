@@ -42,6 +42,7 @@
       :list-params="listParams"
       class="p-[16px]"
       :item-gap="16"
+      :close-init-load="!activeFilter"
       :load-list-api="getCustomerList"
       :transform="transformFormData"
     >

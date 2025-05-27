@@ -36,6 +36,7 @@
     isReturnNativeResponse?: boolean;
     loadListApi?: (...args: any) => Promise<CommonList<Record<string, any>> | Record<string, any>>;
     transform?: (item: any, optionMap?: Record<string, any[]>) => Record<string, any>;
+    closeInitLoad?: boolean; // 关闭首次加载
   }>();
 
   const { t } = useI18n();
@@ -52,6 +53,7 @@
   const code = ref(0); // 状态码
 
   async function loadList(refresh = false) {
+    if (props.closeInitLoad) return;
     try {
       if (!props.loadListApi) {
         list.value = props.transform ? list.value.map((e: any) => props.transform!(e)) : list.value;

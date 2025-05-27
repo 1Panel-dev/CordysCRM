@@ -43,6 +43,7 @@
       :load-list-api="loadApiMap[props.formKey]"
       class="p-[16px]"
       :item-gap="16"
+      :close-init-load="!!props.sourceId ? false : !activeFilter"
       :transform="transformFormData"
       :no-page-nation="!!props.sourceId"
     >

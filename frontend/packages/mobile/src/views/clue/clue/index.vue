@@ -45,6 +45,7 @@
       class="p-[16px]"
       :item-gap="16"
       :load-list-api="getClueList"
+      :close-init-load="!activeFilter"
       :transform="transformFormData"
     >
       <template #item="{ item }">
