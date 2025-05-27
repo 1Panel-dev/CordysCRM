@@ -18,7 +18,7 @@
         :class="desc.fullLine ? 'basis-full' : ''"
       >
         <div class="whitespace-nowrap text-[12px] text-[var(--text-n4)]">{{ desc.label }}</div>
-        <div class="break-words text-[12px] text-[var(--text-n1)]">{{ desc.value }}</div>
+        <div class="break-words break-all text-[12px] text-[var(--text-n1)]">{{ desc.value }}</div>
       </div>
     </div>
     <van-divider v-if="actionList?.length" class="!m-0" />
