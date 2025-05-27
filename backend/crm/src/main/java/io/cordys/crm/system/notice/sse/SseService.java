@@ -1,9 +1,11 @@
 package io.cordys.crm.system.notice.sse;
 
+import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.constants.NotificationConstants;
+import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.mapper.ExtNotificationMapper;
 import io.cordys.crm.system.notice.dto.SseMessageDTO;
@@ -19,7 +21,6 @@ import reactor.core.publisher.Sinks;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Service
 public class SseService {
@@ -171,11 +172,20 @@ public class SseService {
      * 根据 Redis 构建 DTO 列表
      */
     private List<NotificationDTO> buildDTOList(Set<String> values, String prefix) {
+        if (CollectionUtils.isEmpty(values)) {
+            return Collections.emptyList();
+        }
         return values.stream()
                 .map(val -> stringRedisTemplate.opsForValue().get(prefix + val))
                 .filter(StringUtils::isNotBlank)
-                .map(json -> JSON.parseObject(json, NotificationDTO.class))
+                .map(json -> {
+                    Notification notification = JSON.parseObject(json, Notification.class);
+                    NotificationDTO dto = new NotificationDTO();
+                    BeanUtils.copyBean(dto, notification);
+                    dto.setContentText(new String(notification.getContent()));
+                    return dto;
+                })
                 .sorted(Comparator.comparing(NotificationDTO::getCreateTime).reversed())
-                .collect(Collectors.toList());
+                .toList();
     }
 }
