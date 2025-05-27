@@ -392,8 +392,8 @@ public class ClueService {
         }
 
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                NotificationConstants.Event.CLUE_CONVERT_CUSTOMER, customer.getName(), userId,
-                orgId, List.of(customer.getOwner()), true);
+                NotificationConstants.Event.CLUE_CONVERT_CUSTOMER, clue.getName(), userId,
+                orgId, List.of(clue.getOwner()), true);
     }
 
 

@@ -261,6 +261,10 @@ public class CustomerService {
         customerFieldService.saveModuleField(customer.getId(), orgId, userId, request.getModuleFields());
 
         baseService.handleAddLog(customer, request.getModuleFields());
+        // 通知
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_ADD, customer.getName(), userId,
+                orgId, List.of(customer.getOwner()), true);
         return customer;
     }
 

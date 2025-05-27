@@ -92,7 +92,7 @@ public class ClueController {
 
     @PostMapping("/transition/customer")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_ADD)
-    @Operation(summary = "转移客户")
+    @Operation(summary = "转为客户")
     public void transitionCustomer(@Validated @RequestBody ClueTransitionCustomerRequest request) {
         clueService.transitionCustomer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
