@@ -283,7 +283,7 @@
     },
     {
       key: 'operation',
-      minWidth: 120,
+      width: 120,
       fixed: 'right',
       render: (row: CluePoolItem) =>
         h(CrmOperationButton, {

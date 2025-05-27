@@ -270,7 +270,7 @@
     },
     {
       key: 'operation',
-      minWidth: 150,
+      width: 150,
       fixed: 'right',
       render: (row: OpportunityItem) =>
         h(CrmOperationButton, {

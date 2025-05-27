@@ -160,7 +160,7 @@
     },
     {
       key: 'operation',
-      minWidth: 100,
+      width: 100,
       fixed: 'right',
       render: (row) =>
         h(CrmRemoveButton, {

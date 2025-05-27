@@ -720,7 +720,7 @@
     },
     {
       key: 'operation',
-      minWidth: 170,
+      width: 170,
       fixed: 'right',
       render: (row: MemberItem) =>
         h(CrmOperationButton, {

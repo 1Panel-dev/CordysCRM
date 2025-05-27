@@ -233,6 +233,7 @@ const useAppStore = defineStore('app', {
      */
     async disconnectSystemMessageSSE() {
       const userStore = useUserStore();
+      if (!userStore.clientIdRandomId || !userStore.userInfo.id) return;
       if (this.eventSource) {
         this.eventSource.close();
         this.eventSource = null;

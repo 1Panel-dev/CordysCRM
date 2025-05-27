@@ -310,6 +310,17 @@
   .n-data-table-th--fixed-left {
     background-color: var(--text-n10) !important;
   }
+
+  // 缩小表头区域触发排序，减少拖拽列宽触发排序：官方推荐解决方案：不在排序按钮附近放置拖拽手柄，手动规避冲突区域
+  .n-data-table-th {
+    pointer-events: none;
+    .n-data-table-th__title-wrapper {
+      pointer-events: auto;
+    }
+    .n-data-table-resize-button {
+      pointer-events: auto;
+    }
+  }
 </style>
 
 <style lang="less" scoped>
