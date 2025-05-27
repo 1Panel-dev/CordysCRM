@@ -84,57 +84,67 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
-     * @param moduleFieldValues
+     * @param resourceId 资源ID
+     * @param orgId 组织ID
+     * @param userId 用户ID
+     * @param moduleFieldValues 自定义字段值
+     * @param update 是否更新
      */
     public void saveModuleField(String resourceId, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
-        if (CollectionUtils.isEmpty(moduleFieldValues)) {
+        List<BaseField> allFields = CommonBeanFactory.getBean(ModuleFormService.class)
+                .getAllFields(getFormKey(), OrganizationContext.getOrganizationId());
+        if (CollectionUtils.isEmpty(allFields)) {
             return;
         }
-
-        Map<String, BaseField> fieldConfigMap = CommonBeanFactory.getBean(ModuleFormService.class)
-                .getAllFields(getFormKey(), OrganizationContext.getOrganizationId())
-                .stream()
-                .collect(Collectors.toMap(BaseField::getId, Function.identity()));
+        Map<String, BaseModuleFieldValue> fieldValueMap;
+        if (CollectionUtils.isNotEmpty(moduleFieldValues)) {
+            fieldValueMap = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, v -> v));
+        } else {
+            fieldValueMap = new HashMap<>();
+        }
 
         List<T> customerFields = new ArrayList<>();
         List<V> customerFieldBlobs = new ArrayList<>();
-        moduleFieldValues.stream()
-                .filter(item -> {
-                    BaseField fieldConfig = fieldConfigMap.get(item.getFieldId());
-                    return item.valid() || (fieldConfig != null && fieldConfig.isSerialNumber());
+        allFields.stream()
+                .filter(field -> {
+                    BaseModuleFieldValue fieldValue = fieldValueMap.get(field.getId());
+                    return (fieldValue != null && fieldValue.valid()) || field.isSerialNumber();
                 })
-                .forEach(fieldValue -> {
-                    BaseField fieldConfig = fieldConfigMap.get(fieldValue.getFieldId());
-                    if (fieldConfig == null) {
+                .forEach(field -> {
+                    BaseModuleFieldValue fieldValue;
+                    if (field.isSerialNumber() && !update) {
+                        fieldValue = new BaseModuleFieldValue();
+                        fieldValue.setFieldId(field.getId());
+                        String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules());
+                        fieldValue.setFieldValue(serialNo);
+                    } else {
+                        fieldValue = fieldValueMap.get(field.getId());
+                    }
+                    if (fieldValue == null) {
                         return;
                     }
 
-                    if (fieldConfig.isSerialNumber() && !update) {
-                        String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) fieldConfig).getSerialNumberRules());
-                        fieldValue.setFieldValue(serialNo);
-                    }
-
-                    if (fieldConfig.isPic()) {
+                    if (field.isPic()) {
                         preProcessWithPic(orgId, resourceId, userId, fieldValue.getFieldValue());
                     }
 
-                    if (fieldConfig.needRepeatCheck()) {
+                    if (field.needRepeatCheck()) {
                         LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
                         wrapper.eq(BaseResourceField::getFieldId, fieldValue.getFieldId());
                         wrapper.eq(BaseResourceField::getFieldValue, fieldValue.getFieldValue());
                         if (!getResourceFieldMapper().selectListByLambda(wrapper).isEmpty()) {
-                            throw new GenericException(Translator.getWithArgs("common.field_value.repeat", fieldConfig.getName()));
+                            throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
                         }
                     }
 
                     // 获取字段解析器
-                    AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
+                    AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
                     // 校验参数值
-                    customFieldResolver.validate(fieldConfig, fieldValue.getFieldValue());
+                    customFieldResolver.validate(field, fieldValue.getFieldValue());
                     // 将参数值转换成字符串入库
-                    String strValue = customFieldResolver.parse2String(fieldConfig, fieldValue.getFieldValue());
+                    String strValue = customFieldResolver.parse2String(field, fieldValue.getFieldValue());
 
-                    if (fieldConfig.isBlob()) {
+                    if (field.isBlob()) {
                         V resourceField = newResourceFieldBlob();
                         resourceField.setId(IDGenerator.nextStr());
                         resourceField.setResourceId(resourceId);
