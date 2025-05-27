@@ -23,8 +23,7 @@ public class TaskCleanupJob {
      * 该方法每晚 3 点执行，清理过期的任务和释放资源。
      * </p>
      */
-    // @QuartzScheduled(cron = "0 0 3 * * ?")
-    @QuartzScheduled(cron = "0 0/5 * * * ?") // TODO 测试时间
+    @QuartzScheduled(cron = "0 0 3 * * ?")
     public void execute() {
         runAll();
     }
