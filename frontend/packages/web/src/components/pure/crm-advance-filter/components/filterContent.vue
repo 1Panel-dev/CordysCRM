@@ -372,7 +372,7 @@
     if (item.type === FieldTypeEnum.DATE_TIME) {
       formModel.value.list[index].value = null;
     } else {
-      formModel.value.list[index].value = valueIsArray(item) ? [] : undefined;
+      formModel.value.list[index].value = valueIsArray(item) ? [] : null;
     }
     if (isValueDisabled(item)) {
       formRef.value?.restoreValidation();
