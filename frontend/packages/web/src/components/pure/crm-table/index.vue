@@ -113,10 +113,10 @@
       });
       return _col;
     });
+    if (!hasInitStore && attrs.tableKey) {
+      await tableStore.initColumn(attrs.tableKey as TableKeyEnum, columns);
+    }
     if (attrs.showSetting) {
-      if (!hasInitStore && attrs.showSetting && attrs.tableKey) {
-        await tableStore.initColumn(attrs.tableKey as TableKeyEnum, columns);
-      }
       columns = await tableStore.getShowInTableColumns(attrs.tableKey as TableKeyEnum);
     }
     currentColumns.value = columns.map((column) => {

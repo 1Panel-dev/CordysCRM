@@ -18,6 +18,8 @@ export enum TableKeyEnum {
   CLUE_POOL = 'cluePool',
   PRODUCT = 'product',
   BUSINESS = 'business',
+  LOG = 'log',
+  LOGIN_LOG = 'loginLog',
 }
 
 // 具有特殊功能的列

@@ -11,6 +11,7 @@
 </template>
 
 <script setup lang="ts">
+  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { OperationLogParams } from '@lib/shared/models/system/log';
 
@@ -58,6 +59,7 @@
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(loginLogList, {
     showSetting: false,
     columns,
+    tableKey: TableKeyEnum.LOGIN_LOG,
   });
 
   async function searchData(params: OperationLogParams) {

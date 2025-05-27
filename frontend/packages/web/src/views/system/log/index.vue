@@ -76,6 +76,7 @@
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OperationTypeEnum } from '@lib/shared/enums/systemEnum';
+  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { getCityPath } from '@lib/shared/method';
   import type { OperationLogDetail, OperationLogItem, OperationLogParams } from '@lib/shared/models/system/log';
@@ -247,6 +248,7 @@
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(operationLogList, {
     showSetting: false,
     columns,
+    tableKey: TableKeyEnum.LOG,
   });
 
   const loginLogRef = ref<InstanceType<typeof LoginLog>>();
