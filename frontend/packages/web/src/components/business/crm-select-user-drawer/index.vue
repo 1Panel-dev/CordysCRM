@@ -135,25 +135,34 @@
   const roleOptions = ref<Option[]>([]);
   const userOptions = ref<RoleItem[]>([]);
   const departmentOptions = ref<DeptTreeNode[]>([]);
+  const treeLoading = ref(false);
 
   async function loadData(value: MemberSelectTypeEnum) {
-    departmentOptions.value = [];
-    roleOptions.value = [];
-    userOptions.value = [];
-    let params = { ...props.baseParams };
-    switch (value) {
-      case MemberSelectTypeEnum.ORG:
-      case MemberSelectTypeEnum.ONLY_ORG:
-        params = { ...params, ...props.fetchOrgParams };
-        departmentOptions.value = await getDataFunc(props.apiTypeKey, value, params);
-        break;
-      case MemberSelectTypeEnum.ROLE:
-        params = { ...params, ...props.fetchRoleParams };
-        roleOptions.value = await getDataFunc(props.apiTypeKey, value, params);
-        break;
-      default:
-        params = { ...params, ...props.fetchMemberParams };
-        userOptions.value = await getDataFunc(props.apiTypeKey, value, params);
+    try {
+      treeLoading.value = true;
+      departmentOptions.value = [];
+      roleOptions.value = [];
+      userOptions.value = [];
+      let params = { ...props.baseParams };
+      switch (value) {
+        case MemberSelectTypeEnum.ORG:
+        case MemberSelectTypeEnum.ONLY_ORG:
+          params = { ...params, ...props.fetchOrgParams };
+          departmentOptions.value = await getDataFunc(props.apiTypeKey, value, params);
+          break;
+        case MemberSelectTypeEnum.ROLE:
+          params = { ...params, ...props.fetchRoleParams };
+          roleOptions.value = await getDataFunc(props.apiTypeKey, value, params);
+          break;
+        default:
+          params = { ...params, ...props.fetchMemberParams };
+          userOptions.value = await getDataFunc(props.apiTypeKey, value, params);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log('Error loading data:', error);
+    } finally {
+      treeLoading.value = false;
     }
   }
 
@@ -387,11 +396,13 @@
               class: 'px-[12px] h-full',
             },
             [
-              h(NSkeleton, {
-                text: true,
-                repeat: 20,
-                height: 24,
-              }),
+              treeLoading.value
+                ? h(NSkeleton, {
+                    text: true,
+                    repeat: 20,
+                    height: 24,
+                  })
+                : t('common.noData'),
             ]
           );
         },
