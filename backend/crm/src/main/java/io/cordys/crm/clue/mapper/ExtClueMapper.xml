@@ -126,11 +126,11 @@
                     and condition.name != 'updateUser' and condition.name != 'createUser'
                     and condition.name != 'updateTime' and condition.name != 'phone'">
                     <if test="condition.multipleValue">
-                        inner join clue_field_blob ${tablePrefix}_${i}
+                        left join clue_field_blob ${tablePrefix}_${i}
                         on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
-                        inner join clue_field ${tablePrefix}_${i}
+                        left join clue_field ${tablePrefix}_${i}
                         on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>

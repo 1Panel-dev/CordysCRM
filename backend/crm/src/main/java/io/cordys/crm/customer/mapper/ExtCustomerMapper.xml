@@ -149,16 +149,16 @@
                 <if test="condition.name not in
                 {'name', 'owner', 'createTime', 'updateTime', 'follower', 'followTime', 'createUser', 'updateUser', 'departmentId'}">
                     <if test="condition.multipleValue">
-                        inner join customer_field_blob ${tablePrefix}_${i}
+                        left join customer_field_blob ${tablePrefix}_${i}
                         on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
-                        inner join customer_field ${tablePrefix}_${i}
+                        left join customer_field ${tablePrefix}_${i}
                         on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>
                 <if test="condition.name == 'departmentId'">
-                    inner join sys_organization_user souc
+                    left join sys_organization_user souc
                     on souc.user_id = c.owner
                 </if>
             </foreach>

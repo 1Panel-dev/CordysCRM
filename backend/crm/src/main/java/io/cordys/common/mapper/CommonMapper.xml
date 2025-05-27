@@ -120,6 +120,7 @@
                             #{v}
                         </foreach>
                     )
+                    or ${column} is null
                 </when>
                 <when test="${condition}.operator == 'BETWEEN'">
                     ${column} between #{condition.value[0]} and #{condition.value[1]}

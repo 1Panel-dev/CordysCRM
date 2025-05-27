@@ -156,11 +156,11 @@
                 and condition.name != 'followerName'
                 and condition.name != 'departmentId'">
                     <if test="condition.multipleValue">
-                        inner join opportunity_field_blob ${tablePrefix}_${i}
+                        left join opportunity_field_blob ${tablePrefix}_${i}
                         on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
-                        inner join opportunity_field ${tablePrefix}_${i}
+                        left join opportunity_field ${tablePrefix}_${i}
                         on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>
