@@ -17,7 +17,7 @@
       :options="props.fieldConfig.options"
       :multiple="props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE"
       :placeholder="props.fieldConfig.placeholder"
-      :fallback-option="fallbackOption"
+      :fallback-option="value !== null && value !== undefined && value !== '' ? fallbackOption : false"
       clearable
     />
   </n-form-item>
