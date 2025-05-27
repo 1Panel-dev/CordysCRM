@@ -406,7 +406,15 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       loading.value = true;
       const res = await getFormConfigApiMap[props.formKey]();
       columns = res.fields
-        .filter((e) => e.type !== FieldTypeEnum.DIVIDER && e.type !== FieldTypeEnum.TEXTAREA)
+        .filter(
+          (e) =>
+            e.type !== FieldTypeEnum.DIVIDER &&
+            e.type !== FieldTypeEnum.TEXTAREA &&
+            !(
+              e.businessKey === 'owner' &&
+              [FormDesignKeyEnum.CLUE_POOL, FormDesignKeyEnum.CUSTOMER_OPEN_SEA].includes(props.formKey)
+            )
+        )
         .map((field) => {
           if (field.type === FieldTypeEnum.PICTURE) {
             return {
