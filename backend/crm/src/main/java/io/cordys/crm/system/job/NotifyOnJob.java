@@ -1,14 +1,15 @@
-package io.cordys.crm.system.job.listener;
+package io.cordys.crm.system.job;
 
+import com.fit2cloud.quartz.anno.QuartzScheduled;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.crm.system.dto.response.AnnouncementDTO;
+import io.cordys.crm.system.job.listener.ExecuteEvent;
 import io.cordys.crm.system.mapper.ExtAnnouncementMapper;
 import io.cordys.crm.system.service.AnnouncementService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class NotifyOnListener implements ApplicationListener<ExecuteEvent> {
+public class NotifyOnJob {
     @Resource
     private ExtAnnouncementMapper extAnnouncementMapper;
     @Resource
@@ -28,11 +29,10 @@ public class NotifyOnListener implements ApplicationListener<ExecuteEvent> {
 
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
 
-    @Override
+    @QuartzScheduled(cron = "0 0/5 * * * ?")
     public void onApplicationEvent(@NotNull ExecuteEvent event) {
         try {
             this.addNotification();
-
         } catch (Exception e) {
             LogUtils.error("公告通知异常: ", e.getMessage());
         }
