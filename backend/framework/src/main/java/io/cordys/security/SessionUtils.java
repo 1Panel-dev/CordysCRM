@@ -93,6 +93,12 @@ public class SessionUtils {
         if (isSelfReset) {
             // 当前用户重置自己的密码，直接登出
             SecurityUtils.getSubject().logout();
+            // 需要检查是否有其他会话存在
+            try {
+                SessionUtils.kickOutUser(kickUserId);
+            } catch (Exception e) {
+                LogUtils.error("踢出用户失败: " + e.getMessage());
+            }
         } else {
             // 管理员重置他人密码，踢出该用户
             SessionUtils.kickOutUser(kickUserId);
