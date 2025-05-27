@@ -150,7 +150,10 @@
   watch(
     () => fileKeys.value,
     (keys: string[]) => {
-      if (Object.keys(fileKeysMap.value).length === 0) {
+      if (keys.length === 0) {
+        fileList.value = [];
+        fileKeysMap.value = {};
+      } else if (Object.keys(fileKeysMap.value).length === 0) {
         keys.forEach((key) => {
           fileKeysMap.value[key] = key;
           fileList.value.push({

@@ -184,7 +184,9 @@ const useUserStore = defineStore('user', {
       }
     },
     destroySystemNotify() {
-      this.notify?.destroy();
+      if (typeof this.notify?.destroy === 'function') {
+        this.notify?.destroy();
+      }
     },
   },
 });
