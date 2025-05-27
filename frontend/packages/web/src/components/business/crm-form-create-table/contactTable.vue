@@ -343,11 +343,17 @@
   );
 
   onMounted(() => {
+    if (!props.sourceId) return;
     searchData();
   });
 
-  // eslint-disable-next-line vue/no-expose-after-await
-  defineExpose({
-    searchData,
-  });
+  watch(
+    () => props.searchType,
+    (val) => {
+      if (val) {
+        searchData();
+      }
+    },
+    { immediate: true }
+  );
 </script>

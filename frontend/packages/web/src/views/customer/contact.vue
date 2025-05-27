@@ -1,6 +1,6 @@
 <template>
   <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" @change="handleTabChange" />
+    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
   </CrmCard>
   <ContactTable
     ref="contactTableRef"
@@ -40,11 +40,4 @@
     },
   ];
   const { tabList, activeTab } = useHiddenTab(allTabList, FormDesignKeyEnum.CONTACT);
-
-  const contactTableRef = ref<InstanceType<typeof ContactTable>>();
-  function handleTabChange() {
-    nextTick(() => {
-      contactTableRef.value?.searchData();
-    });
-  }
 </script>
