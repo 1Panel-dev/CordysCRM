@@ -18,5 +18,5 @@ public class CustomerContactPageRequest extends BasePageRequest {
 
     @EnumValue(enumClass = BusinessSearchType.class)
     @Schema(description = "搜索类型(ALL/SELF/DEPARTMENT/VISIBLE)")
-    private String searchType ;
+    private String searchType;
 }
