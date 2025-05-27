@@ -131,6 +131,11 @@
       console.error(error);
       // Message.error(t('crm.upload.uploadFail'));
       clearInterval(timer as unknown as number);
+      // clear error file
+      const index = fileList.value.findIndex((item) => item.id === file.id);
+      if (index !== -1) {
+        fileList.value.splice(index, 1);
+      }
       onError();
     }
   }
