@@ -79,7 +79,7 @@
       color: var(--text-n2);
     }
     .crm-description-value {
-      @apply flex-1;
+      @apply flex-1 break-words break-all;
 
       font-size: 14px;
       color: var(--text-n1);
