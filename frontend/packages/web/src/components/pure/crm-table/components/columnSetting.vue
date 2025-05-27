@@ -13,7 +13,7 @@
         :size="16"
       />
     </template>
-    <n-scrollbar class="max-h-[416px] px-[12px] py-[4px]">
+    <n-scrollbar class="my-[8px] max-h-[416px] px-[12px]">
       <div class="mb-[4px] flex h-[24px] w-[175px] items-center justify-between text-[12px]">
         <div class="font-medium text-[var(--text-n1)]">
           {{ t('crmTable.columnSetting.tableHeaderDisplaySettings') }}
