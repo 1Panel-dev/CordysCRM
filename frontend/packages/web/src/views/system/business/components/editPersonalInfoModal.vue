@@ -74,37 +74,35 @@
     { deep: true }
   );
 
-  function validatePhoneLength(rule: FormItemRule, value: string): boolean {
+  function validatePhoneLength(rule: FormItemRule, value: string): boolean | Error {
     if (userStore.isAdmin) {
       return true;
     }
-    return validatePhone(value);
+    if (!value) {
+      return new Error(t('common.notNull', { value: `${t('common.phoneNumber')}` }));
+    }
+    if (!validatePhone(value)) {
+      return new Error(t('common.userPhoneErrTip'));
+    }
+    return true;
   }
 
-  function validateEmailStyle(rule: FormItemRule, value: string): boolean {
+  function validateEmailStyle(rule: FormItemRule, value: string): boolean | Error {
     if (userStore.isAdmin) {
       return true;
     }
-    return validateEmail(value);
+    if (!value) {
+      return new Error(t('common.notNull', { value: `${t('org.userEmail')}` }));
+    }
+    if (!validateEmail(value)) {
+      return new Error(t('common.emailErrTip'));
+    }
+    return true;
   }
 
   const rules: FormRules = {
-    phone: [
-      { required: true, message: t('common.notNull', { value: `${t('system.personal.phone')} ` }) },
-      {
-        validator: validatePhoneLength,
-        message: t('system.personal.phone.length'),
-        trigger: 'input',
-      },
-    ],
-    email: [
-      { required: true, message: t('common.notNull', { value: `${t('system.personal.email')} ` }) },
-      {
-        validator: validateEmailStyle,
-        message: t('system.personal.email.style'),
-        trigger: 'input',
-      },
-    ],
+    phone: [{ required: true, validator: validatePhoneLength, trigger: ['input', 'blur'] }],
+    email: [{ required: true, validator: validateEmailStyle, trigger: ['input', 'blur'] }],
   };
 
   const formRef = ref<FormInst | null>(null);

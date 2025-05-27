@@ -69,7 +69,7 @@ public class AnnouncementService {
     public void add(AnnouncementRequest request, String userId) {
         Set<String> userSet = new HashSet<>();
         AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = new AnnouncementReceiveTypeDTO();
-        dealReceverIds(request, userSet, announcementReceiveTypeDTO);
+        dealReceiverIds(request, userSet, announcementReceiveTypeDTO);
         List<String> userIds = new ArrayList<>(userSet);
 
         Announcement announcement = new Announcement();
@@ -144,7 +144,7 @@ public class AnnouncementService {
         }
         AnnouncementReceiveTypeDTO announcementReceiveTypeDTO = new AnnouncementReceiveTypeDTO();
         Set<String> userSet = new HashSet<>();
-        dealReceverIds(request, userSet, announcementReceiveTypeDTO);
+        dealReceiverIds(request, userSet, announcementReceiveTypeDTO);
         List<String> userIds = new ArrayList<>(userSet);
         Announcement announcement = BeanUtils.copyBean(new Announcement(), request);
         announcement.setSubject(request.getSubject());
@@ -187,7 +187,7 @@ public class AnnouncementService {
         );
     }
 
-    private void dealReceverIds(AnnouncementRequest request, Set<String> userSet, AnnouncementReceiveTypeDTO announcementReceiveTypeDTO) {
+    private void dealReceiverIds(AnnouncementRequest request, Set<String> userSet, AnnouncementReceiveTypeDTO announcementReceiveTypeDTO) {
         if (CollectionUtils.isNotEmpty(request.getDeptIds())) {
             List<String> depIds = extDepartmentMapper.selectChildrenByIds(request.getDeptIds());
             if (CollectionUtils.isNotEmpty(depIds)){
