@@ -236,7 +236,7 @@ public class PoolClueService {
 		List<Clue> clues = clueMapper.selectListByLambda(customerWrapper);
 		int ownCount = clues.size();
 		if (capacity != null && capacity - ownCount < processCount) {
-			throw new GenericException(Translator.get("customer.capacity.over"));
+			throw new GenericException(Translator.getWithArgs("customer.capacity.over", capacity - ownCount));
 		}
 	}
 

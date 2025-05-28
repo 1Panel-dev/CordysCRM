@@ -245,7 +245,7 @@ public class PoolCustomerService {
 		List<Customer> customers = customerMapper.selectListByLambda(customerWrapper);
 		int ownCount = customers.size();
 		if (capacity != null && capacity - ownCount < processCount) {
-			throw new GenericException(Translator.get("customer.capacity.over"));
+			throw new GenericException(Translator.getWithArgs("customer.capacity.over", capacity - ownCount));
 		}
 	}
 
