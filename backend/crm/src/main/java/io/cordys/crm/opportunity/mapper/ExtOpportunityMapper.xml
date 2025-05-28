@@ -11,6 +11,7 @@
             c.id AS customerId,
             c.NAME AS customerName,
             c.in_shared_pool AS in_customer_pool,
+            c.pool_id,
             o.create_time,
             o.update_time,
             o.create_user,
