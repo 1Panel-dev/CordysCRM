@@ -160,7 +160,7 @@ public class CustomerPoolService {
 		OperationLogContext.setContext(LogContextInfo.builder()
 				.modifiedValue(pool)
 				.resourceId(pool.getId())
-				.resourceName(Translator.get("module.customer.pool.setting") + ": " + pool.getName())
+				.resourceName(Translator.get("module.customer.pool.setting"))
 				.build());
 	}
 
@@ -200,7 +200,7 @@ public class CustomerPoolService {
 
 		OperationLogContext.setContext(
 				LogContextInfo.builder()
-						.resourceName(Translator.get("module.customer.pool.setting") + ": " + originCustomerPool.getName())
+						.resourceName(Translator.get("module.customer.pool.setting"))
 						.originalValue(originCustomerPool)
 						.modifiedValue(customerPoolMapper.selectByPrimaryKey(request.getId()))
 						.build()
@@ -225,7 +225,7 @@ public class CustomerPoolService {
 	 */
 	@OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
 	public void delete(String id) {
-		CustomerPool originCustomerPool = checkPoolExist(id);
+		checkPoolExist(id);
 		customerPoolMapper.deleteByPrimaryKey(id);
 		CustomerPoolPickRule pickRule = new CustomerPoolPickRule();
 		pickRule.setPoolId(id);
@@ -235,7 +235,7 @@ public class CustomerPoolService {
 		customerPoolRecycleRuleMapper.delete(recycleRule);
 
 		// 设置操作对象
-		OperationLogContext.setResourceName(Translator.get("module.customer.pool.setting") + ": " + originCustomerPool.getName());
+		OperationLogContext.setResourceName(Translator.get("module.customer.pool.setting"));
 	}
 
 	/**
@@ -252,7 +252,7 @@ public class CustomerPoolService {
 
 		OperationLogContext.setContext(
 				LogContextInfo.builder()
-						.resourceName(Translator.get("module.customer.pool.setting") + ": " + pool.getName())
+						.resourceName(Translator.get("module.customer.pool.setting"))
 						.originalValue(pool)
 						.modifiedValue(customerPoolMapper.selectByPrimaryKey(id))
 						.build()

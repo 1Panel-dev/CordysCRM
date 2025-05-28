@@ -168,7 +168,7 @@ public class CluePoolService {
         OperationLogContext.setContext(LogContextInfo.builder()
                 .modifiedValue(pool)
                 .resourceId(pool.getId())
-                .resourceName(Translator.get("module.clue.pool.setting") + ": " + pool.getName())
+                .resourceName(Translator.get("module.clue.pool.setting"))
                 .build());
     }
 
@@ -215,7 +215,7 @@ public class CluePoolService {
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceId(pool.getId())
-                        .resourceName(Translator.get("module.clue.pool.setting") + ": " + originPool.getName())
+                        .resourceName(Translator.get("module.clue.pool.setting"))
                         .originalValue(originPool)
                         .modifiedValue(cluePoolMapper.selectByPrimaryKey(request.getId()))
                         .build()
@@ -242,7 +242,7 @@ public class CluePoolService {
      */
     @OperationLog(module = LogModule.SYSTEM_MODULE, type = LogType.DELETE, resourceId = "{#id}")
     public void delete(String id) {
-        CluePool originPool = checkPoolExist(id);
+        checkPoolExist(id);
         cluePoolMapper.deleteByPrimaryKey(id);
         CluePoolPickRule pickRule = new CluePoolPickRule();
         pickRule.setPoolId(id);
@@ -251,7 +251,7 @@ public class CluePoolService {
         recycleRule.setPoolId(id);
         cluePoolRecycleRuleMapper.delete(recycleRule);
         // 设置操作对象
-        OperationLogContext.setResourceName(Translator.get("module.clue.pool.setting") + ": " + originPool.getName());
+        OperationLogContext.setResourceName(Translator.get("module.clue.pool.setting"));
     }
 
     /**
@@ -271,7 +271,7 @@ public class CluePoolService {
 
         OperationLogContext.setContext(
                 LogContextInfo.builder()
-                        .resourceName(Translator.get("module.clue.pool.setting") + ": " + pool.getName())
+                        .resourceName(Translator.get("module.clue.pool.setting"))
                         .originalValue(pool)
                         .modifiedValue(cluePoolMapper.selectByPrimaryKey(id))
                         .build()
