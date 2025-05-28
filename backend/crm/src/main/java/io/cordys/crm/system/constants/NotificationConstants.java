@@ -35,7 +35,7 @@ public class NotificationConstants {
     public interface Event {
         // -----客户管理----
         //新建客户
-        @Schema(description = "message.message.customer_add")
+        @Schema(description = "message.customer_add")
         String  CUSTOMER_ADD="CUSTOMER_ADD";
        //被转移客户
        @Schema(description = "message.customer_transferred_customer")
