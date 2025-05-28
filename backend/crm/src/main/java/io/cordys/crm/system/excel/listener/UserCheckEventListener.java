@@ -15,8 +15,8 @@ import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.OrganizationUserService;
 import io.cordys.excel.domain.ExcelErrData;
 import io.cordys.excel.utils.ExcelValidateHelper;
-import lombok.Data;
 import lombok.Getter;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
@@ -137,6 +137,7 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
 
     /**
      * 校验字段长度
+     *
      * @param data
      * @param errMsg
      */
@@ -192,6 +193,16 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
             errMsg.append(Translator.get("email.exist"))
                     .append(ERROR_MSG_SEPARATOR);
         }
+
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (UserExcelData userExcelData : list) {
+                if (StringUtils.equalsIgnoreCase(userExcelData.getEmail(), data.getEmail())) {
+                    errMsg.append(Translator.get("email.repeat") + data.getEmail())
+                            .append(ERROR_MSG_SEPARATOR);
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -213,6 +224,16 @@ public class UserCheckEventListener extends AnalysisEventListener<Map<Integer, S
         if (!data.getPhone().matches(PHONE_REGEX)) {
             errMsg.append(Translator.get("import_phone_validate"))
                     .append(ERROR_MSG_SEPARATOR);
+        }
+
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (UserExcelData userExcelData : list) {
+                if (StringUtils.equalsIgnoreCase(userExcelData.getPhone(), data.getPhone())) {
+                    errMsg.append(Translator.get("phone.repeat") + data.getPhone())
+                            .append(ERROR_MSG_SEPARATOR);
+                    break;
+                }
+            }
         }
     }
 

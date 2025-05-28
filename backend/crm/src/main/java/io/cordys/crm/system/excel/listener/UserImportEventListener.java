@@ -201,6 +201,7 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
 
     /**
      * 校验字段长度
+     *
      * @param data
      * @param errMsg
      */
@@ -258,6 +259,16 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
             errMsg.append(Translator.get("email.exist"))
                     .append(ERROR_MSG_SEPARATOR);
         }
+
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (UserExcelData userExcelData : list) {
+                if (StringUtils.equalsIgnoreCase(userExcelData.getEmail(), data.getEmail())) {
+                    errMsg.append(Translator.get("email.repeat") + data.getEmail())
+                            .append(ERROR_MSG_SEPARATOR);
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -279,6 +290,16 @@ public class UserImportEventListener extends AnalysisEventListener<Map<Integer, 
         if (!data.getPhone().matches(PHONE_REGEX)) {
             errMsg.append(Translator.get("import_phone_validate"))
                     .append(ERROR_MSG_SEPARATOR);
+        }
+
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (UserExcelData userExcelData : list) {
+                if (StringUtils.equalsIgnoreCase(userExcelData.getPhone(), data.getPhone())) {
+                    errMsg.append(Translator.get("phone.repeat") + data.getPhone())
+                            .append(ERROR_MSG_SEPARATOR);
+                    break;
+                }
+            }
         }
     }
 
