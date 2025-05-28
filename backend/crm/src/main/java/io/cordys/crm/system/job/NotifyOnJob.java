@@ -4,12 +4,10 @@ import com.fit2cloud.quartz.anno.QuartzScheduled;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.crm.system.dto.response.AnnouncementDTO;
-import io.cordys.crm.system.job.listener.ExecuteEvent;
 import io.cordys.crm.system.mapper.ExtAnnouncementMapper;
 import io.cordys.crm.system.service.AnnouncementService;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +28,7 @@ public class NotifyOnJob {
     private static final String ANNOUNCE_PREFIX = "announce_content:";  // Redis 存储信息前缀
 
     @QuartzScheduled(cron = "0 0/5 * * * ?")
-    public void onApplicationEvent(@NotNull ExecuteEvent event) {
+    public void onEvent() {
         try {
             this.addNotification();
         } catch (Exception e) {
