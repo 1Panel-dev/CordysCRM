@@ -1,5 +1,5 @@
 <template>
-  <CrmModal v-model:show="showModal" size="small" :title="t('common.update')" @cancel="cancel">
+  <CrmModal v-model:show="showModal" class="crm-form-modal" size="small" :title="t('common.update')" @cancel="cancel">
     <n-form
       ref="formRef"
       :model="form"

@@ -1,4 +1,4 @@
-import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
 import type { FilterFormItem } from '@/components/pure/crm-advance-filter/type';

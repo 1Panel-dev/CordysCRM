@@ -628,6 +628,7 @@
             }
             .n-tree-node-content__suffix {
               .crm-tree-node-extra {
+                margin-left: 8px;
                 @apply visible w-auto;
               }
             }

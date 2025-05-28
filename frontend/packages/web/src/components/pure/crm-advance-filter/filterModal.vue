@@ -1,12 +1,13 @@
 <template>
   <CrmModal v-model:show="visible" size="large" :title="t('advanceFilter.advancedFilter')">
-    <FilterContent
-      ref="filterContentRef"
-      v-model:form-model="formModel"
-      :config-list="props.configList"
-      :custom-list="props.customList"
-    />
-
+    <n-scrollbar class="max-h-[60vh]">
+      <FilterContent
+        ref="filterContentRef"
+        v-model:form-model="formModel"
+        :config-list="props.configList"
+        :custom-list="props.customList"
+      />
+    </n-scrollbar>
     <template #footer>
       <div class="mb-[22px] flex items-center gap-[12px]">
         <n-button type="default" class="outline--secondary" @click="handleReset">
@@ -21,7 +22,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { NButton } from 'naive-ui';
+  import { NButton, NScrollbar } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';

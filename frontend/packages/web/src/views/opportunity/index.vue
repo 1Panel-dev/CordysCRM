@@ -38,7 +38,7 @@
         <CrmAdvanceFilter
           ref="msAdvanceFilterRef"
           v-model:keyword="keyword"
-          :placeholder="t('opportunity.searchPlaceholder')"
+          :search-placeholder="t('opportunity.searchPlaceholder')"
           :custom-fields-config-list="filterConfigList"
           :filter-config-list="customFieldsFilterConfig"
           @adv-search="handleAdvSearch"

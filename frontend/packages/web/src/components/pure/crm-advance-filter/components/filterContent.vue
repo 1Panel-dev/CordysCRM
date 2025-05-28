@@ -63,6 +63,14 @@
               class="w-full"
               @update:value="valueChange"
             />
+            <CrmTagInput
+              v-else-if="item.type === FieldTypeEnum.INPUT_MULTIPLE"
+              v-model:value="item.value"
+              clearable
+              :disabled="isValueDisabled(item)"
+              class="w-full"
+              @update:value="valueChange"
+            />
 
             <n-select
               v-else-if="
@@ -89,6 +97,7 @@
               :disabled="isValueDisabled(item)"
               clearable
               multiple
+              check-strategy="parent"
               @update:value="valueChange"
             />
             <CrmUserTagSelector
@@ -225,6 +234,7 @@
 
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
+  import CrmTagInput from '@/components/pure/crm-tag-input/index.vue';
   import CrmCitySelect from '@/components/business/crm-city-select/index.vue';
   import CrmTimeRangePicker from '@/components/business/crm-time-range-picker/index.vue';
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
@@ -275,24 +285,17 @@
 
   // 第一列下拉数据
   const currentOptions = computed(() => {
+    const allOptions = [...props.configList, ...(props.customList || [])];
+    const formItems = formModel.value.list;
+
     return (currentDataIndex: string) => {
-      const otherDataIndices = formModel.value.list
-        .filter(({ dataIndex }) => dataIndex !== currentDataIndex)
-        .map(({ dataIndex }) => dataIndex);
+      const usedDataIndices = new Set(
+        formItems.filter((item) => item.dataIndex !== currentDataIndex).map((item) => item.dataIndex)
+      );
 
-      const excludeUsedOptions = (options: FilterFormItem[]) => {
-        return options
-          .filter(({ dataIndex }) => !otherDataIndices.includes(dataIndex))
-          .map((item) => ({
-            ...item,
-            label: t(item.title ?? ''),
-          }));
-      };
-
-      const configOptions = excludeUsedOptions(props.configList);
-      const customOptions = excludeUsedOptions(props.customList || []);
-
-      return [...configOptions, ...customOptions];
+      return allOptions
+        .filter(({ dataIndex }) => !usedDataIndices.has(dataIndex))
+        .map((item) => ({ ...item, label: t(item.title as string) }));
     };
   });
 

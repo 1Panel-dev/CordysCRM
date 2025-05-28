@@ -4,6 +4,7 @@
     size="small"
     :title="t('org.setDepartmentHead')"
     :ok-loading="loading"
+    class="crm-form-modal"
     @confirm="confirmHandler"
     @cancel="closeHandler"
   >

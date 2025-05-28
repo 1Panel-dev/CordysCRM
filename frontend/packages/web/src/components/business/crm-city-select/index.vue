@@ -6,7 +6,7 @@
     v-bind="{
       filterable: true,
       showPath: true,
-      checkStrategy: 'child',
+      checkStrategy: props.checkStrategy || 'child',
       ...$attrs,
     }"
     max-tag-count="responsive"
@@ -25,6 +25,7 @@
 
   const props = defineProps<{
     placeholder?: string;
+    checkStrategy?: 'all' | 'child' | 'parent';
   }>();
 
   const emit = defineEmits<{

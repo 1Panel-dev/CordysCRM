@@ -2,7 +2,7 @@
   <CrmModal
     v-model:show="showModal"
     :title="t('system.business.syncFrom', { title: props.title })"
-    class="sync-from-modal"
+    class="crm-form-modal"
   >
     <n-form
       ref="formRef"
@@ -170,14 +170,4 @@
   }
 </script>
 
-<style lang="less">
-  .sync-from-modal {
-    .n-dialog__content {
-      margin-bottom: 0;
-    }
-    .n-form-item-feedback-wrapper {
-      height: 16px;
-      min-height: 16px;
-    }
-  }
-</style>
+<style lang="less"></style>

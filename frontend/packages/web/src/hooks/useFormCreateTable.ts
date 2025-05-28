@@ -529,7 +529,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           if (field.type === FieldTypeEnum.INPUT_NUMBER) {
             return {
               title: field.name,
-              width: 100,
+              width: 150,
               key: field.businessKey || field.id,
               render: (row: any) => formatNumberValue(row[field.businessKey || field.id], field),
               sortOrder: false,
