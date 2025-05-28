@@ -98,7 +98,15 @@
     });
   }
 
+  function adjustOSTheme() {
+    const isMac = navigator.platform.toUpperCase().includes('MAC');
+    if (!isMac) {
+      document.documentElement.style.setProperty('--text-n9', 'var(--text-n8)');
+    }
+  }
+
   onMounted(() => {
+    adjustOSTheme();
     window.onerror = (_message) => {
       if (typeof _message === 'string' && _message.includes('Failed to fetch dynamically imported')) {
         showUpdateMessage();
