@@ -80,6 +80,7 @@
                 ...item.dataSourceProps,
                 dataSourceType:item?.dataSourceProps?.dataSourceType as FieldDataSourceTypeEnum,
               }"
+              :disabled="isValueDisabled(item)"
               @change="valueChange"
             />
             <n-select

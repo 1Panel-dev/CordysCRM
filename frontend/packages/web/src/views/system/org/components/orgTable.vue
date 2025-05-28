@@ -483,11 +483,13 @@
   const columns: CrmDataTableColumn[] = [
     {
       type: 'selection',
+      fixed: 'left',
     },
     {
       title: t('org.userName'),
       key: 'userName',
       width: 200,
+      fixed: 'left',
       sortOrder: false,
       sorter: true,
       columnSelectorDisabled: true,

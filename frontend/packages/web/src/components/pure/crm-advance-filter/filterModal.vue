@@ -56,9 +56,11 @@
   const formModel = ref<FilterForm>(cloneDeep(defaultFormModel));
 
   const savedFormModel = ref(cloneDeep(formModel.value));
+  const filterContentRef = ref<InstanceType<typeof FilterContent>>();
 
   // 重置
   function handleReset() {
+    filterContentRef.value?.formRef?.restoreValidation();
     formModel.value = JSON.parse(JSON.stringify(savedFormModel.value));
   }
 
@@ -77,8 +79,6 @@
   }
 
   // 过滤
-  const filterContentRef = ref<InstanceType<typeof FilterContent>>();
-
   function handleFilter() {
     filterContentRef.value?.formRef?.validate((errors) => {
       if (!errors) {
