@@ -10,7 +10,7 @@
             AND ( sys_notification.subject LIKE CONCAT('%', #{request.subject},'%') OR sys_notification.content LIKE CONCAT('%', #{request.subject},'%') )
         </if>
         <if test='request.keyword != null and request.keyword != ""'>
-            AND ( sys_notification.subject LIKE  CONCAT('%', #{request.keyword},'%')  OR sys_notification.resource_name LIKE  CONCAT('%', #{request.keyword},'%')  )
+            AND ( (sys_notification.subject LIKE  CONCAT('%', #{request.keyword},'%') and sys_notification.type = 'ANNOUNCEMENT_NOTICE') OR (sys_notification.resource_name LIKE  CONCAT('%', #{request.keyword},'%') and sys_notification.type = 'SYSTEM_NOTICE'))
         </if>
         <if test='request.type != null and request.type != ""'>
             AND sys_notification.type = #{request.type}

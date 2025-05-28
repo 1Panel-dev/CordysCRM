@@ -55,6 +55,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static io.cordys.security.SessionUtils.kickOutUser;
+
 @Service
 public class PersonalCenterService {
 
@@ -181,7 +183,7 @@ public class PersonalCenterService {
             // 更新用户密码
             extUserMapper.updateUserPassword(CodingUtils.md5(password), operatorId);
             // 登出当前用户
-            SecurityUtils.getSubject().logout();
+            kickOutUser(operatorId, operatorId);
         } catch (Exception e) {
             // 记录异常并重新抛出
             throw new GenericException(Translator.get("password_reset_failed"), e);

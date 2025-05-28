@@ -165,7 +165,11 @@ public class AnnouncementService {
             String announcementId = announcement.getId();
             deleteAnnouncementKeyById(announcementId, organizationId);
             notificationMapper.deleteByResourceId(announcementId);
-            convertNotification(userId, announcement, userIds);
+            //根据有效时间判断是否生成notification
+            if (request.getStartTime() <= System.currentTimeMillis() && request.getEndTime() >= System.currentTimeMillis()) {
+                //如果公告的有效时间在当前时间内，则生成通知
+                convertNotification(userId, announcement, userIds);
+            }
         }
         // 添加日志上下文
         AnnouncementLogDTO oldLogDTO = getOldLogDTO(originalAnnouncement);
