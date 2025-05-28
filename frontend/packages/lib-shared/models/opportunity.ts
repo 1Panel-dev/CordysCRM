@@ -16,6 +16,8 @@ export interface OpportunityItem {
   reservedDays: number; // 归属天数
   stage: string;
   lastStage: string;
+  inCustomerPool: boolean;
+  poolId?: string | number;
   moduleFields: ModuleField[]; // 自定义字段
 }
 

@@ -64,6 +64,12 @@
       @saved="searchData"
     />
     <customerOverviewDrawer v-model:show="showCustomerOverviewDrawer" :source-id="activeSourceId" />
+    <openSeaOverviewDrawer
+      v-model:show="showOpenSeaOverviewDrawer"
+      :pool-id="openSea"
+      :source-id="activeSourceId"
+      @change="searchData"
+    />
   </CrmCard>
 </template>
 
@@ -95,6 +101,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import OptOverviewDrawer from './components/optOverviewDrawer.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
+  import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
   import { batchDeleteOpt, deleteOpt, getFieldDeptTree, transferOpt } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
@@ -357,6 +364,8 @@
   }
 
   const showCustomerOverviewDrawer = ref(false);
+  const showOpenSeaOverviewDrawer = ref(false);
+  const openSea = ref<string | number>('');
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.BUSINESS,
@@ -412,7 +421,12 @@
           {
             onClick: () => {
               activeSourceId.value = row.customerId;
-              showCustomerOverviewDrawer.value = true;
+              if (row.inCustomerPool) {
+                openSea.value = row.poolId ?? '';
+                showOpenSeaOverviewDrawer.value = true;
+              } else {
+                showCustomerOverviewDrawer.value = true;
+              }
             },
           },
           { default: () => row.customerName, trigger: () => row.customerName }
@@ -483,7 +497,9 @@
 
   function searchByKeyword(val: string) {
     keyword.value = val;
-    searchData();
+    nextTick(() => {
+      searchData();
+    });
   }
 
   watch(

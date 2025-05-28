@@ -279,6 +279,7 @@
         FieldTypeEnum.DEPARTMENT_MULTIPLE,
         FieldTypeEnum.MEMBER_MULTIPLE,
         FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+        FieldTypeEnum.DATA_SOURCE,
       ].includes(listItem.type) ||
       listItem.selectProps?.multiple ||
       listItem.cascaderProps?.multiple ||
