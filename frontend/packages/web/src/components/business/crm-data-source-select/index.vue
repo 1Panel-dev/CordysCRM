@@ -9,6 +9,7 @@
     :show-arrow="false"
     :show="false"
     :disabled="props.disabled"
+    :max-tag-count="props.maxTagCount"
     @click="showDataSourcesModal"
   />
   <CrmModal
@@ -44,17 +45,17 @@
 
   import { InternalRowData, RowData, RowKey } from 'naive-ui/es/data-table/src/interface';
 
-  const props = withDefaults(
-    defineProps<{
-      dataSourceType: FieldDataSourceTypeEnum;
-      multiple?: boolean;
-      disabled?: boolean;
-      disabledSelection?: (row: RowData) => boolean;
-    }>(),
-    {
-      multiple: true,
-    }
-  );
+  export interface DataSourceProps {
+    dataSourceType: FieldDataSourceTypeEnum;
+    multiple?: boolean;
+    disabled?: boolean;
+    disabledSelection?: (row: RowData) => boolean;
+    maxTagCount?: number | 'responsive';
+  }
+
+  const props = withDefaults(defineProps<DataSourceProps>(), {
+    multiple: true,
+  });
   const emit = defineEmits<{
     (e: 'change', value: (string | number)[]): void;
   }>();

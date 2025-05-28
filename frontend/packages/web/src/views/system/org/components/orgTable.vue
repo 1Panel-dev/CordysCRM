@@ -65,7 +65,12 @@
       @edit="addOrEditMember"
       @cancel="cancelHandler"
     />
-    <batchEditModal v-model:show="showEditModal" :user-ids="checkedRowKeys" @load-list="handleLoadList" />
+    <batchEditModal
+      v-model:show="showEditModal"
+      :is-sync-from-third-checked="props.isSyncFromThirdChecked"
+      :user-ids="checkedRowKeys"
+      @load-list="handleLoadList"
+    />
     <!-- 导入开始 -->
     <!-- 导入弹窗 -->
     <ImportModal v-model:show="importModal" :confirm-loading="validateLoading" @validate="validateTemplate" />

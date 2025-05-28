@@ -125,6 +125,7 @@
 
   const props = defineProps<{
     userIds: DataTableRowKey[];
+    isSyncFromThirdChecked: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -148,20 +149,26 @@
     headers: SelectedUsersItem[];
   }>(cloneDeep(initForm));
 
-  const attributesOptions = ref<SelectOption[]>([
-    {
-      value: 'departmentId',
-      label: t('org.department'),
-    },
-    {
-      value: 'supervisorId',
-      label: t('org.directSuperior'),
-    },
-    {
-      value: 'workCity',
-      label: t('org.workingCity'),
-    },
-  ]);
+  const attributesOptions = computed<SelectOption[]>(() => {
+    return [
+      ...(props.isSyncFromThirdChecked
+        ? []
+        : [
+            {
+              value: 'departmentId',
+              label: t('org.department'),
+            },
+          ]),
+      {
+        value: 'supervisorId',
+        label: t('org.directSuperior'),
+      },
+      {
+        value: 'workCity',
+        label: t('org.workingCity'),
+      },
+    ];
+  });
 
   const valueOptions = ref([]);
 

@@ -9,11 +9,23 @@ export default function useFormCreateFilter() {
   // 获取配置属性
   function getFilterListConfig(res: FormDesignConfigDetailParams) {
     const getConfigProps = (field: FormCreateField) => {
-      if ([FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(field.type)) {
+      if (
+        [FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE, FieldTypeEnum.RADIO, FieldTypeEnum.CHECKBOX].includes(
+          field.type
+        )
+      ) {
         return {
           selectProps: {
             options: field.options,
             multiple: true,
+          },
+        };
+      }
+      if ([FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(field.type)) {
+        return {
+          dataSourceProps: {
+            dataSourceType: field.dataSourceType,
+            maxTagCount: 'responsive',
           },
         };
       }
@@ -27,7 +39,7 @@ export default function useFormCreateFilter() {
           dataIndex: field.businessKey ?? field.id,
           type: field.type,
           ...getConfigProps(field),
-        });
+        } as FilterFormItem);
       }
       return acc;
     }, []);

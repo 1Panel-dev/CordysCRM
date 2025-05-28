@@ -72,6 +72,16 @@
               @update:value="valueChange"
             />
 
+            <CrmDataSource
+              v-else-if="[FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(item.type)"
+              v-model:value="item.value"
+              v-model:rows="item.selectedRows"
+              v-bind="{
+                ...item.dataSourceProps,
+                dataSourceType:item?.dataSourceProps?.dataSourceType as FieldDataSourceTypeEnum,
+              }"
+              @change="valueChange"
+            />
             <n-select
               v-else-if="
                 [
@@ -110,6 +120,7 @@
                 ].includes(item.type)
               "
               v-model:value="item.value"
+              v-model:selected-list="item.selectedUserList"
               multiple
               :drawer-title="t('crmFormDesign.selectDataSource')"
               :api-type-key="MemberApiTypeEnum.FORM_FIELD"
@@ -226,7 +237,7 @@
   import { Add } from '@vicons/ionicons5';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldDataSourceTypeEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -236,6 +247,7 @@
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTagInput from '@/components/pure/crm-tag-input/index.vue';
   import CrmCitySelect from '@/components/business/crm-city-select/index.vue';
+  import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import CrmTimeRangePicker from '@/components/business/crm-time-range-picker/index.vue';
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';

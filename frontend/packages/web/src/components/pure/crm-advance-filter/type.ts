@@ -2,8 +2,12 @@ import { CascaderProps, FormItemRule, InputNumberProps, InputProps, SelectProps,
 
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
+import type { DataSourceProps } from '@/components/business/crm-data-source-select/index.vue';
 import { UserTagSelectorProps } from '@/components/business/crm-user-tag-selector/index.vue';
+
+import { InternalRowData } from 'naive-ui/es/data-table/src/interface';
 
 export interface ScopeProps {
   disabled: boolean;
@@ -20,6 +24,8 @@ export interface FilterFormItem {
   showScope?: boolean;
   scope?: string[];
   value?: any; // 第三列的值
+  selectedRows?: InternalRowData[];
+  selectedUserList?: SelectedUsersItem[];
   inputProps?: Partial<InputProps>;
   numberProps?: Partial<InputNumberProps>;
   selectProps?: Partial<SelectProps>;
@@ -27,6 +33,7 @@ export interface FilterFormItem {
   userTagSelectorProps?: Partial<UserTagSelectorProps>;
   cascaderProps?: Partial<CascaderProps>;
   scopeProps?: Partial<ScopeProps>;
+  dataSourceProps?: Partial<DataSourceProps>; // 数据源
   rule?: FormItemRule[];
 }
 

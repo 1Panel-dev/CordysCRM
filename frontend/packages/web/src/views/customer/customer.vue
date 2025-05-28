@@ -428,11 +428,6 @@
 
   const filterConfigList = computed<FilterFormItem[]>(() => [
     {
-      title: t('common.head'),
-      dataIndex: 'owner',
-      type: FieldTypeEnum.USER_SELECT,
-    },
-    {
       title: t('opportunity.department'),
       dataIndex: 'departmentId',
       type: FieldTypeEnum.TREE_SELECT,
