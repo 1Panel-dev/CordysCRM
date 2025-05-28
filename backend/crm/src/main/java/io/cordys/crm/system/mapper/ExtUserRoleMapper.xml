@@ -76,6 +76,9 @@
                     <when test="${sort}.name == 'enable'">
                         sou.`enable` ${sortType}
                     </when>
+                    <when test="${sort}.name == 'user_name'">
+                        su.`name` ${sortType}
+                    </when>
                     <otherwise>
                         sur.create_time ${sortType}
                     </otherwise>
