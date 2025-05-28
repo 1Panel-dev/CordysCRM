@@ -149,6 +149,38 @@
         </trim>
     </sql>
 
+
+
+    <sql id="dataSourceCondition">
+        <trim prefix="(" suffix=")">
+            <choose>
+                <when test="${condition}.operator == 'IN'">
+                    ${column} in (
+                    <foreach collection="${condition}.value" item="valueItem" separator=",">
+                        #{valueItem}
+                    </foreach>)
+                </when>
+
+                <when test="${condition}.operator == 'NOT_IN'">
+                    ${column} NOT IN (
+                    <foreach collection="${condition}.value" item="valueItem" separator=",">
+                        #{valueItem}
+                    </foreach>)
+                </when>
+
+                <!-- EMPTY / NOT_EMPTY -->
+                <when test="${condition}.operator == 'EMPTY'">
+                    (${column} IS NULL OR ${column} = '')
+                </when>
+
+                <when test="${condition}.operator == 'NOT_EMPTY'">
+                    (${column} IS NOT NULL AND ${column} != '')
+                </when>
+
+            </choose>
+        </trim>
+    </sql>
+
     <sql id="searchMode">
         <choose>
             <when test="${searchMode} == 'AND'">

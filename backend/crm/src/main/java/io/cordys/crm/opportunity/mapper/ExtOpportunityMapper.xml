@@ -220,9 +220,9 @@
                 </include>
             </when>
             <when test="condition.name == 'customerId'">
-                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                <include refid="io.cordys.common.mapper.CommonMapper.dataSourceCondition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="c.name"/>
+                    <property name="column" value="c.id"/>
                 </include>
             </when>
             <when test="condition.name == 'stage'">
