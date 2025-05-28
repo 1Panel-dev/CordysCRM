@@ -405,14 +405,27 @@
     if (isValueDisabled(item)) {
       return undefined;
     }
-    return (
-      item.rule ?? [
+    if (item.rule) return item.rule;
+    if (item.type === FieldTypeEnum.TIME_RANGE_PICKER) {
+      return [
         {
-          required: true,
-          message: t('common.value.notNull'),
+          validator: (rule: any, value: string) => {
+            if (!value) return new Error(t('common.value.notNull'));
+            if (item.operator === OperatorEnum.DYNAMICS) {
+              // 动态模式需要校验数字部分
+              const [num] = value.split(',');
+              return !!Number(num) || new Error(t('common.value.notNull'));
+            }
+          },
         },
-      ]
-    );
+      ];
+    }
+    return [
+      {
+        required: true,
+        message: t('common.value.notNull'),
+      },
+    ];
   }
 
   function validateForm(cb: (res?: Record<string, any>) => void) {

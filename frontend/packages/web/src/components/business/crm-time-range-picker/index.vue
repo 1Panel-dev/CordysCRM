@@ -50,7 +50,10 @@
   watch(
     () => modelValue.value,
     (val) => {
-      const parts = val.split(',');
+      let parts: any[] = [];
+      if (val) {
+        parts = val.split(',');
+      }
       if (!isFixed.value) {
         if (val) {
           if (!Number(parts[1])) {
