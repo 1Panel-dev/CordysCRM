@@ -68,26 +68,33 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
    * @param form 表单数据
    */
   function formDescriptionShowControlRulesSet(form: Record<string, any>) {
-    fieldList.value.forEach((item) => {
-      item.showControlRules?.forEach((rule) => {
-        fieldList.value.forEach((e) => {
-          // 若配置了该值的显示规则，且该字段在显示规则中，则显示
-          let value = '';
-          if (item.businessKey) {
-            value = form[item.businessKey];
-          } else {
-            const field = form.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
-            value = field?.fieldValue || '';
+    for (let ri = 0; ri < fieldList.value.length; ri++) {
+      const item = fieldList.value[ri];
+      if (item.showControlRules) {
+        for (let i = 0; i < item.showControlRules.length; i++) {
+          const rule = item.showControlRules[i];
+          for (let j = 0; j < fieldList.value.length; j++) {
+            const e = fieldList.value[j];
+            // 若配置了该值的显示规则，且该字段在显示规则中，则显示
+            let value = '';
+            if (item.businessKey) {
+              value = form[item.businessKey];
+            } else {
+              const field = form.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
+              value = field?.fieldValue || '';
+            }
+            if (rule.value === value && rule.fieldIds.includes(e.id)) {
+              e.show = true;
+              break;
+            } else if (rule.fieldIds.includes(e.id)) {
+              // 若该字段在显示规则中，但值不符合，则隐藏该字段
+              e.show = false;
+              break;
+            }
           }
-          if (rule.value === value && rule.fieldIds.includes(e.id)) {
-            e.show = true;
-          } else if (rule.fieldIds.includes(e.id)) {
-            // 若该字段在显示规则中，但值不符合，则隐藏该字段
-            e.show = false;
-          }
-        });
-      });
-    });
+        }
+      }
+    }
   }
 
   async function initFormDescription() {

@@ -158,17 +158,22 @@
   function handleFieldChange(value: any, item: FormCreateField) {
     // 控制显示规则
     if (item.showControlRules?.length) {
-      item.showControlRules.forEach((rule) => {
-        fieldList.value.forEach((e) => {
+      for (let i = 0; i < item.showControlRules.length; i++) {
+        const rule = item.showControlRules[i];
+        for (let j = 0; j < fieldList.value.length; j++) {
+          const e = fieldList.value[j];
           // 若配置了该值的显示规则，且该字段在显示规则中，则显示
           if (rule.value === value && rule.fieldIds.includes(e.id)) {
             e.show = true;
-          } else if (rule.fieldIds.includes(e.id)) {
+            break;
+          }
+          if (rule.fieldIds.includes(e.id)) {
             // 若该字段在显示规则中，但值不符合，则隐藏该字段
             e.show = false;
+            break;
           }
-        });
-      });
+        }
+      }
       nextTick(() => {
         const labelNodes = Array.from(document.querySelectorAll('.n-form-item-label'));
         const noWidthLabelNodes = labelNodes.filter((e) => (e as HTMLElement).style.width === '');
