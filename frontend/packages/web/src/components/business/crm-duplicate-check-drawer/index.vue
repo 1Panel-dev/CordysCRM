@@ -1,40 +1,45 @@
 <template>
-  <CrmDrawer v-model:show="visible" :width="800" :footer="false" :title="t('workbench.duplicateCheck')">
-    <CrmSearchInput
-      v-model:value="keyword"
-      class="mb-[24px] !w-full"
-      auto-search
-      :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
-      @search="(val) => searchData(val)"
-    />
-    <div v-show="noDuplicateCustomers" class="text-center text-[var(--text-n4)]">
-      {{ t('workbench.duplicateCheck.noDuplicateCustomers') }}
-    </div>
-    <!-- 查询结果 -->
-    <div v-show="showResult" class="mb-[24px]">
-      <div class="font-semibold">{{ t('workbench.duplicateCheck.result') }}</div>
-      <div v-show="code === 101003" class="text-center text-[var(--text-n4)]">
-        {{ t('workbench.duplicateCheck.moduleNotEnabled') }}
+  <CrmDrawer v-model:show="visible" no-padding :width="800" :footer="false" :title="t('workbench.duplicateCheck')">
+    <n-scrollbar content-class="p-[24px]">
+      <CrmSearchInput
+        v-model:value="keyword"
+        class="mb-[24px] !w-full"
+        auto-search
+        :placeholder="t('workbench.duplicateCheck.inputPlaceholder')"
+        @search="(val) => searchData(val)"
+      />
+      <div v-show="noDuplicateCustomers" class="text-center text-[var(--text-n4)]">
+        {{ t('workbench.duplicateCheck.noDuplicateCustomers') }}
       </div>
-      <div v-show="code !== 101003" class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
-        <CrmTable
-          v-bind="propsRes"
-          class="!h-[400px]"
-          @page-change="propsEvent.pageChange"
-          @page-size-change="propsEvent.pageSizeChange"
-          @sorter-change="propsEvent.sorterChange"
-          @filter-change="propsEvent.filterChange"
-        />
+      <!-- 查询结果 -->
+      <div v-show="showResult" class="mb-[24px]">
+        <div class="font-semibold">{{ t('workbench.duplicateCheck.result') }}</div>
+        <div v-show="code === 101003" class="text-center text-[var(--text-n4)]">
+          {{ t('workbench.duplicateCheck.moduleNotEnabled') }}
+        </div>
+        <div
+          v-show="code !== 101003"
+          class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]"
+        >
+          <CrmTable
+            v-bind="propsRes"
+            class="!h-[548px]"
+            @page-change="propsEvent.pageChange"
+            @page-size-change="propsEvent.pageSizeChange"
+            @sorter-change="propsEvent.sorterChange"
+            @filter-change="propsEvent.filterChange"
+          />
+        </div>
       </div>
-    </div>
-    <RelatedTable
-      v-show="showClue"
-      ref="clueTableRef"
-      :api="GetRepeatClueList"
-      :columns="clueColumns"
-      :title="t('workbench.duplicateCheck.relatedClues')"
-      is-return-native-response
-    />
+      <RelatedTable
+        v-show="showClue"
+        ref="clueTableRef"
+        :api="GetRepeatClueList"
+        :columns="clueColumns"
+        :title="t('workbench.duplicateCheck.relatedClues')"
+        is-return-native-response
+      />
+    </n-scrollbar>
   </CrmDrawer>
 
   <CrmDrawer v-model:show="showDetailDrawer" :width="800" :footer="false" :title="activeCustomer?.name">
@@ -52,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton } from 'naive-ui';
+  import { NButton, NScrollbar } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { RepeatCustomerItem } from '@lib/shared/models/system/business';
