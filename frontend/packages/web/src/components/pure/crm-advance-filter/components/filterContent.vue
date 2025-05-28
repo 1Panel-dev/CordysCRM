@@ -123,6 +123,7 @@
               v-model:value="item.value"
               v-model:selected-list="item.selectedUserList"
               multiple
+              :disabled="isValueDisabled(item)"
               :drawer-title="t('crmFormDesign.selectDataSource')"
               :api-type-key="MemberApiTypeEnum.FORM_FIELD"
               :member-types="
@@ -391,6 +392,15 @@
     } else {
       formModel.value.list[index].value = valueIsArray(item) ? [] : null;
     }
+
+    if (formModel.value.list[index]?.selectedRows && formModel.value.list[index]?.selectedRows?.length) {
+      formModel.value.list[index].selectedRows = [];
+    }
+
+    if (formModel.value.list[index]?.selectedUserList && formModel.value.list[index]?.selectedUserList?.length) {
+      formModel.value.list[index].selectedUserList = [];
+    }
+
     if (isValueDisabled(item)) {
       formRef.value?.restoreValidation();
     }
