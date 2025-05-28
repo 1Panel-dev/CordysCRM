@@ -40,7 +40,6 @@
             FieldTypeEnum.PHONE,
             FieldTypeEnum.DATA_SOURCE,
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
-            FieldTypeEnum.SERIAL_NUMBER,
           ].includes(fieldConfig.type)
         "
         class="crm-form-design-config-item"
@@ -480,6 +479,12 @@
           <n-input-number v-model:value="serialNumberRules5" :show-button="false" disabled>
             <template #prefix>{{ t('crmFormDesign.autoCount') }}</template>
           </n-input-number>
+          <div
+            class="flex flex-1 items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] px-[8px] py-[4px]"
+          >
+            <div class="text-[var(--text-n4)]">{{ t('common.preview') }}</div>
+            Opp-202501-000001
+          </div>
         </template>
       </div>
       <!-- inputNumber End -->
@@ -546,10 +551,11 @@
           v-show="fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE || !fieldConfig.hasCurrentUser"
           v-model:selected-list="fieldConfig.initialOptions"
           v-model:value="fieldConfig.defaultValue"
+          :api-type-key="MemberApiTypeEnum.FORM_FIELD"
           :multiple="fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE"
           :drawer-title="t('crmFormDesign.selectMember')"
           :ok-text="t('common.confirm')"
-          :member-types="[]"
+          :member-types="memberTypes"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
           :disabled-node-types="[DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]"
         />
@@ -558,10 +564,11 @@
           v-show="fieldConfig.type === FieldTypeEnum.DEPARTMENT_MULTIPLE || !fieldConfig.hasCurrentUserDept"
           v-model:selected-list="fieldConfig.initialOptions"
           v-model:value="fieldConfig.defaultValue"
+          :api-type-key="MemberApiTypeEnum.FORM_FIELD"
           :multiple="fieldConfig.type === FieldTypeEnum.DEPARTMENT_MULTIPLE"
           :drawer-title="t('crmFormDesign.selectMember')"
           :ok-text="t('common.confirm')"
-          :member-types="[]"
+          :member-types="memberTypes"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
           :disabled-node-types="[DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]"
         />
@@ -720,6 +727,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -803,9 +811,27 @@
   //   }
   // }
 
+  const memberTypes = computed(() => {
+    if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(fieldConfig.value.type)) {
+      return [
+        {
+          label: t('menu.settings.org'),
+          value: MemberSelectTypeEnum.ORG,
+        },
+      ];
+    }
+    return [
+      {
+        label: t('menu.settings.org'),
+        value: MemberSelectTypeEnum.ONLY_ORG,
+      },
+    ];
+  });
+
   function handleHasCurrentChange(val: boolean, multiple: boolean) {
     if (val && !multiple) {
       fieldConfig.value.defaultValue = [];
+      fieldConfig.value.initialOptions = [];
     }
   }
 

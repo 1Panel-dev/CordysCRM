@@ -17,21 +17,7 @@
       :drawer-title="t('crmFormDesign.selectDataSource', { type: props.fieldConfig.name })"
       :api-type-key="MemberApiTypeEnum.FORM_FIELD"
       :disabled="props.fieldConfig.editable === false"
-      :member-types="
-        [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(props.fieldConfig.type)
-          ? [
-              {
-                label: t('menu.settings.org'),
-                value: MemberSelectTypeEnum.ORG,
-              },
-            ]
-          : [
-              {
-                label: t('menu.settings.org'),
-                value: MemberSelectTypeEnum.ONLY_ORG,
-              },
-            ]
-      "
+      :member-types="memberTypes"
       :disabled-node-types="
         [FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(props.fieldConfig.type)
           ? [DeptNodeTypeEnum.ORG, DeptNodeTypeEnum.ROLE]
@@ -70,6 +56,22 @@
     default: [],
   });
   const selectedUsers = ref<SelectedUsersItem[]>(props.fieldConfig.initialOptions || []);
+  const memberTypes = computed(() => {
+    if ([FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(props.fieldConfig.type)) {
+      return [
+        {
+          label: t('menu.settings.org'),
+          value: MemberSelectTypeEnum.ORG,
+        },
+      ];
+    }
+    return [
+      {
+        label: t('menu.settings.org'),
+        value: MemberSelectTypeEnum.ONLY_ORG,
+      },
+    ];
+  });
 
   watch(
     () => props.fieldConfig.defaultValue,
