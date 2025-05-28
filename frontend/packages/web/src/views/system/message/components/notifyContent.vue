@@ -11,7 +11,7 @@
         </n-tooltip>
       </div>
     </div>
-    <div class="py-[16px]">
+    <div class="notify-content py-[16px]">
       {{ parsedContent?.content }}
       <n-tooltip trigger="hover" :delay="300" :disabled="!(parsedContent.renameUrl || parsedContent.url)?.length">
         <template #trigger>
@@ -129,6 +129,12 @@
     font-size: 16px;
     color: var(--text-n1);
     @apply flex items-center justify-between font-semibold;
+  }
+  .notify-content {
+    @apply overflow-y-auto break-all;
+
+    max-height: 400px;
+    .crm-scroll-bar();
   }
 </style>
 
