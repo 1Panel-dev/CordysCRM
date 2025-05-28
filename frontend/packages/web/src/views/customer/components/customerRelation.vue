@@ -21,7 +21,7 @@
           :disabled="props.readonly"
         />
         <n-button
-          v-if="!props.readonly"
+          v-if="!props.readonly && relations.length > 1"
           v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
           class="w-[32px] bg-[var(--text-n10)] p-[8px]"
           @click="deleteRelation(index)"
