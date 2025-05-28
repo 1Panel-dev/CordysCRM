@@ -65,7 +65,7 @@
             },
           ]"
           :multiple="false"
-          :drawer-title="t('org.setDepartmentHead')"
+          :drawer-title="t('org.setDirectSuperiors')"
           :disabled-node-types="[DeptNodeTypeEnum.ORG]"
         />
       </n-form-item>

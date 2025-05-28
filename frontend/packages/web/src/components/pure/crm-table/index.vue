@@ -320,6 +320,12 @@
     .n-data-table-resize-button {
       pointer-events: auto;
     }
+    .n-data-table-filter {
+      pointer-events: auto;
+    }
+    &.n-data-table-th--selection {
+      pointer-events: auto;
+    }
   }
 </style>
 

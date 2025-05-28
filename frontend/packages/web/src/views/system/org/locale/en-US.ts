@@ -72,4 +72,5 @@ export default {
   'org.firstSyncUserTipContent':
     'Synchronizing organization structure will reset existing members and their resource data to the latest state. This operation is irreversible. Continue?',
   'org.searchByNameAndPhone': 'Search by name/mobile number',
+  'org.setDirectSuperiors': 'Set up direct superiors',
 };
