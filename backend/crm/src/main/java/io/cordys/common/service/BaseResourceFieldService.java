@@ -115,7 +115,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
                     if (field.isSerialNumber() && !update) {
                         fieldValue = new BaseModuleFieldValue();
                         fieldValue.setFieldId(field.getId());
-                        String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules());
+                        String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) field).getSerialNumberRules(), orgId, getFormKey());
                         fieldValue.setFieldValue(serialNo);
                     } else {
                         fieldValue = fieldValueMap.get(field.getId());

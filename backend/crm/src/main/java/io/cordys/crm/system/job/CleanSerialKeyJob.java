@@ -21,7 +21,7 @@ public class CleanSerialKeyJob {
     public void clean() {
         LogUtils.info("清理流水号过期Key");
         try {
-            Set<String> keys = stringRedisTemplate.keys("serial:*:*");
+            Set<String> keys = stringRedisTemplate.keys("serial:*:*:*");
             for (String key : keys) {
                 String date = new SimpleDateFormat("yyyyMM").format(new Date());
                 String serialDate = key.substring(key.lastIndexOf(":") + 1);
