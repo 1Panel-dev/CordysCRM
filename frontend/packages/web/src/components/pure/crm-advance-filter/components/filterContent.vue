@@ -52,7 +52,11 @@
               @update:value="valueChange"
             />
             <CrmInputNumber
-              v-else-if="item.type === FieldTypeEnum.INPUT_NUMBER"
+              v-else-if="
+                item.type === FieldTypeEnum.INPUT_NUMBER ||
+                (item.type === FieldTypeEnum.INPUT_MULTIPLE &&
+                  [OperatorEnum.COUNT_LT, OperatorEnum.COUNT_GT].includes(item.operator as OperatorEnum))
+              "
               v-model:value="item.value"
               clearable
               :disabled="isValueDisabled(item)"
@@ -64,7 +68,10 @@
               @update:value="valueChange"
             />
             <CrmTagInput
-              v-else-if="item.type === FieldTypeEnum.INPUT_MULTIPLE"
+              v-else-if="
+                item.type === FieldTypeEnum.INPUT_MULTIPLE &&
+                ![OperatorEnum.COUNT_LT, OperatorEnum.COUNT_GT].includes(item.operator as OperatorEnum)
+              "
               v-model:value="item.value"
               clearable
               :disabled="isValueDisabled(item)"
@@ -401,9 +408,7 @@
       formModel.value.list[index].selectedUserList = [];
     }
 
-    if (isValueDisabled(item)) {
-      formRef.value?.restoreValidation();
-    }
+    formRef.value?.restoreValidation();
   }
 
   function valueChange() {
