@@ -772,6 +772,9 @@ public class OrganizationUserService {
      * @return
      */
     private String handleSupervisor(List<UserImportDTO> supervisorList, String departmentId, String name) {
+        if (StringUtils.isBlank(name)) {
+            return null;
+        }
         List<UserImportDTO> departmentUsers = supervisorList.stream().filter(supervisor -> StringUtils.equalsIgnoreCase(supervisor.getName(), name) && StringUtils.equalsIgnoreCase(supervisor.getDepartmentId(), departmentId)).toList();
         if (CollectionUtils.isNotEmpty(departmentUsers)) {
             List<String> userIds = departmentUsers.stream().map(UserImportDTO::getUserId).toList();
@@ -781,8 +784,10 @@ public class OrganizationUserService {
             }
             return departmentUsers.getFirst().getUserId();
         }
-        if (CollectionUtils.isNotEmpty(supervisorList)) {
-            return supervisorList.getFirst().getUserId();
+
+        List<UserImportDTO> unDepartmentUsers = supervisorList.stream().filter(supervisor -> StringUtils.equalsIgnoreCase(supervisor.getName(), name)).toList();
+        if (CollectionUtils.isNotEmpty(unDepartmentUsers)) {
+            return unDepartmentUsers.getFirst().getUserId();
         }
         return null;
     }

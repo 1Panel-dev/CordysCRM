@@ -31,6 +31,7 @@
                 </when>
 
                 <when test="${condition}.operator == 'NOT_CONTAINS'">
+                    ${column} is null or ${column} = '[]' or
                     NOT JSON_OVERLAPS(${column}, JSON_ARRAY(
                     <foreach collection="${condition}.value" item="valueItem" separator=",">
                        #{valueItem}
@@ -45,6 +46,7 @@
                 </when>
 
                 <when test="${condition}.operator == 'NOT_IN'">
+                    ${column} is null or ${column} = '[]' or
                     NOT JSON_OVERLAPS(${column}, JSON_ARRAY(
                     <foreach collection="${condition}.value" item="tag" separator=",">
                         #{tag}
@@ -62,7 +64,7 @@
                             false
                         </when>
                         <otherwise>
-                            (JSON_LENGTH(${column}) &lt; #{condition.value} OR JSON_TYPE(${column}) = 'NULL' OR ${column} = '[]')
+                            (JSON_LENGTH(${column}) &lt; #{condition.value} OR ${column} is null OR ${column} = '[]')
                         </otherwise>
                     </choose>
                 </when>
