@@ -54,6 +54,7 @@ export default {
   'crmFormDesign.horizontalSort': '横向排列',
   'crmFormDesign.fieldConfigEmptyTip': '选中字段后，可以配置字段属性',
   'crmFormDesign.selectMember': '选择成员',
+  'crmFormDesign.selectDepartment': '选择部门',
   'crmFormDesign.loginUser': '当前用户',
   'crmFormDesign.loginUserDept': '当前用户所处部门',
   'crmFormDesign.style': '样式',

@@ -86,6 +86,9 @@
       {
         title: t('crmFormDesign.customer'),
         key: 'customerName',
+        ellipsis: {
+          tooltip: true,
+        },
         resizable: true,
       }
     );

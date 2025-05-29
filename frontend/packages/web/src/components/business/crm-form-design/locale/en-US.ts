@@ -54,6 +54,7 @@ export default {
   'crmFormDesign.horizontalSort': 'Horizontal',
   'crmFormDesign.fieldConfigEmptyTip': 'Select a field to configure its properties',
   'crmFormDesign.selectMember': 'Select Member',
+  'crmFormDesign.selectDepartment': 'Select Department',
   'crmFormDesign.loginUser': 'Current User',
   'crmFormDesign.loginUserDept': 'Current User’s Department',
   'crmFormDesign.style': 'Style',

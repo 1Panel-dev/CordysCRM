@@ -566,7 +566,7 @@
           v-model:value="fieldConfig.defaultValue"
           :api-type-key="MemberApiTypeEnum.FORM_FIELD"
           :multiple="fieldConfig.type === FieldTypeEnum.DEPARTMENT_MULTIPLE"
-          :drawer-title="t('crmFormDesign.selectMember')"
+          :drawer-title="t('crmFormDesign.selectDepartment')"
           :ok-text="t('common.confirm')"
           :member-types="memberTypes"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
