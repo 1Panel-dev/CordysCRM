@@ -540,7 +540,10 @@ public class OrganizationUserService {
         departmentCommanderMapper.batchInsert(departmentCommanders);
     }
 
-    public void disableUsers(List<OrganizationUser> userList) {
+    public void disableUsers(List<OrganizationUser> userList,String operatorId) {
+        userList.forEach(user -> {
+            SessionUtils.kickOutUser(operatorId, user.getUserId());
+        });
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         ExtUserMapper extUserMapper = sqlSession.getMapper(ExtUserMapper.class);
         ExtOrganizationUserMapper extOrganizationUserMapper = sqlSession.getMapper(ExtOrganizationUserMapper.class);
