@@ -1,5 +1,5 @@
 <template>
-  <CrmPageWrapper :title="t('customer.transferCustomer')">
+  <CrmPageWrapper :title="titleMap[route.query.apiKey as string]">
     <div class="flex h-full flex-col">
       <van-search
         v-model="keyword"
@@ -73,6 +73,12 @@
     [FormDesignKeyEnum.CUSTOMER]: batchTransferCustomer,
     [FormDesignKeyEnum.CLUE]: batchTransferClue,
     [FormDesignKeyEnum.BUSINESS]: transferOpt,
+  };
+
+  const titleMap: Record<string, string> = {
+    [FormDesignKeyEnum.CUSTOMER]: t('customer.transferCustomer'),
+    [FormDesignKeyEnum.CLUE]: t('clue.transferClue'),
+    [FormDesignKeyEnum.BUSINESS]: t('opportunity.transferOpportunity'),
   };
 
   async function onConfirm() {

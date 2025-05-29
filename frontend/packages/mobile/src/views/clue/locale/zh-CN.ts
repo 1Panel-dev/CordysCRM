@@ -10,4 +10,5 @@ export default {
   'clue.clueProgress': '线索进度',
   'clue.transferredToCustomer': '已转为客户',
   'clue.searchPlaceholder': '请输入公司名称',
+  'clue.transferClue': '转移线索',
 };

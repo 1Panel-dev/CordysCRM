@@ -17,4 +17,5 @@ export default {
   'opportunity.intendedProducts': 'Intended products',
   'opportunity.stage': 'Opportunity stage',
   'opportunity.name': 'Opportunity name',
+  'opportunity.transferOpportunity': 'Transfer opportunity',
 };

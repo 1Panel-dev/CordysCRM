@@ -17,4 +17,5 @@ export default {
   'opportunity.intendedProducts': '意向产品',
   'opportunity.stage': '商机阶段',
   'opportunity.name': '商机名称',
+  'opportunity.transferOpportunity': '转移商机',
 };

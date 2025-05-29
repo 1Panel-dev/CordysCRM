@@ -10,4 +10,5 @@ export default {
   'clue.clueProgress': 'Clue progress',
   'clue.transferredToCustomer': 'Transferred to customer',
   'clue.searchPlaceholder': 'Please enter the company name',
+  'clue.transferClue': 'Transfer clue',
 };
