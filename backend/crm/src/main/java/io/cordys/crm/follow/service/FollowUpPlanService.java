@@ -6,7 +6,6 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
-import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
@@ -18,12 +17,13 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.follow.constants.FollowUpPlanStatusType;
 import io.cordys.crm.follow.domain.FollowUpPlan;
 import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
+import io.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
-import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import io.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
@@ -37,7 +37,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
@@ -73,6 +76,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         followUpPlan.setCreateUser(userId);
         followUpPlan.setId(IDGenerator.nextStr());
         followUpPlan.setOrganizationId(orgId);
+        followUpPlan.setStatus(FollowUpPlanStatusType.PREPARED.name());
         if (StringUtils.isBlank(request.getOwner())) {
             followUpPlan.setOwner(userId);
         }
@@ -281,14 +285,14 @@ public class FollowUpPlanService extends BaseFollowUpService {
      * @param id
      */
     @OperationLog(module = LogModule.FOLLOW_UP_PLAN, type = LogType.CANCEL, resourceId = "{#id}")
-    public void cancelPlan(String id,String operator) {
+    public void cancelPlan(String id, String operator) {
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(id);
         if (followUpPlan == null) {
             throw new GenericException("plan_not_found");
         }
         FollowUpPlan plan = new FollowUpPlan();
         plan.setId(followUpPlan.getId());
-        plan.setStatus("CANCELLED");
+        plan.setStatus(FollowUpPlanStatusType.CANCELLED.name());
         plan.setUpdateUser(operator);
         plan.setUpdateTime(System.currentTimeMillis());
         followUpPlanMapper.updateById(plan);
@@ -311,5 +315,21 @@ public class FollowUpPlanService extends BaseFollowUpService {
 
         // 设置操作对象
         OperationLogContext.setResourceName(Translator.get("delete_follow_up_plan"));
+    }
+
+
+    /**
+     * 更新状态
+     *
+     * @param request
+     * @param userId
+     */
+    public void updateStatus(FollowUpPlanStatusRequest request, String userId) {
+        FollowUpPlan followUpPlan = new FollowUpPlan();
+        followUpPlan.setStatus(request.getStatus());
+        followUpPlan.setId(request.getId());
+        followUpPlan.setUpdateUser(userId);
+        followUpPlan.setUpdateTime(System.currentTimeMillis());
+        followUpPlanMapper.update(followUpPlan);
     }
 }

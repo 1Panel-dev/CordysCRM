@@ -3,11 +3,9 @@ package io.cordys.crm.opportunity.controller;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.clue.dto.request.ClueStatusUpdateRequest;
 import io.cordys.crm.follow.domain.FollowUpPlan;
-import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
-import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
-import io.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
-import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
+import io.cordys.crm.follow.dto.request.*;
 import io.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import io.cordys.crm.follow.service.FollowUpPlanService;
@@ -75,4 +73,12 @@ public class OpportunityFollowPlanController {
     public void deletePlan(@PathVariable String id) {
         followUpPlanService.delete(id);
     }
+
+    @PostMapping("/status/update")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE)
+    @Operation(summary = "商机更新跟进计划状态")
+    public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
+        followUpPlanService.updateStatus(request, SessionUtils.getUserId());
+    }
+
 }

@@ -2,9 +2,11 @@ package io.cordys.crm.customer.controller;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.follow.constants.FollowUpPlanStatusType;
 import io.cordys.crm.follow.domain.FollowUpPlan;
 import io.cordys.crm.follow.domain.FollowUpRecord;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
+import io.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
 import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.mybatis.BaseMapper;
@@ -27,6 +29,7 @@ public class CustomerFollowPlanControllerTests extends BaseTest {
     private static final String BASE_PATH = "/customer/follow/plan/";
 
     private static final String CANCEL_PLAN = "cancel/{0}";
+    private static final String STATUS_UPDATE = "status/update";
 
     @Override
     protected String getBasePath() {
@@ -93,6 +96,15 @@ public class CustomerFollowPlanControllerTests extends BaseTest {
     @Order(4)
     void testGet() throws Exception {
         this.requestGet(DEFAULT_GET, addFollowUpPlan.getId());
+    }
+
+    @Test
+    @Order(4)
+    void testStatusUpdate() throws Exception {
+        FollowUpPlanStatusRequest request = new FollowUpPlanStatusRequest();
+        request.setId(addFollowUpPlan.getId());
+        request.setStatus(FollowUpPlanStatusType.COMPLETED.name());
+        this.requestPost(STATUS_UPDATE, request);
     }
 
     @Test

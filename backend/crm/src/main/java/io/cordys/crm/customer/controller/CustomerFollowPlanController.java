@@ -7,8 +7,8 @@ import io.cordys.crm.follow.domain.FollowUpPlan;
 import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpPlanAddRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
+import io.cordys.crm.follow.dto.request.FollowUpPlanStatusRequest;
 import io.cordys.crm.follow.dto.request.FollowUpPlanUpdateRequest;
-import io.cordys.crm.follow.dto.request.FollowUpRecordUpdateRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanDetailResponse;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import io.cordys.crm.follow.service.FollowUpPlanService;
@@ -76,5 +76,13 @@ public class CustomerFollowPlanController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
     public void deletePlan(@PathVariable String id) {
         followUpPlanService.delete(id);
+    }
+
+
+    @PostMapping("/status/update")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @Operation(summary = "客户更新跟进计划状态")
+    public void updateStatus(@Validated @RequestBody FollowUpPlanStatusRequest request) {
+        followUpPlanService.updateStatus(request, SessionUtils.getUserId());
     }
 }
