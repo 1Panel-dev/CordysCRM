@@ -102,8 +102,6 @@
       ellipsis: {
         tooltip: true,
       },
-      sortOrder: false,
-      sorter: true,
       filterOptions: [
         {
           label: t('common.enable'),
@@ -126,8 +124,6 @@
       ellipsis: {
         tooltip: true,
       },
-      sorter: true,
-      sortOrder: false,
       render: (row: RoleMemberItem) => {
         return row.departmentName || '-';
       },
