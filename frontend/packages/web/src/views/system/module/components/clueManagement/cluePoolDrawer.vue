@@ -280,6 +280,9 @@
       title: t('common.updateUserName'),
       key: 'updateUserName',
       width: 200,
+      ellipsis: {
+        tooltip: true,
+      },
     },
     {
       key: 'operation',
