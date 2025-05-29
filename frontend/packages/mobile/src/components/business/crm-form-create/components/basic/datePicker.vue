@@ -81,11 +81,17 @@
       value.value = val;
       if (val) {
         const date = dayjs(val);
-        currentDate.value = date.format('YYYY-MM-DD').split('-');
+        currentDate.value =
+          props.fieldConfig.dateType === 'month'
+            ? date.format('YYYY-MM').split('-')
+            : date.format('YYYY-MM-DD').split('-');
         currentTime.value = date.format('HH:mm:ss').split(':');
       } else {
         const date = dayjs();
-        currentDate.value = date.format('YYYY-MM-DD').split('-');
+        currentDate.value =
+          props.fieldConfig.dateType === 'month'
+            ? date.format('YYYY-MM').split('-')
+            : date.format('YYYY-MM-DD').split('-');
         currentTime.value = date.format('HH:mm:ss').split(':');
       }
     },
