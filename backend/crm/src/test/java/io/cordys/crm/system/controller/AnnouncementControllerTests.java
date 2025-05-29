@@ -48,6 +48,8 @@ public class AnnouncementControllerTests extends BaseTest {
         request.setId(announcement.getId());
         request.setSubject("更新的公告");
         request.setContent("更新的公告内容");
+        request.setStartTime(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 6);
+        request.setEndTime(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7);
         this.requestPost("/announcement/edit", request).andExpect(status().isOk());
 
     }

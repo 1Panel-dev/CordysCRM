@@ -158,7 +158,7 @@ public class AnnouncementService {
         announcement.setOrganizationId(organizationId);
         announcement.setUpdateTime(System.currentTimeMillis());
         announcement.setUpdateUser(userId);
-        announcement.setNotice(originalAnnouncement.getNotice());
+        announcement.setNotice(false);
         announcementMapper.updateById(announcement);
         if (originalAnnouncement.getNotice()) {
             //删除旧的notice，根据接收人生成新的未读的notice
