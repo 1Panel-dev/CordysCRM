@@ -102,7 +102,7 @@ public class PoolClueControllerTests extends BaseTest {
 		request.setClueId(testDataId);
 		request.setPoolId("test-pool-id");
 		MvcResult mvcResult = this.requestPost(PICK, request).andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer.capacity.over"));
+		assert mvcResult.getResponse().getContentAsString().contains(Translator.getWithArgs("customer.capacity.over", 0));
 		clueCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
 		CluePoolPickRule pickRule = createPickRule();
 		pickRule.setLimitOnNumber(false);

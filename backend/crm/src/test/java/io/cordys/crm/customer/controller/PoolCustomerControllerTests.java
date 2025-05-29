@@ -102,7 +102,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 		request.setCustomerId(testDataId);
 		request.setPoolId("test-pool-id");
 		MvcResult mvcResult = this.requestPost(PICK, request).andExpect(status().is5xxServerError()).andReturn();
-		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("customer.capacity.over"));
+		assert mvcResult.getResponse().getContentAsString().contains(Translator.getWithArgs("customer.capacity.over", 0));
 		customerCapacityMapper.deleteByLambda(new LambdaQueryWrapper<>());
 		CustomerPoolPickRule pickRule = createPickRule();
 		pickRule.setLimitOnNumber(false);
