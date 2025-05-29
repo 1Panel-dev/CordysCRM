@@ -173,7 +173,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           ) {
             // 处理成员和数据源类型的字段
             item.initialOptions = options
-              ?.filter((e) => formDetail.value[item.id].includes(e.id))
+              ?.filter((e) => formDetail.value[item.id]?.includes(e.id))
               .map((e) => ({
                 ...e,
                 name: e.name || t('common.optionNotExist'),
@@ -198,7 +198,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           ) {
             // 处理成员和数据源类型的字段
             item.initialOptions = options
-              ?.filter((e) => formDetail.value[item.id].includes(e.id))
+              ?.filter((e) => formDetail.value[item.id]?.includes(e.id))
               .map((e) => ({
                 ...e,
                 name: e.name || t('common.optionNotExist'),

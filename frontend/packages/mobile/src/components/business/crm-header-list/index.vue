@@ -27,14 +27,13 @@
           <div class="flex flex-1 flex-col gap-[2px] overflow-hidden">
             <div class="flex justify-between">
               <div class="one-line-text flex-1 text-[16px] text-[var(--text-n1)]">{{ item.ownerName }}</div>
-              <van-tag
+              <CrmTag
                 v-show="item.departmentName?.length"
+                :tag="item.departmentName"
                 color="var(--text-n9)"
                 text-color="var(--text-n1)"
-                class="rounded-[var(--border-radius-small)] !p-[2px_6px]"
-              >
-                {{ item.departmentName }}
-              </van-tag>
+                class="one-line-text max-w-[50%] rounded-[var(--border-radius-small)] !p-[2px_6px]"
+              />
             </div>
             <div>
               <span class="text-[12px] text-[var(--text-n4)]"> {{ t('header.attributionPeriod') }}</span>
@@ -60,6 +59,7 @@
   import type { CustomerContractTableParams, HeaderHistoryItem } from '@lib/shared/models/customer';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   const props = defineProps<{

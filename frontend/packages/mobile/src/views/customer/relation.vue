@@ -18,7 +18,6 @@
           </template>
         </van-field>
         <CrmDataSource
-          id="customerId"
           v-model:value="customerId"
           v-model:selected-rows="selectedRows"
           :data-source-type="FieldDataSourceTypeEnum.CUSTOMER_OPTIONS"
@@ -76,7 +75,7 @@
   const { t } = useI18n();
 
   const lastPageParams = window.history.state.params ? JSON.parse(window.history.state.params) : null; // 获取上个页面带过来的参数
-  const { relation, hasGroup } = lastPageParams || {};
+  const { relation, hasGroup, customerIds } = lastPageParams || {};
 
   const formRef = ref<FormInstance>();
   const relationType = ref(relation?.relationType || (hasGroup === 'Y' ? 'SUBSIDIARY' : 'GROUP'));
@@ -85,7 +84,7 @@
   const loading = ref(false);
 
   function disabledSelection(row: Record<string, any>) {
-    return row.id === route.query.sourceId;
+    return customerIds?.includes(row.id);
   }
 
   async function save() {

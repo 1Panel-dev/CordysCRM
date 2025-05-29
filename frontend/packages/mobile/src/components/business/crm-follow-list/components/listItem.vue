@@ -50,7 +50,7 @@
             </div>
           </div>
         </div>
-        <div class="rounded-[var(--border-radius-mini)] bg-[var(--text-n9)] p-[12px] text-[12px]">
+        <div class="one-line-text rounded-[var(--border-radius-mini)] bg-[var(--text-n9)] p-[12px] text-[12px]">
           {{ item.content }}
         </div>
       </div>

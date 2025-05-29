@@ -7,9 +7,9 @@
         class="mb-[16px] flex w-full items-center gap-[16px] rounded-[var(--border-radius-small)] bg-[var(--text-n10)] p-[16px]"
       >
         <CrmAvatar :text="item.userName" />
-        <div class="flex flex-1 flex-col gap-[2px]">
+        <div class="flex flex-1 flex-col gap-[2px] overflow-hidden">
           <div class="flex items-center justify-between">
-            <div class="flex-1 text-[16px] text-[var(--text-n1)]">{{ item.userName }}</div>
+            <div class="one-line-text flex-1 text-[16px] text-[var(--text-n1)]">{{ item.userName }}</div>
             <div class="flex items-center gap-[16px]">
               <CrmTextButton
                 v-permission="['CUSTOMER_MANAGEMENT:UPDATE']"
@@ -27,13 +27,13 @@
               />
             </div>
           </div>
-          <div class="flex items-center gap-[4px]">
+          <div class="flex items-center gap-[4px] overflow-hidden">
             <CrmTag
               :tag="item.collaborationType === 'READ_ONLY' ? t('customer.readOnly') : t('customer.cooperation')"
               :icon="item.collaborationType === 'READ_ONLY' ? 'iconicon_browse' : 'iconicon_handwritten_signature'"
               bg-color="var(--text-n9)"
             />
-            <CrmTag :tag="item.departmentName" bg-color="var(--text-n9)" />
+            <CrmTag :tag="item.departmentName" bg-color="var(--text-n9)" class="flex-1 overflow-hidden" />
           </div>
         </div>
       </div>

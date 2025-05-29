@@ -26,7 +26,7 @@
       :width="props.iconWidth"
       :height="props.iconHeight"
     />
-    <div>{{ props.tag }}</div>
+    <div class="one-line-text">{{ props.tag }}</div>
   </van-tag>
 </template>
 

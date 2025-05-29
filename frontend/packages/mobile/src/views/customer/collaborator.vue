@@ -25,6 +25,7 @@
           :label="t('common.pleaseSelect')"
           :multiple="false"
           :disabled-selection="disabledSelection"
+          :disabled="!!route.query.id"
           no-page-nation
           class="!text-[16px]"
         >

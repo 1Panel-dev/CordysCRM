@@ -101,7 +101,15 @@
         sourceId: props.sourceId,
       },
       state: {
-        params: JSON.stringify({ hasGroup: relations.value.some((e) => e.relationType === 'GROUP') ? 'Y' : 'N' }),
+        params: JSON.stringify({
+          hasGroup: relations.value.some((e) => e.relationType === 'GROUP') ? 'Y' : 'N',
+          customerIds: relations.value.map((e) => {
+            if (Array.isArray(e.customerId)) {
+              return e.customerId[0];
+            }
+            return e.customerId;
+          }),
+        }),
       },
     });
   }

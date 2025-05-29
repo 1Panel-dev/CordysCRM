@@ -1,22 +1,23 @@
 <template>
-  <van-cell-group inset class="flex flex-col gap-[8px] px-[20px] py-[16px]">
-    <div v-for="item of props.description" :key="item.label" class="crm-description-item">
-      <slot :name="item.slotName" :item="item">
-        <div v-if="item.isTitle" class="crm-description-title">{{ item.label }}</div>
-        <template v-else>
-          <div class="crm-description-label">{{ item.label }}</div>
-          <div class="crm-description-value">
-            <slot :name="item.valueSlotName" :item="item">
-              <template v-if="item.isImage">
-                <div v-if="(item.value as string[])?.length === 0">-</div>
-                <van-image
-                  v-for="img of item.value"
-                  v-else
-                  :key="img"
-                  width="40"
-                  height="40"
-                  :src="`${PreviewPictureUrl}/${img}`"
-                  @click="
+  <van-cell-group inset class="h-full">
+    <div class="flex h-full flex-col gap-[8px] overflow-auto px-[20px] py-[16px]">
+      <div v-for="item of props.description" :key="item.label" class="crm-description-item">
+        <slot :name="item.slotName" :item="item">
+          <div v-if="item.isTitle" class="crm-description-title">{{ item.label }}</div>
+          <template v-else>
+            <div class="crm-description-label">{{ item.label }}</div>
+            <div class="crm-description-value">
+              <slot :name="item.valueSlotName" :item="item">
+                <template v-if="item.isImage">
+                  <div v-if="(item.value as string[])?.length === 0">-</div>
+                  <van-image
+                    v-for="img of item.value"
+                    v-else
+                    :key="img"
+                    width="40"
+                    height="40"
+                    :src="`${PreviewPictureUrl}/${img}`"
+                    @click="
                   () => {
                     showImagePreview({
                       images: (item.value as string[]).map((img) => `${PreviewPictureUrl}/${img}`),
@@ -25,14 +26,15 @@
                     });
                   }
                 "
-                />
-              </template>
-              <CrmTag v-else-if="Array.isArray(item.value) && item.value?.length" :tag="item.value || ''" />
-              <div v-else>{{ item.value || '-' }}</div>
-            </slot>
-          </div>
-        </template>
-      </slot>
+                  />
+                </template>
+                <CrmTag v-else-if="Array.isArray(item.value) && item.value?.length" :tag="item.value || ''" />
+                <div v-else>{{ item.value || '-' }}</div>
+              </slot>
+            </div>
+          </template>
+        </slot>
+      </div>
     </div>
   </van-cell-group>
 </template>
@@ -62,7 +64,7 @@
 
 <style lang="less" scoped>
   .crm-description-item {
-    @apply flex items-center;
+    @apply flex;
 
     gap: 16px;
     .crm-description-title {
