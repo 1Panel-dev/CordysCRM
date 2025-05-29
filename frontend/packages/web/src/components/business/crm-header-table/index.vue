@@ -42,7 +42,6 @@
     {
       title: t('common.head'),
       key: 'owner',
-      width: 150,
       sortOrder: false,
       sorter: 'default',
       ellipsis: {
@@ -59,7 +58,6 @@
       ellipsis: {
         tooltip: true,
       },
-      width: 150,
       render: (row: HeaderHistoryItem) => {
         return h(CrmNameTooltip, { text: row.departmentName });
       },
@@ -72,12 +70,10 @@
       },
       sortOrder: false,
       sorter: 'default',
-      width: 150,
     },
     {
       title: t('opportunity.belongEndTime'),
       key: 'endTime',
-      width: 150,
       sortOrder: false,
       sorter: 'default',
       ellipsis: {
@@ -87,7 +83,6 @@
     {
       title: t('common.operator'),
       key: 'operator',
-      width: 150,
       resizable: false,
       render: (row: HeaderHistoryItem) => {
         return h(CrmNameTooltip, { text: row.operatorName });

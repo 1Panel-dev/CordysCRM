@@ -188,7 +188,6 @@
     {
       title: t('common.operator'),
       key: 'operatorName',
-      width: 100,
       ellipsis: {
         tooltip: true,
       },
@@ -212,7 +211,7 @@
     {
       title: t('log.operationScope'),
       key: 'module',
-      width: 100,
+      width: 200,
       render: (row) => {
         return findLocalePath(row.module)
           .map((e) => t(e) || row.module)
@@ -222,7 +221,7 @@
     {
       title: t('log.operationType'),
       key: 'type',
-      width: 100,
+      width: 150,
       render: (row) => {
         const step = logTypeOption.find((e) => e.value === row.type);
         return step ? step.label : '-';
@@ -231,7 +230,6 @@
     {
       title: t('role.operator'),
       key: 'resourceName',
-      width: 100,
       ellipsis: {
         tooltip: true,
       },
@@ -239,7 +237,6 @@
     {
       title: t('log.operationTime'),
       key: 'createTime',
-      width: 100,
       sortOrder: false,
       sorter: true,
       resizable: false,

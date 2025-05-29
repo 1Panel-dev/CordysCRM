@@ -273,7 +273,6 @@
     {
       title: t('common.name'),
       key: 'name',
-      width: 200,
       columnSelectorDisabled: true,
       render: (row: AuthItem) => {
         return h(
@@ -311,7 +310,7 @@
     {
       title: t('common.status'),
       key: 'enable',
-      width: 60,
+      width: 100,
       render: (row: AuthItem) => {
         return h(NSwitch, {
           value: row.enable,
@@ -330,7 +329,6 @@
     {
       title: t('common.desc'),
       key: 'description',
-      width: 200,
       ellipsis: {
         tooltip: true,
       },
@@ -338,7 +336,6 @@
     {
       title: t('common.createTime'),
       key: 'createTime',
-      width: 100,
       ellipsis: {
         tooltip: true,
       },
@@ -348,7 +345,6 @@
     {
       title: t('common.updateTime'),
       key: 'updateTime',
-      width: 100,
       ellipsis: {
         tooltip: true,
       },
@@ -357,7 +353,7 @@
     },
     {
       key: 'operation',
-      width: 100,
+      width: 120,
       render: (row: AuthItem) =>
         h(CrmOperationButton, {
           groupList: operationGroupList.value,

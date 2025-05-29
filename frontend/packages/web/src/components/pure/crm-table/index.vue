@@ -95,6 +95,75 @@
 
   const currentColumns = ref<CrmDataTableColumn[]>([]);
 
+  // 处理排序和过滤图标
+  function sorterAndFilterColumn(column: CrmDataTableColumn) {
+    // 排序图标处理
+    const sorterColumn = column.sorter
+      ? {
+          renderSorterIcon: (options: { order: 'descend' | 'ascend' | false }) => {
+            return h('div', [
+              h(CrmIcon, {
+                type: 'iconicon_chevron_up',
+                class: 'h-[8px] sort-up-icon',
+                color: options.order === 'ascend' ? 'var( --primary-8)' : 'var(--text-n2)',
+              }),
+              h(CrmIcon, {
+                type: 'iconicon_chevron_down',
+                class: 'h-[8px] sort-down-icon',
+                color: options.order === 'descend' ? 'var( --primary-8)' : 'var(--text-n2)',
+              }),
+            ]);
+          },
+        }
+      : {};
+
+    // 过滤图标处理
+    const filterColumn = column.filter
+      ? {
+          renderFilterIcon: (options: { active: boolean; show: boolean }) => {
+            return h(CrmIcon, {
+              type: 'iconicon_filter',
+              size: 16,
+              color: options.active ? 'var( --primary-8)' : 'var(--text-n2)',
+            });
+          },
+        }
+      : {};
+
+    return { ...sorterColumn, ...filterColumn };
+  }
+
+  // 计算文本宽度
+  function getTextWidth(text: string, fontSize = 14) {
+    const span = document.createElement('span');
+    span.style.visibility = 'hidden';
+    span.style.position = 'absolute';
+    span.style.fontSize = `${fontSize}px`;
+    span.style.fontFamily = "'Helvetica Neue', Arial, 'PingFang SC', 'Source Han Serif'";
+    span.innerText = text;
+    document.body.appendChild(span);
+    const width = span.offsetWidth;
+    document.body.removeChild(span);
+    return width;
+  }
+
+  // 计算列的最小宽度
+  function calculateColumnMinWidth(column: CrmDataTableColumn) {
+    if (column.minWidth) return column.minWidth;
+
+    let minWidth = 80;
+
+    // 计算标题文本宽度
+    const title = typeof column.title === 'string' ? column.title : (column.key as string);
+    const textWidth = getTextWidth(title);
+    // 增加图标空间
+    const iconSpace = (column.sorter ? 23 : 0) + (column.filter ? 24 : 0);
+
+    // 计算总宽度 = 文本宽度 + 图标空间 + 左右padding(各16px)
+    minWidth = Math.ceil(textWidth + iconSpace + 32);
+    return minWidth;
+  }
+
   async function initColumn(hasInitStore = false) {
     const hasSelectedColumn = props.columns.find((e) => e.type === SpecialColumnEnum.SELECTION);
     // 无任何权限不展示选择列
@@ -169,45 +238,14 @@
         };
       }
 
-      // 排序图标处理
-      const sorterColumn = column.sorter
-        ? {
-            renderSorterIcon: (options: { order: 'descend' | 'ascend' | false }) => {
-              return h('div', [
-                h(CrmIcon, {
-                  type: 'iconicon_chevron_up',
-                  class: 'h-[8px] sort-up-icon',
-                  color: options.order === 'ascend' ? 'var( --primary-8)' : 'var(--text-n2)',
-                }),
-                h(CrmIcon, {
-                  type: 'iconicon_chevron_down',
-                  class: 'h-[8px] sort-down-icon',
-                  color: options.order === 'descend' ? 'var( --primary-8)' : 'var(--text-n2)',
-                }),
-              ]);
-            },
-          }
-        : {};
-
-      // 过滤图标处理
-      const filterColumn = column.filter
-        ? {
-            renderFilterIcon: (options: { active: boolean; show: boolean }) => {
-              return h(CrmIcon, {
-                type: 'iconicon_filter',
-                size: 16,
-                color: options.active ? 'var( --primary-8)' : 'var(--text-n2)',
-              });
-            },
-          }
-        : {};
       return {
         ...column,
-        ...sorterColumn,
-        ...filterColumn,
+        ...sorterAndFilterColumn(column),
         titleAlign: 'left',
         resizable: column.resizable !== undefined ? column.resizable : true,
         render,
+        maxWidth: 600,
+        minWidth: calculateColumnMinWidth(column),
       };
     });
   }

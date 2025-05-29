@@ -33,7 +33,6 @@
     {
       title: t('log.operator'),
       key: 'operatorName',
-      width: 100,
       ellipsis: {
         tooltip: true,
       },
@@ -41,14 +40,12 @@
     {
       title: t('log.loginTime'),
       key: 'createTime',
-      width: 100,
       sortOrder: false,
       sorter: true,
     },
     {
       title: t('log.platform'),
       key: 'platform',
-      width: 80,
       resizable: false,
       render: (row) => {
         const item = platformOption.find((e) => e.value === row.platform);
