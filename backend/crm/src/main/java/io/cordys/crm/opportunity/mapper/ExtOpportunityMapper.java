@@ -38,5 +38,5 @@ public interface ExtOpportunityMapper {
 
     List<OptionDTO> getOpportunityOptionsByIds(@Param("ids") List<String> ids);
 
-    List<Opportunity> selectByCustomerAndName(@Param("request") OpportunityAddRequest request, @Param("orgId") String orgId);
+    List<Opportunity> selectByCustomerAndName(@Param("request") OpportunityAddRequest request, @Param("id") String id, @Param("orgId") String orgId);
 }

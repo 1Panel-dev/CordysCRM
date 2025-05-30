@@ -407,5 +407,8 @@
         where customer_id = #{request.customerId}
         and name = #{request.name}
         and organization_id = #{orgId}
+        <if test="id != null and id != ''">
+            AND id != #{id}
+        </if>
     </select>
 </mapper>

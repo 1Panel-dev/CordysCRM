@@ -233,7 +233,7 @@ public class OpportunityService {
      */
     private void checkOpportunity(OpportunityAddRequest request, String orgId, String id, String type) {
         //同一客户下商机名称唯一
-        List<Opportunity> list = extOpportunityMapper.selectByCustomerAndName(request, orgId);
+        List<Opportunity> list = extOpportunityMapper.selectByCustomerAndName(request, id, orgId);
         if (CollectionUtils.isNotEmpty(list)) {
             throw new GenericException(String.format(Translator.get("opportunity_exist"), request.getName(), type));
         }

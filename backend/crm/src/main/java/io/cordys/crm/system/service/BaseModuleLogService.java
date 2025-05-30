@@ -10,17 +10,17 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.system.constants.FieldType;
+import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.field.DatasourceMultipleField;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
+import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -28,6 +28,8 @@ public abstract class BaseModuleLogService {
 
     @Resource
     private ExtModuleFieldMapper extModuleFieldMapper;
+    @Resource
+    private BaseMapper<Product> productMapper;
 
     abstract public void handleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId);
 
@@ -212,5 +214,29 @@ public abstract class BaseModuleLogService {
             String userName = customerContactService.getContactName(differ.getNewValue().toString());
             differ.setNewValueName(userName);
         }
+    }
+
+
+    /**
+     * 产品
+     *
+     * @param differ
+     */
+    protected void setProductName(JsonDifferenceDTO differ) {
+        Optional.ofNullable(differ.getOldValue()).ifPresent(oldValue -> {
+            List<String> ids = ((Collection<?>) oldValue).stream()
+                    .map(String::valueOf)
+                    .toList();
+            List<Product> products = productMapper.selectByIds(ids);
+            differ.setOldValueName(products.stream().map(Product::getName).toList());
+        });
+
+        Optional.ofNullable(differ.getNewValue()).ifPresent(newValue -> {
+            List<String> ids = ((Collection<?>) newValue).stream()
+                    .map(String::valueOf)
+                    .toList();
+            List<Product> products = productMapper.selectByIds(ids);
+            differ.setNewValueName(products.stream().map(Product::getName).toList());
+        });
     }
 }

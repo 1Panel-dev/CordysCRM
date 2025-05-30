@@ -22,7 +22,11 @@ public class ClueLogService extends BaseModuleLogService {
         for (JsonDifferenceDTO differ : differenceDTOS) {
             if (StringUtils.equals(differ.getColumn(), BusinessModuleField.CLUE_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
-                break;
+                continue;
+            }
+
+            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())) {
+                setProductName(differ);
             }
         }
 
