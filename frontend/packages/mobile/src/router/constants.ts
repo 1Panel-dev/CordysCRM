@@ -18,5 +18,8 @@ export const WHITE_LIST_NAME = WHITE_LIST.map((el) => el.name);
 // 无资源/权限路由
 export const NO_RESOURCE_ROUTE_NAME = 'no-resource';
 
+// 企业微信认证被禁用路由
+export const AUTH_DISABLED_ROUTE_NAME = 'auth-disabled';
+
 // 首页路由
 export const DEFAULT_ROUTE_NAME = 'workbench';

@@ -18,6 +18,7 @@
   import useLocale from '@lib/shared/locale/useLocale';
   import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
   import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method/index';
+  import type { Result } from '@lib/shared/types/axios';
 
   import CrmSysUpgradeTip from '@/components/pure/crm-sys-upgrade-tip/index.vue';
 
@@ -30,7 +31,7 @@
   import { WHITE_LIST } from './router/constants';
   import useUserStore from './store/modules/user';
 
-  const { goUserHasPermissionPage } = useUser();
+  const { goUserHasPermissionPage, logout } = useUser();
 
   const { setLoading } = useLoading();
   const { message } = useDiscreteApi();
@@ -51,8 +52,8 @@
     try {
       const code = getQueryVariable('code');
       if (code) {
-        const weComCallback = await getWeComOauthCallback(code);
-        const boolean = userStore.qrCodeLogin(await weComCallback);
+        const res = await getWeComOauthCallback(code);
+        const boolean = userStore.qrCodeLogin(res.data);
         if (boolean) {
           setLoginExpires();
           setLoginType('WE_COM_OAUTH2');
@@ -76,6 +77,9 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+      if ((error as Result).code === 401) {
+        logout();
+      }
     }
   }
 

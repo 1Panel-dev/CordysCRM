@@ -2,8 +2,10 @@ import { useRouter } from 'vue-router';
 
 import { getQueryVariable, getUrlParameterWidthRegExp } from '@lib/shared/method';
 import { setLoginExpires, setLoginType } from '@lib/shared/method/auth';
+import type { Result } from '@lib/shared/types/axios';
 
 import { getThirdConfigByType, getWeComOauthCallback } from '@/api/modules';
+import { AUTH_DISABLED_ROUTE_NAME } from '@/router/constants';
 import useUserStore from '@/store/modules/user';
 
 import { AppRouteEnum } from '@/enums/routeEnum';
@@ -16,8 +18,8 @@ export default function useLogin() {
     try {
       const code = getQueryVariable('code');
       if (code) {
-        const weComCallback = await getWeComOauthCallback(code);
-        const boolean = userStore.setLoginInfo(weComCallback);
+        const res = await getWeComOauthCallback(code);
+        const boolean = userStore.setLoginInfo(res.data);
         if (boolean) {
           setLoginExpires();
           setLoginType('WE_COM_OAUTH2');
@@ -53,6 +55,9 @@ export default function useLogin() {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+      if ((error as Result).code === 401) {
+        router.replace(AUTH_DISABLED_ROUTE_NAME);
+      }
     }
   }
 

@@ -26,6 +26,7 @@ export default {
   'api.errMsg503': '服务不可用，服务器暂时过载或维护!',
   'api.errMsg504': '网络超时!',
   'api.errMsg505': 'http版本不支持该请求!',
+  'api.authDisabled': '应用被禁用!',
   // 异步任务提示
   'asyncTask.uploadFileProgress': '文件上传进度 {percent}；成功 {done} 个，失败 {fail} 个',
   'asyncTask.uploadFileSuccess': '文件上传完成：成功 {done} 个，失败 {fail} 个',
