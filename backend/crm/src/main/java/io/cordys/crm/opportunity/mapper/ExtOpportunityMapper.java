@@ -4,6 +4,7 @@ package io.cordys.crm.opportunity.mapper;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionCountDTO;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
@@ -36,4 +37,6 @@ public interface ExtOpportunityMapper {
     int countByOwner(@Param("owner") String owner);
 
     List<OptionDTO> getOpportunityOptionsByIds(@Param("ids") List<String> ids);
+
+    List<Opportunity> selectByCustomerAndName(@Param("request") OpportunityAddRequest request, @Param("orgId") String orgId);
 }

@@ -21,7 +21,6 @@ import io.cordys.common.permission.PermissionUtils;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
@@ -233,15 +232,10 @@ public class OpportunityService {
      * @param id
      */
     private void checkOpportunity(OpportunityAddRequest request, String orgId, String id, String type) {
-        List<String> products = extOpportunityMapper.selectByProducts(request, orgId, id);
-        if (CollectionUtils.isNotEmpty(products)) {
-            List<String> ids = JSON.parseArray(products.getFirst(), String.class);
-            String projectId = request.getProducts().stream()
-                    .filter(ids::contains)
-                    .toList().getFirst();
-            Product product = productMapper.selectByPrimaryKey(projectId);
-
-            throw new GenericException(String.format(Translator.get("opportunity_exist"), product.getName(), type));
+        //同一客户下商机名称唯一
+        List<Opportunity> list = extOpportunityMapper.selectByCustomerAndName(request, orgId);
+        if (CollectionUtils.isNotEmpty(list)) {
+            throw new GenericException(String.format(Translator.get("opportunity_exist"), request.getName(), type));
         }
     }
 

@@ -402,4 +402,10 @@
         </foreach>
     </select>
 
+    <select id="selectByCustomerAndName" resultType="io.cordys.crm.opportunity.domain.Opportunity">
+        select id, name from opportunity
+        where customer_id = #{request.customerId}
+        and name = #{request.name}
+        and organization_id = #{orgId}
+    </select>
 </mapper>
