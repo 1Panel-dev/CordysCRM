@@ -25,7 +25,7 @@
     >
       <template #item="{ item }">
         <listItem
-          v-model="item.status"
+          v-model:value="item.status"
           :item="item"
           type="plan"
           :readonly="props.readonly"
