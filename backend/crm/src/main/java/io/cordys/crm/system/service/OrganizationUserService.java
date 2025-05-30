@@ -510,7 +510,7 @@ public class OrganizationUserService {
      *
      * @param orgId
      */
-    public void deleteUser(String orgId) {
+    public void deleteUser(String orgId, String operatorId) {
         List<Department> departmentList = extDepartmentMapper.selectAllDepartment(orgId);
         if (CollectionUtils.isNotEmpty(departmentList)) {
             extDepartmentCommanderMapper.deleteByDepartmentIds(departmentList.stream().map(Department::getId).toList());
@@ -520,6 +520,10 @@ public class OrganizationUserService {
         if (CollectionUtils.isNotEmpty(ids)) {
             extUserMapper.deleteByIds(ids);
             extUserExtendMapper.deleteUser(ids);
+            ids.forEach(id -> {
+                // 踢出用户
+                SessionUtils.kickOutUser(operatorId, id);
+            });
         }
         extOrganizationUserMapper.deleteUserByOrgId(orgId);
 
@@ -540,7 +544,7 @@ public class OrganizationUserService {
         departmentCommanderMapper.batchInsert(departmentCommanders);
     }
 
-    public void disableUsers(List<OrganizationUser> userList,String operatorId) {
+    public void disableUsers(List<OrganizationUser> userList, String operatorId) {
         userList.forEach(user -> {
             SessionUtils.kickOutUser(operatorId, user.getUserId());
         });
