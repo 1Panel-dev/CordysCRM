@@ -45,6 +45,10 @@ export type CrmDataTableColumn<T = any> = (
   }[];
   filterMultipleValue?: boolean; // 给后端传的筛选参数
   disabled?: (rowData: T) => boolean;
+  selectTooltip?: {
+    tooltipText?: string;
+    showTooltip?: (rowData: T) => boolean;
+  };
 };
 
 export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {

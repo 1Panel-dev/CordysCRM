@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { NDataTable } from 'naive-ui';
+  import { NCheckbox, NDataTable, NTooltip } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
@@ -193,6 +193,7 @@
       // 添加上render
       let render = props.columns.find((item) => item.key === column.key)?.render || defaultRender;
       const disabled = props.columns.find((item) => item.key === column.key)?.disabled;
+      const selectTooltip = props.columns.find((item) => item.key === column.key)?.selectTooltip;
 
       if (column.isTag) {
         render = (row: Record<string, any>) =>
@@ -208,6 +209,62 @@
 
       // 选择列
       if (column.type === SpecialColumnEnum.SELECTION) {
+        if (selectTooltip) {
+          return {
+            title: () => {
+              // 计算可选择的行的ID（排除disabled的行）
+              const selectableRowIds: string[] = (attrs.data as [])
+                .filter((row: Record<string, any>) => !disabled || !disabled(row))
+                .map((row: Record<string, any>) => row.id);
+
+              // 计算已选中的可选项
+              const selectedSelectableCount = selectableRowIds.filter((id) =>
+                checkedRowKeys.value?.includes(id)
+              ).length;
+
+              return h(NCheckbox, {
+                checked: selectableRowIds.length > 0 && selectedSelectableCount === selectableRowIds.length,
+                indeterminate: selectedSelectableCount > 0 && selectedSelectableCount < selectableRowIds.length,
+                disabled: selectableRowIds.length === 0,
+                onUpdateChecked: (val: boolean) => {
+                  const currentSelected = new Set(checkedRowKeys.value || []);
+                  if (val) {
+                    selectableRowIds.forEach((id) => currentSelected.add(id));
+                  } else {
+                    selectableRowIds.forEach((id) => currentSelected.delete(id));
+                  }
+                  checkedRowKeys.value = Array.from(currentSelected);
+                },
+              });
+            },
+            key: SpecialColumnEnum.SELECTION,
+            fixed: 'left',
+            width: 46,
+            titleAlign: 'center',
+            render: (row: Record<string, any>) => {
+              const isDisabled = disabled?.(row);
+              const showTooltip = selectTooltip?.showTooltip?.(row) && isDisabled;
+              const checkbox = h(NCheckbox, {
+                disabled: isDisabled,
+                checked: checkedRowKeys.value?.includes(row.id),
+                onUpdateChecked: (checked: boolean) => {
+                  // 处理行选择变化
+                  const newSelected = new Set(checkedRowKeys.value || []);
+                  if (checked) {
+                    newSelected.add(row.id);
+                  } else {
+                    newSelected.delete(row.id);
+                  }
+                  checkedRowKeys.value = Array.from(newSelected);
+                },
+              });
+
+              return showTooltip
+                ? h(NTooltip, {}, { trigger: () => checkbox, default: () => selectTooltip?.tooltipText })
+                : checkbox;
+            },
+          };
+        }
         return {
           ...column,
           width: 46,

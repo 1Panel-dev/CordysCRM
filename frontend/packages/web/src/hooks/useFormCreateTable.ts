@@ -566,6 +566,16 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           disabled(row) {
             return props.disabledSelection ? props.disabledSelection(row) : false;
           },
+          ...(props.formKey === FormDesignKeyEnum.CLUE
+            ? {
+                selectTooltip: {
+                  showTooltip(row) {
+                    return props.disabledSelection ? props.disabledSelection(row) : false;
+                  },
+                  tooltipText: t('clue.disabledTooltipText'),
+                },
+              }
+            : {}),
         });
       }
 

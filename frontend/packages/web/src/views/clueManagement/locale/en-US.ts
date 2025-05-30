@@ -26,4 +26,5 @@ export default {
   'clue.moveIntoCluePoolFailed': 'Partial transfer failed',
   'clue.moveIntoCluePoolFailedContent':
     'Successfully transferred leads will enter the lead pool, while failed leads will not. Please retry the transfer!',
+  'clue.disabledTooltipText': 'The clue has been converted to a customer and cannot be selected!',
 };
