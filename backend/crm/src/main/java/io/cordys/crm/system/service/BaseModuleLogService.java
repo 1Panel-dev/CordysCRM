@@ -12,6 +12,7 @@ import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.field.DatasourceMultipleField;
+import io.cordys.crm.system.dto.field.*;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtModuleFieldMapper;
@@ -149,14 +150,16 @@ public abstract class BaseModuleLogService {
         if (moduleField != null) {
             if (StringUtils.equalsAnyIgnoreCase(moduleField.getType(), FieldType.DATE_TIME.name())) {
                 // 日期时间类型
-                differ.setOldValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getOldValue().toString())));
-                differ.setNewValueName(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(differ.getNewValue().toString())));
-            } else if (StringUtils.equalsAnyIgnoreCase(moduleField.getType(), FieldType.DATA_SOURCE_MULTIPLE.name(), FieldType.DATA_SOURCE.name(),
-                    FieldType.MEMBER.name(), FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT.name(), FieldType.DEPARTMENT_MULTIPLE.name())) {
-                List<OptionDTO> oldOptions = extModuleFieldMapper.getSourceOptionsByIds(((DatasourceMultipleField) moduleField).getDataSourceType(), JSON.parseArray(differ.getOldValue().toString(), String.class));
-                differ.setOldValueName(oldOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
-                List<OptionDTO> newOptions = extModuleFieldMapper.getSourceOptionsByIds(((DatasourceMultipleField) moduleField).getDataSourceType(), JSON.parseArray(differ.getNewValue().toString(), String.class));
-                differ.setNewValueName(newOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
+                setFormatDataTimeFieldValueName(differ);
+            } else if (moduleField instanceof DatasourceMultipleField || moduleField instanceof DatasourceField) {
+                String dataSourceType = moduleField instanceof DatasourceMultipleField ?
+                        ((DatasourceMultipleField) moduleField).getDataSourceType() :
+                        ((DatasourceField) moduleField).getDataSourceType();
+                setResourceValueName(differ, dataSourceType);
+            } else if (moduleField instanceof MemberMultipleField || moduleField instanceof MemberField) {
+                setResourceValueName(differ, "sys_user");
+            } else if (moduleField instanceof DepartmentMultipleField || moduleField instanceof DepartmentField) {
+                setResourceValueName(differ, "sys_department");
             } else {
                 differ.setOldValueName(differ.getOldValue());
                 differ.setNewValueName(differ.getNewValue());
@@ -166,6 +169,23 @@ public abstract class BaseModuleLogService {
             differ.setOldValueName(differ.getOldValue());
             differ.setNewValueName(differ.getNewValue());
         }
+    }
+
+    public void setFormatDataTimeFieldValueName(JsonDifferenceDTO differ) {
+        differ.setOldValueName(formatDataTime(differ.getOldValue().toString()));
+        differ.setNewValueName(formatDataTime(differ.getNewValue().toString()));
+    }
+
+    private String formatDataTime(String value) {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(value));
+    }
+
+    private JsonDifferenceDTO setResourceValueName(JsonDifferenceDTO differ, String tableName) {
+        List<OptionDTO> oldOptions = extModuleFieldMapper.getSourceOptionsByIds(tableName, JSON.parseArray(differ.getOldValue().toString(), String.class));
+        differ.setOldValueName(oldOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
+        List<OptionDTO> newOptions = extModuleFieldMapper.getSourceOptionsByIds(tableName, JSON.parseArray(differ.getNewValue().toString(), String.class));
+        differ.setNewValueName(newOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
+        return differ;
     }
 
     protected void setUserFieldName(JsonDifferenceDTO differ) {

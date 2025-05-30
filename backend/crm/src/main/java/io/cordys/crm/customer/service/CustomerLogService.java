@@ -21,7 +21,8 @@ public class CustomerLogService extends BaseModuleLogService {
         for (JsonDifferenceDTO differ : differenceDTOS) {
             if (StringUtils.equals(differ.getColumn(), BusinessModuleField.CUSTOMER_OWNER.getBusinessKey())) {
                 setUserFieldName(differ);
-                break;
+            } else if (StringUtils.equals(differ.getColumn(), "collectionTime")) {
+                setFormatDataTimeFieldValueName(differ);
             }
         }
     }
