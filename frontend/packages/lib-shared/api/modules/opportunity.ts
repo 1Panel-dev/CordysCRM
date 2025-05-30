@@ -20,6 +20,7 @@ import {
   OptPageUrl,
   OptUpdateStageUrl,
   OptUpdateUrl,
+  UpdateOptFollowPlanStatusUrl,
   UpdateOptFollowPlanUrl,
   UpdateOptFollowRecordUrl,
 } from '@lib/shared/api/requrls/opportunity';
@@ -35,6 +36,7 @@ import type {
   TransferParams,
   UpdateCustomerFollowPlanParams,
   UpdateCustomerFollowRecordParams,
+  UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
 import type {
   OpportunityDetail,
@@ -155,6 +157,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${GetOpportunityContactListUrl}/${data.id}` });
   }
 
+  // 更新商机跟进计划状态
+  function updateOptFollowPlanStatus(data: UpdateFollowPlanStatusParams) {
+    return CDR.post({ url: UpdateOptFollowPlanStatusUrl, data });
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -178,5 +185,6 @@ export default function useProductApi(CDR: CordysAxios) {
     updateOptStage,
     getOptTab,
     getOpportunityContactList,
+    updateOptFollowPlanStatus,
   };
 }

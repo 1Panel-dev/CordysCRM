@@ -32,19 +32,12 @@
         key-field="id"
         :type="props.activeType"
         :empty-text="emptyText"
+        :get-disabled-fun="getShowAction"
         @reach-bottom="handleReachBottom"
+        @change="changePlanStatus"
       >
         <template #headerAction="{ item }">
           <div v-if="getShowAction(item)" class="flex items-center gap-[12px]">
-            <n-button
-              v-if="props.activeType === 'followPlan' && item.status !== CustomerFollowPlanStatusEnum.CANCELLED"
-              type="primary"
-              quaternary
-              class="text-btn-primary"
-              @click="handleCancelPlan(item)"
-            >
-              {{ t('common.cancelPlan') }}
-            </n-button>
             <n-button
               v-if="
                 props.activeType === 'followRecord' ||
@@ -137,7 +130,7 @@
     searchData,
     activeStatus,
     loadFollowList,
-    handleCancelPlan,
+    changePlanStatus,
     followKeyword,
     followFormKeyMap,
     handleDelete,

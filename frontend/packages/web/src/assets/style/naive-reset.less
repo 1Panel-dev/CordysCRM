@@ -441,10 +441,22 @@
     padding-left: 4px;
   }
 }
+.n-cascader-menu {
+  .n-cascader-option:hover {
+    background-color: var(--primary-7) !important;
+  }
+}
 .n-base-selection-placeholder {
   padding: 0 8px !important;
 }
 .n-base-select-option--selected {
+  background-color: var(--primary-7) !important;
+  &::before {
+    @apply hidden;
+  }
+}
+.n-base-select-option--pending,
+.n-cascader-option--pending {
   background-color: var(--primary-7) !important;
   &::before {
     @apply hidden;

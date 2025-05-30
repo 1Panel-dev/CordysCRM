@@ -30,6 +30,7 @@ import {
   GetPoolClueUrl,
   GetPoolOptionsUrl,
   PickClueUrl,
+  UpdateClueFollowPlanStatusUrl,
   UpdateClueFollowPlanUrl,
   UpdateClueFollowRecordUrl,
   UpdateClueStatusUrl,
@@ -61,6 +62,7 @@ import type {
   TransferParams,
   UpdateCustomerFollowPlanParams,
   UpdateCustomerFollowRecordParams,
+  UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
 import type { CluePoolItem, FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
@@ -235,6 +237,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<CustomerTabHidden>({ url: GetClueTabUrl });
   }
 
+  // 更新线索跟进计划状态
+  function updateClueFollowPlanStatus(data: UpdateFollowPlanStatusParams) {
+    return CDR.post({ url: UpdateClueFollowPlanStatusUrl, data });
+  }
+
   return {
     addClue,
     updateClue,
@@ -270,5 +277,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getCluePoolFollowRecordList,
     getPoolClue,
     getClueTab,
+    updateClueFollowPlanStatus,
   };
 }

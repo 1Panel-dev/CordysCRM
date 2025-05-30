@@ -24,6 +24,7 @@ export const AddClueFollowPlanUrl = '/clue/follow/plan/add'; // 添加跟进计�
 export const GetClueFollowPlanUrl = '/clue/follow/plan/get'; // 跟进计划详情
 export const CancelClueFollowPlanUrl = '/clue/follow/plan/cancel'; // 取消跟进计划
 export const DeleteClueFollowPlanUrl = '/clue/follow/plan/delete'; // 删除跟进计划
+export const UpdateClueFollowPlanStatusUrl = '/clue/follow/plan/status/update'; // 更新线索跟进计划状态
 
 export const GetClueHeaderListUrl = '/clue/owner/history/list'; // 线索负责人记录列表
 

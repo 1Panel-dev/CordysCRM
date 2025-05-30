@@ -152,6 +152,9 @@
       width: 200,
       sortOrder: false,
       sorter: true,
+      ellipsis: {
+        tooltip: true,
+      },
       columnSelectorDisabled: true,
     },
     {

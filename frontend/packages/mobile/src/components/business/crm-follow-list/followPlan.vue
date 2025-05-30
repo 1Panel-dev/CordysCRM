@@ -25,13 +25,14 @@
     >
       <template #item="{ item }">
         <listItem
+          v-model="item.status"
           :item="item"
           type="plan"
           :readonly="props.readonly"
           @click="goDetail(item)"
           @delete="handleDelete(item)"
           @edit="handleEdit(item)"
-          @cancel="handleCancel(item)"
+          @change="handleChangeStatus(item)"
         />
       </template>
     </CrmList>
@@ -43,7 +44,7 @@
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { FollowDetailItem } from '@lib/shared/models/customer';
+  import type { CustomerFollowPlanListItem, FollowDetailItem, StatusTagKey } from '@lib/shared/models/customer';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import listItem from './components/listItem.vue';
@@ -83,10 +84,13 @@
     }
   }
 
-  async function handleCancel(item: FollowDetailItem) {
+  async function handleChangeStatus(item: FollowDetailItem) {
     try {
-      await followPlanApiMap.cancel?.[props.type]?.(item.id);
-      showSuccessToast(t('common.cancelSuccess'));
+      await followPlanApiMap.changeStatus?.[props.type]?.({
+        id: item.id,
+        status: (item as CustomerFollowPlanListItem).status,
+      });
+      showSuccessToast(t('common.operationSuccess'));
       crmListRef.value?.loadList(true);
     } catch (error) {
       // eslint-disable-next-line no-console

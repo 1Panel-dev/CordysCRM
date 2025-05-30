@@ -57,6 +57,7 @@ import {
   SwitchCustomerOpenSeaUrl,
   UpdateCustomerCollaborationUrl,
   UpdateCustomerContactUrl,
+  UpdateCustomerFollowPlanStatusUrl,
   UpdateCustomerFollowPlanUrl,
   UpdateCustomerFollowRecordUrl,
   UpdateCustomerOpenSeaUrl,
@@ -101,6 +102,7 @@ import type {
   UpdateCustomerOpenSeaParams,
   UpdateCustomerParams,
   UpdateCustomerRelationItemParams,
+  UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
 
@@ -415,6 +417,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get<CustomerTabHidden>({ url: GetCustomerContactTabUrl });
   }
 
+  // 更新客户跟进计划状态
+  function updateCustomerFollowPlanStatus(data: UpdateFollowPlanStatusParams) {
+    return CDR.post({ url: UpdateCustomerFollowPlanStatusUrl, data });
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -478,5 +485,6 @@ export default function useProductApi(CDR: CordysAxios) {
     addCustomerRelationItem,
     deleteCustomerRelationItem,
     getCustomerTab,
+    updateCustomerFollowPlanStatus,
   };
 }

@@ -1,12 +1,9 @@
 import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import type { CommonList } from '@lib/shared/models/common';
-import type { FollowDetailItem } from '@lib/shared/models/customer';
+import type { FollowDetailItem, StatusTagKey } from '@lib/shared/models/customer';
 
 import {
-  cancelClueFollowPlan,
-  cancelCustomerFollowPlan,
-  cancelOptFollowPlan,
   deleteClueFollowPlan,
   deleteClueFollowRecord,
   deleteCustomerFollowPlan,
@@ -21,9 +18,11 @@ import {
   getCustomerOpenSeaFollowRecordList,
   getOptFollowPlanList,
   getOptFollowRecordList,
+  updateClueFollowPlanStatus,
+  updateCustomerFollowPlanStatus,
+  updateOptFollowPlanStatus,
 } from '@/api/modules';
 
-export type StatusTagKey = Exclude<CustomerFollowPlanStatusEnum, CustomerFollowPlanStatusEnum.ALL>;
 export type StatusTag = {
   label: string;
   value: CustomerFollowPlanStatusEnum;
@@ -32,6 +31,7 @@ export type StatusTag = {
   iconColor?: string;
   bgColor?: string;
 };
+
 export const statusMap: Record<StatusTagKey, StatusTag> = {
   [CustomerFollowPlanStatusEnum.PREPARED]: {
     label: 'common.notStarted',
@@ -102,9 +102,9 @@ export const followPlanApiMap = {
     [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: deleteClueFollowPlan,
     [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: deleteOptFollowPlan,
   },
-  cancel: {
-    [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: cancelCustomerFollowPlan,
-    [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: cancelClueFollowPlan,
-    [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: cancelOptFollowPlan,
+  changeStatus: {
+    [FormDesignKeyEnum.FOLLOW_PLAN_CUSTOMER]: updateCustomerFollowPlanStatus,
+    [FormDesignKeyEnum.FOLLOW_PLAN_CLUE]: updateClueFollowPlanStatus,
+    [FormDesignKeyEnum.FOLLOW_PLAN_BUSINESS]: updateOptFollowPlanStatus,
   },
 };

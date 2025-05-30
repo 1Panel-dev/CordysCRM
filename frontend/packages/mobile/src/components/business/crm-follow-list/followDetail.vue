@@ -15,16 +15,6 @@
       <div class="flex items-center justify-center gap-[16px]">
         <div class="flex w-[100px] items-center">
           <CrmTextButton
-            v-if="isPlan && detail.status !== CustomerFollowPlanStatusEnum.CANCELLED"
-            color="var(--text-n1)"
-            icon="iconicon_minus_circle1"
-            :text="t('common.cancelPlan')"
-            icon-size="18px"
-            direction="column"
-            class="flex-1"
-            @click="handleCancel"
-          />
-          <CrmTextButton
             color="var(--text-n1)"
             icon="iconicon_delete"
             :text="t('common.delete')"
@@ -91,17 +81,6 @@
         await followRecordApiMap.delete?.[formKey.value as RecordEnumType]?.(sourceId.value);
       }
       showSuccessToast(t('common.deleteSuccess'));
-      router.back();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  async function handleCancel() {
-    try {
-      await followPlanApiMap.cancel?.[formKey.value as PlanEnumType]?.(sourceId.value);
-      showSuccessToast(t('common.cancelSuccess'));
       router.back();
     } catch (error) {
       // eslint-disable-next-line no-console

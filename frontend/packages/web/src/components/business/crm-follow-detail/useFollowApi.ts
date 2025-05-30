@@ -6,12 +6,9 @@ import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { sleep } from '@lib/shared/method';
 import type { CommonList } from '@lib/shared/models/common';
-import type { FollowDetailItem } from '@lib/shared/models/customer';
+import type { CustomerFollowPlanListItem, FollowDetailItem } from '@lib/shared/models/customer';
 
 import {
-  cancelClueFollowPlan,
-  cancelCustomerFollowPlan,
-  cancelOptFollowPlan,
   deleteClueFollowPlan,
   deleteClueFollowRecord,
   deleteCustomerFollowPlan,
@@ -27,6 +24,9 @@ import {
   getOptFollowPlanList,
   getOptFollowRecordList,
   getPersonalFollow,
+  updateClueFollowPlanStatus,
+  updateCustomerFollowPlanStatus,
+  updateOptFollowPlanStatus,
 } from '@/api/modules';
 
 import useHighlight from './useHighlight';
@@ -46,8 +46,8 @@ type FollowApiMapType = Record<
       followRecord?: (params: any) => Promise<CommonList<FollowDetailItem>>;
       followPlan?: (params: any) => Promise<CommonList<FollowDetailItem>>;
     };
-    cancel?: {
-      followPlan: typeof cancelOptFollowPlan;
+    changeStatus?: {
+      followPlan: typeof updateOptFollowPlanStatus;
     };
     delete?: {
       followRecord: (params: string) => Promise<any>;
@@ -62,8 +62,8 @@ const followApiMap: FollowApiMapType = {
       followRecord: getOptFollowRecordList,
       followPlan: getOptFollowPlanList,
     },
-    cancel: {
-      followPlan: cancelOptFollowPlan,
+    changeStatus: {
+      followPlan: updateOptFollowPlanStatus,
     },
     delete: {
       followRecord: deleteOptFollowRecord,
@@ -75,8 +75,8 @@ const followApiMap: FollowApiMapType = {
       followRecord: getCustomerFollowRecordList,
       followPlan: getCustomerFollowPlanList,
     },
-    cancel: {
-      followPlan: cancelCustomerFollowPlan,
+    changeStatus: {
+      followPlan: updateCustomerFollowPlanStatus,
     },
     delete: {
       followRecord: deleteCustomerFollowRecord,
@@ -88,8 +88,8 @@ const followApiMap: FollowApiMapType = {
       followRecord: getClueFollowRecordList,
       followPlan: getClueFollowPlanList,
     },
-    cancel: {
-      followPlan: cancelClueFollowPlan,
+    changeStatus: {
+      followPlan: updateClueFollowPlanStatus,
     },
     delete: {
       followRecord: deleteClueFollowRecord,
@@ -210,18 +210,21 @@ export default function useFollowApi(followProps: {
         return FormDesignKeyEnum.CLUE;
       }
       if (item.opportunityId?.length && item.customerId?.length) {
-        return FormDesignKeyEnum.CUSTOMER;
+        return FormDesignKeyEnum.BUSINESS;
       }
-      return FormDesignKeyEnum.BUSINESS;
+      return FormDesignKeyEnum.CUSTOMER;
     }
     return followApiKey;
   }
 
-  // 取消计划
-  async function handleCancelPlan(item: FollowDetailItem) {
+  // 更新计划状态
+  async function changePlanStatus(item: FollowDetailItem) {
     try {
-      await followApiMap[getApiKey(item)].cancel?.followPlan(item.id);
-      Message.success(t('common.cancelSuccess'));
+      await followApiMap[getApiKey(item)].changeStatus?.followPlan({
+        id: item.id,
+        status: (item as CustomerFollowPlanListItem).status,
+      });
+      Message.success(t('common.operationSuccess'));
       loadFollowList();
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -280,7 +283,7 @@ export default function useFollowApi(followProps: {
     handleReachBottom,
     followKeyword,
     loadFollowList,
-    handleCancelPlan,
+    changePlanStatus,
     followFormKeyMap,
     searchData,
     handleDelete,

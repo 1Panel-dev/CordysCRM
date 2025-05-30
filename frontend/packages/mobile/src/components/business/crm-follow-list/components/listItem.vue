@@ -9,21 +9,22 @@
       </div>
     </div>
     <div class="flex flex-1 flex-col gap-[8px] overflow-hidden">
-      <div class="flex items-center gap-[16px]">
+      <div class="flex h-[24px] items-center justify-between gap-[16px]">
         <div class="flex items-center gap-[8px]">
-          <CrmTag
-            v-if="isPlan"
-            :bg-color="getStatus(item.status)?.bgColor ?? getStatus(item.status)?.color"
-            :tag="t(getStatus(item.status)?.label)"
-            :text-color="getStatus(item.status)?.color"
-            :icon="getStatus(item.status)?.icon"
-            :icon-color="getStatus(item.status)?.iconColor ?? getStatus(item.status)?.color"
-            plain
-          />
           <div>{{ getShowTime(item) }} </div>
+          <div class="text-[14px] font-semibold text-[var(--text-n1)]">
+            {{ (!isPlan ? item.followMethod : item.method) ?? '-' }}
+          </div>
         </div>
-        <div class="text-[14px] font-semibold text-[var(--text-n1)]">
-          {{ (!isPlan ? item.followMethod : item.method) ?? '-' }}
+        <div v-if="isPlan" class="flex items-center">
+          <van-dropdown-menu class="status-select-menu" @click.stop>
+            <van-dropdown-item
+              v-model="status"
+              :disabled="props.readonly"
+              :options="statusOptions"
+              @change="changeStatus"
+            />
+          </van-dropdown-menu>
         </div>
       </div>
       <div class="flex flex-1 flex-col gap-[12px] rounded-[var(--border-radius-large)] bg-[var(--text-n10)] p-[16px]">
@@ -33,13 +34,6 @@
             <div class="one-line-text flex-1 text-[16px] font-semibold">{{ item.ownerName }}</div>
             <div v-if="!props.readonly" class="flex items-center gap-[16px]">
               <CrmTextButton icon="iconicon_delete" color="var(--error-red)" icon-size="16px" @click="emit('delete')" />
-              <CrmTextButton
-                v-if="isPlan && item.status !== CustomerFollowPlanStatusEnum.CANCELLED"
-                icon="iconicon_minus_circle1"
-                color="var(--primary-8)"
-                icon-size="16px"
-                @click="emit('cancel')"
-              />
               <CrmTextButton
                 v-if="!isPlan || (isPlan && item.status !== CustomerFollowPlanStatusEnum.CANCELLED)"
                 icon="iconicon_handwritten_signature"
@@ -63,13 +57,12 @@
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { FollowDetailItem } from '@lib/shared/models/customer';
+  import type { FollowDetailItem, StatusTagKey } from '@lib/shared/models/customer';
 
-  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
-  import { statusMap, StatusTagKey } from '@/config/follow';
+  import { statusMap } from '@/config/follow';
   import useUserStore from '@/store/modules/user';
 
   const props = defineProps<{
@@ -77,14 +70,19 @@
     type: 'plan' | 'record';
     readonly?: boolean;
   }>();
+
   const emit = defineEmits<{
     (e: 'edit'): void;
     (e: 'delete'): void;
-    (e: 'cancel'): void;
+    (e: 'change'): void;
   }>();
 
   const { t } = useI18n();
   const userStore = useUserStore();
+
+  const status = defineModel<StatusTagKey>('value', {
+    default: CustomerFollowPlanStatusEnum.PREPARED,
+  });
 
   const isPlan = computed(() => {
     return props.type === 'plan';
@@ -95,9 +93,30 @@
     return time ? dayjs(time).format('YYYY-MM-DD') : '-';
   }
 
-  function getStatus(status: StatusTagKey) {
-    return statusMap[status];
+  const statusOptions = computed(() =>
+    Object.values(statusMap).map((e) => ({
+      text: t(e.label),
+      value: e.value,
+    }))
+  );
+
+  function changeStatus() {
+    emit('change');
   }
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less">
+  .status-select-menu {
+    .van-dropdown-menu__bar {
+      padding-right: 16px;
+      height: 24px !important;
+      border-radius: 4px !important;
+      box-shadow: none !important;
+      .van-dropdown-menu__title {
+        .van-ellipsis {
+          font-size: 14px !important;
+        }
+      }
+    }
+  }
+</style>

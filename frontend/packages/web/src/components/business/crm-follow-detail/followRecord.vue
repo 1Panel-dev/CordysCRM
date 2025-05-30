@@ -17,7 +17,12 @@
         <div class="mb-[24px] flex w-full flex-col gap-[16px]">
           <div class="crm-follow-record-title">
             <div class="flex items-center gap-[16px]">
-              <StatusTag v-if="item.status" :status="item.status" />
+              <StatusTagSelect
+                v-if="item.status"
+                v-model:status="item.status"
+                :disabled="!props.getDisabledFun(item)"
+                @change="() => emit('change', item)"
+              />
               <div class="text-[var(--text-n1)]">{{ getShowTime(item) }}</div>
               <div class="crm-follow-record-method">
                 {{ (props.type === 'followRecord' ? item.followMethod : item.method) ?? '-' }}
@@ -66,7 +71,7 @@
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
-  import StatusTag from './statusTag.vue';
+  import StatusTagSelect from './statusTagSelect.vue';
 
   import useUserStore from '@/store/modules/user';
 
@@ -76,12 +81,14 @@
     type: 'followRecord' | 'followPlan';
     keyField: string;
     getDescriptionFun: (item: FollowDetailItem) => Description[];
+    getDisabledFun: (item: FollowDetailItem) => boolean;
     virtualScrollHeight: string;
     emptyText?: string;
   }>();
 
   const emit = defineEmits<{
     (e: 'reachBottom'): void;
+    (e: 'change', item: FollowDetailItem): void;
   }>();
 
   const listData = defineModel<FollowDetailItem[]>('data', {
@@ -89,17 +96,14 @@
   });
 
   function getFutureClass(item: FollowDetailItem) {
-    const time = 'estimatedTime' in item ? item.estimatedTime : item.followTime;
-    const isFuture = new Date(time).getTime() > Date.now();
-
-    if (!isFuture) return '';
-
     if (props.type === 'followPlan') {
-      const isCancelled = (item as CustomerFollowPlanListItem).status === CustomerFollowPlanStatusEnum.CANCELLED;
-      return isCancelled ? '' : 'crm-follow-dot-future';
+      const isNotFuture = [CustomerFollowPlanStatusEnum.CANCELLED, CustomerFollowPlanStatusEnum.COMPLETED].includes(
+        (item as CustomerFollowPlanListItem).status
+      );
+      return isNotFuture ? '' : 'crm-follow-dot-future';
     }
 
-    return 'crm-follow-dot-future';
+    return new Date(item.followTime).getTime() > Date.now() ? 'crm-follow-dot-future' : '';
   }
 
   function getShowTime(item: FollowDetailItem) {

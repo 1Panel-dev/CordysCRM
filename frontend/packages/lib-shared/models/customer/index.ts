@@ -105,15 +105,17 @@ export interface UpdateCustomerFollowPlanParams extends SaveCustomerFollowPlanPa
   id: string;
 }
 
+export type StatusTagKey = Exclude<CustomerFollowPlanStatusEnum, CustomerFollowPlanStatusEnum.ALL>;
+
 export interface CustomerFollowPlanTableParams extends TableQueryParams {
   sourceId: string; // 客户ID/商机ID/线索ID
-  status: CustomerFollowPlanStatusEnum; // 状态: ALL/PREPARED/UNDERWAY/COMPLETED/CANCELLED
+  status: StatusTagKey; // 状态: ALL/PREPARED/UNDERWAY/COMPLETED/CANCELLED
   myPlan?: boolean; // 个人中心查询时传入true
 }
 
 export interface CustomerFollowPlanListItem extends CustomerFollowRecordListItem {
   estimatedTime: number;
-  status: string;
+  status: StatusTagKey;
   method: string;
 }
 
@@ -317,4 +319,9 @@ export interface CustomerOptionsItem {
 export interface CustomerTabHidden {
   all: boolean; // 是否显示所有数据tab
   dept: boolean; // 是否显示部门数据tab
+}
+
+export interface UpdateFollowPlanStatusParams {
+  id: string;
+  status: StatusTagKey;
 }
