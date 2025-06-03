@@ -5,27 +5,36 @@
     </CrmCard>
 
     <CrmCard hide-footer auto-height class="form-card mb-[16px] min-w-[1000px]">
-      <n-form ref="formRef" label-placement="left" inline label-width="auto" :model="form" class="flex-wrap">
+      <n-form
+        ref="formRef"
+        label-placement="left"
+        label-width="auto"
+        :model="form"
+        class="grid grid-cols-3 gap-x-[24px]"
+      >
         <n-form-item :label="t('common.operator')" path="operator">
           <CrmUserSelect
             v-model:value="form.operator"
             value-field="id"
             label-field="name"
             mode="remote"
-            class="w-[305px]"
             :fetch-api="getUserOptions"
             filterable
             clearable
           />
         </n-form-item>
         <n-form-item :label="t('log.operationTime')" path="time">
-          <n-date-picker v-model:value="form.time" type="datetimerange" :is-date-disabled="dataDisabled" />
+          <n-date-picker
+            v-model:value="form.time"
+            type="datetimerange"
+            :is-date-disabled="dataDisabled"
+            class="w-full"
+          />
         </n-form-item>
         <template v-if="activeTab === 'operation'">
           <n-form-item :label="t('log.operationType')" path="type">
             <n-select
               v-model:value="form.type"
-              class="w-[305px]"
               :options="logTypeOption"
               :placeholder="t('common.pleaseSelect')"
               clearable
@@ -35,7 +44,6 @@
             <n-cascader
               v-model:value="form.module"
               :options="moduleOptions"
-              class="w-[305px]"
               check-strategy="all"
               :placeholder="t('common.pleaseSelect')"
               clearable
