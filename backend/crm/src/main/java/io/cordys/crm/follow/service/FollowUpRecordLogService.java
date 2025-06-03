@@ -40,7 +40,15 @@ public class FollowUpRecordLogService extends BaseModuleLogService {
                 continue;
             }
 
+            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_TIME.getBusinessKey())) {
+                setFormatDataTimeFieldValueName(differ);
+                continue;
+            }
 
+            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_OPPORTUNITY.getBusinessKey())) {
+                setOpportunityName(differ);
+                continue;
+            }
         }
     }
 

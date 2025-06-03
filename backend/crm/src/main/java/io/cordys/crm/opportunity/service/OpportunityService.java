@@ -468,4 +468,9 @@ public class OpportunityService {
         CustomerContactListAllResponse response = customerContactService.getOpportunityContactList(opportunity.getContactId(), orgId);
         return response;
     }
+
+    public String getOpportunityName(String id) {
+        Opportunity opportunity = opportunityMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(opportunity).map(Opportunity::getName).orElse(null);
+    }
 }

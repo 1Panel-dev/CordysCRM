@@ -9,9 +9,9 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.customer.service.CustomerService;
+import io.cordys.crm.opportunity.service.OpportunityService;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.Product;
-import io.cordys.crm.system.dto.field.DatasourceMultipleField;
 import io.cordys.crm.system.dto.field.*;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -81,7 +81,14 @@ public abstract class BaseModuleLogService {
                 // 设置字段值名称
                 setColumnValueName(optionMap, differ, moduleField);
             } else {
-                translatorDifferInfo(differ);
+                if (optionMap.containsKey(differ.getColumn())) {
+                    differ.setColumnName(Translator.get("log." + differ.getColumn()));
+                    // 设置字段值名称
+                    setColumnValueName(optionMap, differ, moduleField);
+                } else {
+                    translatorDifferInfo(differ);
+                }
+
             }
         });
     }
@@ -222,6 +229,23 @@ public abstract class BaseModuleLogService {
         }
         if (differ.getNewValue() != null) {
             String userName = customerService.getCustomerName(differ.getNewValue().toString());
+            differ.setNewValueName(userName);
+        }
+    }
+
+    /**
+     * 商机名称
+     *
+     * @param differ
+     */
+    protected void setOpportunityName(JsonDifferenceDTO differ) {
+        OpportunityService opportunityService = CommonBeanFactory.getBean(OpportunityService.class);
+        if (differ.getOldValue() != null) {
+            String customerName = opportunityService.getOpportunityName(differ.getOldValue().toString());
+            differ.setOldValueName(customerName);
+        }
+        if (differ.getNewValue() != null) {
+            String userName = opportunityService.getOpportunityName(differ.getNewValue().toString());
             differ.setNewValueName(userName);
         }
     }
