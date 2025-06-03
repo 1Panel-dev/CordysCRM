@@ -172,8 +172,12 @@ public abstract class BaseModuleLogService {
     }
 
     public void setFormatDataTimeFieldValueName(JsonDifferenceDTO differ) {
-        differ.setOldValueName(formatDataTime(differ.getOldValue().toString()));
-        differ.setNewValueName(formatDataTime(differ.getNewValue().toString()));
+        if (differ.getOldValue() != null) {
+            differ.setOldValueName(formatDataTime(differ.getOldValue().toString()));
+        }
+        if (differ.getOldValue() != null) {
+            differ.setNewValueName(formatDataTime(differ.getNewValue().toString()));
+        }
     }
 
     private String formatDataTime(String value) {
@@ -181,10 +185,14 @@ public abstract class BaseModuleLogService {
     }
 
     private JsonDifferenceDTO setResourceValueName(JsonDifferenceDTO differ, String tableName) {
-        List<OptionDTO> oldOptions = extModuleFieldMapper.getSourceOptionsByIds(tableName, JSON.parseArray(differ.getOldValue().toString(), String.class));
-        differ.setOldValueName(oldOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
-        List<OptionDTO> newOptions = extModuleFieldMapper.getSourceOptionsByIds(tableName, JSON.parseArray(differ.getNewValue().toString(), String.class));
-        differ.setNewValueName(newOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
+        if (differ.getOldValue() != null) {
+            List<OptionDTO> oldOptions = extModuleFieldMapper.getSourceOptionsByIds(tableName, JSON.parseArray(differ.getOldValue().toString(), String.class));
+            differ.setOldValueName(oldOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
+        }
+        if (differ.getNewValue() != null) {
+            List<OptionDTO> newOptions = extModuleFieldMapper.getSourceOptionsByIds(tableName, JSON.parseArray(differ.getNewValue().toString(), String.class));
+            differ.setNewValueName(newOptions.stream().map(OptionDTO::getName).collect(Collectors.joining(",")));
+        }
         return differ;
     }
 
