@@ -63,7 +63,7 @@ const useUserStore = defineStore('user', {
         setToken(res.sessionId, res.csrfToken);
         this.setInfo(res);
         const appStore = useAppStore();
-        const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds[0] ?? '';
+        const lastOrganizationId = res.lastOrganizationId ?? res.organizationIds?.[0] ?? '';
         appStore.setOrgId(lastOrganizationId);
         this.clientIdRandomId = getGenerateId();
         return true;

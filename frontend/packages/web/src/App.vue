@@ -53,6 +53,8 @@
       const code = getQueryVariable('code');
       if (code) {
         const res = await getWeComOauthCallback(code);
+        // TODO:debugger
+        console.log('res', res);
         const boolean = userStore.qrCodeLogin(res.data);
         if (boolean) {
           setLoginExpires();
