@@ -8,10 +8,13 @@
           <div class="one-line-text text-[16px] font-semibold text-[var(--text-n1)]" @click="handleUserNameClick">
             {{ personalInfo?.userName }}
           </div>
-          <div>
-            <van-tag color="var(--text-n9)" class="one-line-text !block" text-color="var(--text-n1)" size="medium">
-              {{ personalInfo?.departmentName }}
-            </van-tag>
+          <div class="max-w-full">
+            <CrmTag
+              :tag="personalInfo?.departmentName"
+              color="var(--text-n9)"
+              text-color="var(--text-n1)"
+              class="one-line-text max-w-full rounded-[var(--border-radius-small)] !p-[2px_6px]"
+            />
           </div>
         </div>
       </div>
@@ -71,6 +74,7 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmPageHeader from '@/components/pure/crm-page-header/index.vue';
+  import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
 
   import { getNotificationCount, getPersonalInfo } from '@/api/modules';
