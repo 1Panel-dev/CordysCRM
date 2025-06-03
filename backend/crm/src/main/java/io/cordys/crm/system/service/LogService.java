@@ -82,6 +82,13 @@ public class LogService implements OperationLogHandler {
         return content;
     }
 
+    private String subStrResourceName(String name) {
+        if (StringUtils.isNotBlank(name) && name.length() > 255) {
+            return name.substring(0, 255);
+        }
+        return name;
+    }
+
     /**
      * 添加单条操作日志
      *
@@ -115,16 +122,15 @@ public class LogService implements OperationLogHandler {
 
             // 如果注解中没有设置 resourceName ，则使用 extra 中的 resourceName
             if (StringUtils.isBlank(log.getResourceName()) && ObjectUtils.isNotEmpty(extra.getResourceName())) {
-                log.setResourceName(extra.getResourceName());
+                log.setResourceName(subStrResourceName(extra.getResourceName()));
             }
         }
 
         // 截断日志内容
-        log.setResourceName(log.getResourceName());
         log.setDetail(subStrContent(log.getDetail()));
         log.setMethod(StringUtils.defaultIfBlank(log.getMethod(), "GET"));
         OperationLog operationLog = BeanUtils.copyBean(new OperationLog(), log);
-        operationLog.setResourceName(log.getResourceName());
+        operationLog.setResourceName(subStrResourceName(log.getResourceName()));
         operationLog.setDetail(log.getDetail());
         operationLogMapper.insert(operationLog);
 
@@ -152,7 +158,7 @@ public class LogService implements OperationLogHandler {
         var blobs = logs.stream()
                 .peek(log -> {
                     log.setId(IDGenerator.nextStr());
-                    log.setResourceName(log.getResourceName());
+                    log.setResourceName(subStrResourceName(log.getResourceName()));
                     log.setDetail(subStrContent(log.getDetail()));
                     log.setCreateTime(currentTimeMillis);
                     OperationLog item = new OperationLog();
