@@ -19,7 +19,7 @@ export default function useLogin() {
       const code = getQueryVariable('code');
       if (code) {
         const res = await getWeComOauthCallback(code);
-        const boolean = userStore.setLoginInfo(res.data);
+        const boolean = userStore.setLoginInfo(res.data.data);
         if (boolean) {
           setLoginExpires();
           setLoginType('WE_COM_OAUTH2');

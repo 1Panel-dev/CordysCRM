@@ -10,6 +10,7 @@ import {
 import type { LoginParams } from '@lib/shared/models/system/login';
 import type { UserInfo } from '@lib/shared/models/user';
 import type { Result } from '@lib/shared/types/axios';
+import type { AxiosResponse } from 'axios';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 登录
@@ -39,7 +40,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 企业微信oauth2登录
   function getWeComOauthCallback(code: string) {
-    return CDR.get<Result<UserInfo>>(
+    return CDR.get<AxiosResponse<Result<UserInfo>>>(
       { url: weComOauthCallbackUrl, params: { code } },
       { ignoreCancelToken: true, isReturnNativeResponse: true }
     );
