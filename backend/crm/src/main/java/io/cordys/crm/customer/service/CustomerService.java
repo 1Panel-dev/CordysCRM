@@ -356,7 +356,7 @@ public class CustomerService {
     public void batchTransfer(CustomerBatchTransferRequest request, String userId, String orgId) {
         List<Customer> originCustomers = customerMapper.selectByIds(request.getIds());
         List<String> owners = getOwners(originCustomers);
-        long processCount = owners.stream().filter(owner -> !StringUtils.equals(owner, request.getOwner())).count();
+        long processCount = originCustomers.stream().filter(customer -> !StringUtils.equals(customer.getOwner(), request.getOwner())).count();
         poolCustomerService.validateCapacity((int) processCount, request.getOwner(), orgId);
 
         dataScopeService.checkDataPermission(userId, orgId, owners, PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE);

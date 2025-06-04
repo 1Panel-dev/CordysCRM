@@ -422,7 +422,7 @@ public class ClueService {
     public void batchTransfer(ClueBatchTransferRequest request, String userId, String orgId) {
         List<Clue> clues = clueMapper.selectByIds(request.getIds());
         List<String> ownerIds = getOwners(clues);
-        long processCount = ownerIds.stream().filter(owner -> !StringUtils.equals(owner, request.getOwner())).count();
+        long processCount = clues.stream().filter(clue -> !StringUtils.equals(clue.getOwner(), request.getOwner())).count();
         poolClueService.validateCapacity((int) processCount, request.getOwner(), orgId);
         dataScopeService.checkDataPermission(userId, orgId, ownerIds, PermissionConstants.CLUE_MANAGEMENT_UPDATE);
 
