@@ -66,7 +66,7 @@ export default {
   'org.checkSyncUserHoverTip': '当前组织架构为企业微信同步数据，请通过“同步组织架构”进行添加成员操作！',
   'org.syncUserTipTitle': '确定从企业微信同步吗？',
   'org.syncUserTipContent': '同步后，将覆盖手动创建的数据，请谨慎操作!',
-  'org.firstSyncUserTipContent': '同步组织架构将重置现有成员及其资源数据为最新状态，此操作不可逆，确认继续同步？',
+  'org.firstSyncUserTipContent': '同步组织架构将刪除现有成员及其资源数据，此操作不可逆，确认继续同步？',
   'org.searchByNameAndPhone': '通过姓名/手机号搜索',
   'org.setDirectSuperiors': '设置直属上级',
 };
