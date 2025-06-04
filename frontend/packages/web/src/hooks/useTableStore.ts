@@ -53,6 +53,7 @@ export default function useTableStore() {
         if (!isEqual) {
           // 如果不相等，说明有变动将新的column存入indexDB
           setTableColumnsMap(tableKey, {
+            ...tableColumnsMap,
             column,
             columnBackup: cloneDeep(column),
           });
