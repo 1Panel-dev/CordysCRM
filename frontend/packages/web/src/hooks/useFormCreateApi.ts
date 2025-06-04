@@ -37,6 +37,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   const specialInitialOptions = ref<Record<string, any>[]>([]); // 特殊字段的初始化选项列表
   const descriptions = ref<Description[]>([]); // 表单详情描述列表
   const fieldList = ref<FormCreateField[]>([]); // 表单字段列表
+  const fieldShowControlMap = ref<Record<string, any>>({}); // 表单字段显示控制映射
   const loading = ref(false);
   const unsaved = ref(false);
   const formConfig = ref<FormConfig>({
@@ -63,38 +64,65 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   // 详情
   const detail = ref<Record<string, any>>({});
 
+  function initFormShowControl() {
+    // 读取整个显隐控制映射
+    Object.keys(fieldShowControlMap.value).forEach((fieldId) => {
+      // 取出当前字段的所有规则
+      const ruleIds = Object.keys(fieldShowControlMap.value[fieldId]);
+      const field = fieldList.value.find((f) => f.id === fieldId);
+      if (field) {
+        // 当前字段存在，则遍历它的全部控制规则
+        for (let i = 0; i < ruleIds.length; i++) {
+          const ruleId = ruleIds[i];
+          const controlField = fieldList.value.find((f) => f.id === ruleId);
+          if (controlField) {
+            // 处理显示规则
+            if (fieldShowControlMap.value[fieldId][ruleId].includes(formDetail.value[controlField?.id])) {
+              field.show = true;
+              break; // 满足显示规则就停止，因为只需要满足一个规则字段即显示
+            } else {
+              field.show = false;
+            }
+          }
+        }
+      }
+    });
+  }
+
   /**
    * 表单描述显示规则处理
    * @param form 表单数据
    */
   function formDescriptionShowControlRulesSet(form: Record<string, any>) {
-    for (let ri = 0; ri < fieldList.value.length; ri++) {
-      const item = fieldList.value[ri];
-      if (item.showControlRules) {
-        for (let i = 0; i < item.showControlRules.length; i++) {
-          const rule = item.showControlRules[i];
-          for (let j = 0; j < fieldList.value.length; j++) {
-            const e = fieldList.value[j];
-            // 若配置了该值的显示规则，且该字段在显示规则中，则显示
-            let value = '';
-            if (item.businessKey) {
-              value = form[item.businessKey];
-            } else {
-              const field = form.moduleFields?.find((moduleField: ModuleField) => moduleField.fieldId === item.id);
-              value = field?.fieldValue || '';
-            }
-            if (rule.value === value && rule.fieldIds.includes(e.id)) {
-              e.show = true;
-              break;
-            } else if (rule.fieldIds.includes(e.id)) {
-              // 若该字段在显示规则中，但值不符合，则隐藏该字段
-              e.show = false;
-              break;
-            }
+    // 读取整个显隐控制映射
+    Object.keys(fieldShowControlMap.value).forEach((fieldId) => {
+      // 取出当前字段的所有规则
+      const fieldRuleIds = Object.keys(fieldShowControlMap.value[fieldId]);
+      const field = fieldList.value.find((f) => f.id === fieldId);
+      if (field) {
+        // 当前字段存在，则遍历它的全部控制规则
+        for (let i = 0; i < fieldRuleIds.length; i++) {
+          const ruleId = fieldRuleIds[i];
+          let value = '';
+          const controlField = fieldList.value.find((f) => f.id === ruleId);
+          if (controlField?.businessKey) {
+            value = form[controlField.businessKey];
+          } else {
+            const formField = form.moduleFields?.find(
+              (moduleField: ModuleField) => moduleField.fieldId === controlField?.id
+            );
+            value = formField?.fieldValue || '';
+          }
+          // 处理显示规则
+          if (fieldShowControlMap.value[fieldId][ruleId].includes(value)) {
+            field.show = true;
+            break; // 满足显示规则就停止，因为只需要满足一个规则字段即显示
+          } else {
+            field.show = false;
           }
         }
       }
-    }
+    });
   }
 
   async function initFormDescription() {
@@ -423,6 +451,31 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   function initFormFieldConfig(fields: FormCreateField[]) {
     fieldList.value = fields.map((item) => {
       const { defaultValue, initialOptions } = specialFormFieldInit(item);
+      if (item.showControlRules?.length) {
+        // 将字段的控制显隐规则存储到 fieldShowControlMap 中
+        item.showControlRules?.forEach((rule) => {
+          rule.fieldIds.forEach((fieldId) => {
+            // 按字段 ID 存储规则，key 为字段 ID，value 为规则映射集合
+            if (!fieldShowControlMap.value[fieldId]) {
+              fieldShowControlMap.value[fieldId] = {};
+            }
+            // value 映射以控制显示隐藏的字段 id 为 key，字段值为 value 集合
+            if (!fieldShowControlMap.value[fieldId][item.id]) {
+              fieldShowControlMap.value[fieldId][item.id] = [];
+            }
+            /**
+             * 最终结构为：
+             * fieldShowControlMap.value = {
+             *   [fieldId]: {
+             *     [item.id]: [rule.value]
+             *   }
+             * }
+             * 这样最外层存储每个字段的 key，value 为该字段的所有的控制规则集合
+             */
+            fieldShowControlMap.value[fieldId][item.id].push(rule.value);
+          });
+        });
+      }
       return {
         ...item,
         defaultValue,
@@ -556,6 +609,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       }
     });
     nextTick(() => {
+      initFormShowControl();
       unsaved.value = false;
     });
   }
@@ -629,12 +683,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     formCreateTitle,
     collaborationType,
     sourceName,
+    fieldShowControlMap,
     initFormDescription,
     initFormConfig,
     initFormDetail,
     saveForm,
     initForm,
     resetForm,
+    initFormShowControl,
     detail,
   };
 }

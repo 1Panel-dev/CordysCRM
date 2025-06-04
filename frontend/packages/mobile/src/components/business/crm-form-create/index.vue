@@ -64,14 +64,22 @@
 
   const lastPageParams = window.history.state.params ? JSON.parse(window.history.state.params) : null; // 获取上个页面带过来的表格查询参数
 
-  const { fieldList, formDetail, loading, formCreateTitle, initFormConfig, initFormDetail, saveForm } =
-    useFormCreateApi({
-      formKey: route.query.formKey as FormDesignKeyEnum,
-      sourceId: route.query.id as string,
-      needInitDetail: route.query.needInitDetail === 'Y',
-      initialSourceName: route.query.initialSourceName as string,
-      otherSaveParams: lastPageParams,
-    });
+  const {
+    fieldList,
+    formDetail,
+    loading,
+    formCreateTitle,
+    initFormConfig,
+    initFormDetail,
+    saveForm,
+    initFormShowControl,
+  } = useFormCreateApi({
+    formKey: route.query.formKey as FormDesignKeyEnum,
+    sourceId: route.query.id as string,
+    needInitDetail: route.query.needInitDetail === 'Y',
+    initialSourceName: route.query.initialSourceName as string,
+    otherSaveParams: lastPageParams,
+  });
 
   const mobileFieldList = computed(() => {
     return fieldList.value.filter((item) => item.mobile !== false);
@@ -104,17 +112,7 @@
   function handleFieldChange(value: any, item: FormCreateField) {
     // 控制显示规则
     if (item.showControlRules?.length) {
-      item.showControlRules.forEach((rule) => {
-        mobileFieldList.value.forEach((e) => {
-          // 若配置了该值的显示规则，且该字段在显示规则中，则显示
-          if (rule.value === value && rule.fieldIds.includes(e.id)) {
-            e.show = true;
-          } else if (rule.fieldIds.includes(e.id)) {
-            // 若该字段在显示规则中，但值不符合，则隐藏该字段
-            e.show = false;
-          }
-        });
-      });
+      initFormShowControl();
     }
   }
 
@@ -177,7 +175,6 @@
           }
           formDetail.value[item.id] = defaultValue;
         }
-        handleFieldChange(formDetail.value[item.id], item); // 初始化时，根据字段值控制显示
         const fullRules: FormCreateFieldRule[] = [];
         (item.rules || []).forEach((rule) => {
           // 遍历规则集合，将全量的规则配置载入
@@ -215,6 +212,9 @@
             },
           ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
         }
+      });
+      nextTick(() => {
+        initFormShowControl();
       });
     }
   );
