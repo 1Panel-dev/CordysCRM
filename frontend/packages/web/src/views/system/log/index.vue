@@ -176,10 +176,11 @@
           formKey: ref(moduleFormKeyMap[matchedKey]),
         });
         await initFormConfig();
-        const locationId = fieldList.value.find((item) => item.type === FieldTypeEnum.LOCATION)?.id;
-        if (locationId) {
-          locationIds.push(locationId);
-        }
+        fieldList.value.forEach((item) => {
+          if (item.type === FieldTypeEnum.LOCATION) {
+            locationIds.push(item.id);
+          }
+        });
       }
       activeLogDetail.value.diffs?.forEach((item) => {
         if (locationIds.includes(item.column)) {
