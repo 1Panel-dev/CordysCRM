@@ -99,7 +99,7 @@
             </foreach>
         </if>
 
-        ORDER BY create_time DESC
+        ORDER BY estimated_time DESC, create_time DESC
     </select>
 
 

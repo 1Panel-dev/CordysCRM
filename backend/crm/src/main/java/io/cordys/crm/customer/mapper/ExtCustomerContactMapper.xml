@@ -262,7 +262,7 @@
 
 
     <select id="selectContactPhoneOptionByIds" resultType="io.cordys.common.dto.OptionDTO">
-        SELECT id, phone as name
+        SELECT id, ifnull(phone, '') as name
         FROM customer_contact
         WHERE id IN
         <foreach collection="contactIds" item="id" index="index"
