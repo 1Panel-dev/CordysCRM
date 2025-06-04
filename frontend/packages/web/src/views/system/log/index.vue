@@ -158,6 +158,7 @@
   const moduleFormKeyMap: Record<string, FormDesignKeyEnum> = {
     PRODUCT_MANAGEMENT: FormDesignKeyEnum.PRODUCT,
     CUSTOMER_INDEX: FormDesignKeyEnum.CUSTOMER,
+    CUSTOMER_CONTACT: FormDesignKeyEnum.CONTACT,
     CLUE_MANAGEMENT_CLUE: FormDesignKeyEnum.CLUE,
     OPPORTUNITY: FormDesignKeyEnum.BUSINESS,
     FOLLOW_UP_RECORD: FormDesignKeyEnum.FOLLOW_RECORD_CUSTOMER,
