@@ -1,20 +1,23 @@
 package io.cordys.crm.system.service;
 
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.constants.UserSource;
 import io.cordys.common.dto.RoleDataScopeDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.permission.PermissionCache;
 import io.cordys.common.request.LoginRequest;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.CodingUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.ServletUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.constants.LoginType;
-import io.cordys.crm.system.domain.Department;
-import io.cordys.crm.system.domain.LoginLog;
-import io.cordys.crm.system.domain.OrganizationUser;
-import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.constants.OrganizationConfigConstants;
+import io.cordys.crm.system.domain.*;
+import io.cordys.crm.system.dto.ThirdAuthConfigDTO;
+import io.cordys.crm.system.mapper.ExtOrganizationConfigDetailMapper;
+import io.cordys.crm.system.mapper.ExtOrganizationConfigMapper;
 import io.cordys.crm.system.mapper.ExtOrganizationMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.mybatis.BaseMapper;
@@ -32,6 +35,7 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -58,6 +62,11 @@ public class UserLoginService {
     private PermissionCache permissionCache;
     @Resource
     private BaseMapper<Department> departmentBaseMapper;
+    @Resource
+    private ExtOrganizationConfigMapper extOrganizationConfigMapper;
+
+    @Resource
+    private ExtOrganizationConfigDetailMapper extOrganizationConfigDetailMapper;
 
     public UserDTO authenticateUser(String userKey) {
         UserDTO userDTO = extUserMapper.selectByPhoneOrEmail(userKey);
@@ -194,5 +203,35 @@ public class UserLoginService {
         example.setId(userId);
         example.setPassword(CodingUtils.md5(password));
         return sysUserMapper.exist(example);
+    }
+
+    /**
+     * 检查移动端认证配置。
+     */
+    public void checkMobileAuthConfig() {
+        String userAgent = ServletUtils.getUserAgent();
+        if (StringUtils.isBlank(userAgent)) {
+            // 如果 User-Agent 为空，则不进行移动端认证配置检查
+            return;
+        }
+        String organizationId = OrganizationContext.getOrganizationId();
+
+        if (userAgent.contains("miniprogram") || userAgent.contains("MicroMessenger") || userAgent.contains("Android") || userAgent.contains("iOS") || userAgent.contains("Mobile") || userAgent.contains("MQQBrowser") || userAgent.contains("Mobile Safari")) {
+            // 如果是小程序或移动端浏览器，检查认证设置是否存在
+            OrganizationConfig organizationConfig = extOrganizationConfigMapper.getOrganizationConfig(organizationId, OrganizationConfigConstants.ConfigType.AUTH.name());
+            if (organizationConfig == null) {
+                throw new AuthenticationException(Translator.get("auth.setting.no.exists"));
+            }
+            List<OrganizationConfigDetail> enableOrganizationConfigDetails = extOrganizationConfigDetailMapper.getEnableOrganizationConfigDetails(organizationConfig.getId(), UserSource.WE_COM_OAUTH2.toString());
+            if (CollectionUtils.isEmpty(enableOrganizationConfigDetails)) {
+                throw new AuthenticationException(Translator.get("auth.setting.no.exists"));
+            }
+            OrganizationConfigDetail organizationConfigDetail = enableOrganizationConfigDetails.getFirst();
+            String content = new String(organizationConfigDetail.getContent(), StandardCharsets.UTF_8);
+            ThirdAuthConfigDTO weComConfig = JSON.parseObject(content, ThirdAuthConfigDTO.class);
+            if (weComConfig == null) {
+                throw new AuthenticationException(Translator.get("auth.setting.no.exists"));
+            }
+        }
     }
 }
