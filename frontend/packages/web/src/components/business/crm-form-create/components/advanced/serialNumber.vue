@@ -5,7 +5,12 @@
       class="crm-form-create-item-desc"
       v-html="props.fieldConfig.description"
     ></div>
-    <n-input :default-value="props.fieldConfig.defaultValue" :placeholder="props.fieldConfig.placeholder" disabled />
+    <n-input
+      v-model:value="value"
+      :default-value="props.fieldConfig.defaultValue"
+      :placeholder="props.fieldConfig.placeholder"
+      disabled
+    />
   </n-form-item>
 </template>
 
@@ -17,6 +22,10 @@
   const props = defineProps<{
     fieldConfig: FormCreateField;
   }>();
+
+  const value = defineModel<string>('value', {
+    default: '',
+  });
 </script>
 
 <style lang="less" scoped></style>
