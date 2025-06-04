@@ -6,6 +6,7 @@ import io.cordys.common.request.LoginRequest;
 import io.cordys.common.util.Translator;
 import io.cordys.common.util.rsa.RsaKey;
 import io.cordys.common.util.rsa.RsaUtils;
+import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.service.UserLoginService;
 import io.cordys.security.SessionUser;
 import io.cordys.security.SessionUtils;
@@ -42,7 +43,9 @@ public class LoginController {
     public SessionUser isLogin() {
         SessionUser user = SessionUtils.getUser();
         if (user != null) {
-            userLoginService.checkMobileAuthConfig();
+            // 检查当前组织的手机认证配置
+            userLoginService.checkMobileAuthConfig(OrganizationContext.getOrganizationId());
+
             UserDTO userDTO = userLoginService.authenticateUser(user.getId());
             SessionUser sessionUser = SessionUser.fromUser(userDTO, SessionUtils.getSessionId());
             SessionUtils.putUser(sessionUser);
