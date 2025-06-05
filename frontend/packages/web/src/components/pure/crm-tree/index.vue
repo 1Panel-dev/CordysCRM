@@ -44,7 +44,7 @@
   import { debounce } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { findNodeByKey, getAllParentNodeIds, traverseTree } from '@lib/shared/method';
+  import { deleteNode, findNodeByKey, getAllParentNodeIds, traverseTree } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
@@ -110,6 +110,7 @@
       filterMoreActionFunc?: (items: ActionsItem[], node: CrmTreeNodeData) => any[]; // 过滤更多操作按钮
       titleClass?: string;
       renameApi?: (node: CrmTreeNodeData) => Promise<boolean>;
+      createApi?: (node: CrmTreeNodeData) => Promise<boolean>;
       renameStatic?: boolean; // 是否是静态重命名，不调用接口
     }>(),
     {
@@ -205,9 +206,15 @@
     return [];
   }
 
+  function cancelNodeCreate(node: CrmTreeNodeData) {
+    deleteNode(filterTreeData.value, node[props.fieldNames.keyField], props.fieldNames.keyField);
+  }
+
   const { toggleEdit, createEditInput, editingKey } = useRenameNode(
     getSiblingLabels,
     props.renameApi,
+    props.createApi,
+    cancelNodeCreate,
     toRefs(props).renameStatic,
     props.fieldNames
   );

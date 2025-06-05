@@ -46,6 +46,7 @@
       isLeaf: 'isLeaf',
     }"
     :rename-api="renameHandler"
+    :create-api="handleCreateNode"
     @drop="handleDrag"
     @select="handleNodeSelect"
     @more-action-select="handleFolderMoreSelect"
@@ -63,7 +64,7 @@
   import { Add, Search } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { characterLimit, getNextAvailableName, mapTree } from '@lib/shared/method';
+  import { characterLimit, getGenerateId, getNextAvailableName, mapTree } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -198,7 +199,22 @@
         id: option.id,
         name: option.name,
       });
-      Message.success(t('common.updateSuccess'));
+      initTree();
+      return Promise.resolve(true);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+      return Promise.resolve(false);
+    }
+  }
+
+  // 添加节点
+  async function handleCreateNode(option: CrmTreeNodeData) {
+    try {
+      await addDepartment({
+        name: option.name,
+        parentId: option.parentId ?? '',
+      });
       initTree();
       return Promise.resolve(true);
     } catch (e) {
@@ -221,15 +237,12 @@
 
     const nextAddName = getNextAvailableName(existingNames, t('common.unNamed'));
     try {
-      const data = await addDepartment({
-        name: nextAddName,
-        parentId: currentParentId.value,
-      });
-
+      const id = getGenerateId();
       const newNode: CrmTreeNodeData = {
-        ...data,
-        id: data.id,
-        name: data.name,
+        id,
+        isNew: true,
+        parentId: currentParentId.value,
+        name: nextAddName,
         children: undefined,
       };
 
@@ -244,7 +257,7 @@
       expandedKeys.value.push(currentParentId.value);
 
       nextTick(() => {
-        deptTreeRef.value?.toggleEdit(data.id);
+        deptTreeRef.value?.toggleEdit(id);
       });
     } catch (error) {
       // eslint-disable-next-line no-console

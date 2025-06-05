@@ -54,6 +54,7 @@
 
   const props = defineProps<{
     mode: 'rename' | 'view';
+    allowCancel?: boolean; // 是否允许创建取消
     loading?: boolean;
     fieldConfig?: FieldConfig; // 表单配置项
     allNames?: string[]; // 添加或者重命名名称重复
@@ -142,8 +143,14 @@
   }
 
   function clearHandler() {
-    form.value.name = '';
-    validateValue();
+    // 非编辑节点没有值取消该节点
+    if (form.value.name.trim().length === 0 && props.allowCancel) {
+      handleCancel();
+      // 有值清空
+    } else {
+      form.value.name = '';
+      validateValue();
+    }
   }
 
   watch(
@@ -151,6 +158,15 @@
     (newMode) => {
       if (newMode === 'rename') {
         nextTick(() => inputInstRef.value?.focus());
+      }
+    }
+  );
+
+  watch(
+    () => form.value.name,
+    (val) => {
+      if (val.trim().length === 0 && props.allowCancel) {
+        tooltipContent.value = t('common.cancel');
       }
     }
   );

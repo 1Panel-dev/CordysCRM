@@ -16,6 +16,8 @@ import type { CrmInfoNode, CrmTreeFieldNames, CrmTreeNodeData, FieldConfig } fro
 export default function useRenameNode(
   getSiblingLabelsFun: (key: string | number) => string[],
   renameApi?: (node: CrmTreeNodeData) => Promise<boolean>,
+  createApi?: (node: CrmTreeNodeData) => Promise<boolean>,
+  cancelNodeCreateFun?: (node: CrmTreeNodeData) => void,
   renameStatic?: Ref<boolean>,
   fieldNames: CrmTreeFieldNames = { keyField: 'key', labelField: 'label', childrenField: 'children' }
 ) {
@@ -56,13 +58,34 @@ export default function useRenameNode(
       loading.value = false;
     }
   }
+  /** 创建节点 */
+  async function handleCreateMode(node: CrmTreeNodeData) {
+    if (!createApi) return;
+    loading.value = true;
+    try {
+      const res = await createApi(node);
+      if (res) {
+        toggleEdit(node[keyField]);
+        node.hideMoreAction = false;
+        message.success(t('common.addSuccess'));
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
+      loading.value = false;
+    }
+  }
 
   // 处理编辑
-  function handleEdit(node: CrmTreeNodeData, newLabel: string, notChange: boolean) {
+  function handleAction(node: CrmTreeNodeData, newLabel: string, notChange: boolean) {
     const key = node[keyField];
     node[labelField] = newLabel;
-    // 有改变且为重命名
-    if (!notChange && getEditingMode(key) === 'rename' && !renameStatic?.value) {
+
+    if (node.isNew && !renameStatic?.value) {
+      handleCreateMode(node);
+      // 有改变且为重命名
+    } else if (!notChange && getEditingMode(key) === 'rename' && !renameStatic?.value) {
       handleRenameMode(node);
       // 否则切换预览模式
     } else {
@@ -108,8 +131,13 @@ export default function useRenameNode(
         loading: loading.value,
         class: selected ? 'crm-select-label' : '',
         ...titleProps,
-        onSave: (newLabel: string, notChange: boolean) => handleEdit(option, newLabel, notChange),
+        allowCancel: option.isNew && !renameStatic?.value,
+        onSave: (newLabel: string, notChange: boolean) => handleAction(option, newLabel, notChange),
         onCancel: () => {
+          // 取消创建该节点
+          if (option.isNew && !renameStatic?.value && typeof cancelNodeCreateFun === 'function') {
+            cancelNodeCreateFun(option);
+          }
           toggleEdit(option[keyField]);
           option.hideMoreAction = false;
         },
