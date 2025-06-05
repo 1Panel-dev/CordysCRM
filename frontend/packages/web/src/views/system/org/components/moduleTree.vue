@@ -64,7 +64,7 @@
   import { Add, Search } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { characterLimit, getGenerateId, getNextAvailableName, mapTree } from '@lib/shared/method';
+  import { characterLimit, getGenerateId, mapTree } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -230,19 +230,13 @@
   // 添加节点
   async function addNode(parent: CrmTreeNodeData | null) {
     currentParentId.value = parent ? parent.id : orgModuleTree.value[0].id;
-
-    const children = parent ? parent.children ?? [] : orgModuleTree.value[0].children ?? [];
-
-    const existingNames = children.map((child: CrmTreeNodeData) => child.name);
-
-    const nextAddName = getNextAvailableName(existingNames, t('common.unNamed'));
     try {
       const id = getGenerateId();
       const newNode: CrmTreeNodeData = {
         id,
         isNew: true,
         parentId: currentParentId.value,
-        name: nextAddName,
+        name: '',
         children: undefined,
       };
 

@@ -120,6 +120,9 @@
         debouncedSave(form.value.name, form.value.name === props.fieldConfig?.name);
       } else {
         validateNameError.value = 'error';
+        if (props.allowCancel && form.value.name.trim().length === 0) {
+          emit('cancel');
+        }
       }
     });
   }
@@ -159,6 +162,9 @@
       if (newMode === 'rename') {
         nextTick(() => inputInstRef.value?.focus());
       }
+    },
+    {
+      immediate: true,
     }
   );
 
@@ -167,7 +173,11 @@
     (val) => {
       if (val.trim().length === 0 && props.allowCancel) {
         tooltipContent.value = t('common.cancel');
+        validateNameError.value = 'error';
       }
+    },
+    {
+      immediate: true,
     }
   );
 </script>
