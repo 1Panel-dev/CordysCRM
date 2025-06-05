@@ -12,6 +12,16 @@
       @batch-action="handleBatchAction"
     >
       <template #actionLeft>
+        <n-select
+          v-model:value="poolId"
+          :options="cluePoolOptions"
+          value-field="id"
+          :render-option="renderOption"
+          :show-checkmark="false"
+          label-field="name"
+          class="w-[240px]"
+          @update-value="(e) => searchData(undefined, e)"
+        />
         <!-- 先不上 -->
         <!-- <CrmImportButton
           :validate-api="importUserPreCheck"
@@ -23,16 +33,6 @@
       </template>
       <template #actionRight>
         <div class="flex gap-[12px]">
-          <n-select
-            v-model:value="poolId"
-            :options="cluePoolOptions"
-            value-field="id"
-            :render-option="renderOption"
-            :show-checkmark="false"
-            label-field="name"
-            class="w-[240px]"
-            @update-value="(e) => searchData(undefined, e)"
-          />
           <CrmAdvanceFilter
             ref="msAdvanceFilterRef"
             v-model:keyword="keyword"
