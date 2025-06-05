@@ -67,7 +67,10 @@ export function getQueryVariable(variable: string) {
   const urlString = window.location.href;
   const queryIndex = urlString.indexOf('?');
   if (queryIndex !== -1) {
-    const query = urlString.substring(queryIndex + 1);
+    // 先获取?到#之间的内容，如果没有#则获取到结尾
+    const hashIndex = urlString.indexOf('#');
+    const queryEnd = hashIndex !== -1 ? hashIndex : urlString.length;
+    const query = urlString.substring(queryIndex + 1, queryEnd);
 
     // 分割查询参数
     const params = query.split('&');
