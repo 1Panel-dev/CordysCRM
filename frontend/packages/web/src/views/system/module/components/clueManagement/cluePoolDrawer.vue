@@ -134,7 +134,7 @@
 
   function handleActionSelect(row: CluePoolItem, actionKey: string) {
     switch (actionKey) {
-      case 'pop-edit':
+      case 'edit':
         handleEdit(row);
         break;
       case 'delete':
@@ -294,12 +294,6 @@
             {
               label: t('common.edit'),
               key: 'edit',
-              popConfirmProps: {
-                loading: false,
-                title: t('common.updateConfirmTitle'),
-                content: t('module.clue.updateConfirmContent'),
-                positiveText: t('common.updateConfirm'),
-              },
             },
             {
               label: t('common.delete'),

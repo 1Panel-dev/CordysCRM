@@ -10,6 +10,9 @@
     @continue="confirmHandler(true)"
     @cancel="cancelHandler"
   >
+    <n-alert v-if="form.id" class="mb-[16px]" type="warning">
+      {{ t('module.clue.updateConfirmContent') }}
+    </n-alert>
     <n-form
       ref="formRef"
       :model="form"
@@ -133,7 +136,18 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { FormInst, FormRules, NForm, NFormItem, NInput, NRadio, NRadioGroup, NSpace, useMessage } from 'naive-ui';
+  import {
+    FormInst,
+    FormRules,
+    NAlert,
+    NForm,
+    NFormItem,
+    NInput,
+    NRadio,
+    NRadioGroup,
+    NSpace,
+    useMessage,
+  } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';

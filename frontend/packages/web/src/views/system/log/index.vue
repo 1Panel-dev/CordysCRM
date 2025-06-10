@@ -201,22 +201,6 @@
       ellipsis: {
         tooltip: true,
       },
-      render: (row: OperationLogItem) =>
-        h(
-          CrmTableButton,
-          {
-            onClick: async () => {
-              activeLogDetail.value = row;
-              if (row.type === OperationTypeEnum.UPDATE) {
-                await getLogDetail(row.id);
-              }
-              if (!showDetailDrawer.value) {
-                showDetailDrawer.value = true;
-              }
-            },
-          },
-          { default: () => row.operatorName, trigger: () => row.operatorName }
-        ),
     },
     {
       title: t('log.operationScope'),
@@ -243,6 +227,22 @@
       ellipsis: {
         tooltip: true,
       },
+      render: (row: OperationLogItem) =>
+        h(
+          CrmTableButton,
+          {
+            onClick: async () => {
+              activeLogDetail.value = row;
+              if (row.type === OperationTypeEnum.UPDATE) {
+                await getLogDetail(row.id);
+              }
+              if (!showDetailDrawer.value) {
+                showDetailDrawer.value = true;
+              }
+            },
+          },
+          { default: () => row.resourceName, trigger: () => row.resourceName }
+        ),
     },
     {
       title: t('log.operationTime'),
