@@ -78,7 +78,7 @@
       <FilterContent
         v-if="form.auto"
         ref="filterContentRef"
-        v-model:form-model="recycleFormItemModel"
+        v-model:form-model="recycleFormItemModel as FilterForm"
         keep-one-line
         :config-list="filterConfigList"
       />
@@ -226,12 +226,14 @@
         conditions: [],
       };
       if (auto) {
-        const list = recycleFormItemModel.value.list?.map((item) => ({
+        const recycleFormItemModelList: FilterFormItem[] = (recycleFormItemModel.value.list || []) as FilterFormItem[];
+        const list = recycleFormItemModelList.map((item) => ({
           column: item.dataIndex as string,
           operator: item.operator as string,
-          value: item.value as string,
+          value: Array.isArray(item.value) ? item.value.join() : item.value,
           scope: item.scope ?? [],
         }));
+
         params.conditions = list;
       }
 
@@ -278,11 +280,18 @@
     () => props.rows,
     (val?: OpportunityItem) => {
       if (val) {
+        const conditions = JSON.parse(val.condition).map((e: any) => {
+          return {
+            ...e,
+            value: e.column === 'opportunityStage' ? e.value.split(',') : e.value,
+          };
+        });
+
         form.value = {
           ...val,
           ownerIds: val.owners,
           scopeIds: val.members,
-          conditions: JSON.parse(val.condition),
+          conditions,
         };
         if (val.auto) {
           recycleFormItemModel.value.list = JSON.parse(val.condition)?.map((item: any) => {
@@ -290,7 +299,7 @@
             return {
               dataIndex: item.column,
               operator: item.operator,
-              value: item.value,
+              value: item.column === 'opportunityStage' ? item.value.split(',') : item.value,
               scope: item.scope,
               showScope: filterConfigItem?.showScope,
               type: filterConfigItem?.type,

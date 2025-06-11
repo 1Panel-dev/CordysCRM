@@ -1,5 +1,5 @@
 <template>
-  <div class="flex rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
+  <div class="flex w-full rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
     <div class="and-or">
       <CrmTag
         type="primary"
@@ -11,7 +11,7 @@
         {{ formModel.searchMode === 'AND' ? 'and' : 'or' }}
       </CrmTag>
     </div>
-    <div class="flex-1">
+    <div class="min-w-0 flex-1">
       <n-form ref="formRef" :model="formModel">
         <div
           v-for="(item, listIndex) in formModel.list"
