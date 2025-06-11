@@ -11,11 +11,7 @@ public enum RecycleConditionOperator {
 	 */
 	DYNAMICS,
 	/**
-	 * 等于
+	 * 属于
 	 */
-	EQUALS,
-	/**
-	 * 不等于
-	 */
-	NOT_EQUALS,
+	IN,
 }

@@ -13,8 +13,6 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
-import io.cordys.crm.system.constants.RecycleConditionColumnKey;
-import io.cordys.crm.system.constants.RecycleConditionOperator;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;
@@ -22,6 +20,8 @@ import io.cordys.crm.opportunity.dto.request.OpportunityRuleAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityRuleUpdateRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityRuleMapper;
+import io.cordys.crm.system.constants.RecycleConditionColumnKey;
+import io.cordys.crm.system.constants.RecycleConditionOperator;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.service.UserExtendService;
@@ -247,7 +247,11 @@ public class OpportunityRuleService {
 			return false;
 		}
 		if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.OPPORTUNITY_STAGE)) {
-			return StringUtils.equals(condition.getOperator(), RecycleConditionOperator.EQUALS.name()) == StringUtils.equals(condition.getValue(), opportunity.getStage());
+			if (StringUtils.equals(condition.getOperator(), RecycleConditionOperator.IN.name())) {
+				return condition.getValue().contains(opportunity.getStage());
+			} else {
+				return !condition.getValue().contains(opportunity.getStage());
+			}
 		} else {
 			return RecycleConditionUtils.matchTime(condition, opportunity.getCreateTime());
 		}
