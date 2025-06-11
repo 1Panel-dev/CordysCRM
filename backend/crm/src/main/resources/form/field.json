@@ -407,7 +407,8 @@
       "showThousandsSeparator": true,
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "意向产品",
