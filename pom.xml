@@ -23,7 +23,7 @@
         <easyexcel.version>4.0.3</easyexcel.version>
         <pagehelper.version>6.1.0</pagehelper.version>
         <quartz-starter.version>1.0.8</quartz-starter.version>
-        <redisson-starter.version>3.48.0</redisson-starter.version>
+        <redisson-starter.version>3.49.0</redisson-starter.version>
         <mybatis-starter.version>3.0.4</mybatis-starter.version>
         <springdoc-openapi-ui.version>2.8.8</springdoc-openapi-ui.version>
         <flatten.version>1.6.0</flatten.version>
