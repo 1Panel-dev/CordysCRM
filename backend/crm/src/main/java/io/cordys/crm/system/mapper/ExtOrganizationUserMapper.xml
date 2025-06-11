@@ -78,11 +78,13 @@
                         sou.${sortName} ${sortType},
                     </otherwise>
                 </choose>
+                sou.enable desc,
                 ${orderByClause},
                 is_commander DESC
             </when>
             <otherwise>
                 order by
+                sou.enable desc,
                 ${orderByClause},
                 is_commander DESC,
                 sou.create_time desc
