@@ -110,7 +110,7 @@
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
-  import { EQUAL, NOT_EQUAL } from '@/components/pure/crm-advance-filter/index';
+  import { IN, NOT_IN } from '@/components/pure/crm-advance-filter/index';
   import { AccordBelowType, FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
@@ -169,8 +169,8 @@
       {
         title: t('opportunity.opportunityStage'),
         dataIndex: 'opportunityStage',
-        type: FieldTypeEnum.SELECT,
-        operatorOption: [EQUAL, NOT_EQUAL],
+        type: FieldTypeEnum.SELECT_MULTIPLE,
+        operatorOption: [IN, NOT_IN],
         selectProps: {
           options: lastOpportunitySteps,
         },
