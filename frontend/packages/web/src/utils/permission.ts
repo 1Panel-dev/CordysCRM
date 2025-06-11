@@ -1,5 +1,7 @@
 import { RouteLocationNormalized, RouteRecordNormalized, RouteRecordRaw } from 'vue-router';
 
+import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+
 import appRoutes from '@/router/routes/index';
 import useAppStore from '@/store/modules/app';
 import useUserStore from '@/store/modules/user';
@@ -67,7 +69,12 @@ export function topLevelMenuHasPermission(route: RouteLocationNormalized | Route
 // 有权限的第一个路由名，如果没有找到则返回IndexRoute
 export function getFirstRouteNameByPermission(routerList: RouteRecordNormalized[]) {
   const currentRoute = routerList.filter((item) => hasAnyPermission(item.meta.permissions || []))[0]; // 排除没有权限的路由
-  return currentRoute?.name || WorkbenchRouteEnum.WORKBENCH;
+
+  const appStore = useAppStore();
+  // 首页模块开启默认首页，否则有权限的第一个路由
+  return appStore.moduleConfigList.find((e) => e.moduleKey === ModuleConfigEnum.HOME && e.enable)
+    ? WorkbenchRouteEnum.WORKBENCH
+    : currentRoute?.name;
 }
 
 // 判断当前路由名有没有权限

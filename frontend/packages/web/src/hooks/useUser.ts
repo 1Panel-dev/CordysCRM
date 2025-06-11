@@ -45,11 +45,13 @@ export default function useUser() {
 
   const goUserHasPermissionPage = () => {
     const { redirect, ...othersQuery } = router.currentRoute.value.query;
+
     const currentRouteName = getFirstRouteNameByPermission(router.getRoutes());
     const redirectHasPermission =
       redirect &&
-      ![NO_RESOURCE_ROUTE_NAME].includes(redirect as string) &&
+      !redirect.includes(NO_RESOURCE_ROUTE_NAME) &&
       routerNameHasPermission(redirect as string, router.getRoutes());
+
     router.push({
       name: redirectHasPermission ? (redirect as string) : currentRouteName,
       query: {
