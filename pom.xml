@@ -31,7 +31,7 @@
         <mail.version>2.0.3</mail.version>
         <!-- frontend -->
         <frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
-        <node.version>v22.11.0</node.version>
+        <node.version>v22.16.0</node.version>
         <pnpm.version>9.14.4</pnpm.version>
         <!--        -->
         <skipAntRunForJenkins>false</skipAntRunForJenkins>
