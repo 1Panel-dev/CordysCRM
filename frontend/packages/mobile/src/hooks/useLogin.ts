@@ -31,7 +31,7 @@ export default function useLogin() {
             },
           });
         }
-        if (code && getQueryVariable('state')) {
+        if (code) {
           const currentUrl = window.location.href;
           const url = new URL(currentUrl);
           getUrlParameterWidthRegExp('code');
