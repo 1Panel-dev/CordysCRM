@@ -10,11 +10,14 @@
         "
         class="flex items-center gap-[8px]"
       >
-        <van-button v-if="props.showErrorBtn" plain type="danger" size="small" @click="handleUpdateStage(true)">
+        <van-button
+          v-if="props.showErrorBtn"
+          plain
+          type="danger"
+          size="small"
+          @click="handleUpdateStage(StageResultEnum.FAIL)"
+        >
           {{ t('common.followFailed') }}
-        </van-button>
-        <van-button plain type="primary" size="small" @click="handleUpdateStage(false)">
-          {{ t('common.updateToCurrentProgress') }}
         </van-button>
       </div>
     </div>
@@ -34,7 +37,11 @@
             }"
           >
           </div>
-          <div class="crm-workflow-item-status mx-[8px]" :class="statusClass(index, item)">
+          <div
+            class="crm-workflow-item-status mx-[8px]"
+            :class="statusClass(index, item)"
+            @click="handleUpdateStage(item.value)"
+          >
             <CrmIcon
               v-if="index < currentStageIndex || item.value === StageResultEnum.FAIL"
               :name="item.value === StageResultEnum.FAIL ? 'iconicon_close' : 'iconicon_check'"
@@ -194,14 +201,23 @@
     showPopConfirm.value = false;
   }
 
+  const readonly = computed(() => props.readonly || !hasAnyPermission(props.operationPermission));
+
+  const isDisabledStage = (value: string) =>
+    (currentStageIndex.value === workflowList.value.length - 1 &&
+      value === workflowList.value[workflowList.value.length - 1].value) ||
+    currentStage.value === value ||
+    readonly.value;
+
   // 更新状态
-  async function handleUpdateStage(isError = false) {
-    if (props.showConfirmStatus && currentStageIndex.value === workflowList.value.length - 2) {
+  async function handleUpdateStage(stage: string) {
+    if (isDisabledStage(stage)) return;
+
+    if (props.showConfirmStatus && stage === workflowList.value[workflowList.value.length - 1].value) {
       showPopConfirm.value = true;
       return;
     }
-    const nextStage: string = isError ? StageResultEnum.FAIL : workflowList.value[currentStageIndex.value + 1]?.value;
-    await handleSave(nextStage);
+    await handleSave(stage);
   }
 </script>
 

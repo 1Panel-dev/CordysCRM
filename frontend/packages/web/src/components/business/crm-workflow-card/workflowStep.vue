@@ -5,6 +5,7 @@
         v-for="(item, index) of workflowData"
         :key="item.value"
         :class="`crm-workflow-item ${index === workflowData.length - 1 ? '' : 'flex-1'}`"
+        @click="changeStage(item.value as string)"
       >
         <div class="crm-workflow-item-status" :class="statusClass(index, item)">
           <CrmIcon
@@ -41,8 +42,16 @@
 
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
 
+  import { hasAnyPermission } from '@/utils/permission';
+
   const props = defineProps<{
     workflowList: SelectOption[];
+    operationPermission?: string[];
+    readonly?: boolean;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'change', value: string): void;
   }>();
 
   const currentStatus = defineModel<string>('status', {
@@ -53,12 +62,26 @@
 
   const currentStatusIndex = computed(() => workflowData.value.findIndex((e) => e.value === currentStatus.value));
 
+  const readonly = computed(() => props.readonly || !hasAnyPermission(props.operationPermission));
+
+  const isDisabledStage = (stage: string) =>
+    (currentStatusIndex.value === workflowData.value.length - 1 &&
+      stage === workflowData.value[workflowData.value.length - 1].value) ||
+    currentStatus.value === stage ||
+    readonly.value;
+
   function statusClass(index: number, item: SelectOption) {
     return {
-      done: index < currentStatusIndex.value && item.value !== StageResultEnum.FAIL,
-      current: index === currentStatusIndex.value && item.value !== StageResultEnum.FAIL,
-      error: item.value === StageResultEnum.FAIL,
+      'done': index < currentStatusIndex.value && item.value !== StageResultEnum.FAIL,
+      'current': index === currentStatusIndex.value && item.value !== StageResultEnum.FAIL,
+      'error': item.value === StageResultEnum.FAIL,
+      'cursor-pointer': !isDisabledStage(item.value as string),
     };
+  }
+
+  function changeStage(stage: string) {
+    if (isDisabledStage(stage)) return;
+    emit('change', stage);
   }
 </script>
 

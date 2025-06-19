@@ -1,20 +1,23 @@
 <template>
   <div class="bg-[var(--text-n10)] p-[16px]">
     <n-spin :show="updateStageLoading">
-      <WorkflowStep v-model:status="currentStage" :workflow-list="workflowList">
-        <template v-if="!props.readonly" #action="{ currentStatusIndex }">
+      <WorkflowStep
+        v-model:status="currentStage"
+        :readonly="props.readonly"
+        :operation-permission="props.operationPermission"
+        :workflow-list="workflowList"
+        @change="handleUpdateStatus"
+      >
+        <template v-if="!props.readonly" #action>
           <div v-permission="props.operationPermission" class="flex items-center">
             <n-button
               v-if="props.showErrorBtn"
               type="error"
               ghost
-              class="n-btn-outline-error mr-[12px]"
-              @click="handleUpdateStatus(currentStatusIndex, true)"
+              class="n-btn-outline-error"
+              @click="handleUpdateStatus(StageResultEnum.FAIL)"
             >
               {{ t('common.followFailed') }}
-            </n-button>
-            <n-button type="primary" @click="handleUpdateStatus(currentStatusIndex)">
-              {{ t('common.updateToCurrentProgress') }}
             </n-button>
           </div>
         </template>
@@ -65,6 +68,7 @@
     NSpace,
     NSpin,
     SelectOption,
+    useMessage,
   } from 'naive-ui';
 
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
@@ -74,6 +78,7 @@
   import WorkflowStep from './workflowStep.vue';
 
   const { t } = useI18n();
+  const Message = useMessage();
 
   const props = defineProps<{
     baseSteps: SelectOption[]; // 基础步骤
@@ -160,6 +165,7 @@
           id: props.sourceId,
           stage,
         });
+        Message.success(t('common.updateSuccess'));
         emit('loadDetail');
       }
     } catch (error) {
@@ -171,14 +177,12 @@
   }
 
   // 更新状态
-  async function handleUpdateStatus(currentStatusIndex: number, isError = false) {
-    if (props.showConfirmStatus && currentStatusIndex === workflowList.value.length - 2) {
+  async function handleUpdateStatus(stage: string) {
+    if (props.showConfirmStatus && stage === workflowList.value[workflowList.value.length - 1].value) {
       updateStatusModal.value = true;
       return;
     }
-
-    const nextStage = isError ? StageResultEnum.FAIL : workflowList.value[currentStatusIndex + 1]?.value;
-    await handleSave(nextStage as string);
+    await handleSave(stage);
   }
 
   // 确认更新
