@@ -6,6 +6,8 @@
       labelField: props.labelField,
       ...$attrs,
     }"
+    filterable
+    clearable
     max-tag-count="responsive"
     :options="computedOptions"
     :placeholder="props.placeholder || t('common.pleaseSelect')"

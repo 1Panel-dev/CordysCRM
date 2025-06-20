@@ -6,6 +6,8 @@
         :readonly="props.readonly"
         :operation-permission="props.operationPermission"
         :workflow-list="workflowList"
+        :is-limit-back="props.isLimitBack"
+        :back-stage-permission="props.backStagePermission"
         @change="handleUpdateStatus"
       >
         <template v-if="!props.readonly" #action>
@@ -88,6 +90,8 @@
     updateApi?: (params: { id: string; stage: string }) => Promise<any>;
     operationPermission?: string[];
     readonly?: boolean;
+    isLimitBack?: boolean; // 是否限制状态往返
+    backStagePermission?: string[];
   }>();
 
   const emit = defineEmits<{

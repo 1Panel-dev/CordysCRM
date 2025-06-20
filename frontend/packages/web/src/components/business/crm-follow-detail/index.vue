@@ -167,9 +167,9 @@
 
   const descriptionList: Description[] = [
     {
-      key: 'departmentName',
-      label: t('org.department'),
-      value: 'departmentName',
+      key: 'customerName',
+      label: t('crmFollowRecord.companyName'),
+      value: 'customerName',
     },
     {
       key: 'contactName',

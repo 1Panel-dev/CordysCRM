@@ -4,4 +4,5 @@ export default {
   'crmFollowRecord.writePlan': 'Write plan',
   'crmFollowRecord.noFollowRecord': 'No follow up records',
   'crmFollowRecord.noFollowPlan': 'No follow up plan',
+  'crmFollowRecord.companyName': 'Company name',
 };

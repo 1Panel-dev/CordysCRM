@@ -34,7 +34,8 @@
 
           <div class="crm-follow-record-base-info">
             <CrmDetailCard :description="props.getDescriptionFun(item)">
-              <template #prefix>
+              <!-- TODO 先不要了 xinxin -->
+              <!-- <template #prefix>
                 <div class="flex items-center gap-[8px]">
                   <CrmAvatar :is-user="item.owner === userStore.userInfo.id" :size="24" :word="item.ownerName" />
                   <n-tooltip :delay="300">
@@ -44,7 +45,7 @@
                     {{ item.ownerName || '-' }}
                   </n-tooltip>
                 </div>
-              </template>
+              </template> -->
               <template v-for="ele in props.getDescriptionFun(item)" :key="ele.key" #[ele.key]="{ item: descItem }">
                 <slot :name="ele.key" :desc-item="descItem" :item="item"></slot>
               </template>
@@ -61,7 +62,6 @@
 </template>
 
 <script setup lang="ts">
-  import { NTooltip } from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { CustomerFollowPlanStatusEnum } from '@lib/shared/enums/customerEnum';
@@ -70,12 +70,7 @@
   import type { Description } from '@/components/pure/crm-detail-card/index.vue';
   import CrmDetailCard from '@/components/pure/crm-detail-card/index.vue';
   import CrmList from '@/components/pure/crm-list/index.vue';
-  import CrmAvatar from '@/components/business/crm-avatar/index.vue';
   import StatusTagSelect from './statusTagSelect.vue';
-
-  import useUserStore from '@/store/modules/user';
-
-  const userStore = useUserStore();
 
   const props = defineProps<{
     type: 'followRecord' | 'followPlan';

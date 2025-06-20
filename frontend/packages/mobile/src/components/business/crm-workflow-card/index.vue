@@ -89,7 +89,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   import { updateClueStatus, updateOptStage } from '@/api/modules';
-  import { hasAnyPermission } from '@/utils/permission';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
 
@@ -109,6 +109,8 @@
     operationPermission?: string[];
     showErrorBtn?: boolean;
     readonly?: boolean;
+    isLimitBack?: boolean; // 是否限制状态往返
+    backStagePermission?: string[];
   }>();
 
   const emit = defineEmits<{
@@ -203,11 +205,34 @@
 
   const readonly = computed(() => props.readonly || !hasAnyPermission(props.operationPermission));
 
-  const isDisabledStage = (value: string) =>
-    (currentStageIndex.value === workflowList.value.length - 1 &&
-      value === workflowList.value[workflowList.value.length - 1].value) ||
-    currentStage.value === value ||
-    readonly.value;
+  const isDisabledStage = (stage: string) => {
+    const isLastStage =
+      currentStageIndex.value === workflowList.value.length - 1 &&
+      stage === workflowList.value[workflowList.value.length - 1].value;
+
+    const isSameStage = currentStage.value === stage;
+
+    const isSuccessOrFail = [StageResultEnum.SUCCESS, StageResultEnum.FAIL].includes(
+      currentStage.value as StageResultEnum
+    );
+    const isSuccessStage = [StageResultEnum.SUCCESS].includes(stage as StageResultEnum);
+    // 限制回退状态
+    if (props.isLimitBack) {
+      // 当前状态为成功和失败判断是否有高阶权限且不能操作非成功失败阶段的状态
+      if (isSuccessOrFail) {
+        const hasPermission = props.backStagePermission && hasAllPermission(props.backStagePermission);
+        if (!hasPermission) return true;
+        if (hasPermission && !isSuccessStage) return true;
+        // 非当前状态和仅读状态
+      } else {
+        return isSameStage || readonly.value;
+      }
+      // 不限制回退状态
+    } else {
+      return isSameStage || readonly.value || isLastStage;
+    }
+    return false;
+  };
 
   // 更新状态
   async function handleUpdateStage(stage: string) {

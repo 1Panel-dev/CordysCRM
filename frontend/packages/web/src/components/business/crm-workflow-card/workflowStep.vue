@@ -42,12 +42,14 @@
 
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
 
-  import { hasAnyPermission } from '@/utils/permission';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     workflowList: SelectOption[];
     operationPermission?: string[];
     readonly?: boolean;
+    isLimitBack?: boolean; // 是否限制状态往返
+    backStagePermission?: string[];
   }>();
 
   const emit = defineEmits<{
@@ -64,11 +66,34 @@
 
   const readonly = computed(() => props.readonly || !hasAnyPermission(props.operationPermission));
 
-  const isDisabledStage = (stage: string) =>
-    (currentStatusIndex.value === workflowData.value.length - 1 &&
-      stage === workflowData.value[workflowData.value.length - 1].value) ||
-    currentStatus.value === stage ||
-    readonly.value;
+  const isDisabledStage = (stage: string) => {
+    const isLastStage =
+      currentStatusIndex.value === workflowData.value.length - 1 &&
+      stage === workflowData.value[workflowData.value.length - 1].value;
+
+    const isSameStage = currentStatus.value === stage;
+
+    const isSuccessOrFail = [StageResultEnum.SUCCESS, StageResultEnum.FAIL].includes(
+      currentStatus.value as StageResultEnum
+    );
+    const isSuccessStage = [StageResultEnum.SUCCESS].includes(stage as StageResultEnum);
+    // 限制回退状态
+    if (props.isLimitBack) {
+      // 当前状态为成功和失败判断是否有高阶权限且不能操作非成功失败阶段的状态
+      if (isSuccessOrFail) {
+        const hasPermission = props.backStagePermission && hasAllPermission(props.backStagePermission);
+        if (!hasPermission) return true;
+        if (hasPermission && !isSuccessStage) return true;
+        // 非当前状态和仅读状态
+      } else {
+        return isSameStage || readonly.value;
+      }
+      // 不限制回退状态
+    } else {
+      return isSameStage || readonly.value || isLastStage;
+    }
+    return false;
+  };
 
   function statusClass(index: number, item: SelectOption) {
     return {

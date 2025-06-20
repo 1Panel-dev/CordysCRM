@@ -15,6 +15,8 @@
               :form-stage-key="FormDesignKeyEnum.BUSINESS"
               :show-confirm-status="true"
               :title="t('opportunity.progress')"
+              is-limit-back
+              :back-stage-permission="['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT_STAGE']"
               :base-steps="baseStepList"
               :source-id="sourceId"
               :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
