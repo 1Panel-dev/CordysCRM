@@ -16,7 +16,6 @@ import {
   getUnReadAnnouncement,
 } from '@/api/modules';
 import useUserStore from '@/store/modules/user';
-import { hasAnyPermission } from '@/utils/permission';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
 import type { AppState, PageConfig, Style, Theme } from './types';

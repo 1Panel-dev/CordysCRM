@@ -291,4 +291,5 @@ export default {
   'common.dayUnit': '天',
   'common.optionNotExist': '选项不存在',
   'common.dateCannotBeInPast': '日期不能小于当前时间',
+  'common.cancelExport': '取消导出',
 };

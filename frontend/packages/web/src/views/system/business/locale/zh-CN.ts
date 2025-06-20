@@ -117,4 +117,10 @@ export default {
   'system.personal.password.style': '密码需要包含数字和字母',
   'system.personal.password.length': '密码长度不得超过64位字符',
   'system.personal.countdown': '倒计时结束后可重新获取',
+  'system.personal.exportTip': '导出有效期为 24 小时，请及时下载文件',
+  'system.personal.exporting': '导出中',
+  'system.personal.cancelledExport': '已取消导出',
+  'system.personal.addNewExport': '新增【我的导出】菜单',
+  'system.personal.addNewExportPopContent': '可查看导出任务进度',
+  'system.personal.noExportTask': '暂无导出任务',
 };

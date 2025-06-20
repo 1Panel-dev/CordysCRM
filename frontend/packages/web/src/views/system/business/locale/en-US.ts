@@ -122,4 +122,10 @@ export default {
   'system.personal.password.style': 'The password must contain numbers and letters',
   'system.personal.password.length': 'Password length must not exceed 64 characters',
   'system.personal.countdown': 'You can get it again after the countdown ends',
+  'system.personal.exportTip': 'Export is valid for 24 hours, please download the file',
+  'system.personal.exporting': 'Exporting',
+  'system.personal.cancelledExport': 'Cancelled export',
+  'system.personal.addNewExport': 'Added My Export menu',
+  'system.personal.addNewExportPopContent': 'To view the export task schedule',
+  'system.personal.noExportTask': 'No task is deduced',
 };

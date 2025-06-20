@@ -6,6 +6,20 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "44646133",
+      "name": "icon_export",
+      "font_class": "icon_export",
+      "unicode": "e746",
+      "unicode_decimal": 59206
+    },
+    {
+      "icon_id": "44384502",
+      "name": "icon_phone_outgoing",
+      "font_class": "icon_phone_outgoing",
+      "unicode": "e743",
+      "unicode_decimal": 59203
+    },
+    {
       "icon_id": "36511677",
       "name": "icon_that_person",
       "font_class": "icon_that_person",

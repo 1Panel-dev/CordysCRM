@@ -62,6 +62,7 @@ export default {
   'module.capacitySet.MaximumPlaceholder': '不限制',
   'module.personal.info': '个人信息',
   'module.personal.plan': '我的计划',
+  'module.personal.myExport': '我的导出',
   'module.logout': '退出系统',
   'module.customerFormSetting': '客户表单设置',
   'module.clueFormSetting': '线索表单设置',

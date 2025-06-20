@@ -31,9 +31,21 @@
           @update-show="personalMenuUpdateShow"
         >
           <div
-            class="flex w-full cursor-pointer items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px] hover:bg-[var(--primary-7)]"
+            class="personal-info-menu relative flex w-full cursor-pointer items-center gap-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[8px] hover:bg-[var(--primary-7)]"
             :class="personalMenuShow ? 'bg-[var(--primary-6)]' : ''"
           >
+            <CrmPopConfirm
+              v-model:show="showPopModal"
+              :title="t('system.personal.addNewExport', { name: characterLimit('我的导出') })"
+              icon-type="primary"
+              :content="t('system.personal.addNewExportPopContent')"
+              :positive-text="t('common.gotIt')"
+              negative-text=""
+              placement="right-end"
+              @confirm="confirmHandler"
+            >
+              <span class="personal-export-pop"></span>
+            </CrmPopConfirm>
             <CrmAvatar :size="collapsed ? 25 : 40" class="flex-shrink-0 transition-all" />
             <div v-if="!collapsed" class="one-line-text">
               <div class="one-line-text max-w-[110px]">{{ userStore.userInfo.name }}</div>
@@ -60,6 +72,7 @@
     </div>
   </n-layout-sider>
   <PersonalInfoDrawer v-model:visible="showPersonalInfo" :active-tab-value="personalTab" />
+  <personalExportDrawer v-model:visible="showPersonalExport" />
 </template>
 
 <script setup lang="ts">
@@ -68,19 +81,22 @@
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { mapTree } from '@lib/shared/method';
+  import { characterLimit, mapTree } from '@lib/shared/method';
   import { listenerRouteChange } from '@lib/shared/method/route-listener';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmAvatar from '@/components/business/crm-avatar/index.vue';
+  import personalExportDrawer from '@/views/system/business/components/personalExportDrawer.vue';
   import PersonalInfoDrawer from '@/views/system/business/components/personalInfoDrawer.vue';
 
   import useMenuTree from '@/hooks/useMenuTree';
   import useUser from '@/hooks/useUser';
+  import useVisit from '@/hooks/useVisit';
   import type { AppRouteRecordRaw } from '@/router/routes/types';
   import useAppStore from '@/store/modules/app';
   import useUserStore from '@/store/modules/user';
-  import { getFirstRouterNameByCurrentRoute } from '@/utils/permission';
+  import { getFirstRouterNameByCurrentRoute, hasAnyPermission } from '@/utils/permission';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -97,6 +113,8 @@
   const personalMenuValue = ref<string>('');
   const showPersonalInfo = ref<boolean>(false);
   const personalTab = ref(PersonalEnum.INFO);
+  const visitedKey = 'doNotShowPersonalExportAgain';
+  const { addVisited, getIsVisited } = useVisit(visitedKey);
 
   watch(
     () => appStore.getMenuCollapsed,
@@ -149,6 +167,12 @@
       key: AppRouteEnum.PERSONAL_PLAN,
       icon: renderIcon('iconicon_calendar1'),
     },
+    // TODO 权限控制
+    {
+      label: t('module.personal.myExport'),
+      key: AppRouteEnum.PERSONAL_EXPORT,
+      icon: renderIcon('iconicon_export'),
+    },
     {
       label: t('module.logout'),
       key: AppRouteEnum.LOGOUT,
@@ -167,6 +191,14 @@
     personalMenuShow.value = value;
   }
 
+  const showPersonalExport = ref(false);
+  const showPopModal = ref(false);
+
+  function confirmHandler() {
+    addVisited();
+    showPopModal.value = false;
+  }
+
   async function personalMenuChange(key: string) {
     personalMenuValue.value = key;
     if (key === AppRouteEnum.PERSONAL_INFO || key === AppRouteEnum.PERSONAL_PLAN) {
@@ -176,6 +208,8 @@
         personalTab.value = PersonalEnum.MY_PLAN;
       }
       showPersonalInfo.value = true;
+    } else if (key === AppRouteEnum.PERSONAL_EXPORT) {
+      showPersonalExport.value = true;
     } else {
       await userStore.logout();
       logout();
@@ -217,8 +251,28 @@
     }
   }
 
+  // TODO 权限
+  const hasExportPermission: string[] = [];
+
+  function initExportPop() {
+    if (!getIsVisited() && hasAnyPermission(hasExportPermission)) {
+      showPopModal.value = true;
+
+      let timer = null;
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      timer = setTimeout(() => {
+        confirmHandler();
+        timer = null;
+      }, 5000);
+    }
+  }
+
   onBeforeMount(() => {
     setMenuValue(router.currentRoute.value);
+    initExportPop();
   });
 
   /**
@@ -314,5 +368,13 @@
     .n-dropdown-option-body {
       color: var(--text-n2) !important;
     }
+  }
+</style>
+
+<style lang="less" scoped>
+  .personal-export-pop {
+    position: absolute;
+    right: 0;
+    bottom: 0;
   }
 </style>

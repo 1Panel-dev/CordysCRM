@@ -171,12 +171,22 @@
     };
   }
 
-  const resultColumns: PickerOption[] = [
-    { text: t('common.success'), value: StageResultEnum.SUCCESS },
-    { text: t('common.fail'), value: StageResultEnum.FAIL },
-  ];
+  const resultColumns = computed<PickerOption[]>(() => {
+    return [
+      {
+        text: t('common.success'),
+        value: StageResultEnum.SUCCESS,
+        disabled: props.backStagePermission && hasAllPermission(props.backStagePermission),
+      },
+      { text: t('common.fail'), value: StageResultEnum.FAIL },
+    ];
+  });
 
-  const formStage = ref<StageResultEnum[]>([StageResultEnum.SUCCESS]);
+  const formStage = ref<StageResultEnum[]>([
+    props.backStagePermission && hasAllPermission(props.backStagePermission)
+      ? StageResultEnum.FAIL
+      : StageResultEnum.SUCCESS,
+  ]);
 
   const showPopConfirm = ref(false);
 

@@ -167,11 +167,6 @@
 
   const descriptionList: Description[] = [
     {
-      key: 'customerName',
-      label: t('crmFollowRecord.companyName'),
-      value: 'customerName',
-    },
-    {
       key: 'contactName',
       label: t('common.contact'),
       value: 'contactName',
@@ -204,10 +199,18 @@
   ];
 
   function getDescriptionFun(item: FollowDetailItem) {
-    let lastDescriptionList = [...descriptionList];
+    const customerNameKey = item.clueId?.length ? 'clueName' : 'customerName';
+    let lastDescriptionList = [
+      {
+        key: customerNameKey,
+        label: item.clueId?.length ? t('crmFollowRecord.companyName') : t('opportunity.customerName'),
+        value: customerNameKey,
+      },
+      ...descriptionList,
+    ];
 
     if (item.clueId?.length) {
-      lastDescriptionList = descriptionList.filter((e) => !['contactName', 'phone'].includes(e.key));
+      lastDescriptionList = lastDescriptionList.filter((e) => !['contactName', 'phone'].includes(e.key));
     }
 
     return (lastDescriptionList.map((desc: Description) => ({

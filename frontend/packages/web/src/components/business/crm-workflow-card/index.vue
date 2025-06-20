@@ -43,7 +43,11 @@
           >
             <n-radio-group v-model:value="form.stage" name="radiogroup">
               <n-space>
-                <n-radio key="success" :value="StageResultEnum.SUCCESS">
+                <n-radio
+                  key="success"
+                  :value="StageResultEnum.SUCCESS"
+                  :disabled="props.backStagePermission && hasAllPermission(props.backStagePermission)"
+                >
                   {{ t('common.success') }}
                 </n-radio>
                 <n-radio key="fail" :value="StageResultEnum.FAIL">
@@ -78,6 +82,8 @@
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import WorkflowStep from './workflowStep.vue';
+
+  import { hasAllPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -115,7 +121,10 @@
   const form = ref<{
     stage: string;
   }>({
-    stage: 'SUCCESS',
+    stage:
+      props.backStagePermission && hasAllPermission(props.backStagePermission)
+        ? StageResultEnum.FAIL
+        : StageResultEnum.SUCCESS,
   });
 
   const endStage = computed<SelectOption[]>(() => {

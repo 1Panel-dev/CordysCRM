@@ -34,6 +34,7 @@ export enum ProductRouteEnum {
 export enum PersonalRouteEnum {
   PERSONAL_INFO = 'personalInfo',
   PERSONAL_PLAN = 'personalPlan',
+  PERSONAL_EXPORT = 'personalExport',
   LOGOUT = 'logout',
 }
 export enum WorkbenchRouteEnum {

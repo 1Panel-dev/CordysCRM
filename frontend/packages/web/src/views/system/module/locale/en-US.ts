@@ -64,6 +64,7 @@ export default {
   'module.capacitySet.MaximumPlaceholder': 'No limit',
   'module.personal.info': 'Personal information',
   'module.personal.plan': 'My plan',
+  'module.personal.myExport': 'My export',
   'module.logout': 'Exit',
   'module.customerFormSetting': 'Customer form set',
   'module.clueFormSetting': 'Clue form set',
