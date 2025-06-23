@@ -10,6 +10,8 @@ import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
 import useRoleApi from '@lib/shared/api/modules/system/role';
+import useLicenseApi from '@lib/shared/api/modules/system/authorizedManagement';
+
 
 import useDiscreteApi from '@/hooks/useDiscreteApi';
 
@@ -33,6 +35,7 @@ const orgApi = useOrgApi(CDR);
 const roleApi = useRoleApi(CDR);
 const loginApi = useLoginApi(CDR);
 const sysApi = useSysApi(CDR);
+const licenseApi = useLicenseApi(CDR);
 
 export const {
   addProduct,
@@ -306,3 +309,5 @@ export const {
 export const { login, signout, isLogin, getKey, getWeComCallback, getWeComOauthCallback } = loginApi;
 
 export const { getSystemVersion } = sysApi;
+
+export const { getLicense, addLicense } = licenseApi;

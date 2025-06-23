@@ -10,6 +10,7 @@ import useLoginApi from '@lib/shared/api/modules/system/login';
 import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
+import useLicenseApi from '@lib/shared/api/modules/system/authorizedManagement';
 
 import checkStatus from '../http/checkStatus';
 
@@ -27,6 +28,7 @@ const moduleApi = useModuleApi(CDR);
 const orgApi = useOrgApi(CDR);
 const businessApi = useBusinessApi(CDR);
 const loginApi = useLoginApi(CDR);
+const licenseApi = useLicenseApi(CDR);
 
 export const {
   addProduct,
@@ -225,3 +227,5 @@ export const {
 } = businessApi;
 
 export const { isLogin, getWeComOauthCallback, getWeComCallback } = loginApi;
+
+export const { getLicense, addLicense } = licenseApi;

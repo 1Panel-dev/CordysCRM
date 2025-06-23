@@ -142,11 +142,13 @@
   import useUserStore from '@/store/modules/user';
 
   import { Option } from 'naive-ui/es/legacy-transfer/src/interface';
+  import useLicenseStore from "@/store/modules/setting/license";
 
   const { goUserHasPermissionPage } = useUser();
   const { t } = useI18n();
   const appStore = useAppStore();
   const userStore = useUserStore();
+  const licenseStore = useLicenseStore();
   const Message = useMessage();
   // const { openModal } = useModal();
 
@@ -330,7 +332,9 @@
   onMounted(async () => {
     if (!props.isPreview) {
       // userStore.getAuthentication();
-      initPlatformInfo();
+      if (licenseStore.hasLicense()) {
+        initPlatformInfo();
+      }
       appStore.initPublicKey();
       try {
         if (isLoginExpires()) {

@@ -143,9 +143,12 @@
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
   import useUserStore from '@/store/modules/user';
+  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   const userStore = useUserStore();
+
+  const licenseStore = useLicenseStore();
 
   const Message = useMessage();
 
@@ -1017,7 +1020,7 @@
   }
 
   onBeforeMount(() => {
-    if (isHasConfigPermission.value) {
+    if (isHasConfigPermission.value && licenseStore.hasLicense()) {
       initIntegration();
     }
   });
