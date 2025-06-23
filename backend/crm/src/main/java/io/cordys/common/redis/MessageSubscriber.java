@@ -1,10 +1,15 @@
 package io.cordys.common.redis;
 
+import io.cordys.crm.system.consumer.TopicConsumer;
 import io.cordys.common.util.LogUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Redis消息订阅处理器
@@ -12,6 +17,18 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class MessageSubscriber implements MessageListener {
+
+    /**
+     * 所有Topic的消费者集合
+     */
+    static Map<String, TopicConsumer> consumerMap = new HashMap<>();
+
+
+    public MessageSubscriber(List<TopicConsumer> consumers){
+        consumers.forEach(consumer -> {
+            consumerMap.put(consumer.getChannel(),consumer);
+        });
+    }
 
     /**
      * 处理从Redis接收的消息
@@ -45,6 +62,9 @@ public class MessageSubscriber implements MessageListener {
         LogUtils.info("开始处理消息，频道: {}", channel);
 
         // 在这里实现具体的业务逻辑
-        // TODO: 添加实际的业务处理代码
+        TopicConsumer consumer = consumerMap.get(channel);
+        consumer.consume(message);
     }
+
+
 }

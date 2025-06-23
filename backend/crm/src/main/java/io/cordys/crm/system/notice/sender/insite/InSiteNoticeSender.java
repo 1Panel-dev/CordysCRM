@@ -1,15 +1,16 @@
 package io.cordys.crm.system.notice.sender.insite;
 
 
+import io.cordys.common.constants.TopicConstants;
+import io.cordys.crm.system.notice.dto.NoticeRedisMessage;
+import io.cordys.common.redis.MessagePublisher;
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.MessageDetailDTO;
-import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.notice.common.NoticeModel;
 import io.cordys.crm.system.notice.common.Receiver;
 import io.cordys.crm.system.notice.sender.AbstractNoticeSender;
@@ -34,6 +35,8 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private SseService sseService;
+    @Resource
+    private MessagePublisher messagePublisher;
 
     private static final String USER_PREFIX = "msg_user:";  // Redis 存储系统通知用户前缀
     private static final String MSG_PREFIX = "msg_content:";  // Redis 存储系统通知内容信息前缀
@@ -90,7 +93,11 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + receiver.getUserId(), "False");
 
             // 发送消息
-            sseService.broadcastPeriodically(receiver.getUserId(), NotificationConstants.Type.SYSTEM_NOTICE.toString());
+            NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
+            noticeRedisMessage.setMessage(receiver.getUserId());
+            noticeRedisMessage.setNoticeType(NotificationConstants.Type.SYSTEM_NOTICE.toString());
+            messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
+            //sseService.broadcastPeriodically(receiver.getUserId(), NotificationConstants.Type.SYSTEM_NOTICE.toString());
         });
 
     }

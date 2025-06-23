@@ -4,9 +4,12 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.common.constants.TopicConstants;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import io.cordys.common.exception.GenericException;
 import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.common.redis.MessagePublisher;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
@@ -58,6 +61,8 @@ public class AnnouncementService {
     private ExtUserMapper userMapper;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private MessagePublisher messagePublisher;
 
 
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
@@ -268,7 +273,11 @@ public class AnnouncementService {
                     //更新用户的已读全部消息状态 0 为未读，1为已读
                     stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + subUserId, "False");
                     // 发送消息
-                    sseService.broadcastPeriodically(subUserId, NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString());
+                    NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
+                    noticeRedisMessage.setMessage(subUserId);
+                    noticeRedisMessage.setNoticeType(NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString());
+                    messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
+                    //sseService.broadcastPeriodically(subUserId, NotificationConstants.Type.ANNOUNCEMENT_NOTICE.toString());
                 }
             }
             notificationBaseMapper.batchInsert(notifications);

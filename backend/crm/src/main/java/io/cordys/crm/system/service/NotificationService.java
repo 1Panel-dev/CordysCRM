@@ -1,7 +1,11 @@
 package io.cordys.crm.system.service;
 
 
+import io.cordys.common.constants.TopicConstants;
 import io.cordys.common.dto.OptionCountDTO;
+import io.cordys.crm.system.notice.dto.NoticeRedisMessage;
+import io.cordys.common.redis.MessagePublisher;
+import io.cordys.common.util.JSON;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.request.NotificationRequest;
@@ -33,6 +37,8 @@ public class NotificationService {
     private SendModuleService sendModuleService;
     @Resource
     private SseService sseService;
+    @Resource
+    private MessagePublisher messagePublisher;
 
 
     private static final String USER_ANNOUNCE_PREFIX = "announce_user:";  // Redis 存储用户前缀
@@ -64,7 +70,11 @@ public class NotificationService {
         Integer unRead = getUnRead(orgId, userId);
         if (unRead == 0) {
             stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "True");
-            sseService.broadcastPeriodically(userId,NotificationConstants.Status.READ.toString());
+            //sseService.broadcastPeriodically(userId,NotificationConstants.Status.READ.toString());
+            NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
+            noticeRedisMessage.setMessage(userId);
+            noticeRedisMessage.setNoticeType(NotificationConstants.Status.READ.toString());
+            messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
         }
         return update;
     }
@@ -90,7 +100,11 @@ public class NotificationService {
         stringRedisTemplate.delete(USER_ANNOUNCE_PREFIX + userId);
         stringRedisTemplate.delete(USER_PREFIX + userId);
         stringRedisTemplate.opsForValue().set(USER_READ_PREFIX + userId, "True");
-        sseService.broadcastPeriodically(userId,NotificationConstants.Status.READ.toString());
+        NoticeRedisMessage noticeRedisMessage = new NoticeRedisMessage();
+        noticeRedisMessage.setMessage(userId);
+        noticeRedisMessage.setNoticeType(NotificationConstants.Status.READ.toString());
+        messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
+        //sseService.broadcastPeriodically(userId,NotificationConstants.Status.READ.toString());
         return extNotificationMapper.updateByReceiver(record);
     }
 
