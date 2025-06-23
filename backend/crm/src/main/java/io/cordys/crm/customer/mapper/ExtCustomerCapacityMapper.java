@@ -13,7 +13,7 @@ public interface ExtCustomerCapacityMapper {
 	 * @param organizationId 组织ID
 	 * @return 容量
 	 */
-	Integer getCapacityByScopeIds(@Param("ids") List<String> scopeIds, @Param("orgId") String organizationId);
+	CustomerCapacity getCapacityByScopeIds(@Param("ids") List<String> scopeIds, @Param("orgId") String organizationId);
 
 	/**
 	 * 更新容量

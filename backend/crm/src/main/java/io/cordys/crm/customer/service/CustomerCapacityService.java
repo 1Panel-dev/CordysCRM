@@ -12,6 +12,7 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.CustomerCapacity;
 import io.cordys.crm.customer.dto.CustomerCapacityDTO;
 import io.cordys.crm.customer.mapper.ExtCustomerCapacityMapper;
+import io.cordys.crm.system.dto.FilterConditionDTO;
 import io.cordys.crm.system.dto.request.CapacityAddRequest;
 import io.cordys.crm.system.dto.request.CapacityUpdateRequest;
 import io.cordys.crm.system.service.UserExtendService;
@@ -19,6 +20,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +56,7 @@ public class CustomerCapacityService {
 			capacityDTO.setId(capacity.getId());
 			capacityDTO.setCapacity(capacity.getCapacity());
 			capacityDTO.setMembers(userExtendService.getScope(JSON.parseArray(capacity.getScopeId(), String.class)));
+			capacityDTO.setFilters(StringUtils.isEmpty(capacity.getFilter()) ? new ArrayList<>() : JSON.parseArray(capacity.getFilter(), FilterConditionDTO.class));
 			capacityDTOS.add(capacityDTO);
 		});
 		return capacityDTOS;
@@ -74,6 +77,7 @@ public class CustomerCapacityService {
 		capacity.setOrganizationId(currentOrgId);
 		capacity.setCapacity(request.getCapacity());
 		capacity.setScopeId(JSON.toJSONString(request.getScopeIds()));
+		capacity.setFilter(CollectionUtils.isNotEmpty(request.getFilters()) ? JSON.toJSONString(request.getFilters()) : null);
 		capacity.setCreateTime(System.currentTimeMillis());
 		capacity.setCreateUser(currentUserId);
 		capacity.setUpdateTime(System.currentTimeMillis());
@@ -105,6 +109,7 @@ public class CustomerCapacityService {
 		}
 		oldCapacity.setScopeId(JSON.toJSONString(request.getScopeIds()));
 		oldCapacity.setCapacity(request.getCapacity());
+		oldCapacity.setFilter(CollectionUtils.isNotEmpty(request.getFilters()) ? JSON.toJSONString(request.getFilters()) : null);
 		oldCapacity.setUpdateTime(System.currentTimeMillis());
 		oldCapacity.setUpdateUser(currentUserId);
 		extCustomerCapacityMapper.updateCapacity(oldCapacity);

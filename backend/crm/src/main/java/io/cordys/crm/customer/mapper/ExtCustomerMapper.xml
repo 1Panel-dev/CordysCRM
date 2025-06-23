@@ -337,4 +337,22 @@
             #{id}
         </foreach>
     </select>
+
+    <select id="filterOwnerCount" resultType="java.lang.Long">
+        select count(1) from customer c
+        where not exists (
+            select 1 from opportunity o where o.customer_id = c.id
+            <if test="filters != null and filters.size > 0">
+                and
+                <foreach collection="filters" item="filter" open="(" separator=" and " close=")">
+                    <if test="filter.name == 'stage'">
+                        <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                            <property name="condition" value="condition"/>
+                            <property name="column" value="o.stage"/>
+                        </include>
+                    </if>
+                </foreach>
+            </if>
+        ) and c.owner = #{ownerId};
+    </select>
 </mapper>

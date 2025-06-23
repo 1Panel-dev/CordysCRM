@@ -4,6 +4,7 @@ import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.*;
+import io.cordys.crm.system.dto.FilterConditionDTO;
 import org.apache.ibatis.annotations.Param;
 import io.cordys.crm.customer.domain.Customer;
 
@@ -44,5 +45,13 @@ public interface ExtCustomerMapper {
     List<OptionDTO> getCustomerOptionsByIds(@Param("ids") List<String> ids);
 
     boolean hasRefOpportunity(@Param("ids") List<String> ids);
+
+    /**
+     * 查询负责人过滤条件下的客户数量
+     * @param ownerId 负责人ID
+     * @param filters 过滤条件集合
+     * @return 客户数量
+     */
+    long filterOwnerCount(@Param("ownerId") String ownerId, @Param("filters") List<FilterConditionDTO> filters);
 
 }

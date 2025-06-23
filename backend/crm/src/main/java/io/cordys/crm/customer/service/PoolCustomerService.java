@@ -17,8 +17,10 @@ import io.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
 import io.cordys.crm.customer.dto.CustomerPoolRecycleRuleDTO;
 import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import io.cordys.crm.customer.mapper.ExtCustomerCapacityMapper;
+import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.User;
+import io.cordys.crm.system.dto.FilterConditionDTO;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
@@ -50,6 +52,8 @@ public class PoolCustomerService {
 
 	@Resource
 	private BaseMapper<Customer> customerMapper;
+	@Resource
+	private ExtCustomerMapper extCustomerMapper;
 	@Resource
 	private BaseMapper<User> userMapper;
 	@Resource
@@ -239,13 +243,16 @@ public class PoolCustomerService {
 	 */
 	public void validateCapacity(int processCount, String ownUserId, String currentOrgId) {
 		// 实际可处理条数 = 负责人库容容量 - 所领取的数量 < 处理数量, 提示库容不足.
-		Integer capacity = getUserCapacity(ownUserId, currentOrgId);
-		LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
-		customerWrapper.eq(Customer::getOwner, ownUserId).eq(Customer::getInSharedPool, false);
-		List<Customer> customers = customerMapper.selectListByLambda(customerWrapper);
-		int ownCount = customers.size();
-		if (capacity != null && capacity - ownCount < processCount) {
-			throw new GenericException(Translator.getWithArgs("customer.capacity.over", Math.max(capacity - ownCount, 0)));
+		CustomerCapacity customerCapacity = getUserCapacity(ownUserId, currentOrgId);
+		if (customerCapacity == null) {
+			return;
+		}
+		List<FilterConditionDTO> conditions = StringUtils.isEmpty(customerCapacity.getFilter()) ?
+				new ArrayList<>() : JSON.parseArray(customerCapacity.getFilter(), FilterConditionDTO.class);
+		List<FilterConditionDTO> enableConditions = conditions.stream().filter(FilterConditionDTO::getEnable).toList();
+		int ownCount = (int) extCustomerMapper.filterOwnerCount(ownUserId, enableConditions);
+		if (customerCapacity.getCapacity() - ownCount < processCount) {
+			throw new GenericException(Translator.getWithArgs("customer.capacity.over", Math.max(customerCapacity.getCapacity() - ownCount, 0)));
 		}
 	}
 
@@ -277,7 +284,7 @@ public class PoolCustomerService {
 	 * @param organizationId 组织ID
 	 * @return 库容
 	 */
-	public Integer getUserCapacity(String userId, String organizationId) {
+	public CustomerCapacity getUserCapacity(String userId, String organizationId) {
 		List<String> scopeIds = userExtendService.getUserScopeIds(userId, organizationId);
 		return extCustomerCapacityMapper.getCapacityByScopeIds(scopeIds, organizationId);
 	}

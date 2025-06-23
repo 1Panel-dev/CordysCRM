@@ -25,6 +25,8 @@ CREATE INDEX idx_resource_type ON export_task(resource_type ASC);
 CREATE INDEX idx_create_time ON export_task(create_time ASC);
 CREATE INDEX idx_create_user ON export_task(create_user ASC);
 
+ALTER TABLE customer_capacity ADD COLUMN `filter` TEXT COMMENT '过滤条件';
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 

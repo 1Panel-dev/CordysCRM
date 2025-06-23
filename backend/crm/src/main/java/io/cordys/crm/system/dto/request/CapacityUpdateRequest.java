@@ -1,5 +1,6 @@
 package io.cordys.crm.system.dto.request;
 
+import io.cordys.crm.system.dto.FilterConditionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,4 +19,6 @@ public class CapacityUpdateRequest {
 	private List<String> scopeIds;
 	@Schema(description = "容量")
 	private Integer capacity;
+	@Schema(description = "过滤条件集合")
+	private List<FilterConditionDTO> filters;
 }

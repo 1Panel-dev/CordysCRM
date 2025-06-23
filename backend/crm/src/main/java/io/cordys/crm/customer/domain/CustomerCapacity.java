@@ -17,4 +17,7 @@ public class CustomerCapacity extends BaseModel {
 
 	@Schema(description = "库容")
 	private Integer capacity;
+
+	@Schema(description = "过滤条件")
+	private String filter;
 }
