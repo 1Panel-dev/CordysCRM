@@ -63,6 +63,10 @@
             and c.transition_type = 'CUSTOMER'
         </if>
 
+        <if test="request.searchType != 'CUSTOMER_TRANSITION'">
+            and (c.transition_type != 'CUSTOMER' or c.transition_type is null)
+        </if>
+
         <if test="request.searchType == 'OPPORTUNITY_TRANSITION'">
             and c.transition_type = 'OPPORTUNITY'
         </if>
@@ -299,6 +303,11 @@
         left join sys_user su on c.owner = su.id
         where c.name = #{customerName} and c.organization_id = #{orgId}  
         order by c.create_time desc 
+    </select>
+
+    <select id="getOwnerCount" resultType="java.lang.Long">
+        select count(1) from clue where owner = #{ownerId}
+        and in_shared_pool = false and (transition_type is null or transition_type != 'CUSTOMER')
     </select>
 
 </mapper>

@@ -57,5 +57,12 @@ public interface ExtClueMapper {
      * @return 重复线索列表
      */
     List<ClueRepeatListResponse> getRepeatClueList(@Param("customerName") String customerName,@Param("orgId") String orgId);
+
+    /**
+     * 查询用户负责的线索条数
+     * @param ownerId 负责用户ID
+     * @return 数量
+     */
+    long getOwnerCount(@Param("ownerId") String ownerId);
     
 }

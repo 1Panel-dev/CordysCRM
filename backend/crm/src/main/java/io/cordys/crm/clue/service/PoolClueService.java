@@ -18,6 +18,7 @@ import io.cordys.crm.clue.dto.CluePoolPickRuleDTO;
 import io.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import io.cordys.crm.clue.dto.request.PoolCluePickRequest;
 import io.cordys.crm.clue.mapper.ExtClueCapacityMapper;
+import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
@@ -49,6 +50,8 @@ public class PoolClueService {
 
 	@Resource
 	private BaseMapper<Clue> clueMapper;
+	@Resource
+	private ExtClueMapper extClueMapper;
 	@Resource
 	private BaseMapper<ClueOwner> ownerMapper;
 	@Resource
@@ -231,10 +234,7 @@ public class PoolClueService {
 	public void validateCapacity(int processCount, String ownUserId, String currentOrgId) {
 		// 实际可处理条数 = 负责人库容容量 - 所领取的数量 < 处理数量, 提示库容不足.
 		Integer capacity = getUserCapacity(ownUserId, currentOrgId);
-		LambdaQueryWrapper<Clue> customerWrapper = new LambdaQueryWrapper<>();
-		customerWrapper.eq(Clue::getOwner, ownUserId).eq(Clue::getInSharedPool, false);
-		List<Clue> clues = clueMapper.selectListByLambda(customerWrapper);
-		int ownCount = clues.size();
+		int ownCount = (int) extClueMapper.getOwnerCount(ownUserId);
 		if (capacity != null && capacity - ownCount < processCount) {
 			throw new GenericException(Translator.getWithArgs("customer.capacity.over", Math.max(capacity - ownCount, 0)));
 		}
