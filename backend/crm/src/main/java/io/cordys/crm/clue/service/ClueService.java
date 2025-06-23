@@ -6,6 +6,7 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
@@ -321,6 +322,7 @@ public class ClueService {
         );
     }
 
+    @OperationLog(module = LogModule.CLUE_INDEX, type = LogType.UPDATE, resourceId = "{#request.id}")
     public void updateStatus(ClueStatusUpdateRequest request, String userId, String orgId) {
         Clue originClue = clueMapper.selectByPrimaryKey(request.getId());
         Clue clue = BeanUtils.copyBean(new Clue(), request);
@@ -330,6 +332,14 @@ public class ClueService {
         // 记录修改前的状态
         clue.setLastStage(originClue.getStage());
         clueMapper.update(clue);
+        // 日志
+        OperationLogContext.setContext(
+                LogContextInfo.builder()
+                        .resourceName(originClue.getName())
+                        .originalValue(originClue)
+                        .modifiedValue(clueMapper.selectByPrimaryKey(request.getId()))
+                        .build()
+        );
     }
 
     private void updateModuleField(String clueId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {

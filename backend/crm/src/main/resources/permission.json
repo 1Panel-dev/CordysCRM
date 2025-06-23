@@ -206,6 +206,10 @@
           },
           {
             "id": "CLUE_MANAGEMENT:DELETE"
+          },
+          {
+            "id": "CLUE_MANAGEMENT:RESIGN",
+            "name": "permission.clue_management.clue.resign"
           }
         ]
       },
@@ -250,6 +254,10 @@
           },
           {
             "id": "OPPORTUNITY_MANAGEMENT:DELETE"
+          },
+          {
+            "id": "OPPORTUNITY_MANAGEMENT:RESIGN",
+            "name": "permission.clue_management.clue.resign"
           }
         ]
       }
