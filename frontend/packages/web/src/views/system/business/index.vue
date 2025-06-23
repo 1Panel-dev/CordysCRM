@@ -7,9 +7,9 @@
       <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
     </CrmCard>
     <PageSettings v-if="activeTab === 'pageSettings'" />
-    <AuthenticationSettings v-if="activeTab === 'authenticationSettings'" />
+    <AuthenticationSettings v-if="activeTab === 'authenticationSettings' && xPack" />
     <MailSettings v-if="activeTab === 'mailSettings'" />
-    <IntegrationList v-if="activeTab === 'syncOrganization'" />
+    <IntegrationList v-if="activeTab === 'syncOrganization' && xPack" />
   </n-scrollbar>
 </template>
 
@@ -22,18 +22,37 @@
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import IntegrationList from './components/integrationList.vue';
 
+  import useLicenseStore from '@/store/modules/setting/license';
+
   const AuthenticationSettings = defineAsyncComponent(() => import('./components/authenticationSettings.vue'));
   const PageSettings = defineAsyncComponent(() => import('./components/pageSettings.vue'));
   const MailSettings = defineAsyncComponent(() => import('./components/mailSettings.vue'));
   const { t } = useI18n();
 
+  const licenseStore = useLicenseStore();
+  const xPack = computed(() => licenseStore.hasLicense());
+
   const activeTab = ref('syncOrganization');
-  const tabList = ref([
-    // { name: 'pageSettings', tab: t('system.business.tab.interfaceSettings') }, // 第一版先不上
-    { name: 'syncOrganization', tab: t('system.business.tab.third') },
-    { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
-    { name: 'authenticationSettings', tab: t('system.business.tab.authenticationSettings') },
-  ]);
+  const tabList = ref([{ name: 'mailSettings', tab: t('system.business.tab.mailSettings') }]);
+  watch(
+    () => xPack.value,
+    async (val) => {
+      if (val) {
+        tabList.value = [
+          { name: 'syncOrganization', tab: t('system.business.tab.third') },
+          { name: 'mailSettings', tab: t('system.business.tab.mailSettings') },
+          { name: 'authenticationSettings', tab: t('system.business.tab.authenticationSettings') },
+        ];
+        activeTab.value = 'syncOrganization';
+      } else {
+        tabList.value = [{ name: 'mailSettings', tab: t('system.business.tab.mailSettings') }];
+        activeTab.value = 'mailSettings';
+      }
+    },
+    {
+      immediate: true,
+    }
+  );
 </script>
 
 <style lang="less" scoped>

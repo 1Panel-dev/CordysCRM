@@ -142,8 +142,8 @@
   } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import useProgressBar from '@/hooks/useProgressBar';
-  import useUserStore from '@/store/modules/user';
   import useLicenseStore from '@/store/modules/setting/license';
+  import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
   const userStore = useUserStore();
@@ -813,30 +813,48 @@
   const renderSyncResult = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
 
   const moreActions = computed(() => {
-    return [
-      ...(hasAnyPermission(['SYS_ORGANIZATION:SYNC'])
-        ? [
-            {
-              label: t('org.enterpriseWhatSync'),
-              key: 'sync',
-              render: renderSyncResult.value,
-              disabled: !isHasConfig.value,
-            },
-          ]
-        : []),
-      {
-        label: t('common.import'),
-        key: 'import',
-        tooltipContent: props.isSyncFromThirdChecked ? t('org.checkSyncUserHoverTip') : '',
-        disabled: props.isSyncFromThirdChecked,
-        permission: ['SYS_ORGANIZATION:IMPORT'],
-      },
-      // TOTO  不上
-      // {
-      //   label: t('common.export'),
-      //   key: 'export',
-      // },
-    ];
+    if (licenseStore.hasLicense()) {
+      return [
+        ...(hasAnyPermission(['SYS_ORGANIZATION:SYNC'])
+          ? [
+              {
+                label: t('org.enterpriseWhatSync'),
+                key: 'sync',
+                render: renderSyncResult.value,
+                disabled: !isHasConfig.value,
+              },
+            ]
+          : []),
+        {
+          label: t('common.import'),
+          key: 'import',
+          tooltipContent: props.isSyncFromThirdChecked ? t('org.checkSyncUserHoverTip') : '',
+          disabled: props.isSyncFromThirdChecked,
+          permission: ['SYS_ORGANIZATION:IMPORT'],
+        },
+        // TOTO  不上
+        // {
+        //   label: t('common.export'),
+        //   key: 'export',
+        // },
+      ];
+    } else {
+      return [
+        {
+          label: t('common.import'),
+          key: 'import',
+          tooltipContent: props.isSyncFromThirdChecked ? t('org.checkSyncUserHoverTip') : '',
+          disabled: props.isSyncFromThirdChecked,
+          permission: ['SYS_ORGANIZATION:IMPORT'],
+        },
+        // TOTO  不上
+        // {
+        //   label: t('common.export'),
+        //   key: 'export',
+        // },
+      ];
+    }
+
   });
 
   async function handleSync() {

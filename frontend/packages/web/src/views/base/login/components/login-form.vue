@@ -138,11 +138,11 @@
   import useLoading from '@/hooks/useLoading';
   import useUser from '@/hooks/useUser';
   import useAppStore from '@/store/modules/app';
+  import useLicenseStore from '@/store/modules/setting/license';
   // import useModal from '@/hooks/useModal';
   import useUserStore from '@/store/modules/user';
 
   import { Option } from 'naive-ui/es/legacy-transfer/src/interface';
-  import useLicenseStore from "@/store/modules/setting/license";
 
   const { goUserHasPermissionPage } = useUser();
   const { t } = useI18n();
