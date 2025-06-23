@@ -1,6 +1,6 @@
 package io.cordys.crm.system.service;
 
-import com.alibaba.excel.EasyExcelFactory;
+import cn.idev.excel.FastExcelFactory;
 import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
@@ -653,7 +653,7 @@ public class OrganizationUserService {
             //根据本地语言环境选择用哪种数据对象进行存放读取的数据
             Class<?> clazz = new UserExcelDataFactory().getExcelDataByLocal();
             UserCheckEventListener eventListener = new UserCheckEventListener(clazz, orgId);
-            EasyExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(3).sheet().doRead();
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(3).sheet().doRead();
             response.setErrorMessages(eventListener.getErrList());
             response.setSuccessCount(eventListener.getList().size());
             response.setFailCount(eventListener.getErrList().size());
@@ -681,7 +681,7 @@ public class OrganizationUserService {
             //根据本地语言环境选择用哪种数据对象进行存放读取的数据
             Class<?> clazz = new UserExcelDataFactory().getExcelDataByLocal();
             UserImportEventListener eventListener = new UserImportEventListener(clazz, operatorId, orgId);
-            EasyExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(3).sheet().doRead();
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(3).sheet().doRead();
             response.setErrorMessages(eventListener.getErrList());
             response.setSuccessCount(eventListener.getSuccessCount());
             response.setFailCount(eventListener.getErrList().size());

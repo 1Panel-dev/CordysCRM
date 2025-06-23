@@ -1,7 +1,7 @@
 package io.cordys.crm.system.excel.domain;
 
-import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import cn.idev.excel.annotation.ExcelProperty;
+import cn.idev.excel.annotation.write.style.ColumnWidth;
 import io.cordys.crm.system.excel.annotation.NotRequired;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

@@ -1,9 +1,9 @@
 package io.cordys.excel.utils;
 
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.write.handler.WriteHandler;
-import com.alibaba.excel.write.metadata.style.WriteCellStyle;
-import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
+import cn.idev.excel.EasyExcel;
+import cn.idev.excel.write.handler.WriteHandler;
+import cn.idev.excel.write.metadata.style.WriteCellStyle;
+import cn.idev.excel.write.style.HorizontalCellStyleStrategy;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.LogUtils;
 import jakarta.servlet.http.HttpServletResponse;

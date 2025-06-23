@@ -1,6 +1,6 @@
 package io.cordys.crm.customer.service;
 
-import com.alibaba.excel.util.StringUtils;
+import cn.idev.excel.util.StringUtils;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;

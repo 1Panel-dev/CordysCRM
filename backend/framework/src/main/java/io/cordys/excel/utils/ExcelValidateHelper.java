@@ -1,6 +1,6 @@
 package io.cordys.excel.utils;
 
-import com.alibaba.excel.annotation.ExcelProperty;
+import cn.idev.excel.annotation.ExcelProperty;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.validation.ConstraintViolation;

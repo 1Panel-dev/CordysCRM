@@ -1,6 +1,6 @@
 package io.cordys.crm.system.excel.domain;
 
-import com.alibaba.excel.annotation.ExcelIgnore;
+import cn.idev.excel.annotation.ExcelIgnore;
 import io.cordys.crm.system.excel.constants.UserImportFiled;
 import lombok.Getter;
 import lombok.Setter;
