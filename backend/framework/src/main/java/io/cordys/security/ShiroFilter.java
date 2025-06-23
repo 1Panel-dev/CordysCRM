@@ -67,6 +67,8 @@ public class ShiroFilter {
         filterChainDefinitionMap.put("/organization/config/third/type/list", "anon");
         filterChainDefinitionMap.put("/organization/config/third/by/**", "anon");
 
+        // 验证 License 的路径
+        filterChainDefinitionMap.put("/license/validate/**", "anon");
 
         return filterChainDefinitionMap;
     }

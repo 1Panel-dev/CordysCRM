@@ -4,13 +4,18 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * 通用的Spring Bean工厂，用于从Spring容器中获取Bean并调用方法。
@@ -107,5 +112,18 @@ public class CommonBeanFactory implements ApplicationContextAware {
             LogUtils.error(e);
         }
         return null;
+    }
+
+    public static boolean packageExists(String basePackage) {
+        // 不使用默认的候选者过滤器（不只扫描 @Component）
+        ClassPathScanningCandidateComponentProvider scanner =
+                new ClassPathScanningCandidateComponentProvider(false);
+
+        // 添加一个总是匹配的过滤器：只要有类就算命中
+        scanner.addIncludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*")));
+
+        // 按包路径扫描
+        Set<BeanDefinition> defs = scanner.findCandidateComponents(basePackage);
+        return !defs.isEmpty();
     }
 }
