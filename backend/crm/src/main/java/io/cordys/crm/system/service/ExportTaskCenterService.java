@@ -1,13 +1,19 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.constants.TopicConstants;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.redis.MessagePublisher;
+import io.cordys.common.util.JSON;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.ExportConstants;
 import io.cordys.crm.system.domain.ExportTask;
+import io.cordys.crm.system.dto.ExportRedisMessage;
 import io.cordys.crm.system.dto.request.ExportTaskCenterQueryRequest;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +28,8 @@ public class ExportTaskCenterService {
 
 	@Resource
 	private BaseMapper<ExportTask> exportTaskMapper;
+	@Resource
+	private MessagePublisher messagePublisher;
 
 	/**
 	 * 查询导出任务列表
@@ -48,10 +56,17 @@ public class ExportTaskCenterService {
 	public void cancel(String taskId) {
 		ExportTask exportTask = exportTaskMapper.selectByPrimaryKey(taskId);
 		if (exportTask == null) {
-			throw new GenericException("cancel error task not found");
+			throw new GenericException(Translator.get("task_not_found"));
+		}
+		if (StringUtils.equalsIgnoreCase(exportTask.getStatus(), ExportConstants.ExportStatus.STOP.name())) {
+			throw new GenericException(Translator.get("task_already_stopped"));
 		}
 		exportTask.setStatus(ExportConstants.ExportStatus.STOP.name());
 		exportTaskMapper.updateById(exportTask);
+		//停止任务
+		ExportRedisMessage exportRedisMessage = new ExportRedisMessage();
+		exportRedisMessage.setMessage(taskId);
+		messagePublisher.publish(TopicConstants.DOWNLOAD_TOPIC, JSON.toJSONString(exportRedisMessage));
 	}
 
 	/**
@@ -63,7 +78,7 @@ public class ExportTaskCenterService {
 	public void download(String taskId, HttpServletResponse response) {
 		ExportTask exportTask = exportTaskMapper.selectByPrimaryKey(taskId);
 		if (exportTask == null) {
-			throw new GenericException("download error task not found");
+			throw new GenericException(Translator.get("task_not_found"));
 		}
 		// todo: wait for download implementation
 	}
