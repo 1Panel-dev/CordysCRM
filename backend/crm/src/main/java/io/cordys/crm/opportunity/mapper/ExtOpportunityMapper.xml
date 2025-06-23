@@ -70,6 +70,10 @@
             and o.stage = 'SUCCESS'
         </if>
 
+        <if test="request.customerId != null and request.customerId != ''">
+            and o.customer_id = #{request.customerId}
+        </if>
+
         <include refid="filters">
             <property name="filters" value="request.filters"/>
         </include>

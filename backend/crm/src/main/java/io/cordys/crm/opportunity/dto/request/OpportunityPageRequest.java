@@ -9,4 +9,8 @@ public class OpportunityPageRequest extends BasePageRequest {
 
     @Schema(description = "搜索类型(ALL/SELF/DEPARTMENT/DEAL)")
     private String searchType ;
+
+    public String getCustomerId() {
+        return null;
+    }
 }

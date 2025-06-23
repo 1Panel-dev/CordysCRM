@@ -14,10 +14,7 @@ import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerField;
-import io.cordys.crm.customer.dto.request.CustomerAddRequest;
-import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
-import io.cordys.crm.customer.dto.request.CustomerPageRequest;
-import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
+import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.system.domain.ModuleField;
@@ -51,6 +48,7 @@ class CustomerControllerTests extends BaseTest {
     protected static final String TAB = "tab";
     protected static final String BATCH_TO_POOL = "batch/to-pool";
     protected static final String OPTION = "option";
+    protected static final String OPPORTUNITY_PAGE = "opportunity/page";
 
     private static Customer addCustomer;
     private static Customer anotherCustomer;
@@ -365,6 +363,18 @@ class CustomerControllerTests extends BaseTest {
     @Order(13)
     void testBatchToPool() throws Exception {
         this.requestPostWithOk(BATCH_TO_POOL, batchIds);
+    }
+
+    @Test
+    @Order(14)
+    void testOpportunityPage() throws Exception {
+        CustomerOpportunityPageRequest request = new CustomerOpportunityPageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setCustomerId(addCustomer.getId());
+        this.requestPostWithOk(OPPORTUNITY_PAGE, request);
+        // check permission
+        requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ), OPPORTUNITY_PAGE, request);
     }
 
     private List<CustomerField> getCustomerFields(String customerId) {

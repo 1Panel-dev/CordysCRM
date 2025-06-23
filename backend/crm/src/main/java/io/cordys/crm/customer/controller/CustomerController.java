@@ -14,13 +14,13 @@ import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.dto.request.CustomerAddRequest;
-import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
-import io.cordys.crm.customer.dto.request.CustomerPageRequest;
-import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
+import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
+import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
+import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
+import io.cordys.crm.opportunity.service.OpportunityService;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
@@ -47,6 +47,8 @@ public class CustomerController {
 
     @Resource
     private CustomerService customerService;
+    @Resource
+    private OpportunityService opportunityService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
@@ -130,5 +132,15 @@ public class CustomerController {
     @Operation(summary = "所有客户和部门客户tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
         return customerService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/opportunity/page")
+    @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ})
+    @Operation(summary = "客户详情-商机列表")
+    public PagerWithOption<List<OpportunityListResponse>> list(@Validated @RequestBody CustomerOpportunityPageRequest request) {
+        request.setSearchType("ALL");
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 }
