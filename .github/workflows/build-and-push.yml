@@ -7,7 +7,7 @@ on:
     inputs:
       dockerImageTag:
         description: 'Docker Image Tag'
-        default: 'v1.0.0-dev'
+        default: 'dev'
         required: true
       architecture:
         description: 'Architecture'
@@ -31,16 +31,20 @@ jobs:
     if: ${{ contains(github.event.inputs.registry, 'fit2cloud') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout specific repository
+        uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref_name }}
+          repository: cordys-dev/cordys-crm
+          token: ${{ secrets.GH_TOKEN }}  # 使用 GitHub token
+
       - name: Prepare
         id: prepare
         run: |
           DOCKER_IMAGE=${{ secrets.FIT2CLOUD_REGISTRY_HOST }}/cordys/cordys-crm-ce
           DOCKER_PLATFORMS=${{ github.event.inputs.architecture }}
           TAG_NAME=${{ github.event.inputs.dockerImageTag }}
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          
           if [[ ${TAG_NAME} == *dev* ]]; then
             DOCKER_IMAGE_TAGS="--tag ${DOCKER_IMAGE}:${TAG_NAME}"
           else
@@ -49,25 +53,56 @@ jobs:
           echo ::set-output name=buildx_args::--platform ${DOCKER_PLATFORMS} \
             --build-arg DOCKER_IMAGE_TAG=${{ github.event.inputs.dockerImageTag }} --build-arg BUILD_AT=$(TZ=Asia/Shanghai date +'%Y-%m-%dT%H:%M') --build-arg GITHUB_COMMIT=${GITHUB_SHA::8} --no-cache \
             --build-arg FIT2CLOUD_MAVEN_USERNAME=${{ secrets.FIT2CLOUD_MAVEN_USERNAME }} --build-arg FIT2CLOUD_MAVEN_PASSWORD=${{ secrets.FIT2CLOUD_MAVEN_PASSWORD }} \
-            --build-arg CRM_VERSION=${{ github.event.inputs.dockerImageTag }} \
+            --build-arg CRM_VERSION=${TAG_NAME}-${SHORT_SHA} \
             ${DOCKER_IMAGE_TAGS} .
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-#      - name: Login to GitHub Container Registry
-#        uses: docker/login-action@v3
-#        with:
-#          registry: ghcr.io
-#          username: ${{ github.actor }}
-#          password: ${{ secrets.GH_TOKEN }}
+
       - name: Login to FIT2CLOUD Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.FIT2CLOUD_REGISTRY_HOST }}
           username: ${{ secrets.FIT2CLOUD_REGISTRY_USERNAME }}
           password: ${{ secrets.FIT2CLOUD_REGISTRY_PASSWORD }}
+
       - name: Docker Buildx (build-and-push)
         run: |
           docker buildx build --output "type=image,push=true" ${{ steps.prepare.outputs.buildx_args }} -f installer/Dockerfile
+        # 创建或更新标签
+      - name: Create or Re-create Tag
+        if: success()
+        run: |
+          git config --global user.name 'fit2-zhao'
+          git config --global user.email 'yong.zhao@fit2cloud.com'
 
+          # 判断是否为dev标签，如果是则跳过打tag操作
+          if [[ "${{ github.event.inputs.dockerImageTag }}" == "dev" ]]; then
+            echo "当前为dev标签，跳过打tag操作"
+            exit 0
+          fi
+          
+          # 获取远程标签信息
+          git fetch --prune --tags
+          
+          # 检查标签是否存在（本地或远程）
+          if git ls-remote --tags origin refs/tags/${{ github.event.inputs.dockerImageTag }} | grep -q "${{ github.event.inputs.dockerImageTag }}" || git tag -l "${{ github.event.inputs.dockerImageTag }}" | grep -q "${{ github.event.inputs.dockerImageTag }}"; then
+            echo "标签 ${{ github.event.inputs.dockerImageTag }} 已存在，正在删除..."
+          
+            # 删除本地标签（如果存在）
+            git tag -d ${{ github.event.inputs.dockerImageTag }} || true
+          
+            # 删除远程标签并确认结果
+            git push --delete origin ${{ github.event.inputs.dockerImageTag }} || echo "远程标签可能不存在或已被删除"
+          
+            # 确认标签已被删除
+            sleep 2
+            git fetch --prune --tags
+          fi
+          
+          # 创建和推送新标签
+          git tag -a ${{ github.event.inputs.dockerImageTag }} -m "Release ${{ github.event.inputs.dockerImageTag }}"
+          git push origin ${{ github.event.inputs.dockerImageTag }}
