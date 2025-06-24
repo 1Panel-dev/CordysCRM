@@ -6,6 +6,7 @@ import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.BasePageRequest;
+import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.Pager;
@@ -49,6 +50,9 @@ class CustomerControllerTests extends BaseTest {
     protected static final String BATCH_TO_POOL = "batch/to-pool";
     protected static final String OPTION = "option";
     protected static final String OPPORTUNITY_PAGE = "opportunity/page";
+
+    protected static final String EXPORT_ALL = "export-all";
+
 
     private static Customer addCustomer;
     private static Customer anotherCustomer;
@@ -251,6 +255,24 @@ class CustomerControllerTests extends BaseTest {
 
     @Test
     @Order(4)
+    void testExport() throws Exception {
+        CustomerExportRequest request = new CustomerExportRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setFileName("测试导出客户");
+
+        ExportHeadDTO exportHeadDTO = new ExportHeadDTO();
+        exportHeadDTO.setKey("name");
+        exportHeadDTO.setTitle("客户名称");
+        List<ExportHeadDTO> list = new ArrayList<>();
+        list.add(exportHeadDTO);
+        request.setHeadList(list);
+
+        this.requestPostWithOk(EXPORT_ALL, request);
+    }
+
+    @Test
+    @Order(5)
     void testTransfer() throws Exception {
         CustomerBatchTransferRequest request = new CustomerBatchTransferRequest();
         request.setIds(List.of(addCustomer.getId()));
@@ -268,7 +290,7 @@ class CustomerControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(4)
+    @Order(6)
     void testOption() throws Exception {
         BasePageRequest request = new BasePageRequest();
         request.setCurrent(1);
@@ -292,7 +314,7 @@ class CustomerControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(4)
+    @Order(7)
     void testTab() throws Exception {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(TAB);
         ResourceTabEnableDTO resultData = getResultData(mvcResult, ResourceTabEnableDTO.class);
@@ -382,4 +404,6 @@ class CustomerControllerTests extends BaseTest {
         example.setResourceId(customerId);
         return customerFieldMapper.select(example);
     }
+
+
 }

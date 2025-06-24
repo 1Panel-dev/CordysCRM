@@ -6,7 +6,7 @@ import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.opportunity.domain.Opportunity;
-import io.cordys.crm.opportunity.dto.ExportHeadDTO;
+import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;

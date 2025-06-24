@@ -3,15 +3,11 @@ package io.cordys.common.utils;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.util.JSON;
+import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
-import io.cordys.crm.system.dto.field.base.BaseField;
 import org.apache.commons.collections.CollectionUtils;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,26 +29,16 @@ public class OpportunityFieldUtils {
 
         systemFiledMap.put("stage", Translator.get(data.getStage()));
         systemFiledMap.put("followerName", data.getFollowerName());
-        systemFiledMap.put("followTime", handleTime(data.getFollowTime()));
+        systemFiledMap.put("followTime", TimeUtils.getDataTimeStr(data.getFollowTime()));
         systemFiledMap.put("reservedDays", data.getReservedDays());
         systemFiledMap.put("status", Translator.get("log.opportunity.status." + data.getStatus().toString()));
         systemFiledMap.put("createUser", data.getCreateUserName());
-        systemFiledMap.put("createTime", handleTime(data.getCreateTime()));
+        systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
         systemFiledMap.put("updateUser", data.getUpdateUserName());
-        systemFiledMap.put("updateTime", handleTime(data.getUpdateTime()));
+        systemFiledMap.put("updateTime", TimeUtils.getDataTimeStr(data.getUpdateTime()));
 
 
         return systemFiledMap;
-    }
-
-    private static Object handleTime(Long followTime) {
-        if (followTime != null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                    .withZone(ZoneId.systemDefault());
-            String formattedDate = formatter.format(Instant.ofEpochMilli(followTime));
-            return formattedDate;
-        }
-        return null;
     }
 
 

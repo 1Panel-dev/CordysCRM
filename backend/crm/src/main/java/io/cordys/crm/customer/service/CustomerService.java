@@ -24,7 +24,10 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.constants.CustomerResultCode;
-import io.cordys.crm.customer.domain.*;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerCollaboration;
+import io.cordys.crm.customer.domain.CustomerPool;
+import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.dto.request.CustomerAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -96,7 +99,11 @@ public class CustomerService {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomerListResponse> list = extCustomerMapper.list(request, orgId, userId, deptDataPermission);
         List<CustomerListResponse> buildList = buildListData(list, orgId);
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId,list,buildList);
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+    }
 
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<CustomerListResponse> list, List<CustomerListResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), orgId);
         // 获取所有模块字段的值
@@ -109,7 +116,7 @@ public class CustomerService {
                 CustomerListResponse::getOwner, CustomerListResponse::getOwnerName);
         optionMap.put(BusinessModuleField.CUSTOMER_OWNER.getBusinessKey(), ownerFieldOption);
 
-        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+        return optionMap;
     }
 
     public List<CustomerListResponse> sourceList(CustomerPageRequest request, String userId, String orgId) {
@@ -117,7 +124,7 @@ public class CustomerService {
         return buildListData(list, orgId);
     }
 
-    private List<CustomerListResponse> buildListData(List<CustomerListResponse> list, String orgId) {
+    public List<CustomerListResponse> buildListData(List<CustomerListResponse> list, String orgId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }

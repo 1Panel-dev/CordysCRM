@@ -6,7 +6,7 @@ import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import io.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import io.cordys.common.util.CommonBeanFactory;
-import io.cordys.crm.opportunity.dto.ExportHeadDTO;
+import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormService;

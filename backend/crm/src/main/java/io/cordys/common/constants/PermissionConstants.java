@@ -58,6 +58,7 @@ public class PermissionConstants {
     public static final String CUSTOMER_MANAGEMENT_UPDATE = "CUSTOMER_MANAGEMENT:UPDATE";
     public static final String CUSTOMER_MANAGEMENT_RECYCLE = "CUSTOMER_MANAGEMENT:RECYCLE";
     public static final String CUSTOMER_MANAGEMENT_DELETE = "CUSTOMER_MANAGEMENT:DELETE";
+    public static final String CUSTOMER_MANAGEMENT_EXPORT = "CUSTOMER_MANAGEMENT:EXPORT";
     /*------ end: CUSTOMER_MANAGEMENT ------*/
 
 

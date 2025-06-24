@@ -1,4 +1,4 @@
-package io.cordys.crm.opportunity.dto.request;
+package io.cordys.crm.customer.dto.request;
 
 import io.cordys.common.dto.ExportHeadDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class OpportunityExportRequest extends OpportunityPageRequest {
+public class CustomerExportRequest extends CustomerPageRequest{
 
     @Schema(description = "文件名")
     private String fileName;

@@ -140,6 +140,9 @@
           },
           {
             "id": "CUSTOMER_MANAGEMENT:DELETE"
+          },
+          {
+            "id": "CUSTOMER_MANAGEMENT:EXPORT"
           }
         ]
       },

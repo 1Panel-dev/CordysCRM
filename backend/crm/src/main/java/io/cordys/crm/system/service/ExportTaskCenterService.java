@@ -3,11 +3,9 @@ package io.cordys.crm.system.service;
 import io.cordys.common.constants.TopicConstants;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.redis.MessagePublisher;
-import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.ExportConstants;
 import io.cordys.crm.system.domain.ExportTask;
-import io.cordys.crm.system.dto.ExportRedisMessage;
 import io.cordys.crm.system.dto.request.ExportTaskCenterQueryRequest;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -64,9 +62,7 @@ public class ExportTaskCenterService {
 		exportTask.setStatus(ExportConstants.ExportStatus.STOP.name());
 		exportTaskMapper.updateById(exportTask);
 		//停止任务
-		ExportRedisMessage exportRedisMessage = new ExportRedisMessage();
-		exportRedisMessage.setMessage(taskId);
-		messagePublisher.publish(TopicConstants.DOWNLOAD_TOPIC, JSON.toJSONString(exportRedisMessage));
+		messagePublisher.publish(TopicConstants.DOWNLOAD_TOPIC, taskId);
 	}
 
 	/**
