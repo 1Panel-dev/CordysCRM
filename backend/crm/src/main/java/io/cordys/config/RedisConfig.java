@@ -17,6 +17,8 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @EnableCaching
@@ -68,14 +70,17 @@ public class RedisConfig {
     }
 
     /**
-     * 配置 Redis 频道主题
-     * 用于订阅和发布消息
+     * 配置所有 Redis 频道主题集合
+     * 用于统一管理订阅和发布的主题
      *
-     * @return ChannelTopic 实例
+     * @return List<ChannelTopic> Redis主题集合
      */
     @Bean
-    public ChannelTopic topic() {
-        return new ChannelTopic(TopicConstants.DOWNLOAD_TOPIC);
+    public List<ChannelTopic> channelTopics() {
+        List<ChannelTopic> topics = new ArrayList<>();
+        // 添加所有需要的主题到集合中
+        TopicConstants.ALL_TOPICS.forEach(topicName -> topics.add(new ChannelTopic(topicName)));
+        return topics;
     }
 
     /**
@@ -84,16 +89,22 @@ public class RedisConfig {
      *
      * @param factory         Redis连接工厂
      * @param listenerAdapter 消息监听适配器
+     * @param channelTopics   Redis主题集合
      * @return Redis消息监听容器
      */
     @Bean
     public RedisMessageListenerContainer redisContainer(
             RedisConnectionFactory factory,
             MessageListenerAdapter listenerAdapter,
-            ChannelTopic topic) {
+            List<ChannelTopic> channelTopics) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(factory);
-        container.addMessageListener(listenerAdapter, topic);
+
+        // 动态添加所有主题的监听器
+        for (ChannelTopic topic : channelTopics) {
+            container.addMessageListener(listenerAdapter, topic);
+        }
+
         return container;
     }
 
