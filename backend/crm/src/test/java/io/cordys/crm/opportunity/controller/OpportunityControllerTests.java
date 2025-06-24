@@ -6,6 +6,7 @@ import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.opportunity.domain.Opportunity;
+import io.cordys.crm.opportunity.dto.ExportHeadDTO;
 import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -17,6 +18,7 @@ import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -30,6 +32,7 @@ public class OpportunityControllerTests extends BaseTest {
     protected static final String TAB = "tab";
     protected static final String UPDATE_STAGE = "update/stage";
     protected static final String CONTACT_LIST = "contact/list/{0}";
+    protected static final String EXPORT_ALL = "export-all";
 
     private static Opportunity addOpportunity;
     @Resource
@@ -186,5 +189,24 @@ public class OpportunityControllerTests extends BaseTest {
     void testGetContactList() throws Exception {
         this.requestGet(CONTACT_LIST, addOpportunity.getId());
         this.requestGet(CONTACT_LIST, "1234567");
+    }
+
+
+    @Test
+    @Order(4)
+    void testExport() throws Exception {
+        OpportunityExportRequest request = new OpportunityExportRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setFileName("测试导出");
+
+        ExportHeadDTO exportHeadDTO = new ExportHeadDTO();
+        exportHeadDTO.setKey("name");
+        exportHeadDTO.setTitle("商机名称");
+        List<ExportHeadDTO> list = new ArrayList<>();
+        list.add(exportHeadDTO);
+        request.setHeadList(list);
+
+        this.requestPostWithOk(EXPORT_ALL, request);
     }
 }

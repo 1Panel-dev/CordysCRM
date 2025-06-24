@@ -7,6 +7,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
 
@@ -36,6 +37,20 @@ public class FileCommonService {
 	public void upload(MultipartFile file, FileRequest request) {
 		try {
 			FileCenter.getRepository(request.getStorage()).saveFile(file, request);
+		} catch (Exception e) {
+			LogUtils.error(e);
+		}
+	}
+
+	/**
+	 * 上传文件
+	 * @param file
+	 * @param request
+	 */
+	public void upload(File file, FileRequest request) {
+		try {
+			FileInputStream inputStream = new FileInputStream(file);
+			FileCenter.getRepository(request.getStorage()).saveFile(inputStream, request);
 		} catch (Exception e) {
 			LogUtils.error(e);
 		}

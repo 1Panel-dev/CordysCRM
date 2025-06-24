@@ -94,6 +94,13 @@ public class OpportunityService {
         List<OpportunityListResponse> list = extOpportunityMapper.list(request, orgId, userId, deptDataPermission);
         List<OpportunityListResponse> buildList = buildListData(list, orgId);
 
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId,list,buildList);
+
+
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+    }
+
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<OpportunityListResponse> list, List<OpportunityListResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.OPPORTUNITY.getKey(), orgId);
         // 获取所有模块字段的值
@@ -114,11 +121,11 @@ public class OpportunityService {
         List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
         optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
 
+        return optionMap;
 
-        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    private List<OpportunityListResponse> buildListData(List<OpportunityListResponse> list, String orgId) {
+    public List<OpportunityListResponse> buildListData(List<OpportunityListResponse> list, String orgId) {
         if (CollectionUtils.isEmpty(list)) {
             return list;
         }

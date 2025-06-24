@@ -20,4 +20,9 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
     public Object parse2Value(InputMultipleField inputMultipleField, String value) {
         return parse2Array(value);
     }
+
+
+    public Object trans2Value(InputMultipleField inputMultipleField, String value) {
+        return value;
+    }
 }

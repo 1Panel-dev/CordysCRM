@@ -2,6 +2,8 @@ package io.cordys.common.resolver.field;
 
 
 import io.cordys.crm.system.dto.field.SelectField;
+import io.cordys.crm.system.dto.field.base.OptionProp;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author jianxing
@@ -29,5 +31,11 @@ public class SelectResolver extends AbstractModuleFieldResolver<SelectField> {
     @Override
     public Object parse2Value(SelectField selectField, String value) {
         return value;
+    }
+
+    @Override
+    public Object trans2Value(SelectField selectField, String value) {
+        String label = selectField.getOptions().stream().filter(option -> StringUtils.equalsIgnoreCase(option.getValue(), value)).toList().getFirst().getLabel();
+        return label == null ? "" : label;
     }
 }

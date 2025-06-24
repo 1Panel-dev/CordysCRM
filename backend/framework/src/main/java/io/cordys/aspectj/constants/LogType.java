@@ -63,6 +63,10 @@ public final class LogType {
      * 移除用户
      */
     public static final String REMOVE_USER = "REMOVE_USER";
+    /**
+     * 导出
+     */
+    public static final String EXPORT = "EXPORT";
 
     private LogType() {
         // 私有构造函数防止实例化

@@ -40,6 +40,15 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
     }
 
     /**
+     * 将数据库的字符串值转换为对应的参数值
+     * @param value
+     * @return
+     */
+    public Object trans2Value(T selectField, String value) {
+        return value;
+    }
+
+    /**
      * 将对应的参数值转换成字符串
      * @param value
      * @return

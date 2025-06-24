@@ -15,8 +15,17 @@ public class DefaultRepositoryDir {
      */
     private static final String DEFAULT_DIR = "/opt/cordys/data/files";
 
+    /**
+     * 导出目录
+     */
+    private static final String EXPORT_DIR = "/export";
+
     public static String getTmpDir() {
         return TMP_DIR;
+    }
+
+    public static String getExportDir() {
+        return EXPORT_DIR;
     }
 
     public static String getDefaultDir() {

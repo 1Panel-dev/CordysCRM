@@ -12,6 +12,7 @@ import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
+import io.cordys.crm.opportunity.service.OpportunityExportService;
 import io.cordys.crm.opportunity.service.OpportunityService;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
@@ -37,6 +38,8 @@ public class OpportunityController {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private OpportunityExportService opportunityExportService;
 
 
     @GetMapping("/module/form")
@@ -123,4 +126,15 @@ public class OpportunityController {
     public CustomerContactListAllResponse list(@Validated @PathVariable String opportunityId) {
         return opportunityService.getContactList(opportunityId, OrganizationContext.getOrganizationId());
     }
+
+
+    @PostMapping("/export-all")
+    @Operation(summary = "商机导出全部")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT)
+    public String opportunityExportAll(@Validated @RequestBody OpportunityExportRequest request) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+        return opportunityExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
 }

@@ -88,6 +88,7 @@ public class PermissionConstants {
     public static final String OPPORTUNITY_MANAGEMENT_ADD = "OPPORTUNITY_MANAGEMENT:ADD";
     public static final String OPPORTUNITY_MANAGEMENT_UPDATE = "OPPORTUNITY_MANAGEMENT:UPDATE";
     public static final String OPPORTUNITY_MANAGEMENT_DELETE = "OPPORTUNITY_MANAGEMENT:DELETE";
+    public static final String OPPORTUNITY_MANAGEMENT_EXPORT = "OPPORTUNITY_MANAGEMENT:EXPORT";
     /*------ end: OPPORTUNITY_MANAGEMENT ------*/
 
 
