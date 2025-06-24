@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 
 public abstract class BaseExportService {
 
+    //最大查询数量
+    public static final int EXPORT_MAX_COUNT = 2000;
     @Resource
     private LogService logService;
 
@@ -36,39 +38,12 @@ public abstract class BaseExportService {
 
 
     /**
-     * 导出数据
-     *
-     * @param headList
-     * @param fileId
-     * @param fileName
-     * @param data
-     */
-    public void exportData(List<List<String>> headList, String fileId, String fileName, List<List<Object>> data, String taskId) throws InterruptedException {
-        String tempFileDir = getTempFileDir(fileId);
-        File dir = new File(DefaultRepositoryDir.getDefaultDir() + tempFileDir);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        File file = new File(dir, fileName + ".xlsx");
-
-        if (ExportThreadRegistry.isStop(taskId)) {
-            throw new InterruptedException("线程已被中断，主动退出");
-        }
-
-        EasyExcel.write(file)
-                .head(headList)
-                .excelType(ExcelTypeEnum.XLSX).sheet("导出数据").doWrite(data);
-
-    }
-
-
-    /**
      * 获取导出临时文件目录
      *
      * @param tempFileId
      * @return
      */
-    private String getTempFileDir(String tempFileId) {
+    public String getTempFileDir(String tempFileId) {
         return DefaultRepositoryDir.getExportDir() + "/" + tempFileId;
     }
 

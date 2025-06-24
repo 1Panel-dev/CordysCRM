@@ -1,5 +1,10 @@
 package io.cordys.crm.opportunity.service;
 
+import cn.idev.excel.EasyExcel;
+import cn.idev.excel.ExcelWriter;
+import cn.idev.excel.support.ExcelTypeEnum;
+import cn.idev.excel.write.metadata.WriteSheet;
+import com.github.pagehelper.PageHelper;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.common.constants.FormKey;
@@ -18,13 +23,16 @@ import io.cordys.crm.system.constants.ExportConstants;
 import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.service.ExportTaskService;
+import io.cordys.file.engine.DefaultRepositoryDir;
 import io.cordys.registry.ExportThreadRegistry;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +48,9 @@ public class OpportunityExportService extends BaseExportService {
 
 
     public String export(String userId, OpportunityExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        //用户导出数量 限制
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.OPPORTUNITY.toString(), ExportConstants.ExportStatus.PREPARED.toString());
+
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.OPPORTUNITY.toString(), request.getFileName());
         Thread.startVirtualThread(() -> {
@@ -50,15 +61,47 @@ public class OpportunityExportService extends BaseExportService {
                         .map(head -> Arrays.asList(head.getTitle()))
                         .toList();
 
-                //获取导出数据
-                List<List<Object>> data = getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId());
 
-                if (CollectionUtils.isNotEmpty(data)) {
-                    //导出
-                    exportData(headList, fileId, request.getFileName(), data, exportTask.getId());
-                    //更新导出任务状态
-                    exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
+                File dir = new File(DefaultRepositoryDir.getDefaultDir() + getTempFileDir(fileId));
+                if (!dir.exists()) {
+                    dir.mkdirs();
                 }
+                File file = new File(dir, request.getFileName() + ".xlsx");
+                ExcelWriter writer = EasyExcel.write(file)
+                        .head(headList)
+                        .excelType(ExcelTypeEnum.XLSX)
+                        .build();
+
+                WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+
+
+                //分批查询数据并写入文件
+                int current = 1;
+                request.setPageSize(EXPORT_MAX_COUNT);
+                boolean flag = true;
+
+                while (flag) {
+                    request.setCurrent(current);
+                    List<List<Object>> data = getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId());
+                    if (CollectionUtils.isEmpty(data)) {
+                        flag = false;
+                        break;
+                    }
+                    if (ExportThreadRegistry.isStop(exportTask.getId())) {
+                        throw new InterruptedException("线程已被中断，主动退出");
+                    }
+                    writer.write(data, sheet);
+                    if (data.size() < EXPORT_MAX_COUNT) {
+                        flag = false;
+                        break;
+                    }
+                    current++;
+                }
+                writer.finish();
+
+                //更新状态
+                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
+
             } catch (InterruptedException e) {
                 LogUtils.error("任务停止中断", e);
             } catch (Exception e) {
@@ -86,6 +129,7 @@ public class OpportunityExportService extends BaseExportService {
      * @return
      */
     private List<List<Object>> getExportData(List<ExportHeadDTO> headList, OpportunityExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
+        PageHelper.startPage(request.getCurrent(), request.getPageSize());
         //获取数据
         List<OpportunityListResponse> allList = extOpportunityMapper.list(request, orgId, userId, deptDataPermission);
         List<OpportunityListResponse> dataList = opportunityService.buildListData(allList, orgId);
@@ -109,10 +153,12 @@ public class OpportunityExportService extends BaseExportService {
         //固定字段map
         LinkedHashMap<String, Object> systemFiledMap = OpportunityFieldUtils.getSystemFieldMap(data, optionMap);
         //自定义字段map
-        Map<String, Object> moduldFieldMap = data.getModuleFields().stream()
-                .collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue));
+        AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
+        Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields -> {
+            moduleFieldMap.set(moduleFields.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue)));
+        });
         //处理数据转换
-        transModuleFieldValue(headList, systemFiledMap, moduldFieldMap, dataList, fieldConfigMap);
+        transModuleFieldValue(headList, systemFiledMap, moduleFieldMap.get(), dataList, fieldConfigMap);
         return dataList;
     }
 

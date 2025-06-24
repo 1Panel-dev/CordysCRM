@@ -1,8 +1,11 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.ExportConstants;
 import io.cordys.crm.system.domain.ExportTask;
+import io.cordys.crm.system.mapper.ExtExportTaskMapper;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,8 @@ public class ExportTaskService {
 
     @Resource
     private BaseMapper<ExportTask> exportTaskMapper;
+    @Resource
+    private ExtExportTaskMapper extExportTaskMapper;
 
     public ExportTask saveTask(String orgId, String fileId, String userId, String resourceType, String fileName) {
         ExportTask exportTask = new ExportTask();
@@ -38,5 +43,12 @@ public class ExportTaskService {
         exportTask.setUpdateTime(System.currentTimeMillis());
         exportTask.setUpdateUser(userId);
         exportTaskMapper.updateById(exportTask);
+    }
+
+    public void checkUserTaskLimit(String userId, String resourceType, String status) {
+        int userTaskCount = extExportTaskMapper.getExportTaskCount(userId,resourceType,status);
+        if (userTaskCount > 10) {
+            throw new GenericException(Translator.get("user_export_task_limit"));
+        }
     }
 }
