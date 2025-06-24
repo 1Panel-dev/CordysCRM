@@ -36,7 +36,6 @@
             FieldTypeEnum.DEPARTMENT_MULTIPLE,
             FieldTypeEnum.DIVIDER,
             FieldTypeEnum.PICTURE,
-            FieldTypeEnum.LOCATION,
             FieldTypeEnum.PHONE,
             FieldTypeEnum.DATA_SOURCE,
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
@@ -447,6 +446,10 @@
         <n-select
           v-model:value="fieldConfig.locationType"
           :options="[
+            {
+              label: t('crmFormDesign.PC'),
+              value: 'PC',
+            },
             {
               label: t('crmFormDesign.PCD'),
               value: 'PCD',

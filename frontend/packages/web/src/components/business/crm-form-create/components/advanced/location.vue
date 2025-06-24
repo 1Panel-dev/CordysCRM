@@ -13,8 +13,9 @@
     ></div>
     <CrmCitySelect
       v-model:value="city"
-      :placeholder="t('crmFormCreate.advanced.selectLocation')"
+      :placeholder="props.fieldConfig.placeholder || t('crmFormCreate.advanced.selectLocation')"
       :disabled="props.fieldConfig.editable === false"
+      :range="props.fieldConfig.locationType"
       clearable
       @change="handleCityAndDetailChange"
     />

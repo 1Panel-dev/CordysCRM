@@ -16,17 +16,22 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
   import { CascaderOption, NCascader } from 'naive-ui';
 
-  import { regionData } from 'element-china-area-data';
+  import { pcTextArr, regionData } from 'element-china-area-data';
 
   export type DataItem<T = Record<string, any>> = CascaderOption & T;
 
-  const props = defineProps<{
-    placeholder?: string;
-    checkStrategy?: 'all' | 'child' | 'parent';
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      placeholder?: string;
+      checkStrategy?: 'all' | 'child' | 'parent';
+      range?: 'PCD' | 'PC' | 'detail';
+    }>(),
+    {
+      range: 'PCD',
+    }
+  );
 
   const emit = defineEmits<{
     (
@@ -42,7 +47,12 @@
     default: null,
   });
 
-  const workingCityOptions = ref<DataItem[]>(regionData as DataItem[]);
+  const workingCityOptions = computed<DataItem[]>(() => {
+    if (props.range === 'PC') {
+      return pcTextArr as DataItem[];
+    }
+    return regionData as DataItem[];
+  });
 
   function handleChange(
     value: string | number | Array<string | number> | null,
