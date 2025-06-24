@@ -9,7 +9,7 @@
     filterable
     clearable
     max-tag-count="responsive"
-    :options="computedOptions"
+    :options="sortedOptions"
     :placeholder="props.placeholder || t('common.pleaseSelect')"
     @search="handleSearch"
     @update:value="change"
@@ -23,9 +23,12 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
+  import useLocalForage from '@/hooks/useLocalForage';
+
   import { SelectBaseOption, SelectMixedOption } from 'naive-ui/es/select/src/interface';
 
   const { t } = useI18n();
+  const { setItem, getItem } = useLocalForage();
 
   export interface CrmUserSelectProps {
     mode?: 'remote' | 'static';
@@ -57,6 +60,7 @@
     default: null,
   });
 
+  const recentlyUserIds = ref<string[]>([]);
   const optionsList = ref<SelectMixedOption[]>([]);
 
   const loadUsers = async (keyword = '') => {
@@ -81,11 +85,19 @@
     }
   }, 100);
 
+  function updateRecentlyUserIds(value: string | number) {
+    if (!value) return;
+    const newIds = [String(value), ...recentlyUserIds.value.filter((id) => id !== String(value))];
+    recentlyUserIds.value = newIds.slice(0, 5); // 保持最近5个用户
+    setItem('recentlyUserIds', recentlyUserIds.value);
+  }
+
   function change(
     value: Array<string | number> | string | number | null,
     option: SelectBaseOption | null | SelectBaseOption[]
   ) {
     innerValue.value = value;
+    updateRecentlyUserIds(value as string | number);
     emit('change', value, option);
   }
 
@@ -100,8 +112,24 @@
       : optionsList.value;
   });
 
-  onMounted(() => {
+  const sortedOptions = computed<SelectMixedOption[]>(() => {
+    const sorted = [...computedOptions.value];
+    recentlyUserIds.value.forEach((id) => {
+      const index = sorted.findIndex((item) => item[props.valueField] === id);
+      if (index !== -1) {
+        const [item] = sorted.splice(index, 1);
+        sorted.push(item);
+      }
+    });
+    return sorted;
+  });
+
+  onMounted(async () => {
     loadUsers();
+    const ids = await getItem<string[]>('recentlyUserIds');
+    if (ids) {
+      recentlyUserIds.value = ids;
+    }
   });
 
   defineExpose({
