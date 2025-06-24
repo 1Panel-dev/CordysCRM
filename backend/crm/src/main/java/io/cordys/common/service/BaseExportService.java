@@ -78,18 +78,18 @@ public abstract class BaseExportService {
      *
      * @param headList
      * @param systemFiledMap
-     * @param moduldFieldMap
+     * @param moduleFieldMap
      * @param dataList
      * @param fieldConfigMap
      */
-    public void transModuleFieldValue(List<ExportHeadDTO> headList, LinkedHashMap<String, Object> systemFiledMap, Map<String, Object> moduldFieldMap, List<Object> dataList, Map<String, BaseField> fieldConfigMap) {
+    public void transModuleFieldValue(List<ExportHeadDTO> headList, LinkedHashMap<String, Object> systemFiledMap, Map<String, Object> moduleFieldMap, List<Object> dataList, Map<String, BaseField> fieldConfigMap) {
         headList.forEach(head -> {
             if (systemFiledMap.containsKey(head.getKey())) {
                 //固定字段
                 dataList.add(systemFiledMap.get(head.getKey()));
-            } else if (moduldFieldMap.containsKey(head.getKey())) {
+            } else if (moduleFieldMap.containsKey(head.getKey())) {
                 //自定义字段
-                Map<String, Object> collect = moduldFieldMap.entrySet().stream()
+                Map<String, Object> collect = moduleFieldMap.entrySet().stream()
                         .filter(entry -> entry.getKey().contains(head.getKey()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
@@ -105,12 +105,12 @@ public abstract class BaseExportService {
     /**
      * 解析自定义字段
      *
-     * @param moduldFieldMap 模块字段值
+     * @param moduleFieldMap 模块字段值
      * @param dataList       数据列表
      * @param fieldConfigMap 字段配置映射
      */
-    public void getResourceFieldMap(Map<String, Object> moduldFieldMap, List<Object> dataList, Map<String, BaseField> fieldConfigMap) {
-        moduldFieldMap.forEach((key, value) -> {
+    public void getResourceFieldMap(Map<String, Object> moduleFieldMap, List<Object> dataList, Map<String, BaseField> fieldConfigMap) {
+        moduleFieldMap.forEach((key, value) -> {
             BaseField fieldConfig = fieldConfigMap.get(key);
             if (fieldConfig == null) {
                 return;
