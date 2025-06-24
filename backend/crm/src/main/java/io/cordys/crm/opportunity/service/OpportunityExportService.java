@@ -92,16 +92,16 @@ public class OpportunityExportService extends BaseExportService {
         Map<String, List<OptionDTO>> optionMap = opportunityService.buildOptionMap(orgId, allList, dataList);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.OPPORTUNITY.getKey(), orgId);
         //构建导出数据
-        List<List<Object>> datas = new ArrayList<>();
-        for (OpportunityListResponse data : dataList) {
+        List<List<Object>> data = new ArrayList<>();
+        for (OpportunityListResponse response : dataList) {
             if (ExportThreadRegistry.isStop(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
-            List<Object> value = buildData(headList, data, optionMap, fieldConfigMap);
-            datas.add(value);
+            List<Object> value = buildData(headList, response, optionMap, fieldConfigMap);
+            data.add(value);
         }
 
-        return datas;
+        return data;
     }
 
     private List<Object> buildData(List<ExportHeadDTO> headList, OpportunityListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, BaseField> fieldConfigMap) {
