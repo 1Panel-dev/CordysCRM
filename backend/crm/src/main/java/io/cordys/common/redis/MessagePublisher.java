@@ -2,16 +2,16 @@ package io.cordys.common.redis;
 
 import io.cordys.common.constants.TopicConstants;
 import io.cordys.common.util.LogUtils;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MessagePublisher {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
-    public MessagePublisher(RedisTemplate<String, Object> redisTemplate) {
+    public MessagePublisher(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
