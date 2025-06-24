@@ -13,7 +13,7 @@ export default {
   'customer.batchMoveContentTip': 'After the move, the customer will have no person in charge',
   'customer.confirmMove': 'Confirm move',
   'customer.moveToOpenSeaFailedContent':
-    'Successfully transferred customers will enter the open sea, while failed customers will not enter the open sea. Please check the customer\'s recycling on the high seas!',
+    "Successfully transferred customers will enter the open sea, while failed customers will not enter the open sea. Please check the customer's recycling on the high seas!",
   'customer.moveSuccess': 'Move success',
   'customer.contact.deleteContentTip':
     'After deletion, the contact cannot be queried and cannot be recovered. Please proceed with caution!',
@@ -35,6 +35,7 @@ export default {
   'customer.subsidiary': 'Subsidiary',
   'customer.collaborator': 'Collaborator',
   'customer.readOnly': 'Read Only',
+  'customer.opportunityInfo': 'Opportunity Information',
   'customer.cooperation': 'Cooperation',
   'customer.cooperationTip':
     'Read Only: Support viewing customer basic information and responsible person-related data; Cooperation: Support viewing customer basic information and following up customers',

@@ -172,6 +172,7 @@ export const {
   getCustomerTab,
   getCustomerContactTab,
   updateCustomerFollowPlanStatus,
+  getCustomerOpportunityPage,
 } = customerApi;
 
 export const {

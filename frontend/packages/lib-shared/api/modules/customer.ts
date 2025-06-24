@@ -44,6 +44,7 @@ import {
   GetCustomerListUrl,
   GetCustomerOpenSeaFollowRecordListUrl,
   GetCustomerOpenSeaListUrl,
+  GetCustomerOpportunityListUrl,
   GetCustomerOptionsUrl,
   GetCustomerRelationListUrl,
   GetCustomerTabUrl,
@@ -81,6 +82,7 @@ import type {
   CustomerFollowRecordTableParams,
   CustomerListItem,
   CustomerOpenSeaListItem,
+  CustomerOpportunityTableParams,
   CustomerOptionsItem,
   CustomerTabHidden,
   CustomerTableParams,
@@ -104,7 +106,7 @@ import type {
   UpdateCustomerRelationItemParams,
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
-import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import type { FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 添加客户
@@ -422,6 +424,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: UpdateCustomerFollowPlanStatusUrl, data });
   }
 
+  // 获取客户商机列表
+  function getCustomerOpportunityPage(data: CustomerOpportunityTableParams) {
+    return CDR.post<CommonList<OpportunityItem>>({ url: GetCustomerOpportunityListUrl, data });
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -463,6 +470,7 @@ export default function useProductApi(CDR: CordysAxios) {
     deleteCustomerOpenSea,
     isCustomerOpenSeaNoPick,
     getOpenSeaCustomerList,
+    getCustomerOpportunityPage,
     pickOpenSeaCustomer,
     batchPickOpenSeaCustomer,
     batchDeleteOpenSeaCustomer,

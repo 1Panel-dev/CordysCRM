@@ -12,7 +12,8 @@ export default {
   'customer.batchMoveTitleTip': '确认移入 {number} 个客户至公海吗？',
   'customer.batchMoveContentTip': '移入后，客户将无负责人',
   'customer.confirmMove': '确认移入',
-  'customer.moveToOpenSeaFailedContent': '转移成功的客户会进入到公海中，转移失败的客户不会进入公海，请检查客户的回收公海!',
+  'customer.moveToOpenSeaFailedContent':
+    '转移成功的客户会进入到公海中，转移失败的客户不会进入公海，请检查客户的回收公海!',
   'customer.moveSuccess': '移入成功',
   'customer.contact.deleteContentTip': '删除后，将无法查询到该联系人且不可恢复，请谨慎操作！',
   'customer.contact.deleteTitle': '存在绑定的商机，请更换商机绑定联系人后再删除！',
@@ -31,6 +32,7 @@ export default {
   'customer.subsidiary': '子公司',
   'customer.collaborator': '协作成员',
   'customer.readOnly': '只读',
+  'customer.opportunityInfo': '商机信息',
   'customer.cooperation': '协作',
   'customer.cooperationTip': '只读:支持查看客户基础信息与负责人的相关数据;协作:支持查看客户基础信息，并跟进客户',
   'customer.deleteMemberTip': '删除后，成员将不再拥有该客户权限',

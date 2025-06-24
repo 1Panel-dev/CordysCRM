@@ -72,6 +72,10 @@ export interface CustomerFollowRecordTableParams extends TableQueryParams {
   sourceId: string; // 客户ID/商机ID/线索ID
 }
 
+export interface CustomerOpportunityTableParams extends TableQueryParams {
+  customerId: string; // 客户ID
+}
+
 export interface CustomerFollowRecordListItem {
   id: string;
   customerId: string;
@@ -220,7 +224,7 @@ export type FollowDetailItemType<T> = T;
 export type FollowDetailItem = FollowDetailItemType<CustomerFollowRecordListItem | CustomerFollowPlanListItem>;
 
 export interface TransferParams {
-  ids: (string | number)[];
+  ids?: (string | number)[];
   owner: string | null; // 负责人
   [key: string]: any;
 }

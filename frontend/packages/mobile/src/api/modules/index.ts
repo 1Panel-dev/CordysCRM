@@ -5,12 +5,12 @@ import useClueApi from '@lib/shared/api/modules/clue';
 import useCustomerApi from '@lib/shared/api/modules/customer';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
 import useProductApi from '@lib/shared/api/modules/product';
+import useLicenseApi from '@lib/shared/api/modules/system/authorizedManagement';
 import useBusinessApi from '@lib/shared/api/modules/system/business';
 import useLoginApi from '@lib/shared/api/modules/system/login';
 import useMessageApi from '@lib/shared/api/modules/system/message';
 import useModuleApi from '@lib/shared/api/modules/system/module';
 import useOrgApi from '@lib/shared/api/modules/system/org';
-import useLicenseApi from '@lib/shared/api/modules/system/authorizedManagement';
 
 import checkStatus from '../http/checkStatus';
 
@@ -171,6 +171,7 @@ export const {
   getCustomerTab,
   getCustomerContactTab,
   updateCustomerFollowPlanStatus,
+  getCustomerOpportunityPage,
 } = customerApi;
 
 export const {

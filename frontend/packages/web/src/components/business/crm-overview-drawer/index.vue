@@ -130,9 +130,9 @@
 
   const showTabList = computed(() => {
     if (props.showTabSetting) {
-      return cachedList.value.reduce((acc: TabPaneProps[], e: TabContentItem) => {
+      return cachedList.value.reduce((acc: TabContentItem[], e: TabContentItem) => {
         if (e.enable) {
-          acc.push({ name: e.name, tab: e.tab });
+          acc.push({ name: e.name, tab: e.tab, permission: e.permission || [], enable: e.enable });
         }
         return acc;
       }, []);

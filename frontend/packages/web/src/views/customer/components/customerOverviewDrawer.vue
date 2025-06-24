@@ -63,6 +63,9 @@
           :source-id="props.sourceId"
           :readonly="collaborationType === 'READ_ONLY'"
         />
+        <CrmCard v-else-if="activeTab === 'opportunityInfo'" hide-footer>
+          <opportunityTable :source-id="props.sourceId" is-customer-tab />
+        </CrmCard>
         <collaborator
           v-else-if="activeTab === 'collaborator'"
           :source-id="props.sourceId"
@@ -81,6 +84,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CollaborationType } from '@lib/shared/models/customer';
 
+  import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import FollowDetail from '@/components/business/crm-follow-detail/index.vue';
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
@@ -91,6 +95,7 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import collaborator from './collaborator.vue';
   import customerRelation from './customerRelation.vue';
+  import opportunityTable from '@/views/opportunity/components/opportunityTable.vue';
 
   import { deleteCustomer, getCustomerHeaderList, updateCustomer } from '@/api/modules';
   import useModal from '@/hooks/useModal';
@@ -188,6 +193,13 @@
         tab: t('customer.relation'),
         enable: true,
         allowClose: true,
+      },
+      {
+        name: 'opportunityInfo',
+        tab: t('customer.opportunityInfo'),
+        enable: true,
+        allowClose: true,
+        permission: ['OPPORTUNITY_MANAGEMENT:READ'],
       },
       {
         name: 'collaborator',

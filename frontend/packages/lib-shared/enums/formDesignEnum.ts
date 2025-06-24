@@ -15,6 +15,7 @@ export enum FormDesignKeyEnum {
   FOLLOW_PLAN_BUSINESS = 'planBusiness', // 商机跟进计划
   PRODUCT = 'product', // 产品
   BUSINESS_CONTACT = 'opportunityContact', // 商机联系人
+  CUSTOMER_OPPORTUNITY = 'customerOpportunity', // 客户商机
 }
 
 export enum FieldTypeEnum {

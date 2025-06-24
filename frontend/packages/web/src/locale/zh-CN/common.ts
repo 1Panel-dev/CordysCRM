@@ -292,4 +292,8 @@ export default {
   'common.optionNotExist': '选项不存在',
   'common.dateCannotBeInPast': '日期不能小于当前时间',
   'common.cancelExport': '取消导出',
+  'common.exportAll': '导出所有页',
+  'common.exportChecked': '导出勾选',
+  'common.exportTaskCreate': '导出任务创建成功',
+  'common.exportTaskTip': '【左下角头像 > 我的导出】查看导出任务进度',
 };

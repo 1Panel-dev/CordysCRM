@@ -16,7 +16,7 @@
       @batch-action="handleBatchAction"
     >
       <template #actionLeft>
-        <div class="flex items-center">
+        <div class="flex items-center gap-[12px]">
           <n-button
             v-if="activeTab !== CustomerSearchTypeEnum.VISIBLE"
             v-permission="['CUSTOMER_MANAGEMENT:ADD']"
@@ -24,6 +24,16 @@
             @click="handleNewClick"
           >
             {{ t('customer.new') }}
+          </n-button>
+          <n-button
+            v-if="activeTab !== CustomerSearchTypeEnum.VISIBLE"
+            v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+            type="primary"
+            ghost
+            class="n-btn-outline-primary"
+            @click="handleExportAllClick"
+          >
+            {{ t('common.exportAll') }}
           </n-button>
         </div>
       </template>
@@ -62,6 +72,13 @@
     :title="t('customer.moveToOpenSea')"
     :failed-content="t('customer.moveToOpenSeaFailedContent')"
   />
+  <CrmTableExportModal
+    v-model:show="showExportModal"
+    :params="exportParams"
+    :export-api="async () => {}"
+    type="customer"
+    @create-success="handleExportCreateSuccess"
+  />
 </template>
 
 <script setup lang="ts">
@@ -85,6 +102,7 @@
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import customerOverviewDrawer from './components/customerOverviewDrawer.vue';
@@ -150,6 +168,11 @@
   const actionConfig: BatchActionConfig = {
     baseAction: [
       {
+        label: t('common.exportChecked'),
+        key: 'exportChecked',
+        // permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+      },
+      {
         label: t('common.batchTransfer'),
         key: 'batchTransfer',
         permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
@@ -192,7 +215,8 @@
 
   // 批量转移
   const showTransferModal = ref<boolean>(false);
-
+  const showExportModal = ref<boolean>(false);
+  const exportParams = ref<Record<string, any>>({});
   const showToCluePoolResultModel = ref(false);
   const successCount = ref<number>(0);
   const failCount = ref<number>(0);
@@ -226,9 +250,23 @@
           },
         });
         break;
+      case 'exportChecked':
+        showExportModal.value = true;
+        break;
       default:
         break;
     }
+  }
+
+  function handleExportAllClick() {
+    exportParams.value = {
+      keyword: keyword.value,
+    };
+    showExportModal.value = true;
+  }
+
+  function handleExportCreateSuccess() {
+    checkedRowKeys.value = [];
   }
 
   // 删除

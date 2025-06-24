@@ -61,3 +61,4 @@ export const GetCustomerOpenSeaFollowRecordListUrl = '/customer/follow/record/po
 export const GetCustomerTabUrl = '/customer/tab'; // 客户tab显隐
 export const GetCustomerContactTabUrl = '/customer/contact/tab'; // 客户联系人tab显隐
 export const UpdateCustomerFollowPlanStatusUrl = '/customer/follow/plan/status/update'; // 更新客户跟进计划状态
+export const GetCustomerOpportunityListUrl = '/customer/opportunity/page'; // 客户商机列表

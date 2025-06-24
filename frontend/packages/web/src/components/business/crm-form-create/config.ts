@@ -37,6 +37,7 @@ import {
   getCustomerFollowRecordFormConfig,
   getCustomerFormConfig,
   getCustomerList,
+  getCustomerOpportunityPage,
   getOpenSeaCustomer,
   getOpenSeaCustomerList,
   getOpportunityContactList,
@@ -475,6 +476,7 @@ export const getFormConfigApiMap: Record<FormDesignKeyEnum, () => Promise<FormDe
   [FormDesignKeyEnum.PRODUCT]: getProductFormConfig,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getCustomerFormConfig,
   [FormDesignKeyEnum.BUSINESS_CONTACT]: getCustomerContactFormConfig,
+  [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: getOptFormConfig,
 };
 
 export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -494,6 +496,7 @@ export const createFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.CLUE_POOL]: async () => ({}),
   [FormDesignKeyEnum.PRODUCT]: addProduct,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: async () => ({}), // 公海无添加
+  [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: addOpportunity,
 };
 
 export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any>> = {
@@ -513,6 +516,7 @@ export const updateFormApi: Record<FormDesignKeyEnum, (data: any) => Promise<any
   [FormDesignKeyEnum.CLUE_POOL]: async () => ({}),
   [FormDesignKeyEnum.PRODUCT]: updateProduct,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: async () => ({}), // 公海无更新
+  [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: updateOpportunity,
 };
 
 export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string) => Promise<FormDetail>>> = {
@@ -530,6 +534,7 @@ export const getFormDetailApiMap: Partial<Record<FormDesignKeyEnum, (id: string)
   [FormDesignKeyEnum.CLUE_POOL]: getPoolClue,
   [FormDesignKeyEnum.PRODUCT]: getProduct,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getOpenSeaCustomer,
+  [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: getOpportunityDetail,
 };
 
 export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) => Promise<CommonList<any>>>> = {
@@ -542,4 +547,5 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.PRODUCT]: getProductList,
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getOpenSeaCustomerList,
   [FormDesignKeyEnum.BUSINESS_CONTACT]: getOpportunityContactList,
+  [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: getCustomerOpportunityPage,
 };

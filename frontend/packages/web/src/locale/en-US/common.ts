@@ -291,4 +291,8 @@ export default {
   'common.optionNotExist': 'Option does not exist',
   'common.dateCannotBeInPast': 'The date cannot be less than the current time',
   'common.cancelExport': 'Cancel export',
+  'common.exportAll': 'Export all',
+  'common.exportChecked': 'Export checked',
+  'common.exportTaskCreate': 'Export task created, please check the export task list for details',
+  'common.exportTaskTip': '[Avatar in the lower left corner > My Export] View the progress of the export task',
 };
