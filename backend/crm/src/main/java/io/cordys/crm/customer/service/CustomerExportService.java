@@ -13,7 +13,6 @@ import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.common.service.BaseExportService;
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.crm.customer.dto.request.CustomerExportRequest;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
@@ -86,7 +85,7 @@ public class CustomerExportService extends BaseExportService {
                         flag = false;
                         break;
                     }
-                    if (ExportThreadRegistry.isStop(exportTask.getId())) {
+                    if (ExportThreadRegistry.isInterrupted(exportTask.getId())) {
                         throw new InterruptedException("线程已被中断，主动退出");
                     }
                     writer.write(data, sheet);
@@ -136,7 +135,7 @@ public class CustomerExportService extends BaseExportService {
         //构建导出数据
         List<List<Object>> data = new ArrayList<>();
         for (CustomerListResponse response : dataList) {
-            if (ExportThreadRegistry.isStop(taskId)) {
+            if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
             List<Object> value = buildData(headList, response, fieldConfigMap);

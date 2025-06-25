@@ -128,7 +128,7 @@ public class OpportunityExportService extends BaseExportService {
                 break;
             }
 
-            if (ExportThreadRegistry.isStop(taskId)) {
+            if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
 
@@ -163,7 +163,7 @@ public class OpportunityExportService extends BaseExportService {
         //构建导出数据
         List<List<Object>> data = new ArrayList<>();
         for (OpportunityListResponse response : dataList) {
-            if (ExportThreadRegistry.isStop(taskId)) {
+            if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
             List<Object> value = buildData(headList, response, optionMap, fieldConfigMap);
