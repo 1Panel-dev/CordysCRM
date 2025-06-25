@@ -449,8 +449,14 @@ public class OpportunityService {
         if (StringUtils.equalsAnyIgnoreCase(request.getStage(), StageType.SUCCESS.name(), StageType.FAIL.name())) {
             newOpportunity.setStatus(false);
         }
+        //如果是反签 成功->失败 lastStage= BUSINESS_PROCUREMENT
+        if (StringUtils.equalsIgnoreCase(request.getStage(), StageType.FAIL.name()) &&
+                StringUtils.equalsIgnoreCase(oldOpportunity.getStage(), StageType.SUCCESS.name())) {
+            newOpportunity.setLastStage(StageType.BUSINESS_PROCUREMENT.name());
+        } else {
+            newOpportunity.setLastStage(oldOpportunity.getStage());
+        }
         newOpportunity.setId(request.getId());
-        newOpportunity.setLastStage(oldOpportunity.getStage());
         newOpportunity.setStage(request.getStage());
         opportunityMapper.update(newOpportunity);
         OperationLogContext.setContext(
