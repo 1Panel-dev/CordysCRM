@@ -32,7 +32,7 @@
         class="mb-[16px]"
         :base-steps="baseStepList"
         is-limit-back
-        :back-stage-permission="['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT_STAGE']"
+        :back-stage-permission="['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']"
         :source-id="sourceId"
         :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
         :update-api="updateOptStage"
@@ -91,7 +91,7 @@
   import { deleteOpt, transferOpt, updateOptStage } from '@/api/modules';
   import { defaultTransferForm, opportunityBaseSteps } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
-  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
 

@@ -1,4 +1,5 @@
 import type { TableQueryParams } from '../common';
+import { PersonalExportStatusEnum } from '@lib/shared/enums/systemEnum';
 
 // 邮件设置
 export interface ConfigEmailParams {
@@ -124,4 +125,23 @@ export interface RepeatOpportunityItem {
   productNames: string[];
   owner: string;
   ownerName: string;
+}
+
+export interface ExportCenterListParams {
+  keyword: string;
+  exportType: string;
+  exportStatus: string;
+}
+
+export interface ExportCenterItem {
+  id: string;
+  createUser: string;
+  updateUser: string;
+  createTime: number;
+  updateTime: number;
+  fileName: string;
+  resourceType: string;
+  fileId: string;
+  status: PersonalExportStatusEnum;
+  organizationId: string;
 }

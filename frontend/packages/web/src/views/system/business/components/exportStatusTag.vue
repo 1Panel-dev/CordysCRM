@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center gap-[8px]">
-    <div v-if="props.status === PersonalExportStatusEnum.EXPORTING" class="ring-loader"></div>
+    <div v-if="props.status === PersonalExportStatusEnum.PREPARED" class="ring-loader"></div>
     <CrmIcon v-else :type="statusMap[props.status].icon" :size="20" :class="`${statusMap[props.status].color}`" />
     <div class="font-semibold text-[var(--text-n1)]">
       {{ statusMap[props.status].label }}
@@ -27,14 +27,14 @@
       color: string;
     }
   > = {
-    [PersonalExportStatusEnum.CANCELED]: {
-      value: PersonalExportStatusEnum.CANCELED,
+    [PersonalExportStatusEnum.STOP]: {
+      value: PersonalExportStatusEnum.STOP,
       label: t('system.personal.cancelledExport'),
       icon: 'iconicon_block_filled',
       color: 'text-[var(--text-n4)]',
     },
-    [PersonalExportStatusEnum.EXPORTING]: {
-      value: PersonalExportStatusEnum.EXPORTING,
+    [PersonalExportStatusEnum.PREPARED]: {
+      value: PersonalExportStatusEnum.PREPARED,
       label: t('system.personal.exporting'),
       icon: 'iconicon_loading',
       color: '',

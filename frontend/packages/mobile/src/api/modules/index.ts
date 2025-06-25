@@ -225,6 +225,9 @@ export const {
   GetRepeatCustomerList,
   GetRepeatOpportunityDetailList,
   getThirdConfigByType,
+  exportCenterDownload,
+  getExportCenterList,
+  cancelCenterExport,
 } = businessApi;
 
 export const { isLogin, getWeComOauthCallback, getWeComCallback } = loginApi;

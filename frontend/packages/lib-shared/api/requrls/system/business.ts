@@ -28,3 +28,8 @@ export const GetRepeatCustomerUrl = '/personal/center/repeat/customer';
 export const GetRepeatClueUrl = '/personal/center/repeat/clue';
 export const GetRepeatClueDetailUrl = '/personal/center/repeat/clue/detail';
 export const GetRepeatOpportunityDetailUrl = '/personal/center/repeat/opportunity/detail';
+
+// 个人中心导出
+export const GetExportCenterListUrl = '/export/center/list'; // 查询导出任务列表
+export const ExportCenterDownloadUrl = '/export/center/download'; // 下载
+export const CancelCenterExportUrl = '/export/center/cancel'; // 取消导出

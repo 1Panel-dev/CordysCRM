@@ -43,8 +43,8 @@ export enum OperationTypeEnum {
 }
 
 export enum PersonalExportStatusEnum {
-  CANCELED = 'CANCELED', // 已取消
-  EXPORTING = 'EXPORTING', // 导出中
+  STOP = 'STOP', // 已取消
+  PREPARED = 'PREPARED', // 导出中
   ERROR = 'ERROR', // 导出失败
   SUCCESS = 'SUCCESS', // 导出成功
 }

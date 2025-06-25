@@ -134,25 +134,31 @@
   const keyword = ref('');
   const tableRefreshId = ref(0);
 
-  const actionConfig: BatchActionConfig = {
-    baseAction: [
-      {
-        label: t('common.exportChecked'),
-        key: 'exportChecked',
-        // permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('common.batchTransfer'),
-        key: 'batchTransfer',
-        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-      },
-      {
-        label: t('common.batchDelete'),
-        key: 'batchDelete',
-        permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
-      },
-    ],
-  };
+  const actionConfig = computed<BatchActionConfig>(() => {
+    return {
+      baseAction: [
+        {
+          label: t('common.exportChecked'),
+          key: 'exportChecked',
+          // permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+        },
+        ...(props.activeTab !== OpportunitySearchTypeEnum.DEAL
+          ? [
+              {
+                label: t('common.batchTransfer'),
+                key: 'batchTransfer',
+                permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+              },
+              {
+                label: t('common.batchDelete'),
+                key: 'batchDelete',
+                permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+              },
+            ]
+          : []),
+      ],
+    };
+  });
 
   function handleRefresh() {
     checkedRowKeys.value = [];
@@ -383,9 +389,6 @@
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: props.isCustomerTab ? FormDesignKeyEnum.CUSTOMER_OPPORTUNITY : FormDesignKeyEnum.BUSINESS,
     excludeFieldIds: ['customerId'],
-    disabledSelection: (row) => {
-      return row.stage === StageResultEnum.SUCCESS;
-    },
     operationColumn: {
       key: 'operation',
       width: 200,

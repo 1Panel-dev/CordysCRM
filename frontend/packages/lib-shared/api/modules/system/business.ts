@@ -1,11 +1,14 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
+  CancelCenterExportUrl,
   CreateAuthUrl,
   DeleteAuthUrl,
+  ExportCenterDownloadUrl,
   GetAuthDetailUrl,
   GetAuthsUrl,
   GetConfigEmailUrl,
   GetConfigSynchronizationUrl,
+  GetExportCenterListUrl,
   GetPersonalFollowUrl,
   GetPersonalUrl,
   GetRepeatClueDetailUrl,
@@ -39,7 +42,14 @@ import type {
   RepeatCustomerItem,
   RepeatOpportunityItem,
 } from '@lib/shared/models/system/business';
-import { OptionDTO, PersonalInfoRequest, PersonalPassword, SendEmailDTO } from '@lib/shared/models/system/business';
+import {
+  ExportCenterItem,
+  ExportCenterListParams,
+  OptionDTO,
+  PersonalInfoRequest,
+  PersonalPassword,
+  SendEmailDTO,
+} from '@lib/shared/models/system/business';
 import { OrgUserInfo } from '@lib/shared/models/system/org';
 
 export default function useProductApi(CDR: CordysAxios) {
@@ -160,6 +170,24 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<RepeatOpportunityItem>>({ url: GetRepeatOpportunityDetailUrl, data });
   }
 
+  //  个人中心导出列表
+  function getExportCenterList(data: ExportCenterListParams) {
+    return CDR.post<ExportCenterItem[]>({ url: GetExportCenterListUrl, data });
+  }
+
+  //  个人中心导出下载
+  function exportCenterDownload(taskId: string) {
+    return CDR.post(
+      { url: `${ExportCenterDownloadUrl}/${taskId}`, responseType: 'blob' },
+      { isTransformResponse: false }
+    );
+  }
+
+  //  个人中心取消导出
+  function cancelCenterExport(taskId: string) {
+    return CDR.get({ url: `${CancelCenterExportUrl}/${taskId}` });
+  }
+
   return {
     getConfigEmail,
     updateConfigEmail,
@@ -185,5 +213,8 @@ export default function useProductApi(CDR: CordysAxios) {
     GetRepeatClueList,
     GetRepeatClueDetailList,
     GetRepeatOpportunityDetailList,
+    getExportCenterList,
+    exportCenterDownload,
+    cancelCenterExport,
   };
 }

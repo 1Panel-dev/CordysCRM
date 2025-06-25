@@ -47,12 +47,12 @@ const useLicenseStore = defineStore('license', {
         if (!result || !result.status) {
           return;
         }
-        /*if (!result || !result.status || !result.license || !result.license.count) {
+        /* if (!result || !result.status || !result.license || !result.license.count) {
           return;
-        }*/
+        } */
         this.setLicenseInfo(result);
         // 计算license时间
-        if (result.license && result.license.count){
+        if (result.license && result.license.count) {
           this.getExpirationTime(result.license.expired);
         }
       } catch (error) {

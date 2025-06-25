@@ -838,23 +838,21 @@
         //   key: 'export',
         // },
       ];
-    } else {
-      return [
-        {
-          label: t('common.import'),
-          key: 'import',
-          tooltipContent: props.isSyncFromThirdChecked ? t('org.checkSyncUserHoverTip') : '',
-          disabled: props.isSyncFromThirdChecked,
-          permission: ['SYS_ORGANIZATION:IMPORT'],
-        },
-        // TOTO  不上
-        // {
-        //   label: t('common.export'),
-        //   key: 'export',
-        // },
-      ];
     }
-
+    return [
+      {
+        label: t('common.import'),
+        key: 'import',
+        tooltipContent: props.isSyncFromThirdChecked ? t('org.checkSyncUserHoverTip') : '',
+        disabled: props.isSyncFromThirdChecked,
+        permission: ['SYS_ORGANIZATION:IMPORT'],
+      },
+      // TOTO  不上
+      // {
+      //   label: t('common.export'),
+      //   key: 'export',
+      // },
+    ];
   });
 
   async function handleSync() {
