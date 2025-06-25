@@ -1,18 +1,23 @@
 package io.cordys.common.service;
 
 import cn.idev.excel.EasyExcel;
+import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.support.ExcelTypeEnum;
+import cn.idev.excel.write.metadata.WriteSheet;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.common.context.CustomFunction;
+import io.cordys.common.dto.BasePageRequest;
+import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import io.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import io.cordys.common.util.CommonBeanFactory;
-import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.file.engine.DefaultRepositoryDir;
 import io.cordys.registry.ExportThreadRegistry;
 import jakarta.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -34,6 +39,57 @@ public abstract class BaseExportService {
                 .getAllFields(formKey, orgId)
                 .stream()
                 .collect(Collectors.toMap(BaseField::getId, Function.identity()));
+    }
+
+
+    public <T extends BasePageRequest> void batchHandleData(String fileId, List<List<String>> headList, String taskId, String fileName, T t, CustomFunction<T, List<?>> func) throws InterruptedException {
+        // 准备导出文件
+        File file = prepareExportFile(fileId, fileName);
+
+        try (ExcelWriter writer = EasyExcel.write(file)
+                .head(headList)
+                .excelType(ExcelTypeEnum.XLSX)
+                .build()) {
+
+            WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+
+            int current = 1;
+            t.setPageSize(EXPORT_MAX_COUNT);
+
+            while (true) {
+                t.setCurrent(current);
+                List<?> data = func.apply(t);
+                if (CollectionUtils.isEmpty(data)) {
+                    break;
+                }
+                if (ExportThreadRegistry.isInterrupted(taskId)) {
+                    throw new InterruptedException("线程已被中断，主动退出");
+                }
+                writer.write(data, sheet);
+                if (data.size() < EXPORT_MAX_COUNT) {
+                    break;
+                }
+                current++;
+            }
+        }
+
+
+    }
+
+
+    /**
+     * 准备导出文件
+     *
+     * @param fileId
+     * @param fileName
+     * @return
+     */
+    private File prepareExportFile(String fileId, String fileName) {
+        File dir = new File(DefaultRepositoryDir.getDefaultDir() + getTempFileDir(fileId));
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return new File(dir, fileName + ".xlsx");
     }
 
 

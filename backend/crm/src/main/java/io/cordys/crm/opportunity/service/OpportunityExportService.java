@@ -65,19 +65,14 @@ public class OpportunityExportService extends BaseExportService {
                         .map(head -> Collections.singletonList(head.getTitle()))
                         .toList();
 
-                // 准备导出文件
-                File file = prepareExportFile(fileId, request.getFileName());
 
-                try (ExcelWriter writer = EasyExcel.write(file)
-                        .head(headList)
-                        .excelType(ExcelTypeEnum.XLSX)
-                        .build()) {
-
-                    WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
-
-                    // 导出数据
-                    exportDataToExcel(writer, sheet, request, userId, orgId, deptDataPermission, exportTask.getId());
-                }
+                //分批查询数据并写入文件
+                batchHandleData(fileId,
+                        headList,
+                        exportTask.getId(),
+                        request.getFileName(),
+                        request,
+                        t -> getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId()));
 
                 // 更新状态
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
@@ -97,49 +92,6 @@ public class OpportunityExportService extends BaseExportService {
         });
 
         return exportTask.getId();
-    }
-
-    /**
-     * 准备导出文件
-     */
-    private File prepareExportFile(String fileId, String fileName) {
-        File dir = new File(DefaultRepositoryDir.getDefaultDir() + getTempFileDir(fileId));
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        return new File(dir, fileName + ".xlsx");
-    }
-
-    /**
-     * 导出数据到Excel
-     */
-    private void exportDataToExcel(ExcelWriter writer, WriteSheet sheet,
-                                   OpportunityExportRequest request, String userId,
-                                   String orgId, DeptDataPermissionDTO deptDataPermission,
-                                   String taskId) throws InterruptedException {
-        int current = 1;
-        request.setPageSize(EXPORT_MAX_COUNT);
-
-        while (true) {
-            request.setCurrent(current);
-            List<List<Object>> data = getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, taskId);
-
-            if (CollectionUtils.isEmpty(data)) {
-                break;
-            }
-
-            if (ExportThreadRegistry.isInterrupted(taskId)) {
-                throw new InterruptedException("线程已被中断，主动退出");
-            }
-
-            writer.write(data, sheet);
-
-            if (data.size() < EXPORT_MAX_COUNT) {
-                break;
-            }
-
-            current++;
-        }
     }
 
 

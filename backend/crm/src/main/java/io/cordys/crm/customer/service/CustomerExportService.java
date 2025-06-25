@@ -60,42 +60,13 @@ public class CustomerExportService extends BaseExportService {
                         .map(head -> Collections.singletonList(head.getTitle()))
                         .toList();
 
-                File dir = new File(DefaultRepositoryDir.getDefaultDir() + getTempFileDir(fileId));
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-                File file = new File(dir, request.getFileName() + ".xlsx");
-                ExcelWriter writer = EasyExcel.write(file)
-                        .head(headList)
-                        .excelType(ExcelTypeEnum.XLSX)
-                        .build();
-
-                WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
-
-
                 //分批查询数据并写入文件
-                int current = 1;
-                request.setPageSize(EXPORT_MAX_COUNT);
-                boolean flag = true;
-
-                while (flag) {
-                    request.setCurrent(current);
-                    List<List<Object>> data = getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId());
-                    if (CollectionUtils.isEmpty(data)) {
-                        flag = false;
-                        break;
-                    }
-                    if (ExportThreadRegistry.isInterrupted(exportTask.getId())) {
-                        throw new InterruptedException("线程已被中断，主动退出");
-                    }
-                    writer.write(data, sheet);
-                    if (data.size() < EXPORT_MAX_COUNT) {
-                        flag = false;
-                        break;
-                    }
-                    current++;
-                }
-                writer.finish();
+                batchHandleData(fileId,
+                        headList,
+                        exportTask.getId(),
+                        request.getFileName(),
+                        request,
+                        t -> getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId()));
 
                 //更新状态
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
