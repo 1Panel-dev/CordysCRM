@@ -129,7 +129,7 @@ public class ClueService {
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
-    private List<ClueListResponse> buildListData(List<ClueListResponse> list, String orgId) {
+    public List<ClueListResponse> buildListData(List<ClueListResponse> list, String orgId) {
         if(CollectionUtils.isEmpty(list)){
             return list;
         }

@@ -4,6 +4,7 @@ import io.cordys.common.constants.BusinessSearchType;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
@@ -44,6 +45,7 @@ class ClueControllerTests extends BaseTest {
     protected static final String TAB = "tab";
     protected static final String BATCH_TO_POOL = "batch/to-pool";
     protected static final String TRANSITION_CUSTOMER = "transition/customer";
+    protected static final String EXPORT = "export";
 
     private static Clue addClue;
     private static Clue anotherClue;
@@ -360,6 +362,20 @@ class ClueControllerTests extends BaseTest {
         this.requestPostWithOk(BATCH_TO_POOL, batchIds);
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_RECYCLE, BATCH_TO_POOL, batchIds);
+    }
+
+    @Test
+    @Order(14)
+    void testExport() throws Exception {
+        ClueExportRequest request = new ClueExportRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setFileName("export_test");
+        ExportHeadDTO col = new ExportHeadDTO();
+        col.setKey("name");
+        col.setTitle("线索名称");
+        request.setHeads(List.of(col));
+        this.requestPostWithOk(EXPORT, request);
     }
 
     private List<ClueField> getClueFields(String clueId) {

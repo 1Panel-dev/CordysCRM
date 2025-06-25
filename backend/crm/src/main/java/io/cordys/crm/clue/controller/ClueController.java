@@ -11,6 +11,7 @@ import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
+import io.cordys.crm.clue.service.ClueExportService;
 import io.cordys.crm.clue.service.ClueService;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -34,6 +35,8 @@ public class ClueController {
 
     @Resource
     private ClueService clueService;
+    @Resource
+    private ClueExportService clueExportService;
     @Resource
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
@@ -123,5 +126,14 @@ public class ClueController {
     @Operation(summary = "所有线索和部门线索tab是否显示")
     public ResourceTabEnableDTO getTabEnableConfig() {
         return clueService.getTabEnableConfig(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/export")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_EXPORT)
+    @Operation(summary = "导出全部")
+    public String exportAll(@Validated @RequestBody ClueExportRequest request) {
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.CLUE_MANAGEMENT_READ);
+        return clueExportService.exportAll(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 }
