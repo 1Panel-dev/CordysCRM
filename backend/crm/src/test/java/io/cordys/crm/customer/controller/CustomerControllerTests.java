@@ -5,30 +5,21 @@ import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
-import io.cordys.common.dto.BasePageRequest;
-import io.cordys.common.dto.ExportHeadDTO;
-import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.dto.ResourceTabEnableDTO;
+import io.cordys.common.dto.*;
 import io.cordys.common.pager.Pager;
-import io.cordys.common.service.BaseExportService;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerField;
 import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
-import io.cordys.crm.system.constants.ExportConstants;
 import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.service.ExportTaskCenterService;
-import io.cordys.crm.system.service.FileCommonService;
-import io.cordys.file.engine.DefaultRepositoryDir;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.*;
@@ -63,6 +54,8 @@ class CustomerControllerTests extends BaseTest {
     protected static final String OPPORTUNITY_PAGE = "opportunity/page";
 
     protected static final String EXPORT_ALL = "export-all";
+    protected static final String EXPORT_SELECT = "export-select";
+
 
 
     private static Customer addCustomer;
@@ -299,6 +292,32 @@ class CustomerControllerTests extends BaseTest {
 
     @Test
     @Order(5)
+    void testExportSelect() throws Exception {
+        CustomerPageRequest requestP = new CustomerPageRequest();
+        requestP.setCurrent(1);
+        requestP.setPageSize(10);
+
+        requestP.setSearchType(BusinessSearchType.ALL.name());
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, requestP);
+        Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
+        List<CustomerListResponse> customerList = pageResult.getList();
+        ExportSelectRequest request = new ExportSelectRequest();
+        request.setFileName("测试导出选中");
+
+        ExportHeadDTO exportHeadDTO = new ExportHeadDTO();
+        exportHeadDTO.setKey("name");
+        exportHeadDTO.setTitle("客户选择名称");
+        List<ExportHeadDTO> list = new ArrayList<>();
+        list.add(exportHeadDTO);
+        request.setHeadList(list);
+        List<String> ids = customerList.stream().map(CustomerListResponse::getId).collect(Collectors.toList());
+        request.setIds(ids);
+
+        this.requestPostWithOk(EXPORT_SELECT, request);
+    }
+
+    @Test
+    @Order(6)
     void testTransfer() throws Exception {
         CustomerBatchTransferRequest request = new CustomerBatchTransferRequest();
         request.setIds(List.of(addCustomer.getId()));
@@ -316,7 +335,7 @@ class CustomerControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     void testOption() throws Exception {
         BasePageRequest request = new BasePageRequest();
         request.setCurrent(1);
@@ -340,7 +359,7 @@ class CustomerControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(7)
+    @Order(8)
     void testTab() throws Exception {
         MvcResult mvcResult = this.requestGetWithOkAndReturn(TAB);
         ResourceTabEnableDTO resultData = getResultData(mvcResult, ResourceTabEnableDTO.class);

@@ -56,4 +56,5 @@ public interface ExtCustomerMapper {
      */
     long filterOwnerCount(@Param("ownerId") String ownerId, @Param("filters") List<FilterConditionDTO> filters);
 
+    List<CustomerListResponse> getListByIds(@Param("ids")List<String> ids);
 }

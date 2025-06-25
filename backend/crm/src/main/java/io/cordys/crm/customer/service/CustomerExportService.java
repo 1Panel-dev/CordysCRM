@@ -1,5 +1,9 @@
 package io.cordys.crm.customer.service;
 
+import cn.idev.excel.EasyExcel;
+import cn.idev.excel.ExcelWriter;
+import cn.idev.excel.support.ExcelTypeEnum;
+import cn.idev.excel.write.metadata.WriteSheet;
 import com.github.pagehelper.PageHelper;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
@@ -7,9 +11,11 @@ import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.ExportHeadDTO;
+import io.cordys.common.dto.ExportSelectRequest;
 import io.cordys.common.service.BaseExportService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.LogUtils;
+import io.cordys.common.util.SubListUtils;
 import io.cordys.crm.customer.dto.request.CustomerExportRequest;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
@@ -23,6 +29,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -124,4 +131,89 @@ public class CustomerExportService extends BaseExportService {
     }
 
 
+    /**
+     * 导出选择数据
+     *
+     * @param userId 用户ID
+     * @param request 导出选择请求
+     * @param orgId 组织ID
+     * @return 导出任务ID
+     */
+    public String exportSelect(String userId, ExportSelectRequest request, String orgId) {
+        // 用户导出数量限制
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER.toString(), ExportConstants.ExportStatus.PREPARED.toString());
+
+        String fileId = IDGenerator.nextStr();
+        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
+        Thread.startVirtualThread(() -> {
+            try {
+                ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
+                //表头信息
+                List<List<String>> headList = request.getHeadList().stream()
+                        .map(head -> Collections.singletonList(head.getTitle()))
+                        .toList();
+
+                // 准备导出文件
+                File file = prepareExportFile(fileId, request.getFileName());
+                try (ExcelWriter writer = EasyExcel.write(file)
+                        .head(headList)
+                        .excelType(ExcelTypeEnum.XLSX)
+                        .build()) {
+                    WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+
+                    SubListUtils.dealForSubList(request.getIds(), 500, (subIds) -> {
+                        List<List<Object>> data = null;
+                        try {
+                            data = getExportDataBySelect(request.getHeadList(), subIds, orgId, exportTask.getId());
+                        } catch (InterruptedException e) {
+                            LogUtils.error("任务停止中断", e);
+                            exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
+                        }
+                        writer.write(data, sheet);
+                    });
+                }
+
+                //更新导出任务状态
+                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
+            } catch (Exception e) {
+                //更新任务
+                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
+            } finally {
+                //从注册中心移除
+                ExportThreadRegistry.remove(exportTask.getId());
+                //日志
+                exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.CUSTOMER_INDEX, request.getFileName());
+            }
+        });
+        return exportTask.getId();
+    }
+
+
+
+
+    /**
+     * 选中商机数据
+     * @param headList  表头列表
+     * @param ids 选中数据ID列表
+     * @param orgId 组织ID
+     * @param taskId 任务ID
+     * @return 导出数据列表
+     */
+    private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {
+        //获取数据
+        List<CustomerListResponse> allList = extCustomerMapper.getListByIds(ids);
+        List<CustomerListResponse> dataList = customerService.buildListData(allList, orgId);
+        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CUSTOMER.getKey(), orgId);
+        //构建导出数据
+        List<List<Object>> data = new ArrayList<>();
+        for (CustomerListResponse response : dataList) {
+            if (ExportThreadRegistry.isInterrupted(taskId)) {
+                throw new InterruptedException("线程已被中断，主动退出");
+            }
+            List<Object> value = buildData(headList, response, fieldConfigMap);
+            data.add(value);
+        }
+
+        return data;
+    }
 }

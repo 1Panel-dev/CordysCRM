@@ -4,10 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.dto.BasePageRequest;
-import io.cordys.common.dto.DeptDataPermissionDTO;
-import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.dto.ResourceTabEnableDTO;
+import io.cordys.common.dto.*;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
@@ -154,6 +151,13 @@ public class CustomerController {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return customerExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+    @PostMapping("/export-select")
+    @Operation(summary = "导出选中商机")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT)
+    public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
+        return customerExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId());
     }
 
 }
