@@ -13,4 +13,6 @@ public class ExportTaskCenterQueryRequest {
 	private String keyword;
 	@Schema(description = "导出类型")
 	private String exportType;
+	@Schema(description = "导出状态")
+	private String exportStatus;
 }

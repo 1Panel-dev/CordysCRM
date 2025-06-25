@@ -43,12 +43,18 @@ const useLicenseStore = defineStore('license', {
     async getValidateLicense() {
       try {
         const result = await getLicense();
-        if (!result || !result.status || !result.license || !result.license.count) {
+        // 检查返回结果是否有效，不存在license自身值
+        if (!result || !result.status) {
           return;
         }
+        /*if (!result || !result.status || !result.license || !result.license.count) {
+          return;
+        }*/
         this.setLicenseInfo(result);
         // 计算license时间
-        this.getExpirationTime(result.license.expired);
+        if (result.license && result.license.count){
+          this.getExpirationTime(result.license.expired);
+        }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);

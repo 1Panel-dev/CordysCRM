@@ -41,6 +41,7 @@ public class ExportTaskCenterService {
 		queryWrapper.like(ExportTask::getFileName, request.getKeyword())
 				.eq(ExportTask::getCreateUser, userId)
 				.eq(ExportTask::getResourceType, request.getExportType())
+				.eq(ExportTask::getStatus, request.getExportStatus())
 				.gt(ExportTask::getCreateTime, oneDayBefore.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
 				.orderByDesc(ExportTask::getCreateTime);
 		return exportTaskMapper.selectListByLambda(queryWrapper);

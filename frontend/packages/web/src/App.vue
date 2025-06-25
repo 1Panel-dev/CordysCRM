@@ -29,6 +29,7 @@
 
   import useDiscreteApi from './hooks/useDiscreteApi';
   import { WHITE_LIST } from './router/constants';
+  import useLicenseStore from './store/modules/setting/license';
   import useUserStore from './store/modules/user';
 
   const { goUserHasPermissionPage, logout } = useUser();
@@ -37,6 +38,7 @@
   const { message } = useDiscreteApi();
 
   const userStore = useUserStore();
+  const licenseStore = useLicenseStore();
   const { currentLocale } = useLocale(message.loading);
   const appStore = useAppStore();
 
@@ -111,6 +113,7 @@
 
   onMounted(() => {
     adjustOSTheme();
+    licenseStore.getValidateLicense();
     window.onerror = (_message) => {
       if (typeof _message === 'string' && _message.includes('Failed to fetch dynamically imported')) {
         showUpdateMessage();
