@@ -2,6 +2,7 @@ package io.cordys.crm.opportunity.controller;
 
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.ExportSelectRequest;
 import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -33,6 +34,7 @@ public class OpportunityControllerTests extends BaseTest {
     protected static final String UPDATE_STAGE = "update/stage";
     protected static final String CONTACT_LIST = "contact/list/{0}";
     protected static final String EXPORT_ALL = "export-all";
+    protected static final String EXPORT_SELECT = "export-select";
 
     private static Opportunity addOpportunity;
     @Resource
@@ -208,5 +210,24 @@ public class OpportunityControllerTests extends BaseTest {
         request.setHeadList(list);
 
         this.requestPostWithOk(EXPORT_ALL, request);
+    }
+
+
+    @Test
+    @Order(4)
+    void testExportSelect() throws Exception {
+        ExportSelectRequest request = new ExportSelectRequest();
+        request.setFileName("测试导出选中");
+
+        ExportHeadDTO exportHeadDTO = new ExportHeadDTO();
+        exportHeadDTO.setKey("name");
+        exportHeadDTO.setTitle("商机名称");
+        List<ExportHeadDTO> list = new ArrayList<>();
+        list.add(exportHeadDTO);
+        request.setHeadList(list);
+
+        request.setIds(List.of(addOpportunity.getId()));
+
+        this.requestPostWithOk(EXPORT_SELECT, request);
     }
 }

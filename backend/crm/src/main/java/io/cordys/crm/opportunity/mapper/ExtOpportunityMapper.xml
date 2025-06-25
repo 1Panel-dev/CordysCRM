@@ -415,4 +415,36 @@
             AND id != #{id}
         </if>
     </select>
+
+
+    <select id="getListByIds" resultType="io.cordys.crm.opportunity.dto.response.OpportunityListResponse">
+    SELECT
+    o.id,
+    o.NAME,
+    c.id AS customerId,
+    c.NAME AS customerName,
+    c.in_shared_pool AS in_customer_pool,
+    c.pool_id,
+    o.create_time,
+    o.update_time,
+    o.create_user,
+    o.update_user,
+    o.owner,
+    o.follower,
+    o.follow_time,
+    o.amount,
+    o.possible,
+    o.products,
+    o.last_stage,
+    o.stage,
+    o.status,
+    o.contact_id
+    FROM
+    opportunity o
+    INNER JOIN customer c ON o.customer_id = c.id
+        where o.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

@@ -84,7 +84,7 @@ public abstract class BaseExportService {
      * @param fileName
      * @return
      */
-    private File prepareExportFile(String fileId, String fileName) {
+    public File prepareExportFile(String fileId, String fileName) {
         File dir = new File(DefaultRepositoryDir.getDefaultDir() + getTempFileDir(fileId));
         if (!dir.exists()) {
             dir.mkdirs();

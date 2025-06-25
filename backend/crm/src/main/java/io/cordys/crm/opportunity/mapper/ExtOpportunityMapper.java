@@ -2,7 +2,6 @@ package io.cordys.crm.opportunity.mapper;
 
 
 import io.cordys.common.dto.DeptDataPermissionDTO;
-import io.cordys.common.dto.OptionCountDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
@@ -11,11 +10,9 @@ import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse;
-import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 
 public interface ExtOpportunityMapper {
@@ -39,4 +36,6 @@ public interface ExtOpportunityMapper {
     List<OptionDTO> getOpportunityOptionsByIds(@Param("ids") List<String> ids);
 
     List<Opportunity> selectByCustomerAndName(@Param("request") OpportunityAddRequest request, @Param("id") String id, @Param("orgId") String orgId);
+
+    List<OpportunityListResponse> getListByIds(@Param("ids") List<String> ids);
 }

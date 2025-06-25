@@ -3,6 +3,7 @@ package io.cordys.crm.opportunity.controller;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.ExportSelectRequest;
 import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
@@ -137,4 +138,11 @@ public class OpportunityController {
         return opportunityExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
+
+    @PostMapping("/export-select")
+    @Operation(summary = "导出选中商机")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT)
+    public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
+        return opportunityExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId());
+    }
 }
