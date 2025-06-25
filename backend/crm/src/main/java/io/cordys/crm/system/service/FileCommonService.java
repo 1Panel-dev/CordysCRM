@@ -4,6 +4,8 @@ import io.cordys.common.util.LogUtils;
 import io.cordys.file.engine.FileCenter;
 import io.cordys.file.engine.FileCopyRequest;
 import io.cordys.file.engine.FileRequest;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -110,4 +112,15 @@ public class FileCommonService {
 			LogUtils.error(e);
 		}
 	}
+
+	/**
+	 * 下载文件
+	 * @param request   文件请求信息，包含待下载的文件标识符或路径。
+	 * @throws Exception 如果下载文件过程中发生错误，抛出异常。
+	 */
+	public  ResponseEntity<Resource> download(FileRequest request) throws Exception {
+		return FileCenter.getRepository(request.getStorage()).downloadFile(request);
+    }
+
+
 }

@@ -1,5 +1,7 @@
 package io.cordys.file.engine;
 
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -45,6 +47,11 @@ public class S3Repository implements FileRepository {
     @Override
     public void downloadFile(FileRequest request, String localPath) throws Exception {
 
+    }
+
+    @Override
+    public ResponseEntity<Resource> downloadFile(FileRequest request) throws Exception {
+        return null;
     }
 
     @Override

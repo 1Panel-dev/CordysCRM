@@ -7,7 +7,7 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,9 +36,9 @@ public class ExportTaskCenterController {
 		exportTaskCenterService.cancel(taskId);
 	}
 
-	@GetMapping("download/{taskId}")
+	@GetMapping("/download/{taskId}")
 	@Operation(summary = "下载")
-	public void download(@PathVariable("taskId") String taskId, HttpServletResponse response) {
-		exportTaskCenterService.download(taskId, response);
+	public ResponseEntity<org.springframework.core.io.Resource> download(@PathVariable("taskId") String taskId) {
+		return exportTaskCenterService.download(taskId);
 	}
 }

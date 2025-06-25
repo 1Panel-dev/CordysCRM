@@ -1,5 +1,8 @@
 package io.cordys.file.engine;
 
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -86,6 +89,14 @@ public interface FileRepository {
      */
     void downloadFile(FileRequest request, String localPath) throws Exception;
 
+
+    /**
+     * 以流式方式下载文件，通过逐块下载的方式节省内存。
+     *
+     * @param request   文件请求信息，包含待下载的文件标识符或路径。
+     * @throws Exception 如果下载文件过程中发生错误，抛出异常。
+     */
+    ResponseEntity<Resource> downloadFile(FileRequest request) throws Exception;
     /**
      * 获取指定文件夹下所有文件的文件名列表。
      *

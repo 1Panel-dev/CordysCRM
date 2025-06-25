@@ -4,10 +4,16 @@ import io.cordys.common.exception.GenericException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.util.FileUtil;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -157,6 +163,22 @@ public class LocalRepository implements FileRepository {
     @Override
     public void downloadFile(FileRequest request, String localPath) {
         throw new UnsupportedOperationException("Download file is not supported in LocalFileRepository.");
+    }
+
+    @Override
+    public ResponseEntity<Resource> downloadFile(FileRequest request) throws Exception {
+        File file = new File(getFilePath(request));
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + URLEncoder.encode(file.getName(), "UTF-8"))
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(file.length())
+                .body(resource);
     }
 
     /**

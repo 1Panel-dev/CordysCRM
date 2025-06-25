@@ -65,6 +65,18 @@ public class LambdaQueryWrapper<T> {
     }
 
     /**
+     * 时间类型的添加大于条件（>）。
+     *
+     * @param column 列名的 Lambda 表达式
+     * @param value  值
+     * @return 当前 LambdaQueryWrapper 实例
+     */
+    public LambdaQueryWrapper<T> gtT(XFunction<T, ?> column, Object value) {
+        addCondition(columnToString(column) + " <![CDATA[ > ]]> " + formatValue(value));
+        return this;
+    }
+
+    /**
      * 添加小于条件（<）。
      *
      * @param column 列名的 Lambda 表达式
@@ -73,6 +85,18 @@ public class LambdaQueryWrapper<T> {
      */
     public LambdaQueryWrapper<T> lt(XFunction<T, ?> column, Object value) {
         addCondition(columnToString(column) + " < " + formatValue(value));
+        return this;
+    }
+
+    /**
+     * 时间类型的添加小于条件（<）。
+     *
+     * @param column 列名的 Lambda 表达式
+     * @param value  值
+     * @return 当前 LambdaQueryWrapper 实例
+     */
+    public LambdaQueryWrapper<T> ltT(XFunction<T, ?> column, Object value) {
+        addCondition(columnToString(column) + " <![CDATA[ < ]]> " + formatValue(value));
         return this;
     }
 

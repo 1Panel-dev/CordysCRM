@@ -10,27 +10,38 @@ import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.service.BaseExportService;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerField;
 import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.system.constants.ExportConstants;
+import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleForm;
+import io.cordys.crm.system.service.ExportTaskCenterService;
+import io.cordys.crm.system.service.FileCommonService;
+import io.cordys.file.engine.DefaultRepositoryDir;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +79,11 @@ class CustomerControllerTests extends BaseTest {
     private BaseMapper<ModuleField> moduleFieldMapper;
     @Resource
     private BaseMapper<ModuleForm> moduleFormMapper;
+    @Resource
+    private BaseMapper<ExportTask> exportTaskBaseMapper;
+    @Resource
+    private ExportTaskCenterService exportTaskCenterService;
+
 
     @Override
     protected String getBasePath() {
@@ -267,8 +283,18 @@ class CustomerControllerTests extends BaseTest {
         List<ExportHeadDTO> list = new ArrayList<>();
         list.add(exportHeadDTO);
         request.setHeadList(list);
-
-        this.requestPostWithOk(EXPORT_ALL, request);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(EXPORT_ALL, request);
+        String resultData = getResultData(mvcResult, String.class);
+        Thread.sleep(1500); // 等待导出任务完成
+        ResponseEntity<org.springframework.core.io.Resource> resourceResponseEntity = exportTaskCenterService.download(resultData);
+        Assertions.assertTrue(resourceResponseEntity.getBody().exists());
+        ExportTask exportTask = new ExportTask();
+        exportTask.setId(resultData);
+        LocalDateTime oneDayBefore = LocalDateTime.now().minusDays(2);
+        exportTask.setCreateTime(oneDayBefore.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        exportTaskBaseMapper.updateById(exportTask);
+        exportTaskCenterService.clean();
+       System.out.println(resourceResponseEntity.getBody().exists());
     }
 
     @Test
