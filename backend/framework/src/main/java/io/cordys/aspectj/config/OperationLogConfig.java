@@ -1,8 +1,8 @@
 package io.cordys.aspectj.config;
 
 import io.cordys.aspectj.aop.OperationLogAopAdvisor;
-import io.cordys.aspectj.aop.OperationOperationLogInterceptor;
 import io.cordys.aspectj.aop.OperationLogSource;
+import io.cordys.aspectj.aop.OperationOperationLogInterceptor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.*;

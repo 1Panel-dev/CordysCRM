@@ -10,7 +10,6 @@ import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.dto.NodeSortDTO;
-import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;

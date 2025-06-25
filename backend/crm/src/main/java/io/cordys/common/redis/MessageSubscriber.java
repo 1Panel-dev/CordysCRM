@@ -1,7 +1,7 @@
 package io.cordys.common.redis;
 
-import io.cordys.crm.system.consumer.TopicConsumer;
 import io.cordys.common.util.LogUtils;
+import io.cordys.crm.system.consumer.TopicConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;

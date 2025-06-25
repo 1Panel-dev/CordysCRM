@@ -1,7 +1,6 @@
 package io.cordys.crm.clue.controller;
 
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.groups.Created;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.dto.ClueCapacityDTO;
 import io.cordys.crm.clue.service.ClueCapacityService;

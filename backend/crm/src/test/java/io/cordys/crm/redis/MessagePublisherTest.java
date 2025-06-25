@@ -1,11 +1,11 @@
 package io.cordys.crm.redis;
 
 import io.cordys.common.constants.TopicConstants;
-import io.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import io.cordys.common.redis.MessagePublisher;
-import io.cordys.crm.system.consumer.SSEConsumer;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.system.constants.NotificationConstants;
+import io.cordys.crm.system.consumer.SSEConsumer;
+import io.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;

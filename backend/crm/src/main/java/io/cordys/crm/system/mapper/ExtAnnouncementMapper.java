@@ -1,11 +1,10 @@
 package io.cordys.crm.system.mapper;
 
-import java.util.List;
-
 import io.cordys.crm.system.dto.request.AnnouncementPageRequest;
+import io.cordys.crm.system.dto.response.AnnouncementDTO;
 import org.springframework.data.repository.query.Param;
 
-import io.cordys.crm.system.dto.response.AnnouncementDTO;
+import java.util.List;
 
 public interface ExtAnnouncementMapper {
     List<AnnouncementDTO> selectByBaseRequest(@Param("request") AnnouncementPageRequest request);

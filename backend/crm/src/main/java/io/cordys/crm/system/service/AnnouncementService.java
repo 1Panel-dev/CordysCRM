@@ -4,11 +4,10 @@ import io.cordys.aspectj.annotation.OperationLog;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.constants.TopicConstants;
 import io.cordys.common.dto.OptionDTO;
-import io.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import io.cordys.common.exception.GenericException;
-import io.cordys.aspectj.dto.LogContextInfo;
 import io.cordys.common.redis.MessagePublisher;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -19,27 +18,30 @@ import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Announcement;
 import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.AnnouncementReceiveTypeDTO;
+import io.cordys.crm.system.dto.convert.AnnouncementContentDTO;
 import io.cordys.crm.system.dto.log.AnnouncementLogDTO;
 import io.cordys.crm.system.dto.request.AnnouncementPageRequest;
 import io.cordys.crm.system.dto.request.AnnouncementRequest;
-import io.cordys.crm.system.dto.convert.AnnouncementContentDTO;
 import io.cordys.crm.system.dto.response.AnnouncementDTO;
 import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.dto.response.OptionScopeDTO;
-import io.cordys.crm.system.mapper.*;
+import io.cordys.crm.system.mapper.ExtAnnouncementMapper;
+import io.cordys.crm.system.mapper.ExtDepartmentMapper;
+import io.cordys.crm.system.mapper.ExtNotificationMapper;
+import io.cordys.crm.system.mapper.ExtUserMapper;
+import io.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import io.cordys.crm.system.notice.sse.SseService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
-
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 @Service

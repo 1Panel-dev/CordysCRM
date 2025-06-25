@@ -15,7 +15,6 @@ import io.cordys.crm.clue.dto.request.PoolCluePickRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
-import io.cordys.crm.system.dto.request.PoolBatchRequest;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;

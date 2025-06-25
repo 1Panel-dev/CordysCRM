@@ -1,9 +1,9 @@
 package io.cordys.crm.system.dto.response;
 
 import io.cordys.common.permission.PermissionDefinitionItem;
+import io.cordys.crm.system.domain.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import io.cordys.crm.system.domain.Role;
 
 import java.util.List;
 

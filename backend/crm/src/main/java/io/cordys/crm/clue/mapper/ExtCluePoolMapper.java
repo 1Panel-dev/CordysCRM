@@ -5,7 +5,6 @@ import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.clue.domain.CluePoolPickRule;
 import io.cordys.crm.clue.domain.CluePoolRecycleRule;
 import io.cordys.crm.clue.dto.CluePoolDTO;
-import io.cordys.crm.customer.domain.CustomerPool;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

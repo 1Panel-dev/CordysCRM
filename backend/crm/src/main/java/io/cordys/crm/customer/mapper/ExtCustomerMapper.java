@@ -2,11 +2,13 @@ package io.cordys.crm.customer.mapper;
 
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
-import io.cordys.crm.customer.dto.request.*;
-import io.cordys.crm.customer.dto.response.*;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
+import io.cordys.crm.customer.dto.request.CustomerPageRequest;
+import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
 import io.cordys.crm.system.dto.FilterConditionDTO;
 import org.apache.ibatis.annotations.Param;
-import io.cordys.crm.customer.domain.Customer;
 
 import java.util.List;
 

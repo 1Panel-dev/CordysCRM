@@ -11,7 +11,6 @@ import io.cordys.crm.system.dto.request.NodeMoveRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 public abstract class MoveNodeService {

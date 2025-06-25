@@ -2,8 +2,8 @@ package io.cordys.crm.system.mapper;
 
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.system.domain.Product;
-import io.cordys.crm.system.dto.response.product.ProductListResponse;
 import io.cordys.crm.system.dto.request.ProductPageRequest;
+import io.cordys.crm.system.dto.response.product.ProductListResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

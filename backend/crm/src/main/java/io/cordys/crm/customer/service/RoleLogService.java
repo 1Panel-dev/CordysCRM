@@ -1,6 +1,5 @@
 package io.cordys.crm.customer.service;
 
-import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.dto.JsonDifferenceDTO;
 import io.cordys.common.permission.Permission;
 import io.cordys.common.permission.PermissionDefinitionItem;

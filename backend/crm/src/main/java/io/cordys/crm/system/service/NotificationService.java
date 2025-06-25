@@ -3,7 +3,6 @@ package io.cordys.crm.system.service;
 
 import io.cordys.common.constants.TopicConstants;
 import io.cordys.common.dto.OptionCountDTO;
-import io.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import io.cordys.common.redis.MessagePublisher;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.system.constants.NotificationConstants;
@@ -11,6 +10,7 @@ import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.request.NotificationRequest;
 import io.cordys.crm.system.dto.response.NotificationDTO;
 import io.cordys.crm.system.mapper.ExtNotificationMapper;
+import io.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import io.cordys.crm.system.notice.sse.SseService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;

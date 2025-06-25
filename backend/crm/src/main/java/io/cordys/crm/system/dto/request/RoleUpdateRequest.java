@@ -4,7 +4,8 @@ import io.cordys.common.constants.EnumValue;
 import io.cordys.common.constants.RoleDataScope;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.List;

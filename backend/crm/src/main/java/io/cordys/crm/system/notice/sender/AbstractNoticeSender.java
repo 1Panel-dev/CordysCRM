@@ -4,7 +4,6 @@ package io.cordys.crm.system.notice.sender;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.MessageDetailDTO;
 import io.cordys.crm.system.mapper.ExtUserMapper;

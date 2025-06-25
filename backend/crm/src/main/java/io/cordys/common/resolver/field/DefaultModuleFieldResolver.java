@@ -1,6 +1,5 @@
 package io.cordys.common.resolver.field;
 
-import io.cordys.common.util.JSON;
 import io.cordys.crm.system.dto.field.base.BaseField;
 
 import java.util.List;

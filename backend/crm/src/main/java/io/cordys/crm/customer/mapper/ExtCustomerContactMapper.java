@@ -7,7 +7,6 @@ import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**

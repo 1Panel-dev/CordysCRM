@@ -1,8 +1,8 @@
 package io.cordys.crm.system.dto.request;
 
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.groups.Created;
 import io.cordys.common.groups.Updated;
-import io.cordys.common.dto.BasePageRequest;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;

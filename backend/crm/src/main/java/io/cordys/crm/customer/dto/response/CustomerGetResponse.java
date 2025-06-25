@@ -2,8 +2,8 @@ package io.cordys.crm.customer.dto.response;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.OptionDTO;
-import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
 import java.util.List;
 import java.util.Map;

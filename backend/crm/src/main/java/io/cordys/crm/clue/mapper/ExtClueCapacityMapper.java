@@ -1,7 +1,6 @@
 package io.cordys.crm.clue.mapper;
 
 import io.cordys.crm.clue.domain.ClueCapacity;
-import io.cordys.crm.customer.domain.CustomerCapacity;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

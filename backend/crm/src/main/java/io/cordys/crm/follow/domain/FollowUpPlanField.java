@@ -2,8 +2,6 @@ package io.cordys.crm.follow.domain;
 
 import io.cordys.common.domain.BaseResourceField;
 import jakarta.persistence.Table;
-import io.cordys.common.domain.BaseModel;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data

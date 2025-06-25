@@ -1,6 +1,5 @@
 package io.cordys.crm.follow.mapper;
 
-import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.crm.follow.dto.CustomerDataDTO;
 import io.cordys.crm.follow.dto.request.FollowUpRecordPageRequest;
 import io.cordys.crm.follow.dto.response.FollowUpRecordListResponse;

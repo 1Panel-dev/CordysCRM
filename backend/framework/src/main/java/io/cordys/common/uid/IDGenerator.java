@@ -1,7 +1,7 @@
 package io.cordys.common.uid;
 
-import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.uid.impl.DefaultUidGenerator;
+import io.cordys.common.util.CommonBeanFactory;
 
 /**
  * IDGenerator 用于生成唯一的 ID。

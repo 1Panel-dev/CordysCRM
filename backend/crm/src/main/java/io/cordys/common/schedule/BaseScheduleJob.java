@@ -1,7 +1,10 @@
 package io.cordys.common.schedule;
 
 import io.cordys.common.util.LogUtils;
-import org.quartz.*;
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobKey;
 
 /**
  * 基础调度任务类，所有调度任务都应该继承此类，并实现具体的业务逻辑。

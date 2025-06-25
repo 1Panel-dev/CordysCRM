@@ -1,11 +1,10 @@
 package io.cordys.crm.system.mapper;
 
-import java.util.List;
-
+import io.cordys.crm.system.domain.MessageTask;
 import io.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import org.apache.ibatis.annotations.Param;
 
-import io.cordys.crm.system.domain.MessageTask;
+import java.util.List;
 
 public interface ExtMessageTaskMapper {
 

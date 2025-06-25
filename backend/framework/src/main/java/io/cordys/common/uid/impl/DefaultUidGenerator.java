@@ -3,9 +3,9 @@ package io.cordys.common.uid.impl;
 
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.BitsAllocator;
-import io.cordys.common.util.TimeUtils;
 import io.cordys.common.uid.worker.WorkerIdAssigner;
 import io.cordys.common.util.LogUtils;
+import io.cordys.common.util.TimeUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.DisposableBean;

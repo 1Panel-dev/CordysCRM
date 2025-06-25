@@ -4,16 +4,13 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.response.EmailDTO;
 import io.cordys.crm.system.service.OrganizationConfigService;
+import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-
-
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import io.cordys.security.SessionUtils;
 
 @Tag(name = "企业设置")
 @RestController

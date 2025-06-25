@@ -1,9 +1,5 @@
 package io.cordys.crm.customer.service;
 
-import cn.idev.excel.EasyExcel;
-import cn.idev.excel.ExcelWriter;
-import cn.idev.excel.support.ExcelTypeEnum;
-import cn.idev.excel.write.metadata.WriteSheet;
 import com.github.pagehelper.PageHelper;
 import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
@@ -22,14 +18,11 @@ import io.cordys.crm.system.constants.ExportConstants;
 import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.service.ExportTaskService;
-import io.cordys.file.engine.DefaultRepositoryDir;
 import io.cordys.registry.ExportThreadRegistry;
 import jakarta.annotation.Resource;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;

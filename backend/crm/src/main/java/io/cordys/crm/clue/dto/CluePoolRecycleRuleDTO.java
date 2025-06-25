@@ -2,7 +2,6 @@ package io.cordys.crm.clue.dto;
 
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

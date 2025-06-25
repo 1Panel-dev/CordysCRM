@@ -2,7 +2,6 @@ package io.cordys.common.interceptor;
 
 import io.cordys.common.util.CompressUtils;
 import io.cordys.config.MybatisInterceptorConfig;
-import io.cordys.crm.follow.domain.FollowUpRecordFieldBlob;
 import io.cordys.crm.system.domain.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -3,7 +3,6 @@ package io.cordys.crm.system.controller;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.OptionCountDTO;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
@@ -15,7 +14,6 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 

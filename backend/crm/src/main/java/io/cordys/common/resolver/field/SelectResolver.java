@@ -2,7 +2,6 @@ package io.cordys.common.resolver.field;
 
 
 import io.cordys.crm.system.dto.field.SelectField;
-import io.cordys.crm.system.dto.field.base.OptionProp;
 import org.apache.commons.lang3.StringUtils;
 
 /**

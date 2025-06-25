@@ -1,9 +1,9 @@
 package io.cordys.crm.customer.dto.response;
 
 import io.cordys.common.domain.BaseModuleFieldValue;
-import lombok.Data;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.cordys.crm.customer.domain.CustomerContact;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
 import java.util.List;
 

@@ -1,10 +1,10 @@
 package io.cordys.crm.system.mapper;
 
 import io.cordys.common.dto.DeptUserTreeNode;
-import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.RoleUserTreeNode;
-import io.cordys.crm.system.dto.request.*;
-import io.cordys.crm.system.dto.response.*;
+import io.cordys.crm.system.dto.request.RoleUserPageRequest;
+import io.cordys.crm.system.dto.response.RoleUserListResponse;
+import io.cordys.crm.system.dto.response.RoleUserOptionResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

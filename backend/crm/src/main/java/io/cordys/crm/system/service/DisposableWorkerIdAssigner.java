@@ -1,13 +1,13 @@
 
 package io.cordys.crm.system.service;
 
+import io.cordys.common.uid.utils.DockerUtils;
+import io.cordys.common.uid.utils.NetUtils;
 import io.cordys.common.uid.worker.WorkerIdAssigner;
 import io.cordys.common.uid.worker.WorkerNodeType;
 import io.cordys.common.util.LogUtils;
 import io.cordys.crm.system.domain.WorkerNode;
 import io.cordys.crm.system.mapper.ExtWorkerNodeMapper;
-import io.cordys.common.uid.utils.DockerUtils;
-import io.cordys.common.uid.utils.NetUtils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.RandomUtils;
 import org.springframework.stereotype.Service;

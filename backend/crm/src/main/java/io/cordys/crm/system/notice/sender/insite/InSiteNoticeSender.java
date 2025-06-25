@@ -2,7 +2,6 @@ package io.cordys.crm.system.notice.sender.insite;
 
 
 import io.cordys.common.constants.TopicConstants;
-import io.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import io.cordys.common.redis.MessagePublisher;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
@@ -13,6 +12,7 @@ import io.cordys.crm.system.domain.Notification;
 import io.cordys.crm.system.dto.MessageDetailDTO;
 import io.cordys.crm.system.notice.common.NoticeModel;
 import io.cordys.crm.system.notice.common.Receiver;
+import io.cordys.crm.system.notice.dto.NoticeRedisMessage;
 import io.cordys.crm.system.notice.sender.AbstractNoticeSender;
 import io.cordys.crm.system.notice.sse.SseService;
 import io.cordys.mybatis.BaseMapper;
