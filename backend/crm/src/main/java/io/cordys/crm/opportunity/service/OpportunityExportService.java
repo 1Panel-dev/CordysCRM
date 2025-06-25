@@ -48,73 +48,98 @@ public class OpportunityExportService extends BaseExportService {
 
 
     public String export(String userId, OpportunityExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) {
-        //用户导出数量 限制
+        // 参数校验
+        Objects.requireNonNull(userId, "userId 不能为空");
+        // 用户导出数量限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.OPPORTUNITY.toString(), ExportConstants.ExportStatus.PREPARED.toString());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.OPPORTUNITY.toString(), request.getFileName());
+
         Thread.startVirtualThread(() -> {
             try {
                 ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
-                //表头信息
+
+                // 表头信息
                 List<List<String>> headList = request.getHeadList().stream()
-                        .map(head -> Arrays.asList(head.getTitle()))
+                        .map(head -> Collections.singletonList(head.getTitle()))
                         .toList();
 
+                // 准备导出文件
+                File file = prepareExportFile(fileId, request.getFileName());
 
-                File dir = new File(DefaultRepositoryDir.getDefaultDir() + getTempFileDir(fileId));
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-                File file = new File(dir, request.getFileName() + ".xlsx");
-                ExcelWriter writer = EasyExcel.write(file)
+                try (ExcelWriter writer = EasyExcel.write(file)
                         .head(headList)
                         .excelType(ExcelTypeEnum.XLSX)
-                        .build();
+                        .build()) {
 
-                WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
+                    WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
 
-
-                //分批查询数据并写入文件
-                int current = 1;
-                request.setPageSize(EXPORT_MAX_COUNT);
-                boolean flag = true;
-
-                while (flag) {
-                    request.setCurrent(current);
-                    List<List<Object>> data = getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId());
-                    if (CollectionUtils.isEmpty(data)) {
-                        flag = false;
-                        break;
-                    }
-                    if (ExportThreadRegistry.isStop(exportTask.getId())) {
-                        throw new InterruptedException("线程已被中断，主动退出");
-                    }
-                    writer.write(data, sheet);
-                    if (data.size() < EXPORT_MAX_COUNT) {
-                        flag = false;
-                        break;
-                    }
-                    current++;
+                    // 导出数据
+                    exportDataToExcel(writer, sheet, request, userId, orgId, deptDataPermission, exportTask.getId());
                 }
-                writer.finish();
 
-                //更新状态
+                // 更新状态
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
 
             } catch (InterruptedException e) {
                 LogUtils.error("任务停止中断", e);
+                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
             } catch (Exception e) {
-                //更新任务
+                LogUtils.error("导出数据异常", e);
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
             } finally {
-                //从注册中心移除
+                // 从注册中心移除
                 ExportThreadRegistry.remove(exportTask.getId());
-                //日志
+                // 日志
                 exportLog(orgId, exportTask.getId(), userId, LogType.EXPORT, LogModule.OPPORTUNITY, request.getFileName());
             }
         });
+
         return exportTask.getId();
+    }
+
+    /**
+     * 准备导出文件
+     */
+    private File prepareExportFile(String fileId, String fileName) {
+        File dir = new File(DefaultRepositoryDir.getDefaultDir() + getTempFileDir(fileId));
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return new File(dir, fileName + ".xlsx");
+    }
+
+    /**
+     * 导出数据到Excel
+     */
+    private void exportDataToExcel(ExcelWriter writer, WriteSheet sheet,
+                                   OpportunityExportRequest request, String userId,
+                                   String orgId, DeptDataPermissionDTO deptDataPermission,
+                                   String taskId) throws InterruptedException {
+        int current = 1;
+        request.setPageSize(EXPORT_MAX_COUNT);
+
+        while (true) {
+            request.setCurrent(current);
+            List<List<Object>> data = getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, taskId);
+
+            if (CollectionUtils.isEmpty(data)) {
+                break;
+            }
+
+            if (ExportThreadRegistry.isStop(taskId)) {
+                throw new InterruptedException("线程已被中断，主动退出");
+            }
+
+            writer.write(data, sheet);
+
+            if (data.size() < EXPORT_MAX_COUNT) {
+                break;
+            }
+
+            current++;
+        }
     }
 
 
