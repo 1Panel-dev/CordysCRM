@@ -21,3 +21,5 @@ export const DeleteOptFollowPlanUrl = '/opportunity/follow/plan/delete'; // 删�
 export const GetOptTabUrl = '/opportunity/tab'; // 商机tab显隐
 export const GetOpportunityContactListUrl = 'opportunity/contact/list'; // 商机详情联系人列表
 export const UpdateOptFollowPlanStatusUrl = '/opportunity/follow/plan/status/update'; // 更新商机跟进计划状态
+export const ExportOpportunityAllUrl = '/opportunity/export-all'; // 商机导出
+export const ExportOpportunitySelectedUrl = '/opportunity/export-select'; // 商机导出选中

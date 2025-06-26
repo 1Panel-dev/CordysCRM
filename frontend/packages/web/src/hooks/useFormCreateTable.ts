@@ -424,6 +424,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               title: field.name,
               width: 200,
               key: field.businessKey || field.id,
+              filedType: FieldTypeEnum.PICTURE,
               render: (row: any) =>
                 h(
                   'div',

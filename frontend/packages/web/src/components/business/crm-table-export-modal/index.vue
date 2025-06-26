@@ -6,7 +6,7 @@
     :ok-loading="loading"
     :positive-text="t('common.export')"
     :ok-button-props="{
-      disabled: !form.name.trim().length,
+      disabled: !form.fileName.trim().length,
     }"
     @confirm="confirmHandler"
     @cancel="closeHandler"
@@ -15,7 +15,7 @@
       ref="formRef"
       :model="form"
       :rules="{
-        name: [
+        fileName: [
           {
             required: true,
             message: t('common.nameNotNull'),
@@ -27,9 +27,9 @@
       require-mark-placement="left"
       class="hidden-feedback min-w-[350px]"
     >
-      <n-form-item path="name" :label="t('common.name')" required>
+      <n-form-item path="fileName" :label="t('common.name')" required>
         <n-input-group>
-          <n-input v-model:value="form.name" type="text" :placeholder="t('common.pleaseInput')"> </n-input>
+          <n-input v-model:value="form.fileName" type="text" :placeholder="t('common.pleaseInput')"> </n-input>
           <n-input-group-label>.xlsx</n-input-group-label>
         </n-input-group>
         <div class="mt-[2px] text-[12px] text-[var(--text-n4)]"> {{ t('common.exportTaskTip') }} </div>
@@ -43,13 +43,23 @@
   import dayjs from 'dayjs';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { ExportTableColumnItem } from '@lib/shared/models/common';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+
+  import {
+    exportClueAll,
+    exportClueSelected,
+    exportCustomerAll,
+    exportCustomerSelected,
+    exportOpportunityAll,
+    exportOpportunitySelected,
+  } from '@/api/modules';
 
   const props = defineProps<{
     params: Record<string, any>;
     type: 'customer' | 'clue' | 'opportunity';
-    exportApi: (params: Record<string, any>) => Promise<any>;
+    exportColumns: ExportTableColumnItem[];
   }>();
   const emit = defineEmits<{
     (e: 'createSuccess'): void;
@@ -72,32 +82,45 @@
   const loading = ref<boolean>(false);
   const formRef = ref<FormInst>();
   const form = ref<Record<string, any>>({
-    name: `${dayjs().format('YYYYMMDD-HHmmss')}-${typeStringMap[props.type]}`,
+    fileName: `${dayjs().format('YYYYMMDD-HHmmss')}-${typeStringMap[props.type]}`,
   });
 
   function closeHandler() {
     formRef.value?.restoreValidation();
   }
 
+  const exportAllApiMap = {
+    customer: exportCustomerAll,
+    clue: exportClueAll,
+    opportunity: exportOpportunityAll,
+  };
+
+  const exportSelectedApiMap = {
+    customer: exportCustomerSelected,
+    clue: exportClueSelected,
+    opportunity: exportOpportunitySelected,
+  };
+
   function confirmHandler() {
     formRef.value?.validate(async (error) => {
       if (!error) {
-        if (props.exportApi) {
-          try {
-            loading.value = true;
-            await props.exportApi({
-              ...form.value,
-              ...props.params,
-            });
-            show.value = false;
-            message.success(t('common.exportTaskCreate'));
-            emit('createSuccess');
-          } catch (e) {
-            // eslint-disable-next-line no-console
-            console.log(e);
-          } finally {
-            loading.value = false;
-          }
+        try {
+          loading.value = true;
+          const exportApi = props.params.ids?.length ? exportSelectedApiMap[props.type] : exportAllApiMap[props.type];
+          await exportApi({
+            ...props.params,
+            ids: props.params.ids || [],
+            fileName: form.value.fileName.trim(),
+            headList: props.exportColumns,
+          });
+          show.value = false;
+          message.success(t('common.exportTaskCreate'));
+          emit('createSuccess');
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log(e);
+        } finally {
+          loading.value = false;
         }
       }
     });

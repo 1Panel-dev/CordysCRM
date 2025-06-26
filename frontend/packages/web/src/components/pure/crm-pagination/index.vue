@@ -2,7 +2,12 @@
   <div
     :class="`crm-pagination--${props.size} flex items-center ${props.showTotal ? 'justify-between' : 'justify-end'}`"
   >
-    <div v-show="props.showTotal" class="total text-[var(--text-n2)]">
+    <div v-if="props.checkedCount" class="flex items-center gap-[4px]">
+      <div>{{ t('crmPagination.checked') }}</div>
+      <div class="text-[var(--primary-8)]">{{ props.checkedCount }}</div>
+      <div>{{ t('crmPagination.item') }}</div>
+    </div>
+    <div v-else v-show="props.showTotal" class="total text-[var(--text-n2)]">
       {{ t('crmPagination.total', { count: props.itemCount }) }}
     </div>
     <n-pagination
@@ -47,6 +52,7 @@
     showTotal?: boolean;
     isSimple?: boolean;
     pageSlot?: number;
+    checkedCount?: number;
   }
 
   const props = withDefaults(defineProps<CrmPaginationProps>(), {

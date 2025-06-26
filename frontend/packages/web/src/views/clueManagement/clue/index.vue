@@ -22,7 +22,7 @@
           </n-button>
           <n-button
             v-if="activeTab !== CustomerSearchTypeEnum.VISIBLE"
-            v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+            v-permission="['CLUE_MANAGEMENT:EXPORT']"
             type="primary"
             ghost
             class="n-btn-outline-primary"
@@ -68,7 +68,7 @@
   <CrmTableExportModal
     v-model:show="showExportModal"
     :params="exportParams"
-    :export-api="async () => {}"
+    :export-columns="exportColumns"
     type="clue"
     @create-success="handleExportCreateSuccess"
   />
@@ -84,6 +84,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { ClueListItem } from '@lib/shared/models/clue';
+  import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { TransferParams } from '@lib/shared/models/customer/index';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -142,36 +143,34 @@
   const formKey = ref(FormDesignKeyEnum.CLUE);
   const formCreateDrawerVisible = ref(false);
 
-  const actionConfig = computed<BatchActionConfig>(() => {
-    return {
-      baseAction: [
-        {
-          label: t('common.exportChecked'),
-          key: 'exportChecked',
-          // permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-        },
-        ...(activeTab.value !== CustomerSearchTypeEnum.CUSTOMER_TRANSITION
-          ? [
-              {
-                label: t('common.batchTransfer'),
-                key: 'batchTransfer',
-                permission: ['CLUE_MANAGEMENT:UPDATE'],
-              },
-              {
-                label: t('clue.moveIntoCluePool'),
-                key: 'moveIntoCluePool',
-                permission: ['CLUE_MANAGEMENT:RECYCLE'],
-              },
-              {
-                label: t('common.batchDelete'),
-                key: 'batchDelete',
-                permission: ['CLUE_MANAGEMENT:DELETE'],
-              },
-            ]
-          : []),
-      ],
-    };
-  });
+  const actionConfig: BatchActionConfig = {
+    baseAction: [
+      {
+        label: t('common.exportChecked'),
+        key: 'exportChecked',
+        permission: ['CLUE_MANAGEMENT:EXPORT'],
+      },
+      ...(activeTab.value !== CustomerSearchTypeEnum.CUSTOMER_TRANSITION
+        ? [
+            {
+              label: t('common.batchTransfer'),
+              key: 'batchTransfer',
+              permission: ['CLUE_MANAGEMENT:UPDATE'],
+            },
+            {
+              label: t('clue.moveIntoCluePool'),
+              key: 'moveIntoCluePool',
+              permission: ['CLUE_MANAGEMENT:RECYCLE'],
+            },
+            {
+              label: t('common.batchDelete'),
+              key: 'batchDelete',
+              permission: ['CLUE_MANAGEMENT:DELETE'],
+            },
+          ]
+        : []),
+    ],
+  };
 
   const tableRefreshId = ref(0);
 
@@ -181,7 +180,6 @@
   }
 
   const showExportModal = ref<boolean>(false);
-  const exportParams = ref<Record<string, any>>({});
 
   // 批量移入线索池
   const showToCluePoolResultModel = ref(false);
@@ -253,9 +251,6 @@
   }
 
   function handleExportAllClick() {
-    exportParams.value = {
-      keyword: keyword.value,
-    };
     showExportModal.value = true;
   }
 
@@ -460,7 +455,25 @@
     },
     permission: ['CLUE_MANAGEMENT:RECYCLE', 'CLUE_MANAGEMENT:DELETE', 'CLUE_MANAGEMENT:UPDATE'],
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  const exportColumns = computed<ExportTableColumnItem[]>(() => {
+    return propsRes.value.columns
+      .filter((item: any) => item.key !== 'operation' && item.type !== 'selection')
+      .map((e) => {
+        return {
+          key: e.key?.toString() || '',
+          title: t('common.name'),
+        };
+      });
+  });
+
+  const exportParams = computed(() => {
+    return {
+      ...tableQueryParams.value,
+      ids: checkedRowKeys.value,
+    };
+  });
 
   const filterConfigList = computed<FilterFormItem[]>(() => [
     {

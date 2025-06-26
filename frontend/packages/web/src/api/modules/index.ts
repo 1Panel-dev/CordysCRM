@@ -71,6 +71,8 @@ export const {
   getOptTab,
   getOpportunityContactList,
   updateOptFollowPlanStatus,
+  exportOpportunityAll,
+  exportOpportunitySelected,
 } = opportunityApi;
 
 export const {
@@ -109,6 +111,8 @@ export const {
   getPoolClue,
   getClueTab,
   updateClueFollowPlanStatus,
+  exportClueAll,
+  exportClueSelected,
 } = clueApi;
 
 export const {
@@ -173,6 +177,8 @@ export const {
   getCustomerContactTab,
   updateCustomerFollowPlanStatus,
   getCustomerOpportunityPage,
+  exportCustomerAll,
+  exportCustomerSelected,
 } = customerApi;
 
 export const {

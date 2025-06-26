@@ -28,6 +28,8 @@ import {
   DeleteOpenSeaCustomerUrl,
   DisableCustomerContactUrl,
   EnableCustomerContactUrl,
+  ExportCustomerAllUrl,
+  ExportCustomerSelectedUrl,
   GetCustomerCollaborationListUrl,
   GetCustomerContactFormConfigUrl,
   GetCustomerContactListUrl,
@@ -65,7 +67,12 @@ import {
   UpdateCustomerRelationItemUrl,
   UpdateCustomerUrl,
 } from '@lib/shared/api/requrls/customer';
-import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+import type {
+  CommonList,
+  TableExportParams,
+  TableExportSelectedParams,
+  TableQueryParams,
+} from '@lib/shared/models/common';
 import type {
   AddCustomerCollaborationParams,
   AddCustomerRelationItemParams,
@@ -429,6 +436,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<OpportunityItem>>({ url: GetCustomerOpportunityListUrl, data });
   }
 
+  // 导出全量客户列表
+  function exportCustomerAll(data: TableExportParams) {
+    return CDR.post({ url: ExportCustomerAllUrl, data });
+  }
+
+  // 导出选中客户列表
+  function exportCustomerSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportCustomerSelectedUrl, data });
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -494,5 +511,7 @@ export default function useProductApi(CDR: CordysAxios) {
     deleteCustomerRelationItem,
     getCustomerTab,
     updateCustomerFollowPlanStatus,
+    exportCustomerAll,
+    exportCustomerSelected,
   };
 }

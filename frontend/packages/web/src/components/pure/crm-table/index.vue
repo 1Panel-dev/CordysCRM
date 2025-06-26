@@ -43,6 +43,7 @@
       v-if="!!attrs.showPagination"
       class="mt-[16px]"
       v-bind="{ ...(attrs.crmPagination || {}) }"
+      :checked-count="checkedRowKeys.length"
       @handle-page-change="handlePageChange"
       @handle-page-size-change="handlePageSizeChange"
     />

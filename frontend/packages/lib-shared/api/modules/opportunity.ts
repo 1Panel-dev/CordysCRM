@@ -5,6 +5,8 @@ import {
   CancelOptFollowPlanUrl,
   DeleteOptFollowPlanUrl,
   DeleteOptFollowRecordUrl,
+  ExportOpportunityAllUrl,
+  ExportOpportunitySelectedUrl,
   GetOpportunityContactListUrl,
   GetOptDetailUrl,
   GetOptFollowPlanUrl,
@@ -24,7 +26,12 @@ import {
   UpdateOptFollowPlanUrl,
   UpdateOptFollowRecordUrl,
 } from '@lib/shared/api/requrls/opportunity';
-import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+import type {
+  CommonList,
+  TableExportParams,
+  TableExportSelectedParams,
+  TableQueryParams,
+} from '@lib/shared/models/common';
 import type {
   CustomerContractTableParams,
   CustomerFollowPlanTableParams,
@@ -162,6 +169,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: UpdateOptFollowPlanStatusUrl, data });
   }
 
+  // 导出全量商机列表
+  function exportOpportunityAll(data: TableExportParams) {
+    return CDR.post({ url: ExportOpportunityAllUrl, data });
+  }
+
+  // 导出选中商机列表
+  function exportOpportunitySelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportOpportunitySelectedUrl, data });
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -186,5 +203,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getOptTab,
     getOpportunityContactList,
     updateOptFollowPlanStatus,
+    exportOpportunityAll,
+    exportOpportunitySelected,
   };
 }

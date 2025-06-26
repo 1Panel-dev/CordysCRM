@@ -43,3 +43,19 @@ export interface FilterConditionItem {
   operator: OperatorEnum;
   multipleValue?: boolean;
 }
+
+export interface ExportTableColumnItem {
+  key: string;
+  title: string;
+}
+
+export interface TableExportParams extends TableQueryParams {
+  fileName: string; // 导出文件名
+  headList: ExportTableColumnItem[]; // 导出表头
+}
+
+export interface TableExportSelectedParams {
+  fileName: string;
+  headList: ExportTableColumnItem[];
+  ids: string[];
+}

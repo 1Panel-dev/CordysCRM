@@ -27,7 +27,7 @@
           </n-button>
           <n-button
             v-if="activeTab !== CustomerSearchTypeEnum.VISIBLE"
-            v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+            v-permission="['CUSTOMER_MANAGEMENT:EXPORT']"
             type="primary"
             ghost
             class="n-btn-outline-primary"
@@ -75,7 +75,7 @@
   <CrmTableExportModal
     v-model:show="showExportModal"
     :params="exportParams"
-    :export-api="async () => {}"
+    :export-columns="exportColumns"
     type="customer"
     @create-success="handleExportCreateSuccess"
   />
@@ -89,6 +89,7 @@
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
+  import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
@@ -170,7 +171,7 @@
       {
         label: t('common.exportChecked'),
         key: 'exportChecked',
-        // permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+        permission: ['CUSTOMER_MANAGEMENT:EXPORT'],
       },
       {
         label: t('common.batchTransfer'),
@@ -216,7 +217,6 @@
   // 批量转移
   const showTransferModal = ref<boolean>(false);
   const showExportModal = ref<boolean>(false);
-  const exportParams = ref<Record<string, any>>({});
   const showToCluePoolResultModel = ref(false);
   const successCount = ref<number>(0);
   const failCount = ref<number>(0);
@@ -256,13 +256,6 @@
       default:
         break;
     }
-  }
-
-  function handleExportAllClick() {
-    exportParams.value = {
-      keyword: keyword.value,
-    };
-    showExportModal.value = true;
   }
 
   function handleExportCreateSuccess() {
@@ -436,7 +429,7 @@
     },
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const tableColumns = computed(() => {
     if (activeTab.value === CustomerSearchTypeEnum.VISIBLE) {
       return propsRes.value.columns
@@ -453,6 +446,29 @@
     }
     return propsRes.value.columns;
   });
+
+  const exportColumns = computed<ExportTableColumnItem[]>(() => {
+    return propsRes.value.columns
+      .filter(
+        (item: any) => item.key !== 'operation' && item.type !== 'selection' && item.fieldType !== FieldTypeEnum.PICTURE
+      )
+      .map((e) => {
+        return {
+          key: e.key?.toString() || '',
+          title: t('common.name'),
+        };
+      });
+  });
+  const exportParams = computed(() => {
+    return {
+      ...tableQueryParams.value,
+      ids: checkedRowKeys.value,
+    };
+  });
+
+  function handleExportAllClick() {
+    showExportModal.value = true;
+  }
 
   const department = ref<DeptUserTreeNode[]>([]);
   async function initDepartList() {

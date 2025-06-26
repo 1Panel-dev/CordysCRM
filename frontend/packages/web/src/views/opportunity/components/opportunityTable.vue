@@ -20,7 +20,8 @@
           {{ t('opportunity.createOpportunity') }}
         </n-button>
         <n-button
-          v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+          v-if="activeTab !== OpportunitySearchTypeEnum.DEAL"
+          v-permission="['OPPORTUNITY_MANAGEMENT:EXPORT']"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -70,7 +71,7 @@
   <CrmTableExportModal
     v-model:show="showExportModal"
     :params="exportParams"
-    :export-api="async () => {}"
+    :export-columns="exportColumns"
     type="opportunity"
     @create-success="handleExportCreateSuccess"
   />
@@ -89,6 +90,7 @@
   import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
+  import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { TransferParams } from '@lib/shared/models/customer/index';
   import type { OpportunityItem } from '@lib/shared/models/opportunity';
   import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
@@ -134,31 +136,29 @@
   const keyword = ref('');
   const tableRefreshId = ref(0);
 
-  const actionConfig = computed<BatchActionConfig>(() => {
-    return {
-      baseAction: [
-        {
-          label: t('common.exportChecked'),
-          key: 'exportChecked',
-          // permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
-        },
-        ...(props.activeTab !== OpportunitySearchTypeEnum.DEAL
-          ? [
-              {
-                label: t('common.batchTransfer'),
-                key: 'batchTransfer',
-                permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-              },
-              {
-                label: t('common.batchDelete'),
-                key: 'batchDelete',
-                permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
-              },
-            ]
-          : []),
-      ],
-    };
-  });
+  const actionConfig: BatchActionConfig = {
+    baseAction: [
+      {
+        label: t('common.exportChecked'),
+        key: 'exportChecked',
+        permission: ['OPPORTUNITY_MANAGEMENT:EXPORT'],
+      },
+      ...(props.activeTab !== OpportunitySearchTypeEnum.DEAL
+        ? [
+            {
+              label: t('common.batchTransfer'),
+              key: 'batchTransfer',
+              permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+            },
+            {
+              label: t('common.batchDelete'),
+              key: 'batchDelete',
+              permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+            },
+          ]
+        : []),
+    ],
+  };
 
   function handleRefresh() {
     checkedRowKeys.value = [];
@@ -193,7 +193,6 @@
   }
 
   const showExportModal = ref<boolean>(false);
-  const exportParams = ref<Record<string, any>>({});
 
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
@@ -227,9 +226,6 @@
   }
 
   function handleExportAllClick() {
-    exportParams.value = {
-      keyword: keyword.value,
-    };
     showExportModal.value = true;
   }
 
@@ -458,7 +454,25 @@
     },
     permission: ['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:DELETE'],
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+
+  const exportColumns = computed<ExportTableColumnItem[]>(() => {
+    return propsRes.value.columns
+      .filter((item: any) => item.key !== 'operation' && item.type !== 'selection')
+      .map((e) => {
+        return {
+          key: e.key?.toString() || '',
+          title: t('common.name'),
+        };
+      });
+  });
+
+  const exportParams = computed(() => {
+    return {
+      ...tableQueryParams.value,
+      ids: checkedRowKeys.value,
+    };
+  });
 
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';

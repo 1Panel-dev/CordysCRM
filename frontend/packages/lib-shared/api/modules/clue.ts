@@ -16,6 +16,8 @@ import {
   DeleteClueFollowRecordUrl,
   DeleteCluePoolUrl,
   DeleteClueUrl,
+  ExportClueAllUrl,
+  ExportClueSelectedUrl,
   GetClueFollowPlanListUrl,
   GetClueFollowPlanUrl,
   GetClueFollowRecordListUrl,
@@ -49,7 +51,7 @@ import type {
   SaveClueParams,
   UpdateClueParams,
 } from '@lib/shared/models/clue';
-import type { CommonList } from '@lib/shared/models/common';
+import type { CommonList, TableExportParams, TableExportSelectedParams } from '@lib/shared/models/common';
 import type {
   CustomerContractTableParams,
   CustomerFollowPlanTableParams,
@@ -242,6 +244,16 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: UpdateClueFollowPlanStatusUrl, data });
   }
 
+  // 导出全量线索列表
+  function exportClueAll(data: TableExportParams) {
+    return CDR.post({ url: ExportClueAllUrl, data });
+  }
+
+  // 导出选中线索列表
+  function exportClueSelected(data: TableExportSelectedParams) {
+    return CDR.post({ url: ExportClueSelectedUrl, data });
+  }
+
   return {
     addClue,
     updateClue,
@@ -278,5 +290,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getPoolClue,
     getClueTab,
     updateClueFollowPlanStatus,
+    exportClueAll,
+    exportClueSelected,
   };
 }

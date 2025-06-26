@@ -62,3 +62,5 @@ export const GetCustomerTabUrl = '/customer/tab'; // 客户tab显隐
 export const GetCustomerContactTabUrl = '/customer/contact/tab'; // 客户联系人tab显隐
 export const UpdateCustomerFollowPlanStatusUrl = '/customer/follow/plan/status/update'; // 更新客户跟进计划状态
 export const GetCustomerOpportunityListUrl = '/customer/opportunity/page'; // 客户商机列表
+export const ExportCustomerAllUrl = '/customer/export-all'; // 导出所有客户
+export const ExportCustomerSelectedUrl = '/customer/export-select'; // 导出选中客户

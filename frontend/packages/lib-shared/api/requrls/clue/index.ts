@@ -9,6 +9,8 @@ export const DeleteClueUrl = '/clue/delete'; // 删除线索
 export const BatchTransferClueUrl = '/clue/batch/transfer'; // 批量转移线索
 export const BatchToPoolClueUrl = '/clue/batch/to-pool'; // 批量移入线索池
 export const BatchDeleteClueUrl = '/clue/batch/delete'; // 批量删除线索
+export const ExportClueAllUrl = '/clue/export'; // 导出全部线索
+export const ExportClueSelectedUrl = '/clue/export-select'; // 导出选中线索
 
 // 跟进记录
 export const UpdateClueFollowRecordUrl = '/clue/follow/record/update'; // 更新跟进记录

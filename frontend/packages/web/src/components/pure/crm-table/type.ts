@@ -1,5 +1,6 @@
 import { VNodeChild } from 'vue';
 
+import type { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import type { TableKeyEnum } from '@lib/shared/enums/tableEnum';
 
 import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -49,6 +50,7 @@ export type CrmDataTableColumn<T = any> = (
     tooltipText?: string;
     showTooltip?: (rowData: T) => boolean;
   };
+  filedType?: FieldTypeEnum; // 字段类型
 };
 
 export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
