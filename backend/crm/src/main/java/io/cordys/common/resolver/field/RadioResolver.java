@@ -2,6 +2,7 @@ package io.cordys.common.resolver.field;
 
 
 import io.cordys.crm.system.dto.field.RadioField;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author jianxing
@@ -29,5 +30,11 @@ public class RadioResolver extends AbstractModuleFieldResolver<RadioField> {
     @Override
     public Object parse2Value(RadioField radioField, String value) {
         return value;
+    }
+
+    @Override
+    public Object trans2Value(RadioField radioField, String value) {
+        String label = radioField.getOptions().stream().filter(option -> StringUtils.equalsIgnoreCase(option.getValue(), value)).toList().getFirst().getLabel();
+        return label == null ? "" : label;
     }
 }

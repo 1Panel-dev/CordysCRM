@@ -21,6 +21,7 @@ import io.cordys.common.permission.PermissionUtils;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
@@ -485,5 +486,15 @@ public class OpportunityService {
     public String getOpportunityName(String id) {
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(id);
         return Optional.ofNullable(opportunity).map(Opportunity::getName).orElse(null);
+    }
+
+
+    public String getOpportunityNameByIds(List<String> ids) {
+        List<Opportunity> opportunityList = opportunityMapper.selectByIds(ids);
+        if (CollectionUtils.isNotEmpty(opportunityList)) {
+            List<String> names = opportunityList.stream().map(Opportunity::getName).toList();
+            return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
+        }
+        return StringUtils.EMPTY;
     }
 }

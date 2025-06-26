@@ -1,6 +1,8 @@
 package io.cordys.common.resolver.field;
 
+import io.cordys.common.util.TimeUtils;
 import io.cordys.crm.system.dto.field.DateTimeField;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author jianxing
@@ -23,5 +25,16 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
     @Override
     public Object parse2Value(DateTimeField dateTimeField, String value) {
         return parse2Long(value);
+    }
+
+    @Override
+    public Object trans2Value(DateTimeField dateTimeField, String value) {
+        if (StringUtils.equalsIgnoreCase(dateTimeField.getDateType(), "date")) {
+            return TimeUtils.getDataStr(Long.valueOf(value));
+        }
+        if (StringUtils.equalsIgnoreCase(dateTimeField.getDateType(), "datetime")) {
+            return TimeUtils.getDataTimeStr(Long.valueOf(value));
+        }
+        return value;
     }
 }

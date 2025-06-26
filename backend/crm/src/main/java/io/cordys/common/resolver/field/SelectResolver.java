@@ -35,6 +35,6 @@ public class SelectResolver extends AbstractModuleFieldResolver<SelectField> {
     @Override
     public Object trans2Value(SelectField selectField, String value) {
         String label = selectField.getOptions().stream().filter(option -> StringUtils.equalsIgnoreCase(option.getValue(), value)).toList().getFirst().getLabel();
-        return label == null ? "" : label;
+        return label == null ? StringUtils.EMPTY : label;
     }
 }

@@ -22,6 +22,7 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.clue.constants.ClueResultCode;
 import io.cordys.crm.clue.constants.ClueStatus;
@@ -52,10 +53,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -537,5 +535,21 @@ public class ClueService {
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String organizationId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, organizationId);
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CLUE_MANAGEMENT_READ, rolePermissions);
+    }
+
+
+    public String getClueName(String id) {
+        Clue clue = clueMapper.selectByPrimaryKey(id);
+        return Optional.ofNullable(clue).map(Clue::getName).orElse(null);
+    }
+
+
+    public String getClueNameByIds(List<String> ids) {
+        List<Clue> clueList = clueMapper.selectByIds(ids);
+        if (CollectionUtils.isNotEmpty(clueList)) {
+            List<String> names = clueList.stream().map(Clue::getName).toList();
+            return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
+        }
+        return StringUtils.EMPTY;
     }
 }

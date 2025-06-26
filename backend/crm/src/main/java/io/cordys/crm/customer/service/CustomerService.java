@@ -22,6 +22,7 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
@@ -99,7 +100,7 @@ public class CustomerService {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<CustomerListResponse> list = extCustomerMapper.list(request, orgId, userId, deptDataPermission);
         List<CustomerListResponse> buildList = buildListData(list, orgId);
-        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId,list,buildList);
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
@@ -425,9 +426,9 @@ public class CustomerService {
         // 消息通知
         customers.stream()
                 .forEach(customer ->
-                    commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                            NotificationConstants.Event.CUSTOMER_DELETED, customer.getName(), userId,
-                            orgId, List.of(customer.getOwner()), true)
+                        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                                NotificationConstants.Event.CUSTOMER_DELETED, customer.getName(), userId,
+                                orgId, List.of(customer.getOwner()), true)
                 );
 
     }
@@ -438,7 +439,7 @@ public class CustomerService {
         }
     }
 
-    private  List<String> getOwners(List<Customer> customers) {
+    private List<String> getOwners(List<Customer> customers) {
         List<String> owners = customers.stream().map(Customer::getOwner)
                 .distinct()
                 .toList();
@@ -508,5 +509,15 @@ public class CustomerService {
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);
+    }
+
+
+    public String getCustomerNameByIds(List<String> ids) {
+        List<Customer> customerList = customerMapper.selectByIds(ids);
+        if (CollectionUtils.isNotEmpty(customerList)) {
+            List<String> names = customerList.stream().map(Customer::getName).toList();
+            return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
+        }
+        return StringUtils.EMPTY;
     }
 }
