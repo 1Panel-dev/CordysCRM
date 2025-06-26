@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 public class SubListUtils {
 
     public static int DEFAULT_BATCH_SIZE = 200;
+    public static int DEFAULT_EXPORT_BATCH_SIZE = 500;
 
     /**
      *  将较长的数组截断成较短的数组进行批处理

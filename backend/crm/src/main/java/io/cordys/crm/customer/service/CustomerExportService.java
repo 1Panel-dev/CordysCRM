@@ -161,7 +161,7 @@ public class CustomerExportService extends BaseExportService {
                         .build()) {
                     WriteSheet sheet = EasyExcel.writerSheet("导出数据").build();
 
-                    SubListUtils.dealForSubList(request.getIds(), 500, (subIds) -> {
+                    SubListUtils.dealForSubList(request.getIds(), SubListUtils.DEFAULT_EXPORT_BATCH_SIZE, (subIds) -> {
                         List<List<Object>> data = null;
                         try {
                             data = getExportDataBySelect(request.getHeadList(), subIds, orgId, exportTask.getId());
