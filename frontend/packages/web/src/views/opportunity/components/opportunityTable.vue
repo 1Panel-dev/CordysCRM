@@ -20,7 +20,7 @@
           {{ t('opportunity.createOpportunity') }}
         </n-button>
         <n-button
-          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:EXPORT']) && activeTab !== OpportunitySearchTypeEnum.DEAL"
+          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:EXPORT'])"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -463,7 +463,7 @@
       .map((e) => {
         return {
           key: e.key?.toString() || '',
-          title: t('common.name'),
+          title: (e.title as string) || '',
         };
       });
   });
