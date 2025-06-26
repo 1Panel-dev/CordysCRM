@@ -209,6 +209,9 @@
           },
           {
             "id": "CLUE_MANAGEMENT:DELETE"
+          },
+          {
+            "id": "CLUE_MANAGEMENT:EXPORT"
           }
         ]
       },
