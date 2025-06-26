@@ -70,6 +70,10 @@
             and o.stage = 'SUCCESS'
         </if>
 
+        <if test="request.searchType != null and request.searchType != '' and request.searchType != 'DEAL'">
+            and o.stage != 'SUCCESS'
+        </if>
+
         <if test="request.customerId != null and request.customerId != ''">
             and o.customer_id = #{request.customerId}
         </if>
