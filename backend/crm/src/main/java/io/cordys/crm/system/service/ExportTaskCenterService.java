@@ -46,10 +46,14 @@ public class ExportTaskCenterService {
         LambdaQueryWrapper<ExportTask> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(ExportTask::getFileName, request.getKeyword())
                 .eq(ExportTask::getCreateUser, userId)
-                .eq(ExportTask::getResourceType, request.getExportType())
-                .eq(ExportTask::getStatus, request.getExportStatus())
                 .gtT(ExportTask::getCreateTime, oneDayBefore.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                 .orderByDesc(ExportTask::getCreateTime);
+        if (StringUtils.isNotEmpty(request.getExportType())) {
+            queryWrapper.eq(ExportTask::getResourceType, request.getExportType());
+        }
+        if (StringUtils.isNotEmpty(request.getExportStatus())) {
+            queryWrapper.eq(ExportTask::getStatus, request.getExportStatus());
+        }
         return exportTaskMapper.selectListByLambda(queryWrapper);
     }
 
