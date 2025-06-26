@@ -154,7 +154,7 @@ public class CustomerController {
     }
 
     @PostMapping("/export-select")
-    @Operation(summary = "导出选中商机")
+    @Operation(summary = "导出选中客户")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT)
     public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
         return customerExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId());

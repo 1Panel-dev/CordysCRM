@@ -192,7 +192,7 @@ public class CustomerExportService extends BaseExportService {
 
 
     /**
-     * 选中商机数据
+     * 选中客户数据
      * @param headList  表头列表
      * @param ids 选中数据ID列表
      * @param orgId 组织ID
