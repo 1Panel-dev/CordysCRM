@@ -189,6 +189,7 @@
       loading.value = true;
       await cancelCenterExport(id);
       Message.success(t('common.cancelSuccess'));
+      searchData();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

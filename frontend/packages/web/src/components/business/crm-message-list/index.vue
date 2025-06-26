@@ -11,9 +11,9 @@
     >
       <template #item="{ item }">
         <div class="crm-message-item py-[8px]">
-          <div class="crm-message-item-content flex h-full w-full justify-between gap-[24px] p-[16px]">
-            <div>
-              <div class="mb-[8px] flex w-full items-center gap-[8px]">
+          <div class="crm-message-item-content h-full w-full gap-[24px] p-[16px]">
+            <div class="mb-[8px] flex w-full items-center justify-between gap-[24px]">
+              <div class="flex items-center gap-[8px] overflow-hidden">
                 <CrmTag theme="light" :type="item.type === SystemMessageTypeEnum.SYSTEM_NOTICE ? 'info' : 'warning'">
                   {{
                     item.type === SystemMessageTypeEnum.SYSTEM_NOTICE
@@ -21,11 +21,11 @@
                       : t('system.message.announcement')
                   }}
                 </CrmTag>
-                <n-badge dot :show="item.status === SystemMessageStatusEnum.UNREAD">
+                <n-badge class="overflow-hidden" dot :show="item.status === SystemMessageStatusEnum.UNREAD">
                   <n-tooltip :delay="300">
                     <template #trigger>
                       <div
-                        :class="` w-full message-title--${
+                        :class="`one-line-text  message-title--${
                           item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'
                         } font-medium`"
                       >
@@ -44,35 +44,35 @@
                   </n-tooltip>
                 </n-badge>
               </div>
-              <div class="flex flex-col pl-[48px]">
-                <div :class="`message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
-                  {{
-                    item.type === SystemMessageTypeEnum.SYSTEM_NOTICE
-                      ? item.contentText
-                      : parseMessageContent(item)?.content ?? '-'
-                  }}
-                  <span
-                    v-if="item.type === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE"
-                    class="ml-[8px] cursor-pointer text-[var(--primary-8)]"
-                    @click="goUrl(item.contentText)"
-                  >
-                    {{ parseMessageContent(item)?.renameUrl ?? parseMessageContent(item)?.url }}
-                  </span>
-                </div>
-                <div class="text-[var(--text-n4)]">
-                  {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
-                </div>
+              <n-button
+                v-if="item.status === SystemMessageStatusEnum.UNREAD"
+                type="primary"
+                text
+                class="set-read-button flex-shrink-0"
+                @click="setMessageRead(item)"
+              >
+                {{ t('system.message.setRead') }}
+              </n-button>
+            </div>
+            <div class="flex flex-col pl-[48px]">
+              <div :class="`message-title--${item.status === SystemMessageStatusEnum.UNREAD ? 'normal' : 'read'}`">
+                {{
+                  item.type === SystemMessageTypeEnum.SYSTEM_NOTICE
+                    ? item.contentText
+                    : parseMessageContent(item)?.content ?? '-'
+                }}
+                <span
+                  v-if="item.type === SystemMessageTypeEnum.ANNOUNCEMENT_NOTICE"
+                  class="ml-[8px] cursor-pointer text-[var(--primary-8)]"
+                  @click="goUrl(item.contentText)"
+                >
+                  {{ parseMessageContent(item)?.renameUrl ?? parseMessageContent(item)?.url }}
+                </span>
+              </div>
+              <div class="text-[var(--text-n4)]">
+                {{ dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss') }}
               </div>
             </div>
-            <n-button
-              v-if="item.status === SystemMessageStatusEnum.UNREAD"
-              type="primary"
-              text
-              class="set-read-button flex-shrink-0"
-              @click="setMessageRead(item)"
-            >
-              {{ t('system.message.setRead') }}
-            </n-button>
           </div>
         </div>
       </template>

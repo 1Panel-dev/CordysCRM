@@ -132,7 +132,11 @@
       });
   }
 
-  const personalMenuOptions = [
+  const hasExportPermission = computed(() =>
+    hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT', 'OPPORTUNITY_MANAGEMENT:EXPORT', 'CLUE_MANAGEMENT:EXPORT'])
+  );
+
+  const personalMenuOptions = computed(() => [
     {
       key: 'header',
       type: 'render',
@@ -167,18 +171,21 @@
       key: AppRouteEnum.PERSONAL_PLAN,
       icon: renderIcon('iconicon_calendar1'),
     },
-    // TODO 权限控制
-    {
-      label: t('module.personal.myExport'),
-      key: AppRouteEnum.PERSONAL_EXPORT,
-      icon: renderIcon('iconicon_export'),
-    },
+    ...(hasExportPermission.value
+      ? [
+          {
+            label: t('module.personal.myExport'),
+            key: AppRouteEnum.PERSONAL_EXPORT,
+            icon: renderIcon('iconicon_export'),
+          },
+        ]
+      : []),
     {
       label: t('module.logout'),
       key: AppRouteEnum.LOGOUT,
       icon: renderIcon('iconicon_logout'),
     },
-  ];
+  ]);
 
   function menuChange(key: string, item: MenuOption) {
     const routeItem = item as unknown as AppRouteRecordRaw;
@@ -251,11 +258,8 @@
     }
   }
 
-  // TODO 权限
-  const hasExportPermission: string[] = [];
-
   function initExportPop() {
-    if (!getIsVisited() && hasAnyPermission(hasExportPermission)) {
+    if (!getIsVisited() && hasExportPermission.value) {
       showPopModal.value = true;
 
       let timer = null;

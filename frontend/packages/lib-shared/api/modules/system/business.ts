@@ -177,7 +177,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   //  个人中心导出下载
   function exportCenterDownload(taskId: string) {
-    return CDR.post(
+    return CDR.get(
       { url: `${ExportCenterDownloadUrl}/${taskId}`, responseType: 'blob' },
       { isTransformResponse: false }
     );
