@@ -1,5 +1,6 @@
 package io.cordys.common.resolver.field;
 
+import io.cordys.common.resolver.LocationResolver;
 import io.cordys.crm.system.constants.FieldType;
 
 import java.util.HashMap;
@@ -39,6 +40,8 @@ public class ModuleFieldResolverFactory {
 
         resolverMap.put(FieldType.DEPARTMENT.name(), new DepartmentResolver());
         resolverMap.put(FieldType.DEPARTMENT_MULTIPLE.name(), new DepartmentMultipleResolver());
+
+        resolverMap.put(FieldType.LOCATION.name(), new LocationResolver());
     }
 
     public static AbstractModuleFieldResolver getResolver(String type) {

@@ -208,4 +208,14 @@ public class JSON {
             throw new RuntimeException("JSON 反序列化失败", e);
         }
     }
+
+
+    public static <T> T parseObject(InputStream src, TypeReference<T> valueType) {
+        try {
+            return objectMapper.readValue(src, valueType);
+        } catch (IOException e) {
+            throw new RuntimeException("JSON 反序列化失败", e);
+        }
+    }
+
 }

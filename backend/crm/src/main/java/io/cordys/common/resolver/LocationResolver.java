@@ -1,0 +1,97 @@
+package io.cordys.common.resolver;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import io.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import io.cordys.common.util.JSON;
+import io.cordys.crm.system.dto.field.LocationField;
+import io.cordys.crm.system.dto.regioncode.RegionCode;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.InputStream;
+import java.lang.ref.SoftReference;
+import java.util.List;
+
+public class LocationResolver extends AbstractModuleFieldResolver<LocationField> {
+
+
+    private static SoftReference<List<RegionCode>> regionCodeRef;
+
+    public static List<RegionCode> getRegionCodes() {
+        List<RegionCode> regions = null;
+
+        if (regionCodeRef == null || (regions = regionCodeRef.get()) == null) {
+            synchronized (LocationResolver.class) {
+                if (regionCodeRef == null || (regions = regionCodeRef.get()) == null) {
+                    regions = loadRegionData();
+                    regionCodeRef = new SoftReference<>(regions);
+                }
+            }
+        }
+        return regions;
+    }
+
+
+    private static List<RegionCode> loadRegionData() {
+        try (InputStream is = LocationResolver.class.getClassLoader()
+                .getResourceAsStream("region/region.json")) {
+            return JSON.parseObject(is, new TypeReference<List<RegionCode>>() {
+            });
+        } catch (Exception e) {
+            throw new RuntimeException("加载行政区划数据失败", e);
+        }
+    }
+
+    @Override
+    public void validate(LocationField customField, Object value) {
+
+    }
+
+
+    @Override
+    public Object trans2Value(LocationField locationField, String value) {
+        if (StringUtils.isBlank(value)) {
+            return StringUtils.EMPTY;
+        }
+
+        //编码
+        String code = value.substring(0, 6);
+        //描述
+        String detail = value.substring(6, value.length());
+
+        if (StringUtils.equalsIgnoreCase(detail, "-")) {
+            detail = "";
+        }
+
+        String regionName = StringUtils.EMPTY;
+
+        List<RegionCode> regionCode = getRegionCodes();
+
+        for (RegionCode province : regionCode) {
+            // 检查省级编码
+            if (province.getCode().equals(code)) {
+                regionName = province.getName();
+                break;
+            }
+
+            // 检查市级编码
+            if (province.getChildren() != null) {
+                for (RegionCode city : province.getChildren()) {
+                    if (city.getCode().equals(code)) {
+                        regionName = province.getName() + "/" + city.getName();
+                        break;
+                    }
+
+                    for (RegionCode area : city.getChildren()) {
+                        if (area.getCode().equals(code)) {
+                            regionName = province.getName() + "/" + city.getName() + "/" + area.getName();
+                            break;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return regionName + detail;
+    }
+}
