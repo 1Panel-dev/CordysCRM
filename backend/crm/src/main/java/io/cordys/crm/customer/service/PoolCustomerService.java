@@ -242,7 +242,7 @@ public class PoolCustomerService {
 	public void validateCapacity(int processCount, String ownUserId, String currentOrgId) {
 		// 实际可处理条数 = 负责人库容容量 - 所领取的数量 < 处理数量, 提示库容不足.
 		CustomerCapacity customerCapacity = getUserCapacity(ownUserId, currentOrgId);
-		if (customerCapacity == null) {
+		if (customerCapacity == null || customerCapacity.getCapacity() == null) {
 			return;
 		}
 		List<FilterConditionDTO> conditions = StringUtils.isEmpty(customerCapacity.getFilter()) ?

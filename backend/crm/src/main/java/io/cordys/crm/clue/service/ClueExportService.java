@@ -148,7 +148,6 @@ public class ClueExportService extends BaseExportService {
 		List<ClueListResponse> dataList = clueService.buildListData(exportList, orgId);
 		Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CLUE.getKey(), orgId);
 		//构建导出数据
-		//构建导出数据
 		List<List<Object>> data = new ArrayList<>();
 		for (ClueListResponse response : dataList) {
 			if (ExportThreadRegistry.isInterrupted(taskId)) {
