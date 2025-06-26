@@ -20,8 +20,17 @@ public class DefaultRepositoryDir {
      */
     private static final String EXPORT_DIR = "/export";
 
+    /**
+     * 图片正式目录
+     */
+    private static final String PIC_DIR = "/pic";
+
     public static String getTmpDir() {
         return TMP_DIR;
+    }
+
+    public static String getPicDir() {
+        return PIC_DIR;
     }
 
     public static String getExportDir() {
