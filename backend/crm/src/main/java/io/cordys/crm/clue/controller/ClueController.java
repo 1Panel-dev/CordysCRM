@@ -3,6 +3,7 @@ package io.cordys.crm.clue.controller;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.ExportSelectRequest;
 import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.DataScopeService;
@@ -135,5 +136,12 @@ public class ClueController {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.CLUE_MANAGEMENT_READ);
         return clueExportService.exportAll(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+    }
+
+    @PostMapping("/export-select")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_EXPORT)
+    @Operation(summary = "导出选中")
+    public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
+        return clueExportService.exportSelect(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

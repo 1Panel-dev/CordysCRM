@@ -5,6 +5,7 @@ import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.ExportHeadDTO;
+import io.cordys.common.dto.ExportSelectRequest;
 import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
@@ -46,6 +47,7 @@ class ClueControllerTests extends BaseTest {
     protected static final String BATCH_TO_POOL = "batch/to-pool";
     protected static final String TRANSITION_CUSTOMER = "transition/customer";
     protected static final String EXPORT = "export";
+    protected static final String EXPORT_SELECT = "export-select";
 
     private static Clue addClue;
     private static Clue anotherClue;
@@ -376,6 +378,19 @@ class ClueControllerTests extends BaseTest {
         col.setTitle("线索名称");
         request.setHeads(List.of(col));
         this.requestPostWithOk(EXPORT, request);
+    }
+
+    @Test
+    @Order(15)
+    void testExportSelect() throws Exception {
+        ExportSelectRequest request = new ExportSelectRequest();
+        request.setFileName("export_select_test");
+        request.setIds(List.of("test_id"));
+        ExportHeadDTO col = new ExportHeadDTO();
+        col.setKey("name");
+        col.setTitle("线索名称");
+        request.setHeadList(List.of(col));
+        this.requestPostWithOk(EXPORT_SELECT, request);
     }
 
     private List<ClueField> getClueFields(String clueId) {
