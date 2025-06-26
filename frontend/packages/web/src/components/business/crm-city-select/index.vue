@@ -18,7 +18,7 @@
 <script setup lang="ts">
   import { CascaderOption, NCascader } from 'naive-ui';
 
-  import { pcTextArr, regionData } from 'element-china-area-data';
+  import { provinceAndCityData, regionData } from 'element-china-area-data';
 
   export type DataItem<T = Record<string, any>> = CascaderOption & T;
 
@@ -49,7 +49,7 @@
 
   const workingCityOptions = computed<DataItem[]>(() => {
     if (props.range === 'PC') {
-      return pcTextArr as DataItem[];
+      return provinceAndCityData as DataItem[];
     }
     return regionData as DataItem[];
   });
