@@ -1,5 +1,13 @@
 <template>
-  <CrmDrawer v-model:show="visible" :width="800" :title="t('common.export')" :footer="false" @cancel="handleCancel">
+  <CrmDrawer
+    v-model:show="visible"
+    resizable
+    :default-width="800"
+    :title="t('common.export')"
+    :footer="false"
+    class="min-w-[800px]"
+    @cancel="handleCancel"
+  >
     <n-alert type="default" class="mb-[16px]" closable>
       <template #icon>
         <CrmIcon type="iconicon_info_circle_filled" :size="20" />
@@ -203,7 +211,7 @@
     try {
       loading.value = true;
       const res = await exportCenterDownload(item.id);
-      downloadByteFile(res, `${item.fileName}`);
+      downloadByteFile(res, `${item.fileName}.xlsx`);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
