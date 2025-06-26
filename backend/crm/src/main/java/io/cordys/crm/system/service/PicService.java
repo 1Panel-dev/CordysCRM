@@ -180,7 +180,7 @@ public class PicService {
      * @return 转存文件目录
      */
     private String getTransferFileDir(String organizationId, String resourceId, String fileId) {
-        return organizationId + "/" + DefaultRepositoryDir.getPicDir() + "/" + resourceId + "/" + fileId;
+        return "/" + organizationId + DefaultRepositoryDir.getPicDir() + "/" + resourceId + "/" + fileId;
     }
 
     /**
