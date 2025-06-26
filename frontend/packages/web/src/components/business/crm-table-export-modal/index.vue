@@ -82,8 +82,17 @@
   const loading = ref<boolean>(false);
   const formRef = ref<FormInst>();
   const form = ref<Record<string, any>>({
-    fileName: `${dayjs().format('YYYYMMDD-HHmmss')}-${typeStringMap[props.type]}`,
+    fileName: '',
   });
+
+  watch(
+    () => show.value,
+    (newVal) => {
+      if (newVal) {
+        form.value.fileName = `${dayjs().format('YYYYMMDD-HHmmss')}-${typeStringMap[props.type]}`;
+      }
+    }
+  );
 
   function closeHandler() {
     formRef.value?.restoreValidation();
@@ -113,6 +122,7 @@
             fileName: form.value.fileName.trim(),
             headList: props.exportColumns,
           });
+          form.value.fileName = '';
           show.value = false;
           message.success(t('common.exportTaskCreate'));
           emit('createSuccess');
