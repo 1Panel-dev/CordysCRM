@@ -43,11 +43,7 @@
           >
             <n-radio-group v-model:value="form.stage" name="radiogroup">
               <n-space>
-                <n-radio
-                  key="success"
-                  :value="StageResultEnum.SUCCESS"
-                  :disabled="props.backStagePermission && hasAllPermission(props.backStagePermission)"
-                >
+                <n-radio key="success" :value="StageResultEnum.SUCCESS" :disabled="isHasBackPermission">
                   {{ t('common.success') }}
                 </n-radio>
                 <n-radio key="fail" :value="StageResultEnum.FAIL">
@@ -118,13 +114,17 @@
     status: [{ required: true, message: t('common.pleaseSelect') }],
   };
 
+  const isHasBackPermission = computed(
+    () =>
+      props.backStagePermission &&
+      hasAllPermission(props.backStagePermission) &&
+      currentStage.value === StageResultEnum.SUCCESS
+  );
+
   const form = ref<{
     stage: string;
   }>({
-    stage:
-      props.backStagePermission && hasAllPermission(props.backStagePermission)
-        ? StageResultEnum.FAIL
-        : StageResultEnum.SUCCESS,
+    stage: isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS,
   });
 
   const endStage = computed<SelectOption[]>(() => {
@@ -164,7 +164,7 @@
 
   function handleCancel() {
     updateStatusModal.value = false;
-    form.value.stage = StageResultEnum.SUCCESS;
+    form.value.stage = isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS;
   }
 
   const formRef = ref<FormInst | null>(null);
@@ -193,6 +193,7 @@
   async function handleUpdateStatus(stage: string) {
     if (props.showConfirmStatus && stage === workflowList.value[workflowList.value.length - 1].value) {
       updateStatusModal.value = true;
+      form.value.stage = isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS;
       return;
     }
     await handleSave(stage);

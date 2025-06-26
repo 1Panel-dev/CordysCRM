@@ -171,21 +171,26 @@
     };
   }
 
+  const isHasBackPermission = computed(
+    () =>
+      props.backStagePermission &&
+      hasAllPermission(props.backStagePermission) &&
+      currentStage.value === StageResultEnum.SUCCESS
+  );
+
   const resultColumns = computed<PickerOption[]>(() => {
     return [
       {
         text: t('common.success'),
         value: StageResultEnum.SUCCESS,
-        disabled: props.backStagePermission && hasAllPermission(props.backStagePermission),
+        disabled: isHasBackPermission.value,
       },
       { text: t('common.fail'), value: StageResultEnum.FAIL },
     ];
   });
 
   const formStage = ref<StageResultEnum[]>([
-    props.backStagePermission && hasAllPermission(props.backStagePermission)
-      ? StageResultEnum.FAIL
-      : StageResultEnum.SUCCESS,
+    isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS,
   ]);
 
   const showPopConfirm = ref(false);
@@ -250,6 +255,7 @@
 
     if (props.showConfirmStatus && stage === workflowList.value[workflowList.value.length - 1].value) {
       showPopConfirm.value = true;
+      formStage.value = [isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS];
       return;
     }
     await handleSave(stage);
