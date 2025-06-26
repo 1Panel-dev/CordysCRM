@@ -108,7 +108,7 @@ public class OpportunityController {
     }
 
     @PostMapping("/update/stage")
-    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_UPDATE)
+    @RequiresPermissions({PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_RESIGN})
     @Operation(summary = "更新商机阶段")
     public void updateStage(@RequestBody OpportunityStageRequest request) {
         opportunityService.updateStage(request);

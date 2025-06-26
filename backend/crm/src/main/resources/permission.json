@@ -209,10 +209,6 @@
           },
           {
             "id": "CLUE_MANAGEMENT:DELETE"
-          },
-          {
-            "id": "CLUE_MANAGEMENT:RESIGN",
-            "name": "permission.clue_management.clue.resign"
           }
         ]
       },
