@@ -20,8 +20,7 @@
           {{ t('opportunity.createOpportunity') }}
         </n-button>
         <n-button
-          v-if="activeTab !== OpportunitySearchTypeEnum.DEAL"
-          v-permission="['OPPORTUNITY_MANAGEMENT:EXPORT']"
+          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:EXPORT']) && activeTab !== OpportunitySearchTypeEnum.DEAL"
           type="primary"
           ghost
           class="n-btn-outline-primary"
@@ -136,29 +135,31 @@
   const keyword = ref('');
   const tableRefreshId = ref(0);
 
-  const actionConfig: BatchActionConfig = {
-    baseAction: [
-      {
-        label: t('common.exportChecked'),
-        key: 'exportChecked',
-        permission: ['OPPORTUNITY_MANAGEMENT:EXPORT'],
-      },
-      ...(props.activeTab !== OpportunitySearchTypeEnum.DEAL
-        ? [
-            {
-              label: t('common.batchTransfer'),
-              key: 'batchTransfer',
-              permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-            },
-            {
-              label: t('common.batchDelete'),
-              key: 'batchDelete',
-              permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
-            },
-          ]
-        : []),
-    ],
-  };
+  const actionConfig = computed<BatchActionConfig>(() => {
+    return {
+      baseAction: [
+        {
+          label: t('common.exportChecked'),
+          key: 'exportChecked',
+          permission: ['OPPORTUNITY_MANAGEMENT:EXPORT'],
+        },
+        ...(props.activeTab !== OpportunitySearchTypeEnum.DEAL
+          ? [
+              {
+                label: t('common.batchTransfer'),
+                key: 'batchTransfer',
+                permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+              },
+              {
+                label: t('common.batchDelete'),
+                key: 'batchDelete',
+                permission: ['OPPORTUNITY_MANAGEMENT:DELETE'],
+              },
+            ]
+          : []),
+      ],
+    };
+  });
 
   function handleRefresh() {
     checkedRowKeys.value = [];

@@ -143,34 +143,36 @@
   const formKey = ref(FormDesignKeyEnum.CLUE);
   const formCreateDrawerVisible = ref(false);
 
-  const actionConfig: BatchActionConfig = {
-    baseAction: [
-      {
-        label: t('common.exportChecked'),
-        key: 'exportChecked',
-        permission: ['CLUE_MANAGEMENT:EXPORT'],
-      },
-      ...(activeTab.value !== CustomerSearchTypeEnum.CUSTOMER_TRANSITION
-        ? [
-            {
-              label: t('common.batchTransfer'),
-              key: 'batchTransfer',
-              permission: ['CLUE_MANAGEMENT:UPDATE'],
-            },
-            {
-              label: t('clue.moveIntoCluePool'),
-              key: 'moveIntoCluePool',
-              permission: ['CLUE_MANAGEMENT:RECYCLE'],
-            },
-            {
-              label: t('common.batchDelete'),
-              key: 'batchDelete',
-              permission: ['CLUE_MANAGEMENT:DELETE'],
-            },
-          ]
-        : []),
-    ],
-  };
+  const actionConfig = computed<BatchActionConfig>(() => {
+    return {
+      baseAction: [
+        {
+          label: t('common.exportChecked'),
+          key: 'exportChecked',
+          permission: ['CLUE_MANAGEMENT:EXPORT'],
+        },
+        ...(activeTab.value !== CustomerSearchTypeEnum.CUSTOMER_TRANSITION
+          ? [
+              {
+                label: t('common.batchTransfer'),
+                key: 'batchTransfer',
+                permission: ['CLUE_MANAGEMENT:UPDATE'],
+              },
+              {
+                label: t('clue.moveIntoCluePool'),
+                key: 'moveIntoCluePool',
+                permission: ['CLUE_MANAGEMENT:RECYCLE'],
+              },
+              {
+                label: t('common.batchDelete'),
+                key: 'batchDelete',
+                permission: ['CLUE_MANAGEMENT:DELETE'],
+              },
+            ]
+          : []),
+      ],
+    };
+  });
 
   const tableRefreshId = ref(0);
 
