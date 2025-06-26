@@ -11,6 +11,7 @@ import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import io.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import io.cordys.common.util.CommonBeanFactory;
+import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormService;
@@ -42,9 +43,9 @@ public abstract class BaseExportService {
     }
 
 
-    public <T extends BasePageRequest> void batchHandleData(String fileId, List<List<String>> headList, String taskId, String fileName, T t, CustomFunction<T, List<?>> func) throws InterruptedException {
+    public <T extends BasePageRequest> void batchHandleData(String fileId, List<List<String>> headList, ExportTask task, String fileName, T t, CustomFunction<T, List<?>> func) throws InterruptedException {
         // 准备导出文件
-        File file = prepareExportFile(fileId, fileName);
+        File file = prepareExportFile(fileId, fileName, task.getOrganizationId());
 
         try (ExcelWriter writer = EasyExcel.write(file)
                 .head(headList)
@@ -62,7 +63,7 @@ public abstract class BaseExportService {
                 if (CollectionUtils.isEmpty(data)) {
                     break;
                 }
-                if (ExportThreadRegistry.isInterrupted(taskId)) {
+                if (ExportThreadRegistry.isInterrupted(task.getId())) {
                     throw new InterruptedException("线程已被中断，主动退出");
                 }
                 writer.write(data, sheet);
@@ -84,25 +85,27 @@ public abstract class BaseExportService {
      * @param fileName
      * @return
      */
-    public File prepareExportFile(String fileId, String fileName) {
-        File dir = new File(DefaultRepositoryDir.getDefaultDir() + getTempFileDir(fileId));
-        if (!dir.exists()) {
-            dir.mkdirs();
+    public File prepareExportFile(String fileId, String fileName, String orgId) {
+        if (fileId == null || fileName == null || orgId == null) {
+            throw new IllegalArgumentException("文件ID、文件名和组织ID不能为空");
         }
+
+        // 构建导出目录路径
+        String exportDirPath = DefaultRepositoryDir.getDefaultDir()
+                + File.separator
+                + DefaultRepositoryDir.getExportDir(orgId)
+                + File.separator + fileId;
+
+        File dir = new File(exportDirPath);
+
+        // 检查目录创建结果
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new RuntimeException("无法创建导出目录: " + dir.getAbsolutePath());
+        }
+
+        // 返回完整的文件路径
         return new File(dir, fileName + ".xlsx");
     }
-
-
-    /**
-     * 获取导出临时文件目录
-     *
-     * @param tempFileId
-     * @return
-     */
-    public String getTempFileDir(String tempFileId) {
-        return DefaultRepositoryDir.getExportDir() + "/" + tempFileId;
-    }
-
 
     /**
      * 根据数据value 转换对应值

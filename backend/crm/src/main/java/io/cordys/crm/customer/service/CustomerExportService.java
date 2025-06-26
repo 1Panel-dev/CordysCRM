@@ -63,7 +63,7 @@ public class CustomerExportService extends BaseExportService {
                 //分批查询数据并写入文件
                 batchHandleData(fileId,
                         headList,
-                        exportTask.getId(),
+                        exportTask,
                         request.getFileName(),
                         request,
                         t -> getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId()));
@@ -90,10 +90,10 @@ public class CustomerExportService extends BaseExportService {
     /**
      * 构建导出的数据
      *
-     * @param headList 表头列表
-     * @param request 导出请求
-     * @param userId 用户ID
-     * @param orgId 组织id
+     * @param headList           表头列表
+     * @param request            导出请求
+     * @param userId             用户ID
+     * @param orgId              组织id
      * @param deptDataPermission 部门数据权限
      * @return 导出数据列表
      */
@@ -134,9 +134,9 @@ public class CustomerExportService extends BaseExportService {
     /**
      * 导出选择数据
      *
-     * @param userId 用户ID
+     * @param userId  用户ID
      * @param request 导出选择请求
-     * @param orgId 组织ID
+     * @param orgId   组织ID
      * @return 导出任务ID
      */
     public String exportSelect(String userId, ExportSelectRequest request, String orgId) {
@@ -154,7 +154,7 @@ public class CustomerExportService extends BaseExportService {
                         .toList();
 
                 // 准备导出文件
-                File file = prepareExportFile(fileId, request.getFileName());
+                File file = prepareExportFile(fileId, request.getFileName(), exportTask.getOrganizationId());
                 try (ExcelWriter writer = EasyExcel.write(file)
                         .head(headList)
                         .excelType(ExcelTypeEnum.XLSX)
@@ -189,14 +189,13 @@ public class CustomerExportService extends BaseExportService {
     }
 
 
-
-
     /**
      * 选中客户数据
-     * @param headList  表头列表
-     * @param ids 选中数据ID列表
-     * @param orgId 组织ID
-     * @param taskId 任务ID
+     *
+     * @param headList 表头列表
+     * @param ids      选中数据ID列表
+     * @param orgId    组织ID
+     * @param taskId   任务ID
      * @return 导出数据列表
      */
     private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {

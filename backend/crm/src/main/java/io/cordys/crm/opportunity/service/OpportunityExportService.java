@@ -69,7 +69,7 @@ public class OpportunityExportService extends BaseExportService {
                 //分批查询数据并写入文件
                 batchHandleData(fileId,
                         headList,
-                        exportTask.getId(),
+                        exportTask,
                         request.getFileName(),
                         request,
                         t -> getExportData(request.getHeadList(), request, userId, orgId, deptDataPermission, exportTask.getId()));
@@ -165,7 +165,7 @@ public class OpportunityExportService extends BaseExportService {
                         .toList();
 
                 // 准备导出文件
-                File file = prepareExportFile(fileId, request.getFileName());
+                File file = prepareExportFile(fileId, request.getFileName(), exportTask.getOrganizationId());
                 try (ExcelWriter writer = EasyExcel.write(file)
                         .head(headList)
                         .excelType(ExcelTypeEnum.XLSX)
@@ -202,6 +202,7 @@ public class OpportunityExportService extends BaseExportService {
 
     /**
      * 选中商机数据
+     *
      * @param headList
      * @param ids
      * @param orgId

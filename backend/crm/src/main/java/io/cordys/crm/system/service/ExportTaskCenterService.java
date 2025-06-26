@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -97,7 +98,7 @@ public class ExportTaskCenterService {
     }
 
     private String getFilePath(ExportTask exportTask) {
-        return DefaultRepositoryDir.getExportDir() + "/" + exportTask.getFileId();
+        return File.separator + DefaultRepositoryDir.getExportDir(exportTask.getOrganizationId()) + File.separator + exportTask.getFileId();
     }
 
     public void clean() {

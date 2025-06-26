@@ -70,7 +70,7 @@ public class ClueExportService extends BaseExportService {
                 //分批查询数据并写入文件
                 batchHandleData(fileId,
                         headList,
-                        exportTask.getId(),
+                        exportTask,
                         request.getFileName(),
                         request,
                         t -> getExportData(request, userId, orgId, dataPermission, exportTask.getId()));
@@ -108,7 +108,7 @@ public class ClueExportService extends BaseExportService {
                         .toList();
 
                 // 准备导出文件
-                File file = prepareExportFile(fileId, request.getFileName());
+                File file = prepareExportFile(fileId, request.getFileName(), exportTask.getOrganizationId());
                 try (ExcelWriter writer = EasyExcel.write(file)
                         .head(headList)
                         .excelType(ExcelTypeEnum.XLSX)
