@@ -1,19 +1,20 @@
 package io.cordys.crm.system.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 @Data
-@Builder
 public class LicenseDTO implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     /**
      * 客户名称
      */
     @Schema(description = "客户名称")
-    @Builder.Default
     private String corporation = "CORDYS";
     /**
      * 授权截止时间
@@ -24,7 +25,6 @@ public class LicenseDTO implements Serializable {
      * 产品名称
      */
     @Schema(description = "产品名称")
-    @Builder.Default
     private String product = "CRM";
     /**
      * 产品版本
@@ -47,4 +47,7 @@ public class LicenseDTO implements Serializable {
      */
     private String status;
 
+    public LicenseDTO() {
+        this.status = "invalid";
+    }
 }
