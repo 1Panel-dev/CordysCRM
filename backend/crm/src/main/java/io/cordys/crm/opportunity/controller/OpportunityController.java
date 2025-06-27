@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotEmpty;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -108,7 +109,7 @@ public class OpportunityController {
     }
 
     @PostMapping("/update/stage")
-    @RequiresPermissions({PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_RESIGN})
+    @RequiresPermissions(value = {PermissionConstants.OPPORTUNITY_MANAGEMENT_UPDATE, PermissionConstants.OPPORTUNITY_MANAGEMENT_RESIGN}, logical = Logical.OR)
     @Operation(summary = "更新商机阶段")
     public void updateStage(@RequestBody OpportunityStageRequest request) {
         opportunityService.updateStage(request);
