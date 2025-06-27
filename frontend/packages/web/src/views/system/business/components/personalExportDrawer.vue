@@ -43,8 +43,8 @@
     </div>
     <div>
       <n-spin :show="loading">
-        <n-scrollbar class="max-h-[calc(100vh-204px)]" trigger="none">
-          <div v-if="list.length" class="grid h-full grid-cols-2 gap-[16px] pr-[5px]">
+        <n-scrollbar class="max-h-[calc(100vh-204px)]">
+          <div v-if="list.length" class="grid h-full grid-cols-2 gap-[16px]">
             <div v-for="item of list" :key="item.id" class="export-item">
               <div class="mb-[8px] flex items-center justify-between">
                 <exportStatusTag :status="item.status" />
