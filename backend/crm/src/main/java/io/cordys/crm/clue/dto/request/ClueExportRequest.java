@@ -24,5 +24,5 @@ public class ClueExportRequest extends CluePageRequest {
 
 	@NotNull
 	@Schema(description = "表头信息", requiredMode = Schema.RequiredMode.REQUIRED)
-	private List<ExportHeadDTO> heads;
+	private List<ExportHeadDTO> headList;
 }

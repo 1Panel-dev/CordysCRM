@@ -63,7 +63,7 @@ public class ClueExportService extends BaseExportService {
             try {
                 ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
                 //表头信息
-                List<List<String>> headList = request.getHeads().stream()
+                List<List<String>> headList = request.getHeadList().stream()
                         .map(head -> Collections.singletonList(head.getTitle()))
                         .toList();
 
@@ -82,6 +82,7 @@ public class ClueExportService extends BaseExportService {
                 LogUtils.error("任务停止中断", e);
             } catch (Exception e) {
                 //更新任务
+                LogUtils.error("任务失败", e);
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
             } finally {
                 //从注册中心移除
@@ -153,7 +154,7 @@ public class ClueExportService extends BaseExportService {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
-            List<Object> value = buildData(request.getHeads(), response, fieldConfigMap);
+            List<Object> value = buildData(request.getHeadList(), response, fieldConfigMap);
             data.add(value);
         }
 

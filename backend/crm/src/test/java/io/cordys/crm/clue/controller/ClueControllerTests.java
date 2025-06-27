@@ -376,7 +376,7 @@ class ClueControllerTests extends BaseTest {
         ExportHeadDTO col = new ExportHeadDTO();
         col.setKey("name");
         col.setTitle("线索名称");
-        request.setHeads(List.of(col));
+        request.setHeadList(List.of(col));
         this.requestPostWithOk(EXPORT, request);
     }
 
