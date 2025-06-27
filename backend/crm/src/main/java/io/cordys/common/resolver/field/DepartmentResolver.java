@@ -11,10 +11,10 @@ import java.util.List;
 
 public class DepartmentResolver extends AbstractModuleFieldResolver<DepartmentField> {
 
-	private static final ExtDepartmentMapper extdepartmentMapper;
+	private static final ExtDepartmentMapper extDepartmentMapper;
 
 	static {
-		extdepartmentMapper = CommonBeanFactory.getBean(ExtDepartmentMapper.class);
+		extDepartmentMapper = CommonBeanFactory.getBean(ExtDepartmentMapper.class);
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class DepartmentResolver extends AbstractModuleFieldResolver<DepartmentFi
 			return StringUtils.EMPTY;
 		}
 
-		List<String> names = extdepartmentMapper.getNameByIds(List.of(value));
+		List<String> names = extDepartmentMapper.getNameByIds(List.of(value));
 		if (CollectionUtils.isNotEmpty(names)) {
 			return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
 		}
