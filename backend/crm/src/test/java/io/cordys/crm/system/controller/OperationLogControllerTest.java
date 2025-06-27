@@ -29,8 +29,8 @@ public class OperationLogControllerTest extends BaseTest {
     public void operationLogList() throws Exception {
         OperationLogRequest request = buildRequest();
         this.requestPost(OPERATION_LOG_LIST, request).andExpect(status().isOk());
-        request.setStartTime(1735890402193l);
-        request.setEndTime(1735808851000l);
+        request.setStartTime(1735890402193L);
+        request.setEndTime(1735808851000L);
         request.setSort(new SortRequest("id", "desc"));
         this.requestPost(OPERATION_LOG_LIST, request);
     }
@@ -39,8 +39,8 @@ public class OperationLogControllerTest extends BaseTest {
         OperationLogRequest request = new OperationLogRequest();
         request.setCurrent(1);
         request.setPageSize(10);
-        request.setStartTime(1735808851000l);
-        request.setEndTime(1735890402193l);
+        request.setStartTime(1735808851000L);
+        request.setEndTime(1735890402193L);
         return request;
     }
 

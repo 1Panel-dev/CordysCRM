@@ -45,8 +45,8 @@ public class ClueCapacityService {
 	public List<ClueCapacityDTO> list(String currentOrgId) {
 		List<ClueCapacityDTO> capacityData = new ArrayList<>();
 		LambdaQueryWrapper<ClueCapacity> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ClueCapacity::getOrganizationId, currentOrgId).orderByDesc(ClueCapacity::getCreateTime);;
-		List<ClueCapacity> capacities = clueCapacityMapper.selectListByLambda(wrapper);
+		wrapper.eq(ClueCapacity::getOrganizationId, currentOrgId).orderByDesc(ClueCapacity::getCreateTime);
+        List<ClueCapacity> capacities = clueCapacityMapper.selectListByLambda(wrapper);
 		if (CollectionUtils.isEmpty(capacities)) {
 			return new ArrayList<>();
 		}

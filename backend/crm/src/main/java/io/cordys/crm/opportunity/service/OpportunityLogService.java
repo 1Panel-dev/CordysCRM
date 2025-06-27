@@ -48,7 +48,7 @@ public class OpportunityLogService extends BaseModuleLogService {
             }
 
             if (StringUtils.equals(differ.getColumn(), "status")) {
-                differ.setColumnName(Translator.get("log.opportunity." + differ.getColumn().toString()));
+                differ.setColumnName(Translator.get("log.opportunity." + differ.getColumn()));
                 differ.setOldValueName(Boolean.valueOf(differ.getOldValueName().toString()) ? Translator.get("log.opportunity.status.true") : Translator.get("log.opportunity.status.false"));
                 differ.setNewValueName(Boolean.valueOf(differ.getNewValueName().toString()) ? Translator.get("log.opportunity.status.true") : Translator.get("log.opportunity.status.false"));
             }

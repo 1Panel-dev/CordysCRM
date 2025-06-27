@@ -878,13 +878,9 @@ public class OrganizationUserService {
     }
 
     public boolean checkUserResource(String id) {
-        if (extOpportunityMapper.countByOwner(id) > 0 ||
-                extCustomerMapper.countByOwner(id) > 0 ||
-                extClueMapper.countByOwner(id) > 0) {
-            return false;
-        }
-
-        return true;
+        return extOpportunityMapper.countByOwner(id) <= 0 &&
+                extCustomerMapper.countByOwner(id) <= 0 &&
+                extClueMapper.countByOwner(id) <= 0;
     }
 
     public boolean deleteCheck(String id) {

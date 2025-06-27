@@ -115,7 +115,7 @@ class RoleControllerTests extends BaseTest {
         Role role = roleMapper.selectByPrimaryKey(resultData.getId());
 
         // 校验请求成功数据
-        this.addRole = role;
+        addRole = role;
         Assertions.assertEquals(request.getName(), role.getName());
         Assertions.assertEquals(request.getDescription(), role.getDescription());
         Assertions.assertEquals(role.getOrganizationId(), DEFAULT_ORGANIZATION_ID);

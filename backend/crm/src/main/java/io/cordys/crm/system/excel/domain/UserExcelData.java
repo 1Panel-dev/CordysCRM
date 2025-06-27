@@ -5,10 +5,7 @@ import io.cordys.crm.system.excel.constants.UserImportFiled;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * @author wx
@@ -76,7 +73,7 @@ public class UserExcelData {
         List<List<String>> heads = new ArrayList<>();
         UserImportFiled[] fields = UserImportFiled.values();
         for (UserImportFiled field : fields) {
-            heads.add(Arrays.asList(field.getFiledLangMap().get(lang)));
+            heads.add(Collections.singletonList(field.getFiledLangMap().get(lang)));
         }
         return heads;
     }

@@ -52,7 +52,7 @@ public class OpportunityFollowRecordControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         FollowUpRecord resultData = getResultData(mvcResult, FollowUpRecord.class);
         FollowUpRecord followUpRecord = followUpRecordMapper.selectByPrimaryKey(resultData.getId());
-        this.addFollowUpRecord = followUpRecord;
+        addFollowUpRecord = followUpRecord;
     }
 
     @Test

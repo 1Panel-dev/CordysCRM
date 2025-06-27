@@ -61,11 +61,7 @@ public class FilterCondition {
         }
 
         // 针对值为字符串的校验
-        if (value instanceof String valueStr && StringUtils.isBlank(valueStr)) {
-            return false;
-        }
-
-        return true;
+        return !(value instanceof String valueStr) || !StringUtils.isBlank(valueStr);
     }
 
     /**

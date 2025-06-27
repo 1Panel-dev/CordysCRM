@@ -103,7 +103,7 @@ public class BaseMapperTest {
     @Test
     @Order(8)
     public void testSelectAll() {
-        when(baseMapper.selectAll("username")).thenReturn(Arrays.asList(user));
+        when(baseMapper.selectAll("username")).thenReturn(Collections.singletonList(user));
         List<User> result = baseMapper.selectAll("username");
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -113,7 +113,7 @@ public class BaseMapperTest {
     @Test
     @Order(9)
     public void testSelect() {
-        when(baseMapper.select(user)).thenReturn(Arrays.asList(user));
+        when(baseMapper.select(user)).thenReturn(Collections.singletonList(user));
         List<User> result = baseMapper.select(user);
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -134,7 +134,7 @@ public class BaseMapperTest {
     @Order(11)
     public void testSelectByColumn() {
         Serializable[] ids = {1L};
-        when(baseMapper.selectByColumn("id", ids)).thenReturn(Arrays.asList(user));
+        when(baseMapper.selectByColumn("id", ids)).thenReturn(Collections.singletonList(user));
         List<User> result = baseMapper.selectByColumn("id", ids);
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -154,7 +154,7 @@ public class BaseMapperTest {
     @Order(13)
     public void testQuery() {
         Function<BaseMapper.SQL, BaseMapper.SQL> sqlBuild = sql -> sql;
-        when(baseMapper.query(sqlBuild, user)).thenReturn(Arrays.asList(user));
+        when(baseMapper.query(sqlBuild, user)).thenReturn(Collections.singletonList(user));
         List<User> result = baseMapper.query(sqlBuild, user);
         assertNotNull(result);
         assertEquals(1, result.size());

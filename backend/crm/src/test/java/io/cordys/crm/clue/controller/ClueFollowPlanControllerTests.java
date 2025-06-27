@@ -58,7 +58,7 @@ public class ClueFollowPlanControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         FollowUpRecord resultData = getResultData(mvcResult, FollowUpRecord.class);
         FollowUpPlan followUpPlan = followUpPlanMapper.selectByPrimaryKey(resultData.getId());
-        this.addFollowUpPlan = followUpPlan;
+        addFollowUpPlan = followUpPlan;
     }
 
 

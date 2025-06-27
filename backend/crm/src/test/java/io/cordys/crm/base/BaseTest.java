@@ -80,13 +80,13 @@ public abstract class BaseTest {
     @BeforeEach
     public void login() throws Exception {
         if (adminAuthInfo == null) {
-            this.adminAuthInfo = initAuthInfo(InternalUser.ADMIN.getValue(), DEFAULT_USER_PASSWORD);
+            adminAuthInfo = initAuthInfo(InternalUser.ADMIN.getValue(), DEFAULT_USER_PASSWORD);
         }
 
         User permissionUser = userMapper.selectByPrimaryKey(PERMISSION_USER_NAME);
         // 有对应用户才初始化认证信息
         if (permissionUser != null && permissionAuthInfo == null) {
-            this.permissionAuthInfo = initAuthInfo(PERMISSION_USER_NAME, DEFAULT_USER_PASSWORD);
+            permissionAuthInfo = initAuthInfo(PERMISSION_USER_NAME, DEFAULT_USER_PASSWORD);
         }
     }
 
@@ -389,8 +389,7 @@ public abstract class BaseTest {
                         continue;
                     }
                     MockMultipartFile multipartFile;
-                    if (o instanceof List) {
-                        List listObject = ((List) o);
+                    if (o instanceof List listObject) {
                         if (CollectionUtils.isEmpty(listObject)) {
                             continue;
                         }
@@ -420,8 +419,7 @@ public abstract class BaseTest {
 
     private static MockMultipartFile getMockMultipartFile(String key, Object value) throws IOException {
         MockMultipartFile multipartFile;
-        if (value instanceof File) {
-            File file = (File) value;
+        if (value instanceof File file) {
             multipartFile = new MockMultipartFile(key, file.getName(),
                     MediaType.APPLICATION_OCTET_STREAM_VALUE, Files.readAllBytes(file.toPath()));
         } else if (value instanceof MockMultipartFile) {

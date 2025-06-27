@@ -60,7 +60,7 @@ class CustomerCollaborationControllerTests extends BaseTest {
         CustomerCollaboration customerCollaboration = customerCollaborationMapper.selectByPrimaryKey(resultData.getId());
 
         // 校验请求成功数据
-        this.addCustomerCollaboration = customerCollaboration;
+        addCustomerCollaboration = customerCollaboration;
         Assertions.assertEquals(request.getCustomerId(), "customerId");
         Assertions.assertEquals(request.getCollaborationType(), customerCollaboration.getCollaborationType());
         Assertions.assertEquals(request.getUserId(), customerCollaboration.getUserId());

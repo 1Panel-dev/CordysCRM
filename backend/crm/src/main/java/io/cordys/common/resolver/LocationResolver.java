@@ -56,7 +56,7 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
         //编码
         String code = value.substring(0, 6);
         //描述
-        String detail = value.substring(6, value.length());
+        String detail = value.substring(6);
 
         if (StringUtils.equalsIgnoreCase(detail, "-")) {
             detail = "";

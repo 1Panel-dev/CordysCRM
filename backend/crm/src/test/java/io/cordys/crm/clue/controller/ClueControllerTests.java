@@ -51,7 +51,7 @@ class ClueControllerTests extends BaseTest {
 
     private static Clue addClue;
     private static Clue anotherClue;
-    private static List<String> batchIds = new ArrayList<>();
+    private static final List<String> batchIds = new ArrayList<>();
 
     @Resource
     private BaseMapper<Clue> clueMapper;
@@ -137,7 +137,7 @@ class ClueControllerTests extends BaseTest {
         anotherClue = clueMapper.selectByPrimaryKey(resultData.getId());
 
         // 校验请求成功数据
-        this.addClue = clue;
+        addClue = clue;
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_ADD, DEFAULT_ADD, request);

@@ -82,7 +82,7 @@ class CustomerContactControllerTests extends BaseTest {
         CustomerContact customerContact = customerContactMapper.selectByPrimaryKey(resultData.getId());
 
         // 校验请求成功数据
-        this.addCustomerContact = customerContact;
+        addCustomerContact = customerContact;
         Assertions.assertEquals(request.getName(), customerContact.getName());
         Assertions.assertEquals(request.getOwner(), customerContact.getOwner());
         Assertions.assertEquals(request.getPhone(), customerContact.getPhone());

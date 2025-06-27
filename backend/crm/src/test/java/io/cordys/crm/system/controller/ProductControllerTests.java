@@ -43,7 +43,7 @@ class ProductControllerTests extends BaseTest {
 
     private static Product addProduct;
 
-    private static List<String> batchIds = new ArrayList<>();
+    private static final List<String> batchIds = new ArrayList<>();
     private static String moduleFieldPriceId = "";
     private static String moduleFieldStatusId=  "";
 

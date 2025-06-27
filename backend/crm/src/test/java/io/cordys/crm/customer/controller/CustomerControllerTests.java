@@ -60,7 +60,7 @@ class CustomerControllerTests extends BaseTest {
 
     private static Customer addCustomer;
     private static Customer anotherCustomer;
-    private static List<String> batchIds = new ArrayList<>();
+    private static final List<String> batchIds = new ArrayList<>();
 
     @Resource
     private BaseMapper<Customer> customerMapper;
@@ -150,7 +150,7 @@ class CustomerControllerTests extends BaseTest {
         anotherCustomer = customerMapper.selectByPrimaryKey(resultData.getId());
 
         // 校验请求成功数据
-        this.addCustomer = customer;
+        addCustomer = customer;
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_ADD, DEFAULT_ADD, request);
@@ -350,7 +350,7 @@ class CustomerControllerTests extends BaseTest {
         mvcResult = this.requestPostWithOkAndReturn(OPTION, request);
         options = getPageResult(mvcResult, OptionDTO.class).getList();
 
-        Assertions.assertTrue(options.size() == 1);
+        Assertions.assertEquals(1, options.size());
         Assertions.assertEquals(addCustomer.getId(), options.getFirst().getId());
         Assertions.assertEquals(addCustomer.getName(), options.getFirst().getName());
 

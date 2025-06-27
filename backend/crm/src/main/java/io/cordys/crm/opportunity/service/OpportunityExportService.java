@@ -161,7 +161,7 @@ public class OpportunityExportService extends BaseExportService {
                 ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
                 //表头信息
                 List<List<String>> headList = request.getHeadList().stream()
-                        .map(head -> Arrays.asList(head.getTitle()))
+                        .map(head -> Collections.singletonList(head.getTitle()))
                         .toList();
 
                 // 准备导出文件

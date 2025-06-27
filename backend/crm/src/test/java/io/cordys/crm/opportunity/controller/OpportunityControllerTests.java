@@ -83,7 +83,7 @@ public class OpportunityControllerTests extends BaseTest {
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Opportunity resultData = getResultData(mvcResult, Opportunity.class);
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(resultData.getId());
-        this.addOpportunity = opportunity;
+        addOpportunity = opportunity;
 
         request.setProducts(List.of("11", "22"));
         this.requestPost(DEFAULT_ADD, request);

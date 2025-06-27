@@ -146,11 +146,8 @@ public class SysOperationLogService {
     private List<JsonDifferenceDTO> filterIgnoreFields(List<JsonDifferenceDTO> differenceDTOS) {
         differenceDTOS = differenceDTOS.stream()
                 .filter(differ -> {
-                    if (StringUtils.equalsAny(differ.getColumn(),
-                            "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName", "supervisorName", "lastStage")) {
-                        return false;
-                    }
-                    return true;
+                    return !StringUtils.equalsAny(differ.getColumn(),
+                            "organizationId", "createUser", "updateUser", "createTime", "updateTime", "departmentName", "supervisorName", "lastStage");
                 }).toList();
         return differenceDTOS;
     }

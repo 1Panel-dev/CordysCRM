@@ -22,8 +22,8 @@ public class LoginLogControllerTest extends BaseTest {
         LoginLogRequest request = new LoginLogRequest();
         request.setCurrent(1);
         request.setPageSize(10);
-        request.setStartTime(1735808851000l);
-        request.setEndTime(1735890402193l);
+        request.setStartTime(1735808851000L);
+        request.setEndTime(1735890402193L);
         return request;
     }
 
@@ -32,8 +32,8 @@ public class LoginLogControllerTest extends BaseTest {
     public void operationLogLoginList() throws Exception {
         LoginLogRequest request = buildRequest();
         this.requestPost(LOGIN_LOG_LIST, request).andExpect(status().isOk());
-        request.setStartTime(1735890402193l);
-        request.setEndTime(1735808851000l);
+        request.setStartTime(1735890402193L);
+        request.setEndTime(1735808851000L);
         request.setSort(new SortRequest("id", "desc"));
         this.requestPost(LOGIN_LOG_LIST, request);
     }

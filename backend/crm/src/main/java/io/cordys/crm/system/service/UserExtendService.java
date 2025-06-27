@@ -136,8 +136,8 @@ public class UserExtendService {
 		for (BaseTreeNode treeNode : node.getChildren()) {
 			if (findDeptPathWithDfs(treeNode, targetNode, path)) {
 				return true;
-			};
-		}
+			}
+        }
 		// 未命中, 回退当前节点
 		path.removeLast();
 		return false;

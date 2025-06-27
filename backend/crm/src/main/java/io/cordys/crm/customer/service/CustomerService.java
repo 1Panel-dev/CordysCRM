@@ -391,11 +391,15 @@ public class CustomerService {
     }
 
     private void sendTransferNotice(List<Customer> originCustomers, String toUser, String userId, String orgId) {
-        originCustomers.forEach(customerName -> {
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                    NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER, customerName.getName(), userId,
-                    orgId, List.of(toUser), true);
-        });
+        originCustomers.forEach(customer -> commonNoticeSendService.sendNotice(
+                NotificationConstants.Module.CUSTOMER,
+                NotificationConstants.Event.CUSTOMER_TRANSFERRED_CUSTOMER,
+                customer.getName(),
+                userId,
+                orgId,
+                List.of(toUser),
+                true
+        ));
     }
 
     public void batchDelete(List<String> ids, String userId, String orgId) {
@@ -424,13 +428,11 @@ public class CustomerService {
         logService.batchAdd(logs);
 
         // 消息通知
-        customers.stream()
-                .forEach(customer ->
-                        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
-                                NotificationConstants.Event.CUSTOMER_DELETED, customer.getName(), userId,
-                                orgId, List.of(customer.getOwner()), true)
-                );
-
+        customers.forEach(customer ->
+                commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER,
+                        NotificationConstants.Event.CUSTOMER_DELETED, customer.getName(), userId,
+                        orgId, List.of(customer.getOwner()), true)
+        );
     }
 
     private void checkOpportunityRef(List<String> ids) {
@@ -440,10 +442,9 @@ public class CustomerService {
     }
 
     private List<String> getOwners(List<Customer> customers) {
-        List<String> owners = customers.stream().map(Customer::getOwner)
+        return customers.stream().map(Customer::getOwner)
                 .distinct()
                 .toList();
-        return owners;
     }
 
     /**

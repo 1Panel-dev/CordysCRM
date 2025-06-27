@@ -105,7 +105,7 @@ public class PersonalCenterService {
     public void sendCode(SendEmailDTO emailDTO, String organizationId) {
         String email = emailDTO.getEmail();
         String redisKey = PREFIX + email;
-        if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(redisKey))) {
+        if (stringRedisTemplate.hasKey(redisKey)) {
             stringRedisTemplate.delete(redisKey); // 验证通过后删除验证码
         }
         String code = generateCode();
