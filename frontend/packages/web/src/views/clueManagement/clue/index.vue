@@ -21,11 +21,11 @@
             {{ t('clueManagement.newClue') }}
           </n-button>
           <n-button
-            v-if="activeTab !== CustomerSearchTypeEnum.VISIBLE"
-            v-permission="['CLUE_MANAGEMENT:EXPORT']"
+            v-if="hasAnyPermission(['CLUE_MANAGEMENT:EXPORT']) && activeTab !== CustomerSearchTypeEnum.VISIBLE"
             type="primary"
             ghost
             class="n-btn-outline-primary"
+            :disabled="propsRes.data.length === 0"
             @click="handleExportAllClick"
           >
             {{ t('common.exportAll') }}
@@ -109,6 +109,7 @@
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const Message = useMessage();
   const { openModal } = useModal();

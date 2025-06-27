@@ -24,6 +24,7 @@
           type="primary"
           ghost
           class="n-btn-outline-primary"
+          :disabled="propsRes.data.length === 0"
           @click="handleExportAllClick"
         >
           {{ t('common.exportAll') }}
