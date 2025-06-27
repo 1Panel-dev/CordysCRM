@@ -455,7 +455,7 @@
       .map((e) => {
         return {
           key: e.key?.toString() || '',
-          title: t('common.name'),
+          title: (e.title as string) || '',
         };
       });
   });
