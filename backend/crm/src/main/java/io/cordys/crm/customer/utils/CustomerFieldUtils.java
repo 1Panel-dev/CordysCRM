@@ -16,7 +16,7 @@ public class CustomerFieldUtils {
         systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
         systemFiledMap.put("updateUser", data.getUpdateUserName());
         systemFiledMap.put("updateTime", TimeUtils.getDataTimeStr(data.getUpdateTime()));
-        systemFiledMap.put("followerName", data.getFollowerName());
+        systemFiledMap.put("follower", data.getFollowerName());
         systemFiledMap.put("followTime", TimeUtils.getDataTimeStr(data.getFollowTime()));
         systemFiledMap.put("reservedDays", data.getReservedDays());
         systemFiledMap.put("recyclePoolName", data.getRecyclePoolName());

@@ -476,9 +476,9 @@
 
   const exportColumns = computed<ExportTableColumnItem[]>(() => {
     return propsRes.value.columns
-      .filter(
-        (item: any) => item.key !== 'operation' && item.type !== 'selection' && item.fieldType !== FieldTypeEnum.PICTURE
-      )
+        .filter(
+            (item: any) => item.key !== 'operation' && item.type !== 'selection' && item.filedType !== FieldTypeEnum.PICTURE
+        )
       .map((e) => {
         return {
           key: e.key?.toString() || '',

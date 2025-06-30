@@ -28,7 +28,7 @@ public class OpportunityFieldUtils {
         systemFiledMap.put("owner", data.getOwnerName());
 
         systemFiledMap.put("stage", Translator.get(data.getStage()));
-        systemFiledMap.put("followerName", data.getFollowerName());
+        systemFiledMap.put("follower", data.getFollowerName());
         systemFiledMap.put("followTime", TimeUtils.getDataTimeStr(data.getFollowTime()));
         systemFiledMap.put("reservedDays", data.getReservedDays());
         systemFiledMap.put("status", Translator.get("log.opportunity.status." + data.getStatus().toString()));
