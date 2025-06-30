@@ -1,6 +1,7 @@
 package io.cordys.common.uid;
 
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.util.LogUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -31,7 +32,13 @@ public class SerialNumGenerator {
 		}
 		String date = new SimpleDateFormat(rules.get(2)).format(new Date());
 		String redisKey = "serial:" + orgId + ":" + formKey + ":" + date;
-		Long seq = stringRedisTemplate.opsForValue().increment(redisKey);
-		return String.format("%s%s%s%s%0" + rules.getLast() + "d", rules.get(0), rules.get(1), date, rules.get(3), seq);
+		Long seq;
+		try {
+			seq = stringRedisTemplate.opsForValue().increment(redisKey);
+			return String.format("%s%s%s%s%0" + rules.getLast() + "d", rules.get(0), rules.get(1), date, rules.get(3), seq);
+		} catch (Exception e) {
+			LogUtils.error("获取流水号失败: " + e.getMessage());
+		}
+		return null;
 	}
 }
