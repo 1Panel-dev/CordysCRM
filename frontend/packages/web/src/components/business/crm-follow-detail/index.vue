@@ -199,17 +199,18 @@
   ];
 
   function getDescriptionFun(item: FollowDetailItem) {
-    const customerNameKey = item.clueId?.length ? 'clueName' : 'customerName';
+    const isClue = item.type === 'CLUE' && item.clueId?.length;
+    const customerNameKey = isClue ? 'clueName' : 'customerName';
     let lastDescriptionList = [
       {
         key: customerNameKey,
-        label: item.clueId?.length ? t('crmFollowRecord.companyName') : t('opportunity.customerName'),
+        label: isClue ? t('crmFollowRecord.companyName') : t('opportunity.customerName'),
         value: customerNameKey,
       },
       ...descriptionList,
     ];
 
-    if (item.clueId?.length) {
+    if (isClue) {
       lastDescriptionList = lastDescriptionList.filter((e) => !['contactName', 'phone'].includes(e.key));
     }
 
