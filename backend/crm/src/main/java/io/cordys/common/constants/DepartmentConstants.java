@@ -20,5 +20,9 @@ public enum DepartmentConstants {
     /**
      * 飞书
      */
-    LARK
+    LARK,
+    /**
+     * DE
+     */
+    DE
 }
