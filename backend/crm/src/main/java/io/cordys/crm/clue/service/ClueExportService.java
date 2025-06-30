@@ -12,6 +12,7 @@ import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.common.dto.ExportSelectRequest;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.service.BaseExportService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
@@ -147,6 +148,7 @@ public class ClueExportService extends BaseExportService {
         PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<ClueListResponse> exportList = extClueMapper.list(request, orgId, userId, deptDataPermission);
         List<ClueListResponse> dataList = clueService.buildListData(exportList, orgId);
+        Map<String, List<OptionDTO>> optionMap = clueService.buildOptionMap(orgId, exportList, dataList);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CLUE.getKey(), orgId);
         //构建导出数据
         List<List<Object>> data = new ArrayList<>();
@@ -154,17 +156,17 @@ public class ClueExportService extends BaseExportService {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
-            List<Object> value = buildData(request.getHeadList(), response, fieldConfigMap);
+            List<Object> value = buildData(request.getHeadList(), response, optionMap, fieldConfigMap);
             data.add(value);
         }
 
         return data;
     }
 
-    private List<Object> buildData(List<ExportHeadDTO> headList, ClueListResponse data, Map<String, BaseField> fieldConfigMap) {
+    private List<Object> buildData(List<ExportHeadDTO> headList, ClueListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, BaseField> fieldConfigMap) {
         List<Object> dataList = new ArrayList<>();
         //固定字段map
-        LinkedHashMap<String, Object> systemFiledMap = ClueFieldUtils.getSystemFieldMap(data);
+        LinkedHashMap<String, Object> systemFiledMap = ClueFieldUtils.getSystemFieldMap(data, optionMap);
         //自定义字段map
         AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
         Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields -> moduleFieldMap.set(moduleFields.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue))));
@@ -177,6 +179,8 @@ public class ClueExportService extends BaseExportService {
         //获取数据
         List<ClueListResponse> allList = extClueMapper.getListByIds(ids);
         List<ClueListResponse> dataList = clueService.buildListData(allList, orgId);
+        Map<String, List<OptionDTO>> optionMap = clueService.buildOptionMap(orgId, allList, dataList);
+
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CLUE.getKey(), orgId);
         //构建导出数据
         List<List<Object>> data = new ArrayList<>();
@@ -184,7 +188,7 @@ public class ClueExportService extends BaseExportService {
             if (ExportThreadRegistry.isInterrupted(taskId)) {
                 throw new InterruptedException("线程已被中断，主动退出");
             }
-            List<Object> value = buildData(headList, response, fieldConfigMap);
+            List<Object> value = buildData(headList, response, optionMap, fieldConfigMap);
             data.add(value);
         }
 

@@ -50,6 +50,7 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,6 +109,13 @@ public class ClueService {
         List<ClueListResponse> list = extClueMapper.list(request, orgId, userId, deptDataPermission);
         List<ClueListResponse> buildList = buildListData(list, orgId);
 
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
+
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+    }
+
+    @NotNull
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<ClueListResponse> list, List<ClueListResponse> buildList) {
         // 处理自定义字段选项数据
         ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), orgId);
         // 获取所有模块字段的值
@@ -123,8 +131,7 @@ public class ClueService {
         // 意向产品选项
         List<OptionDTO> productOption = extProductMapper.getOptions(orgId);
         optionMap.put(BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey(), productOption);
-
-        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+        return optionMap;
     }
 
     public List<ClueListResponse> buildListData(List<ClueListResponse> list, String orgId) {
