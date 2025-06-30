@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, NTooltip, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
@@ -430,21 +430,37 @@
         );
       },
       customerId: (row: OpportunityItem) => {
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              activeSourceId.value = row.customerId;
-              if (row.inCustomerPool) {
-                openSea.value = row.poolId ?? '';
-                showOpenSeaOverviewDrawer.value = true;
-              } else {
-                emit('openCustomerDrawer', activeSourceId.value);
+        return props.isCustomerTab
+          ? h(
+              NTooltip,
+              {},
+              {
+                trigger: () =>
+                  h(
+                    'div',
+                    { class: 'one-line-text' },
+                    {
+                      default: () => row.customerName,
+                    }
+                  ),
+                default: () => row.customerName,
               }
-            },
-          },
-          { default: () => row.customerName, trigger: () => row.customerName }
-        );
+            )
+          : h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  activeSourceId.value = row.customerId;
+                  if (row.inCustomerPool) {
+                    openSea.value = row.poolId ?? '';
+                    showOpenSeaOverviewDrawer.value = true;
+                  } else {
+                    emit('openCustomerDrawer', activeSourceId.value);
+                  }
+                },
+              },
+              { default: () => row.customerName, trigger: () => row.customerName }
+            );
       },
       status: (row: OpportunityItem) => {
         return row.status ? t('common.open') : t('common.close');
