@@ -1,6 +1,7 @@
 package io.cordys.file.engine;
 
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.util.LogUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.util.FileUtil;
@@ -125,7 +126,18 @@ public class LocalRepository implements FileRepository {
     @Override
     public void deleteFolder(FileRequest request) throws Exception {
         FileValidate.validateFileName(request.getFolder(), request.getFileName());
+        // 删除文件
         this.delete(request);
+        // 删除文件夹
+        String folderPath = getFolderWithDefaultDir(request.getFolder());
+        File folder = new File(folderPath);
+        if (folder.exists() && folder.isDirectory()) {
+            try {
+                FileUtils.deleteDirectory(folder);
+            } catch (IOException e) {
+                LogUtils.error("Failed to delete folder: " + folderPath, e);
+            }
+        }
     }
 
     /**
@@ -195,6 +207,7 @@ public class LocalRepository implements FileRepository {
 
     /**
      * 获取指定文件夹下的文件列表
+     *
      * @param request 文件请求信息，包含目标文件夹的标识符或路径。
      * @return 文件列表
      */
@@ -226,7 +239,7 @@ public class LocalRepository implements FileRepository {
      *
      * @param request 文件请求信息，包含待获取大小的文件路径和文件名。
      * @return 返回文件的大小（字节数）。
-	 */
+     */
     @Override
     public long getFileSize(FileRequest request) {
         File file = new File(getFilePath(request));
@@ -257,6 +270,7 @@ public class LocalRepository implements FileRepository {
 
     /**
      * 获取默认的文件夹路径
+     *
      * @param folder 文件夹名称
      * @return 文件夹路径
      */
