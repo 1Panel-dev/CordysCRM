@@ -17,7 +17,7 @@
     <name>cordys-crm</name>
 
     <properties>
-        <revision>1.0.x</revision>
+        <revision>main</revision>
         <java.version>21</java.version>
         <shiro.version>2.0.4</shiro.version>
         <fastexcel.version>1.2.0</fastexcel.version>
