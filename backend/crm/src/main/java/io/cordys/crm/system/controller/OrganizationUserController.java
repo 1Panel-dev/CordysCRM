@@ -177,7 +177,7 @@ public class OrganizationUserController {
     @GetMapping("/get/{departmentId}")
     @Operation(summary = "获取指定部门下用户")
     @RequiresPermissions(PermissionConstants.SYS_ORGANIZATION_READ)
-    public List<DeptUserTreeNode> getDepartMentUser(@PathVariable String departmentId) {
+    public List<DeptUserTreeNode> getDepartmentUser(@PathVariable String departmentId) {
         return organizationUserService.getUserTreeByDepId(departmentId, OrganizationContext.getOrganizationId());
     }
 }
