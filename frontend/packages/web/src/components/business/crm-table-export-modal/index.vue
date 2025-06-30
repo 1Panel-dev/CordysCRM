@@ -29,7 +29,7 @@
     >
       <n-form-item path="fileName" :label="t('common.name')" required>
         <n-input-group>
-          <n-input v-model:value="form.fileName" type="text" :placeholder="t('common.pleaseInput')"> </n-input>
+          <n-input v-model:value="form.fileName" type="text" :maxlength="255" :placeholder="t('common.pleaseInput')" />
           <n-input-group-label>.xlsx</n-input-group-label>
         </n-input-group>
         <div class="mt-[2px] text-[12px] text-[var(--text-n4)]"> {{ t('common.exportTaskTip') }} </div>
