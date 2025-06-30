@@ -114,14 +114,15 @@
 
   const sortedOptions = computed<SelectMixedOption[]>(() => {
     const sorted = [...computedOptions.value];
+    const recentlyIds: SelectMixedOption[] = [];
     recentlyUserIds.value.forEach((id) => {
       const index = sorted.findIndex((item) => item[props.valueField] === id);
       if (index !== -1) {
         const [item] = sorted.splice(index, 1);
-        sorted.push(item);
+        recentlyIds.push(item);
       }
     });
-    return sorted;
+    return [...recentlyIds, ...sorted];
   });
 
   onMounted(async () => {
