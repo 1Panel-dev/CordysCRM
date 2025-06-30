@@ -179,6 +179,7 @@ public class PersonalCenterControllerTests extends BaseTest {
         opportunity.setCreateUser("admin");
         opportunity.setUpdateTime(System.currentTimeMillis());
         opportunity.setUpdateUser("admin");
+        opportunity.setExpectedEndTime(System.currentTimeMillis());
         opportunityBaseMapper.insert(opportunity);
 
         Customer customer = new Customer();

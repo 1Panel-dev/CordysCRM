@@ -80,6 +80,7 @@ public class OpportunityControllerTests extends BaseTest {
         request.setPossible(BigDecimal.valueOf(1.2));
         request.setContactId("12345");
         request.setOwner("admin");
+        request.setExpectedEndTime(System.currentTimeMillis());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         Opportunity resultData = getResultData(mvcResult, Opportunity.class);
         Opportunity opportunity = opportunityMapper.selectByPrimaryKey(resultData.getId());
@@ -100,6 +101,7 @@ public class OpportunityControllerTests extends BaseTest {
         request.setContactId("1234567");
         request.setOwner("admin");
         request.setProducts(List.of("22"));
+        request.setExpectedEndTime(System.currentTimeMillis());
         request.setModuleFields(List.of(new BaseModuleFieldValue("id", "value")));
         this.requestPost(DEFAULT_UPDATE, request);
 
@@ -177,6 +179,7 @@ public class OpportunityControllerTests extends BaseTest {
         request.setPossible(BigDecimal.valueOf(1.2));
         request.setContactId("12345");
         request.setOwner("admin");
+        request.setExpectedEndTime(System.currentTimeMillis());
         this.requestPostWithOk(DEFAULT_ADD, request);
         OpportunityPageRequest pageRequest = new OpportunityPageRequest();
         pageRequest.setSearchType("ALL");

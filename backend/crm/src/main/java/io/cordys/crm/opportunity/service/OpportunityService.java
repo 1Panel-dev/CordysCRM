@@ -219,6 +219,7 @@ public class OpportunityService {
         opportunity.setUpdateTime(System.currentTimeMillis());
         opportunity.setUpdateUser(operatorId);
         opportunity.setStatus(true);
+        opportunity.setExpectedEndTime(request.getExpectedEndTime());
         if (StringUtils.isBlank(request.getOwner())) {
             opportunity.setOwner(operatorId);
         }
@@ -286,6 +287,7 @@ public class OpportunityService {
         item.setOwner(request.getOwner());
         item.setUpdateTime(System.currentTimeMillis());
         item.setUpdateUser(userId);
+        item.setExpectedEndTime(request.getExpectedEndTime());
         opportunityMapper.update(item);
     }
 

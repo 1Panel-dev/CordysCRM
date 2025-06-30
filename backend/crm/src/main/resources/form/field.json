@@ -425,7 +425,7 @@
       "mobile": true
     },
     {
-      "name": "预计结束",
+      "name": "结束时间",
       "internalKey": "opportunityEndTime",
       "type": "DATE_TIME",
       "showLabel": true,
@@ -435,7 +435,8 @@
       "dateType": "date",
       "rules": [
         {"key":  "required"}
-      ]
+      ],
+      "mobile": true
     },
     {
       "name": "可能性",

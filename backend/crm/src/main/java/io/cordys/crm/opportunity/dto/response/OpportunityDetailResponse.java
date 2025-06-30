@@ -72,6 +72,9 @@ public class OpportunityDetailResponse {
     @Schema(description = "更新人名称")
     private String updateUserName;
 
+    @Schema(description = "结束时间")
+    private Long expectedEndTime;
+
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 

@@ -25,7 +25,8 @@
             o.last_stage,
             o.stage,
             o.status,
-            o.contact_id
+            o.contact_id,
+            o.expected_end_time
         FROM
             opportunity o
                 INNER JOIN customer c ON o.customer_id = c.id
@@ -364,7 +365,8 @@
             o.create_time,
             o.update_time,
             o.create_user,
-            o.update_user
+            o.update_user,
+            o.expected_end_time
         FROM
             opportunity o
                 INNER JOIN customer c ON o.customer_id = c.id
@@ -442,7 +444,8 @@
     o.last_stage,
     o.stage,
     o.status,
-    o.contact_id
+    o.contact_id,
+    o.expected_end_time
     FROM
     opportunity o
     INNER JOIN customer c ON o.customer_id = c.id

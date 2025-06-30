@@ -27,6 +27,8 @@ CREATE INDEX idx_create_user ON export_task(create_user ASC);
 
 ALTER TABLE customer_capacity ADD COLUMN `filter` TEXT COMMENT '过滤条件';
 
+ALTER TABLE opportunity ADD COLUMN expected_end_time BIGINT NOT NULL COMMENT '结束时间';
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 

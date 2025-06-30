@@ -166,6 +166,7 @@ public class OpportunityFollowPlanControllerTests extends BaseTest {
         opportunity.setCreateTime(System.currentTimeMillis());
         opportunity.setUpdateUser("admin");
         opportunity.setUpdateTime(System.currentTimeMillis());
+        opportunity.setExpectedEndTime(System.currentTimeMillis());
         opportunityMapper.insert(opportunity);
         followUpPlanRemindListener.followUpPlanRemind();
 

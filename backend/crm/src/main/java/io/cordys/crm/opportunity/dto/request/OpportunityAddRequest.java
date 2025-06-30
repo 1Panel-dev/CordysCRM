@@ -41,6 +41,10 @@ public class OpportunityAddRequest {
     private String owner;
 
 
+    @Schema(description = "结束时间")
+    private Long expectedEndTime;
+
+
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 

@@ -94,6 +94,9 @@ public class OpportunityListResponse {
     @Schema(description = "部门名称")
     private String departmentName;
 
+    @Schema(description = "结束时间")
+    private Long expectedEndTime;
+
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
 }
