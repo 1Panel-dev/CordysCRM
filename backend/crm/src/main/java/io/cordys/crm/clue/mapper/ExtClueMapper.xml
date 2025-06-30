@@ -309,5 +309,16 @@
         select count(1) from clue where owner = #{ownerId}
         and in_shared_pool = false and (transition_type is null or transition_type != 'CUSTOMER')
     </select>
+    <select id="getListByIds" resultType="io.cordys.crm.clue.dto.response.ClueListResponse">
+        select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user,
+               c.update_user, c.collection_time, c.contact, c.phone, c.stage, c.pool_id,
+               c.follower, c.follow_time, c.last_stage, c.transition_type, c.products
+        from `clue` c
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by c.create_time desc
+    </select>
 
 </mapper>

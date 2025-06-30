@@ -175,12 +175,7 @@ public class ClueExportService extends BaseExportService {
 
     private List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {
         //获取数据
-        List<Clue> clues = clueMapper.selectByIds(ids);
-        List<ClueListResponse> allList = clues.stream().map(clue -> {
-            ClueListResponse clueListResponse = new ClueListResponse();
-            BeanUtils.copyBean(clueListResponse, clue);
-            return clueListResponse;
-        }).toList();
+        List<ClueListResponse> allList = extClueMapper.getListByIds(ids);
         List<ClueListResponse> dataList = clueService.buildListData(allList, orgId);
         Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CLUE.getKey(), orgId);
         //构建导出数据

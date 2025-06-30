@@ -363,5 +363,6 @@
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+        order by c.create_time desc
     </select>
 </mapper>

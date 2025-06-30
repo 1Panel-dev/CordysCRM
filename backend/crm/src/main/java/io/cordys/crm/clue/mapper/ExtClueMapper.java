@@ -64,5 +64,7 @@ public interface ExtClueMapper {
      * @return 数量
      */
     long getOwnerCount(@Param("ownerId") String ownerId);
+
+    List<ClueListResponse> getListByIds(@Param("ids") List<String> ids);
     
 }
