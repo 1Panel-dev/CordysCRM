@@ -90,6 +90,10 @@ public enum BusinessModuleField {
      */
     OPPORTUNITY_POSSIBLE("opportunityWinRate", "possible", Set.of("rules"), FormKey.OPPORTUNITY.getKey()),
     /**
+     * 预计结束时间
+     */
+    OPPORTUNITY_END_TIME("opportunityEndTime", "expectedEndTime", Set.of("rules"), FormKey.OPPORTUNITY.getKey()),
+    /**
      * 意向产品
      */
     OPPORTUNITY_PRODUCTS("opportunityProduct", "products", Set.of("rules"), FormKey.OPPORTUNITY.getKey()),
