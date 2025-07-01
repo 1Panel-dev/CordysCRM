@@ -333,8 +333,8 @@ public class OpportunityService {
      * @param request
      */
     public void transfer(OpportunityTransferRequest request, String userId, String orgId) {
-        extOpportunityMapper.batchTransfer(request, userId, System.currentTimeMillis());
         List<Opportunity> opportunityList = opportunityMapper.selectByIds(request.getIds());
+        extOpportunityMapper.batchTransfer(request, userId, System.currentTimeMillis());
         // 记录日志
         List<LogDTO> logs = new ArrayList<>();
         opportunityList.forEach(customer -> {
