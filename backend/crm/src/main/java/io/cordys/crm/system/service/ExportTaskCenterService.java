@@ -68,7 +68,7 @@ public class ExportTaskCenterService {
         if (exportTask == null) {
             throw new GenericException(Translator.get("task_not_found"));
         }
-        if (StringUtils.equalsIgnoreCase(exportTask.getStatus(), ExportConstants.ExportStatus.STOP.name())) {
+        if (StringUtils.equalsIgnoreCase(exportTask.getStatus(), ExportConstants.ExportStatus.SUCCESS.name())) {
             throw new GenericException(Translator.get("task_already_stopped"));
         }
         exportTask.setStatus(ExportConstants.ExportStatus.STOP.name());
