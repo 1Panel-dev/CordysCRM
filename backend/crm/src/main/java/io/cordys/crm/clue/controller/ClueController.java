@@ -24,6 +24,7 @@ import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -135,13 +136,13 @@ public class ClueController {
     public String exportAll(@Validated @RequestBody ClueExportRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.CLUE_MANAGEMENT_READ);
-        return clueExportService.exportAll(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+        return clueExportService.exportAll(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
     }
 
     @PostMapping("/export-select")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_EXPORT)
     @Operation(summary = "导出选中")
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        return clueExportService.exportSelect(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return clueExportService.exportSelect(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
     }
 }

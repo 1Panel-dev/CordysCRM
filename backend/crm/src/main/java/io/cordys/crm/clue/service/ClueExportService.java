@@ -15,7 +15,6 @@ import io.cordys.common.dto.ExportSelectRequest;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.service.BaseExportService;
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.SubListUtils;
 import io.cordys.crm.clue.domain.Clue;
@@ -30,6 +29,7 @@ import io.cordys.crm.system.service.ExportTaskService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.registry.ExportThreadRegistry;
 import jakarta.annotation.Resource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,7 +54,7 @@ public class ClueExportService extends BaseExportService {
     @Resource
     private ExportTaskService exportTaskService;
 
-    public String exportAll(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO dataPermission) {
+    public String exportAll(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO dataPermission, Locale locale) {
         //用户导出数量 限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CLUE.toString(), ExportConstants.ExportStatus.PREPARED.toString());
 
@@ -62,6 +62,7 @@ public class ClueExportService extends BaseExportService {
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE.toString(), request.getFileName());
         Thread.startVirtualThread(() -> {
             try {
+                LocaleContextHolder.setLocale(locale);
                 ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
                 //表头信息
                 List<List<String>> headList = request.getHeadList().stream()
@@ -95,7 +96,7 @@ public class ClueExportService extends BaseExportService {
         return exportTask.getId();
     }
 
-    public String exportSelect(ExportSelectRequest request, String userId, String orgId) {
+    public String exportSelect(ExportSelectRequest request, String userId, String orgId, Locale locale) {
         // 用户导出数量限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CLUE.toString(), ExportConstants.ExportStatus.PREPARED.toString());
 
@@ -103,6 +104,7 @@ public class ClueExportService extends BaseExportService {
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE.toString(), request.getFileName());
         Thread.startVirtualThread(() -> {
             try {
+                LocaleContextHolder.setLocale(locale);
                 ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
                 //表头信息
                 List<List<String>> headList = request.getHeadList().stream()

@@ -26,6 +26,7 @@ import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.service.ExportTaskService;
 import io.cordys.registry.ExportThreadRegistry;
 import jakarta.annotation.Resource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +47,7 @@ public class CustomerExportService extends BaseExportService {
     private ExtCustomerMapper extCustomerMapper;
 
 
-    public String export(String userId, CustomerExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public String export(String userId, CustomerExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) {
         //用户导出数量 限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER.toString(), ExportConstants.ExportStatus.PREPARED.toString());
 
@@ -54,6 +55,7 @@ public class CustomerExportService extends BaseExportService {
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
         Thread.startVirtualThread(() -> {
             try {
+                LocaleContextHolder.setLocale(locale);
                 ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
                 //表头信息
                 List<List<String>> headList = request.getHeadList().stream()
@@ -139,7 +141,7 @@ public class CustomerExportService extends BaseExportService {
      * @param orgId   组织ID
      * @return 导出任务ID
      */
-    public String exportSelect(String userId, ExportSelectRequest request, String orgId) {
+    public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {
         // 用户导出数量限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER.toString(), ExportConstants.ExportStatus.PREPARED.toString());
 
@@ -147,6 +149,7 @@ public class CustomerExportService extends BaseExportService {
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
         Thread.startVirtualThread(() -> {
             try {
+                LocaleContextHolder.setLocale(locale);
                 ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
                 //表头信息
                 List<List<String>> headList = request.getHeadList().stream()

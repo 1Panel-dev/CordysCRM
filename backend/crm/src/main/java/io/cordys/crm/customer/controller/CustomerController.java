@@ -28,6 +28,7 @@ import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -150,14 +151,14 @@ public class CustomerController {
     public String opportunityExportAll(@Validated @RequestBody CustomerExportRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        return customerExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission);
+        return customerExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
     }
 
     @PostMapping("/export-select")
     @Operation(summary = "导出选中客户")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT)
     public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
-        return customerExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId());
+        return customerExportService.exportSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
     }
 
 }

@@ -7,11 +7,9 @@ import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.context.i18n.LocaleContextHolder;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class OpportunityFieldUtils {

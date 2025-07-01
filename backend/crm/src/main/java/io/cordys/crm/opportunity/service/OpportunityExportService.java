@@ -27,6 +27,7 @@ import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.service.ExportTaskService;
 import io.cordys.registry.ExportThreadRegistry;
 import jakarta.annotation.Resource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +48,7 @@ public class OpportunityExportService extends BaseExportService {
     private ExtOpportunityMapper extOpportunityMapper;
 
 
-    public String export(String userId, OpportunityExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission) {
+    public String export(String userId, OpportunityExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) {
         // 参数校验
         Objects.requireNonNull(userId, "userId 不能为空");
         // 用户导出数量限制
@@ -58,6 +59,7 @@ public class OpportunityExportService extends BaseExportService {
 
         Thread.startVirtualThread(() -> {
             try {
+                LocaleContextHolder.setLocale(locale);
                 ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
 
                 // 表头信息
@@ -148,7 +150,7 @@ public class OpportunityExportService extends BaseExportService {
      * @param orgId
      * @return
      */
-    public String exportSelect(String userId, ExportSelectRequest request, String orgId) {
+    public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {
         // 参数校验
         Objects.requireNonNull(userId, "userId 不能为空");
         // 用户导出数量限制
@@ -158,6 +160,7 @@ public class OpportunityExportService extends BaseExportService {
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.OPPORTUNITY.toString(), request.getFileName());
         Thread.startVirtualThread(() -> {
             try {
+                LocaleContextHolder.setLocale(locale);
                 ExportThreadRegistry.register(exportTask.getId(), Thread.currentThread());
                 //表头信息
                 List<List<String>> headList = request.getHeadList().stream()
