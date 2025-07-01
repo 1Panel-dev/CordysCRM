@@ -72,6 +72,7 @@
   import { deleteOpt, getOpportunityList } from '@/api/modules';
   import useFormCreateTransform from '@/hooks/useFormCreateTransform';
   import useHiddenTab from '@/hooks/useHiddenTab';
+  import { hasAllPermission } from '@/utils/permission';
 
   import { CommonRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
@@ -121,6 +122,10 @@
     });
   }
 
+  const hasBackStagePermission = computed(() =>
+    hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])
+  );
+
   const actions = computed(() => {
     return (row: OpportunityItem) => {
       const transferAction = [
@@ -134,15 +139,7 @@
         },
       ];
 
-      if (row.stage === StageResultEnum.FAIL) {
-        return transferAction;
-      }
-
-      if (row.stage === StageResultEnum.SUCCESS) {
-        return [];
-      }
-
-      return [
+      const editAction = [
         {
           label: t('common.edit'),
           icon: 'iconicon_handwritten_signature',
@@ -158,6 +155,18 @@
             });
           },
         },
+      ];
+
+      if (row.stage === StageResultEnum.FAIL) {
+        return transferAction;
+      }
+
+      if (row.stage === StageResultEnum.SUCCESS) {
+        return hasBackStagePermission.value ? editAction : [];
+      }
+
+      return [
+        ...editAction,
         {
           label: t('common.writeRecord'),
           icon: 'iconicon_handwritten_signature',
