@@ -20,13 +20,14 @@ public class OpportunityFieldUtils {
         systemFiledMap.put("name", data.getName());
         systemFiledMap.put("customerId", data.getCustomerName());
         systemFiledMap.put("amount", data.getAmount());
+        systemFiledMap.put("expectedEndTime", TimeUtils.getDataStr(data.getExpectedEndTime()));
         systemFiledMap.put("possible", data.getPossible());
         systemFiledMap.put("products", JSON.toJSONString(getProducts(optionMap, data.getProducts())));
         systemFiledMap.put("contactId", data.getContactName());
         systemFiledMap.put("owner", data.getOwnerName());
 
         systemFiledMap.put("stage", Translator.get(data.getStage()));
-        systemFiledMap.put("follower", data.getFollowerName());
+        systemFiledMap.put("followerName", data.getFollowerName());
         systemFiledMap.put("followTime", TimeUtils.getDataTimeStr(data.getFollowTime()));
         systemFiledMap.put("reservedDays", data.getReservedDays());
         systemFiledMap.put("status", Translator.get("log.opportunity.status." + data.getStatus().toString()));
