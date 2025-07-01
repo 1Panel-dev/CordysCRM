@@ -43,7 +43,7 @@ public abstract class BaseModuleLogService {
      * @param formKey
      */
     protected void handleModuleLogField(List<JsonDifferenceDTO> differenceDTOS, String orgId, String formKey) {
-        ModuleFormConfigDTO customerFormConfig = CommonBeanFactory.getBean(ModuleFormCacheService.class)
+        ModuleFormConfigDTO customerFormConfig = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormCacheService.class))
                 .getBusinessFormConfig(formKey, orgId);
 
         // 模块字段 map
@@ -71,7 +71,7 @@ public abstract class BaseModuleLogService {
             }
         });
 
-        Map<String, List<OptionDTO>> optionMap = CommonBeanFactory.getBean(ModuleFormService.class)
+        Map<String, List<OptionDTO>> optionMap = Objects.requireNonNull(CommonBeanFactory.getBean(ModuleFormService.class))
                 .getOptionMap(customerFormConfig, optionFieldValues);
 
         differenceDTOS.forEach(differ -> {
@@ -205,6 +205,7 @@ public abstract class BaseModuleLogService {
 
     protected void setUserFieldName(JsonDifferenceDTO differ) {
         BaseService baseService = CommonBeanFactory.getBean(BaseService.class);
+        assert baseService != null;
         if (differ.getOldValue() != null) {
             String userName = baseService.getUserName(differ.getOldValue().toString());
             differ.setOldValueName(userName);
@@ -223,6 +224,7 @@ public abstract class BaseModuleLogService {
      */
     protected void setCustomerName(JsonDifferenceDTO differ) {
         CustomerService customerService = CommonBeanFactory.getBean(CustomerService.class);
+        assert customerService != null;
         if (differ.getOldValue() != null) {
             String customerName = customerService.getCustomerName(differ.getOldValue().toString());
             differ.setOldValueName(customerName);
@@ -240,6 +242,7 @@ public abstract class BaseModuleLogService {
      */
     protected void setOpportunityName(JsonDifferenceDTO differ) {
         OpportunityService opportunityService = CommonBeanFactory.getBean(OpportunityService.class);
+        assert opportunityService != null;
         if (differ.getOldValue() != null) {
             String customerName = opportunityService.getOpportunityName(differ.getOldValue().toString());
             differ.setOldValueName(customerName);
@@ -258,6 +261,7 @@ public abstract class BaseModuleLogService {
      */
     protected void setContactFieldName(JsonDifferenceDTO differ) {
         CustomerContactService customerContactService = CommonBeanFactory.getBean(CustomerContactService.class);
+        assert customerContactService != null;
         if (differ.getOldValue() != null) {
             String customerName = customerContactService.getContactName(differ.getOldValue().toString());
             differ.setOldValueName(customerName);

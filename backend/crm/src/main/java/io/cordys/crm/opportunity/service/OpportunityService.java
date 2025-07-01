@@ -95,7 +95,7 @@ public class OpportunityService {
         List<OpportunityListResponse> list = extOpportunityMapper.list(request, orgId, userId, deptDataPermission);
         List<OpportunityListResponse> buildList = buildListData(list, orgId);
 
-        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId,list,buildList);
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
 
 
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
@@ -381,12 +381,11 @@ public class OpportunityService {
         logService.batchAdd(logs);
 
         // 消息通知
-        opportunityList.stream()
-                .forEach(opportunity ->
-                        commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
-                                NotificationConstants.Event.BUSINESS_DELETED, opportunity.getName(), userId,
-                                orgId, List.of(opportunity.getOwner()), true)
-                );
+        opportunityList.forEach(opportunity ->
+                commonNoticeSendService.sendNotice(NotificationConstants.Module.OPPORTUNITY,
+                        NotificationConstants.Event.BUSINESS_DELETED, opportunity.getName(), userId,
+                        orgId, List.of(opportunity.getOwner()), true)
+        );
     }
 
 
@@ -481,8 +480,7 @@ public class OpportunityService {
         if (opportunity == null) {
             throw new GenericException("opportunity_not_found");
         }
-        CustomerContactListAllResponse response = customerContactService.getOpportunityContactList(opportunity.getContactId(), orgId);
-        return response;
+        return customerContactService.getOpportunityContactList(opportunity.getContactId(), orgId);
     }
 
     public String getOpportunityName(String id) {
