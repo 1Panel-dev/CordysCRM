@@ -91,7 +91,7 @@
   import { deleteOpt, transferOpt, updateOptStage } from '@/api/modules';
   import { defaultTransferForm, opportunityBaseSteps } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
-  import { hasAnyPermission } from '@/utils/permission';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
 
@@ -145,15 +145,7 @@
       },
     ];
 
-    if (currentStatus.value === StageResultEnum.FAIL) {
-      return transferAction;
-    }
-
-    if (currentStatus.value === StageResultEnum.SUCCESS) {
-      return [];
-    }
-
-    return [
+    const editAction: ActionsItem[] = [
       {
         label: t('common.edit'),
         key: 'edit',
@@ -162,6 +154,18 @@
         class: 'n-btn-outline-primary',
         permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
+    ];
+
+    if (currentStatus.value === StageResultEnum.FAIL) {
+      return transferAction;
+    }
+
+    if (currentStatus.value === StageResultEnum.SUCCESS) {
+      return hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']) ? editAction : [];
+    }
+
+    return [
+      ...editAction,
       ...transferAction,
       {
         label: t('common.delete'),

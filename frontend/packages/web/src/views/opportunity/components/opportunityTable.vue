@@ -116,7 +116,7 @@
   import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
-  import { hasAnyPermission } from '@/utils/permission';
+  import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     activeTab?: OpportunitySearchTypeEnum;
@@ -337,6 +337,10 @@
     }
   }
 
+  const hasBackStagePermission = computed(() =>
+    hasAllPermission(['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN'])
+  );
+
   function getOperationGroupList(row: OpportunityItem): ActionsItem[] {
     const transferAction: ActionsItem[] = [
       {
@@ -352,21 +356,24 @@
         permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
       },
     ];
+    const editAction: ActionsItem[] = [
+      {
+        label: t('common.edit'),
+        key: 'edit',
+        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
+      },
+    ];
 
     if (row.stage === StageResultEnum.FAIL) {
       return transferAction;
     }
 
     if (row.stage === StageResultEnum.SUCCESS) {
-      return [];
+      return hasBackStagePermission.value ? editAction : [];
     }
 
     return [
-      {
-        label: t('common.edit'),
-        key: 'edit',
-        permission: ['OPPORTUNITY_MANAGEMENT:UPDATE'],
-      },
+      ...editAction,
       {
         label: t('opportunity.followUp'),
         key: 'followUp',
@@ -392,7 +399,7 @@
       width: 200,
       fixed: 'right',
       render: (row: OpportunityItem) =>
-        row.stage === StageResultEnum.SUCCESS
+        row.stage === StageResultEnum.SUCCESS && !hasBackStagePermission.value
           ? '-'
           : h(
               CrmOperationButton,
@@ -476,9 +483,9 @@
 
   const exportColumns = computed<ExportTableColumnItem[]>(() => {
     return propsRes.value.columns
-        .filter(
-            (item: any) => item.key !== 'operation' && item.type !== 'selection' && item.filedType !== FieldTypeEnum.PICTURE
-        )
+      .filter(
+        (item: any) => item.key !== 'operation' && item.type !== 'selection' && item.filedType !== FieldTypeEnum.PICTURE
+      )
       .map((e) => {
         return {
           key: e.key?.toString() || '',
