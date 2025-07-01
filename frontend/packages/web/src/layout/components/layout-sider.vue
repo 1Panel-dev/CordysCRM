@@ -41,6 +41,7 @@
               :content="t('system.personal.addNewExportPopContent')"
               :positive-text="t('common.gotIt')"
               negative-text=""
+              trigger="manual"
               placement="right-end"
               @confirm="confirmHandler"
             >
@@ -98,7 +99,7 @@
   import useUserStore from '@/store/modules/user';
   import { getFirstRouterNameByCurrentRoute, hasAnyPermission } from '@/utils/permission';
 
-  import { AppRouteEnum } from '@/enums/routeEnum';
+  import { AppRouteEnum, ClueRouteEnum, CustomerRouteEnum, OpportunityRouteEnum } from '@/enums/routeEnum';
 
   import { MenuOption } from 'naive-ui/es/menu/src/interface';
 
@@ -187,10 +188,40 @@
     },
   ]);
 
-  function menuChange(key: string, item: MenuOption) {
+  const showPopModal = ref(false);
+  function confirmHandler() {
+    addVisited();
+    showPopModal.value = false;
+  }
+
+  let timer: any = null;
+  function initExportPop() {
+    if (!getIsVisited() && hasExportPermission.value) {
+      showPopModal.value = true;
+
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      timer = setTimeout(() => {
+        confirmHandler();
+        timer = null;
+      }, 5000);
+    }
+  }
+
+  const isRequiredExportRoute = (key: OpportunityRouteEnum | ClueRouteEnum | CustomerRouteEnum) =>
+    [AppRouteEnum.CLUE_MANAGEMENT, AppRouteEnum.OPPORTUNITY, AppRouteEnum.CUSTOMER].includes(
+      key as OpportunityRouteEnum | ClueRouteEnum | CustomerRouteEnum
+    );
+
+  async function menuChange(key: string, item: MenuOption) {
     const routeItem = item as unknown as AppRouteRecordRaw;
     const name = routeItem.meta?.hideChildrenInMenu ? getFirstRouterNameByCurrentRoute(routeItem.name as string) : key;
-    router.push({ name });
+    await router.push({ name });
+    if (isRequiredExportRoute(key as OpportunityRouteEnum | ClueRouteEnum | CustomerRouteEnum)) {
+      initExportPop();
+    }
   }
 
   const personalMenuShow = ref(false);
@@ -199,12 +230,6 @@
   }
 
   const showPersonalExport = ref(false);
-  const showPopModal = ref(false);
-
-  function confirmHandler() {
-    addVisited();
-    showPopModal.value = false;
-  }
 
   async function personalMenuChange(key: string) {
     personalMenuValue.value = key;
@@ -258,25 +283,16 @@
     }
   }
 
-  function initExportPop() {
-    if (!getIsVisited() && hasExportPermission.value) {
-      showPopModal.value = true;
-
-      let timer = null;
-      if (timer) {
-        clearTimeout(timer);
-        timer = null;
-      }
-      timer = setTimeout(() => {
-        confirmHandler();
-        timer = null;
-      }, 5000);
-    }
-  }
-
   onBeforeMount(() => {
     setMenuValue(router.currentRoute.value);
-    initExportPop();
+
+    const routeName = router.currentRoute.value.matched[0]?.name as
+      | OpportunityRouteEnum
+      | ClueRouteEnum
+      | CustomerRouteEnum;
+    if (isRequiredExportRoute(routeName)) {
+      initExportPop();
+    }
   });
 
   /**
