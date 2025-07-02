@@ -13,7 +13,7 @@ import java.util.List;
 
 public class LocationResolver extends AbstractModuleFieldResolver<LocationField> {
 
-
+    private static final String SPILT_STR = "-";
     private static SoftReference<List<RegionCode>> regionCodeRef;
 
     public static List<RegionCode> getRegionCodes() {
@@ -53,14 +53,14 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
             return StringUtils.EMPTY;
         }
 
-        //编码
-        String code = value.substring(0, 6);
-        //描述
-        String detail = value.substring(6);
-
-        if (StringUtils.equalsIgnoreCase(detail, "-")) {
-            detail = "";
+        if (!value.contains(SPILT_STR)) {
+            return StringUtils.EMPTY;
         }
+
+        //编码
+        String code = value.substring(0, value.indexOf(SPILT_STR));
+        //描述
+        String detail = value.substring(value.indexOf(SPILT_STR) + 1);
 
         String regionName = StringUtils.EMPTY;
 

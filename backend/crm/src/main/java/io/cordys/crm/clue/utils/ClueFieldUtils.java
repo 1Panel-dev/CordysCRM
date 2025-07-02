@@ -6,6 +6,7 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.TimeUtils;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -19,7 +20,9 @@ public class ClueFieldUtils {
 		LinkedHashMap<String, Object> systemFiledMap = new LinkedHashMap<>();
 		systemFiledMap.put("name", data.getName());
 		systemFiledMap.put("owner", data.getOwnerName());
-		systemFiledMap.put("products", JSON.toJSONString(getProducts(optionMap, data.getProducts())));
+		systemFiledMap.put("contact", data.getContact());
+		systemFiledMap.put("phone", data.getPhone());
+		systemFiledMap.put("products", getProducts(optionMap, data.getProducts()));
 		systemFiledMap.put("collectionTime", TimeUtils.getDataTimeStr(data.getCollectionTime()));
 		systemFiledMap.put("createUser", data.getCreateUserName());
 		systemFiledMap.put("createTime", TimeUtils.getDataTimeStr(data.getCreateTime()));
@@ -42,7 +45,10 @@ public class ClueFieldUtils {
 				}
 			});
 		}
-		return productNames;
+		if (CollectionUtils.isEmpty(productNames)) {
+			return StringUtils.EMPTY;
+		}
+		return StringUtils.join(productNames, ",");
 	}
 
 }
