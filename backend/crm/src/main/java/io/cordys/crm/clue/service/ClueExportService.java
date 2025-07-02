@@ -82,6 +82,7 @@ public class ClueExportService extends BaseExportService {
 
             } catch (InterruptedException e) {
                 LogUtils.error("任务停止中断", e);
+                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
             } catch (Exception e) {
                 //更新任务
                 LogUtils.error("任务失败", e);

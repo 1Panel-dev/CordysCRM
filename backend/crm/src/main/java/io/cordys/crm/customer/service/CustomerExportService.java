@@ -75,6 +75,7 @@ public class CustomerExportService extends BaseExportService {
 
             } catch (InterruptedException e) {
                 LogUtils.error("任务停止中断", e);
+                exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.STOP.toString(), userId);
             } catch (Exception e) {
                 //更新任务
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);

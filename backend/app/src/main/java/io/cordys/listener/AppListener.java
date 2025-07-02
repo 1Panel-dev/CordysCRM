@@ -7,6 +7,7 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.rsa.RsaKey;
 import io.cordys.common.util.rsa.RsaUtils;
+import io.cordys.crm.system.service.ExportTaskStopService;
 import io.cordys.crm.system.service.ExtScheduleService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +29,9 @@ class AppListener implements ApplicationRunner {
 
     @Resource
     private DataInitService dataInitService;
+
+    @Resource
+    private ExportTaskStopService exportTaskStopService;
 
     /**
      * 应用启动后执行的初始化方法。
@@ -55,6 +59,9 @@ class AppListener implements ApplicationRunner {
 
         LogUtils.info("初始化默认组织数据");
         dataInitService.initOneTime();
+
+        LogUtils.info("停止导出任务");
+        exportTaskStopService.stopPreparedAll();
 
         LogUtils.info("===== 完成初始化配置 =====");
     }

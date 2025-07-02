@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.cordys.crm.system.mapper.ExtExportTaskMapper">
+    <update id="updateExportTaskStatus">
+        update export_task
+        set status = #{newStatus}
+        where status = #{oldStatus}
+    </update>
 
     <select id="getExportTaskCount" resultType="java.lang.Integer">
         SELECT
