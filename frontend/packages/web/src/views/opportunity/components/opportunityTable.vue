@@ -502,6 +502,7 @@
     return {
       ...tableQueryParams.value,
       ids: checkedRowKeys.value,
+      customerId: props.sourceId,
     };
   });
 
