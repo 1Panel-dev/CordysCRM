@@ -823,11 +823,13 @@ public class OrganizationUserService {
     /**
      * 获取系统用户options
      *
-     * @param orgId
-     * @return
+     * @param orgId 组织ID
+     * @return 用户选项列表
      */
     public List<OptionDTO> getUserOptions(String orgId) {
-        return extUserMapper.selectUserOptionByOrgId(orgId);
+        List<String> allDpIds = getSortDepartmentIds(orgId);
+        String defaultOrder = CollectionUtils.isEmpty(allDpIds) ? StringUtils.EMPTY : buildOrderByFieldClause(allDpIds);
+        return extUserMapper.selectUserOptionByOrgId(orgId, defaultOrder);
     }
 
 
@@ -970,5 +972,28 @@ public class OrganizationUserService {
         });
         userNodes.addAll(treeNodes);
         return BaseTreeNode.buildTree(userNodes);
+    }
+
+    private List<String> getSortDepartmentIds(String orgId) {
+        List<String> sortDpIds = new ArrayList<>();
+        List<BaseTreeNode> dTree = departmentService.getTree(orgId);
+        if (CollectionUtils.isEmpty(dTree)) {
+            return new ArrayList<>();
+        }
+        Deque<BaseTreeNode> stack = new ArrayDeque<>();
+        stack.push(dTree.getFirst());
+
+        while (!stack.isEmpty()) {
+            BaseTreeNode currentNode = stack.pop();
+            sortDpIds.add(currentNode.getId());
+            List<BaseTreeNode> childrenList = currentNode.getChildren();
+            if (CollectionUtils.isNotEmpty(childrenList)) {
+                for (int i = childrenList.size() - 1; i >= 0; i--) {
+                    stack.push(childrenList.get(i));
+                }
+            }
+        }
+
+        return sortDpIds;
     }
 }

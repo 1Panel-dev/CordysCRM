@@ -168,10 +168,17 @@
     </select>
 
     <select id="selectUserOptionByOrgId" resultType="io.cordys.common.dto.OptionDTO">
-        SELECT sys_user.id, sys_user.name
-        FROM sys_user
-        inner join sys_organization_user on sys_user.id = sys_organization_user.user_id
-        WHERE sys_organization_user.organization_id = #{orgId}
+        SELECT su.id, su.name
+        FROM sys_user su
+        INNER JOIN sys_organization_user sou on su.id = sou.user_id
+        LEFT JOIN
+            ( SELECT user_id, 1 AS is_commander FROM sys_department_commander ) uc ON su.id = uc.user_id
+        WHERE sou.organization_id = #{orgId}
+        ORDER BY sou.enable DESC,
+            <if test="defaultOrder != null and defaultOrder != ''">
+                ${defaultOrder},
+            </if>
+            is_commander DESC, sou.create_time DESC, su.name DESC
     </select>
 
     <select id="getUserDeptByUserIds" resultType="io.cordys.common.dto.UserDeptDTO">

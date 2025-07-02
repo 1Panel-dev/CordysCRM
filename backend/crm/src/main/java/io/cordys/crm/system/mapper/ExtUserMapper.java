@@ -42,7 +42,7 @@ public interface ExtUserMapper {
 
     int countByPhone(@Param("phone") String phone, @Param("id") String id);
 
-    List<OptionDTO> selectUserOptionByOrgId(@Param("orgId") String orgId);
+    List<OptionDTO> selectUserOptionByOrgId(@Param("orgId") String orgId, @Param("defaultOrder") String defaultOrder);
 
     void updateUser(@Param("user") User user);
 
