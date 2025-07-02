@@ -69,6 +69,7 @@
     v-model:show="showExportModal"
     :params="exportParams"
     :export-columns="exportColumns"
+    :is-export-all="isExportAll"
     type="clue"
     @create-success="handleExportCreateSuccess"
   />
@@ -233,6 +234,7 @@
 
   // 批量转移
   const showTransferModal = ref<boolean>(false);
+  const isExportAll = ref(false);
 
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
@@ -246,6 +248,7 @@
         handleBatchDelete();
         break;
       case 'exportChecked':
+        isExportAll.value = false;
         showExportModal.value = true;
         break;
       default:
@@ -254,6 +257,7 @@
   }
 
   function handleExportAllClick() {
+    isExportAll.value = true;
     showExportModal.value = true;
   }
 

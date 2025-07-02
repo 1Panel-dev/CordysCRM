@@ -72,6 +72,7 @@
     v-model:show="showExportModal"
     :params="exportParams"
     :export-columns="exportColumns"
+    :is-export-all="isExportAll"
     type="opportunity"
     @create-success="handleExportCreateSuccess"
   />
@@ -195,6 +196,7 @@
   }
 
   const showExportModal = ref<boolean>(false);
+  const isExportAll = ref(false);
 
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
@@ -205,6 +207,7 @@
         handleBatchDelete();
         break;
       case 'exportChecked':
+        isExportAll.value = false;
         showExportModal.value = true;
         break;
       default:
@@ -229,6 +232,7 @@
 
   function handleExportAllClick() {
     showExportModal.value = true;
+    isExportAll.value = true;
   }
 
   function handleExportCreateSuccess() {

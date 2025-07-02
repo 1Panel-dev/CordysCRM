@@ -60,6 +60,7 @@
     params: Record<string, any>;
     type: 'customer' | 'clue' | 'opportunity';
     exportColumns: ExportTableColumnItem[];
+    isExportAll?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'createSuccess'): void;
@@ -115,7 +116,7 @@
       if (!error) {
         try {
           loading.value = true;
-          const exportApi = props.params.ids?.length ? exportSelectedApiMap[props.type] : exportAllApiMap[props.type];
+          const exportApi = props.isExportAll ? exportAllApiMap[props.type] : exportSelectedApiMap[props.type];
           await exportApi({
             ...props.params,
             ids: props.params.ids || [],

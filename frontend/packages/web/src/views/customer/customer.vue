@@ -76,6 +76,7 @@
     v-model:show="showExportModal"
     :params="exportParams"
     :export-columns="exportColumns"
+    :is-export-all="isExportAll"
     type="customer"
     @create-success="handleExportCreateSuccess"
   />
@@ -221,6 +222,7 @@
   const showToCluePoolResultModel = ref(false);
   const successCount = ref<number>(0);
   const failCount = ref<number>(0);
+  const isExportAll = ref(false);
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
       case 'batchTransfer':
@@ -252,6 +254,7 @@
         });
         break;
       case 'exportChecked':
+        isExportAll.value = false;
         showExportModal.value = true;
         break;
       default:
@@ -468,6 +471,7 @@
   });
 
   function handleExportAllClick() {
+    isExportAll.value = true;
     showExportModal.value = true;
   }
 
