@@ -3,6 +3,8 @@ package io.cordys.crm.clue.service;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.dto.JsonDifferenceDTO;
+import io.cordys.common.util.Translator;
+import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.system.service.BaseModuleLogService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,12 @@ public class ClueLogService extends BaseModuleLogService {
 
             if (StringUtils.equals(differ.getColumn(), BusinessModuleField.OPPORTUNITY_PRODUCTS.getBusinessKey())) {
                 setProductName(differ);
+            }
+
+            if (StringUtils.equals(differ.getColumn(), "stage")) {
+                differ.setColumnName(Translator.get("clue.stage"));
+                differ.setNewValueName(ClueStatus.getByKey((String) differ.getNewValue()));
+                differ.setOldValueName(ClueStatus.getByKey((String) differ.getOldValue()));
             }
         }
 
