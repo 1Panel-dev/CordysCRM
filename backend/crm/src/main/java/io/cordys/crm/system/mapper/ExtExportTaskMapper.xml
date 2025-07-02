@@ -14,7 +14,6 @@
             export_task
         WHERE
             create_user = #{userId}
-          AND resource_type = #{resourceType}
           AND `status` = #{status}
     </select>
 

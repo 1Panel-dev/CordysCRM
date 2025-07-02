@@ -49,7 +49,7 @@ public class CustomerExportService extends BaseExportService {
 
     public String export(String userId, CustomerExportRequest request, String orgId, DeptDataPermissionDTO deptDataPermission, Locale locale) {
         //用户导出数量 限制
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER.toString(), ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());
@@ -144,7 +144,7 @@ public class CustomerExportService extends BaseExportService {
      */
     public String exportSelect(String userId, ExportSelectRequest request, String orgId, Locale locale) {
         // 用户导出数量限制
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.CUSTOMER.toString(), ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CUSTOMER.toString(), request.getFileName());

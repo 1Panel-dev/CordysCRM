@@ -52,7 +52,7 @@ public class OpportunityExportService extends BaseExportService {
         // 参数校验
         Objects.requireNonNull(userId, "userId 不能为空");
         // 用户导出数量限制
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.OPPORTUNITY.toString(), ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.OPPORTUNITY.toString(), request.getFileName());
@@ -154,7 +154,7 @@ public class OpportunityExportService extends BaseExportService {
         // 参数校验
         Objects.requireNonNull(userId, "userId 不能为空");
         // 用户导出数量限制
-        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportType.OPPORTUNITY.toString(), ExportConstants.ExportStatus.PREPARED.toString());
+        exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
         String fileId = IDGenerator.nextStr();
         ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.OPPORTUNITY.toString(), request.getFileName());

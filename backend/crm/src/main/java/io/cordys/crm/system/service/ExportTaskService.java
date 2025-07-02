@@ -45,8 +45,8 @@ public class ExportTaskService {
         exportTaskMapper.updateById(exportTask);
     }
 
-    public void checkUserTaskLimit(String userId, String resourceType, String status) {
-        int userTaskCount = extExportTaskMapper.getExportTaskCount(userId,resourceType,status);
+    public void checkUserTaskLimit(String userId, String status) {
+        int userTaskCount = extExportTaskMapper.getExportTaskCount(userId,status);
         if (userTaskCount >= 10) {
             throw new GenericException(Translator.get("user_export_task_limit"));
         }
