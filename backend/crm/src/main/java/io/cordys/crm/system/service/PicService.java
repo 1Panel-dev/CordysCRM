@@ -149,6 +149,9 @@ public class PicService {
                 // get pic from transferred dir
                 request = new FileRequest(getTransferFileDir(attachment.getOrganizationId(), attachment.getResourceId(), attachment.getId()), StorageType.LOCAL.name(), attachment.getName());
                 picStream = fileCommonService.getFileInputStream(request);
+                if (picStream == null) {
+                    throw new GenericException("The picture does not exist or has been deleted");
+                }
                 responseBuilder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachment.getName() + "\"")
                         .contentLength(attachment.getSize())
                         .contentType(isSvg(attachment.getName()) ? MediaType.parseMediaType("image/svg+xml") : MediaType.parseMediaType("application/octet-stream"));
@@ -156,7 +159,7 @@ public class PicService {
             return responseBuilder
                     .body(new InputStreamResource(picStream));
         } catch (Exception e) {
-            LogUtils.error(e);
+            LogUtils.error(e.getMessage());
             return null;
         }
     }

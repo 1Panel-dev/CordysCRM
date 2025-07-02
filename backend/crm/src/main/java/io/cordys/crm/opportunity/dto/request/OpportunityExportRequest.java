@@ -2,7 +2,6 @@ package io.cordys.crm.opportunity.dto.request;
 
 import io.cordys.common.dto.ExportHeadDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 

@@ -7,6 +7,7 @@ import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.*;
@@ -22,7 +23,7 @@ public class OpportunityFieldUtils {
         systemFiledMap.put("amount", data.getAmount());
         systemFiledMap.put("expectedEndTime", TimeUtils.getDataStr(data.getExpectedEndTime()));
         systemFiledMap.put("possible", data.getPossible());
-        systemFiledMap.put("products", JSON.toJSONString(getProducts(optionMap, data.getProducts())));
+        systemFiledMap.put("products", getProducts(optionMap, data.getProducts()));
         systemFiledMap.put("contactId", data.getContactName());
         systemFiledMap.put("owner", data.getOwnerName());
 
@@ -51,6 +52,9 @@ public class OpportunityFieldUtils {
                 }
             });
         }
-        return productNames;
+        if (CollectionUtils.isEmpty(productNames)) {
+            return StringUtils.EMPTY;
+        }
+        return StringUtils.join(productNames, ",");
     }
 }
