@@ -1,28 +1,94 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.aspectj.annotation.OperationLog;
+import io.cordys.aspectj.constants.LogModule;
+import io.cordys.aspectj.constants.LogType;
+import io.cordys.aspectj.context.OperationLogContext;
+import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.common.exception.GenericException;
+import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.CommonBeanFactory;
+import io.cordys.common.util.Translator;
+import io.cordys.crm.system.domain.License;
 import io.cordys.crm.system.dto.LicenseDTO;
+import io.cordys.crm.system.dto.log.LicenseLogDTO;
+import io.cordys.crm.system.mapper.ExtLicenseMapper;
+import io.cordys.mybatis.BaseMapper;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class LicenseService {
 
+    @Resource
+    private BaseMapper<License>licenseBaseMapper;
+
+    @Resource
+    private ExtLicenseMapper extLicenseMapper;
+
     @Cacheable(value = "license_cache", key = "'CORDYS-LICENSE'", unless = "#result == null")
     public LicenseDTO validate() {
-        // TODO 从数据库查询 code
-        String code = "xx"; // 这里需要替换为实际的许可证代码获取逻辑
+        var code = Optional.ofNullable(extLicenseMapper.get())
+                .map(License::getLicenseCode)
+                .orElse("");
         return validate(code);
     }
 
+    @OperationLog(module = LogModule.SYSTEM, type = LogType.ADD)
     @CachePut(value = "license_cache", key = "'CORDYS-LICENSE'", unless = "#result == null")
-    public LicenseDTO add(String code) {
+    public LicenseDTO add(String code, String userId) {
         LicenseDTO licenseDTO = validate(code);
 
-        // TODO: 实现 License 添加逻辑
+        if (licenseDTO == null || StringUtils.isBlank(licenseDTO.getProduct())) {
+            throw new GenericException(Translator.get("license_valid_license_error"));
+        }
+        License license = extLicenseMapper.get();
+        if (license == null) {
+            license = new License();
+            license.setId(IDGenerator.nextStr());
+            license.setLicenseCode(code);
+            license.setCreateTime(System.currentTimeMillis());
+            license.setUpdateTime(System.currentTimeMillis());
+            license.setCreateUser(userId);
+            license.setUpdateUser(userId);
+            licenseBaseMapper.insert(license);
+            LicenseLogDTO licenseLogDTO = new LicenseLogDTO();
+            BeanUtils.copyBean(licenseLogDTO, license);
+            OperationLogContext.setContext(
+                    LogContextInfo.builder()
+                            .originalValue(null)
+                            .resourceId(license.getId())
+                            .resourceName("license")
+                            .modifiedValue(licenseLogDTO)
+                            .build()
 
+
+            );
+        } else {
+            LicenseLogDTO oldLogDTO = new LicenseLogDTO();
+            BeanUtils.copyBean(oldLogDTO, license);
+            license.setLicenseCode(code);
+            license.setUpdateTime(System.currentTimeMillis());
+            license.setUpdateUser(userId);
+            licenseBaseMapper.update(license);
+            LicenseLogDTO updateDTO = new LicenseLogDTO();
+            BeanUtils.copyBean(updateDTO, license);
+            // 添加日志上下文
+            OperationLogContext.setContext(
+                    LogContextInfo.builder()
+                            .originalValue(oldLogDTO)
+                            .resourceId(license.getId())
+                            .resourceName("license")
+                            .modifiedValue(updateDTO)
+                            .build()
+            );
+        }
         return licenseDTO;
     }
 

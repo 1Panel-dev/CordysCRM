@@ -1,11 +1,15 @@
 package io.cordys.crm.system.controller;
 
 import com.fasterxml.jackson.databind.node.TextNode;
+import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.crm.system.dto.LicenseDTO;
 import io.cordys.crm.system.service.LicenseService;
+import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,8 +28,8 @@ public class LicenseController {
 
     @PostMapping("/add")
     @Operation(summary = "添加License")
+    @RequiresPermissions(PermissionConstants.LICENSE_EDIT)
     public LicenseDTO addLicense(@RequestBody TextNode licenseCode) {
-
-        return new LicenseDTO();
+        return licenseService.add(licenseCode.asText(), SessionUtils.getUserId());
     }
 }

@@ -45,12 +45,29 @@ ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_name ON dashboard(name ASC);
-CREATE INDEX idx_dashboard_module_id ON dashboard(dashboard_module_id ASC);
+CREATE INDEX idx_name ON dashboard (name ASC);
+CREATE INDEX idx_dashboard_module_id ON dashboard (dashboard_module_id ASC);
 
 
-ALTER TABLE opportunity ADD COLUMN actual_end_time BIGINT COMMENT '实际结束时间';
-ALTER TABLE opportunity ADD COLUMN failure_reason VARCHAR(50) COMMENT '失败原因';
+ALTER TABLE opportunity
+    ADD COLUMN actual_end_time BIGINT COMMENT '实际结束时间';
+ALTER TABLE opportunity
+    ADD COLUMN failure_reason VARCHAR(50) COMMENT '失败原因';
+
+
+CREATE TABLE license
+(
+    `id`           VARCHAR(32) NOT NULL COMMENT 'id',
+    `license_code` LONGTEXT    NOT NULL COMMENT 'license_code',
+    `create_time`  BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`  BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`  VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`  VARCHAR(32) NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = 'license'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

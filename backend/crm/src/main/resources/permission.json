@@ -114,6 +114,18 @@
             "id": "OPERATION_LOG:READ"
           }
         ]
+      },
+      {
+        "id": "SYSTEM_LICENSE",
+        "name": "permission.system.license",
+        "permissions": [
+          {
+            "id": "LICENSE:READ"
+          },
+          {
+            "id": "LICENSE:EDIT"
+          }
+        ]
       }
     ]
   },

@@ -122,4 +122,9 @@ public class PermissionConstants {
     public static final String DASHBOARD_EDIT = "DASHBOARD:EDIT";
     public static final String DASHBOARD_DELETE = "DASHBOARD:DELETE";
 
+    /*------ start: LICENSE ------*/
+    public static final String LICENSE_READ = "LICENSE:READ";
+    public static final String LICENSE_EDIT = "LICENSE:EDIT";
+    /*------ end: LICENSE ------*/
+
 }
