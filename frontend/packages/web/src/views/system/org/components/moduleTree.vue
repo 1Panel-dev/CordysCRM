@@ -112,7 +112,7 @@
     const { option } = infoProps;
     if (option.parentId === 'NONE') {
       return h(CrmIcon, {
-        type: 'iconicon_control_platform',
+        type: 'iconicon_enterprise',
         size: 16,
         class: 'mr-[8px]',
       });
