@@ -15,5 +15,6 @@ public class MessageDetailDTO implements Serializable {
     private String organizationId;
     private boolean emailEnable;
     private boolean sysEnable;
+    private boolean weComEnable;
 
 }

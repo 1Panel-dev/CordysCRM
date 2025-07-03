@@ -13,4 +13,7 @@ public class MessageTaskBatchRequest {
     @Schema(description = "系统启用")
     private Boolean sysEnable;
 
+    @Schema(description = "企业微信启用")
+    private Boolean weComEnable;
+
 }

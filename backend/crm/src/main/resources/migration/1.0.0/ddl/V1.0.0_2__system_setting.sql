@@ -53,23 +53,24 @@ CREATE TABLE IF NOT EXISTS worker_node
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci COMMENT = 'DB WorkerID Assigner for UID Generator';
 
-CREATE TABLE sys_operation_log(
-  `id` VARCHAR(32) NOT NULL   COMMENT '主键' ,
-  `organization_id` VARCHAR(32) NOT NULL  DEFAULT 'NONE' COMMENT '组织id' ,
-  `type` VARCHAR(32) NOT NULL   COMMENT '操作类型/add/update/delete' ,
-  `module` VARCHAR(32) NOT NULL   COMMENT '操作模块' ,
-  `resource_id` VARCHAR(32) NOT NULL   COMMENT '资源id' ,
-  `resource_name` VARCHAR(255)    COMMENT '资源名称' ,
-  `detail` VARCHAR(500)    COMMENT '操作详情' ,
-  `create_time` BIGINT NOT NULL   COMMENT '操作时间' ,
-  `create_user` VARCHAR(32) NOT NULL   COMMENT '操作人' ,
-  `path` VARCHAR(255)    COMMENT '操作路径' ,
-  `method` VARCHAR(255) NOT NULL   COMMENT '操作方法' ,
-  PRIMARY KEY (id)
-)  COMMENT = '操作日志'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+CREATE TABLE sys_operation_log
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT '主键',
+    `organization_id` VARCHAR(32)  NOT NULL DEFAULT 'NONE' COMMENT '组织id',
+    `type`            VARCHAR(32)  NOT NULL COMMENT '操作类型/add/update/delete',
+    `module`          VARCHAR(32)  NOT NULL COMMENT '操作模块',
+    `resource_id`     VARCHAR(32)  NOT NULL COMMENT '资源id',
+    `resource_name`   VARCHAR(255) COMMENT '资源名称',
+    `detail`          VARCHAR(500) COMMENT '操作详情',
+    `create_time`     BIGINT       NOT NULL COMMENT '操作时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '操作人',
+    `path`            VARCHAR(255) COMMENT '操作路径',
+    `method`          VARCHAR(255) NOT NULL COMMENT '操作方法',
+    PRIMARY KEY (id)
+) COMMENT = '操作日志'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE sys_login_log
 (
@@ -164,7 +165,7 @@ CREATE TABLE IF NOT EXISTS sys_notification
     `operator`        VARCHAR(32)  NOT NULL COMMENT '操作人',
     `operation`       VARCHAR(50)  NOT NULL COMMENT '操作',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
-    `resource_id`     VARCHAR(32)  COMMENT '资源ID',
+    `resource_id`     VARCHAR(32) COMMENT '资源ID',
     `resource_type`   VARCHAR(64)  NOT NULL COMMENT '资源类型',
     `resource_name`   VARCHAR(255) NOT NULL COMMENT '资源名称',
     `content`         BLOB         NOT NULL COMMENT '通知内容',
@@ -302,15 +303,16 @@ CREATE TABLE sys_role
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE sys_role_permission(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `role_id` VARCHAR(32) NOT NULL   COMMENT '角色id' ,
-    `permission_id` VARCHAR(255) NOT NULL   COMMENT '权限id' ,
+CREATE TABLE sys_role_permission
+(
+    `id`            VARCHAR(32)  NOT NULL COMMENT 'id',
+    `role_id`       VARCHAR(32)  NOT NULL COMMENT '角色id',
+    `permission_id` VARCHAR(255) NOT NULL COMMENT '权限id',
     PRIMARY KEY (id)
-)  COMMENT = '角色权限'
-ENGINE = InnoDB
-DEFAULT CHARSET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+) COMMENT = '角色权限'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_role_id ON sys_role_permission (role_id ASC);
 
@@ -480,17 +482,17 @@ CREATE TABLE sys_module_form_blob
 
 CREATE TABLE sys_module_field
 (
-    `id`           VARCHAR(32) NOT NULL COMMENT 'ID',
-    `form_id`      VARCHAR(32) NOT NULL COMMENT '所属表单ID',
+    `id`           VARCHAR(32)  NOT NULL COMMENT 'ID',
+    `form_id`      VARCHAR(32)  NOT NULL COMMENT '所属表单ID',
     `internal_key` VARCHAR(255) COMMENT '字段内置Key',
-    `name`         VARCHAR(255) NOT NULL   COMMENT '名称' ,
-    `type`         VARCHAR(20) NOT NULL COMMENT '类型',
-    `mobile`       BIT(1)      NOT NULL DEFAULT 0 COMMENT '是否移动端' ,
-    `pos`          BIGINT      NOT NULL COMMENT '排序',
-    `create_user`  VARCHAR(32) NOT NULL COMMENT '创建人',
-    `create_time`  BIGINT      NOT NULL COMMENT '创建时间',
-    `update_user`  VARCHAR(32) NOT NULL COMMENT '更新人',
-    `update_time`  BIGINT      NOT NULL COMMENT '更新时间',
+    `name`         VARCHAR(255) NOT NULL COMMENT '名称',
+    `type`         VARCHAR(20)  NOT NULL COMMENT '类型',
+    `mobile`       BIT(1)       NOT NULL DEFAULT 0 COMMENT '是否移动端',
+    `pos`          BIGINT       NOT NULL COMMENT '排序',
+    `create_user`  VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `create_time`  BIGINT       NOT NULL COMMENT '创建时间',
+    `update_user`  VARCHAR(32)  NOT NULL COMMENT '更新人',
+    `update_time`  BIGINT       NOT NULL COMMENT '更新时间',
     PRIMARY KEY (id)
 ) COMMENT = '模块字段配置'
     ENGINE = InnoDB
@@ -498,12 +500,12 @@ CREATE TABLE sys_module_field
     COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_form_id_internal_key ON sys_module_field (form_id, internal_key);
-CREATE INDEX idx_mobile ON sys_module_field(mobile ASC);
+CREATE INDEX idx_mobile ON sys_module_field (mobile ASC);
 
 CREATE TABLE sys_module_field_blob
 (
     `id`   VARCHAR(32) NOT NULL COMMENT 'id',
-    `prop` TEXT    COMMENT '属性' ,
+    `prop` TEXT COMMENT '属性',
     PRIMARY KEY (id)
 ) COMMENT = '模块字段属性配置'
     ENGINE = InnoDB
@@ -521,24 +523,25 @@ CREATE TABLE sys_parameter
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE product(
-                        `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-                        `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
-                        `price` DECIMAL(10, 2) COMMENT '价格' ,
-                        `status` VARCHAR(32) NOT NULL   COMMENT '状态' ,
-                        `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织机构id' ,
-                        `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-                        `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-                        `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-                        `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
-                        PRIMARY KEY (id)
-)  COMMENT = '产品'
+CREATE TABLE product
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '名称',
+    `price`           DECIMAL(14, 4) COMMENT '价格',
+    `status`          VARCHAR(32)  NOT NULL COMMENT '状态',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织机构id',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '产品'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_organization_id ON product(organization_id ASC);
-CREATE INDEX idx_name ON product(name ASC);
+CREATE INDEX idx_organization_id ON product (organization_id ASC);
+CREATE INDEX idx_name ON product (name ASC);
 
 
 CREATE TABLE product_field
@@ -569,28 +572,29 @@ CREATE TABLE product_field_blob
 
 CREATE INDEX idx_resource_id ON product_field_blob (resource_id);
 
-CREATE TABLE sys_attachment(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'ID' ,
-    `name` VARCHAR(255) NOT NULL   COMMENT '名称' ,
-    `type` VARCHAR(50)    COMMENT '类型' ,
-    `size` BIGINT(255)    COMMENT '大小' ,
-    `storage` VARCHAR(50) NOT NULL   COMMENT '存储方式' ,
-    `resource_id` VARCHAR(32)    COMMENT '资源ID' ,
-    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+CREATE TABLE sys_attachment
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'ID',
+    `name`            VARCHAR(255) NOT NULL COMMENT '名称',
+    `type`            VARCHAR(50) COMMENT '类型',
+    `size`            BIGINT(255) COMMENT '大小',
+    `storage`         VARCHAR(50)  NOT NULL COMMENT '存储方式',
+    `resource_id`     VARCHAR(32) COMMENT '资源ID',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织ID',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '系统附件'
+) COMMENT = '系统附件'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
 
-CREATE INDEX idx_storage ON sys_attachment(storage ASC);
-CREATE INDEX idx_org_id ON sys_attachment(organization_id ASC);
-CREATE INDEX idx_resource_id ON sys_attachment(resource_id ASC);
+CREATE INDEX idx_storage ON sys_attachment (storage ASC);
+CREATE INDEX idx_org_id ON sys_attachment (organization_id ASC);
+CREATE INDEX idx_resource_id ON sys_attachment (resource_id ASC);
 
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;

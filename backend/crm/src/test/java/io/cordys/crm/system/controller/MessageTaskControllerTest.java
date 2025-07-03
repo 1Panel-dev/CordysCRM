@@ -9,6 +9,7 @@ import io.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import io.cordys.crm.system.dto.request.MessageTaskRequest;
 import io.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
+import io.cordys.crm.system.notice.NoticeSendService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -64,6 +65,20 @@ public class MessageTaskControllerTest extends BaseTest {
         resource.put("relatedUsers", "aa");
         resource.put("name", "cc");
         commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin",  DEFAULT_ORGANIZATION_ID, List.of("aa"),true);
+
+        messageTaskRequest.setSysEnable(false);
+        messageTaskRequest.setWeComEnable(true);
+       mvcResult1 = this.requestPostWithOkAndReturn(SAVE_MESSAGE_TASK, messageTaskRequest);
+        updateReturnData1 = mvcResult1.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        resultHolder1 = JSON.parseObject(updateReturnData1, ResultHolder.class);
+        messageTask2 = JSON.parseObject(JSON.toJSONString(resultHolder1.getData()), MessageTask.class);
+        Assertions.assertNotNull(messageTask2);
+       resource = new HashMap<>();
+        resource.put("relatedUsers", "aa");
+        resource.put("name", "cc");
+        commonNoticeSendService.sendNotice(NotificationConstants.Module.CUSTOMER, NotificationConstants.Event.CUSTOMER_MOVED_HIGH_SEAS, resource, "admin",  DEFAULT_ORGANIZATION_ID, List.of("aa"),true);
+
+
 
     }
 

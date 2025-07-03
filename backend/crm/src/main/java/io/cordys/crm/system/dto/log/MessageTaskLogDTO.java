@@ -14,4 +14,7 @@ public class MessageTaskLogDTO {
 
     @Schema(description = "系统发送启用")
     private String sysEnable;
+
+    @Schema(description = "企业微信发送启用")
+    private String weComEnable;
 }

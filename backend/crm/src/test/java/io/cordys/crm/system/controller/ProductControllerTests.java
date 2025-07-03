@@ -242,7 +242,7 @@ class ProductControllerTests extends BaseTest {
         this.requestPostWithOk("batch/update", request);
         MvcResult mvcResult = this.requestGetWithOkAndReturn(DEFAULT_GET, batchIds.getFirst());
         ProductGetResponse getResponse = getResultData(mvcResult, ProductGetResponse.class);
-        Assertions.assertEquals(BigDecimal.valueOf(300,2), getResponse.getPrice());
+        Assertions.assertEquals(BigDecimal.valueOf(30000,4), getResponse.getPrice());
         for (BaseModuleFieldValue moduleField : getResponse.getModuleFields()) {
             if (StringUtils.equalsAnyIgnoreCase(moduleField.getFieldId(), moduleFieldStatusId)) {
                 Assertions.assertEquals("1",moduleField.getFieldValue());

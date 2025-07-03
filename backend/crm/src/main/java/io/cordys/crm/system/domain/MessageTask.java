@@ -20,6 +20,9 @@ public class MessageTask extends BaseModel {
     @Schema(description = "系统启用")
     private Boolean sysEnable;
 
+    @Schema(description = "企业微信启用")
+    private Boolean weComEnable;
+
     @Schema(description = "组织id")
     private String organizationId;
 

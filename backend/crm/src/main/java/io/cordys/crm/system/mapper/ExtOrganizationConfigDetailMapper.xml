@@ -67,5 +67,9 @@
             <property name="defaultSort" value="create_time desc"/>
         </include>
     </select>
+    <select id="getOrgConfigDetailByIdAndType"
+            resultType="io.cordys.crm.system.domain.OrganizationConfigDetail">
+        SELECT * FROM sys_organization_config_detail WHERE config_id = #{configId} and type = #{type} and enable = true
+    </select>
 
 </mapper>

@@ -27,4 +27,7 @@ public class MessageTaskRequest {
     @Schema(description = "系统启用")
     private boolean sysEnable;
 
+    @Schema(description = "企业微信启用")
+    private boolean weComEnable;
+
 }

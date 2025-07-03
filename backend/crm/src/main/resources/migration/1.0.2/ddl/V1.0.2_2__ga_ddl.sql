@@ -1,6 +1,9 @@
 -- set innodb lock wait timeout
 SET SESSION innodb_lock_wait_timeout = 7200;
 
+alter table sys_message_task
+    add we_com_enable bit default b'0' null comment '企业微信启用' after sys_enable;
+
 CREATE TABLE dashboard_module
 (
     `id`              VARCHAR(32)  NOT NULL COMMENT 'id',

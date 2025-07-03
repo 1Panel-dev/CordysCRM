@@ -1,11 +1,15 @@
 package io.cordys.crm.system.notice;
 
+import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
 import io.cordys.crm.system.dto.MessageDetailDTO;
 import io.cordys.crm.system.notice.common.NoticeModel;
 import io.cordys.crm.system.notice.message.MessageDetailDTOService;
+import io.cordys.crm.system.notice.sender.AbstractNoticeSender;
+import io.cordys.crm.system.notice.sender.NoticeSender;
 import io.cordys.crm.system.notice.sender.insite.InSiteNoticeSender;
 import io.cordys.crm.system.notice.sender.mail.MailNoticeSender;
+import io.cordys.crm.system.notice.sender.wecom.WeComNoticeSender;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +53,7 @@ public class NoticeSendService {
         LocaleContextHolder.setLocale(locale);
     }
 
-    private void sendNotification(MessageDetailDTO messageDetail, NoticeModel noticeModel) {
+    public void sendNotification(MessageDetailDTO messageDetail, NoticeModel noticeModel) {
         MessageDetailDTO clonedMessageDetail = SerializationUtils.clone(messageDetail);
         NoticeModel clonedNoticeModel = SerializationUtils.clone(noticeModel);
         try {
@@ -58,6 +62,16 @@ public class NoticeSendService {
             }
             if (clonedMessageDetail.isEmailEnable()) {
                 mailNoticeSender.send(clonedMessageDetail, clonedNoticeModel);
+            }
+            if (clonedMessageDetail.isWeComEnable()){
+                WeComNoticeSender weComNoticeSender = CommonBeanFactory.getBean(WeComNoticeSender.class);
+                if (weComNoticeSender != null) {
+                    weComNoticeSender.sendWeCom(clonedMessageDetail, clonedNoticeModel);
+                } else {
+                    LogUtils.warn("WeComNoticeSender bean not found, skipping WeCom notification.");
+
+                }
+
             }
         } catch (Exception e) {
             LogUtils.error("Error sending individual notification", e);

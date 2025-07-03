@@ -10,6 +10,8 @@ public interface ExtOrganizationConfigDetailMapper {
 
     OrganizationConfigDetail getOrganizationConfigDetail(@Param("configId") String configId);
 
+    OrganizationConfigDetail getOrgConfigDetailByIdAndType(@Param("configId") String configId, @Param("type") String type);
+
     List<OrganizationConfigDetail> getOrganizationConfigDetails(@Param("configId") String configId, @Param("name") String name);
 
     List<OrganizationConfigDetail> getOrganizationConfigDetailList(@Param("request") AuthSourceRequest request);

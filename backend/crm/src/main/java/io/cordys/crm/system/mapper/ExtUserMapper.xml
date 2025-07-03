@@ -202,6 +202,17 @@
         </foreach>
     </select>
 
+    <select id="getOrgUserResourceIds" resultType="java.lang.String">
+        SELECT distinct sou.resource_user_id
+        FROM sys_organization_user sou
+        WHERE  sou.organization_id = #{orgId}
+        AND sou.user_id IN
+        <foreach collection="userIds" item="id" index="index"
+                 open="(" close=")" separator=",">
+        #{id}
+        </foreach>
+    </select>
+
     <update id="updateUser" parameterType="io.cordys.crm.system.domain.User">
         update sys_user
         <set>
