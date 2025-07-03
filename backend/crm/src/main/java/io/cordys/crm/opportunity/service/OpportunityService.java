@@ -52,6 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -458,6 +460,18 @@ public class OpportunityService {
         } else {
             newOpportunity.setLastStage(oldOpportunity.getStage());
         }
+
+        if (StringUtils.equalsIgnoreCase(request.getStage(), StageType.SUCCESS.name())) {
+            newOpportunity.setExpectedEndTime(request.getExpectedEndTime());
+            newOpportunity.setActualEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        }
+
+        if (StringUtils.equalsIgnoreCase(request.getStage(), StageType.FAIL.name())) {
+            newOpportunity.setActualEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
+            newOpportunity.setExpectedEndTime(request.getExpectedEndTime());
+            newOpportunity.setFailureReason(request.getFailureReason());
+        }
+
         newOpportunity.setId(request.getId());
         newOpportunity.setStage(request.getStage());
         opportunityMapper.update(newOpportunity);

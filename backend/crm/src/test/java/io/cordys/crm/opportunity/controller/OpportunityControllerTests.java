@@ -19,6 +19,8 @@ import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -159,6 +161,11 @@ public class OpportunityControllerTests extends BaseTest {
         OpportunityStageRequest request = new OpportunityStageRequest();
         request.setId(addOpportunity.getId());
         request.setStage("SUCCESS");
+        request.setExpectedEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        this.requestPostWithOk(UPDATE_STAGE, request);
+        request.setStage("FAIL");
+        request.setExpectedEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        request.setFailureReason("test_fail");
         this.requestPostWithOk(UPDATE_STAGE, request);
     }
 

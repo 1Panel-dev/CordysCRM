@@ -59,4 +59,10 @@ public class Opportunity extends BaseModel {
 	@Schema(description = "结束时间")
 	private Long expectedEndTime;
 
+	@Schema(description = "实际结束时间")
+	private Long actualEndTime;
+
+	@Schema(description = "失败原因")
+	private String failureReason;
+
 }

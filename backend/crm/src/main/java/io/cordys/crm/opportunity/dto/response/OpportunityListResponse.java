@@ -97,6 +97,12 @@ public class OpportunityListResponse {
     @Schema(description = "结束时间")
     private Long expectedEndTime;
 
+    @Schema(description = "结束时间")
+    private Long actualEndTime;
+
+    @Schema(description = "失败原因")
+    private String failureReason;
+
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
 }

@@ -16,4 +16,10 @@ public class OpportunityStageRequest {
     @Schema(description = "商机阶段", requiredMode = Schema.RequiredMode.REQUIRED)
     private String stage;
 
+    @Schema(description = "结束时间")
+    private Long expectedEndTime;
+
+    @Schema(description = "失败原因")
+    private String failureReason;
+
 }

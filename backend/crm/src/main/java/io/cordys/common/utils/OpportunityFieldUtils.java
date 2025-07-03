@@ -22,6 +22,8 @@ public class OpportunityFieldUtils {
         systemFiledMap.put("customerId", data.getCustomerName());
         systemFiledMap.put("amount", data.getAmount());
         systemFiledMap.put("expectedEndTime", TimeUtils.getDataStr(data.getExpectedEndTime()));
+        systemFiledMap.put("actualEndTime", TimeUtils.getDataStr(data.getActualEndTime()));
+        systemFiledMap.put("failureReason", data.getFailureReason());
         systemFiledMap.put("possible", data.getPossible());
         systemFiledMap.put("products", getProducts(optionMap, data.getProducts()));
         systemFiledMap.put("contactId", data.getContactName());

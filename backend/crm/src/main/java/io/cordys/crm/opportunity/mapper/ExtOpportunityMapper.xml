@@ -26,7 +26,9 @@
             o.stage,
             o.status,
             o.contact_id,
-            o.expected_end_time
+            o.expected_end_time,
+            o.actual_end_time,
+            o.failure_reason
         FROM
             opportunity o
                 INNER JOIN customer c ON o.customer_id = c.id
@@ -135,6 +137,15 @@
                     <when test="${sort}.name == 'follower_name'">
                         o.`follower` ${sortType}
                     </when>
+                    <when test="${sort}.name == 'expected_end_time'">
+                        o.`expected_end_time` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'actual_end_time'">
+                        o.`actual_end_time` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'failure_reason'">
+                        o.`failure_reason` ${sortType}
+                    </when>
                     <otherwise>
                         sort_table.field_value ${sortType}
                     </otherwise>
@@ -164,6 +175,9 @@
                 and condition.name != 'updateTime'
                 and condition.name != 'createUser'
                 and condition.name != 'followerName'
+                and condition.name != 'expectedEndTime'
+                and condition.name != 'actualEndTime'
+                and condition.name != 'failureReason'
                 and condition.name != 'departmentId'">
                     <if test="condition.multipleValue">
                         left join opportunity_field_blob ${tablePrefix}_${i}
@@ -181,7 +195,7 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'name', 'owner', 'customer_id', 'stage', 'amount', 'possible', 'products', 'contact_id', 'follow_time', 'status',
-                 'update_user', 'create_time', 'update_time', 'create_user', 'follower_name', 'department_id'}">
+                 'update_user', 'create_time', 'update_time', 'create_user', 'follower_name', 'department_id', expected_end_time, actual_end_time, failure_reason}">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_field sort_table
             on o.id = sort_table.resource_id and sort_table.field_id = #{sortName}
@@ -312,6 +326,24 @@
                     <property name="column" value="o.follow_time"/>
                 </include>
             </when>
+            <when test="condition.name == 'expectedEndTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.expected_end_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'actualEndTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.actual_end_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'failureReason'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.failure_reason"/>
+                </include>
+            </when>
             <otherwise>
                 <include refid="io.cordys.common.mapper.CommonMapper.moduleFieldCondition">
                     <property name="condition" value="condition"/>
@@ -366,7 +398,9 @@
             o.update_time,
             o.create_user,
             o.update_user,
-            o.expected_end_time
+            o.expected_end_time,
+            o.actual_end_time,
+            o.failure_reason
         FROM
             opportunity o
                 INNER JOIN customer c ON o.customer_id = c.id
@@ -445,7 +479,9 @@
     o.stage,
     o.status,
     o.contact_id,
-    o.expected_end_time
+    o.expected_end_time,
+    o.actual_end_time,
+    o.failure_reason
     FROM
     opportunity o
     INNER JOIN customer c ON o.customer_id = c.id
