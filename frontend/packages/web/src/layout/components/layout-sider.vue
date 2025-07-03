@@ -36,7 +36,7 @@
           >
             <CrmPopConfirm
               v-model:show="showPopModal"
-              :title="t('system.personal.addNewExport', { name: characterLimit('我的导出') })"
+              :title="t('system.personal.addNewExport')"
               icon-type="primary"
               :content="t('system.personal.addNewExportPopContent')"
               :positive-text="t('common.gotIt')"
@@ -82,7 +82,7 @@
 
   import { PersonalEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { characterLimit, mapTree } from '@lib/shared/method';
+  import { mapTree } from '@lib/shared/method';
   import { listenerRouteChange } from '@lib/shared/method/route-listener';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
