@@ -114,7 +114,7 @@
       return h(CrmIcon, {
         type: 'iconicon_enterprise',
         size: 16,
-        class: 'mr-[8px]',
+        class: 'mr-[8px] text-[var(--primary-8)]',
       });
     }
     return null;
