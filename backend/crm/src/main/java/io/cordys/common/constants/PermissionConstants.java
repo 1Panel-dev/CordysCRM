@@ -114,4 +114,12 @@ public class PermissionConstants {
     public static final String CLUE_MANAGEMENT_POOL_ASSIGN = "CLUE_MANAGEMENT_POOL:ASSIGN";
     /*------ end: CLUE_MANAGEMENT_POOL ------*/
 
+    /**
+     * dashboard permission
+     */
+    public static final String DASHBOARD_READ = "DASHBOARD:READ";
+    public static final String DASHBOARD_ADD = "DASHBOARD:ADD";
+    public static final String DASHBOARD_EDIT = "DASHBOARD:EDIT";
+    public static final String DASHBOARD_DELETE = "DASHBOARD:DELETE";
+
 }
