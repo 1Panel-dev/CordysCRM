@@ -11,8 +11,8 @@ export default {
   'clue.batchDeleteTitleTip': 'Are you sure you want to delete {number} clues?',
   'clue.batchDeleteContentTip':
     'After deletion, members will not be able to access these clues. Please proceed with caution!',
-  'clue.batchMoveIntoCluePoolTitleTip': 'Are you sure you want to move {number} customers to the clue pool?',
-  'clue.batchMoveIntoCluePoolContentTip': 'After moving, the customers will no longer have an assigned owner.',
+  'clue.batchMoveIntoCluePoolTitleTip': 'Are you sure you want to move {number} clue to the clue pool?',
+  'clue.batchMoveIntoCluePoolContentTip': 'After moving, the clue will no longer have an assigned owner.',
   'clue.convertToCustomer': 'Convert to customer',
   'clue.belongToPublicPool': 'Belongs to public pool',
   'clue.remainingDays': 'Remaining days',
