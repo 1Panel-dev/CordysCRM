@@ -33,6 +33,7 @@ CREATE TABLE dashboard
     `name`                VARCHAR(255) NOT NULL COMMENT '名称',
     `resource_id`         VARCHAR(50)  NOT NULL COMMENT '三方资源id',
     `dashboard_module_id` VARCHAR(32)  NOT NULL COMMENT '模块id',
+    `pos`                 BIGINT       NOT NULL DEFAULT 0 COMMENT '同一节点下顺序',
     `scope_id`            TEXT         NOT NULL COMMENT '范围',
     `description`         VARCHAR(1000) COMMENT '描述',
     `create_time`         BIGINT       NOT NULL COMMENT '创建时间',

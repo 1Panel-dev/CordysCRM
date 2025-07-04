@@ -31,7 +31,7 @@ import java.util.Properties;
  * @version 1.0
  */
 @Configuration
-@MapperScan(basePackages = {"io.cordys.crm.*.mapper", "io.cordys.common.mapper"}, sqlSessionFactoryRef = "sqlSessionFactory")
+@MapperScan(basePackages = {"io.cordys.**.mapper"}, sqlSessionFactoryRef = "sqlSessionFactory")
 @EnableTransactionManagement
 public class MybatisConfig {
 
@@ -167,6 +167,7 @@ public class MybatisConfig {
 
     /**
      * baseMapper 映射 tags 字段
+     *
      * @return
      */
     @Bean
