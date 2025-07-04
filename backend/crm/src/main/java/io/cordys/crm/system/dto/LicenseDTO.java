@@ -45,9 +45,10 @@ public class LicenseDTO implements Serializable {
     /**
      * 状态
      */
+    @Schema(example = "invalid", description = "License 状态包括[ valid, invalid, expired, not_found ]")
     private String status;
 
     public LicenseDTO() {
-        this.status = "invalid";
+        this.status = "not_found";
     }
 }
