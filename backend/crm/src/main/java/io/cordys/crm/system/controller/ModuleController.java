@@ -5,6 +5,7 @@ import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.dto.RoleUserTreeNode;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Module;
+import io.cordys.crm.system.dto.ModuleDTO;
 import io.cordys.crm.system.dto.request.ModuleRequest;
 import io.cordys.crm.system.dto.request.ModuleSortRequest;
 import io.cordys.crm.system.service.ModuleService;
@@ -28,7 +29,7 @@ public class ModuleController {
 
 	@PostMapping("/list")
 	@Operation(summary = "获取模块设置列表")
-	public List<Module> getModuleList(@Validated @RequestBody ModuleRequest request) {
+	public List<ModuleDTO> getModuleList(@Validated @RequestBody ModuleRequest request) {
 		return moduleService.getModuleList(request);
 	}
 

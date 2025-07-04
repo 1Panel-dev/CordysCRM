@@ -5,6 +5,7 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.common.constants.DepartmentConstants;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.dto.BaseTreeNode;
@@ -13,7 +14,11 @@ import io.cordys.common.dto.RoleUserTreeNode;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.constants.OrganizationConfigConstants;
 import io.cordys.crm.system.domain.Module;
+import io.cordys.crm.system.domain.OrganizationConfig;
+import io.cordys.crm.system.domain.OrganizationConfigDetail;
+import io.cordys.crm.system.dto.ModuleDTO;
 import io.cordys.crm.system.dto.request.ModuleRequest;
 import io.cordys.crm.system.dto.request.ModuleSortRequest;
 import io.cordys.crm.system.dto.response.RoleListResponse;
@@ -24,6 +29,8 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +54,10 @@ public class ModuleService {
 	private RoleService roleService;
 	@Resource
 	private DepartmentService departmentService;
+	@Resource
+	private BaseMapper<OrganizationConfig> organizationConfigMapper;
+	@Resource
+	private BaseMapper<OrganizationConfigDetail> organizationConfigDetailMapper;
 
 	private static final String DEFAULT_ORGANIZATION_ID = "100001";
 
@@ -55,11 +66,19 @@ public class ModuleService {
 	 * @param request 请求参数
 	 * @return 模块配置列表
 	 */
-	public List<Module> getModuleList(ModuleRequest request) {
+	public List<ModuleDTO> getModuleList(ModuleRequest request) {
 		LambdaQueryWrapper<Module> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(Module::getOrganizationId, request.getOrganizationId());
 		List<Module> modules = moduleMapper.selectListByLambda(queryWrapper);
-		return modules.stream().sorted(Comparator.comparing(Module::getPos)).toList();
+		return modules.stream()
+				.map(module -> {
+					ModuleDTO dto = new ModuleDTO();
+					BeanUtils.copyProperties(module, dto);
+					dto.setDisabled(StringUtils.equals(dto.getModuleKey(), "dashboard") && !isDashboardEnable(request.getOrganizationId()));
+					return dto;
+				})
+				.sorted(Comparator.comparing(ModuleDTO::getPos))
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -189,19 +208,6 @@ public class ModuleService {
 	}
 
 	/**
-	 * 获取模块
-	 * @param moduleConstants 模块常量
-	 * @param organizationId 组织ID
-	 * @return 模块
-	 */
-	public Module getModuleByKey(ModuleKey moduleConstants, String organizationId) {
-		Module module = new Module();
-		module.setModuleKey(moduleConstants.getKey());
-		module.setOrganizationId(organizationId);
-		return moduleMapper.select(module).getFirst();
-	}
-
-	/**
 	 * 获取排序之后的模块菜单
 	 * @param organizationId 组织ID
 	 * @return 模块列表
@@ -209,7 +215,25 @@ public class ModuleService {
 	private List<String> getModuleSortKeys(String organizationId) {
 		ModuleRequest request = new ModuleRequest();
 		request.setOrganizationId(organizationId);
-		List<Module> moduleList = getModuleList(request);
+		List<ModuleDTO> moduleList = getModuleList(request);
 		return moduleList.stream().map(Module::getModuleKey).toList();
+	}
+
+	/**
+	 * 检查仪表盘开关
+	 * @param organizationId 组织ID
+	 * @return bool
+	 */
+	private boolean isDashboardEnable(String organizationId) {
+		LambdaQueryWrapper<OrganizationConfig> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(OrganizationConfig::getOrganizationId, organizationId).eq(OrganizationConfig::getType, OrganizationConfigConstants.ConfigType.THIRD.name());
+		OrganizationConfig config = organizationConfigMapper.selectListByLambda(queryWrapper).getFirst();
+		if (config == null) {
+			return false;
+		}
+		LambdaQueryWrapper<OrganizationConfigDetail> detailQueryWrapper = new LambdaQueryWrapper<>();
+		detailQueryWrapper.eq(OrganizationConfigDetail::getConfigId, config.getId()).like(OrganizationConfigDetail::getType, DepartmentConstants.DE.name());
+		OrganizationConfigDetail configDetail = organizationConfigDetailMapper.selectListByLambda(detailQueryWrapper).getFirst();
+		return configDetail != null && configDetail.getEnable();
 	}
 }
