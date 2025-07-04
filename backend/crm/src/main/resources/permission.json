@@ -120,10 +120,12 @@
         "name": "permission.system.license",
         "permissions": [
           {
-            "id": "LICENSE:READ"
+            "id": "LICENSE:READ",
+            "license": true
           },
           {
-            "id": "LICENSE:EDIT"
+            "id": "LICENSE:EDIT",
+            "license": true
           }
         ]
       }
