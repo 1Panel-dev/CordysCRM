@@ -237,6 +237,12 @@
                     <property name="column" value="c.update_time"/>
                 </include>
             </when>
+            <when test="condition.name == 'products'">
+                <include refid="io.cordys.common.mapper.CommonMapper.arrayValueCondition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.products"/>
+                </include>
+            </when>
             <otherwise>
                 <include refid="io.cordys.common.mapper.CommonMapper.moduleFieldCondition">
                     <property name="condition" value="condition"/>
