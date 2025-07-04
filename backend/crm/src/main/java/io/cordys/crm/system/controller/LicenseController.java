@@ -2,7 +2,6 @@ package io.cordys.crm.system.controller;
 
 import com.fasterxml.jackson.databind.node.TextNode;
 import io.cordys.common.constants.PermissionConstants;
-import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.crm.system.dto.LicenseDTO;
 import io.cordys.crm.system.service.LicenseService;
 import io.cordys.security.SessionUtils;

@@ -55,7 +55,7 @@ ALTER TABLE opportunity
     ADD COLUMN failure_reason VARCHAR(50) COMMENT '失败原因';
 
 
-CREATE TABLE license
+CREATE TABLE sys_license
 (
     `id`           VARCHAR(32) NOT NULL COMMENT 'id',
     `license_code` LONGTEXT    NOT NULL COMMENT 'license_code',

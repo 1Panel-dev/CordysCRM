@@ -6,7 +6,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
-@Table(name = "license")
+@Table(name = "sys_license")
 public class License extends BaseModel {
 
     @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)

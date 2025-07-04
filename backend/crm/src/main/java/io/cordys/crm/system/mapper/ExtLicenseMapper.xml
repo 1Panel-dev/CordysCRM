@@ -3,12 +3,10 @@
 <mapper namespace="io.cordys.crm.system.mapper.ExtLicenseMapper">
 
     <select id="get" resultType="io.cordys.crm.system.domain.License">
-        SELECT * FROM license
+        SELECT * FROM sys_license
     </select>
     <select id="selectLicenseCode" resultType="io.cordys.crm.system.domain.License">
-        SELECT *
-        FROM license where license_code = #{code}
+        SELECT * FROM sys_license where license_code = #{code}
     </select>
-
 
 </mapper>
