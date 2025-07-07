@@ -195,7 +195,7 @@
     <sql id="fieldSortJoin">
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
                 {'name', 'owner', 'customer_id', 'stage', 'amount', 'possible', 'products', 'contact_id', 'follow_time', 'status',
-                 'update_user', 'create_time', 'update_time', 'create_user', 'follower_name', 'department_id', expected_end_time, actual_end_time, failure_reason}">
+                 'update_user', 'create_time', 'update_time', 'create_user', 'follower_name', 'department_id', 'expected_end_time', 'actual_end_time', 'failure_reason'}">
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_field sort_table
             on o.id = sort_table.resource_id and sort_table.field_id = #{sortName}
