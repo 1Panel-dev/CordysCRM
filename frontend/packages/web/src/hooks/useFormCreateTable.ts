@@ -604,7 +604,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       showSetting: true,
       showPagination,
       columns,
-      scrollX: columns.reduce((prev, curr) => prev + (curr.width as number), 0),
       permission: props.permission,
     },
     (item, originalData) => {

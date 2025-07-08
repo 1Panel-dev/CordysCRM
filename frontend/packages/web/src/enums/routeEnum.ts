@@ -37,9 +37,20 @@ export enum PersonalRouteEnum {
   PERSONAL_EXPORT = 'personalExport',
   LOGOUT = 'logout',
 }
+
 export enum WorkbenchRouteEnum {
   WORKBENCH = 'workbench',
   WORKBENCH_INDEX = 'workbenchIndex',
+}
+
+export enum DashboardRouteEnum {
+  DASHBOARD = 'dashboard',
+  DASHBOARD_INDEX = 'dashboardIndex',
+}
+
+export enum FullPageEnum {
+  FULL_PAGE = 'fullPage',
+  FULL_PAGE_DASHBOARD = 'fullPageDashboard',
 }
 
 export const AppRouteEnum = {

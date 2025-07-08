@@ -7,6 +7,7 @@
     class="crm-dropdown"
     :node-props="getNodeProps"
     :placement="props.placement"
+    size="small"
     @select="handleSelect"
     @update-show="handleUpdateShow"
     @clickoutside="clickOutSide"
@@ -16,13 +17,11 @@
         type="primary"
         :size="props.size"
         ghost
-        :class="`crm-more-action--size-${props.size}`"
+        :class="`crm-more-action--size-${props.size} h-[20px] px-[3px]`"
         @click.stop="(e) => emit('click', e)"
       >
         <template #icon>
-          <n-icon>
-            <CrmIcon type="iconicon_ellipsis" :size="16" class="mt-[1px] text-[var(--primary-8)]" />
-          </n-icon>
+          <CrmIcon type="iconicon_ellipsis" :size="16" class="mt-[1px] text-[var(--primary-8)]" />
         </template>
       </n-button>
     </slot>
@@ -37,7 +36,6 @@
     MenuNodeProps,
     NButton,
     NDropdown,
-    NIcon,
     NTooltip,
     PopoverTrigger,
   } from 'naive-ui';
@@ -47,13 +45,14 @@
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import type { ActionsItem } from './type';
+  import { Size } from 'naive-ui/es/button/src/interface';
 
   const props = withDefaults(
     defineProps<{
       options: ActionsItem[];
       trigger?: PopoverTrigger;
       nodeProps?: (option: DropdownOption | DropdownGroupOption) => HTMLAttributes;
-      size?: 'small' | 'medium' | 'large';
+      size?: Size;
       placement?:
         | 'top-start'
         | 'top'

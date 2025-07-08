@@ -296,4 +296,5 @@ export default {
   'common.exportChecked': '导出勾选',
   'common.exportTaskCreate': '导出任务创建成功',
   'common.exportTaskTip': '【左下角头像 > 我的导出】查看导出任务进度',
+  'common.dashboard': '仪表板',
 };

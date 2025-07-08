@@ -1,0 +1,13 @@
+export default {
+  'dashboard.myFavorite': '我的收藏',
+  'dashboard.all': '全部仪表板',
+  'dashboard.newChild': '新增子集',
+  'dashboard.expandChild': '展开子集',
+  'dashboard.collapseChild': '收起子集',
+  'dashboard.addDashboard': '添加仪表板',
+  'dashboard.deleteDashboardTip': '删除后，成员无法查看，DataEase 看板不受影响',
+  'dashboard.dashboardName': '仪表板名称',
+  'dashboard.dashboardId': '仪表板 ID',
+  'dashboard.members': '可查看成员',
+  'dashboard.folder': '文件夹',
+};

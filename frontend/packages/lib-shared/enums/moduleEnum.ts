@@ -19,6 +19,9 @@ export enum ModuleConfigEnum {
 
   /** 系统设置 */
   SYSTEM_SETTINGS = 'setting',
+
+  /** 仪表板 */
+  DASHBOARD = 'dashboard',
 }
 
 // 添加员工API

@@ -20,7 +20,25 @@
           </template>
         </CrmButtonGroup>
         <n-divider v-if="item.groupList.length" v-permission="['MODULE_SETTING:UPDATE']" class="!mx-[4px]" vertical />
+        <CrmPopConfirm
+          v-if="item.disabled"
+          :title="t('module.DataEaseTip')"
+          icon-type="primary"
+          :content="t('module.DataEaseTipContent')"
+          :positive-text="t('module.goConfig')"
+          trigger="hover"
+          negative-text=""
+          placement="right-end"
+          @confirm="goDEConfig"
+        >
+          <NSwitch
+            :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE']) || item.disabled"
+            :value="item.enable"
+            @update:value="(value:boolean)=>toggleModule(value,item)"
+          />
+        </CrmPopConfirm>
         <NSwitch
+          v-else
           :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
           :value="item.enable"
           @update:value="(value:boolean)=>toggleModule(value,item)"
@@ -59,6 +77,7 @@
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import CapacitySetDrawer from './capacitySetDrawer.vue';
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
   import clueFormDrawer from './clueManagement/formDrawer.vue';
@@ -73,7 +92,10 @@
 
   import { toggleModuleNavStatus } from '@/api/modules';
   import useModal from '@/hooks/useModal';
+  import router from '@/router';
   import { hasAnyPermission } from '@/utils/permission';
+
+  import { SystemRouteEnum } from '@/enums/routeEnum';
 
   const { openModal } = useModal();
   const Message = useMessage();
@@ -94,6 +116,7 @@
     icon?: string;
     enable: boolean;
     groupList: ActionsItem[];
+    disabled?: boolean; // 是否禁用
   };
 
   const moduleConfigList = ref<ModuleConfigItem[]>([
@@ -185,6 +208,14 @@
       ],
       enable: true,
     },
+    {
+      label: t('common.dashboard'),
+      key: ModuleConfigEnum.DASHBOARD,
+      icon: 'iconicon_dashboard1',
+      groupList: [],
+      enable: true,
+      disabled: true, // TODO:接口返回
+    },
   ]);
 
   const moreOptions = [
@@ -228,6 +259,12 @@
           console.error(error);
         }
       },
+    });
+  }
+
+  function goDEConfig() {
+    router.push({
+      name: SystemRouteEnum.SYSTEM_BUSINESS,
     });
   }
 

@@ -9,6 +9,7 @@
     :negative-text="props.negativeText"
     :positive-text="props.positiveText"
     :placement="props.placement"
+    :trigger="props.trigger"
     @positive-click="handlePositiveClick"
     @negative-click="handleNegativeClick"
   >
@@ -107,6 +108,7 @@
       | 'left'
       | 'left-end';
     permission?: string[]; // 权限
+    trigger?: 'hover' | 'click' | 'focus'; // 触发方式
   };
 
   const props = withDefaults(defineProps<CrmPopConfirmProps>(), {
@@ -116,6 +118,7 @@
     showIcon: true,
     showArrow: true,
     permission: () => [],
+    trigger: 'click',
   });
 
   const emit = defineEmits<{
@@ -124,7 +127,6 @@
   }>();
 
   const show = defineModel<boolean>('show', {
-    required: true,
     default: false,
   });
 

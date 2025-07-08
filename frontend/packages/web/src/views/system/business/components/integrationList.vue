@@ -34,7 +34,7 @@
                   class="outline--secondary mr-[8px]"
                   @click="handleEdit(item)"
                 >
-                  {{ t('common.edit') }}
+                  {{ t('common.config') }}
                 </n-button>
                 <n-tooltip :disabled="item.hasConfig">
                   <template #trigger>
@@ -55,7 +55,21 @@
             <p class="text-[12px] text-[var(--text-n4)]">{{ item.description }}</p>
           </div>
         </div>
-        <div class="flex justify-between">
+        <div v-if="item.type === CompanyTypeEnum.DATA_EASE" class="flex items-center gap-[8px]">
+          <n-tooltip :disabled="item.hasConfig">
+            <template #trigger>
+              <n-switch
+                size="small"
+                :value="item.response.deBoardEnable"
+                :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
+                @update:value="handleChangeEnable(item, 'deBoardEnable')"
+              />
+            </template>
+            {{ t('system.business.notConfiguredTip') }}
+          </n-tooltip>
+          <div class="text-[12px]">{{ t('common.dashboard') }}</div>
+        </div>
+        <div v-else class="flex justify-between">
           <div class="flex items-center gap-[8px]">
             <n-tooltip :disabled="item.hasConfig">
               <template #trigger>
@@ -141,6 +155,12 @@
       description: t('system.business.LARK.description'),
       logo: 'iconlogo_lark',
     },
+    {
+      type: CompanyTypeEnum.DATA_EASE,
+      title: 'DataEase',
+      description: t('system.business.DE.description'),
+      logo: 'iconlogo_lark',
+    },
   ];
 
   const integrationList = ref<IntegrationItem[]>([]);
@@ -152,7 +172,7 @@
       const res = await getConfigSynchronization();
       const configMap = new Map(res.map((item) => [item.type, item]));
       integrationList.value = allIntegrations
-        .filter((item) => [CompanyTypeEnum.WECOM].includes(item.type))
+        .filter((item) => [CompanyTypeEnum.WECOM, CompanyTypeEnum.DATA_EASE].includes(item.type))
         .map((item) => {
           const config = configMap.get(item.type);
           return {
@@ -184,7 +204,7 @@
     showEditIntegrationModal.value = true;
   }
 
-  async function handleChangeEnable(item: IntegrationItem, key: 'syncEnable' | 'qrcodeEnable') {
+  async function handleChangeEnable(item: IntegrationItem, key: 'syncEnable' | 'qrcodeEnable' | 'deBoardEnable') {
     try {
       updateConfigSynchronization({ ...item.response, [key]: !item.response[key] })
         .then(() => {
@@ -195,6 +215,7 @@
           item.response.verify = false;
           item.response.qrcodeEnable = true;
           item.response.syncEnable = true;
+          item.response.deBoardEnable = true;
         });
     } catch (e) {
       // eslint-disable-next-line no-console
@@ -212,6 +233,7 @@
           item.response.verify = false;
           item.response.qrcodeEnable = true;
           item.response.syncEnable = true;
+          item.response.deBoardEnable = true;
         });
     } catch (error) {
       // eslint-disable-next-line no-console

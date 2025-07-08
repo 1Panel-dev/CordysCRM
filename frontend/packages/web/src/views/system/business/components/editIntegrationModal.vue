@@ -1,7 +1,7 @@
 <template>
   <CrmModal
     v-model:show="showModal"
-    :title="t('system.business.syncFrom', { title: props.title })"
+    :title="t('system.business.configType', { type: props.title })"
     class="crm-form-modal"
   >
     <n-form
@@ -10,7 +10,7 @@
       :rules="rules"
       label-placement="left"
       require-mark-placement="left"
-      :label-width="80"
+      :label-width="form.type === CompanyTypeEnum.DATA_EASE ? 120 : 80"
     >
       <!-- 应用 key 第一版没有 -->
       <!-- <n-form-item v-if="['DINGTALK'].includes(form?.type)" path="appKey" :label="t('system.business.appKey')">
@@ -24,28 +24,66 @@
       </n-form-item> -->
 
       <!-- 企业 ID -->
-      <template v-if="['WECOM'].includes(form?.type)">
+      <template v-if="[CompanyTypeEnum.WECOM].includes(form?.type)">
         <n-form-item path="corpId" :label="t('system.business.corpId')">
           <n-input v-model:value="form.corpId" :placeholder="t('common.pleaseInput')" />
         </n-form-item>
       </template>
-
+      <!-- DE 地址 -->
+      <template v-if="[CompanyTypeEnum.DATA_EASE].includes(form?.type)">
+        <n-form-item path="redirectUrl" :label="t('system.business.DE.url')">
+          <n-input v-model:value="form.redirectUrl" :placeholder="t('system.business.DE.urlPlaceholder')" />
+        </n-form-item>
+      </template>
       <!-- 应用 ID -->
-      <template v-if="['WECOM', 'DINGTALK', 'LARK', 'INTERNAL'].includes(form?.type)">
-        <n-form-item path="agentId" :label="t('system.business.agentId')">
-          <n-input v-model:value="form.agentId" :placeholder="t('common.pleaseInput')" />
+      <template
+        v-if="
+          [
+            CompanyTypeEnum.WECOM,
+            CompanyTypeEnum.DINGTALK,
+            CompanyTypeEnum.LARK,
+            CompanyTypeEnum.INTERNAL,
+            CompanyTypeEnum.DATA_EASE,
+          ].includes(form?.type)
+        "
+      >
+        <n-form-item
+          path="agentId"
+          :label="form.type === CompanyTypeEnum.DATA_EASE ? 'APP ID' : t('system.business.agentId')"
+        >
+          <n-input
+            v-model:value="form.agentId"
+            :placeholder="
+              form.type === CompanyTypeEnum.DATA_EASE ? t('system.business.DE.idPlaceholder') : t('common.pleaseInput')
+            "
+          />
         </n-form-item>
       </template>
 
       <!-- 应用密钥 -->
-      <n-form-item path="appSecret" :label="t('system.business.appSecret')">
+      <n-form-item
+        path="appSecret"
+        :label="form.type === CompanyTypeEnum.DATA_EASE ? 'APP Secret' : t('system.business.appSecret')"
+      >
         <n-input
           v-model:value="form.appSecret"
           type="password"
           show-password-on="click"
           :input-props="{ autocomplete: 'new-password' }"
-          :placeholder="t('common.pleaseInput')"
+          :placeholder="
+            form.type === CompanyTypeEnum.DATA_EASE
+              ? t('system.business.DE.secretPlaceholder')
+              : t('common.pleaseInput')
+          "
         />
+      </n-form-item>
+      <!-- DE账号 -->
+      <n-form-item
+        v-if="form.type === CompanyTypeEnum.DATA_EASE"
+        path="deAccount"
+        :label="t('system.business.DE.account')"
+      >
+        <n-input v-model:value="form.deAccount" type="text" :placeholder="t('system.business.DE.accountPlaceholder')" />
       </n-form-item>
     </n-form>
     <template #footer>
@@ -74,6 +112,7 @@
   import { ref } from 'vue';
   import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, useMessage } from 'naive-ui';
 
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ConfigSynchronization } from '@lib/shared/models/system/business';
 
@@ -104,7 +143,10 @@
     appSecret: '',
     syncEnable: true,
     qrcodeEnable: true,
-    type: '',
+    type: CompanyTypeEnum.WECOM,
+    redirectUrl: '',
+    deAccount: '',
+    deBoardEnable: false, // DE看板是否开启
   });
 
   watch(
@@ -120,6 +162,8 @@
     agentId: [{ required: true, message: t('common.notNull', { value: `${t('system.business.agentId')} ` }) }],
     appKey: [{ required: true, message: t('common.notNull', { value: `${t('system.business.appKey')} ` }) }],
     appSecret: [{ required: true, message: t('common.notNull', { value: t('system.business.appSecret') }) }],
+    redirectUrl: [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.url')} ` }) }],
+    deAccount: [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.account')} ` }) }],
   };
 
   const formRef = ref<FormInst | null>(null);

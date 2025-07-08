@@ -72,4 +72,7 @@ export default {
   'module.productFormSetting': 'Product form set',
   'module.followRecordFormSetting': 'Follow record form set',
   'module.followPlanFormSetting': 'Follow plan form set',
+  'module.goConfig': 'Go to configuration',
+  'module.DataEaseTip': 'The system is not configured for DataEase',
+  'module.DataEaseTipContent': 'Configure DataEase before using this feature',
 };

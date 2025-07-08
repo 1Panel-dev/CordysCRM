@@ -41,7 +41,6 @@
               :content="t('system.personal.addNewExportPopContent')"
               :positive-text="t('common.gotIt')"
               negative-text=""
-              trigger="manual"
               placement="right-end"
               @confirm="confirmHandler"
             >

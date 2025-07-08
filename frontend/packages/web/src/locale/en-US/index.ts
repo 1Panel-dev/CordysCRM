@@ -31,6 +31,7 @@ export default {
     'menu.clue': 'Clue',
     'menu.customer': 'Customer',
     'menu.contact': 'Contact',
+    'menu.dashboard': 'Dashboard',
     'menu.settings.businessSetting': 'Enterprise',
     'menu.settings.messageSetting': 'Message setting',
     'menu.settings.log': 'Log',

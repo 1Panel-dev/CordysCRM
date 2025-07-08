@@ -94,7 +94,7 @@
             v-model:value="fieldConfig.precision"
             :disabled="fieldConfig.disabledProps?.includes('precision')"
             :min="0"
-            :max="10"
+            :max="4"
             class="flex-1"
           />
           <div

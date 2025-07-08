@@ -3,6 +3,7 @@ export enum CompanyTypeEnum {
   DINGTALK = 'DINGTALK', // 钉钉
   LARK = 'LARK', // 飞书
   INTERNAL = 'INTERNAL', // 国际飞书
+  DATA_EASE = 'DE', // DE
 }
 
 // 操作符号

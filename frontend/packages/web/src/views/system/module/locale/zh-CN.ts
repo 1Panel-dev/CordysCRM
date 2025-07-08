@@ -70,4 +70,7 @@ export default {
   'module.productFormSetting': '产品表单设置',
   'module.followRecordFormSetting': '跟进记录表单设置',
   'module.followPlanFormSetting': '跟进计划表单设置',
+  'module.goConfig': '去配置',
+  'module.DataEaseTip': '系统暂未配置 DataEase',
+  'module.DataEaseTipContent': '配置 DataEase 后方可使用该功能',
 };

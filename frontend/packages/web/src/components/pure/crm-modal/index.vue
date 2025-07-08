@@ -46,7 +46,7 @@
                 class="n-btn-outline-primary"
                 @click="handleContinue"
               >
-                {{ t(props.continueText || '') }}
+                {{ t(props.continueText || t('common.saveAndContinue')) }}
               </n-button>
               <n-button
                 :loading="props.okLoading"

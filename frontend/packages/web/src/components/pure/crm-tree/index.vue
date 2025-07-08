@@ -312,6 +312,7 @@
       filteredActions.length > 0
         ? h(CrmMoreAction, {
             options: filteredActions,
+            size: 'tiny',
             onSelect: (actionItem: ActionsItem) => selectMoreAction(actionItem, option),
             onUpdateShow: (show: boolean) => {
               focusNodeKeys.value.clear();

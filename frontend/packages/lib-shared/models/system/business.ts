@@ -1,3 +1,4 @@
+import type { CompanyTypeEnum } from '../../enums/commonEnum';
 import type { TableQueryParams } from '../common';
 import { PersonalExportStatusEnum } from '@lib/shared/enums/systemEnum';
 
@@ -15,13 +16,16 @@ export interface ConfigEmailParams {
 
 // 同步组织设置
 export interface ConfigSynchronization {
-  type: string; // 类型
+  type: CompanyTypeEnum; // 类型
   corpId?: string; // 企业ID
   agentId?: string; // 应用ID
   appSecret?: string; // 应用密钥
-  syncEnable: boolean; // 同步组织架构是否开启
-  qrcodeEnable: boolean; // 扫码登录是否开启
+  syncEnable?: boolean; // 同步组织架构是否开启
+  qrcodeEnable?: boolean; // 扫码登录是否开启
   verify?: boolean; // 是否验证通过
+  redirectUrl?: string; // DE URL
+  deAccount?: string; // DE 账号
+  deBoardEnable?: boolean; // DE看板是否开启
 }
 
 // 同步组织和扫码卡片数据类型

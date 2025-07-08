@@ -30,6 +30,7 @@ export default {
     'menu.clue': '线索',
     'menu.customer': '客户',
     'menu.contact': '联系人',
+    'menu.dashboard': '仪表板',
     'menu.settings.businessSetting': '企业设置',
     'menu.settings.messageSetting': '消息设置',
     'menu.settings.log': '系统日志',

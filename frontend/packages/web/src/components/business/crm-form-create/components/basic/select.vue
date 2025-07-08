@@ -50,12 +50,9 @@
     () => props.fieldConfig.defaultValue,
     (val) => {
       if (!props.needInitDetail) {
-        value.value = val || value.value || (props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE ? [] : '');
+        value.value = val || (props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE ? [] : '');
         emit('change', value.value);
       }
-    },
-    {
-      immediate: true,
     }
   );
 
@@ -72,6 +69,16 @@
       value: val,
     };
   }
+
+  onBeforeMount(() => {
+    if (!props.needInitDetail) {
+      value.value =
+        props.fieldConfig.defaultValue ||
+        value.value ||
+        (props.fieldConfig.type === FieldTypeEnum.SELECT_MULTIPLE ? [] : '');
+      emit('change', value.value);
+    }
+  });
 </script>
 
 <style lang="less" scoped></style>

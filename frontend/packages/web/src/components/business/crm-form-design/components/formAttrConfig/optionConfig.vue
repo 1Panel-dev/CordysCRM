@@ -33,6 +33,7 @@
         <n-radio
           v-else
           :value="item.value"
+          :default-checked="fieldConfig.defaultValue === item.value"
           class="flex items-center"
           :disabled="props.disabled"
           @click="() => handleRadioOptionClick(item.value)"
