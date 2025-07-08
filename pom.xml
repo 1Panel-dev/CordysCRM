@@ -47,6 +47,7 @@
         <persistence-api.version>3.2.0</persistence-api.version>
         <guava.version>33.4.8-jre</guava.version>
         <commons-compress.version>1.27.1</commons-compress.version>
+        <jwt.version>3.12.1</jwt.version>
 
     </properties>
 
