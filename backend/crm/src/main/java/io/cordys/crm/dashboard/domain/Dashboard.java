@@ -22,6 +22,9 @@ public class Dashboard extends BaseModel {
 	@Schema(description = "模块id")
 	private String dashboardModuleId;
 
+	@Schema(description = "组织id")
+	private String organizationId;
+
 	@Schema(description = "同一节点下顺序")
 	private Long pos;
 
