@@ -35,4 +35,12 @@ export default {
   'opportunity.projectProposalReport': 'Project proposal report',
   'opportunity.businessProcurement': 'Business procurement',
   'opportunity.end': 'End',
+  'opportunity.endTime': 'End time',
+  'opportunity.actualEndTime': 'Actual end time',
+  'opportunity.failureReason': 'Failure reason',
+  'opportunity.customerChooseCompetitor': 'Customer choose competitor',
+  'opportunity.projectFailed': 'Project failed',
+  'opportunity.complexDecisionChain': 'Complex decision chain',
+  'opportunity.budgetLimit': 'Budget limit',
+  'opportunity.requirementChange': 'Requirement change',
 };

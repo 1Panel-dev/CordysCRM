@@ -16,7 +16,11 @@
           <div v-else class="flex items-center justify-center">{{ index + 1 }} </div>
         </div>
         <div class="crm-workflow-item-name" :class="statusClass(index, item)">
-          {{ item.label }}
+          {{
+            item.value === StageResultEnum.FAIL && props.failureReason
+              ? `${item.label}（${props.failureReason}）`
+              : item.label
+          }}
         </div>
         <div
           v-if="index !== workflowData.length - 1"
@@ -50,6 +54,7 @@
     readonly?: boolean;
     isLimitBack?: boolean; // 是否限制状态往返
     backStagePermission?: string[];
+    failureReason?: string;
   }>();
 
   const emit = defineEmits<{

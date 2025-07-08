@@ -1,4 +1,4 @@
-import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+import { FailureReasonTypeEnum, OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
 import type { Options } from '@/components/business/crm-workflow-card/index.vue';
@@ -48,5 +48,13 @@ export const opportunityResultSteps = [
 ];
 
 export const lastOpportunitySteps = [...baseStepList, ...opportunityResultSteps];
+
+export const failureReasonOptions = [
+  { value: FailureReasonTypeEnum.COMPETITOR_CHOSEN, text: t('opportunity.customerChooseCompetitor') },
+  { value: FailureReasonTypeEnum.PROJECT_FAILED, text: t('opportunity.projectFailed') },
+  { value: FailureReasonTypeEnum.COMPLEX_DECISION_CHAIN, text: t('opportunity.complexDecisionChain') },
+  { value: FailureReasonTypeEnum.BUDGET_LIMITATION, text: t('opportunity.budgetLimit') },
+  { value: FailureReasonTypeEnum.REQUIREMENT_CHANGE, text: t('opportunity.requirementChange') },
+];
 
 export default {};

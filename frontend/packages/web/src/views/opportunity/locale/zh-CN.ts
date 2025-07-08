@@ -35,4 +35,12 @@ export default {
   'opportunity.projectProposalReport': '立项汇报',
   'opportunity.businessProcurement': '商务采购',
   'opportunity.end': '完结',
+  'opportunity.endTime': '结束时间',
+  'opportunity.actualEndTime': '实际结束时间',
+  'opportunity.failureReason': '失败原因',
+  'opportunity.customerChooseCompetitor': '客户选择竞品',
+  'opportunity.projectFailed': '立项失败',
+  'opportunity.complexDecisionChain': '决策链复杂',
+  'opportunity.budgetLimit': '预算限制',
+  'opportunity.requirementChange': '需求变化',
 };

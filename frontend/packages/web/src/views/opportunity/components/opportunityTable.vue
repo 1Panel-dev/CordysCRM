@@ -114,7 +114,7 @@
 
   import { batchDeleteOpt, deleteOpt, getFieldDeptTree, transferOpt } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
+  import { defaultTransferForm, failureReasonOptions, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
@@ -476,6 +476,9 @@
       status: (row: OpportunityItem) => {
         return row.status ? t('common.open') : t('common.close');
       },
+      failureReason: (row: OpportunityItem) => {
+        return failureReasonOptions.find((e) => e.value === row.failureReason)?.label ?? '-';
+      },
       stage: (row: OpportunityItem) => {
         const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
         return step ? step.label : '-';
@@ -525,6 +528,14 @@
         type: FieldTypeEnum.SELECT_MULTIPLE,
         selectProps: {
           options: lastOpportunitySteps,
+        },
+      },
+      {
+        title: t('opportunity.failureReason'),
+        dataIndex: 'failureReason',
+        type: FieldTypeEnum.SELECT_MULTIPLE,
+        selectProps: {
+          options: failureReasonOptions,
         },
       },
       {

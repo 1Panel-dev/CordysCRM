@@ -8,6 +8,7 @@
         :workflow-list="workflowList"
         :is-limit-back="props.isLimitBack"
         :back-stage-permission="props.backStagePermission"
+        :failure-reason="getFailureReason"
         @change="handleUpdateStatus"
       >
         <template v-if="!props.readonly" #action>
@@ -39,6 +40,7 @@
             label-placement="left"
             path="stage"
             :show-feedback="false"
+            class="mb-[16px]"
             :label="t('common.result')"
           >
             <n-radio-group v-model:value="form.stage" name="radiogroup">
@@ -52,6 +54,39 @@
               </n-space>
             </n-radio-group>
           </n-form-item>
+          <n-form-item
+            require-mark-placement="left"
+            label-placement="left"
+            path="expectedEndTime"
+            :label="t('opportunity.endTime')"
+            :rule="[{ required: true, message: t('common.notNull', { value: t('opportunity.endTime') }) }]"
+          >
+            <n-date-picker
+              v-model:value="form.expectedEndTime"
+              :default-value="Date.now()"
+              class="w-full"
+              type="date"
+              clearable
+            >
+              <template #date-icon>
+                <CrmIcon class="text-[var(--text-n4)]" type="iconicon_time" :size="16" />
+              </template>
+            </n-date-picker>
+          </n-form-item>
+          <n-form-item
+            v-if="form.stage === StageResultEnum.FAIL"
+            require-mark-placement="left"
+            label-placement="left"
+            path="failureReason"
+            :label="t('opportunity.failureReason')"
+            :rule="[{ required: true, message: t('common.notNull', { value: t('opportunity.failureReason') }) }]"
+          >
+            <n-select
+              v-model:value="form.failureReason"
+              :options="failureReasonOptions"
+              :placeholder="t('common.pleaseSelect')"
+            />
+          </n-form-item>
         </n-form>
       </CrmModal>
     </n-spin>
@@ -63,10 +98,12 @@
     FormInst,
     FormRules,
     NButton,
+    NDatePicker,
     NForm,
     NFormItem,
     NRadio,
     NRadioGroup,
+    NSelect,
     NSpace,
     NSpin,
     SelectOption,
@@ -75,10 +112,12 @@
 
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { UpdateStageParams } from '@lib/shared/models/opportunity';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import WorkflowStep from './workflowStep.vue';
 
+  import { failureReasonOptions } from '@/config/opportunity';
   import { hasAllPermission } from '@/utils/permission';
 
   const { t } = useI18n();
@@ -89,11 +128,12 @@
     sourceId: string; // 资源id
     showErrorBtn?: boolean;
     showConfirmStatus?: boolean; // 是否二次确认更新成功 | 成败
-    updateApi?: (params: { id: string; stage: string }) => Promise<any>;
+    updateApi?: (params: UpdateStageParams) => Promise<any>;
     operationPermission?: string[];
     readonly?: boolean;
     isLimitBack?: boolean; // 是否限制状态往返
     backStagePermission?: string[];
+    failureReason?: string;
   }>();
 
   const emit = defineEmits<{
@@ -121,10 +161,15 @@
       currentStage.value === StageResultEnum.SUCCESS
   );
 
-  const form = ref<{
-    stage: string;
-  }>({
+  const getInitForm = (): UpdateStageParams => ({
+    id: '',
     stage: isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS,
+    expectedEndTime: Date.now(),
+    failureReason: null,
+  });
+
+  const form = ref<UpdateStageParams>({
+    ...getInitForm(),
   });
 
   const endStage = computed<SelectOption[]>(() => {
@@ -148,6 +193,8 @@
     return [];
   });
 
+  const getFailureReason = computed(() => failureReasonOptions.find((e) => e.value === props.failureReason)?.label);
+
   const workflowList = computed<SelectOption[]>(() => {
     // 失败返回基础阶段截止当前 + 失败阶段
     if (currentStage.value === StageResultEnum.FAIL) {
@@ -164,6 +211,7 @@
 
   function handleCancel() {
     updateStatusModal.value = false;
+    form.value = { ...getInitForm() };
     form.value.stage = isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS;
   }
 
@@ -177,6 +225,13 @@
         await props.updateApi({
           id: props.sourceId,
           stage,
+          expectedEndTime:
+            props.showConfirmStatus &&
+            [StageResultEnum.FAIL, StageResultEnum.SUCCESS].includes(stage as StageResultEnum)
+              ? form.value.expectedEndTime
+              : undefined,
+          failureReason:
+            props.showConfirmStatus && stage === StageResultEnum.FAIL ? form.value.failureReason : undefined,
         });
         Message.success(t('common.updateSuccess'));
         emit('loadDetail');
@@ -196,7 +251,7 @@
       form.value.stage = isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS;
       return;
     }
-    await handleSave(stage);
+    handleSave(stage);
   }
 
   // 确认更新

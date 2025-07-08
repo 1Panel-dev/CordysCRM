@@ -64,23 +64,20 @@
           </div>
         </div>
         <div class="crm-workflow-item-name one-line-text relative -left-[16px]" :class="statusClass(index, item)">
-          {{ item.label }}
+          {{
+            item.value === StageResultEnum.FAIL && props.failureReason
+              ? `${item.label}（${lastFailureReason}）`
+              : item.label
+          }}
         </div>
       </div>
     </div>
   </div>
-  <van-popup v-model:show="showPopConfirm" destroy-on-close position="bottom">
-    <van-picker
-      v-model="formStage"
-      :columns="resultColumns"
-      @confirm="onConfirm"
-      @cancel="() => (showPopConfirm = false)"
-    />
-  </van-popup>
 </template>
 
 <script setup lang="ts">
-  import { closeToast, PickerOption, showLoadingToast, showSuccessToast } from 'vant';
+  import { useRouter } from 'vue-router';
+  import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
@@ -89,10 +86,13 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
   import { updateClueStatus, updateOptStage } from '@/api/modules';
+  import { failureReasonOptions } from '@/config/opportunity';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
-  const { t } = useI18n();
+  import { CommonRouteEnum } from '@/enums/routeEnum';
 
+  const { t } = useI18n();
+  const router = useRouter();
   export interface Options {
     value: string;
     label: string;
@@ -111,6 +111,7 @@
     readonly?: boolean;
     isLimitBack?: boolean; // 是否限制状态往返
     backStagePermission?: string[];
+    failureReason?: string; // 失败原因
   }>();
 
   const emit = defineEmits<{
@@ -125,6 +126,8 @@
     [FormDesignKeyEnum.BUSINESS]: updateOptStage,
     [FormDesignKeyEnum.CLUE]: updateClueStatus,
   };
+
+  const lastFailureReason = computed(() => failureReasonOptions.find((e) => e.value === props.failureReason)?.text);
 
   const endStage = computed<Options[]>(() => {
     if (currentStage.value === StageResultEnum.SUCCESS) {
@@ -178,23 +181,6 @@
       currentStage.value === StageResultEnum.SUCCESS
   );
 
-  const resultColumns = computed<PickerOption[]>(() => {
-    return [
-      {
-        text: t('common.success'),
-        value: StageResultEnum.SUCCESS,
-        disabled: isHasBackPermission.value,
-      },
-      { text: t('common.fail'), value: StageResultEnum.FAIL },
-    ];
-  });
-
-  const formStage = ref<StageResultEnum[]>([
-    isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS,
-  ]);
-
-  const showPopConfirm = ref(false);
-
   async function handleSave(stage: string) {
     try {
       showLoadingToast(t('common.updating'));
@@ -210,12 +196,6 @@
     } finally {
       closeToast();
     }
-  }
-
-  async function onConfirm() {
-    const [nextStage] = formStage.value;
-    await handleSave(nextStage);
-    showPopConfirm.value = false;
   }
 
   const readonly = computed(() => props.readonly || !hasAnyPermission(props.operationPermission));
@@ -254,8 +234,15 @@
     if (isDisabledStage(stage)) return;
 
     if (props.showConfirmStatus && stage === workflowList.value[workflowList.value.length - 1].value) {
-      showPopConfirm.value = true;
-      formStage.value = [isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS];
+      router.push({
+        name: CommonRouteEnum.WORKFLOW_STAGE,
+        query: {
+          id: props.sourceId,
+          type: props.formStageKey,
+          lastName: workflowList.value[workflowList.value.length - 1].label,
+          isHasBack: isHasBackPermission.value ? 'Y' : 'N',
+        },
+      });
       return;
     }
     await handleSave(stage);

@@ -32,6 +32,7 @@
         class="mb-[16px]"
         :base-steps="baseStepList"
         is-limit-back
+        :failure-reason="lastFailureReason"
         :back-stage-permission="['OPPORTUNITY_MANAGEMENT:UPDATE', 'OPPORTUNITY_MANAGEMENT:RESIGN']"
         :source-id="sourceId"
         :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
@@ -117,7 +118,7 @@
 
   const sourceId = computed(() => props.detail?.id ?? '');
   const refreshKey = ref(0);
-
+  const lastFailureReason = ref('');
   const currentStatus = ref<string>(OpportunityStatusEnum.CREATE);
   const showAction = computed(
     () => currentStatus.value !== StageResultEnum.FAIL && currentStatus.value !== StageResultEnum.SUCCESS
@@ -287,13 +288,14 @@
     detail?: Record<string, any>
   ) {
     if (detail) {
-      const { customerName, customerId, name, lastStage, stage } = detail;
+      const { customerName, customerId, name, lastStage, stage, failureReason } = detail;
       // 商机阶段
       currentStatus.value = stage;
       lastOptStage.value = lastStage;
       // 用于回显跟进类型、商机、商机对应客户
       titleName.value = _sourceName || '';
       subTitleName.value = customerName;
+      lastFailureReason.value = failureReason;
       initialSourceName.value =
         JSON.stringify({
           name,

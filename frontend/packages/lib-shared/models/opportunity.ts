@@ -18,6 +18,7 @@ export interface OpportunityItem {
   lastStage: string;
   inCustomerPool: boolean;
   poolId?: string | number;
+  failureReason: string;
   moduleFields: ModuleField[]; // 自定义字段
 }
 
@@ -49,4 +50,11 @@ export interface OpportunityDetail extends OpportunityItem {
   owner: string;
   ownerName: string;
   lastStage: string; // 上一个阶段
+}
+
+export interface UpdateStageParams {
+  id: string;
+  stage: string;
+  expectedEndTime?: number; // 预计结束时间
+  failureReason?: string | null; // 失败原因
 }

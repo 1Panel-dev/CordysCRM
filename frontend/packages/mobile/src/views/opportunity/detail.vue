@@ -20,6 +20,7 @@
               :base-steps="baseStepList"
               :source-id="sourceId"
               :operation-permission="['OPPORTUNITY_MANAGEMENT:UPDATE']"
+              :failure-reason="lastFailureReason"
               @load-detail="() => initStage(true)"
             />
           </div>
@@ -121,14 +122,16 @@
 
   const lastOptStage = ref<string>(OpportunityStatusEnum.CREATE);
 
+  const lastFailureReason = ref('');
   async function initStage(isInit = false) {
     if (isInit) {
       initFormDescription();
     }
 
-    const { stage, lastStage } = detail.value;
+    const { stage, lastStage, failureReason } = detail.value;
     currentStatus.value = stage;
     lastOptStage.value = lastStage;
+    lastFailureReason.value = failureReason;
   }
 
   const readonly = computed(
@@ -143,6 +146,8 @@
       recordListRef.value?.[0].loadList();
     } else if (activeTab.value === 'plan') {
       planListRef.value?.[0].loadList();
+    } else if (activeTab.value === 'info') {
+      initFormDescription();
     }
   });
 

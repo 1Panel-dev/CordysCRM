@@ -1,4 +1,4 @@
-import { OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+import { FailureReasonTypeEnum, OpportunityStatusEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { TransferParams } from '@lib/shared/models/customer/index';
 
@@ -41,6 +41,14 @@ export const opportunityResultSteps = [
     value: StageResultEnum.FAIL,
     label: t('common.fail'),
   },
+];
+
+export const failureReasonOptions = [
+  { value: FailureReasonTypeEnum.COMPETITOR_CHOSEN, label: t('opportunity.customerChooseCompetitor') },
+  { value: FailureReasonTypeEnum.PROJECT_FAILED, label: t('opportunity.projectFailed') },
+  { value: FailureReasonTypeEnum.COMPLEX_DECISION_CHAIN, label: t('opportunity.complexDecisionChain') },
+  { value: FailureReasonTypeEnum.BUDGET_LIMITATION, label: t('opportunity.budgetLimit') },
+  { value: FailureReasonTypeEnum.REQUIREMENT_CHANGE, label: t('opportunity.requirementChange') },
 ];
 
 export const lastOpportunitySteps = [...opportunityBaseSteps, ...opportunityResultSteps];

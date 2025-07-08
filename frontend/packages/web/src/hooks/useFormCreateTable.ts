@@ -17,7 +17,7 @@ import {
 } from '@/components/business/crm-form-create/config';
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
-import { lastOpportunitySteps } from '@/config/opportunity';
+import { failureReasonOptions, lastOpportunitySteps } from '@/config/opportunity';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
 
 type FormKey =
@@ -131,6 +131,28 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       sortOrder: false,
       sorter: true,
       render: props.specialRender?.status,
+    },
+    {
+      title: t('opportunity.actualEndTime'),
+      width: 160,
+      key: 'actualEndTime',
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+      render: (row: any) => (row.actualEndTime ? dayjs(row.actualEndTime).format('YYYY-MM-DD') : '-'),
+    },
+    {
+      title: t('opportunity.failureReason'),
+      width: 120,
+      key: 'failureReason',
+      ellipsis: {
+        tooltip: true,
+      },
+      filterOptions: failureReasonOptions,
+      filter: true,
+      render: props.specialRender?.failureReason,
     },
   ];
   const internalColumnMap: Record<FormKey, CrmDataTableColumn[]> = {

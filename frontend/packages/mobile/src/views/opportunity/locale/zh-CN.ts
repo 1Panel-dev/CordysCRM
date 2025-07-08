@@ -18,4 +18,13 @@ export default {
   'opportunity.stage': '商机阶段',
   'opportunity.name': '商机名称',
   'opportunity.transferOpportunity': '转移商机',
+  'opportunity.endTime': '结束时间',
+  'opportunity.selectActualEndTime': '请选择结束时间',
+  'opportunity.failureReason': '失败原因',
+  'opportunity.selectFailureReason': '请选择失败原因',
+  'opportunity.customerChooseCompetitor': '客户选择竞品',
+  'opportunity.projectFailed': '立项失败',
+  'opportunity.complexDecisionChain': '决策链复杂',
+  'opportunity.budgetLimit': '预算限制',
+  'opportunity.requirementChange': '需求变化',
 };
