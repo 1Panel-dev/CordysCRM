@@ -13,6 +13,8 @@ COPY . /build
 COPY --from=frontend /frontend/packages/web/dist /build/frontend/packages/web/dist
 COPY --from=frontend /frontend/packages/mobile/dist /build/frontend/packages/mobile/dist
 
+RUN ./mvnw install -N
+
 RUN ./mvnw clean package -DskipTests -pl '!frontend' && \
     mkdir backend/app/target/dependency && \
     cd backend/app/target/dependency && \
