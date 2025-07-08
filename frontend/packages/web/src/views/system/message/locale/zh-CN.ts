@@ -39,4 +39,8 @@ export default {
   'system.message.system': '系统',
   'system.message.systemNotification': '系统通知',
   'system.message.setRead': '标为已读',
+  'system.message.enterpriseWeChatNotice': '企业微信通知',
+  'system.message.confirmCloseWeChatNotice': '确定关闭该企业微信通知吗？',
+  'system.message.weComSwitchTip':
+    '企业微信无法获取接收消息的用户身份，请先完成企业微信组织架构同步，确保系统与企业微信的人员数据一致!',
 };

@@ -21,7 +21,8 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import SwitchPopConfirm from './switchPopConfirm.vue';
 
-  import { batchSaveMessageTask, getMessageTask, saveMessageTask } from '@/api/modules';
+  import { batchSaveMessageTask, checkSyncUserFromThird, getMessageTask, saveMessageTask } from '@/api/modules';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const Message = useMessage();
 
@@ -29,6 +30,7 @@
 
   const enableSystemMessage = ref(false);
   const enableEmailMessage = ref(false);
+  const enableWeChatMessage = ref(false);
   const enableSystemLoading = ref(false);
 
   const data = ref<MessageConfigItem[]>([]);
@@ -41,6 +43,7 @@
 
       enableSystemMessage.value = result.every((e) => e.messageTaskDetailDTOList.every((c) => c.sysEnable));
       enableEmailMessage.value = result.every((e) => e.messageTaskDetailDTOList.every((c) => c.emailEnable));
+      enableWeChatMessage.value = result.every((e) => e.messageTaskDetailDTOList.every((c) => c.weComEnable));
 
       data.value = result
         .map((item) =>
@@ -68,6 +71,7 @@
         event: row.event,
         emailEnable: type === 'email' ? !row.emailEnable : row.emailEnable,
         sysEnable: type === 'system' ? !row.sysEnable : row.sysEnable,
+        weComEnable: type === 'weChat' ? !row.weComEnable : row.weComEnable,
       });
       Message.success(t('common.saveSuccess'));
       cancel?.();
@@ -87,15 +91,19 @@
       const params: {
         sysEnable: boolean | undefined;
         emailEnable: boolean | undefined;
+        weComEnable: boolean | undefined;
       } = {
         sysEnable: undefined,
         emailEnable: undefined,
+        weComEnable: undefined,
       };
 
       if (type === 'system') {
         params.sysEnable = !enableSystemMessage.value;
       } else if (type === 'email') {
         params.emailEnable = !enableEmailMessage.value;
+      } else if (type === 'weChat') {
+        params.weComEnable = !enableWeChatMessage.value;
       }
 
       await batchSaveMessageTask(params);
@@ -110,7 +118,8 @@
     }
   }
 
-  const columns: DataTableColumn[] = [
+  const isSyncFromThirdChecked = ref(false);
+  const columns = computed<DataTableColumn[]>(() => [
     {
       title: t('system.message.Feature'),
       key: 'moduleName',
@@ -138,6 +147,7 @@
           value: enableSystemMessage.value,
           loading: enableSystemLoading.value,
           content: t('system.message.confirmCloseSystemNotifyContent'),
+          disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']),
           onChange: (cancel?: () => void) => toggleGlobalMessage('system', cancel),
         });
       },
@@ -152,6 +162,7 @@
           value: row.sysEnable as boolean,
           loading: enableSystemLoading.value,
           content: t('system.message.confirmCloseSystemNotifyContent'),
+          disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']),
           onChange: (cancel?: () => void) =>
             handleToggleSystemMessage(row as unknown as MessageConfigItem, 'system', cancel),
         });
@@ -163,6 +174,7 @@
           titleColumnText: t('system.message.emailReminder'),
           value: enableEmailMessage.value,
           loading: enableSystemLoading.value,
+          disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']),
           onChange: (cancel?: () => void) => toggleGlobalMessage('email', cancel),
         });
       },
@@ -175,14 +187,56 @@
         return h(SwitchPopConfirm, {
           value: row.emailEnable as boolean,
           loading: enableSystemLoading.value,
+          disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']),
           onChange: (cancel?: () => void) =>
             handleToggleSystemMessage(row as unknown as MessageConfigItem, 'email', cancel),
         });
       },
     },
-  ];
+    {
+      title: () => {
+        return h(SwitchPopConfirm, {
+          title: t('system.message.confirmCloseWeChatNotice'),
+          titleColumnText: t('system.message.enterpriseWeChatNotice'),
+          value: enableWeChatMessage.value,
+          loading: enableSystemLoading.value,
+          content: t('system.message.confirmCloseSystemNotifyContent'),
+          disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) || !isSyncFromThirdChecked.value,
+          toolTipContent: !isSyncFromThirdChecked.value ? t('system.message.weComSwitchTip') : '',
+          onChange: (cancel?: () => void) => toggleGlobalMessage('weChat', cancel),
+        });
+      },
+      key: 'weComEnable',
+      width: 200,
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row) => {
+        return h(SwitchPopConfirm, {
+          title: t('system.message.confirmCloseWeChatNotice'),
+          value: row.weComEnable as boolean,
+          loading: enableSystemLoading.value,
+          content: t('system.message.confirmCloseSystemNotifyContent'),
+          disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) || !isSyncFromThirdChecked.value,
+          toolTipContent: !isSyncFromThirdChecked.value ? t('system.message.weComSwitchTip') : '',
+          onChange: (cancel?: () => void) =>
+            handleToggleSystemMessage(row as unknown as MessageConfigItem, 'weChat', cancel),
+        });
+      },
+    },
+  ]);
+
+  async function initCheckSyncType() {
+    try {
+      isSyncFromThirdChecked.value = await checkSyncUserFromThird();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
 
   onBeforeMount(() => {
+    initCheckSyncType();
     initMessageList();
   });
 </script>

@@ -91,7 +91,7 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 批量编辑消息设置
-  function batchSaveMessageTask(data: Pick<SaveMessageConfigParams, 'emailEnable' | 'sysEnable'>) {
+  function batchSaveMessageTask(data: Pick<SaveMessageConfigParams, 'emailEnable' | 'sysEnable' | 'weComEnable'>) {
     return CDR.post({ url: BatchSaveMessageTaskUrl, data });
   }
 

@@ -4,27 +4,26 @@
     :title="props.title ?? ''"
     icon-type="error"
     :content="content"
-    :disabled="!props.title || !props.value || !hasAnyPermission(['SYSTEM_NOTICE:UPDATE'])"
+    :disabled="!props.title || !props.value || !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) || props.disabled"
     :positive-text="t('system.message.confirmClose')"
     placement="bottom-end"
     :loading="props.loading"
     @confirm="confirmHandler"
     @cancel="handleCancel"
   >
-    <n-switch
-      :value="props.value"
-      :disabled="!hasAnyPermission(['SYSTEM_NOTICE:UPDATE'])"
-      class="mr-[8px]"
-      size="small"
-      @click="changeStatus"
-    />
+    <n-tooltip :delay="300" :disabled="!props.toolTipContent">
+      <template #trigger>
+        <n-switch :value="props.value" :disabled="props.disabled" class="mr-[8px]" size="small" @click="changeStatus" />
+      </template>
+      {{ props.toolTipContent }}
+    </n-tooltip>
   </CrmPopConfirm>
   {{ t(props.titleColumnText ?? '') }}
 </template>
 
 <script lang="ts" setup>
   import { ref } from 'vue';
-  import { NSwitch } from 'naive-ui';
+  import { NSwitch, NTooltip } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
@@ -40,6 +39,8 @@
     loading: boolean;
     content?: string;
     value: boolean;
+    disabled: boolean;
+    toolTipContent?: string;
   }>();
 
   const emit = defineEmits<{

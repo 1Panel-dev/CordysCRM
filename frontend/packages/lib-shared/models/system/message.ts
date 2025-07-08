@@ -48,6 +48,7 @@ export interface MessageTaskDetailDTOItem {
   eventName: string;
   sysEnable: boolean;
   emailEnable: boolean;
+  weComEnable: boolean;
 }
 
 export interface MessageConfigItem extends MessageTaskDetailDTOItem {
@@ -62,6 +63,7 @@ export interface SaveMessageConfigParams {
   event: string;
   emailEnable?: boolean;
   sysEnable?: boolean;
+  weComEnable?: boolean;
 }
 
 export interface MessageCenterItem {
