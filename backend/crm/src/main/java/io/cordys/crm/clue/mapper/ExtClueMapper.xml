@@ -298,16 +298,16 @@
     </select>
 
     <select id="getSimilarClueList" resultType="io.cordys.crm.clue.dto.response.ClueRepeatListResponse">
-        select c.id, c.name, c.owner, c.stage, su.name as ownerName from clue c
+        select c.id, c.name, c.owner, c.stage, c.contact, c.phone, su.name as ownerName from clue c
         left join sys_user su on c.owner = su.id
-        where c.name like concat('%', #{customerName}, '%') and  c.organization_id = #{orgId}
+        where c.organization_id = #{orgId} and ( c.name like concat('%', #{customerName}, '%') or c.phone like concat('%', #{customerName}, '%') )
         order by c.create_time desc 
     </select>
 
     <select id="getRepeatClueList" resultType="io.cordys.crm.clue.dto.response.ClueRepeatListResponse">
-        select c.id, c.name, c.owner, c.stage, su.name as ownerName from clue c
+        select c.id, c.name, c.owner, c.stage, c.contact, c.phone, su.name as ownerName from clue c
         left join sys_user su on c.owner = su.id
-        where c.name = #{customerName} and c.organization_id = #{orgId}  
+        where c.organization_id = #{orgId} and (c.name = #{customerName} or c.phone = #{customerName})
         order by c.create_time desc 
     </select>
 

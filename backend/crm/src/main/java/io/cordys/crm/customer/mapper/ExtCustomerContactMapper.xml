@@ -270,4 +270,13 @@
             #{id}
         </foreach>
     </select>
+    <select id="getSimilarContactList"
+            resultType="io.cordys.crm.customer.dto.response.CustomerContactRepeatResponse">
+        select cc.id, cc.customer_id, cc.name, cc.create_time,
+               cc.enable, cc.owner, cc.phone, su.name as ownerName, c.name as customerName
+        from customer_contact cc
+                 left join sys_user su on cc.owner = su.id
+                 left join customer c on cc.customer_id = c.id
+        where cc.organization_id = #{orgId} and cc.phone like concat('%', #{name}, '%')
+    </select>
 </mapper>

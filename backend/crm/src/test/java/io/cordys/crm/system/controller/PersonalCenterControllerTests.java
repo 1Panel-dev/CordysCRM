@@ -5,6 +5,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.CodingUtils;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerContact;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
 import io.cordys.crm.opportunity.constants.StageType;
@@ -43,6 +44,8 @@ public class PersonalCenterControllerTests extends BaseTest {
     private BaseMapper<Department> departmentBaseMapper;
     @Resource
     private BaseMapper<Customer>customerBaseMapper;
+    @Resource
+    private BaseMapper<CustomerContact>customerContactBaseMapper;
     @Resource
     private BaseMapper<User>userBaseMapper;
 
@@ -194,11 +197,32 @@ public class PersonalCenterControllerTests extends BaseTest {
         customer.setInSharedPool(false);
         customerBaseMapper.insert(customer);
 
+        CustomerContact customerContact = new CustomerContact();
+        customerContact.setId(IDGenerator.nextStr());
+        customerContact.setCustomerId(s);
+        customerContact.setOwner(userId);
+        customerContact.setName("联系人一");
+        customerContact.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        customerContact.setCreateTime(System.currentTimeMillis());
+        customerContact.setCreateUser("admin");
+        customerContact.setUpdateTime(System.currentTimeMillis());
+        customerContact.setUpdateUser("admin");
+        customerContact.setPhone("12345678912");
+        customerContact.setEnable(true);
+        customerContactBaseMapper.insert(customerContact);
+
+
         RepeatCustomerPageRequest request = new RepeatCustomerPageRequest();    
         request.setCurrent(1);
         request.setPageSize(10);
         request.setName("kehu");
         this.requestPost("/personal/center/repeat/customer", request).andExpect(status().isOk());
+
+        request = new RepeatCustomerPageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+        request.setName("12345678912");
+        this.requestPost("/personal/center/repeat/contact", request).andExpect(status().isOk());
     }
 
     @Test

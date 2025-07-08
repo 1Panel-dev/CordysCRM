@@ -21,7 +21,9 @@ import io.cordys.common.util.Translator;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.dto.response.ClueRepeatListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
+import io.cordys.crm.customer.dto.response.CustomerContactRepeatResponse;
 import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
+import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
@@ -87,6 +89,8 @@ public class PersonalCenterService {
     private ExtUserRoleMapper extUserRoleMapper;
     @Resource
     private BaseMapper<Module> moduleMapper;
+    @Resource
+    private ExtCustomerContactMapper extCustomerContactMapper;
 
     private static final String PREFIX = "personal_email_code:";  // Redis 存储前缀
 
@@ -528,5 +532,43 @@ public class PersonalCenterService {
         }
 
         return resourceTypes;
+    }
+
+    public Pager<List<CustomerContactRepeatResponse>> getRepeatCustomerContact(RepeatCustomerPageRequest request, String organizationId, String userId) {
+        // 如果手机号为空，直接返回空列表
+        if (StringUtils.isBlank(request.getName())) {
+            return PageUtils.setPageInfo(
+                    PageHelper.startPage(request.getCurrent(), request.getPageSize()), new ArrayList<>());
+        }
+
+        // 查询用户权限并检查是否是管理员
+        List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
+        boolean isAdmin = StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue());
+        boolean hasCustomerRead = permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ) || isAdmin;
+
+        // 查询当前组织下已启用的模块列表
+        List<String> enabledModules = moduleMapper.selectListByLambda(
+                        new LambdaQueryWrapper<Module>()
+                                .eq(Module::getOrganizationId, OrganizationContext.getOrganizationId())
+                                .eq(Module::getEnable, true)
+                ).stream()
+                .map(Module::getModuleKey)
+                .toList();
+
+        // 检查：如果有客户读取权限但客户模块未启用，抛出异常
+        if (hasCustomerRead && !enabledModules.contains(ModuleKey.CUSTOMER.getKey())) {
+            throw new GenericException(SystemResultCode.MODULE_ENABLE);
+        }
+
+        // 没有客户读取权限直接返回空列表
+        if (!hasCustomerRead) {
+            return PageUtils.setPageInfo(
+                    PageHelper.startPage(request.getCurrent(), request.getPageSize()), new ArrayList<>());
+        }
+
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+
+        // 查询重复联系人列表
+        return PageUtils.setPageInfo(page, extCustomerContactMapper.getSimilarContactList(request.getName(), organizationId));
     }
 }

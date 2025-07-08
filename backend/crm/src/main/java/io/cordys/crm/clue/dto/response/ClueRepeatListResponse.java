@@ -22,6 +22,12 @@ public class ClueRepeatListResponse {
     @Schema(description = "阶段")
     private String stage;
 
+    @Schema(description = "联系人")
+    private String contact;
+
+    @Schema(description = "联系人电话")
+    private String phone;
+
     @Schema(description = "负责人名称")
     private String ownerName;
 

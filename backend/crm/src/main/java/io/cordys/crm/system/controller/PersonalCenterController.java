@@ -8,6 +8,7 @@ import io.cordys.common.pager.Pager;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.dto.response.ClueRepeatListResponse;
+import io.cordys.crm.customer.dto.response.CustomerContactRepeatResponse;
 import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
 import io.cordys.crm.follow.dto.request.FollowUpPlanPageRequest;
 import io.cordys.crm.follow.dto.response.FollowUpPlanListResponse;
@@ -41,6 +42,14 @@ public class PersonalCenterController {
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_READ}, logical = Logical.OR)
     public Pager<List<CustomerRepeatResponse>> getRepeatCustomer(@Validated @RequestBody RepeatCustomerPageRequest request) {
         return personalCenterService.getRepeatCustomer(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
+
+
+    @PostMapping("/repeat/contact")
+    @Operation(summary = "获取重复联系人相关数据")
+    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_READ}, logical = Logical.OR)
+    public Pager<List<CustomerContactRepeatResponse>> getRepeatCustomerContact(@Validated @RequestBody RepeatCustomerPageRequest request) {
+        return personalCenterService.getRepeatCustomerContact(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
 
 
