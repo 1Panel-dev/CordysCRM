@@ -228,6 +228,7 @@ export const {
   exportCenterDownload,
   getExportCenterList,
   cancelCenterExport,
+  getRepeatContactList,
 } = businessApi;
 
 export const { isLogin, getWeComOauthCallback, getWeComCallback } = loginApi;

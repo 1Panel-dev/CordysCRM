@@ -1,5 +1,10 @@
 import { useI18n } from '@lib/shared/hooks/useI18n';
-import { RepeatClueItem, RepeatCustomerItem, RepeatOpportunityItem } from '@lib/shared/models/system/business';
+import {
+  RepeatClueItem,
+  RepeatContactItem,
+  RepeatCustomerItem,
+  RepeatOpportunityItem,
+} from '@lib/shared/models/system/business';
 
 import { clueBaseSteps } from '@/config/clue';
 import { lastOpportunitySteps, opportunityResultSteps } from '@/config/opportunity';
@@ -41,6 +46,38 @@ export const customerDescriptionList = [
   },
 ];
 
+export const contactDescriptionList = [
+  {
+    label: t('workbench.duplicateCheck.customerName'),
+    key: 'customerName',
+  },
+  {
+    label: t('workbench.duplicateCheck.contactName'),
+    key: 'name',
+  },
+  {
+    label: t('common.phoneNumber'),
+    key: 'phone',
+  },
+  {
+    label: t('common.head'),
+    key: 'ownerName',
+  },
+  {
+    label: t('workbench.duplicateCheck.contactStatus'),
+    key: 'enable',
+    valueSlotName: 'enable',
+    render: (row: RepeatContactItem) => {
+      return row.enable ? t('common.open') : t('common.close');
+    },
+  },
+  {
+    label: t('common.createTime'),
+    key: 'createTime',
+    valueSlotName: 'createTime',
+  },
+];
+
 export const clueDescriptionList = [
   {
     label: t('workbench.duplicateCheck.clueStage'),
@@ -54,6 +91,14 @@ export const clueDescriptionList = [
   {
     label: t('common.head'),
     key: 'ownerName',
+  },
+  {
+    label: t('workbench.duplicateCheck.contactorName'),
+    key: 'contact',
+  },
+  {
+    label: t('workbench.duplicateCheck.contactorPhoneNumber'),
+    key: 'phone',
   },
 ];
 

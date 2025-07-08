@@ -25,6 +25,7 @@ export const GetPersonalFollowUrl = '/personal/center/follow/plan/list'; // 用�
 
 // 查重
 export const GetRepeatCustomerUrl = '/personal/center/repeat/customer';
+export const GetRepeatContactUrl = '/personal/center/repeat/contact';
 export const GetRepeatClueUrl = '/personal/center/repeat/clue';
 export const GetRepeatClueDetailUrl = '/personal/center/repeat/clue/detail';
 export const GetRepeatOpportunityDetailUrl = '/personal/center/repeat/opportunity/detail';

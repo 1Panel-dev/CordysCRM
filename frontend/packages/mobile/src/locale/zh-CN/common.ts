@@ -91,4 +91,6 @@ export default {
   'common.login': '登录中...',
   'common.searchByName': '通过名称搜索',
   'common.optionNotExist': '选项不存在',
+  'common.open': '开启',
+  'common.close': '关闭',
 };

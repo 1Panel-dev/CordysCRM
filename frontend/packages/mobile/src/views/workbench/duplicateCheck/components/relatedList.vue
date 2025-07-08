@@ -32,6 +32,9 @@
           <template #render="{ item }">
             {{ item.render(listItem) }}
           </template>
+          <template #enable="{ item }">
+            {{ item.render(listItem) }}
+          </template>
         </CrmDescription>
       </div>
     </template>

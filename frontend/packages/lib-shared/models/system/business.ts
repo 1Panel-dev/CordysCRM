@@ -111,12 +111,25 @@ export interface RepeatCustomerItem {
   opportunityModuleEnable: boolean;
 }
 
+export interface RepeatContactItem {
+  id: string;
+  name: string;
+  customerName: string;
+  ownerName: string;
+  createTime: number;
+  phone: string;
+  enable: boolean;
+  opportunityCount: number;
+}
+
 export interface RepeatClueItem {
   id: string;
   name: string;
   owner: string;
   stage: string;
   ownerName: string;
+  contact: string;
+  phone: string;
 }
 
 export interface RepeatOpportunityItem {

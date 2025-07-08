@@ -90,4 +90,6 @@ export default {
   'common.login': 'Login...',
   'common.searchByName': 'Search by name',
   'common.optionNotExist': 'Option does not exist',
+  'common.open': 'Open',
+  'common.close': 'Closed',
 };

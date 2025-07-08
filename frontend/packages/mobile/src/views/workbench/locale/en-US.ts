@@ -1,8 +1,9 @@
 export default {
-  'workbench.searchPlaceholder': 'Customer name duplication check',
+  'workbench.searchPlaceholder': 'Account name or phone duplication check',
   'workbench.quickEntry': 'Quick Entry',
   'workbench.duplicateCheck': 'Duplicate Check',
   'workbench.duplicateCheck.result': 'Customer related',
+  'workbench.duplicateCheck.contactResult': 'Contact result',
   'workbench.duplicateCheck.status': 'Duplicate status',
   'workbench.duplicateCheck.relatedOpportunity': 'Related opportunity',
   'workbench.duplicateCheck.relatedClue': 'Related clue',
@@ -12,4 +13,10 @@ export default {
   'workbench.duplicateCheck.moduleNotEnabled': 'Module not enabled',
   'workbench.duplicateCheck.duplicate': 'Duplicate',
   'workbench.duplicateCheck.similar': 'Similar',
+  'workbench.duplicateCheck.contactCompany': 'Company',
+  'workbench.duplicateCheck.contactorName': 'Contact name',
+  'workbench.duplicateCheck.contactorPhoneNumber': 'The contact phone',
+  'workbench.duplicateCheck.accountName': 'Account name',
+  'workbench.duplicateCheck.contactName': 'name',
+  'workbench.duplicateCheck.contactStatus': 'status',
 };

@@ -13,6 +13,7 @@ import {
   GetPersonalUrl,
   GetRepeatClueDetailUrl,
   GetRepeatClueUrl,
+  GetRepeatContactUrl,
   GetRepeatCustomerUrl,
   GetRepeatOpportunityDetailUrl,
   GetThirdConfigByTypeUrl,
@@ -39,6 +40,7 @@ import type {
   ConfigSynchronization,
   RepeatClueItem,
   RepeatClueParams,
+  RepeatContactItem,
   RepeatCustomerItem,
   RepeatOpportunityItem,
 } from '@lib/shared/models/system/business';
@@ -150,10 +152,18 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<FollowDetailItem>>({ url: GetPersonalFollowUrl, data });
   }
 
-  // 查重
+  // 查重客户相关
   function GetRepeatCustomerList(data: RepeatClueParams) {
     return CDR.post<CommonList<RepeatCustomerItem>>(
       { url: GetRepeatCustomerUrl, data },
+      { isReturnNativeResponse: true }
+    );
+  }
+
+  // 查重联系人相关
+  function getRepeatContactList(data: RepeatClueParams) {
+    return CDR.post<CommonList<RepeatContactItem>>(
+      { url: GetRepeatContactUrl, data },
       { isReturnNativeResponse: true }
     );
   }
@@ -216,5 +226,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getExportCenterList,
     exportCenterDownload,
     cancelCenterExport,
+    getRepeatContactList,
   };
 }

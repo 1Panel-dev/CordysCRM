@@ -14,7 +14,13 @@
     <van-collapse v-model="activeNames" :border="false">
       <van-collapse-item v-show="showResult" name="customer" :border="false">
         <template #title>
-          <div class="text-[18px] font-semibold">{{ t('workbench.duplicateCheck.result') }}</div>
+          <div class="text-[18px] font-semibold">
+            {{
+              validatePhone(keyword)
+                ? t('workbench.duplicateCheck.contactResult')
+                : t('workbench.duplicateCheck.result')
+            }}
+          </div>
         </template>
         <template #right-icon>
           <CrmIcon
@@ -27,8 +33,8 @@
           ref="customerRelatedListRef"
           v-model="customerList"
           :keyword="keyword"
-          :description-list="customerDescriptionList"
-          :api="GetRepeatCustomerList"
+          :description-list="validatePhone(keyword) ? contactDescriptionList : customerDescriptionList"
+          :api="validatePhone(keyword) ? getRepeatContactList : GetRepeatCustomerList"
           is-return-native-response
         />
       </van-collapse-item>
@@ -58,13 +64,14 @@
 
 <script setup lang="ts">
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { validatePhone } from '@lib/shared/method/validate';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
   import RelatedList from './components/relatedList.vue';
 
-  import { GetRepeatClueList, GetRepeatCustomerList } from '@/api/modules';
-  import { clueDescriptionList, customerDescriptionList } from '@/config/workbench';
+  import { GetRepeatClueList, getRepeatContactList, GetRepeatCustomerList } from '@/api/modules';
+  import { clueDescriptionList, contactDescriptionList, customerDescriptionList } from '@/config/workbench';
 
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 

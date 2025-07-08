@@ -1,8 +1,9 @@
 export default {
-  'workbench.searchPlaceholder': '请输入要查重的客户名称',
+  'workbench.searchPlaceholder': '请输入要查重的客户名称或手机号',
   'workbench.quickEntry': '快速入口',
   'workbench.duplicateCheck': '查重',
   'workbench.duplicateCheck.result': '客户相关',
+  'workbench.duplicateCheck.contactResult': '联系人相关',
   'workbench.duplicateCheck.status': '重复状态',
   'workbench.duplicateCheck.relatedOpportunity': '对应商机',
   'workbench.duplicateCheck.relatedClue': '对应线索',
@@ -12,4 +13,10 @@ export default {
   'workbench.duplicateCheck.moduleNotEnabled': '模块未开启',
   'workbench.duplicateCheck.duplicate': '重复',
   'workbench.duplicateCheck.similar': '相似',
+  'workbench.duplicateCheck.contactCompany': '公司',
+  'workbench.duplicateCheck.contactorName': '联系人姓名',
+  'workbench.duplicateCheck.contactorPhoneNumber': '联系人电话',
+  'workbench.duplicateCheck.customerName': '客户名称',
+  'workbench.duplicateCheck.contactName': '姓名',
+  'workbench.duplicateCheck.contactStatus': '状态',
 };

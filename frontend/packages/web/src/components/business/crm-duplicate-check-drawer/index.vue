@@ -1,5 +1,13 @@
 <template>
-  <CrmDrawer v-model:show="visible" no-padding :width="800" :footer="false" :title="t('workbench.duplicateCheck')">
+  <CrmDrawer
+    v-model:show="visible"
+    resizable
+    no-padding
+    :default-width="800"
+    :footer="false"
+    class="min-w-[800px]"
+    :title="t('workbench.duplicateCheck')"
+  >
     <n-scrollbar content-class="p-[24px]">
       <CrmSearchInput
         v-model:value="keyword"
@@ -9,25 +17,33 @@
         @search="(val) => searchData(val)"
       />
       <div v-show="noDuplicateCustomers" class="text-center text-[var(--text-n4)]">
-        {{ t('workbench.duplicateCheck.noDuplicateCustomers') }}
+        {{
+          validatePhone(keyword)
+            ? t('workbench.duplicateCheck.noDuplicateContacts')
+            : t('workbench.duplicateCheck.noDuplicateCustomers')
+        }}
       </div>
       <!-- 查询结果 -->
       <div v-show="showResult" class="mb-[24px]">
-        <div class="font-semibold">{{ t('workbench.duplicateCheck.result') }}</div>
-        <div v-show="code === 101003" class="text-center text-[var(--text-n4)]">
+        <div class="font-semibold">
+          {{
+            validatePhone(keyword) ? t('workbench.duplicateCheck.contactResult') : t('workbench.duplicateCheck.result')
+          }}
+        </div>
+        <div v-show="repeatTable.code === 101003" class="text-center text-[var(--text-n4)]">
           {{ t('workbench.duplicateCheck.moduleNotEnabled') }}
         </div>
         <div
-          v-show="code !== 101003"
+          v-show="repeatTable.code !== 101003"
           class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]"
         >
           <CrmTable
-            v-bind="propsRes"
+            v-bind="repeatTable.propsRes"
             class="!h-[548px]"
-            @page-change="propsEvent.pageChange"
-            @page-size-change="propsEvent.pageSizeChange"
-            @sorter-change="propsEvent.sorterChange"
-            @filter-change="propsEvent.filterChange"
+            @page-change="repeatTable.propsEvent.pageChange"
+            @page-size-change="repeatTable.propsEvent.pageSizeChange"
+            @sorter-change="repeatTable.propsEvent.sorterChange"
+            @filter-change="repeatTable.propsEvent.filterChange"
           />
         </div>
       </div>
@@ -60,7 +76,8 @@
   import { NButton, NScrollbar } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { RepeatCustomerItem } from '@lib/shared/models/system/business';
+  import { validatePhone } from '@lib/shared/method/validate';
+  import { RepeatContactItem, RepeatCustomerItem } from '@lib/shared/models/system/business';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
@@ -72,6 +89,7 @@
   import {
     GetRepeatClueDetailList,
     GetRepeatClueList,
+    getRepeatContactList,
     GetRepeatCustomerList,
     GetRepeatOpportunityDetailList,
   } from '@/api/modules';
@@ -130,6 +148,22 @@
         tooltip: true,
       },
     },
+    {
+      title: t('workbench.duplicateCheck.contactorName'),
+      key: 'contact',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('workbench.duplicateCheck.contactorPhoneNumber'),
+      key: 'phone',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
   ];
 
   const opportunityColumns: CrmDataTableColumn[] = [
@@ -179,6 +213,7 @@
     { label: t('workbench.duplicateCheck.similar'), value: 'PART' },
   ];
 
+  // 客户相关
   const columns: CrmDataTableColumn[] = [
     {
       title: t('opportunity.customerName'),
@@ -253,7 +288,62 @@
     },
   ];
 
-  const { propsRes, propsEvent, loadList, setLoadListParams, code } = useTable(GetRepeatCustomerList, {
+  // 联系人相关
+  const contactColumn: CrmDataTableColumn[] = [
+    {
+      title: t('opportunity.customerName'),
+      key: 'customerName',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('workbench.duplicateCheck.contactName'),
+      key: 'name',
+      width: 70,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('common.phoneNumber'),
+      key: 'phone',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('common.head'),
+      key: 'ownerName',
+      width: 80,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('common.status'),
+      width: 50,
+      key: 'enable',
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: RepeatContactItem) => {
+        return row.enable ? t('common.open') : t('common.close');
+      },
+    },
+    {
+      title: t('common.createTime'),
+      key: 'createTime',
+      width: 100,
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+  ];
+
+  const repeatAccountTable = useTable(GetRepeatCustomerList, {
     showSetting: false,
     columns,
     isReturnNativeResponse: true,
@@ -262,11 +352,30 @@
     },
   });
 
+  const repeatContactTable = useTable(getRepeatContactList, {
+    showSetting: false,
+    columns: contactColumn,
+    isReturnNativeResponse: true,
+    crmPagination: {
+      size: 'small',
+    },
+  });
+
+  const repeatTable = ref<Record<string, any>>(repeatAccountTable);
+
+  watch(
+    () => keyword.value,
+    (val) => {
+      repeatTable.value = validatePhone(val) ? repeatContactTable : repeatAccountTable;
+    },
+    { immediate: true }
+  );
+
   const clueTableRef = ref<InstanceType<typeof RelatedTable>>();
   async function searchData(val: string) {
-    setLoadListParams({ name: val });
-    loadList().finally(() => {
-      showResult.value = !!propsRes.value.data.length || code.value === 101003;
+    repeatTable.value.setLoadListParams({ name: val });
+    repeatTable.value.loadList().finally(() => {
+      showResult.value = !!repeatTable.value.propsRes.data.length || repeatTable.value.code === 101003;
       noDuplicateCustomers.value = !showResult.value && !showClue.value;
     });
     clueTableRef.value?.searchData(val).finally(() => {
