@@ -52,10 +52,6 @@ export const contactDescriptionList = [
     key: 'customerName',
   },
   {
-    label: t('workbench.duplicateCheck.contactName'),
-    key: 'name',
-  },
-  {
     label: t('common.phoneNumber'),
     key: 'phone',
   },

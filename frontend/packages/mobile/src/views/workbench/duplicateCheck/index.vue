@@ -63,6 +63,8 @@
 </template>
 
 <script setup lang="ts">
+  import { debounce } from 'lodash-es';
+
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { validatePhone } from '@lib/shared/method/validate';
 
@@ -101,7 +103,7 @@
   const customerRelatedListRef = ref<InstanceType<typeof RelatedList>>();
   const clueRelatedListRef = ref<InstanceType<typeof RelatedList>>();
 
-  async function searchData() {
+  const searchData = debounce(() => {
     nextTick(() => {
       customerRelatedListRef.value?.loadList().finally(() => {
         showResult.value = !!customerList.value.length || customerRelatedListRef.value?.code === 101003;
@@ -112,7 +114,14 @@
         noDuplicateCustomers.value = !showResult.value && !showClue.value;
       });
     });
-  }
+  }, 300);
+
+  watch(
+    () => keyword.value,
+    () => {
+      searchData();
+    }
+  );
 </script>
 
 <style lang="less" scoped>

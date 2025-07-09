@@ -22,7 +22,7 @@
                   ? 'var(--text-n1)'
                   : 'var(--primary-8)'
               "
-              :text="String(item.value)"
+              :text="String(item.value || 0)"
               @click="toDetail(listItem, item)"
             />
           </template>
