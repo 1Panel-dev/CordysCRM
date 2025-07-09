@@ -3,9 +3,9 @@
     v-model:show="visible"
     resizable
     no-padding
-    :default-width="800"
+    :default-width="1000"
     :footer="false"
-    class="min-w-[800px]"
+    class="min-w-[1000px]"
     :title="t('workbench.duplicateCheck')"
   >
     <n-scrollbar content-class="p-[24px]">
@@ -243,7 +243,7 @@
     {
       title: t('workbench.duplicateCheck.relatedOpportunity'),
       key: 'opportunityCount',
-      width: 70,
+      width: 60,
       render: (row: RepeatCustomerItem) => {
         return !row.opportunityCount
           ? row.opportunityCount
@@ -262,7 +262,7 @@
     {
       title: t('workbench.duplicateCheck.relatedClue'),
       key: 'clueCount',
-      width: 70,
+      width: 60,
       render: (row: RepeatCustomerItem) => {
         return !row.clueCount
           ? row.clueCount
@@ -281,7 +281,7 @@
     {
       title: t('common.createTime'),
       key: 'createTime',
-      width: 100,
+      width: 120,
       ellipsis: {
         tooltip: true,
       },
