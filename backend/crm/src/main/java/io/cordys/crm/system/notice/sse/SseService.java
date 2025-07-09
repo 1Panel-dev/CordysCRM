@@ -72,7 +72,8 @@ public class SseService {
      */
     public Flux<String> addClient(String userId, String clientId) {
         if (StringUtils.isAnyBlank(userId, clientId)) {
-            throw new IllegalArgumentException("userId 和 clientId 不能为空");
+            LogUtils.info("User ID or Client ID is blank, cannot add client.");
+            return null;
         }
         Map<String, ClientSinkWrapper> inner = userClients.computeIfAbsent(userId,
                 k -> Collections.synchronizedMap(new LinkedHashMap<>()));
