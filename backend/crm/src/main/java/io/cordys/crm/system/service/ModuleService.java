@@ -232,7 +232,7 @@ public class ModuleService {
 			return false;
 		}
 		LambdaQueryWrapper<OrganizationConfigDetail> detailQueryWrapper = new LambdaQueryWrapper<>();
-		detailQueryWrapper.eq(OrganizationConfigDetail::getConfigId, config.getId()).like(OrganizationConfigDetail::getType, DepartmentConstants.DE.name());
+		detailQueryWrapper.eq(OrganizationConfigDetail::getConfigId, config.getId()).like(OrganizationConfigDetail::getType, "DE_BOARD");
 		OrganizationConfigDetail configDetail = organizationConfigDetailMapper.selectListByLambda(detailQueryWrapper).getFirst();
 		return configDetail != null && configDetail.getEnable();
 	}
