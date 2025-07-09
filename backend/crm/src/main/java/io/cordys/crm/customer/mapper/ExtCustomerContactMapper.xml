@@ -277,6 +277,6 @@
         from customer_contact cc
                  left join sys_user su on cc.owner = su.id
                  left join customer c on cc.customer_id = c.id
-        where cc.organization_id = #{orgId} and cc.phone like concat('%', #{name}, '%')
+        where cc.organization_id = #{orgId} and cc.phone = #{name}
     </select>
 </mapper>
