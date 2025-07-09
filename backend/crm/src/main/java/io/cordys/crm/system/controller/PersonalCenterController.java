@@ -39,7 +39,7 @@ public class PersonalCenterController {
 
     @PostMapping("/repeat/customer")
     @Operation(summary = "获取重复客户相关数据")
-    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_READ}, logical = Logical.OR)
+    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ, PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ}, logical = Logical.OR)
     public Pager<List<CustomerRepeatResponse>> getRepeatCustomer(@Validated @RequestBody RepeatCustomerPageRequest request) {
         return personalCenterService.getRepeatCustomer(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
@@ -55,7 +55,7 @@ public class PersonalCenterController {
 
     @PostMapping("/repeat/clue")
     @Operation(summary = "获取重复线索相关数据")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ})
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ}, logical = Logical.OR)
     public Pager<List<ClueRepeatListResponse>> getRepeatClue(@Validated @RequestBody RepeatCustomerPageRequest request) {
         return personalCenterService.getRepeatClue(request, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
     }
@@ -63,7 +63,7 @@ public class PersonalCenterController {
 
     @PostMapping("/repeat/clue/detail")
     @Operation(summary = "获取重复线索详情")
-    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ})
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ}, logical = Logical.OR)
     public Pager<List<ClueRepeatListResponse>> getRepeatClueDetail(@Validated @RequestBody RepeatCustomerDetailPageRequest request) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         return PageUtils.setPageInfo(page, personalCenterService.getRepeatClueDetail(request, OrganizationContext.getOrganizationId()));

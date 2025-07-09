@@ -243,7 +243,7 @@ public class PersonalCenterService {
         // 查询用户权限并检查是否是管理员
         List<String> permissions = extUserRoleMapper.selectPermissionsByUserId(userId);
         boolean isAdmin = StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue());
-        boolean hasCustomerRead = permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ) || isAdmin;
+        boolean hasCustomerRead = permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_READ) || permissions.contains(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ) || isAdmin;
 
         // 查询当前组织下已启用的模块列表
         List<String> enabledModules = moduleMapper.selectListByLambda(
@@ -344,7 +344,7 @@ public class PersonalCenterService {
                                               List<CustomerRepeatResponse> customers,
                                               List<String> enabledModules) {
         // 没有线索读取权限且不是管理员返回空map
-        if (!permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) && !isAdmin) {
+        if (!permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) &&  !permissions.contains(PermissionConstants.CLUE_MANAGEMENT_POOL_READ) && !isAdmin) {
             return Collections.emptyMap();
         }
         // 线索模块未启用返回空map
@@ -398,7 +398,7 @@ public class PersonalCenterService {
         List<Module> modules = moduleMapper.selectListByLambda(moduleQuery);
 
         // 3. 权限检查：有线索读取权限或是管理员，但线索模块未启用
-        boolean hasClueReadPermission = permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ);
+        boolean hasClueReadPermission = permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) || permissions.contains(PermissionConstants.CLUE_MANAGEMENT_POOL_READ);
         boolean isAdmin = StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue());
 
         if ((hasClueReadPermission || isAdmin) && CollectionUtils.isEmpty(modules)) {
