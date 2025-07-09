@@ -398,11 +398,18 @@ public class PersonalCenterService {
         List<Module> modules = moduleMapper.selectListByLambda(moduleQuery);
 
         // 3. 权限检查：有线索读取权限或是管理员，但线索模块未启用
-        boolean hasClueReadPermission = permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) || permissions.contains(PermissionConstants.CLUE_MANAGEMENT_POOL_READ);
         boolean isAdmin = StringUtils.equalsIgnoreCase(userId, InternalUser.ADMIN.getValue());
+        boolean hasClueReadPermission = permissions.contains(PermissionConstants.CLUE_MANAGEMENT_READ) || permissions.contains(PermissionConstants.CLUE_MANAGEMENT_POOL_READ) || isAdmin;
 
-        if ((hasClueReadPermission || isAdmin) && CollectionUtils.isEmpty(modules)) {
+        if (hasClueReadPermission && CollectionUtils.isEmpty(modules)) {
             throw new GenericException(SystemResultCode.MODULE_ENABLE);
+        }
+
+        if (!hasClueReadPermission) {
+            // 没有线索读取权限直接返回空列表
+            return PageUtils.setPageInfo(
+                    PageHelper.startPage(request.getCurrent(), request.getPageSize()), new ArrayList<>());
+
         }
 
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
