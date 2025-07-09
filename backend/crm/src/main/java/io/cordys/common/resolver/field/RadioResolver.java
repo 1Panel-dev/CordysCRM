@@ -2,7 +2,11 @@ package io.cordys.common.resolver.field;
 
 
 import io.cordys.crm.system.dto.field.RadioField;
+import io.cordys.crm.system.dto.field.base.OptionProp;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author jianxing
@@ -34,7 +38,11 @@ public class RadioResolver extends AbstractModuleFieldResolver<RadioField> {
 
     @Override
     public Object trans2Value(RadioField radioField, String value) {
-        String label = radioField.getOptions().stream().filter(option -> StringUtils.equalsIgnoreCase(option.getValue(), value)).toList().getFirst().getLabel();
-        return label == null ? "" : label;
+        AtomicReference<String> optionValue = new AtomicReference<>(StringUtils.EMPTY);
+        OptionProp optionProp = radioField.getOptions().stream().filter(option -> StringUtils.equalsIgnoreCase(option.getValue(), value)).findFirst().orElse(null);
+        Optional.ofNullable(optionProp).ifPresent(option ->{
+            optionValue.set(option.getLabel());
+        });
+        return optionValue.get();
     }
 }
