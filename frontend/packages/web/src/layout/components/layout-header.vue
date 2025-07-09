@@ -15,7 +15,7 @@
       <CrmTopMenu />
       <div class="flex items-center gap-[8px]">
         <CrmTag
-          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT_READ', 'CLUE_MANAGEMENT_READ'])"
+          v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'])"
           theme="light"
           type="primary"
           class="cursor-pointer"
