@@ -26,6 +26,7 @@ export default {
   'org.updateMember': 'Update member',
   'org.testConnection': 'Test Connection',
   'org.testConnectionSuccess': 'Test Connection Success',
+  'org.testConnectionError': 'The connection test failed',
   'org.importAlertDesc': 'Please edit the content in the format in the Excel template before uploading',
   'org.downloadTemplate': 'Download Excel templates',
   'org.formExcelImport': 'Import from Excel file',

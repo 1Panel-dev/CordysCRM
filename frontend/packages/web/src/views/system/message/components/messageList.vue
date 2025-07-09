@@ -15,13 +15,20 @@
 <script lang="ts" setup>
   import { DataTableColumn, NDataTable, useMessage } from 'naive-ui';
 
+  import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { MessageConfigItem } from '@lib/shared/models/system/message';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import SwitchPopConfirm from './switchPopConfirm.vue';
 
-  import { batchSaveMessageTask, checkSyncUserFromThird, getMessageTask, saveMessageTask } from '@/api/modules';
+  import {
+    batchSaveMessageTask,
+    checkSyncUserFromThird,
+    getConfigSynchronization,
+    getMessageTask,
+    saveMessageTask,
+  } from '@/api/modules';
   import { hasAnyPermission } from '@/utils/permission';
 
   const Message = useMessage();
@@ -119,6 +126,7 @@
   }
 
   const isSyncFromThirdChecked = ref(false);
+  const isEnableWeComConfig = ref<boolean>(false);
   const columns = computed<DataTableColumn[]>(() => [
     {
       title: t('system.message.Feature'),
@@ -193,37 +201,46 @@
         });
       },
     },
-    {
-      title: () => {
-        return h(SwitchPopConfirm, {
-          title: t('system.message.confirmCloseWeChatNotice'),
-          titleColumnText: t('system.message.enterpriseWeChatNotice'),
-          value: enableWeChatMessage.value,
-          loading: enableSystemLoading.value,
-          content: t('system.message.confirmCloseSystemNotifyContent'),
-          disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) || !isSyncFromThirdChecked.value,
-          toolTipContent: !isSyncFromThirdChecked.value ? t('system.message.weComSwitchTip') : '',
-          onChange: (cancel?: () => void) => toggleGlobalMessage('weChat', cancel),
-        });
-      },
-      key: 'weComEnable',
-      width: 200,
-      ellipsis: {
-        tooltip: true,
-      },
-      render: (row) => {
-        return h(SwitchPopConfirm, {
-          title: t('system.message.confirmCloseWeChatNotice'),
-          value: row.weComEnable as boolean,
-          loading: enableSystemLoading.value,
-          content: t('system.message.confirmCloseSystemNotifyContent'),
-          disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) || !isSyncFromThirdChecked.value,
-          toolTipContent: !isSyncFromThirdChecked.value ? t('system.message.weComSwitchTip') : '',
-          onChange: (cancel?: () => void) =>
-            handleToggleSystemMessage(row as unknown as MessageConfigItem, 'weChat', cancel),
-        });
-      },
-    },
+    ...(isEnableWeComConfig.value
+      ? [
+          {
+            title: () => {
+              return h(SwitchPopConfirm, {
+                title: t('system.message.confirmCloseWeChatNotice'),
+                titleColumnText: t('system.message.enterpriseWeChatNotice'),
+                value: enableWeChatMessage.value,
+                loading: enableSystemLoading.value,
+                content: t('system.message.confirmCloseSystemNotifyContent'),
+                disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) || !isSyncFromThirdChecked.value,
+                toolTipContent: !isSyncFromThirdChecked.value ? t('system.message.weComSwitchTip') : '',
+                onChange: (cancel?: () => void) => {
+                  if (!isSyncFromThirdChecked.value) return;
+                  toggleGlobalMessage('weChat', cancel);
+                },
+              });
+            },
+            key: 'weComEnable',
+            width: 200,
+            ellipsis: {
+              tooltip: true,
+            },
+            render: (row: any) => {
+              return h(SwitchPopConfirm, {
+                title: t('system.message.confirmCloseWeChatNotice'),
+                value: row.weComEnable as boolean,
+                loading: enableSystemLoading.value,
+                content: t('system.message.confirmCloseSystemNotifyContent'),
+                disabled: !hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) || !isSyncFromThirdChecked.value,
+                toolTipContent: !isSyncFromThirdChecked.value ? t('system.message.weComSwitchTip') : '',
+                onChange: (cancel?: () => void) => {
+                  if (!isSyncFromThirdChecked.value) return;
+                  handleToggleSystemMessage(row as unknown as MessageConfigItem, 'weChat', cancel);
+                },
+              });
+            },
+          },
+        ]
+      : []),
   ]);
 
   async function initCheckSyncType() {
@@ -235,8 +252,23 @@
     }
   }
 
+  // 企业微信配置
+  async function initIntegration() {
+    try {
+      const res = await getConfigSynchronization();
+      if (res) {
+        const weChatConfig = res.find((item) => item.type === CompanyTypeEnum.WECOM);
+        isEnableWeComConfig.value = !!weChatConfig && !!weChatConfig.weComEnable;
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   onBeforeMount(() => {
     initCheckSyncType();
+    initIntegration();
     initMessageList();
   });
 </script>

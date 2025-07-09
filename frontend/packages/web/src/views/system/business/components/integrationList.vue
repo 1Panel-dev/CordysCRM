@@ -84,6 +84,15 @@
             </n-tooltip>
             <div class="text-[12px]">{{ t('system.business.tab.scanLogin') }}</div>
           </div>
+          <div class="flex items-center gap-[8px]">
+            <n-switch
+              size="small"
+              :value="item.response.weComEnable"
+              :disabled="!hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
+              @update:value="handleChangeEnable(item, 'weComEnable')"
+            />
+            <div class="text-[12px]">{{ t('system.message.enterpriseWeChatNotice') }}</div>
+          </div>
 
           <div class="flex items-center gap-[8px]">
             <n-tooltip :disabled="item.hasConfig">
@@ -204,7 +213,10 @@
     showEditIntegrationModal.value = true;
   }
 
-  async function handleChangeEnable(item: IntegrationItem, key: 'syncEnable' | 'qrcodeEnable' | 'deBoardEnable') {
+  async function handleChangeEnable(
+    item: IntegrationItem,
+    key: 'syncEnable' | 'qrcodeEnable' | 'deBoardEnable' | 'weComEnable'
+  ) {
     try {
       updateConfigSynchronization({ ...item.response, [key]: !item.response[key] })
         .then(() => {

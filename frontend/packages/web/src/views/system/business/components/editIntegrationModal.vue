@@ -201,8 +201,13 @@
       if (!error) {
         try {
           linkLoading.value = true;
-          await testConfigSynchronization(form.value);
-          Message.success(t('org.testConnectionSuccess'));
+          const result = await testConfigSynchronization(form.value);
+          const isSuccess = result.data.data;
+          if (isSuccess) {
+            Message.success(t('org.testConnectionSuccess'));
+          } else {
+            Message.error(t('org.testConnectionError'));
+          }
         } catch (e) {
           // eslint-disable-next-line no-console
           console.log(e);
