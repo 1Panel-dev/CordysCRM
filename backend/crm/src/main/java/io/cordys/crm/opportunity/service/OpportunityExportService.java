@@ -190,6 +190,7 @@ public class OpportunityExportService extends BaseExportService {
                 //更新导出任务状态
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.SUCCESS.toString(), userId);
             } catch (Exception e) {
+                LogUtils.error("导出商机异常", e);
                 //更新任务
                 exportTaskService.update(exportTask.getId(), ExportConstants.ExportStatus.ERROR.toString(), userId);
             } finally {
