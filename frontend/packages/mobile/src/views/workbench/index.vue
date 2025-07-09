@@ -3,7 +3,14 @@
     <div class="flex items-center justify-between gap-[12px] bg-[var(--text-n10)] px-[12px] py-[4px]">
       <CrmAvatar :is-word="false" @click="goMine" />
       <van-search
-        v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'])"
+        v-if="
+          hasAnyPermission([
+            'CUSTOMER_MANAGEMENT:READ',
+            'CUSTOMER_MANAGEMENT_POOL:READ',
+            'CLUE_MANAGEMENT:READ',
+            'CLUE_MANAGEMENT_POOL:READ',
+          ])
+        "
         v-model="keyword"
         shape="round"
         :placeholder="t('workbench.searchPlaceholder')"

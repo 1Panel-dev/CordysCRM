@@ -95,6 +95,7 @@
   } from '@/api/modules';
   import { clueBaseSteps } from '@/config/clue';
   import { lastOpportunitySteps, opportunityResultSteps } from '@/config/opportunity';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const visible = defineModel<boolean>('visible', {
     required: true,
@@ -252,7 +253,7 @@
               {
                 text: true,
                 type: 'primary',
-                disabled: !row.opportunityModuleEnable,
+                disabled: !row.opportunityModuleEnable || !hasAnyPermission(['OPPORTUNITY_MANAGEMENT:READ']),
                 onClick: () => showDetail(row, 'opportunity'),
               },
               { default: () => row.opportunityCount }
@@ -271,7 +272,8 @@
               {
                 text: true,
                 type: 'primary',
-                disabled: !row.clueModuleEnable,
+                disabled:
+                  !row.clueModuleEnable || !hasAnyPermission(['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ']),
                 onClick: () => showDetail(row, 'clue'),
               },
               { default: () => row.clueCount }

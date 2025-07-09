@@ -18,7 +18,9 @@
           <template #count="{ item }">
             <CrmTextButton
               :color="
-                !item.value || !listItem[item.key.includes('clue') ? 'clueModuleEnable' : 'opportunityModuleEnable']
+                !item.value ||
+                !listItem[item.key.includes('clue') ? 'clueModuleEnable' : 'opportunityModuleEnable'] ||
+                !hasPermission(listItem, item)
                   ? 'var(--text-n1)'
                   : 'var(--primary-8)'
               "
@@ -52,6 +54,8 @@
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
+  import { hasAnyPermission } from '@/utils/permission';
+
   import { WorkbenchRouteEnum } from '@/enums/routeEnum';
 
   const props = defineProps<{
@@ -83,8 +87,20 @@
     })) as CrmDescriptionItem[];
   }
 
+  function hasPermission(listItem: Record<string, any>, item: Record<string, any>) {
+    const permission = item.key.includes('clue')
+      ? ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ']
+      : ['OPPORTUNITY_MANAGEMENT:READ'];
+    return hasAnyPermission(permission);
+  }
+
   function toDetail(listItem: Record<string, any>, item: Record<string, any>) {
-    if (!item.value || !listItem[item.key.includes('clue') ? 'clueModuleEnable' : 'opportunityModuleEnable']) return;
+    if (
+      !item.value ||
+      !listItem[item.key.includes('clue') ? 'clueModuleEnable' : 'opportunityModuleEnable'] ||
+      !hasPermission(listItem, item)
+    )
+      return;
     router.push({
       name: WorkbenchRouteEnum.WORKBENCH_DUPLICATE_CHECK_DETAIL,
       query: {
