@@ -71,6 +71,25 @@ ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
 COLLATE = utf8mb4_general_ci;
 
+
+CREATE TABLE dashboard_collection
+(
+    `id`           VARCHAR(32) NOT NULL COMMENT 'id',
+    `user_id`      VARCHAR(32) NOT NULL COMMENT '用户id',
+    `dashboard_id` VARCHAR(32) NOT NULL COMMENT '仪表板id',
+    `create_time`  BIGINT      NOT NULL COMMENT '创建时间',
+    `update_time`  BIGINT      NOT NULL COMMENT '更新时间',
+    `create_user`  VARCHAR(32) NOT NULL COMMENT '创建人',
+    `update_user`  VARCHAR(32) NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id, user_id, dashboard_id)
+) COMMENT = '仪表板收藏'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_user_id ON dashboard_collection (user_id ASC);
+
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
