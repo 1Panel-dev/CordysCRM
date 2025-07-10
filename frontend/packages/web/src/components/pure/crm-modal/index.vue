@@ -38,14 +38,7 @@
               >
                 {{ props.negativeText || t('common.cancel') }}
               </n-button>
-              <n-button
-                v-if="showContinue"
-                :loading="props.okLoading"
-                type="primary"
-                ghost
-                class="n-btn-outline-primary"
-                @click="handleContinue"
-              >
+              <n-button v-if="showContinue" :loading="props.okLoading" type="primary" ghost @click="handleContinue">
                 {{ t(props.continueText || t('common.saveAndContinue')) }}
               </n-button>
               <n-button

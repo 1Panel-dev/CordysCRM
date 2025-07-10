@@ -5,6 +5,27 @@
   "css_prefix_text": "icon",
   "description": "",
   "glyphs": [
+      {
+      "icon_id": "44783033",
+      "name": "icon_data_person",
+      "font_class": "icon_data_person",
+      "unicode": "e7d8",
+      "unicode_decimal": 59352
+    },
+    {
+      "icon_id": "44783034",
+      "name": "icon_data_plan",
+      "font_class": "icon_data_plan",
+      "unicode": "e7d9",
+      "unicode_decimal": 59353
+    },
+    {
+      "icon_id": "44783032",
+      "name": "icon_data_record",
+      "font_class": "icon_data_record",
+      "unicode": "e7da",
+      "unicode_decimal": 59354
+    },
     {
       "icon_id": "44765698",
       "name": "icon_folder_collapse",

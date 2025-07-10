@@ -5,12 +5,6 @@ const { t } = useI18n();
 
 export const quickAccessList = [
   {
-    key: FormDesignKeyEnum.CLUE,
-    icon: 'newClue',
-    label: t('clueManagement.newClue'),
-    permission: ['CLUE_MANAGEMENT:ADD'],
-  },
-  {
     key: FormDesignKeyEnum.CUSTOMER,
     icon: 'newCustomer',
     label: t('customer.new'),
@@ -21,6 +15,12 @@ export const quickAccessList = [
     icon: 'newContact',
     label: t('customManagement.newContact'),
     permission: ['CUSTOMER_MANAGEMENT_CONTACT:ADD'],
+  },
+  {
+    key: FormDesignKeyEnum.CLUE,
+    icon: 'newClue',
+    label: t('clueManagement.newClue'),
+    permission: ['CLUE_MANAGEMENT:ADD'],
   },
   {
     key: FormDesignKeyEnum.BUSINESS,
@@ -42,5 +42,103 @@ export const quickAccessList = [
   //   permission: [],
   // },
 ];
+
+export const defaultClueData = {
+  icon: 'iconicon_clue',
+  iconColor: 'text-[var(--warning-yellow)]',
+  bgColor: 'var(--warning-5)',
+  name: t('workbench.clueTotal'),
+  total: 0,
+  permission: ['CLUE_MANAGEMENT:READ'],
+  analytics: [
+    {
+      title: t('workbench.addCount'),
+      count: 0,
+      isGrowth: 0,
+    },
+    {
+      title: t('workbench.noFollowUp'),
+      count: 0,
+      isGrowth: 0,
+    },
+    {
+      title: t('workbench.remainingCapacity'),
+      count: 0,
+      isGrowth: 0,
+    },
+  ],
+};
+
+export const defaultAccountData = {
+  icon: 'iconicon_customer',
+  iconColor: 'text-[var(--success-green)]',
+  bgColor: 'var(--success-5)',
+  name: t('workbench.customerTotal'),
+  total: 0,
+  permission: ['CUSTOMER_MANAGEMENT:READ'],
+  analytics: [
+    {
+      title: t('workbench.addCount'),
+      count: 0,
+      isGrowth: 0,
+    },
+    {
+      title: t('workbench.noFollowUp'),
+      count: 0,
+      isGrowth: 0,
+    },
+    {
+      title: t('workbench.remainingCapacity'),
+      count: 0,
+      isGrowth: 0,
+    },
+  ],
+};
+
+export const defaultOpportunityData = {
+  icon: 'iconicon_business_opportunity',
+  iconColor: 'text-[var(--primary-8)]',
+  bgColor: 'var(--primary-6)',
+  name: t('workbench.opportunityTotal'),
+  total: 0,
+  permission: ['OPPORTUNITY_MANAGEMENT:READ'],
+  analytics: [
+    {
+      title: t('workbench.addCount'),
+      count: 0,
+      isGrowth: 0,
+    },
+  ],
+};
+
+export const defaultContactsData = {
+  icon: 'iconicon_user_add',
+  iconColor: 'text-[var(--info-blue)]',
+  bgColor: 'var(--info-5)',
+  name: t('workbench.addContacts'),
+  total: 0,
+  isGrowth: 0,
+  permission: ['CUSTOMER_MANAGEMENT:READ'],
+};
+
+export const defaultFollowRecordData = {
+  icon: 'iconicon_data_record',
+  iconColor: 'text-[var(--warning-yellow)]',
+  bgColor: 'var(--warning-4)',
+  name: t('workbench.addFollowRecords'),
+  total: 0,
+  isGrowth: 0,
+  permission: ['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'],
+};
+
+export const defaultFollowPlanData = {
+  icon: 'iconicon_data_plan',
+  iconColor: 'text-[#9170FD]',
+  bgColor: 'rgba(145, 112, 253, 0.05)',
+  name: t('workbench.addFollowPlans'),
+  total: 0,
+  isGrowth: 0,
+  permission: ['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'],
+};
 
 export default {};
