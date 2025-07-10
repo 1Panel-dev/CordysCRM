@@ -39,6 +39,7 @@
         </include>
 
         where p.organization_id = #{orgId}
+          and p.status = 1
         <if test="request.keyword != null and request.keyword != ''">
             and p.name like concat('%', #{request.keyword},'%')
         </if>
