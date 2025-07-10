@@ -2,15 +2,16 @@ package io.cordys.common.utils;
 
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.util.JSON;
 import io.cordys.common.util.TimeUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.i18n.LocaleContextHolder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OpportunityFieldUtils {

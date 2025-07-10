@@ -5,9 +5,6 @@ import io.cordys.crm.system.dto.field.RadioField;
 import io.cordys.crm.system.dto.field.base.OptionProp;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
-
 /**
  * @author jianxing
  */
@@ -32,17 +29,16 @@ public class RadioResolver extends AbstractModuleFieldResolver<RadioField> {
     }
 
     @Override
-    public Object parse2Value(RadioField radioField, String value) {
-        return value;
+    public Object parse2Value(RadioField selectField, String value) {
+        return super.parse2Value(selectField, value);
     }
 
     @Override
     public Object trans2Value(RadioField radioField, String value) {
-        AtomicReference<String> optionValue = new AtomicReference<>(StringUtils.EMPTY);
-        OptionProp optionProp = radioField.getOptions().stream().filter(option -> StringUtils.equalsIgnoreCase(option.getValue(), value)).findFirst().orElse(null);
-        Optional.ofNullable(optionProp).ifPresent(option ->{
-            optionValue.set(option.getLabel());
-        });
-        return optionValue.get();
+        return radioField.getOptions().stream()
+                .filter(option -> StringUtils.equalsIgnoreCase(option.getValue(), value))
+                .map(OptionProp::getLabel)
+                .findFirst()
+                .orElse(StringUtils.EMPTY);
     }
 }

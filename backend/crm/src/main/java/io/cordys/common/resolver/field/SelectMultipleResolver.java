@@ -2,12 +2,10 @@ package io.cordys.common.resolver.field;
 
 
 import io.cordys.common.util.JSON;
-import io.cordys.crm.system.dto.field.CheckBoxField;
 import io.cordys.crm.system.dto.field.SelectMultipleField;
 import io.cordys.crm.system.dto.field.base.OptionProp;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,14 +44,24 @@ public class SelectMultipleResolver extends AbstractModuleFieldResolver<SelectMu
         if (StringUtils.isBlank(value) || StringUtils.equals(value, "[]")) {
             return StringUtils.EMPTY;
         }
-        List list = JSON.parseArray(value);
-        List<String> result = new ArrayList<>();
-        Map<String, String> optionValueMap = selectMultipleField.getOptions().stream().collect(Collectors.toMap(OptionProp::getValue, OptionProp::getLabel));
-        list.forEach(item -> {
-            if (optionValueMap.containsKey(item.toString())) {
-                result.add(optionValueMap.get(item.toString()));
+
+        try {
+            List<String> list = JSON.parseArray(value, String.class);
+            if (list == null || list.isEmpty()) {
+                return StringUtils.EMPTY;
             }
-        });
-        return String.join(",", JSON.parseArray(JSON.toJSONString(result)));
+
+            Map<String, String> optionValueMap = selectMultipleField.getOptions().stream()
+                    .collect(Collectors.toMap(OptionProp::getValue, OptionProp::getLabel, (a, b) -> a));
+
+            List<String> result = list.stream()
+                    .filter(item -> item != null && optionValueMap.containsKey(item))
+                    .map(optionValueMap::get)
+                    .collect(Collectors.toList());
+
+            return String.join(",", result);
+        } catch (Exception e) {
+            return StringUtils.EMPTY;
+        }
     }
 }

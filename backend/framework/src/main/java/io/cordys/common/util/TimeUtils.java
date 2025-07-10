@@ -1,5 +1,6 @@
 package io.cordys.common.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
@@ -47,7 +48,10 @@ public abstract class TimeUtils extends DateUtils {
     }
 
 
-    public static String getDataStr(long timeStamp) {
+    public static String getDataStr(Long timeStamp) {
+        if (timeStamp == null) {
+            return StringUtils.EMPTY;
+        }
         SimpleDateFormat dateFormat = new SimpleDateFormat(DAY_PATTERN);
         return dateFormat.format(timeStamp);
     }
