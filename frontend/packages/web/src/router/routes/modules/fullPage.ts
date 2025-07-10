@@ -10,12 +10,16 @@ const FullPage: AppRouteRecordRaw = {
   component: FULL_PAGE_LAYOUT,
   meta: {
     hideInMenu: true,
+    permissions: ['DASHBOARD:READ'],
   },
   children: [
     {
       path: 'fullPageDashboard',
       name: FullPageEnum.FULL_PAGE_DASHBOARD,
       component: () => import('@/views/dashboard/fullPage.vue'),
+      meta: {
+        permissions: ['DASHBOARD:READ'],
+      },
     },
   ],
 };

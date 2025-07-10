@@ -54,6 +54,7 @@
         <n-tooltip trigger="hover" :style="{ padding: '4px' }">
           <template #trigger>
             <n-button
+              v-permission="['DASHBOARD:ADD']"
               type="primary"
               size="tiny"
               ghost
@@ -75,7 +76,7 @@
       v-model:selected-keys="selectedKeys"
       v-model:expanded-keys="expandedKeys"
       v-model:default-expand-all="expandAll"
-      :draggable="true"
+      :draggable="hasAnyPermission(['DASHBOARD:EDIT'])"
       :keyword="keyword"
       :render-prefix="renderPrefixDom"
       :node-more-actions="nodeMoreOptions"
@@ -234,6 +235,21 @@
   }
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
+    if (!hasAnyPermission(['DASHBOARD:EDIT'])) {
+      items = items.filter((e) => {
+        return e.key !== 'edit' && e.key !== 'rename';
+      });
+    }
+    if (!hasAnyPermission(['DASHBOARD:ADD'])) {
+      items = items.filter((e) => {
+        return e.key !== 'addDashboard';
+      });
+    }
+    if (!hasAnyPermission(['DASHBOARD:DELETE'])) {
+      items = items.filter((e) => {
+        return e.key !== 'delete';
+      });
+    }
     return items.filter((e) => {
       if (node.type === 'MODULE') {
         return e.key !== 'edit';

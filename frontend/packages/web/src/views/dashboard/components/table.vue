@@ -10,7 +10,7 @@
     >
       <template #tableTop>
         <div class="mb-[16px] flex items-center justify-between">
-          <n-button v-permission="[]" type="primary" @click="emit('create')">
+          <n-button v-permission="['DASHBOARD:ADD']" type="primary" @click="emit('create')">
             {{ t('dashboard.addDashboard') }}
           </n-button>
           <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
@@ -95,12 +95,12 @@
     {
       label: t('common.edit'),
       key: 'edit',
-      permission: [],
+      permission: ['DASHBOARD:EDIT'],
     },
     {
       label: t('common.delete'),
       key: 'delete',
-      permission: [],
+      permission: ['DASHBOARD:DELETE'],
     },
   ];
 

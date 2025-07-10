@@ -10,7 +10,7 @@ const dashboard: AppRouteRecordRaw = {
   component: DEFAULT_LAYOUT,
   meta: {
     locale: 'menu.dashboard',
-    permissions: [],
+    permissions: ['DASHBOARD:READ'],
     icon: 'iconicon_dashboard1',
     hideChildrenInMenu: true,
     collapsedLocale: 'menu.dashboard',
@@ -22,7 +22,7 @@ const dashboard: AppRouteRecordRaw = {
       component: () => import('@/views/dashboard/index.vue'),
       meta: {
         locale: 'menu.dashboard',
-        permissions: [],
+        permissions: ['DASHBOARD:READ'],
       },
     },
   ],
