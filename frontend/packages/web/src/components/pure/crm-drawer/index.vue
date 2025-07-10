@@ -58,6 +58,7 @@
                 v-if="props.showContinue"
                 type="primary"
                 ghost
+                class="n-btn-outline-primary"
                 :loading="props.loading"
                 :disabled="okDisabled"
                 @click="handleContinue"
