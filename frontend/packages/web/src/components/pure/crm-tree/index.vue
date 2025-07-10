@@ -593,6 +593,8 @@
             }
           }
           .n-tree-node-content__prefix {
+            @apply flex items-center;
+
             margin-right: 0 !important;
           }
           &.n-tree-node--selected {

@@ -65,7 +65,7 @@
   const props = withDefaults(defineProps<CrmTagGroupProps>(), {
     size: 'medium',
     type: 'default',
-    theme: 'default',
+    theme: 'dark',
     labelKey: 'label',
     placement: 'top',
   });

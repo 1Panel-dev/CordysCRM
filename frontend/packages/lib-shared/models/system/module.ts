@@ -14,6 +14,7 @@ export interface ModuleNavBaseInfoItem {
   moduleKey: string; // 模块KEY
   enable: boolean;
   pos?: number; // 自定义排序
+  disabled?: boolean; // 是否禁用
 }
 
 export interface ModuleNavItem extends ModuleNavBaseInfoItem {

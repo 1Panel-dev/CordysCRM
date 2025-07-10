@@ -11,7 +11,7 @@
       <div
         class="folder-button"
         :class="{ 'folder-button--active': selectedKeys.includes('favorite') }"
-        @click="selectedKeys = ['favorite']"
+        @click="handleFolderClick('favorite')"
       >
         <div class="folder-button-left">
           <favoriteIcon />
@@ -24,7 +24,7 @@
     <div
       class="folder-button mt-[4px]"
       :class="{ 'folder-button--active': selectedKeys.includes('all') }"
-      @click="selectedKeys = ['all']"
+      @click="handleFolderClick('all')"
     >
       <div class="folder-button-left">
         <CrmIcon type="iconicon_wallet" :size="16" />
@@ -103,15 +103,27 @@
   import { Add, Search } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { characterLimit, getGenerateId, mapTree } from '@lib/shared/method';
+  import { characterLimit, getGenerateId, mapTree, traverseTree } from '@lib/shared/method';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmTree from '@/components/pure/crm-tree/index.vue';
-  import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
+  import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import favoriteIcon from './favoriteIcon.vue';
 
-  import { getDepartmentTree, sortDepartment } from '@/api/modules';
+  import {
+    dashboardCollect,
+    dashboardDelete,
+    dashboardDrag,
+    dashboardModuleAdd,
+    dashboardModuleCount,
+    dashboardModuleDelete,
+    dashboardModuleDrag,
+    dashboardModuleRename,
+    dashboardModuleTree,
+    dashboardRename,
+    dashboardUnCollect,
+  } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -121,13 +133,12 @@
 
   const { t } = useI18n();
 
-  // const props = defineProps<{
-  // }>();
-
   const emit = defineEmits<{
     (e: 'selectNode', node: CrmTreeNodeData, _selectedKeys: Array<string | number>, offspringIds: string[]): void;
     (e: 'init', folderTree: CrmTreeNodeData[]): void;
     (e: 'addDashboard', option: CrmTreeNodeData): void;
+    (e: 'editDashboard', id: string): void;
+    (e: 'collect'): void;
   }>();
 
   const selectedKeys = defineModel<Array<string | number>>('value', {
@@ -142,7 +153,14 @@
 
   async function favoriteToggle(option: CrmTreeNodeData) {
     try {
-      option.isFavorite = !option.isFavorite;
+      if (option.myCollect) {
+        await dashboardUnCollect(option.id);
+      } else {
+        await dashboardCollect(option.id);
+      }
+      option.myCollect = !option.myCollect;
+      Message.success(option.myCollect ? t('dashboard.favoriteSuccess') : t('dashboard.unFavoriteSuccess'));
+      emit('collect');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -151,11 +169,21 @@
 
   function renderPrefixDom(infoProps: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
     const { option } = infoProps;
-    if (option.parentId === 'NONE') {
+    if (option.type === 'DASHBOARD') {
       return h(favoriteIcon, {
-        value: option.isFavorite,
+        value: option.myCollect,
         class: 'mr-[8px]',
-        onclick: () => favoriteToggle(option),
+        onclick: (e: MouseEvent) => {
+          e.stopPropagation();
+          favoriteToggle(option);
+        },
+      });
+    }
+    if (option.type === 'MODULE') {
+      return h(CrmIcon, {
+        type: 'iconicon_wallet',
+        class: 'mr-[8px]',
+        size: 16,
       });
     }
     return null;
@@ -207,8 +235,11 @@
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
     return items.filter((e) => {
-      if (node.parentId === 'NONE') {
-        return e.key !== 'delete';
+      if (node.type === 'MODULE') {
+        return e.key !== 'edit';
+      }
+      if (node.type === 'DASHBOARD') {
+        return e.key !== 'addDashboard';
       }
       return true;
     });
@@ -217,7 +248,7 @@
   // 获取模块树
   async function initTree(isInit = false) {
     try {
-      folderTree.value = await getDepartmentTree();
+      folderTree.value = await dashboardModuleTree();
       emit('init', folderTree.value);
       if (isInit) {
         selectedKeys.value = folderTree.value[0] ? [folderTree.value[0].id] : [];
@@ -234,9 +265,39 @@
     }
   }
 
+  const folderTreeCount = ref<Record<string, any>>({});
+  async function initModuleCount() {
+    try {
+      folderTreeCount.value = await dashboardModuleCount();
+      traverseTree(folderTree.value, (node) => {
+        if (node.type === 'MODULE') {
+          node.count = folderTreeCount.value[node.id] || 0;
+        } else if (node.type === 'DASHBOARD') {
+          node.count = folderTreeCount.value[node.parentId] || 0;
+        }
+      });
+      myFavoriteCount.value = folderTreeCount.value.myCollect || 0;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   //  重命名
   async function renameHandler(option: CrmTreeNodeData) {
     try {
+      const params = {
+        id: option.id,
+        name: option.name,
+      };
+      if (option.type === 'MODULE') {
+        await dashboardModuleRename(params);
+      } else {
+        await dashboardRename({
+          ...params,
+          dashboardModuleId: option.parentId || '',
+        });
+      }
       initTree();
       return Promise.resolve(true);
     } catch (e) {
@@ -249,6 +310,10 @@
   // 添加节点
   async function handleCreateNode(option: CrmTreeNodeData) {
     try {
+      await dashboardModuleAdd({
+        parentId: option.parentId || '',
+        name: option.name,
+      });
       initTree();
       return Promise.resolve(true);
     } catch (e) {
@@ -263,7 +328,7 @@
 
   // 添加节点
   async function addNode(parent: CrmTreeNodeData | null) {
-    currentParentId.value = parent ? parent.id : folderTree.value[0].id;
+    currentParentId.value = parent ? parent.id : 'NONE';
     try {
       const id = getGenerateId();
       const newNode: CrmTreeNodeData = {
@@ -272,14 +337,14 @@
         parentId: currentParentId.value,
         name: '',
         children: undefined,
+        type: 'MODULE',
       };
 
       if (parent) {
         parent.children = parent.children ?? [];
         parent.children.push(newNode);
       } else {
-        folderTree.value[0].children = folderTree.value[0].children ?? [];
-        folderTree.value[0].children.push(newNode);
+        folderTree.value.push(newNode);
       }
       expandedKeys.value.push(currentParentId.value);
       nextTick(() => {
@@ -346,17 +411,36 @@
     dropNode: CrmTreeNodeData,
     dropPosition: 'before' | 'inside' | 'after'
   ) {
-    const positionMap: Record<'before' | 'inside' | 'after', 0 | -1 | 1> = {
-      before: -1,
-      inside: 0,
-      after: 1,
-    };
+    if (dragNode.type === 'MODULE' && dropNode.type === 'DASHBOARD' && dropPosition === 'inside') {
+      // 模块不能拖拽到仪表板上
+      return;
+    }
     try {
-      await sortDepartment({
-        dragNodeId: dragNode.id,
-        dropNodeId: dropNode.id,
-        dropPosition: positionMap[dropPosition],
-      });
+      if (dragNode.type === 'MODULE') {
+        const positionMap: Record<'before' | 'inside' | 'after', 0 | -1 | 1> = {
+          before: -1,
+          inside: 0,
+          after: 1,
+        };
+        await dashboardModuleDrag({
+          dragNodeId: dragNode.id as string,
+          dropNodeId: dropNode.type === 'DASHBOARD' ? dropNode.parentId : dropNode.id,
+          dropPosition: positionMap[dropPosition],
+        });
+      } else {
+        const positionMap: Record<'before' | 'inside' | 'after', 'AFTER' | 'BEFORE' | 'APPEND'> = {
+          before: 'BEFORE',
+          inside: 'APPEND',
+          after: 'AFTER',
+        };
+        await dashboardDrag({
+          moveId: dragNode.id,
+          moveMode: positionMap[dropPosition],
+          targetId: dropNode.type === 'MODULE' ? dragNode.id : dropNode.id, // 释放节点是模块，则传入当前拖动的 仪表板 的id；释放节点是 仪表板 节点的话就传入释放节点的 id
+          dashboardModuleId: dropNode.type === 'DASHBOARD' ? dropNode.parentId : dropNode.id, // 释放节点是 仪表板，则传入它所属模块id；模块的话直接是模块id
+        });
+      }
+      Message.success(t('common.moveSuccess'));
       initTree();
     } catch (e) {
       // eslint-disable-next-line no-console
@@ -368,26 +452,39 @@
    * 删除
    */
   async function handleDelete(option: CrmTreeNodeData) {
-    openModal({
-      type: 'error',
-      title: t('common.deleteConfirmTitle', { name: characterLimit(option.name) }),
-      content: t('dashboard.deleteDashboardTip'),
-      positiveText: t('common.confirm'),
-      negativeText: t('common.cancel'),
-      positiveButtonProps: {
+    if (option.type === 'MODULE') {
+      try {
+        const offspringIds = getSpringIds(option.children || []);
+        await dashboardModuleDelete([option.id, ...offspringIds]);
+        Message.success(t('common.deleteSuccess'));
+        initTree(true);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    } else {
+      openModal({
         type: 'error',
-        size: 'medium',
-      },
-      onPositiveClick: async () => {
-        try {
-          Message.success(t('common.deleteSuccess'));
-          initTree(true);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log(error);
-        }
-      },
-    });
+        title: t('common.deleteConfirmTitle', { name: characterLimit(option.name) }),
+        content: t('dashboard.deleteDashboardTip'),
+        positiveText: t('common.confirm'),
+        negativeText: t('common.cancel'),
+        positiveButtonProps: {
+          type: 'error',
+          size: 'medium',
+        },
+        onPositiveClick: async () => {
+          try {
+            await dashboardDelete(option.id);
+            Message.success(t('common.deleteSuccess'));
+            initTree(true);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log(error);
+          }
+        },
+      });
+    }
   }
 
   function handleFolderMoreSelect(item: ActionsItem, option: CrmTreeNodeData) {
@@ -398,6 +495,9 @@
       case 'rename':
         folderTreeRef.value?.toggleEdit(option.id);
         break;
+      case 'edit':
+        emit('editDashboard', option.id);
+        break;
       case 'addDashboard':
         emit('addDashboard', option);
         break;
@@ -406,12 +506,30 @@
     }
   }
 
-  onBeforeMount(() => {
-    initTree(true);
+  function handleFolderClick(folderId: string | number) {
+    selectedKeys.value = [folderId];
+    emit('selectNode', { id: folderId }, selectedKeys.value, []);
+  }
+
+  function toggleDashboardCollect(nodeId: string, collect: boolean) {
+    traverseTree(folderTree.value, (node) => {
+      if (node.id === nodeId) {
+        node.myCollect = collect;
+        return true; // 停止遍历
+      }
+      return false; // 继续遍历
+    });
+    initModuleCount();
+  }
+
+  onBeforeMount(async () => {
+    await initTree(true);
+    initModuleCount();
   });
 
   defineExpose({
     initTree,
+    toggleDashboardCollect,
   });
 </script>
 
@@ -438,5 +556,8 @@
         color: var(--primary-8);
       }
     }
+  }
+  :deep(.n-tree-node-content__prefix) {
+    height: 35px;
   }
 </style>

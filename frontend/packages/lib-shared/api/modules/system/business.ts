@@ -8,6 +8,7 @@ import {
   GetAuthsUrl,
   GetConfigEmailUrl,
   GetConfigSynchronizationUrl,
+  GetDETokenUrl,
   GetExportCenterListUrl,
   GetPersonalFollowUrl,
   GetPersonalUrl,
@@ -130,6 +131,11 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${DeleteAuthUrl}/${id}` });
   }
 
+  // 获取DEToken
+  function getDEToken() {
+    return CDR.get({ url: GetDETokenUrl });
+  }
+
   // 获取个人信息
   function getPersonalInfo() {
     return CDR.get<OrgUserInfo>({ url: GetPersonalUrl });
@@ -227,5 +233,6 @@ export default function useProductApi(CDR: CordysAxios) {
     exportCenterDownload,
     cancelCenterExport,
     getRepeatContactList,
+    getDEToken,
   };
 }

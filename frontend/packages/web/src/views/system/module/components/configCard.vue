@@ -214,7 +214,6 @@
       icon: 'iconicon_dashboard1',
       groupList: [],
       enable: true,
-      disabled: true, // TODO:接口返回
     },
   ]);
 
@@ -350,6 +349,7 @@
           ...item,
           enable: findConfigItem?.enable ?? false,
           id: findConfigItem?.id ?? '',
+          disabled: findConfigItem?.disabled ?? false,
         };
       });
     }

@@ -5,9 +5,12 @@ export default {
   'dashboard.expandChild': '展开子集',
   'dashboard.collapseChild': '收起子集',
   'dashboard.addDashboard': '添加仪表板',
+  'dashboard.updateDashboard': '更新仪表板',
   'dashboard.deleteDashboardTip': '删除后，成员无法查看，DataEase 看板不受影响',
   'dashboard.dashboardName': '仪表板名称',
   'dashboard.dashboardId': '仪表板 ID',
   'dashboard.members': '可查看成员',
   'dashboard.folder': '文件夹',
+  'dashboard.favoriteSuccess': '收藏成功',
+  'dashboard.unFavoriteSuccess': '取消收藏成功',
 };

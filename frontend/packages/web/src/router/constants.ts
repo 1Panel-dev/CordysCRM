@@ -3,6 +3,7 @@ import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import {
   ClueRouteEnum,
   CustomerRouteEnum,
+  DashboardRouteEnum,
   OpportunityRouteEnum,
   ProductRouteEnum,
   SystemRouteEnum,
@@ -40,6 +41,7 @@ export const featureRouteMap: Record<string, any> = {
   [OpportunityRouteEnum.OPPORTUNITY]: ModuleConfigEnum.BUSINESS_MANAGEMENT,
   [ProductRouteEnum.PRODUCT]: ModuleConfigEnum.PRODUCT_MANAGEMENT,
   [ClueRouteEnum.CLUE_MANAGEMENT]: ModuleConfigEnum.CLUE_MANAGEMENT,
+  [DashboardRouteEnum.DASHBOARD_INDEX]: ModuleConfigEnum.DASHBOARD,
 };
 
 export const allMenuRouteMap: Record<string, any> = {

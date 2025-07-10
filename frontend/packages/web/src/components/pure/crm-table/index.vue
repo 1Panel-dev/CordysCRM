@@ -1,5 +1,6 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden">
+    <slot name="tableTop"></slot>
     <BatchAction
       v-if="props.actionConfig"
       :select-row-count="checkedRowKeys.length"

@@ -14,7 +14,9 @@
         <CrmIcon v-else type="iconicon_full_screen_one" />
       </div>
     </div>
-    <div class="flex-1">dashboard</div>
+    <div class="flex-1">
+      <iframe id="iframe-dashboard-view" style="width: 100%; height: 100%; border: 0" :src="iframeSrc"></iframe>
+    </div>
   </div>
 </template>
 
@@ -22,6 +24,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import favoriteIcon from './favoriteIcon.vue';
 
+  import { getDEToken } from '@/api/modules';
   import useFullScreen from '@/hooks/useFullScreen';
 
   const props = defineProps<{
@@ -34,6 +37,34 @@
   // 用于全屏的容器 ref
   const fullRef = ref<HTMLElement | null>();
   const { isFullScreen, toggleFullScreen } = useFullScreen(fullRef);
+
+  const iframeSrc = ref('');
+  const params = {
+    // 固定写法：dashboard 仪表板、dataV 数据大屏
+    'busiFlag': 'dashboard',
+    'dvId': '',
+    // 固定写法
+    'type': 'Dashboard',
+    //  JWT token 认证。
+    'embeddedToken': '',
+    // 固定写法
+    'de-embedded': true,
+  };
+
+  async function init() {
+    try {
+      const token = await getDEToken();
+      // params.embeddedToken = token;
+      // iframeSrc.value = `${window.location.origin}/dashboard?${new URLSearchParams(params).toString()}`;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error initializing dashboard:', error);
+    }
+  }
+
+  onBeforeMount(() => {
+    init();
+  });
 </script>
 
 <style lang="less" scoped></style>

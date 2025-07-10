@@ -97,6 +97,11 @@
       key: ModuleConfigEnum.SYSTEM_SETTINGS,
       icon: 'iconicon_set_up',
     },
+    {
+      label: t('menu.dashboard'),
+      key: ModuleConfigEnum.DASHBOARD,
+      icon: 'iconicon_dashboard1',
+    },
   ]);
 
   const moduleNavList = ref<ModuleNavItem[]>([]);

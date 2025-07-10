@@ -3,23 +3,41 @@
     <CrmSplitPanel :default-size="0.3" :min="0.2" :max="0.5">
       <template #1>
         <tree
+          ref="folderTreeRef"
           v-model:value="selectedKeys"
           @init="folderTree = $event"
           @add-dashboard="handleAddDashboard"
           @select-node="handleNodeSelect"
+          @edit-dashboard="handleEditDashboard"
+          @collect="refreshTable"
         />
       </template>
       <template #2>
-        <!-- <dashboardTable :active-folder-id="selectedKeys[0]" @create="handleAddDashboard" /> -->
+        <dashboardTable
+          v-if="activeNode?.type !== 'DASHBOARD'"
+          ref="dashboardTableRef"
+          :active-folder-id="selectedKeys[0]"
+          :is-favorite="activeNode?.id === 'favorite'"
+          :offspring-ids="offspringIds"
+          @create="handleAddDashboard"
+          @edit="handleEditDashboard"
+          @collect="handleCollectDashboard"
+        />
         <dashboard
-          :title="activeDashboard.name"
-          :dashboard-id="activeDashboard.id"
-          :is-favorite="activeDashboard.isFavorite"
+          v-else-if="activeNode"
+          :title="activeNode.name"
+          :dashboard-id="activeNode.id"
+          :is-favorite="!!activeNode.myCollect"
         />
       </template>
     </CrmSplitPanel>
   </CrmCard>
-  <addDashboardModal v-model:show="show" :folder-tree="folderTree" />
+  <addDashboardModal
+    v-model:show="show"
+    :folder-tree="folderTree"
+    :dashboard-id="activeDashboardId"
+    @finish="handleFinish"
+  />
 </template>
 
 <script setup lang="ts">
@@ -35,15 +53,43 @@
 
   const show = ref(false);
   const folderTree = ref<TreeSelectOption[]>([]);
-  const selectedKeys = ref<Array<string | number>>([]);
-  const activeDashboard = ref<any>({});
+  const folderTreeRef = ref<InstanceType<typeof tree>>();
+  const selectedKeys = ref<Array<string>>([]);
+  const activeNode = ref<CrmTreeNodeData>();
+  const offspringIds = ref<Array<string>>([]);
+  const activeDashboardId = ref<string | undefined>('');
 
-  function handleNodeSelect(node: CrmTreeNodeData) {
-    activeDashboard.value = node;
+  function handleNodeSelect(
+    node: CrmTreeNodeData,
+    _selectedKeys: Array<string | number>,
+    _offspringIds: Array<string | number>
+  ) {
+    activeNode.value = node;
+    offspringIds.value = _offspringIds as Array<string>;
   }
 
   function handleAddDashboard() {
+    activeDashboardId.value = '';
     show.value = true;
+  }
+
+  function handleEditDashboard(id: string) {
+    show.value = true;
+    activeDashboardId.value = id;
+  }
+
+  function handleCollectDashboard(id: string, collect: boolean) {
+    folderTreeRef.value?.toggleDashboardCollect(id, collect);
+  }
+
+  const dashboardTableRef = ref<InstanceType<typeof dashboardTable>>();
+  function refreshTable() {
+    dashboardTableRef.value?.loadList();
+  }
+
+  function handleFinish() {
+    folderTreeRef.value?.initTree();
+    refreshTable();
   }
 </script>
 

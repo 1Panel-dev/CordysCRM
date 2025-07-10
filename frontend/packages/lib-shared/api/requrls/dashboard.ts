@@ -1,0 +1,16 @@
+export const dashboardModuleRenameUrl = '/dashboard/module/rename'; // 模块重命名
+export const dashboardModuleDeleteUrl = '/dashboard/module/delete'; // 模块删除
+export const dashboardModuleAddUrl = '/dashboard/module/add'; // 模块添加
+export const dashboardUpdateUrl = '/dashboard/update'; // 仪表板更新
+export const dashboardRenameUrl = '/dashboard/rename'; // 仪表板重命名
+export const dashboardAddUrl = '/dashboard/add'; // 仪表板添加
+export const dashboardDetailUrl = '/dashboard/detail'; // 仪表板详情
+export const dashboardDeleteUrl = '/dashboard/delete'; // 仪表板删除
+export const dashboardPageUrl = '/dashboard/page'; // 仪表板列表
+export const dashboardCollectPageUrl = '/dashboard/collect/page'; // 仪表板收藏列表
+export const dashboardModuleTreeUrl = '/dashboard/module/tree'; // 模块树
+export const dashboardCollectUrl = '/dashboard/collect'; // 仪表板收藏
+export const dashboardUnCollectUrl = '/dashboard/un-collect'; // 仪表板取消收藏
+export const dashboardModuleCountUrl = '/dashboard/module/count'; // 仪表板模块数量
+export const dashboardDragUrl = '/dashboard/edit/pos'; // 仪表板拖拽
+export const dashboardModuleDragUrl = '/dashboard/module/move'; // 仪表板模块拖拽

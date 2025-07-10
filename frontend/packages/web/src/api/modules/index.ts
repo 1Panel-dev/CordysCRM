@@ -1,6 +1,7 @@
 import createAxios from '@lib/shared/api/http';
 import useClueApi from '@lib/shared/api/modules/clue';
 import useCustomerApi from '@lib/shared/api/modules/customer';
+import useDashboard from '@lib/shared/api/modules/dashboard';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
 import useProductApi from '@lib/shared/api/modules/product';
 import useSysApi from '@lib/shared/api/modules/sys';
@@ -35,6 +36,7 @@ const roleApi = useRoleApi(CDR);
 const loginApi = useLoginApi(CDR);
 const sysApi = useSysApi(CDR);
 const licenseApi = useLicenseApi(CDR);
+const dashboardApi = useDashboard(CDR);
 
 export const {
   addProduct,
@@ -210,6 +212,7 @@ export const {
   getExportCenterList,
   cancelCenterExport,
   getRepeatContactList,
+  getDEToken,
 } = businessApi;
 
 export const {
@@ -321,3 +324,22 @@ export const { login, signout, isLogin, getKey, getWeComCallback, getWeComOauthC
 export const { getSystemVersion } = sysApi;
 
 export const { getLicense, addLicense } = licenseApi;
+
+export const {
+  dashboardAdd,
+  dashboardDelete,
+  dashboardDetail,
+  dashboardModuleAdd,
+  dashboardModuleDelete,
+  dashboardModuleRename,
+  dashboardModuleTree,
+  dashboardPage,
+  dashboardRename,
+  dashboardUpdate,
+  dashboardCollectPage,
+  dashboardCollect,
+  dashboardUnCollect,
+  dashboardModuleCount,
+  dashboardModuleDrag,
+  dashboardDrag,
+} = dashboardApi;

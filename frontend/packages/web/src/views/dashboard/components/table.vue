@@ -1,28 +1,29 @@
 <template>
-  <div class="p-[24px]">
+  <div class="h-full p-[24px]">
     <CrmTable
-      v-bind="propsRes"
-      @page-change="propsEvent.pageChange"
-      @page-size-change="propsEvent.pageSizeChange"
-      @sorter-change="propsEvent.sorterChange"
-      @filter-change="propsEvent.filterChange"
+      v-bind="currentTable.propsRes.value"
+      class="flex-1"
+      @page-change="currentTable.propsEvent.value.pageChange"
+      @page-size-change="currentTable.propsEvent.value.pageSizeChange"
+      @sorter-change="currentTable.propsEvent.value.sorterChange"
+      @filter-change="currentTable.propsEvent.value.filterChange"
     >
-      <template #actionLeft>
-        <n-button v-permission="['SYSTEM_ROLE:ADD_USER']" type="primary" @click="emit('create')">
-          {{ t('role.addMember') }}
-        </n-button>
-      </template>
-      <template #actionRight>
-        <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+      <template #tableTop>
+        <div class="mb-[16px] flex items-center justify-between">
+          <n-button v-permission="[]" type="primary" @click="emit('create')">
+            {{ t('dashboard.addDashboard') }}
+          </n-button>
+          <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+        </div>
       </template>
     </CrmTable>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { useRouter } from 'vue-router';
   import { NButton, useMessage } from 'naive-ui';
 
-  import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
 
@@ -31,18 +32,35 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import favoriteIcon from './favoriteIcon.vue';
 
+  import {
+    dashboardCollect,
+    dashboardCollectPage,
+    dashboardDelete,
+    dashboardPage,
+    dashboardUnCollect,
+  } from '@/api/modules';
   import useModal from '@/hooks/useModal';
 
+  import { FullPageEnum } from '@/enums/routeEnum';
+
   const props = defineProps<{
-    activeFolderId?: string | number;
+    isFavorite?: boolean;
+    activeFolderId?: string;
+    offspringIds?: Array<string>;
   }>();
   const emit = defineEmits<{
     (e: 'create'): void;
-    (e: 'edit', id: string | number): void;
+    (e: 'edit', id: string): void;
+    (e: 'collect', id: string, collect: boolean): void;
+    (e: 'delete'): void;
   }>();
 
+  const router = useRouter();
   const { t } = useI18n();
   const Message = useMessage();
   const { openModal } = useModal();
@@ -61,7 +79,9 @@
       },
       onPositiveClick: async () => {
         try {
+          await dashboardDelete(row.id);
           Message.success(t('common.deleteSuccess'));
+          emit('delete');
           tableRefreshId.value += 1;
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -80,7 +100,6 @@
     {
       label: t('common.delete'),
       key: 'delete',
-      danger: true,
       permission: [],
     },
   ];
@@ -98,6 +117,22 @@
     }
   }
 
+  async function favoriteToggle(option: CrmTreeNodeData) {
+    try {
+      if (option.myCollect) {
+        await dashboardUnCollect(option.id);
+      } else {
+        await dashboardCollect(option.id);
+      }
+      option.myCollect = !option.myCollect;
+      Message.success(option.myCollect ? t('dashboard.favoriteSuccess') : t('dashboard.unFavoriteSuccess'));
+      emit('collect', option.id, option.myCollect);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   const columns: CrmDataTableColumn<any>[] = [
     {
       title: t('common.name'),
@@ -106,6 +141,39 @@
       fixed: 'left',
       ellipsis: {
         tooltip: true,
+      },
+      render: (row: any) => {
+        return h(
+          'div',
+          {
+            class: 'flex items-center',
+          },
+          {
+            default: () => [
+              h(favoriteIcon, {
+                value: row.myCollect,
+                class: 'mr-[8px] cursor-pointer text-[var(--primary-8)]',
+                onclick: () => {
+                  favoriteToggle(row);
+                },
+              }),
+              h(
+                CrmTableButton,
+                {
+                  onClick: () => {
+                    window.open(
+                      `${window.location.origin}#${
+                        router.resolve({ name: FullPageEnum.FULL_PAGE_DASHBOARD }).fullPath
+                      }?id=${row.id}&isFavorite=${row.myCollect ? 'Y' : 'N'}&title=${encodeURIComponent(row.name)}`,
+                      '_blank'
+                    );
+                  },
+                },
+                { trigger: () => row.name, default: () => row.name }
+              ),
+            ],
+          }
+        );
       },
     },
     {
@@ -118,7 +186,7 @@
     },
     {
       title: t('dashboard.folder'),
-      key: 'folder',
+      key: 'dashboardModuleName',
       width: 120,
       ellipsis: {
         tooltip: true,
@@ -127,15 +195,15 @@
     {
       title: t('dashboard.members'),
       key: 'members',
-      ellipsis: {
-        tooltip: true,
-      },
       isTag: true,
       width: 150,
+      tagGroupProps: {
+        labelKey: 'name',
+      },
     },
     {
       title: t('common.creator'),
-      key: 'creatorName',
+      key: 'createUserName',
       width: 120,
       ellipsis: {
         tooltip: true,
@@ -150,7 +218,7 @@
     },
     {
       key: 'operation',
-      width: 170,
+      width: 100,
       fixed: 'right',
       render: (row: any) =>
         h(CrmOperationButton, {
@@ -160,11 +228,16 @@
     },
   ];
 
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(
-    async () => Promise.resolve([]),
+  const dashboardTable = useTable(dashboardPage, {
+    showSetting: false,
+    columns,
+    permission: [],
+  });
+
+  const dashboardCollectTable = useTable(
+    dashboardCollectPage,
     {
-      tableKey: TableKeyEnum.ROLE_MEMBER,
-      showSetting: true,
+      showSetting: false,
       columns,
       permission: [],
     },
@@ -175,11 +248,37 @@
     }
   );
 
+  // 当前展示的表格数据类型
+  const currentTable = computed(() => {
+    if (props.isFavorite) {
+      return dashboardCollectTable;
+    }
+    return dashboardTable;
+  });
+
   const keyword = ref('');
   function searchData(val?: string) {
-    setLoadListParams({ keyword: val ?? keyword.value, folderId: props.activeFolderId });
-    loadList();
+    currentTable.value.setLoadListParams({
+      keyword: val ?? keyword.value,
+      dashboardModuleIds: Array.from(new Set([props.activeFolderId, ...(props.offspringIds || [])])).filter(
+        (item) => item && !['all', 'favorite'].includes(item)
+      ),
+    });
+    currentTable.value.loadList();
   }
+
+  watch(
+    () => props.activeFolderId,
+    () => {
+      searchData();
+    }
+  );
+
+  defineExpose({
+    loadList: () => {
+      searchData();
+    },
+  });
 </script>
 
 <style lang="less" scoped></style>
