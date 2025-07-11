@@ -35,7 +35,12 @@ import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerContact;
+import io.cordys.crm.customer.dto.request.CustomerCollaborationAddRequest;
+import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
+import io.cordys.crm.customer.dto.request.ReTransitionCustomerRequest;
+import io.cordys.crm.customer.service.CustomerCollaborationService;
 import io.cordys.crm.customer.service.CustomerService;
+import io.cordys.crm.customer.service.PoolCustomerService;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -68,6 +73,8 @@ public class ClueService {
 
     @Resource
     private BaseMapper<Clue> clueMapper;
+    @Resource
+    private BaseMapper<Customer> customerMapper;
     @Resource
     private ExtClueMapper extClueMapper;
     @Resource
@@ -102,6 +109,10 @@ public class ClueService {
     private ExtProductMapper extProductMapper;
     @Resource
     private ProductService productService;
+    @Resource
+    private PoolCustomerService poolCustomerService;
+    @Resource
+    private CustomerCollaborationService customerCollaborationService;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -540,5 +551,27 @@ public class ClueService {
             return String.join(",", JSON.parseArray(JSON.toJSONString(names)));
         }
         return StringUtils.EMPTY;
+    }
+
+    public void transitionOldCustomer(ReTransitionCustomerRequest request, String currentUser, String orgId) {
+        Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
+        if (customer.getInSharedPool()) {
+            // 如果客户已经在公海中，则领取改客户
+            PoolCustomerPickRequest pickRequest = new PoolCustomerPickRequest();
+            pickRequest.setCustomerId(request.getCustomerId());
+            pickRequest.setPoolId(customer.getPoolId());
+            poolCustomerService.pick(pickRequest, currentUser, orgId);
+        } else {
+            // 如果客户不在公海中，则加入到协作人
+            CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
+            collaborationAddRequest.setCustomerId(request.getCustomerId());
+            collaborationAddRequest.setCollaborationType("COLLABORATION");
+            collaborationAddRequest.setUserId(currentUser);
+            customerCollaborationService.add(collaborationAddRequest, currentUser);
+        }
+        Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
+        clue.setTransitionId(request.getCustomerId());
+        clue.setTransitionType("CUSTOMER");
+        clueMapper.update(clue);
     }
 }

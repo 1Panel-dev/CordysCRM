@@ -53,16 +53,28 @@
 
         where c.organization_id = #{orgId}
 
-        <if test="request.poolId == null">
+        <if test="request.poolId == null and !request.transition">
             and c.in_shared_pool is false
         </if>
 
-        <if test="request.poolId != null">
-          and c.in_shared_pool is true and c.pool_id = #{request.poolId}
+        <if test="request.poolId != null and !request.transition">
+            and c.in_shared_pool is true and c.pool_id = #{request.poolId}
+        </if>
+
+        <if test="request.transition">
+            and (c.in_shared_pool is false
+            <if test="request.transitionPoolIds != null and request.transitionPoolIds.size()> 0">
+                or (c.in_shared_pool is true and c.pool_id in
+                <foreach collection="request.transitionPoolIds" item="poolId" open="(" close=")" separator=",">
+                    #{poolId}
+                </foreach>
+                )
+            </if>
+            )
         </if>
 
         <if test="dataPermission != null and dataPermission.self">
-          and c.owner = #{userId}
+            and c.owner = #{userId}
         </if>
 
         <if test="request.keyword != null and request.keyword != ''">

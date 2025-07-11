@@ -14,6 +14,10 @@ import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.service.ClueExportService;
 import io.cordys.crm.clue.service.ClueService;
+import io.cordys.crm.customer.dto.request.CustomerPageRequest;
+import io.cordys.crm.customer.dto.request.ReTransitionCustomerRequest;
+import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
@@ -43,6 +47,8 @@ public class ClueController {
     private ModuleFormCacheService moduleFormCacheService;
     @Resource
     private DataScopeService dataScopeService;
+    @Resource
+    private CustomerService customerService;
 
     @GetMapping("/module/form")
     @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_POOL_READ}, logical = Logical.OR)
@@ -144,5 +150,19 @@ public class ClueController {
     @Operation(summary = "导出选中")
     public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
         return clueExportService.exportSelect(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+    }
+
+    @PostMapping("/transition/customer/page")
+    @RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ}, logical = Logical.AND)
+    @Operation(summary = "客户转移分页查询")
+    public PagerWithOption<List<CustomerListResponse>> transitionCustomerPage(@Validated @RequestBody CustomerPageRequest request) {
+        return customerService.transitionList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/re-transition/customer")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_UPDATE)
+    @Operation(summary = "合并已有客户")
+    public void reTransitionOldCustomer(@Validated @RequestBody ReTransitionCustomerRequest request) {
+        clueService.transitionOldCustomer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

@@ -29,13 +29,11 @@ import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerCollaboration;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
-import io.cordys.crm.customer.dto.request.CustomerAddRequest;
-import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
-import io.cordys.crm.customer.dto.request.CustomerPageRequest;
-import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
+import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
@@ -43,6 +41,7 @@ import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
+import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -95,6 +94,10 @@ public class CustomerService {
     private PoolCustomerService poolCustomerService;
     @Resource
     private PermissionCache permissionCache;
+    @Resource
+    private UserExtendService userExtendService;
+    @Resource
+    private ExtCustomerPoolMapper extCustomerPoolMapper;
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -102,6 +105,17 @@ public class CustomerService {
         List<CustomerListResponse> buildList = buildListData(list, orgId);
         Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
         return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
+    }
+
+    public PagerWithOption<List<CustomerListResponse>> transitionList(CustomerPageRequest request, String userId, String orgId) {
+        /**
+         * 数据范围: 当前用户所在公海&所有私海客户
+         */
+        List<String> scopeIds = userExtendService.getUserScopeIds(userId, orgId);
+        List<CustomerPool> pools = extCustomerPoolMapper.getPoolByScopeIds(scopeIds, orgId);
+        request.setTransitionPoolIds(pools.stream().map(CustomerPool::getId).toList());
+        request.setTransition(true);
+        return list(request, userId, orgId, null);
     }
 
     public Map<String, List<OptionDTO>> buildOptionMap(String orgId, List<CustomerListResponse> list, List<CustomerListResponse> buildList) {
