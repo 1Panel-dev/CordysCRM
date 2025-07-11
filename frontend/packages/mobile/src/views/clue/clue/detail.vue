@@ -8,7 +8,7 @@
           </div>
         </template>
         <div v-if="tab.name === 'info'" class="relative h-full overflow-auto bg-[var(--text-n9)]">
-          <div class="bg-[var(--text-n9)] p-[16px]">
+          <!-- <div class="bg-[var(--text-n9)] p-[16px]">
             <CrmWorkflowCard
               v-model:stage="currentStatus"
               v-model:last-stage="lastOptStage"
@@ -21,7 +21,7 @@
               :operation-permission="['CLUE_MANAGEMENT:UPDATE']"
               @load-detail="() => initStage(true)"
             />
-          </div>
+          </div> -->
           <CrmDescription :description="descriptions" />
         </div>
         <CrmFollowRecordList
@@ -49,9 +49,9 @@
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
 
-  import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
+  // import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  // import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
@@ -59,10 +59,10 @@
   import CrmFollowPlanList from '@/components/business/crm-follow-list/followPlan.vue';
   import CrmFollowRecordList from '@/components/business/crm-follow-list/followRecord.vue';
   import CrmHeaderList from '@/components/business/crm-header-list/index.vue';
-  import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
+  // import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
   import { getClueHeaderList } from '@/api/modules';
-  import { clueBaseSteps } from '@/config/clue';
+  // import { clueBaseSteps } from '@/config/clue';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -96,7 +96,7 @@
 
   const sourceId = computed(() => route.query.id?.toString() ?? '');
 
-  const { sourceName, descriptions, initFormConfig, initFormDescription, detail } = useFormCreateApi({
+  const { sourceName, descriptions, initFormConfig, initFormDescription } = useFormCreateApi({
     formKey: FormDesignKeyEnum.CLUE,
     sourceId: sourceId.value,
     needInitDetail: true,
@@ -106,41 +106,42 @@
     initFormDescription();
   });
 
-  const currentStatus = ref<string>(ClueStatusEnum.NEW);
-  const lastOptStage = ref<string>(ClueStatusEnum.NEW);
+  // const currentStatus = ref<string>(ClueStatusEnum.NEW);
+  // const lastOptStage = ref<string>(ClueStatusEnum.NEW);
   const readonly = computed(
     () =>
-      ([StageResultEnum.FAIL, StageResultEnum.SUCCESS] as string[]).includes(currentStatus.value) ||
+      // ([StageResultEnum.FAIL, StageResultEnum.SUCCESS] as string[]).includes(currentStatus.value) ||
       !hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])
   );
 
-  const workflowList = [
-    ...clueBaseSteps,
-    {
-      value: StageResultEnum.SUCCESS,
-      label: t('common.success'),
-    },
-  ];
+  // TODO 先不要了
+  // const workflowList = [
+  //   ...clueBaseSteps,
+  //   {
+  //     value: StageResultEnum.SUCCESS,
+  //     label: t('common.success'),
+  //   },
+  // ];
 
-  async function initStage(isInit = false) {
-    if (isInit) {
-      initFormDescription();
-    }
+  // async function initStage(isInit = false) {
+  //   if (isInit) {
+  //     initFormDescription();
+  //   }
 
-    const { stage, lastStage } = detail.value;
-    currentStatus.value = stage;
-    lastOptStage.value = lastStage;
-  }
+  //   const { stage, lastStage } = detail.value;
+  //   currentStatus.value = stage;
+  //   lastOptStage.value = lastStage;
+  // }
 
-  watch([() => detail.value.stage, () => detail.value.lastStage], () => {
-    initStage(false);
-  });
+  // watch([() => detail.value.stage, () => detail.value.lastStage], () => {
+  //   initStage(false);
+  // });
 
-  const isConverted = computed<boolean>(
-    () =>
-      !!route.query?.transitionType?.toString().length &&
-      ['CUSTOMER', 'OPPORTUNITY'].includes(route.query?.transitionType?.toString())
-  );
+  // const isConverted = computed<boolean>(
+  //   () =>
+  //     !!route.query?.transitionType?.toString().length &&
+  //     ['CUSTOMER', 'OPPORTUNITY'].includes(route.query?.transitionType?.toString())
+  // );
 
   const recordListRef = ref<InstanceType<typeof CrmFollowRecordList>[]>();
   const planListRef = ref<InstanceType<typeof CrmFollowPlanList>[]>();

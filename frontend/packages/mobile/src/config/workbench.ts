@@ -6,7 +6,7 @@ import {
   RepeatOpportunityItem,
 } from '@lib/shared/models/system/business';
 
-import { clueBaseSteps } from '@/config/clue';
+// import { clueBaseSteps } from '@/config/clue';
 import { lastOpportunitySteps, opportunityResultSteps } from '@/config/opportunity';
 
 const { t } = useI18n();
@@ -75,27 +75,28 @@ export const contactDescriptionList = [
 ];
 
 export const clueDescriptionList = [
-  {
-    label: t('workbench.duplicateCheck.clueStage'),
-    key: 'stage',
-    valueSlotName: 'render',
-    render: (row: RepeatClueItem) => {
-      const step = [...clueBaseSteps, ...opportunityResultSteps].find((e: any) => e.value === row.stage);
-      return step ? step.label : '-';
-    },
-  },
+  // TODO 先不要了
+  // {
+  //   label: t('workbench.duplicateCheck.clueStage'),
+  //   key: 'stage',
+  //   valueSlotName: 'render',
+  //   render: (row: RepeatClueItem) => {
+  //     const step = [...clueBaseSteps, ...opportunityResultSteps].find((e: any) => e.value === row.stage);
+  //     return step ? step.label : '-';
+  //   },
+  // },
   {
     label: t('common.head'),
     key: 'ownerName',
   },
-  {
-    label: t('workbench.duplicateCheck.contactorName'),
-    key: 'contact',
-  },
-  {
-    label: t('workbench.duplicateCheck.contactorPhoneNumber'),
-    key: 'phone',
-  },
+  // {
+  //   label: t('workbench.duplicateCheck.contactorName'),
+  //   key: 'contact',
+  // },
+  // {
+  //   label: t('workbench.duplicateCheck.contactorPhoneNumber'),
+  //   key: 'phone',
+  // },
 ];
 
 export const opportunityDescriptionList = [

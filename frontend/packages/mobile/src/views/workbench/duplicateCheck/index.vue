@@ -16,7 +16,7 @@
         <template #title>
           <div class="text-[18px] font-semibold">
             {{
-              validatePhone(keyword)
+              validatePhone(keywordVal)
                 ? t('workbench.duplicateCheck.contactResult')
                 : t('workbench.duplicateCheck.result')
             }}
@@ -32,9 +32,9 @@
         <RelatedList
           ref="customerRelatedListRef"
           v-model="customerList"
-          :keyword="keyword"
-          :description-list="validatePhone(keyword) ? contactDescriptionList : customerDescriptionList"
-          :api="validatePhone(keyword) ? getRepeatContactList : GetRepeatCustomerList"
+          :keyword="keywordVal"
+          :description-list="validatePhone(keywordVal) ? contactDescriptionList : customerDescriptionList"
+          :api="validatePhone(keywordVal) ? getRepeatContactList : GetRepeatCustomerList"
           is-return-native-response
         />
       </van-collapse-item>
@@ -52,7 +52,7 @@
         <RelatedList
           ref="clueRelatedListRef"
           v-model="clueList"
-          :keyword="keyword"
+          :keyword="keywordVal"
           :description-list="clueDescriptionList"
           :api="GetRepeatClueList"
           is-return-native-response
@@ -102,6 +102,7 @@
 
   const customerRelatedListRef = ref<InstanceType<typeof RelatedList>>();
   const clueRelatedListRef = ref<InstanceType<typeof RelatedList>>();
+  const keywordVal = computed(() => keyword.value.replace(/[\s\uFEFF\xA0]+/g, ''));
 
   const searchData = debounce(() => {
     nextTick(() => {

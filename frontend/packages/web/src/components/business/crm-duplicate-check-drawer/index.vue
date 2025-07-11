@@ -18,7 +18,7 @@
       />
       <div v-show="noDuplicateCustomers" class="text-center text-[var(--text-n4)]">
         {{
-          validatePhone(keyword)
+          validatePhone(keywordVal)
             ? t('workbench.duplicateCheck.noDuplicateContacts')
             : t('workbench.duplicateCheck.noDuplicateCustomers')
         }}
@@ -27,7 +27,9 @@
       <div v-show="showResult" class="mb-[24px]">
         <div class="font-semibold">
           {{
-            validatePhone(keyword) ? t('workbench.duplicateCheck.contactResult') : t('workbench.duplicateCheck.result')
+            validatePhone(keywordVal)
+              ? t('workbench.duplicateCheck.contactResult')
+              : t('workbench.duplicateCheck.result')
           }}
         </div>
         <div v-show="repeatTable.code === 101003" class="text-center text-[var(--text-n4)]">
@@ -93,7 +95,7 @@
     GetRepeatCustomerList,
     GetRepeatOpportunityDetailList,
   } from '@/api/modules';
-  import { clueBaseSteps } from '@/config/clue';
+  // import { clueBaseSteps } from '@/config/clue';
   import { lastOpportunitySteps, opportunityResultSteps } from '@/config/opportunity';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -112,6 +114,7 @@
   const activeCustomer = ref();
   const showDetailDrawer = ref(false);
   const detailType = ref<'opportunity' | 'clue'>('clue');
+  const keywordVal = computed(() => keyword.value.replace(/[\s\uFEFF\xA0]+/g, ''));
 
   const detailTableRef = ref<InstanceType<typeof RelatedTable>>();
   function showDetail(row: RepeatCustomerItem, type: 'opportunity' | 'clue') {
@@ -132,15 +135,16 @@
         tooltip: true,
       },
     },
-    {
-      title: t('workbench.duplicateCheck.clueStage'),
-      key: 'stage',
-      width: 100,
-      render: (row) => {
-        const step = [...clueBaseSteps, ...opportunityResultSteps].find((e: any) => e.value === row.stage);
-        return step ? step.label : '-';
-      },
-    },
+    // TODO 先不要了
+    // {
+    //   title: t('workbench.duplicateCheck.clueStage'),
+    //   key: 'stage',
+    //   width: 100,
+    //   render: (row) => {
+    //     const step = [...clueBaseSteps, ...opportunityResultSteps].find((e: any) => e.value === row.stage);
+    //     return step ? step.label : '-';
+    //   },
+    // },
     {
       title: t('common.head'),
       key: 'ownerName',
@@ -149,20 +153,30 @@
         tooltip: true,
       },
     },
+    // TODO 先不要了
+    // {
+    //   title: t('workbench.duplicateCheck.contactorName'),
+    //   key: 'contact',
+    //   width: 100,
+    //   ellipsis: {
+    //     tooltip: true,
+    //   },
+    // },
+    // {
+    //   title: t('workbench.duplicateCheck.contactorPhoneNumber'),
+    //   key: 'phone',
+    //   width: 100,
+    //   ellipsis: {
+    //     tooltip: true,
+    //   },
+    // },
     {
-      title: t('workbench.duplicateCheck.contactorName'),
-      key: 'contact',
+      title: t('opportunity.intendedProducts'),
+      key: 'productNameList',
       width: 100,
-      ellipsis: {
-        tooltip: true,
-      },
-    },
-    {
-      title: t('workbench.duplicateCheck.contactorPhoneNumber'),
-      key: 'phone',
-      width: 100,
-      ellipsis: {
-        tooltip: true,
+      isTag: true,
+      tagGroupProps: {
+        labelKey: 'name',
       },
     },
   ];
@@ -368,19 +382,20 @@
   watch(
     () => keyword.value,
     (val) => {
-      repeatTable.value = validatePhone(val) ? repeatContactTable : repeatAccountTable;
+      const newKeywordVal = val.replace(/[\s\uFEFF\xA0]+/g, '');
+      repeatTable.value = validatePhone(newKeywordVal) ? repeatContactTable : repeatAccountTable;
     },
     { immediate: true }
   );
 
   const clueTableRef = ref<InstanceType<typeof RelatedTable>>();
   async function searchData(val: string) {
-    repeatTable.value.setLoadListParams({ name: val });
+    repeatTable.value.setLoadListParams({ name: val.replace(/[\s\uFEFF\xA0]+/g, '') });
     repeatTable.value.loadList().finally(() => {
       showResult.value = !!repeatTable.value.propsRes.data.length || repeatTable.value.code === 101003;
       noDuplicateCustomers.value = !showResult.value && !showClue.value;
     });
-    clueTableRef.value?.searchData(val).finally(() => {
+    clueTableRef.value?.searchData(keywordVal.value).finally(() => {
       showClue.value = !!clueTableRef.value?.propsRes.data.length || clueTableRef.value?.code === 101003;
       noDuplicateCustomers.value = !showResult.value && !showClue.value;
     });

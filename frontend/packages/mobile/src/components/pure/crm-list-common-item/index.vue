@@ -3,7 +3,7 @@
     <div class="crm-list-common-item-header">
       <div class="one-line-text text-[14px] font-semibold text-[var(--text-n1)]">{{ props.item.name }}</div>
       <CrmTag
-        v-if="item.stage"
+        v-if="item.stage && !props.hiddenStage"
         class="flex-shrink-0"
         :bg-color="getStage(item.stage)?.bgColor ?? 'var(--info-5)'"
         :tag="t(getStage(item.stage)?.label)"
@@ -39,7 +39,7 @@
 
   import CrmTextButton from '@/components/pure/crm-text-button/index.vue';
 
-  import { clueBaseSteps } from '@/config/clue';
+  // import { clueBaseSteps } from '@/config/clue';
   import { lastOpportunitySteps, opportunityResultSteps } from '@/config/opportunity';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
@@ -52,6 +52,7 @@
   }
   const props = defineProps<{
     item: Record<string, any>;
+    hiddenStage?: boolean;
     actions?: CrmListCommonItemActionsItem[];
   }>();
   const emit = defineEmits<{
@@ -61,9 +62,11 @@
   const { t } = useI18n();
 
   function getStage(stage: string): Record<string, any> {
-    return [...clueBaseSteps, ...lastOpportunitySteps, ...opportunityResultSteps].find(
-      (item) => item.value === stage
-    ) as Record<string, any>;
+    return [
+      // ...clueBaseSteps,
+      ...lastOpportunitySteps,
+      ...opportunityResultSteps,
+    ].find((item) => item.value === stage) as Record<string, any>;
   }
 
   const actionList = computed(() => {

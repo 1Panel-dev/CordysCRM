@@ -27,7 +27,8 @@
     <template #transferPopContent>
       <TransferForm ref="transferFormRef" v-model:form="transferForm" class="mt-[16px] w-[320px]" />
     </template>
-    <template #rightTop>
+    <!-- TODO 先不要了 -->
+    <!-- <template #rightTop>
       <CrmWorkflowCard
         v-model:stage="currentStatus"
         v-model:last-stage="lastStage"
@@ -40,14 +41,14 @@
         :operation-permission="['CLUE_MANAGEMENT:UPDATE']"
         @load-detail="loadDetail"
       />
-    </template>
+    </template> -->
     <template #right>
       <div class="h-full pt-[16px]">
         <FollowDetail
           v-if="['followRecord', 'followPlan'].includes(activeTab)"
           :active-type="(activeTab as 'followRecord'| 'followPlan')"
-          wrapper-class="h-[calc(100vh-290px)]"
-          virtual-scroll-height="calc(100vh - 382px)"
+          wrapper-class="h-[calc(100vh-162px)]"
+          virtual-scroll-height="calc(100vh - 254px)"
           :follow-api-key="FormDesignKeyEnum.CLUE"
           :initial-source-name="sourceName"
           :show-add="hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])"
@@ -71,9 +72,9 @@
 <script setup lang="ts">
   import { SelectOption, useMessage } from 'naive-ui';
 
-  import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
+  // import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  // import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { ClueListItem } from '@lib/shared/models/clue';
@@ -87,10 +88,10 @@
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
-  import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
 
+  // import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
   import { batchTransferClue, deleteClue, getClue, getClueHeaderList, updateClueStatus } from '@/api/modules';
-  import { clueBaseSteps } from '@/config/clue';
+  // import { clueBaseSteps } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -189,41 +190,43 @@
         break;
     }
   }
-  const currentStatus = ref<string>(ClueStatusEnum.NEW);
-  const lastStage = ref<string>(ClueStatusEnum.NEW);
-  const showAction = computed(
-    () =>
-      currentStatus.value !== StageResultEnum.FAIL &&
-      currentStatus.value !== StageResultEnum.SUCCESS &&
-      hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])
+
+  // const currentStatus = ref<string>(ClueStatusEnum.NEW);
+  // const lastStage = ref<string>(ClueStatusEnum.NEW);
+  const showAction = computed(() =>
+    // currentStatus.value !== StageResultEnum.FAIL &&
+    // currentStatus.value !== StageResultEnum.SUCCESS &&
+    hasAnyPermission(['CLUE_MANAGEMENT:UPDATE'])
   );
-  const workflowList: SelectOption[] = [
-    ...clueBaseSteps,
-    {
-      value: StageResultEnum.SUCCESS,
-      label: t('common.success'),
-    },
-  ];
-  watch(
-    () => props.detail,
-    () => {
-      if (props.detail) {
-        currentStatus.value = props.detail.stage;
-        lastStage.value = props.detail.lastStage;
-      }
-    }
-  );
-  async function loadDetail() {
-    try {
-      const result = await getClue(sourceId.value);
-      currentStatus.value = result.stage;
-      lastStage.value = result.lastStage;
-      emit('refresh');
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
+  // TODO 先不要了
+  // const workflowList: SelectOption[] = [
+  //   ...clueBaseSteps,
+  //   {
+  //     value: StageResultEnum.SUCCESS,
+  //     label: t('common.success'),
+  //   },
+  // ];
+  // watch(
+  //   () => props.detail,
+  //   () => {
+  //     if (props.detail) {
+  //       currentStatus.value = props.detail.stage;
+  //       lastStage.value = props.detail.lastStage;
+  //     }
+  //   }
+  // );
+  // TODO 先不要了
+  // async function loadDetail() {
+  //   try {
+  //     const result = await getClue(sourceId.value);
+  //     currentStatus.value = result.stage;
+  //     lastStage.value = result.lastStage;
+  //     emit('refresh');
+  //   } catch (error) {
+  //     // eslint-disable-next-line no-console
+  //     console.log(error);
+  //   }
+  // }
 
   const isConverted = computed(
     () => props.detail?.transitionType && ['CUSTOMER'].includes(props.detail.transitionType)
@@ -266,16 +269,23 @@
       return [];
     }
     return [
-      ...(currentStatus.value !== StageResultEnum.FAIL
-        ? [
-            {
-              label: t('clue.convertToCustomer'),
-              key: 'convertToCustomer',
-              permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-              allPermission: true,
-            },
-          ]
-        : []),
+      // TODO 先不要了
+      // ...(currentStatus.value !== StageResultEnum.FAIL
+      //   ? [
+      //       {
+      //         label: t('clue.convertToCustomer'),
+      //         key: 'convertToCustomer',
+      //         permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+      //         allPermission: true,
+      //       },
+      //     ]
+      //   : []),
+      {
+        label: t('clue.convertToCustomer'),
+        key: 'convertToCustomer',
+        permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+        allPermission: true,
+      },
       {
         type: 'divider',
       },

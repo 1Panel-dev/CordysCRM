@@ -49,7 +49,7 @@
       :transform="transformFormData"
     >
       <template #item="{ item }">
-        <CrmListCommonItem :item="item" :actions="actions(item)" @click="goDetail"></CrmListCommonItem>
+        <CrmListCommonItem :hidden-stage="true" :item="item" :actions="actions(item)" @click="goDetail" />
       </template>
     </CrmList>
   </div>
@@ -61,7 +61,7 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
+  // import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ClueListItem } from '@lib/shared/models/clue';
 
@@ -182,19 +182,29 @@
             handleTransfer(item.id);
           },
         },
-        ...(row.stage !== StageResultEnum.FAIL
-          ? [
-              {
-                label: t('common.convertToCustomer'),
-                icon: 'iconicon_edit1',
-                permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-                allPermission: true,
-                action: (item: ClueListItem) => {
-                  convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER);
-                },
-              },
-            ]
-          : []),
+        // TODO 先不要了
+        // ...(row.stage !== StageResultEnum.FAIL
+        //   ? [
+        //       {
+        //         label: t('common.convertToCustomer'),
+        //         icon: 'iconicon_edit1',
+        //         permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+        //         allPermission: true,
+        //         action: (item: ClueListItem) => {
+        //           convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER);
+        //         },
+        //       },
+        //     ]
+        //   : []),
+        {
+          label: t('common.convertToCustomer'),
+          icon: 'iconicon_edit1',
+          permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+          allPermission: true,
+          action: (item: ClueListItem) => {
+            convertTo(item.id, FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER);
+          },
+        },
         {
           label: t('common.delete'),
           icon: 'iconicon_delete',
