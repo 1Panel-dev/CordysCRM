@@ -35,7 +35,7 @@
         where cc.organization_id = #{orgId}
 
         <if test="request.keyword != null and request.keyword != ''">
-            and cc.name like concat('%', #{request.keyword},'%')
+            and (cc.name like concat('%', #{request.keyword},'%') or cc.phone like concat('%', #{request.keyword},'%'))
         </if>
 
         <if test="dataPermission != null and dataPermission.self">
@@ -82,7 +82,7 @@
             )
         </if>
         <if test="request.keyword != null and request.keyword != ''">
-            and cc.name like concat('%', #{request.keyword},'%')
+            and (cc.name like concat('%', #{request.keyword},'%') or cc.phone like concat('%', #{request.keyword},'%'))
         </if>
         <include refid="filters">
             <property name="filters" value="request.filters"/>
