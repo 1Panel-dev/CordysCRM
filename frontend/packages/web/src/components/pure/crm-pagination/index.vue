@@ -11,6 +11,7 @@
       {{ t('crmPagination.total', { count: props.itemCount }) }}
     </div>
     <n-pagination
+      v-if="!props.hidePagination"
       v-model:page="page"
       v-model:page-size="pageSize"
       :size="props.size"
@@ -53,6 +54,7 @@
     isSimple?: boolean;
     pageSlot?: number;
     checkedCount?: number;
+    hidePagination?: boolean;
   }
 
   const props = withDefaults(defineProps<CrmPaginationProps>(), {

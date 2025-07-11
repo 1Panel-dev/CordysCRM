@@ -134,7 +134,7 @@ export default function useTable<T>(
     return item;
   }
 
-  async function loadList() {
+  async function loadList(isPageChange = false) {
     if (!loadListFunc) return;
     setLoading(true);
     try {
@@ -152,14 +152,26 @@ export default function useTable<T>(
       }
       const data = props?.isReturnNativeResponse ? res.data.data : res;
       if (!propsRes.value.showPagination && Array.isArray(data)) {
-        propsRes.value.data = data.map((item: CrmTableDataItem<T>) => {
-          return processRecordItem(item);
-        }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
+        if (isPageChange) {
+          data.forEach((item: CrmTableDataItem<T>) => {
+            propsRes.value.data.push(processRecordItem(item));
+          }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
+        } else {
+          propsRes.value.data = data.map((item: CrmTableDataItem<T>) =>
+            processRecordItem(item)
+          ) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
+        }
       } else {
         const tmpArr = data as CommonList<CrmTableDataItem<T>>;
-        propsRes.value.data = tmpArr.list?.map((item: CrmTableDataItem<T>) => {
-          return processRecordItem(item, tmpArr);
-        }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
+        if (isPageChange) {
+          tmpArr.list?.forEach((item: CrmTableDataItem<T>) => {
+            propsRes.value.data.push(processRecordItem(item, tmpArr));
+          }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
+        } else {
+          propsRes.value.data = tmpArr.list?.map((item: CrmTableDataItem<T>) =>
+            processRecordItem(item, tmpArr)
+          ) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
+        }
         // 设置分页
         setPagination(tmpArr.current, tmpArr.total);
       }
@@ -181,7 +193,7 @@ export default function useTable<T>(
     // 分页触发
     pageChange: async (page: number) => {
       setPagination(page);
-      await loadList();
+      await loadList(true);
     },
     // 修改每页显示条数触发
     pageSizeChange: async (pageSize: number) => {

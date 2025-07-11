@@ -1,5 +1,12 @@
 <template>
-  <CrmSearchInput v-model:value="keyword" class="mb-[16px] !w-[240px]" @search="searchData" />
+  <CrmSearchInput
+    v-model:value="keyword"
+    class="mb-[16px] !w-[240px]"
+    :placeholder="
+      props.sourceType === FieldDataSourceTypeEnum.CONTACT ? t('common.searchByNamePhone') : t('common.searchByName')
+    "
+    @search="searchData"
+  />
   <CrmTable
     v-model:checked-row-keys="selectedKeys"
     v-bind="propsRes"

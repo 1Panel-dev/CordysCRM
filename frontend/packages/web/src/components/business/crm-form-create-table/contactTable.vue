@@ -16,7 +16,7 @@
       <CrmSearchInput
         v-model:value="keyword"
         class="!w-[240px]"
-        :placeholder="t('common.searchName')"
+        :placeholder="t('common.searchByNamePhone')"
         @search="searchData"
       />
     </div>
@@ -80,6 +80,7 @@
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
   import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, NSwitch, useMessage } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -308,21 +309,24 @@
     },
   });
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
+  const backupData = ref<CustomerContractListItem[]>([]);
 
-  function searchData(val?: string) {
+  async function searchData(val?: string) {
     if (props.sourceId) {
       if (val) {
         const lowerCaseVal = val.toLowerCase();
-        propsRes.value.data = propsRes.value.data.filter((item: CustomerContractListItem) => {
-          return item.name.toLowerCase().includes(lowerCaseVal);
+        propsRes.value.data = backupData.value.filter((item: CustomerContractListItem) => {
+          return item.name.toLowerCase().includes(lowerCaseVal) || item.phone.toLowerCase().includes(lowerCaseVal);
         });
       } else {
         setLoadListParams({ id: props.sourceId });
-        loadList();
+        await loadList();
+        backupData.value = cloneDeep(propsRes.value.data);
       }
     } else {
       setLoadListParams({ keyword: val ?? keyword.value, searchType: props.searchType });
-      loadList();
+      await loadList();
+      backupData.value = cloneDeep(propsRes.value.data);
     }
   }
 

@@ -158,6 +158,7 @@ export interface CustomerContractListItem {
   createUserName: string;
   updateUserName: string;
   moduleFields: ModuleField[];
+  phone: string; // 联系电话
 }
 
 export interface Condition {

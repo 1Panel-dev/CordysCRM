@@ -72,7 +72,7 @@ const useAppStore = defineStore('app', {
     menuCollapsed: false,
     collapsedWidth: 56,
     // 分页
-    pageSize: 10,
+    pageSize: 30,
     showSizePicker: true,
     showQuickJumper: true,
     loginLoading: false,

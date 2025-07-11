@@ -26,9 +26,11 @@
       :row-key="getRowKey"
       flex-height
       :class="`${props.notShowTableFilter ? 'not-show-filter' : ''} flex-1`"
+      virtual-scroll
       @update:sorter="handleSorterChange"
       @update:filters="handleFiltersChange"
       @update:checked-row-keys="handleCheck"
+      @scroll="handleScroll"
     >
       <template #empty>
         <div class="w-full">
@@ -45,6 +47,7 @@
       class="mt-[16px]"
       v-bind="{ ...(attrs.crmPagination || {}) }"
       :checked-count="checkedRowKeys.length"
+      hide-pagination
       @handle-page-change="handlePageChange"
       @handle-page-size-change="handlePageSizeChange"
     />
@@ -394,6 +397,21 @@
     // 追加新项
     selectedRows.value = [...selectedRows.value, ...newRows];
     emit('rowKeyChange', rowKeys, selectedRows.value);
+  }
+
+  function handleScroll(e: Event) {
+    const target = e.target as HTMLElement;
+    const pagination = attrs.crmPagination as any;
+    // 处理有纵向滚动的情况
+    if (
+      target.scrollHeight > target.clientHeight && // 有纵向滚动条
+      target.scrollHeight - target.scrollTop === target.clientHeight && // 滚动到底部
+      pagination
+    ) {
+      if (pagination.itemCount > pagination.page * pagination.pageSize) {
+        emit('pageChange', pagination.page + 1);
+      }
+    }
   }
 
   onMounted(() => {
