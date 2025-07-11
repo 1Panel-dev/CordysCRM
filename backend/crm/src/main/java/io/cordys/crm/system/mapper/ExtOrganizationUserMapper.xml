@@ -349,4 +349,9 @@
     <update id="updateUserByUserId">
         update sys_organization_user set update_time = #{time}, update_user = #{operatorId} where user_id = #{userId}
     </update>
+
+    
+    <select id="getDepartmentByUserId" resultType="java.lang.String">
+        select department_id from sys_organization_user where user_id = #{userId} limit 1
+    </select>
 </mapper>
