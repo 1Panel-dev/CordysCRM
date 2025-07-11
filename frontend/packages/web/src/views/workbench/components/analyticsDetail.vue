@@ -3,12 +3,17 @@
     <div v-for="item of data" :key="item.icon" v-permission="item.permission" class="analytics-wrapper flex-auto">
       <div class="analytics-header">
         <div class="flex items-center gap-[4px]">
-          <div :class="`analytics-icon bg-[${item.bgColor}]`">
+          <div class="analytics-icon" :style="{ background: item.bgColor }">
             <CrmIcon :type="item.icon" :size="16" :class="item.iconColor" />
           </div>
           <div class="text-[16px]">{{ item.name }}</div>
         </div>
-        <div class="analytics-count">
+        <div
+          :class="`analytics-count ${
+            item.routeName && hasAnyPermission(item.permission) ? 'cursor-pointer text-[var(--primary-8)]' : ''
+          }`"
+          @click="goDetail(item)"
+        >
           {{ item.total }}
         </div>
       </div>
@@ -33,13 +38,23 @@
 </template>
 
 <script setup lang="ts">
+  import { useRouter } from 'vue-router';
+
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import { defaultAccountData, defaultClueData, defaultOpportunityData } from '@/config/workbench';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
 
   const data = computed(() => [defaultAccountData, defaultClueData, defaultOpportunityData]);
+
+  const router = useRouter();
+  function goDetail(item: Record<string, any>) {
+    if (hasAnyPermission(item.permission) && item.routeName) {
+      router.push({ name: item.routeName });
+    }
+  }
 </script>
 
 <style scoped lang="less">

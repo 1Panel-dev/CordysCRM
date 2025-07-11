@@ -1,6 +1,8 @@
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 
+import { AppRouteEnum } from '@/enums/routeEnum';
+
 const { t } = useI18n();
 
 export const quickAccessList = [
@@ -50,6 +52,7 @@ export const defaultClueData = {
   name: t('workbench.clueTotal'),
   total: 0,
   permission: ['CLUE_MANAGEMENT:READ'],
+  routeName: AppRouteEnum.CLUE_MANAGEMENT_CLUE,
   analytics: [
     {
       title: t('workbench.addCount'),
@@ -76,6 +79,7 @@ export const defaultAccountData = {
   name: t('workbench.customerTotal'),
   total: 0,
   permission: ['CUSTOMER_MANAGEMENT:READ'],
+  routeName: AppRouteEnum.CUSTOMER_INDEX,
   analytics: [
     {
       title: t('workbench.addCount'),
@@ -102,6 +106,7 @@ export const defaultOpportunityData = {
   name: t('workbench.opportunityTotal'),
   total: 0,
   permission: ['OPPORTUNITY_MANAGEMENT:READ'],
+  routeName: AppRouteEnum.OPPORTUNITY_OPT,
   analytics: [
     {
       title: t('workbench.addCount'),
@@ -118,13 +123,14 @@ export const defaultContactsData = {
   name: t('workbench.addContacts'),
   total: 0,
   isGrowth: 0,
+  routeName: AppRouteEnum.CUSTOMER_CONTACT,
   permission: ['CUSTOMER_MANAGEMENT:READ'],
 };
 
 export const defaultFollowRecordData = {
   icon: 'iconicon_data_record',
   iconColor: 'text-[var(--warning-yellow)]',
-  bgColor: 'var(--warning-4)',
+  bgColor: 'var(--warning-5)',
   name: t('workbench.addFollowRecords'),
   total: 0,
   isGrowth: 0,

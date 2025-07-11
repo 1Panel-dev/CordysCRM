@@ -130,6 +130,7 @@
   }
   .analytics-count {
     font-size: 18px;
+    line-height: 26px;
     @apply font-semibold;
   }
   .analytics-last-time {

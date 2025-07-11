@@ -17,7 +17,12 @@
             <CrmIcon :type="item.icon" :size="16" :class="item.iconColor" />
           </div>
           <div class="text-[16px]">{{ item.name }}</div>
-          <div class="analytics-count">
+          <div
+            :class="`analytics-count ${
+              item?.routeName && hasAnyPermission(item.permission) ? 'cursor-pointer text-[var(--primary-8)]' : ''
+            }`"
+            @click="goDetail(item)"
+          >
             {{ item.total }}
           </div>
         </div>
@@ -38,13 +43,28 @@
 </template>
 
 <script setup lang="ts">
+  import { useRouter } from 'vue-router';
+
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import { defaultContactsData, defaultFollowPlanData, defaultFollowRecordData } from '@/config/workbench';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
 
-  const analyticsMiniCardList = computed(() => [defaultContactsData, defaultFollowRecordData, defaultFollowPlanData]);
+  // TODO 类型
+  const analyticsMiniCardList = computed<Record<string, any>>(() => [
+    defaultContactsData,
+    defaultFollowRecordData,
+    defaultFollowPlanData,
+  ]);
+
+  const router = useRouter();
+  function goDetail(item: Record<string, any>) {
+    if (hasAnyPermission(item.permission) && item.routeName) {
+      router.push({ name: item.routeName });
+    }
+  }
 </script>
 
 <style scoped lang="less">
