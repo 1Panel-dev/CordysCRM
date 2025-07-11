@@ -21,10 +21,6 @@ public interface ExtClueMapper {
     List<ClueListResponse> list(@Param("request") CluePageRequest request, @Param("orgId") String orgId,
                                     @Param("userId") String userId, @Param("dataPermission") DeptDataPermissionDTO deptDataPermission);
 
-    boolean checkAddExist(@Param("clue") Clue clue);
-
-    boolean checkUpdateExist(@Param("clue") Clue Clue);
-
     List<OptionDTO> selectOptionByIds(@Param("ids") List<String> ids);
 
     void batchTransfer(@Param("request") ClueBatchTransferRequest request);

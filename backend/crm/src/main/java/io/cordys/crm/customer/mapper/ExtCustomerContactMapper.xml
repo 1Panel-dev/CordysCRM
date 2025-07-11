@@ -220,22 +220,6 @@
         </choose>
     </sql>
 
-    <select id="checkAddExist" resultType="java.lang.Boolean">
-        select count(1)
-        from customer_contact
-        where name = #{customerContact.name} and organization_id = #{customerContact.organizationId} limit 1
-    </select>
-
-    <select id="checkUpdateExist" resultType="java.lang.Boolean">
-        select count(1)
-        from customer_contact
-        where name = #{customerContact.name}
-        and organization_id = (
-            select organization_id from customer_contact where id = #{customerContact.id}
-        )
-        and id != #{customerContact.id} limit 1
-    </select>
-
     <select id="selectContactOptionByIds" resultType="io.cordys.common.dto.OptionDTO">
         SELECT id, name
         FROM customer_contact

@@ -126,8 +126,6 @@ class ClueControllerTests extends BaseTest {
 //                .toList();
 //        Assertions.assertEquals(request.getModuleFields(), fieldValues);
 
-        // 校验重名异常
-        assertErrorCode(this.requestPost(DEFAULT_ADD, request), ClueResultCode.CLUE_EXIST);
 
         // 创建另一个客户
         request.setName("another");
@@ -170,11 +168,6 @@ class ClueControllerTests extends BaseTest {
         emptyRequest.setId(addClue.getId());
         emptyRequest.setProducts(List.of("cc", "dd"));
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
-
-        // 校验重名异常
-        request.setId(addClue.getId());
-        request.setName(anotherClue.getName());
-        assertErrorCode(this.requestPost(DEFAULT_UPDATE, request), ClueResultCode.CLUE_EXIST);
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_UPDATE, DEFAULT_UPDATE, request);

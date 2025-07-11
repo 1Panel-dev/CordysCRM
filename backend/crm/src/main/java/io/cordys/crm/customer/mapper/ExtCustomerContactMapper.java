@@ -2,7 +2,6 @@ package io.cordys.crm.customer.mapper;
 
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
-import io.cordys.crm.customer.domain.CustomerContact;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.crm.customer.dto.response.CustomerContactRepeatResponse;
@@ -21,10 +20,6 @@ public interface ExtCustomerContactMapper {
 
     List<CustomerContactListResponse> sourceList(@Param("request") CustomerContactPageRequest request, @Param("orgId") String orgId,
                                                  @Param("userId") String userId);
-
-    boolean checkAddExist(@Param("customerContact") CustomerContact customerContact);
-
-    boolean checkUpdateExist(@Param("customerContact") CustomerContact CustomerContact);
 
     List<OptionDTO> selectContactOptionByIds(List<String> contactIds);
 

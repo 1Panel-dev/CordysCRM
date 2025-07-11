@@ -87,9 +87,6 @@ class CustomerContactControllerTests extends BaseTest {
         Assertions.assertEquals(request.getOwner(), customerContact.getOwner());
         Assertions.assertEquals(request.getPhone(), customerContact.getPhone());
 
-        // 校验重名异常
-        assertErrorCode(this.requestPost(DEFAULT_ADD, request), CustomerResultCode.CUSTOMER_CONTACT_EXIST);
-
         // 校验权限
         requestPostPermissionsTest(List.of(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_ADD, PermissionConstants.CUSTOMER_MANAGEMENT_ADD),
                 DEFAULT_ADD, request);

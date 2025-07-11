@@ -13,7 +13,6 @@ import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.*;
-import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.permission.PermissionCache;
@@ -50,8 +49,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static io.cordys.crm.customer.constants.CustomerResultCode.CUSTOMER_CONTACT_EXIST;
 
 /**
  * @author jianxing
@@ -213,8 +210,6 @@ public class CustomerContactService {
             customerContact.setOwner(userId);
         }
 
-        // 校验名称重复
-        checkAddExist(customerContact);
         customerContactMapper.insert(customerContact);
 
         //保存自定义字段
@@ -229,8 +224,6 @@ public class CustomerContactService {
         CustomerContact customerContact = BeanUtils.copyBean(new CustomerContact(), request);
         customerContact.setUpdateTime(System.currentTimeMillis());
         customerContact.setUpdateUser(userId);
-        // 校验名称重复
-        checkUpdateExist(customerContact);
 
         CustomerContact originCustomerContact = customerContactMapper.selectByPrimaryKey(customerContact.getId());
         // 获取模块字段
@@ -255,18 +248,6 @@ public class CustomerContactService {
         customerContactFieldService.deleteByResourceId(customerId);
         // 再保存
         customerContactFieldService.saveModuleField(customerId, orgId, userId, moduleFields, true);
-    }
-
-    private void checkAddExist(CustomerContact customerContact) {
-        if (extCustomerContactMapper.checkAddExist(customerContact)) {
-            throw new GenericException(CUSTOMER_CONTACT_EXIST);
-        }
-    }
-
-    private void checkUpdateExist(CustomerContact customerContact) {
-        if (extCustomerContactMapper.checkUpdateExist(customerContact)) {
-            throw new GenericException(CUSTOMER_CONTACT_EXIST);
-        }
     }
 
     @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.DELETE, resourceId = "{#id}")

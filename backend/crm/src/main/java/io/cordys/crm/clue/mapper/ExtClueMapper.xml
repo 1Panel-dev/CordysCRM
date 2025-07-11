@@ -252,22 +252,6 @@
         </choose>
     </sql>
 
-    <select id="checkAddExist" resultType="java.lang.Boolean">
-        select count(1)
-        from `clue`
-        where name = #{clue.name} and organization_id = #{clue.organizationId} limit 1
-    </select>
-
-    <select id="checkUpdateExist" resultType="java.lang.Boolean">
-        select count(1)
-        from `clue`
-        where name = #{clue.name}
-        and organization_id = (
-            select organization_id from clue where id = #{clue.id}
-        )
-        and id != #{clue.id} limit 1
-    </select>
-
     <select id="selectOptionByIds" resultType="io.cordys.common.dto.OptionDTO">
         select id, name
         from `clue`

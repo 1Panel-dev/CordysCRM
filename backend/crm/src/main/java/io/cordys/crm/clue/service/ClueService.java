@@ -267,9 +267,6 @@ public class ClueService {
         clue.setStage(ClueStatus.NEW.name());
         clue.setInSharedPool(false);
 
-        // 校验名称重复
-        checkAddExist(clue);
-
         clueMapper.insert(clue);
 
         //保存自定义字段
@@ -290,9 +287,6 @@ public class ClueService {
         Clue clue = BeanUtils.copyBean(new Clue(), request);
         clue.setUpdateTime(System.currentTimeMillis());
         clue.setUpdateUser(userId);
-
-        // 校验名称重复
-        checkUpdateExist(clue);
 
         if (StringUtils.isNotBlank(request.getOwner())) {
             if (!StringUtils.equals(request.getOwner(), originClue.getOwner())) {
@@ -359,18 +353,6 @@ public class ClueService {
         clueFieldService.deleteByResourceId(clueId);
         // 再保存
         clueFieldService.saveModuleField(clueId, orgId, userId, moduleFields, true);
-    }
-
-    private void checkAddExist(Clue clue) {
-        if (extClueMapper.checkAddExist(clue)) {
-            throw new GenericException(ClueResultCode.CLUE_EXIST);
-        }
-    }
-
-    private void checkUpdateExist(Clue clue) {
-        if (extClueMapper.checkUpdateExist(clue)) {
-            throw new GenericException(ClueResultCode.CLUE_EXIST);
-        }
     }
 
     /**
