@@ -113,6 +113,7 @@ public class ModuleFieldController {
 	@PostMapping("/source/product")
 	@Operation(summary = "分页获取产品")
 	public Pager<List<ProductListResponse>> sourceProductPage(@Valid @RequestBody ProductPageRequest request) {
+		request.setStatus("1"); // 默认只查询上架的产品
 		return productService.list(request, OrganizationContext.getOrganizationId());
 	}
 }

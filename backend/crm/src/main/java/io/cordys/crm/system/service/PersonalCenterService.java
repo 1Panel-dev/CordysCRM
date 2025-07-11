@@ -412,14 +412,49 @@ public class PersonalCenterService {
 
         }
 
+        List<OptionDTO> productOption = extProductMapper.getOptions(organizationId);
+
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         // 4. 查询并返回相似线索列表
-        return PageUtils.setPageInfo(page, extClueMapper.getSimilarClueList(request.getName(), organizationId));
+        return PageUtils.setPageInfo(page, getSimilarClueList(request, organizationId, productOption));
+    }
+
+    private List<ClueRepeatListResponse> getSimilarClueList(RepeatCustomerPageRequest request, String organizationId, List<OptionDTO> productOption) {
+        List<ClueRepeatListResponse> list =  extClueMapper.getSimilarClueList(request.getName(), organizationId);
+        if (CollectionUtils.isEmpty(list)) {
+            return list;
+        }
+        getProductNames(productOption, list);
+        return list;
+    }
+
+    private void getProductNames(List<OptionDTO> productOption, List<ClueRepeatListResponse> list) {
+        // 设置产品名称
+        Map<String, String> productMap = productOption.stream().collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+        list.forEach(clue -> {
+            // 设置产品名称
+            List<String> productNames = new ArrayList<>();
+            List<String> productIds = clue.getProducts();
+            productIds.forEach(product -> {
+                if (productMap.containsKey(product)) {
+                    productNames.add(productMap.get(product));
+                }
+            });
+            clue.setProductNameList(productNames);
+        });
     }
 
     public List<ClueRepeatListResponse> getRepeatClueDetail(RepeatCustomerDetailPageRequest request,
                                                             String organizationId) {
-        return extClueMapper.getRepeatClueList(request.getName(), organizationId);
+        List<ClueRepeatListResponse> repeatClueList = extClueMapper.getRepeatClueList(request.getName(), organizationId);
+        if (CollectionUtils.isEmpty(repeatClueList)) {
+            return repeatClueList;
+        }
+        List<OptionDTO> productOption = extProductMapper.getOptions(organizationId);
+        // 设置产品名称
+        getProductNames(productOption, repeatClueList);
+
+        return repeatClueList;
     }
 
     /**

@@ -2,6 +2,7 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.request.PosRequest;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Product;
@@ -95,5 +96,12 @@ public class ProductController {
     @Operation(summary = "批量删除产品")
     public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
         productService.batchDelete(ids, SessionUtils.getUserId());
+    }
+
+    @PostMapping("edit/pos")
+    @Operation(summary = "用例管理-功能用例-拖拽排序")
+    @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
+    public void editPos(@Validated @RequestBody PosRequest request) {
+        productService.editPos(request);
     }
 }

@@ -28,4 +28,10 @@ public interface ExtProductMapper {
     void updateProduct(@Param("ids") List<String> ids, @Param("product") Product product);
 
     List<OptionDTO> getOptions(@Param("orgId") String orgId);
+
+    Long getPos(@Param("orgId") String orgId);
+
+    Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos);
+
+    Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos);
 }

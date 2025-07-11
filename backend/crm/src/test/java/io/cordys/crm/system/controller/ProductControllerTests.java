@@ -3,6 +3,7 @@ package io.cordys.crm.system.controller;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.request.PosRequest;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
@@ -194,6 +195,7 @@ class ProductControllerTests extends BaseTest {
         Product product = productBaseMapper.selectByPrimaryKey(addProduct.getId());
         Product responseProduct = BeanUtils.copyBean(new Product(), getResponse);
         responseProduct.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        responseProduct.setPos(4096L);
         Assertions.assertEquals(responseProduct, product);
         // 校验权限
         requestGetPermissionTest(PermissionConstants.PRODUCT_MANAGEMENT_READ, DEFAULT_GET, addProduct.getId());
@@ -221,6 +223,7 @@ class ProductControllerTests extends BaseTest {
             Product product = productMap.get(productListResponse.getId());
             Product responseProduct = BeanUtils.copyBean(new Product(), productListResponse);
             responseProduct.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+            responseProduct.setPos(product.getPos());
             Assertions.assertEquals(product, responseProduct);
         });
 
@@ -254,9 +257,20 @@ class ProductControllerTests extends BaseTest {
 
     }
 
-
     @Test
     @Order(7)
+    void post() throws Exception {
+        PosRequest request = new PosRequest();
+        request.setOrgId(DEFAULT_ORGANIZATION_ID);
+        request.setMoveId(addProduct.getId());
+        request.setMoveMode("after");
+        request.setTargetId(batchIds.getFirst());
+        this.requestPostWithOk("edit/pos", request);
+    }
+
+
+    @Test
+    @Order(8)
     void delete() throws Exception {
         this.requestGetWithOk(DEFAULT_DELETE, addProduct.getId());
         Assertions.assertNull(productBaseMapper.selectByPrimaryKey(addProduct.getId()));
@@ -271,7 +285,7 @@ class ProductControllerTests extends BaseTest {
     }
 
     @Test
-    @Order(8)
+    @Order(9)
     void batchDelete() throws Exception {
 
         this.requestPostWithOk("batch/delete", batchIds);

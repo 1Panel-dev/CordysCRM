@@ -278,20 +278,23 @@
         <foreach collection="customerNames" item="customerName" open="(" close=")" separator=",">   
             #{customerName}
         </foreach>
+        and ( transition_id is null or transition_id = '' )
         group by name
     </select>
 
     <select id="getSimilarClueList" resultType="io.cordys.crm.clue.dto.response.ClueRepeatListResponse">
-        select c.id, c.name, c.owner, c.stage, c.contact, c.phone, su.name as ownerName from clue c
+        select c.id, c.name, c.owner, c.stage, c.contact, c.phone, c.products, su.name as ownerName from clue c
         left join sys_user su on c.owner = su.id
         where c.organization_id = #{orgId} and ( c.name like concat('%', #{customerName}, '%') or c.phone = #{customerName} )
+        and ( c.transition_id is null or c.transition_id = '' )
         order by c.create_time desc 
     </select>
 
     <select id="getRepeatClueList" resultType="io.cordys.crm.clue.dto.response.ClueRepeatListResponse">
-        select c.id, c.name, c.owner, c.stage, c.contact, c.phone, su.name as ownerName from clue c
+        select c.id, c.name, c.owner, c.stage, c.contact, c.phone, c.products, su.name as ownerName from clue c
         left join sys_user su on c.owner = su.id
         where c.organization_id = #{orgId} and (c.name = #{customerName} or c.phone = #{customerName})
+        and ( c.transition_id is null or c.transition_id = '' )
         order by c.create_time desc 
     </select>
 

@@ -28,4 +28,7 @@ public class Product extends BaseModel {
 
     @Schema(description = "状态")
     private String status;
+
+    @Schema(description = "排序")
+    private Long pos;
 }

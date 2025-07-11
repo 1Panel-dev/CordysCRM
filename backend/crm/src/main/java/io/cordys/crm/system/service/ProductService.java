@@ -10,12 +10,14 @@ import io.cordys.aspectj.dto.LogDTO;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.request.PosRequest;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.ServiceUtils;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.Product;
 import io.cordys.crm.system.dto.request.ProductBatchEditRequest;
@@ -113,6 +115,7 @@ public class ProductService {
         product.setStatus(request.getStatus());
         product.setCreateTime(System.currentTimeMillis());
         product.setUpdateTime(System.currentTimeMillis());
+        product.setPos(getNextOrder(orgId));
         product.setUpdateUser(userId);
         product.setCreateUser(userId);
         product.setOrganizationId(orgId);
@@ -262,5 +265,20 @@ public class ProductService {
         if (products.size() > 20) {
             throw new GenericException(Translator.get("product.length"));
         }
+    }
+
+    public Long getNextOrder(String orgId) {
+        Long pos = extProductMapper.getPos(orgId);
+        return (pos == null ? 0 : pos) + ServiceUtils.POS_STEP;
+    }
+
+    public void editPos(PosRequest request) {
+
+        ServiceUtils.updatePosField(request,
+                Product.class,
+                productBaseMapper::selectByPrimaryKey,
+                extProductMapper::getPrePos,
+                extProductMapper::getLastPos,
+                productBaseMapper::update);
     }
 }

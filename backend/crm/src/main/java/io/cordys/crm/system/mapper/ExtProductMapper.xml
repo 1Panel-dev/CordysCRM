@@ -17,6 +17,9 @@
             <if test="product.updateUser != null">
                 update_user = #{product.updateUser},
             </if>
+            <if test="product.pos != null">
+                pos = #{product.pos},
+            </if>
         </set>
         WHERE id IN
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
@@ -39,7 +42,9 @@
         </include>
 
         where p.organization_id = #{orgId}
-          and p.status = 1
+        <if test="request.status != null and request.status != ''">
+            and p.status = #{request.status}
+        </if>
         <if test="request.keyword != null and request.keyword != ''">
             and p.name like concat('%', #{request.keyword},'%')
         </if>
@@ -129,7 +134,7 @@
                 </choose>
             </when>
             <otherwise>
-                order by p.create_time desc
+                order by p.pos
             </otherwise>
         </choose>
     </sql>
@@ -204,6 +209,7 @@
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+        order by p.pos
     </select>
 
 
@@ -219,5 +225,31 @@
         <foreach collection="ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
+        order by pos
+    </select>
+    <select id="getPos" resultType="java.lang.Long">
+        SELECT
+            pos
+        FROM
+            product
+        WHERE
+            organization_id = #{orgId}
+        ORDER BY
+            pos DESC
+            LIMIT 1;
+    </select>
+    <select id="getPrePos" resultType="java.lang.Long">
+        select `pos` from product where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &lt; #{basePos}
+        </if>
+        order by `pos` desc limit 1;
+    </select>
+    <select id="getLastPos" resultType="java.lang.Long">
+        select `pos` from product where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &gt; #{basePos}
+        </if>
+        order by `pos` desc limit 1;
     </select>
 </mapper>

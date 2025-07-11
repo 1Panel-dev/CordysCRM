@@ -3,6 +3,8 @@ package io.cordys.crm.clue.dto.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.List;
+
 
 /**
  * @author jianxing
@@ -30,5 +32,11 @@ public class ClueRepeatListResponse {
 
     @Schema(description = "负责人名称")
     private String ownerName;
+
+    @Schema(description = "意向产品id")
+    private List<String> products;
+
+    @Schema(description = "意向产品名称")
+    private List<String> productNameList;
 
 }
