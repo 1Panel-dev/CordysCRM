@@ -39,6 +39,7 @@ export const {
   updateProduct,
   batchDeleteProduct,
   batchUpdateProduct,
+  dragSortProduct,
 } = productApi;
 
 export const {

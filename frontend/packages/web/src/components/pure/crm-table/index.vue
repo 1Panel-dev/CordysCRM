@@ -61,7 +61,7 @@
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { FilterConditionItem, SortParams } from '@lib/shared/models/common';
+  import type { FilterConditionItem, SortParams, TableDraggedParams } from '@lib/shared/models/common';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -72,17 +72,22 @@
   import ColumnSetting from './components/columnSetting.vue';
 
   import useTableStore from '@/hooks/useTableStore';
+  import { useAppStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { BatchActionConfig } from './type';
   import type { DataTableBaseColumn, DataTableFilterState, DataTableRowKey, DataTableSortState } from 'naive-ui';
   import type { InternalRowData, TableColumns } from 'naive-ui/es/data-table/src/interface';
+  import Sortable from 'sortablejs';
+
+  const appStore = useAppStore();
 
   const props = defineProps<{
     columns: CrmDataTableColumn[];
     tableRowKey?: string;
     actionConfig?: BatchActionConfig; // 批量操作
     notShowTableFilter?: boolean; // 不显示表头筛选
+    draggable?: boolean; // 允许拖拽
   }>();
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;
@@ -91,6 +96,7 @@
     (e: 'batchAction', value: ActionsItem): void;
     (e: 'sorterChange', value: SortParams): void;
     (e: 'rowKeyChange', keys: DataTableRowKey[], rows: InternalRowData[]): void;
+    (e: 'drag', params: TableDraggedParams): void;
   }>();
   const attrs = useAttrs();
   const { t } = useI18n();
@@ -193,7 +199,8 @@
     if (attrs.showSetting) {
       columns = await tableStore.getShowInTableColumns(attrs.tableKey as TableKeyEnum);
     }
-    currentColumns.value = columns.map((column) => {
+
+    const noDragColumns = columns.map((column) => {
       const defaultRender = (row: Record<string, any>) => row[column.key as string] || '-';
       // 添加上render
       let render = props.columns.find((item) => item.key === column.key)?.render || defaultRender;
@@ -310,6 +317,29 @@
         minWidth: calculateColumnMinWidth(column),
       };
     });
+
+    currentColumns.value = [
+      ...(props.draggable
+        ? [
+            {
+              title: '',
+              key: SpecialColumnEnum.SELECTION,
+              width: 40,
+              render: () =>
+                h(
+                  'div',
+                  { class: 'crm-table-data-draggable-handle' },
+                  h(CrmIcon, {
+                    type: 'iconicon_move',
+                    size: 14,
+                    class: 'sort-handle text-[var(--text-n4)]',
+                  })
+                ),
+            },
+          ]
+        : []),
+      ...noDragColumns,
+    ] as CrmDataTableColumn[];
   }
 
   watch(
@@ -416,6 +446,65 @@
 
   onMounted(() => {
     checkedRowKeys.value = [];
+  });
+
+  const sortable = ref();
+  async function setDraggerSort() {
+    const observer = new MutationObserver((mutations, obs) => {
+      const el = tableRef.value?.$el?.querySelector('.n-data-table tbody');
+      if (el) {
+        obs.disconnect();
+        sortable.value = Sortable.create(el, {
+          ghostClass: 'sortable-ghost',
+          handle: '.crm-table-data-draggable-handle',
+          setData(dataTransfer: any) {
+            dataTransfer.setData('Text', '');
+          },
+          onEnd: (e: any) => {
+            const { oldIndex, newIndex } = e;
+            const data = attrs.data as any[];
+            const rowKey = props.tableRowKey || 'id';
+
+            const moveId = data[oldIndex][rowKey];
+
+            let targetId;
+            let moveMode: 'AFTER' | 'BEFORE';
+
+            if (newIndex >= data.length) {
+              targetId = data[data.length - 1][rowKey];
+              moveMode = 'AFTER';
+            } else if (newIndex === 0) {
+              targetId = data[0][rowKey];
+              moveMode = 'BEFORE';
+            } else if (oldIndex < newIndex) {
+              targetId = data[newIndex][rowKey];
+              moveMode = 'AFTER';
+            } else {
+              targetId = data[newIndex][rowKey];
+              moveMode = 'BEFORE';
+            }
+
+            emit('drag', {
+              targetId,
+              moveId,
+              moveMode,
+              orgId: appStore.orgId,
+            });
+          },
+        });
+      }
+    });
+
+    observer.observe(tableRef.value.$el, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  onMounted(() => {
+    if (props.draggable) {
+      setDraggerSort();
+    }
   });
 
   const scrollXWidth = computed(() => currentColumns.value.reduce((prev, curr) => prev + (curr.width as number), 0));

@@ -28,4 +28,6 @@ export enum SpecialColumnEnum {
   SELECTION = 'selection',
   // 操作列
   OPERATION = 'operation',
+  // 拖拽列
+  DRAG = 'drag',
 }

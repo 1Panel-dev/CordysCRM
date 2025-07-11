@@ -59,3 +59,10 @@ export interface TableExportSelectedParams {
   headList: ExportTableColumnItem[];
   ids: string[];
 }
+
+export interface TableDraggedParams {
+  moveId: string;
+  moveMode: 'BEFORE' | 'AFTER';
+  orgId: string;
+  targetId: string;
+}

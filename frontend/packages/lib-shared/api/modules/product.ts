@@ -4,12 +4,13 @@ import {
   BatchDeleteProductUrl,
   BatchUpdateProductUrl,
   DeleteProductUrl,
+  DragSortProductUrl,
   GetProductFormConfigUrl,
   GetProductListUrl,
   GetProductUrl,
   UpdateProductUrl,
 } from '@lib/shared/api/requrls/product';
-import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
+import type { CommonList, TableDraggedParams, TableQueryParams } from '@lib/shared/models/common';
 import type {
   BatchUpdateProductParams,
   ProductListItem,
@@ -58,6 +59,10 @@ export default function useProductApi(CDR: CordysAxios) {
   function batchUpdateProduct(data: BatchUpdateProductParams) {
     return CDR.post({ url: BatchUpdateProductUrl, data });
   }
+  // 拖拽排序产品
+  function dragSortProduct(data: TableDraggedParams) {
+    return CDR.post({ url: DragSortProductUrl, data });
+  }
 
   return {
     addProduct,
@@ -68,5 +73,6 @@ export default function useProductApi(CDR: CordysAxios) {
     deleteProduct,
     batchDeleteProduct,
     batchUpdateProduct,
+    dragSortProduct,
   };
 }

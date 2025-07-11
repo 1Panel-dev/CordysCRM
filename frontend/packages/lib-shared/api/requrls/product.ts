@@ -6,3 +6,4 @@ export const GetProductUrl = '/product/get'; // 获取产品详情
 export const DeleteProductUrl = '/product/delete'; // 删除产品
 export const BatchDeleteProductUrl = '/product/batch/delete'; // 批量删除产品
 export const BatchUpdateProductUrl = '/product/batch/update'; // 批量更新产品
+export const DragSortProductUrl = '/product/edit/pos'; // 排序拖拽产品

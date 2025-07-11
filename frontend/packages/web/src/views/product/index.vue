@@ -4,11 +4,13 @@
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
       :action-config="actionConfig"
+      :draggable="hasAnyPermission(['PRODUCT_MANAGEMENT:UPDATE'])"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
       @batch-action="handleBatchAction"
+      @drag="dragHandler"
     >
       <template #actionLeft>
         <div class="flex items-center">
@@ -46,6 +48,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
+  import type { TableDraggedParams } from '@lib/shared/models/common';
   import type { ProductListItem } from '@lib/shared/models/product';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -57,9 +60,10 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
 
-  import { batchDeleteProduct, batchUpdateProduct, deleteProduct } from '@/api/modules';
+  import { batchDeleteProduct, batchUpdateProduct, deleteProduct, dragSortProduct } from '@/api/modules';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { openModal } = useModal();
 
@@ -175,6 +179,18 @@
   function handleEdit(productId: string) {
     activeProductId.value = productId;
     formCreateDrawerVisible.value = true;
+  }
+
+  // 拖拽
+  async function dragHandler(params: TableDraggedParams) {
+    try {
+      await dragSortProduct(params);
+      Message.success(t('common.operationSuccess'));
+      tableRefreshId.value += 1;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
   }
 
   function handleActionSelect(row: ProductListItem, actionKey: string) {
