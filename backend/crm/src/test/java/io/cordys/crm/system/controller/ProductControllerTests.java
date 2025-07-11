@@ -263,9 +263,13 @@ class ProductControllerTests extends BaseTest {
         PosRequest request = new PosRequest();
         request.setOrgId(DEFAULT_ORGANIZATION_ID);
         request.setMoveId(addProduct.getId());
+        System.out.println(addProduct.getPos());
         request.setMoveMode("after");
         request.setTargetId(batchIds.getFirst());
-        this.requestPostWithOk("edit/pos", request);
+        this.requestPostWithOk("/edit/pos", request);
+        Product product = productBaseMapper.selectByPrimaryKey(addProduct.getId());
+        System.out.println(product.getPos());
+        Assertions.assertTrue(addProduct.getPos() < product.getPos());
     }
 
 

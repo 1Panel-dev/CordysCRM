@@ -98,7 +98,7 @@ public class ProductController {
         productService.batchDelete(ids, SessionUtils.getUserId());
     }
 
-    @PostMapping("edit/pos")
+    @PostMapping("/edit/pos")
     @Operation(summary = "用例管理-功能用例-拖拽排序")
     @RequiresPermissions(PermissionConstants.PRODUCT_MANAGEMENT_UPDATE)
     public void editPos(@Validated @RequestBody PosRequest request) {
