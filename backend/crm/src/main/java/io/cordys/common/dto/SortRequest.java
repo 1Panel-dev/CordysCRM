@@ -72,17 +72,12 @@ public class SortRequest {
         if (StringUtils.isEmpty(script)) {
             return false;
         }
-        // 只允许字母、数字、下划线和连字符的安全模式
-        java.util.regex.Pattern safePattern = java.util.regex.Pattern.compile("^[\\w\\-]+$");
-        boolean isSafe = safePattern.matcher(script).matches();
-
         // 检测危险SQL模式
         java.util.regex.Pattern dangerousPattern = java.util.regex.Pattern.compile(
                 "(;|--|#|'|\"|/\\*|\\*/|\\b(select|insert|update|delete|drop|alter|truncate|exec|union|xp_)\\b)",
                 java.util.regex.Pattern.CASE_INSENSITIVE);
-        boolean hasDangerousPattern = dangerousPattern.matcher(script).find();
 
         // 返回true表示存在注入风险
-        return !isSafe || hasDangerousPattern;
+        return dangerousPattern.matcher(script).find();
     }
 }
