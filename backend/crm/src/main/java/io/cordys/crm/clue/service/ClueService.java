@@ -552,6 +552,7 @@ public class ClueService {
     }
 
     public void transitionOldCustomer(ReTransitionCustomerRequest request, String currentUser, String orgId) {
+        boolean notice = false;
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
         if (customer.getInSharedPool()) {
             // 如果客户已经在公海中，则领取改客户
@@ -560,16 +561,30 @@ public class ClueService {
             pickRequest.setPoolId(customer.getPoolId());
             poolCustomerService.pick(pickRequest, currentUser, orgId);
         } else {
-            // 如果客户不在公海中，则加入到协作人
-            CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
-            collaborationAddRequest.setCustomerId(request.getCustomerId());
-            collaborationAddRequest.setCollaborationType("COLLABORATION");
-            collaborationAddRequest.setUserId(currentUser);
-            customerCollaborationService.add(collaborationAddRequest, currentUser);
+            if (!StringUtils.equals(customer.getOwner(), currentUser)) {
+                // 如果非客户负责人，则加到协作人
+                CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
+                collaborationAddRequest.setCustomerId(request.getCustomerId());
+                collaborationAddRequest.setCollaborationType("COLLABORATION");
+                collaborationAddRequest.setUserId(currentUser);
+                customerCollaborationService.add(collaborationAddRequest, currentUser);
+                notice = true;
+            }
         }
         Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
         clue.setTransitionId(request.getCustomerId());
         clue.setTransitionType("CUSTOMER");
         clueMapper.update(clue);
+
+        if (notice) {
+            Map<String, Object> paramMap = new HashMap<>(8);
+            paramMap.put("useTemplate", true);
+            paramMap.put("template", Translator.get("message.clue_convert_exist_customer_text"));
+            paramMap.put("ownerName", currentUser);
+            paramMap.put("customerName", customer.getName());
+            paramMap.put("name", clue.getName());
+            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_CUSTOMER,
+                    paramMap, currentUser, orgId, List.of(customer.getOwner()), true);
+        }
     }
 }
