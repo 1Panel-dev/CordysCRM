@@ -25,12 +25,13 @@
       </div>
       <!-- 查询结果 -->
       <div v-show="showResult" class="mb-[24px]">
-        <div class="font-semibold">
+        <div class="flex items-center font-semibold">
           {{
             validatePhone(keywordVal)
               ? t('workbench.duplicateCheck.contactResult')
               : t('workbench.duplicateCheck.result')
           }}
+          <div class="text-[var(--text-n4)]"> （{{ repeatTable.propsRes.crmPagination.itemCount || 0 }}） </div>
         </div>
         <div v-show="repeatTable.code === 101003" class="text-center text-[var(--text-n4)]">
           {{ t('workbench.duplicateCheck.moduleNotEnabled') }}

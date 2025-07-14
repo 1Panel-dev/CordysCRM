@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div class="font-semibold">{{ props.title }}</div>
+    <div class="flex items-center font-semibold">
+      {{ props.title }}
+      <div class="text-[var(--text-n4)]"> （{{ propsRes.crmPagination?.itemCount || 0 }}） </div>
+    </div>
     <div v-show="code === 101003" class="text-center text-[var(--text-n4)]">
       {{ t('workbench.duplicateCheck.moduleNotEnabled') }}
     </div>
