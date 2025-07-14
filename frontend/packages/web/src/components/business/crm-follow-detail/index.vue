@@ -202,11 +202,15 @@
     const isClue = item.type === 'CLUE' && item.clueId?.length;
     const customerNameKey = isClue ? 'clueName' : 'customerName';
     let lastDescriptionList = [
-      {
-        key: customerNameKey,
-        label: isClue ? t('crmFollowRecord.companyName') : t('opportunity.customerName'),
-        value: customerNameKey,
-      },
+      ...(props.followApiKey === 'myPlan' || props.activeType === 'followPlan'
+        ? [
+            {
+              key: customerNameKey,
+              label: isClue ? t('crmFollowRecord.companyName') : t('opportunity.customerName'),
+              value: customerNameKey,
+            },
+          ]
+        : []),
       ...descriptionList,
     ];
 
