@@ -129,10 +129,6 @@
       name: CustomerSearchTypeEnum.DEPARTMENT,
       tab: t('clue.departmentClues'),
     },
-    {
-      name: CustomerSearchTypeEnum.CUSTOMER_TRANSITION,
-      tab: t('clue.convertedToCustomer'),
-    },
   ];
 
   const { tabList, activeTab } = useHiddenTab(allTabList, FormDesignKeyEnum.CLUE);
@@ -466,9 +462,9 @@
 
   const exportColumns = computed<ExportTableColumnItem[]>(() => {
     return propsRes.value.columns
-        .filter(
-            (item: any) => item.key !== 'operation' && item.type !== 'selection' && item.filedType !== FieldTypeEnum.PICTURE
-        )
+      .filter(
+        (item: any) => item.key !== 'operation' && item.type !== 'selection' && item.filedType !== FieldTypeEnum.PICTURE
+      )
       .map((e) => {
         return {
           key: e.key?.toString() || '',
