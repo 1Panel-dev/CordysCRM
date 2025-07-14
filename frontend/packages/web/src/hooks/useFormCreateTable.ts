@@ -71,6 +71,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const dataSourceFieldIds = ref<string[]>([]);
   const opportunityInternalColumns: CrmDataTableColumn[] = [
     {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentName',
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
       title: t('opportunity.stage'),
       width: 150,
       key: 'stage',
@@ -318,6 +326,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     ],
     [FormDesignKeyEnum.BUSINESS]: opportunityInternalColumns,
     [FormDesignKeyEnum.CLUE]: [
+      {
+        title: t('org.department'),
+        width: 120,
+        key: 'departmentName',
+        ellipsis: {
+          tooltip: true,
+        },
+      },
       {
         title: t('customer.collectionTime'),
         width: 160,
