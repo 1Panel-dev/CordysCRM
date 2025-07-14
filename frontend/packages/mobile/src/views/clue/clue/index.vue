@@ -92,10 +92,10 @@
       name: CustomerSearchTypeEnum.DEPARTMENT,
       tab: t('clue.department'),
     },
-    {
-      name: CustomerSearchTypeEnum.CUSTOMER_TRANSITION,
-      tab: t('clue.convertedToCustomer'),
-    },
+    // {
+    //   name: CustomerSearchTypeEnum.CUSTOMER_TRANSITION,
+    //   tab: t('clue.convertedToCustomer'),
+    // },
   ];
   const { tabList, activeFilter } = useHiddenTab(filterButtons, FormDesignKeyEnum.CLUE);
 

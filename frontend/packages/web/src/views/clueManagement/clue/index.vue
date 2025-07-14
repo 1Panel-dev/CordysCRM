@@ -370,7 +370,7 @@
       width: 200,
       fixed: 'right',
       render: (row: ClueListItem) =>
-        row.transitionType && ['CUSTOMER'].includes(row.transitionType)
+        row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)
           ? '-'
           : h(
               CrmOperationButton,
