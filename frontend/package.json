@@ -8,7 +8,7 @@
     "packages/web"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "pnpm -r run build",
     "prepare": "cd .. && husky install frontend/.husky"
   },
   "keywords": [],
