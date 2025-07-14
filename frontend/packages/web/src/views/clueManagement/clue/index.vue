@@ -88,6 +88,7 @@
   import type { ClueListItem } from '@lib/shared/models/clue';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
   import type { TransferParams } from '@lib/shared/models/customer/index';
+  import { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -105,7 +106,7 @@
   import ClueOverviewDrawer from './components/clueOverviewDrawer.vue';
   import ToCluePoolResultModel from './components/toCluePoolResultModel.vue';
 
-  import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue } from '@/api/modules';
+  import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue, getFieldDeptTree } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -481,7 +482,21 @@
     };
   });
 
+  const department = ref<DeptUserTreeNode[]>([]);
   const filterConfigList = computed<FilterFormItem[]>(() => [
+    {
+      title: t('opportunity.department'),
+      dataIndex: 'departmentId',
+      type: FieldTypeEnum.TREE_SELECT,
+      treeSelectProps: {
+        labelField: 'name',
+        keyField: 'id',
+        multiple: true,
+        clearFilterAfterSelect: false,
+        options: department.value,
+        checkable: true,
+      },
+    },
     {
       title: t('customer.lastFollowUps'),
       dataIndex: 'follower',
@@ -510,6 +525,19 @@
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
+
+  async function initDepartList() {
+    try {
+      department.value = await getFieldDeptTree();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  onBeforeMount(() => {
+    initDepartList();
+  });
 
   watch(
     () => activeTab.value,

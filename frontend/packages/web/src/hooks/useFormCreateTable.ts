@@ -519,7 +519,10 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               filterMultipleValue: multipleValueTypeList.includes(field.type),
             };
           }
-          if (field.businessKey === 'name') {
+          if (
+            field.businessKey === 'name' &&
+            ![FormDesignKeyEnum.CUSTOMER_CONTACT, FormDesignKeyEnum.BUSINESS_CONTACT].includes(props.formKey)
+          ) {
             return {
               title: field.name,
               width: 200,
