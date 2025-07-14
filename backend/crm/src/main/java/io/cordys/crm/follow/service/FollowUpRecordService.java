@@ -33,6 +33,7 @@ import io.cordys.crm.system.dto.response.UserResponse;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -316,6 +317,14 @@ public class FollowUpRecordService extends BaseFollowUpService {
      * @return
      */
     public PagerWithOption<List<FollowUpRecordListResponse>> list(FollowUpRecordPageRequest request, String userId, String orgId, String resourceType, String type, CustomerDataDTO customerData) {
+        if (StringUtils.equals(resourceType, "CUSTOMER")) {
+            // 如果是客户类型，查询所有转移的线索来源ID的记录
+            LambdaQueryWrapper<Clue> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Clue::getTransitionId, request.getSourceId());
+            List<Clue> clues = clueMapper.selectListByLambda(queryWrapper);
+            request.setTransitionIds(clues.stream().map(Clue::getId).toList());
+            type = StringUtils.EMPTY;
+        }
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
         List<FollowUpRecordListResponse> list = extFollowUpRecordMapper.selectList(request, userId, orgId, resourceType, type, customerData);
         buildListData(list, orgId);
