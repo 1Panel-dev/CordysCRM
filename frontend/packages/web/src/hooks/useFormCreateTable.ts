@@ -624,7 +624,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         fixed: 'left',
         title: '',
         width: 56,
-        key: 'order',
+        key: 'crmTableOrder',
         resizable: false,
         render: (row: any, rowIndex: number) => rowIndex + 1,
       });
