@@ -97,6 +97,10 @@ export const clueDescriptionList = [
   //   label: t('workbench.duplicateCheck.contactorPhoneNumber'),
   //   key: 'phone',
   // },
+  {
+    label: t('opportunity.intendedProducts'),
+    key: 'productNameList',
+  },
 ];
 
 export const opportunityDescriptionList = [
