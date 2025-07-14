@@ -1,33 +1,35 @@
 <template>
   <CrmCard hide-footer :special-height="props.specialHeight">
-    <div
-      :class="`mb-[16px] flex  ${
-        !props.readonly && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:ADD']) ? 'justify-between' : 'justify-end'
-      }`"
-    >
-      <n-button
-        v-if="!props.readonly"
-        v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']"
-        type="primary"
-        @click="handleCreate"
-      >
-        {{ t('overviewDrawer.addContract') }}
-      </n-button>
-      <CrmSearchInput
-        v-model:value="keyword"
-        class="!w-[240px]"
-        :placeholder="t('common.searchByNamePhone')"
-        @search="searchData"
-      />
-    </div>
     <CrmTable
       v-bind="propsRes"
-      class="!h-[calc(100%-48px)]"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
-    />
+    >
+      <template #tableTop>
+        <div
+          :class="`flex items-center ${
+            !props.readonly && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:ADD']) ? 'justify-between' : 'justify-end'
+          }`"
+        >
+          <n-button
+            v-if="!props.readonly"
+            v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']"
+            type="primary"
+            @click="handleCreate"
+          >
+            {{ t('overviewDrawer.addContract') }}
+          </n-button>
+          <CrmSearchInput
+            v-model:value="keyword"
+            class="!w-[240px]"
+            :placeholder="t('common.searchByNamePhone')"
+            @search="searchData"
+          />
+        </div>
+      </template>
+    </CrmTable>
     <CrmFormCreateDrawer
       v-model:visible="formCreateDrawerVisible"
       :form-key="FormDesignKeyEnum.CONTACT"

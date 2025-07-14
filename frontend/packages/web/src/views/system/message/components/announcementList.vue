@@ -1,19 +1,21 @@
 <template>
   <CrmCard hide-footer :special-height="64">
-    <div class="mb-[16px] flex items-center justify-between">
-      <n-button v-permission="['SYSTEM_NOTICE:ADD']" type="primary" @click="handleAdd">
-        {{ t('system.message.newAnnouncement') }}
-      </n-button>
-      <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
-    </div>
     <CrmTable
       v-bind="propsRes"
-      class="!h-[calc(100%-48px)]"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
-    />
+    >
+      <template #tableTop>
+        <div class="flex items-center justify-between">
+          <n-button v-permission="['SYSTEM_NOTICE:ADD']" type="primary" @click="handleAdd">
+            {{ t('system.message.newAnnouncement') }}
+          </n-button>
+          <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+        </div>
+      </template>
+    </CrmTable>
     <AddNotifyModal :id="activeId" v-model:show="showModal" @cancel="cancelHandler" @saved="() => initData()" />
   </CrmCard>
 </template>

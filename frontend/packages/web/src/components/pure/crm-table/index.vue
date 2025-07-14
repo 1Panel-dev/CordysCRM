@@ -1,6 +1,5 @@
 <template>
-  <div class="flex h-full flex-col overflow-hidden">
-    <slot name="tableTop"></slot>
+  <div class="relative flex h-full flex-col overflow-hidden">
     <BatchAction
       v-if="props.actionConfig"
       :select-row-count="checkedRowKeys.length"
@@ -15,9 +14,20 @@
       <template #actionRight>
         <div class="flex items-center gap-[8px]">
           <slot name="actionRight"></slot>
+          <div class="whitespace-nowrap text-[var(--text-n2)]">
+            {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
+          </div>
         </div>
       </template>
     </BatchAction>
+    <div v-else class="mb-[16px] flex w-full items-center gap-[8px]">
+      <div class="flex-1">
+        <slot name="tableTop"></slot>
+      </div>
+      <div class="whitespace-nowrap text-[var(--text-n2)]">
+        {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
+      </div>
+    </div>
     <n-data-table
       ref="tableRef"
       v-bind="{ scrollX: scrollXWidth, ...$attrs }"
@@ -27,6 +37,9 @@
       flex-height
       :class="`${props.notShowTableFilter ? 'not-show-filter' : ''} flex-1`"
       virtual-scroll
+      :virtual-scroll-x="props.virtualScrollX"
+      :min-row-height="46"
+      :header-height="48"
       @update:sorter="handleSorterChange"
       @update:filters="handleFiltersChange"
       @update:checked-row-keys="handleCheck"
@@ -42,15 +55,6 @@
         </div>
       </template>
     </n-data-table>
-    <CrmPagination
-      v-if="!!attrs.showPagination"
-      class="mt-[16px]"
-      v-bind="{ ...(attrs.crmPagination || {}) }"
-      :checked-count="checkedRowKeys.length"
-      hide-pagination
-      @handle-page-change="handlePageChange"
-      @handle-page-size-change="handlePageSizeChange"
-    />
   </div>
 </template>
 
@@ -65,7 +69,6 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
-  import CrmPagination from '@/components/pure/crm-pagination/index.vue';
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
   import BatchAction from './components/batchAction.vue';
@@ -76,7 +79,13 @@
   import { hasAnyPermission } from '@/utils/permission';
 
   import { BatchActionConfig } from './type';
-  import type { DataTableBaseColumn, DataTableFilterState, DataTableRowKey, DataTableSortState } from 'naive-ui';
+  import type {
+    DataTableBaseColumn,
+    DataTableFilterState,
+    DataTableRowKey,
+    DataTableSortState,
+    PaginationProps,
+  } from 'naive-ui';
   import type { InternalRowData, TableColumns } from 'naive-ui/es/data-table/src/interface';
   import Sortable from 'sortablejs';
 
@@ -88,6 +97,7 @@
     actionConfig?: BatchActionConfig; // 批量操作
     notShowTableFilter?: boolean; // 不显示表头筛选
     draggable?: boolean; // 允许拖拽
+    virtualScrollX?: boolean; // 是否开启横向虚拟滚动
   }>();
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;
@@ -364,13 +374,6 @@
     return props.tableRowKey ? rowData[props.tableRowKey] : rowData.id;
   }
 
-  function handlePageChange(page: number) {
-    emit('pageChange', page);
-  }
-  function handlePageSizeChange(pageSize: number) {
-    emit('pageSizeChange', pageSize);
-  }
-
   function handleSorterChange(sorter: DataTableSortState) {
     currentColumns.value.forEach((column) => {
       if (column.sortOrder === undefined) return;
@@ -544,5 +547,12 @@
     :deep(.n-data-table-filter) {
       display: none;
     }
+  }
+  :deep(.n-data-table-td[data-col-key='order']) {
+    padding-right: 0;
+  }
+  :deep(.n-data-table-td) {
+    line-height: 46px;
+    vertical-align: middle;
   }
 </style>

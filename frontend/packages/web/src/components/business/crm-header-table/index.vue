@@ -1,17 +1,19 @@
 <template>
   <CrmCard hide-footer>
-    <div class="mb-[16px] flex items-center justify-between">
-      <div class="font-medium text-[var(--text-n1)]"> {{ t('opportunity.headRecordPage') }} </div>
-      <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
-    </div>
     <CrmTable
       v-bind="propsRes"
-      class="!h-[calc(100%-48px)]"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
-    />
+    >
+      <template #tableTop>
+        <div class="flex items-center justify-between">
+          <div class="font-medium text-[var(--text-n1)]"> {{ t('opportunity.headRecordPage') }} </div>
+          <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+        </div>
+      </template>
+    </CrmTable>
   </CrmCard>
 </template>
 

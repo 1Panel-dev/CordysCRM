@@ -14,7 +14,6 @@
         </n-button>
         <CrmTable
           v-bind="propsRes"
-          class="!h-[calc(100%-48px)]"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"

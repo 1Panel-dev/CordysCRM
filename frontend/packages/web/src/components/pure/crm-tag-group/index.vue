@@ -1,5 +1,5 @@
 <template>
-  <div ref="container" class="crm-overflow-tag-list w-full">
+  <div ref="container" class="crm-overflow-tag-list h-full w-full">
     <!-- 测量所有标签宽度 -->
     <div v-if="innerTags.length > 0" ref="measureRef" class="crm-measure-tag-item">
       <template v-for="(item, index) in tags" :key="`crm-measure-tag-item-${index}`">

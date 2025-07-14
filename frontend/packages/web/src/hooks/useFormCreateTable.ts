@@ -604,7 +604,14 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             : {}),
         });
       }
-
+      columns.unshift({
+        fixed: 'left',
+        title: '',
+        width: 56,
+        key: 'order',
+        resizable: false,
+        render: (row: any, rowIndex: number) => rowIndex + 1,
+      });
       if (props.operationColumn) {
         columns.push(props.operationColumn);
       }
@@ -627,6 +634,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       showPagination,
       columns,
       permission: props.permission,
+      virtualScrollX: props.formKey !== FormDesignKeyEnum.PRODUCT, // 产品表格无需横向虚拟滚动
     },
     (item, originalData) => {
       const businessFieldAttr: Record<string, any> = {};

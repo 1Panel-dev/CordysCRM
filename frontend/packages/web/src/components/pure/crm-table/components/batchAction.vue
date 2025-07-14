@@ -1,10 +1,5 @@
 <template>
-  <div
-    ref="batchActionWrapperRef"
-    :class="`mb-[16px] flex w-full flex-nowrap items-center gap-[12px] ${
-      props.selectRowCount < 1 ? 'justify-between' : ''
-    }`"
-  >
+  <div ref="batchActionWrapperRef" :class="`mb-[16px] flex w-full flex-nowrap items-center justify-between gap-[12px]`">
     <div ref="batchActionLeftSlotRef">
       <slot name="actionLeft"></slot>
     </div>
@@ -28,7 +23,11 @@
       <div v-if="moreAction.length" ref="moreButtonRef" :class="`${moreActionClass}`">
         <CrmMoreAction :options="moreAction" :size="props.size" @select="handleMoreSelect" />
       </div>
-
+      <div ref="selectCountRef" class="flex flex-nowrap items-center gap-[4px]">
+        <div class="whitespace-nowrap">{{ t('crmPagination.checked') }}</div>
+        <div class="whitespace-nowrap text-[var(--primary-8)]">{{ props.selectRowCount }}</div>
+        <div>{{ t('crmPagination.item') }}</div>
+      </div>
       <n-button
         v-if="moreAction?.length || baseAction.length"
         ref="clearButtonRef"
@@ -100,6 +99,7 @@
   const clearButtonRef = ref();
   const batchActionLeftSlotRef = ref();
   const batchActionRightSlotRef = ref();
+  const selectCountRef = ref();
 
   // 计算容器元素宽度
   function calculateWidths() {
@@ -108,7 +108,8 @@
     const clearButtonWidth = clearButtonRef.value?.clientWidth || 0;
     const leftContentWidth = batchActionLeftSlotRef.value?.clientWidth || 0;
     const rightContentWidth = batchActionRightSlotRef.value?.clientWidth || 0;
-    return { wrapperWidth, moreButtonWidth, clearButtonWidth, leftContentWidth, rightContentWidth };
+    const selectCountWidth = selectCountRef.value?.clientWidth || 0;
+    return { wrapperWidth, moreButtonWidth, clearButtonWidth, leftContentWidth, rightContentWidth, selectCountWidth };
   }
 
   const filterActionList = (list: ActionsItem[] = []) =>
@@ -123,11 +124,12 @@
       return;
     }
 
-    const { wrapperWidth, moreButtonWidth, clearButtonWidth, leftContentWidth, rightContentWidth } = calculateWidths();
+    const { wrapperWidth, moreButtonWidth, clearButtonWidth, leftContentWidth, rightContentWidth, selectCountWidth } =
+      calculateWidths();
 
     const childNodeList = [].slice.call(actionContainerRef.value.children) as HTMLElement[];
-    // 初始总宽度为 左边容器 + 右边容器
-    let totalWidth = leftContentWidth + rightContentWidth;
+    // 初始总宽度为 左边容器 + 右边容器 + 选中数量容器的宽度
+    let totalWidth = leftContentWidth + rightContentWidth + selectCountWidth;
     let menuItemIndex = 0;
     // gap间距
     const gapDis = 12;
