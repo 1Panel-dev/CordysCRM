@@ -438,7 +438,7 @@
     // 处理有纵向滚动的情况
     if (
       target.scrollHeight > target.clientHeight && // 有纵向滚动条
-      target.scrollHeight - target.scrollTop === target.clientHeight && // 滚动到底部
+      target.scrollHeight - target.scrollTop - target.clientHeight <= 40 && // 距离底部 40px 以内
       pagination
     ) {
       if (pagination.itemCount > pagination.page * pagination.pageSize) {

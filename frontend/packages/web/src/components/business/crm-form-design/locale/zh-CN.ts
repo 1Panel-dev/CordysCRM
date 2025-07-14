@@ -105,4 +105,6 @@ export default {
   'crmFormDesign.fixedChar': '固定字符',
   'crmFormDesign.submitDate': '提交日期',
   'crmFormDesign.autoCount': '自动计数',
+  'crmFormDesign.custom': '自定义',
+  'crmFormDesign.currentTime': '填写当时',
 };

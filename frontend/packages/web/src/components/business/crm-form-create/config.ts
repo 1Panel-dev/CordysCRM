@@ -133,6 +133,7 @@ export const dateTimeDefaultFieldConfig: FormCreateField = {
   editable: true,
   rules: [],
   dateType: 'datetime',
+  dateDefaultType: 'custom', // 自定义日期类型
 };
 
 export const radioDefaultFieldConfig: FormCreateField = {

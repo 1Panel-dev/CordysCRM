@@ -106,4 +106,6 @@ export default {
   'crmFormDesign.fixedChar': 'Fixed Character',
   'crmFormDesign.submitDate': 'Submission Date',
   'crmFormDesign.autoCount': 'Auto Count',
+  'crmFormDesign.custom': 'Custom',
+  'crmFormDesign.currentTime': 'Current Time',
 };

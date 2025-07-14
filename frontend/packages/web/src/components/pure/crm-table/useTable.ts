@@ -135,7 +135,7 @@ export default function useTable<T>(
   }
 
   async function loadList(isPageChange = false) {
-    if (!loadListFunc) return;
+    if (!loadListFunc || propsRes.value.loading) return;
     setLoading(true);
     try {
       tableQueryParams.value = {

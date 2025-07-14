@@ -542,13 +542,29 @@
           :min="0"
           :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
         />
-        <n-date-picker
-          v-else-if="fieldConfig.type === FieldTypeEnum.DATE_TIME"
-          v-model:value="fieldConfig.defaultValue"
-          :type="fieldConfig.dateType"
-          :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
-          class="w-full"
-        ></n-date-picker>
+        <template v-else-if="fieldConfig.type === FieldTypeEnum.DATE_TIME">
+          <n-select
+            v-model:value="fieldConfig.dateDefaultType"
+            :options="[
+              {
+                label: t('crmFormDesign.custom'),
+                value: 'custom',
+              },
+              {
+                label: t('crmFormDesign.currentTime'),
+                value: 'current',
+              },
+            ]"
+            :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+          />
+          <n-date-picker
+            v-if="fieldConfig.dateDefaultType === 'custom'"
+            v-model:value="fieldConfig.defaultValue"
+            :type="fieldConfig.dateType"
+            :disabled="fieldConfig.disabledProps?.includes('defaultValue')"
+            class="w-full"
+          ></n-date-picker>
+        </template>
         <CrmUserTagSelector
           v-else-if="[FieldTypeEnum.MEMBER, FieldTypeEnum.MEMBER_MULTIPLE].includes(fieldConfig.type)"
           v-show="fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE || !fieldConfig.hasCurrentUser"

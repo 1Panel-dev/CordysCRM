@@ -48,6 +48,7 @@ export interface FormCreateField {
   showThousandsSeparator?: boolean; // 是否显示千分位
   // 日期输入属性
   dateType?: FormCreateFieldDateType;
+  dateDefaultType?: 'custom' | 'current'; // 日期默认类型, custom: 自定义, current: 填写当时
   // radio属性
   direction?: 'horizontal' | 'vertical';
   // divider属性
