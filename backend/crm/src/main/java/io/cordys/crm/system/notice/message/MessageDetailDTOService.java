@@ -35,29 +35,29 @@ public class MessageDetailDTOService {
      * @param organizationId 项目ID
      * @return List<MessageDetail>list
      */
-    public List<MessageDetailDTO> searchMessageByTypeAndOrgId(String module, String organizationId) {
+    public List<MessageDetailDTO> searchMessageByTypeAndOrgId(String module, boolean useTemplate, String template, String organizationId) {
         try {
-            return getMessageDetailDTOs(module, organizationId);
+            return getMessageDetailDTOs(module, useTemplate, template, organizationId);
         } catch (Exception e) {
             LogUtils.error(e.getMessage(), e);
             return new ArrayList<>();
         }
     }
 
-    private List<MessageDetailDTO> getMessageDetailDTOs(String module, String organizationId) {
+    private List<MessageDetailDTO> getMessageDetailDTOs(String module, boolean useTemplate, String template, String organizationId) {
         List<MessageDetailDTO> messageDetailDTOS = new ArrayList<>();
         List<MessageTask> messageTaskLists = extMessageTaskMapper.getEnableMessageTaskByReceiveTypeAndTaskType(module, organizationId);
         if (messageTaskLists == null) {
             return new ArrayList<>();
         }
-        getMessageDetailDTOs(messageDetailDTOS, messageTaskLists);
+        getMessageDetailDTOs(useTemplate, template,  messageDetailDTOS, messageTaskLists);
         return messageDetailDTOS.stream()
                 .sorted(Comparator.comparing(MessageDetailDTO::getCreateTime, Comparator.nullsLast(Long::compareTo)).reversed())
                 .distinct()
                 .collect(Collectors.toList());
     }
 
-    private void getMessageDetailDTOs(List<MessageDetailDTO> messageDetailDTOS, List<MessageTask> messageTaskLists) {
+    private void getMessageDetailDTOs(boolean useTemplate, String customTemplate, List<MessageDetailDTO> messageDetailDTOS, List<MessageTask> messageTaskLists) {
         //消息通知任务以消息类型事件接收类型唯一进行分组
         Map<String, List<MessageTask>> messageTaskGroup = messageTaskLists.stream().collect(Collectors.groupingBy(t -> (t.getTaskType() + t.getEvent())));
         messageTaskGroup.forEach((messageTaskId, messageTaskList) -> {
@@ -65,12 +65,12 @@ public class MessageDetailDTOService {
             MessageTask messageTask = messageTaskList.getFirst();
             MessageDetailDTO messageDetailDTO = new MessageDetailDTO();
             BeanUtils.copyBean(messageDetailDTO,messageTask);
-            if (messageTask.getTemplate()==null) {
+            if (!useTemplate) {
                 String template = MessageTemplateUtils.getTemplate(messageTask.getEvent());
                 messageDetailDTO.setTemplate(template);
             } else {
-                messageDetailDTO.setTemplate(new String(messageTask.getTemplate()));
-
+                //这里特殊处理,如果使用模版，这里用调用处传来的模板
+                messageDetailDTO.setTemplate(customTemplate);
             }
             messageDetailDTOS.add(messageDetailDTO);
         });

@@ -17,8 +17,10 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +33,11 @@ public class NoticeSendService {
     @Async("threadPoolTaskExecutor")
     public void send(String module, NoticeModel noticeModel) {
         setLanguage(noticeModel.getParamMap().get("Language"));
+        boolean useTemplate = Boolean.getBoolean((String) noticeModel.getParamMap().get("useTemplate"));
+        String template = (String) noticeModel.getParamMap().get("template");
         try {
             String organizationId = (String) noticeModel.getParamMap().get("organizationId");
-            List<MessageDetailDTO> messageDetailDTOS = messageDetailDTOService.searchMessageByTypeAndOrgId(module, organizationId);
+            List<MessageDetailDTO> messageDetailDTOS = messageDetailDTOService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
 
             messageDetailDTOS.stream()
                     .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
@@ -63,7 +67,7 @@ public class NoticeSendService {
             if (clonedMessageDetail.isEmailEnable()) {
                 mailNoticeSender.send(clonedMessageDetail, clonedNoticeModel);
             }
-            if (clonedMessageDetail.isWeComEnable()){
+            if (clonedMessageDetail.isWeComEnable()) {
                 WeComNoticeSender weComNoticeSender = CommonBeanFactory.getBean(WeComNoticeSender.class);
                 if (weComNoticeSender != null) {
                     weComNoticeSender.sendWeCom(clonedMessageDetail, clonedNoticeModel);
@@ -81,8 +85,10 @@ public class NoticeSendService {
     @Async("threadPoolTaskExecutor")
     public void send(String organizationId, String module, NoticeModel noticeModel) {
         setLanguage(noticeModel.getParamMap().get("Language"));
+        boolean useTemplate = Boolean.getBoolean((String) noticeModel.getParamMap().get("useTemplate"));
+        String template = (String) noticeModel.getParamMap().get("template");
         try {
-            List<MessageDetailDTO> messageDetailDTOS = messageDetailDTOService.searchMessageByTypeAndOrgId(module, organizationId);
+            List<MessageDetailDTO> messageDetailDTOS = messageDetailDTOService.searchMessageByTypeAndOrgId(module, useTemplate, template, organizationId);
 
             messageDetailDTOS.stream()
                     .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
@@ -96,10 +102,12 @@ public class NoticeSendService {
     @Async("threadPoolTaskExecutor")
     public void sendOther(String module, NoticeModel noticeModel, boolean excludeSelf) {
         setLanguage(noticeModel.getParamMap().get("Language"));
+        boolean useTemplate = Boolean.getBoolean((String) noticeModel.getParamMap().get("useTemplate"));
+        String template = (String) noticeModel.getParamMap().get("template");
         noticeModel.setExcludeSelf(excludeSelf);
         try {
             String organizationId = (String) noticeModel.getParamMap().get("organizationId");
-            List<MessageDetailDTO> messageDetailDTOS = messageDetailDTOService.searchMessageByTypeAndOrgId(module, organizationId)
+            List<MessageDetailDTO> messageDetailDTOS = messageDetailDTOService.searchMessageByTypeAndOrgId(module, useTemplate,template, organizationId)
                     .stream()
                     .filter(messageDetail -> StringUtils.equals(messageDetail.getEvent(), noticeModel.getEvent()))
                     .toList();
