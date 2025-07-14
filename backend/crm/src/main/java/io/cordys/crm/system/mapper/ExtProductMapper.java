@@ -17,10 +17,6 @@ public interface ExtProductMapper {
 
     List<ProductListResponse> list(@Param("request") ProductPageRequest request, @Param("orgId") String orgId);
 
-    boolean checkAddExist(@Param("product") Product product);
-
-    boolean checkUpdateExist(@Param("product") Product product);
-
     List<Product> listIdNameByIds(@Param("ids") List<String> ids);
 
     List<Product> listByIds(@Param("ids") List<String> ids);

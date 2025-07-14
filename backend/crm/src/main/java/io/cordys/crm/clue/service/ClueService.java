@@ -13,7 +13,6 @@ import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.*;
-import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.permission.PermissionCache;
@@ -24,7 +23,6 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.clue.constants.ClueResultCode;
 import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.clue.domain.CluePool;
@@ -278,10 +276,10 @@ public class ClueService {
         clue.setStage(ClueStatus.NEW.name());
         clue.setInSharedPool(false);
 
-        clueMapper.insert(clue);
-
         //保存自定义字段
-        clueFieldService.saveModuleField(clue.getId(), orgId, userId, request.getModuleFields(), false);
+        clueFieldService.saveModuleField(clue, orgId, userId, request.getModuleFields(), false);
+
+        clueMapper.insert(clue);
         baseService.handleAddLog(clue, request.getModuleFields());
         return clue;
     }
@@ -307,13 +305,13 @@ public class ClueService {
             }
         }
 
-        clueMapper.update(clue);
-
         // 获取模块字段
         List<BaseModuleFieldValue> originCustomerFields = clueFieldService.getModuleFieldValuesByResourceId(request.getId());
 
         // 更新模块字段
-        updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+        updateModuleField(clue, request.getModuleFields(), orgId, userId);
+
+        clueMapper.update(clue);
         clue = clueMapper.selectByPrimaryKey(request.getId());
         baseService.handleUpdateLog(originClue, clue, originCustomerFields, request.getModuleFields(), originClue.getId(), originClue.getName());
         return clueMapper.selectByPrimaryKey(clue.getId());
@@ -355,15 +353,15 @@ public class ClueService {
         );
     }
 
-    private void updateModuleField(String clueId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(Clue clue, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
         }
         // 先删除
-        clueFieldService.deleteByResourceId(clueId);
+        clueFieldService.deleteByResourceId(clue.getId());
         // 再保存
-        clueFieldService.saveModuleField(clueId, orgId, userId, moduleFields, true);
+        clueFieldService.saveModuleField(clue, orgId, userId, moduleFields, true);
     }
 
     /**

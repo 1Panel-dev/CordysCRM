@@ -187,22 +187,6 @@
         </choose>
     </sql>
 
-    <select id="checkAddExist" resultType="java.lang.Boolean">
-        select count(1)
-        from product
-        where name = #{product.name} and organization_id = #{product.organizationId} limit 1
-    </select>
-
-    <select id="checkUpdateExist" resultType="java.lang.Boolean">
-        select count(1)
-        from product
-        where name = #{product.name}
-          and organization_id = (
-            select organization_id from product where id = #{product.id}
-        )
-          and id != #{product.id} limit 1
-    </select>
-
     <select id="listIdNameByIds" resultType="io.cordys.crm.system.domain.Product">
         select id, name from product
         where id in

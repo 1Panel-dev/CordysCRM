@@ -80,9 +80,9 @@ public class FollowUpPlanService extends BaseFollowUpService {
         if (StringUtils.isBlank(request.getOwner())) {
             followUpPlan.setOwner(userId);
         }
-        followUpPlanMapper.insert(followUpPlan);
         //保存自定义字段
-        followUpPlanFieldService.saveModuleField(followUpPlan.getId(), orgId, userId, request.getModuleFields(), false);
+        followUpPlanFieldService.saveModuleField(followUpPlan, orgId, userId, request.getModuleFields(), false);
+        followUpPlanMapper.insert(followUpPlan);
         return followUpPlan;
     }
 
@@ -101,11 +101,12 @@ public class FollowUpPlanService extends BaseFollowUpService {
         Optional.ofNullable(followUpPlan).ifPresentOrElse(plan -> {
             //更新跟进计划
             FollowUpPlan newPlan = BeanUtils.copyBean(new FollowUpPlan(), plan);
-            updatePlan(newPlan, request, userId);
+            FollowUpPlan updateFollowUpPlan = newPlan(newPlan, request, userId);
             // 获取模块字段
             List<BaseModuleFieldValue> originCustomerFields = followUpPlanFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
-            updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+            updateModuleField(updateFollowUpPlan, request.getModuleFields(), orgId, userId);
+            followUpPlanMapper.update(plan);
             baseService.handleUpdateLog(followUpPlan, newPlan, originCustomerFields, request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));
         }, () -> {
             throw new GenericException("plan_not_found");
@@ -113,18 +114,18 @@ public class FollowUpPlanService extends BaseFollowUpService {
         return followUpPlan;
     }
 
-    private void updateModuleField(String id, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(FollowUpPlan followUpPlan, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
         }
         // 先删除
-        followUpPlanFieldService.deleteByResourceId(id);
+        followUpPlanFieldService.deleteByResourceId(followUpPlan.getId());
         // 再保存
-        followUpPlanFieldService.saveModuleField(id, orgId, userId, moduleFields, true);
+        followUpPlanFieldService.saveModuleField(followUpPlan, orgId, userId, moduleFields, true);
     }
 
-    private void updatePlan(FollowUpPlan plan, FollowUpPlanUpdateRequest request, String userId) {
+    private FollowUpPlan newPlan(FollowUpPlan plan, FollowUpPlanUpdateRequest request, String userId) {
         plan.setCustomerId(request.getCustomerId());
         plan.setOpportunityId(request.getOpportunityId());
         plan.setType(request.getType());
@@ -136,7 +137,7 @@ public class FollowUpPlanService extends BaseFollowUpService {
         plan.setEstimatedTime(request.getEstimatedTime());
         plan.setUpdateTime(System.currentTimeMillis());
         plan.setUpdateUser(userId);
-        followUpPlanMapper.update(plan);
+        return plan;
     }
 
 

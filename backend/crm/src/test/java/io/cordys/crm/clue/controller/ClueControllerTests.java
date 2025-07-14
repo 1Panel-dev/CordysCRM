@@ -10,7 +10,6 @@ import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.clue.constants.ClueResultCode;
 import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.clue.domain.ClueField;
@@ -129,6 +128,7 @@ class ClueControllerTests extends BaseTest {
 
         // 创建另一个客户
         request.setName("another");
+        request.setPhone("18750920049");
         request.setOwner(InternalUser.ADMIN.getValue());
         mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         resultData = getResultData(mvcResult, Clue.class);

@@ -87,10 +87,11 @@ public class FollowUpRecordService extends BaseFollowUpService {
         if (StringUtils.isBlank(request.getOwner())) {
             followUpRecord.setOwner(userId);
         }
-        followUpRecordMapper.insert(followUpRecord);
 
         //保存自定义字段
-        followUpRecordFieldService.saveModuleField(followUpRecord.getId(), orgId, userId, request.getModuleFields(), false);
+        followUpRecordFieldService.saveModuleField(followUpRecord, orgId, userId, request.getModuleFields(), false);
+
+        followUpRecordMapper.insert(followUpRecord);
 
         if (StringUtils.isNotBlank(request.getCustomerId())) {
             Customer customer = new Customer();
@@ -132,11 +133,12 @@ public class FollowUpRecordService extends BaseFollowUpService {
         Optional.ofNullable(followUpRecord).ifPresentOrElse(record -> {
             //更新跟进记录
             FollowUpRecord newRecord = BeanUtils.copyBean(new FollowUpRecord(), record);
-            updateRecord(newRecord, request, userId);
+            FollowUpRecord updateFollowUpRecord = newRecord(newRecord, request, userId);
             // 获取模块字段
             List<BaseModuleFieldValue> originCustomerFields = followUpRecordFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
-            updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+            updateModuleField(updateFollowUpRecord, request.getModuleFields(), orgId, userId);
+            followUpRecordMapper.update(record);
             baseService.handleUpdateLog(followUpRecord, newRecord, originCustomerFields, request.getModuleFields(), followUpRecord.getId(), Translator.get("update_follow_up_record"));
         }, () -> {
             throw new GenericException("record_not_found");
@@ -145,19 +147,19 @@ public class FollowUpRecordService extends BaseFollowUpService {
         return followUpRecord;
     }
 
-    private void updateModuleField(String followUpId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(FollowUpRecord updateFollowUpRecord, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
         }
         // 先删除
-        followUpRecordFieldService.deleteByResourceId(followUpId);
+        followUpRecordFieldService.deleteByResourceId(updateFollowUpRecord.getId());
         // 再保存
-        followUpRecordFieldService.saveModuleField(followUpId, orgId, userId, moduleFields, true);
+        followUpRecordFieldService.saveModuleField(updateFollowUpRecord, orgId, userId, moduleFields, true);
     }
 
 
-    private void updateRecord(FollowUpRecord record, FollowUpRecordUpdateRequest request, String userId) {
+    private FollowUpRecord newRecord(FollowUpRecord record, FollowUpRecordUpdateRequest request, String userId) {
         record.setCustomerId(request.getCustomerId());
         record.setOpportunityId(request.getOpportunityId());
         record.setType(request.getType());
@@ -169,7 +171,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
         record.setContent(request.getContent());
         record.setUpdateTime(System.currentTimeMillis());
         record.setUpdateUser(userId);
-        followUpRecordMapper.update(record);
+        return record;
     }
 
 

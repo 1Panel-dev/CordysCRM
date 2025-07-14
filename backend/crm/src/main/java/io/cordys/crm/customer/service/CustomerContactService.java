@@ -210,10 +210,10 @@ public class CustomerContactService {
             customerContact.setOwner(userId);
         }
 
-        customerContactMapper.insert(customerContact);
-
         //保存自定义字段
-        customerContactFieldService.saveModuleField(customerContact.getId(), orgId, userId, request.getModuleFields(), false);
+        customerContactFieldService.saveModuleField(customerContact, orgId, userId, request.getModuleFields(), false);
+
+        customerContactMapper.insert(customerContact);
 
         baseService.handleAddLog(customerContact, request.getModuleFields());
         return customerContact;
@@ -229,25 +229,25 @@ public class CustomerContactService {
         // 获取模块字段
         List<BaseModuleFieldValue> originCustomerFields = customerContactFieldService.getModuleFieldValuesByResourceId(request.getId());
 
-        customerContactMapper.update(customerContact);
-
         // 更新模块字段
-        updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+        updateModuleField(customerContact, request.getModuleFields(), orgId, userId);
+
+        customerContactMapper.update(customerContact);
 
         customerContact = customerContactMapper.selectByPrimaryKey(customerContact.getId());
         baseService.handleUpdateLog(originCustomerContact, customerContact, originCustomerFields, request.getModuleFields(), originCustomerContact.getId(), originCustomerContact.getName());
         return customerContact;
     }
 
-    private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(CustomerContact customerContact, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
         }
         // 先删除
-        customerContactFieldService.deleteByResourceId(customerId);
+        customerContactFieldService.deleteByResourceId(customerContact.getId());
         // 再保存
-        customerContactFieldService.saveModuleField(customerId, orgId, userId, moduleFields, true);
+        customerContactFieldService.saveModuleField(customerContact, orgId, userId, moduleFields, true);
     }
 
     @OperationLog(module = LogModule.CUSTOMER_CONTACT, type = LogType.DELETE, resourceId = "{#id}")

@@ -1,5 +1,6 @@
 package io.cordys.mybatis;
 
+import io.cordys.common.util.CaseFormatUtils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -90,7 +91,7 @@ public class EntityTableMapper {
         return Optional.ofNullable(entityType.getAnnotation(Table.class))
                 .map(Table::name) // 如果有注解，获取 name 属性值
                 .filter(name -> !name.isEmpty()) // 确保 name 属性非空
-                .orElseGet(() -> camelToUnderscore(entityType.getSimpleName())); // 否则使用默认策略
+                .orElseGet(() -> CaseFormatUtils.camelToUnderscore(entityType.getSimpleName())); // 否则使用默认策略
     }
 
     /**
@@ -140,7 +141,7 @@ public class EntityTableMapper {
         if (columnAnnotation != null && !columnAnnotation.name().isEmpty()) {
             return columnAnnotation.name();
         }
-        return FIELD_SEP_TAG + camelToUnderscore(field.getName()) + FIELD_SEP_TAG;
+        return FIELD_SEP_TAG + CaseFormatUtils.camelToUnderscore(field.getName()) + FIELD_SEP_TAG;
     }
 
     /**
@@ -153,42 +154,7 @@ public class EntityTableMapper {
         return getColumnName(field) + " AS " + FIELD_SEP_TAG + field.getName() + FIELD_SEP_TAG;
     }
 
-    /**
-     * 将驼峰字符串转换为下划线分隔的字符串。
-     *
-     * @param camelStr 驼峰字符串
-     * @return 下划线字符串
-     */
-    public static String camelToUnderscore(String camelStr) {
-        return convertCamelToSeparator(camelStr, '_');
-    }
 
-    /**
-     * 将驼峰字符串转换为指定分隔符的字符串。
-     *
-     * @param camelStr  驼峰字符串
-     * @param separator 分隔符
-     * @return 分隔符字符串
-     */
-    public static String convertCamelToSeparator(String camelStr, char separator) {
-        if (camelStr == null || camelStr.trim().isEmpty()) {
-            return camelStr;
-        }
-        StringBuilder result = new StringBuilder();
-        char[] chars = camelStr.toCharArray();
-        for (int i = 0; i < chars.length; i++) {
-            char c = chars[i];
-            if (Character.isUpperCase(c)) {
-                if (i > 0) {
-                    result.append(separator);
-                }
-                result.append(Character.toLowerCase(c));
-            } else {
-                result.append(c);
-            }
-        }
-        return result.toString();
-    }
 
     /**
      * 获取指定类的所有字段（包括父类）。

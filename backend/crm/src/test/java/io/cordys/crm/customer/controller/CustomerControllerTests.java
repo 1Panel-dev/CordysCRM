@@ -9,7 +9,6 @@ import io.cordys.common.dto.*;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerField;
 import io.cordys.crm.customer.dto.request.*;
@@ -139,9 +138,6 @@ class CustomerControllerTests extends BaseTest {
                 .toList();
         Assertions.assertEquals(request.getModuleFields(), fieldValues);
 
-        // 校验重名异常
-        assertErrorCode(this.requestPost(DEFAULT_ADD, request), CustomerResultCode.CUSTOMER_EXIST);
-
         // 创建另一个客户
         request.setName("another");
         request.setOwner(InternalUser.ADMIN.getValue());
@@ -181,11 +177,6 @@ class CustomerControllerTests extends BaseTest {
         CustomerUpdateRequest emptyRequest = new CustomerUpdateRequest();
         emptyRequest.setId(addCustomer.getId());
         this.requestPostWithOk(DEFAULT_UPDATE, emptyRequest);
-
-        // 校验重名异常
-        request.setId(addCustomer.getId());
-        request.setName(anotherCustomer.getName());
-        assertErrorCode(this.requestPost(DEFAULT_UPDATE, request), CustomerResultCode.CUSTOMER_EXIST);
 
         addCustomer = customerMapper.selectByPrimaryKey(addCustomer.getId());
 

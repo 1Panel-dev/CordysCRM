@@ -282,22 +282,6 @@
         </choose>
     </sql>
 
-    <select id="checkAddExist" resultType="java.lang.Boolean">
-        select count(1)
-        from customer
-        where name = #{customer.name} and organization_id = #{customer.organizationId} limit 1
-    </select>
-
-    <select id="checkUpdateExist" resultType="java.lang.Boolean">
-        select count(1)
-        from customer
-        where name = #{customer.name}
-        and organization_id = (
-            select organization_id from customer where id = #{customer.id}
-        )
-        and id != #{customer.id} limit 1
-    </select>
-
     <select id="selectOptionByIds" resultType="io.cordys.common.dto.OptionDTO">
         select id, name
         from customer

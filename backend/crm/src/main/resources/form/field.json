@@ -265,7 +265,11 @@
       "readable": true,
       "editable": true,
       "fieldWidth": 1,
-      "mobile": true
+      "mobile": true,
+      "rules": [
+        {"key":  "required"},
+        {"key":  "unique"}
+      ]
     },
     {
       "name": "意向产品",

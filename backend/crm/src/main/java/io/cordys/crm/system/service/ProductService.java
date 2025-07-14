@@ -121,14 +121,10 @@ public class ProductService {
         product.setOrganizationId(orgId);
         product.setId(IDGenerator.nextStr());
 
-        // 校验名称重复
-        checkAddExist(product);
+        //保存自定义字段
+        productFieldService.saveModuleField(product, orgId, userId, request.getModuleFields(), false);
 
         productBaseMapper.insert(product);
-
-
-        //保存自定义字段
-        productFieldService.saveModuleField(product.getId(), orgId, userId, request.getModuleFields(), false);
 
         // 添加日志上下文
         baseService.handleAddLog(product, request.getModuleFields());
@@ -146,15 +142,12 @@ public class ProductService {
         product.setUpdateUser(userId);
         product.setOrganizationId(orgId);
 
-        // 校验名称重复
-        checkUpdateExist(product);
-        productBaseMapper.update(product);
-
         // 获取模块字段
         List<BaseModuleFieldValue> originCustomerFields = productFieldService.getModuleFieldValuesByResourceId(request.getId());
 
         // 更新模块字段
-        updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+        updateModuleField(product, request.getModuleFields(), orgId, userId);
+        productBaseMapper.update(product);
 
         //添加日志
         baseService.handleUpdateLog(oldProduct, product, originCustomerFields, request.getModuleFields(), request.getId(), product.getName());
@@ -162,27 +155,15 @@ public class ProductService {
         return productBaseMapper.selectByPrimaryKey(product.getId());
     }
 
-    private void checkAddExist(Product product) {
-        if (extProductMapper.checkAddExist(product)) {
-            throw new GenericException(Translator.get("product.exist"));
-        }
-    }
-
-    private void checkUpdateExist(Product product) {
-        if (extProductMapper.checkUpdateExist(product)) {
-            throw new GenericException(Translator.get("product.exist"));
-        }
-    }
-
-    private void updateModuleField(String productId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(Product product, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
         }
         // 先删除
-        productFieldService.deleteByResourceId(productId);
+        productFieldService.deleteByResourceId(product.getId());
         // 再保存
-        productFieldService.saveModuleField(productId, orgId, userId, moduleFields, true);
+        productFieldService.saveModuleField(product, orgId, userId, moduleFields, true);
     }
 
     private void batchUpdateModuleField(List<String>  productIds, List<BaseModuleFieldValue> moduleFields) {

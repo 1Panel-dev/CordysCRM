@@ -22,53 +22,53 @@ public enum BusinessModuleField {
     /**
      * 客户名称
      */
-    CUSTOMER_NAME("customerName", "name", Set.of("rules"), FormKey.CUSTOMER.getKey()),
+    CUSTOMER_NAME("customerName", "name", Set.of("rules.required"), FormKey.CUSTOMER.getKey()),
     /**
      * 负责人
      */
-    CUSTOMER_OWNER("customerOwner", "owner", Set.of("rules"), FormKey.CUSTOMER.getKey()),
+    CUSTOMER_OWNER("customerOwner", "owner", Set.of("rules.required"), FormKey.CUSTOMER.getKey()),
     /*------ end: CUSTOMER ------*/
 
     /*------ start: CLUE ------*/
     /**
      * 线索名称
      */
-    CLUE_NAME("clueName", "name", Set.of("rules"), FormKey.CLUE.getKey()),
+    CLUE_NAME("clueName", "name", Set.of("rules.required"), FormKey.CLUE.getKey()),
     /**
      * 负责人
      */
-    CLUE_OWNER("clueOwner", "owner", Set.of("rules"), FormKey.CLUE.getKey()),
+    CLUE_OWNER("clueOwner", "owner", Set.of("rules.required"), FormKey.CLUE.getKey()),
     /**
      * 联系人
      */
-    CLUE_CONTACT("clueContactName", "contact", Set.of("rules"), FormKey.CLUE.getKey()),
+    CLUE_CONTACT("clueContactName", "contact", Set.of(), FormKey.CLUE.getKey()),
     /**
      * 联系人电话
      */
-    CLUE_CONTACT_PHONE("clueContactPhone", "phone", Set.of("rules"), FormKey.CLUE.getKey()),
+    CLUE_CONTACT_PHONE("clueContactPhone", "phone", Set.of(), FormKey.CLUE.getKey()),
     /**
      * 意向产品
      */
-    CLUE_PRODUCTS("clueProduct", "products", Set.of("rules"), FormKey.CLUE.getKey()),
+    CLUE_PRODUCTS("clueProduct", "products", Set.of(), FormKey.CLUE.getKey()),
     /*------ end: CUSTOMER ------*/
 
     /*------ start: CUSTOMER_MANAGEMENT_CONTACT ------*/
     /**
      * 联系人客户id
      */
-    CUSTOMER_CONTACT_CUSTOMER("contactCustomer", "customerId", Set.of("rules"), FormKey.CONTACT.getKey()),
+    CUSTOMER_CONTACT_CUSTOMER("contactCustomer", "customerId", Set.of(), FormKey.CONTACT.getKey()),
     /**
      * 联系人责任人
      */
-    CUSTOMER_CONTACT_OWNER("contactOwner", "owner", Set.of("rules"), FormKey.CONTACT.getKey()),
+    CUSTOMER_CONTACT_OWNER("contactOwner", "owner", Set.of("rules.required"), FormKey.CONTACT.getKey()),
     /**
      * 联系人名称
      */
-    CUSTOMER_CONTACT_NAME("contactName", "name", Set.of("rules"), FormKey.CONTACT.getKey()),
+    CUSTOMER_CONTACT_NAME("contactName", "name", Set.of("rules.required"), FormKey.CONTACT.getKey()),
     /**
      * 联系人电话
      */
-    CUSTOMER_CONTACT_PHONE("contactPhone", "phone", Set.of("rules"), FormKey.CONTACT.getKey()),
+    CUSTOMER_CONTACT_PHONE("contactPhone", "phone", Set.of(), FormKey.CONTACT.getKey()),
     /*------ end: CUSTOMER_MANAGEMENT_CONTACT ------*/
 
 
@@ -76,36 +76,36 @@ public enum BusinessModuleField {
     /**
      * 商机名称
      */
-    OPPORTUNITY_NAME("opportunityName", "name", Set.of("rules"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_NAME("opportunityName", "name", Set.of("rules.required"), FormKey.OPPORTUNITY.getKey()),
     /**
      * 客户名称
      */
-    OPPORTUNITY_CUSTOMER_NAME("opportunityCustomer", "customerId", Set.of("rules"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_CUSTOMER_NAME("opportunityCustomer", "customerId", Set.of("rules.required"), FormKey.OPPORTUNITY.getKey()),
     /**
      * 商机金额
      */
-    OPPORTUNITY_AMOUNT("opportunityPrice", "amount", Set.of("rules"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_AMOUNT("opportunityPrice", "amount", Set.of(), FormKey.OPPORTUNITY.getKey()),
     /**
      * 可能性
      */
-    OPPORTUNITY_POSSIBLE("opportunityWinRate", "possible", Set.of("rules"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_POSSIBLE("opportunityWinRate", "possible", Set.of(), FormKey.OPPORTUNITY.getKey()),
     /**
      * 结束时间
      */
-    OPPORTUNITY_END_TIME("opportunityEndTime", "expectedEndTime", Set.of("rules"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_END_TIME("opportunityEndTime", "expectedEndTime", Set.of(), FormKey.OPPORTUNITY.getKey()),
     /**
      * 意向产品
      */
-    OPPORTUNITY_PRODUCTS("opportunityProduct", "products", Set.of("rules"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_PRODUCTS("opportunityProduct", "products", Set.of(), FormKey.OPPORTUNITY.getKey()),
     /**
      * 联系人
      */
-    OPPORTUNITY_CONTACT("opportunityContact", "contactId",Set.of("rules"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_CONTACT("opportunityContact", "contactId",Set.of(), FormKey.OPPORTUNITY.getKey()),
 
     /**
      * 负责人
      */
-    OPPORTUNITY_OWNER("opportunityOwner", "owner", Set.of("rules"), FormKey.OPPORTUNITY.getKey()),
+    OPPORTUNITY_OWNER("opportunityOwner", "owner", Set.of("rules.required"), FormKey.OPPORTUNITY.getKey()),
     /*------ end: OPPORTUNITY ------*/
 
 
@@ -114,39 +114,39 @@ public enum BusinessModuleField {
     /**
      * 跟进类型
      */
-    FOLLOW_RECORD_TYPE("recordType", "type", Set.of("options", "rules"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_TYPE("recordType", "type", Set.of("options", "rules.required"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 客户id
      */
-    FOLLOW_RECORD_CUSTOMER("recordCustomer", "customerId", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_CUSTOMER("recordCustomer", "customerId", Set.of("rules.required"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 商机id
      */
-    FOLLOW_RECORD_OPPORTUNITY("recordOpportunity", "opportunityId", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_OPPORTUNITY("recordOpportunity", "opportunityId", Set.of(), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 线索id
      */
-    FOLLOW_RECORD_CLUE("recordClue", "clueId", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_CLUE("recordClue", "clueId", Set.of("rules.required"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 责任人id
      */
-    FOLLOW_RECORD_OWNER("recordOwner", "owner", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_OWNER("recordOwner", "owner", Set.of("rules.required"), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 联系人id
      */
-    FOLLOW_RECORD_CONTACT("recordContact", "contactId", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_CONTACT("recordContact", "contactId", Set.of(), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 跟进内容
      */
-    FOLLOW_RECORD_CONTENT("recordDescription", "content", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_CONTENT("recordDescription", "content", Set.of(), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 跟进时间
      */
-    FOLLOW_RECORD_TIME("recordTime", "followTime", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_RECORD_TIME("recordTime", "followTime", Set.of(), FormKey.FOLLOW_RECORD.getKey()),
     /**
      * 跟进方式
      */
-    FOLLOW_METHOD("recordMethod", "followMethod", Set.of("rules"), FormKey.FOLLOW_RECORD.getKey()),
+    FOLLOW_METHOD("recordMethod", "followMethod", Set.of(), FormKey.FOLLOW_RECORD.getKey()),
     /*------ end: FOLLOW_UP_RECORD ------*/
 
 
@@ -154,47 +154,47 @@ public enum BusinessModuleField {
     /**
      * 跟进类型
      */
-    FOLLOW_PLAN_TYPE("planType", "type", Set.of("options", "rules"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_TYPE("planType", "type", Set.of("options", "rules.required"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 客户id
      */
-    FOLLOW_PLAN_CUSTOMER("planCustomer", "customerId", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_CUSTOMER("planCustomer", "customerId", Set.of("rules.required"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 商机id
      */
-    FOLLOW_PLAN_OPPORTUNITY("planOpportunity", "opportunityId", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_OPPORTUNITY("planOpportunity", "opportunityId", Set.of(), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 线索id
      */
-    FOLLOW_PLAN_CLUE("planClue", "clueId", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_CLUE("planClue", "clueId", Set.of("rules.required"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 责任人id
      */
-    FOLLOW_PLAN_OWNER("planOwner", "owner", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_OWNER("planOwner", "owner", Set.of("rules.required"), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 联系人id
      */
-    FOLLOW_PLAN_CONTACT("planContact", "contactId", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_CONTACT("planContact", "contactId", Set.of(), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 预计开始时间
      */
-    FOLLOW_PLAN_ESTIMATED_TIME("planStartTime", "estimatedTime", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_ESTIMATED_TIME("planStartTime", "estimatedTime", Set.of(), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 预计沟通内容
      */
-    FOLLOW_PLAN_CONTENT("planContent", "content", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_CONTENT("planContent", "content", Set.of(), FormKey.FOLLOW_PLAN.getKey()),
     /**
      * 跟进方式
      */
-    FOLLOW_PLAN_METHOD("planMethod", "method", Set.of("rules"), FormKey.FOLLOW_PLAN.getKey()),
+    FOLLOW_PLAN_METHOD("planMethod", "method", Set.of(), FormKey.FOLLOW_PLAN.getKey()),
 
 
     /*------ end: FOLLOW_UP_PLAN ------*/
 
     /*------ start: PRODUCT ------*/
-    PRODUCT_NAME("productName", "name", Set.of("rules"), FormKey.PRODUCT.getKey()),
-    PRODUCT_PRICE("productPrice", "price", Set.of("rules"), FormKey.PRODUCT.getKey()),
-    PRODUCT_STATUS("productStatus", "status", Set.of("rules"), FormKey.PRODUCT.getKey());
+    PRODUCT_NAME("productName", "name", Set.of("rules.required"), FormKey.PRODUCT.getKey()),
+    PRODUCT_PRICE("productPrice", "price", Set.of(), FormKey.PRODUCT.getKey()),
+    PRODUCT_STATUS("productStatus", "status", Set.of("rules.required"), FormKey.PRODUCT.getKey());
     /*------ end: PRODUCT ------*/
     /**
      * 字段 key，field.json 中的 internalKey

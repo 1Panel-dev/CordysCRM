@@ -274,13 +274,10 @@ public class CustomerService {
         customer.setId(IDGenerator.nextStr());
         customer.setInSharedPool(false);
 
-        // 校验名称重复
-        checkAddExist(customer);
+        //保存自定义字段
+        customerFieldService.saveModuleField(customer, orgId, userId, request.getModuleFields(), false);
 
         customerMapper.insert(customer);
-
-        //保存自定义字段
-        customerFieldService.saveModuleField(customer.getId(), orgId, userId, request.getModuleFields(), false);
 
         baseService.handleAddLog(customer, request.getModuleFields());
         // 通知
@@ -302,9 +299,6 @@ public class CustomerService {
         customer.setUpdateTime(System.currentTimeMillis());
         customer.setUpdateUser(userId);
 
-        // 校验名称重复
-        checkUpdateExist(customer);
-
         if (StringUtils.isNotBlank(request.getOwner())) {
             if (!StringUtils.equals(request.getOwner(), originCustomer.getOwner())) {
                 // 如果责任人有修改，则添加责任人历史
@@ -315,40 +309,28 @@ public class CustomerService {
             }
         }
 
-        customerMapper.update(customer);
-
         // 获取模块字段
         List<BaseModuleFieldValue> originCustomerFields = customerFieldService.getModuleFieldValuesByResourceId(request.getId());
 
         // 更新模块字段
-        updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+        updateModuleField(customer, request.getModuleFields(), orgId, userId);
+
+        customerMapper.update(customer);
 
         customer = customerMapper.selectByPrimaryKey(request.getId());
         baseService.handleUpdateLog(originCustomer, customer, originCustomerFields, request.getModuleFields(), originCustomer.getId(), originCustomer.getName());
         return customer;
     }
 
-    private void updateModuleField(String customerId, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(Customer customer, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
         }
         // 先删除
-        customerFieldService.deleteByResourceId(customerId);
+        customerFieldService.deleteByResourceId(customer.getId());
         // 再保存
-        customerFieldService.saveModuleField(customerId, orgId, userId, moduleFields, true);
-    }
-
-    private void checkAddExist(Customer customer) {
-        if (extCustomerMapper.checkAddExist(customer)) {
-            throw new GenericException(CustomerResultCode.CUSTOMER_EXIST);
-        }
-    }
-
-    private void checkUpdateExist(Customer customer) {
-        if (extCustomerMapper.checkUpdateExist(customer)) {
-            throw new GenericException(CustomerResultCode.CUSTOMER_EXIST);
-        }
+        customerFieldService.saveModuleField(customer, orgId, userId, moduleFields, true);
     }
 
     @OperationLog(module = LogModule.CUSTOMER_INDEX, type = LogType.DELETE, resourceId = "{#id}")

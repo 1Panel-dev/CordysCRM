@@ -1,12 +1,15 @@
 package io.cordys.common.service;
 
+import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.domain.BaseResourceField;
 import io.cordys.common.exception.GenericException;
+import io.cordys.common.mapper.CommonMapper;
 import io.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import io.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.uid.SerialNumGenerator;
+import io.cordys.common.util.CaseFormatUtils;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.Translator;
@@ -23,10 +26,7 @@ import org.apache.commons.collections.CollectionUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -40,6 +40,8 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     @Resource
     private SerialNumGenerator serialNumGenerator;
+    @Resource
+    private CommonMapper commonMapper;
 
     protected abstract String getFormKey();
 
@@ -84,24 +86,30 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
-     * @param resourceId 资源ID
+     * @param resource 资源
      * @param orgId 组织ID
      * @param userId 用户ID
      * @param moduleFieldValues 自定义字段值
      * @param update 是否更新
      */
-    public void saveModuleField(String resourceId, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
+    public <K> void saveModuleField(K resource, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
         List<BaseField> allFields = CommonBeanFactory.getBean(ModuleFormService.class)
                 .getAllFields(getFormKey(), OrganizationContext.getOrganizationId());
         if (CollectionUtils.isEmpty(allFields)) {
             return;
         }
+
+        String resourceId = (String) getResourceFieldValue(resource, "id");
+
         Map<String, BaseModuleFieldValue> fieldValueMap;
         if (CollectionUtils.isNotEmpty(moduleFieldValues)) {
             fieldValueMap = moduleFieldValues.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, v -> v));
         } else {
             fieldValueMap = new HashMap<>();
         }
+
+        // 校验业务字段，字段值是否重复
+        businessFieldRepeatCheck(orgId, resource, update, allFields);
 
         List<T> customerFields = new ArrayList<>();
         List<V> customerFieldBlobs = new ArrayList<>();
@@ -169,6 +177,56 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
         if (CollectionUtils.isNotEmpty(customerFieldBlobs)) {
             getResourceFieldBlobMapper().batchInsert(customerFieldBlobs);
         }
+    }
+
+    /**
+     * 校验业务字段，字段值是否重复
+     * @param orgId
+     * @param resource
+     * @param update
+     * @param allFields
+     * @param <K>
+     */
+    private <K> void businessFieldRepeatCheck(String orgId, K resource, boolean update, List<BaseField> allFields) {
+        Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
+                collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
+
+        allFields.forEach(field -> {
+            if (businessModuleFieldMap.containsKey(field.getInternalKey()) && field.needRepeatCheck()) {
+                BusinessModuleField businessModuleField = businessModuleFieldMap.get(field.getInternalKey());
+                String fieldName = businessModuleField.getBusinessKey();
+                Class<?> clazz = resource.getClass();
+                String tableName = CaseFormatUtils.camelToUnderscore(clazz.getSimpleName());
+
+                Object fieldValue = getResourceFieldValue(resource, fieldName);
+
+                if (fieldValue != null) {
+                    boolean repeat;
+                    if (update) {
+                        repeat = commonMapper.checkUpdateExist(tableName, fieldName, fieldValue.toString(), orgId, resource);
+                    } else {
+                        repeat = commonMapper.checkAddExist(tableName, fieldName, fieldValue.toString(), orgId);
+                    }
+                    if (repeat) {
+                        throw new GenericException(Translator.getWithArgs("common.field_value.repeat", field.getName()));
+                    }
+                }
+
+            }
+        });
+    }
+
+    private <K> Object getResourceFieldValue(K resource, String fieldName) {
+        Class<?> clazz = resource.getClass();
+        // 获取字段值
+        Object fieldValue = null;
+        try {
+            fieldValue = clazz.getMethod("get" + CaseFormatUtils.capitalizeFirstLetter(fieldName))
+                    .invoke(resource);
+        } catch (Exception e) {
+            LogUtils.error(e);
+        }
+        return fieldValue;
     }
 
     private T newResourceField() {

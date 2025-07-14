@@ -202,7 +202,6 @@ public class OpportunityService {
      */
     @OperationLog(module = LogModule.OPPORTUNITY, type = LogType.ADD, resourceName = "{#request.name}")
     public Opportunity add(OpportunityAddRequest request, String operatorId, String orgId) {
-        checkOpportunity(request, orgId, null, Translator.get("opportunity.add"));
         productService.checkProductList(request.getProducts());
         Opportunity opportunity = new Opportunity();
         String id = IDGenerator.nextStr();
@@ -225,29 +224,14 @@ public class OpportunityService {
         if (StringUtils.isBlank(request.getOwner())) {
             opportunity.setOwner(operatorId);
         }
-        opportunityMapper.insert(opportunity);
 
         //自定义字段
-        opportunityFieldService.saveModuleField(id, orgId, operatorId, request.getModuleFields(), false);
+        opportunityFieldService.saveModuleField(opportunity, orgId, operatorId, request.getModuleFields(), false);
+        opportunityMapper.insert(opportunity);
+
         baseService.handleAddLog(opportunity, request.getModuleFields());
 
         return opportunity;
-    }
-
-
-    /**
-     * 校验商机
-     *
-     * @param request
-     * @param orgId
-     * @param id
-     */
-    private void checkOpportunity(OpportunityAddRequest request, String orgId, String id, String type) {
-        //同一客户下商机名称唯一
-        List<Opportunity> list = extOpportunityMapper.selectByCustomerAndName(request, id, orgId);
-        if (CollectionUtils.isNotEmpty(list)) {
-            throw new GenericException(String.format(Translator.get("opportunity_exist"), request.getName(), type));
-        }
     }
 
 
@@ -263,14 +247,14 @@ public class OpportunityService {
         Opportunity oldOpportunity = opportunityMapper.selectByPrimaryKey(request.getId());
         Optional.ofNullable(oldOpportunity).ifPresentOrElse(item -> {
             Opportunity newOpportunity = BeanUtils.copyBean(new Opportunity(), item);
-            checkOpportunity(request, orgId, request.getId(), Translator.get("opportunity.update"));
             productService.checkProductList(request.getProducts());
             //更新商机
-            updateOpportunity(newOpportunity, request, userId);
+            Opportunity updateOpportunity = newOpportunity(newOpportunity, request, userId);
             // 获取模块字段
             List<BaseModuleFieldValue> originCustomerFields = opportunityFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
-            updateModuleField(request.getId(), request.getModuleFields(), orgId, userId);
+            updateModuleField(updateOpportunity, request.getModuleFields(), orgId, userId);
+            opportunityMapper.update(item);
             baseService.handleUpdateLog(oldOpportunity, newOpportunity, originCustomerFields, request.getModuleFields(), oldOpportunity.getId(), oldOpportunity.getName());
         }, () -> {
             throw new GenericException("opportunity_not_found");
@@ -279,7 +263,7 @@ public class OpportunityService {
     }
 
 
-    private void updateOpportunity(Opportunity item, OpportunityUpdateRequest request, String userId) {
+    private Opportunity newOpportunity(Opportunity item, OpportunityUpdateRequest request, String userId) {
         item.setName(request.getName());
         item.setCustomerId(request.getCustomerId());
         item.setAmount(request.getAmount());
@@ -290,19 +274,19 @@ public class OpportunityService {
         item.setUpdateTime(System.currentTimeMillis());
         item.setUpdateUser(userId);
         item.setExpectedEndTime(request.getExpectedEndTime());
-        opportunityMapper.update(item);
+        return item;
     }
 
 
-    private void updateModuleField(String id, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
+    private void updateModuleField(Opportunity opportunity, List<BaseModuleFieldValue> moduleFields, String orgId, String userId) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
         }
         // 先删除
-        opportunityFieldService.deleteByResourceId(id);
+        opportunityFieldService.deleteByResourceId(opportunity.getId());
         // 再保存
-        opportunityFieldService.saveModuleField(id, orgId, userId, moduleFields, true);
+        opportunityFieldService.saveModuleField(opportunity, orgId, userId, moduleFields, true);
     }
 
 

@@ -24,10 +24,6 @@ public interface ExtCustomerMapper {
 
     List<CustomerListResponse> sourceList(@Param("request") CustomerPageRequest request, @Param("orgId") String orgId, @Param("userId") String userId);
 
-    boolean checkAddExist(@Param("customer") Customer customer);
-
-    boolean checkUpdateExist(@Param("customer") Customer Customer);
-
     List<OptionDTO> selectOptionByIds(@Param("ids") List<String> ids);
 
     void batchTransfer(@Param("request") CustomerBatchTransferRequest request, @Param("userId") String userId);
