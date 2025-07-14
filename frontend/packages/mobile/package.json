@@ -33,7 +33,7 @@
     "less": "^4.2.0",
     "less-loader": "^11.1.4",
     "postcss-pxtorem": "^6.1.0",
-    "rollup": "^4.18.0",
+    "rollup": "4.44.0",
     "rollup-plugin-visualizer": "^5.12.0",
     "unplugin-auto-import": "^0.17.5",
     "unplugin-vue-components": "^0.26.0",
