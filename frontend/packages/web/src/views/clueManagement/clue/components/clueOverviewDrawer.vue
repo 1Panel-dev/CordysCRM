@@ -246,6 +246,14 @@
         permission: ['CLUE_MANAGEMENT:UPDATE'],
       },
       {
+        label: t('clue.convertToCustomer'),
+        key: 'convertToCustomer',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+      },
+      {
         label: t('common.transfer'),
         key: 'transfer',
         permission: ['CLUE_MANAGEMENT:UPDATE'],
@@ -280,15 +288,6 @@
       //       },
       //     ]
       //   : []),
-      {
-        label: t('clue.convertToCustomer'),
-        key: 'convertToCustomer',
-        permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
-        allPermission: true,
-      },
-      {
-        type: 'divider',
-      },
       {
         label: t('common.delete'),
         key: 'delete',
