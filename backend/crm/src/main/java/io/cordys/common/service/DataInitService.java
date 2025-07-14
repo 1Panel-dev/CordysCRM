@@ -3,6 +3,7 @@ package io.cordys.common.service;
 import io.cordys.common.util.LogUtils;
 import io.cordys.common.util.OnceInterface;
 import io.cordys.crm.system.domain.Parameter;
+import io.cordys.crm.system.service.ModuleFieldService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.crm.system.service.ModuleService;
 import io.cordys.mybatis.BaseMapper;
@@ -11,6 +12,7 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.redisson.Redisson;
 import org.redisson.api.RLock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,8 @@ public class DataInitService {
     private BaseMapper<Parameter> parameterMapper;
     @Resource
     private Redisson redisson;
+	@Autowired
+	private ModuleFieldService moduleFieldService;
 
     public void initOneTime() {
         RLock lock = redisson.getLock("init_data_lock");
@@ -39,6 +43,7 @@ public class DataInitService {
         try {
             initOneTime(moduleService::initDefaultOrgModule, "init.module");
             initOneTime(moduleFormService::initForm, "init.form");
+            initOneTime(moduleFieldService::modifyDateProp, "modify.form.date");
         } finally {
             lock.unlock();
         }
