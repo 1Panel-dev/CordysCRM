@@ -81,7 +81,7 @@ CREATE TABLE dashboard_collection
     `update_time`  BIGINT      NOT NULL COMMENT '更新时间',
     `create_user`  VARCHAR(32) NOT NULL COMMENT '创建人',
     `update_user`  VARCHAR(32) NOT NULL COMMENT '更新人',
-    PRIMARY KEY (id, user_id, dashboard_id)
+    PRIMARY KEY (id)
 ) COMMENT = '仪表板收藏'
 ENGINE = InnoDB
 DEFAULT CHARSET = utf8mb4
