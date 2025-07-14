@@ -22,13 +22,13 @@ export default function useLocalForage() {
     return val;
   };
 
+  /* eslint-disable no-new-func */
   const deserializeFunction = (funcStr: string) => {
     try {
       if (!funcStr.trim().startsWith('function') && !funcStr.trim().startsWith('(')) {
         funcStr = `function ${funcStr}`;
       }
-      // eslint-disable-next-line no-eval
-      const func = eval(`(${funcStr})`);
+      const func = new Function(`return (${funcStr})`)();
       return func;
     } catch (e) {
       // eslint-disable-next-line no-console

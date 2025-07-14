@@ -2,7 +2,7 @@
   <CrmOverviewDrawer
     v-model:show="show"
     v-model:active-tab="activeTab"
-    v-model:cached-list="tabList"
+    v-model:cached-list="cachedList"
     :tab-list="tabList"
     :button-list="buttonList"
     :title="sourceName"
@@ -132,6 +132,7 @@
   ];
 
   const activeTab = ref('followRecord');
+  const cachedList = ref([]);
   const tabList: TabContentItem[] = [
     {
       name: 'followRecord',
