@@ -188,6 +188,10 @@
                         on o.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>
+                <if test="condition.name == 'departmentId'">
+                    left join sys_organization_user souc
+                    on souc.user_id = o.owner
+                </if>
             </foreach>
         </if>
     </sql>
@@ -305,7 +309,7 @@
             <when test="condition.name == 'departmentId'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
-                    <property name="column" value="sys_organization_user.department_id"/>
+                    <property name="column" value="souc.department_id"/>
                 </include>
             </when>
             <when test="condition.name == 'createTime'">
