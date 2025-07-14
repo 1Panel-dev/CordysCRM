@@ -143,6 +143,7 @@ export interface RepeatOpportunityItem {
   productNames: string[];
   owner: string;
   ownerName: string;
+  productNameList:string[]
 }
 
 export interface ExportCenterListParams {

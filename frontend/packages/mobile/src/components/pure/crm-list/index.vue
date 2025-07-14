@@ -107,12 +107,12 @@
   }
 
   function filterListByKeyword(keywordKeys: string | string[]) {
-    if (!props.keyword?.length) {
+    if (!props.keyword?.trim()?.length) {
       loadList(true);
       return;
     }
 
-    const lowerCaseVal = props.keyword.toLowerCase();
+    const lowerCaseVal = props.keyword.trim()?.toLowerCase();
     const keys = Array.isArray(keywordKeys) ? keywordKeys : [keywordKeys];
 
     list.value = list.value.filter((item) => {

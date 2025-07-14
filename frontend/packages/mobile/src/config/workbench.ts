@@ -100,6 +100,10 @@ export const clueDescriptionList = [
   {
     label: t('opportunity.intendedProducts'),
     key: 'productNameList',
+    valueSlotName: 'render',
+    render: (row: RepeatOpportunityItem) => {
+      return row.productNameList.length ? row.productNameList.join('；') : '-';
+    },
   },
 ];
 
