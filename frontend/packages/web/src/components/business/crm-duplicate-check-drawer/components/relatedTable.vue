@@ -9,6 +9,7 @@
     </div>
     <div v-show="code !== 101003" class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]">
       <CrmTable
+        ref="crmTableRef"
         v-bind="propsRes"
         class="!h-[548px]"
         @page-change="propsEvent.pageChange"
@@ -46,9 +47,11 @@
     isReturnNativeResponse: props.isReturnNativeResponse,
   });
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   async function searchData(val: string, id?: string) {
     setLoadListParams({ name: val, ...(id ? { id } : {}) });
     await loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   defineExpose({

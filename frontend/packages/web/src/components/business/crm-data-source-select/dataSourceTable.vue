@@ -1,5 +1,6 @@
 <template>
   <CrmTable
+    ref="crmTableRef"
     v-model:checked-row-keys="selectedKeys"
     v-bind="propsRes"
     class="!h-[60vh]"
@@ -126,9 +127,11 @@
 
   const keyword = ref('');
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(_keyword?: string) {
     setLoadListParams({ keyword: _keyword !== undefined ? _keyword : keyword.value });
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   function handleRowKeyChange(keys: DataTableRowKey[], _rows: InternalRowData[]) {

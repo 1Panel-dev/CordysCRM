@@ -16,6 +16,7 @@
           <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
         </div>
         <CrmTable
+          ref="crmTableRef"
           v-bind="propsRes"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
@@ -301,11 +302,13 @@
     ruleRecord.value = undefined;
   }
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function initOpportunityList() {
     setLoadListParams({
       keyword: keyword.value,
     });
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   function searchData(val: string) {

@@ -1,6 +1,7 @@
 <template>
   <CrmCard hide-footer>
     <CrmTable
+      ref="crmTableRef"
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
       :action-config="actionConfig"
@@ -240,9 +241,11 @@
   });
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(val?: string) {
     setLoadListParams({ keyword: val ?? keyword.value });
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   watch(

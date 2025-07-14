@@ -63,6 +63,7 @@
 
     <CrmCard v-if="activeTab === 'operation'" hide-footer :special-height="208">
       <CrmTable
+        ref="crmTableRef"
         v-bind="propsRes"
         @page-change="propsEvent.pageChange"
         @page-size-change="propsEvent.pageSizeChange"
@@ -259,11 +260,13 @@
   });
 
   const loginLogRef = ref<InstanceType<typeof LoginLog>>();
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   async function searchData() {
     const { time, ...otherForm } = form.value;
     if (activeTab.value === 'operation') {
       setLoadListParams({ ...otherForm, startTime: time[0], endTime: time[1] });
       await loadList();
+      crmTableRef.value?.scrollTo({ top: 0 });
     } else {
       nextTick(() => {
         loginLogRef.value?.searchData({ operator: otherForm.operator, startTime: time[0], endTime: time[1] });

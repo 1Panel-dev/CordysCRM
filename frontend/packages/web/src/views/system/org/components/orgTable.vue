@@ -1,6 +1,7 @@
 <template>
   <div class="h-full w-full p-[24px]">
     <CrmTable
+      ref="crmTableRef"
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
       :action-config="actionConfig"
@@ -869,9 +870,11 @@
 
   const keyword = ref('');
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function initOrgList() {
     setLoadListParams({ keyword: keyword.value, departmentIds: [props.activeNode, ...props.offspringIds] });
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   const memberDetailRef = ref<InstanceType<typeof MemberDetail>>();

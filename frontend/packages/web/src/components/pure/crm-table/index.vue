@@ -511,6 +511,14 @@
   });
 
   const scrollXWidth = computed(() => currentColumns.value.reduce((prev, curr) => prev + (curr.width as number), 0));
+
+  function scrollTo(options: { top?: number; left?: number }) {
+    tableRef.value?.scrollTo(options);
+  }
+
+  defineExpose({
+    scrollTo,
+  });
 </script>
 
 <style lang="less">

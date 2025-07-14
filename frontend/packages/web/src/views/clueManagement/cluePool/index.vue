@@ -1,6 +1,7 @@
 <template>
   <CrmCard hide-footer>
     <CrmTable
+      ref="crmTableRef"
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
       :not-show-table-filter="isAdvancedSearchMode"
@@ -426,9 +427,11 @@
   const msAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const isAdvancedSearchMode = computed(() => msAdvanceFilterRef.value?.isAdvancedSearchMode);
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(_keyword?: string, id?: string) {
     setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: id || poolId.value });
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   watch(

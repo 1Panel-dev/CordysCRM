@@ -41,6 +41,7 @@
           class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]"
         >
           <CrmTable
+            ref="crmTableRef"
             v-bind="repeatTable.propsRes"
             class="!h-[548px]"
             @page-change="repeatTable.propsEvent.pageChange"
@@ -389,6 +390,7 @@
     { immediate: true }
   );
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const clueTableRef = ref<InstanceType<typeof RelatedTable>>();
   async function searchData(val: string) {
     repeatTable.value.setLoadListParams({ name: val.replace(/[\s\uFEFF\xA0]+/g, '') });
@@ -400,6 +402,7 @@
       showClue.value = !!clueTableRef.value?.propsRes.data.length || clueTableRef.value?.code === 101003;
       noDuplicateCustomers.value = !showResult.value && !showClue.value;
     });
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   watch(

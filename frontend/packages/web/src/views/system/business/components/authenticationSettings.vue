@@ -2,6 +2,7 @@
   <!-- special-height 64是tab的高度和margin -->
   <CrmCard hide-footer :special-height="64">
     <CrmTable
+      ref="crmTableRef"
       v-bind="propsRes"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -370,9 +371,11 @@
     columns,
   });
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData() {
     setLoadListParams({ keyword: keyword.value });
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   watch(

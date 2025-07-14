@@ -1,5 +1,6 @@
 <template>
   <CrmTable
+    ref="crmTableRef"
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
     :not-show-table-filter="isAdvancedSearchMode"
@@ -560,6 +561,7 @@
     ];
   });
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData() {
     setLoadListParams({
       keyword: keyword.value,
@@ -567,6 +569,7 @@
       customerId: props.sourceId,
     });
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   function searchByKeyword(val: string) {

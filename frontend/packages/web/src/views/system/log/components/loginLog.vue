@@ -1,6 +1,7 @@
 <template>
   <CrmCard hide-footer :special-height="160">
     <CrmTable
+      ref="crmTableRef"
       v-bind="propsRes"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -53,6 +54,8 @@
       },
     },
   ];
+
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(loginLogList, {
     showSetting: false,
     columns,
@@ -62,6 +65,7 @@
   async function searchData(params: OperationLogParams) {
     setLoadListParams({ ...params });
     await loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   defineExpose({

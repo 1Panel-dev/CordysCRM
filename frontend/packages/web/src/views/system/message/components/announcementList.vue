@@ -1,6 +1,7 @@
 <template>
   <CrmCard hide-footer :special-height="64">
     <CrmTable
+      ref="crmTableRef"
       v-bind="propsRes"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -229,12 +230,14 @@
     }
   );
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function initData() {
     setLoadListParams({
       keyword: keyword.value,
       organizationId: appStore.orgId,
     });
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   function searchData(val: string) {

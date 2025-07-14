@@ -5,6 +5,7 @@
       :content-style="{ 'min-width': '600px', 'width': '100%', 'padding': '0 24px 24px', 'height': '100%' }"
     >
       <CrmTable
+        ref="crmTableRef"
         v-model:checked-row-keys="checkedRowKeys"
         v-bind="propsRes"
         :action-config="actionConfig"
@@ -204,9 +205,11 @@
   };
 
   const keyword = ref('');
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(val?: string) {
     setLoadListParams({ keyword: val ?? keyword.value, roleId: props.activeRoleId });
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   const checkedRowKeys = ref<(string | number)[]>([]);

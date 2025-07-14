@@ -1,6 +1,7 @@
 <template>
   <CrmCard hide-footer :special-height="props.specialHeight">
     <CrmTable
+      ref="crmTableRef"
       v-bind="propsRes"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -313,6 +314,7 @@
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
   const backupData = ref<CustomerContractListItem[]>([]);
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   async function searchData(val?: string) {
     if (props.sourceId) {
       if (val) {
@@ -330,6 +332,7 @@
       await loadList();
       backupData.value = cloneDeep(propsRes.value.data);
     }
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   watch(

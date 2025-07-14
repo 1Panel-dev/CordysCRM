@@ -1,6 +1,7 @@
 <template>
   <CrmCard hide-footer>
     <CrmTable
+      ref="crmTableRef"
       v-bind="propsRes"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -110,11 +111,13 @@
   );
   const keyword = ref('');
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function initData() {
     setLoadListParams({
       sourceId: props.sourceId,
     });
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   function searchData(val: string) {

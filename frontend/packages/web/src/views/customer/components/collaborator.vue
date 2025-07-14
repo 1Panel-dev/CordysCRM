@@ -1,6 +1,7 @@
 <template>
   <CrmCard hide-footer>
     <CrmTable
+      ref="crmTableRef"
       v-bind="propsRes"
       v-model:checked-row-keys="checkedRowKeys"
       :action-config="props.readonly ? undefined : actionConfig"
@@ -312,11 +313,13 @@
 
   const disabledIds = computed(() => propsRes.value.data.map((e) => e.userId));
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function initData() {
     setLoadListParams({
       customerId: props.sourceId,
     });
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   const actionConfig: BatchActionConfig = {

@@ -71,6 +71,9 @@ export default function useTable<T>(
   const loadListParams = ref<TableQueryParams>({});
   function setLoadListParams(params?: TableQueryParams) {
     loadListParams.value = params || {};
+    if (propsRes.value.crmPagination) {
+      propsRes.value.crmPagination.page = 1;
+    }
   }
 
   // 获取分页参数
