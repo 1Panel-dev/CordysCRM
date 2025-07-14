@@ -179,7 +179,7 @@
   const listParams = computed(() => {
     return {
       searchType: activeFilter.value,
-      keyword: keyword.value,
+      keyword: keyword.value.trim(),
       id: props.sourceId,
     };
   });
@@ -249,7 +249,7 @@
   function searchList() {
     nextTick(() => {
       if (props.sourceId) {
-        crmListRef.value?.filterListByKeyword('name');
+        crmListRef.value?.filterListByKeyword(['name', 'phone']);
       } else {
         loadList();
       }

@@ -1,6 +1,6 @@
 export default {
   'customer.searchPlaceholder': '请输入客户名称',
-  'customer.searchContactPlaceholder': '请输入联系人名称',
+  'customer.searchContactPlaceholder': '请输入联系人名称或手机号',
   'customer.all': '全部',
   'customer.mine': '我的客户',
   'customer.deptCustomer': '部门客户',

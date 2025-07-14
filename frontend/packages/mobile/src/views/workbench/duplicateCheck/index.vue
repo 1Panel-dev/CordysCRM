@@ -29,14 +29,16 @@
             height="24px"
           />
         </template>
-        <RelatedList
-          ref="customerRelatedListRef"
-          v-model="customerList"
-          :keyword="keywordVal"
-          :description-list="validatePhone(keywordVal) ? contactDescriptionList : customerDescriptionList"
-          :api="validatePhone(keywordVal) ? getRepeatContactList : GetRepeatCustomerList"
-          is-return-native-response
-        />
+        <div style="overflow: hidden; height: calc(100vh - 224px)">
+          <RelatedList
+            ref="customerRelatedListRef"
+            v-model="customerList"
+            :keyword="keywordVal"
+            :description-list="validatePhone(keywordVal) ? contactDescriptionList : customerDescriptionList"
+            :api="validatePhone(keywordVal) ? getRepeatContactList : GetRepeatCustomerList"
+            is-return-native-response
+          />
+        </div>
       </van-collapse-item>
       <van-collapse-item v-show="showClue" name="clue" :border="false">
         <template #title>
@@ -49,14 +51,16 @@
             height="24px"
           />
         </template>
-        <RelatedList
-          ref="clueRelatedListRef"
-          v-model="clueList"
-          :keyword="keywordVal"
-          :description-list="clueDescriptionList"
-          :api="GetRepeatClueList"
-          is-return-native-response
-        />
+        <div style="overflow: hidden; height: calc(100vh - 224px)">
+          <RelatedList
+            ref="clueRelatedListRef"
+            v-model="clueList"
+            :keyword="keywordVal"
+            :description-list="clueDescriptionList"
+            :api="GetRepeatClueList"
+            is-return-native-response
+          />
+        </div>
       </van-collapse-item>
     </van-collapse>
   </CrmPageWrapper>

@@ -1,6 +1,6 @@
 export default {
   'customer.searchPlaceholder': 'Please enter customer name',
-  'customer.searchContactPlaceholder': 'Please enter contact name',
+  'customer.searchContactPlaceholder': 'Please enter contact name or phone number',
   'customer.all': 'All',
   'customer.mine': 'My Customers',
   'customer.deptCustomer': 'Department Customers',

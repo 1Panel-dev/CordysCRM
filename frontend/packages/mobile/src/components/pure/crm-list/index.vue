@@ -106,15 +106,18 @@
     }
   }
 
-  function filterListByKeyword(keywordKey: string) {
-    if (props.keyword?.length) {
-      const lowerCaseVal = props.keyword.toLowerCase();
-      list.value = list.value.filter((item) => {
-        return item[keywordKey]?.toLowerCase().includes(lowerCaseVal);
-      });
-    } else {
+  function filterListByKeyword(keywordKeys: string | string[]) {
+    if (!props.keyword?.length) {
       loadList(true);
+      return;
     }
+
+    const lowerCaseVal = props.keyword.toLowerCase();
+    const keys = Array.isArray(keywordKeys) ? keywordKeys : [keywordKeys];
+
+    list.value = list.value.filter((item) => {
+      return keys.some((key) => item[key]?.toString().toLowerCase().includes(lowerCaseVal));
+    });
   }
 
   async function handleRefresh() {
