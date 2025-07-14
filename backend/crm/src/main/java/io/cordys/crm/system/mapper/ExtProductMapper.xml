@@ -75,11 +75,11 @@
                 ">
                     <if test="condition.multipleValue">
                         inner join product_field_blob ${tablePrefix}_${i}
-                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        on p.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                     <if test="!condition.multipleValue">
                         inner join product_field ${tablePrefix}_${i}
-                        on c.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
+                        on p.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
                 </if>
             </foreach>
