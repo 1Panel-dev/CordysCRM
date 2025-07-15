@@ -7,6 +7,7 @@ import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.dto.response.CustomerRepeatResponse;
+import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import io.cordys.crm.system.dto.FilterConditionDTO;
 import org.apache.ibatis.annotations.Param;
 
@@ -53,4 +54,6 @@ public interface ExtCustomerMapper {
     long filterOwnerCount(@Param("ownerId") String ownerId, @Param("filters") List<FilterConditionDTO> filters);
 
     List<CustomerListResponse> getListByIds(@Param("ids")List<String> ids);
+
+    Long selectCustomerStatistic(@Param("request") HomeStatisticSearchWrapperRequest request);
 }
