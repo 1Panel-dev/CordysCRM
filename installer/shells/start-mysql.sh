@@ -4,6 +4,8 @@ cp -rf /opt/cordys/conf/mysql/my.cnf /etc/my.cnf.d/mariadb-server.cnf
 mkdir -p /opt/cordys/data/mysql
 mkdir -p /opt/cordys/conf/mysql
 
+chmod 644 /etc/mysql/conf.d/my.cnf
+
 if [ ! -d "/run/mysqld" ]; then
   mkdir -p /run/mysqld
 fi
