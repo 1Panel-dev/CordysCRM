@@ -546,6 +546,17 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             };
           }
 
+          if (field.businessKey === 'owner') {
+            return {
+              title: field.name,
+              width: 200,
+              key: field.businessKey,
+              sortOrder: false,
+              sorter,
+              render: props.specialRender?.[field.businessKey],
+            };
+          }
+
           if (
             [
               FieldTypeEnum.DATA_SOURCE_MULTIPLE,

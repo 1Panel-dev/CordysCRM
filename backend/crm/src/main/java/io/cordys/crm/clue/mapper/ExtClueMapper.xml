@@ -99,6 +99,9 @@
                     <when test="${sort}.name == 'phone'">
                         c.`phone` ${sortType}
                     </when>
+                    <when test="${sort}.name == 'owner'">
+                        c.`owner` ${sortType}
+                    </when>
                     <when test="${sort}.name == 'collection_time'">
                         c.`collection_time` ${sortType}
                     </when>
