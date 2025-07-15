@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableRowKey, NButton, NTooltip, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
@@ -100,6 +100,7 @@
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
@@ -444,17 +445,9 @@
       customerId: (row: OpportunityItem) => {
         return props.isCustomerTab
           ? h(
-              NTooltip,
-              {},
+              CrmNameTooltip,
+              { text: row.customerName },
               {
-                trigger: () =>
-                  h(
-                    'div',
-                    { class: 'one-line-text' },
-                    {
-                      default: () => row.customerName,
-                    }
-                  ),
                 default: () => row.customerName,
               }
             )

@@ -30,4 +30,6 @@ export enum SpecialColumnEnum {
   OPERATION = 'operation',
   // 拖拽列
   DRAG = 'drag',
+  // 序号列
+  ORDER = 'crmTableOrder',
 }

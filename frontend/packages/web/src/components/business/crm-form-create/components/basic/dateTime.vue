@@ -15,7 +15,7 @@
       v-model:value="value"
       :type="props.fieldConfig.dateType"
       :placeholder="props.fieldConfig.placeholder"
-      :disabled="props.fieldConfig.editable === false || props.fieldConfig.dateDefaultType === 'current'"
+      :disabled="props.fieldConfig.editable === false"
       class="w-full"
       @update-value="($event) => emit('change', $event)"
     >

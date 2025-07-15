@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 
 import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
+import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { formatTimeValue, getCityPath } from '@lib/shared/method';
 import type { ModuleField } from '@lib/shared/models/customer';
@@ -625,10 +625,11 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       }
       columns.unshift({
         fixed: 'left',
-        title: '',
+        title: t('crmTable.order'),
         width: 56,
-        key: 'crmTableOrder',
+        key: SpecialColumnEnum.ORDER,
         resizable: false,
+        columnSelectorDisabled: true,
         render: (row: any, rowIndex: number) => rowIndex + 1,
       });
       if (props.operationColumn) {
@@ -653,7 +654,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       showPagination,
       columns,
       permission: props.permission,
-      virtualScrollX: props.formKey !== FormDesignKeyEnum.PRODUCT, // 产品表格无需横向虚拟滚动
+      // virtualScrollX: props.formKey !== FormDesignKeyEnum.PRODUCT, // TODO:横向滚动有问题
     },
     (item, originalData) => {
       const businessFieldAttr: Record<string, any> = {};

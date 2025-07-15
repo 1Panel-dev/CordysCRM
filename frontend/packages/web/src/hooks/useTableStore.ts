@@ -91,8 +91,10 @@ export default function useTableStore() {
       if (tableColumnsMap) {
         const operationColumn = tableColumnsMap.column.find((i) => i.key === SpecialColumnEnum.OPERATION);
         const selectColumn = tableColumnsMap.column.find((i) => i.type === SpecialColumnEnum.SELECTION);
+        const orderColumn = tableColumnsMap.column.find((i) => i.key === SpecialColumnEnum.ORDER);
         if (selectColumn) columns.unshift(selectColumn); // 加上选择框列
         if (operationColumn) columns.push(operationColumn); // 加上操作列
+        if (orderColumn) columns.unshift(orderColumn); // 加上序号列，序号比选择列更前
         tableColumnsMap.column = cloneDeep(columns);
         await setTableColumnsMap(tableKey, tableColumnsMap);
       }

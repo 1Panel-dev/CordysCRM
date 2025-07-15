@@ -89,6 +89,6 @@
 
 <style scoped lang="less">
   .crm-button-group {
-    @apply flex flex-nowrap items-center;
+    @apply flex h-full flex-nowrap items-center;
   }
 </style>
