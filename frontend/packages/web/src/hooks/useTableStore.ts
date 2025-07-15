@@ -70,7 +70,10 @@ export default function useTableStore() {
     const tableColumnsMap = await getTableColumnsMap(tableKey);
     if (tableColumnsMap) {
       return tableColumnsMap.column.filter(
-        (item) => item.key !== SpecialColumnEnum.OPERATION && item.type !== SpecialColumnEnum.SELECTION
+        (item) =>
+          item.key !== SpecialColumnEnum.OPERATION &&
+          item.type !== SpecialColumnEnum.SELECTION &&
+          item.key !== SpecialColumnEnum.ORDER
       );
     }
     return [];
