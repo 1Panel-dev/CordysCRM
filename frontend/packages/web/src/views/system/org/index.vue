@@ -1,5 +1,5 @@
 <template>
-  <CrmCard no-content-padding hide-footer>
+  <CrmCard no-content-padding hide-footer :special-height="licenseStore.expiredDuring ? 64 : 0">
     <CrmSplitPanel :max="0.5" :min="0.2" :default-size="0.2">
       <template #1>
         <div class="org-tree-wrapper">
@@ -31,9 +31,12 @@
   import OrgTable from '@/views/system/org/components/orgTable.vue';
 
   import { checkSyncUserFromThird } from '@/api/modules';
+  import useLicenseStore from '@/store/modules/setting/license';
 
   const activeNodeId = ref<string | number>('');
   const offspringIds = ref<string[]>([]);
+
+  const licenseStore = useLicenseStore();
 
   function selectNode(_selectedKeys: Array<string | number>, _offspringIds: string[]) {
     [activeNodeId.value] = _selectedKeys;

@@ -33,6 +33,7 @@ export default {
     'menu.contact': 'Contact',
     'menu.dashboard': 'Dashboard',
     'menu.settings.businessSetting': 'Enterprise',
+    'menu.settings.license': 'License',
     'menu.settings.messageSetting': 'Message setting',
     'menu.settings.log': 'Log',
     'navbar.action.locale': 'Switch to English',

@@ -6,6 +6,9 @@ import usePermission from '@/hooks/usePermission';
 import appClientMenus from '@/router/app-menus';
 import { allMenuRouteMap, featureRouteMap } from '@/router/constants';
 import useAppStore from '@/store/modules/app';
+import useLicenseStore from '@/store/modules/setting/license';
+
+import { SystemRouteEnum } from '@/enums/routeEnum';
 
 /**
  * 获取菜单树
@@ -14,6 +17,7 @@ import useAppStore from '@/store/modules/app';
 export default function useMenuTree() {
   const appStore = useAppStore();
   const permission = usePermission();
+  const licenseStore = useLicenseStore();
 
   const menuTree = computed(() => {
     const copyRouter = cloneDeep(appClientMenus) as RouteRecordNormalized[];
@@ -47,6 +51,11 @@ export default function useMenuTree() {
 
         // 权限校验不通过
         if (!permission.accessRouter(element)) {
+          return null;
+        }
+
+        //  社区版去掉license菜单
+        if (!licenseStore.isEnterpriseVersion() && element.name === SystemRouteEnum.SYSTEM_LICENSE) {
           return null;
         }
 

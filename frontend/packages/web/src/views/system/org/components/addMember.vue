@@ -49,7 +49,7 @@
             key-field="id"
             filterable
             clearable
-            :disabled="props.isSyncFromThirdChecked"
+            :disabled="props.isSyncFromThirdChecked && xPack"
             children-field="children"
           >
             <template #empty>
@@ -120,7 +120,7 @@
               type="text"
               :placeholder="t('common.pleaseInput')"
               :maxlength="255"
-              :disabled="props.isSyncFromThirdChecked"
+              :disabled="props.isSyncFromThirdChecked && xPack"
             />
           </n-form-item>
           <n-form-item
@@ -216,10 +216,12 @@
   import CrmUserSelect from '@/components/business/crm-user-select/index.vue';
 
   import { addUser, getDepartmentTree, getRoleOptions, getUserDetail, getUserOptions, updateUser } from '@/api/modules';
+  import useLicenseStore from '@/store/modules/setting/license';
 
   const Message = useMessage();
   const { t } = useI18n();
-
+  const licenseStore = useLicenseStore();
+  const xPack = computed(() => licenseStore.hasLicense());
   const emit = defineEmits<{
     (e: 'brash'): void;
     (e: 'close'): void;

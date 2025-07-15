@@ -24,14 +24,27 @@ const useLicenseStore = defineStore('license', {
     hasLicense() {
       return this.licenseInfo?.status === 'valid';
     },
+    isEnterpriseVersion() {
+      return this.licenseInfo?.status !== 'not_found';
+    },
     getExpirationTime(resTime: string) {
+      if (!this.isEnterpriseVersion()) {
+        this.expiredDuring = false;
+        return;
+      }
+
+      if (!resTime || this.licenseInfo?.status === 'expired') {
+        this.expiredDuring = true;
+        this.expiredDays = 0;
+        return;
+      }
       const today = Date.now();
       const startDate = dayjs(today).format('YYYY-MM-DD');
       const endDate = dayjs(resTime);
 
       const daysDifference = endDate.diff(startDate, 'day');
       this.expiredDays = daysDifference;
-      if (daysDifference <= 30 && daysDifference >= 0) {
+      if (daysDifference <= 30 && daysDifference > 0) {
         this.expiredDuring = true;
       } else if (daysDifference <= 0 && daysDifference >= -30) {
         this.expiredDuring = true;
@@ -43,12 +56,18 @@ const useLicenseStore = defineStore('license', {
     async getValidateLicense() {
       try {
         const result = await getLicense();
-        if (!result || !result.status || !result.license || !result.license.count) {
+        // 检查返回结果是否有效，不存在license自身值
+        if (!result || !result.status) {
           return;
         }
+        /* if (!result || !result.status || !result.license || !result.license.count) {
+          return;
+        } */
         this.setLicenseInfo(result);
         // 计算license时间
-        this.getExpirationTime(result.license.expired);
+        if (result) {
+          this.getExpirationTime(result.expired);
+        }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);

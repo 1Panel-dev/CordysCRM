@@ -4,6 +4,7 @@ export enum SystemRouteEnum {
   SYSTEM_ROLE = 'systemRole',
   SYSTEM_MODULE = 'systemModule',
   SYSTEM_BUSINESS = 'systemBusiness',
+  SYSTEM_LICENSE = 'systemLicense',
   SYSTEM_LOG = 'systemLog',
   SYSTEM_MESSAGE = 'systemMessage',
 }

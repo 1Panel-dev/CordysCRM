@@ -119,6 +119,7 @@
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { batchEditUser, getDepartmentTree } from '@/api/modules';
+  import useLicenseStore from '@/store/modules/setting/license';
 
   const Message = useMessage();
   const { t } = useI18n();
@@ -131,6 +132,9 @@
   const emit = defineEmits<{
     (e: 'loadList'): void;
   }>();
+
+  const licenseStore = useLicenseStore();
+  const xPack = computed(() => licenseStore.hasLicense());
 
   const showEditDrawer = defineModel<boolean>('show', {
     required: true,
@@ -151,7 +155,7 @@
 
   const attributesOptions = computed<SelectOption[]>(() => {
     return [
-      ...(props.isSyncFromThirdChecked
+      ...(props.isSyncFromThirdChecked && xPack.value
         ? []
         : [
             {

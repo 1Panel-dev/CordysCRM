@@ -13,11 +13,11 @@
     >
       <template #actionLeft>
         <div class="flex">
-          <n-tooltip trigger="hover" :disabled="!isSyncFromThirdChecked">
+          <n-tooltip trigger="hover" :disabled="!isSyncFromThirdChecked || !xPack">
             <template #trigger>
               <n-button
                 v-permission="['SYS_ORGANIZATION:ADD']"
-                :disabled="props.isSyncFromThirdChecked"
+                :disabled="props.isSyncFromThirdChecked && xPack"
                 class="mr-[12px]"
                 type="primary"
                 @click="() => addOrEditMember()"
@@ -147,9 +147,10 @@
   import useUserStore from '@/store/modules/user';
   import { hasAnyPermission } from '@/utils/permission';
 
-  const userStore = useUserStore();
-
   const licenseStore = useLicenseStore();
+
+  const userStore = useUserStore();
+  const xPack = computed(() => licenseStore.hasLicense());
 
   const Message = useMessage();
 
@@ -737,7 +738,9 @@
         h(CrmOperationButton, {
           groupList,
           moreList:
-            props.isSyncFromThirdChecked || row.userId === userStore.userInfo.id ? undefined : moreOperationList,
+            (props.isSyncFromThirdChecked && xPack.value) || row.userId === userStore.userInfo.id
+              ? undefined
+              : moreOperationList,
           onSelect: (key: string) => handleActionSelect(row, key),
         }),
     },
@@ -829,8 +832,8 @@
         {
           label: t('common.import'),
           key: 'import',
-          tooltipContent: props.isSyncFromThirdChecked ? t('org.checkSyncUserHoverTip') : '',
-          disabled: props.isSyncFromThirdChecked,
+          tooltipContent: props.isSyncFromThirdChecked && xPack.value ? t('org.checkSyncUserHoverTip') : '',
+          disabled: props.isSyncFromThirdChecked && xPack.value,
           permission: ['SYS_ORGANIZATION:IMPORT'],
         },
         // TOTO  不上
@@ -844,8 +847,8 @@
       {
         label: t('common.import'),
         key: 'import',
-        tooltipContent: props.isSyncFromThirdChecked ? t('org.checkSyncUserHoverTip') : '',
-        disabled: props.isSyncFromThirdChecked,
+        tooltipContent: props.isSyncFromThirdChecked && xPack.value ? t('org.checkSyncUserHoverTip') : '',
+        disabled: props.isSyncFromThirdChecked && xPack.value,
         permission: ['SYS_ORGANIZATION:IMPORT'],
       },
       // TOTO  不上

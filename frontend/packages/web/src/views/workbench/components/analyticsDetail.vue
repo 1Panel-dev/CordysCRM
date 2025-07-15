@@ -14,13 +14,13 @@
           }`"
           @click="goDetail(item)"
         >
-          {{ item.total }}
+          {{ addCommasToNumber(item.total || 0) }}
         </div>
       </div>
       <div class="flex items-center gap-[8px]">
         <div v-for="(ele, index) of item.analytics" :key="`${ele.title}-${index}`" class="analytics-item flex-1">
           <div>{{ ele.title }}</div>
-          <div class="analytics-count">{{ ele.count }}</div>
+          <div class="analytics-count">{{ addCommasToNumber(ele.count || 0) }}</div>
           <div class="analytics-last-time">
             <div>{{ t('workbench.comparedWithPreviousPeriod') }}</div>
             <div class="flex items-center justify-end">
@@ -41,6 +41,7 @@
   import { useRouter } from 'vue-router';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { addCommasToNumber } from '@lib/shared/method';
 
   import { defaultAccountData, defaultClueData, defaultOpportunityData } from '@/config/workbench';
   import { hasAnyPermission } from '@/utils/permission';

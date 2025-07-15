@@ -32,6 +32,7 @@ export default {
     'menu.contact': '联系人',
     'menu.dashboard': '仪表板',
     'menu.settings.businessSetting': '企业设置',
+    'menu.settings.license': 'License',
     'menu.settings.messageSetting': '消息设置',
     'menu.settings.log': '系统日志',
     'navbar.action.locale': '切换为中文',

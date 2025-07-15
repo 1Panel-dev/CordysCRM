@@ -1,5 +1,5 @@
 <template>
-  <div class="config-container h-full w-full">
+  <div :class="`config-container  w-full ${licenseStore.expiredDuring ? 'h-[calc(100%-64px)]' : 'h-full'}`">
     <div class="left-box">
       <CrmCard hide-footer>
         <div class="h-full">
@@ -52,11 +52,13 @@
 
   import { moduleNavListSort } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
+  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const appStore = useAppStore();
   const Message = useMessage();
+  const licenseStore = useLicenseStore();
 
   const enable = ref(false);
 
@@ -163,7 +165,7 @@
   .config-container {
     width: 100%;
     background: var(--text-n9);
-    @apply flex h-full w-full gap-4;
+    @apply flex w-full gap-4;
     .left-box {
       width: 24%;
       border-radius: var(--border-radius-medium);

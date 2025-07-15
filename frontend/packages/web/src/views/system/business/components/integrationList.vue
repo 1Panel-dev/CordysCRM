@@ -1,6 +1,6 @@
 <template>
   <!-- special-height 64是tab的高度和margin -->
-  <CrmCard hide-footer :special-height="64" :loading="loading">
+  <CrmCard hide-footer :special-height="licenseStore.expiredDuring ? 128 : 64" :loading="loading">
     <div v-if="integrationList.length" class="flex flex-wrap gap-[16px]">
       <div
         v-for="item of integrationList"
@@ -133,10 +133,12 @@
   import EditIntegrationModal from './editIntegrationModal.vue';
 
   import { getConfigSynchronization, testConfigSynchronization, updateConfigSynchronization } from '@/api/modules';
+  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const Message = useMessage();
+  const licenseStore = useLicenseStore();
 
   // 所有可用的集成平台配置
   const allIntegrations = [

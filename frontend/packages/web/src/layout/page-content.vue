@@ -5,6 +5,7 @@
       <div class="h-full w-full overflow-hidden">
         <n-scrollbar content-style="min-height: 500px;height: 100%;width: 100%">
           <div class="page-content">
+            <CrmExpireAlert v-if="route.path.includes(SystemRouteEnum.SYSTEM)" />
             <Suspense>
               <keep-alive :include="[]">
                 <component :is="Component" :key="route.name" />
@@ -19,6 +20,10 @@
 
 <script lang="ts" setup>
   import { NScrollbar } from 'naive-ui';
+
+  import CrmExpireAlert from '@/components/business/crm-expire-alert/index.vue';
+
+  import { SystemRouteEnum } from '@/enums/routeEnum';
 </script>
 
 <style lang="less">

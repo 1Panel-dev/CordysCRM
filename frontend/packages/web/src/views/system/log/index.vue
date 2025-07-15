@@ -61,7 +61,7 @@
       </n-form>
     </CrmCard>
 
-    <CrmCard v-if="activeTab === 'operation'" hide-footer :special-height="208">
+    <CrmCard v-if="activeTab === 'operation'" hide-footer :special-height="licenseStore.expiredDuring ? 272 : 0">
       <CrmTable
         ref="crmTableRef"
         v-bind="propsRes"
@@ -106,10 +106,11 @@
   import { logTypeOption } from '@/config/system';
   import useFormCreateApi from '@/hooks/useFormCreateApi';
   import usePathMap from '@/hooks/usePathMap';
+  import useLicenseStore from '@/store/modules/setting/license';
 
   const { t } = useI18n();
   const { getModuleOptions, findLocalePath } = usePathMap();
-
+  const licenseStore = useLicenseStore();
   const activeTab = ref('operation');
   const tabList = [
     {

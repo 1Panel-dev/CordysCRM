@@ -1,5 +1,5 @@
 <template>
-  <CrmCard :loading="loading" hide-footer no-content-padding>
+  <CrmCard :loading="loading" hide-footer no-content-padding :special-height="licenseStore.expiredDuring ? 64 : 0">
     <CrmSplitPanel class="h-full" :max="0.5" :min="0.25" :default-size="0.25">
       <template #1>
         <div class="flex h-full flex-col overflow-hidden">
@@ -89,12 +89,14 @@
   import { deleteRole, getRoles, updateRole } from '@/api/modules';
   import useLeaveUnSaveTip from '@/hooks/useLeaveUnSaveTip';
   import useModal from '@/hooks/useModal';
+  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const { openModal } = useModal();
   const message = useMessage();
   const { setIsSave } = useLeaveUnSaveTip();
+  const licenseStore = useLicenseStore();
 
   const loading = ref(false);
   const keyword = ref('');

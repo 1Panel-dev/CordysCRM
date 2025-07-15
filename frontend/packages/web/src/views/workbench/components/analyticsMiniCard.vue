@@ -23,7 +23,7 @@
             }`"
             @click="goDetail(item)"
           >
-            {{ item.total }}
+            {{ addCommasToNumber(item.total || 0) }}
           </div>
         </div>
 
@@ -46,6 +46,7 @@
   import { useRouter } from 'vue-router';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { addCommasToNumber } from '@lib/shared/method';
 
   import { defaultContactsData, defaultFollowPlanData, defaultFollowRecordData } from '@/config/workbench';
   import { hasAnyPermission } from '@/utils/permission';

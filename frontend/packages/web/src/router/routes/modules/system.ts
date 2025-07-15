@@ -61,6 +61,15 @@ const system: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'license',
+      name: SystemRouteEnum.SYSTEM_LICENSE,
+      component: () => import('@/views/system/license/index.vue'),
+      meta: {
+        locale: 'menu.settings.license',
+        permissions: ['LICENSE:READ'],
+      },
+    },
+    {
       path: 'log',
       name: SystemRouteEnum.SYSTEM_LOG,
       component: () => import('@/views/system/log/index.vue'),

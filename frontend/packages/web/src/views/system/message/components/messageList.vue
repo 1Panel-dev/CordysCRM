@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer :special-height="64">
+  <CrmCard hide-footer :special-height="licenseStore.expiredDuring ? 128 : 0">
     <n-data-table
       :single-line="false"
       :columns="columns"
@@ -7,7 +7,7 @@
       :paging="false"
       :pagination="false"
       :loading="loading"
-      max-height="calc(100vh - 242px)"
+      :max-height="licenseStore.expiredDuring ? 'calc(100vh - 306px)' : 'calc(100vh - 242px)'"
     />
   </CrmCard>
 </template>
@@ -29,11 +29,13 @@
     getMessageTask,
     saveMessageTask,
   } from '@/api/modules';
+  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   const Message = useMessage();
 
   const { t } = useI18n();
+  const licenseStore = useLicenseStore();
 
   const enableSystemMessage = ref(false);
   const enableEmailMessage = ref(false);
