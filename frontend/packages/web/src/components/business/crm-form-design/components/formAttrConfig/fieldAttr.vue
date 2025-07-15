@@ -611,13 +611,14 @@
       <!-- 校验规则 -->
       <div v-if="showRules.length > 0" class="crm-form-design-config-item">
         <div class="crm-form-design-config-item-title">{{ t('crmFormDesign.validator') }}</div>
-        <n-checkbox-group
-          v-model:value="checkedRules"
-          :disabled="fieldConfig.disabledProps?.includes('rules')"
-          @update-value="handleRuleChange"
-        >
+        <n-checkbox-group v-model:value="checkedRules" @update-value="handleRuleChange">
           <n-space item-class="w-full">
-            <n-checkbox v-for="rule of showRules" :key="rule.key" :value="rule.key">
+            <n-checkbox
+              v-for="rule of showRules"
+              :key="rule.key"
+              :value="rule.key"
+              :disabled="fieldConfig.disabledProps?.includes(`rules.${rule.key}`)"
+            >
               {{ t(rule.label || '', { value: t(fieldConfig.name) }) }}
             </n-checkbox>
           </n-space>
