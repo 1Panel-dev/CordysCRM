@@ -12,7 +12,7 @@
             </van-radio-group>
           </template>
         </van-field>
-        <van-field
+        <!-- <van-field
           v-model="form.expectedEndTime"
           is-link
           name="datePicker"
@@ -23,7 +23,7 @@
         />
         <van-popup v-model:show="showEndTimePicker" destroy-on-close position="bottom">
           <van-date-picker v-model="currentDate" @confirm="onSelectDateConfirm" @cancel="showEndTimePicker = false" />
-        </van-popup>
+        </van-popup> -->
         <van-field
           v-if="form.stage === StageResultEnum.FAIL"
           v-model="form.failureReason"
@@ -100,25 +100,25 @@
   const form = ref<{
     stage: string;
     failureReason?: string;
-    expectedEndTime?: string;
+    // expectedEndTime?: string;
   }>({
     stage: isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS,
     failureReason: '',
-    expectedEndTime: '',
+    // expectedEndTime: '',
   });
 
-  const showEndTimePicker = ref(false);
-  const currentDate = ref<string[]>([]);
-  function selectExpectedEndTime() {
-    const date = dayjs();
-    currentDate.value = date.format('YYYY-MM-DD').split('-');
-    showEndTimePicker.value = true;
-  }
+  // const showEndTimePicker = ref(false);
+  // const currentDate = ref<string[]>([]);
+  // function selectExpectedEndTime() {
+  //   const date = dayjs();
+  //   currentDate.value = date.format('YYYY-MM-DD').split('-');
+  //   showEndTimePicker.value = true;
+  // }
 
-  const onSelectDateConfirm = ({ selectedValues }: { selectedValues: string[] }) => {
-    form.value.expectedEndTime = selectedValues.join('-');
-    showEndTimePicker.value = false;
-  };
+  // const onSelectDateConfirm = ({ selectedValues }: { selectedValues: string[] }) => {
+  //   form.value.expectedEndTime = selectedValues.join('-');
+  //   showEndTimePicker.value = false;
+  // };
 
   const showReasonPicker = ref(false);
   const currentReason = ref<string[]>([]);
@@ -144,9 +144,10 @@
       await updateStageApi[stageType]({
         id: route.query.id as string,
         stage: form.value.stage,
-        expectedEndTime: form.value.expectedEndTime
-          ? (dayjs(form.value.expectedEndTime).valueOf() as number)
-          : undefined,
+        // TODO 先不要了
+        // expectedEndTime: form.value.expectedEndTime
+        //   ? (dayjs(form.value.expectedEndTime).valueOf() as number)
+        //   : undefined,
         failureReason: form.value.stage === StageResultEnum.FAIL ? currentReason.value[0] : undefined,
       });
       showSuccessToast(t('common.operationSuccess'));

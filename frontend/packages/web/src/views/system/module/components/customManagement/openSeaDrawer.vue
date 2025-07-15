@@ -178,6 +178,7 @@
       ellipsis: {
         tooltip: true,
       },
+      fixed: 'left',
       columnSelectorDisabled: true,
     },
     {

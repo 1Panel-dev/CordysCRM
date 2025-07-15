@@ -76,10 +76,13 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     {
       title: t('org.department'),
       width: 120,
-      key: 'departmentName',
+      key: 'departmentId',
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
+      render: (row: any) => row.departmentName || '-',
     },
     {
       title: t('opportunity.stage'),
@@ -89,6 +92,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         tooltip: true,
       },
       filter: true,
+      sortOrder: false,
+      sorter: true,
       filterOptions: lastOpportunitySteps,
       render: props.specialRender?.stage,
     },
@@ -170,10 +175,13 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     {
       title: t('org.department'),
       width: 120,
-      key: 'departmentName',
+      key: 'departmentId',
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
+      render: (row: any) => row.departmentName || '-',
     },
     {
       title: t('customer.collectionTime'),
@@ -333,10 +341,13 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       {
         title: t('org.department'),
         width: 120,
-        key: 'departmentName',
+        key: 'departmentId',
         ellipsis: {
           tooltip: true,
         },
+        sortOrder: false,
+        sorter: true,
+        render: (row: any) => row.departmentName || '-',
       },
       {
         title: t('customer.collectionTime'),
@@ -400,7 +411,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         tooltip: true,
       },
       sortOrder: false,
-      sorter: false,
+      sorter: columnsSorter,
       render: (row: any) => row.createUserName || '-',
     },
     {
@@ -421,7 +432,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         tooltip: true,
       },
       sortOrder: false,
-      sorter: false,
+      sorter: columnsSorter,
       render: (row: any) => row.updateUserName || '-',
     },
     {
@@ -462,6 +473,15 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             )
         )
         .map((field) => {
+          const noSorterType = [
+            FieldTypeEnum.DIVIDER,
+            FieldTypeEnum.PICTURE,
+            FieldTypeEnum.TEXTAREA,
+            FieldTypeEnum.INPUT_MULTIPLE,
+            FieldTypeEnum.MEMBER_MULTIPLE,
+            FieldTypeEnum.SELECT_MULTIPLE,
+            FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+          ];
           if (field.type === FieldTypeEnum.PICTURE) {
             return {
               title: field.name,
@@ -521,6 +541,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               isTag: field.type === FieldTypeEnum.CHECKBOX || field.type === FieldTypeEnum.SELECT_MULTIPLE,
               filterOptions: field.options || field.initialOptions?.map((e: any) => ({ label: e.name, value: e.id })),
               filter: true,
+              sortOrder: false,
+              sorter: !noSorterType.includes(field.type),
               filterMultipleValue: multipleValueTypeList.includes(field.type),
             };
           }
@@ -605,6 +627,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               ellipsis: {
                 tooltip: true,
               },
+              sortOrder: false,
+              sorter: !noSorterType.includes(field.type),
             };
           }
           return {
@@ -615,7 +639,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               tooltip: true,
             },
             sortOrder: false,
-            sorter: [FieldTypeEnum.INPUT, FieldTypeEnum.PHONE].includes(field.type) ? sorter : false,
+            sorter: !noSorterType.includes(field.type) ? sorter : false,
           };
         });
       columns = [...columns, ...(internalColumnMap[props.formKey] || []), ...staticColumns];

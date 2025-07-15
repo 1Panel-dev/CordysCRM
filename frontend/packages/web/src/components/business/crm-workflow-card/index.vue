@@ -54,7 +54,8 @@
               </n-space>
             </n-radio-group>
           </n-form-item>
-          <n-form-item
+          <!-- TODO 先不要了 -->
+          <!-- <n-form-item
             require-mark-placement="left"
             label-placement="left"
             path="expectedEndTime"
@@ -72,7 +73,7 @@
                 <CrmIcon class="text-[var(--text-n4)]" type="iconicon_time" :size="16" />
               </template>
             </n-date-picker>
-          </n-form-item>
+          </n-form-item> -->
           <n-form-item
             v-if="form.stage === StageResultEnum.FAIL"
             require-mark-placement="left"
@@ -98,7 +99,6 @@
     FormInst,
     FormRules,
     NButton,
-    NDatePicker,
     NForm,
     NFormItem,
     NRadio,
@@ -164,7 +164,7 @@
   const getInitForm = (): UpdateStageParams => ({
     id: '',
     stage: isHasBackPermission.value ? StageResultEnum.FAIL : StageResultEnum.SUCCESS,
-    expectedEndTime: Date.now(),
+    // expectedEndTime: Date.now(),
     failureReason: null,
   });
 
@@ -225,11 +225,11 @@
         await props.updateApi({
           id: props.sourceId,
           stage,
-          expectedEndTime:
-            props.showConfirmStatus &&
-            [StageResultEnum.FAIL, StageResultEnum.SUCCESS].includes(stage as StageResultEnum)
-              ? form.value.expectedEndTime
-              : undefined,
+          // expectedEndTime:
+          //   props.showConfirmStatus &&
+          //   [StageResultEnum.FAIL, StageResultEnum.SUCCESS].includes(stage as StageResultEnum)
+          //     ? form.value.expectedEndTime
+          //     : undefined,
           failureReason:
             props.showConfirmStatus && stage === StageResultEnum.FAIL ? form.value.failureReason : undefined,
         });

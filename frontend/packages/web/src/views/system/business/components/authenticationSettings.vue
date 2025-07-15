@@ -277,6 +277,7 @@
       title: t('common.name'),
       key: 'name',
       columnSelectorDisabled: true,
+      fixed: 'left',
       render: (row: AuthItem) => {
         return h(
           CrmEditableText,

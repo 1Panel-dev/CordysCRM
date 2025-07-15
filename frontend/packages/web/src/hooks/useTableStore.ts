@@ -1,6 +1,7 @@
 import { cloneDeep } from 'lodash-es';
 
 import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
+import { useI18n } from '@lib/shared/hooks/useI18n';
 import { isArraysEqualWithOrder } from '@lib/shared/method/equal';
 
 import type { CrmDataTableColumn, TableStorageConfigItem } from '@/components/pure/crm-table/type';
@@ -8,6 +9,8 @@ import type { CrmDataTableColumn, TableStorageConfigItem } from '@/components/pu
 import useAppStore from '@/store/modules/app';
 
 import useLocalForage from './useLocalForage';
+
+const { t } = useI18n();
 
 export default function useTableStore() {
   const { getItem, setItem } = useLocalForage();
@@ -29,6 +32,9 @@ export default function useTableStore() {
       if (item.showInTable === undefined) {
         // 默认在表格中展示
         item.showInTable = true;
+      }
+      if (item.key === SpecialColumnEnum.OPERATION) {
+        item.title = t('common.operation');
       }
     });
     return columns;
@@ -70,10 +76,7 @@ export default function useTableStore() {
     const tableColumnsMap = await getTableColumnsMap(tableKey);
     if (tableColumnsMap) {
       return tableColumnsMap.column.filter(
-        (item) =>
-          item.key !== SpecialColumnEnum.OPERATION &&
-          item.type !== SpecialColumnEnum.SELECTION &&
-          item.key !== SpecialColumnEnum.ORDER
+        (item) => item.type !== SpecialColumnEnum.SELECTION && item.key !== SpecialColumnEnum.ORDER
       );
     }
     return [];
@@ -93,11 +96,19 @@ export default function useTableStore() {
       const tableColumnsMap = await getTableColumnsMap(tableKey);
       if (tableColumnsMap) {
         const operationColumn = tableColumnsMap.column.find((i) => i.key === SpecialColumnEnum.OPERATION);
+        const newOperationColumn = columns.find((i) => i.key === SpecialColumnEnum.OPERATION);
         const selectColumn = tableColumnsMap.column.find((i) => i.type === SpecialColumnEnum.SELECTION);
         const orderColumn = tableColumnsMap.column.find((i) => i.key === SpecialColumnEnum.ORDER);
-        if (selectColumn) columns.unshift(selectColumn); // 加上选择框列
-        if (operationColumn) columns.push(operationColumn); // 加上操作列
-        if (orderColumn) columns.unshift(orderColumn); // 加上序号列，序号比选择列更前
+        columns = columns.filter((col) => col.key !== SpecialColumnEnum.OPERATION);
+        if (selectColumn) columns.unshift(selectColumn);
+        if (orderColumn) columns.unshift(orderColumn);
+        if (operationColumn) {
+          columns.push({
+            ...operationColumn,
+            fixed: newOperationColumn?.fixed,
+          });
+        }
+
         tableColumnsMap.column = cloneDeep(columns);
         await setTableColumnsMap(tableKey, tableColumnsMap);
       }

@@ -152,6 +152,7 @@
       width: 200,
       sortOrder: false,
       sorter: true,
+      fixed: 'left',
       ellipsis: {
         tooltip: true,
       },
