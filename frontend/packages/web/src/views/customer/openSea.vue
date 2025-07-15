@@ -24,7 +24,7 @@
       </template>
       <template #actionRight>
         <CrmAdvanceFilter
-          ref="msAdvanceFilterRef"
+          ref="tableAdvanceFilterRef"
           v-model:keyword="keyword"
           :custom-fields-config-list="baseFilterConfigList"
           :filter-config-list="customFieldsFilterConfig"
@@ -405,8 +405,8 @@
     loadList();
   }
 
-  const msAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
-  const isAdvancedSearchMode = computed(() => msAdvanceFilterRef.value?.isAdvancedSearchMode);
+  const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
+  const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(_keyword?: string, poolId?: string) {
     setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: poolId || openSea.value });

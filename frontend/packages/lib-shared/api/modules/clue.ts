@@ -28,10 +28,12 @@ import {
   GetCluePoolFollowRecordListUrl,
   GetCluePoolListUrl,
   GetClueTabUrl,
+  GetClueTransitionCustomerListUrl,
   GetClueUrl,
   GetPoolClueUrl,
   GetPoolOptionsUrl,
   PickClueUrl,
+  ReTransitionCustomerUrl,
   UpdateClueFollowPlanStatusUrl,
   UpdateClueFollowPlanUrl,
   UpdateClueFollowRecordUrl,
@@ -89,9 +91,19 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<CommonList<ClueListItem>>({ url: GetClueListUrl, data });
   }
 
+  // 获取线索转为客户列表
+  function getClueTransitionCustomerList(data: CustomerTableParams) {
+    return CDR.post<CommonList<ClueListItem>>({ url: GetClueTransitionCustomerListUrl, data });
+  }
+
   // 批量转移线索
   function batchTransferClue(data: TransferParams) {
     return CDR.post({ url: BatchTransferClueUrl, data });
+  }
+
+  // 线索合并客户
+  function reTransitionCustomer(data: { clueId: string; customerId: string }) {
+    return CDR.post({ url: ReTransitionCustomerUrl, data });
   }
 
   // 批量移入线索池
@@ -292,5 +304,7 @@ export default function useProductApi(CDR: CordysAxios) {
     updateClueFollowPlanStatus,
     exportClueAll,
     exportClueSelected,
+    getClueTransitionCustomerList,
+    reTransitionCustomer,
   };
 }

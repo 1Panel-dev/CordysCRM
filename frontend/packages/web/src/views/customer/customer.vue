@@ -40,7 +40,7 @@
       </template>
       <template #actionRight>
         <CrmAdvanceFilter
-          ref="msAdvanceFilterRef"
+          ref="tableAdvanceFilterRef"
           v-model:keyword="keyword"
           :custom-fields-config-list="filterConfigList"
           :filter-config-list="customFieldsFilterConfig"
@@ -54,9 +54,9 @@
     v-model:show="showTransferModal"
     :source-ids="checkedRowKeys"
     :save-api="batchTransferCustomer"
-    @load-list="loadList"
+    @load-list="searchData"
   />
-  <customerOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeSourceId" @saved="loadList" />
+  <customerOverviewDrawer v-model:show="showOverviewDrawer" :source-id="activeSourceId" @saved="searchData" />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
     :form-key="activeFormKey"
@@ -64,7 +64,7 @@
     :need-init-detail="needInitDetail"
     :initial-source-name="initialSourceName"
     :other-save-params="otherFollowRecordSaveParams"
-    @saved="loadList"
+    @saved="searchData"
   />
   <ToCluePoolResultModel
     v-model:show="showToCluePoolResultModel"
@@ -522,8 +522,8 @@
     loadList();
   }
 
-  const msAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
-  const isAdvancedSearchMode = computed(() => msAdvanceFilterRef.value?.isAdvancedSearchMode);
+  const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
+  const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(val?: string) {

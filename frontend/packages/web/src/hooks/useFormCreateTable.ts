@@ -30,7 +30,8 @@ type FormKey =
   | FormDesignKeyEnum.CLUE_POOL
   | FormDesignKeyEnum.CUSTOMER_CONTACT
   | FormDesignKeyEnum.BUSINESS_CONTACT
-  | FormDesignKeyEnum.CUSTOMER_OPPORTUNITY;
+  | FormDesignKeyEnum.CUSTOMER_OPPORTUNITY
+  | FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
 
 export interface FormCreateTableProps {
   formKey: FormKey;
@@ -41,6 +42,7 @@ export interface FormCreateTableProps {
   excludeFieldIds?: string[]; // 规避某些字段的文字替换
   permission?: string[];
   readonly?: boolean;
+  radio?: boolean; // 是否单选
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
@@ -61,6 +63,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.PRODUCT]: TableKeyEnum.PRODUCT,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: TableKeyEnum.CUSTOMER_OPEN_SEA,
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: TableKeyEnum.BUSINESS,
+    [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: TableKeyEnum.CLUE_CONVERT_CUSTOMER,
   };
   const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
   // 存储地址类型字段集合
@@ -163,64 +166,65 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       render: props.specialRender?.failureReason,
     },
   ];
+  const customerInternalColumns: CrmDataTableColumn[] = [
+    {
+      title: t('org.department'),
+      width: 120,
+      key: 'departmentName',
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('customer.collectionTime'),
+      width: 160,
+      key: 'collectionTime',
+      sortOrder: false,
+      sorter: true,
+      render: (row: any) => (row.collectionTime ? dayjs(row.collectionTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
+    },
+    {
+      title: t('customer.recycleOpenSea'),
+      width: 120,
+      key: 'recyclePoolName',
+      ellipsis: {
+        tooltip: true,
+      },
+    },
+    {
+      title: t('customer.remainingVesting'),
+      width: 120,
+      key: 'reservedDays',
+      ellipsis: {
+        tooltip: true,
+      },
+      render: (row: any) => (row.reservedDays ? `${row.reservedDays}${t('common.dayUnit')}` : '-'),
+    },
+    {
+      title: t('customer.lastFollowUps'),
+      width: 150,
+      key: 'follower',
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: false,
+      render: (row: any) => row.followerName || '-',
+    },
+    {
+      title: t('customer.lastFollowUpDate'),
+      width: 160,
+      key: 'followTime',
+      ellipsis: {
+        tooltip: true,
+      },
+      sortOrder: false,
+      sorter: true,
+      render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
+    },
+  ];
   const internalColumnMap: Record<FormKey, CrmDataTableColumn[]> = {
-    [FormDesignKeyEnum.CUSTOMER]: [
-      {
-        title: t('org.department'),
-        width: 120,
-        key: 'departmentName',
-        ellipsis: {
-          tooltip: true,
-        },
-      },
-      {
-        title: t('customer.collectionTime'),
-        width: 160,
-        key: 'collectionTime',
-        sortOrder: false,
-        sorter: true,
-        render: (row: any) => (row.collectionTime ? dayjs(row.collectionTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
-      },
-      {
-        title: t('customer.recycleOpenSea'),
-        width: 120,
-        key: 'recyclePoolName',
-        ellipsis: {
-          tooltip: true,
-        },
-      },
-      {
-        title: t('customer.remainingVesting'),
-        width: 120,
-        key: 'reservedDays',
-        ellipsis: {
-          tooltip: true,
-        },
-        render: (row: any) => (row.reservedDays ? `${row.reservedDays}${t('common.dayUnit')}` : '-'),
-      },
-      {
-        title: t('customer.lastFollowUps'),
-        width: 150,
-        key: 'follower',
-        ellipsis: {
-          tooltip: true,
-        },
-        sortOrder: false,
-        sorter: false,
-        render: (row: any) => row.followerName || '-',
-      },
-      {
-        title: t('customer.lastFollowUpDate'),
-        width: 160,
-        key: 'followTime',
-        ellipsis: {
-          tooltip: true,
-        },
-        sortOrder: false,
-        sorter: true,
-        render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
-      },
-    ],
+    [FormDesignKeyEnum.CUSTOMER]: customerInternalColumns,
     [FormDesignKeyEnum.CONTACT]: [
       {
         title: t('common.status'),
@@ -385,6 +389,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: [],
     [FormDesignKeyEnum.CLUE_POOL]: [],
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: opportunityInternalColumns,
+    [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: customerInternalColumns,
   };
   const staticColumns: CrmDataTableColumn[] = [
     {
@@ -619,6 +624,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           type: 'selection',
           fixed: 'left',
           width: 46,
+          multiple: !props.radio,
           disabled(row) {
             return props.disabledSelection ? props.disabledSelection(row) : false;
           },

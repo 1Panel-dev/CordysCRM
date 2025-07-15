@@ -103,6 +103,7 @@ export const {
   getCluePoolFollowRecordList,
   getPoolClue,
   getClueTab,
+  getClueTransitionCustomerList,
   updateClueFollowPlanStatus,
 } = clueApi;
 

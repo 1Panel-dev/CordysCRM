@@ -15,6 +15,7 @@ export enum TableKeyEnum {
   CUSTOMER_COLLABORATOR = 'customerCollaborator',
   CUSTOMER_OPEN_SEA = 'customerOpenSea',
   CLUE = 'clue',
+  CLUE_CONVERT_CUSTOMER = 'clueConvertCustomer',
   CLUE_POOL = 'cluePool',
   PRODUCT = 'product',
   BUSINESS = 'business',

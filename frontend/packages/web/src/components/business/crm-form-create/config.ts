@@ -26,6 +26,7 @@ import {
   getClueFormConfig,
   getClueList,
   getCluePoolList,
+  getClueTransitionCustomerList,
   getContactListUnderCustomer,
   getCustomer,
   getCustomerContact,
@@ -549,4 +550,5 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: getOpenSeaCustomerList,
   [FormDesignKeyEnum.BUSINESS_CONTACT]: getOpportunityContactList,
   [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: getCustomerOpportunityPage,
+  [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: getClueTransitionCustomerList,
 };

@@ -3,6 +3,7 @@ export const GetClueFormConfigUrl = '/clue/module/form'; // 获取线索表单�
 export const UpdateClueUrl = '/clue/update'; // 更新线索
 export const UpdateClueStatusUrl = '/clue/status/update'; // 更新线索状态
 export const GetClueListUrl = '/clue/page'; // 分页查询线索
+export const GetClueTransitionCustomerListUrl = '/clue/transition/customer/page'; // 线索转为客户列表
 export const AddClueUrl = '/clue/add'; // 添加线索
 export const GetClueUrl = '/clue/get'; // 获取线索详情
 export const DeleteClueUrl = '/clue/delete'; // 删除线索
@@ -11,6 +12,7 @@ export const BatchToPoolClueUrl = '/clue/batch/to-pool'; // 批量移入线索�
 export const BatchDeleteClueUrl = '/clue/batch/delete'; // 批量删除线索
 export const ExportClueAllUrl = '/clue/export'; // 导出全部线索
 export const ExportClueSelectedUrl = '/clue/export-select'; // 导出选中线索
+export const ReTransitionCustomerUrl = '/clue/re-transition/customer'; // 合并线索转为客户
 
 // 跟进记录
 export const UpdateClueFollowRecordUrl = '/clue/follow/record/update'; // 更新跟进记录

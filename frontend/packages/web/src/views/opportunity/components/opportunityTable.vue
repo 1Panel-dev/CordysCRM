@@ -42,7 +42,7 @@
     </template>
     <template #actionRight>
       <CrmAdvanceFilter
-        ref="msAdvanceFilterRef"
+        ref="tableAdvanceFilterRef"
         v-model:keyword="keyword"
         :search-placeholder="t('opportunity.searchPlaceholder')"
         :custom-fields-config-list="filterConfigList"
@@ -513,8 +513,8 @@
     loadList();
   }
 
-  const msAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
-  const isAdvancedSearchMode = computed(() => msAdvanceFilterRef.value?.isAdvancedSearchMode);
+  const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
+  const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
 
   const department = ref<DeptUserTreeNode[]>([]);
 

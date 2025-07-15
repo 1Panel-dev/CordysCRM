@@ -83,6 +83,8 @@ export const {
   updateClue,
   updateClueStatus,
   getClueList,
+  getClueTransitionCustomerList,
+  reTransitionCustomer,
   batchTransferClue,
   batchToCluePool,
   batchDeleteClue,

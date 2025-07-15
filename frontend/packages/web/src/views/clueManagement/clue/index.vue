@@ -35,7 +35,7 @@
       </template>
       <template #actionRight>
         <CrmAdvanceFilter
-          ref="msAdvanceFilterRef"
+          ref="tableAdvanceFilterRef"
           v-model:keyword="keyword"
           :custom-fields-config-list="filterConfigList"
           :filter-config-list="customFieldsFilterConfig"
@@ -74,6 +74,12 @@
     type="clue"
     @create-success="handleExportCreateSuccess"
   />
+  <convertToCustomerDrawer
+    v-model:show="showConvertToCustomerDrawer"
+    :clue-id="otherFollowRecordSaveParams.clueId"
+    @new="handleNew"
+    @finish="handleRefresh"
+  />
 </template>
 
 <script setup lang="ts">
@@ -104,6 +110,7 @@
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import ClueOverviewDrawer from './components/clueOverviewDrawer.vue';
+  import convertToCustomerDrawer from './components/convertToCustomerDrawer.vue';
   import ToCluePoolResultModel from './components/toCluePoolResultModel.vue';
 
   import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue, getFieldDeptTree } from '@/api/modules';
@@ -320,6 +327,11 @@
     formCreateDrawerVisible.value = true;
   }
 
+  const showConvertToCustomerDrawer = ref(false);
+  function handleNew() {
+    formCreateDrawerVisible.value = true;
+  }
+
   const otherFollowRecordSaveParams = ref({
     type: 'CLUE',
     clueId: '',
@@ -352,7 +364,7 @@
         activeRowName.value = row.name;
         otherFollowRecordSaveParams.value.clueId = row.id;
         needInitDetail.value = false;
-        formCreateDrawerVisible.value = true;
+        showConvertToCustomerDrawer.value = true;
         break;
       case 'delete':
         handleDelete(row);
@@ -516,8 +528,8 @@
     loadList();
   }
 
-  const msAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
-  const isAdvancedSearchMode = computed(() => msAdvanceFilterRef.value?.isAdvancedSearchMode);
+  const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
+  const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(val?: string) {
