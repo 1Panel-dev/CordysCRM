@@ -13,6 +13,8 @@ import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +34,8 @@ class AppListener implements ApplicationRunner {
 
     @Resource
     private ExportTaskStopService exportTaskStopService;
+    @Resource
+    private CacheManager cacheManager;
 
     /**
      * 应用启动后执行的初始化方法。
@@ -63,7 +67,23 @@ class AppListener implements ApplicationRunner {
         LogUtils.info("停止导出任务");
         exportTaskStopService.stopPreparedAll();
 
+        LogUtils.info("清理表单缓存");
+        clearFormCache();
+
         LogUtils.info("===== 完成初始化配置 =====");
+    }
+
+    /**
+     * 清理 form_cache 相关 key
+     */
+    public void clearFormCache() {
+        try {
+            Cache cache = cacheManager.getCache("form_cache");
+            if (cache != null) {
+                cache.clear();
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     /**
