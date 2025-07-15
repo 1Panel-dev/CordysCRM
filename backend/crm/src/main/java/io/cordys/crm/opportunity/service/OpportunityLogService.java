@@ -56,6 +56,15 @@ public class OpportunityLogService extends BaseModuleLogService {
             if (StringUtils.equals(differ.getColumn(), "expectedEndTime")) {
                 setFormatDataTimeFieldValueName(differ);
             }
+
+            if (StringUtils.equals(differ.getColumn(), "actualEndTime")) {
+                setFormatDataTimeFieldValueName(differ);
+            }
+
+            if (StringUtils.equals(differ.getColumn(), "failureReason")) {
+                differ.setOldValueName(Translator.get(differ.getOldValue().toString()));
+                differ.setNewValueName(Translator.get(differ.getNewValue().toString()));
+            }
         }
     }
 

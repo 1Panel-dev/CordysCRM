@@ -306,5 +306,29 @@
         ]
       }
     ]
+  },
+  {
+    "id": "DASHBOARD_MANAGEMENT",
+    "name": "permission.dashboard_management.name",
+    "children": [
+      {
+        "id": "DASHBOARD",
+        "name": "permission.dashboard.name",
+        "permissions": [
+          {
+            "id": "DASHBOARD:READ"
+          },
+          {
+            "id": "DASHBOARD:ADD"
+          },
+          {
+            "id": "DASHBOARD:UPDATE"
+          },
+          {
+            "id": "DASHBOARD:DELETE"
+          }
+        ]
+      }
+    ]
   }
 ]

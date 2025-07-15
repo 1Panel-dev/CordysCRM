@@ -188,6 +188,9 @@ public abstract class BaseModuleLogService {
     }
 
     private String formatDataTime(String value) {
+        if(StringUtils.isBlank(value)||StringUtils.equalsIgnoreCase(value, "null")){
+            return StringUtils.EMPTY;
+        }
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Long.parseLong(value));
     }
 
