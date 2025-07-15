@@ -106,8 +106,8 @@ public class FollowUpPlanService extends BaseFollowUpService {
             List<BaseModuleFieldValue> originCustomerFields = followUpPlanFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
             updateModuleField(updateFollowUpPlan, request.getModuleFields(), orgId, userId);
-            followUpPlanMapper.update(plan);
-            baseService.handleUpdateLog(followUpPlan, newPlan, originCustomerFields, request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));
+            followUpPlanMapper.update(updateFollowUpPlan);
+            baseService.handleUpdateLog(followUpPlan, updateFollowUpPlan, originCustomerFields, request.getModuleFields(), followUpPlan.getId(), Translator.get("update_follow_up_plan"));
         }, () -> {
             throw new GenericException("plan_not_found");
         });

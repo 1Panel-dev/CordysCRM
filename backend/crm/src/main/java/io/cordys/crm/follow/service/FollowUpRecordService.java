@@ -138,8 +138,8 @@ public class FollowUpRecordService extends BaseFollowUpService {
             List<BaseModuleFieldValue> originCustomerFields = followUpRecordFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
             updateModuleField(updateFollowUpRecord, request.getModuleFields(), orgId, userId);
-            followUpRecordMapper.update(record);
-            baseService.handleUpdateLog(followUpRecord, newRecord, originCustomerFields, request.getModuleFields(), followUpRecord.getId(), Translator.get("update_follow_up_record"));
+            followUpRecordMapper.update(updateFollowUpRecord);
+            baseService.handleUpdateLog(followUpRecord, updateFollowUpRecord, originCustomerFields, request.getModuleFields(), followUpRecord.getId(), Translator.get("update_follow_up_record"));
         }, () -> {
             throw new GenericException("record_not_found");
         });
