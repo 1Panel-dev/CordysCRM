@@ -13,7 +13,6 @@ import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.math.raw.Mod;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,8 +27,6 @@ public class ModuleFieldService {
 	@Resource
 	private BaseMapper<ModuleFieldBlob> moduleFieldBlobMapper;
 
-	private static final String DEFAULT_ORGANIZATION_ID = "100001";
-
 	/**
 	 * 获取带用户的信息的部门树
 	 *
@@ -40,6 +37,9 @@ public class ModuleFieldService {
 		return BaseTreeNode.buildTree(treeNodes);
 	}
 
+	/**
+	 * 修改日期时间类型的字段部分属性
+	 */
 	public void modifyDateProp() {
 		LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(ModuleField::getType, FieldType.DATE_TIME.name());

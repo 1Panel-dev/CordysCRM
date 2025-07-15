@@ -34,9 +34,11 @@ import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerContact;
 import io.cordys.crm.customer.dto.request.CustomerCollaborationAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
 import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import io.cordys.crm.customer.dto.request.ReTransitionCustomerRequest;
 import io.cordys.crm.customer.service.CustomerCollaborationService;
+import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.customer.service.PoolCustomerService;
 import io.cordys.crm.system.constants.NotificationConstants;
@@ -111,6 +113,8 @@ public class ClueService {
     private PoolCustomerService poolCustomerService;
     @Resource
     private CustomerCollaborationService customerCollaborationService;
+    @Resource
+    private CustomerContactService customerContactService;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -318,11 +322,9 @@ public class ClueService {
     }
 
     private void sendTransferNotice(List<Clue> originClues, String toUser, String userId, String orgId) {
-        originClues.forEach(clue -> {
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                    NotificationConstants.Event.TRANSFER_CLUE, clue.getName(), userId,
-                    orgId, List.of(toUser), true);
-        });
+        originClues.forEach(clue -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+				NotificationConstants.Event.TRANSFER_CLUE, clue.getName(), userId,
+				orgId, List.of(toUser), true));
     }
 
     private String getClueNames(List<Clue> clues) {
@@ -470,11 +472,9 @@ public class ClueService {
         clueOwnerHistoryService.deleteByClueIds(ids);
 
         // 消息通知
-        clues.forEach(clue -> {
-            commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
-                    NotificationConstants.Event.CLUE_DELETED, clue.getName(), userId,
-                    orgId, List.of(clue.getOwner()), true);
-        });
+        clues.forEach(clue -> commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE,
+				NotificationConstants.Event.CLUE_DELETED, clue.getName(), userId,
+				orgId, List.of(clue.getOwner()), true));
     }
 
     private List<String> getOwners(List<Clue> clues) {
@@ -551,6 +551,12 @@ public class ClueService {
         return StringUtils.EMPTY;
     }
 
+    /**
+     * 旧客户关联已有线索
+     * @param request 请求参数
+     * @param currentUser 当前用户ID
+     * @param orgId 组织ID
+     */
     public void transitionOldCustomer(ReTransitionCustomerRequest request, String currentUser, String orgId) {
         boolean notice = false;
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
@@ -575,6 +581,18 @@ public class ClueService {
         clue.setTransitionId(request.getCustomerId());
         clue.setTransitionType("CUSTOMER");
         clueMapper.update(clue);
+        // 线索联系人=>客户联系人
+        if (StringUtils.isNotEmpty(clue.getContact()) || StringUtils.isNotEmpty(clue.getPhone())) {
+            boolean unique = customerContactService.checkCustomerContactUnique(clue.getContact(), clue.getPhone(), request.getCustomerId(), orgId);
+            if (unique) {
+                CustomerContactAddRequest contactAddRequest = new CustomerContactAddRequest();
+                contactAddRequest.setCustomerId(request.getCustomerId());
+                contactAddRequest.setName(clue.getContact());
+                contactAddRequest.setPhone(clue.getPhone());
+                contactAddRequest.setOwner(currentUser);
+                customerContactService.add(contactAddRequest, currentUser, orgId);
+            }
+        }
 
         if (notice) {
             Map<String, Object> paramMap = new HashMap<>(8);

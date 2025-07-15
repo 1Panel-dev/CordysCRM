@@ -7,10 +7,7 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
-import io.cordys.common.constants.BusinessModuleField;
-import io.cordys.common.constants.FormKey;
-import io.cordys.common.constants.InternalUser;
-import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.constants.*;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.*;
 import io.cordys.common.pager.PageUtils;
@@ -20,24 +17,28 @@ import io.cordys.common.permission.PermissionUtils;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
 import io.cordys.crm.customer.constants.CustomerCollaborationType;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerCollaboration;
 import io.cordys.crm.customer.domain.CustomerContact;
-import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
-import io.cordys.crm.customer.dto.request.CustomerContactDisableRequest;
-import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
-import io.cordys.crm.customer.dto.request.CustomerContactUpdateRequest;
+import io.cordys.crm.customer.dto.request.*;
 import io.cordys.crm.customer.dto.response.CustomerContactGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.opportunity.domain.Opportunity;
+import io.cordys.crm.system.domain.ModuleField;
+import io.cordys.crm.system.domain.ModuleFieldBlob;
+import io.cordys.crm.system.domain.ModuleForm;
+import io.cordys.crm.system.dto.field.base.BaseField;
+import io.cordys.crm.system.dto.field.base.RuleProp;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -79,6 +80,12 @@ public class CustomerContactService {
     private BaseMapper<Opportunity> opportunityMapper;
     @Resource
     private PermissionCache permissionCache;
+    @Resource
+    private BaseMapper<ModuleForm> moduleFormMapper;
+    @Resource
+    private BaseMapper<ModuleField> moduleFieldMapper;
+    @Resource
+    private BaseMapper<ModuleFieldBlob> moduleFieldBlobMapper;
 
     public PagerWithOption<List<CustomerContactListResponse>> list(CustomerContactPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -399,5 +406,44 @@ public class CustomerContactService {
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, rolePermissions);
+    }
+
+    /**
+     * 检查联系人和电话是否唯一
+     * @param contact 联系人姓名
+     * @param phone 联系人电话
+     * @param customerId 客户ID
+     * @param orgId 组织ID
+     * @return 是否唯一
+     */
+    public boolean checkCustomerContactUnique(String contact, String phone, String customerId, String orgId) {
+        LambdaQueryWrapper<ModuleForm> formQueryWrapper = new LambdaQueryWrapper<>();
+        formQueryWrapper.eq(ModuleForm::getOrganizationId, orgId);
+        List<ModuleForm> forms = moduleFormMapper.selectListByLambda(formQueryWrapper);
+        List<String> formIds = forms.stream().map(ModuleForm::getId).toList();
+
+        LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(ModuleField::getName, List.of(BusinessModuleField.CUSTOMER_CONTACT_NAME.name(),
+                BusinessModuleField.CUSTOMER_CONTACT_PHONE.name())).in(ModuleField::getFormId, formIds);
+        List<String> fieldIds = moduleFieldMapper.selectListByLambda(queryWrapper).stream().map(ModuleField::getId).toList();
+        List<ModuleFieldBlob> blobs = moduleFieldBlobMapper.selectByIds(fieldIds);
+
+        boolean nameUnique = false, phoneUnique = false;
+        for (ModuleFieldBlob blob : blobs) {
+            BaseField baseField = JSON.parseObject(blob.getProp(), BaseField.class);
+            String internalKey = baseField.getInternalKey();
+            boolean hasUnique = baseField.getRules().stream().anyMatch(rule -> RuleValidatorConstants.UNIQUE.equals(rule.getKey()));
+            if (BusinessModuleField.CUSTOMER_CONTACT_NAME.name().equals(internalKey)) {
+				nameUnique = hasUnique;
+			}
+            if (BusinessModuleField.CUSTOMER_CONTACT_PHONE.name().equals(internalKey)) {
+				phoneUnique = hasUnique;
+			}
+        }
+        if (!nameUnique && !phoneUnique) {
+            return true;
+        }
+        ContactUniqueRequest request = ContactUniqueRequest.builder().name(contact).phone(phone).nameUnique(nameUnique).phoneUnique(phoneUnique).build();
+        return extCustomerContactMapper.getUniqueContactCount(request, customerId, orgId) == 0;
     }
 }

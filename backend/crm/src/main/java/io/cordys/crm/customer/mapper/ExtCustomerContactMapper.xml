@@ -263,4 +263,15 @@
                  left join customer c on cc.customer_id = c.id
         where cc.organization_id = #{orgId} and cc.phone = #{name}
     </select>
+
+    <select id="getUniqueContactCount" resultType="java.lang.Long">
+        select count(*) from customer_contact cc
+        where cc.organization_id = #{orgId} and cc.customer_id = #{customerId}
+        <if test="request.nameUnique != null request.nameUnique">
+            and cc.name = #{request.name} and cc.name != ''
+        </if>
+        <if test="request.phoneUnique != null request.phoneUnique">
+            and cc.phone = #{request.phone} and cc.phone != '' and cc.phone is not null
+        </if>
+    </select>
 </mapper>
