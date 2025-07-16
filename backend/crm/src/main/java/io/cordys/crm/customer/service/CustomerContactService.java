@@ -116,11 +116,6 @@ public class CustomerContactService {
         return optionMap;
     }
 
-    public List<CustomerContactListResponse> sourceList(CustomerContactPageRequest request, String currentUser, String orgId) {
-        List<CustomerContactListResponse> list = extCustomerContactMapper.sourceList(request, orgId, currentUser);
-        return buildListData(list, orgId);
-    }
-
     private List<CustomerContactListResponse> buildListData(List<CustomerContactListResponse> list, String orgId) {
         if (CollectionUtils.isEmpty(list)) {
             return List.of();

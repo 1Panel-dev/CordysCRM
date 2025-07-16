@@ -3,10 +3,12 @@ package io.cordys.crm.system.controller;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
+import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
@@ -57,6 +59,8 @@ public class ModuleFieldController {
 	private OpportunityService opportunityService;
 	@Resource
 	private ProductService productService;
+	@Resource
+	private DataScopeService dataScopeService;
 
 	@GetMapping("/dept/tree")
 	@Operation(summary = "获取部门树")
@@ -73,47 +77,40 @@ public class ModuleFieldController {
 	@PostMapping("/source/clue")
 	@Operation(summary = "分页获取线索")
 	public Pager<List<ClueListResponse>> sourceCluePage(@Valid @RequestBody CluePageRequest request) {
-		DeptDataPermissionDTO deptDataPermission;
-		if (StringUtils.equals(SessionUtils.getUserId(), InternalUser.ADMIN.getValue())) {
-			deptDataPermission = null;
-		} else {
-			deptDataPermission = new DeptDataPermissionDTO();
-			deptDataPermission.setSelf(true);
-		}
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+				"ALL", PermissionConstants.CLUE_MANAGEMENT_READ);
 		return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}
 
 	@PostMapping("/source/customer")
 	@Operation(summary = "分页获取客户")
 	public Pager<List<CustomerListResponse>> sourceCustomerPage(@Valid @RequestBody CustomerPageRequest request) {
-		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-		return PageUtils.setPageInfo(page, customerService.sourceList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+				"ALL",  PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+		return customerService.sourceList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}
 
 	@PostMapping("/source/contact")
 	@Operation(summary = "分页获取联系人")
 	public Pager<List<CustomerContactListResponse>> sourceContactPage(@Valid @RequestBody CustomerContactPageRequest request) {
-		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-		return PageUtils.setPageInfo(page, customerContactService.sourceList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId()));
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
+				"ALL", PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
+		return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}
 
 	@PostMapping("/source/opportunity")
 	@Operation(summary = "分页获取商机")
 	public Pager<List<OpportunityListResponse>> sourceOpportunityPage(@Valid @RequestBody OpportunityPageRequest request) {
-		DeptDataPermissionDTO deptDataPermission;
-		if (StringUtils.equals(SessionUtils.getUserId(), InternalUser.ADMIN.getValue())) {
-			deptDataPermission = null;
-		} else {
-			deptDataPermission = new DeptDataPermissionDTO();
-			deptDataPermission.setSelf(true);
-		}
-		return  opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "ALL",
+				PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+		return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
 	}
 
 	@PostMapping("/source/product")
 	@Operation(summary = "分页获取产品")
 	public Pager<List<ProductListResponse>> sourceProductPage(@Valid @RequestBody ProductPageRequest request) {
-		request.setStatus("1"); // 默认只查询上架的产品
+		// 数据源接口只展示上架数据
+		request.setStatus("1");
 		return productService.list(request, OrganizationContext.getOrganizationId());
 	}
 }

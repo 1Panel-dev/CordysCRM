@@ -95,9 +95,9 @@
     </select>
 
     <select id="sourceList" resultType="io.cordys.crm.customer.dto.response.CustomerListResponse">
-        select distinct c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
+        select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
         c.follower, c.follow_time
-        from customer c
+        from customer c left join customer_collaboration cc on c.id = cc.customer_id and cc.user_id = #{userId}
 
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
@@ -111,11 +111,25 @@
             <property name="sort" value="request.sort"/>
         </include>
 
-        left join customer_collaboration cc on c.id = cc.customer_id
-        where c.organization_id = #{orgId} and c.in_shared_pool is false
-        <if test="userId != 'admin'">
-            and ( (cc.user_id = #{userId} and collaboration_type = 'COLLABORATION') or c.owner = #{userId} )
+        <if test="dataPermission != null and dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on c.owner = sou.user_id
+            and ( sou.department_id in
+                <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                    #{deptId}
+                </foreach>
+                <if test="dataPermission.searchType == 'ALL'">
+                    or sou.user_id = #{userId}
+                </if>
+                or cc.id is not null
+            )
         </if>
+
+        where c.organization_id = #{orgId} and c.in_shared_pool is false
+
+        <if test="dataPermission != null and dataPermission.self">
+            and (c.owner = #{userId} or cc.id is not null)
+        </if>
+
         <if test="request.keyword != null and request.keyword != ''">
             and c.name like concat('%', #{request.keyword},'%')
         </if>

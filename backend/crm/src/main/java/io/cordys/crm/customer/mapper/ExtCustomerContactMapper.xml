@@ -55,49 +55,6 @@
         </include>
     </select>
 
-    <select id="sourceList" resultType="io.cordys.crm.customer.dto.response.CustomerContactListResponse">
-        select distinct cc.id, cc.customer_id, cc.name, cc.create_time, cc.update_time, cc.create_user, cc.update_user,
-        cc.enable, cc.owner, cc.disable_reason, cc.phone
-
-        from customer_contact cc
-
-        <include refid="fieldConditionJoin">
-            <property name="conditions" value="request.filters"/>
-            <property name="tablePrefix" value="filter"/>
-        </include>
-        <include refid="fieldConditionJoin">
-            <property name="conditions" value="request.combineSearch.conditions"/>
-            <property name="tablePrefix" value="combine"/>
-        </include>
-        <include refid="fieldSortJoin">
-            <property name="sort" value="request.sort"/>
-        </include>
-
-        where cc.organization_id = #{orgId}
-        <if test="userId != 'admin'">
-            and cc.customer_id in (
-                select distinct c.id from customer c
-                left join customer_collaboration cc on c.id = cc.customer_id
-                where cc.user_id = #{userId} or c.owner = #{userId}
-            )
-        </if>
-        <if test="request.keyword != null and request.keyword != ''">
-            and (cc.name like concat('%', #{request.keyword},'%') or cc.phone like concat('%', #{request.keyword},'%'))
-        </if>
-        <include refid="filters">
-            <property name="filters" value="request.filters"/>
-        </include>
-
-        <include refid="combine">
-            <property name="combineSearch" value="request.combineSearch"/>
-        </include>
-
-        <include refid="sort">
-            <property name="sort" value="request.sort"/>
-        </include>
-    </select>
-
-
     <sql id="sort">
         <choose>
             <when test="${sort} != null and ${sort}.valid()">

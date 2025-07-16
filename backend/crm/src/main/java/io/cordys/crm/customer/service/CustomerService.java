@@ -134,9 +134,12 @@ public class CustomerService {
         return optionMap;
     }
 
-    public List<CustomerListResponse> sourceList(CustomerPageRequest request, String userId, String orgId) {
-        List<CustomerListResponse> list = extCustomerMapper.sourceList(request, orgId, userId);
-        return buildListData(list, orgId);
+    public PagerWithOption<List<CustomerListResponse>> sourceList(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
+        Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
+        List<CustomerListResponse> list = extCustomerMapper.sourceList(request, orgId, userId, deptDataPermission);
+        List<CustomerListResponse> buildList = buildListData(list, orgId);
+        Map<String, List<OptionDTO>> optionMap = buildOptionMap(orgId, list, buildList);
+        return PageUtils.setPageInfoWithOption(page, buildList, optionMap);
     }
 
     public List<CustomerListResponse> buildListData(List<CustomerListResponse> list, String orgId) {

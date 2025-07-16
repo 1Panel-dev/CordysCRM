@@ -19,9 +19,6 @@ public interface ExtCustomerContactMapper {
     List<CustomerContactListResponse> list(@Param("request") CustomerContactPageRequest request, @Param("userId") String userId, @Param("orgId") String orgId,
                                            @Param("dataPermission") DeptDataPermissionDTO dataPermission);
 
-    List<CustomerContactListResponse> sourceList(@Param("request") CustomerContactPageRequest request, @Param("orgId") String orgId,
-                                                 @Param("userId") String userId);
-
     List<OptionDTO> selectContactOptionByIds(List<String> contactIds);
 
     List<CustomerContactListResponse> listByCustomerId(@Param("customerId") String customerId);
