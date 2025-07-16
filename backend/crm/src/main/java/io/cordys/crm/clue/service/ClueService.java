@@ -571,8 +571,8 @@ public class ClueService {
             pickRequest.setPoolId(customer.getPoolId());
             poolCustomerService.pick(pickRequest, currentUser, orgId);
         } else {
-            if (!StringUtils.equals(customer.getOwner(), currentUser)) {
-                // 如果非客户负责人，则加到协作人
+            if (!StringUtils.equals(customer.getOwner(), currentUser) && !customerCollaborationService.hasCollaboration(currentUser, request.getCustomerId())) {
+                // 如果非客户负责人，且非客户协作人, 则添加协作关系
                 CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
                 collaborationAddRequest.setCustomerId(request.getCustomerId());
                 collaborationAddRequest.setCollaborationType("COLLABORATION");
