@@ -154,7 +154,7 @@
     {
       title: t('opportunity.ruleName'),
       key: 'name',
-      width: 200,
+      width: 250,
       sortOrder: false,
       sorter: true,
       fixed: 'left',

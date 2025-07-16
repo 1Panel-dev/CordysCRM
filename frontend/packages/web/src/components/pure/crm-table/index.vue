@@ -310,7 +310,6 @@
         return {
           ...column,
           resizable: false,
-          minWidth: 150,
           title: t('common.operation'),
           render,
         };

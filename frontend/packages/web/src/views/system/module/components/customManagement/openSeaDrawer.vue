@@ -177,7 +177,7 @@
     {
       title: t('module.customer.openSeaName'),
       key: 'name',
-      width: 200,
+      width: 250,
       sortOrder: false,
       sorter: true,
       ellipsis: {

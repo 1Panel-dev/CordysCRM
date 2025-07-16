@@ -1,7 +1,7 @@
 <template>
   <NTooltip v-if="text" :delay="300" flip :disabled="!text">
     <template #trigger>
-      <div class="one-line-text flex h-full items-center">{{ text }}</div>
+      <div class="flex h-full items-center overflow-hidden overflow-ellipsis whitespace-nowrap">{{ text }}</div>
     </template>
     {{ text }}
   </NTooltip>

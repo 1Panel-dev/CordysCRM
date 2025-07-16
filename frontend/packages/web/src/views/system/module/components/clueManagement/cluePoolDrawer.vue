@@ -177,7 +177,7 @@
     {
       title: t('module.clue.name'),
       key: 'name',
-      width: 200,
+      width: 300,
       sortOrder: false,
       sorter: true,
       ellipsis: {
