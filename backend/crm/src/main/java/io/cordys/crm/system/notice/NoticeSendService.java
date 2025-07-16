@@ -102,7 +102,7 @@ public class NoticeSendService {
     @Async("threadPoolTaskExecutor")
     public void sendOther(String module, NoticeModel noticeModel, boolean excludeSelf) {
         setLanguage(noticeModel.getParamMap().get("Language"));
-        boolean useTemplate = Boolean.getBoolean((String) noticeModel.getParamMap().get("useTemplate"));
+        boolean useTemplate = Boolean.parseBoolean((String) noticeModel.getParamMap().get("useTemplate"));
         String template = (String) noticeModel.getParamMap().get("template");
         noticeModel.setExcludeSelf(excludeSelf);
         try {

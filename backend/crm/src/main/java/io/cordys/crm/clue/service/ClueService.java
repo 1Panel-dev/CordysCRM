@@ -45,6 +45,7 @@ import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtProductMapper;
+import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.LogService;
 import io.cordys.crm.system.service.ModuleFormCacheService;
@@ -56,6 +57,7 @@ import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -115,6 +117,8 @@ public class ClueService {
     private CustomerCollaborationService customerCollaborationService;
     @Resource
     private CustomerContactService customerContactService;
+	@Autowired
+	private ExtUserMapper extUserMapper;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -595,10 +599,11 @@ public class ClueService {
         }
 
         if (notice) {
+            String ownerName = extUserMapper.selectUserNameByIds(List.of(currentUser)).getFirst();
             Map<String, Object> paramMap = new HashMap<>(8);
-            paramMap.put("useTemplate", true);
+            paramMap.put("useTemplate", "true");
             paramMap.put("template", Translator.get("message.clue_convert_exist_customer_text"));
-            paramMap.put("ownerName", currentUser);
+            paramMap.put("ownerName", ownerName);
             paramMap.put("customerName", customer.getName());
             paramMap.put("name", clue.getName());
             commonNoticeSendService.sendNotice(NotificationConstants.Module.CLUE, NotificationConstants.Event.CLUE_CONVERT_CUSTOMER,
