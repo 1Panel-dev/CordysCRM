@@ -114,6 +114,15 @@
                     <when test="${sort}.name == 'update_time'">
                         c.`update_time` ${sortType}
                     </when>
+                    <when test="${sort}.name == 'department_id'">
+                        sd.`id` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'create_user'">
+                        c.`create_user` ${sortType}
+                    </when>
+                    <when test="${sort}.name == 'update_user'">
+                        c.`update_user` ${sortType}
+                    </when>
                     <otherwise>
                         sort_table.field_value ${sortType}
                     </otherwise>
@@ -150,10 +159,16 @@
     </sql>
 
     <sql id="fieldSortJoin">
-        <if test="${sort} != null and ${sort}.name != 'name' and ${sort}.name != 'owner' and ${sort}.name != 'phone'">
+        <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
+                {'name', 'owner', 'contact', 'phone', 'update_user', 'create_time', 'update_time',
+                'create_user', 'follow_time', 'follower','department_id','collection_time'}">
             <bind name="sortName" value="${sort}.name"/>
             left join clue_field sort_table
             on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+        </if>
+        <if test="${sort} != null and ${sort}.valid() and ${sort}.name == 'department_id'">
+            inner join sys_organization_user souc on souc.user_id = c.owner
+            inner join sys_department sd on souc.department_id = sd.id
         </if>
     </sql>
 

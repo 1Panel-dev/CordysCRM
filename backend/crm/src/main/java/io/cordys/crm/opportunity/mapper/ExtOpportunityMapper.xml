@@ -152,6 +152,9 @@
                     <when test="${sort}.name == 'failure_reason'">
                         o.`failure_reason` ${sortType}
                     </when>
+                    <when test="${sort}.name == 'department_id'">
+                        sd.`id` ${sortType}
+                    </when>
                     <otherwise>
                         sort_table.field_value ${sortType}
                     </otherwise>
@@ -209,6 +212,10 @@
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_field sort_table
             on o.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+        </if>
+        <if test="${sort} != null and ${sort}.valid() and ${sort}.name == 'department_id'">
+            inner join sys_organization_user souc on souc.user_id = o.owner
+            inner join sys_department sd on souc.department_id = sd.id
         </if>
     </sql>
 
@@ -352,6 +359,18 @@
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="o.failure_reason"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createUser'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.create_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateUser'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.update_user"/>
                 </include>
             </when>
             <otherwise>
