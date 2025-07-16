@@ -14,6 +14,12 @@
       <template #actionRight>
         <div class="flex items-center gap-[8px]">
           <slot name="actionRight"></slot>
+          <div v-if="attrs.showSetting && props.actionConfig" class="crm-table-setting flex items-center">
+            <ColumnSetting
+              :table-key="attrs.tableKey as TableKeyEnum"
+              @change-columns-setting="() => initColumn(true)"
+            />
+          </div>
           <div class="whitespace-nowrap text-[var(--text-n2)]">
             {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
           </div>
@@ -24,6 +30,11 @@
       <div class="flex-1">
         <slot name="tableTop"></slot>
       </div>
+      <ColumnSetting
+        v-if="attrs.showSetting && !props.actionConfig"
+        :table-key="attrs.tableKey as TableKeyEnum"
+        @change-columns-setting="() => initColumn(true)"
+      />
       <div class="whitespace-nowrap text-[var(--text-n2)]">
         {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
       </div>
@@ -299,20 +310,8 @@
         return {
           ...column,
           resizable: false,
-          title() {
-            const children = [h('div', t('common.operation'))];
-            if (attrs.showSetting) {
-              children.push(
-                h(ColumnSetting, {
-                  tableKey: attrs.tableKey as TableKeyEnum,
-                  onChangeColumnsSetting: () => {
-                    initColumn(true);
-                  },
-                })
-              );
-            }
-            return h('div', { class: 'flex items-center gap-[8px]' }, children);
-          },
+          minWidth: 150,
+          title: t('common.operation'),
           render,
         };
       }
@@ -374,6 +373,10 @@
     return props.tableRowKey ? rowData[props.tableRowKey] : rowData.id;
   }
 
+  function scrollTo(options: { top?: number; left?: number }) {
+    tableRef.value?.scrollTo(options);
+  }
+
   function handleSorterChange(sorter: DataTableSortState) {
     currentColumns.value.forEach((column) => {
       if (column.sortOrder === undefined) return;
@@ -394,6 +397,9 @@
       sortOrder = 'desc';
     }
     if (!attrs.showPagination) return;
+    scrollTo({
+      top: 0,
+    });
     emit('sorterChange', !sorter.order ? {} : { name: sorter.columnKey as string, type: sortOrder });
   }
 
@@ -517,10 +523,6 @@
       return prev + Math.max(width, minWidth);
     }, 0)
   );
-
-  function scrollTo(options: { top?: number; left?: number }) {
-    tableRef.value?.scrollTo(options);
-  }
 
   defineExpose({
     scrollTo,

@@ -9,12 +9,6 @@
   >
     <div class="business-close-rule">
       <div class="h-full bg-[var(--text-n10)] p-[16px]">
-        <div class="mb-[16px] flex items-center justify-between">
-          <n-button class="mr-[12px]" type="primary" @click="addRule">
-            {{ t('module.businessManage.addRules') }}
-          </n-button>
-          <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
-        </div>
         <CrmTable
           ref="crmTableRef"
           class="!h-[calc(100vh-186px)]"
@@ -23,7 +17,17 @@
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
           @filter-change="propsEvent.filterChange"
-        />
+        >
+          <template #tableTop>
+            <div class="flex items-center justify-between">
+              <n-button class="mr-[12px]" type="primary" @click="addRule">
+                {{ t('module.businessManage.addRules') }}
+              </n-button>
+
+              <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+            </div>
+          </template>
+        </CrmTable>
       </div>
       <AddRuleDrawer
         v-model:visible="showAddRuleDrawer"

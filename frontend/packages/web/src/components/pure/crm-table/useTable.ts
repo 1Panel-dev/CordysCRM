@@ -212,6 +212,7 @@ export default function useTable<T>(
     // 排序触发
     sorterChange: (sortObj: SortParams) => {
       sortItem.value = sortObj;
+      setPagination(1);
       loadList();
     },
     // 筛选触发

@@ -9,9 +9,6 @@
   >
     <div class="h-full w-full bg-[var(--text-n9)] p-[16px]">
       <div class="h-full bg-[var(--text-n10)] p-[16px]">
-        <n-button class="mb-[16px]" type="primary" @click="handleAdd">
-          {{ t('module.customer.addOpenSea') }}
-        </n-button>
         <CrmTable
           class="!h-[calc(100vh-186px)]"
           v-bind="propsRes"
@@ -19,7 +16,13 @@
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
           @filter-change="propsEvent.filterChange"
-        />
+        >
+          <template #tableTop>
+            <n-button class="mb-[16px]" type="primary" @click="handleAdd">
+              {{ t('module.customer.addOpenSea') }}
+            </n-button>
+          </template>
+        </CrmTable>
       </div>
       <AddOrEditPoolDrawer
         v-model:visible="showAddOrEditDrawer"
@@ -34,7 +37,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { useRouter } from 'vue-router';
-  import { NButton, NScrollbar, NSwitch, useMessage } from 'naive-ui';
+  import { NButton, NSwitch, useMessage } from 'naive-ui';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';
@@ -43,6 +46,7 @@
   import type { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
@@ -62,7 +66,7 @@
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
-
+  const keyword = ref<string>('');
   const showAddOrEditDrawer = ref<boolean>(false);
   // 增加
   function handleAdd() {

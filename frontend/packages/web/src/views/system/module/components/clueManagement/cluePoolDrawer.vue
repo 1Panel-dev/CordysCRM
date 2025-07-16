@@ -9,9 +9,6 @@
   >
     <div class="h-full w-full bg-[var(--text-n9)] p-[16px]">
       <div class="h-full bg-[var(--text-n10)] p-[16px]">
-        <n-button class="mb-[16px]" type="primary" @click="handleAdd">
-          {{ t('module.clue.addCluePool') }}
-        </n-button>
         <CrmTable
           class="!h-[calc(100vh-186px)]"
           v-bind="propsRes"
@@ -19,7 +16,13 @@
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
           @filter-change="propsEvent.filterChange"
-        />
+        >
+          <template #tableTop>
+            <n-button class="mb-[16px]" type="primary" @click="handleAdd">
+              {{ t('module.clue.addCluePool') }}
+            </n-button>
+          </template>
+        </CrmTable>
       </div>
       <AddOrEditPoolDrawer
         v-model:visible="showAddOrEditDrawer"

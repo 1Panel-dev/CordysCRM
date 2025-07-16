@@ -7,11 +7,17 @@
     @update:show="handleUpdateShow"
   >
     <template #trigger>
-      <CrmIcon
-        type="iconicon_set_up"
-        :class="`cursor-pointer ${popoverVisible ? 'text-[var(--primary-8)]' : ''}`"
-        :size="16"
-      />
+      <n-button
+        :ghost="popoverVisible"
+        :type="popoverVisible ? 'primary' : 'default'"
+        class="outline--secondary px-[8px]"
+      >
+        <CrmIcon
+          type="iconicon_set_up"
+          :class="`cursor-pointer ${popoverVisible ? 'text-[var(--primary-8)]' : ''}`"
+          :size="16"
+        />
+      </n-button>
     </template>
     <n-scrollbar class="my-[4px] max-h-[416px] px-[4px]">
       <div class="mb-[4px] flex h-[24px] w-[175px] items-center justify-between text-[12px]">

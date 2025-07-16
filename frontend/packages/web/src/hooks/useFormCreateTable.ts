@@ -580,6 +580,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               key: field.businessKey,
               sortOrder: false,
               sorter,
+              ellipsis: {
+                tooltip: true,
+              },
               render: props.specialRender?.[field.businessKey],
             };
           }
