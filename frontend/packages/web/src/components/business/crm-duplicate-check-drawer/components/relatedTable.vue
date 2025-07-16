@@ -45,6 +45,7 @@
       size: 'small',
     },
     isReturnNativeResponse: props.isReturnNativeResponse,
+    hiddenTotal: true,
   });
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();

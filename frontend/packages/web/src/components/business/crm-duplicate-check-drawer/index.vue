@@ -368,6 +368,7 @@
     crmPagination: {
       size: 'small',
     },
+    hiddenTotal: true,
   });
 
   const repeatContactTable = useTable(getRepeatContactList, {
@@ -377,6 +378,7 @@
     crmPagination: {
       size: 'small',
     },
+    hiddenTotal: true,
   });
 
   const repeatTable = ref<Record<string, any>>(repeatAccountTable);

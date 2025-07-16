@@ -20,7 +20,7 @@
               @change-columns-setting="() => initColumn(true)"
             />
           </div>
-          <div class="whitespace-nowrap text-[var(--text-n2)]">
+          <div v-if="!attrs.hiddenTotal" class="whitespace-nowrap text-[var(--text-n2)]">
             {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
           </div>
         </div>
@@ -35,7 +35,7 @@
         :table-key="attrs.tableKey as TableKeyEnum"
         @change-columns-setting="() => initColumn(true)"
       />
-      <div class="whitespace-nowrap text-[var(--text-n2)]">
+      <div v-if="!attrs.hiddenTotal" class="whitespace-nowrap text-[var(--text-n2)]">
         {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
       </div>
     </div>
