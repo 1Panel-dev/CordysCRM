@@ -13,6 +13,7 @@
           {{ t('module.customer.addOpenSea') }}
         </n-button>
         <CrmTable
+          class="!h-[calc(100vh-186px)]"
           v-bind="propsRes"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
@@ -33,7 +34,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { useRouter } from 'vue-router';
-  import { NButton, NSwitch, useMessage } from 'naive-ui';
+  import { NButton, NScrollbar, NSwitch, useMessage } from 'naive-ui';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { TableKeyEnum } from '@lib/shared/enums/tableEnum';

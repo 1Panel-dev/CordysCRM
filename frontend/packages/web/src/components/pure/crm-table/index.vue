@@ -510,7 +510,13 @@
     }
   });
 
-  const scrollXWidth = computed(() => currentColumns.value.reduce((prev, curr) => prev + (curr.width as number), 0));
+  const scrollXWidth = computed(() =>
+    currentColumns.value.reduce((prev, curr) => {
+      const width = typeof curr.width === 'number' ? curr.width : 0;
+      const minWidth = typeof curr.minWidth === 'number' ? curr.minWidth : 120;
+      return prev + Math.max(width, minWidth);
+    }, 0)
+  );
 
   function scrollTo(options: { top?: number; left?: number }) {
     tableRef.value?.scrollTo(options);

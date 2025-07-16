@@ -13,6 +13,7 @@
           {{ t('module.clue.addCluePool') }}
         </n-button>
         <CrmTable
+          class="!h-[calc(100vh-186px)]"
           v-bind="propsRes"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
