@@ -93,32 +93,46 @@ public class FollowUpRecordService extends BaseFollowUpService {
 
         followUpRecordMapper.insert(followUpRecord);
 
-        if (StringUtils.isNotBlank(request.getCustomerId())) {
+        handleFollowTimeAndFollower(request.getCustomerId(), request.getOpportunityId(), request.getClueId(), request.getFollowTime(), request.getOwner());
+        return followUpRecord;
+    }
+
+
+    /**
+     * 处理最新跟进使时间&最新跟进人
+     *
+     * @param customerId
+     * @param opportunityId
+     * @param clueId
+     * @param followTime
+     * @param owner
+     */
+    private void handleFollowTimeAndFollower(String customerId, String opportunityId, String clueId, Long followTime, String owner) {
+        if (StringUtils.isNotBlank(customerId)) {
             Customer customer = new Customer();
-            customer.setId(request.getCustomerId());
-            customer.setFollowTime(time);
-            customer.setFollower(request.getOwner());
+            customer.setId(customerId);
+            customer.setFollowTime(followTime);
+            customer.setFollower(owner);
             customerMapper.update(customer);
         }
 
-        if (StringUtils.isNotBlank(request.getOpportunityId())) {
+        if (StringUtils.isNotBlank(opportunityId)) {
             Opportunity opportunity = new Opportunity();
-            opportunity.setId(request.getOpportunityId());
-            opportunity.setFollowTime(time);
-            opportunity.setFollower(request.getOwner());
+            opportunity.setId(opportunityId);
+            opportunity.setFollowTime(followTime);
+            opportunity.setFollower(owner);
             opportunityMapper.update(opportunity);
         }
 
-        if (StringUtils.isNotBlank(request.getClueId())) {
+        if (StringUtils.isNotBlank(clueId)) {
             Clue clue = new Clue();
-            clue.setId(request.getClueId());
-            clue.setFollowTime(time);
-            clue.setFollower(request.getOwner());
+            clue.setId(clueId);
+            clue.setFollowTime(followTime);
+            clue.setFollower(owner);
             clueMapper.update(clue);
         }
-
-        return followUpRecord;
     }
+
 
     /**
      * 更新跟进记录
@@ -139,6 +153,7 @@ public class FollowUpRecordService extends BaseFollowUpService {
             //更新模块字段
             updateModuleField(updateFollowUpRecord, request.getModuleFields(), orgId, userId);
             followUpRecordMapper.update(updateFollowUpRecord);
+            handleFollowTimeAndFollower(updateFollowUpRecord.getCustomerId(), updateFollowUpRecord.getOpportunityId(), updateFollowUpRecord.getClueId(), updateFollowUpRecord.getFollowTime(), updateFollowUpRecord.getOwner());
             baseService.handleUpdateLog(followUpRecord, updateFollowUpRecord, originCustomerFields, request.getModuleFields(), followUpRecord.getId(), Translator.get("update_follow_up_record"));
         }, () -> {
             throw new GenericException("record_not_found");
@@ -364,7 +379,76 @@ public class FollowUpRecordService extends BaseFollowUpService {
         }
         followUpRecordMapper.deleteByPrimaryKey(id);
 
+        getFollowTimeAndFollower(followUpRecord);
+
         // 设置操作对象
         OperationLogContext.setResourceName(Translator.get("delete_follow_up_record"));
+    }
+
+    /**
+     * 删除跟进记录，更新客户/商机/线索的最新跟进时间和跟进人
+     *
+     * @param followUpRecord
+     */
+    private void getFollowTimeAndFollower(FollowUpRecord followUpRecord) {
+        switch (followUpRecord.getType()) {
+            case "CUSTOMER" -> updateCustomerOrOpportunity(followUpRecord);
+            case "CLUE" -> updateClue(followUpRecord);
+            default -> {
+            }
+        }
+    }
+
+    /**
+     * 跟新线索的最新跟进时间和跟进人
+     *
+     * @param followUpRecord
+     */
+    private void updateClue(FollowUpRecord followUpRecord) {
+        if (StringUtils.isNotBlank(followUpRecord.getClueId())) {
+            FollowUpRecord record = extFollowUpRecordMapper.selectRecord(null, null, followUpRecord.getClueId(), followUpRecord.getOrganizationId(), "CLUE");
+            Optional.ofNullable(record).ifPresent(r -> {
+                Clue clue = new Clue();
+                clue.setId(r.getClueId());
+                clue.setFollowTime(r.getFollowTime());
+                clue.setFollower(r.getOwner());
+                clueMapper.update(clue);
+            });
+        }
+
+
+    }
+
+
+    /**
+     * 更新客户&商机 最近跟进时间&最近跟进人
+     *
+     * @param followUpRecord
+     */
+    private void updateCustomerOrOpportunity(FollowUpRecord followUpRecord) {
+
+        if (StringUtils.isNotBlank(followUpRecord.getCustomerId())) {
+            FollowUpRecord record = extFollowUpRecordMapper.selectRecord(followUpRecord.getCustomerId(), null, null, followUpRecord.getOrganizationId(), "CUSTOMER");
+            Optional.ofNullable(record).ifPresent(r -> {
+                Customer customer = new Customer();
+                customer.setId(r.getCustomerId());
+                customer.setFollowTime(r.getFollowTime());
+                customer.setFollower(r.getOwner());
+                customerMapper.update(customer);
+            });
+        }
+
+        if (StringUtils.isNotBlank(followUpRecord.getOpportunityId())) {
+            FollowUpRecord record = extFollowUpRecordMapper.selectRecord(null, followUpRecord.getOpportunityId(), null, followUpRecord.getOrganizationId(), "CUSTOMER");
+            Optional.ofNullable(record).ifPresent(r -> {
+                Opportunity opportunity = new Opportunity();
+                opportunity.setId(r.getOpportunityId());
+                opportunity.setFollowTime(r.getFollowTime());
+                opportunity.setFollower(r.getOwner());
+                opportunityMapper.update(opportunity);
+            });
+        }
+
+
     }
 }

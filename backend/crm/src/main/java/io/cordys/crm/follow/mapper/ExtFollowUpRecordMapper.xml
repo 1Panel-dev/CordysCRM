@@ -115,4 +115,26 @@
         </where>
         ORDER BY follow_time DESC, create_time DESC
     </select>
+
+
+    <select id="selectRecord" resultType="io.cordys.crm.follow.domain.FollowUpRecord">
+        select
+        customer_id,
+        opportunity_id,
+        clue_id,
+        follow_time,
+        owner
+        from follow_up_record
+        where organization_id = #{orgId}
+        and type = #{type}
+        <if test="customerId != null and customerId != ''">
+            AND customer_id = #{customerId}
+        </if>
+        <if test="clueId != null and clueId != ''">
+            AND clue_id = #{clueId}
+        </if>
+        <if test="opportunityId != null and opportunityId != ''">
+            AND opportunity_id = #{opportunityId}
+        </if>
+    </select>
 </mapper>
