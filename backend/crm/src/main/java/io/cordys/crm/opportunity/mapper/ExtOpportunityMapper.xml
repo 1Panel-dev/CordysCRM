@@ -337,6 +337,18 @@
                     <property name="column" value="o.update_time"/>
                 </include>
             </when>
+            <when test="condition.name == 'updateUser'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.update_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createUser'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="o.create_user"/>
+                </include>
+            </when>
             <when test="condition.name == 'lastFollowUpDate'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
