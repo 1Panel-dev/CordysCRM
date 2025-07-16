@@ -136,5 +136,7 @@
         <if test="opportunityId != null and opportunityId != ''">
             AND opportunity_id = #{opportunityId}
         </if>
+        order by follow_time desc
+        limit 1
     </select>
 </mapper>
