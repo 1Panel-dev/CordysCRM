@@ -28,8 +28,8 @@ const useLicenseStore = defineStore('license', {
       return this.licenseInfo?.status !== 'not_found';
     },
     getExpirationTime(resTime: string) {
-      if (!this.isEnterpriseVersion()) {
-        this.expiredDuring = false;
+      if (!this.hasLicense) {
+        this.expiredDuring = true;
         return;
       }
 

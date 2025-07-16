@@ -8,7 +8,7 @@ import { allMenuRouteMap, featureRouteMap } from '@/router/constants';
 import useAppStore from '@/store/modules/app';
 import useLicenseStore from '@/store/modules/setting/license';
 
-import { SystemRouteEnum } from '@/enums/routeEnum';
+import { DashboardRouteEnum, SystemRouteEnum } from '@/enums/routeEnum';
 
 /**
  * 获取菜单树
@@ -55,7 +55,10 @@ export default function useMenuTree() {
         }
 
         //  社区版去掉license菜单
-        if (!licenseStore.isEnterpriseVersion() && element.name === SystemRouteEnum.SYSTEM_LICENSE) {
+        if (
+          (!licenseStore.isEnterpriseVersion() && element.name === SystemRouteEnum.SYSTEM_LICENSE) ||
+          (!licenseStore.hasLicense() && element.name === DashboardRouteEnum.DASHBOARD)
+        ) {
           return null;
         }
 

@@ -270,7 +270,9 @@
 
   onBeforeMount(() => {
     initCheckSyncType();
-    initIntegration();
+    if (licenseStore.hasLicense()) {
+      initIntegration();
+    }
     initMessageList();
   });
 </script>

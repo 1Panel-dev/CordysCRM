@@ -93,6 +93,7 @@
   import { toggleModuleNavStatus } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import router from '@/router';
+  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   import { SystemRouteEnum } from '@/enums/routeEnum';
@@ -100,6 +101,7 @@
   const { openModal } = useModal();
   const Message = useMessage();
   const { t } = useI18n();
+  const licenseStore = useLicenseStore();
 
   const props = defineProps<{
     list: ModuleNavItem[];
@@ -206,13 +208,6 @@
           key: 'newForm',
         },
       ],
-      enable: true,
-    },
-    {
-      label: t('common.dashboard'),
-      key: ModuleConfigEnum.DASHBOARD,
-      icon: 'iconicon_dashboard1',
-      groupList: [],
       enable: true,
     },
   ]);
@@ -343,7 +338,19 @@
   watch(
     () => props.list,
     () => {
-      moduleConfigList.value = moduleConfigList.value.map((item) => {
+      const list = licenseStore.hasLicense()
+        ? [
+            ...moduleConfigList.value,
+            {
+              label: t('common.dashboard'),
+              key: ModuleConfigEnum.DASHBOARD,
+              icon: 'iconicon_dashboard1',
+              groupList: [],
+              enable: true,
+            },
+          ]
+        : moduleConfigList.value;
+      moduleConfigList.value = list.map((item) => {
         const findConfigItem = props.list.find((e) => e.key === item.key);
         return {
           ...item,

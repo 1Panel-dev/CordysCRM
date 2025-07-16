@@ -62,4 +62,5 @@ export const AppRouteEnum = {
   ...ProductRouteEnum,
   ...PersonalRouteEnum,
   ...WorkbenchRouteEnum,
+  ...DashboardRouteEnum,
 };

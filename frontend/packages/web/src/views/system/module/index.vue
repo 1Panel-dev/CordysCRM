@@ -1,45 +1,47 @@
 <template>
-  <div :class="`config-container  w-full ${licenseStore.expiredDuring ? 'h-[calc(100%-64px)]' : 'h-full'}`">
-    <div class="left-box">
-      <CrmCard hide-footer>
-        <div class="h-full">
-          <div class="mb-[16px] flex items-center justify-between">
-            <div class="font-medium text-[var(--text-n1)]">{{ t('module.businessManage.mainNavConfig') }}</div>
-            <div class="text-[var(--text-n4)]">
-              <n-switch v-model:value="enable" @update:value="changeIcon" />
-              <span class="ml-[8px]">icon </span>
+  <n-scrollbar x-scrollable content-class="h-full !w-full" content-style="min-width: 800px">
+    <div :class="`config-container  w-full ${licenseStore.expiredDuring ? 'h-[calc(100%-64px)]' : 'h-full'}`">
+      <div class="left-box">
+        <CrmCard hide-footer>
+          <div class="h-full">
+            <div class="mb-[16px] flex items-center justify-between">
+              <div class="font-medium text-[var(--text-n1)]">{{ t('module.businessManage.mainNavConfig') }}</div>
+              <div class="text-[var(--text-n4)]">
+                <n-switch v-model:value="enable" @update:value="changeIcon" />
+                <span class="ml-[8px]">icon </span>
+              </div>
+            </div>
+            <div class="nav-list">
+              <VueDraggable
+                v-model="moduleNavList"
+                ghost-class="ghost"
+                handle=".nav-item"
+                :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
+                @end="onDragEnd"
+              >
+                <div v-for="item in moduleNavList" :key="item.key" class="nav-item">
+                  <CrmIcon type="iconicon_move" :size="16" class="mt-[1px] cursor-move text-[var(--text-n4)]" />
+                  <CrmIcon v-if="enable" :type="item.icon ?? ''" :size="18" class="text-[var(--text-n1)]" />
+                  {{ item.label }}
+                </div>
+              </VueDraggable>
             </div>
           </div>
-          <div class="nav-list">
-            <VueDraggable
-              v-model="moduleNavList"
-              ghost-class="ghost"
-              handle=".nav-item"
-              :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
-              @end="onDragEnd"
-            >
-              <div v-for="item in moduleNavList" :key="item.key" class="nav-item">
-                <CrmIcon type="iconicon_move" :size="16" class="mt-[1px] cursor-move text-[var(--text-n4)]" />
-                <CrmIcon v-if="enable" :type="item.icon ?? ''" :size="18" class="text-[var(--text-n1)]" />
-                {{ item.label }}
-              </div>
-            </VueDraggable>
+        </CrmCard>
+      </div>
+      <div class="right-box">
+        <CrmCard hide-footer>
+          <div class="h-full">
+            <ConfigCard :list="moduleNavList" @load-module-list="initModuleNavList()" />
           </div>
-        </div>
-      </CrmCard>
+        </CrmCard>
+      </div>
     </div>
-    <div class="right-box">
-      <CrmCard hide-footer>
-        <div class="h-full">
-          <ConfigCard :list="moduleNavList" @load-module-list="initModuleNavList()" />
-        </div>
-      </CrmCard>
-    </div>
-  </div>
+  </n-scrollbar>
 </template>
 
 <script setup lang="ts">
-  import { NSwitch, useMessage } from 'naive-ui';
+  import { NScrollbar, NSwitch, useMessage } from 'naive-ui';
   import { VueDraggable } from 'vue-draggable-plus';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';

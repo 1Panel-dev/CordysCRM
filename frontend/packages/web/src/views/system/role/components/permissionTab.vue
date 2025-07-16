@@ -93,7 +93,10 @@
   } from '@lib/shared/models/system/role';
 
   import { createRole, getPermissions, getRoleDeptTree, getRoleDetail, updateRole } from '@/api/modules';
+  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
+
+  const licenseStore = useLicenseStore();
 
   const props = defineProps<{
     activeRoleId: string;
@@ -169,6 +172,28 @@
     );
   }
 
+  function transferData(permissions: PermissionTreeNode[], isNew = false) {
+    const isEnterprise = licenseStore.hasLicense();
+
+    permissions.forEach((item) => {
+      if (!isEnterprise && item.license) return;
+
+      const children = isEnterprise ? item.children || [] : item.children?.filter((child) => !child.license) || [];
+
+      if (!children.length) return;
+
+      children.forEach((child) => {
+        data.value.push({
+          id: child.id,
+          feature: item.name,
+          operator: child.name,
+          rowSpan: children.length,
+          permissions: child.permissions,
+          enable: isNew ? false : child.enable,
+        });
+      });
+    });
+  }
   async function init() {
     try {
       loading.value = true;
@@ -177,51 +202,19 @@
         const res = await getRoleDetail(props.copyFrom);
         dataPermission.value = res.dataScope || 'ALL';
         departments.value = res.deptIds || [];
-        res.permissions.forEach((item) => {
-          item.children.forEach((child) => {
-            data.value.push({
-              id: child.id,
-              feature: item.name,
-              operator: child.name,
-              rowSpan: item.children?.length || 1,
-              permissions: child.permissions,
-              enable: child.enable,
-            });
-          });
-        });
+        transferData(res.permissions);
       } else if (props.isNew) {
         const res = await getPermissions();
         dataPermission.value = 'ALL';
         departments.value = [];
-        res.forEach((item) => {
-          item.children.forEach((child) => {
-            data.value.push({
-              id: child.id,
-              feature: item.name,
-              operator: child.name,
-              rowSpan: item.children?.length || 1,
-              permissions: child.permissions,
-              enable: false,
-            });
-          });
-        });
+        transferData(res, true);
       } else {
         const res = await getRoleDetail(props.activeRoleId);
         backupDetail.value = res;
         dataPermission.value = res.dataScope || 'ALL';
         departments.value = res.deptIds || [];
-        res.permissions.forEach((item) => {
-          item.children.forEach((child) => {
-            data.value.push({
-              id: child.id,
-              feature: item.name,
-              operator: child.name,
-              rowSpan: item.children?.length || 1,
-              permissions: child.permissions,
-              enable: child.enable,
-            });
-          });
-        });
+        transferData(res.permissions);
+
         backupDetail.value.permissions = cloneDeep(data.value as PermissionTreeNode[]);
       }
       nextTick(() => {

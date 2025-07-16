@@ -158,7 +158,7 @@
   };
 
   const licenseInfo = computed(() => {
-    const { corporation, expired, product, edition, count } = licenseStore?.licenseInfo || {};
+    const { corporation, expired, product, edition, count, licenseVersion } = licenseStore?.licenseInfo || {};
     return [
       {
         label: t('system.license.customerName'),
@@ -167,6 +167,7 @@
       { label: t('system.license.authorizationTime'), value: expired },
       { label: t('system.license.productName'), value: product },
       { label: t('system.license.productionVersion'), value: edition },
+      { label: t('system.license.licenseVersion'), value: licenseVersion },
       { label: t('system.license.authorizationsCount'), value: addCommasToNumber(count || 0) },
       {
         label: t('system.license.authorizationStatus'),

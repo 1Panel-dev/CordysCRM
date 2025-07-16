@@ -41,7 +41,7 @@ export const featureRouteMap: Record<string, any> = {
   [OpportunityRouteEnum.OPPORTUNITY]: ModuleConfigEnum.BUSINESS_MANAGEMENT,
   [ProductRouteEnum.PRODUCT]: ModuleConfigEnum.PRODUCT_MANAGEMENT,
   [ClueRouteEnum.CLUE_MANAGEMENT]: ModuleConfigEnum.CLUE_MANAGEMENT,
-  [DashboardRouteEnum.DASHBOARD_INDEX]: ModuleConfigEnum.DASHBOARD,
+  [DashboardRouteEnum.DASHBOARD]: ModuleConfigEnum.DASHBOARD,
 };
 
 export const allMenuRouteMap: Record<string, any> = {

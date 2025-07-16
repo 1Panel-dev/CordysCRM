@@ -18,6 +18,7 @@ import {
 import useUserStore from '@/store/modules/user';
 import { getThemeOverrides } from '@/utils/themeOverrides';
 
+import useLicenseStore from '../setting/license';
 import type { AppState, PageConfig, Style, Theme } from './types';
 import type { RouteRecordRaw } from 'vue-router';
 
@@ -42,6 +43,10 @@ const defaultPlatformConfig = {
 
 const defaultModuleConfig = [
   {
+    moduleKey: ModuleConfigEnum.DASHBOARD,
+    enable: true,
+  },
+  {
     moduleKey: ModuleConfigEnum.HOME,
     enable: true,
   },
@@ -59,10 +64,6 @@ const defaultModuleConfig = [
   },
   {
     moduleKey: ModuleConfigEnum.PRODUCT_MANAGEMENT,
-    enable: true,
-  },
-  {
-    moduleKey: ModuleConfigEnum.DASHBOARD,
     enable: true,
   },
 ];
@@ -178,6 +179,9 @@ const useAppStore = defineStore('app', {
         this.moduleConfigList = await getModuleNavConfigList({
           organizationId: this.orgId,
         });
+        if (!useLicenseStore().hasLicense()) {
+          this.moduleConfigList = this.moduleConfigList.filter((e) => e.moduleKey !== ModuleConfigEnum.DASHBOARD);
+        }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
