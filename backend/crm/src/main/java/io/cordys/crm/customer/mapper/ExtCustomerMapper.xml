@@ -144,6 +144,9 @@
                         {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user'}">
                         c.${sortName} ${sortType}
                     </when>
+                    <when test="${sort}.name == 'department_id'">
+                        sou.${sortName} ${sortType}
+                    </when>
                     <otherwise>
                         sort_table.field_value ${sortType}
                     </otherwise>
@@ -178,11 +181,18 @@
     </sql>
 
     <sql id="fieldSortJoin">
-        <if test="${sort} != null and ${sort}.valid() and ${sort}.name not in
-                {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user'}">
+        <if test="${sort} != null and ${sort}.valid()">
             <bind name="sortName" value="${sort}.name"/>
-            left join customer_field sort_table
-            on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+            <choose>
+                <when test="${sort}.name == 'department_id'">
+                    join sys_organization_user sou on c.owner = sou.user_id
+                </when>
+                <when test="${sort}.name not in
+                    {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user'}">
+                    left join customer_field sort_table
+                    on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+                </when>
+            </choose>
         </if>
     </sql>
 
