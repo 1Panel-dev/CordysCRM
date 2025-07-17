@@ -53,8 +53,9 @@
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterFormItem, FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
+  import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
+  // import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
 
   import { getFieldDeptTree, reTransitionCustomer } from '@/api/modules';
@@ -91,16 +92,9 @@
     radio: true, // 单选模式
     specialRender: {
       name: (row: any) => {
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              activeSourceId.value = row.id;
-              showOverviewDrawer.value = true;
-            },
-          },
-          { trigger: () => row.name, default: () => row.name }
-        );
+        return h(CrmNameTooltip, {
+          text: row.name,
+        });
       },
     },
   });
