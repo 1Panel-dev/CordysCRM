@@ -11,6 +11,20 @@
           </n-space>
         </n-image-group>
       </template>
+      <template #[FieldTypeEnum.DATE_TIME]="{ item }">
+        <div class="flex w-full items-center justify-between">
+          <div class="text-[var(--text-n2)]">{{ item.label }}</div>
+          <dateTime
+            v-model:value="formDetail[item.fieldInfo.id]"
+            :field-config="{
+              ...item.fieldInfo,
+              showLabel: false,
+            }"
+            :path="item.fieldInfo.id"
+            @change="handleFormChange"
+          />
+        </div>
+      </template>
     </CrmDescription>
   </n-spin>
 </template>
@@ -19,11 +33,12 @@
   import { NImage, NImageGroup, NSpace, NSpin } from 'naive-ui';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
   import CrmFormCreateDivider from '@/components/business/crm-form-create/components/basic/divider.vue';
+  import dateTime from '../crm-form-create/components/basic/dateTime.vue';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
 
@@ -37,11 +52,47 @@
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
   }>();
 
-  const { descriptions, loading, collaborationType, sourceName, detail, initFormConfig, initFormDescription } =
-    useFormCreateApi({
-      formKey: toRefs(props).formKey,
-      sourceId: toRefs(props).sourceId,
+  const needInitDetail = computed(() => props.formKey === FormDesignKeyEnum.BUSINESS); // TODO:商机需要编辑日期
+  const {
+    fieldList,
+    descriptions,
+    loading,
+    collaborationType,
+    sourceName,
+    detail,
+    formDetail,
+    initFormDetail,
+    initFormConfig,
+    initFormDescription,
+    saveForm,
+  } = useFormCreateApi({
+    formKey: toRefs(props).formKey,
+    sourceId: toRefs(props).sourceId,
+    needInitDetail,
+  });
+
+  const isInit = ref(false);
+
+  function handleFormChange() {
+    nextTick(async () => {
+      try {
+        if (!isInit.value) return;
+        fieldList.value.forEach((item) => {
+          if (
+            [FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(item.type) &&
+            Array.isArray(formDetail.value[item.id])
+          ) {
+            // 处理数据源字段，单选传单个值
+            formDetail.value[item.id] = formDetail.value[item.id]?.[0];
+          }
+        });
+        await saveForm(formDetail.value, false, () => ({}), true);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
     });
+  }
 
   watch(
     () => props.refreshKey,
@@ -55,6 +106,8 @@
     await initFormConfig();
     await initFormDescription();
     emit('init', collaborationType.value, sourceName.value, detail.value);
+    await initFormDetail();
+    isInit.value = true;
   });
 
   defineExpose({
@@ -62,4 +115,8 @@
   });
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+  :deep(.n-form-item-feedback-wrapper) {
+    display: none;
+  }
+</style>

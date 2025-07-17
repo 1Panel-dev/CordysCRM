@@ -156,7 +156,15 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               name = options.find((e) => e.id === value)?.name || t('common.optionNotExist');
             }
           }
-          if (item.type === FieldTypeEnum.DATE_TIME) {
+          if (item.businessKey === 'expectedEndTime') {
+            // TODO:商机结束时间原位编辑
+            descriptions.value.push({
+              label: item.name,
+              value: name || form[item.businessKey],
+              slotName: FieldTypeEnum.DATE_TIME,
+              fieldInfo: item,
+            });
+          } else if (item.type === FieldTypeEnum.DATE_TIME) {
             descriptions.value.push({
               label: item.name,
               value: formatTimeValue(name || form[item.businessKey], item.dateType),
@@ -623,7 +631,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     initForm();
   }
 
-  async function saveForm(form: Record<string, any>, isContinue: boolean, callback?: (_isContinue: boolean) => void) {
+  async function saveForm(
+    form: Record<string, any>,
+    isContinue: boolean,
+    callback?: (_isContinue: boolean) => void,
+    noReset = false
+  ) {
     try {
       loading.value = true;
       const params: Record<string, any> = {
@@ -656,7 +669,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
       if (callback) {
         callback(isContinue);
       }
-      resetForm();
+      if (!noReset) {
+        resetForm();
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
