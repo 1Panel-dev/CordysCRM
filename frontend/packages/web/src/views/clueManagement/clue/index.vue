@@ -44,28 +44,35 @@
         />
       </template>
     </CrmTable>
-    <TransferModal
-      v-model:show="showTransferModal"
-      :source-ids="checkedRowKeys"
-      :save-api="batchTransferClue"
-      @load-list="handleRefresh"
-    />
-    <ClueOverviewDrawer v-model:show="showOverviewDrawer" :detail="activeClue" @refresh="handleRefresh" />
-    <CrmFormCreateDrawer
-      v-model:visible="formCreateDrawerVisible"
-      :form-key="formKey"
-      :source-id="activeClueId"
-      :need-init-detail="needInitDetail"
-      :initial-source-name="activeRowName"
-      :other-save-params="otherFollowRecordSaveParams"
-      @saved="loadList"
-    />
-    <ToCluePoolResultModel
-      v-model:show="showToCluePoolResultModel"
-      :fail-count="failCount"
-      :success-count="successCount"
-    />
   </CrmCard>
+  <TransferModal
+    v-model:show="showTransferModal"
+    :source-ids="checkedRowKeys"
+    :save-api="batchTransferClue"
+    @load-list="handleRefresh"
+  />
+  <ClueOverviewDrawer
+    v-if="isInitOverviewDrawer"
+    v-model:show="showOverviewDrawer"
+    :detail="activeClue"
+    @refresh="handleRefresh"
+    @convert-to-customer="() => handleConvertToCustomer(activeClue)"
+  />
+  <CrmFormCreateDrawer
+    v-if="isInitFormCreateDrawer"
+    v-model:visible="formCreateDrawerVisible"
+    :form-key="formKey"
+    :source-id="activeClueId"
+    :need-init-detail="needInitDetail"
+    :initial-source-name="activeRowName"
+    :other-save-params="otherFollowRecordSaveParams"
+    @saved="loadList"
+  />
+  <ToCluePoolResultModel
+    v-model:show="showToCluePoolResultModel"
+    :fail-count="failCount"
+    :success-count="successCount"
+  />
   <CrmTableExportModal
     v-model:show="showExportModal"
     :params="exportParams"
@@ -75,9 +82,10 @@
     @create-success="handleExportCreateSuccess"
   />
   <convertToCustomerDrawer
+    v-if="isInitConvertDrawer"
     v-model:show="showConvertToCustomerDrawer"
     :clue-id="otherFollowRecordSaveParams.clueId"
-    @new="handleNew"
+    @new="handleAdd"
     @finish="handleRefresh"
   />
 </template>
@@ -109,8 +117,6 @@
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
-  import ClueOverviewDrawer from './components/clueOverviewDrawer.vue';
-  import convertToCustomerDrawer from './components/convertToCustomerDrawer.vue';
   import ToCluePoolResultModel from './components/toCluePoolResultModel.vue';
 
   import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue, getFieldDeptTree } from '@/api/modules';
@@ -120,6 +126,9 @@
   import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
+
+  const convertToCustomerDrawer = defineAsyncComponent(() => import('./components/convertToCustomerDrawer.vue'));
+  const ClueOverviewDrawer = defineAsyncComponent(() => import('./components/clueOverviewDrawer.vue'));
 
   const Message = useMessage();
   const { openModal } = useModal();
@@ -148,6 +157,7 @@
   const needInitDetail = ref(false);
   const activeClue = ref<ClueListItem>();
   const formKey = ref(FormDesignKeyEnum.CLUE);
+  const isInitFormCreateDrawer = ref(false);
   const formCreateDrawerVisible = ref(false);
 
   const actionConfig = computed<BatchActionConfig>(() => {
@@ -322,15 +332,14 @@
 
   // 新增
   function handleAdd() {
+    isInitFormCreateDrawer.value = true;
     formKey.value = FormDesignKeyEnum.CLUE;
     activeClueId.value = '';
     formCreateDrawerVisible.value = true;
   }
 
+  const isInitConvertDrawer = ref(false);
   const showConvertToCustomerDrawer = ref(false);
-  function handleNew() {
-    formCreateDrawerVisible.value = true;
-  }
 
   const otherFollowRecordSaveParams = ref({
     type: 'CLUE',
@@ -338,6 +347,16 @@
     id: '',
   });
   const activeRowName = ref('');
+
+  function handleConvertToCustomer(row?: ClueListItem) {
+    isInitConvertDrawer.value = true;
+    activeClueId.value = '';
+    formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
+    activeRowName.value = row?.name || '';
+    otherFollowRecordSaveParams.value.clueId = row?.id || '';
+    needInitDetail.value = false;
+    showConvertToCustomerDrawer.value = true;
+  }
 
   function handleActionSelect(row: ClueListItem, actionKey: string) {
     activeClueId.value = row.id;
@@ -360,11 +379,12 @@
         break;
       case 'convertToCustomer':
         activeClueId.value = '';
-        formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
-        activeRowName.value = row.name;
-        otherFollowRecordSaveParams.value.clueId = row.id;
-        needInitDetail.value = false;
-        showConvertToCustomerDrawer.value = true;
+        // formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
+        // activeRowName.value = row.name;
+        // otherFollowRecordSaveParams.value.clueId = row.id;
+        // needInitDetail.value = false;
+        // showConvertToCustomerDrawer.value = true;
+        handleConvertToCustomer(row);
         break;
       case 'delete':
         handleDelete(row);
@@ -375,6 +395,7 @@
   }
 
   // 概览
+  const isInitOverviewDrawer = ref(false);
   const showOverviewDrawer = ref(false);
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
@@ -459,6 +480,7 @@
           {
             onClick: () => {
               activeClue.value = row;
+              isInitOverviewDrawer.value = true;
               showOverviewDrawer.value = true;
             },
           },

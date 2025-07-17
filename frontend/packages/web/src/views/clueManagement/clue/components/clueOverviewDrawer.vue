@@ -67,10 +67,16 @@
       />
     </template>
   </CrmOverviewDrawer>
+  <convertToCustomerDrawer
+    v-model:show="showConvertToCustomerDrawer"
+    :clue-id="otherFollowRecordSaveParams.clueId"
+    @new="handleNew"
+    @finish="closeAndRefresh"
+  />
 </template>
 
 <script setup lang="ts">
-  import { SelectOption, useMessage } from 'naive-ui';
+  import { useMessage } from 'naive-ui';
 
   // import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
@@ -88,9 +94,10 @@
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
+  import convertToCustomerDrawer from './convertToCustomerDrawer.vue';
 
   // import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
-  import { batchTransferClue, deleteClue, getClue, getClueHeaderList, updateClueStatus } from '@/api/modules';
+  import { batchTransferClue, deleteClue, getClueHeaderList } from '@/api/modules';
   // import { clueBaseSteps } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
@@ -106,6 +113,7 @@
 
   const emit = defineEmits<{
     (e: 'refresh'): void;
+    (e: 'convertToCustomer'): void;
   }>();
 
   const { openModal } = useModal();
@@ -172,6 +180,7 @@
   }
 
   const formDrawerVisible = ref(false);
+  const showConvertToCustomerDrawer = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD_CLUE);
   const otherFollowRecordSaveParams = computed(() => ({ clueId: sourceId.value }));
   function handleSelect(key: string) {
@@ -184,13 +193,16 @@
         break;
       case 'convertToCustomer':
         realFormKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
-        formDrawerVisible.value = true;
+        emit('convertToCustomer');
         break;
       default:
         break;
     }
   }
 
+  function handleNew() {
+    formDrawerVisible.value = true;
+  }
   // const currentStatus = ref<string>(ClueStatusEnum.NEW);
   // const lastStage = ref<string>(ClueStatusEnum.NEW);
   const showAction = computed(() =>
