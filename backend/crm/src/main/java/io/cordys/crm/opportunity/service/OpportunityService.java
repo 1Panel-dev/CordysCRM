@@ -254,7 +254,7 @@ public class OpportunityService {
             List<BaseModuleFieldValue> originCustomerFields = opportunityFieldService.getModuleFieldValuesByResourceId(request.getId());
             //更新模块字段
             updateModuleField(updateOpportunity, request.getModuleFields(), orgId, userId);
-            opportunityMapper.update(item);
+            opportunityMapper.update(updateOpportunity);
             baseService.handleUpdateLog(oldOpportunity, newOpportunity, originCustomerFields, request.getModuleFields(), oldOpportunity.getId(), oldOpportunity.getName());
         }, () -> {
             throw new GenericException("opportunity_not_found");
