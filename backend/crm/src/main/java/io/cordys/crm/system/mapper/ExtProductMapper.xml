@@ -29,7 +29,7 @@
     </update>
 
     <select id="list" resultType="io.cordys.crm.system.dto.response.product.ProductListResponse">
-        select *
+        select p.id, p.name, p.price, p.status, p.pos, p.organization_id, p.create_time, p.update_time, p.create_user, p.update_user
         from product p
 
         <include refid="fieldConditionJoin">
@@ -98,6 +98,7 @@
             <bind name="sortName" value="${sort}.name"/>
             left join product_field sort_table
             on p.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+            left join sys_module_field module_table on sort_table.field_id = module_table.id
         </if>
     </sql>
 
@@ -129,7 +130,12 @@
                         p.`update_user` ${sortType}
                     </when>
                     <otherwise>
-                        sort_table.field_value ${sortType}
+                        CASE
+                        WHEN module_table.type = 'INPUT_NUMBER'
+                        THEN sort_table.field_value+0
+                        END ${sortType},
+                        sort_table.field_value ${sortType},
+                        p.id ASC
                     </otherwise>
                 </choose>
             </when>

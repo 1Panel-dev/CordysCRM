@@ -156,6 +156,10 @@
                         sd.`id` ${sortType}
                     </when>
                     <otherwise>
+                        CASE
+                        WHEN module_table.type = 'INPUT_NUMBER'
+                        THEN sort_table.field_value+0
+                        END ${sortType},
                         sort_table.field_value ${sortType}
                     </otherwise>
                 </choose>
@@ -212,6 +216,7 @@
             <bind name="sortName" value="${sort}.name"/>
             left join opportunity_field sort_table
             on o.id = sort_table.resource_id and sort_table.field_id = #{sortName}
+            left join sys_module_field module_table on sort_table.field_id = module_table.id
         </if>
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name == 'department_id'">
             inner join sys_organization_user souc on souc.user_id = o.owner
