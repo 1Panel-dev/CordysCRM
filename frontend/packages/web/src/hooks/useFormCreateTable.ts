@@ -252,7 +252,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           },
         ],
         sortOrder: false,
-        sorter: false,
+        sorter: true,
         filter: true,
         render: props.specialRender?.status,
       },
