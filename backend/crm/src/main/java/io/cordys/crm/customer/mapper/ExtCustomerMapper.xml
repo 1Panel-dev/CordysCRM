@@ -359,22 +359,21 @@
     </select>
 
     <select id="filterOwnerCount" resultType="java.lang.Long">
-        select count(1) from customer c
-        where not exists (
-            select 1 from opportunity o where o.customer_id = c.id
-            <if test="filters != null and filters.size > 0">
-                and
-                <foreach collection="filters" item="filter" open="(" separator=" and " close=")">
-                    <if test="filter.name == 'stage'">
-                        <include refid="io.cordys.common.mapper.CommonMapper.condition">
-                            <property name="condition" value="condition"/>
-                            <property name="column" value="o.stage"/>
-                        </include>
-                    </if>
-                </foreach>
-            </if>
-        ) and c.owner = #{ownerId};
+        select count(distinct c.id) from customer c
+        <if test="filters != null and filters.size > 0">
+            join opportunity o on c.id = o.customer_id and
+            <foreach collection="filters" item="filter" open="(" separator=" and " close=")">
+                <if test="filter.name == 'stage'">
+                    <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                        <property name="condition" value="condition"/>
+                        <property name="column" value="o.stage"/>
+                    </include>
+                </if>
+            </foreach>
+        </if>
+        where c.owner = #{ownerId}
     </select>
+
     <select id="getListByIds" resultType="io.cordys.crm.customer.dto.response.CustomerListResponse">
         select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
                c.follower, c.follow_time, c.in_shared_pool, c.organization_id

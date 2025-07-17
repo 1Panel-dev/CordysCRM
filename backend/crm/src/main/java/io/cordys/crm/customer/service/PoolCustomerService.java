@@ -248,8 +248,14 @@ public class PoolCustomerService {
 		List<FilterConditionDTO> conditions = StringUtils.isEmpty(customerCapacity.getFilter()) ?
 				new ArrayList<>() : JSON.parseArray(customerCapacity.getFilter(), FilterConditionDTO.class);
 		List<FilterConditionDTO> enableConditions = conditions.stream().filter(FilterConditionDTO::getEnable).toList();
-		int ownCount = (int) extCustomerMapper.filterOwnerCount(ownUserId, enableConditions);
-		if (customerCapacity.getCapacity() - ownCount < processCount) {
+		int filter = 0;
+		if (CollectionUtils.isNotEmpty(enableConditions)) {
+			filter = (int) extCustomerMapper.filterOwnerCount(ownUserId, enableConditions);
+		}
+		LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
+		customerWrapper.eq(Customer::getOwner, ownUserId).eq(Customer::getInSharedPool, false);
+		int ownCount = customerMapper.selectListByLambda(customerWrapper).size();
+		if (customerCapacity.getCapacity() - (ownCount - filter) < processCount) {
 			throw new GenericException(Translator.getWithArgs("customer.capacity.over", Math.max(customerCapacity.getCapacity() - ownCount, 0)));
 		}
 	}

@@ -11,8 +11,23 @@
     </select>
 
     <update id="updateCapacity" parameterType="io.cordys.crm.customer.domain.CustomerCapacity">
-        update customer_capacity set scope_id = #{capacity.scopeId}, capacity = #{capacity.capacity}, filter = #{capacity.filters},
-                                     update_user = #{capacity.updateUser}, update_time = #{capacity.updateTime}
-        where id = #{capacity.id}
+        update customer_capacity
+        <set>
+            <if test="capacity.scopeId != null">
+                scope_id = #{capacity.scopeId},
+            </if>
+            <if test="capacity.filter != null">
+                filter = #{capacity.filter},
+            </if>
+            <if test="capacity.updateUser != null">
+                update_user = #{capacity.updateUser},
+            </if>
+            <if test="capacity.updateTime != null">
+                update_time = #{capacity.updateTime},
+            </if>
+        </set>
+        <where>
+            id = #{capacity.id}
+        </where>
     </update>
 </mapper>
