@@ -28,6 +28,7 @@
               filterable
               :placeholder="props.dataIndexPlaceholder"
               :options="transformFieldsToOptions(props.leftFields)"
+              :fallback-option="() => fallbackOption(item.leftFieldId)"
               @update-value="(val, option) => leftFieldChange((option as any).fieldType, listIndex)"
             />
           </n-form-item>
@@ -36,6 +37,7 @@
               v-model:value="item.operator"
               :options="getOperatorOptions(item.leftFieldId)"
               :disabled="!item.leftFieldId"
+              :fallback-option="() => fallbackOption(item.leftFieldId)"
             />
           </n-form-item>
           <n-form-item
@@ -45,8 +47,9 @@
           >
             <n-select
               v-model:value="item.rightFieldId"
-              :options="transformFieldsToOptions(props.rightFields)"
+              :options="transformFieldsToOptions(props.rightFields, item.leftFieldType)"
               :placeholder="t('crmFormDesign.dataSourceFilterValuePlaceholder')"
+              :fallback-option="() => fallbackOption(item.leftFieldId)"
             />
           </n-form-item>
           <n-button ghost class="px-[7px]" @click="handleDeleteItem(listIndex)">
@@ -78,11 +81,17 @@
   import { operatorOptionsMap } from '@/components/pure/crm-advance-filter/index';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
-  import { DataSourceFilterCombine, FormCreateField } from '@/components/business/crm-form-create/types';
+  import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
+  import {
+    DataSourceFilterCombine,
+    DataSourceFilterItem,
+    FormCreateField,
+  } from '@/components/business/crm-form-create/types';
 
   const { t } = useI18n();
 
   const props = defineProps<{
+    selfId: string;
     leftFields: FormCreateField[];
     rightFields: FormCreateField[];
     dataIndexPlaceholder: string;
@@ -125,14 +134,32 @@
     currentFormList[index].leftFieldType = leftFieldType;
   };
 
-  function transformFieldsToOptions(fields: FormCreateField[]): SelectOption[] {
+  function transformFieldsToOptions(fields: FormCreateField[], leftFieldType?: FieldTypeEnum): SelectOption[] {
     return fields
-      .filter((e) => ![FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE].includes(e.type))
+      .filter((e) => {
+        const condition = ![FieldTypeEnum.DIVIDER, FieldTypeEnum.PICTURE].includes(e.type) && props.selfId !== e.id;
+        if (leftFieldType) {
+          if (multipleValueTypeList.includes(leftFieldType)) {
+            return multipleValueTypeList.includes(e.type) && condition;
+          }
+          if (!multipleValueTypeList.includes(leftFieldType)) {
+            return !multipleValueTypeList.includes(e.type) && condition;
+          }
+        }
+        return condition;
+      })
       .map((field) => ({
         label: field.name,
         value: field.id,
         fieldType: field.type,
       }));
+  }
+
+  function fallbackOption(val?: string | number) {
+    return {
+      label: t('common.optionNotExist'),
+      value: val,
+    };
   }
 
   // 获取操作符号
@@ -170,7 +197,7 @@
       const item = {
         leftFieldId: undefined,
         leftFieldType: FieldTypeEnum.INPUT,
-        operator: OperatorEnum.EQUALS,
+        operator: undefined,
         rightFieldId: undefined,
         rightFieldCustom: false,
         rightFieldCustomValue: '',

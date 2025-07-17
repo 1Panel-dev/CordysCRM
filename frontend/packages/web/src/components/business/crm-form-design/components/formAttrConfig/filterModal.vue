@@ -6,6 +6,7 @@
     :positive-text="t('common.save')"
     footer
     @confirm="saveFilter"
+    @cancel="handleCancel"
   >
     <n-scrollbar class="max-h-[60vh]">
       <FilterContent
@@ -14,6 +15,7 @@
         :left-fields="fieldList"
         :right-fields="props.formFields"
         :data-index-placeholder="dataIndexPlaceholder"
+        :self-id="props.fieldConfig.id"
       />
     </n-scrollbar>
   </CrmModal>
@@ -40,7 +42,6 @@
   const props = defineProps<{
     searchMode?: 'AND' | 'OR';
     fieldConfig: FormCreateField;
-    formKey: FormDesignKeyEnum;
     formFields: FormCreateField[];
   }>();
 
@@ -53,14 +54,17 @@
     conditions: [],
   };
 
-  const formModel = ref<DataSourceFilterCombine>(props.fieldConfig.combineSearch || cloneDeep(defaultFormModel));
+  const formModel = ref<DataSourceFilterCombine>(
+    cloneDeep(props.fieldConfig.combineSearch) || cloneDeep(defaultFormModel)
+  );
+  const formKey = computed<FormDesignKeyEnum>(() => {
+    return dataSourceFilterFormKeyMap[
+      props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER
+    ] as FormDesignKeyEnum;
+  });
 
   const { fieldList, initFormConfig } = useFormCreateApi({
-    formKey: toRef(
-      dataSourceFilterFormKeyMap[
-        props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER
-      ] as FormDesignKeyEnum
-    ),
+    formKey,
   });
 
   const filterContentRef = ref<InstanceType<typeof FilterContent>>();
@@ -89,7 +93,7 @@
     async (val) => {
       if (val) {
         await initFormConfig();
-        formModel.value.conditions = props.fieldConfig.combineSearch?.conditions || [
+        formModel.value.conditions = cloneDeep(props.fieldConfig.combineSearch?.conditions) || [
           {
             leftFieldId: undefined,
             leftFieldType: FieldTypeEnum.INPUT,
@@ -101,6 +105,13 @@
           },
         ];
       }
+    },
+    {
+      immediate: true,
     }
   );
+
+  function handleCancel() {
+    formModel.value = cloneDeep(defaultFormModel);
+  }
 </script>

@@ -737,7 +737,6 @@
     v-if="fieldConfig"
     v-model:visible="showDataSourceFilterModal"
     :field-config="fieldConfig"
-    :form-key="props.formKey"
     :form-fields="props.list"
     @save="handleDataSourceFilterSave"
   />
