@@ -108,6 +108,9 @@
                     <when test="${sort}.name == 'follow_time'">
                         c.`follow_time` ${sortType}
                     </when>
+                    <when test="${sort}.name == 'follower_name' || ${sort}.name == 'follower'">
+                        c.`follower` ${sortType}
+                    </when>
                     <when test="${sort}.name == 'create_time'">
                         c.`create_time` ${sortType}
                     </when>

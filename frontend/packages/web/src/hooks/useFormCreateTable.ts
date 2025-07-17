@@ -105,7 +105,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         tooltip: true,
       },
       sortOrder: false,
-      sorter: false,
+      sorter: true,
     },
     {
       title: t('customer.lastFollowUpDate'),
@@ -381,7 +381,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
           tooltip: true,
         },
         sortOrder: false,
-        sorter: false,
+        sorter: true,
         render: (row: any) => row.followerName || '-',
       },
       {
