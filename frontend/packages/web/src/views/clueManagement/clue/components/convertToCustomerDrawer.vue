@@ -55,7 +55,6 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmNameTooltip from '@/components/pure/crm-name-tooltip/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
-  // import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
 
   import { getFieldDeptTree, reTransitionCustomer } from '@/api/modules';

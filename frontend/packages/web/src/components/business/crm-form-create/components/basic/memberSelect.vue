@@ -24,6 +24,7 @@
           : [DeptNodeTypeEnum.USER, DeptNodeTypeEnum.ROLE]
       "
       @confirm="handleConfirm"
+      @delete-tag="handleConfirm"
     />
   </n-form-item>
 </template>
