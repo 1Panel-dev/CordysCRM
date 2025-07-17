@@ -61,8 +61,8 @@
             <div class="flex flex-1 items-center gap-[8px] overflow-hidden">
               <CrmIcon
                 type="iconicon_move"
-                :class="`sort-handle text-[var(--text-n4)] ${
-                  element.key !== SpecialColumnEnum.OPERATION ? 'cursor-move ' : 'cursor-not-allowed'
+                :class="`text-[var(--text-n4)] ${
+                  element.key !== SpecialColumnEnum.OPERATION ? 'sort-handle cursor-move' : 'cursor-not-allowed'
                 }`"
                 :size="12"
               />

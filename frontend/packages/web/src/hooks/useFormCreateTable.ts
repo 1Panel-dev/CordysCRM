@@ -260,6 +260,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         title: t('customer.disableReason'),
         width: 120,
         key: 'disableReason',
+        sortOrder: false,
+        sorter: true,
         ellipsis: {
           tooltip: true,
         },
@@ -271,8 +273,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
-        sortOrder: false,
-        sorter: false,
+        sorter: true,
+        filter: true,
         render: (row: any) => row.departmentName || '-',
       },
     ],
@@ -481,6 +483,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             FieldTypeEnum.MEMBER_MULTIPLE,
             FieldTypeEnum.SELECT_MULTIPLE,
             FieldTypeEnum.DATA_SOURCE_MULTIPLE,
+            FieldTypeEnum.USER_TAG_SELECTOR,
+            FieldTypeEnum.CHECKBOX,
           ];
           if (field.type === FieldTypeEnum.PICTURE) {
             return {
