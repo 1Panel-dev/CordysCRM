@@ -27,7 +27,7 @@ public abstract class MoveNodeService {
     private static final String MOVE_POS_OPERATOR_LATEST = "latest";
     private static final String DRAG_NODE_NOT_EXIST = "drag_node.not.exist";
 
-
+    public static final String ROOT_NODE_PARENT_ID = "NONE";
     /**
      * 构建节点排序的参数
      *
@@ -36,7 +36,7 @@ public abstract class MoveNodeService {
      * @param selectPosNodeFunc 通过parentId和Pos运算符查询节点的函数
      * @return
      */
-    public NodeSortDTO getNodeSortDTO(NodeMoveRequest request, Function<String, BaseTree> selectIdNodeFunc, Function<NodeSortQueryParam, BaseTree> selectPosNodeFunc) {
+    public NodeSortDTO getNodeSortDTO(NodeMoveRequest request, Function<String, BaseTree> selectIdNodeFunc, Function<NodeSortQueryParam, BaseTree> selectPosNodeFunc, boolean isDepartment) {
         if (StringUtils.equals(request.getDragNodeId(), request.getDropNodeId())) {
             //两种节点不能一样
             throw new GenericException(Translator.get("invalid_parameter") + ": drag node  and drop node");
@@ -63,10 +63,19 @@ public abstract class MoveNodeService {
             sortParam.setOperator(MOVE_POS_OPERATOR_LATEST);
             previousNode = selectPosNodeFunc.apply(sortParam);
         } else {
-            parentModule = selectIdNodeFunc.apply(dropNode.getParentId());
-            if(parentModule == null) {
-                throw new GenericException(Translator.get("illegal_operation"));
+            if (isDepartment) {
+                parentModule = selectIdNodeFunc.apply(dropNode.getParentId());
+                if (parentModule == null) {
+                    throw new GenericException(Translator.get("illegal_operation"));
+                }
+            } else {
+                if (StringUtils.equalsIgnoreCase(dropNode.getParentId(), ROOT_NODE_PARENT_ID)) {
+                    parentModule = new BaseTree(ROOT_NODE_PARENT_ID, ROOT_NODE_PARENT_ID, 0, dragNode.getOrganizationId(), ROOT_NODE_PARENT_ID);
+                } else {
+                    parentModule = selectIdNodeFunc.apply(dropNode.getParentId());
+                }
             }
+
             if (request.getDropPosition() == 1) {
                 //dropPosition=1: 放到dropNode节点后，原dropNode后面的节点之前
                 previousNode = dropNode;

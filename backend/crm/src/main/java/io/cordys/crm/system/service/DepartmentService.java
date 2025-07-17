@@ -411,7 +411,8 @@ public class DepartmentService extends MoveNodeService {
     public void sort(NodeMoveRequest request, String operatorId, String orgId) {
         NodeSortDTO nodeSortDTO = super.getNodeSortDTO(request,
                 extDepartmentMapper::selectBaseTreeById,
-                extDepartmentMapper::selectTreeByParentIdAndPosOperator);
+                extDepartmentMapper::selectTreeByParentIdAndPosOperator,
+                true);
         Department department = new Department();
         department.setParentId(nodeSortDTO.getParent().getId());
         department.setId(request.getDragNodeId());

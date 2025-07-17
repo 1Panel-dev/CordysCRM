@@ -446,13 +446,11 @@ public class OpportunityService {
         }
 
         if (StringUtils.equalsIgnoreCase(request.getStage(), StageType.SUCCESS.name())) {
-            newOpportunity.setExpectedEndTime(request.getExpectedEndTime());
             newOpportunity.setActualEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
         }
 
         if (StringUtils.equalsIgnoreCase(request.getStage(), StageType.FAIL.name())) {
             newOpportunity.setActualEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
-            newOpportunity.setExpectedEndTime(request.getExpectedEndTime());
             newOpportunity.setFailureReason(request.getFailureReason());
         }
 
