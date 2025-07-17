@@ -563,25 +563,25 @@ public class ClueService {
      */
     public void transitionOldCustomer(ReTransitionCustomerRequest request, String currentUser, String orgId) {
         boolean notice = false;
+        Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
         if (customer.getInSharedPool()) {
             // 如果客户已经在公海中，则领取改客户
             PoolCustomerPickRequest pickRequest = new PoolCustomerPickRequest();
             pickRequest.setCustomerId(request.getCustomerId());
             pickRequest.setPoolId(customer.getPoolId());
-            poolCustomerService.pick(pickRequest, currentUser, orgId);
+            poolCustomerService.pick(pickRequest, clue.getOwner(), orgId);
         } else {
-            if (!StringUtils.equals(customer.getOwner(), currentUser) && !customerCollaborationService.hasCollaboration(currentUser, request.getCustomerId())) {
+            if (!StringUtils.equals(customer.getOwner(), clue.getOwner()) && !customerCollaborationService.hasCollaboration(clue.getOwner(), request.getCustomerId())) {
                 // 如果非客户负责人，且非客户协作人, 则添加协作关系
                 CustomerCollaborationAddRequest collaborationAddRequest = new CustomerCollaborationAddRequest();
                 collaborationAddRequest.setCustomerId(request.getCustomerId());
                 collaborationAddRequest.setCollaborationType("COLLABORATION");
-                collaborationAddRequest.setUserId(currentUser);
+                collaborationAddRequest.setUserId(clue.getOwner());
                 customerCollaborationService.add(collaborationAddRequest, currentUser);
                 notice = true;
             }
         }
-        Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
         clue.setTransitionId(request.getCustomerId());
         clue.setTransitionType("CUSTOMER");
         clueMapper.update(clue);
@@ -593,13 +593,13 @@ public class ClueService {
                 contactAddRequest.setCustomerId(request.getCustomerId());
                 contactAddRequest.setName(clue.getContact());
                 contactAddRequest.setPhone(clue.getPhone());
-                contactAddRequest.setOwner(currentUser);
+                contactAddRequest.setOwner(clue.getOwner());
                 customerContactService.add(contactAddRequest, currentUser, orgId);
             }
         }
 
         if (notice) {
-            String ownerName = extUserMapper.selectUserNameByIds(List.of(currentUser)).getFirst();
+            String ownerName = extUserMapper.selectUserNameByIds(List.of(clue.getOwner())).getFirst();
             Map<String, Object> paramMap = new HashMap<>(8);
             paramMap.put("useTemplate", "true");
             paramMap.put("template", Translator.get("message.clue_convert_exist_customer_text"));
