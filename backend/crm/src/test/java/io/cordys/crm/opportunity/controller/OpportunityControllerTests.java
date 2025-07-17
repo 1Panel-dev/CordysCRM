@@ -161,10 +161,8 @@ public class OpportunityControllerTests extends BaseTest {
         OpportunityStageRequest request = new OpportunityStageRequest();
         request.setId(addOpportunity.getId());
         request.setStage("SUCCESS");
-        request.setExpectedEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
         this.requestPostWithOk(UPDATE_STAGE, request);
         request.setStage("FAIL");
-        request.setExpectedEndTime(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
         request.setFailureReason("test_fail");
         this.requestPostWithOk(UPDATE_STAGE, request);
     }
