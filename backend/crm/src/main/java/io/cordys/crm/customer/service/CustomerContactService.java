@@ -428,10 +428,10 @@ public class CustomerContactService {
             BaseField baseField = JSON.parseObject(blob.getProp(), BaseField.class);
             String internalKey = baseField.getInternalKey();
             boolean hasUnique = baseField.getRules().stream().anyMatch(rule -> RuleValidatorConstants.UNIQUE.equals(rule.getKey()));
-            if (BusinessModuleField.CUSTOMER_CONTACT_NAME.name().equals(internalKey)) {
+            if (StringUtils.equalsIgnoreCase(internalKey, BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey())) {
 				nameUnique = hasUnique;
 			}
-            if (BusinessModuleField.CUSTOMER_CONTACT_PHONE.name().equals(internalKey)) {
+            if (StringUtils.equalsIgnoreCase(internalKey, BusinessModuleField.CUSTOMER_CONTACT_PHONE.getKey())) {
 				phoneUnique = hasUnique;
 			}
         }
