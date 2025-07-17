@@ -89,6 +89,7 @@ export default {
   'common.preview': '预览',
   'common.fullScreen': '全屏',
   'common.offFullScreen': '退出全屏',
+  'common.offFullScreenTip': '快捷键"Command+E" / "Control+E" 按一次全屏，两次退出',
   'common.allSelect': '全选',
   'common.setting': '设置',
   'common.resetDefault': '恢复默认',

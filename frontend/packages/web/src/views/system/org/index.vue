@@ -1,8 +1,8 @@
 <template>
   <CrmCard no-content-padding hide-footer :special-height="licenseStore.expiredDuring ? 64 : 0">
-    <CrmSplitPanel :max="0.5" :min="0.2" :default-size="0.2">
+    <CrmSplitPanel class="h-full" :max="0.5" :min="0.25" :default-size="0.25">
       <template #1>
-        <div class="org-tree-wrapper">
+        <div class="org-tree-wrapper h-full">
           <OrgModuleTree
             ref="orgModuleTreeRef"
             :is-sync-from-third-checked="isSyncFromThirdChecked"

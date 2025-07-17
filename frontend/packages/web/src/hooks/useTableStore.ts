@@ -136,6 +136,24 @@ export default function useTableStore() {
     }
   }
 
+  async function setTableLineHeight(tableKey: TableKeyEnum, layout: string): Promise<void> {
+    try {
+      const tableColumnsMap = await getTableColumnsMap(tableKey);
+      if (tableColumnsMap) {
+        tableColumnsMap.layout = layout;
+        await setTableColumnsMap(tableKey, tableColumnsMap);
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
+  }
+
+  async function getTableLineHeight(tableKey: TableKeyEnum) {
+    const tableColumnsMap = await getTableColumnsMap(tableKey);
+    return tableColumnsMap && tableColumnsMap.layout ? tableColumnsMap.layout : 'compact';
+  }
+
   return {
     initColumn,
     getCanSetColumns,
@@ -143,5 +161,7 @@ export default function useTableStore() {
     getShowInTableColumns,
     setPageSize,
     getPageSize,
+    setTableLineHeight,
+    getTableLineHeight,
   };
 }

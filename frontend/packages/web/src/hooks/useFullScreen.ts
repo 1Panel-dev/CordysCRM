@@ -15,6 +15,8 @@ export default function useFullScreen(
 ): UseFullScreen {
   const isFullScreen = ref(false);
   const originalStyle = ref('');
+  const lastKeyPressTime = ref(0);
+  const keyPressTimeout = ref<NodeJS.Timeout>();
 
   function enterFullScreen() {
     const dom = unref(domRef);
@@ -43,6 +45,39 @@ export default function useFullScreen(
       enterFullScreen();
     }
   }
+  // 快捷键全屏和退出
+  function handleKeyDown(event: KeyboardEvent) {
+    // 检查是否是 Command/Ctrl + E
+    if ((event.metaKey || event.ctrlKey) && event.key === 'e') {
+      event.preventDefault();
+      const now = Date.now();
+      if (keyPressTimeout.value) {
+        clearTimeout(keyPressTimeout.value);
+      }
+      if (now - lastKeyPressTime.value < 500) {
+        exitFullscreen();
+      } else {
+        toggleFullScreen();
+      }
+      lastKeyPressTime.value = now;
+      keyPressTimeout.value = setTimeout(() => {
+        lastKeyPressTime.value = 0;
+      }, 500);
+    }
+  }
+
+  // 添加键盘事件监听
+  onMounted(() => {
+    window.addEventListener('keydown', handleKeyDown);
+  });
+
+  // 移除键盘事件监听
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeyDown);
+    if (keyPressTimeout.value) {
+      clearTimeout(keyPressTimeout.value);
+    }
+  });
 
   return {
     isFullScreen,

@@ -1,55 +1,59 @@
 <template>
-  <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
-  </CrmCard>
-  <CrmCard :special-height="64" hide-footer>
-    <CrmTable
-      ref="crmTableRef"
-      v-model:checked-row-keys="checkedRowKeys"
-      v-bind="propsRes"
-      :columns="tableColumns"
-      :not-show-table-filter="isAdvancedSearchMode"
-      :action-config="actionConfig"
-      @page-change="propsEvent.pageChange"
-      @page-size-change="propsEvent.pageSizeChange"
-      @sorter-change="propsEvent.sorterChange"
-      @filter-change="propsEvent.filterChange"
-      @batch-action="handleBatchAction"
-    >
-      <template #actionLeft>
-        <div class="flex items-center gap-[12px]">
-          <n-button
-            v-if="activeTab !== CustomerSearchTypeEnum.VISIBLE"
-            v-permission="['CUSTOMER_MANAGEMENT:ADD']"
-            type="primary"
-            @click="handleNewClick"
-          >
-            {{ t('customer.new') }}
-          </n-button>
-          <n-button
-            v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT']) && activeTab !== CustomerSearchTypeEnum.VISIBLE"
-            type="primary"
-            ghost
-            class="n-btn-outline-primary"
-            :disabled="propsRes.data.length === 0"
-            @click="handleExportAllClick"
-          >
-            {{ t('common.exportAll') }}
-          </n-button>
-        </div>
-      </template>
-      <template #actionRight>
-        <CrmAdvanceFilter
-          ref="tableAdvanceFilterRef"
-          v-model:keyword="keyword"
-          :custom-fields-config-list="filterConfigList"
-          :filter-config-list="customFieldsFilterConfig"
-          @adv-search="handleAdvSearch"
-          @keyword-search="searchData"
-        />
-      </template>
-    </CrmTable>
-  </CrmCard>
+  <div ref="customerCardRef" class="h-full">
+    <CrmCard no-content-padding hide-footer>
+      <CrmTab v-model:active-tab="activeTab" no-content-padding :tab-list="tabList" type="line" />
+      <div class="h-[calc(100%-48px)] p-[16px]">
+        <CrmTable
+          ref="crmTableRef"
+          v-model:checked-row-keys="checkedRowKeys"
+          v-bind="propsRes"
+          :columns="tableColumns"
+          :not-show-table-filter="isAdvancedSearchMode"
+          :action-config="actionConfig"
+          is-outer-control-full-screen
+          @page-change="propsEvent.pageChange"
+          @page-size-change="propsEvent.pageSizeChange"
+          @sorter-change="propsEvent.sorterChange"
+          @filter-change="propsEvent.filterChange"
+          @batch-action="handleBatchAction"
+          @toggle-full-screen="toggleFullScreen"
+        >
+          <template #actionLeft>
+            <div class="flex items-center gap-[12px]">
+              <n-button
+                v-if="activeTab !== CustomerSearchTypeEnum.VISIBLE"
+                v-permission="['CUSTOMER_MANAGEMENT:ADD']"
+                type="primary"
+                @click="handleNewClick"
+              >
+                {{ t('customer.new') }}
+              </n-button>
+              <n-button
+                v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT']) && activeTab !== CustomerSearchTypeEnum.VISIBLE"
+                type="primary"
+                ghost
+                class="n-btn-outline-primary"
+                :disabled="propsRes.data.length === 0"
+                @click="handleExportAllClick"
+              >
+                {{ t('common.exportAll') }}
+              </n-button>
+            </div>
+          </template>
+          <template #actionRight>
+            <CrmAdvanceFilter
+              ref="tableAdvanceFilterRef"
+              v-model:keyword="keyword"
+              :custom-fields-config-list="filterConfigList"
+              :filter-config-list="customFieldsFilterConfig"
+              @adv-search="handleAdvSearch"
+              @keyword-search="searchData"
+            />
+          </template>
+        </CrmTable>
+      </div>
+    </CrmCard>
+  </div>
   <TransferModal
     v-model:show="showTransferModal"
     :source-ids="checkedRowKeys"
@@ -121,6 +125,7 @@
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useFullScreen from '@/hooks/useFullScreen';
   import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -382,6 +387,8 @@
 
   // 概览
   const showOverviewDrawer = ref(false);
+  const customerCardRef = ref<HTMLElement | null>(null);
+  const { toggleFullScreen } = useFullScreen(customerCardRef);
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER,

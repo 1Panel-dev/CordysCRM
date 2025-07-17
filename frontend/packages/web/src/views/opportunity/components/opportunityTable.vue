@@ -5,11 +5,13 @@
     v-bind="propsRes"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="actionConfig"
+    is-outer-control-full-screen
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
     @filter-change="propsEvent.filterChange"
     @batch-action="handleBatchAction"
+    @toggle-full-screen="() => emit('toggleFullScreen')"
   >
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
@@ -128,6 +130,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'openCustomerDrawer', activeSourceId: string): void;
+    (e: 'toggleFullScreen'): void;
   }>();
 
   const Message = useMessage();

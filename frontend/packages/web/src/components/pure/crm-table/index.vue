@@ -1,5 +1,9 @@
 <template>
-  <div class="relative flex h-full flex-col overflow-hidden">
+  <div
+    ref="tableFullRef"
+    class="relative flex h-full flex-col overflow-hidden"
+    :class="isFullScreen && !props.isOuterControlFullScreen ? 'bg-[var(--text-n10)] p-[16px]' : ''"
+  >
     <BatchAction
       v-if="props.actionConfig"
       :select-row-count="checkedRowKeys.length"
@@ -14,13 +18,25 @@
       <template #actionRight>
         <div class="flex items-center gap-[8px]">
           <slot name="actionRight"></slot>
-          <div v-if="attrs.showSetting && props.actionConfig" class="crm-table-setting flex items-center">
-            <ColumnSetting
-              :table-key="attrs.tableKey as TableKeyEnum"
-              @change-columns-setting="() => initColumn(true)"
+          <ColumnSetting
+            v-if="attrs.showSetting && props.actionConfig"
+            :table-key="attrs.tableKey as TableKeyEnum"
+            @change-columns-setting="changeColumnsSetting"
+          />
+
+          <n-button
+            v-if="!attrs.showAllScreen && props.actionConfig"
+            type="default"
+            class="outline--secondary px-[8px]"
+            @click="handleToggleFullScreen"
+          >
+            <CrmIcon
+              class="text-[var(--text-n1)]"
+              :type="isFullScreen ? 'iconicon_off_screen' : 'iconicon_full_screen_one'"
+              :size="16"
             />
-          </div>
-          <div v-if="!attrs.hiddenTotal" class="whitespace-nowrap text-[var(--text-n2)]">
+          </n-button>
+          <div v-if="!attrs.hiddenTotal" class="whitespace-nowrap text-[var(--text-n1)]">
             {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
           </div>
         </div>
@@ -35,6 +51,18 @@
         :table-key="attrs.tableKey as TableKeyEnum"
         @change-columns-setting="() => initColumn(true)"
       />
+      <n-button
+        v-if="!attrs.showAllScreen && !props.actionConfig"
+        type="default"
+        class="outline--secondary px-[8px]"
+        @click="handleToggleFullScreen"
+      >
+        <CrmIcon
+          class="text-[var(--text-n1)]"
+          :type="isFullScreen ? 'iconicon_off_screen' : 'iconicon_full_screen_one'"
+          :size="16"
+        />
+      </n-button>
       <div v-if="!attrs.hiddenTotal" class="whitespace-nowrap text-[var(--text-n2)]">
         {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
       </div>
@@ -46,11 +74,13 @@
       :columns="currentColumns as TableColumns"
       :row-key="getRowKey"
       flex-height
-      :class="`${props.notShowTableFilter ? 'not-show-filter' : ''} flex-1`"
+      :class="`${props.notShowTableFilter ? 'not-show-filter' : ''} ${
+        attrs.showSetting ? crmTableLayoutClass : ''
+      } flex-1`"
       virtual-scroll
       :virtual-scroll-x="props.virtualScrollX"
-      :min-row-height="46"
-      :header-height="48"
+      :min-row-height="tableLineHeight"
+      :header-height="tableLineHeight"
       @update:sorter="handleSorterChange"
       @update:filters="handleFiltersChange"
       @update:checked-row-keys="handleCheck"
@@ -66,11 +96,14 @@
         </div>
       </template>
     </n-data-table>
+    <div v-if="hasFinished" class="crm-table-bottom-tip text-center">
+      {{ t('crmTable.tableScrollFinishedTip') }}
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { NCheckbox, NDataTable, NTooltip } from 'naive-ui';
+  import { NButton, NCheckbox, NDataTable, NTooltip } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
@@ -85,6 +118,7 @@
   import BatchAction from './components/batchAction.vue';
   import ColumnSetting from './components/columnSetting.vue';
 
+  import useFullScreen from '@/hooks/useFullScreen';
   import useTableStore from '@/hooks/useTableStore';
   import { useAppStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
@@ -109,6 +143,7 @@
     notShowTableFilter?: boolean; // 不显示表头筛选
     draggable?: boolean; // 允许拖拽
     virtualScrollX?: boolean; // 是否开启横向虚拟滚动
+    isOuterControlFullScreen?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;
@@ -118,10 +153,15 @@
     (e: 'sorterChange', value: SortParams): void;
     (e: 'rowKeyChange', keys: DataTableRowKey[], rows: InternalRowData[]): void;
     (e: 'drag', params: TableDraggedParams): void;
+    (e: 'toggleFullScreen'): void;
   }>();
   const attrs = useAttrs();
   const { t } = useI18n();
   const tableStore = useTableStore();
+
+  const tableFullRef = ref<HTMLElement | null>(null);
+
+  const { toggleFullScreen } = useFullScreen(tableFullRef);
 
   const checkedRowKeys = defineModel<DataTableRowKey[]>('checkedRowKeys', { default: [] });
 
@@ -350,10 +390,26 @@
     ] as CrmDataTableColumn[];
   }
 
+  const crmTableLayoutClass = ref('');
+  const layOut = ref<string>();
+  async function initLayoutType() {
+    if (attrs.showSetting) {
+      const layout = await tableStore.getTableLineHeight(attrs.tableKey as TableKeyEnum);
+      layOut.value = layout;
+      crmTableLayoutClass.value = layout === 'compact' ? 'crm-data-table-compact' : 'crm-data-table-loose';
+    }
+  }
+
+  function changeColumnsSetting() {
+    initColumn(true);
+    initLayoutType();
+  }
+
   watch(
     () => props.columns,
     () => {
       initColumn();
+      initLayoutType();
     },
     { immediate: true }
   );
@@ -437,9 +493,11 @@
     emit('rowKeyChange', rowKeys, selectedRows.value);
   }
 
+  const hasFinished = ref(false);
   function handleScroll(e: Event) {
     const target = e.target as HTMLElement;
     const pagination = attrs.crmPagination as any;
+    hasFinished.value = false;
     // 处理有纵向滚动的情况
     if (
       target.scrollHeight > target.clientHeight && // 有纵向滚动条
@@ -448,6 +506,8 @@
     ) {
       if (pagination.itemCount > pagination.page * pagination.pageSize) {
         emit('pageChange', pagination.page + 1);
+      } else {
+        hasFinished.value = true;
       }
     }
   }
@@ -523,6 +583,23 @@
     }, 0)
   );
 
+  const isFullScreen = ref(false);
+  function handleToggleFullScreen() {
+    isFullScreen.value = !isFullScreen.value;
+    if (props.isOuterControlFullScreen) {
+      emit('toggleFullScreen');
+    } else {
+      toggleFullScreen();
+    }
+  }
+
+  const tableLineHeight = computed(() => {
+    if (attrs.showSetting) {
+      return layOut.value === 'compact' ? 36 : 46;
+    }
+    return 46;
+  });
+
   defineExpose({
     scrollTo,
   });
@@ -565,5 +642,19 @@
   }
   :deep(.n-data-table-td[data-col-key='order']) {
     padding-right: 0;
+  }
+  :deep(.n-data-table-td) {
+    vertical-align: middle;
+  }
+  .crm-table-bottom-tip {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    z-index: 999;
+    width: 100%;
+    height: 22px;
+    border-radius: 4px 4px 12px 12px;
+    background: var(--text-n10);
+    box-shadow: 0 -4px 10px rgb(100 103 103 / 5%);
   }
 </style>

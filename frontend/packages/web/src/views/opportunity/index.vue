@@ -1,10 +1,16 @@
 <template>
-  <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
-  </CrmCard>
-  <CrmCard hide-footer :special-height="64">
-    <CrmOpportunityTable :active-tab="activeTab" @open-customer-drawer="handleOpenCustomerDrawer" />
-  </CrmCard>
+  <div ref="opportunityCardRef" class="h-full">
+    <CrmCard hide-footer no-content-padding>
+      <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+      <div class="h-[calc(100%-48px)] p-[16px]">
+        <CrmOpportunityTable
+          :active-tab="activeTab"
+          @toggle-full-screen="toggleFullScreen"
+          @open-customer-drawer="handleOpenCustomerDrawer"
+        />
+      </div>
+    </CrmCard>
+  </div>
   <customerOverviewDrawer v-model:show="showCustomerOverviewDrawer" :source-id="activeSourceId" />
 </template>
 
@@ -20,9 +26,12 @@
   import CrmOpportunityTable from './components/opportunityTable.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
 
+  import useFullScreen from '@/hooks/useFullScreen';
   import useHiddenTab from '@/hooks/useHiddenTab';
 
   const { t } = useI18n();
+  const opportunityCardRef = ref<HTMLElement | null>(null);
+  const { toggleFullScreen } = useFullScreen(opportunityCardRef);
 
   const allTabList: TabPaneProps[] = [
     {

@@ -1,78 +1,81 @@
 <template>
-  <CrmCard no-content-padding hide-footer auto-height class="mb-[16px]">
-    <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
-  </CrmCard>
-
-  <CrmCard hide-footer :special-height="64">
-    <CrmTable
-      ref="crmTableRef"
-      v-model:checked-row-keys="checkedRowKeys"
-      v-bind="propsRes"
-      :not-show-table-filter="isAdvancedSearchMode"
-      :action-config="actionConfig"
-      @page-change="propsEvent.pageChange"
-      @page-size-change="propsEvent.pageSizeChange"
-      @sorter-change="propsEvent.sorterChange"
-      @filter-change="propsEvent.filterChange"
-      @batch-action="handleBatchAction"
-    >
-      <template #actionLeft>
-        <div class="flex items-center gap-[12px]">
-          <n-button v-permission="['CLUE_MANAGEMENT:ADD']" type="primary" @click="handleAdd">
-            {{ t('clueManagement.newClue') }}
-          </n-button>
-          <n-button
-            v-if="hasAnyPermission(['CLUE_MANAGEMENT:EXPORT']) && activeTab !== CustomerSearchTypeEnum.VISIBLE"
-            type="primary"
-            ghost
-            class="n-btn-outline-primary"
-            :disabled="propsRes.data.length === 0"
-            @click="handleExportAllClick"
-          >
-            {{ t('common.exportAll') }}
-          </n-button>
-        </div>
-      </template>
-      <template #actionRight>
-        <CrmAdvanceFilter
-          ref="tableAdvanceFilterRef"
-          v-model:keyword="keyword"
-          :custom-fields-config-list="filterConfigList"
-          :filter-config-list="customFieldsFilterConfig"
-          @adv-search="handleAdvSearch"
-          @keyword-search="searchData"
-        />
-      </template>
-    </CrmTable>
-  </CrmCard>
-  <TransferModal
-    v-model:show="showTransferModal"
-    :source-ids="checkedRowKeys"
-    :save-api="batchTransferClue"
-    @load-list="handleRefresh"
-  />
-  <ClueOverviewDrawer
-    v-if="isInitOverviewDrawer"
-    v-model:show="showOverviewDrawer"
-    :detail="activeClue"
-    @refresh="handleRefresh"
-    @convert-to-customer="() => handleConvertToCustomer(activeClue)"
-  />
-  <CrmFormCreateDrawer
-    v-if="isInitFormCreateDrawer"
-    v-model:visible="formCreateDrawerVisible"
-    :form-key="formKey"
-    :source-id="activeClueId"
-    :need-init-detail="needInitDetail"
-    :initial-source-name="activeRowName"
-    :other-save-params="otherFollowRecordSaveParams"
-    @saved="loadList"
-  />
-  <ToCluePoolResultModel
-    v-model:show="showToCluePoolResultModel"
-    :fail-count="failCount"
-    :success-count="successCount"
-  />
+  <div ref="leadCardRef" class="h-full">
+    <CrmCard no-content-padding hide-footer>
+      <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
+      <div class="h-[calc(100%-48px)] p-[16px]">
+        <CrmTable
+          ref="crmTableRef"
+          v-model:checked-row-keys="checkedRowKeys"
+          v-bind="propsRes"
+          :not-show-table-filter="isAdvancedSearchMode"
+          :action-config="actionConfig"
+          is-outer-control-full-screen
+          @page-change="propsEvent.pageChange"
+          @page-size-change="propsEvent.pageSizeChange"
+          @sorter-change="propsEvent.sorterChange"
+          @filter-change="propsEvent.filterChange"
+          @batch-action="handleBatchAction"
+          @toggle-full-screen="toggleFullScreen"
+        >
+          <template #actionLeft>
+            <div class="flex items-center gap-[12px]">
+              <n-button v-permission="['CLUE_MANAGEMENT:ADD']" type="primary" @click="handleAdd">
+                {{ t('clueManagement.newClue') }}
+              </n-button>
+              <n-button
+                v-if="hasAnyPermission(['CLUE_MANAGEMENT:EXPORT']) && activeTab !== CustomerSearchTypeEnum.VISIBLE"
+                type="primary"
+                ghost
+                class="n-btn-outline-primary"
+                :disabled="propsRes.data.length === 0"
+                @click="handleExportAllClick"
+              >
+                {{ t('common.exportAll') }}
+              </n-button>
+            </div>
+          </template>
+          <template #actionRight>
+            <CrmAdvanceFilter
+              ref="tableAdvanceFilterRef"
+              v-model:keyword="keyword"
+              :custom-fields-config-list="filterConfigList"
+              :filter-config-list="customFieldsFilterConfig"
+              @adv-search="handleAdvSearch"
+              @keyword-search="searchData"
+            />
+          </template>
+        </CrmTable>
+      </div>
+    </CrmCard>
+    <TransferModal
+      v-model:show="showTransferModal"
+      :source-ids="checkedRowKeys"
+      :save-api="batchTransferClue"
+      @load-list="handleRefresh"
+    />
+    <ClueOverviewDrawer
+      v-if="isInitOverviewDrawer"
+      v-model:show="showOverviewDrawer"
+      :detail="activeClue"
+      @refresh="handleRefresh"
+      @convert-to-customer="() => handleConvertToCustomer(activeClue)"
+    />
+    <CrmFormCreateDrawer
+      v-if="isInitFormCreateDrawer"
+      v-model:visible="formCreateDrawerVisible"
+      :form-key="formKey"
+      :source-id="activeClueId"
+      :need-init-detail="needInitDetail"
+      :initial-source-name="activeRowName"
+      :other-save-params="otherFollowRecordSaveParams"
+      @saved="loadList"
+    />
+    <ToCluePoolResultModel
+      v-model:show="showToCluePoolResultModel"
+      :fail-count="failCount"
+      :success-count="successCount"
+    />
+  </div>
   <CrmTableExportModal
     v-model:show="showExportModal"
     :params="exportParams"
@@ -123,6 +126,7 @@
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useFullScreen from '@/hooks/useFullScreen';
   import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -148,6 +152,10 @@
       tab: t('clue.departmentClues'),
     },
   ];
+
+  const leadCardRef = ref<HTMLElement | null>(null);
+
+  const { toggleFullScreen } = useFullScreen(leadCardRef);
 
   const { tabList, activeTab } = useHiddenTab(allTabList, FormDesignKeyEnum.CLUE);
 

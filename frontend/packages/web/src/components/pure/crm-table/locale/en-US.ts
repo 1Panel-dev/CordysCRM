@@ -3,4 +3,9 @@ export default {
   'crmTable.columnSetting.resetDefault': 'Restore default',
   'crmTable.order': 'Order',
   'crmTable.bottomTip': 'You have reached the bottom~',
+  'crmTable.columnSetting.tableHeaderSettings': 'Table header settings',
+  'crmTable.columnSetting.tableLineHeightSettings': 'Table line height settings',
+  'crmTable.columnSetting.compact': 'Compact',
+  'crmTable.columnSetting.loose': 'Loose',
+  'crmTable.tableScrollFinishedTip': 'Reached the end~',
 };

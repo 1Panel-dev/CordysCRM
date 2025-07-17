@@ -88,6 +88,7 @@ export default {
   'common.preview': 'Preview',
   'common.fullScreen': 'Full screen',
   'common.offFullScreen': 'Off full screen',
+  'common.offFullScreenTip': 'The shortcuts "Command+E"/"Control+E" press full screen once and exit twice',
   'common.allSelect': 'All select',
   'common.setting': 'Setting',
   'common.resetDefault': 'Reset default',
