@@ -17,6 +17,7 @@
       :multiple="fieldConfig.type === FieldTypeEnum.DATA_SOURCE_MULTIPLE"
       :data-source-type="props.fieldConfig.dataSourceType || FieldDataSourceTypeEnum.CUSTOMER"
       :disabled="props.fieldConfig.editable === false"
+      :filter-params="getParams()"
       @change="($event) => emit('change', $event)"
     />
   </n-form-item>
@@ -27,14 +28,17 @@
 
   import { FieldDataSourceTypeEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
+  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
 
+  import { multipleValueTypeList } from '../../config';
   import { FormCreateField } from '../../types';
 
   const props = defineProps<{
     fieldConfig: FormCreateField;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
+    formDetail?: Record<string, any>;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: (string | number)[]): void;
@@ -43,6 +47,20 @@
   const value = defineModel<(string | number)[]>('value', {
     default: [],
   });
+
+  function getParams(): FilterResult {
+    const conditions = props.fieldConfig.combineSearch?.conditions.map((item) => ({
+      value: item.rightFieldCustom ? item.rightFieldCustomValue : props.formDetail?.[item.rightFieldId || ''],
+      operator: item.operator,
+      name: item.leftFieldId ?? '',
+      multipleValue: multipleValueTypeList.includes(item.leftFieldType),
+    }));
+
+    return {
+      searchMode: props.fieldConfig.combineSearch?.searchMode,
+      conditions,
+    };
+  }
 
   watch(
     () => props.fieldConfig.defaultValue,

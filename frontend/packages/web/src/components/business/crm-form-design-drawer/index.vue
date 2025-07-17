@@ -33,7 +33,12 @@
         <n-button type="primary" :loading="loading" @click="handleSave">{{ t('common.save') }}</n-button>
       </div>
     </template>
-    <CrmFormDesign v-if="visible" v-model:form-config="formConfig" v-model:field-list="fieldList" />
+    <CrmFormDesign
+      v-if="visible"
+      v-model:form-config="formConfig"
+      v-model:field-list="fieldList"
+      :form-key="props.formKey"
+    />
   </CrmDrawer>
 </template>
 

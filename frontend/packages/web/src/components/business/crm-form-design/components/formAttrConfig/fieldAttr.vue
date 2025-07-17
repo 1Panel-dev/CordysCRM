@@ -119,19 +119,26 @@
       </div>
       <!-- date End -->
       <!-- 数据源属性 -->
-      <div
-        v-if="[FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(fieldConfig.type)"
-        class="crm-form-design-config-item"
-      >
-        <div class="crm-form-design-config-item-title">
-          {{ t('common.type') }}
+      <template v-if="[FieldTypeEnum.DATA_SOURCE, FieldTypeEnum.DATA_SOURCE_MULTIPLE].includes(fieldConfig.type)">
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.dataSource') }}
+          </div>
+          <n-select
+            v-model:value="fieldConfig.dataSourceType"
+            :options="dataSourceOptions"
+            :disabled="fieldConfig.disabledProps?.includes('dataSourceType')"
+          />
         </div>
-        <n-select
-          v-model:value="fieldConfig.dataSourceType"
-          :options="dataSourceOptions"
-          :disabled="fieldConfig.disabledProps?.includes('dataSourceType')"
-        />
-      </div>
+        <div class="crm-form-design-config-item">
+          <div class="crm-form-design-config-item-title">
+            {{ t('crmFormDesign.dataSourceFilter') }}
+          </div>
+          <n-button :disabled="fieldConfig.disabledProps?.includes('dataSource')" @click="handleDataSourceFilter">
+            {{ t('common.setting') }}
+          </n-button>
+        </div>
+      </template>
       <!-- 数据源属性 End -->
       <!-- 选项属性 -->
       <!-- <div
@@ -726,6 +733,14 @@
       </n-button>
     </div>
   </CrmModal>
+  <FilterModal
+    v-if="fieldConfig"
+    v-model:visible="showDataSourceFilterModal"
+    :field-config="fieldConfig"
+    :form-key="props.formKey"
+    :form-fields="props.list"
+    @save="handleDataSourceFilterSave"
+  />
 </template>
 
 <script setup lang="ts">
@@ -746,7 +761,12 @@
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import {
+    FieldDataSourceTypeEnum,
+    FieldRuleEnum,
+    FieldTypeEnum,
+    FormDesignKeyEnum,
+  } from '@lib/shared/enums/formDesignEnum';
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { DeptNodeTypeEnum } from '@lib/shared/enums/systemEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -759,11 +779,13 @@
   import Divider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import { rules, showRulesMap } from '@/components/business/crm-form-create/config';
   import {
+    DataSourceFilterCombine,
     FormCreateField,
     FormCreateFieldRule,
     FormCreateFieldShowControlRule,
   } from '@/components/business/crm-form-create/types';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
+  import FilterModal from './filterModal.vue';
   import optionConfig from './optionConfig.vue';
 
   // import useUserStore from '@/store/modules/user';
@@ -771,6 +793,7 @@
 
   const props = defineProps<{
     list: FormCreateField[];
+    formKey: FormDesignKeyEnum;
     disabled?: boolean;
   }>();
 
@@ -970,6 +993,17 @@
   function handleShowRuleConfigConfirm() {
     showRuleConfigVisible.value = false;
     fieldConfig.value.showControlRules = cloneDeep(tempShowRules.value);
+  }
+
+  const showDataSourceFilterModal = ref(false);
+
+  function handleDataSourceFilter() {
+    showDataSourceFilterModal.value = true;
+  }
+
+  function handleDataSourceFilterSave(result: DataSourceFilterCombine) {
+    fieldConfig.value.combineSearch = result;
+    showDataSourceFilterModal.value = false;
   }
 
   const serialNumberRules1 = ref(fieldConfig.value?.serialNumberRules?.[0].toString() || 'Opp');

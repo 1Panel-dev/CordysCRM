@@ -1,3 +1,4 @@
+import type { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import type { FieldDataSourceTypeEnum, FieldRuleEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
 
@@ -20,6 +21,21 @@ export interface FormCreateFieldShowControlRule {
 }
 
 export type FormCreateFieldDateType = 'month' | 'date' | 'datetime';
+
+export interface DataSourceFilterItem {
+  leftFieldId: string | undefined; // 左侧字段id
+  leftFieldType: FieldTypeEnum; // 左侧字段类型
+  operator: OperatorEnum | undefined; // 操作符
+  rightFieldId: string | undefined; // 右侧字段id
+  rightFieldCustom?: boolean; // 右侧是否为自定义值
+  rightFieldCustomValue?: string; // 右侧自定义值
+  rightFieldType: FieldTypeEnum; // 右侧字段类型
+}
+
+export interface DataSourceFilterCombine {
+  searchMode: 'AND' | 'OR'; // 匹配模式
+  conditions: DataSourceFilterItem[]; // 条件集合
+}
 
 export interface FormCreateField {
   // 基础属性
@@ -69,6 +85,7 @@ export interface FormCreateField {
   initialOptions?: any; // 用于回显(成员、部门、数据源选择)
   // dataSource属性
   dataSourceType?: FieldDataSourceTypeEnum;
+  combineSearch?: DataSourceFilterCombine; // 数据源过滤条件
   // 成员属性
   hasCurrentUser?: boolean;
   // 部门属性

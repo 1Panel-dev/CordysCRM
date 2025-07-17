@@ -566,8 +566,4 @@
   :deep(.n-data-table-td[data-col-key='order']) {
     padding-right: 0;
   }
-  :deep(.n-data-table-td) {
-    line-height: 46px;
-    vertical-align: middle;
-  }
 </style>

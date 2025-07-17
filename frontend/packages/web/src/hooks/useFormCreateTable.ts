@@ -63,7 +63,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     [FormDesignKeyEnum.PRODUCT]: TableKeyEnum.PRODUCT,
     [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: TableKeyEnum.CUSTOMER_OPEN_SEA,
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: TableKeyEnum.BUSINESS,
-    [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: TableKeyEnum.CLUE_CONVERT_CUSTOMER,
+    [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: TableKeyEnum.CUSTOMER,
   };
   const noPaginationKey = [FormDesignKeyEnum.CUSTOMER_CONTACT];
   // 存储地址类型字段集合

@@ -7,7 +7,12 @@
       </div>
     </div>
     <div class="crm-form-design--right">
-      <formAttrConfig v-model:field="field" v-model:field-list="list" :form-config="formConfig" />
+      <formAttrConfig
+        v-model:field="field"
+        v-model:field-list="list"
+        :form-config="formConfig"
+        :form-key="props.formKey"
+      />
     </div>
   </n-scrollbar>
 </template>
@@ -16,6 +21,7 @@
   import { NScrollbar } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { FormConfig } from '@lib/shared/models/system/module';
 
   import fieldComponents from './components/fieldComponents.vue';
@@ -24,6 +30,10 @@
 
   import { rules } from '../crm-form-create/config';
   import { FormCreateField, FormCreateFieldRule } from '../crm-form-create/types';
+
+  const props = defineProps<{
+    formKey: FormDesignKeyEnum;
+  }>();
 
   const list = defineModel<FormCreateField[]>('fieldList', {
     required: true,

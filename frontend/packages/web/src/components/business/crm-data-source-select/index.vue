@@ -29,6 +29,7 @@
       :multiple="props.multiple"
       :source-type="props.dataSourceType"
       :disabled-selection="tableDisabledSelection"
+      :filter-params="filterParams"
     />
   </CrmModal>
 </template>
@@ -39,6 +40,7 @@
   import { FieldDataSourceTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
+  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import dataSourceTable from './dataSourceTable.vue';
@@ -51,6 +53,7 @@
     disabled?: boolean;
     disabledSelection?: (row: RowData) => boolean;
     maxTagCount?: number | 'responsive';
+    filterParams?: FilterResult;
   }
 
   const props = withDefaults(defineProps<DataSourceProps>(), {

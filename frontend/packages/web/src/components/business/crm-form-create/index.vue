@@ -20,6 +20,7 @@
               :id="item.id"
               v-model:value="formDetail[item.id]"
               :field-config="item"
+              :form-detail="formDetail"
               :path="item.id"
               :need-init-detail="needInitDetail"
               @change="($event: any) => handleFieldChange($event, item)"

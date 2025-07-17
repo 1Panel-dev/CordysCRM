@@ -364,7 +364,7 @@ export const dataSourceDefaultFieldConfig: FormCreateField = {
   id: '',
   type: FieldTypeEnum.DATA_SOURCE,
   icon: 'iconicon_select_data',
-  name: 'crmFormDesign.dataSource',
+  name: 'crmFormDesign.dataSourceSingle',
   fieldWidth: 1,
   showLabel: true,
   description: '',
@@ -375,6 +375,20 @@ export const dataSourceDefaultFieldConfig: FormCreateField = {
   defaultValue: [],
   initialOptions: [],
   dataSourceType: FieldDataSourceTypeEnum.CUSTOMER,
+  combineSearch: {
+    searchMode: 'OR', // 默认搜索模式
+    conditions: [
+      {
+        leftFieldId: undefined,
+        leftFieldType: FieldTypeEnum.INPUT,
+        operator: undefined,
+        rightFieldId: undefined,
+        rightFieldCustom: false,
+        rightFieldCustomValue: '',
+        rightFieldType: FieldTypeEnum.INPUT, // 默认右侧字段类型为输入框
+      },
+    ],
+  },
 };
 
 export const dataSourceMultipleDefaultFieldConfig: FormCreateField = {
@@ -392,6 +406,20 @@ export const dataSourceMultipleDefaultFieldConfig: FormCreateField = {
   defaultValue: [],
   initialOptions: [],
   dataSourceType: FieldDataSourceTypeEnum.CUSTOMER,
+  combineSearch: {
+    searchMode: 'OR', // 默认搜索模式
+    conditions: [
+      {
+        leftFieldId: undefined,
+        leftFieldType: FieldTypeEnum.INPUT,
+        operator: undefined,
+        rightFieldId: undefined,
+        rightFieldCustom: false,
+        rightFieldCustomValue: '',
+        rightFieldType: FieldTypeEnum.INPUT, // 默认右侧字段类型为输入框
+      },
+    ],
+  },
 };
 
 export const serialNumberDefaultFieldConfig: FormCreateField = {
@@ -551,4 +579,12 @@ export const getFormListApiMap: Partial<Record<FormDesignKeyEnum, (data: any) =>
   [FormDesignKeyEnum.BUSINESS_CONTACT]: getOpportunityContactList,
   [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: getCustomerOpportunityPage,
   [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: getClueTransitionCustomerList,
+};
+
+export const dataSourceFilterFormKeyMap: Partial<Record<FieldDataSourceTypeEnum, FormDesignKeyEnum>> = {
+  [FieldDataSourceTypeEnum.CUSTOMER]: FormDesignKeyEnum.CUSTOMER,
+  [FieldDataSourceTypeEnum.BUSINESS]: FormDesignKeyEnum.BUSINESS,
+  [FieldDataSourceTypeEnum.CONTACT]: FormDesignKeyEnum.CONTACT,
+  [FieldDataSourceTypeEnum.PRODUCT]: FormDesignKeyEnum.PRODUCT,
+  [FieldDataSourceTypeEnum.CLUE]: FormDesignKeyEnum.CLUE,
 };

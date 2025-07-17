@@ -2,7 +2,7 @@
   <n-tabs v-model:value="configTab" :bar-width="140" justify-content="space-around" type="line" animated>
     <n-tab-pane name="field" :tab="t('crmFormDesign.fieldConfig')">
       <n-scrollbar>
-        <fieldAttr :field="fieldConfig" :list="list" />
+        <fieldAttr :field="fieldConfig" :list="list" :form-key="props.formKey" />
       </n-scrollbar>
     </n-tab-pane>
     <n-tab-pane name="form" :tab="t('crmFormDesign.formConfig')">
@@ -16,12 +16,17 @@
 <script setup lang="ts">
   import { NScrollbar, NTabPane, NTabs } from 'naive-ui';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { FormConfig } from '@lib/shared/models/system/module';
 
   import { FormCreateField } from '@/components/business/crm-form-create/types';
   import fieldAttr from './fieldAttr.vue';
   import formAttr from './formAttr.vue';
+
+  const props = defineProps<{
+    formKey: FormDesignKeyEnum;
+  }>();
 
   const { t } = useI18n();
 

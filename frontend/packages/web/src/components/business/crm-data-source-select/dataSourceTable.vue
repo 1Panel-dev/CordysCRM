@@ -32,6 +32,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CommonList } from '@lib/shared/models/common';
 
+  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
@@ -54,6 +55,7 @@
       sourceType: FieldDataSourceTypeEnum;
       multiple?: boolean;
       disabledSelection?: (row: RowData) => boolean;
+      filterParams?: FilterResult;
     }>(),
     {
       multiple: true,
@@ -117,18 +119,24 @@
     [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
   };
 
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(sourceApi[props.sourceType], {
-    columns,
-    showSetting: false,
-    crmPagination: {
-      showSizePicker: false,
-    },
-  });
+  const { propsRes, propsEvent, loadList, setAdvanceFilter, setLoadListParams } = useTable(
+    sourceApi[props.sourceType],
+    {
+      columns,
+      showSetting: false,
+      crmPagination: {
+        showSizePicker: false,
+      },
+    }
+  );
 
   const keyword = ref('');
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(_keyword?: string) {
+    if (props.filterParams) {
+      setAdvanceFilter(props.filterParams);
+    }
     setLoadListParams({ keyword: _keyword !== undefined ? _keyword : keyword.value });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
