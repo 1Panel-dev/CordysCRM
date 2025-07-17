@@ -7,6 +7,7 @@ import io.cordys.crm.clue.dto.request.ClueBatchTransferRequest;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.dto.response.ClueRepeatListResponse;
+import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -62,5 +63,6 @@ public interface ExtClueMapper {
     long getOwnerCount(@Param("ownerId") String ownerId);
 
     List<ClueListResponse> getListByIds(@Param("ids") List<String> ids);
-    
+
+    Long selectClueCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed")  boolean unfollowed);
 }

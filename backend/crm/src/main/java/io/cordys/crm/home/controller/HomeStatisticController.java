@@ -2,10 +2,10 @@ package io.cordys.crm.home.controller;
 
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.BaseTreeNode;
-import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
+import io.cordys.crm.home.dto.response.HomeClueStatistic;
 import io.cordys.crm.home.dto.response.HomeCustomerStatistic;
 import io.cordys.crm.home.service.HomeStatisticService;
 import io.cordys.security.SessionUtils;
@@ -34,11 +34,17 @@ public class HomeStatisticController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户统计")
     public HomeCustomerStatistic getCustomerStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
-        DeptDataPermissionDTO deptDataPermission = homeStatisticService.getDeptDataPermissionDTO(request, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission, OrganizationContext.getOrganizationId());
+        HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
         return homeStatisticService.getCustomerStatistic(wrapperRequest);
     }
 
+    @PostMapping("/clue")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
+    @Operation(summary = "线索统计")
+    public HomeClueStatistic getClueStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
+        HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
+        return homeStatisticService.getClueStatistic(wrapperRequest);
+    }
 
     @GetMapping("/department/tree")
     @Operation(summary = "用户部门权限树")

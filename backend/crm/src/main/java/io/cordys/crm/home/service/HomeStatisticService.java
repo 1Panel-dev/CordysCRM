@@ -1,6 +1,7 @@
 package io.cordys.crm.home.service;
 
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptDataPermissionDTO;
@@ -10,9 +11,11 @@ import io.cordys.common.permission.PermissionCache;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.util.LogUtils;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
+import io.cordys.crm.home.dto.response.HomeClueStatistic;
 import io.cordys.crm.home.dto.response.HomeCustomerStatistic;
 import io.cordys.crm.home.dto.response.HomeStatisticSearchResponse;
 import io.cordys.crm.system.domain.OrganizationUser;
@@ -39,6 +42,8 @@ public class HomeStatisticService {
 	@Resource
 	private ExtCustomerMapper extCustomerMapper;
 	@Resource
+	private ExtClueMapper extClueMapper;
+	@Resource
 	private DataScopeService dataScopeService;
 	@Resource
 	private PermissionCache permissionCache;
@@ -52,9 +57,9 @@ public class HomeStatisticService {
 		try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 			// 多线程执行
 			Future<HomeStatisticSearchResponse> getNewCustomerStatistic = executor.submit(() ->
-					getCustomerStatisticSearchResponse(request, this::getNewCustomerCount));
+					getStatisticSearchResponse(request, this::getNewCustomerCount));
 			Future<HomeStatisticSearchResponse> getUnfollowedCustomerStatistic = executor.submit(() ->
-					getCustomerStatisticSearchResponse(request, this::getUnfollowedCustomerCount));
+					getStatisticSearchResponse(request, this::getUnfollowedCustomerCount));
 			Future<Long> getTotalCustomerCount = executor.submit(() -> getTotalCustomerCount(request));
 
 			customerStatistic.setNewCustomer(getNewCustomerStatistic.get());
@@ -64,6 +69,25 @@ public class HomeStatisticService {
 			LogUtils.error(e);
 		}
 		return customerStatistic;
+	}
+
+	public HomeClueStatistic getClueStatistic(HomeStatisticSearchWrapperRequest request) {
+		HomeClueStatistic clueStatistic = new HomeClueStatistic();
+		try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+			// 多线程执行
+			Future<HomeStatisticSearchResponse> getNewClueStatistic = executor.submit(() ->
+					getStatisticSearchResponse(request, this::getNewClueCount));
+			Future<HomeStatisticSearchResponse> getUnfollowedClueStatistic = executor.submit(() ->
+					getStatisticSearchResponse(request, this::getUnfollowedClueCount));
+			Future<Long> getTotalClueCount = executor.submit(() -> getTotalClueCount(request));
+
+			clueStatistic.setNewClue(getNewClueStatistic.get());
+			clueStatistic.setUnfollowedClue(getUnfollowedClueStatistic.get());
+			clueStatistic.setTotal(getTotalClueCount.get());
+		} catch (Exception e) {
+			LogUtils.error(e);
+		}
+		return clueStatistic;
 	}
 
 	/**
@@ -97,12 +121,42 @@ public class HomeStatisticService {
 	}
 
 	/**
+	 * 获取线索总数
+	 * @param request
+	 * @return
+	 */
+	public Long getTotalClueCount(HomeStatisticSearchWrapperRequest request) {
+		HomeStatisticSearchWrapperRequest totalRequest = new HomeStatisticSearchWrapperRequest(request.getStaticRequest(), request.getDataPermission(), request.getOrgId());
+		totalRequest.setStartTime(null);
+		totalRequest.setEndTime(null);
+		return extClueMapper.selectClueCount(totalRequest, false);
+	}
+
+	/**
+	 * 获取新增线索统计
+	 * @param request
+	 * @return
+	 */
+	public Long getNewClueCount(HomeStatisticSearchWrapperRequest request) {
+		return extClueMapper.selectClueCount(request, false);
+	}
+
+	/**
+	 * 获取未跟进线索统计
+	 * @param request
+	 * @return
+	 */
+	public Long getUnfollowedClueCount(HomeStatisticSearchWrapperRequest request) {
+		return extClueMapper.selectClueCount(request, true);
+	}
+
+	/**
 	 * 获取统计数量和较上期对比率的通用方法
 	 * @param request
 	 * @param statisticFunction
 	 * @return
 	 */
-	public HomeStatisticSearchResponse getCustomerStatisticSearchResponse(HomeStatisticSearchWrapperRequest request,
+	public HomeStatisticSearchResponse getStatisticSearchResponse(HomeStatisticSearchWrapperRequest request,
 																		  Function<HomeStatisticSearchWrapperRequest, Long> statisticFunction) {
 		HomeStatisticSearchResponse response = new HomeStatisticSearchResponse();
 		Long count = statisticFunction.apply(request);
@@ -213,5 +267,11 @@ public class HomeStatisticService {
 		}
 		tree.addAll(addNodes);
 		return tree;
+	}
+
+	public HomeStatisticSearchWrapperRequest getHomeStatisticSearchWrapperRequest(HomeStatisticSearchRequest request) {
+		DeptDataPermissionDTO deptDataPermission = getDeptDataPermissionDTO(request, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+		HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission, OrganizationContext.getOrganizationId());
+		return wrapperRequest;
 	}
 }

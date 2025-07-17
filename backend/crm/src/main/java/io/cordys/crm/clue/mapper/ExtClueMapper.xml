@@ -344,5 +344,37 @@
         </foreach>
         order by c.create_time desc
     </select>
+    <select id="selectClueCount" resultType="java.lang.Long">
+        select count(*) from clue c
+
+        <if test="request.dataPermission != null and request.dataPermission.deptIds.size() > 0">
+            join sys_organization_user sou on c.owner = sou.user_id
+            and (
+            sou.department_id in
+            <foreach collection="request.dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                #{deptId}
+            </foreach>
+            <if test="request.dataPermission.searchType == 'ALL'">
+                or sou.user_id = #{userId}
+            </if>
+            )
+        </if>
+
+        <if test="unfollowed">
+            LEFT JOIN follow_up_record fur on c.id = fur.clue_id
+        </if>
+
+        where c.organization_id = #{request.orgId} and transition_id is null
+        <if test="unfollowed">
+            and fur.id is null
+        </if>
+        <if test="request.startTime != null and request.endTime != null">
+            and c.create_time &gt; #{request.startTime} and c.create_time &lt; #{request.endTime}
+        </if>
+
+        <if test="request.dataPermission != null and request.dataPermission.self">
+            and c.owner = #{userId}
+        </if>
+    </select>
 
 </mapper>

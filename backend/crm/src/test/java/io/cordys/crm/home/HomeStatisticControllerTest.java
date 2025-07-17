@@ -24,6 +24,7 @@ public class HomeStatisticControllerTest extends BaseTest {
     private static final String BASE_PATH = "/home/statistic/";
 
     protected static final String CUSTOMER = "customer";
+    protected static final String CLUE = "clue";
     protected static final String DEPARTMENT_TREE = "department/tree";
 
     @Override
@@ -42,6 +43,19 @@ public class HomeStatisticControllerTest extends BaseTest {
 
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, CUSTOMER, request);
+    }
+
+    @Test
+    @Order(0)
+    void testGetClueStatistic() throws Exception {
+        HomeStatisticSearchRequest request = new HomeStatisticSearchRequest();
+        request.setSearchType(BusinessSearchType.ALL.name());
+        request.setPeriod(HomeStatisticPeriod.THIS_MONTH.name());
+
+        this.requestPostWithOkAndReturn(CLUE, request);
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, CLUE, request);
     }
 
     @Test
