@@ -1,13 +1,11 @@
 package io.cordys.crm.system.service;
 
 import io.cordys.common.dto.BaseTreeNode;
-import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleFieldBlob;
 import io.cordys.crm.system.dto.field.DateTimeField;
-import io.cordys.crm.system.mapper.ExtDepartmentMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -21,20 +19,19 @@ import java.util.List;
 public class ModuleFieldService {
 
 	@Resource
-	private ExtDepartmentMapper extDepartmentMapper;
-	@Resource
 	private BaseMapper<ModuleField> moduleFieldMapper;
+	@Resource
+	private DepartmentService departmentService;
 	@Resource
 	private BaseMapper<ModuleFieldBlob> moduleFieldBlobMapper;
 
 	/**
-	 * 获取带用户的信息的部门树
+	 * 获取不带用户的信息的部门树
 	 *
 	 * @return List<DeptUserTreeNode>
 	 */
-	public List<DeptUserTreeNode> getDeptTree(String orgId) {
-		List<DeptUserTreeNode> treeNodes = extDepartmentMapper.selectDeptUserTreeNode(orgId);
-		return BaseTreeNode.buildTree(treeNodes);
+	public List<BaseTreeNode> getDeptTree(String orgId) {
+		return departmentService.getTree(orgId);
 	}
 
 	/**

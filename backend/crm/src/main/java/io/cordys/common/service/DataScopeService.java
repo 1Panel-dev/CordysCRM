@@ -171,7 +171,7 @@ public class DataScopeService {
                 .collect(Collectors.groupingBy(RolePermissionDTO::getDataScope, Collectors.toList()));
     }
 
-    private OrganizationUser getOrganizationUser(String userId, String orgId) {
+    public OrganizationUser getOrganizationUser(String userId, String orgId) {
         OrganizationUser example = new OrganizationUser();
         example.setUserId(userId);
         example.setOrganizationId(orgId);
@@ -186,7 +186,7 @@ public class DataScopeService {
      * @param deptIds
      * @return
      */
-    private List<String> getDeptIdsWithChild(List<BaseTreeNode> tree, Set<String> deptIds) {
+    public List<String> getDeptIdsWithChild(List<BaseTreeNode> tree, Set<String> deptIds) {
         List<String> childDeptIds = new ArrayList<>();
         for (BaseTreeNode node : tree) {
             if (deptIds.contains(node.getId())) {

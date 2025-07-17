@@ -24,6 +24,7 @@ public class HomeStatisticControllerTest extends BaseTest {
     private static final String BASE_PATH = "/home/statistic/";
 
     protected static final String CUSTOMER = "customer";
+    protected static final String DEPARTMENT_TREE = "department/tree";
 
     @Override
     protected String getBasePath() {
@@ -43,4 +44,9 @@ public class HomeStatisticControllerTest extends BaseTest {
         requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_READ, CUSTOMER, request);
     }
 
+    @Test
+    @Order(1)
+    void getDepartmentTree() throws Exception {
+        this.requestGetWithOkAndReturn(DEPARTMENT_TREE);
+    }
 }

@@ -1,12 +1,9 @@
 package io.cordys.crm.system.controller;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
-import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.DeptUserTreeNode;
-import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.context.OrganizationContext;
@@ -32,7 +29,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,7 +60,7 @@ public class ModuleFieldController {
 
 	@GetMapping("/dept/tree")
 	@Operation(summary = "获取部门树")
-	public List<DeptUserTreeNode> getDeptTree() {
+	public List<BaseTreeNode> getDeptTree() {
 		return moduleFieldService.getDeptTree(OrganizationContext.getOrganizationId());
 	}
 

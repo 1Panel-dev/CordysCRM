@@ -1,21 +1,22 @@
 package io.cordys.crm.home.controller;
 
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import io.cordys.crm.home.dto.response.HomeCustomerStatistic;
 import io.cordys.crm.home.service.HomeStatisticService;
+import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author jianxing
@@ -37,6 +38,13 @@ public class HomeStatisticController {
         HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission);
         wrapperRequest.setOrgId(OrganizationContext.getOrganizationId());
         return homeStatisticService.getCustomerStatistic(wrapperRequest);
+    }
+
+
+    @GetMapping("/department/tree")
+    @Operation(summary = "用户部门权限树")
+    public List<BaseTreeNode> getDepartmentTree() {
+        return homeStatisticService.getDepartmentTree(SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 }
