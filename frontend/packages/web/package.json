@@ -42,7 +42,7 @@
     "consola": "^2.15.3",
     "fast-glob": "^3.3.2",
     "jsdom": "^22.1.0",
-    "less": "^4.2.0",
+    "less": "4.3.0",
     "less-loader": "^11.1.4",
     "rollup": "^4.18.0",
     "rollup-plugin-visualizer": "^5.12.0",

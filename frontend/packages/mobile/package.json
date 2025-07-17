@@ -30,7 +30,7 @@
     "@vue/babel-plugin-jsx": "^1.2.2",
     "@vue/test-utils": "^2.4.6",
     "eruda": "^3.4.1",
-    "less": "^4.2.0",
+    "less": "4.3.0",
     "less-loader": "^11.1.4",
     "postcss-pxtorem": "^6.1.0",
     "rollup": "4.44.0",
