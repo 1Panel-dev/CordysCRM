@@ -56,5 +56,5 @@ public interface ExtCustomerMapper {
 
     List<CustomerListResponse> getListByIds(@Param("ids")List<String> ids);
 
-    Long selectCustomerStatistic(@Param("request") HomeStatisticSearchWrapperRequest request);
+    Long selectCustomerCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed")  boolean unfollowed);
 }

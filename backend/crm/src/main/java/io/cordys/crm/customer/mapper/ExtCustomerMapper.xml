@@ -385,7 +385,7 @@
         </foreach>
         order by c.create_time desc
     </select>
-    <select id="selectCustomerStatistic" resultType="java.lang.Long">
+    <select id="selectCustomerCount" resultType="java.lang.Long">
         select count(*) from customer c
 
         <if test="request.dataPermission != null and request.dataPermission.deptIds.size() > 0">
@@ -401,7 +401,14 @@
             )
         </if>
 
+        <if test="unfollowed">
+            LEFT JOIN follow_up_record fur on c.id = fur.customer_id
+        </if>
+
         where c.organization_id = #{request.orgId}
+        <if test="unfollowed">
+            and fur.id is null
+        </if>
         <if test="request.startTime != null and request.endTime != null">
             and c.create_time &gt; #{request.startTime} and c.create_time &lt; #{request.endTime}
         </if>

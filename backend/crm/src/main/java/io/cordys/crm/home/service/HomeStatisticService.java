@@ -8,6 +8,7 @@ import io.cordys.common.dto.RoleDataScopeDTO;
 import io.cordys.common.dto.RolePermissionDTO;
 import io.cordys.common.permission.PermissionCache;
 import io.cordys.common.service.DataScopeService;
+import io.cordys.common.util.LogUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
@@ -25,6 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -45,8 +49,20 @@ public class HomeStatisticService {
 
 	public HomeCustomerStatistic getCustomerStatistic(HomeStatisticSearchWrapperRequest request) {
 		HomeCustomerStatistic customerStatistic = new HomeCustomerStatistic();
-		customerStatistic.setNewCustomer(getNewCustomerStatistic(request));
-		customerStatistic.setTotal(getTotalCustomerCount(request));
+		try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+			// 多线程执行
+			Future<HomeStatisticSearchResponse> getNewCustomerStatistic = executor.submit(() ->
+					getCustomerStatisticSearchResponse(request, this::getNewCustomerCount));
+			Future<HomeStatisticSearchResponse> getUnfollowedCustomerStatistic = executor.submit(() ->
+					getCustomerStatisticSearchResponse(request, this::getUnfollowedCustomerCount));
+			Future<Long> getTotalCustomerCount = executor.submit(() -> getTotalCustomerCount(request));
+
+			customerStatistic.setNewCustomer(getNewCustomerStatistic.get());
+			customerStatistic.setUnfollowedCustomer(getUnfollowedCustomerStatistic.get());
+			customerStatistic.setTotal(getTotalCustomerCount.get());
+		} catch (Exception e) {
+			LogUtils.error(e);
+		}
 		return customerStatistic;
 	}
 
@@ -56,10 +72,10 @@ public class HomeStatisticService {
 	 * @return
 	 */
 	public Long getTotalCustomerCount(HomeStatisticSearchWrapperRequest request) {
-		HomeStatisticSearchWrapperRequest totalRequest = new HomeStatisticSearchWrapperRequest(request.getStaticRequest(), request.getDataPermission());
+		HomeStatisticSearchWrapperRequest totalRequest = new HomeStatisticSearchWrapperRequest(request.getStaticRequest(), request.getDataPermission(), request.getOrgId());
 		totalRequest.setStartTime(null);
 		totalRequest.setEndTime(null);
-		return extCustomerMapper.selectCustomerStatistic(totalRequest);
+		return extCustomerMapper.selectCustomerCount(totalRequest, false);
 	}
 
 	/**
@@ -67,8 +83,17 @@ public class HomeStatisticService {
 	 * @param request
 	 * @return
 	 */
-	public HomeStatisticSearchResponse getNewCustomerStatistic(HomeStatisticSearchWrapperRequest request) {
-		return getCustomerStatisticSearchResponse(request, extCustomerMapper::selectCustomerStatistic);
+	public Long getNewCustomerCount(HomeStatisticSearchWrapperRequest request) {
+		return extCustomerMapper.selectCustomerCount(request, false);
+	}
+
+	/**
+	 * 获取未跟进客户统计
+	 * @param request
+	 * @return
+	 */
+	public Long getUnfollowedCustomerCount(HomeStatisticSearchWrapperRequest request) {
+		return extCustomerMapper.selectCustomerCount(request, true);
 	}
 
 	/**
@@ -83,7 +108,7 @@ public class HomeStatisticService {
 		Long count = statisticFunction.apply(request);
 		response.setValue(count);
 		if (request.comparePeriod()) {
-			HomeStatisticSearchWrapperRequest periodRequest = new HomeStatisticSearchWrapperRequest(request.getStaticRequest(), request.getDataPermission());
+			HomeStatisticSearchWrapperRequest periodRequest = new HomeStatisticSearchWrapperRequest(request.getStaticRequest(), request.getDataPermission(), request.getOrgId());
 			periodRequest.setStartTime(periodRequest.getPeriodStartTime());
 			periodRequest.setEndTime(periodRequest.getPeriodEndTime());
 			Long periodCount = statisticFunction.apply(periodRequest);

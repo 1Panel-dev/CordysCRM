@@ -35,8 +35,7 @@ public class HomeStatisticController {
     @Operation(summary = "客户统计")
     public HomeCustomerStatistic getCustomerStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
         DeptDataPermissionDTO deptDataPermission = homeStatisticService.getDeptDataPermissionDTO(request, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-        HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission);
-        wrapperRequest.setOrgId(OrganizationContext.getOrganizationId());
+        HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission, OrganizationContext.getOrganizationId());
         return homeStatisticService.getCustomerStatistic(wrapperRequest);
     }
 

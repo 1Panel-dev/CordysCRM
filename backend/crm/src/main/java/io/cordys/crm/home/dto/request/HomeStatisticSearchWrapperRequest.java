@@ -23,9 +23,10 @@ public class HomeStatisticSearchWrapperRequest {
     private DeptDataPermissionDTO dataPermission;
     private String orgId;
 
-    public HomeStatisticSearchWrapperRequest(HomeStatisticSearchRequest staticRequest, DeptDataPermissionDTO dataPermission) {
+    public HomeStatisticSearchWrapperRequest(HomeStatisticSearchRequest staticRequest, DeptDataPermissionDTO dataPermission, String orgId) {
         this.staticRequest = staticRequest;
         this.dataPermission = dataPermission;
+        this.orgId = orgId;
     }
 
     public boolean comparePeriod() {
