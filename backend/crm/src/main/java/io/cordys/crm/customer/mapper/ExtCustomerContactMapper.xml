@@ -167,6 +167,12 @@
                     <property name="column" value="cc.customer_id"/>
                 </include>
             </when>
+            <when test="condition.name == 'owner'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.owner"/>
+                </include>
+            </when>
             <when test="condition.name == 'enable'">
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
