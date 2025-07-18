@@ -5,13 +5,12 @@
     v-bind="propsRes"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="actionConfig"
-    is-outer-control-full-screen
+    :fullscreen-target-ref="props.fullscreenTargetRef"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"
     @filter-change="propsEvent.filterChange"
     @batch-action="handleBatchAction"
-    @toggle-full-screen="() => emit('toggleFullScreen')"
   >
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
@@ -127,10 +126,10 @@
     activeTab?: OpportunitySearchTypeEnum;
     isCustomerTab?: boolean;
     sourceId?: string; // 客户详情下时传入客户 ID
+    fullscreenTargetRef?: HTMLElement | null;
   }>();
   const emit = defineEmits<{
     (e: 'openCustomerDrawer', activeSourceId: string): void;
-    (e: 'toggleFullScreen'): void;
   }>();
 
   const Message = useMessage();

@@ -307,7 +307,7 @@
         return h(CrmNameTooltip, { text: row.customerName });
       },
       name: (row: CustomerContractListItem) => {
-        return row.name;
+        return h(CrmNameTooltip, { text: row.name });
       },
     },
   });

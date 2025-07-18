@@ -9,13 +9,12 @@
           v-bind="propsRes"
           :not-show-table-filter="isAdvancedSearchMode"
           :action-config="actionConfig"
-          is-outer-control-full-screen
+          :fullscreen-target-ref="leadCardRef"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
           @filter-change="propsEvent.filterChange"
           @batch-action="handleBatchAction"
-          @toggle-full-screen="toggleFullScreen"
         >
           <template #actionLeft>
             <div class="flex items-center gap-[12px]">
@@ -126,7 +125,6 @@
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import useFullScreen from '@/hooks/useFullScreen';
   import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -154,8 +152,6 @@
   ];
 
   const leadCardRef = ref<HTMLElement | null>(null);
-
-  const { toggleFullScreen } = useFullScreen(leadCardRef);
 
   const { tabList, activeTab } = useHiddenTab(allTabList, FormDesignKeyEnum.CLUE);
 

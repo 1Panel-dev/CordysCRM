@@ -1,7 +1,7 @@
 <template>
   <div ref="customerCardRef" class="h-full">
     <CrmCard no-content-padding hide-footer>
-      <CrmTab v-model:active-tab="activeTab" no-content-padding :tab-list="tabList" type="line" />
+      <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
       <div class="h-[calc(100%-48px)] p-[16px]">
         <CrmTable
           ref="crmTableRef"
@@ -10,13 +10,12 @@
           :columns="tableColumns"
           :not-show-table-filter="isAdvancedSearchMode"
           :action-config="actionConfig"
-          is-outer-control-full-screen
+          :fullscreen-target-ref="customerCardRef"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
           @filter-change="propsEvent.filterChange"
           @batch-action="handleBatchAction"
-          @toggle-full-screen="toggleFullScreen"
         >
           <template #actionLeft>
             <div class="flex items-center gap-[12px]">
@@ -125,7 +124,6 @@
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
-  import useFullScreen from '@/hooks/useFullScreen';
   import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -388,7 +386,6 @@
   // 概览
   const showOverviewDrawer = ref(false);
   const customerCardRef = ref<HTMLElement | null>(null);
-  const { toggleFullScreen } = useFullScreen(customerCardRef);
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER,

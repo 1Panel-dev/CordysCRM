@@ -11,7 +11,8 @@ export interface UseFullScreen {
  * @param domRef dom ref
  */
 export default function useFullScreen(
-  domRef: Ref<HTMLElement | Element | null | undefined> | HTMLElement | Element | null | undefined
+  domRef: Ref<HTMLElement | Element | null | undefined> | HTMLElement | Element | null | undefined,
+  disabledShortcutKeys = false
 ): UseFullScreen {
   const isFullScreen = ref(false);
   const originalStyle = ref('');
@@ -68,7 +69,9 @@ export default function useFullScreen(
 
   // 添加键盘事件监听
   onMounted(() => {
-    window.addEventListener('keydown', handleKeyDown);
+    if (!disabledShortcutKeys) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
   });
 
   // 移除键盘事件监听

@@ -11,7 +11,7 @@
       <CrmTable
         ref="crmTableRef"
         v-bind="propsRes"
-        class="!h-[548px]"
+        class="!min-h-[548px]"
         @page-change="propsEvent.pageChange"
         @page-size-change="propsEvent.pageSizeChange"
         @sorter-change="propsEvent.sorterChange"

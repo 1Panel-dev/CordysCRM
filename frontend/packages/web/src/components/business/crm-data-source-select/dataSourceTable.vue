@@ -3,7 +3,7 @@
     ref="crmTableRef"
     v-model:checked-row-keys="selectedKeys"
     v-bind="propsRes"
-    class="!h-[60vh]"
+    class="!min-h-[60vh]"
     @page-change="propsEvent.pageChange"
     @page-size-change="propsEvent.pageSizeChange"
     @sorter-change="propsEvent.sorterChange"

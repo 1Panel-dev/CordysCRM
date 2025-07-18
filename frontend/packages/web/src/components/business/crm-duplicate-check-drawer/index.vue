@@ -43,7 +43,7 @@
           <CrmTable
             ref="crmTableRef"
             v-bind="repeatTable.propsRes"
-            class="!h-[548px]"
+            class="!min-h-[548px]"
             @page-change="repeatTable.propsEvent.pageChange"
             @page-size-change="repeatTable.propsEvent.pageSizeChange"
             @sorter-change="repeatTable.propsEvent.sorterChange"

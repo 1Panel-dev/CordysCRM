@@ -65,7 +65,7 @@ export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
   'isReturnNativeResponse'?: boolean;
   'permission'?: string[];
   'hiddenTotal'?: boolean;
-  'showAllScreen'?: boolean;
+  'hiddenAllScreen'?: boolean;
 };
 
 // 表格存储

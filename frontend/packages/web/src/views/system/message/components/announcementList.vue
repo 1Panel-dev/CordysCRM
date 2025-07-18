@@ -150,9 +150,6 @@
     {
       title: t('common.creator'),
       key: 'createUser',
-      ellipsis: {
-        tooltip: true,
-      },
       sortOrder: false,
       sorter: true,
       width: 200,
@@ -174,9 +171,6 @@
       title: t('common.updateUserName'),
       key: 'updateUser',
       width: 200,
-      ellipsis: {
-        tooltip: true,
-      },
       sortOrder: false,
       sorter: true,
       render: (row: AnnouncementItemDetail) => {

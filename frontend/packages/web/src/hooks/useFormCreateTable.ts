@@ -273,6 +273,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
+        sortOrder: false,
         sorter: true,
         filter: true,
         render: (row: any) => row.departmentName || '-',

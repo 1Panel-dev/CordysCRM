@@ -47,9 +47,6 @@
       key: 'owner',
       sortOrder: false,
       sorter: 'default',
-      ellipsis: {
-        tooltip: true,
-      },
       render: (row: HeaderHistoryItem) => {
         return h(CrmNameTooltip, { text: row.ownerName });
       },
@@ -58,9 +55,6 @@
     {
       title: t('opportunity.department'),
       key: 'departmentId',
-      ellipsis: {
-        tooltip: true,
-      },
       render: (row: HeaderHistoryItem) => {
         return h(CrmNameTooltip, { text: row.departmentName });
       },

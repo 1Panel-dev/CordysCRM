@@ -2,7 +2,7 @@
   <div
     ref="tableFullRef"
     class="relative flex h-full flex-col overflow-hidden"
-    :class="isFullScreen && !props.isOuterControlFullScreen ? 'bg-[var(--text-n10)] p-[16px]' : ''"
+    :class="isFullScreen && !props.fullscreenTargetRef ? 'bg-[var(--text-n10)] p-[16px]' : ''"
   >
     <BatchAction
       v-if="props.actionConfig"
@@ -25,10 +25,10 @@
           />
 
           <n-button
-            v-if="!attrs.showAllScreen && props.actionConfig"
+            v-if="!attrs.hiddenAllScreen && props.actionConfig"
             type="default"
             class="outline--secondary px-[8px]"
-            @click="handleToggleFullScreen"
+            @click="toggleFullScreen"
           >
             <CrmIcon
               class="text-[var(--text-n1)]"
@@ -36,9 +36,6 @@
               :size="16"
             />
           </n-button>
-          <div v-if="!attrs.hiddenTotal" class="whitespace-nowrap text-[var(--text-n1)]">
-            {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
-          </div>
         </div>
       </template>
     </BatchAction>
@@ -49,13 +46,13 @@
       <ColumnSetting
         v-if="attrs.showSetting && !props.actionConfig"
         :table-key="attrs.tableKey as TableKeyEnum"
-        @change-columns-setting="() => initColumn(true)"
+        @change-columns-setting="changeColumnsSetting"
       />
       <n-button
-        v-if="!attrs.showAllScreen && !props.actionConfig"
+        v-if="!attrs.hiddenAllScreen && !props.actionConfig"
         type="default"
         class="outline--secondary px-[8px]"
-        @click="handleToggleFullScreen"
+        @click="toggleFullScreen"
       >
         <CrmIcon
           class="text-[var(--text-n1)]"
@@ -63,9 +60,6 @@
           :size="16"
         />
       </n-button>
-      <div v-if="!attrs.hiddenTotal" class="whitespace-nowrap text-[var(--text-n2)]">
-        {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
-      </div>
     </div>
     <n-data-table
       ref="tableRef"
@@ -96,8 +90,16 @@
         </div>
       </template>
     </n-data-table>
-    <div v-if="hasFinished" class="crm-table-bottom-tip text-center">
-      {{ t('crmTable.tableScrollFinishedTip') }}
+    <div v-if="hasFinished" class="crm-table-bottom-tip flex text-center">
+      <div v-if="!attrs.hiddenTotal && hasFinished" :class="`flex flex-1 `">
+        {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
+      </div>
+      <div :class="`${!attrs.hiddenTotal && hasFinished ? 'items-start' : 'items-center justify-center'} flex flex-1`">
+        {{ t('crmTable.tableScrollFinishedTip') }}</div
+      >
+    </div>
+    <div v-if="!attrs.hiddenTotal && !hasFinished" class="crm-table-bottom-tip">
+      {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
     </div>
   </div>
 </template>
@@ -143,7 +145,7 @@
     notShowTableFilter?: boolean; // 不显示表头筛选
     draggable?: boolean; // 允许拖拽
     virtualScrollX?: boolean; // 是否开启横向虚拟滚动
-    isOuterControlFullScreen?: boolean;
+    fullscreenTargetRef?: HTMLElement | null;
   }>();
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;
@@ -153,7 +155,6 @@
     (e: 'sorterChange', value: SortParams): void;
     (e: 'rowKeyChange', keys: DataTableRowKey[], rows: InternalRowData[]): void;
     (e: 'drag', params: TableDraggedParams): void;
-    (e: 'toggleFullScreen'): void;
   }>();
   const attrs = useAttrs();
   const { t } = useI18n();
@@ -161,7 +162,12 @@
 
   const tableFullRef = ref<HTMLElement | null>(null);
 
-  const { toggleFullScreen } = useFullScreen(tableFullRef);
+  // 实际使用的全屏目标
+  const actualTargetRef = computed<HTMLElement | null>(() => {
+    return props.fullscreenTargetRef ?? tableFullRef.value;
+  });
+
+  const { toggleFullScreen, isFullScreen } = useFullScreen(actualTargetRef, !!attrs.hiddenAllScreen);
 
   const checkedRowKeys = defineModel<DataTableRowKey[]>('checkedRowKeys', { default: [] });
 
@@ -583,16 +589,6 @@
     }, 0)
   );
 
-  const isFullScreen = ref(false);
-  function handleToggleFullScreen() {
-    isFullScreen.value = !isFullScreen.value;
-    if (props.isOuterControlFullScreen) {
-      emit('toggleFullScreen');
-    } else {
-      toggleFullScreen();
-    }
-  }
-
   const tableLineHeight = computed(() => {
     if (attrs.showSetting) {
       return layOut.value === 'compact' ? 36 : 46;
@@ -656,8 +652,5 @@
     border-radius: 4px 4px 12px 12px;
     background: var(--text-n10);
     box-shadow: 0 -4px 10px rgb(100 103 103 / 5%);
-  }
-  :deep(.n-ellipsis) {
-    @apply flex items-center;
   }
 </style>

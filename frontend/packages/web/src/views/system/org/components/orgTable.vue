@@ -633,9 +633,6 @@
     {
       title: t('org.directSuperior'),
       key: 'supervisorId',
-      ellipsis: {
-        tooltip: true,
-      },
       width: 120,
       showInTable: false,
       render: (row: MemberItem) => {
