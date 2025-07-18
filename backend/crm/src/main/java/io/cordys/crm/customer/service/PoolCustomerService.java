@@ -247,10 +247,9 @@ public class PoolCustomerService {
 		}
 		List<FilterConditionDTO> conditions = StringUtils.isEmpty(customerCapacity.getFilter()) ?
 				new ArrayList<>() : JSON.parseArray(customerCapacity.getFilter(), FilterConditionDTO.class);
-		List<FilterConditionDTO> enableConditions = conditions.stream().filter(FilterConditionDTO::getEnable).toList();
 		int filter = 0;
-		if (CollectionUtils.isNotEmpty(enableConditions)) {
-			filter = (int) extCustomerMapper.filterOwnerCount(ownUserId, enableConditions);
+		if (CollectionUtils.isNotEmpty(conditions)) {
+			filter = (int) extCustomerMapper.filterOwnerCount(ownUserId, conditions);
 		}
 		LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
 		customerWrapper.eq(Customer::getOwner, ownUserId).eq(Customer::getInSharedPool, false);

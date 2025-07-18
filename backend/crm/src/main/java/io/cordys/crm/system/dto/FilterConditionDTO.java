@@ -15,6 +15,4 @@ public class FilterConditionDTO {
 	private String operator;
 	@Schema(description = "值")
 	private String value;
-	@Schema(description = "是否启用")
-	private Boolean enable;
 }
