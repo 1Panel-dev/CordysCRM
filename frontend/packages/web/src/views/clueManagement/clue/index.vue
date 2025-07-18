@@ -370,12 +370,14 @@
     activeClueId.value = row.id;
     switch (actionKey) {
       case 'edit':
+        isInitFormCreateDrawer.value = true;
         otherFollowRecordSaveParams.value.id = row.id;
         needInitDetail.value = true;
         formKey.value = FormDesignKeyEnum.CLUE;
         formCreateDrawerVisible.value = true;
         break;
       case 'followUp':
+        isInitFormCreateDrawer.value = true;
         formKey.value = FormDesignKeyEnum.FOLLOW_RECORD_CLUE;
         otherFollowRecordSaveParams.value.clueId = row.id;
         activeRowName.value = row.name;
