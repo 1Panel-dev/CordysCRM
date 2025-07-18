@@ -3,6 +3,7 @@ package io.cordys.crm.opportunity.mapper;
 
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityAddRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
@@ -35,4 +36,6 @@ public interface ExtOpportunityMapper {
     List<OptionDTO> getOpportunityOptionsByIds(@Param("ids") List<String> ids);
 
     List<OpportunityListResponse> getListByIds(@Param("ids") List<String> ids);
+
+    Long selectOpportunityCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("amount")  boolean amount);
 }

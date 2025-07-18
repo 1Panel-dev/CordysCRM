@@ -17,7 +17,9 @@ import io.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import io.cordys.crm.home.dto.response.HomeClueStatistic;
 import io.cordys.crm.home.dto.response.HomeCustomerStatistic;
+import io.cordys.crm.home.dto.response.HomeOpportunityStatistic;
 import io.cordys.crm.home.dto.response.HomeStatisticSearchResponse;
+import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.service.DepartmentService;
 import io.cordys.crm.system.service.RoleService;
@@ -43,6 +45,8 @@ public class HomeStatisticService {
 	private ExtCustomerMapper extCustomerMapper;
 	@Resource
 	private ExtClueMapper extClueMapper;
+	@Resource
+	private ExtOpportunityMapper extOpportunityMapper;
 	@Resource
 	private DataScopeService dataScopeService;
 	@Resource
@@ -88,6 +92,25 @@ public class HomeStatisticService {
 			LogUtils.error(e);
 		}
 		return clueStatistic;
+	}
+
+
+	public HomeOpportunityStatistic getOpportunityStatistic(HomeStatisticSearchWrapperRequest request) {
+		HomeOpportunityStatistic opportunityStatistic = new HomeOpportunityStatistic();
+		try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+			// 多线程执行
+			Future<HomeStatisticSearchResponse> getNewOpportunityStatistic = executor.submit(() ->
+					getStatisticSearchResponse(request, this::getNewOpportunityCount));
+			Future<Long> getOpportunityTotalAmount = executor.submit(() -> getOpportunityTotalAmount(request));
+			Future<Long> getTotalOpportunityCount = executor.submit(() -> getTotalOpportunityCount(request));
+
+			opportunityStatistic.setNewOpportunity(getNewOpportunityStatistic.get());
+			opportunityStatistic.setTotalAmount(getOpportunityTotalAmount.get());
+			opportunityStatistic.setTotal(getTotalOpportunityCount.get());
+		} catch (Exception e) {
+			LogUtils.error(e);
+		}
+		return opportunityStatistic;
 	}
 
 	/**
@@ -148,6 +171,37 @@ public class HomeStatisticService {
 	 */
 	public Long getUnfollowedClueCount(HomeStatisticSearchWrapperRequest request) {
 		return extClueMapper.selectClueCount(request, true);
+	}
+
+
+	/**
+	 * 获取客户总数
+	 * @param request
+	 * @return
+	 */
+	public Long getTotalOpportunityCount(HomeStatisticSearchWrapperRequest request) {
+		HomeStatisticSearchWrapperRequest totalRequest = new HomeStatisticSearchWrapperRequest(request.getStaticRequest(), request.getDataPermission(), request.getOrgId());
+		totalRequest.setStartTime(null);
+		totalRequest.setEndTime(null);
+		return extOpportunityMapper.selectOpportunityCount(totalRequest, false);
+	}
+
+	/**
+	 * 获取新增客户统计
+	 * @param request
+	 * @return
+	 */
+	public Long getNewOpportunityCount(HomeStatisticSearchWrapperRequest request) {
+		return extOpportunityMapper.selectOpportunityCount(request, false);
+	}
+
+	/**
+	 * 获取未跟进客户统计
+	 * @param request
+	 * @return
+	 */
+	public Long getOpportunityTotalAmount(HomeStatisticSearchWrapperRequest request) {
+		return extOpportunityMapper.selectOpportunityCount(request, true);
 	}
 
 	/**

@@ -7,6 +7,7 @@ import io.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import io.cordys.crm.home.dto.response.HomeClueStatistic;
 import io.cordys.crm.home.dto.response.HomeCustomerStatistic;
+import io.cordys.crm.home.dto.response.HomeOpportunityStatistic;
 import io.cordys.crm.home.service.HomeStatisticService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,6 +45,14 @@ public class HomeStatisticController {
     public HomeClueStatistic getClueStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
         HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
         return homeStatisticService.getClueStatistic(wrapperRequest);
+    }
+
+    @PostMapping("/opportunity")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @Operation(summary = "跟进商机统计")
+    public HomeOpportunityStatistic getOpportunityStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
+        HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
+        return homeStatisticService.getOpportunityStatistic(wrapperRequest);
     }
 
     @GetMapping("/department/tree")
