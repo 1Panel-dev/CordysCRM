@@ -82,11 +82,7 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import { multipleValueTypeList } from '@/components/business/crm-form-create/config';
-  import {
-    DataSourceFilterCombine,
-    DataSourceFilterItem,
-    FormCreateField,
-  } from '@/components/business/crm-form-create/types';
+  import { DataSourceFilterCombine, FormCreateField } from '@/components/business/crm-form-create/types';
 
   const { t } = useI18n();
 
@@ -150,7 +146,7 @@
       })
       .map((field) => ({
         label: field.name,
-        value: field.id,
+        value: leftFieldType ? field.id : field.businessKey || field.id, // 左侧字段需要业务Key，右侧字段需要id
         fieldType: field.type,
       }));
   }
@@ -164,7 +160,7 @@
 
   // 获取操作符号
   function getOperatorOptions(leftFieldId: string | undefined) {
-    const leftField = props.leftFields.find((field) => field.id === leftFieldId);
+    const leftField = props.leftFields.find((field) => [field.id, field.businessKey].includes(leftFieldId || ''));
     if (!leftField) return [];
     return operatorOptionsMap[leftField.type].map((e) => {
       return {
