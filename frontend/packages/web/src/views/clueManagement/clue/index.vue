@@ -87,7 +87,7 @@
     v-if="isInitConvertDrawer"
     v-model:show="showConvertToCustomerDrawer"
     :clue-id="otherFollowRecordSaveParams.clueId"
-    @new="handleAdd"
+    @new="handleNewCustomer"
     @finish="handleRefresh"
   />
 </template>
@@ -338,6 +338,13 @@
   function handleAdd() {
     isInitFormCreateDrawer.value = true;
     formKey.value = FormDesignKeyEnum.CLUE;
+    activeClueId.value = '';
+    formCreateDrawerVisible.value = true;
+  }
+
+  function handleNewCustomer() {
+    isInitFormCreateDrawer.value = true;
+    formKey.value = FormDesignKeyEnum.CUSTOMER;
     activeClueId.value = '';
     formCreateDrawerVisible.value = true;
   }
