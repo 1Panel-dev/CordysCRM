@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Map;
+
 @Data
 @JsonTypeName(value = "DATA_SOURCE_MULTIPLE")
 @EqualsAndHashCode(callSuper = true)
@@ -17,5 +19,5 @@ public class DatasourceMultipleField extends BaseField {
 	@Schema(description = "数据源类型")
 	private String dataSourceType;
 	@Schema(description = "过滤条件")
-	private CombineSearch combineSearch;
+	private Map<String, Object> combineSearch;
 }
