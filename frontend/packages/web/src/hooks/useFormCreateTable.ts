@@ -116,7 +116,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
       sortOrder: false,
       sorter: true,
-      render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
+      render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD') : '-'),
     },
     {
       title: t('customer.remainingVesting'),
@@ -228,7 +228,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
       sortOrder: false,
       sorter: true,
-      render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
+      render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD') : '-'),
     },
   ];
   const internalColumnMap: Record<FormKey, CrmDataTableColumn[]> = {
@@ -396,7 +396,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         },
         sortOrder: false,
         sorter: true,
-        render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD HH:mm:ss') : '-'),
+        render: (row: any) => (row.followTime ? dayjs(row.followTime).format('YYYY-MM-DD') : '-'),
       },
     ],
     [FormDesignKeyEnum.PRODUCT]: [],
