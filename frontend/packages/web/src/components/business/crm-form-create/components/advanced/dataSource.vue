@@ -26,6 +26,7 @@
 <script setup lang="ts">
   import { NFormItem } from 'naive-ui';
 
+  import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { FieldDataSourceTypeEnum, FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -56,7 +57,9 @@
         name: item.leftFieldId ?? '',
         multipleValue: multipleValueTypeList.includes(item.leftFieldType),
       }))
-      .filter((e) => e.value !== undefined && e.value !== null && e.value !== '');
+      .filter(
+        (e) => e.operator === OperatorEnum.EMPTY || (e.value !== undefined && e.value !== null && e.value !== '')
+      );
 
     return {
       searchMode: props.fieldConfig.combineSearch?.searchMode,
