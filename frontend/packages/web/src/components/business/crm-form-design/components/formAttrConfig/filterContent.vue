@@ -50,6 +50,7 @@
               :options="transformFieldsToOptions(props.rightFields, item.leftFieldType)"
               :placeholder="t('crmFormDesign.dataSourceFilterValuePlaceholder')"
               :fallback-option="() => fallbackOption(item.leftFieldId)"
+              :disabled="['EMPTY', 'NOT_EMPTY'].includes(item.operator as string)"
             />
           </n-form-item>
           <n-button ghost class="px-[7px]" @click="handleDeleteItem(listIndex)">

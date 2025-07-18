@@ -49,12 +49,14 @@
   });
 
   function getParams(): FilterResult {
-    const conditions = props.fieldConfig.combineSearch?.conditions.map((item) => ({
-      value: item.rightFieldCustom ? item.rightFieldCustomValue : props.formDetail?.[item.rightFieldId || ''],
-      operator: item.operator,
-      name: item.leftFieldId ?? '',
-      multipleValue: multipleValueTypeList.includes(item.leftFieldType),
-    }));
+    const conditions = props.fieldConfig.combineSearch?.conditions
+      .map((item) => ({
+        value: item.rightFieldCustom ? item.rightFieldCustomValue : props.formDetail?.[item.rightFieldId || ''],
+        operator: item.operator,
+        name: item.leftFieldId ?? '',
+        multipleValue: multipleValueTypeList.includes(item.leftFieldType),
+      }))
+      .filter((e) => e.value !== undefined && e.value !== null && e.value !== '');
 
     return {
       searchMode: props.fieldConfig.combineSearch?.searchMode,
