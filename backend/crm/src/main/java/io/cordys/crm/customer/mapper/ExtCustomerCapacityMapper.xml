@@ -25,6 +25,7 @@
             <if test="capacity.updateTime != null">
                 update_time = #{capacity.updateTime},
             </if>
+            capacity = #{capacity.capacity},
         </set>
         <where>
             id = #{capacity.id}
