@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import JSEncrypt from 'jsencrypt';
 
 import { isObject } from './is';
+import { GAT_PC } from '@cordys/web/src/components/business/crm-city-select/config';
 import type {
   FormCreateField,
   FormCreateFieldDateType,
@@ -441,7 +442,7 @@ export function findNodePathByKey<T>(
  */
 export function getCityPath(cityId: string | null): string {
   if (!cityId) return '';
-  const nodePathObject = findNodePathByKey(regionData, cityId, undefined, 'value');
+  const nodePathObject = findNodePathByKey([...regionData, ...GAT_PC], cityId, undefined, 'value');
   const nodePathName = (nodePathObject?.treePath || []).map((item: any) => item.label);
   return nodePathName.length === 1 ? nodePathName[0] : nodePathName.join('/');
 }
