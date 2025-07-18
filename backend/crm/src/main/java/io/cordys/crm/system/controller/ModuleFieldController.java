@@ -73,6 +73,7 @@ public class ModuleFieldController {
 	@PostMapping("/source/clue")
 	@Operation(summary = "分页获取线索")
 	public Pager<List<ClueListResponse>> sourceCluePage(@Valid @RequestBody CluePageRequest request) {
+		request.setCombineSearch(request.getCombineSearch().convert());
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
 				"ALL", PermissionConstants.CLUE_MANAGEMENT_READ);
 		return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
@@ -81,6 +82,7 @@ public class ModuleFieldController {
 	@PostMapping("/source/customer")
 	@Operation(summary = "分页获取客户")
 	public Pager<List<CustomerListResponse>> sourceCustomerPage(@Valid @RequestBody CustomerPageRequest request) {
+		request.setCombineSearch(request.getCombineSearch().convert());
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
 				"ALL",  PermissionConstants.CUSTOMER_MANAGEMENT_READ);
 		return customerService.sourceList(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
@@ -89,6 +91,7 @@ public class ModuleFieldController {
 	@PostMapping("/source/contact")
 	@Operation(summary = "分页获取联系人")
 	public Pager<List<CustomerContactListResponse>> sourceContactPage(@Valid @RequestBody CustomerContactPageRequest request) {
+		request.setCombineSearch(request.getCombineSearch().convert());
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(),
 				"ALL", PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ);
 		return customerContactService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
@@ -97,6 +100,7 @@ public class ModuleFieldController {
 	@PostMapping("/source/opportunity")
 	@Operation(summary = "分页获取商机")
 	public Pager<List<OpportunityListResponse>> sourceOpportunityPage(@Valid @RequestBody OpportunityPageRequest request) {
+		request.setCombineSearch(request.getCombineSearch().convert());
 		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), "ALL",
 				PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
 		return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
@@ -105,6 +109,7 @@ public class ModuleFieldController {
 	@PostMapping("/source/product")
 	@Operation(summary = "分页获取产品")
 	public Pager<List<ProductListResponse>> sourceProductPage(@Valid @RequestBody ProductPageRequest request) {
+		request.setCombineSearch(request.getCombineSearch().convert());
 		// 数据源接口只展示上架数据
 		request.setStatus("1");
 		return productService.list(request, OrganizationContext.getOrganizationId());

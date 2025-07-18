@@ -64,6 +64,10 @@ public class FilterCondition {
         return !(value instanceof String valueStr) || !StringUtils.isBlank(valueStr);
     }
 
+    public boolean expectMulti() {
+        return StringUtils.equalsAny(operator, CombineConditionOperator.IN.name(), CombineConditionOperator.NOT_IN.name(), CombineConditionOperator.BETWEEN.name());
+    }
+
     /**
      * 枚举：组合条件操作符，定义了各种可能的查询操作符。
      */

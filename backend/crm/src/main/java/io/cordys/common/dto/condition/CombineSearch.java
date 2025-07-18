@@ -7,6 +7,7 @@ import lombok.Data;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -40,6 +41,45 @@ public class CombineSearch {
      */
     public String getSearchMode() {
         return StringUtils.isBlank(searchMode) ? SearchMode.AND.name() : searchMode;
+    }
+
+    public CombineSearch convert() {
+        if (CollectionUtils.isEmpty(conditions)) {
+            return this;
+        }
+
+        Iterator<FilterCondition> iterator = conditions.iterator();
+        while (iterator.hasNext()) {
+            FilterCondition condition = iterator.next();
+            if (!condition.valid()) {
+                iterator.remove();
+                continue;
+            }
+
+            Object value = condition.getValue();
+            boolean isBetween = StringUtils.equals(condition.getOperator(), FilterCondition.CombineConditionOperator.BETWEEN.name());
+
+            if (value instanceof List<?> valueList) {
+                // 多值处理
+                if (!condition.expectMulti()) {
+                    condition.setValue(valueList.getFirst());
+                }
+                if (isBetween) {
+                    Object first = valueList.getFirst();
+                    condition.setValue(List.of(first, first));
+                }
+            } else {
+                // 单值处理
+                if (condition.expectMulti()) {
+                    if (isBetween) {
+                        condition.setValue(List.of(value, value));
+                    } else {
+                        condition.setValue(List.of(value));
+                    }
+                }
+            }
+        }
+        return this;
     }
 
     /**
