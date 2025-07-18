@@ -657,4 +657,7 @@
     background: var(--text-n10);
     box-shadow: 0 -4px 10px rgb(100 103 103 / 5%);
   }
+  :deep(.n-ellipsis) {
+    @apply flex items-center;
+  }
 </style>

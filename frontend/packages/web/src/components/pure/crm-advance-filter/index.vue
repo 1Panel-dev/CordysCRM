@@ -4,7 +4,7 @@
     v-model:value="keyword"
     class="!w-[240px]"
     :placeholder="props.searchPlaceholder"
-    @search="emit('keywordSearch', keyword)"
+    @search="emit('keywordSearch', $event)"
   />
   <div class="flex flex-row items-center gap-[8px]">
     <n-button

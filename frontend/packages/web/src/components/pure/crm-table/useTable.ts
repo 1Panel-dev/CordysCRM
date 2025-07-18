@@ -143,7 +143,6 @@ export default function useTable<T>(
     try {
       tableQueryParams.value = {
         ...(!propsRes.value.showPagination ? {} : await getPaginationParams()),
-        keyword: keyword.value,
         sort: sortItem.value,
         combineSearch: advanceFilter,
         ...loadListParams.value,
