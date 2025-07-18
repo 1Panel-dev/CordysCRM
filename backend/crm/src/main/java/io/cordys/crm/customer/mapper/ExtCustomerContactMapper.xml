@@ -228,11 +228,11 @@
 
     <select id="getUniqueContactCount" resultType="java.lang.Long">
         select count(*) from customer_contact cc
-        where cc.organization_id = #{orgId} and cc.customer_id = #{customerId}
-        <if test="request.nameUnique != null and request.nameUnique != ''">
+        where cc.organization_id = #{orgId}
+        <if test="request.nameUnique != null and request.nameUnique">
             and cc.name = #{request.name} and cc.name != ''
         </if>
-        <if test="request.phoneUnique != null and request.phoneUnique != ''">
+        <if test="request.phoneUnique != null and request.phoneUnique">
             and cc.phone = #{request.phone} and cc.phone != '' and cc.phone is not null
         </if>
     </select>

@@ -413,13 +413,13 @@ public class CustomerContactService {
      */
     public boolean checkCustomerContactUnique(String contact, String phone, String customerId, String orgId) {
         LambdaQueryWrapper<ModuleForm> formQueryWrapper = new LambdaQueryWrapper<>();
-        formQueryWrapper.eq(ModuleForm::getOrganizationId, orgId);
+        formQueryWrapper.eq(ModuleForm::getOrganizationId, orgId).eq(ModuleForm::getFormKey, FormKey.CONTACT.getKey());
         List<ModuleForm> forms = moduleFormMapper.selectListByLambda(formQueryWrapper);
         List<String> formIds = forms.stream().map(ModuleForm::getId).toList();
 
         LambdaQueryWrapper<ModuleField> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(ModuleField::getName, List.of(BusinessModuleField.CUSTOMER_CONTACT_NAME.name(),
-                BusinessModuleField.CUSTOMER_CONTACT_PHONE.name())).in(ModuleField::getFormId, formIds);
+        queryWrapper.in(ModuleField::getInternalKey, List.of(BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey(),
+                BusinessModuleField.CUSTOMER_CONTACT_PHONE.getKey())).in(ModuleField::getFormId, formIds);
         List<String> fieldIds = moduleFieldMapper.selectListByLambda(queryWrapper).stream().map(ModuleField::getId).toList();
         List<ModuleFieldBlob> blobs = moduleFieldBlobMapper.selectByIds(fieldIds);
 
