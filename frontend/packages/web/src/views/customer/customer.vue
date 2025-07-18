@@ -2,7 +2,7 @@
   <div ref="customerCardRef" class="h-full">
     <CrmCard no-content-padding hide-footer>
       <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
-      <div class="h-[calc(100%-48px)] p-[16px]">
+      <div class="h-[calc(100%-48px)] p-[16px] !pb-0">
         <CrmTable
           ref="crmTableRef"
           v-model:checked-row-keys="checkedRowKeys"

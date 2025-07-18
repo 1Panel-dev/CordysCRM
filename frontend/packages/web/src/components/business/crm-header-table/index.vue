@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer>
+  <CrmCard hide-footer no-content-bottom-padding>
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"

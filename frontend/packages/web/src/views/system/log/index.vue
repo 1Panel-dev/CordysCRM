@@ -61,7 +61,12 @@
       </n-form>
     </CrmCard>
 
-    <CrmCard v-if="activeTab === 'operation'" hide-footer :special-height="licenseStore.expiredDuring ? 272 : 0">
+    <CrmCard
+      v-if="activeTab === 'operation'"
+      no-content-bottom-padding
+      hide-footer
+      :special-height="licenseStore.expiredDuring ? 272 : 0"
+    >
       <CrmTable
         ref="crmTableRef"
         v-bind="propsRes"

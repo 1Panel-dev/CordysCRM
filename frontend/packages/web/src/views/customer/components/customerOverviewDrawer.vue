@@ -63,7 +63,7 @@
           :source-id="props.sourceId"
           :readonly="collaborationType === 'READ_ONLY'"
         />
-        <CrmCard v-else-if="activeTab === 'opportunityInfo'" hide-footer>
+        <CrmCard v-else-if="activeTab === 'opportunityInfo'" no-content-bottom-padding hide-footer>
           <opportunityTable :source-id="props.sourceId" is-customer-tab />
         </CrmCard>
         <collaborator

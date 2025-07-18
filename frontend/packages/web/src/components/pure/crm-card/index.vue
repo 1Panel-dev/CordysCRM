@@ -10,7 +10,11 @@
     <!-- 有卡片footer 时，高度为100%-64px，64px 为：footer 高度80px 减去底部内边距 16px -->
     <n-card
       class="h-full"
-      :class="[props.noContentPadding ? 'n-card--no-padding' : '', props.hideFooter ? '' : 'h-[calc(100%-64px)]']"
+      :class="[
+        props.noContentPadding ? 'n-card--no-padding' : '',
+        props.hideFooter ? '' : 'h-[calc(100%-64px)]',
+        props.noContentBottomPadding ? 'n-card--no-bottom-padding' : '',
+      ]"
       :bordered="props.bordered"
     >
       <template #header>
@@ -84,6 +88,7 @@
       description?: string;
       contentMaxHeight?: string;
       noContentPadding?: boolean;
+      noContentBottomPadding?: boolean;
       loading?: boolean;
       saveText?: string;
       isEdit?: boolean;
@@ -96,6 +101,7 @@
     }>(),
     {
       noContentPadding: false,
+      noContentBottomPadding: false,
       hideFooter: false,
       hideContinue: false,
       specialHeight: 0,
@@ -138,6 +144,11 @@
   .n-card--no-padding {
     .n-card__content {
       padding: 0 !important;
+    }
+  }
+  .n-card--no-bottom-padding {
+    .n-card__content {
+      padding-bottom: 0 !important;
     }
   }
   .n-card-footer {

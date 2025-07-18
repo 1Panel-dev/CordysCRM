@@ -1,6 +1,6 @@
 <template>
   <!-- special-height 64是tab的高度和margin -->
-  <CrmCard hide-footer :special-height="64">
+  <CrmCard hide-footer :special-height="64" no-content-bottom-padding>
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"

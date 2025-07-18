@@ -2,7 +2,7 @@
   <div class="relative h-full">
     <n-scrollbar
       x-scrollable
-      :content-style="{ 'min-width': '600px', 'width': '100%', 'padding': '0 24px 24px', 'height': '100%' }"
+      :content-style="{ 'min-width': '600px', 'width': '100%', 'padding': '0 24px 0px', 'height': '100%' }"
     >
       <CrmTable
         ref="crmTableRef"

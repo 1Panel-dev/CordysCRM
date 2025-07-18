@@ -8,10 +8,9 @@
     :show-back="true"
   >
     <div class="business-close-rule">
-      <div class="h-full bg-[var(--text-n10)] p-[16px]">
+      <div class="h-full bg-[var(--text-n10)] p-[16px] pb-0">
         <CrmTable
           ref="crmTableRef"
-          class="!h-[calc(100vh-186px)]"
           v-bind="propsRes"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"

@@ -2,7 +2,7 @@
   <div ref="opportunityCardRef" class="h-full">
     <CrmCard hide-footer no-content-padding>
       <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
-      <div class="h-[calc(100%-48px)] p-[16px]">
+      <div class="h-[calc(100%-48px)] p-[16px] !pb-0">
         <CrmOpportunityTable
           :active-tab="activeTab"
           :fullscreen-target-ref="opportunityCardRef"

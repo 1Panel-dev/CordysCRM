@@ -8,9 +8,8 @@
     :show-back="true"
   >
     <div class="h-full w-full bg-[var(--text-n9)] p-[16px]">
-      <div class="h-full bg-[var(--text-n10)] p-[16px]">
+      <div class="h-full bg-[var(--text-n10)] p-[16px] pb-0">
         <CrmTable
-          class="!h-[calc(100vh-186px)]"
           v-bind="propsRes"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"

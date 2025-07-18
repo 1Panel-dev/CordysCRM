@@ -2,7 +2,7 @@
   <div
     ref="tableFullRef"
     class="relative flex h-full flex-col overflow-hidden"
-    :class="isFullScreen && !props.fullscreenTargetRef ? 'bg-[var(--text-n10)] p-[16px]' : ''"
+    :class="isFullScreen && !props.fullscreenTargetRef ? 'bg-[var(--text-n10)] p-[16px] !pb-0' : ''"
   >
     <BatchAction
       v-if="props.actionConfig"
@@ -90,16 +90,21 @@
         </div>
       </template>
     </n-data-table>
-    <div v-if="hasFinished" class="crm-table-bottom-tip flex text-center">
-      <div v-if="!attrs.hiddenTotal && hasFinished" :class="`flex flex-1 `">
+    <div
+      v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen) || hasFinished"
+      class="crm-table-bottom-tip flex text-center"
+    >
+      <div v-if="!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen)" :class="`flex flex-1 items-start`">
         {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
       </div>
-      <div :class="`${!attrs.hiddenTotal && hasFinished ? 'items-start' : 'items-center justify-center'} flex flex-1`">
-        {{ t('crmTable.tableScrollFinishedTip') }}</div
+      <div
+        v-if="hasFinished && !attrs.loading"
+        :class="`-ml-[24px] flex flex-1 items-start ${
+          !(!attrs.hiddenTotal || (attrs.hiddenTotal && isFullScreen)) ? 'items-center justify-center' : 'items-start'
+        }`"
       >
-    </div>
-    <div v-if="!attrs.hiddenTotal && !hasFinished" class="crm-table-bottom-tip">
-      {{ t('crmPagination.total', { count: (attrs.crmPagination as PaginationProps)?.itemCount }) }}
+        {{ t('crmTable.tableScrollFinishedTip') }}
+      </div>
     </div>
   </div>
 </template>
@@ -506,9 +511,11 @@
     hasFinished.value = false;
     // 处理有纵向滚动的情况
     if (
-      target.scrollHeight > target.clientHeight && // 有纵向滚动条
-      target.scrollHeight - target.scrollTop - target.clientHeight <= 40 && // 距离底部 40px 以内
-      pagination
+      target.scrollHeight > target.clientHeight &&
+      target.scrollHeight - target.scrollTop - target.clientHeight <= 40 &&
+      pagination &&
+      !attrs.loading &&
+      !hasFinished.value
     ) {
       if (pagination.itemCount > pagination.page * pagination.pageSize) {
         emit('pageChange', pagination.page + 1);
@@ -648,7 +655,8 @@
     left: 0;
     z-index: 999;
     width: 100%;
-    height: 22px;
+    height: 30px;
+    line-height: 30px;
     border-radius: 4px 4px 12px 12px;
     background: var(--text-n10);
     box-shadow: 0 -4px 10px rgb(100 103 103 / 5%);
