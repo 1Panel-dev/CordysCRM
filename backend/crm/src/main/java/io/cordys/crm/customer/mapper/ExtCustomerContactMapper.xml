@@ -90,7 +90,7 @@
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'name' and condition.name != 'owner' and condition.name != 'enable'">
+                <if test="condition.name != 'name' and condition.name != 'owner' and condition.name != 'enable' and condition.name != 'customerId'">
                     <if test="condition.multipleValue">
                         inner join customer_contact_field_blob ${tablePrefix}_${i}
                         on cc.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
