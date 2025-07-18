@@ -15,7 +15,7 @@
       v-model:value="value"
       :type="props.fieldConfig.dateType"
       :placeholder="props.fieldConfig.placeholder"
-      :disabled="props.fieldConfig.editable === false"
+      :disabled="props.fieldConfig.editable === false || props.disabled"
       class="w-full"
       @update-value="($event) => emit('change', $event)"
     >
@@ -32,6 +32,7 @@
     fieldConfig: FormCreateField;
     path: string;
     needInitDetail?: boolean; // 判断是否编辑情况
+    disabled?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change', value: null | number | (string | number)[]): void;

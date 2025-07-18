@@ -43,7 +43,7 @@
           <n-form-item
             :path="`conditions[${listIndex}].rightFieldId`"
             class="block flex-[1.5] overflow-hidden"
-            :rule="[{ required: true, message: t('common.value.nameNotNull') }]"
+            :rule="['EMPTY', 'NOT_EMPTY'].includes(item.operator as string) ? [] : [{ required: true, message: t('common.value.nameNotNull') }]"
           >
             <n-select
               v-model:value="item.rightFieldId"

@@ -21,6 +21,7 @@
               showLabel: false,
             }"
             :path="item.fieldInfo.id"
+            :disabled="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
             @change="handleFormChange"
           />
         </div>
@@ -41,6 +42,7 @@
   import dateTime from '../crm-form-create/components/basic/dateTime.vue';
 
   import useFormCreateApi from '@/hooks/useFormCreateApi';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
     sourceId: string;
