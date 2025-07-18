@@ -52,6 +52,7 @@
 
   const code = ref(0); // 状态码
 
+  const originData = ref<any[]>([]);
   async function loadList(refresh = false) {
     if (props.closeInitLoad) return;
     try {
@@ -92,6 +93,7 @@
       }
       finished.value = props.noPageNation || data.total <= currentPage.value * 10;
       error.value = false;
+      originData.value = list.value;
     } catch (_error: any) {
       // eslint-disable-next-line no-console
       console.log(_error);
@@ -111,11 +113,10 @@
       loadList(true);
       return;
     }
-
     const lowerCaseVal = props.keyword.trim()?.toLowerCase();
     const keys = Array.isArray(keywordKeys) ? keywordKeys : [keywordKeys];
 
-    list.value = list.value.filter((item) => {
+    list.value = originData.value.filter((item) => {
       return keys.some((key) => item[key]?.toString().toLowerCase().includes(lowerCaseVal));
     });
   }
