@@ -119,7 +119,12 @@
               formItemClass: 'w-[220px] flex-initial',
               selectProps: {
                 options: [...opportunityBaseSteps, ...opportunityResultSteps],
-                disabledFunction: (row: any) => !row.capacity || !row.column || !row.operator,
+                disabledFunction: (row: any) => {
+                  if (!row.column || !row.operator) {
+                    row.value = null;
+                  }
+                  return !row.capacity || !row.column || !row.operator;
+                },
                 maxTagCount: 'responsive',
                 disabledTooltipFunction: (row: any) =>
                   !row.capacity
