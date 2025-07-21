@@ -32,6 +32,7 @@ public class ClueFieldUtils {
 		systemFiledMap.put("followTime", TimeUtils.getDataTimeStr(data.getFollowTime()));
 		systemFiledMap.put("reservedDays", data.getReservedDays());
 		systemFiledMap.put("recyclePoolName", data.getRecyclePoolName());
+		systemFiledMap.put("departmentId", data.getDepartmentName());
 		return systemFiledMap;
 	}
 
