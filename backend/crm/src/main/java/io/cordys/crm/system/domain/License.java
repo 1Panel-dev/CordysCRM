@@ -9,9 +9,6 @@ import lombok.Data;
 @Table(name = "sys_license")
 public class License extends BaseModel {
 
-    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String id;
-
     @Schema(description = "license_code")
     private String licenseCode;
 
