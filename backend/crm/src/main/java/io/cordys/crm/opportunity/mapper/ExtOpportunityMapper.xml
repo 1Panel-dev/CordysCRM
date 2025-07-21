@@ -546,7 +546,7 @@
                     #{deptId}
                 </foreach>
                 <if test="request.dataPermission.searchType == 'ALL'">
-                    or sou.user_id = #{userId}
+                    or sou.user_id = #{request.userId}
                 </if>
             )
         </if>
@@ -557,7 +557,7 @@
         </if>
 
         <if test="request.dataPermission != null and request.dataPermission.self">
-            and c.owner = #{userId}
+            and c.owner = #{request.userId}
         </if>
     </select>
 </mapper>

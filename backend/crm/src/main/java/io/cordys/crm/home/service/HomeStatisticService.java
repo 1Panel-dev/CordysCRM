@@ -9,6 +9,7 @@ import io.cordys.common.dto.RoleDataScopeDTO;
 import io.cordys.common.dto.RolePermissionDTO;
 import io.cordys.common.permission.PermissionCache;
 import io.cordys.common.service.DataScopeService;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.LogUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
@@ -62,9 +63,12 @@ public class HomeStatisticService {
 	@Resource
 	private RoleService roleService;
 
+	private ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+
+
 	public HomeCustomerStatistic getCustomerStatistic(HomeStatisticSearchWrapperRequest request) {
 		HomeCustomerStatistic customerStatistic = new HomeCustomerStatistic();
-		try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+		try {
 			// 多线程执行
 			Future<HomeStatisticSearchResponse> getNewCustomerStatistic = executor.submit(() ->
 					getStatisticSearchResponse(request, this::getNewCustomerCount));
@@ -83,7 +87,7 @@ public class HomeStatisticService {
 
 	public HomeClueStatistic getClueStatistic(HomeStatisticSearchWrapperRequest request) {
 		HomeClueStatistic clueStatistic = new HomeClueStatistic();
-		try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+		try {
 			// 多线程执行
 			Future<HomeStatisticSearchResponse> getNewClueStatistic = executor.submit(() ->
 					getStatisticSearchResponse(request, this::getNewClueCount));
@@ -103,7 +107,7 @@ public class HomeStatisticService {
 
 	public HomeOpportunityStatistic getOpportunityStatistic(HomeStatisticSearchWrapperRequest request) {
 		HomeOpportunityStatistic opportunityStatistic = new HomeOpportunityStatistic();
-		try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+		try {
 			// 多线程执行
 			Future<HomeStatisticSearchResponse> getNewOpportunityStatistic = executor.submit(() ->
 					getStatisticSearchResponse(request, this::getNewOpportunityCount));
@@ -149,7 +153,7 @@ public class HomeStatisticService {
 	 * @return
 	 */
 	public Long getTotalCustomerCount(HomeStatisticSearchWrapperRequest request) {
-		HomeStatisticSearchWrapperRequest totalRequest = new HomeStatisticSearchWrapperRequest(request.getStaticRequest(), request.getDataPermission(), request.getOrgId());
+		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
 		totalRequest.setStartTime(null);
 		totalRequest.setEndTime(null);
 		return extCustomerMapper.selectCustomerCount(totalRequest, false);
@@ -179,7 +183,7 @@ public class HomeStatisticService {
 	 * @return
 	 */
 	public Long getTotalClueCount(HomeStatisticSearchWrapperRequest request) {
-		HomeStatisticSearchWrapperRequest totalRequest = new HomeStatisticSearchWrapperRequest(request.getStaticRequest(), request.getDataPermission(), request.getOrgId());
+		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
 		totalRequest.setStartTime(null);
 		totalRequest.setEndTime(null);
 		return extClueMapper.selectClueCount(totalRequest, false);
@@ -210,10 +214,16 @@ public class HomeStatisticService {
 	 * @return
 	 */
 	public Long getTotalOpportunityCount(HomeStatisticSearchWrapperRequest request) {
-		HomeStatisticSearchWrapperRequest totalRequest = new HomeStatisticSearchWrapperRequest(request.getStaticRequest(), request.getDataPermission(), request.getOrgId());
+		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
 		totalRequest.setStartTime(null);
 		totalRequest.setEndTime(null);
 		return extOpportunityMapper.selectOpportunityCount(totalRequest, false);
+	}
+
+	private HomeStatisticSearchWrapperRequest copyHomeStatisticSearchWrapperRequest(HomeStatisticSearchWrapperRequest request) {
+		HomeStatisticSearchWrapperRequest totalRequest = new HomeStatisticSearchWrapperRequest(BeanUtils.copyBean(new HomeStatisticSearchRequest(), request.getStaticRequest()),
+				request.getDataPermission(), request.getOrgId(), request.getUserId());
+		return totalRequest;
 	}
 
 	/**
@@ -243,14 +253,24 @@ public class HomeStatisticService {
 	public HomeStatisticSearchResponse getStatisticSearchResponse(HomeStatisticSearchWrapperRequest request,
 																		  Function<HomeStatisticSearchWrapperRequest, Long> statisticFunction) {
 		HomeStatisticSearchResponse response = new HomeStatisticSearchResponse();
-		Long count = statisticFunction.apply(request);
-		response.setValue(count);
-		if (request.comparePeriod()) {
-			HomeStatisticSearchWrapperRequest periodRequest = new HomeStatisticSearchWrapperRequest(request.getStaticRequest(), request.getDataPermission(), request.getOrgId());
-			periodRequest.setStartTime(periodRequest.getPeriodStartTime());
-			periodRequest.setEndTime(periodRequest.getPeriodEndTime());
-			Long periodCount = statisticFunction.apply(periodRequest);
-			response.setPriorPeriodCompareRate(getPriorPeriodCompareRate(count, periodCount));
+		Future<Long> getCount = executor.submit(() -> statisticFunction.apply(request));
+		try {
+			if (request.comparePeriod()) {
+				HomeStatisticSearchWrapperRequest periodRequest = copyHomeStatisticSearchWrapperRequest(request);
+				periodRequest.setStartTime(periodRequest.getPeriodStartTime());
+				periodRequest.setEndTime(periodRequest.getPeriodEndTime());
+				Future<Long> getPeriodCount = executor.submit(() -> statisticFunction.apply(periodRequest));
+
+				Long count = getCount.get();
+				response.setValue(count);
+				Long periodCount = getPeriodCount.get();
+				response.setPriorPeriodCompareRate(getPriorPeriodCompareRate(count, periodCount));
+			} else {
+				Long count = getCount.get();
+				response.setValue(count);
+			}
+		} catch (Exception e) {
+			LogUtils.error(e);
 		}
 		return response;
 	}
@@ -355,7 +375,7 @@ public class HomeStatisticService {
 
 	public HomeStatisticSearchWrapperRequest getHomeStatisticSearchWrapperRequest(HomeStatisticSearchRequest request) {
 		DeptDataPermissionDTO deptDataPermission = getDeptDataPermissionDTO(request, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
-		HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission, OrganizationContext.getOrganizationId());
+		HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
 		return wrapperRequest;
 	}
 }

@@ -22,11 +22,15 @@ public class HomeStatisticSearchWrapperRequest {
     private HomeStatisticSearchRequest staticRequest;
     private DeptDataPermissionDTO dataPermission;
     private String orgId;
+    private String userId;
 
-    public HomeStatisticSearchWrapperRequest(HomeStatisticSearchRequest staticRequest, DeptDataPermissionDTO dataPermission, String orgId) {
+    public HomeStatisticSearchWrapperRequest(HomeStatisticSearchRequest staticRequest,
+                                             DeptDataPermissionDTO dataPermission,
+                                             String orgId, String userId) {
         this.staticRequest = staticRequest;
         this.dataPermission = dataPermission;
         this.orgId = orgId;
+        this.userId = userId;
     }
 
     public boolean comparePeriod() {
@@ -44,6 +48,9 @@ public class HomeStatisticSearchWrapperRequest {
     public Long getStartTime() {
         String period = staticRequest.getPeriod();
         Long startTime = staticRequest.getStartTime();
+        if (startTime != null) {
+            return startTime;
+        }
         if (StringUtils.isNotBlank(period)) {
             LocalDate now = LocalDate.now();
             HomeStatisticPeriod statisticPeriod = EnumUtils.valueOf(HomeStatisticPeriod.class, period);
@@ -116,6 +123,9 @@ public class HomeStatisticSearchWrapperRequest {
     public Long getEndTime() {
         String period = staticRequest.getPeriod();
         Long endTime = staticRequest.getEndTime();
+        if (endTime != null) {
+            return endTime;
+        }
         if (StringUtils.isNotBlank(period)) {
             LocalDate now = LocalDate.now();
             HomeStatisticPeriod statisticPeriod = EnumUtils.valueOf(HomeStatisticPeriod.class, period);
