@@ -71,6 +71,8 @@ public class SseService {
      * 添加或获取现有客户端流
      */
     public Flux<String> addClient(String userId, String clientId) {
+        LogUtils.info("当前在线用户数: {} ", userClients.size());
+
         if (StringUtils.isAnyBlank(userId, clientId)) {
             LogUtils.info("User ID or Client ID is blank, cannot add client.");
             return null;
@@ -83,9 +85,9 @@ public class SseService {
                 return inner.get(clientId).flux;
             }
             ClientSinkWrapper wrapper = new ClientSinkWrapper();
-            // 控制最多 3 个客户端
+            // 控制最多 2 个客户端
             inner.put(clientId, wrapper);
-            if (inner.size() > 3) {
+            if (inner.size() > 2) {
                 Iterator<String> it = inner.keySet().iterator();
                 String oldest = it.next();
                 ClientSinkWrapper old = inner.remove(oldest);
