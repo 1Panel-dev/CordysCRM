@@ -69,6 +69,7 @@
 
 <script setup lang="ts">
   import { NButton, NDivider, NDropdown, NSwitch, useMessage } from 'naive-ui';
+  import { cloneDeep } from 'lodash-es';
 
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -335,12 +336,11 @@
     }
   }
 
-  watch(
-    () => props.list,
-    () => {
-      const list = licenseStore.hasLicense()
+  function initModuleConfigList() {
+    const newList = cloneDeep(moduleConfigList.value);
+    const dashboardList: ModuleConfigItem[] =
+      licenseStore.hasLicense() && !newList.some((e) => e.key === ModuleConfigEnum.DASHBOARD)
         ? [
-            ...moduleConfigList.value,
             {
               label: t('common.dashboard'),
               key: ModuleConfigEnum.DASHBOARD,
@@ -349,16 +349,24 @@
               enable: true,
             },
           ]
-        : moduleConfigList.value;
-      moduleConfigList.value = list.map((item) => {
-        const findConfigItem = props.list.find((e) => e.key === item.key);
-        return {
-          ...item,
-          enable: findConfigItem?.enable ?? false,
-          id: findConfigItem?.id ?? '',
-          disabled: findConfigItem?.disabled ?? false,
-        };
-      });
+        : [];
+
+    const list: ModuleConfigItem[] = [...newList, ...dashboardList];
+    moduleConfigList.value = list.map((item) => {
+      const findConfigItem = props.list.find((e) => e.key === item.key);
+      return {
+        ...item,
+        enable: findConfigItem?.enable ?? false,
+        id: findConfigItem?.id ?? '',
+        disabled: findConfigItem?.disabled ?? false,
+      };
+    });
+  }
+
+  watch(
+    () => props.list,
+    () => {
+      initModuleConfigList();
     }
   );
 </script>

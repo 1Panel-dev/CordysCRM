@@ -5,21 +5,21 @@ export enum OpportunityRouteEnum {
 }
 
 export enum ClueRouteEnum {
-  CLUE = 'clue',
-  CLUE_INDEX = 'clueIndex',
-  CLUE_DETAIL = 'clueDetail',
-  CLUE_POOL_DETAIL = 'cluePoolDetail',
+  CLUE = 'lead',
+  CLUE_INDEX = 'leadIndex',
+  CLUE_DETAIL = 'leadDetail',
+  CLUE_POOL_DETAIL = 'leadPoolDetail',
 }
 
 export enum CustomerRouteEnum {
-  CUSTOMER = 'customer',
-  CUSTOMER_INDEX = 'customerIndex',
-  CUSTOMER_DETAIL = 'customerDetail',
-  CUSTOMER_TRANSFER = 'customerTransfer',
-  CUSTOMER_DISTRIBUTE = 'customerDistribute',
-  CUSTOMER_OPENSEA_DETAIL = 'customerOpenSeaDetail',
-  CUSTOMER_RELATION = 'customerRelation',
-  CUSTOMER_COLLABORATOR = 'customerCollaborator',
+  CUSTOMER = 'account',
+  CUSTOMER_INDEX = 'accountIndex',
+  CUSTOMER_DETAIL = 'accountDetail',
+  CUSTOMER_TRANSFER = 'accountTransfer',
+  CUSTOMER_DISTRIBUTE = 'accountDistribute',
+  CUSTOMER_OPENSEA_DETAIL = 'accountOpenSeaDetail',
+  CUSTOMER_RELATION = 'accountRelation',
+  CUSTOMER_COLLABORATOR = 'accountCollaborator',
 }
 
 export enum CommonRouteEnum {

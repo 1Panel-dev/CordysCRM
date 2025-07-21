@@ -4,9 +4,9 @@ import { DEFAULT_LAYOUT } from '../base';
 import type { AppRouteRecordRaw } from '../types';
 
 const clue: AppRouteRecordRaw = {
-  path: '/clue',
+  path: '/lead',
   name: ClueRouteEnum.CLUE,
-  redirect: '/clue/index',
+  redirect: '/lead/index',
   component: DEFAULT_LAYOUT,
   meta: {
     permissions: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'],

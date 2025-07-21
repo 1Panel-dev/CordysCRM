@@ -15,16 +15,16 @@ export enum OpportunityRouteEnum {
 }
 
 export enum ClueRouteEnum {
-  CLUE_MANAGEMENT = 'clueManagement',
-  CLUE_MANAGEMENT_CLUE = 'clueManagementClue',
-  CLUE_MANAGEMENT_POOL = 'clueManagementPool',
+  CLUE_MANAGEMENT = 'leadManagement',
+  CLUE_MANAGEMENT_CLUE = 'leadManagementLead',
+  CLUE_MANAGEMENT_POOL = 'leadManagementPool',
 }
 
 export enum CustomerRouteEnum {
-  CUSTOMER = 'customer',
-  CUSTOMER_INDEX = 'customerIndex',
-  CUSTOMER_CONTACT = 'customerContact',
-  CUSTOMER_OPEN_SEA = 'customerOpenSea',
+  CUSTOMER = 'account',
+  CUSTOMER_INDEX = 'accountIndex',
+  CUSTOMER_CONTACT = 'accountContact',
+  CUSTOMER_OPEN_SEA = 'accountOpenSea',
 }
 
 export enum ProductRouteEnum {

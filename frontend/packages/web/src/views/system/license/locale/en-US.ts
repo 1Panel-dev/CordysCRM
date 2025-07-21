@@ -4,7 +4,7 @@ export default {
   'system.license.authorizationTime': 'Expiration date',
   'system.license.productName': 'Product Name',
   'system.license.productionVersion': 'Production Version',
-  'system.license.licenseVersion': 'Version',
+  'system.license.licenseVersion': 'Authorized version',
   'system.license.authorizationsCount': 'Number of authorizations',
   'system.license.authorizationStatus': 'Authorization status',
   'system.license.authorityChecking': 'Import License',

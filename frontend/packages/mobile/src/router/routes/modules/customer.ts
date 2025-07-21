@@ -4,9 +4,9 @@ import { DEFAULT_LAYOUT } from '../base';
 import type { AppRouteRecordRaw } from '../types';
 
 const customer: AppRouteRecordRaw = {
-  path: '/customer',
+  path: '/account',
   name: CustomerRouteEnum.CUSTOMER,
-  redirect: '/customer/index',
+  redirect: '/account/index',
   component: DEFAULT_LAYOUT,
   meta: {
     permissions: ['CUSTOMER_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT_POOL:READ', 'CUSTOMER_MANAGEMENT_CONTACT:READ'],

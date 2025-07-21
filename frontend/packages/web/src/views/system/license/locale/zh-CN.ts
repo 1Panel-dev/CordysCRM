@@ -4,7 +4,7 @@ export default {
   'system.license.authorizationTime': '过期时间',
   'system.license.productName': '产品名称',
   'system.license.productionVersion': '产品版本',
-  'system.license.licenseVersion': '版本',
+  'system.license.licenseVersion': '授权版本',
   'system.license.authorizationsCount': '授权数量',
   'system.license.authorizationStatus': '授权状态',
   'system.license.authorityChecking': '导入 License',

@@ -4,9 +4,9 @@ import { DEFAULT_LAYOUT } from '../base';
 import type { AppRouteRecordRaw } from '../types';
 
 const clue: AppRouteRecordRaw = {
-  path: '/clueManagement',
+  path: '/lead',
   name: ClueRouteEnum.CLUE_MANAGEMENT,
-  redirect: '/clueManagement/clue',
+  redirect: '/lead/index',
   component: DEFAULT_LAYOUT,
   meta: {
     locale: 'module.clueManagement',
@@ -17,7 +17,7 @@ const clue: AppRouteRecordRaw = {
   },
   children: [
     {
-      path: 'clue',
+      path: 'index',
       name: ClueRouteEnum.CLUE_MANAGEMENT_CLUE,
       component: () => import('@/views/clueManagement/clue/index.vue'),
       meta: {
@@ -27,7 +27,7 @@ const clue: AppRouteRecordRaw = {
       },
     },
     {
-      path: 'cluePool',
+      path: 'leadPool',
       name: ClueRouteEnum.CLUE_MANAGEMENT_POOL,
       component: () => import('@/views/clueManagement/cluePool/index.vue'),
       meta: {
