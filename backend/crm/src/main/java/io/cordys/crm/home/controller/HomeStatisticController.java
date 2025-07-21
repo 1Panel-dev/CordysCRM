@@ -65,9 +65,17 @@ public class HomeStatisticController {
     @PostMapping("/follow/record")
     @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
     @Operation(summary = "跟进记录统计")
-    public HomeFollowUpRecordStatistic getFollowRecordStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
+    public HomeFollowUpRecordStatistic getFollowUpRecordStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
         HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
         return homeStatisticService.getFollowUpRecordStatistic(wrapperRequest);
+    }
+
+    @PostMapping("/follow/plan")
+    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
+    @Operation(summary = "跟进计划统计")
+    public HomeFollowUpPlanStatistic getFollowUpPlanStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
+        HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
+        return homeStatisticService.getFollowUpPlanStatistic(wrapperRequest);
     }
 
     @GetMapping("/department/tree")

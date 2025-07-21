@@ -30,6 +30,7 @@ public class HomeStatisticControllerTest extends BaseTest {
     protected static final String CLUE = "clue";
     protected static final String CONTACT = "contact";
     protected static final String FOLLOW_RECORD = "follow/record";
+    protected static final String FOLLOW_PLAN = "follow/plan";
     protected static final String DEPARTMENT_TREE = "department/tree";
 
     @Override
@@ -100,6 +101,19 @@ public class HomeStatisticControllerTest extends BaseTest {
 
         // 校验权限
         requestPostPermissionsTest(List.of(PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ), FOLLOW_RECORD, request);
+    }
+
+    @Test
+    @Order(0)
+    void testGetFollowUpPlanStatistic() throws Exception {
+        HomeStatisticSearchRequest request = new HomeStatisticSearchRequest();
+        request.setSearchType(BusinessSearchType.ALL.name());
+        request.setPeriod(HomeStatisticPeriod.THIS_MONTH.name());
+
+        this.requestPostWithOkAndReturn(FOLLOW_PLAN, request);
+
+        // 校验权限
+        requestPostPermissionsTest(List.of(PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ), FOLLOW_PLAN, request);
     }
 
     @Test
