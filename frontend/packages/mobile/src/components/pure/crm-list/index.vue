@@ -22,6 +22,7 @@
 
 <script setup lang="ts">
   import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
+  import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CommonList } from '@lib/shared/models/common';
@@ -58,6 +59,7 @@
     try {
       if (!props.loadListApi) {
         list.value = props.transform ? list.value.map((e: any) => props.transform!(e)) : list.value;
+        originData.value = list.value;
         finished.value = true;
         return;
       }
@@ -93,7 +95,7 @@
       }
       finished.value = props.noPageNation || data.total <= currentPage.value * 10;
       error.value = false;
-      originData.value = list.value;
+      originData.value = cloneDeep(dataList);
     } catch (_error: any) {
       // eslint-disable-next-line no-console
       console.log(_error);

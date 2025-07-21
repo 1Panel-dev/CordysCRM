@@ -398,16 +398,17 @@
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   batchTableQueryParams.value = tableQueryParams;
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
 
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';
     setAdvanceFilter(filter);
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
-  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(_keyword?: string, poolId?: string) {
     setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: poolId || openSea.value });
     loadList();
@@ -417,6 +418,7 @@
   watch(
     () => tableRefreshId.value,
     () => {
+      crmTableRef.value?.clearCheckedRowKeys();
       searchData();
     }
   );

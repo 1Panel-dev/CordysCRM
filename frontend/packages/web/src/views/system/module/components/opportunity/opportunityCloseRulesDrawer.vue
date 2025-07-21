@@ -325,6 +325,7 @@
     () => tableRefreshId.value,
     (val) => {
       if (val) {
+        crmTableRef.value?.clearCheckedRowKeys();
         initOpportunityList();
       }
     }
@@ -334,7 +335,7 @@
     () => visible.value,
     (val) => {
       if (val) {
-        loadList();
+        initOpportunityList();
       }
     }
   );

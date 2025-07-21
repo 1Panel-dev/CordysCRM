@@ -308,7 +308,7 @@
     },
   ];
 
-  const { propsRes, propsEvent, loadList } = useTable(getCluePoolPage, {
+  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getCluePoolPage, {
     tableKey: TableKeyEnum.MODULE_CLUE_POOL,
     showSetting: true,
     columns,
@@ -317,6 +317,7 @@
   watch(
     () => tableRefreshId.value,
     () => {
+      setLoadListParams({});
       loadList();
     }
   );
@@ -325,6 +326,7 @@
     () => visible.value,
     (val) => {
       if (val) {
+        setLoadListParams({});
         loadList();
       }
     }

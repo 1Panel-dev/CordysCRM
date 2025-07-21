@@ -53,7 +53,7 @@ import {
   PersonalPassword,
   SendEmailDTO,
 } from '@lib/shared/models/system/business';
-import { OrgUserInfo } from '@lib/shared/models/system/org';
+import { type DEToken, OrgUserInfo } from '@lib/shared/models/system/org';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 获取邮件设置
@@ -133,7 +133,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 获取DEToken
   function getDEToken() {
-    return CDR.get({ url: GetDETokenUrl });
+    return CDR.get<DEToken>({ url: GetDETokenUrl });
   }
 
   // 获取个人信息

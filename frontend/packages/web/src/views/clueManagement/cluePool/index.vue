@@ -418,16 +418,17 @@
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';
     setAdvanceFilter(filter);
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
 
-  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(_keyword?: string, id?: string) {
     setLoadListParams({ keyword: _keyword ?? keyword.value, poolId: id || poolId.value });
     loadList();
@@ -437,7 +438,8 @@
   watch(
     () => tableRefreshId.value,
     () => {
-      loadList();
+      crmTableRef.value?.clearCheckedRowKeys();
+      searchData();
     }
   );
 

@@ -480,6 +480,9 @@
           initiatorColumn.key === key ? !!(initiatorColumn as CrmDataTableColumn).filterMultipleValue : undefined,
         operator: OperatorEnum.IN,
       }));
+    scrollTo({
+      top: 0,
+    });
     emit('filterChange', filterList);
   }
 
@@ -605,6 +608,7 @@
 
   defineExpose({
     scrollTo,
+    clearCheckedRowKeys: handleClear,
   });
 </script>
 

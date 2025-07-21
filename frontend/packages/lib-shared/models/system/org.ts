@@ -101,3 +101,8 @@ export interface DragNodeParams {
   dropNodeId: string;
   dropPosition: -1 | 0 | 1; // -1：dropNodeId节点之前。 1：dropNodeId节点后） 0：dropNodeId节点内）
 }
+
+export interface DEToken {
+  url: string;
+  token: string;
+}

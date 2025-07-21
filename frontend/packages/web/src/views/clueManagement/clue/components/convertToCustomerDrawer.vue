@@ -102,13 +102,14 @@
   function searchData(val?: string) {
     setLoadListParams({ keyword: val ?? keyword.value });
     loadList();
-    // crmTableRef.value?.scrollTo({ top: 0 });
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';
     setAdvanceFilter(filter);
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   const department = ref<DeptUserTreeNode[]>([]);

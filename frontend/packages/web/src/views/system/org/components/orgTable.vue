@@ -891,6 +891,7 @@
   watch(
     () => tableRefreshId.value,
     () => {
+      crmTableRef.value?.clearCheckedRowKeys();
       initOrgList();
     }
   );

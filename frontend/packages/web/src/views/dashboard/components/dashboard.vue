@@ -42,7 +42,7 @@
   const params = {
     // 固定写法：dashboard 仪表板、dataV 数据大屏
     'busiFlag': 'dashboard',
-    'dvId': '',
+    'dvId': props.dashboardId,
     // 固定写法
     'type': 'Dashboard',
     //  JWT token 认证。
@@ -51,16 +51,29 @@
     'de-embedded': true,
   };
 
+  const onMessage = (event: any) => {
+    const iframe = document.getElementById('iframe-dashboard-view');
+    if (event.data?.msgOrigin === 'de-fit2cloud') {
+      const { contentWindow } = iframe as HTMLIFrameElement;
+      contentWindow?.postMessage(params, '*');
+    }
+  };
+
   async function init() {
     try {
-      const token = await getDEToken();
-      // params.embeddedToken = token;
-      // iframeSrc.value = `${window.location.origin}/dashboard?${new URLSearchParams(params).toString()}`;
+      const res = await getDEToken();
+      params.embeddedToken = res.token;
+      iframeSrc.value = `${res.url}/#/chart-view`;
+      window.addEventListener('message', onMessage, false);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error initializing dashboard:', error);
     }
   }
+
+  onUnmounted(() => {
+    window.removeEventListener('message', onMessage, false);
+  });
 
   onBeforeMount(() => {
     init();

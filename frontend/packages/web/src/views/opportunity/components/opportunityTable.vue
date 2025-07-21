@@ -509,10 +509,12 @@
     };
   });
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';
     setAdvanceFilter(filter);
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
@@ -560,7 +562,6 @@
     ];
   });
 
-  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData() {
     setLoadListParams({
       keyword: keyword.value,
@@ -592,6 +593,7 @@
   watch(
     () => tableRefreshId.value,
     () => {
+      checkedRowKeys.value = [];
       searchData();
     }
   );

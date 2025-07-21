@@ -520,16 +520,18 @@
     },
     ...baseFilterConfigList,
   ]);
+
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';
     setAdvanceFilter(filter);
     loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
   const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
 
-  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(val?: string) {
     setLoadListParams({ keyword: val, searchType: activeTab.value });
     loadList();
@@ -549,7 +551,8 @@
   watch(
     () => tableRefreshId.value,
     () => {
-      loadList();
+      checkedRowKeys.value = [];
+      searchData();
     }
   );
 

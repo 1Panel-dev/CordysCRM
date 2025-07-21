@@ -101,6 +101,9 @@ export default function useTable<T>(
     loadListParams.value.keyword = '';
     keyword.value = '';
     resetFilterParams();
+    if (propsRes.value.crmPagination) {
+      propsRes.value.crmPagination.page = 1;
+    }
   }
 
   /**
@@ -220,6 +223,7 @@ export default function useTable<T>(
         ...item,
         multipleValue: item.multipleValue ?? filterItem.value.find((i) => i.name === item.name)?.multipleValue ?? false,
       }));
+      setPagination(1);
       loadList();
     },
   });

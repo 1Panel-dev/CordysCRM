@@ -382,7 +382,8 @@
   watch(
     () => tableRefreshId.value,
     () => {
-      loadList();
+      crmTableRef.value?.clearCheckedRowKeys();
+      searchData();
     }
   );
 

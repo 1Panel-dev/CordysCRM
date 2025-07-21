@@ -351,7 +351,7 @@
           ]
         : [];
 
-    const list: ModuleConfigItem[] = [...newList, ...dashboardList];
+    const list: ModuleConfigItem[] = newList.concat(dashboardList);
     moduleConfigList.value = list.map((item) => {
       const findConfigItem = props.list.find((e) => e.key === item.key);
       return {

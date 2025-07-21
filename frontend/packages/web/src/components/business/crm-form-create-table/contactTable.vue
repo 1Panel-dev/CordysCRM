@@ -338,7 +338,8 @@
   watch(
     () => tableRefreshId.value,
     () => {
-      loadList();
+      crmTableRef.value?.clearCheckedRowKeys();
+      searchData();
     }
   );
 
@@ -346,7 +347,8 @@
     () => props.refreshKey,
     (val) => {
       if (val) {
-        loadList();
+        crmTableRef.value?.clearCheckedRowKeys();
+        searchData();
       }
     }
   );

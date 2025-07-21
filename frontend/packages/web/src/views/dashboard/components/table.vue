@@ -9,7 +9,7 @@
       @filter-change="currentTable.propsEvent.value.filterChange"
     >
       <template #tableTop>
-        <div class="mb-[16px] flex items-center justify-between">
+        <div class="flex items-center justify-between">
           <n-button v-permission="['DASHBOARD:ADD']" type="primary" @click="emit('create')">
             {{ t('dashboard.addDashboard') }}
           </n-button>
