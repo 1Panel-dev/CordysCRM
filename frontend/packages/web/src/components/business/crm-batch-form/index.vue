@@ -14,7 +14,11 @@
     <div class="flex-1 overflow-hidden">
       <n-form ref="formRef" :model="form">
         <n-scrollbar :style="{ 'max-height': props.maxHeight }">
-          <div v-for="(element, index) in form.list" :key="`${element.path}${index}`" class="flex gap-[8px]">
+          <div
+            v-for="(element, index) in form.list"
+            :key="`${element.path}${index}`"
+            :class="`${!element.editing ? 'read-only-row' : ''} flex gap-[8px]`"
+          >
             <n-form-item
               v-for="model of props.models"
               :key="`${model.path}${index}`"
@@ -80,8 +84,9 @@
                   <n-select
                     v-model:value="element[model.path]"
                     clearable
-                    :placeholder="t('common.pleaseSelect')"
+                    :placeholder="!element.editing ? '-' : t('common.pleaseSelect')"
                     :disabled="!element.editing || model.selectProps?.disabledFunction?.(element)"
+                    :show-arrow="element.editing"
                     v-bind="model.selectProps"
                     :options="getSelectOptions(element, model)"
                     :multiple="model.type === FieldTypeEnum.SELECT_MULTIPLE"
@@ -350,17 +355,6 @@
     form.value.list[index].editing = true;
   }
 
-  // 取消编辑
-  function handleCancelEdit(index: number) {
-    if (rowBackups.value[index]) {
-      form.value.list[index] = cloneDeep(rowBackups.value[index]);
-    } else {
-      form.value.list[index] = { ...formItem };
-    }
-    form.value.list[index].editing = false;
-    delete rowBackups.value[index];
-  }
-
   // 单行校验
   async function validateRowFields(index: number): Promise<boolean> {
     const fieldRefs = props.models.map((model) => formItemRefs.value[model.path]?.get(`${index}`)).filter(Boolean);
@@ -373,6 +367,18 @@
       return false;
     }
     return true;
+  }
+
+  // 取消编辑
+  function handleCancelEdit(index: number) {
+    if (rowBackups.value[index]) {
+      form.value.list[index] = cloneDeep(rowBackups.value[index]);
+      validateRowFields(index);
+    } else {
+      form.value.list[index] = { ...formItem };
+    }
+    form.value.list[index].editing = false;
+    delete rowBackups.value[index];
   }
 
   // 保存编辑
@@ -417,6 +423,27 @@
     }
     :deep(.n-tag__content) {
       margin: 0 auto;
+    }
+  }
+  :deep(.n-form-item-feedback-wrapper) {
+    min-height: 8px;
+  }
+  .read-only-row {
+    :deep(.n-form-item) {
+      .n-base-selection.n-base-selection--disabled .n-base-selection-label .n-base-selection-input,
+      .n-input.n-input--disabled .n-input__input-el,
+      .n-input.n-input--disabled .n-input__placeholder,
+      .n-base-selection.n-base-selection--disabled .n-base-selection-placeholder {
+        color: var(--text-n1);
+      }
+      .n-tag {
+        &.n-tag--disabled {
+          opacity: 1;
+        }
+        .n-tag__close {
+          display: none;
+        }
+      }
     }
   }
 </style>
