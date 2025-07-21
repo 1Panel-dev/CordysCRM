@@ -164,7 +164,9 @@
                     window.open(
                       `${window.location.origin}#${
                         router.resolve({ name: FullPageEnum.FULL_PAGE_DASHBOARD }).fullPath
-                      }?id=${row.id}&isFavorite=${row.myCollect ? 'Y' : 'N'}&title=${encodeURIComponent(row.name)}`,
+                      }?id=${row.resourceId}&isFavorite=${row.myCollect ? 'Y' : 'N'}&title=${encodeURIComponent(
+                        row.name
+                      )}`,
                       '_blank'
                     );
                   },
