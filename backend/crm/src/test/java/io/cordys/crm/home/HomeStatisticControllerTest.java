@@ -26,6 +26,7 @@ public class HomeStatisticControllerTest extends BaseTest {
     protected static final String OPPORTUNITY = "opportunity";
     protected static final String CUSTOMER = "customer";
     protected static final String CLUE = "clue";
+    protected static final String CONTACT = "contact";
     protected static final String DEPARTMENT_TREE = "department/tree";
 
     @Override
@@ -61,6 +62,19 @@ public class HomeStatisticControllerTest extends BaseTest {
 
     @Test
     @Order(0)
+    void getContactStatistic() throws Exception {
+        HomeStatisticSearchRequest request = new HomeStatisticSearchRequest();
+        request.setSearchType(BusinessSearchType.ALL.name());
+        request.setPeriod(HomeStatisticPeriod.THIS_MONTH.name());
+
+        this.requestPostWithOkAndReturn(CONTACT, request);
+
+        // 校验权限
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ, CONTACT, request);
+    }
+
+    @Test
+    @Order(0)
     void testGetClueStatistic() throws Exception {
         HomeStatisticSearchRequest request = new HomeStatisticSearchRequest();
         request.setSearchType(BusinessSearchType.ALL.name());
@@ -71,6 +85,7 @@ public class HomeStatisticControllerTest extends BaseTest {
         // 校验权限
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, CLUE, request);
     }
+
 
     @Test
     @Order(1)

@@ -6,6 +6,7 @@ import io.cordys.context.OrganizationContext;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import io.cordys.crm.home.dto.response.HomeClueStatistic;
+import io.cordys.crm.home.dto.response.HomeContactStatistic;
 import io.cordys.crm.home.dto.response.HomeCustomerStatistic;
 import io.cordys.crm.home.dto.response.HomeOpportunityStatistic;
 import io.cordys.crm.home.service.HomeStatisticService;
@@ -53,6 +54,14 @@ public class HomeStatisticController {
     public HomeOpportunityStatistic getOpportunityStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
         HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
         return homeStatisticService.getOpportunityStatistic(wrapperRequest);
+    }
+
+    @PostMapping("/contact")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
+    @Operation(summary = "联系人统计")
+    public HomeContactStatistic getContactStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
+        HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
+        return homeStatisticService.getContactStatistic(wrapperRequest);
     }
 
     @GetMapping("/department/tree")

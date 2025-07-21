@@ -6,6 +6,7 @@ import io.cordys.crm.customer.dto.request.ContactUniqueRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
 import io.cordys.crm.customer.dto.response.CustomerContactRepeatResponse;
+import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -37,4 +38,6 @@ public interface ExtCustomerContactMapper {
      * @return 联系人数量
      */
     long getUniqueContactCount(@Param("request") ContactUniqueRequest uniqueRequest, @Param("customerId") String customerId, @Param("orgId") String orgId);
+
+    Long getNewContactCount(@Param("request") HomeStatisticSearchWrapperRequest request);
 }

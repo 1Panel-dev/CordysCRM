@@ -12,13 +12,11 @@ import io.cordys.common.service.DataScopeService;
 import io.cordys.common.util.LogUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
+import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
-import io.cordys.crm.home.dto.response.HomeClueStatistic;
-import io.cordys.crm.home.dto.response.HomeCustomerStatistic;
-import io.cordys.crm.home.dto.response.HomeOpportunityStatistic;
-import io.cordys.crm.home.dto.response.HomeStatisticSearchResponse;
+import io.cordys.crm.home.dto.response.*;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
 import io.cordys.crm.system.domain.OrganizationUser;
 import io.cordys.crm.system.service.DepartmentService;
@@ -47,6 +45,8 @@ public class HomeStatisticService {
 	private ExtClueMapper extClueMapper;
 	@Resource
 	private ExtOpportunityMapper extOpportunityMapper;
+	@Resource
+	private ExtCustomerContactMapper extCustomerContactMapper;
 	@Resource
 	private DataScopeService dataScopeService;
 	@Resource
@@ -111,6 +111,14 @@ public class HomeStatisticService {
 			LogUtils.error(e);
 		}
 		return opportunityStatistic;
+	}
+
+	public HomeContactStatistic getContactStatistic(HomeStatisticSearchWrapperRequest request) {
+		HomeContactStatistic contactStatistic = new HomeContactStatistic();
+		HomeStatisticSearchResponse statisticSearchResponse =
+				getStatisticSearchResponse(request, extCustomerContactMapper::getNewContactCount);
+		contactStatistic.setNewContact(statisticSearchResponse);
+		return contactStatistic;
 	}
 
 	/**
