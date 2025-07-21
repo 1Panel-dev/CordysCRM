@@ -369,9 +369,9 @@
         <if test="filters != null and filters.size > 0">
             join opportunity o on c.id = o.customer_id and
             <foreach collection="filters" item="filter" open="(" separator=" and " close=")">
-                <if test="filter.name == 'stage'">
+                <if test="filter.column == 'stage'">
                     <include refid="io.cordys.common.mapper.CommonMapper.condition">
-                        <property name="condition" value="condition"/>
+                        <property name="condition" value="filter"/>
                         <property name="column" value="o.stage"/>
                     </include>
                 </if>
