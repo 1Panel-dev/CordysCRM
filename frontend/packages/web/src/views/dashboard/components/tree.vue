@@ -1,5 +1,5 @@
 <template>
-  <div class="p-[24px]">
+  <div class="flex h-full flex-col p-[24px]">
     <div class="mb-[8px] flex flex-col items-center justify-between gap-[8px]">
       <n-input v-model:value="keyword" :placeholder="t('common.searchByName')">
         <template #suffix>
@@ -82,7 +82,7 @@
       :node-more-actions="nodeMoreOptions"
       :filter-more-action-func="filterMoreActionFunc"
       :render-extra="renderExtraDom"
-      :virtual-scroll-props="{ virtualScroll: true, virtualScrollHeight: 'calc(100vh - 176px)' }"
+      :virtual-scroll-props="{ virtualScroll: true, virtualScrollHeight: '100%' }"
       :field-names="{
         keyField: 'id',
         labelField: 'name',
