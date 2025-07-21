@@ -1,5 +1,6 @@
 package io.cordys.crm.system.dto;
 
+import io.cordys.crm.system.constants.LicenseStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -49,6 +50,6 @@ public class LicenseDTO implements Serializable {
     private String status;
 
     public LicenseDTO() {
-        this.status = "not_found";
+        this.status = LicenseStatus.NOT_FOUND.getName();
     }
 }

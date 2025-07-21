@@ -10,6 +10,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.constants.LicenseStatus;
 import io.cordys.crm.system.domain.License;
 import io.cordys.crm.system.dto.LicenseDTO;
 import io.cordys.crm.system.dto.log.LicenseLogDTO;
@@ -27,7 +28,7 @@ import java.util.Optional;
 public class LicenseService {
 
     @Resource
-    private BaseMapper<License>licenseBaseMapper;
+    private BaseMapper<License> licenseBaseMapper;
 
     @Resource
     private ExtLicenseMapper extLicenseMapper;
@@ -94,6 +95,7 @@ public class LicenseService {
 
     public LicenseDTO validate(String code) {
         boolean isValid = CommonBeanFactory.packageExists("io.cordys.xpack");
+        LicenseDTO licenseDTO = new LicenseDTO();
         if (isValid && StringUtils.isNotBlank(code)) {
             Object license = CommonBeanFactory.invoke("extLicenseService",
                     clazz -> {
@@ -108,7 +110,11 @@ public class LicenseService {
             }
         }
 
-        return new LicenseDTO();
+        if (isValid) {
+            licenseDTO.setStatus(LicenseStatus.INVALID.getName());
+        }
+
+        return licenseDTO;
     }
 
 }
