@@ -12,6 +12,8 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
+
 /**
  * @Author: jianxing
  * @CreateTime: 2025-07-15  16:24
@@ -27,6 +29,7 @@ public class HomeStatisticControllerTest extends BaseTest {
     protected static final String CUSTOMER = "customer";
     protected static final String CLUE = "clue";
     protected static final String CONTACT = "contact";
+    protected static final String FOLLOW_RECORD = "follow/record";
     protected static final String DEPARTMENT_TREE = "department/tree";
 
     @Override
@@ -86,6 +89,18 @@ public class HomeStatisticControllerTest extends BaseTest {
         requestPostPermissionTest(PermissionConstants.CLUE_MANAGEMENT_READ, CLUE, request);
     }
 
+    @Test
+    @Order(0)
+    void testGetFollowUpRecordStatistic() throws Exception {
+        HomeStatisticSearchRequest request = new HomeStatisticSearchRequest();
+        request.setSearchType(BusinessSearchType.ALL.name());
+        request.setPeriod(HomeStatisticPeriod.THIS_MONTH.name());
+
+        this.requestPostWithOkAndReturn(FOLLOW_RECORD, request);
+
+        // 校验权限
+        requestPostPermissionsTest(List.of(PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ), FOLLOW_RECORD, request);
+    }
 
     @Test
     @Order(1)

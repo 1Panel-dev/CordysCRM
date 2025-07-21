@@ -263,7 +263,7 @@
 
         where c.organization_id = #{request.orgId}
         <if test="request.startTime != null and request.endTime != null">
-            and c.create_time &gt; #{request.startTime} and c.create_time &lt; #{request.endTime}
+            and c.create_time &gt;= #{request.startTime} and c.create_time &lt;= #{request.endTime}
         </if>
 
         <if test="request.dataPermission != null and request.dataPermission.self">

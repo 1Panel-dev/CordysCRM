@@ -5,15 +5,13 @@ import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
-import io.cordys.crm.home.dto.response.HomeClueStatistic;
-import io.cordys.crm.home.dto.response.HomeContactStatistic;
-import io.cordys.crm.home.dto.response.HomeCustomerStatistic;
-import io.cordys.crm.home.dto.response.HomeOpportunityStatistic;
+import io.cordys.crm.home.dto.response.*;
 import io.cordys.crm.home.service.HomeStatisticService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -62,6 +60,14 @@ public class HomeStatisticController {
     public HomeContactStatistic getContactStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
         HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
         return homeStatisticService.getContactStatistic(wrapperRequest);
+    }
+
+    @PostMapping("/follow/record")
+    @RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.CLUE_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ}, logical = Logical.OR)
+    @Operation(summary = "跟进记录统计")
+    public HomeFollowUpRecordStatistic getFollowRecordStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
+        HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
+        return homeStatisticService.getFollowUpRecordStatistic(wrapperRequest);
     }
 
     @GetMapping("/department/tree")

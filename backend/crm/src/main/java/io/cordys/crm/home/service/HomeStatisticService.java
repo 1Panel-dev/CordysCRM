@@ -14,6 +14,7 @@ import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import io.cordys.crm.home.dto.response.*;
@@ -47,6 +48,8 @@ public class HomeStatisticService {
 	private ExtOpportunityMapper extOpportunityMapper;
 	@Resource
 	private ExtCustomerContactMapper extCustomerContactMapper;
+	@Resource
+	private ExtFollowUpRecordMapper extFollowUpRecordMapper;
 	@Resource
 	private DataScopeService dataScopeService;
 	@Resource
@@ -119,6 +122,14 @@ public class HomeStatisticService {
 				getStatisticSearchResponse(request, extCustomerContactMapper::getNewContactCount);
 		contactStatistic.setNewContact(statisticSearchResponse);
 		return contactStatistic;
+	}
+
+	public HomeFollowUpRecordStatistic getFollowUpRecordStatistic(HomeStatisticSearchWrapperRequest request) {
+		HomeFollowUpRecordStatistic followUpRecordStatistic = new HomeFollowUpRecordStatistic();
+		HomeStatisticSearchResponse statisticSearchResponse =
+				getStatisticSearchResponse(request, extFollowUpRecordMapper::getNewContactCount);
+		followUpRecordStatistic.setNewFollowUpRecord(statisticSearchResponse);
+		return followUpRecordStatistic;
 	}
 
 	/**
