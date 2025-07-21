@@ -90,6 +90,14 @@ public class OpenApiConfig {
     }
 
     /**
+     * 配置首页 API 文档。
+     */
+    @Bean
+    public GroupedOpenApi homeApi() {
+        return createApi("home", PRE_PACKAGES + "home");
+    }
+
+    /**
      * 配置 XPack API 文档。
      */
     @Bean
