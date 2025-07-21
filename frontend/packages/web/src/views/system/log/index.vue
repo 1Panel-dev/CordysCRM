@@ -49,6 +49,13 @@
               clearable
             />
           </n-form-item>
+          <n-form-item :label="t('log.keyword')" path="keyword">
+            <n-input
+                v-model:value="form.keyword"
+                :placeholder="t('common.pleaseInput')"
+                clearable
+            />
+          </n-form-item>
         </template>
         <n-form-item>
           <n-button ghost class="mr-[12px]" type="primary" @click="searchData">
@@ -85,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-  import { CascaderOption, NButton, NCascader, NDatePicker, NForm, NFormItem, NScrollbar, NSelect } from 'naive-ui';
+import {CascaderOption, NButton, NCascader, NDatePicker, NForm, NFormItem, NInput, NScrollbar, NSelect} from 'naive-ui';
   import dayjs from 'dayjs';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';

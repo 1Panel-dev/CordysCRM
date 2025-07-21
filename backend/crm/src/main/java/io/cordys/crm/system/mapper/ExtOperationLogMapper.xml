@@ -30,7 +30,7 @@
                 AND t.module like #{module}
             </if>
             <if test='request.keyword != null and request.keyword != ""'>
-                AND AND t.resource_name LIKE CONCAT('%', #{request.keyword},'%')
+                AND t.resource_name LIKE CONCAT('%', #{request.keyword},'%')
             </if>
             <include refid="io.cordys.common.mapper.CommonMapper.sort">
                 <property name="sort" value="request.sort"/>
