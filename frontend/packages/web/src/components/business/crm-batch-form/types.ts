@@ -11,6 +11,8 @@ export interface CustomValidator {
 
 export interface customSelectedProps {
   filterRepeat?: boolean;
+  disabledFunction?: (row: any) => boolean;
+  disabledTooltipFunction?: (row: any) => string;
 }
 
 export interface FormItemModel {
@@ -19,6 +21,7 @@ export interface FormItemModel {
   rule?: (FormItemRule & CustomValidator)[];
   type: FieldTypeEnum;
   formItemClass?: string;
+  labelTooltip?: string;
   defaultValue?: string | string[] | number | number[] | boolean; // 默认值
   inputProps?: Partial<InputProps>;
   numberProps?: Partial<InputNumberProps>;

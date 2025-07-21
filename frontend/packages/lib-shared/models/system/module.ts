@@ -146,6 +146,7 @@ export interface CapacityItem {
   scopeId: string;
   capacity: number;
   members: SelectedUsersItem[];
+  filters?: { column: 'string'; operator: 'string'; value: 'string' }[];
 }
 
 // 表单设计保存参数

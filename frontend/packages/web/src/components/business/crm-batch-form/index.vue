@@ -11,7 +11,7 @@
         {{ form.allOr === 'AND' ? 'all' : 'or' }}
       </CrmTag>
     </div>
-    <div class="flex-1">
+    <div class="flex-1 overflow-hidden">
       <n-form ref="formRef" :model="form">
         <n-scrollbar :style="{ 'max-height': props.maxHeight }">
           <div v-for="(element, index) in form.list" :key="`${element.path}${index}`" class="flex gap-[8px]">
@@ -31,9 +31,25 @@
                   return e;
                 })
               "
-              class="block flex-1"
+              class="block flex-1 overflow-hidden"
               :class="model.formItemClass"
             >
+              <template v-if="index === 0 && model.label && model.labelTooltip" #label>
+                <span class="inline-flex items-center gap-[8px]">
+                  {{ model.label }}
+                  <n-tooltip trigger="hover" placement="right">
+                    <template #trigger>
+                      <CrmIcon
+                        type="iconicon_help_circle"
+                        :size="16"
+                        class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                      />
+                    </template>
+                    {{ model.labelTooltip }}
+                  </n-tooltip>
+                </span>
+              </template>
+
               <n-input
                 v-if="model.type === FieldTypeEnum.INPUT"
                 v-model:value="element[model.path]"
@@ -54,16 +70,25 @@
                   min: model.numberProps?.min,
                 }"
               />
-              <n-select
+              <n-tooltip
                 v-if="[FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(model.type)"
-                v-model:value="element[model.path]"
-                clearable
-                :placeholder="t('common.pleaseSelect')"
-                :disabled="!element.editing"
-                v-bind="model.selectProps"
-                :options="getSelectOptions(element, model)"
-                :multiple="model.type === FieldTypeEnum.SELECT_MULTIPLE"
-              />
+                :disabled="!model.selectProps?.disabledFunction?.(element)"
+                trigger="hover"
+                placement="bottom"
+              >
+                <template #trigger>
+                  <n-select
+                    v-model:value="element[model.path]"
+                    clearable
+                    :placeholder="t('common.pleaseSelect')"
+                    :disabled="!element.editing || model.selectProps?.disabledFunction?.(element)"
+                    v-bind="model.selectProps"
+                    :options="getSelectOptions(element, model)"
+                    :multiple="model.type === FieldTypeEnum.SELECT_MULTIPLE"
+                  />
+                </template>
+                {{ model.selectProps?.disabledTooltipFunction?.(element) }}
+              </n-tooltip>
               <CrmUserTagSelector
                 v-if="model.type === FieldTypeEnum.USER_TAG_SELECTOR"
                 v-model:selected-list="element[model.path]"
@@ -122,7 +147,18 @@
 </template>
 
 <script setup lang="ts">
-  import { FormInst, FormItemRule, NButton, NForm, NFormItem, NIcon, NInput, NScrollbar, NSelect } from 'naive-ui';
+  import {
+    FormInst,
+    FormItemRule,
+    NButton,
+    NForm,
+    NFormItem,
+    NIcon,
+    NInput,
+    NScrollbar,
+    NSelect,
+    NTooltip,
+  } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
   import { cloneDeep } from 'lodash-es';
 
@@ -189,7 +225,7 @@
       if (e.defaultValue) {
         formItem[e.path] = e.defaultValue;
       } else {
-        formItem[e.path] = valueIsArray(e) ? [] : undefined;
+        formItem[e.path] = valueIsArray(e) ? [] : null;
       }
     });
     form.value.list = props.defaultList?.length
@@ -319,7 +355,7 @@
     if (rowBackups.value[index]) {
       form.value.list[index] = cloneDeep(rowBackups.value[index]);
     } else {
-      form.value.list[index] = { ...formItem, capacity: null };
+      form.value.list[index] = { ...formItem };
     }
     form.value.list[index].editing = false;
     delete rowBackups.value[index];

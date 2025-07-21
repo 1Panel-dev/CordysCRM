@@ -62,6 +62,11 @@ export default {
   'module.capacitySet.repeatMsg': 'Already added in another rule',
   'module.capacitySet.Maximum': 'Capacity Limit',
   'module.capacitySet.MaximumPlaceholder': 'No limit',
+  'module.capacitySet.notIncluded': 'Exclude from conditions',
+  'module.capacitySet.notIncludedTip':
+    'Customers who meet the filter criteria will be excluded from capacity calculations.',
+  'module.capacitySet.notIncludedDisabled': 'This option is unavailable when the capacity limit is not enabled.',
+  'module.capacitySet.notIncludedValueDisabled': 'Please select a condition first.',
   'module.personal.info': 'Personal information',
   'module.personal.plan': 'My plan',
   'module.personal.myExport': 'My export',
