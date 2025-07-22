@@ -112,7 +112,11 @@
       if (!error) {
         try {
           loading.value = true;
-          await addLicense(form.value.licenseCode as string);
+          let code = form.value.licenseCode as string;
+          if (/^\d+$/.test(code)) {
+            code = `"${code}"`;
+          }
+          await addLicense(code);
           licenseStore.getValidateLicense();
           Message.success(t('common.updateSuccess'));
           handleCancel();
@@ -121,6 +125,7 @@
           console.log(e);
         } finally {
           loading.value = false;
+          window.location.reload();
         }
       }
     });

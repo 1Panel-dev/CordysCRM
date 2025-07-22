@@ -10,7 +10,15 @@ const system: AppRouteRecordRaw = {
   component: DEFAULT_LAYOUT,
   meta: {
     locale: 'menu.settings',
-    permissions: ['SYS_ORGANIZATION:READ', 'SYSTEM_ROLE:READ', 'MODULE_SETTING:READ', 'SYSTEM_SETTING:READ'],
+    permissions: [
+      'SYS_ORGANIZATION:READ',
+      'SYSTEM_ROLE:READ',
+      'MODULE_SETTING:READ',
+      'SYSTEM_NOTICE:READ',
+      'SYSTEM_SETTING:READ',
+      'OPERATION_LOG:READ',
+      'LICENSE:READ',
+    ],
     icon: 'iconicon_set_up',
     collapsedLocale: 'menu.collapsedSettings',
   },

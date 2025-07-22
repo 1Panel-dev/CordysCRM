@@ -1,8 +1,11 @@
 <template>
   <div v-expire class="mb-[16px]" :class="props.styleClass">
-    <n-alert :type="licenseStore.expiredDays > 0 && licenseStore.expiredDays <= 30 ? 'warning' : 'error'">
+    <n-alert :type="licenseStore.expiredDays >= 0 && licenseStore.expiredDays <= 30 ? 'warning' : 'error'">
+      <template #icon>
+        <n-icon><AlertCircle /></n-icon>
+      </template>
       {{
-        licenseStore.expiredDays > 0 && licenseStore.expiredDays <= 30
+        licenseStore.expiredDays >= 0 && licenseStore.expiredDays <= 30
           ? t('system.license.LicenseExpirationPromptLessThanThirty', { day: licenseStore.expiredDays })
           : t('system.license.LicenseExpirationPromptGreaterThanThirty')
       }}
@@ -11,7 +14,8 @@
 </template>
 
 <script setup lang="ts">
-  import { NAlert } from 'naive-ui';
+  import { NAlert, NIcon } from 'naive-ui';
+  import { AlertCircle } from '@vicons/ionicons5';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
