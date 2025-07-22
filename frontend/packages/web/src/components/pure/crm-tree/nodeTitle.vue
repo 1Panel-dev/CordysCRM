@@ -27,6 +27,8 @@
             @blur="handleSave"
             @input="validateValue"
             @click.stop
+            @compositionstart="handleCompositionStart"
+            @compositionend="handleCompositionEnd"
           >
             <template #suffix>
               <CrmClearSuffix :tooltip-content="tooltipContent" :status="validateNameError" @clear="clearHandler" />
@@ -131,8 +133,18 @@
     emit('cancel');
   }
 
+  const isComposing = ref(false);
+  function handleCompositionStart() {
+    isComposing.value = true;
+  }
+
+  function handleCompositionEnd() {
+    isComposing.value = false;
+  }
+
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter') {
+      if (isComposing.value) return;
       handleSave();
     } else if (e.key === 'Escape') {
       handleCancel();
