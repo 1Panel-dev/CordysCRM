@@ -1,9 +1,9 @@
 export default {
   'dashboard.myFavorite': 'My Favorites',
   'dashboard.all': 'All Dashboards',
-  'dashboard.newChild': 'New Child',
-  'dashboard.expandChild': 'Expand Child',
-  'dashboard.collapseChild': 'Collapse Child',
+  'dashboard.newChild': 'New Folder',
+  'dashboard.expandChild': 'Expand Folder',
+  'dashboard.collapseChild': 'Collapse Folder',
   'dashboard.addDashboard': 'Add Dashboard',
   'dashboard.updateDashboard': 'Update Dashboard',
   'dashboard.deleteDashboardTip':
