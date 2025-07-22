@@ -21,10 +21,14 @@
         </div>
       </div>
       <div class="flex h-[92px] items-center gap-[8px]">
-        <div v-for="(ele, index) of item.analytics" :key="`${ele.title}-${index}`" class="analytics-item h-full flex-1">
+        <div
+          v-for="(ele, index) of item.analytics"
+          :key="`${ele.title}-${index}`"
+          class="analytics-item flex h-full flex-1 flex-col justify-between"
+        >
           <div>{{ ele.title }}</div>
           <div class="analytics-count">{{ addCommasToNumber(ele.count || 0) }}</div>
-          <div v-if="ele.countValue !== 'remainingCapacity'" class="analytics-last-time">
+          <div v-if="!['remainingCapacity', 'totalAmount'].includes(ele.countValue)" class="analytics-last-time">
             <div>{{ t('workbench.comparedWithPreviousPeriod') }}</div>
             <div class="flex items-center justify-end gap-[4px]">
               <CrmIcon
@@ -125,9 +129,11 @@
       total: detail?.total,
       analytics: analyticsList.map((e: any) => {
         const countKey = e.countValue;
+        const count = typeof detail[countKey] === 'number' ? detail[countKey] : detail[countKey]?.value;
+        const countValue = count && typeof count === 'number' ? count : '-';
         return {
           ...e,
-          count: detail[countKey] && typeof detail[countKey]?.value === 'number' ? detail[countKey]?.value : '-',
+          count: countValue,
           priorPeriodCompareRate:
             detail[countKey] && typeof detail[countKey]?.priorPeriodCompareRate === 'number'
               ? Number(detail[countKey]?.priorPeriodCompareRate.toFixed(2))

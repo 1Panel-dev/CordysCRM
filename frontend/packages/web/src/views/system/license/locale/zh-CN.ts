@@ -16,7 +16,7 @@ export default {
   'system.license.license': 'License',
   'system.license.licenseCode': 'License Code',
   'system.license.licenseSuccessTip': '授权成功',
-  'system.license.LicenseIsRequired': 'License Code 是必填项',
+  'system.license.LicenseIsRequired': 'License Code 不能为空',
   'system.license.clickUpload': '点击上传',
   'system.license.uploadFileTip': '请上传文件再提交！',
   'system.license.LicenseExpirationPromptLessThanThirty':

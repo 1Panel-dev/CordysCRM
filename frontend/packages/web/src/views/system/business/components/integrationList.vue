@@ -88,7 +88,7 @@
             <n-switch
               size="small"
               :value="item.response.weComEnable"
-              :disabled="!hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
+              :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
               @update:value="handleChangeEnable(item, 'weComEnable')"
             />
             <div class="text-[12px]">{{ t('system.message.enterpriseWeChatNotice') }}</div>
@@ -220,6 +220,7 @@
     key: 'syncEnable' | 'qrcodeEnable' | 'deBoardEnable' | 'weComEnable'
   ) {
     try {
+      loading.value = true;
       updateConfigSynchronization({ ...item.response, [key]: !item.response[key] })
         .then(() => {
           Message.success(item.response[key] ? t('common.disableSuccess') : t('common.enableSuccess'));
@@ -230,6 +231,9 @@
           item.response.qrcodeEnable = true;
           item.response.syncEnable = true;
           item.response.deBoardEnable = true;
+        })
+        .finally(() => {
+          loading.value = false;
         });
     } catch (e) {
       // eslint-disable-next-line no-console

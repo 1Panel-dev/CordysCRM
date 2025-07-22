@@ -16,7 +16,7 @@ export default {
   'system.license.license': 'License',
   'system.license.licenseCode': 'License Code',
   'system.license.licenseSuccessTip': 'Authorized Successfully！',
-  'system.license.LicenseIsRequired': 'License Code is required',
+  'system.license.LicenseIsRequired': 'The License Code cannot be null',
   'system.license.clickUpload': 'Click to upload',
   'system.license.LicenseExpirationPromptLessThanThirty':
     'The remaining {day} of system authorization expires. In order not to affect your use, please contact the staff as soon as possible',

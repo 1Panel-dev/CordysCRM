@@ -45,7 +45,7 @@
         <n-form-item
           path="licenseCode"
           :label="t('system.license')"
-          :rule="[{ required: true, message: t('common.notNull', { value: t('system.license') }) }]"
+          :rule="[{ required: true, message: t('system.license.LicenseIsRequired') }]"
         >
           <CrmUpload
             v-model:file-list="fileList"
