@@ -32,6 +32,11 @@ export const pathMap: PathMapItem[] = [
     route: AppRouteEnum.PRODUCT_PRO,
   },
   {
+    key: 'DASHBOARD',
+    locale: 'menu.dashboard',
+    route: AppRouteEnum.DASHBOARD_INDEX,
+  },
+  {
     key: 'CUSTOMER',
     route: AppRouteEnum.CUSTOMER,
     locale: 'module.customerManagement',

@@ -14,13 +14,18 @@
         <CrmIcon v-else type="iconicon_full_screen_one" />
       </div>
     </div>
-    <div class="flex-1">
+    <n-spin class="block flex-1" :show="loading">
       <iframe id="iframe-dashboard-view" style="width: 100%; height: 100%; border: 0" :src="iframeSrc"></iframe>
-    </div>
+      <n-empty v-if="isError" size="large" :description="t('dashboard.loadFailed')"> </n-empty>
+    </n-spin>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { NEmpty, NSpin } from 'naive-ui';
+
+  import { useI18n } from '@lib/shared/hooks/useI18n';
+
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import favoriteIcon from './favoriteIcon.vue';
 
@@ -34,6 +39,10 @@
     isFullPage?: boolean;
   }>();
 
+  const { t } = useI18n();
+
+  const loading = ref(false);
+  const isError = ref(false);
   // 用于全屏的容器 ref
   const fullRef = ref<HTMLElement | null>();
   const { isFullScreen, toggleFullScreen } = useFullScreen(fullRef);
@@ -56,18 +65,22 @@
     if (event.data?.msgOrigin === 'de-fit2cloud') {
       const { contentWindow } = iframe as HTMLIFrameElement;
       contentWindow?.postMessage(params, '*');
+      loading.value = false;
     }
   };
 
   async function init() {
     try {
+      loading.value = true;
+      isError.value = false;
       const res = await getDEToken();
       params.embeddedToken = res.token;
       iframeSrc.value = `${res.url}/#/chart-view`;
-      window.addEventListener('message', onMessage, false);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error initializing dashboard:', error);
+      loading.value = false;
+      isError.value = true;
     }
   }
 
@@ -75,7 +88,21 @@
     window.removeEventListener('message', onMessage, false);
   });
 
+  watch(
+    () => props.dashboardId,
+    async (newVal) => {
+      if (newVal) {
+        await init();
+        const iframe = document.getElementById('iframe-dashboard-view');
+        const { contentWindow } = iframe as HTMLIFrameElement;
+        contentWindow?.postMessage(params, '*');
+        loading.value = false;
+      }
+    }
+  );
+
   onBeforeMount(() => {
+    window.addEventListener('message', onMessage, false);
     init();
   });
 </script>

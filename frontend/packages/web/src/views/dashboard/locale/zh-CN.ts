@@ -13,4 +13,5 @@ export default {
   'dashboard.folder': '文件夹',
   'dashboard.favoriteSuccess': '收藏成功',
   'dashboard.unFavoriteSuccess': '取消收藏成功',
+  'dashboard.loadFailed': '加载失败',
 };

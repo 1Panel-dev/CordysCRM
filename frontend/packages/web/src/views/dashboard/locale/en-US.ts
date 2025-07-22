@@ -14,4 +14,5 @@ export default {
   'dashboard.folder': 'Folder',
   'dashboard.favoriteSuccess': 'Favorite Success',
   'dashboard.unFavoriteSuccess': 'Unfavorite Success',
+  'dashboard.loadFailed': 'Load Failed',
 };

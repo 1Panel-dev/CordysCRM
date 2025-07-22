@@ -5,7 +5,7 @@
         <tree
           ref="folderTreeRef"
           v-model:value="selectedKeys"
-          @init="folderTree = $event"
+          @init="handleFolderTreeInit"
           @add-dashboard="handleAddDashboard"
           @select-node="handleNodeSelect"
           @edit-dashboard="handleEditDashboard"
@@ -43,6 +43,8 @@
 <script setup lang="ts">
   import { TreeSelectOption } from 'naive-ui';
 
+  import { mapTree } from '@lib/shared/method';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmSplitPanel from '@/components/pure/crm-split-panel/index.vue';
   import { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
@@ -66,6 +68,18 @@
   ) {
     activeNode.value = node;
     offspringIds.value = _offspringIds as Array<string>;
+  }
+
+  function handleFolderTreeInit(_tree: CrmTreeNodeData[]) {
+    folderTree.value = mapTree(_tree, (item) => {
+      if (item.type === 'MODULE') {
+        if (item.children?.length === 0) {
+          item.children = undefined;
+        }
+        return item;
+      }
+      return null;
+    });
   }
 
   function handleAddDashboard() {

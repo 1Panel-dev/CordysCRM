@@ -267,7 +267,7 @@
       folderTree.value = await dashboardModuleTree();
       emit('init', folderTree.value);
       if (isInit) {
-        selectedKeys.value = folderTree.value[0] ? [folderTree.value[0].id] : [];
+        selectedKeys.value = ['all'];
         const offspringIds = getSpringIds(folderTree.value);
 
         emit('selectNode', folderTree.value[0], selectedKeys.value, offspringIds);

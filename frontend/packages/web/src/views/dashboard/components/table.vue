@@ -1,6 +1,7 @@
 <template>
   <div class="h-full p-[24px]">
     <CrmTable
+      ref="crmTableRef"
       v-bind="currentTable.propsRes.value"
       class="flex-1"
       @page-change="currentTable.propsEvent.value.pageChange"
@@ -65,6 +66,7 @@
   const Message = useMessage();
   const { openModal } = useModal();
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const tableRefreshId = ref(0);
   async function removeDashboard(row: any) {
     openModal({
@@ -267,10 +269,21 @@
       ),
     });
     currentTable.value.loadList();
+    crmTableRef.value?.scrollTo({ top: 0 });
   }
 
   watch(
     () => props.activeFolderId,
+    () => {
+      searchData();
+    },
+    {
+      immediate: true,
+    }
+  );
+
+  watch(
+    () => tableRefreshId.value,
     () => {
       searchData();
     }
