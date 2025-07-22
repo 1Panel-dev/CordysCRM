@@ -47,9 +47,9 @@ const useLicenseStore = defineStore('license', {
       const daysDifference = endDate.diff(startDate, 'day');
       // 包含当天
       this.expiredDays = daysDifference + 1;
-      if (daysDifference <= 30 && daysDifference > 0) {
+      if (daysDifference <= 31 && daysDifference > 0) {
         this.expiredDuring = true;
-      } else if (daysDifference <= 0 && daysDifference >= -30) {
+      } else if (daysDifference <= 0 && daysDifference >= -31) {
         this.expiredDuring = true;
       } else {
         this.expiredDuring = false;
