@@ -14,7 +14,7 @@
         <CrmIcon v-else type="iconicon_full_screen_one" />
       </div>
     </div>
-    <n-spin class="block flex-1" :show="loading">
+    <n-spin class="block flex-1" :show="loading" content-class="h-full">
       <iframe id="iframe-dashboard-view" style="width: 100%; height: 100%; border: 0" :src="iframeSrc"></iframe>
       <n-empty v-if="isError" size="large" :description="t('dashboard.loadFailed')"> </n-empty>
     </n-spin>
