@@ -410,7 +410,7 @@
             LEFT JOIN follow_up_record fur on c.id = fur.customer_id
         </if>
 
-        where c.organization_id = #{request.orgId}
+        where c.organization_id = #{request.orgId} and c.in_shared_pool is false
         <if test="unfollowed">
             and fur.id is null
         </if>

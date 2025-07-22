@@ -356,13 +356,13 @@
         <if test="request.dataPermission != null and request.dataPermission.deptIds.size() > 0">
             join sys_organization_user sou on c.owner = sou.user_id
             and (
-            sou.department_id in
-            <foreach collection="request.dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
-                #{deptId}
-            </foreach>
-            <if test="request.dataPermission.searchType == 'ALL'">
-                or sou.user_id = #{request.userId}
-            </if>
+                sou.department_id in
+                <foreach collection="request.dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
+                    #{deptId}
+                </foreach>
+                <if test="request.dataPermission.searchType == 'ALL'">
+                    or sou.user_id = #{request.userId}
+                </if>
             )
         </if>
 
@@ -370,7 +370,7 @@
             LEFT JOIN follow_up_record fur on c.id = fur.clue_id
         </if>
 
-        where c.organization_id = #{request.orgId} and transition_id is null
+        where c.organization_id = #{request.orgId} and c.transition_id is null and c.in_shared_pool is false
         <if test="unfollowed">
             and fur.id is null
         </if>
