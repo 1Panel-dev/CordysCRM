@@ -1,5 +1,6 @@
 package io.cordys.crm.home.service;
 
+import io.cordys.common.constants.BusinessSearchType;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.constants.RoleDataScope;
@@ -13,8 +14,12 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.LogUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
+import io.cordys.crm.clue.service.PoolClueService;
+import io.cordys.crm.customer.domain.CustomerCapacity;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.customer.service.CustomerCapacityService;
+import io.cordys.crm.customer.service.PoolCustomerService;
 import io.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchRequest;
@@ -62,6 +67,10 @@ public class HomeStatisticService {
 	private DepartmentService departmentService;
 	@Resource
 	private RoleService roleService;
+	@Resource
+	private PoolCustomerService poolCustomerService;
+	@Resource
+	private PoolClueService poolClueService;
 
 	private ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
@@ -75,10 +84,12 @@ public class HomeStatisticService {
 			Future<HomeStatisticSearchResponse> getUnfollowedCustomerStatistic = executor.submit(() ->
 					getStatisticSearchResponse(request, this::getUnfollowedCustomerCount));
 			Future<Long> getTotalCustomerCount = executor.submit(() -> getTotalCustomerCount(request));
+			Future<Long> getCustomerCapacityCount = executor.submit(() -> getTotalCustomerCapacityCount(request));
 
 			customerStatistic.setNewCustomer(getNewCustomerStatistic.get());
 			customerStatistic.setUnfollowedCustomer(getUnfollowedCustomerStatistic.get());
 			customerStatistic.setTotal(getTotalCustomerCount.get());
+			customerStatistic.setRemainingCapacity(getCustomerCapacityCount.get());
 		} catch (Exception e) {
 			LogUtils.error(e);
 		}
@@ -94,10 +105,12 @@ public class HomeStatisticService {
 			Future<HomeStatisticSearchResponse> getUnfollowedClueStatistic = executor.submit(() ->
 					getStatisticSearchResponse(request, this::getUnfollowedClueCount));
 			Future<Long> getTotalClueCount = executor.submit(() -> getTotalClueCount(request));
+			Future<Long> getClueCapacityCount = executor.submit(() -> getTotalClueCapacityCount(request));
 
 			clueStatistic.setNewClue(getNewClueStatistic.get());
 			clueStatistic.setUnfollowedClue(getUnfollowedClueStatistic.get());
 			clueStatistic.setTotal(getTotalClueCount.get());
+			clueStatistic.setRemainingCapacity(getClueCapacityCount.get());
 		} catch (Exception e) {
 			LogUtils.error(e);
 		}
@@ -160,6 +173,20 @@ public class HomeStatisticService {
 	}
 
 	/**
+	 * 获取客户剩余库容
+	 * @param request 请求参数
+	 * @return 剩余库容数量
+	 */
+	public Long getTotalCustomerCapacityCount(HomeStatisticSearchWrapperRequest request) {
+		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
+		if (request.getStaticRequest() != null && StringUtils.equals(BusinessSearchType.SELF.name(), totalRequest.getStaticRequest().getSearchType())) {
+			CustomerCapacity userCapacity = poolCustomerService.getUserCapacity(request.getUserId(), request.getOrgId());
+			return userCapacity == null || userCapacity.getCapacity() == null ? 0L : userCapacity.getCapacity();
+		}
+		return 0L;
+	}
+
+	/**
 	 * 获取新增客户统计
 	 * @param request
 	 * @return
@@ -187,6 +214,14 @@ public class HomeStatisticService {
 		totalRequest.setStartTime(null);
 		totalRequest.setEndTime(null);
 		return extClueMapper.selectClueCount(totalRequest, false);
+	}
+
+	public Long getTotalClueCapacityCount(HomeStatisticSearchWrapperRequest request) {
+		if (request.getStaticRequest() != null && StringUtils.equals(BusinessSearchType.SELF.name(), request.getStaticRequest().getSearchType())) {
+			Integer capacity = poolClueService.getUserCapacity(request.getUserId(), request.getOrgId());
+			return capacity == null ? 0L : capacity.longValue();
+		}
+		return 0L;
 	}
 
 	/**

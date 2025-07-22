@@ -22,5 +22,5 @@ public class HomeClueStatistic {
     private HomeStatisticSearchResponse unfollowedClue;
 
     @Schema(description = "剩余库容")
-    private HomeStatisticSearchResponse remainingCapacity;
+    private Long remainingCapacity;
 }
