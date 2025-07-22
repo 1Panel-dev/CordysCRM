@@ -104,11 +104,6 @@ public class LogModule {
     public static final String CUSTOMER_POOL = "CUSTOMER_POOL";
 
     /**
-     * 仪表板模块
-     */
-    public static final String DASHBOARD_MODULE = "DASHBOARD_MODULE";
-
-    /**
      * 仪表板
      */
     public static final String DASHBOARD = "DASHBOARD";
