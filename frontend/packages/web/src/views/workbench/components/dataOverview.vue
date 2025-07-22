@@ -50,7 +50,7 @@
       </div>
     </div>
     <div class="flex flex-col gap-[16px]">
-      <analyticsDetail ref="analyticsDetailRef" />
+      <analyticsDetail ref="analyticsDetailRef" :search-type="params.searchType" />
       <analyticsMiniCard ref="analyticsMiniCardRef" />
       <div
         v-if="!hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'])"

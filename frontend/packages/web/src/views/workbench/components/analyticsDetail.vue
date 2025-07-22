@@ -20,11 +20,11 @@
           {{ addCommasToNumber(item.total || 0) }}
         </div>
       </div>
-      <div class="flex items-center gap-[8px]">
-        <div v-for="(ele, index) of item.analytics" :key="`${ele.title}-${index}`" class="analytics-item flex-1">
+      <div class="flex h-[92px] items-center gap-[8px]">
+        <div v-for="(ele, index) of item.analytics" :key="`${ele.title}-${index}`" class="analytics-item h-full flex-1">
           <div>{{ ele.title }}</div>
           <div class="analytics-count">{{ addCommasToNumber(ele.count || 0) }}</div>
-          <div class="analytics-last-time">
+          <div v-if="ele.countValue !== 'remainingCapacity'" class="analytics-last-time">
             <div>{{ t('workbench.comparedWithPreviousPeriod') }}</div>
             <div class="flex items-center justify-end gap-[4px]">
               <CrmIcon
@@ -65,6 +65,10 @@
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
+
+  const props = defineProps<{
+    searchType: string;
+  }>();
 
   const router = useRouter();
   function goDetail(item: Record<string, any>) {
@@ -110,10 +114,16 @@
     if (!detail) {
       return defaultData;
     }
+    // 部门和全部不展示剩余库容
+    const analyticsList =
+      props.searchType === 'SELF'
+        ? defaultData.analytics
+        : defaultData.analytics.filter((e) => e.countValue !== 'remainingCapacity');
+
     return {
       ...defaultData,
       total: detail?.total,
-      analytics: defaultData.analytics.map((e: any) => {
+      analytics: analyticsList.map((e: any) => {
         const countKey = e.countValue;
         return {
           ...e,
