@@ -1,6 +1,6 @@
 <template>
   <!-- special-height 64是tab的高度和margin -->
-  <CrmCard hide-footer :special-height="64" no-content-bottom-padding>
+  <CrmCard hide-footer :special-height="licenseStore.expiredDuring ? 128 : 64" no-content-bottom-padding>
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"
@@ -101,12 +101,14 @@
   import { deleteAuth, getAuthDetail, getAuthList, updateAuthName, updateAuthStatus } from '@/api/modules';
   import { authTypeFieldMap, defaultAuthForm } from '@/config/business';
   import useModal from '@/hooks/useModal';
+  import useLicenseStore from '@/store/modules/setting/license';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
   const { openModal } = useModal();
   const Message = useMessage();
   const { copy, isSupported } = useClipboard({ legacy: true });
+  const licenseStore = useLicenseStore();
 
   // 详情
   const showDetailDrawer = ref(false);

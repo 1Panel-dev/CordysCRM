@@ -32,7 +32,7 @@ export default {
   'workbench.addCount': '新增',
   'workbench.noFollowUp': '未跟进',
   'workbench.remainingCapacity': '剩余库容',
-  'workbench.opportunityCombination': '商机总额',
+  'workbench.opportunityCombination': '跟进商机总额',
   'workbench.customerTotal': '客户总数',
   'workbench.opportunityTotal': '商机总数',
   'workbench.followOpportunityTotal': '跟进商机总数',

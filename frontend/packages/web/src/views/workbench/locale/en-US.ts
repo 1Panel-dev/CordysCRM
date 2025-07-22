@@ -32,7 +32,7 @@ export default {
   'workbench.addCount': 'New added',
   'workbench.noFollowUp': 'Not followed up',
   'workbench.remainingCapacity': 'Remaining capacity',
-  'workbench.opportunityCombination': 'Business combination',
+  'workbench.opportunityCombination': 'Business combination of Follow',
   'workbench.customerTotal': 'Total customers',
   'workbench.opportunityTotal': 'Total opportunities',
   'workbench.followOpportunityTotal': 'Total opportunities',
