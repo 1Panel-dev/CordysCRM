@@ -92,6 +92,7 @@
     () => props.dashboardId,
     async (newVal) => {
       if (newVal) {
+        params.dvId = newVal;
         await init();
         const iframe = document.getElementById('iframe-dashboard-view');
         const { contentWindow } = iframe as HTMLIFrameElement;
