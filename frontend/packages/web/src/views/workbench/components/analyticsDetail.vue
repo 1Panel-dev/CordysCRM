@@ -115,14 +115,18 @@
   }
 
   function getStatisticDetailData(defaultData: DefaultAnalyticsData, detail: Record<string, any>) {
+    const originAnalyticsList = defaultData.analytics;
     if (!detail) {
-      return defaultData;
+      return {
+        ...defaultData,
+        analytics: originAnalyticsList.filter((e) => e.countValue !== 'remainingCapacity'),
+      };
     }
-    // 部门和全部不展示剩余库容
+    // 部门和全部不展示剩余库容 未配置库容也不展示库容
     const analyticsList =
-      props.searchType === 'SELF'
-        ? defaultData.analytics
-        : defaultData.analytics.filter((e) => e.countValue !== 'remainingCapacity');
+      props.searchType === 'SELF' && detail.unConfigured === false
+        ? originAnalyticsList
+        : originAnalyticsList.filter((e) => e.countValue !== 'remainingCapacity');
 
     return {
       ...defaultData,
@@ -130,7 +134,7 @@
       analytics: analyticsList.map((e: any) => {
         const countKey = e.countValue;
         const count = typeof detail[countKey] === 'number' ? detail[countKey] : detail[countKey]?.value;
-        const countValue = count && typeof count === 'number' ? count : '-';
+        const countValue = typeof count === 'number' ? count : '-';
         return {
           ...e,
           count: countValue,

@@ -24,6 +24,7 @@ export interface AccountStatisticDetail {
   newCustomer: PriorPeriodCompareRateItem;
   unfollowedCustomer: PriorPeriodCompareRateItem;
   remainingCapacity: PriorPeriodCompareRateItem;
+  unConfigured: boolean;
 }
 
 // 线索统计
@@ -32,6 +33,7 @@ export interface LeadStatisticDetail {
   newClue: PriorPeriodCompareRateItem;
   unfollowedClue: PriorPeriodCompareRateItem;
   remainingCapacity: PriorPeriodCompareRateItem;
+  unConfigured: boolean;
 }
 
 // 跟进记录统计
