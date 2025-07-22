@@ -76,7 +76,7 @@
       v-model:selected-keys="selectedKeys"
       v-model:expanded-keys="expandedKeys"
       v-model:default-expand-all="expandAll"
-      :draggable="hasAnyPermission(['DASHBOARD:EDIT'])"
+      :draggable="hasAnyPermission(['DASHBOARD:UPDATE'])"
       :keyword="keyword"
       :render-prefix="renderPrefixDom"
       :node-more-actions="nodeMoreOptions"
@@ -102,6 +102,7 @@
 <script setup lang="ts">
   import { NButton, NDivider, NIcon, NInput, NTooltip, useMessage } from 'naive-ui';
   import { Add, Search } from '@vicons/ionicons5';
+  import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit, getGenerateId, mapTree, traverseTree } from '@lib/shared/method';
@@ -152,6 +153,24 @@
   const keyword = ref<string>('');
   const expandAll = ref<boolean>(true);
 
+  const folderTreeCount = ref<Record<string, any>>({});
+  async function initModuleCount() {
+    try {
+      folderTreeCount.value = await dashboardModuleCount();
+      traverseTree(folderTree.value, (node) => {
+        if (node.type === 'MODULE') {
+          node.count = folderTreeCount.value[node.id] || 0;
+        } else if (node.type === 'DASHBOARD') {
+          node.count = folderTreeCount.value[node.parentId] || 0;
+        }
+      });
+      myFavoriteCount.value = folderTreeCount.value.myCollect || 0;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   async function favoriteToggle(option: CrmTreeNodeData) {
     try {
       if (option.myCollect) {
@@ -160,6 +179,7 @@
         await dashboardCollect(option.id);
       }
       option.myCollect = !option.myCollect;
+      initModuleCount();
       Message.success(option.myCollect ? t('dashboard.favoriteSuccess') : t('dashboard.unFavoriteSuccess'));
       emit('collect');
     } catch (error) {
@@ -194,17 +214,17 @@
     {
       label: t('dashboard.addDashboard'),
       key: 'addDashboard',
-      permission: [],
+      permission: ['DASHBOARD:ADD'],
     },
     {
       label: t('common.edit'),
       key: 'edit',
-      permission: [],
+      permission: ['DASHBOARD:UPDATE'],
     },
     {
       label: t('common.rename'),
       key: 'rename',
-      permission: [],
+      permission: ['DASHBOARD:UPDATE'],
     },
     {
       type: 'divider',
@@ -213,7 +233,7 @@
       label: t('common.delete'),
       key: 'delete',
       danger: true,
-      permission: [],
+      permission: ['DASHBOARD:DELETE'],
     },
   ]);
 
@@ -235,7 +255,7 @@
   }
 
   function filterMoreActionFunc(items: ActionsItem[], node: CrmTreeNodeData) {
-    if (!hasAnyPermission(['DASHBOARD:EDIT'])) {
+    if (!hasAnyPermission(['DASHBOARD:UPDATE'])) {
       items = items.filter((e) => {
         return e.key !== 'edit' && e.key !== 'rename';
       });
@@ -264,8 +284,8 @@
   // 获取模块树
   async function initTree(isInit = false) {
     try {
-      folderTree.value = []; // 重置更新
-      folderTree.value = await dashboardModuleTree();
+      const res = await dashboardModuleTree();
+      folderTree.value = cloneDeep(res);
       emit('init', folderTree.value);
       if (isInit) {
         selectedKeys.value = ['all'];
@@ -276,24 +296,6 @@
           expandedKeys.value = [folderTree.value[0].id];
         });
       }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  }
-
-  const folderTreeCount = ref<Record<string, any>>({});
-  async function initModuleCount() {
-    try {
-      folderTreeCount.value = await dashboardModuleCount();
-      traverseTree(folderTree.value, (node) => {
-        if (node.type === 'MODULE') {
-          node.count = folderTreeCount.value[node.id] || 0;
-        } else if (node.type === 'DASHBOARD') {
-          node.count = folderTreeCount.value[node.parentId] || 0;
-        }
-      });
-      myFavoriteCount.value = folderTreeCount.value.myCollect || 0;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -356,14 +358,12 @@
         children: undefined,
         type: 'MODULE',
       };
-
       if (parent) {
         parent.children = parent.children ?? [];
         parent.children.push(newNode);
       } else {
         folderTree.value.push(newNode);
       }
-      expandedKeys.value.push(currentParentId.value);
       nextTick(() => {
         folderTreeRef.value?.toggleEdit(id);
       });
@@ -384,7 +384,7 @@
   }
 
   function renderExtraDom(infoProps: { option: CrmTreeNodeData; checked: boolean; selected: boolean }) {
-    if (hasAnyPermission(['SYS_ORGANIZATION:ADD'])) {
+    if (hasAnyPermission(['DASHBOARD:ADD']) && infoProps.option.type === 'MODULE') {
       const { option } = infoProps;
       // 额外的节点
       return h(
@@ -473,6 +473,9 @@
       try {
         const offspringIds = getSpringIds(option.children || []);
         await dashboardModuleDelete([option.id, ...offspringIds]);
+        if (selectedKeys.value.includes(option.id)) {
+          selectedKeys.value = ['all'];
+        }
         Message.success(t('common.deleteSuccess'));
         initTree(true);
       } catch (error) {
@@ -493,6 +496,9 @@
         onPositiveClick: async () => {
           try {
             await dashboardDelete(option.id);
+            if (selectedKeys.value.includes(option.id)) {
+              selectedKeys.value = ['all'];
+            }
             Message.success(t('common.deleteSuccess'));
             initTree(true);
           } catch (error) {

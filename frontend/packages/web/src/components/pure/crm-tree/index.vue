@@ -517,12 +517,11 @@
       } else {
         filterTreeData.value = data.value;
       }
+    },
+    {
+      immediate: true,
     }
   );
-
-  onBeforeMount(() => {
-    filterTreeData.value = data.value;
-  });
 
   // TODO 未生效xxw
   const crmTreeRef = ref<InstanceType<typeof NTree>>();
