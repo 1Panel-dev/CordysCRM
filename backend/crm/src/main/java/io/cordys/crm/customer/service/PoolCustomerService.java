@@ -330,6 +330,14 @@ public class PoolCustomerService {
 		if (customer == null) {
 			throw new IllegalArgumentException(Translator.get("customer.not.exist"));
 		}
+		if (!isPoolAdmin && pickRule != null && pickRule.getLimitNew()) {
+			LocalDateTime joinPoolTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(customer.getUpdateTime()), ZoneId.systemDefault());
+			LocalDateTime releaseDate = joinPoolTime.plusDays(pickRule.getNewPickInterval());
+			if (releaseDate.isAfter(LocalDateTime.now())) {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+				throw new GenericException(Translator.getWithArgs("pool.data.release.date", releaseDate.format(formatter)));
+			}
+		}
 		if (!isPoolAdmin && pickRule != null && pickRule.getLimitPreOwner()) {
 			LambdaQueryWrapper<CustomerOwner> queryWrapper = new LambdaQueryWrapper<>();
 			queryWrapper.eq(CustomerOwner::getCustomerId, customerId);

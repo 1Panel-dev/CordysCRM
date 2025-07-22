@@ -23,4 +23,10 @@ public class CustomerPoolPickRule extends BaseModel {
 
 	@Schema(description = "领取间隔天数")
 	private Integer pickIntervalDays;
+
+	@Schema(description = "是否限制新数据")
+	private Boolean limitNew;
+
+	@Schema(description = "新数据领取间隔")
+	private Integer newPickInterval;
 }

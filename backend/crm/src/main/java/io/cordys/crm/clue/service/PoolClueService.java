@@ -145,13 +145,17 @@ public class PoolClueService {
 	 * @param currentOrgId 当前组织ID
 	 */
 	public void pick(PoolCluePickRequest request, String currentUser, String currentOrgId) {
+		CluePool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
 		validateCapacity(1, currentUser, currentOrgId);
 		LambdaQueryWrapper<CluePoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
 		pickRuleWrapper.eq(CluePoolPickRule::getPoolId, request.getPoolId());
 		List<CluePoolPickRule> cluePoolPickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
 		CluePoolPickRule pickRule = cluePoolPickRules.getFirst();
-		validateDailyPickNum(1, currentUser, pickRule);
-		ownClue(request.getClueId(), currentUser, pickRule, currentUser, LogType.PICK, currentOrgId);
+		boolean poolAdmin = userExtendService.isPoolAdmin(JSON.parseArray(pool.getOwnerId(), String.class), currentUser, currentOrgId);
+		if (!poolAdmin) {
+			validateDailyPickNum(1, currentUser, pickRule);
+		}
+		ownClue(request.getClueId(), currentUser, pickRule, currentUser, LogType.PICK, currentOrgId, poolAdmin);
 	}
 
 	/**
@@ -162,7 +166,7 @@ public class PoolClueService {
 	@OperationLog(module = LogModule.CLUE_POOL_INDEX, type = LogType.ASSIGN, resourceId = "{#request.clueId}")
 	public void assign(String id, String assignUserId, String currentOrgId, String currentUser) {
 		validateCapacity(1, assignUserId, currentOrgId);
-		ownClue(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId);
+		ownClue(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false);
 	}
 
 	/**
@@ -187,13 +191,17 @@ public class PoolClueService {
 	 * @param currentOrgId 当前组织ID
 	 */
 	public void batchPick(PoolBatchPickRequest request, String currentUser, String currentOrgId) {
+		CluePool pool = poolMapper.selectByPrimaryKey(request.getPoolId());
 		validateCapacity(request.getBatchIds().size(), currentUser, currentOrgId);
 		LambdaQueryWrapper<CluePoolPickRule> pickRuleWrapper = new LambdaQueryWrapper<>();
 		pickRuleWrapper.eq(CluePoolPickRule::getPoolId, request.getPoolId());
 		List<CluePoolPickRule> cluePoolPickRules = pickRuleMapper.selectListByLambda(pickRuleWrapper);
 		CluePoolPickRule pickRule = cluePoolPickRules.getFirst();
-		validateDailyPickNum(request.getBatchIds().size(), currentUser, pickRule);
-		request.getBatchIds().forEach(id -> ownClue(id, currentUser, pickRule, currentUser, LogType.PICK, currentOrgId));
+		boolean poolAdmin = userExtendService.isPoolAdmin(JSON.parseArray(pool.getOwnerId(), String.class), currentUser, currentOrgId);
+		if (!poolAdmin) {
+			validateDailyPickNum(request.getBatchIds().size(), currentUser, pickRule);
+		}
+		request.getBatchIds().forEach(id -> ownClue(id, currentUser, pickRule, currentUser, LogType.PICK, currentOrgId, poolAdmin));
 	}
 
 	/**
@@ -204,7 +212,7 @@ public class PoolClueService {
 	 */
 	public void batchAssign(PoolBatchAssignRequest request, String assignUserId, String currentOrgId, String currentUser) {
 		validateCapacity(request.getBatchIds().size(), assignUserId, currentOrgId);
-		request.getBatchIds().forEach(id -> ownClue(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId));
+		request.getBatchIds().forEach(id -> ownClue(id, assignUserId, null, currentUser, LogType.ASSIGN, currentOrgId, false));
 	}
 
 	/**
@@ -293,10 +301,18 @@ public class PoolClueService {
 	 * @param clueId 线索ID
 	 * @param ownerId 拥有人ID
 	 */
-	private void ownClue(String clueId, String ownerId, CluePoolPickRule pickRule, String operateUserId, String logType, String currentOrgId) {
+	private void ownClue(String clueId, String ownerId, CluePoolPickRule pickRule, String operateUserId, String logType, String currentOrgId, boolean isPoolAdmin) {
 		Clue clue = clueMapper.selectByPrimaryKey(clueId);
 		if (clue == null) {
 			throw new IllegalArgumentException(Translator.get("clue.not.exist"));
+		}
+		if (!isPoolAdmin && pickRule != null && pickRule.getLimitNew()) {
+			LocalDateTime joinPoolTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(clue.getUpdateTime()), ZoneId.systemDefault());
+			LocalDateTime releaseDate = joinPoolTime.plusDays(pickRule.getNewPickInterval());
+			if (releaseDate.isAfter(LocalDateTime.now())) {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+				throw new GenericException(Translator.getWithArgs("pool.data.release.date", releaseDate.format(formatter)));
+			}
 		}
 		if (pickRule != null && pickRule.getLimitPreOwner()) {
 			LambdaQueryWrapper<ClueOwner> queryWrapper = new LambdaQueryWrapper<>();
