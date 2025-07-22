@@ -89,7 +89,12 @@ public class HomeStatisticService {
 			customerStatistic.setNewCustomer(getNewCustomerStatistic.get());
 			customerStatistic.setUnfollowedCustomer(getUnfollowedCustomerStatistic.get());
 			customerStatistic.setTotal(getTotalCustomerCount.get());
-			customerStatistic.setRemainingCapacity(getCustomerCapacityCount.get());
+
+			Long cap = getCustomerCapacityCount.get();
+			customerStatistic.setUnConfigured(cap == null);
+			if (!customerStatistic.getUnConfigured()) {
+				customerStatistic.setRemainingCapacity(cap);
+			}
 		} catch (Exception e) {
 			LogUtils.error(e);
 		}
@@ -110,6 +115,11 @@ public class HomeStatisticService {
 			clueStatistic.setNewClue(getNewClueStatistic.get());
 			clueStatistic.setUnfollowedClue(getUnfollowedClueStatistic.get());
 			clueStatistic.setTotal(getTotalClueCount.get());
+			Long cap = getClueCapacityCount.get();
+			clueStatistic.setUnConfigured(cap == null);
+			if (!clueStatistic.getUnConfigured()) {
+				clueStatistic.setRemainingCapacity(cap);
+			}
 			clueStatistic.setRemainingCapacity(getClueCapacityCount.get());
 		} catch (Exception e) {
 			LogUtils.error(e);
@@ -181,9 +191,12 @@ public class HomeStatisticService {
 		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
 		if (request.getStaticRequest() != null && StringUtils.equals(BusinessSearchType.SELF.name(), totalRequest.getStaticRequest().getSearchType())) {
 			CustomerCapacity userCapacity = poolCustomerService.getUserCapacity(request.getUserId(), request.getOrgId());
-			return userCapacity == null || userCapacity.getCapacity() == null ? 0L : userCapacity.getCapacity();
+			if (userCapacity == null || userCapacity.getCapacity() == null) {
+				return null;
+			}
+			return userCapacity.getCapacity().longValue();
 		}
-		return 0L;
+		return null;
 	}
 
 	/**
@@ -219,9 +232,12 @@ public class HomeStatisticService {
 	public Long getTotalClueCapacityCount(HomeStatisticSearchWrapperRequest request) {
 		if (request.getStaticRequest() != null && StringUtils.equals(BusinessSearchType.SELF.name(), request.getStaticRequest().getSearchType())) {
 			Integer capacity = poolClueService.getUserCapacity(request.getUserId(), request.getOrgId());
-			return capacity == null ? 0L : capacity.longValue();
+			if (capacity == null) {
+				return null;
+			}
+			return capacity.longValue();
 		}
-		return 0L;
+		return null;
 	}
 
 	/**

@@ -23,4 +23,7 @@ public class HomeCustomerStatistic {
 
     @Schema(description = "剩余库容")
     private Long remainingCapacity;
+
+    @Schema(description = "库容未配置")
+    private Boolean unConfigured;
 }
