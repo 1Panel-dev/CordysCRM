@@ -198,7 +198,7 @@
   ) {
     activeDeptId.value = value as string;
     if (value !== 'SELF') {
-      params.value.deptIds = getSpringIds((option as CrmTreeNodeData).children);
+      params.value.deptIds = [value as string, ...getSpringIds((option as CrmTreeNodeData).children)];
     } else {
       params.value.deptIds = [];
     }
