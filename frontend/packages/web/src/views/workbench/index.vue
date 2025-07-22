@@ -8,9 +8,7 @@
   </CrmCard> -->
   <n-scrollbar x-scrollable content-style="min-width: 1000px;height: 100%;width: 100%">
     <div class="workbench-card">
-      <dataOverview
-        v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'])"
-      />
+      <dataOverview />
       <div class="flex h-full w-full">
         <div class="h-full flex-1">
           <QuickAccess @refresh="refresh" />

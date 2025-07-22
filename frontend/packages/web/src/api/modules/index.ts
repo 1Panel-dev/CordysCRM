@@ -2,6 +2,7 @@ import createAxios from '@lib/shared/api/http';
 import useClueApi from '@lib/shared/api/modules/clue';
 import useCustomerApi from '@lib/shared/api/modules/customer';
 import useDashboard from '@lib/shared/api/modules/dashboard';
+import useHomeApi from '@lib/shared/api/modules/home';
 import useOpportunityApi from '@lib/shared/api/modules/opportunity';
 import useProductApi from '@lib/shared/api/modules/product';
 import useSysApi from '@lib/shared/api/modules/sys';
@@ -37,6 +38,7 @@ const loginApi = useLoginApi(CDR);
 const sysApi = useSysApi(CDR);
 const licenseApi = useLicenseApi(CDR);
 const dashboardApi = useDashboard(CDR);
+const homeApi = useHomeApi(CDR);
 
 export const {
   addProduct,
@@ -346,3 +348,13 @@ export const {
   dashboardModuleDrag,
   dashboardDrag,
 } = dashboardApi;
+
+export const {
+  getHomeAccountStatistic,
+  getHomeContactStatistic,
+  getHomeFollowOpportunity,
+  getHomeLeadStatistic,
+  getHomeDepartmentTree,
+  getHomeFollowStatistic,
+  getHomeFollowPlanStatistic,
+} = homeApi;

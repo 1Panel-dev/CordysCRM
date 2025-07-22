@@ -1,5 +1,6 @@
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
+import { AnalyticsDataWithValueKey, DefaultAnalyticsData } from '@lib/shared/models/home';
 
 import { AppRouteEnum } from '@/enums/routeEnum';
 
@@ -45,7 +46,7 @@ export const quickAccessList = [
   // },
 ];
 
-export const defaultClueData = {
+export const defaultClueData: DefaultAnalyticsData = {
   icon: 'iconicon_clue',
   iconColor: 'text-[var(--warning-yellow)]',
   bgColor: 'var(--warning-5)',
@@ -57,22 +58,25 @@ export const defaultClueData = {
     {
       title: t('workbench.addCount'),
       count: 0,
-      isGrowth: 0,
+      countValue: 'newClue',
+      priorPeriodCompareRate: 0,
     },
     {
       title: t('workbench.noFollowUp'),
       count: 0,
-      isGrowth: 0,
+      countValue: 'unfollowedClue',
+      priorPeriodCompareRate: 0,
     },
     {
       title: t('workbench.remainingCapacity'),
       count: 0,
-      isGrowth: 0,
+      countValue: 'remainingCapacity',
+      priorPeriodCompareRate: 0,
     },
   ],
 };
 
-export const defaultAccountData = {
+export const defaultAccountData: DefaultAnalyticsData = {
   icon: 'iconicon_customer',
   iconColor: 'text-[var(--success-green)]',
   bgColor: 'var(--success-5)',
@@ -84,26 +88,29 @@ export const defaultAccountData = {
     {
       title: t('workbench.addCount'),
       count: 0,
-      isGrowth: 0,
+      countValue: 'newCustomer',
+      priorPeriodCompareRate: 0,
     },
     {
       title: t('workbench.noFollowUp'),
       count: 0,
-      isGrowth: 0,
+      countValue: 'unfollowedCustomer',
+      priorPeriodCompareRate: 0,
     },
     {
       title: t('workbench.remainingCapacity'),
       count: 0,
-      isGrowth: 0,
+      countValue: 'remainingCapacity',
+      priorPeriodCompareRate: 0,
     },
   ],
 };
 
-export const defaultOpportunityData = {
+export const defaultOpportunityData: DefaultAnalyticsData = {
   icon: 'iconicon_business_opportunity',
   iconColor: 'text-[var(--primary-8)]',
   bgColor: 'var(--primary-6)',
-  name: t('workbench.opportunityTotal'),
+  name: t('workbench.followOpportunityTotal'),
   total: 0,
   permission: ['OPPORTUNITY_MANAGEMENT:READ'],
   routeName: AppRouteEnum.OPPORTUNITY_OPT,
@@ -111,39 +118,49 @@ export const defaultOpportunityData = {
     {
       title: t('workbench.addCount'),
       count: 0,
-      isGrowth: 0,
+      countValue: 'newOpportunity',
+      priorPeriodCompareRate: 0,
+    },
+    {
+      title: t('workbench.opportunityCombination'),
+      count: 0,
+      countValue: 'totalAmount',
+      priorPeriodCompareRate: 0,
     },
   ],
 };
 
-export const defaultContactsData = {
+export const defaultContactsData: AnalyticsDataWithValueKey = {
   icon: 'iconicon_user_add',
   iconColor: 'text-[var(--info-blue)]',
   bgColor: 'var(--info-5)',
   name: t('workbench.addContacts'),
   total: 0,
-  isGrowth: 0,
+  priorPeriodCompareRate: 0,
   routeName: AppRouteEnum.CUSTOMER_CONTACT,
+  valueKey: 'newContact',
   permission: ['CUSTOMER_MANAGEMENT:READ'],
 };
 
-export const defaultFollowRecordData = {
+export const defaultFollowRecordData: AnalyticsDataWithValueKey = {
   icon: 'iconicon_data_record',
   iconColor: 'text-[var(--warning-yellow)]',
   bgColor: 'var(--warning-5)',
   name: t('workbench.addFollowRecords'),
   total: 0,
-  isGrowth: 0,
+  priorPeriodCompareRate: 0,
+  valueKey: 'newFollowUpRecord',
   permission: ['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'],
 };
 
-export const defaultFollowPlanData = {
+export const defaultFollowPlanData: AnalyticsDataWithValueKey = {
   icon: 'iconicon_data_plan',
   iconColor: 'text-[#9170FD]',
   bgColor: 'rgba(145, 112, 253, 0.05)',
   name: t('workbench.addFollowPlans'),
   total: 0,
-  isGrowth: 0,
+  priorPeriodCompareRate: 0,
+  valueKey: 'newFollowUpPlan',
   permission: ['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'],
 };
 

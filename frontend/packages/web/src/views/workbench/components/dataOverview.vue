@@ -15,19 +15,26 @@
       </div>
       <div class="flex items-center gap-[12px]">
         <n-tree-select
-          v-model:value="params.departmentId"
+          v-model:value="activeDeptId"
           :options="departmentOptions"
           label-field="name"
           key-field="id"
           filterable
-          clearable
+          :render-switcher-icon="renderSwitcherIconDom"
           class="w-[240px]"
           children-field="children"
-          :placeholder="t('common.all')"
+          @update:value="changeHandler"
         />
-        <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="segment" class="w-fit" />
+        <CrmTab
+          v-model:active-tab="activePeriod"
+          no-content
+          :tab-list="tabList"
+          type="segment"
+          class="w-fit"
+          @change="handleChangeTab"
+        />
         <n-date-picker
-          v-if="activeTab === 'custom'"
+          v-if="activePeriod === 'CUSTOM'"
           v-model:value="range"
           class="w-[240px]"
           type="datetimerange"
@@ -43,69 +50,184 @@
       </div>
     </div>
     <div class="flex flex-col gap-[16px]">
-      <analyticsDetail />
-      <analyticsMiniCard />
+      <analyticsDetail ref="analyticsDetailRef" />
+      <analyticsMiniCard ref="analyticsMiniCardRef" />
+      <div
+        v-if="!hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'])"
+        class="flex items-center justify-center p-[16px] text-[var(--text-n4)]"
+      >
+        {{ t('common.noPermission') }}
+      </div>
     </div>
   </CrmCard>
 </template>
 
 <script setup lang="ts">
-  import { NDatePicker, NTooltip, NTreeSelect } from 'naive-ui';
+  import { NDatePicker, NTooltip, NTreeSelect, TreeOption } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { mapTree } from '@lib/shared/method';
+  import { GetHomeStatisticParams } from '@lib/shared/models/home';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import CrmTab from '@/components/pure/crm-tab/index.vue';
   import type { CrmTreeNodeData } from '@/components/pure/crm-tree/type';
   import analyticsDetail from './analyticsDetail.vue';
   import analyticsMiniCard from './analyticsMiniCard.vue';
 
-  import { getDepartmentTree } from '@/api/modules';
+  import { getHomeDepartmentTree } from '@/api/modules';
+  import { useUserStore } from '@/store';
+  import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
 
-  const params = ref({
-    departmentId: '',
+  const activePeriod = ref('TODAY');
+  const params = ref<GetHomeStatisticParams>({
+    deptIds: [],
+    searchType: '', // ALL/SELF/DEPARTMENT
+    period: activePeriod.value,
+    startTime: undefined,
+    endTime: undefined,
   });
 
-  const activeTab = ref('today');
+  const activeDeptId = ref('');
+
+  const useStore = useUserStore();
+
   const tabList = [
     {
-      name: 'today',
+      name: 'TODAY',
       tab: t('workbench.today'),
     },
     {
-      name: '7',
+      name: 'THIS_WEEK',
       tab: t('workbench.thisWeek'),
     },
     {
-      name: '30',
+      name: 'THIS_MONTH',
       tab: t('workbench.thisMonth'),
     },
     {
-      name: 'custom',
+      name: 'CUSTOM',
       tab: t('common.custom'),
     },
   ];
   const range = ref();
 
-  function confirmTimePicker(value: number | [number, number] | null, _: string | [string, string] | null) {
-    range.value = value;
+  const originDepartmentOptions = ref<CrmTreeNodeData[]>([]);
+  const departmentOptions = ref<CrmTreeNodeData[]>([]);
+
+  const analyticsDetailRef = ref<InstanceType<typeof analyticsDetail>>();
+  const analyticsMiniCardRef = ref<InstanceType<typeof analyticsMiniCard>>();
+  function getSpringIds(children: CrmTreeNodeData[] | undefined): string[] {
+    const offspringIds: string[] = [];
+    mapTree(children || [], (e) => {
+      offspringIds.push(e.id);
+      return e;
+    });
+    return offspringIds;
   }
 
-  const departmentOptions = ref<CrmTreeNodeData[]>([]);
+  function setSearchType(isInit: boolean, activeId?: string) {
+    if (isInit) {
+      params.value.searchType = useStore.userInfo.roles.some((e: any) => e?.dataScope === 'SELF') ? 'SELF' : 'ALL';
+      activeDeptId.value = params.value.searchType === 'SELF' ? 'SELF' : originDepartmentOptions.value[0]?.id;
+      return;
+    }
+
+    if (activeId) {
+      activeDeptId.value = activeId;
+    }
+
+    if (activeDeptId.value === 'SELF') {
+      params.value.searchType = 'SELF';
+    } else if (activeDeptId.value !== originDepartmentOptions.value[0]?.id) {
+      params.value.searchType = 'DEPARTMENT';
+    } else if (useStore.isAdmin || activeDeptId.value === originDepartmentOptions.value[0]?.id) {
+      params.value.searchType = 'ALL';
+    } else {
+      params.value.searchType = useStore.userInfo.roles.some((e: any) => e?.dataScope === 'SELF') ? 'SELF' : 'ALL';
+    }
+  }
+
+  function renderSwitcherIconDom(nodeSwitchProps: { option: CrmTreeNodeData; expanded: boolean; selected: boolean }) {
+    const { option } = nodeSwitchProps;
+    return h(CrmIcon, {
+      size: 16,
+      type: option.children?.length ? 'iconicon_caret_right_small' : '',
+      class: `text-[var(--text-n2)]`,
+    });
+  }
 
   async function initDepartList() {
     try {
-      departmentOptions.value = await getDepartmentTree();
+      const result = await getHomeDepartmentTree();
+      originDepartmentOptions.value = result;
+      departmentOptions.value = [
+        {
+          id: 'SELF',
+          name: t('opportunity.mine'),
+          organizationId: '100001',
+        },
+        ...result,
+      ];
+      setSearchType(true);
+      if (params.value.searchType === 'ALL') {
+        params.value.deptIds = getSpringIds(result);
+      } else {
+        params.value.deptIds = [];
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
     }
   }
 
-  onBeforeMount(() => {
-    initDepartList();
+  function refresh() {
+    nextTick(() => {
+      analyticsDetailRef.value?.initHomeStatistic(params.value);
+      analyticsMiniCardRef.value?.initStatisticDetail(params.value);
+    });
+  }
+
+  async function changeHandler(
+    value: string | number | Array<string | number> | null,
+    option: Array<CrmTreeNodeData | null> | CrmTreeNodeData,
+    _: { node: TreeOption | null; action: 'select' | 'unselect' | 'delete' | 'clear' }
+  ) {
+    activeDeptId.value = value as string;
+    if (value !== 'SELF') {
+      params.value.deptIds = getSpringIds((option as CrmTreeNodeData).children);
+    } else {
+      params.value.deptIds = [];
+    }
+    setSearchType(false, value as string);
+    refresh();
+  }
+
+  function handleChangeTab(value: string | number) {
+    if (value === 'CUSTOM') {
+      params.value.period = undefined;
+    } else {
+      params.value.period = value as string;
+      params.value.startTime = undefined;
+      params.value.endTime = undefined;
+      refresh();
+    }
+  }
+
+  function confirmTimePicker(value: number | [number, number] | null, _: string | [string, string] | null) {
+    range.value = value;
+    const [startTime, endTime] = range.value || [0, 0];
+    params.value.startTime = startTime;
+    params.value.endTime = endTime;
+    refresh();
+  }
+
+  onMounted(async () => {
+    await initDepartList();
+    refresh();
   });
 </script>
 
