@@ -59,6 +59,31 @@ COLLATE = utf8mb4_general_ci;
 
 CREATE INDEX idx_sys_user_view_id ON sys_user_view_condition (sys_user_view_id ASC);
 
+-- Dict config
+CREATE TABLE sys_dict(
+    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
+    `name` VARCHAR(255) NOT NULL   COMMENT '字典值' ,
+    `type` VARCHAR(20) NOT NULL   COMMENT '字典类型' ,
+    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
+    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
+    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
+    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
+    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+    PRIMARY KEY (id)
+)  COMMENT = '系统字典表'
+    ENGINE = InnoDB
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_org_type ON sys_dict(organization_id ASC,type ASC);
+CREATE INDEX idx_org_name ON sys_dict(organization_id ASC,name ASC);
+
+-- Add customer/clue pool reason
+ALTER TABLE customer ADD `reason_id` VARCHAR(32) COMMENT '公海原因ID';
+CREATE INDEX idx_reason_id ON customer(reason_id);
+ALTER TABLE clue ADD `reason_id` VARCHAR(32) COMMENT '线索池原因ID';
+CREATE INDEX idx_reason_id ON clue(reason_id);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
