@@ -40,7 +40,7 @@
           <n-input v-model:value="form.name" :maxlength="255" />
         </n-form-item>
         <n-form-item :label="t('dashboard.dashboardId')" path="resourceId">
-          <n-input v-model:value="form.resourceId" :maxlength="255" />
+          <n-input v-model:value="form.resourceId" :maxlength="50" />
           <a
             href="https://rtykuh4z44.feishu.cn/docx/QN1TdHfxjofZXXxZ0toc9oIpnWd"
             class="text-[var(--primary-8)]"

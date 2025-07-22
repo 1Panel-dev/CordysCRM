@@ -173,7 +173,7 @@
     if (option.type === 'DASHBOARD') {
       return h(favoriteIcon, {
         value: option.myCollect,
-        class: 'mr-[8px]',
+        class: 'mr-[8px] mt-[-2px]',
         onclick: (e: MouseEvent) => {
           e.stopPropagation();
           favoriteToggle(option);
@@ -264,6 +264,7 @@
   // 获取模块树
   async function initTree(isInit = false) {
     try {
+      folderTree.value = []; // 重置更新
       folderTree.value = await dashboardModuleTree();
       emit('init', folderTree.value);
       if (isInit) {

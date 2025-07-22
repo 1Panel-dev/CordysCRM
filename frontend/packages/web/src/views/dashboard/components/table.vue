@@ -154,7 +154,7 @@
             default: () => [
               h(favoriteIcon, {
                 value: row.myCollect,
-                class: 'mr-[8px] cursor-pointer text-[var(--primary-8)]',
+                class: 'mr-[8px] cursor-pointer text-[var(--primary-8)] mt-[-2px]',
                 onclick: () => {
                   favoriteToggle(row);
                 },

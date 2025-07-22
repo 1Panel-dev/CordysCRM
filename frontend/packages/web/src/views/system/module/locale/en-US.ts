@@ -11,7 +11,7 @@ export default {
   'module.closeModuleTip': 'Confirm to close module{name}?',
   'module.closeModuleTipContent':
     'After closing, members will not find the module in the main navigation, please be careful!',
-  'module.openModuleTip': 'Confirm to open module{name}?',
+  'module.openModuleTip': 'Confirm to open {name} module?',
   'module.openModuleTipContent': 'After opening, the module appears in the main navigation menu',
   'module.remainingDays': 'Remaining ownership days',
   'module.openSea': 'Open Sea',
