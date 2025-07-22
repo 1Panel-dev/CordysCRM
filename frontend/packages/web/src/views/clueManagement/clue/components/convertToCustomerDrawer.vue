@@ -9,7 +9,7 @@
     @cancel="handleCancel"
     @confirm="handleConfirm"
   >
-    <div class="h-full p-[24px]">
+    <div class="h-full p-[24px] !pb-0">
       <CrmTable
         ref="crmTableRef"
         v-model:checked-row-keys="checkedRowKeys"

@@ -34,16 +34,12 @@ const useLicenseStore = defineStore('license', {
         return;
       }
 
-      if (!this.hasLicense) {
-        this.expiredDuring = true;
-        return;
-      }
-
-      if (!resTime || this.licenseInfo?.status === 'expired') {
+      if (!resTime && !this.hasLicense() && this.isEnterpriseVersion()) {
         this.expiredDuring = true;
         this.expiredDays = 0;
         return;
       }
+
       const today = Date.now();
       const startDate = dayjs(today).format('YYYY-MM-DD');
       const endDate = dayjs(resTime);
