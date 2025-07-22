@@ -40,7 +40,7 @@
     @cancel="handleCancel"
     @confirm="handleConfirm"
   >
-    <n-scrollbar class="p-[24px]">
+    <n-scrollbar class="p-[24px] pb-0">
       <n-form ref="formRef" :model="form" require-mark-placement="left" label-placement="left">
         <n-form-item
           path="licenseCode"
@@ -55,7 +55,15 @@
             :show-sub-text="false"
             :file-type-tip="t('crmImportButton.onlyAllowFileTypeTip')"
           />
-          <n-input v-model:value="form.licenseCode" class="mt-[16px]" type="textarea" placeholder="License Code" />
+          <n-input
+            v-model:value="form.licenseCode"
+            :autosize="{
+              minRows: 5,
+            }"
+            class="mt-[16px] max-h-[calc(100vh-334px)]"
+            type="textarea"
+            placeholder="License Code"
+          />
         </n-form-item>
       </n-form>
     </n-scrollbar>
@@ -64,14 +72,11 @@
 
 <script setup lang="ts">
   import { FormInst, NButton, NForm, NFormItem, NInput, NScrollbar, useMessage } from 'naive-ui';
-  import { cloneDeep } from 'lodash-es';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { addCommasToNumber } from '@lib/shared/method';
-  import { LicenseInfo } from '@lib/shared/models/system/authorizedManagement';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
-  import type { Description } from '@/components/pure/crm-description/index.vue';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import CrmUpload from '@/components/pure/crm-upload/index.vue';

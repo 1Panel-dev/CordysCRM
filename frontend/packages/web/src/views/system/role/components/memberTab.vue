@@ -21,7 +21,12 @@
           </n-button>
         </template>
         <template #actionRight>
-          <CrmSearchInput v-model:value="keyword" class="!w-[240px]" @search="searchData" />
+          <CrmSearchInput
+            v-model:value="keyword"
+            class="!w-[240px]"
+            :placeholder="t('common.searchName')"
+            @search="searchData"
+          />
         </template>
       </CrmTable>
     </n-scrollbar>
