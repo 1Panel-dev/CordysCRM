@@ -95,7 +95,7 @@ public class MessageTaskService {
         messageTask.setUpdateTime(System.currentTimeMillis());
         messageTaskMapper.update(messageTask);
         // 添加日志上下文
-        MessageTaskLogDTO oldDTO = buildLogDTO(oldMessageTask, oldMessageTask.getEmailEnable(), oldMessageTask.getSysEnable(), messageTaskRequest.isWeComEnable(), eventMap);
+        MessageTaskLogDTO oldDTO = buildLogDTO(oldMessageTask, oldMessageTask.getEmailEnable(), oldMessageTask.getSysEnable(), oldMessageTask.getWeComEnable(), eventMap);
         MessageTaskLogDTO newDTO = buildLogDTO(oldMessageTask, messageTaskRequest.isEmailEnable(), messageTaskRequest.isSysEnable(), messageTaskRequest.isWeComEnable(), eventMap);
         LogDTO logDTO = new LogDTO(oldMessageTask.getOrganizationId(), messageTask.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE, eventMap.get(messageTaskRequest.getEvent()));
         logDTO.setOriginalValue(oldDTO);
