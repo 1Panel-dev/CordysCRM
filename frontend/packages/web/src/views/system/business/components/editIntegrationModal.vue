@@ -159,9 +159,23 @@
 
   const rules: FormRules = {
     corpId: [{ required: true, message: t('common.notNull', { value: `${t('system.business.corpId')} ` }) }],
-    agentId: [{ required: true, message: t('common.notNull', { value: `${t('system.business.agentId')} ` }) }],
+    agentId: [
+      {
+        required: true,
+        message: t('common.notNull', {
+          value: `${props.integration?.type === CompanyTypeEnum.DATA_EASE ? 'APP ID' : t('system.business.agentId')} `,
+        }),
+      },
+    ],
     appKey: [{ required: true, message: t('common.notNull', { value: `${t('system.business.appKey')} ` }) }],
-    appSecret: [{ required: true, message: t('common.notNull', { value: t('system.business.appSecret') }) }],
+    appSecret: [
+      {
+        required: true,
+        message: t('common.notNull', {
+          value: props.integration?.type === CompanyTypeEnum.DATA_EASE ? 'APP Secret' : t('system.business.appSecret'),
+        }),
+      },
+    ],
     redirectUrl: [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.url')} ` }) }],
     deAccount: [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.account')} ` }) }],
   };
