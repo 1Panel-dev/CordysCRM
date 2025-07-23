@@ -148,7 +148,7 @@
         return h(
           'div',
           {
-            class: 'flex items-center',
+            class: 'flex items-center w-full overflow-hidden',
           },
           {
             default: () => [
@@ -162,6 +162,7 @@
               h(
                 CrmTableButton,
                 {
+                  class: 'flex-1 overflow-hidden',
                   onClick: () => {
                     window.open(
                       `${window.location.origin}#${

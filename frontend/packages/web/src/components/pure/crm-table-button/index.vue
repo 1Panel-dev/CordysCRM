@@ -1,7 +1,7 @@
 <template>
   <n-tooltip trigger="hover" :delay="300">
     <template #trigger>
-      <n-button type="primary" text class="max-w-full" @click="emit('click')">
+      <n-button type="primary" text class="max-w-full" :class="props.class" @click="emit('click')">
         <div class="one-line-text w-[fit-content]">
           <slot name="trigger"></slot>
         </div>
@@ -14,6 +14,9 @@
 <script setup lang="ts">
   import { NButton, NTooltip } from 'naive-ui';
 
+  const props = defineProps<{
+    class?: string;
+  }>();
   const emit = defineEmits<{
     (e: 'click'): void;
   }>();
