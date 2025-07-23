@@ -35,7 +35,8 @@ public class HomeStatisticController {
     @Operation(summary = "客户统计")
     public HomeCustomerStatistic getCustomerStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
         HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
-        return homeStatisticService.getCustomerStatistic(wrapperRequest);
+        return homeStatisticService.isEmptyDeptData(wrapperRequest) ?
+                new HomeCustomerStatistic() : homeStatisticService.getCustomerStatistic(wrapperRequest);
     }
 
     @PostMapping("/clue")
@@ -43,7 +44,8 @@ public class HomeStatisticController {
     @Operation(summary = "线索统计")
     public HomeClueStatistic getClueStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
         HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
-        return homeStatisticService.getClueStatistic(wrapperRequest);
+        return homeStatisticService.isEmptyDeptData(wrapperRequest) ?
+                new HomeClueStatistic() : homeStatisticService.getClueStatistic(wrapperRequest);
     }
 
     @PostMapping("/opportunity")
@@ -51,7 +53,8 @@ public class HomeStatisticController {
     @Operation(summary = "跟进商机统计")
     public HomeOpportunityStatistic getOpportunityStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
         HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
-        return homeStatisticService.getOpportunityStatistic(wrapperRequest);
+        return homeStatisticService.isEmptyDeptData(wrapperRequest) ?
+                new HomeOpportunityStatistic() : homeStatisticService.getOpportunityStatistic(wrapperRequest);
     }
 
     @PostMapping("/contact")
@@ -59,7 +62,8 @@ public class HomeStatisticController {
     @Operation(summary = "联系人统计")
     public HomeContactStatistic getContactStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
         HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
-        return homeStatisticService.getContactStatistic(wrapperRequest);
+        return homeStatisticService.isEmptyDeptData(wrapperRequest) ?
+                new HomeContactStatistic() : homeStatisticService.getContactStatistic(wrapperRequest);
     }
 
     @PostMapping("/follow/record")
@@ -67,7 +71,8 @@ public class HomeStatisticController {
     @Operation(summary = "跟进记录统计")
     public HomeFollowUpRecordStatistic getFollowUpRecordStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
         HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
-        return homeStatisticService.getFollowUpRecordStatistic(wrapperRequest);
+        return homeStatisticService.isEmptyDeptData(wrapperRequest) ?
+                new HomeFollowUpRecordStatistic() : homeStatisticService.getFollowUpRecordStatistic(wrapperRequest);
     }
 
     @PostMapping("/follow/plan")
@@ -75,7 +80,8 @@ public class HomeStatisticController {
     @Operation(summary = "跟进计划统计")
     public HomeFollowUpPlanStatistic getFollowUpPlanStatistic(@RequestBody @Validated HomeStatisticSearchRequest request) {
         HomeStatisticSearchWrapperRequest wrapperRequest = homeStatisticService.getHomeStatisticSearchWrapperRequest(request);
-        return homeStatisticService.getFollowUpPlanStatistic(wrapperRequest);
+        return homeStatisticService.isEmptyDeptData(wrapperRequest) ?
+                new HomeFollowUpPlanStatistic() : homeStatisticService.getFollowUpPlanStatistic(wrapperRequest);
     }
 
     @GetMapping("/department/tree")

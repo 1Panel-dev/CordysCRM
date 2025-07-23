@@ -18,7 +18,6 @@ import io.cordys.crm.clue.service.PoolClueService;
 import io.cordys.crm.customer.domain.CustomerCapacity;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
-import io.cordys.crm.customer.service.CustomerCapacityService;
 import io.cordys.crm.customer.service.PoolCustomerService;
 import io.cordys.crm.follow.mapper.ExtFollowUpPlanMapper;
 import io.cordys.crm.follow.mapper.ExtFollowUpRecordMapper;
@@ -337,17 +336,31 @@ public class HomeStatisticService {
 	 * @return
 	 */
 	public DeptDataPermissionDTO getDeptDataPermissionDTO(HomeStatisticSearchRequest request, String permission) {
-		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-				OrganizationContext.getOrganizationId(), request.getSearchType(), permission);
-		if (CollectionUtils.isNotEmpty(request.getDeptIds())) {
-			Set<String> deptIds = request.getDeptIds()
-					.stream()
-					.filter(deptId -> CollectionUtils.isNotEmpty(deptDataPermission.getDeptIds())
-							&& deptDataPermission.getDeptIds().contains(deptId))
-					.collect(Collectors.toSet());
-			deptDataPermission.setDeptIds(deptIds);
+		if (StringUtils.equals(request.getSearchType(), BusinessSearchType.DEPARTMENT.name())) {
+			DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+					OrganizationContext.getOrganizationId(), permission);
+			if (deptDataPermission.getAll()) {
+				// 如果是全部权限，则不需要过滤部门ID
+				deptDataPermission.setDeptIds(request.getDeptIds());
+			} else if (CollectionUtils.isNotEmpty(deptDataPermission.getDeptIds())) {
+				// 如果只有部门权限，则过滤掉没有权限的部门ID
+				Set<String> deptIds = request.getDeptIds()
+						.stream()
+						.filter(deptId -> CollectionUtils.isNotEmpty(deptDataPermission.getDeptIds())
+								&& deptDataPermission.getDeptIds().contains(deptId))
+						.collect(Collectors.toSet());
+				deptDataPermission.setDeptIds(deptIds);
+			}
+			return deptDataPermission;
+		} else if (StringUtils.equals(request.getSearchType(), BusinessSearchType.ALL.name())) {
+			DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+					OrganizationContext.getOrganizationId(), permission);
+			return deptDataPermission;
+		} else {
+			DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
+			deptDataPermission.setSelf(true);
+			return deptDataPermission;
 		}
-		return deptDataPermission;
 	}
 
 	public List<BaseTreeNode> getDepartmentTree(String userId, String orgId) {
@@ -428,5 +441,10 @@ public class HomeStatisticService {
 		DeptDataPermissionDTO deptDataPermission = getDeptDataPermissionDTO(request, PermissionConstants.CUSTOMER_MANAGEMENT_READ);
 		HomeStatisticSearchWrapperRequest wrapperRequest = new HomeStatisticSearchWrapperRequest(request, deptDataPermission, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
 		return wrapperRequest;
+	}
+
+	public boolean isEmptyDeptData(HomeStatisticSearchWrapperRequest wrapperRequest) {
+		return StringUtils.equals(wrapperRequest.getStaticRequest().getSearchType(), BusinessSearchType.DEPARTMENT.name())
+				&& CollectionUtils.isEmpty(wrapperRequest.getDataPermission().getDeptIds());
 	}
 }
