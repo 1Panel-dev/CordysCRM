@@ -53,10 +53,18 @@
       <analyticsDetail ref="analyticsDetailRef" :search-type="params.searchType" />
       <analyticsMiniCard ref="analyticsMiniCardRef" />
       <div
-        v-if="!hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'])"
+        v-if="
+          !hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ']) ||
+          !hasAnyModuleEnable
+        "
         class="flex items-center justify-center p-[16px] text-[var(--text-n4)]"
       >
-        {{ t('common.noPermission') }}
+        {{
+          !hasAnyModuleEnable &&
+          hasAnyPermission(['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'])
+            ? t('workbench.duplicateCheck.moduleNotEnabled')
+            : t('common.noPermission')
+        }}
       </div>
     </div>
   </CrmCard>
@@ -65,6 +73,7 @@
 <script setup lang="ts">
   import { NDatePicker, NTooltip, NTreeSelect, TreeOption } from 'naive-ui';
 
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { mapTree } from '@lib/shared/method';
   import { GetHomeStatisticParams } from '@lib/shared/models/home';
@@ -77,10 +86,11 @@
   import analyticsMiniCard from './analyticsMiniCard.vue';
 
   import { getHomeDepartmentTree } from '@/api/modules';
-  import { useUserStore } from '@/store';
+  import { useAppStore, useUserStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
+  const appStore = useAppStore();
 
   const activePeriod = ref('TODAY');
   const params = ref<GetHomeStatisticParams>({
@@ -159,6 +169,17 @@
       class: `text-[var(--text-n2)]`,
     });
   }
+
+  const hasAnyModuleEnable = computed(() =>
+    appStore.moduleConfigList.some(
+      (e) =>
+        [
+          ModuleConfigEnum.CUSTOMER_MANAGEMENT,
+          ModuleConfigEnum.BUSINESS_MANAGEMENT,
+          ModuleConfigEnum.CLUE_MANAGEMENT,
+        ].includes(e.moduleKey as ModuleConfigEnum) && e.enable
+    )
+  );
 
   async function initDepartList() {
     try {

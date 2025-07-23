@@ -60,15 +60,18 @@
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
 
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { addCommasToNumber } from '@lib/shared/method';
   import { DefaultAnalyticsData, GetHomeStatisticParams } from '@lib/shared/models/home';
 
   import { getHomeAccountStatistic, getHomeFollowOpportunity, getHomeLeadStatistic } from '@/api/modules';
   import { defaultAccountData, defaultClueData, defaultOpportunityData } from '@/config/workbench';
+  import { useAppStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
+  const appStore = useAppStore();
 
   const props = defineProps<{
     searchType: string;
@@ -169,7 +172,11 @@
     const lastLeadData = getStatisticDetailData(defaultClueData, leadData.value);
     const lastAccountData = getStatisticDetailData(defaultAccountData, accountData.value);
     const lastOpportunityData = getStatisticDetailData(defaultOpportunityData, opportunityData.value);
-    return [lastLeadData, lastAccountData, lastOpportunityData];
+    return [lastLeadData, lastAccountData, lastOpportunityData].filter((e) => {
+      return appStore.moduleConfigList.find((m) => {
+        return e.moduleKey.includes(m.moduleKey as ModuleConfigEnum) && m.enable;
+      });
+    });
   });
 
   function initHomeStatistic(params: GetHomeStatisticParams) {

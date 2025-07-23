@@ -1,3 +1,5 @@
+import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+
 export interface GetHomeStatisticParams {
   searchType: string;
   deptIds: string[];
@@ -58,6 +60,7 @@ export interface BaseStatisticData {
   name: string;
   total: number | null;
   routeName?: string;
+  moduleKey: ModuleConfigEnum[];
   permission: string[];
 }
 
