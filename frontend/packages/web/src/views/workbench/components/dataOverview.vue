@@ -213,6 +213,7 @@
       params.value.period = value as string;
       params.value.startTime = undefined;
       params.value.endTime = undefined;
+      range.value = undefined;
       refresh();
     }
   }
