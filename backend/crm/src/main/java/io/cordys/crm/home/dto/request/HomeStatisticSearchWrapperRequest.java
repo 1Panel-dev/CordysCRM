@@ -112,8 +112,13 @@ public class HomeStatisticSearchWrapperRequest {
                     break;
                 case THIS_MONTH:
                     LocalDate startOfMonth = now.minusMonths(1).withDayOfMonth(1);
-                    LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth()).plusDays(1).minusDays(1);
-                    endTime = endOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                    endTime = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth())
+                            .plusDays(1)
+                            .minusDays(1)
+                            .atTime(23, 59, 59)
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli();
                     break;
             }
         }
@@ -141,8 +146,13 @@ public class HomeStatisticSearchWrapperRequest {
                     break;
                 case THIS_MONTH:
                     LocalDate startOfMonth = now.withDayOfMonth(1);
-                    LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth()).plusDays(1).minusDays(1);
-                    endTime = endOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                    endTime = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth())
+                            .plusDays(1)
+                            .minusDays(1)
+                            .atTime(23, 59, 59)
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli();
                     break;
             }
         }
