@@ -567,6 +567,7 @@
           height: 34px !important;
           .n-tree-node-content {
             min-width: 100px;
+            max-width: 100%;
             .n-tree-node-content__text {
               @apply flex w-full items-center overflow-hidden;
 
@@ -584,6 +585,10 @@
             }
             // 后缀
             .n-tree-node-content__suffix {
+              @apply sticky right-0;
+
+              background-color: var(--primary-7);
+              transition: background-color 0.3s var(--n-bezier);
               .crm-tree-node-extra {
                 margin-left: -4px;
                 gap: 4px;

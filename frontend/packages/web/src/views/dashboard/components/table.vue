@@ -97,7 +97,7 @@
     {
       label: t('common.edit'),
       key: 'edit',
-      permission: ['DASHBOARD:EDIT'],
+      permission: ['DASHBOARD:UPDATE'],
     },
     {
       label: t('common.delete'),
@@ -144,6 +144,8 @@
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
       render: (row: any) => {
         return h(
           'div',
@@ -196,6 +198,8 @@
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
     },
     {
       title: t('dashboard.members'),
@@ -213,6 +217,8 @@
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
     },
     {
       title: t('common.createTime'),
