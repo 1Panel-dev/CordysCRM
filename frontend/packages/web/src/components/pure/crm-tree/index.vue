@@ -202,7 +202,9 @@
       // 排除自己节点在内
       return siblings.reduce((siblingsLabels: string[], node: CrmTreeNodeData) => {
         if (node[props.fieldNames.keyField] !== option[props.fieldNames.keyField]) {
-          siblingsLabels.push(node[props.fieldNames.labelField]);
+          if (!node.type || node.type === option.type) {
+            siblingsLabels.push(node[props.fieldNames.labelField]);
+          }
         }
         return siblingsLabels;
       }, []);

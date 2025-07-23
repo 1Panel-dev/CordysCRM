@@ -20,18 +20,21 @@
             {
               required: true,
               message: t('common.notNull', { value: t('dashboard.dashboardName') }),
+              trigger: 'blur',
             },
           ],
           resourceId: [
             {
               required: true,
               message: t('common.notNull', { value: t('dashboard.dashboardId') }),
+              trigger: 'blur',
             },
           ],
           dashboardModuleId: [
             {
               required: true,
               message: t('common.notNull', { value: t('dashboard.folder') }),
+              trigger: 'blur',
             },
           ],
         }"
