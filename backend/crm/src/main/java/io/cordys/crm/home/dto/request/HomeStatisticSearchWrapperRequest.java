@@ -37,6 +37,12 @@ public class HomeStatisticSearchWrapperRequest {
         return StringUtils.isNotBlank(staticRequest.getPeriod());
     }
 
+    public void clearStartTimeAndEndTie() {
+        staticRequest.setStartTime(null);
+        staticRequest.setEndTime(null);
+        staticRequest.setPeriod(null);
+    }
+
     public void setStartTime(Long startTime) {
         staticRequest.setStartTime(startTime);
     }

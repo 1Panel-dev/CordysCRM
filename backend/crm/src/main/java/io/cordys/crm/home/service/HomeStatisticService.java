@@ -176,8 +176,7 @@ public class HomeStatisticService {
 	 */
 	public Long getTotalCustomerCount(HomeStatisticSearchWrapperRequest request) {
 		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
-		totalRequest.setStartTime(null);
-		totalRequest.setEndTime(null);
+		totalRequest.clearStartTimeAndEndTie();
 		return extCustomerMapper.selectCustomerCount(totalRequest, false);
 	}
 
@@ -223,8 +222,7 @@ public class HomeStatisticService {
 	 */
 	public Long getTotalClueCount(HomeStatisticSearchWrapperRequest request) {
 		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
-		totalRequest.setStartTime(null);
-		totalRequest.setEndTime(null);
+		totalRequest.clearStartTimeAndEndTie();
 		return extClueMapper.selectClueCount(totalRequest, false);
 	}
 
@@ -265,8 +263,7 @@ public class HomeStatisticService {
 	 */
 	public Long getTotalOpportunityCount(HomeStatisticSearchWrapperRequest request) {
 		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
-		totalRequest.setStartTime(null);
-		totalRequest.setEndTime(null);
+		totalRequest.clearStartTimeAndEndTie();
 		return extOpportunityMapper.selectOpportunityCount(totalRequest, false);
 	}
 
