@@ -91,6 +91,8 @@ public class OpportunityService {
     @Resource
     private ProductService productService;
 
+    public static final String SUCCESS = "SUCCESS";
+
     public PagerWithOption<List<OpportunityListResponse>> list(OpportunityPageRequest request, String userId, String orgId,
                                                                DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -319,7 +321,13 @@ public class OpportunityService {
      * @param request
      */
     public void transfer(OpportunityTransferRequest request, String userId, String orgId) {
-        List<Opportunity> opportunityList = opportunityMapper.selectByIds(request.getIds());
+        LambdaQueryWrapper<Opportunity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Opportunity::getId, request.getIds());
+        wrapper.nq(Opportunity::getStage, SUCCESS);
+        List<Opportunity> opportunityList = opportunityMapper.selectListByLambda(wrapper);
+        if (CollectionUtils.isEmpty(opportunityList)) {
+            return;
+        }
         extOpportunityMapper.batchTransfer(request, userId, System.currentTimeMillis());
         // 记录日志
         List<LogDTO> logs = new ArrayList<>();
@@ -355,9 +363,14 @@ public class OpportunityService {
     public void batchDelete(List<String> ids, String userId, String orgId) {
         LambdaQueryWrapper<Opportunity> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(Opportunity::getId, ids);
+        wrapper.nq(Opportunity::getStage, SUCCESS);
         List<Opportunity> opportunityList = opportunityMapper.selectListByLambda(wrapper);
-        opportunityMapper.deleteByIds(ids);
-        opportunityFieldService.deleteByResourceIds(ids);
+        List<String> toDoIds = opportunityList.stream().map(Opportunity::getId).toList();
+        if (CollectionUtils.isEmpty(toDoIds)) {
+            return;
+        }
+        opportunityMapper.deleteByIds(toDoIds);
+        opportunityFieldService.deleteByResourceIds(toDoIds);
         List<LogDTO> logs = new ArrayList<>();
         opportunityList.forEach(opportunity -> {
             LogDTO logDTO = new LogDTO(opportunity.getOrganizationId(), opportunity.getId(), userId, LogType.DELETE, LogModule.OPPORTUNITY, opportunity.getName());
