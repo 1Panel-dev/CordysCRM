@@ -37,7 +37,7 @@
           v-if="activePeriod === 'CUSTOM'"
           v-model:value="range"
           class="w-[240px]"
-          type="datetimerange"
+          type="daterange"
           @confirm="confirmTimePicker"
         >
           <template #date-icon>
