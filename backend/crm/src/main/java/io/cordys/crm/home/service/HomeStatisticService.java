@@ -288,6 +288,7 @@ public class HomeStatisticService {
 	 * @return
 	 */
 	public Long getOpportunityTotalAmount(HomeStatisticSearchWrapperRequest request) {
+		request.clearStartTimeAndEndTie();
 		return extOpportunityMapper.selectOpportunityCount(request, true);
 	}
 
