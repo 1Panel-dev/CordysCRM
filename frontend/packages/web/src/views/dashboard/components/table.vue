@@ -272,7 +272,7 @@
     currentTable.value.setLoadListParams({
       keyword: val ?? keyword.value,
       dashboardModuleIds:
-        props.activeFolderId && ['all', 'favorite'].includes(props.activeFolderId)
+        props.activeFolderId && !['all', 'favorite'].includes(props.activeFolderId)
           ? Array.from(new Set([props.activeFolderId, ...(props.offspringIds || [])])).filter(
               (item) => item && !['all', 'favorite'].includes(item)
             )
