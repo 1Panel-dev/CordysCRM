@@ -13,6 +13,7 @@ import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.*;
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
 import io.cordys.common.pager.PagerWithOption;
 import io.cordys.common.permission.PermissionCache;
@@ -564,6 +565,10 @@ public class ClueService {
     public void transitionOldCustomer(ReTransitionCustomerRequest request, String currentUser, String orgId) {
         boolean notice = false;
         Clue clue = clueMapper.selectByPrimaryKey(request.getClueId());
+        List<String> owners = extUserMapper.selectUserNameByIds(List.of(clue.getOwner()));
+        if (CollectionUtils.isEmpty(owners)) {
+            throw new GenericException(Translator.get("clue_owner_not_exist"));
+        }
         Customer customer = customerMapper.selectByPrimaryKey(request.getCustomerId());
         if (customer.getInSharedPool()) {
             // 如果客户已经在公海中，则领取改客户
@@ -599,7 +604,7 @@ public class ClueService {
         }
 
         if (notice) {
-            String ownerName = extUserMapper.selectUserNameByIds(List.of(clue.getOwner())).getFirst();
+            String ownerName = owners.getFirst();
             Map<String, Object> paramMap = new HashMap<>(8);
             paramMap.put("useTemplate", "true");
             paramMap.put("template", Translator.get("message.clue_convert_exist_customer_text"));
