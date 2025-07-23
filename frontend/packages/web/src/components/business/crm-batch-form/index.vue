@@ -32,6 +32,12 @@
                     validator: (rule: FormItemRule, value: string) => fieldNotRepeat(value, index, model.path, e.message as string),
                     };
                   }
+                  if (typeof e.validator === 'function') {
+                    return {
+                      validator: (rule, value, callback) =>
+                        (e.validator as any)?.(rule, value, callback, element),
+                    };
+                  }
                   return e;
                 })
               "

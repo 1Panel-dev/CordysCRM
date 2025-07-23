@@ -20,6 +20,8 @@
 </template>
 
 <script setup lang="ts">
+  import { FormItemRule } from 'naive-ui';
+
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { MemberSelectTypeEnum, ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -106,10 +108,27 @@
               type: FieldTypeEnum.SELECT,
               label: ' ',
               formItemClass: 'w-[120px] flex-initial',
+              rule: [
+                {
+                  validator: (_rule: FormItemRule, value: any, callback: (err?: Error) => void, row: any) => {
+                    if (row.column && !value) {
+                      return new Error(t('common.notNull', { value: t('module.capacitySet.condition') }));
+                    }
+                  },
+                },
+              ],
               selectProps: {
                 options: [IN, NOT_IN].map((item) => ({ ...item, label: t(item.label) })),
-                disabledFunction: (row: any) => !row.capacity,
-                disabledTooltipFunction: () => t('module.capacitySet.notIncludedDisabled'),
+                disabledFunction: (row: any) => {
+                  if (!row.column) {
+                    row.operator = null;
+                  }
+                  return !row.capacity || !row.column;
+                },
+                disabledTooltipFunction: (row: any) =>
+                  !row.capacity
+                    ? t('module.capacitySet.notIncludedDisabled')
+                    : t('module.capacitySet.notIncludedOperatorDisabled'),
               },
             },
             {
@@ -117,6 +136,15 @@
               type: FieldTypeEnum.SELECT_MULTIPLE,
               label: ' ',
               formItemClass: 'w-[220px] flex-initial',
+              rule: [
+                {
+                  validator: (_rule: FormItemRule, value: any, callback: (err?: Error) => void, row: any) => {
+                    if (row.column && !value) {
+                      return new Error(t('common.notNull', { value: t('module.capacitySet.value') }));
+                    }
+                  },
+                },
+              ],
               selectProps: {
                 options: [...opportunityBaseSteps, ...opportunityResultSteps],
                 disabledFunction: (row: any) => {
