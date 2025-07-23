@@ -241,6 +241,21 @@ public class PoolClueService {
 	}
 
 	/**
+	 * 获取剩余库容
+	 * @param ownUserId 负责人用户ID
+	 * @param currentOrgId 当前组织ID
+	 * @return 剩余库容
+	 */
+	public Long getRemainCapacity(String ownUserId, String currentOrgId) {
+		Integer capacity = getUserCapacity(ownUserId, currentOrgId);
+		if (capacity == null) {
+			return null;
+		}
+		long ownerCount = extClueMapper.getOwnerCount(ownUserId);
+		return capacity.longValue() - ownerCount;
+	}
+
+	/**
 	 * 校验每日领取数量
 	 *
 	 * @param pickingCount 领取数量

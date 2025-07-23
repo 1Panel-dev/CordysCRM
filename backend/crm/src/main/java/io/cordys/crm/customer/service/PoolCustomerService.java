@@ -260,6 +260,29 @@ public class PoolCustomerService {
 	}
 
 	/**
+	 * 获取剩余库容
+	 * @param ownUserId 负责人
+	 * @param currentOrgId 当前组织ID
+	 * @return 剩余库容
+	 */
+	public Long getRemainCapacity(String ownUserId, String currentOrgId) {
+		CustomerCapacity customerCapacity = getUserCapacity(ownUserId, currentOrgId);
+		if (customerCapacity == null || customerCapacity.getCapacity() == null) {
+			return null;
+		}
+		List<FilterConditionDTO> conditions = StringUtils.isEmpty(customerCapacity.getFilter()) ?
+				new ArrayList<>() : JSON.parseArray(customerCapacity.getFilter(), FilterConditionDTO.class);
+		int filter = 0;
+		if (CollectionUtils.isNotEmpty(conditions)) {
+			filter = (int) extCustomerMapper.filterOwnerCount(ownUserId, conditions);
+		}
+		LambdaQueryWrapper<Customer> customerWrapper = new LambdaQueryWrapper<>();
+		customerWrapper.eq(Customer::getOwner, ownUserId).eq(Customer::getInSharedPool, false);
+		int ownCount = customerMapper.selectListByLambda(customerWrapper).size();
+		return Math.max(0, customerCapacity.getCapacity().longValue() - ownCount + filter);
+	}
+
+	/**
 	 * 校验每日领取数量
 	 *
 	 * @param pickingCount 领取数量

@@ -188,11 +188,7 @@ public class HomeStatisticService {
 	public Long getTotalCustomerCapacityCount(HomeStatisticSearchWrapperRequest request) {
 		HomeStatisticSearchWrapperRequest totalRequest = copyHomeStatisticSearchWrapperRequest(request);
 		if (request.getStaticRequest() != null && StringUtils.equals(BusinessSearchType.SELF.name(), totalRequest.getStaticRequest().getSearchType())) {
-			CustomerCapacity userCapacity = poolCustomerService.getUserCapacity(request.getUserId(), request.getOrgId());
-			if (userCapacity == null || userCapacity.getCapacity() == null) {
-				return null;
-			}
-			return userCapacity.getCapacity().longValue();
+			return poolCustomerService.getRemainCapacity(request.getUserId(), request.getOrgId());
 		}
 		return null;
 	}
@@ -226,13 +222,14 @@ public class HomeStatisticService {
 		return extClueMapper.selectClueCount(totalRequest, false);
 	}
 
+	/**
+	 * 获取剩余库容总数
+	 * @param request 请求参数
+	 * @return 剩余库容数量
+	 */
 	public Long getTotalClueCapacityCount(HomeStatisticSearchWrapperRequest request) {
 		if (request.getStaticRequest() != null && StringUtils.equals(BusinessSearchType.SELF.name(), request.getStaticRequest().getSearchType())) {
-			Integer capacity = poolClueService.getUserCapacity(request.getUserId(), request.getOrgId());
-			if (capacity == null) {
-				return null;
-			}
-			return capacity.longValue();
+			return poolClueService.getRemainCapacity(request.getUserId(), request.getOrgId());
 		}
 		return null;
 	}
