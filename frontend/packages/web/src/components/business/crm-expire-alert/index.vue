@@ -1,11 +1,11 @@
 <template>
-  <div v-expire class="mb-[16px]" :class="props.styleClass">
-    <n-alert :type="licenseStore.expiredDays > 0 && licenseStore.expiredDays <= 31 ? 'warning' : 'error'">
+  <div v-if="licenseStore.expiredDuring" class="mb-[16px]" :class="props.styleClass">
+    <n-alert :type="licenseStore.expiredDays > 0 && licenseStore.expiredDays <= 30 ? 'warning' : 'error'">
       <template #icon>
         <n-icon><AlertCircle /></n-icon>
       </template>
       {{
-        licenseStore.expiredDays > 0 && licenseStore.expiredDays <= 31
+        licenseStore.expiredDays > 0 && licenseStore.expiredDays <= 30
           ? t('system.license.LicenseExpirationPromptLessThanThirty', { day: licenseStore.expiredDays })
           : t('system.license.LicenseExpirationPromptGreaterThanThirty')
       }}

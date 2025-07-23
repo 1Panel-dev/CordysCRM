@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer no-content-bottom-padding :special-height="64">
+  <CrmCard hide-footer no-content-bottom-padding :special-height="licenseStore.expiredDuring ? 128 : 0">
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"
@@ -41,8 +41,10 @@
 
   import { deleteAnnouncement, getAnnouncementList } from '@/api/modules';
   import useAppStore from '@/store/modules/app';
+  import useLicenseStore from '@/store/modules/setting/license';
 
   const appStore = useAppStore();
+  const licenseStore = useLicenseStore();
 
   const { t } = useI18n();
   const Message = useMessage();

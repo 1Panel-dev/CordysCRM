@@ -40,18 +40,31 @@ const useLicenseStore = defineStore('license', {
         return;
       }
 
-      const today = Date.now();
-      const startDate = dayjs(today).format('YYYY-MM-DD');
-      const endDate = dayjs(resTime);
+      const today = dayjs().startOf('day'); // 今天的开始时间
+      const expirationDate = dayjs(resTime).startOf('day'); // license到期日的开始时间
 
-      const daysDifference = endDate.diff(startDate, 'day');
-      // 包含当天
-      this.expiredDays = daysDifference + 1;
-      if (daysDifference <= 31 && daysDifference > 0) {
+      // 计算天数差（不包含当天）
+      const daysDifference = expirationDate.diff(today, 'day');
+      if (daysDifference < 0) {
+        // 已过期情况
+        const daysExpired = Math.abs(daysDifference);
+        this.expiredDays = -daysExpired; // 负数表示已过期天数
+        this.expiredDuring = daysExpired <= 30; // 过期后只显示30天
+      } else if (daysDifference === 0) {
+        // 今天到期（显示"剩余1天"）
+        this.expiredDays = 1;
         this.expiredDuring = true;
-      } else if (daysDifference <= 0 && daysDifference >= -31) {
+      } else if (daysDifference <= 29) {
+        // 1-29天后到期（显示剩余天数+1）
+        this.expiredDays = daysDifference + 1;
         this.expiredDuring = true;
+      } else if (daysDifference === 30) {
+        // 30天后到期（显示"剩余30天"）
+        this.expiredDays = daysDifference + 1;
+        this.expiredDuring = false;
       } else {
+        // 31+天后到期
+        this.expiredDays = daysDifference + 1;
         this.expiredDuring = false;
       }
     },
