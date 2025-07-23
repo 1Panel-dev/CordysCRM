@@ -8,6 +8,7 @@
     :show-continue="!props.dashboardId"
     @confirm="handleConfirm"
     @cancel="handleCancel"
+    @continue="handleConfirm(true)"
   >
     <n-spin :show="detailLoading" class="h-full w-full">
       <n-form
@@ -127,7 +128,7 @@
     };
   }
 
-  function handleConfirm() {
+  function handleConfirm(isContinue = false) {
     formRef.value?.validate(async (errors) => {
       if (errors) return;
       loading.value = true;
@@ -147,7 +148,9 @@
           message.success(t('common.addSuccess'));
         }
         emit('finish');
-        show.value = false;
+        if (!isContinue) {
+          show.value = false;
+        }
         handleCancel();
       } catch (error) {
         // eslint-disable-next-line no-console
