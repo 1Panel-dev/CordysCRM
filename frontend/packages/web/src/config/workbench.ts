@@ -1,4 +1,5 @@
 import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { AnalyticsDataWithValueKey, DefaultAnalyticsData } from '@lib/shared/models/home';
 
@@ -54,6 +55,7 @@ export const defaultClueData: DefaultAnalyticsData = {
   total: 0,
   permission: ['CLUE_MANAGEMENT:READ'],
   routeName: AppRouteEnum.CLUE_MANAGEMENT_CLUE,
+  moduleKey: [ModuleConfigEnum.CLUE_MANAGEMENT],
   analytics: [
     {
       title: t('workbench.addCount'),
@@ -87,6 +89,7 @@ export const defaultAccountData: DefaultAnalyticsData = {
   total: 0,
   permission: ['CUSTOMER_MANAGEMENT:READ'],
   routeName: AppRouteEnum.CUSTOMER_INDEX,
+  moduleKey: [ModuleConfigEnum.CUSTOMER_MANAGEMENT],
   analytics: [
     {
       title: t('workbench.addCount'),
@@ -120,6 +123,7 @@ export const defaultOpportunityData: DefaultAnalyticsData = {
   total: 0,
   permission: ['OPPORTUNITY_MANAGEMENT:READ'],
   routeName: AppRouteEnum.OPPORTUNITY_OPT,
+  moduleKey: [ModuleConfigEnum.BUSINESS_MANAGEMENT],
   analytics: [
     {
       title: t('workbench.addCount'),
@@ -147,8 +151,9 @@ export const defaultContactsData: AnalyticsDataWithValueKey = {
   priorPeriodCompareRate: 0,
   priorPeriodCompareRateAbs: 0,
   routeName: AppRouteEnum.CUSTOMER_CONTACT,
+  moduleKey: [ModuleConfigEnum.CUSTOMER_MANAGEMENT],
   valueKey: 'newContact',
-  permission: ['CUSTOMER_MANAGEMENT:READ'],
+  permission: ['CUSTOMER_MANAGEMENT_CONTACT:READ'],
 };
 
 export const defaultFollowRecordData: AnalyticsDataWithValueKey = {
@@ -159,6 +164,11 @@ export const defaultFollowRecordData: AnalyticsDataWithValueKey = {
   total: 0,
   priorPeriodCompareRate: 0,
   priorPeriodCompareRateAbs: 0,
+  moduleKey: [
+    ModuleConfigEnum.CUSTOMER_MANAGEMENT,
+    ModuleConfigEnum.CLUE_MANAGEMENT,
+    ModuleConfigEnum.BUSINESS_MANAGEMENT,
+  ],
   valueKey: 'newFollowUpRecord',
   permission: ['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'],
 };
@@ -171,6 +181,11 @@ export const defaultFollowPlanData: AnalyticsDataWithValueKey = {
   total: 0,
   priorPeriodCompareRate: 0,
   priorPeriodCompareRateAbs: 0,
+  moduleKey: [
+    ModuleConfigEnum.CUSTOMER_MANAGEMENT,
+    ModuleConfigEnum.CLUE_MANAGEMENT,
+    ModuleConfigEnum.BUSINESS_MANAGEMENT,
+  ],
   valueKey: 'newFollowUpPlan',
   permission: ['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'],
 };

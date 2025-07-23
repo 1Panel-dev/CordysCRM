@@ -60,15 +60,18 @@
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
 
+  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { addCommasToNumber } from '@lib/shared/method';
   import { AnalyticsDataWithValueKey, GetHomeStatisticParams } from '@lib/shared/models/home';
 
   import { getHomeContactStatistic, getHomeFollowPlanStatistic, getHomeFollowStatistic } from '@/api/modules';
   import { defaultContactsData, defaultFollowPlanData, defaultFollowRecordData } from '@/config/workbench';
+  import { useAppStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
 
   const { t } = useI18n();
+  const appStore = useAppStore();
 
   function getAnalyticsData(defaultData: AnalyticsDataWithValueKey, detail: Record<string, any>) {
     if (detail) {
@@ -110,7 +113,7 @@
 
   const contactData = ref();
   async function initContactDetail(params: GetHomeStatisticParams) {
-    if (!hasAnyPermission(['CUSTOMER_MANAGEMENT:READ'])) return;
+    if (!hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:READ'])) return;
     try {
       contactData.value = await getHomeContactStatistic(params);
     } catch (error) {
@@ -143,7 +146,11 @@
     const lastContactData = getAnalyticsData(defaultContactsData, contactData.value);
     const lastFollowRecordData = getAnalyticsData(defaultFollowRecordData, followRecordData.value);
     const lastFollowPlanData = getAnalyticsData(defaultFollowPlanData, followPlanData.value);
-    return [lastContactData, lastFollowRecordData, lastFollowPlanData];
+    return [lastContactData, lastFollowRecordData, lastFollowPlanData].filter((item) =>
+      item.moduleKey.some((moduleKey: ModuleConfigEnum) =>
+        appStore.moduleConfigList.some((m) => m.moduleKey === moduleKey && m.enable)
+      )
+    );
   });
 
   function initStatisticDetail(params: GetHomeStatisticParams) {
