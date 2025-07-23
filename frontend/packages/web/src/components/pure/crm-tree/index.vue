@@ -21,6 +21,7 @@
     :render-prefix="renderPrefixDom"
     :render-suffix="renderSuffixDom"
     :render-switcher-icon="renderSwitcherIconDom"
+    :selectable="editingKey ? false : props.selectable"
     @update:selected-keys="select"
     @update:expanded-keys="expanded"
     @update:checked-keys="checkNode"
