@@ -28,7 +28,7 @@
       :initial-source-name="props.initialSourceName"
       :other-save-params="props.otherSaveParams"
       :is-edit="needInitDetail"
-      class="pt-[16px]"
+      class="!pt-[16px]"
       @cancel="handleBack"
       @saved="handleSaved"
       @init="($event) => (formCreateTitle = $event)"

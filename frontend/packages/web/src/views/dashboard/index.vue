@@ -10,6 +10,8 @@
           @select-node="handleNodeSelect"
           @edit-dashboard="handleEditDashboard"
           @collect="refreshTable"
+          @delete="refreshTable"
+          @move="refreshTable"
         />
       </template>
       <template #2>

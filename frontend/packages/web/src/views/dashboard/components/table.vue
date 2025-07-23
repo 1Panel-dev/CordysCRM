@@ -271,9 +271,12 @@
   function searchData(val?: string) {
     currentTable.value.setLoadListParams({
       keyword: val ?? keyword.value,
-      dashboardModuleIds: Array.from(new Set([props.activeFolderId, ...(props.offspringIds || [])])).filter(
-        (item) => item && !['all', 'favorite'].includes(item)
-      ),
+      dashboardModuleIds:
+        props.activeFolderId && ['all', 'favorite'].includes(props.activeFolderId)
+          ? Array.from(new Set([props.activeFolderId, ...(props.offspringIds || [])])).filter(
+              (item) => item && !['all', 'favorite'].includes(item)
+            )
+          : [],
     });
     currentTable.value.loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
