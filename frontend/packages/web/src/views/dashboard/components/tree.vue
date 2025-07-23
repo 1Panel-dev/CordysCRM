@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full flex-col p-[24px]">
     <div class="mb-[8px] flex flex-col items-center justify-between gap-[8px]">
-      <n-input v-model:value="keyword" :placeholder="t('common.searchByName')">
+      <n-input v-model:value="keyword" :placeholder="t('common.searchByName')" clearable>
         <template #suffix>
           <n-icon>
             <Search />
@@ -141,6 +141,8 @@
     (e: 'addDashboard', option: CrmTreeNodeData): void;
     (e: 'editDashboard', id: string): void;
     (e: 'collect'): void;
+    (e: 'delete'): void;
+    (e: 'move'): void;
   }>();
 
   const selectedKeys = defineModel<Array<string | number>>('value', {
@@ -456,6 +458,7 @@
       }
       Message.success(t('common.moveSuccess'));
       initTree();
+      emit('move');
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
@@ -498,6 +501,7 @@
             }
             Message.success(t('common.deleteSuccess'));
             initTree(true);
+            emit('delete');
           } catch (error) {
             // eslint-disable-next-line no-console
             console.log(error);
