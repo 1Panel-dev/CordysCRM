@@ -9,7 +9,8 @@
       >
         <div class="flex">
           <div class="mr-[8px] flex h-[40px] w-[40px] items-center justify-center rounded-[2px] bg-[var(--text-n9)]">
-            <CrmIcon :type="item.logo" :size="24"></CrmIcon>
+            <CrmSvgIcon v-if="item.type === CompanyTypeEnum.DATA_EASE" name="dataease" width="24px" height="24px" />
+            <CrmIcon v-else :type="item.logo" :size="24"></CrmIcon>
           </div>
           <div class="flex-1">
             <div class="flex justify-between">
@@ -129,6 +130,7 @@
   import type { ConfigSynchronization, IntegrationItem } from '@lib/shared/models/system/business';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
+  import CrmSvgIcon from '@/components/pure/crm-svg/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import EditIntegrationModal from './editIntegrationModal.vue';
 
