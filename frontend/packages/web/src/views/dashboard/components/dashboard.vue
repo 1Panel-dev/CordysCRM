@@ -2,7 +2,11 @@
   <div ref="fullRef" class="flex h-full flex-col gap-[16px] bg-[var(--text-n10)] p-[24px]">
     <div class="flex items-center justify-between">
       <div class="flex flex-1 items-center gap-[8px]">
-        <favoriteIcon :value="props.isFavorite" class="cursor-pointer text-[var(--primary-8)]" />
+        <favoriteIcon
+          :value="props.isFavorite"
+          class="cursor-pointer text-[var(--primary-8)]"
+          @click="emit('toggleFavorite')"
+        />
         <div class="flex-1 font-semibold">{{ props.title }}</div>
       </div>
       <div
@@ -37,6 +41,9 @@
     dashboardId: string;
     isFavorite: boolean;
     isFullPage?: boolean;
+  }>();
+  const emit = defineEmits<{
+    (e: 'toggleFavorite'): void;
   }>();
 
   const { t } = useI18n();

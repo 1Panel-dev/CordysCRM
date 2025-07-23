@@ -28,6 +28,7 @@
           :title="activeNode.name"
           :dashboard-id="activeNode.resourceId"
           :is-favorite="!!activeNode.myCollect"
+          @toggle-favorite="favoriteToggle(activeNode)"
         />
       </template>
     </CrmSplitPanel>
@@ -41,8 +42,9 @@
 </template>
 
 <script setup lang="ts">
-  import { TreeSelectOption } from 'naive-ui';
+  import { TreeSelectOption, useMessage } from 'naive-ui';
 
+  import { useI18n } from '@lib/shared/hooks/useI18n';
   import { mapTree } from '@lib/shared/method';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -52,6 +54,11 @@
   import dashboard from './components/dashboard.vue';
   import dashboardTable from './components/table.vue';
   import tree from './components/tree.vue';
+
+  import { dashboardCollect, dashboardUnCollect } from '@/api/modules';
+
+  const { t } = useI18n();
+  const Message = useMessage();
 
   const show = ref(false);
   const folderTree = ref<TreeSelectOption[]>([]);
@@ -90,6 +97,21 @@
   function handleEditDashboard(id: string) {
     show.value = true;
     activeDashboardId.value = id;
+  }
+
+  async function favoriteToggle(option: CrmTreeNodeData) {
+    try {
+      if (option.myCollect) {
+        await dashboardUnCollect(option.id);
+      } else {
+        await dashboardCollect(option.id);
+      }
+      option.myCollect = !option.myCollect;
+      Message.success(option.myCollect ? t('dashboard.favoriteSuccess') : t('dashboard.unFavoriteSuccess'));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   function handleCollectDashboard(id: string, collect: boolean) {
