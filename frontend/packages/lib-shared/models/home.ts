@@ -66,6 +66,7 @@ export interface HomeStatisticAnalyticsItem {
   count: number;
   countValue: string;
   priorPeriodCompareRate: number | string;
+  priorPeriodCompareRateAbs: number | string;
 }
 
 export interface DefaultAnalyticsData extends BaseStatisticData {
@@ -74,6 +75,7 @@ export interface DefaultAnalyticsData extends BaseStatisticData {
 
 export interface AnalyticsDataWithValueKey extends BaseStatisticData {
   priorPeriodCompareRate: number;
+  priorPeriodCompareRateAbs: number | string;
   valueKey: string;
 }
 

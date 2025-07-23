@@ -60,18 +60,21 @@ export const defaultClueData: DefaultAnalyticsData = {
       count: 0,
       countValue: 'newClue',
       priorPeriodCompareRate: 0,
+      priorPeriodCompareRateAbs: 0,
     },
     {
       title: t('workbench.noFollowUp'),
       count: 0,
       countValue: 'unfollowedClue',
       priorPeriodCompareRate: 0,
+      priorPeriodCompareRateAbs: 0,
     },
     {
       title: t('workbench.remainingCapacity'),
       count: 0,
       countValue: 'remainingCapacity',
       priorPeriodCompareRate: 0,
+      priorPeriodCompareRateAbs: 0,
     },
   ],
 };
@@ -90,18 +93,21 @@ export const defaultAccountData: DefaultAnalyticsData = {
       count: 0,
       countValue: 'newCustomer',
       priorPeriodCompareRate: 0,
+      priorPeriodCompareRateAbs: 0,
     },
     {
       title: t('workbench.noFollowUp'),
       count: 0,
       countValue: 'unfollowedCustomer',
       priorPeriodCompareRate: 0,
+      priorPeriodCompareRateAbs: 0,
     },
     {
       title: t('workbench.remainingCapacity'),
       count: 0,
       countValue: 'remainingCapacity',
       priorPeriodCompareRate: 0,
+      priorPeriodCompareRateAbs: 0,
     },
   ],
 };
@@ -120,12 +126,14 @@ export const defaultOpportunityData: DefaultAnalyticsData = {
       count: 0,
       countValue: 'newOpportunity',
       priorPeriodCompareRate: 0,
+      priorPeriodCompareRateAbs: 0,
     },
     {
       title: t('workbench.opportunityCombination'),
       count: 0,
       countValue: 'totalAmount',
       priorPeriodCompareRate: 0,
+      priorPeriodCompareRateAbs: 0,
     },
   ],
 };
@@ -137,6 +145,7 @@ export const defaultContactsData: AnalyticsDataWithValueKey = {
   name: t('workbench.addContacts'),
   total: 0,
   priorPeriodCompareRate: 0,
+  priorPeriodCompareRateAbs: 0,
   routeName: AppRouteEnum.CUSTOMER_CONTACT,
   valueKey: 'newContact',
   permission: ['CUSTOMER_MANAGEMENT:READ'],
@@ -149,6 +158,7 @@ export const defaultFollowRecordData: AnalyticsDataWithValueKey = {
   name: t('workbench.addFollowRecords'),
   total: 0,
   priorPeriodCompareRate: 0,
+  priorPeriodCompareRateAbs: 0,
   valueKey: 'newFollowUpRecord',
   permission: ['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'],
 };
@@ -160,6 +170,7 @@ export const defaultFollowPlanData: AnalyticsDataWithValueKey = {
   name: t('workbench.addFollowPlans'),
   total: 0,
   priorPeriodCompareRate: 0,
+  priorPeriodCompareRateAbs: 0,
   valueKey: 'newFollowUpPlan',
   permission: ['CUSTOMER_MANAGEMENT:READ', 'OPPORTUNITY_MANAGEMENT:READ', 'CLUE_MANAGEMENT:READ'],
 };

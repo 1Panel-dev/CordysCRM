@@ -42,7 +42,7 @@
               :class="getPriorPeriodCompareRateClass(item.priorPeriodCompareRate)"
             />
             <div :class="getPriorPeriodCompareRateClass(item.priorPeriodCompareRate)">
-              {{ item.priorPeriodCompareRate }}
+              {{ item.priorPeriodCompareRateAbs }}
               <span
                 v-if="typeof item.priorPeriodCompareRate === 'number'"
                 :class="getPriorPeriodCompareRateClass(item.priorPeriodCompareRate)"
@@ -73,13 +73,19 @@
   function getAnalyticsData(defaultData: AnalyticsDataWithValueKey, detail: Record<string, any>) {
     if (detail) {
       const nameKey = defaultData.valueKey;
+
+      const priorPeriodCompareRate =
+        detail[nameKey] && typeof detail[nameKey]?.priorPeriodCompareRate === 'number'
+          ? Number(detail[nameKey]?.priorPeriodCompareRate.toFixed(2))
+          : '-';
+
+      const priorPeriodCompareRateAbs =
+        typeof detail[nameKey]?.priorPeriodCompareRate === 'number' ? Math.abs(priorPeriodCompareRate as number) : '-';
       return {
         ...defaultData,
         ...detail[nameKey],
-        priorPeriodCompareRate:
-          detail[nameKey] && typeof detail[nameKey]?.priorPeriodCompareRate === 'number'
-            ? Number(detail[nameKey]?.priorPeriodCompareRate.toFixed(2))
-            : '-',
+        priorPeriodCompareRate,
+        priorPeriodCompareRateAbs,
         total: detail[nameKey].value,
       };
     }

@@ -41,7 +41,7 @@
                 :class="getPriorPeriodCompareRateClass(ele.priorPeriodCompareRate)"
               />
               <div :class="getPriorPeriodCompareRateClass(ele.priorPeriodCompareRate)">
-                {{ ele.priorPeriodCompareRate }}
+                {{ ele.priorPeriodCompareRateAbs }}
                 <span
                   v-if="typeof ele.priorPeriodCompareRate === 'number'"
                   :class="getPriorPeriodCompareRateClass(ele.priorPeriodCompareRate)"
@@ -135,13 +135,22 @@
         const countKey = e.countValue;
         const count = typeof detail[countKey] === 'number' ? detail[countKey] : detail[countKey]?.value;
         const countValue = typeof count === 'number' ? count : '-';
+
+        const priorPeriodCompareRate =
+          typeof detail[countKey]?.priorPeriodCompareRate === 'number'
+            ? Number(detail[countKey].priorPeriodCompareRate.toFixed(2))
+            : '-';
+
+        const priorPeriodCompareRateAbs =
+          typeof detail[countKey]?.priorPeriodCompareRate === 'number'
+            ? Math.abs(priorPeriodCompareRate as number)
+            : '-';
+
         return {
           ...e,
           count: countValue,
-          priorPeriodCompareRate:
-            detail[countKey] && typeof detail[countKey]?.priorPeriodCompareRate === 'number'
-              ? Number(detail[countKey]?.priorPeriodCompareRate.toFixed(2))
-              : '-',
+          priorPeriodCompareRate,
+          priorPeriodCompareRateAbs,
         };
       }),
     };
