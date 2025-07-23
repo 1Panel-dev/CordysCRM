@@ -51,6 +51,6 @@ public class DataAccessConfig {
         );
 
         // 返回对应的 BaseMapper 实例
-        return DataAccessLayer.with(parameterClass, sqlSession);
+        return DataAccessLayer.with(parameterClass);
     }
 }

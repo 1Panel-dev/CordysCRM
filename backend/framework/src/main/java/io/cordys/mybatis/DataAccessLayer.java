@@ -29,28 +29,38 @@ import java.util.function.Function;
 public class DataAccessLayer implements ApplicationContextAware {
 
     private static ApplicationContext applicationContext;
-    private SqlSession sqlSession;
-    private Configuration configuration;
     private final Map<Class<?>, EntityTable> cachedTableInfo = new ConcurrentHashMap<>();
+    // 添加MappedStatement的缓存，限制大小
+    private final Map<String, String> cachedMappedStatements = new LRUCache<>(1000);
+
+    // 实现LRU缓存
+    private static class LRUCache<K, V> extends LinkedHashMap<K, V> {
+        private final int maxSize;
+
+        public LRUCache(int maxSize) {
+            super(maxSize, 0.75f, true);
+            this.maxSize = maxSize;
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+            return size() > maxSize;
+        }
+    }
 
     private DataAccessLayer() {
     }
 
-    /**
-     * 初始化 SqlSession，用于执行 DAL 操作。
-     *
-     * @param sqlSession SqlSession，用于数据库交互。
-     */
-    private void initSession(SqlSession sqlSession) {
-        this.sqlSession = sqlSession;
-        this.configuration = sqlSession.getConfiguration();
-    }
-
     @Override
     public void setApplicationContext(@NotNull ApplicationContext context) throws BeansException {
-        if (applicationContext == null) {
-            applicationContext = context;
-        }
+        applicationContext = context;
+    }
+
+    /**
+     * 获取SqlSessionFactory
+     */
+    private SqlSessionFactory getSqlSessionFactory() {
+        return applicationContext.getBean(SqlSessionFactory.class);
     }
 
     /**
@@ -62,26 +72,9 @@ public class DataAccessLayer implements ApplicationContextAware {
 
     /**
      * 获取 Dal 实例并为指定的实体类准备 Executor。
-     *
-     * @param clazz 实体类类型。
-     * @param <T>   实体类的类型。
-     * @return 为指定实体类准备的 Executor。
      */
     public static <T> Executor<T> with(Class<T> clazz) {
-        return with(clazz, applicationContext.getBean(SqlSession.class));
-    }
-
-    /**
-     * 获取 Dal 实例并为指定的实体类准备 Executor，同时使用给定的 SqlSession。
-     *
-     * @param clazz      实体类类型。
-     * @param sqlSession SqlSession，用于数据库交互。
-     * @param <T>        实体类的类型。
-     * @return 为指定实体类准备的 Executor。
-     */
-    public static <T> Executor<T> with(Class<T> clazz, SqlSession sqlSession) {
         DataAccessLayer instance = Holder.instance;
-        instance.initSession(sqlSession);
         EntityTable entityTable = null;
         if (clazz != null) {
             entityTable = instance.cachedTableInfo.computeIfAbsent(clazz, EntityTableMapper::extractTableInfo);
@@ -91,12 +84,6 @@ public class DataAccessLayer implements ApplicationContextAware {
 
     /**
      * 执行原生 SQL 查询，并将结果作为对象列表返回。
-     *
-     * @param sql        要执行的 SQL 查询语句。
-     * @param param      查询参数。
-     * @param resultType 结果类型。
-     * @param <T>        结果类型的泛型。
-     * @return 查询结果的对象列表。
      */
     public static <T> List<T> sql(String sql, Object param, Class<T> resultType) {
         return with(resultType).sqlQuery(sql, param, resultType);
@@ -113,115 +100,175 @@ public class DataAccessLayer implements ApplicationContextAware {
 
         @Override
         public List<E> query(Function<SQL, SQL> sqlBuild, Object criteria) {
-            Map<String, Object> maps = new HashMap<>(2);
-            maps.put("sqlBuild", sqlBuild);
-            maps.put("entity", criteria);
-            String sql = new BaseMapper.SelectBySqlProvider().buildSql(maps, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
-            return sqlSession.selectList(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession()) {
+                Map<String, Object> maps = new HashMap<>(2);
+                maps.put("sqlBuild", sqlBuild);
+                maps.put("entity", criteria);
+                String sql = new BaseMapper.SelectBySqlProvider().buildSql(maps, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+                return sqlSession.selectList(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("查询执行失败", e);
+            }
         }
 
         @Override
         public List<E> selectAll(String criteria) {
-            String sql = new BaseMapper.SelectAllSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
-            return sqlSession.selectList(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession()) {
+                String sql = new BaseMapper.SelectAllSqlProvider().buildSql(criteria, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+                return sqlSession.selectList(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("查询全部记录失败", e);
+            }
         }
 
         @Override
         public List<E> select(E criteria) {
-            String sql = new BaseMapper.SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
-            return sqlSession.selectList(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession()) {
+                String sql = new BaseMapper.SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+                return sqlSession.selectList(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("条件查询失败", e);
+            }
         }
 
         @Override
         public List<E> selectListByLambda(LambdaQueryWrapper<E> wrapper) {
-            String sql = new BaseMapper.SelectByLambdaSqlProvider().buildSql(wrapper, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
-            return sqlSession.selectList(msId, wrapper);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession()) {
+                String sql = new BaseMapper.SelectByLambdaSqlProvider().buildSql(wrapper, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+                return sqlSession.selectList(msId, wrapper);
+            } catch (Exception e) {
+                throw new RuntimeException("Lambda查询失败", e);
+            }
         }
 
         @Override
         public E selectByPrimaryKey(Serializable criteria) {
-            String sql = new BaseMapper.SelectByIdSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
-            return sqlSession.selectOne(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession()) {
+                String sql = new BaseMapper.SelectByIdSqlProvider().buildSql(criteria, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+                return sqlSession.selectOne(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("主键查询失败", e);
+            }
         }
 
         @Override
         public E selectOne(E criteria) {
-            String sql = new BaseMapper.SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
-            return sqlSession.selectOne(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession()) {
+                String sql = new BaseMapper.SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+                return sqlSession.selectOne(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("查询单条记录失败", e);
+            }
         }
 
         @Override
         public List<E> selectByColumn(String column, Serializable[] criteria) {
-            Map<String, Object> maps = new HashMap<>(2);
-            maps.put("column", column);
-            maps.put("array", criteria);
-            String sql = new BaseMapper.SelectInSqlProvider().buildSql(maps, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
-            return sqlSession.selectList(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession()) {
+                Map<String, Object> maps = new HashMap<>(2);
+                maps.put("column", column);
+                maps.put("array", criteria);
+                String sql = new BaseMapper.SelectInSqlProvider().buildSql(maps, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+                return sqlSession.selectList(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("列查询失败", e);
+            }
         }
 
         @Override
         public Long countByExample(E criteria) {
-            String sql = new BaseMapper.CountByCriteriaSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), Long.class, SqlCommandType.SELECT);
-            return sqlSession.selectOne(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession()) {
+                String sql = new BaseMapper.CountByCriteriaSqlProvider().buildSql(criteria, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), Long.class, SqlCommandType.SELECT);
+                return sqlSession.selectOne(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("计数查询失败", e);
+            }
         }
 
         @Override
         public Integer insert(E criteria) {
-            String sql = new BaseMapper.InsertSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.INSERT);
-            return sqlSession.insert(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession(true)) {
+                String sql = new BaseMapper.InsertSqlProvider().buildSql(criteria, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), int.class, SqlCommandType.INSERT);
+                return sqlSession.insert(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("插入操作失败", e);
+            }
         }
 
         @Override
         public Integer updateById(E criteria) {
-            String sql = new BaseMapper.UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.UPDATE);
-            return sqlSession.update(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession(true)) {
+                String sql = new BaseMapper.UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), int.class, SqlCommandType.UPDATE);
+                return sqlSession.update(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("按ID更新失败", e);
+            }
         }
 
         @Override
         public Integer update(E criteria) {
-            String sql = new BaseMapper.UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.UPDATE);
-            return sqlSession.update(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession(true)) {
+                String sql = new BaseMapper.UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), int.class, SqlCommandType.UPDATE);
+                return sqlSession.update(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("更新操作失败", e);
+            }
         }
 
         @Override
         public Integer delete(E criteria) {
-            String sql = new BaseMapper.DeleteByCriteriaSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
-            return sqlSession.delete(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession(true)) {
+                String sql = new BaseMapper.DeleteByCriteriaSqlProvider().buildSql(criteria, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
+                return sqlSession.delete(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("删除操作失败", e);
+            }
         }
 
         @Override
         public void deleteByLambda(LambdaQueryWrapper<E> wrapper) {
-            String sql = new BaseMapper.DeleteByLambdaSqlProvider().buildSql(wrapper, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
-            sqlSession.delete(msId, wrapper);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession(true)) {
+                String sql = new BaseMapper.DeleteByLambdaSqlProvider().buildSql(wrapper, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
+                sqlSession.delete(msId, wrapper);
+            } catch (Exception e) {
+                throw new RuntimeException("Lambda删除失败", e);
+            }
         }
 
         @Override
         public void deleteByIds(List<String> array) {
-            String sql = new BaseMapper.DeleteByIdsSqlProvider().buildSql(array, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
-            Map<String,List<String>> map = new HashMap<>();
-            map.put("array",array);
-            sqlSession.delete(msId, map);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession(true)) {
+                String sql = new BaseMapper.DeleteByIdsSqlProvider().buildSql(array, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
+                Map<String, List<String>> map = new HashMap<>();
+                map.put("array", array);
+                sqlSession.delete(msId, map);
+            } catch (Exception e) {
+                throw new RuntimeException("批量ID删除失败", e);
+            }
         }
 
         @Override
         public Integer deleteByPrimaryKey(Serializable criteria) {
-            String sql = new BaseMapper.DeleteSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
-            return sqlSession.delete(msId, criteria);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession(true)) {
+                String sql = new BaseMapper.DeleteSqlProvider().buildSql(criteria, this.table);
+                String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
+                return sqlSession.delete(msId, criteria);
+            } catch (Exception e) {
+                throw new RuntimeException("主键删除失败", e);
+            }
         }
 
         public List<E> sqlQuery(String sql, Object param, Class<?> resultType) {
@@ -229,8 +276,12 @@ public class DataAccessLayer implements ApplicationContextAware {
         }
 
         public List<E> sqlQuery(String sql, Object param, Class<?> paramType, Class<?> resultType) {
-            String msId = execute(sql, paramType, resultType, SqlCommandType.SELECT);
-            return sqlSession.selectList(msId, param);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession()) {
+                String msId = execute(sqlSession.getConfiguration(), sql, paramType, resultType, SqlCommandType.SELECT);
+                return sqlSession.selectList(msId, param);
+            } catch (Exception e) {
+                throw new RuntimeException("SQL查询执行失败", e);
+            }
         }
 
         @Override
@@ -241,65 +292,75 @@ public class DataAccessLayer implements ApplicationContextAware {
 
         @Override
         public Integer batchInsert(List<E> entities) {
-            // 使用 BatchInsertSqlProvider 构建 SQL 语句
+            if (entities == null || entities.isEmpty()) {
+                return 0;
+            }
+
+            // 批量插入的最大批次大小
+            final int BATCH_SIZE = 500;
+            int total;
             String sql = new BaseMapper.BatchInsertSqlProvider().buildSql(entities, this.table);
 
-            // 获取 MyBatis 映射的 SQL ID
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.INSERT);
+            try (SqlSession sqlSession = getSqlSessionFactory().openSession(ExecutorType.BATCH, false)) {
+                try {
+                    String msId = execute(sqlSession.getConfiguration(), sql, table.getEntityClass(), int.class, SqlCommandType.INSERT);
 
-            // 获取 SqlSessionFactory 并打开批处理会话
-            SqlSessionFactory sqlSessionFactory = applicationContext.getBean(SqlSessionFactory.class);
+                    // 分批处理数据
+                    for (int i = 0; i < entities.size(); i++) {
+                        sqlSession.insert(msId, entities.get(i));
 
-            // 使用 try-with-resources 确保 SqlSession 关闭
-            SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH, false);
+                        // 每BATCH_SIZE条数据提交一次
+                        if ((i + 1) % BATCH_SIZE == 0 || i == entities.size() - 1) {
+                            sqlSession.flushStatements();
+                        }
+                    }
 
-            // 执行批量插入操作
-            entities.forEach(entity -> sqlSession.insert(msId, entity));
+                    sqlSession.commit();
+                    total = entities.size();
+                } catch (Exception e) {
+                    sqlSession.rollback();
+                    throw new RuntimeException("批量插入失败", e);
+                }
+            }
 
-            // 刷新批处理中的所有语句
-            sqlSession.flushStatements();
-
-            // 提交事务，确保批量操作生效
-            sqlSession.commit();
-
-            sqlSession.close();
-
-            // 返回成功插入的记录数
-            return entities.size();
+            return total;
         }
     }
 
     /**
      * 执行 SQL，并返回生成的 MappedStatement ID。
-     *
-     * @param sql            SQL 查询语句。
-     * @param parameterType  参数类型。
-     * @param resultType     结果类型。
-     * @param sqlCommandType SQL 命令类型。
-     * @return MappedStatement 的 ID。
+     * 使用缓存机制减少MappedStatement的创建。
      */
-    private String execute(String sql, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
-        String msId = sqlCommandType.toString() + "." + parameterType.getName() + "." + IDGenerator.nextStr();
-        if (configuration.hasStatement(msId, false)) {
+    private String execute(Configuration configuration, String sql, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
+        // 创建缓存键
+        String cacheKey = sqlCommandType + "_" + sql + "_" + parameterType.getName() + "_" + resultType.getName();
+
+        // 尝试从缓存获取MappedStatement ID
+        String msId = cachedMappedStatements.get(cacheKey);
+        if (msId != null && configuration.hasStatement(msId, false)) {
             return msId;
         }
+
+        // 创建新的MappedStatement ID
+        msId = sqlCommandType.toString() + "." + parameterType.getName() + "." + IDGenerator.nextStr();
+
         SqlSource sqlSource = configuration
                 .getDefaultScriptingLanguageInstance()
                 .createSqlSource(configuration, sql, parameterType);
-        // 缓存 MappedStatement
-        newMappedStatement(msId, sqlSource, resultType, sqlCommandType);
+
+        // 创建并注册新的MappedStatement
+        newMappedStatement(configuration, msId, sqlSource, resultType, sqlCommandType);
+
+        // 将新创建的MappedStatement ID放入缓存
+        cachedMappedStatements.put(cacheKey, msId);
+
         return msId;
     }
 
     /**
      * 创建并注册新的 MappedStatement。
-     *
-     * @param msId           MappedStatement 的 ID。
-     * @param sqlSource      SQL 源。
-     * @param resultType     结果类型。
-     * @param sqlCommandType SQL 命令类型。
      */
-    private void newMappedStatement(String msId, SqlSource sqlSource, Class<?> resultType, SqlCommandType sqlCommandType) {
+    private void newMappedStatement(Configuration configuration, String msId, SqlSource sqlSource, Class<?> resultType, SqlCommandType sqlCommandType) {
         MappedStatement ms = new MappedStatement.Builder(configuration, msId, sqlSource, sqlCommandType)
                 .resultMaps(Collections.singletonList(
                         new ResultMap.Builder(configuration, "defaultResultMap", resultType, new ArrayList<>(0)).build()
