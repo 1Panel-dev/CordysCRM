@@ -180,6 +180,8 @@
     (val) => {
       if (val && props.dashboardId) {
         initDetail();
+      } else {
+        form.value.dashboardModuleId = (props.folderTree[0]?.id as string) || '';
       }
     },
     { immediate: true }

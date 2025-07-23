@@ -11,6 +11,9 @@
     }"
     :class="['crm-tree', containerStatusClass]"
     v-bind="{ ...props, ...props.fieldNames, draggable: editingKey ? false : props.draggable }"
+    :scrollbar-props="{
+      xScrollable: true,
+    }"
     :data="filterTreeData"
     :node-props="nodeProps"
     :allow-drop="handleAllowDrop"
@@ -544,10 +547,17 @@
 
 <style lang="less">
   .crm-tree {
-    width: calc(100% + 5px);
     .crm-container--shadow-y();
-    .v-vl-visible-items {
-      padding-right: 5px;
+    .v-vl {
+      @apply relative;
+      .v-vl-items {
+        @apply absolute min-w-full;
+        .v-vl-visible-items {
+          @apply w-full;
+
+          padding-right: 5px;
+        }
+      }
     }
     &.n-tree {
       .n-tree-node-wrapper {
@@ -556,9 +566,11 @@
 
           height: 34px !important;
           .n-tree-node-content {
+            min-width: 100px;
             .n-tree-node-content__text {
-              gap: 4px;
               @apply flex w-full items-center overflow-hidden;
+
+              gap: 4px;
               .crm-tree-node-title {
                 @apply flex-1 overflow-hidden;
 
@@ -643,6 +655,12 @@
             }
           }
         }
+      }
+      .n-scrollbar-rail--horizontal {
+        bottom: 0;
+      }
+      .n-scrollbar-rail--vertical {
+        right: 0;
       }
     }
   }

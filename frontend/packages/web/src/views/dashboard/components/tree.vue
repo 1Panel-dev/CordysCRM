@@ -290,11 +290,7 @@
       if (isInit) {
         selectedKeys.value = ['all'];
         const offspringIds = getSpringIds(folderTree.value);
-
         emit('selectNode', folderTree.value[0], selectedKeys.value, offspringIds);
-        nextTick(() => {
-          expandedKeys.value = [folderTree.value[0].id];
-        });
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -361,6 +357,7 @@
       if (parent) {
         parent.children = parent.children ?? [];
         parent.children.push(newNode);
+        expandedKeys.value.push(parent.id);
       } else {
         folderTree.value.push(newNode);
       }
