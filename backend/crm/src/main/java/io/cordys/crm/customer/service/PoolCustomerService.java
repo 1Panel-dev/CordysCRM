@@ -247,6 +247,8 @@ public class PoolCustomerService {
 		}
 		List<FilterConditionDTO> conditions = StringUtils.isEmpty(customerCapacity.getFilter()) ?
 				new ArrayList<>() : JSON.parseArray(customerCapacity.getFilter(), FilterConditionDTO.class);
+		conditions = conditions.stream().filter(condition -> StringUtils.isNotEmpty(condition.getColumn())
+				&& StringUtils.isNotEmpty(condition.getOperator()) && CollectionUtils.isNotEmpty(condition.getValue())).toList();
 		int filter = 0;
 		if (CollectionUtils.isNotEmpty(conditions)) {
 			filter = (int) extCustomerMapper.filterOwnerCount(ownUserId, conditions);
@@ -272,6 +274,8 @@ public class PoolCustomerService {
 		}
 		List<FilterConditionDTO> conditions = StringUtils.isEmpty(customerCapacity.getFilter()) ?
 				new ArrayList<>() : JSON.parseArray(customerCapacity.getFilter(), FilterConditionDTO.class);
+		conditions = conditions.stream().filter(condition -> StringUtils.isNotEmpty(condition.getColumn())
+				&& StringUtils.isNotEmpty(condition.getOperator()) && CollectionUtils.isNotEmpty(condition.getValue())).toList();
 		int filter = 0;
 		if (CollectionUtils.isNotEmpty(conditions)) {
 			filter = (int) extCustomerMapper.filterOwnerCount(ownUserId, conditions);
