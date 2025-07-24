@@ -1,6 +1,7 @@
 package io.cordys.crm.system.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
@@ -17,4 +18,6 @@ public class FilterConditionDTO {
 	private String operator;
 	@Schema(description = "值")
 	private List<String> value;
+	@Schema(description = "类型")
+	private String type;
 }
