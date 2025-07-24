@@ -36,6 +36,10 @@ public class FilterCondition {
     @EnumValue(enumClass = CombineConditionOperator.class)
     private String operator;
 
+    @Schema(description = "类型")
+    @NotNull
+    private String type;
+
     /**
      * 校验条件是否合法，检查字段名称、操作符和值的有效性。
      *

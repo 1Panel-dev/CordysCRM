@@ -98,31 +98,64 @@
                     )
                 </when>
                 <when test="${condition}.operator == 'IN'">
-                    <if test="'${column}' == 'value'">
-                        `value`
-                    </if>
-                    <if test="'${column}' != 'value'">
-                        ${column}
-                    </if>
-                    in
-                    <foreach collection="${condition}.value" item="v" separator="," open="(" close=")">
-                        #{v}
-                    </foreach>
+                    <choose>
+                        <when test="${condition}.type == 'LOCATION'">
+                            <foreach collection="${condition}.value" item="v" open="(" separator=" OR " close=")">
+                                <if test="'${column}' == 'value'">
+                                    `value`
+                                </if>
+                                <if test="'${column}' != 'value'">
+                                    ${column}
+                                </if>
+                                 LIKE CONCAT(#{v}, '%')
+                            </foreach>
+                        </when>
+                        <otherwise>
+                            <if test="'${column}' == 'value'">
+                                `value`
+                            </if>
+                            <if test="'${column}' != 'value'">
+                                ${column}
+                            </if>
+                            in
+                            <foreach collection="${condition}.value" item="v" separator="," open="(" close=")">
+                                #{v}
+                            </foreach>
+                        </otherwise>
+                    </choose>
                 </when>
                 <when test="${condition}.operator == 'NOT_IN'">
-                    !(
-                        <if test="'${column}' == 'value'">
-                            `value`
-                        </if>
-                        <if test="'${column}' != 'value'">
-                            ${column}
-                        </if>
-                        in
-                        <foreach collection="${condition}.value" item="v" separator="," open="(" close=")">
-                            #{v}
-                        </foreach>
-                    )
-                    or ${column} is null
+                    <choose>
+                        <when test="${condition}.type == 'LOCATION'">
+                            !(
+                            <foreach collection="${condition}.value" item="v" open="(" separator=" OR " close=")">
+                                <if test="'${column}' == 'value'">
+                                    `value`
+                                </if>
+                                <if test="'${column}' != 'value'">
+                                    ${column}
+                                </if>
+                                LIKE CONCAT(#{v}, '%')
+                            </foreach>
+                            )
+                            or ${column} is null
+                        </when>
+                        <otherwise>
+                            !(
+                            <if test="'${column}' == 'value'">
+                                `value`
+                            </if>
+                            <if test="'${column}' != 'value'">
+                                ${column}
+                            </if>
+                            in
+                            <foreach collection="${condition}.value" item="v" separator="," open="(" close=")">
+                                #{v}
+                            </foreach>
+                            )
+                            or ${column} is null
+                        </otherwise>
+                    </choose>
                 </when>
                 <when test="${condition}.operator == 'BETWEEN'">
                     ${column} between #{condition.value[0]} and #{condition.value[1]}
