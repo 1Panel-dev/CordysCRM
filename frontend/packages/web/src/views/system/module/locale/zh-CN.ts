@@ -8,7 +8,7 @@ export default {
   'module.newContactForm': '联系人表单设置',
   'module.autoRecycle': '自动回收',
   'module.expirationReminder': '到期提醒',
-  'module.closeModuleTip': '确认关闭模块{name}吗',
+  'module.closeModuleTip': '确认关闭{name}模块吗',
   'module.closeModuleTipContent': '关闭后，成员在主导航找不到该模块，请谨慎操作！',
   'module.openModuleTip': '确认开启{name}模块吗',
   'module.openModuleTipContent': '模块开启后，模块出现在主导航菜单',

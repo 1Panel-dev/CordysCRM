@@ -157,7 +157,7 @@
     { deep: true }
   );
 
-  const rules: FormRules = {
+  const rules = computed<FormRules>(() => ({
     corpId: [{ required: true, message: t('common.notNull', { value: `${t('system.business.corpId')} ` }) }],
     agentId: [
       {
@@ -178,7 +178,7 @@
     ],
     redirectUrl: [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.url')} ` }) }],
     deAccount: [{ required: true, message: t('common.notNull', { value: `${t('system.business.DE.account')} ` }) }],
-  };
+  }));
 
   const formRef = ref<FormInst | null>(null);
   function cancel() {

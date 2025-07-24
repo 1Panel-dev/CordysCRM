@@ -8,7 +8,7 @@ export default {
   'module.newContactForm': 'Contact form settings',
   'module.autoRecycle': 'Auto recycle',
   'module.expirationReminder': 'Expiration reminder',
-  'module.closeModuleTip': 'Confirm to close module{name}?',
+  'module.closeModuleTip': 'Confirm to close {name} module?',
   'module.closeModuleTipContent':
     'After closing, members will not find the module in the main navigation, please be careful!',
   'module.openModuleTip': 'Confirm to open {name} module?',
