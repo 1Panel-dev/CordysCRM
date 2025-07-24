@@ -37,22 +37,15 @@
                 >
                   {{ t('common.config') }}
                 </n-button>
-                <n-tooltip :disabled="item.response.verify">
-                  <template #trigger>
-                    <n-button
-                      :disabled="
-                        !item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])
-                      "
-                      size="small"
-                      type="default"
-                      class="outline--secondary"
-                      @click="testLink(item)"
-                    >
-                      {{ t('system.business.mailSettings.testLink') }}
-                    </n-button>
-                  </template>
-                  {{ t('system.business.notConfiguredTip') }}
-                </n-tooltip>
+                <n-button
+                  :disabled="!item.hasConfig"
+                  size="small"
+                  type="default"
+                  class="outline--secondary"
+                  @click="testLink(item)"
+                >
+                  {{ t('system.business.mailSettings.testLink') }}
+                </n-button>
               </div>
             </div>
             <p class="text-[12px] text-[var(--text-n4)]">{{ item.description }}</p>
