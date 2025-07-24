@@ -109,6 +109,7 @@
         await dashboardCollect(option.id);
       }
       option.myCollect = !option.myCollect;
+      folderTreeRef.value?.toggleDashboardCollect(option.id, option.myCollect);
       Message.success(option.myCollect ? t('dashboard.favoriteSuccess') : t('dashboard.unFavoriteSuccess'));
     } catch (error) {
       // eslint-disable-next-line no-console
