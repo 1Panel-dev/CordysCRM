@@ -6,11 +6,9 @@ INSERT INTO sys_role_permission
 VALUES (UUID_SHORT(), 'org_admin', 'DASHBOARD:READ'),
        (UUID_SHORT(), 'org_admin', 'DASHBOARD:ADD'),
        (UUID_SHORT(), 'org_admin', 'DASHBOARD:UPDATE'),
-       (UUID_SHORT(), 'org_admin', 'DASHBOARD:DELETE');
-
-INSERT INTO sys_role_permission
-(id, role_id, permission_id)
-VALUES (UUID_SHORT(), 'org_admin', 'LICENSE:READ'),
+       (UUID_SHORT(), 'org_admin', 'DASHBOARD:DELETE'),
+       (UUID_SHORT(), 'org_admin', 'LICENSE:READ'),
        (UUID_SHORT(), 'org_admin', 'LICENSE:EDIT');
+
 
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
