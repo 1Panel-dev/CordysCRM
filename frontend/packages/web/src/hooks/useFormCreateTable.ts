@@ -549,6 +549,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               sortOrder: false,
               sorter: !noSorterType.includes(field.type),
               filterMultipleValue: multipleValueTypeList.includes(field.type),
+              filedType: field.type,
             };
           }
           if (
@@ -563,6 +564,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               sorter,
               fixed: 'left',
               columnSelectorDisabled: true,
+              filedType: field.type,
               render: props.specialRender?.[field.businessKey],
             };
           }
@@ -574,6 +576,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               key: field.businessKey,
               sortOrder: false,
               sorter,
+              filedType: field.type,
               render: props.specialRender?.[field.businessKey],
             };
           }
@@ -588,6 +591,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               ellipsis: {
                 tooltip: true,
               },
+              filedType: field.type,
               render: props.specialRender?.[field.businessKey],
             };
           }
@@ -605,6 +609,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               width: 150,
               key: field.businessKey || field.id,
               isTag: true,
+              filedType: field.type,
             };
           }
           if (field.type === FieldTypeEnum.DATE_TIME) {
@@ -615,6 +620,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               render: (row: any) => formatTimeValue(row[field.businessKey || field.id], field.dateType),
               sortOrder: false,
               sorter,
+              filedType: field.type,
             };
           }
           if (field.type === FieldTypeEnum.INPUT_NUMBER) {
@@ -625,6 +631,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               render: (row: any) => formatNumberValue(row[field.businessKey || field.id], field),
               sortOrder: false,
               sorter,
+              filedType: field.type,
             };
           }
           if ([FieldTypeEnum.MEMBER, FieldTypeEnum.DEPARTMENT].includes(field.type)) {
@@ -637,6 +644,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               },
               sortOrder: false,
               sorter: !noSorterType.includes(field.type),
+              filedType: field.type,
             };
           }
           return {
@@ -648,6 +656,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             },
             sortOrder: false,
             sorter: !noSorterType.includes(field.type) ? sorter : false,
+            filedType: field.type,
           };
         });
       columns = [...columns, ...(internalColumnMap[props.formKey] || []), ...staticColumns];

@@ -479,6 +479,7 @@
         multipleValue:
           initiatorColumn.key === key ? !!(initiatorColumn as CrmDataTableColumn).filterMultipleValue : undefined,
         operator: OperatorEnum.IN,
+        type: (initiatorColumn as CrmDataTableColumn).filedType,
       }));
     scrollTo({
       top: 0,
