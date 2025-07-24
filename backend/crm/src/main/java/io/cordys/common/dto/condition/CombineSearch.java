@@ -60,6 +60,13 @@ public class CombineSearch {
             boolean isBetween = StringUtils.equals(condition.getOperator(), FilterCondition.CombineConditionOperator.BETWEEN.name());
 
             if (value instanceof List<?> valueList) {
+                if (CollectionUtils.isEmpty(valueList)) {
+                    /*
+                     * 兜底处理, 防止前端[EMPTY, NOT_EMPTY]条件产生脏数据导致报错
+                      */
+                    iterator.remove();
+                    continue;
+                }
                 // 多值处理
                 if (!condition.expectMulti()) {
                     condition.setValue(valueList.getFirst());
