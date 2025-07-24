@@ -10,6 +10,7 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * 加密解密工具类，提供 MD5、BASE64 和 AES 加密解密操作。
@@ -182,5 +183,32 @@ public class CodingUtils {
      */
     public static byte[] generateIv() {
         return GCM_IV.getBytes();
+    }
+
+    /**
+     * 计算字符串的哈希值（SHA-256）并返回其前16个字符的十六进制表示
+     *
+     * @param str 需要计算哈希值的字符串
+     * @return 字符串的哈希值（16个字符的十六进制表示）
+     */
+    public static String hashStr(String str) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(str.getBytes(StandardCharsets.UTF_8));
+
+            // 转换为十六进制字符串
+            char[] hexChars = new char[digest.length * 2];
+            int k = 0;
+            for (byte b : digest) {
+                hexChars[k++] = HEX_DIGITS[(b >>> 4) & 0xf];
+                hexChars[k++] = HEX_DIGITS[b & 0xf];
+            }
+
+            // 只使用前16个字符，平衡长度和唯一性
+            return new String(hexChars, 0, Math.min(16, hexChars.length));
+        } catch (NoSuchAlgorithmException e) {
+            // 降级方案：使用多种哈希组合减少冲突
+            return str.hashCode() + "-" + str.length();
+        }
     }
 }
