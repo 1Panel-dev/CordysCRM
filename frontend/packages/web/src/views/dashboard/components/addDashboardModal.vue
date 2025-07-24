@@ -56,8 +56,10 @@
           <n-tree-select
             v-model:value="form.dashboardModuleId"
             :options="props.folderTree"
+            :render-label="renderLabel"
             label-field="name"
             key-field="id"
+            filterable
           />
         </n-form-item>
         <n-form-item :label="t('dashboard.members')" path="scopeIds">
@@ -76,7 +78,17 @@
 </template>
 
 <script setup lang="ts">
-  import { NForm, NFormItem, NInput, NSpin, NTreeSelect, TreeSelectOption, useMessage } from 'naive-ui';
+  import {
+    NForm,
+    NFormItem,
+    NInput,
+    NSpin,
+    NTooltip,
+    NTreeSelect,
+    TreeOption,
+    TreeSelectOption,
+    useMessage,
+  } from 'naive-ui';
 
   import { MemberApiTypeEnum, MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -120,6 +132,26 @@
       value: MemberSelectTypeEnum.ORG,
     },
   ];
+
+  function renderLabel({ option }: { option: TreeOption; checked: boolean; selected: boolean }) {
+    return h(
+      NTooltip,
+      {
+        delay: 300,
+      },
+      {
+        default: () => h('div', {}, { default: () => option.name }),
+        trigger: () =>
+          h(
+            'div',
+            {
+              class: 'one-line-text max-w-[200px]',
+            },
+            { default: () => option.name }
+          ),
+      }
+    );
+  }
 
   function handleCancel() {
     form.value = {

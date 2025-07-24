@@ -27,7 +27,8 @@ export default {
   'system.business.LARK.description': 'An advanced enterprise collaboration and management platform.',
   'system.business.LARK_SUITE': 'Lark International',
   'system.business.notConfigured': 'Not Configured',
-  'system.business.notConfiguredTip': 'Not configured yet. Configure and enable it in the edit page.',
+  'system.business.notConfiguredTip':
+    'Please perform a test connection first. This feature can only be enabled after a successful test connection.',
   'system.business.corpId': 'Enterprise ID',
   'system.business.agentId': 'App ID',
   'system.business.appKey': 'App Key',

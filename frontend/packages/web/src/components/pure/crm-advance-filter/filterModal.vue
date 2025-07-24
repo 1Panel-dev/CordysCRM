@@ -70,6 +70,7 @@
       operator: item.operator,
       name: item.dataIndex ?? '',
       multipleValue: multipleValueTypeList.includes(item.type),
+      type: item.type,
     }));
 
     return {
