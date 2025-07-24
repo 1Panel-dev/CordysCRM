@@ -272,41 +272,34 @@ public class DataAccessLayer implements ApplicationContextAware {
 
         @Override
         public Integer batchInsert(List<E> entities) {
-            if (entities == null || entities.isEmpty()) {
-                return 0;
-            }
+            // 使用 BatchInsertSqlProvider 构建 SQL 语句
+            String sql = new BaseMapper.BatchInsertSqlProvider().buildSql(entities, this.table);
 
-            // 批量处理，避免一次性处理过多数据
-            int batchSize = 500; // 每批处理500条数据
-            int totalSize = entities.size();
-            int totalBatches = (totalSize + batchSize - 1) / batchSize;
-            int insertedCount = 0;
+            // 获取 MyBatis 映射的 SQL ID
+            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.INSERT);
 
+            // 获取 SqlSessionFactory 并打开批处理会话
             SqlSessionFactory sqlSessionFactory = applicationContext.getBean(SqlSessionFactory.class);
 
-            for (int i = 0; i < totalBatches; i++) {
-                int start = i * batchSize;
-                int end = Math.min((i + 1) * batchSize, totalSize);
-                List<E> batchEntities = entities.subList(start, end);
+            // 使用 try-with-resources 确保 SqlSession 关闭
+            try (SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH, false)) {
 
-                // 构建SQL
-                String sql = new BaseMapper.BatchInsertSqlProvider().buildSql(batchEntities, this.table);
-                String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.INSERT);
+                // 执行批量插入操作
+                entities.forEach(entity -> sqlSession.insert(msId, entity));
 
-                // 使用try-with-resources确保SqlSession关闭
-                try (SqlSession batchSession = sqlSessionFactory.openSession(ExecutorType.BATCH, false)) {
-                    for (E entity : batchEntities) {
-                        batchSession.insert(msId, entity);
-                    }
-                    batchSession.flushStatements();
-                    batchSession.commit();
-                    insertedCount += (end - start);
-                } catch (Exception e) {
-                    throw new RuntimeException("批量插入失败", e);
-                }
+                // 刷新批处理中的所有语句
+                sqlSession.flushStatements();
+
+                // 提交事务，确保批量操作生效
+                sqlSession.commit();
+
+                sqlSession.close();
+
+                // 返回成功插入的记录数
+                return entities.size();
+            } catch (Exception e) {
+                throw new RuntimeException("批量插入失败", e);
             }
-
-            return insertedCount;
         }
     }
 
