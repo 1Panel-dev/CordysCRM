@@ -37,10 +37,12 @@
                 >
                   {{ t('common.config') }}
                 </n-button>
-                <n-tooltip :disabled="item.hasConfig">
+                <n-tooltip :disabled="item.response.verify">
                   <template #trigger>
                     <n-button
-                      :disabled="!item.hasConfig || !item.response.verify"
+                      :disabled="
+                        !item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])
+                      "
                       size="small"
                       type="default"
                       class="outline--secondary"
@@ -57,7 +59,7 @@
           </div>
         </div>
         <div v-if="item.type === CompanyTypeEnum.DATA_EASE" class="flex items-center gap-[8px]">
-          <n-tooltip :disabled="item.hasConfig">
+          <n-tooltip :disabled="item.response.verify">
             <template #trigger>
               <n-switch
                 size="small"
@@ -72,7 +74,7 @@
         </div>
         <div v-else class="flex justify-between">
           <div class="flex items-center gap-[8px]">
-            <n-tooltip :disabled="item.hasConfig">
+            <n-tooltip :disabled="item.response.verify">
               <template #trigger>
                 <n-switch
                   size="small"
@@ -96,7 +98,7 @@
           </div>
 
           <div class="flex items-center gap-[8px]">
-            <n-tooltip :disabled="item.hasConfig">
+            <n-tooltip :disabled="item.response.verify">
               <template #trigger>
                 <n-switch
                   size="small"

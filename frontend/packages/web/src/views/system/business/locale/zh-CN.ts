@@ -27,7 +27,7 @@ export default {
   'system.business.LARK.description': '先进企业合作与管理平台',
   'system.business.LARK_SUITE': '国际飞书',
   'system.business.notConfigured': '未配置',
-  'system.business.notConfiguredTip': '暂未配置，可在编辑页配置并开启',
+  'system.business.notConfiguredTip': '请先执行测试连接。只有当测试连接成功后，方可开启此功能',
   'system.business.corpId': '企业 ID',
   'system.business.agentId': '应用 ID',
   'system.business.appKey': '应用 key',
