@@ -571,7 +571,7 @@
           height: 34px !important;
           .n-tree-node-content {
             min-width: 100px;
-            max-width: 100%;
+            max-width: 300px;
             .n-tree-node-content__text {
               @apply flex w-full items-center overflow-hidden;
 
