@@ -18,7 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +37,8 @@ public class UserExtendService {
 	private BaseMapper<UserRole> userRoleMapper;
 	@Resource
 	private BaseMapper<User> userMapper;
+
+	public static final String ROOT_NODE_PARENT_ID = "NONE";
 
 	/**
 	 * 获取范围的所有负责人ID
@@ -99,6 +104,74 @@ public class UserExtendService {
 		List<UserRole> roles = userRoleMapper.selectListByLambda(userRoleWrapper);
 		List<String> roleIds = roles.stream().map(UserRole::getRoleId).toList();
 		return ListUtils.union(departmentIds, roleIds);
+	}
+
+	/**
+	 * 获取负责人范围对象集合
+	 * @param ownerIds 负责人ID集合
+	 * @param organizationId 组织ID
+	 * @return 范围对象集合
+	 */
+	public Map<String, List<String>> getMultiScopeMap(List<String> ownerIds, String organizationId) {
+		if (CollectionUtils.isEmpty(ownerIds)) {
+			return Map.of();
+		}
+		Map<String, List<String>> scopeMap = new HashMap<>(ownerIds.size());
+		// 查询所有负责人的角色
+		LambdaQueryWrapper<UserRole> userRoleWrapper = new LambdaQueryWrapper<>();
+		userRoleWrapper.in(UserRole::getUserId, ownerIds);
+		List<UserRole> allOwnerRoles = userRoleMapper.selectListByLambda(userRoleWrapper);
+		Map<String, List<String>> ownerRoleMap = allOwnerRoles.stream().collect(Collectors.groupingBy(
+				UserRole::getUserId, Collectors.mapping(UserRole::getRoleId, Collectors.toList())));
+		// 查询所有负责人的部门
+		Map<String, List<String>> ownerDepMap = getOwnerAncestorMap(ownerIds, organizationId);
+
+		ownerIds.forEach(ownerId -> {
+			List<String> roleIds = ownerRoleMap.getOrDefault(ownerId, List.of());
+			List<String> deptIds = ownerDepMap.getOrDefault(ownerId, List.of());
+			List<String> allDeptIds = new ArrayList<>(deptIds);
+			// 负责人也作为范围对象
+			allDeptIds.add(ownerId);
+			scopeMap.put(ownerId, ListUtils.union(roleIds, allDeptIds));
+		});
+		return scopeMap;
+	}
+
+	/**
+	 * 获取负责人集合的父部门映射
+	 * @param ownerIds 负责人ID集合
+	 * @param organizationId 组织ID
+	 * @return 负责人ID -> 父部门ID集合映射
+	 */
+	public Map<String, List<String>> getOwnerAncestorMap(List<String> ownerIds, String organizationId) {
+		Map<String, String> deptParentMap = loadDeptParentMap(organizationId);
+		Map<String, List<String>> ancestorMap = new HashMap<>(ownerIds.size());
+		// 查询所有负责人的部门ID
+		LambdaQueryWrapper<OrganizationUser> wrapper = new LambdaQueryWrapper<>();
+		wrapper.in(OrganizationUser::getUserId, ownerIds).eq(OrganizationUser::getOrganizationId, organizationId);
+		List<OrganizationUser> organizationUsers = organizationUserMapper.selectListByLambda(wrapper);
+		if (organizationUsers.isEmpty()) {
+			return ancestorMap;
+		}
+		Map<String, String> ownerDepIdMap = organizationUsers.stream().collect(Collectors.toMap(OrganizationUser::getUserId, OrganizationUser::getDepartmentId));
+		ownerDepIdMap.forEach((k, v) -> ancestorMap.put(k, getDepAllAncestor(v, deptParentMap)));
+		return ancestorMap;
+	}
+
+	/**
+	 * 获取部门的父部门
+	 * @param deptId 部门ID
+	 * @return 父部门ID集合
+	 */
+	public List<String> getDepAllAncestor(String deptId, Map<String, String> deptParentMap) {
+		List<String> ancestors = new ArrayList<>();
+		ancestors.add(deptId);
+		String current = deptParentMap.get(deptId);
+		while (StringUtils.isNotEmpty(current) && !StringUtils.equals(current, ROOT_NODE_PARENT_ID)) {
+			ancestors.add(current);
+			current = deptParentMap.get(current);
+		}
+		return ancestors;
 	}
 
 	/**
@@ -240,4 +313,33 @@ public class UserExtendService {
 		List<String> adminIds = getScopeOwnerIds(scopeIds, orgId);
 		return adminIds.contains(ownerId);
 	}
+
+	/**
+	 * 加载组织部门父节点映射
+	 * @param orgId 组织ID
+	 * @return 部门ID -> 父部门ID 映射
+	 */
+	private Map<String, String> loadDeptParentMap(String orgId) {
+		List<BaseTreeNode> departmentTree = departmentService.getTree(orgId);
+		Map<String, String> deptMap = new HashMap<>(2 << 7);
+		collectDeptNodes(departmentTree, deptMap);
+		return deptMap;
+	}
+
+	/**
+	 * 递归收集部门节点的ID和父ID映射
+	 * @param nodes 节点列表
+	 * @param deptMap 部门ID -> 父部门ID 映射
+	 */
+	private void collectDeptNodes(List<BaseTreeNode> nodes, Map<String, String> deptMap) {
+		if (CollectionUtils.isEmpty(nodes)) {
+			return;
+		}
+		for (BaseTreeNode node : nodes) {
+			deptMap.put(node.getId(), node.getParentId());
+			// 递归处理子节点
+			collectDeptNodes(node.getChildren(), deptMap);
+		}
+	}
+
 }

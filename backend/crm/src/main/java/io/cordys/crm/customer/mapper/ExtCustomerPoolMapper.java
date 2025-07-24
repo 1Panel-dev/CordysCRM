@@ -33,6 +33,13 @@ public interface ExtCustomerPoolMapper {
 
 	/**
 	 * 获取公海池集合
+	 * @param orgId 组织ID
+	 * @return 公海池集合
+	 */
+	List<CustomerPool> getAllPool(@Param("orgId") String orgId);
+
+	/**
+	 * 获取指定范围下的公海池
 	 * @param scopeIds 范围ID集合
 	 * @param orgId 组织ID
 	 * @return 公海池集合

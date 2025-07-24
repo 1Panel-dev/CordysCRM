@@ -25,12 +25,8 @@
         where pool_id = #{rule.poolId}
     </update>
 
-    <select id="getPoolByScopeIds" resultType="io.cordys.crm.clue.domain.CluePool">
-        select * from clue_pool where organization_id = #{orgId} and enable = true and
-        <foreach collection="ids" item="id" open="(" close=")" separator="or">
-            scope_id like concat('%', #{id}, '%')
-        </foreach>
-        order by create_time desc
+    <select id="getAllPool" resultType="io.cordys.crm.clue.domain.CluePool">
+        select * from clue_pool where organization_id = #{orgId} and enable = true order by create_time desc
     </select>
 
     <sql id="filters">

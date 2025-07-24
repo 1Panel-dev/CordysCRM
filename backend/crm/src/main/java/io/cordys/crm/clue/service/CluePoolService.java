@@ -286,16 +286,40 @@ public class CluePoolService {
      */
     public Map<String, CluePool> getOwnersDefaultPoolMap(List<String> ownerIds, String organizationId) {
         Map<String, CluePool> poolMap = new HashMap<>(4);
+        List<CluePool> pools = extCluePoolMapper.getAllPool(organizationId);
+        Map<String, List<String>> ownerScopeMap = userExtendService.getMultiScopeMap(ownerIds, organizationId);
         ownerIds.forEach(ownerId -> {
-            List<String> scopeIds = userExtendService.getUserScopeIds(ownerId, organizationId);
-            List<CluePool> pools = extCluePoolMapper.getPoolByScopeIds(scopeIds, organizationId);
-            if (CollectionUtils.isEmpty(pools)) {
+            List<CluePool> matchPools = matchMultiScope(ownerScopeMap.get(ownerId), pools);
+            if (CollectionUtils.isEmpty(matchPools)) {
+                // not found pool for owner
                 return;
             }
-            poolMap.put(ownerId, pools.getFirst());
+            poolMap.put(ownerId, matchPools.getFirst());
         });
 
         return poolMap;
+    }
+
+    /**
+     * 匹配多个范围的线索池
+     * @param scopeIds 范围ID集合
+     * @param pools 线索池列表
+     * @return 命中范围的线索池列表
+     */
+    public List<CluePool> matchMultiScope(List<String> scopeIds, List<CluePool> pools) {
+        /*
+         * 命中线索池任意范围即返回(默认按照创建时间作为优先级)
+         */
+        if (CollectionUtils.isEmpty(scopeIds) || CollectionUtils.isEmpty(pools)) {
+            return new ArrayList<>();
+        }
+        return pools.stream()
+                .filter(pool -> {
+                    List<String> poolScopes = JSON.parseArray(pool.getScopeId(), String.class);
+                    return CollectionUtils.isNotEmpty(poolScopes) && CollectionUtils.containsAny(scopeIds, poolScopes);
+                })
+                .sorted(Comparator.comparing(CluePool::getCreateTime).reversed())
+                .collect(Collectors.toList());
     }
 
     /**

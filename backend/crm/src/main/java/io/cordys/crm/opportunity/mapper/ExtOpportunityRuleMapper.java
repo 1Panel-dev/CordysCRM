@@ -19,9 +19,8 @@ public interface ExtOpportunityRuleMapper {
 
 	/**
 	 * 获取范围下商机关闭规则
-	 * @param scopeIds 范围ID集合
 	 * @param orgId 组织ID
 	 * @return 商机关闭规则
 	 */
-	List<OpportunityRule> getRuleByScopeIds(@Param("ids") List<String> scopeIds, @Param("orgId") String orgId);
+	List<OpportunityRule> getAllRule(@Param("orgId") String orgId);
 }

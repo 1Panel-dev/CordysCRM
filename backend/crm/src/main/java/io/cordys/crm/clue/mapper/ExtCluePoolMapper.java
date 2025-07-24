@@ -33,9 +33,8 @@ public interface ExtCluePoolMapper {
 
 	/**
 	 * 获取公海池集合
-	 * @param scopeIds 范围ID集合
 	 * @param orgId 组织ID
 	 * @return 公海池集合
 	 */
-	List<CluePool> getPoolByScopeIds(@Param("ids") List<String> scopeIds, @Param("orgId") String orgId);
+	List<CluePool> getAllPool(@Param("orgId") String orgId);
 }

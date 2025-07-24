@@ -17,13 +17,8 @@
         </include>
     </select>
 
-    <select id="getRuleByScopeIds" resultType="io.cordys.crm.opportunity.domain.OpportunityRule">
-        select * from opportunity_rule where organization_id = #{orgId} and
-        <foreach collection="ids" item="id" open="(" close=")" separator="or">
-            scope_id like concat('%', #{id}, '%')
-        </foreach>
-        and enable = 1
-        order by create_time desc
+    <select id="getAllRule" resultType="io.cordys.crm.opportunity.domain.OpportunityRule">
+        select * from opportunity_rule where organization_id = #{orgId} and enable = 1 order by create_time desc
     </select>
 
     <sql id="sort">

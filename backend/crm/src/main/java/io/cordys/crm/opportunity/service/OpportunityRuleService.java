@@ -13,6 +13,7 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
+import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;
@@ -172,9 +173,10 @@ public class OpportunityRuleService {
 	 */
 	public Map<String, OpportunityRule> getOwnersDefaultRuleMap(List<String> ownerIds, String organizationId) {
 		Map<String, OpportunityRule> ruleMap = new HashMap<>(4);
+		List<OpportunityRule> allRules = extOpportunityRuleMapper.getAllRule(organizationId);
+		Map<String, List<String>> ownerScopeMap = userExtendService.getMultiScopeMap(ownerIds, organizationId);
 		ownerIds.forEach(ownerId -> {
-			List<String> scopeIds = userExtendService.getUserScopeIds(ownerId, organizationId);
-			List<OpportunityRule> rules = extOpportunityRuleMapper.getRuleByScopeIds(scopeIds, organizationId);
+			List<OpportunityRule> rules = matchMultiScope(ownerScopeMap.get(ownerId), allRules);
 			if (CollectionUtils.isEmpty(rules)) {
 				return;
 			}
@@ -182,6 +184,28 @@ public class OpportunityRuleService {
 		});
 
 		return ruleMap;
+	}
+
+	/**
+	 * 匹配多个范围的商机关闭规则
+	 * @param scopeIds 范围ID集合
+	 * @param rules 规则列表
+	 * @return 命中范围的规则列表
+	 */
+	public List<OpportunityRule> matchMultiScope(List<String> scopeIds, List<OpportunityRule> rules) {
+		/*
+		 * 命中规则任意范围即返回(默认按照创建时间作为优先级)
+		 */
+		if (CollectionUtils.isEmpty(scopeIds) || CollectionUtils.isEmpty(rules)) {
+			return new ArrayList<>();
+		}
+		return rules.stream()
+				.filter(rule -> {
+					List<String> poolScopes = JSON.parseArray(rule.getScopeId(), String.class);
+					return CollectionUtils.isNotEmpty(poolScopes) && CollectionUtils.containsAny(scopeIds, poolScopes);
+				})
+				.sorted(Comparator.comparing(OpportunityRule::getCreateTime).reversed())
+				.collect(Collectors.toList());
 	}
 
 	/**

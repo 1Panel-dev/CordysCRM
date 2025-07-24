@@ -13,6 +13,7 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
+import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolPickRule;
@@ -280,16 +281,40 @@ public class CustomerPoolService {
 	 */
 	public Map<String, CustomerPool> getOwnersDefaultPoolMap(List<String> ownerIds, String organizationId) {
 		Map<String, CustomerPool> poolMap = new HashMap<>(4);
+		List<CustomerPool> pools = extCustomerPoolMapper.getAllPool(organizationId);
+		Map<String, List<String>> ownerScopeMap = userExtendService.getMultiScopeMap(ownerIds, organizationId);
 		ownerIds.forEach(ownerId -> {
-			List<String> scopeIds = userExtendService.getUserScopeIds(ownerId, organizationId);
-			List<CustomerPool> pools = extCustomerPoolMapper.getPoolByScopeIds(scopeIds, organizationId);
-			if (CollectionUtils.isEmpty(pools)) {
+			List<CustomerPool> matchPools = matchMultiScope(ownerScopeMap.get(ownerId), pools);
+			if (CollectionUtils.isEmpty(matchPools)) {
+				// not found pool for owner
 				return;
 			}
-			poolMap.put(ownerId, pools.getFirst());
+			poolMap.put(ownerId, matchPools.getFirst());
 		});
 
 		return poolMap;
+	}
+
+	/**
+	 * 匹配多个范围的公海
+	 * @param scopeIds 范围ID集合
+	 * @param pools 公海列表
+	 * @return 命中范围的公海列表
+	 */
+	public List<CustomerPool> matchMultiScope(List<String> scopeIds, List<CustomerPool> pools) {
+		/*
+		 * 命中线索池任意范围即返回(默认按照创建时间作为优先级)
+		 */
+		if (CollectionUtils.isEmpty(scopeIds) || CollectionUtils.isEmpty(pools)) {
+			return new ArrayList<>();
+		}
+		return pools.stream()
+				.filter(pool -> {
+					List<String> poolScopes = JSON.parseArray(pool.getScopeId(), String.class);
+					return CollectionUtils.isNotEmpty(poolScopes) && CollectionUtils.containsAny(scopeIds, poolScopes);
+				})
+				.sorted(Comparator.comparing(CustomerPool::getCreateTime).reversed())
+				.collect(Collectors.toList());
 	}
 
 	/**
