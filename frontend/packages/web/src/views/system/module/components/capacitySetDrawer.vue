@@ -210,9 +210,9 @@
           ? {
               filters: [
                 {
-                  column: element.column,
-                  operator: element.operator,
-                  value: element.value,
+                  column: element.capacity ? element.column : null,
+                  operator: element.capacity ? element.operator : null,
+                  value: element.capacity ? element.value : null,
                 },
               ],
             }
@@ -221,12 +221,11 @@
 
       if (element.id) {
         await updateCapacity(params, props.type);
-        done();
       } else {
         await addCapacity(params, props.type);
-        done();
-        await getCapacity();
       }
+      done();
+      await getCapacity();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);

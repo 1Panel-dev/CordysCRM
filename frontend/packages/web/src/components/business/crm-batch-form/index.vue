@@ -375,14 +375,20 @@
     return true;
   }
 
+  // 单行还原到未校验的状态
+  async function restoreValidationRowFields(index: number) {
+    const fieldRefs = props.models.map((model) => formItemRefs.value[model.path]?.get(`${index}`)).filter(Boolean);
+    await Promise.allSettled(fieldRefs.map((ref) => ref?.restoreValidation?.()));
+  }
+
   // 取消编辑
   function handleCancelEdit(index: number) {
     if (rowBackups.value[index]) {
       form.value.list[index] = cloneDeep(rowBackups.value[index]);
-      validateRowFields(index);
     } else {
       form.value.list[index] = { ...formItem };
     }
+    restoreValidationRowFields(index);
     form.value.list[index].editing = false;
     delete rowBackups.value[index];
   }
