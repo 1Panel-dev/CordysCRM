@@ -194,11 +194,12 @@
     const option = findNodeByKey<CrmTreeNodeData>(data.value, key, props.fieldNames.keyField);
     if (option) {
       // 获取同层节点列表（树结构 or 列表结构）
-      const siblings = option.parentId
-        ? findNodeByKey<CrmTreeNodeData>(data.value, option.parentId, props.fieldNames.keyField)?.[
-            props.fieldNames.childrenField
-          ] ?? []
-        : data.value;
+      const siblings =
+        option.parentId && option.parentId !== 'NONE'
+          ? findNodeByKey<CrmTreeNodeData>(data.value, option.parentId, props.fieldNames.keyField)?.[
+              props.fieldNames.childrenField
+            ] ?? []
+          : data.value;
       // 排除自己节点在内
       return siblings.reduce((siblingsLabels: string[], node: CrmTreeNodeData) => {
         if (node[props.fieldNames.keyField] !== option[props.fieldNames.keyField]) {
