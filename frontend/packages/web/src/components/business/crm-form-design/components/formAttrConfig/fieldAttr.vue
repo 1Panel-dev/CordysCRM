@@ -522,6 +522,7 @@
         >
           <n-switch
             v-model:value="fieldConfig.hasCurrentUser"
+            :rubber-band="false"
             :disabled="fieldConfig.disabledProps?.includes('hasCurrentUser')"
             @update-value="
               ($event) => handleHasCurrentChange($event, fieldConfig.type === FieldTypeEnum.MEMBER_MULTIPLE)
@@ -535,6 +536,7 @@
         >
           <n-switch
             v-model:value="fieldConfig.hasCurrentUserDept"
+            :rubber-band="false"
             :disabled="fieldConfig.disabledProps?.includes('hasCurrentUserDept')"
             @update-value="
               ($event) => handleHasCurrentChange($event, fieldConfig.type === FieldTypeEnum.DEPARTMENT_MULTIPLE)

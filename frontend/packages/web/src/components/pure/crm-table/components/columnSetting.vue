@@ -52,6 +52,7 @@
             v-model:value="element.showInTable"
             :disabled="element.columnSelectorDisabled"
             size="small"
+            :rubber-band="false"
             @update:value="handleChange"
           />
         </div>
@@ -80,6 +81,7 @@
               v-model:value="element.showInTable"
               :disabled="element.key === SpecialColumnEnum.OPERATION"
               size="small"
+              :rubber-band="false"
               @update:value="handleChange"
             />
           </div>

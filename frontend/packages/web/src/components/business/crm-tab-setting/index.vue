@@ -33,6 +33,7 @@
           v-model:value="element.enable"
           :disabled="!element.allowClose"
           size="small"
+          :rubber-band="false"
           @update:value="handleChange"
         />
       </div>

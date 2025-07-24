@@ -78,7 +78,7 @@
           :placeholder="t('common.pleaseInput')"
           clearable
         />
-        <n-switch v-model:value="formConfig.optBtnContent[0].enable" />
+        <n-switch v-model:value="formConfig.optBtnContent[0].enable" :rubber-band="false" />
       </div>
       <div class="crm-form-design-config-item-input">
         <n-input
@@ -87,7 +87,7 @@
           :placeholder="t('common.pleaseInput')"
           clearable
         />
-        <n-switch v-model:value="formConfig.optBtnContent[1].enable" />
+        <n-switch v-model:value="formConfig.optBtnContent[1].enable" :rubber-band="false" />
       </div>
       <div class="crm-form-design-config-item-input">
         <n-input
@@ -96,7 +96,7 @@
           :placeholder="t('common.pleaseInput')"
           clearable
         />
-        <n-switch v-model:value="formConfig.optBtnContent[2].enable" />
+        <n-switch v-model:value="formConfig.optBtnContent[2].enable" :rubber-band="false" />
       </div>
     </div>
     <div class="crm-form-design-config-item">

@@ -159,7 +159,7 @@
     <template #footer>
       <div class="flex w-full items-center justify-between">
         <div class="ml-[4px] flex items-center gap-[8px]">
-          <n-switch v-model:value="form.enable" /> {{ t('common.status') }}
+          <n-switch v-model:value="form.enable" :rubber-band="false" /> {{ t('common.status') }}
         </div>
         <div class="flex items-center justify-end gap-[12px]">
           <n-button :disabled="loading" secondary @click="cancelHandler">

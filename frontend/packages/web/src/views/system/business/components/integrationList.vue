@@ -63,6 +63,7 @@
             <template #trigger>
               <n-switch
                 size="small"
+                :rubber-band="false"
                 :value="item.response.deBoardEnable"
                 :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
                 @update:value="handleChangeEnable(item, 'deBoardEnable')"
@@ -78,6 +79,7 @@
               <template #trigger>
                 <n-switch
                   size="small"
+                  :rubber-band="false"
                   :value="item.response.qrcodeEnable"
                   :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
                   @update:value="handleChangeEnable(item, 'qrcodeEnable')"
@@ -90,6 +92,7 @@
           <div class="flex items-center gap-[8px]">
             <n-switch
               size="small"
+              :rubber-band="false"
               :value="item.response.weComEnable"
               :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
               @update:value="handleChangeEnable(item, 'weComEnable')"
@@ -102,6 +105,7 @@
               <template #trigger>
                 <n-switch
                   size="small"
+                  :rubber-band="false"
                   :value="item.response.syncEnable"
                   :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
                   @update:value="handleChangeEnable(item, 'syncEnable')"

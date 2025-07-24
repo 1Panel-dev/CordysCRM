@@ -96,7 +96,7 @@
       <n-form-item label=" " path="ssl">
         <div>
           <div class="flex items-center">
-            <n-switch v-model:value="form.ssl" class="mr-[8px]" />
+            <n-switch v-model:value="form.ssl" :rubber-band="false" class="mr-[8px]" />
             {{ t('system.business.mailSettings.ssl') }}
           </div>
           <div class="text-[12px] text-[var(--text-n4)]">{{ t('system.business.mailSettings.sslTip') }}</div>
@@ -105,7 +105,7 @@
       <n-form-item label=" " path="tsl">
         <div>
           <div class="flex items-center">
-            <n-switch v-model:value="form.tsl" class="mr-[8px]" />
+            <n-switch v-model:value="form.tsl" :rubber-band="false" class="mr-[8px]" />
             {{ t('system.business.mailSettings.tsl') }}
           </div>
           <div class="text-[12px] text-[var(--text-n4)]">{{ t('system.business.mailSettings.tslTip') }}</div>

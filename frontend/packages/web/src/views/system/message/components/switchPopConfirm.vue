@@ -13,7 +13,14 @@
   >
     <n-tooltip :delay="300" :disabled="!props.toolTipContent">
       <template #trigger>
-        <n-switch :value="props.value" :disabled="props.disabled" class="mr-[8px]" size="small" @click="changeStatus" />
+        <n-switch
+          :value="props.value"
+          :disabled="props.disabled"
+          class="mr-[8px]"
+          :rubber-band="false"
+          size="small"
+          @update:value="changeStatus"
+        />
       </template>
       {{ props.toolTipContent }}
     </n-tooltip>
