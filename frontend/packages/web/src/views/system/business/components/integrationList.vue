@@ -193,6 +193,7 @@
             response: {
               qrcodeEnable: config?.qrcodeEnable ?? false,
               syncEnable: config?.syncEnable ?? false,
+              weComEnable: config?.weComEnable ?? false,
               type: item.type,
               ...config,
             },
@@ -232,6 +233,7 @@
           item.response.qrcodeEnable = true;
           item.response.syncEnable = true;
           item.response.deBoardEnable = true;
+          item.response.weComEnable = true;
         })
         .finally(() => {
           loading.value = false;
@@ -253,6 +255,7 @@
           item.response.qrcodeEnable = true;
           item.response.syncEnable = true;
           item.response.deBoardEnable = true;
+          item.response.weComEnable = true;
         });
     } catch (error) {
       // eslint-disable-next-line no-console
