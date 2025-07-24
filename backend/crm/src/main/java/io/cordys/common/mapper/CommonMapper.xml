@@ -99,7 +99,7 @@
                 </when>
                 <when test="${condition}.operator == 'IN'">
                     <choose>
-                        <when test="${condition}.type == 'LOCATION'">
+                        <when test="${condition}.type != null and ${condition}.type == 'LOCATION'">
                             <foreach collection="${condition}.value" item="v" open="(" separator=" OR " close=")">
                                 <if test="'${column}' == 'value'">
                                     `value`
@@ -126,7 +126,7 @@
                 </when>
                 <when test="${condition}.operator == 'NOT_IN'">
                     <choose>
-                        <when test="${condition}.type == 'LOCATION'">
+                        <when test="${condition}.type != null and ${condition}.type == 'LOCATION'">
                             !(
                             <foreach collection="${condition}.value" item="v" open="(" separator=" OR " close=")">
                                 <if test="'${column}' == 'value'">

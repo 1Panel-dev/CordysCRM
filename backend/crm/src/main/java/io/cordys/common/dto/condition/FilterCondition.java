@@ -37,7 +37,6 @@ public class FilterCondition {
     private String operator;
 
     @Schema(description = "类型")
-    @NotNull
     private String type;
 
     /**
