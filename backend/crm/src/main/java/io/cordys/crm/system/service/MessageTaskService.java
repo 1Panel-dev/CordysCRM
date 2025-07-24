@@ -182,7 +182,7 @@ public class MessageTaskService {
         Map<String, String> eventMap = MessageTemplateUtils.getEventMap();
         List<LogDTO>logDTOList=new ArrayList<>();
         for (MessageTask messageTask : oldMessageList) {
-            MessageTaskLogDTO oldDTO = buildLogDTO(messageTask, messageTask.getEmailEnable(), messageTask.getSysEnable(), messageTaskBatchRequest.getWeComEnable(), eventMap);
+            MessageTaskLogDTO oldDTO = buildLogDTO(messageTask, messageTask.getEmailEnable(), messageTask.getSysEnable(), messageTask.getWeComEnable(), eventMap);
             MessageTaskLogDTO newDTO = buildLogDTO(messageTask, messageTaskBatchRequest.getEmailEnable(), messageTaskBatchRequest.getSysEnable(), messageTaskBatchRequest.getWeComEnable(), eventMap);
             LogDTO logDTO = new LogDTO(organizationId, messageTask.getId(), userId, LogType.UPDATE, LogModule.SYSTEM_MESSAGE_MESSAGE, eventMap.get(messageTask.getEvent()));
             logDTO.setOriginalValue(oldDTO);

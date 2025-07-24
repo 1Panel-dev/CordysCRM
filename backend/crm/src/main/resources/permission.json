@@ -310,22 +310,27 @@
   {
     "id": "DASHBOARD_MANAGEMENT",
     "name": "permission.dashboard_management.name",
+    "license": true,
     "children": [
       {
         "id": "DASHBOARD",
         "name": "permission.dashboard.name",
         "permissions": [
           {
-            "id": "DASHBOARD:READ"
+            "id": "DASHBOARD:READ",
+            "license": true
           },
           {
-            "id": "DASHBOARD:ADD"
+            "id": "DASHBOARD:ADD",
+            "license": true
           },
           {
-            "id": "DASHBOARD:UPDATE"
+            "id": "DASHBOARD:UPDATE",
+            "license": true
           },
           {
-            "id": "DASHBOARD:DELETE"
+            "id": "DASHBOARD:DELETE",
+            "license": true
           }
         ]
       }
