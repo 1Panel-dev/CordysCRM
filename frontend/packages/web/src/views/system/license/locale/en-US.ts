@@ -22,4 +22,6 @@ export default {
     'The remaining {day} of system authorization expires. In order not to affect your use, please contact the staff as soon as possible',
   'system.license.LicenseExpirationPromptGreaterThanThirty':
     'System authorization has expired, if you need help, please contact the working staff',
+  'system.license.LicenseExpirationError':
+    'License Code check failed, please check!  If you need assistance, please contact the staff',
 };

@@ -22,4 +22,5 @@ export default {
   'system.license.LicenseExpirationPromptLessThanThirty':
     '系统授权剩余 {day} 天到期，为了不影响您的使用，请尽快联系工作人员',
   'system.license.LicenseExpirationPromptGreaterThanThirty': '系统授权已过期，如需帮助，请联系工作人员',
+  'system.license.LicenseExpirationError': 'License Code 校验失败，请检查！如需帮助，请联系工作人员',
 };

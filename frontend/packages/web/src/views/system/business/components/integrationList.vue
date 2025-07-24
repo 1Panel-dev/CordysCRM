@@ -191,8 +191,8 @@
             ...item,
             hasConfig: Boolean(config?.appSecret),
             response: {
-              qrcodeEnable: config?.qrcodeEnable ?? true,
-              syncEnable: config?.syncEnable ?? true,
+              qrcodeEnable: config?.qrcodeEnable ?? false,
+              syncEnable: config?.syncEnable ?? false,
               type: item.type,
               ...config,
             },

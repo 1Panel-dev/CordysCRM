@@ -7,7 +7,7 @@
       {{
         licenseStore.expiredDays > 0 && licenseStore.expiredDays <= 30
           ? t('system.license.LicenseExpirationPromptLessThanThirty', { day: licenseStore.expiredDays })
-          : t('system.license.LicenseExpirationPromptGreaterThanThirty')
+          : getInvalidTip
       }}
     </n-alert>
   </div>
@@ -27,6 +27,17 @@
   const props = defineProps<{
     styleClass?: string[];
   }>();
+
+  const getInvalidTip = computed(() => {
+    switch (licenseStore.licenseInfo?.status) {
+      case 'invalid':
+        return t('system.license.LicenseExpirationError');
+      case 'expired':
+        return t('system.license.LicenseExpirationPromptGreaterThanThirty');
+      default:
+        break;
+    }
+  });
 </script>
 
 <style scoped></style>
