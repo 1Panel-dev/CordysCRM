@@ -2,6 +2,7 @@ package io.cordys.mybatis;
 
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.CodingUtils;
+import io.cordys.common.util.LogUtils;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultMap;
@@ -388,6 +389,9 @@ public class DataAccessLayer implements ApplicationContextAware {
                         new ResultMap.Builder(configuration, "defaultResultMap", resultType, new ArrayList<>(0)).build()
                 ))
                 .build();
+        if (configuration.getMappedStatements().size() > 2000) {
+            LogUtils.info("当前缓存的 MappedStatement 总量：{}", configuration.getMappedStatements().size());
+        }
         configuration.addMappedStatement(ms);
     }
 }
