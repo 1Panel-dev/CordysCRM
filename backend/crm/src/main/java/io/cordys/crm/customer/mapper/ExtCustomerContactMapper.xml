@@ -63,14 +63,14 @@
                 order by
                 <choose>
                     <when test="${sort}.name == 'department_id'">
-                        sort_table.department_id ${sortType}
+                        sort_table.department_id ${sortType},  cc.id ASC
                     </when>
                     <when test="${sort}.name == 'customer_id'">
-                        sort_table.name ${sortType}
+                        sort_table.name ${sortType},  cc.id ASC
                     </when>
                     <when test="${sort}.name in
                         {'name', 'owner', 'create_time', 'update_time', 'phone', 'create_user', 'update_user', 'enable'}">
-                        cc.${sortName} ${sortType}
+                        cc.${sortName} ${sortType},  cc.id ASC
                     </when>
                     <otherwise>
                         CASE

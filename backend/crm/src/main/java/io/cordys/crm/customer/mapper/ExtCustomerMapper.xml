@@ -156,10 +156,10 @@
                 <choose>
                     <when test="${sort}.name in
                         {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time'}">
-                        c.${sortName} ${sortType}
+                        c.${sortName} ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
-                        sou.${sortName} ${sortType}
+                        sou.${sortName} ${sortType}, c.id ASC
                     </when>
                     <otherwise>
                         CASE

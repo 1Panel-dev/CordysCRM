@@ -91,40 +91,40 @@
                 order by
                 <choose>
                     <when test="${sort}.name == 'name'">
-                        c.`name` ${sortType}
+                        c.`name` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'contact'">
-                        c.`contact` ${sortType}
+                        c.`contact` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'phone'">
-                        c.`phone` ${sortType}
+                        c.`phone` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'owner'">
-                        c.`owner` ${sortType}
+                        c.`owner` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'collection_time'">
-                        c.`collection_time` ${sortType}
+                        c.`collection_time` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'follow_time'">
-                        c.`follow_time` ${sortType}
+                        c.`follow_time` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'follower_name' || ${sort}.name == 'follower'">
-                        c.`follower` ${sortType}
+                        c.`follower` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'create_time'">
-                        c.`create_time` ${sortType}
+                        c.`create_time` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'update_time'">
-                        c.`update_time` ${sortType}
+                        c.`update_time` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
-                        sd.`id` ${sortType}
+                        sd.`id` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'create_user'">
-                        c.`create_user` ${sortType}
+                        c.`create_user` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'update_user'">
-                        c.`update_user` ${sortType}
+                        c.`update_user` ${sortType}, c.id ASC
                     </when>
                     <otherwise>
                         CASE

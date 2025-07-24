@@ -102,59 +102,60 @@
                 order by
                 <choose>
                     <when test="${sort}.name == 'name'">
-                        o.`name` ${sortType}
+                        o.`name` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'customer_id'">
-                        c.`name` ${sortType}
+                        c.`name` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'owner'">
-                        o.`owner` ${sortType}
+                        o.`owner` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'amount'">
-                        o.`amount` ${sortType}
+                        o.`amount` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'possible'">
-                        o.`possible` ${sortType}
+                        o.`possible` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'status'">
-                        o.`status` ${sortType}
+                        o.`status` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'stage'">
-                        o.`stage` ${sortType}
+                        o.`stage` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'contact_id' || ${sort}.name == 'contact_name'">
-                        o.`contact_id` ${sortType}
+                        o.`contact_id` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'create_time'">
-                        o.`create_time` ${sortType}
+                        o.`create_time` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'update_time'">
-                        o.`update_time` ${sortType}
+                        o.`update_time` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'create_user'">
-                        o.`create_user` ${sortType}
+                        o.`create_user` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'update_user'">
-                        o.`update_user` ${sortType}
+                        o.`update_user` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'follow_time'">
-                        o.`follow_time` ${sortType}
+                        o.`follow_time` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'follower_name' || ${sort}.name == 'follower'">
-                        o.`follower` ${sortType}
+                        o.`follower` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'expected_end_time'">
-                        o.`expected_end_time` ${sortType}
+                        o.`expected_end_time` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'actual_end_time'">
-                        o.`actual_end_time` ${sortType}
+                        o.`actual_end_time` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'failure_reason'">
-                        o.`failure_reason` ${sortType}
+                        o.`failure_reason` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
-                        sd.`id` ${sortType}
+                        sd.`id` ${sortType},  o.id ASC
                     </when>
+
                     <otherwise>
                         CASE
                         WHEN module_table.type = 'INPUT_NUMBER'

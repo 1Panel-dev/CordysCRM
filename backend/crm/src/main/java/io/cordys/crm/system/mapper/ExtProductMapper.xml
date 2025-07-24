@@ -109,25 +109,25 @@
                 order by
                 <choose>
                     <when test="${sort}.name == 'name'">
-                        p.`name` ${sortType}
+                        p.`name` ${sortType},  p.id ASC
                     </when>
                     <when test="${sort}.name == 'price'">
-                        p.`price` ${sortType}
+                        p.`price` ${sortType},  p.id ASC
                     </when>
                     <when test="${sort}.name == 'status'">
-                        p.`status` ${sortType}
+                        p.`status` ${sortType},  p.id ASC
                     </when>
                     <when test="${sort}.name == 'create_time'">
-                        p.`create_time` ${sortType}
+                        p.`create_time` ${sortType},  p.id ASC
                     </when>
                     <when test="${sort}.name == 'update_time'">
-                        p.`update_time` ${sortType}
+                        p.`update_time` ${sortType},  p.id ASC
                     </when>
                     <when test="${sort}.name == 'create_user'">
-                        p.`create_user` ${sortType}
+                        p.`create_user` ${sortType},  p.id ASC
                     </when>
                     <when test="${sort}.name == 'update_user'">
-                        p.`update_user` ${sortType}
+                        p.`update_user` ${sortType},  p.id ASC
                     </when>
                     <otherwise>
                         CASE
