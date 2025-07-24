@@ -31,7 +31,7 @@
             o.failure_reason
         FROM
             opportunity o
-                LEFT JOIN customer c ON o.customer_id = c.id
+                INNER JOIN customer c ON o.customer_id = c.id
         <include refid="fieldConditionJoin">
             <property name="conditions" value="request.filters"/>
             <property name="tablePrefix" value="filter"/>
@@ -56,11 +56,11 @@
             )
         </if>
 
+        where o.organization_id = #{orgId}
+
         <if test="dataPermission != null and dataPermission.self">
             and o.owner = #{userId}
         </if>
-
-        where o.organization_id = #{orgId}
 
         <if test="request.keyword != null and request.keyword != ''">
             and (
