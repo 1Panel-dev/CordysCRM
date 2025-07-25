@@ -12,6 +12,53 @@ ALTER TABLE clue_pool_pick_rule
 ALTER TABLE clue_pool_pick_rule
     ADD new_pick_interval INT COMMENT '新数据领取保护' after limit_new;
 
+
+CREATE TABLE sys_user_view
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `user_id`         VARCHAR(32)  NOT NULL COMMENT '用户id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '视图名称',
+    `resource_type`   VARCHAR(50)  NOT NULL COMMENT '资源类型(客户/线索/商机)',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
+    `pos`             BIGINT       NOT NULL COMMENT '排序',
+    `search_mode`     VARCHAR(10)  NOT NULL DEFAULT 'AND' COMMENT '匹配模式(AND/OR)',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '用户视图'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_user_id ON sys_user_view (user_id ASC);
+CREATE INDEX idx_name ON sys_user_view (name ASC);
+CREATE INDEX idx_resource_type ON sys_user_view (resource_type ASC);
+CREATE INDEX idx_organization_id ON sys_user_view (organization_id ASC);
+
+
+CREATE TABLE sys_user_view_condition
+(
+    `id`               VARCHAR(32)  NOT NULL COMMENT 'id',
+    `sys_user_view_id` VARCHAR(32)  NOT NULL COMMENT '视图id',
+    `name`             VARCHAR(255) NOT NULL COMMENT '参数名称',
+    `value`            TEXT(255) COMMENT '参数值',
+    `type`             VARCHAR(20) COMMENT '参数值类型',
+    `multiple_value`   BIT(1)       NOT NULL DEFAULT 0 COMMENT '是否是多选值',
+    `operator`         VARCHAR(20) COMMENT '操作符',
+    `create_time`      BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`      BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`      VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`      VARCHAR(32)  NOT NULL COMMENT '更新人',
+    PRIMARY KEY (id)
+) COMMENT = '用户视图详情'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE INDEX idx_sys_user_view_id ON sys_user_view_condition (sys_user_view_id ASC);
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 
