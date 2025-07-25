@@ -14,7 +14,10 @@ public class Dict extends BaseModel {
 	@Schema(description = "字典值")
 	private String name;
 
-	@Schema(description = "字典类型")
+	@Schema(description = "字典模块")
+	private String module;
+
+	@Schema(description = "字典值类型")
 	private String type;
 
 	@Schema(description = "组织ID")

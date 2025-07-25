@@ -39,4 +39,7 @@ public class Customer extends BaseModel {
 
 	@Schema(description = "最新跟进时间")
 	private Long followTime;
+
+	@Schema(description = "公海原因ID")
+	private String reasonId;
 }

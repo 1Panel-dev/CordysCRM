@@ -1,11 +1,11 @@
 package io.cordys.crm.system.constants;
 
-public enum DictType {
+public enum DictModule {
 
 	/**
 	 * 商机失败
 	 */
-	OPPORTUNITY_FAIL,
+	OPPORTUNITY_FAIL_RS,
 	/**
 	 * 公海原因
 	 */

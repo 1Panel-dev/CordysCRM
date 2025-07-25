@@ -62,4 +62,7 @@ public class Clue extends BaseModel {
 
 	@Schema(description = "线索池ID")
 	private String poolId;
+
+	@Schema(description = "线索池原因ID")
+	private String reasonId;
 }

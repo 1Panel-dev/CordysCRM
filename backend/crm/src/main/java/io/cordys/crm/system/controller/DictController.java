@@ -3,7 +3,9 @@ package io.cordys.crm.system.controller;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Dict;
+import io.cordys.crm.system.dto.DictConfigDTO;
 import io.cordys.crm.system.dto.request.DictAddRequest;
+import io.cordys.crm.system.dto.request.DictSwitchRequest;
 import io.cordys.crm.system.dto.request.DictUpdateRequest;
 import io.cordys.crm.system.service.DictService;
 import io.cordys.security.SessionUtils;
@@ -24,13 +26,13 @@ public class DictController {
 	@Resource
 	private DictService dictService;
 
-	@GetMapping("/get/{type}")
+	@GetMapping("/get/{module}")
 	@Operation(summary = "获取字典列表")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_READ})
 	public List<Dict> getDictListByType(
-			@Schema(description = "类型", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"OPPORTUNITY_FAIL", "CUSTOMER_POOL_RS", "CLUE_POOL_RS"})
-			@PathVariable("type") String type) {
-		return dictService.getDictListByType(type, OrganizationContext.getOrganizationId());
+			@Schema(description = "类型", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"OPPORTUNITY_FAIL_RS", "CUSTOMER_POOL_RS", "CLUE_POOL_RS"})
+			@PathVariable("module") String module) {
+		return dictService.getDictListByType(module, OrganizationContext.getOrganizationId());
 	}
 
 	@PostMapping("/add")
@@ -53,4 +55,20 @@ public class DictController {
 	public void deleteDict(@PathVariable("id") String id) {
 		dictService.deleteDict(id);
 	}
+
+	@GetMapping("/switch")
+	@Operation(summary = "字典开启关闭")
+	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
+	public void switchDict(@RequestBody DictSwitchRequest request) {
+		dictService.switchDict(request, OrganizationContext.getOrganizationId());
+	}
+
+	@GetMapping("/config/{module}")
+	@Operation(summary = "获取字典配置")
+	public DictConfigDTO getReasonDict(
+			@Schema(description = "字典类型", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"OPPORTUNITY_FAIL_RS", "CUSTOMER_POOL_RS", "CLUE_POOL_RS"})
+			@PathVariable("module") String module) {
+		return dictService.getDictConf(module, OrganizationContext.getOrganizationId());
+	}
+
 }

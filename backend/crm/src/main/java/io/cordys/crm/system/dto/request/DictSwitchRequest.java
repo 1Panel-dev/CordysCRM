@@ -1,21 +1,21 @@
 package io.cordys.crm.system.dto.request;
 
-
 import io.cordys.common.constants.EnumValue;
 import io.cordys.crm.system.constants.DictModule;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class DictAddRequest {
+public class DictSwitchRequest {
 
 	@NotEmpty
-	@Schema(description = "字典值", requiredMode = Schema.RequiredMode.REQUIRED)
-	private String name;
-
-	@NotEmpty
-	@Schema(description = "字典模块", requiredMode = Schema.RequiredMode.REQUIRED)
 	@EnumValue(enumClass = DictModule.class)
+	@Schema(description = "字典模块", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String module;
+
+	@NotNull
+	@Schema(description = "开启关闭", requiredMode = Schema.RequiredMode.REQUIRED)
+	private Boolean enable;
 }
