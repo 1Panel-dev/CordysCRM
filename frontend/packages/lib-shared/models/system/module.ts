@@ -1,7 +1,7 @@
 import type { FormDesignKeyEnum } from '../../enums/formDesignEnum';
 import type { TableQueryParams } from '../common';
 import type { FormCreateField } from '@cordys/web/src/components/business/crm-form-create/types';
-import { MemberSelectTypeEnum } from '@lib/shared/enums/moduleEnum';
+import { MemberSelectTypeEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 
 // 模块首页-导航模块列表
 export interface ModuleNavBaseInfoItem {
@@ -178,4 +178,32 @@ export interface FormDesignConfigDetailParams {
 
 export interface FormDesignDataSourceTableQueryParams extends TableQueryParams {
   field: string;
+}
+
+export interface ReasonParams {
+  id?: string;
+  name: string;
+  module: ReasonTypeEnum;
+}
+
+export interface UpdateReasonEnableParams {
+  module: ReasonTypeEnum;
+  enable: boolean;
+}
+
+export interface ReasonItem {
+  id: string;
+  createUser: string;
+  updateUser: string;
+  createTime: number;
+  updateTime: number;
+  name: string;
+  module: ReasonTypeEnum;
+  type: string;
+  organizationId: string;
+}
+
+export interface ReasonConfig {
+  enable: boolean;
+  dictList: ReasonItem[];
 }

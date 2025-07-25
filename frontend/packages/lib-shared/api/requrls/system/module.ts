@@ -55,3 +55,11 @@ export const GetFieldClueListUrl = '/field/source/clue'; // 获取线索列表
 export const UploadTempFileUrl = '/pic/upload/temp'; // 上传临时图片
 export const PreviewPictureUrl = '/pic/preview'; // 预览图片
 export const DownloadPictureUrl = '/pic/download'; // 下载图片
+
+// 模块设置-字典管理-原因配置
+export const GetReasonUrl = '/dict/get'; // 获取原因
+export const AddReasonUrl = '/dict/add'; // 添加原因
+export const UpdateReasonUrl = '/dict/update'; // 更新原因
+export const DeleteReasonUrl = '/dict/delete'; // 删除原因
+export const GetReasonConfigUrl = '/dict/config'; // 获取原因配置
+export const UpdateReasonEnableUrl = '/dict/switch'; // 更新原因开关

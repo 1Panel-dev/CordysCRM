@@ -39,3 +39,10 @@ export enum MemberSelectTypeEnum {
   MEMBER = 'USER', // 成员
   ONLY_ORG = 'ONLY_DEPARTMENT', // 组织架构
 }
+
+// 原因类型
+export enum ReasonTypeEnum {
+  OPPORTUNITY_FAIL_RS = 'OPPORTUNITY_FAIL_RS', // 商机失败原因
+  CUSTOMER_POOL_RS = 'CUSTOMER_POOL_RS', //  公海原因
+  CLUE_POOL_RS = 'CLUE_POOL_RS', // 线索移入原因
+}

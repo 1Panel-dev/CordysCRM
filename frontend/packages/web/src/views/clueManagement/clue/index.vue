@@ -90,6 +90,12 @@
     @new="handleNewCustomer"
     @finish="handleRefresh"
   />
+  <CrmMoveModal
+    v-model:show="showMoveModal"
+    :form-key="FormDesignKeyEnum.CLUE"
+    :source-id="checkedRowKeys"
+    :name="activeRowName"
+  />
 </template>
 
 <script setup lang="ts">
@@ -115,6 +121,7 @@
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
@@ -203,31 +210,48 @@
   }
 
   const showExportModal = ref<boolean>(false);
-
+  const activeRowName = ref('');
   // 批量移入线索池
   const showToCluePoolResultModel = ref(false);
   const successCount = ref<number>(0);
   const failCount = ref<number>(0);
+
+  // 移入线索池 TODO
+  const isEnableReason = ref(false);
+  const showMoveModal = ref(false);
+  function handleMoveToLeadPool(row?: ClueListItem) {
+    activeRowName.value = row?.name ?? '';
+    if (isEnableReason.value) {
+      showMoveModal.value = true;
+    } else {
+      const title = row
+        ? t('clue.batchMoveIntoCluePoolTitle', { name: characterLimit(activeRowName.value) })
+        : t('clue.batchMoveIntoCluePoolTitleTip', { number: checkedRowKeys.value.length });
+      const ids = row ? [row.id] : (checkedRowKeys.value as string[]);
+      openModal({
+        type: 'default',
+        title,
+        content: t('clue.moveToLeadPoolTip'),
+        positiveText: t('common.confirmMoveIn'),
+        negativeText: t('common.cancel'),
+        onPositiveClick: async () => {
+          try {
+            const { success, fail } = await batchToCluePool(ids);
+            successCount.value = success;
+            failCount.value = fail;
+            showToCluePoolResultModel.value = true;
+            handleRefresh();
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(error);
+          }
+        },
+      });
+    }
+  }
+
   function handleBatchMoveIntoCluePool() {
-    openModal({
-      type: 'default',
-      title: t('clue.batchMoveIntoCluePoolTitleTip', { number: checkedRowKeys.value.length }),
-      content: t('clue.batchMoveIntoCluePoolContentTip'),
-      positiveText: t('common.confirmMoveIn'),
-      negativeText: t('common.cancel'),
-      onPositiveClick: async () => {
-        try {
-          const { success, fail } = await batchToCluePool(checkedRowKeys.value as string[]);
-          successCount.value = success;
-          failCount.value = fail;
-          showToCluePoolResultModel.value = true;
-          handleRefresh();
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(error);
-        }
-      },
-    });
+    handleMoveToLeadPool();
   }
 
   // 批量删除
@@ -357,7 +381,6 @@
     clueId: '',
     id: '',
   });
-  const activeRowName = ref('');
 
   function handleConvertToCustomer(row?: ClueListItem) {
     isInitConvertDrawer.value = true;
@@ -399,6 +422,9 @@
         // showConvertToCustomerDrawer.value = true;
         handleConvertToCustomer(row);
         break;
+      case 'moveIntoCluePool':
+        handleMoveToLeadPool(row);
+        break;
       case 'delete':
         handleDelete(row);
         break;
@@ -415,7 +441,7 @@
     formKey: FormDesignKeyEnum.CLUE,
     operationColumn: {
       key: 'operation',
-      width: 200,
+      width: 280,
       fixed: 'right',
       render: (row: ClueListItem) =>
         row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)
@@ -445,6 +471,11 @@
                       iconType: 'primary',
                     },
                     popSlotContent: 'transferPopContent',
+                  },
+                  {
+                    label: t('clue.moveIntoCluePool'),
+                    key: 'moveIntoCluePool',
+                    permission: ['CLUE_MANAGEMENT:UPDATE'],
                   },
                   {
                     label: 'more',

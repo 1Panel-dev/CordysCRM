@@ -5,11 +5,13 @@ import {
   AddCustomerCapacityUrl,
   AddCustomerPoolUrl,
   addOpportunityRuleUrl,
+  AddReasonUrl,
   DeleteClueCapacityUrl,
   DeleteCluePoolUrl,
   DeleteCustomerCapacityUrl,
   DeleteCustomerPoolUrl,
   deleteOpportunityUrl,
+  DeleteReasonUrl,
   DownloadPictureUrl,
   GetClueCapacityPageUrl,
   GetCluePoolPageUrl,
@@ -25,6 +27,8 @@ import {
   GetFormDesignConfigUrl,
   getModuleNavConfigListUrl,
   getOpportunityListUrl,
+  GetReasonConfigUrl,
+  GetReasonUrl,
   moduleNavListSortUrl,
   ModuleRoleTreeUrl,
   ModuleUserDeptTreeUrl,
@@ -43,9 +47,11 @@ import {
   UpdateCustomerCapacityUrl,
   UpdateCustomerPoolUrl,
   updateOpportunityRuleUrl,
+  UpdateReasonEnableUrl,
+  UpdateReasonUrl,
   UploadTempFileUrl,
 } from '@lib/shared/api/requrls/system/module';
-import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
 import type { ClueListItem } from '@lib/shared/models/clue';
 import type { CommonList, TableQueryParams } from '@lib/shared/models/common';
 import type { CustomerContractListItem, CustomerListItem } from '@lib/shared/models/customer';
@@ -61,7 +67,11 @@ import type {
   ModuleSortParams,
   OpportunityItem,
   OpportunityParams,
+  ReasonConfig,
+  ReasonItem,
+  ReasonParams,
   SaveFormDesignConfigParams,
+  UpdateReasonEnableParams,
 } from '@lib/shared/models/system/module';
 import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
 import type { Result } from '@lib/shared/types/axios';
@@ -242,6 +252,31 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${DownloadPictureUrl}/${id}` });
   }
 
+  // 模块设置-原因配置
+  function getReasonList(type: ReasonTypeEnum) {
+    return CDR.get<ReasonItem[]>({ url: `${GetReasonUrl}/${type}` });
+  }
+
+  function addReason(data: ReasonParams) {
+    return CDR.post({ url: AddReasonUrl, data });
+  }
+
+  function updateReason(data: ReasonParams) {
+    return CDR.post({ url: UpdateReasonUrl, data });
+  }
+
+  function deleteReasonItem(id: string) {
+    return CDR.get({ url: `${DeleteReasonUrl}/${id}` });
+  }
+
+  function getReasonConfig(type: ReasonTypeEnum) {
+    return CDR.get<ReasonConfig>({ url: `${GetReasonConfigUrl}/${type}` });
+  }
+
+  function updateReasonEnable(data: UpdateReasonEnableParams) {
+    return CDR.post<ReasonConfig>({ url: UpdateReasonEnableUrl, data });
+  }
+
   return {
     getModuleNavConfigList,
     moduleNavListSort,
@@ -281,5 +316,11 @@ export default function useProductApi(CDR: CordysAxios) {
     uploadTempFile,
     previewPicture,
     downloadPicture,
+    getReasonList,
+    addReason,
+    updateReason,
+    deleteReasonItem,
+    getReasonConfig,
+    updateReasonEnable,
   };
 }

@@ -7,7 +7,7 @@
             <div class="mb-[16px] flex items-center justify-between">
               <div class="font-medium text-[var(--text-n1)]">{{ t('module.businessManage.mainNavConfig') }}</div>
               <div class="text-[var(--text-n4)]">
-                <n-switch v-model:value="enable" :rubber-band="false" @update:value="changeIcon" />
+                <n-switch v-model:value="enable" size="small" :rubber-band="false" @update:value="changeIcon" />
                 <span class="ml-[8px]">icon </span>
               </div>
             </div>

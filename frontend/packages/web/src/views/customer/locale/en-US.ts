@@ -10,7 +10,8 @@ export default {
   'customer.moveToOpenSea': 'Move to Open Sea',
   'customer.moveToSeaOrPool': 'Move to Sea/Pool',
   'customer.batchMoveTitleTip': 'Confirm to move {number} customers to high seas?',
-  'customer.batchMoveContentTip': 'After the move, the customer will have no person in charge',
+  'customer.moveCustomerToOpenSeaTitleTip': 'Confirm moving {name} customer to open pool?',
+  'customer.batchMoveContentTip': 'After moving, the customer will have no owner. Please proceed with caution!',
   'customer.confirmMove': 'Confirm move',
   'customer.moveToOpenSeaFailedContent':
     "Successfully transferred customers will enter the open sea, while failed customers will not enter the open sea. Please check the customer's recycling on the high seas!",

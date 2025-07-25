@@ -38,6 +38,7 @@
           v-model:value="range"
           class="w-[240px]"
           type="datetimerange"
+          :default-time="[undefined, '23:59:59']"
           @confirm="confirmTimePicker"
         >
           <template #date-icon>

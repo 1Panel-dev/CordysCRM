@@ -277,6 +277,12 @@ export const {
   uploadTempFile,
   previewPicture,
   downloadPicture,
+  getReasonList,
+  addReason,
+  updateReason,
+  deleteReasonItem,
+  getReasonConfig,
+  updateReasonEnable,
 } = moduleApi;
 
 export const {

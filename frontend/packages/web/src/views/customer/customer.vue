@@ -84,6 +84,12 @@
     type="customer"
     @create-success="handleExportCreateSuccess"
   />
+  <CrmMoveModal
+    v-model:show="showMoveModal"
+    :form-key="FormDesignKeyEnum.CUSTOMER"
+    :source-id="checkedRowKeys"
+    :name="initialSourceName"
+  />
 </template>
 
 <script setup lang="ts">
@@ -107,6 +113,7 @@
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
@@ -220,12 +227,48 @@
     });
   }
 
-  // 批量转移
-  const showTransferModal = ref<boolean>(false);
-  const showExportModal = ref<boolean>(false);
+  const isEnableReason = ref(false);
+  const showMoveModal = ref(false);
   const showToCluePoolResultModel = ref(false);
   const successCount = ref<number>(0);
   const failCount = ref<number>(0);
+  // TODO xinxinwu
+  function handleMoveToOpenSea(row?: any) {
+    initialSourceName.value = row?.name ?? '';
+    if (isEnableReason.value) {
+      showMoveModal.value = true;
+    } else {
+      const title = row
+        ? t('customer.moveCustomerToOpenSeaTitleTip', { name: characterLimit(initialSourceName.value) })
+        : t('customer.batchMoveTitleTip', { number: checkedRowKeys.value.length });
+      const ids = row ? [row.id] : (checkedRowKeys.value as string[]);
+      openModal({
+        type: 'warning',
+        title,
+        content: t('customer.batchMoveContentTip'),
+        positiveText: t('common.confirmMoveIn'),
+        negativeText: t('common.cancel'),
+        onPositiveClick: async () => {
+          try {
+            const { success, fail } = await batchMoveCustomer(ids);
+            successCount.value = success;
+            failCount.value = fail;
+            showToCluePoolResultModel.value = true;
+            checkedRowKeys.value = [];
+            tableRefreshId.value += 1;
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(error);
+          }
+        },
+      });
+    }
+  }
+
+  // 批量转移
+  const showTransferModal = ref<boolean>(false);
+  const showExportModal = ref<boolean>(false);
+
   const isExportAll = ref(false);
   function handleBatchAction(item: ActionsItem) {
     switch (item.key) {
@@ -236,26 +279,7 @@
         handleBatchDelete();
         break;
       case 'moveToOpenSea':
-        openModal({
-          type: 'warning',
-          title: t('customer.batchMoveTitleTip', { number: checkedRowKeys.value.length }),
-          content: t('customer.batchMoveContentTip'),
-          positiveText: t('common.confirmMoveIn'),
-          negativeText: t('common.cancel'),
-          onPositiveClick: async () => {
-            try {
-              const { success, fail } = await batchMoveCustomer(checkedRowKeys.value);
-              successCount.value = success;
-              failCount.value = fail;
-              showToCluePoolResultModel.value = true;
-              checkedRowKeys.value = [];
-              tableRefreshId.value += 1;
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.error(error);
-            }
-          },
-        });
+        handleMoveToOpenSea();
         break;
       case 'exportChecked':
         isExportAll.value = false;
@@ -341,6 +365,9 @@
       case 'delete':
         handleDelete(row);
         break;
+      case 'moveToOpenSea':
+        handleMoveToOpenSea(row);
+        break;
       default:
         break;
     }
@@ -374,6 +401,11 @@
               permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
             },
             {
+              label: t('customer.moveToOpenSea'),
+              key: 'moveToOpenSea',
+              permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+            },
+            {
               label: t('common.delete'),
               key: 'delete',
               permission: ['CUSTOMER_MANAGEMENT:DELETE'],
@@ -394,7 +426,7 @@
     },
     operationColumn: {
       key: 'operation',
-      width: 200,
+      width: 260,
       fixed: 'right',
       render: (row: any) =>
         ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value) ||

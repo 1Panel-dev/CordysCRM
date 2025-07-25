@@ -87,4 +87,7 @@ export default {
   'module.goConfig': 'Go to configuration',
   'module.DataEaseTip': 'The system is not configured for DataEase',
   'module.DataEaseTipContent': 'Configure DataEase before using this feature',
+  'module.moveReasonConfig': 'Move reason configuration',
+  'module.failReasonConfig': 'Fail reason configuration',
+  'module.configReasonTooltip': 'The configuration can be enabled',
 };

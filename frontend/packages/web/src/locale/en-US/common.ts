@@ -64,6 +64,7 @@ export default {
   'common.confirmClose': 'Confirm close',
   'common.enableSuccess': 'Enable success',
   'common.confirmMoveIn': 'Confirm move in',
+  'common.moveInReason': 'Move-in reason',
   'common.moveInSuccess': 'Move in success',
   'common.disableSuccess': 'Disable success',
   'common.enableFailed': 'Enable failed',

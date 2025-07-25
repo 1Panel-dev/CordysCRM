@@ -8,15 +8,7 @@
             <div v-for="item in licenseInfo" :key="item.label" class="mb-[24px]">
               {{ item.label }}
             </div>
-            <n-button
-              v-permission="['LICENSE:EDIT']"
-              strong
-              text
-              size="large"
-              class="!text-[18px]"
-              type="primary"
-              @click="handleUpdate"
-            >
+            <n-button v-permission="['LICENSE:EDIT']" strong text type="primary" @click="handleUpdate">
               {{ t('system.license.authorityUpdate') }}
             </n-button>
           </div>
@@ -201,7 +193,6 @@
     padding: 24px;
     width: 936px;
     min-height: 628px;
-    font-size: 18px;
     color: var(--text-n1);
     flex-direction: column;
     .license-content {

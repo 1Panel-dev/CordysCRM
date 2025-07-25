@@ -29,4 +29,6 @@ export default {
   'clue.disabledTooltipText': 'The clue has been converted to a customer and cannot be selected!',
   'clue.relationCustomer': 'Related customer',
   'clue.convertToCustomerSuccess': 'Converted to customer successfully',
+  'clue.moveToLeadPoolTip': 'Warning: Leads will become unassigned after transfer!',
+  'clue.batchMoveIntoCluePoolTitle': 'Confirm move-in {name} to lead pool?',
 };

@@ -10,7 +10,8 @@ export default {
   'customer.moveToOpenSea': '移入公海',
   'customer.moveToSeaOrPool': '移入公海/线索池',
   'customer.batchMoveTitleTip': '确认移入 {number} 个客户至公海吗？',
-  'customer.batchMoveContentTip': '移入后，客户将无负责人',
+  'customer.moveCustomerToOpenSeaTitleTip': '确认移入 {name} 客户至公海吗？',
+  'customer.batchMoveContentTip': '移入后，客户将无负责人，请谨慎操作！',
   'customer.confirmMove': '确认移入',
   'customer.moveToOpenSeaFailedContent':
     '转移成功的客户会进入到公海中，转移失败的客户不会进入公海，请检查客户的回收公海!',

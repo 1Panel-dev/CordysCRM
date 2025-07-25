@@ -73,6 +73,12 @@
     @new="handleNew"
     @finish="closeAndRefresh"
   />
+  <CrmMoveModal
+    v-model:show="showMoveModal"
+    :form-key="FormDesignKeyEnum.CLUE"
+    :source-id="sourceId"
+    :name="sourceName"
+  />
 </template>
 
 <script setup lang="ts">
@@ -91,13 +97,14 @@
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
+  import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import convertToCustomerDrawer from './convertToCustomerDrawer.vue';
 
   // import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
-  import { batchTransferClue, deleteClue, getClueHeaderList } from '@/api/modules';
+  import { batchToCluePool, batchTransferClue, deleteClue, getClueHeaderList } from '@/api/modules';
   // import { clueBaseSteps } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
@@ -179,6 +186,39 @@
     });
   }
 
+  // 移入线索池 TODO
+  const isEnableReason = ref(false);
+  const showMoveModal = ref(false);
+  function handleMoveToLeadPool() {
+    if (isEnableReason.value) {
+      showMoveModal.value = true;
+    } else {
+      openModal({
+        type: 'default',
+        title: t('clue.batchMoveIntoCluePoolTitle', { name: characterLimit(sourceName.value) }),
+        content: t('clue.moveToLeadPoolTip'),
+        positiveText: t('common.confirmMoveIn'),
+        negativeText: t('common.cancel'),
+        onPositiveClick: async () => {
+          try {
+            try {
+              // TODO 等待联调
+              await batchToCluePool([sourceId.value]);
+              Message.success(t('common.moveInSuccess'));
+              closeAndRefresh();
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.error(error);
+            }
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(error);
+          }
+        },
+      });
+    }
+  }
+
   const formDrawerVisible = ref(false);
   const showConvertToCustomerDrawer = ref(false);
   const realFormKey = ref<FormDesignKeyEnum>(FormDesignKeyEnum.FOLLOW_RECORD_CLUE);
@@ -194,6 +234,9 @@
       case 'convertToCustomer':
         realFormKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
         emit('convertToCustomer');
+        break;
+      case 'moveIntoCluePool':
+        handleMoveToLeadPool();
         break;
       default:
         break;
@@ -264,6 +307,14 @@
         ghost: true,
         class: 'n-btn-outline-primary',
         permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
+      },
+      {
+        label: t('clue.moveIntoCluePool'),
+        key: 'moveIntoCluePool',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CLUE_MANAGEMENT:UPDATE'],
       },
       {
         label: t('common.transfer'),

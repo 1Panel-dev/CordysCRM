@@ -27,4 +27,6 @@ export default {
   'clue.disabledTooltipText': '线索已转为客户，无法选中！',
   'clue.relationCustomer': '关联客户',
   'clue.convertToCustomerSuccess': '转为客户成功',
+  'clue.moveToLeadPoolTip': '移入后，线索将无负责人，请谨慎操作！',
+  'clue.batchMoveIntoCluePoolTitle': '确认 {name} 移入至线索池吗？',
 };

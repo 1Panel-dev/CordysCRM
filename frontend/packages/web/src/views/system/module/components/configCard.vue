@@ -14,9 +14,13 @@
           @select="(key) => handleSelect(key, item)"
         >
           <template #more>
-            <n-dropdown trigger="hover" :options="moreOptions" @select="handleMoreSelect">
+            <CrmMoreAction
+              :options="getMoreList(item.key)"
+              trigger="hover"
+              @select="(item) => handleMoreSelect(item.key as string)"
+            >
               <n-button type="primary" text :keyboard="false">{{ t('common.more') }}</n-button>
-            </n-dropdown>
+            </CrmMoreAction>
           </template>
         </CrmButtonGroup>
         <n-divider v-if="item.groupList.length" v-permission="['MODULE_SETTING:UPDATE']" class="!mx-[4px]" vertical />
@@ -39,6 +43,7 @@
         </CrmPopConfirm>
         <NSwitch
           v-else
+          size="small"
           :disabled="!hasAnyPermission(['MODULE_SETTING:UPDATE'])"
           :value="item.enable"
           @update:value="(value:boolean)=>toggleModule(value,item)"
@@ -65,33 +70,56 @@
   <clueFormDrawer v-model:visible="clueManagementFormVisible" />
   <OpenSeaDrawer v-model:visible="customerManagementOpenSeaVisible" :type="selectKey" />
   <ProductFromDrawer v-model:visible="productManagementFormVisible" />
+  <MoveAccountReasonDrawer
+    v-model:visible="showAccountReasonDrawer"
+    v-model:config="isHasConfigAccountReason"
+    v-model:enable="enableAccountMoveReason"
+    @load-config="() => getGlobalReasonConfig()"
+  />
+  <MoveLeadReasonDrawer
+    v-model:visible="showLeadReasonDrawer"
+    v-model:enable="enableLeadMoveReason"
+    v-model:config="isHasConfigAccountReason"
+    @load-config="() => getGlobalReasonConfig()"
+  />
+  <OpportunityReasonDrawer
+    v-model:visible="showOptReasonDrawer"
+    v-model:config="isHasConfigOptReason"
+    v-model:enable="enableOptMoveReason"
+    @load-config="() => getGlobalReasonConfig()"
+  />
 </template>
 
 <script setup lang="ts">
-  import { NButton, NDivider, NDropdown, NSwitch, useMessage } from 'naive-ui';
+  import { RendererElement } from 'vue';
+  import { NButton, NDivider, NSwitch, NTooltip, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { ModuleNavItem } from '@lib/shared/models/system/module';
 
   import CrmButtonGroup from '@/components/pure/crm-button-group/index.vue';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
+  import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmPopConfirm from '@/components/pure/crm-pop-confirm/index.vue';
   import CapacitySetDrawer from './capacitySetDrawer.vue';
   import CluePoolDrawer from './clueManagement/cluePoolDrawer.vue';
   import clueFormDrawer from './clueManagement/formDrawer.vue';
+  import MoveLeadReasonDrawer from './clueManagement/moveReasonDrawer.vue';
   import customManagementContactFormDrawer from './customManagement/contactFormDrawer.vue';
   import followPlanDrawer from './customManagement/followPlanDrawer.vue';
   import followRecordDrawer from './customManagement/followRecordDrawer.vue';
   import customManagementFormDrawer from './customManagement/formDrawer.vue';
+  import MoveAccountReasonDrawer from './customManagement/moveReasonDrawer.vue';
   import OpenSeaDrawer from './customManagement/openSeaDrawer.vue';
+  import OpportunityReasonDrawer from './opportunity/failReasonDrawer.vue';
   import OpportunityFormDrawer from './opportunity/formDrawer.vue';
   import OpportunityCloseRulesDrawer from './opportunity/opportunityCloseRulesDrawer.vue';
   import ProductFromDrawer from './productManagement/formDrawer.vue';
 
-  import { toggleModuleNavStatus } from '@/api/modules';
+  import { getReasonConfig, toggleModuleNavStatus, updateReasonEnable } from '@/api/modules';
   import useModal from '@/hooks/useModal';
   import router from '@/router';
   import useLicenseStore from '@/store/modules/setting/license';
@@ -122,6 +150,167 @@
     disabled?: boolean; // 是否禁用
   };
 
+  const renderAccountReasonConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
+  const renderLeadReasonConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
+  const renderOptReasonConfig = ref<VNode<RendererElement, { [key: string]: any }> | null>(null);
+  // 是否已配置原因
+  const isHasConfigAccountReason = ref<boolean>(false);
+  const isHasConfigLeadReason = ref<boolean>(false);
+  const isHasConfigOptReason = ref<boolean>(false);
+
+  // 全局原因配置
+  const enableAccountMoveReason = ref(false);
+  const enableLeadMoveReason = ref(false);
+  const enableOptMoveReason = ref(false);
+
+  const showAccountReasonDrawer = ref(false);
+  const showLeadReasonDrawer = ref(false);
+  const showOptReasonDrawer = ref(false);
+
+  // 配置原因
+  function handleConfigReason(e: MouseEvent, type: ReasonTypeEnum) {
+    switch (type) {
+      case ReasonTypeEnum.CUSTOMER_POOL_RS:
+        showAccountReasonDrawer.value = true;
+        break;
+      case ReasonTypeEnum.CLUE_POOL_RS:
+        showLeadReasonDrawer.value = true;
+        break;
+      case ReasonTypeEnum.OPPORTUNITY_FAIL_RS:
+        showOptReasonDrawer.value = true;
+        break;
+      default:
+        break;
+    }
+  }
+
+  const refreshReasonConfigKey = ref(0);
+  // 切换原因全局开关
+  async function toggleReason(e: MouseEvent, type: ReasonTypeEnum, enable: boolean) {
+    try {
+      await updateReasonEnable({
+        module: type,
+        enable: !enable,
+      });
+
+      Message.success(enable ? t('common.closeSuccess') : t('common.enableSuccess'));
+      refreshReasonConfigKey.value += 1;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  function getLabel(type: ReasonTypeEnum) {
+    switch (type) {
+      case ReasonTypeEnum.CUSTOMER_POOL_RS:
+      case ReasonTypeEnum.CLUE_POOL_RS:
+        return t('module.moveReasonConfig');
+      case ReasonTypeEnum.OPPORTUNITY_FAIL_RS:
+        return t('module.failReasonConfig');
+      default:
+        break;
+    }
+  }
+
+  // 获取原因开关
+  function renderReason(
+    type: ReasonTypeEnum,
+    switchValue: Ref<boolean>,
+    isConfigAvailableReason: Ref<boolean>,
+    onToggleCallBack: (e: MouseEvent, moduleType: ReasonTypeEnum, val: boolean) => void,
+    onConfigReasonCallBack: (e: MouseEvent, moduleType: ReasonTypeEnum) => void
+  ) {
+    if (!hasAnyPermission(['MODULE_SETTING:UPDATE'])) {
+      return null;
+    }
+    const label = getLabel(type);
+    return h(
+      'div',
+      {
+        class: 'flex items-center text-[var(--text-n1)]',
+        onClick: (e: MouseEvent) => onConfigReasonCallBack(e, type),
+      },
+      [
+        label,
+        h(
+          NTooltip,
+          {
+            delay: 300,
+            flip: true,
+            disabled: isConfigAvailableReason.value,
+          },
+          {
+            trigger: () =>
+              h(NSwitch, {
+                value: switchValue.value,
+                rubberBand: false,
+                size: 'small',
+                disabled: !hasAnyPermission(['MODULE_SETTING:UPDATE']) || !isConfigAvailableReason.value,
+                class: 'ml-[8px] mt-[2px] text-[var(--primary-8)]',
+                onClick: (e: MouseEvent) => {
+                  e.stopPropagation();
+                  if (isConfigAvailableReason.value) {
+                    onToggleCallBack(e, type, switchValue.value);
+                  }
+                },
+              }),
+            default: () => t('module.configReasonTooltip'),
+          }
+        ),
+      ]
+    );
+  }
+
+  const accountMoreOptions = computed<ActionsItem[]>(() => [
+    {
+      key: 'followRecord',
+      label: t('module.followRecordFormSetting'),
+    },
+    {
+      key: 'followPlan',
+      label: t('module.followPlanFormSetting'),
+    },
+    {
+      key: 'capacitySet',
+      label: t('module.customer.capacitySet'),
+    },
+    {
+      label: t('module.moveReasonConfig'),
+      key: 'move',
+      render: renderAccountReasonConfig.value,
+    },
+  ]);
+
+  const leadMoreOptions = computed<ActionsItem[]>(() => [
+    {
+      label: t('module.moveReasonConfig'),
+      key: 'move',
+      render: renderLeadReasonConfig.value,
+    },
+  ]);
+
+  const opportunityMoreOptions = computed<ActionsItem[]>(() => [
+    {
+      label: t('module.failReasonConfig'),
+      key: 'move',
+      render: renderOptReasonConfig.value,
+    },
+  ]);
+
+  function getMoreList(key: ModuleConfigEnum) {
+    switch (key) {
+      case ModuleConfigEnum.CUSTOMER_MANAGEMENT:
+        return accountMoreOptions.value;
+      case ModuleConfigEnum.CLUE_MANAGEMENT:
+        return leadMoreOptions.value;
+      case ModuleConfigEnum.BUSINESS_MANAGEMENT:
+        return opportunityMoreOptions.value;
+      default:
+        return [];
+    }
+  }
+
   const moduleConfigList = ref<ModuleConfigItem[]>([
     {
       label: t('module.workbenchHome'),
@@ -146,6 +335,10 @@
         {
           label: t('module.clue.capacitySet'),
           key: 'capacitySet',
+        },
+        {
+          label: t('common.more'),
+          slotName: 'more',
         },
       ],
       enable: true,
@@ -189,6 +382,10 @@
           label: t('module.businessManage.businessCloseRule'),
           key: 'businessParamsSet',
         },
+        {
+          label: t('common.more'),
+          slotName: 'more',
+        },
       ],
     },
     // TODO 不上 xxw
@@ -212,21 +409,6 @@
       enable: true,
     },
   ]);
-
-  const moreOptions = [
-    {
-      key: 'followRecord',
-      label: t('module.followRecordFormSetting'),
-    },
-    {
-      key: 'followPlan',
-      label: t('module.followPlanFormSetting'),
-    },
-    {
-      key: 'capacitySet',
-      label: t('module.customer.capacitySet'),
-    },
-  ];
 
   // 切换模块状态
   async function toggleModule(enable: boolean, item: ModuleConfigItem) {
@@ -363,12 +545,76 @@
     });
   }
 
+  function initRenderReasonSwitch() {
+    renderAccountReasonConfig.value = renderReason(
+      ReasonTypeEnum.CUSTOMER_POOL_RS,
+      enableAccountMoveReason,
+      isHasConfigAccountReason,
+      toggleReason,
+      handleConfigReason
+    );
+    renderLeadReasonConfig.value = renderReason(
+      ReasonTypeEnum.CLUE_POOL_RS,
+      enableLeadMoveReason,
+      isHasConfigLeadReason,
+      toggleReason,
+      handleConfigReason
+    );
+    renderOptReasonConfig.value = renderReason(
+      ReasonTypeEnum.OPPORTUNITY_FAIL_RS,
+      enableOptMoveReason,
+      isHasConfigOptReason,
+      toggleReason,
+      handleConfigReason
+    );
+  }
+
+  async function getGlobalReasonConfig() {
+    try {
+      const [accountReasonConfig, leadReasonConfig, opportunityReasonConfig] = await Promise.all([
+        getReasonConfig(ReasonTypeEnum.CUSTOMER_POOL_RS),
+        getReasonConfig(ReasonTypeEnum.CLUE_POOL_RS),
+        getReasonConfig(ReasonTypeEnum.OPPORTUNITY_FAIL_RS),
+      ]);
+      // 客户
+      enableAccountMoveReason.value = accountReasonConfig.enable;
+      isHasConfigAccountReason.value = accountReasonConfig.dictList.length > 0;
+      // 线索
+      enableLeadMoveReason.value = leadReasonConfig.enable;
+      isHasConfigLeadReason.value = leadReasonConfig.dictList.length > 0;
+      // 商机
+      enableOptMoveReason.value = opportunityReasonConfig.enable;
+      isHasConfigOptReason.value = opportunityReasonConfig.dictList.length > 0;
+      initRenderReasonSwitch();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  onBeforeMount(() => {
+    getGlobalReasonConfig();
+  });
+
+  watch(
+    () => refreshReasonConfigKey.value,
+    (val) => {
+      if (val) {
+        getGlobalReasonConfig();
+      }
+    }
+  );
+
   watch(
     () => props.list,
     () => {
       initModuleConfigList();
     }
   );
+
+  onMounted(() => {
+    initRenderReasonSwitch();
+  });
 </script>
 
 <style scoped lang="less">

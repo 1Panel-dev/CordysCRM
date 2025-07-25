@@ -131,7 +131,23 @@
                     <CrmIcon type="iconicon_edit" :size="16" />
                   </template>
                 </n-button>
-                <n-button ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
+                <CrmPopConfirm
+                  v-if="props.popConfirmProps"
+                  v-model:show="popShow[element.id]"
+                  :disabled="!props.popConfirmProps"
+                  placement="bottom-end"
+                  class="w-[260px]"
+                  v-bind="getPopConfirmProps(element) as CrmPopConfirmProps"
+                  @confirm="handlePopDeleteListItem(index, element.id)"
+                  @cancel="popShow[element.id] = false"
+                >
+                  <n-button ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
+                    <template #icon>
+                      <CrmIcon type="iconicon_delete" :size="16" />
+                    </template>
+                  </n-button>
+                </CrmPopConfirm>
+                <n-button v-else ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
                   <template #icon>
                     <CrmIcon type="iconicon_delete" :size="16" />
                   </template>
@@ -179,6 +195,7 @@
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
+  import CrmPopConfirm, { CrmPopConfirmProps } from '@/components/pure/crm-pop-confirm/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
@@ -195,6 +212,7 @@
       disabledAdd?: boolean; // 是否禁用添加按钮
       validateWhenAdd?: boolean; // 增加一行的时候是否进行校验
       showAllOr?: boolean;
+      popConfirmProps?: (ele: Record<string, any>) => CrmPopConfirmProps | CrmPopConfirmProps;
     }>(),
     {
       maxHeight: '100%',
@@ -212,6 +230,7 @@
   const form = ref<Record<string, any>>({ list: [], allOr: 'AND' });
   const formItemRefs = ref<Record<string, Map<string, any>>>({});
   const formItem: Record<string, any> = {};
+  const popShow = ref<Record<string, boolean>>({});
 
   const handleFormItemRef = (el: Element | ComponentPublicInstance | null, path: string, index: number) => {
     if (!formItemRefs.value[path]) {
@@ -322,6 +341,12 @@
     return unref(form.value);
   }
 
+  function getPopConfirmProps(element: Record<string, any>) {
+    return props.popConfirmProps && typeof props.popConfirmProps === 'function'
+      ? props.popConfirmProps(element)
+      : props.popConfirmProps;
+  }
+
   /**
    * 触发表单校验
    * @param cb 校验通过后执行回调
@@ -343,14 +368,28 @@
     });
   }
 
-  // 删除一行
-  async function handleDeleteListItem(i: number, id?: string) {
+  function handleDelete(i: number, id?: string) {
     if (id) {
       emit('deleteRow', i, id, () => {
         form.value.list.splice(i, 1);
       });
     } else {
       form.value.list.splice(i, 1);
+    }
+  }
+
+  // 删除一行
+  async function handleDeleteListItem(i: number, id?: string) {
+    if (props.popConfirmProps && id) {
+      popShow.value[id as string] = true;
+    } else {
+      handleDelete(i, id);
+    }
+  }
+
+  function handlePopDeleteListItem(i: number, id?: string) {
+    if (props.popConfirmProps) {
+      handleDelete(i, id);
     }
   }
 
@@ -413,6 +452,21 @@
       form.value.list.push({ ...formItem, editing: true });
     }
   }
+
+  // 初始化
+  watch(
+    () => form.value.list,
+    (newList) => {
+      if (props.popConfirmProps) {
+        newList.forEach((item: any) => {
+          if (item.popConfirmProps) {
+            popShow.value[item.id as string] = false;
+          }
+        });
+      }
+    },
+    { immediate: true }
+  );
 </script>
 
 <style lang="less" scoped>
