@@ -1,7 +1,5 @@
 package io.cordys.mybatis;
 
-import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.LogUtils;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -40,15 +38,6 @@ public class DataAccessLayer implements ApplicationContextAware {
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<Class<?>, EntityTable> eldest) {
                     return size() > 1000;
-                }
-            });
-
-    // 添加SQL语句缓存，避免重复创建MappedStatement
-    private final Map<String, String> sqlCache = Collections.synchronizedMap(
-            new LinkedHashMap<>(256, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
-                    return size() > 5000;
                 }
             });
 
@@ -138,42 +127,42 @@ public class DataAccessLayer implements ApplicationContextAware {
             maps.put("sqlBuild", sqlBuild);
             maps.put("entity", criteria);
             String sql = new BaseMapper.SelectBySqlProvider().buildSql(maps, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String msId = execute(sql, "BaseMapper.query", table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, criteria);
         }
 
         @Override
         public List<E> selectAll(String criteria) {
             String sql = new BaseMapper.SelectAllSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String msId = execute(sql, "BaseMapper.selectAll", table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, criteria);
         }
 
         @Override
         public List<E> select(E criteria) {
             String sql = new BaseMapper.SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String msId = execute(sql, "BaseMapper.select", table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, criteria);
         }
 
         @Override
         public List<E> selectListByLambda(LambdaQueryWrapper<E> wrapper) {
             String sql = new BaseMapper.SelectByLambdaSqlProvider().buildSql(wrapper, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String msId = execute(sql, "BaseMapper.selectListByLambda", table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, wrapper);
         }
 
         @Override
         public E selectByPrimaryKey(Serializable criteria) {
             String sql = new BaseMapper.SelectByIdSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String msId = execute(sql, "BaseMapper.selectByPrimaryKey", table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectOne(msId, criteria);
         }
 
         @Override
         public E selectOne(E criteria) {
             String sql = new BaseMapper.SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String msId = execute(sql, "BaseMapper.selectOne", table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectOne(msId, criteria);
         }
 
@@ -183,56 +172,56 @@ public class DataAccessLayer implements ApplicationContextAware {
             maps.put("column", column);
             maps.put("array", criteria);
             String sql = new BaseMapper.SelectInSqlProvider().buildSql(maps, this.table);
-            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String msId = execute(sql, "BaseMapper.selectByColumn", table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, criteria);
         }
 
         @Override
         public Long countByExample(E criteria) {
             String sql = new BaseMapper.CountByCriteriaSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), Long.class, SqlCommandType.SELECT);
+            String msId = execute(sql, "BaseMapper.countByExample", table.getEntityClass(), Long.class, SqlCommandType.SELECT);
             return sqlSession.selectOne(msId, criteria);
         }
 
         @Override
         public Integer insert(E criteria) {
             String sql = new BaseMapper.InsertSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.INSERT);
+            String msId = execute(sql, "BaseMapper.insert", table.getEntityClass(), int.class, SqlCommandType.INSERT);
             return sqlSession.insert(msId, criteria);
         }
 
         @Override
         public Integer updateById(E criteria) {
             String sql = new BaseMapper.UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.UPDATE);
+            String msId = execute(sql, "BaseMapper.updateById", table.getEntityClass(), int.class, SqlCommandType.UPDATE);
             return sqlSession.update(msId, criteria);
         }
 
         @Override
         public Integer update(E criteria) {
             String sql = new BaseMapper.UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.UPDATE);
+            String msId = execute(sql, "BaseMapper.update", table.getEntityClass(), int.class, SqlCommandType.UPDATE);
             return sqlSession.update(msId, criteria);
         }
 
         @Override
         public Integer delete(E criteria) {
             String sql = new BaseMapper.DeleteByCriteriaSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            String msId = execute(sql, "BaseMapper.delete", table.getEntityClass(), int.class, SqlCommandType.DELETE);
             return sqlSession.delete(msId, criteria);
         }
 
         @Override
         public void deleteByLambda(LambdaQueryWrapper<E> wrapper) {
             String sql = new BaseMapper.DeleteByLambdaSqlProvider().buildSql(wrapper, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            String msId = execute(sql, "BaseMapper.deleteByLambda", table.getEntityClass(), int.class, SqlCommandType.DELETE);
             sqlSession.delete(msId, wrapper);
         }
 
         @Override
         public void deleteByIds(List<String> array) {
             String sql = new BaseMapper.DeleteByIdsSqlProvider().buildSql(array, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            String msId = execute(sql, "BaseMapper.deleteByIds", table.getEntityClass(), int.class, SqlCommandType.DELETE);
             Map<String, List<String>> map = new HashMap<>();
             map.put("array", array);
             sqlSession.delete(msId, map);
@@ -241,7 +230,7 @@ public class DataAccessLayer implements ApplicationContextAware {
         @Override
         public Integer deleteByPrimaryKey(Serializable criteria) {
             String sql = new BaseMapper.DeleteSqlProvider().buildSql(criteria, this.table);
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            String msId = execute(sql, "BaseMapper.deleteByPrimaryKey", table.getEntityClass(), int.class, SqlCommandType.DELETE);
             return sqlSession.delete(msId, criteria);
         }
 
@@ -261,7 +250,7 @@ public class DataAccessLayer implements ApplicationContextAware {
 
         public List<E> sqlQuery(String sql, Object param, Class<?> paramType, Class<?> resultType) {
             checkDangerousSql(sql);
-            String msId = execute(sql, paramType, resultType, SqlCommandType.SELECT);
+            String msId = execute(sql, "BaseMapper.sqlQuery", paramType, resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, param);
         }
 
@@ -277,7 +266,7 @@ public class DataAccessLayer implements ApplicationContextAware {
             String sql = new BaseMapper.BatchInsertSqlProvider().buildSql(entities, this.table);
 
             // 获取 MyBatis 映射的 SQL ID
-            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.INSERT);
+            String msId = execute(sql, "BaseMapper.batchInsert", table.getEntityClass(), int.class, SqlCommandType.INSERT);
 
             // 获取 SqlSessionFactory 并打开批处理会话
             SqlSessionFactory sqlSessionFactory = applicationContext.getBean(SqlSessionFactory.class);
@@ -307,23 +296,8 @@ public class DataAccessLayer implements ApplicationContextAware {
     /**
      * 生成更合理的缓存键
      */
-    private String generateCacheKey(String sql, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
-        // 1. SQL规范化处理
-        String normalizedSql = normalizeSql(sql);
-
-        // 2. 使用StringBuilder提高效率
-        StringBuilder keyBuilder = new StringBuilder(64)
-                .append(sqlCommandType.name())
-                .append(':')
-                .append(parameterType.getName())
-                .append(':')
-                .append(resultType.getName())
-                .append(':');
-
-        // 3. 使用哈希码代替完整SQL
-        keyBuilder.append(CodingUtils.hashStr(normalizedSql));
-
-        return keyBuilder.toString();
+    private String generateCacheKey(String methodName, Class<?> parameterType, SqlCommandType sqlCommandType) {
+        return sqlCommandType.name() + ':' + parameterType.getName() + methodName;
     }
 
     /**
@@ -349,18 +323,13 @@ public class DataAccessLayer implements ApplicationContextAware {
      * @param sqlCommandType SQL 命令类型。
      * @return MappedStatement 的 ID。
      */
-    private String execute(String sql, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
+    private String execute(String sql, String methodName, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
         // 生成缓存键
-        String cacheKey = generateCacheKey(sql, parameterType, resultType, sqlCommandType);
+        String msId = generateCacheKey(methodName, parameterType, sqlCommandType);
 
-        // 尝试从缓存获取
-        String msId = sqlCache.get(cacheKey);
-        if (msId != null && configuration.hasStatement(msId, false)) {
+        if (configuration.hasStatement(msId, false)) {
             return msId;
         }
-
-        // 没有缓存，创建新的MappedStatement
-        msId = cacheKey + "." + IDGenerator.nextStr();
 
         SqlSource sqlSource = configuration
                 .getDefaultScriptingLanguageInstance()
@@ -368,9 +337,6 @@ public class DataAccessLayer implements ApplicationContextAware {
 
         // 创建并缓存MappedStatement
         newMappedStatement(msId, sqlSource, resultType, sqlCommandType);
-
-        // 缓存SQL和msId的映射
-        sqlCache.put(cacheKey, msId);
 
         return msId;
     }
