@@ -3,9 +3,11 @@ package io.cordys.crm.opportunity.controller;
 
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
+import io.cordys.crm.system.constants.UserViewResourceType;
 import io.cordys.crm.system.domain.UserView;
 import io.cordys.crm.system.dto.request.UserViewAddRequest;
 import io.cordys.crm.system.dto.request.UserViewUpdateRequest;
+import io.cordys.crm.system.dto.response.UserViewListResponse;
 import io.cordys.crm.system.dto.response.UserViewResponse;
 import io.cordys.crm.system.service.UserViewService;
 import io.cordys.security.SessionUtils;
@@ -15,6 +17,8 @@ import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "商机视图")
 @RestController
@@ -29,7 +33,7 @@ public class OpportunityUserViewController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "添加商机视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
-        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.OPPORTUNITY.name());
     }
 
 
@@ -49,8 +53,17 @@ public class OpportunityUserViewController {
     }
 
     @GetMapping("/detail/{id}")
-    @Operation(summary = "视图详情")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @Operation(summary = "商机视图详情")
     public UserViewResponse viewDetail(@PathVariable String id) {
         return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+
+    @GetMapping("/list")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @Operation(summary = "商机视图列表")
+    public List<UserViewListResponse> queryList() {
+        return userViewService.list(UserViewResourceType.OPPORTUNITY.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }

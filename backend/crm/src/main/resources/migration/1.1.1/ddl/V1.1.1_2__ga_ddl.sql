@@ -18,6 +18,7 @@ CREATE TABLE sys_user_view
     `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
     `user_id`         VARCHAR(32)  NOT NULL COMMENT '用户id',
     `name`            VARCHAR(255) NOT NULL COMMENT '视图名称',
+    `fixed`           BIT(1)       NOT NULL DEFAULT 0 COMMENT '是否固定',
     `resource_type`   VARCHAR(50)  NOT NULL COMMENT '资源类型(客户/线索/商机)',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
     `pos`             BIGINT       NOT NULL COMMENT '排序',
@@ -44,7 +45,7 @@ CREATE TABLE sys_user_view_condition
     `sys_user_view_id` VARCHAR(32)  NOT NULL COMMENT '视图id',
     `name`             VARCHAR(255) NOT NULL COMMENT '参数名称',
     `value`            TEXT(255) COMMENT '参数值',
-    `value_type`            TEXT(255) COMMENT '参数值类型',
+    `value_type`       TEXT(255) COMMENT '参数值类型',
     `type`             VARCHAR(20) COMMENT '类型',
     `multiple_value`   BIT(1)       NOT NULL DEFAULT 0 COMMENT '是否是多选值',
     `operator`         VARCHAR(20) COMMENT '操作符',
@@ -61,38 +62,42 @@ COLLATE = utf8mb4_general_ci;
 CREATE INDEX idx_sys_user_view_id ON sys_user_view_condition (sys_user_view_id ASC);
 
 -- Dict config
-CREATE TABLE sys_dict(
-    `id` VARCHAR(32) NOT NULL   COMMENT 'id' ,
-    `name` VARCHAR(255) NOT NULL   COMMENT '字典值' ,
-    `module` VARCHAR(20) NOT NULL   COMMENT '字典模块' ,
-    `type` VARCHAR(10) NOT NULL DEFAULT 'TEXT' COMMENT '字典值类型' ,
-    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
-    `create_time` BIGINT NOT NULL   COMMENT '创建时间' ,
-    `update_time` BIGINT NOT NULL   COMMENT '更新时间' ,
-    `create_user` VARCHAR(32) NOT NULL   COMMENT '创建人' ,
-    `update_user` VARCHAR(32) NOT NULL   COMMENT '更新人' ,
+CREATE TABLE sys_dict
+(
+    `id`              VARCHAR(32)  NOT NULL COMMENT 'id',
+    `name`            VARCHAR(255) NOT NULL COMMENT '字典值',
+    `module`          VARCHAR(20)  NOT NULL COMMENT '字典模块',
+    `type`            VARCHAR(10)  NOT NULL DEFAULT 'TEXT' COMMENT '字典值类型',
+    `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织ID',
+    `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
+    `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
+    `create_user`     VARCHAR(32)  NOT NULL COMMENT '创建人',
+    `update_user`     VARCHAR(32)  NOT NULL COMMENT '更新人',
     PRIMARY KEY (id)
-)  COMMENT = '系统字典表'
+) COMMENT = '系统字典表'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
-CREATE INDEX idx_org_type ON sys_dict(organization_id ASC,type ASC);
-CREATE INDEX idx_org_name ON sys_dict(organization_id ASC,name ASC);
+CREATE INDEX idx_org_type ON sys_dict (organization_id ASC, type ASC);
+CREATE INDEX idx_org_name ON sys_dict (organization_id ASC, name ASC);
 
 -- Add customer/clue pool reason
-ALTER TABLE customer ADD `reason_id` VARCHAR(32) COMMENT '公海原因ID';
-CREATE INDEX idx_reason_id ON customer(reason_id);
-ALTER TABLE clue ADD `reason_id` VARCHAR(32) COMMENT '线索池原因ID';
-CREATE INDEX idx_reason_id ON clue(reason_id);
+ALTER TABLE customer
+    ADD `reason_id` VARCHAR(32) COMMENT '公海原因ID';
+CREATE INDEX idx_reason_id ON customer (reason_id);
+ALTER TABLE clue
+    ADD `reason_id` VARCHAR(32) COMMENT '线索池原因ID';
+CREATE INDEX idx_reason_id ON clue (reason_id);
 
 -- Add dict config
-CREATE TABLE sys_dict_config(
-    `module` VARCHAR(20) NOT NULL   COMMENT '字典类型' ,
-    `organization_id` VARCHAR(32) NOT NULL   COMMENT '组织ID' ,
-    `enabled` BIT(1) NOT NULL  DEFAULT 0 COMMENT '是否启用' ,
-    PRIMARY KEY (module,organization_id)
-)  COMMENT = '系统字典配置表'
+CREATE TABLE sys_dict_config
+(
+    `module`          VARCHAR(20) NOT NULL COMMENT '字典类型',
+    `organization_id` VARCHAR(32) NOT NULL COMMENT '组织ID',
+    `enabled`         BIT(1)      NOT NULL DEFAULT 0 COMMENT '是否启用',
+    PRIMARY KEY (module, organization_id)
+) COMMENT = '系统字典配置表'
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;

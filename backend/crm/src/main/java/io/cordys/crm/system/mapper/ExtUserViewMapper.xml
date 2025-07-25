@@ -18,4 +18,11 @@
         and user_id = #{userId}
         and id = #{id}
     </select>
+
+
+    <select id="selectViewList" resultType="io.cordys.crm.system.dto.response.UserViewListResponse">
+        select id, name, fixed from sys_user_view
+        where organization_id = #{orgId}
+        and user_id = #{userId}
+    </select>
 </mapper>

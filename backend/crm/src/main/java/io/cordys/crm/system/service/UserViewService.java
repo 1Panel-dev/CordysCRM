@@ -13,6 +13,7 @@ import io.cordys.crm.system.domain.UserView;
 import io.cordys.crm.system.domain.UserViewCondition;
 import io.cordys.crm.system.dto.request.UserViewAddRequest;
 import io.cordys.crm.system.dto.request.UserViewUpdateRequest;
+import io.cordys.crm.system.dto.response.UserViewListResponse;
 import io.cordys.crm.system.dto.response.UserViewResponse;
 import io.cordys.crm.system.mapper.ExtUserViewConditionMapper;
 import io.cordys.crm.system.mapper.ExtUserViewMapper;
@@ -42,19 +43,21 @@ public class UserViewService {
     /**
      * 添加用户视图
      *
-     * @param request 视图请求参数
-     * @param userId  用户ID
-     * @param orgId   组织ID
+     * @param request      视图请求参数
+     * @param userId       用户ID
+     * @param orgId        组织ID
+     * @param resourceType 视图类型
      * @return 新增的用户视图
      */
-    public UserView add(UserViewAddRequest request, String userId, String orgId) {
-        Long nextPos = getNextPos(orgId, userId, request.getResourceType());
+    public UserView add(UserViewAddRequest request, String userId, String orgId, String resourceType) {
+        Long nextPos = getNextPos(orgId, userId, resourceType);
         String viewId = IDGenerator.nextStr();
         UserView userView = new UserView();
         userView.setId(viewId);
         userView.setName(request.getName());
         userView.setUserId(userId);
-        userView.setResourceType(request.getResourceType());
+        userView.setResourceType(resourceType);
+        userView.setFixed(false);
         userView.setOrganizationId(orgId);
         userView.setPos(nextPos);
         userView.setSearchMode(request.getSearchMode());
@@ -226,5 +229,18 @@ public class UserViewService {
             default:
                 return value;
         }
+    }
+
+
+    /**
+     * 视图列表
+     *
+     * @param resourceType
+     * @param userId
+     * @param orgId
+     * @return
+     */
+    public List<UserViewListResponse> list(String resourceType, String userId, String orgId) {
+        return extUserViewMapper.selectViewList(resourceType, userId, orgId);
     }
 }

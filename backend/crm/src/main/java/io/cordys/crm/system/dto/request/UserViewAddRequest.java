@@ -13,7 +13,4 @@ public class UserViewAddRequest extends CombineSearch {
     @NotBlank
     private String name;
 
-    @Schema(description = "视图类型(客户/线索/商机等)")
-    @NotBlank
-    private String resourceType;
 }

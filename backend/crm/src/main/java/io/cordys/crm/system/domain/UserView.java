@@ -18,6 +18,9 @@ public class UserView extends BaseModel {
 	@Schema(description = "视图名称")
 	private String name;
 
+	@Schema(description = "是否固定视图")
+	private Boolean fixed;
+
 	@Schema(description = "资源类型(客户/线索/商机)")
 	private String resourceType;
 

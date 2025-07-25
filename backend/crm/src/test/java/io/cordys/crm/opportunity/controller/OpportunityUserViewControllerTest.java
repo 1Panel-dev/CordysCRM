@@ -24,7 +24,8 @@ public class OpportunityUserViewControllerTest extends BaseTest {
 
     private static final String BASE_PATH = "/opportunity/view/";
 
-    protected static final String DEFAULT_GET = "detail/{0}";
+    protected static final String DETAIL = "detail/{0}";
+    protected static final String LIST = "list";
 
     @Override
     protected String getBasePath() {
@@ -40,7 +41,6 @@ public class OpportunityUserViewControllerTest extends BaseTest {
         UserViewAddRequest request = new UserViewAddRequest();
         request.setName("测试视图11");
         request.setSearchMode("AND");
-        request.setResourceType("OPPORTUNITY");
         request.setConditions(buildConditions());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
         UserView resultData = getResultData(mvcResult, UserView.class);
@@ -89,8 +89,15 @@ public class OpportunityUserViewControllerTest extends BaseTest {
     @Test
     @Order(3)
     void testGetDetail() throws Exception {
-        this.requestGet(DEFAULT_GET, this.viewId);
+        this.requestGet(DETAIL, this.viewId);
     }
+
+    @Test
+    @Order(4)
+    void testList() throws Exception {
+        this.requestGet(LIST);
+    }
+
 
 
     @Test
