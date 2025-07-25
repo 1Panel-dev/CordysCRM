@@ -50,7 +50,7 @@ public class CluePoolControllerTests extends BaseTest {
 		request.setOwnerIds(List.of("cc"));
 		request.setScopeIds(List.of("cc"));
 		CluePoolPickRuleDTO pickRule = CluePoolPickRuleDTO.builder()
-				.pickNumber(1).limitOnNumber(true).pickIntervalDays(1).limitPreOwner(true).build();
+				.pickNumber(1).limitOnNumber(true).pickIntervalDays(1).limitPreOwner(true).limitNew(false).build();
 		request.setPickRule(pickRule);
 		RuleConditionDTO condition = new RuleConditionDTO();
 		condition.setColumn("name");

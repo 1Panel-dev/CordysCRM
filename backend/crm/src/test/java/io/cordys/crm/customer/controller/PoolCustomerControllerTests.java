@@ -212,6 +212,7 @@ public class PoolCustomerControllerTests extends BaseTest {
 		rule.setPoolId("test-pool-id");
 		rule.setLimitOnNumber(false);
 		rule.setLimitPreOwner(false);
+		rule.setLimitNew(false);
 		rule.setCreateTime(System.currentTimeMillis());
 		rule.setCreateUser("admin");
 		rule.setUpdateTime(System.currentTimeMillis());

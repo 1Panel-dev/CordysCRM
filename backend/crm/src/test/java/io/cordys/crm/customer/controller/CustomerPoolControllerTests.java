@@ -57,7 +57,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 		request.setOwnerIds(List.of("cc"));
 		request.setScopeIds(List.of("cc"));
 		CustomerPoolPickRuleDTO pickRule = CustomerPoolPickRuleDTO.builder()
-				.limitOnNumber(true).limitPreOwner(true).pickNumber(1).pickIntervalDays(1).build();
+				.limitOnNumber(true).limitPreOwner(true).limitNew(false).pickNumber(1).pickIntervalDays(1).build();
 		request.setPickRule(pickRule);
 		RuleConditionDTO condition = new RuleConditionDTO();
 		condition.setColumn("name");
