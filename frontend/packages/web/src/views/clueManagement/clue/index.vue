@@ -552,7 +552,7 @@
     {
       title: t('customer.lastFollowUpDate'),
       dataIndex: 'followTime',
-      type: FieldTypeEnum.DATE_TIME,
+      type: FieldTypeEnum.TIME_RANGE_PICKER,
     },
     ...baseFilterConfigList,
   ]);

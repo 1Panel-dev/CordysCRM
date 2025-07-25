@@ -15,7 +15,7 @@ export const baseFilterConfigList: FilterFormItem[] = [
   {
     title: t('common.createTime'),
     dataIndex: 'createTime',
-    type: FieldTypeEnum.DATE_TIME,
+    type: FieldTypeEnum.TIME_RANGE_PICKER,
   },
   {
     title: t('common.updateUserName'),
@@ -25,7 +25,7 @@ export const baseFilterConfigList: FilterFormItem[] = [
   {
     title: t('common.updateTime'),
     dataIndex: 'updateTime',
-    type: FieldTypeEnum.DATE_TIME,
+    type: FieldTypeEnum.TIME_RANGE_PICKER,
   },
 ];
 

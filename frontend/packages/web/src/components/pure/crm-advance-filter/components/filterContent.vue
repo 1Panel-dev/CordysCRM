@@ -46,9 +46,23 @@
             :rule="getRules(item)"
           >
             <CrmTimeRangePicker
-              v-if="item.type === FieldTypeEnum.TIME_RANGE_PICKER"
+              v-if="
+                item.type === FieldTypeEnum.TIME_RANGE_PICKER &&
+                [OperatorEnum.DYNAMICS, OperatorEnum.FIXED].includes(item.operator as OperatorEnum)
+              "
               v-model:value="item.value"
-              :time-range-type="item.operator as (OperatorEnum.DYNAMICS | OperatorEnum.FIXED)"
+              :time-range-type="item.operator"
+              @update:value="valueChange"
+            />
+            <n-date-picker
+              v-else-if="item.type === FieldTypeEnum.DATE_TIME || (item.type === FieldTypeEnum.TIME_RANGE_PICKER &&
+                ![OperatorEnum.DYNAMICS, OperatorEnum.FIXED].includes(item.operator as OperatorEnum))"
+              v-model:value="item.value"
+              :type="item.operator === OperatorEnum.BETWEEN ? 'datetimerange' : 'datetime'"
+              clearable
+              :disabled="isValueDisabled(item)"
+              class="w-full"
+              :default-time="item.operator === OperatorEnum.BETWEEN ? [undefined, '23:59:59'] : undefined"
               @update:value="valueChange"
             />
             <CrmInputNumber
@@ -164,17 +178,6 @@
               :placeholder="t('common.pleaseSelect')"
               cascade
               v-bind="item.treeSelectProps"
-              @update:value="valueChange"
-            />
-
-            <n-date-picker
-              v-else-if="item.type === FieldTypeEnum.DATE_TIME"
-              v-model:value="item.value"
-              :type="item.operator === OperatorEnum.BETWEEN ? 'datetimerange' : 'datetime'"
-              clearable
-              :disabled="isValueDisabled(item)"
-              class="w-full"
-              :default-time="item.operator === OperatorEnum.BETWEEN ? [undefined, '23:59:59'] : undefined"
               @update:value="valueChange"
             />
 
@@ -429,8 +432,10 @@
             if (!value) return new Error(t('common.value.notNull'));
             if (item.operator === OperatorEnum.DYNAMICS) {
               // 动态模式需要校验数字部分
-              const [num] = value.split(',');
-              return !!Number(num) || new Error(t('common.value.notNull'));
+              const [time, num, unit] = value.split(',');
+              if (time === 'CUSTOM') {
+                return !!Number(num) || new Error(t('common.value.notNull'));
+              }
             }
           },
         },

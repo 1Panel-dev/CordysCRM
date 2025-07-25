@@ -110,7 +110,7 @@
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
-  import { IN, NOT_IN } from '@/components/pure/crm-advance-filter/index';
+  import { DYNAMICS, FIXED, IN, NOT_IN } from '@/components/pure/crm-advance-filter/index';
   import { AccordBelowType, FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import type { Option } from '@/components/business/crm-select-user-drawer/type';
@@ -165,6 +165,7 @@
         title: t('common.createTime'),
         dataIndex: 'createTime',
         type: FieldTypeEnum.TIME_RANGE_PICKER,
+        operatorOption: [DYNAMICS, FIXED],
       },
       {
         title: t('opportunity.opportunityStage'),
@@ -197,7 +198,6 @@
         dataIndex: 'createTime',
         type: FieldTypeEnum.TIME_RANGE_PICKER,
         operator: OperatorEnum.DYNAMICS,
-        value: '6,month',
       },
     ],
   };

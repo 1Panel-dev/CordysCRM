@@ -1,7 +1,7 @@
 <template>
   <CrmDrawer
     v-model:show="visible"
-    :width="800"
+    :width="900"
     :title="title"
     :show-continue="!form.id"
     :ok-text="form.id ? t('common.update') : undefined"
@@ -205,6 +205,7 @@
   } from '@lib/shared/models/system/module';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
+  import { DYNAMICS, FIXED } from '@/components/pure/crm-advance-filter/index';
   import { AccordBelowType, FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
@@ -280,7 +281,6 @@
         dataIndex: 'storageTime',
         type: FieldTypeEnum.TIME_RANGE_PICKER,
         operator: OperatorEnum.DYNAMICS,
-        value: '6,month',
         showScope: true,
         scope: ['Created', 'Picked'],
       },
@@ -303,6 +303,7 @@
         title: t('module.clue.storageTime'),
         dataIndex: 'storageTime',
         type: FieldTypeEnum.TIME_RANGE_PICKER,
+        operatorOption: [DYNAMICS, FIXED],
         showScope: true,
         scope: ['Created', 'Picked'],
       },
@@ -310,6 +311,7 @@
         title: t('module.clue.followUpTime'),
         dataIndex: 'followUpTime',
         type: FieldTypeEnum.TIME_RANGE_PICKER,
+        operatorOption: [DYNAMICS, FIXED],
       },
     ];
   });

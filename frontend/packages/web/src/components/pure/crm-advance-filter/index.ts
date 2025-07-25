@@ -37,7 +37,7 @@ export const NO_CONTAINS = { label: 'advanceFilter.operator.not_contains', value
 // 动态
 export const DYNAMICS = { value: OperatorEnum.DYNAMICS, label: 'common.dynamics' };
 // 固定
-export const FIXED = { value: OperatorEnum.FIXED, label: 'common.fixed' };
+export const FIXED = { value: OperatorEnum.FIXED, label: 'advanceFilter.operator.between' };
 // 通用文本符号
 const COMMON_TEXT_OPERATORS = [CONTAINS, NO_CONTAINS, EMPTY, NOT_EMPTY, EQUAL, NOT_EQUAL];
 // 通用选择符号
@@ -63,7 +63,7 @@ export const operatorOptionsMap: Record<string, { value: string; label: string }
   [FieldTypeEnum.DATA_SOURCE_MULTIPLE]: COMMON_SELECTION_OPERATORS,
   [FieldTypeEnum.TREE_SELECT]: [IN, NOT_IN],
   [FieldTypeEnum.DATE_TIME]: [BETWEEN, GT, LT, EMPTY, NOT_EMPTY],
-  [FieldTypeEnum.TIME_RANGE_PICKER]: [DYNAMICS, FIXED],
+  [FieldTypeEnum.TIME_RANGE_PICKER]: [DYNAMICS, BETWEEN, GT, LT, EMPTY, NOT_EMPTY],
   [FieldTypeEnum.SERIAL_NUMBER]: COMMON_TEXT_OPERATORS,
 };
 
