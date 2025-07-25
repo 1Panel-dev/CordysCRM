@@ -370,7 +370,9 @@
             LEFT JOIN follow_up_record fur on c.id = fur.clue_id
         </if>
 
-        where c.organization_id = #{request.orgId} and c.transition_id is null and c.in_shared_pool is false
+        where c.organization_id = #{request.orgId}
+          and (c.transition_id is null or c.transition_id= '')
+          and c.in_shared_pool is false
         <if test="unfollowed">
             and fur.id is null
         </if>
