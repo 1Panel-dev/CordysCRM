@@ -26,6 +26,7 @@ public class OpportunityUserViewControllerTest extends BaseTest {
 
     protected static final String DETAIL = "detail/{0}";
     protected static final String LIST = "list";
+    protected static final String FIXED = "fixed/{0}";
 
     @Override
     protected String getBasePath() {
@@ -98,7 +99,11 @@ public class OpportunityUserViewControllerTest extends BaseTest {
         this.requestGet(LIST);
     }
 
-
+    @Test
+    @Order(5)
+    void testFixed() throws Exception {
+        this.requestGet(FIXED, this.viewId);
+    }
 
     @Test
     @Order(10)

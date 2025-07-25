@@ -66,4 +66,12 @@ public class OpportunityUserViewController {
     public List<UserViewListResponse> queryList() {
         return userViewService.list(UserViewResourceType.OPPORTUNITY.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
+
+
+    @GetMapping("/fixed/{id}")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @Operation(summary = "商机视图固定/取消固定")
+    public void fixed(@PathVariable String id) {
+        userViewService.fixed(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
 }

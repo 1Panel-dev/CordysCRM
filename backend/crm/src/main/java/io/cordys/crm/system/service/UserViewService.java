@@ -243,4 +243,21 @@ public class UserViewService {
     public List<UserViewListResponse> list(String resourceType, String userId, String orgId) {
         return extUserViewMapper.selectViewList(resourceType, userId, orgId);
     }
+
+
+    /**
+     * 固定/取消固定
+     *
+     * @param id
+     * @param userId
+     * @param orgId
+     */
+    public void fixed(String id, String userId, String orgId) {
+        checkView(userId, id, orgId);
+        UserView userView = userViewMapper.selectByPrimaryKey(id);
+        UserView updateView = new UserView();
+        updateView.setId(id);
+        updateView.setFixed(!userView.getFixed());
+        userViewMapper.update(updateView);
+    }
 }
