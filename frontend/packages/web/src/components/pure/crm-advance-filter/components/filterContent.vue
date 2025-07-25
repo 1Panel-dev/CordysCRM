@@ -162,6 +162,7 @@
               :disabled="isValueDisabled(item)"
               max-tag-count="responsive"
               :placeholder="t('common.pleaseSelect')"
+              cascade
               v-bind="item.treeSelectProps"
               @update:value="valueChange"
             />

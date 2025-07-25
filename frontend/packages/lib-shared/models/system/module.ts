@@ -84,6 +84,8 @@ export interface CluePoolPickRuleParams {
   pickNumber?: number; // 领取数量
   limitPreOwner: boolean; // 是否限制前归属人领取
   pickIntervalDays?: number; // 领取间隔天数
+  limitNew: boolean; // 是否限制新数据领取
+  newPickInterval?: number; // 新数据领取间隔天数
 }
 
 // 线索池回收规则

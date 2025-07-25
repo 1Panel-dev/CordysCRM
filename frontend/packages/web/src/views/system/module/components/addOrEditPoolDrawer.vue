@@ -18,7 +18,7 @@
       :model="form"
       :rules="rules"
       label-placement="left"
-      :label-width="100"
+      :label-width="110"
       require-mark-placement="left"
     >
       <div class="crm-module-form-title">{{ t('common.baseInfo') }}</div>
@@ -76,6 +76,48 @@
           max="10000"
           :precision="0"
         />
+      </n-form-item>
+      <n-form-item path="pickRule.limitNew">
+        <template #label>
+          <div class="flex items-center gap-[8px]">
+            {{ t('module.clue.newDataPick') }}
+            <n-tooltip trigger="hover" placement="right">
+              <template #trigger>
+                <CrmIcon
+                  type="iconicon_help_circle"
+                  :size="16"
+                  class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                />
+              </template>
+              {{
+                props.type === ModuleConfigEnum.CLUE_MANAGEMENT
+                  ? t('module.clue.newPoolDataTip')
+                  : t('module.clue.newOpenSeaDataTip')
+              }}
+            </n-tooltip>
+          </div>
+        </template>
+        <n-radio-group v-model:value="form.pickRule.limitNew" name="radiogroup">
+          <n-space>
+            <n-radio :value="false">
+              {{ t('module.clue.noLimit') }}
+            </n-radio>
+            <n-radio :value="true">
+              {{ t('module.clue.limit') }}
+            </n-radio>
+          </n-space>
+        </n-radio-group>
+      </n-form-item>
+      <n-form-item v-if="form.pickRule.limitNew" path="pickRule.newPickInterval" :label="t('module.clue.newData')">
+        <CrmInputNumber
+          v-model:value="form.pickRule.newPickInterval"
+          class="crm-reminder-advance-input"
+          :placeholder="t('common.pleaseInput')"
+          min="1"
+          max="10000"
+          :precision="0"
+        />
+        <div class="flex flex-nowrap"> {{ t('module.clue.receiveDay') }}</div>
       </n-form-item>
       <n-form-item path="pickRule.limitPreOwner" :label="t('module.clue.ownerCollection')">
         <n-radio-group v-model:value="form.pickRule.limitPreOwner" name="radiogroup">
@@ -146,6 +188,7 @@
     NRadio,
     NRadioGroup,
     NSpace,
+    NTooltip,
     useMessage,
   } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
@@ -154,7 +197,12 @@
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import type { CluePoolForm, CluePoolItem, CluePoolParams } from '@lib/shared/models/system/module';
+  import type {
+    CluePoolForm,
+    CluePoolItem,
+    CluePoolParams,
+    ModuleConditionsItem,
+  } from '@lib/shared/models/system/module';
 
   import FilterContent from '@/components/pure/crm-advance-filter/components/filterContent.vue';
   import { AccordBelowType, FilterForm, FilterFormItem } from '@/components/pure/crm-advance-filter/type';
@@ -214,6 +262,8 @@
       pickNumber: undefined,
       limitPreOwner: false,
       pickIntervalDays: undefined,
+      limitNew: false,
+      newPickInterval: undefined,
     },
     recycleRule: {
       operator: 'all',
@@ -289,12 +339,15 @@
         },
       };
       if (auto) {
-        const conditions = recycleFormItemModel.value.list?.map((item) => ({
-          column: item.dataIndex as string,
-          operator: item.operator as string,
-          value: item.value as string,
-          scope: item.scope ?? [],
-        }));
+        const conditions: ModuleConditionsItem[] = [];
+        recycleFormItemModel.value.list?.forEach((item) => {
+          conditions.push({
+            column: item.dataIndex || '',
+            operator: item.operator || '',
+            value: item.value,
+            scope: item.scope,
+          });
+        });
         params.recycleRule.conditions = form.value.auto ? conditions : [];
       }
       if (form.value.id) {
