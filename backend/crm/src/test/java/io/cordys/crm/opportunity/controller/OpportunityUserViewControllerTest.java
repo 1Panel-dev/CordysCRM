@@ -24,6 +24,8 @@ public class OpportunityUserViewControllerTest extends BaseTest {
 
     private static final String BASE_PATH = "/opportunity/view/";
 
+    protected static final String DEFAULT_GET = "detail/{0}";
+
     @Override
     protected String getBasePath() {
         return BASE_PATH;
@@ -72,7 +74,7 @@ public class OpportunityUserViewControllerTest extends BaseTest {
 
 
     @Test
-    @Order(3)
+    @Order(2)
     void testUpdate() throws Exception {
         UserViewUpdateRequest request = new UserViewUpdateRequest();
         request.setId(this.viewId);
@@ -82,5 +84,18 @@ public class OpportunityUserViewControllerTest extends BaseTest {
 
         request.setId("123123123");
         this.requestPost(DEFAULT_UPDATE, request);
+    }
+
+    @Test
+    @Order(3)
+    void testGetDetail() throws Exception {
+        this.requestGet(DEFAULT_GET, this.viewId);
+    }
+
+
+    @Test
+    @Order(10)
+    void testDelete() throws Exception {
+        this.requestGetWithOk(DEFAULT_DELETE, this.viewId);
     }
 }

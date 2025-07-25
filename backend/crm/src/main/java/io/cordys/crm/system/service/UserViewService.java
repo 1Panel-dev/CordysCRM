@@ -3,18 +3,24 @@ package io.cordys.crm.system.service;
 import io.cordys.common.dto.condition.FilterCondition;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.uid.utils.EnumUtils;
+import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.NodeSortUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.constants.UserViewConditionValueType;
 import io.cordys.crm.system.domain.UserView;
 import io.cordys.crm.system.domain.UserViewCondition;
 import io.cordys.crm.system.dto.request.UserViewAddRequest;
 import io.cordys.crm.system.dto.request.UserViewUpdateRequest;
+import io.cordys.crm.system.dto.response.UserViewResponse;
+import io.cordys.crm.system.mapper.ExtUserViewConditionMapper;
 import io.cordys.crm.system.mapper.ExtUserViewMapper;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +36,8 @@ public class UserViewService {
     private ExtUserViewMapper extUserViewMapper;
     @Resource
     private BaseMapper<UserViewCondition> userViewConditionMapper;
+    @Resource
+    private ExtUserViewConditionMapper extUserViewConditionMapper;
 
     /**
      * 添加用户视图
@@ -83,6 +91,8 @@ public class UserViewService {
             UserViewCondition userViewCondition = new UserViewCondition();
             userViewCondition.setId(IDGenerator.nextStr());
             Object value = condition.getValue();
+            String conditionValueType = getConditionValueType(value);
+            userViewCondition.setValueType(conditionValueType);
             if (condition.getValue() != null) {
                 if (value instanceof List<?>) {
                     userViewCondition.setValue(JSON.toJSONString(value));
@@ -103,6 +113,21 @@ public class UserViewService {
         }).toList();
 
         userViewConditionMapper.batchInsert(insertConditions);
+    }
+
+
+    private String getConditionValueType(Object value) {
+        if (value instanceof List<?>) {
+            return UserViewConditionValueType.ARRAY.name();
+        } else if (value instanceof Integer || value instanceof Long) {
+            return UserViewConditionValueType.INT.name();
+        } else if (value instanceof Float || value instanceof Double) {
+            return UserViewConditionValueType.FLOAT.name();
+        } else if (value instanceof Boolean) {
+            return UserViewConditionValueType.BOOLEAN.name();
+        } else {
+            return UserViewConditionValueType.STRING.name();
+        }
     }
 
 
@@ -132,15 +157,74 @@ public class UserViewService {
         return userView;
     }
 
-    private void deleteConditionsByViewId(String id) {
+    private void deleteConditionsByViewId(String viewId) {
         LambdaQueryWrapper<UserViewCondition> viewWrapper = new LambdaQueryWrapper<>();
-        viewWrapper.eq(UserViewCondition::getSysUserViewId, id);
+        viewWrapper.eq(UserViewCondition::getSysUserViewId, viewId);
         userViewConditionMapper.deleteByLambda(viewWrapper);
     }
 
     private void checkView(String userId, String id, String orgId) {
         if (extUserViewMapper.countUserView(userId, id, orgId) <= 0) {
             throw new GenericException(Translator.get("view_blank"));
+        }
+    }
+
+
+    /**
+     * 删除视图
+     *
+     * @param id
+     * @param userId
+     * @param orgId
+     */
+    public void delete(String id, String userId, String orgId) {
+        checkView(userId, id, orgId);
+        userViewMapper.deleteByPrimaryKey(id);
+        deleteConditionsByViewId(id);
+    }
+
+
+    /**
+     * 获取视图详情
+     *
+     * @param id
+     * @param userId
+     * @param orgId
+     * @return
+     */
+    public UserViewResponse getViewDetail(String id, String userId, String orgId) {
+        checkView(userId, id, orgId);
+        UserView userView = userViewMapper.selectByPrimaryKey(id);
+        List<UserViewCondition> viewConditions = extUserViewConditionMapper.getViewConditions(id);
+        List<FilterCondition> conditions = viewConditions.stream().map(condition -> {
+            FilterCondition filterCondition = BeanUtils.copyBean(new FilterCondition(), condition);
+            Object value = getConditionValueByType(condition.getValueType(), condition.getValue());
+            filterCondition.setValue(value);
+            return filterCondition;
+        }).toList();
+        UserViewResponse response = new UserViewResponse();
+        BeanUtils.copyBean(response, userView);
+        response.setConditions(conditions);
+        return response;
+    }
+
+
+    private Object getConditionValueByType(String valueType, String value) {
+        UserViewConditionValueType conditionValueType = EnumUtils.valueOf(UserViewConditionValueType.class, valueType);
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+        switch (conditionValueType) {
+            case ARRAY:
+                return JSON.parseObject(value);
+            case INT:
+                return Long.valueOf(value);
+            case FLOAT:
+                return Double.valueOf(value);
+            case BOOLEAN:
+                return Boolean.valueOf(value);
+            default:
+                return value;
         }
     }
 }
