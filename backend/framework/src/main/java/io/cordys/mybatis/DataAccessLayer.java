@@ -29,7 +29,7 @@ import java.util.function.Function;
 @Component
 public class DataAccessLayer implements ApplicationContextAware {
 
-    private static ApplicationContext applicationContext;
+    private static volatile ApplicationContext applicationContext;
     private SqlSession sqlSession;
     private Configuration configuration;
 
