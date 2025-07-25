@@ -61,6 +61,7 @@
         />
       </n-button>
     </div>
+    <slot name="view"></slot>
     <n-data-table
       ref="tableRef"
       v-bind="{ scrollX: scrollXWidth, ...$attrs }"

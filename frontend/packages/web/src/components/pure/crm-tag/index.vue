@@ -2,7 +2,7 @@
   <n-tag
     v-bind="$attrs"
     :size="props.size"
-    :class="`${props.color ? '' : `crm-tag-${props.theme} crm-tag-${props.theme}--${props.type}`} customClass`"
+    :class="`${props.color ? '' : `crm-tag-${props.theme} crm-tag-${props.theme}--${props.type}`} ${props.customClass}`"
     :bordered="hasBorder"
     :color="props.color"
     :type="props.type"
