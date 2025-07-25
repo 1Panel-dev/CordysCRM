@@ -18,6 +18,8 @@ import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.request.ReTransitionCustomerRequest;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.service.CustomerService;
+import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
+import io.cordys.crm.system.dto.request.PoolReasonRequest;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
@@ -26,6 +28,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -118,15 +121,22 @@ public class ClueController {
     @PostMapping("/batch/delete")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_DELETE)
     @Operation(summary = "批量删除线索")
-    public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
+    public void batchDelete(@RequestBody @NotNull List<String> ids) {
         clueService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/to-pool")
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_RECYCLE)
     @Operation(summary = "批量移入线索池")
-    public BatchAffectResponse batchToPool(@RequestBody @NotEmpty List<String> ids) {
-        return clueService.batchToPool(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectResponse batchToPool(@RequestBody BatchPoolReasonRequest request) {
+        return clueService.batchToPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/to-pool")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE)
+    @Operation(summary = "移入公海")
+    public void toPool(@Validated @RequestBody PoolReasonRequest request) {
+        clueService.toPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/tab")

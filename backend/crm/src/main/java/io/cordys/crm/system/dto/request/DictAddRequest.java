@@ -15,7 +15,7 @@ public class DictAddRequest {
 	private String name;
 
 	@NotEmpty
-	@Schema(description = "字典模块", requiredMode = Schema.RequiredMode.REQUIRED)
+	@Schema(description = "字典模块", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"OPPORTUNITY_FAIL_RS", "CUSTOMER_POOL_RS", "CLUE_POOL_RS"})
 	@EnumValue(enumClass = DictModule.class)
 	private String module;
 }

@@ -352,7 +352,7 @@
     </select>
 
     <update id="moveToPool" parameterType="io.cordys.crm.customer.domain.Customer">
-        update customer set pool_id = #{customer.poolId}, in_shared_pool = #{customer.inSharedPool}, owner = #{customer.owner},
+        update customer set pool_id = #{customer.poolId}, in_shared_pool = #{customer.inSharedPool}, owner = #{customer.owner}, reason_id = #{customer.reasonId},
                             collection_time = #{customer.collectionTime}, update_time = #{customer.updateTime}, update_user = #{customer.updateUser}
         where id = #{customer.id}
     </update>

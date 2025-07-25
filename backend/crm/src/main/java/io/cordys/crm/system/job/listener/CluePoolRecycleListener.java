@@ -162,6 +162,7 @@ public class CluePoolRecycleListener implements ApplicationListener<ExecuteEvent
         clue.setInSharedPool(true);
         clue.setOwner(null);
         clue.setCollectionTime(null);
+        clue.setReasonId("system.auto.recycle");
         clue.setUpdateUser(InternalUser.ADMIN.getValue());
         clue.setUpdateTime(System.currentTimeMillis());
 

@@ -52,6 +52,7 @@ public class DictService {
 		dict.setName(request.getName());
 		dict.setModule(request.getModule());
 		dict.setOrganizationId(orgId);
+		dict.setType("TEXT");
 		dict.setCreateUser(currentUser);
 		dict.setCreateTime(System.currentTimeMillis());
 		dict.setUpdateUser(currentUser);
@@ -77,7 +78,8 @@ public class DictService {
 		if (oldDict == null) {
 			throw new GenericException(Translator.get("dict.not_exist"));
 		}
-		Dict dict = BeanUtils.copyBean(new Dict(), request);
+		Dict dict = BeanUtils.copyBean(new Dict(), oldDict);
+		dict.setName(request.getName());
 		dict.setUpdateUser(currentUser);
 		dict.setUpdateTime(System.currentTimeMillis());
 		dictMapper.updateById(dict);

@@ -29,12 +29,17 @@ import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerCollaboration;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
-import io.cordys.crm.customer.dto.request.*;
+import io.cordys.crm.customer.dto.request.CustomerAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerBatchTransferRequest;
+import io.cordys.crm.customer.dto.request.CustomerPageRequest;
+import io.cordys.crm.customer.dto.request.CustomerUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
 import io.cordys.crm.system.constants.NotificationConstants;
+import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
+import io.cordys.crm.system.dto.request.PoolReasonRequest;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
@@ -449,12 +454,12 @@ public class CustomerService {
     /**
      * 批量移入公海
      *
-     * @param ids         id集合
+     * @param request     请求参数
      * @param orgId       组织ID
      * @param currentUser 当前用户
      */
-    public BatchAffectResponse batchToPool(List<String> ids, String currentUser, String orgId) {
-        List<Customer> customers = customerMapper.selectByIds(ids);
+    public BatchAffectResponse batchToPool(BatchPoolReasonRequest request, String currentUser, String orgId) {
+        List<Customer> customers = customerMapper.selectByIds(request.getIds());
         List<String> owners = getOwners(customers);
         dataScopeService.checkDataPermission(currentUser, orgId, owners, PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE);
 
@@ -485,6 +490,7 @@ public class CustomerService {
             customer.setInSharedPool(true);
             customer.setOwner(null);
             customer.setCollectionTime(null);
+            customer.setReasonId(request.getReasonId());
             customer.setUpdateUser(currentUser);
             customer.setUpdateTime(System.currentTimeMillis());
             // 回收客户至公海
@@ -494,7 +500,20 @@ public class CustomerService {
 
         logService.batchAdd(logs);
 
-        return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
+        return BatchAffectResponse.builder().success(success).fail(request.getIds().size() - success).build();
+    }
+
+    /**
+     * 移入公海
+     * @param request 请求参数
+     * @param currentUser 当前用户
+     * @param orgId 组织ID
+     */
+    public void toPool(PoolReasonRequest request, String currentUser, String orgId) {
+        BatchPoolReasonRequest batchRequest = new BatchPoolReasonRequest();
+        batchRequest.setReasonId(request.getReasonId());
+        batchRequest.setIds(List.of(request.getId()));
+        batchToPool(batchRequest, currentUser, orgId);
     }
 
     public List<OptionDTO> getCustomerOptions(String keyword, String organizationId) {

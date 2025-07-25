@@ -56,7 +56,7 @@ public class DictController {
 		dictService.deleteDict(id);
 	}
 
-	@GetMapping("/switch")
+	@PostMapping("/switch")
 	@Operation(summary = "字典开启关闭")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
 	public void switchDict(@RequestBody DictSwitchRequest request) {
@@ -65,7 +65,7 @@ public class DictController {
 
 	@GetMapping("/config/{module}")
 	@Operation(summary = "获取字典配置")
-	public DictConfigDTO getReasonDict(
+	public DictConfigDTO getDictConf(
 			@Schema(description = "字典类型", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"OPPORTUNITY_FAIL_RS", "CUSTOMER_POOL_RS", "CLUE_POOL_RS"})
 			@PathVariable("module") String module) {
 		return dictService.getDictConf(module, OrganizationContext.getOrganizationId());

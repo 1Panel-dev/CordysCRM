@@ -43,6 +43,8 @@ import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.customer.service.PoolCustomerService;
 import io.cordys.crm.system.constants.NotificationConstants;
+import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
+import io.cordys.crm.system.dto.request.PoolReasonRequest;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtProductMapper;
@@ -491,13 +493,13 @@ public class ClueService {
 
     /**
      * 批量移入线索池
-     * @param ids id集合
+     * @param request 请求参数
      * @param orgId 组织ID
      * @param currentUser 当前用户
      */
-    public BatchAffectResponse batchToPool(List<String> ids, String currentUser, String orgId) {
+    public BatchAffectResponse batchToPool(BatchPoolReasonRequest request, String currentUser, String orgId) {
         LambdaQueryWrapper<Clue> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(Clue::getId, ids);
+        wrapper.in(Clue::getId, request.getIds());
         List<Clue> clues = clueMapper.selectListByLambda(wrapper);
         List<String> ownerIds = getOwners(clues);
         dataScopeService.checkDataPermission(currentUser, orgId, ownerIds, PermissionConstants.CLUE_MANAGEMENT_RECYCLE);
@@ -526,13 +528,27 @@ public class ClueService {
             clue.setInSharedPool(true);
             clue.setOwner(null);
             clue.setCollectionTime(null);
+            clue.setReasonId(request.getReasonId());
             clue.setUpdateUser(currentUser);
             clue.setUpdateTime(System.currentTimeMillis());
             extClueMapper.moveToPool(clue);
             success++;
         }
         logService.batchAdd(logs);
-        return BatchAffectResponse.builder().success(success).fail(ids.size() - success).build();
+        return BatchAffectResponse.builder().success(success).fail(request.getIds().size() - success).build();
+    }
+
+    /**
+     * 移入公海
+     * @param request 请求参数
+     * @param currentUser 当前用户
+     * @param orgId 组织ID
+     */
+    public void toPool(PoolReasonRequest request, String currentUser, String orgId) {
+        BatchPoolReasonRequest batchRequest = new BatchPoolReasonRequest();
+        batchRequest.setReasonId(request.getReasonId());
+        batchRequest.setIds(List.of(request.getId()));
+        batchToPool(batchRequest, currentUser, orgId);
     }
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String organizationId) {

@@ -17,6 +17,7 @@ import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleForm;
+import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import io.cordys.crm.system.service.ExportTaskCenterService;
 import io.cordys.mybatis.BaseMapper;
 import jakarta.annotation.Resource;
@@ -406,16 +407,20 @@ class CustomerControllerTests extends BaseTest {
         customerList.forEach(customerListResponse -> {
             batchIds.add(customerListResponse.getId());
         });
-        this.requestPostWithOk(BATCH_TO_POOL, batchIds);
+        BatchPoolReasonRequest reasonRequest = new BatchPoolReasonRequest();
+        reasonRequest.setIds(batchIds);
+        this.requestPostWithOk(BATCH_TO_POOL, reasonRequest);
 
         // 校验权限
-        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE, BATCH_TO_POOL, batchIds);
+        requestPostPermissionTest(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE, BATCH_TO_POOL, reasonRequest);
     }
 
     @Test
     @Order(13)
     void testBatchToPool() throws Exception {
-        this.requestPostWithOk(BATCH_TO_POOL, batchIds);
+        BatchPoolReasonRequest reasonRequest = new BatchPoolReasonRequest();
+        reasonRequest.setIds(batchIds);
+        this.requestPostWithOk(BATCH_TO_POOL, reasonRequest);
     }
 
     @Test

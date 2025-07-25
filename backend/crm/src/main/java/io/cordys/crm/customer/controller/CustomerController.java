@@ -18,6 +18,8 @@ import io.cordys.crm.customer.service.CustomerExportService;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.service.OpportunityService;
+import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
+import io.cordys.crm.system.dto.request.PoolReasonRequest;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
@@ -26,6 +28,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -109,15 +112,22 @@ public class CustomerController {
     @PostMapping("/batch/delete")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_DELETE)
     @Operation(summary = "批量删除客户")
-    public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
+    public void batchDelete(@RequestBody @NotNull List<String> ids) {
         customerService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/batch/to-pool")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE)
     @Operation(summary = "批量移入公海")
-    public BatchAffectResponse batchToPool(@RequestBody @NotEmpty List<String> ids) {
-        return customerService.batchToPool(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectResponse batchToPool(@RequestBody BatchPoolReasonRequest request) {
+        return customerService.batchToPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/to-pool")
+    @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE)
+    @Operation(summary = "移入公海")
+    public void toPool(@Validated @RequestBody PoolReasonRequest request) {
+        customerService.toPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/option")
