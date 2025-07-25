@@ -1,5 +1,7 @@
 package io.cordys.mybatis;
 
+import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.util.CodingUtils;
 import io.cordys.common.util.LogUtils;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -18,8 +20,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -29,85 +29,100 @@ import java.util.function.Function;
 @Component
 public class DataAccessLayer implements ApplicationContextAware {
 
-    private static volatile ApplicationContext applicationContext;
+    private static ApplicationContext applicationContext;
     private SqlSession sqlSession;
     private Configuration configuration;
 
-    // 使用 ConcurrentHashMap 替代同步 LinkedHashMap，提高并发性能
-    private final Map<Class<?>, EntityTable> cachedTableInfo = new ConcurrentHashMap<>(128);
 
-    // 添加 MappedStatement 缓存计数监控
-    private final AtomicInteger mappedStatementCount = new AtomicInteger(0);
+    // 添加LRU缓存实现
+    private final Map<Class<?>, EntityTable> cachedTableInfo = Collections.synchronizedMap(
+            new LinkedHashMap<>(16, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<Class<?>, EntityTable> eldest) {
+                    return size() > 1000;
+                }
+            });
 
-    // SQL 危险关键词集合
-    private static final Set<String> DANGEROUS_SQL_KEYWORDS = Set.of("drop", "truncate");
+    // 添加SQL语句缓存，避免重复创建MappedStatement
+    private final Map<String, String> sqlCache = Collections.synchronizedMap(
+            new LinkedHashMap<>(256, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
+                    return size() > 5000;
+                }
+            });
 
     private DataAccessLayer() {
-        // 私有构造函数
     }
 
     /**
-     * 初始化 SqlSession，用于执行 DAL 操作
+     * 初始化 SqlSession，用于执行 DAL 操作。
+     *
+     * @param sqlSession SqlSession，用于数据库交互。
      */
-    private DataAccessLayer initSession(SqlSession sqlSession) {
+    private void initSession(SqlSession sqlSession) {
         this.sqlSession = sqlSession;
         this.configuration = sqlSession.getConfiguration();
-        return this;
     }
 
     @Override
     public void setApplicationContext(@NotNull ApplicationContext context) throws BeansException {
-        // 使用双重检查锁定模式
-        if (applicationContext == null) {
-            synchronized (DataAccessLayer.class) {
-                if (applicationContext == null) {
-                    applicationContext = context;
-                }
+        synchronized (DataAccessLayer.class) {
+            if (applicationContext == null) {
+                applicationContext = context;
             }
         }
     }
 
     /**
-     * 单例持有者，确保 Dal 实例的唯一性
+     * 单例持有者，确保 Dal 实例的唯一性。
      */
     private static class Holder {
-        private static final DataAccessLayer INSTANCE = new DataAccessLayer();
+        private static final DataAccessLayer instance = new DataAccessLayer();
     }
 
     /**
-     * 获取 Dal 实例并为指定的实体类准备 Executor
+     * 获取 Dal 实例并为指定的实体类准备 Executor。
+     *
+     * @param clazz 实体类类型。
+     * @param <T>   实体类的类型。
+     * @return 为指定实体类准备的 Executor。
      */
-    public static <T> Executor<T> with(Class<T> entityClass) {
-        if (applicationContext == null) {
-            throw new IllegalStateException("ApplicationContext 未初始化");
+    public static <T> Executor<T> with(Class<T> clazz) {
+        return with(clazz, applicationContext.getBean(SqlSession.class));
+    }
+
+    /**
+     * 获取 Dal 实例并为指定的实体类准备 Executor，同时使用给定的 SqlSession。
+     *
+     * @param clazz      实体类类型。
+     * @param sqlSession SqlSession，用于数据库交互。
+     * @param <T>        实体类的类型。
+     * @return 为指定实体类准备的 Executor。
+     */
+    public static <T> Executor<T> with(Class<T> clazz, SqlSession sqlSession) {
+        DataAccessLayer instance = Holder.instance;
+        instance.initSession(sqlSession);
+        EntityTable entityTable = null;
+        if (clazz != null) {
+            entityTable = instance.cachedTableInfo.computeIfAbsent(clazz, EntityTableMapper::extractTableInfo);
         }
-        return with(entityClass, applicationContext.getBean(SqlSession.class));
-    }
-
-    /**
-     * 获取 Dal 实例并使用指定的 SqlSession
-     */
-    public static <T> Executor<T> with(Class<T> entityClass, SqlSession sqlSession) {
-        var instance = Holder.INSTANCE.initSession(sqlSession);
-
-        var entityTable = Optional.ofNullable(entityClass)
-                .map(clazz -> instance.cachedTableInfo.computeIfAbsent(
-                        clazz, EntityTableMapper::extractTableInfo))
-                .orElse(null);
-
         return instance.new Executor<>(entityTable);
     }
 
     /**
-     * 执行原生 SQL 查询
+     * 执行原生 SQL 查询，并将结果作为对象列表返回。
+     *
+     * @param sql        要执行的 SQL 查询语句。
+     * @param param      查询参数。
+     * @param resultType 结果类型。
+     * @param <T>        结果类型的泛型。
+     * @return 查询结果的对象列表。
      */
     public static <T> List<T> sql(String sql, Object param, Class<T> resultType) {
         return with(resultType).sqlQuery(sql, param, resultType);
     }
 
-    /**
-     * 数据访问执行器
-     */
     public class Executor<E> implements BaseMapper<E> {
         private final EntityTable table;
         private final Class<?> resultType;
@@ -119,168 +134,169 @@ public class DataAccessLayer implements ApplicationContextAware {
 
         @Override
         public List<E> query(Function<SQL, SQL> sqlBuild, Object criteria) {
-            var params = Map.of(
-                    "sqlBuild", sqlBuild,
-                    "entity", criteria
-            );
-            var sql = new BaseMapper.SelectBySqlProvider().buildSql(params, this.table);
-            var msId = execute(sql, "BaseMapper.query", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            Map<String, Object> maps = new HashMap<>(2);
+            maps.put("sqlBuild", sqlBuild);
+            maps.put("entity", criteria);
+            String sql = new BaseMapper.SelectBySqlProvider().buildSql(maps, this.table);
+            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, criteria);
         }
 
         @Override
         public List<E> selectAll(String criteria) {
-            var sql = new BaseMapper.SelectAllSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(sql, "BaseMapper.selectAll", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String sql = new BaseMapper.SelectAllSqlProvider().buildSql(criteria, this.table);
+            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, criteria);
         }
 
         @Override
         public List<E> select(E criteria) {
-            var sql = new BaseMapper.SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(sql, "BaseMapper.select", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String sql = new BaseMapper.SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
+            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, criteria);
         }
 
         @Override
         public List<E> selectListByLambda(LambdaQueryWrapper<E> wrapper) {
-            var sql = new BaseMapper.SelectByLambdaSqlProvider().buildSql(wrapper, this.table);
-            var msId = execute(sql, "BaseMapper.selectListByLambda", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String sql = new BaseMapper.SelectByLambdaSqlProvider().buildSql(wrapper, this.table);
+            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, wrapper);
         }
 
         @Override
         public E selectByPrimaryKey(Serializable criteria) {
-            var sql = new BaseMapper.SelectByIdSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(sql, "BaseMapper.selectByPrimaryKey", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String sql = new BaseMapper.SelectByIdSqlProvider().buildSql(criteria, this.table);
+            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectOne(msId, criteria);
         }
 
         @Override
         public E selectOne(E criteria) {
-            var sql = new BaseMapper.SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(sql, "BaseMapper.selectOne", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            String sql = new BaseMapper.SelectByCriteriaSqlProvider().buildSql(criteria, this.table);
+            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectOne(msId, criteria);
         }
 
         @Override
         public List<E> selectByColumn(String column, Serializable[] criteria) {
-            var params = Map.of(
-                    "column", column,
-                    "array", criteria
-            );
-            var sql = new BaseMapper.SelectInSqlProvider().buildSql(params, this.table);
-            var msId = execute(sql, "BaseMapper.selectByColumn", table.getEntityClass(), resultType, SqlCommandType.SELECT);
+            Map<String, Object> maps = new HashMap<>(2);
+            maps.put("column", column);
+            maps.put("array", criteria);
+            String sql = new BaseMapper.SelectInSqlProvider().buildSql(maps, this.table);
+            String msId = execute(sql, table.getEntityClass(), resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, criteria);
         }
 
         @Override
         public Long countByExample(E criteria) {
-            var sql = new BaseMapper.CountByCriteriaSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(sql, "BaseMapper.countByExample", table.getEntityClass(), Long.class, SqlCommandType.SELECT);
+            String sql = new BaseMapper.CountByCriteriaSqlProvider().buildSql(criteria, this.table);
+            String msId = execute(sql, table.getEntityClass(), Long.class, SqlCommandType.SELECT);
             return sqlSession.selectOne(msId, criteria);
         }
 
         @Override
         public Integer insert(E criteria) {
-            var sql = new BaseMapper.InsertSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(sql, "BaseMapper.insert", table.getEntityClass(), int.class, SqlCommandType.INSERT);
+            String sql = new BaseMapper.InsertSqlProvider().buildSql(criteria, this.table);
+            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.INSERT);
             return sqlSession.insert(msId, criteria);
         }
 
         @Override
         public Integer updateById(E criteria) {
-            var sql = new BaseMapper.UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(sql, "BaseMapper.updateById", table.getEntityClass(), int.class, SqlCommandType.UPDATE);
+            String sql = new BaseMapper.UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
+            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.UPDATE);
             return sqlSession.update(msId, criteria);
         }
 
         @Override
         public Integer update(E criteria) {
-            var sql = new BaseMapper.UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(sql, "BaseMapper.update", table.getEntityClass(), int.class, SqlCommandType.UPDATE);
+            String sql = new BaseMapper.UpdateSelectiveSqlProvider().buildSql(criteria, this.table);
+            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.UPDATE);
             return sqlSession.update(msId, criteria);
         }
 
         @Override
         public Integer delete(E criteria) {
-            var sql = new BaseMapper.DeleteByCriteriaSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(sql, "BaseMapper.delete", table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            String sql = new BaseMapper.DeleteByCriteriaSqlProvider().buildSql(criteria, this.table);
+            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
             return sqlSession.delete(msId, criteria);
         }
 
         @Override
         public void deleteByLambda(LambdaQueryWrapper<E> wrapper) {
-            var sql = new BaseMapper.DeleteByLambdaSqlProvider().buildSql(wrapper, this.table);
-            var msId = execute(sql, "BaseMapper.deleteByLambda", table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            String sql = new BaseMapper.DeleteByLambdaSqlProvider().buildSql(wrapper, this.table);
+            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
             sqlSession.delete(msId, wrapper);
         }
 
         @Override
-        public void deleteByIds(List<String> ids) {
-            var sql = new BaseMapper.DeleteByIdsSqlProvider().buildSql(ids, this.table);
-            var msId = execute(sql, "BaseMapper.deleteByIds", table.getEntityClass(), int.class, SqlCommandType.DELETE);
-            var params = Map.of("array", ids);
-            sqlSession.delete(msId, params);
+        public void deleteByIds(List<String> array) {
+            String sql = new BaseMapper.DeleteByIdsSqlProvider().buildSql(array, this.table);
+            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            Map<String, List<String>> map = new HashMap<>();
+            map.put("array", array);
+            sqlSession.delete(msId, map);
         }
 
         @Override
         public Integer deleteByPrimaryKey(Serializable criteria) {
-            var sql = new BaseMapper.DeleteSqlProvider().buildSql(criteria, this.table);
-            var msId = execute(sql, "BaseMapper.deleteByPrimaryKey", table.getEntityClass(), int.class, SqlCommandType.DELETE);
+            String sql = new BaseMapper.DeleteSqlProvider().buildSql(criteria, this.table);
+            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.DELETE);
             return sqlSession.delete(msId, criteria);
         }
 
-        /**
-         * 检查SQL是否包含危险操作
-         */
         private void checkDangerousSql(String sql) {
             if (sql == null) {
                 return;
             }
-
-            var lowerSql = sql.toLowerCase();
-            boolean hasDangerousKeyword = DANGEROUS_SQL_KEYWORDS.stream()
-                    .anyMatch(lowerSql::contains);
-
-            if (hasDangerousKeyword) {
+            if (sql.toLowerCase().contains("drop") || sql.toLowerCase().contains("truncate")) {
                 throw new IllegalArgumentException("不允许执行危险SQL操作");
             }
         }
 
         public List<E> sqlQuery(String sql, Object param, Class<?> resultType) {
             checkDangerousSql(sql);
-            var paramType = param != null ? param.getClass() : Map.class;
-            return sqlQuery(sql, param, paramType, resultType);
+            return sqlQuery(sql, param, param != null ? param.getClass() : Map.class, resultType);
         }
 
         public List<E> sqlQuery(String sql, Object param, Class<?> paramType, Class<?> resultType) {
             checkDangerousSql(sql);
-            var msId = execute(sql, "BaseMapper.sqlQuery", paramType, resultType, SqlCommandType.SELECT);
+            String msId = execute(sql, paramType, resultType, SqlCommandType.SELECT);
             return sqlSession.selectList(msId, param);
         }
 
         @Override
         public boolean exist(E criteria) {
-            return Optional.ofNullable(select(criteria))
-                    .filter(list -> !list.isEmpty())
-                    .isPresent();
+            List<E> ret = select(criteria);
+            return ret != null && !ret.isEmpty();
         }
 
         @Override
         public Integer batchInsert(List<E> entities) {
-            if (entities == null || entities.isEmpty()) {
-                return 0;
-            }
+            // 使用 BatchInsertSqlProvider 构建 SQL 语句
+            String sql = new BaseMapper.BatchInsertSqlProvider().buildSql(entities, this.table);
 
-            var sql = new BaseMapper.BatchInsertSqlProvider().buildSql(entities, this.table);
-            var msId = execute(sql, "BaseMapper.batchInsert", table.getEntityClass(), int.class, SqlCommandType.INSERT);
-            var sqlSessionFactory = applicationContext.getBean(SqlSessionFactory.class);
+            // 获取 MyBatis 映射的 SQL ID
+            String msId = execute(sql, table.getEntityClass(), int.class, SqlCommandType.INSERT);
 
-            try (var batchSession = sqlSessionFactory.openSession(ExecutorType.BATCH, false)) {
-                entities.forEach(entity -> batchSession.insert(msId, entity));
-                batchSession.flushStatements();
-                batchSession.commit();
+            // 获取 SqlSessionFactory 并打开批处理会话
+            SqlSessionFactory sqlSessionFactory = applicationContext.getBean(SqlSessionFactory.class);
+
+            // 使用 try-with-resources 确保 SqlSession 关闭
+            try (SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH, false)) {
+
+                // 执行批量插入操作
+                entities.forEach(entity -> sqlSession.insert(msId, entity));
+
+                // 刷新批处理中的所有语句
+                sqlSession.flushStatements();
+
+                // 提交事务，确保批量操作生效
+                sqlSession.commit();
+
+                sqlSession.close();
+
+                // 返回成功插入的记录数
                 return entities.size();
             } catch (Exception e) {
                 throw new RuntimeException("批量插入失败", e);
@@ -289,45 +305,93 @@ public class DataAccessLayer implements ApplicationContextAware {
     }
 
     /**
-     * 生成缓存键
+     * 生成更合理的缓存键
      */
-    private String generateCacheKey(String methodName, Class<?> parameterType, SqlCommandType sqlCommandType) {
-        return String.format("%s:%s:%s", sqlCommandType.name(), parameterType.getName(), methodName);
+    private String generateCacheKey(String sql, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
+        // 1. SQL规范化处理
+        String normalizedSql = normalizeSql(sql);
+
+        // 2. 使用StringBuilder提高效率
+        StringBuilder keyBuilder = new StringBuilder(64)
+                .append(sqlCommandType.name())
+                .append(':')
+                .append(parameterType.getName())
+                .append(':')
+                .append(resultType.getName())
+                .append(':');
+
+        // 3. 使用哈希码代替完整SQL
+        keyBuilder.append(CodingUtils.hashStr(normalizedSql));
+
+        return keyBuilder.toString();
     }
 
     /**
-     * 执行 SQL，返回 MappedStatement ID
+     * SQL规范化处理
      */
-    private String execute(String sql, String methodName, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
-        var msId = generateCacheKey(methodName, parameterType, sqlCommandType);
-
-        if (!configuration.hasStatement(msId, false)) {
-            var sqlSource = configuration
-                    .getDefaultScriptingLanguageInstance()
-                    .createSqlSource(configuration, sql, parameterType);
-
-            newMappedStatement(msId, sqlSource, resultType, sqlCommandType);
-
-            var count = mappedStatementCount.incrementAndGet();
-            if (count % 500 == 0) {
-                LogUtils.info("当前缓存的 MappedStatement 总量：{}", count);
-            }
+    private String normalizeSql(String sql) {
+        if (sql == null) {
+            return "";
         }
+        // 去除多余空格、统一换行符、转为小写
+        return sql.replaceAll("\\s+", " ")
+                .trim()
+                .toLowerCase();
+    }
+
+    /**
+     * 执行 SQL，并返回生成的 MappedStatement ID。
+     * 使用SQL语句缓存，避免重复创建MappedStatement
+     *
+     * @param sql            SQL 查询语句。
+     * @param parameterType  参数类型。
+     * @param resultType     结果类型。
+     * @param sqlCommandType SQL 命令类型。
+     * @return MappedStatement 的 ID。
+     */
+    private String execute(String sql, Class<?> parameterType, Class<?> resultType, SqlCommandType sqlCommandType) {
+        // 生成缓存键
+        String cacheKey = generateCacheKey(sql, parameterType, resultType, sqlCommandType);
+
+        // 尝试从缓存获取
+        String msId = sqlCache.get(cacheKey);
+        if (msId != null && configuration.hasStatement(msId, false)) {
+            return msId;
+        }
+
+        // 没有缓存，创建新的MappedStatement
+        msId = cacheKey + "." + IDGenerator.nextStr();
+
+        SqlSource sqlSource = configuration
+                .getDefaultScriptingLanguageInstance()
+                .createSqlSource(configuration, sql, parameterType);
+
+        // 创建并缓存MappedStatement
+        newMappedStatement(msId, sqlSource, resultType, sqlCommandType);
+
+        // 缓存SQL和msId的映射
+        sqlCache.put(cacheKey, msId);
 
         return msId;
     }
 
     /**
-     * 创建并注册新的 MappedStatement
+     * 创建并注册新的 MappedStatement。
+     *
+     * @param msId           MappedStatement 的 ID。
+     * @param sqlSource      SQL 源。
+     * @param resultType     结果类型。
+     * @param sqlCommandType SQL 命令类型。
      */
     private void newMappedStatement(String msId, SqlSource sqlSource, Class<?> resultType, SqlCommandType sqlCommandType) {
-        var resultMap = new ResultMap.Builder(configuration, "defaultResultMap", resultType, new ArrayList<>(0))
+        MappedStatement ms = new MappedStatement.Builder(configuration, msId, sqlSource, sqlCommandType)
+                .resultMaps(Collections.singletonList(
+                        new ResultMap.Builder(configuration, "defaultResultMap", resultType, new ArrayList<>(0)).build()
+                ))
                 .build();
-
-        var ms = new MappedStatement.Builder(configuration, msId, sqlSource, sqlCommandType)
-                .resultMaps(Collections.singletonList(resultMap))
-                .build();
-
+        if (configuration.getMappedStatements().size() > 2000) {
+            LogUtils.info("当前缓存的 MappedStatement 总量：{}", configuration.getMappedStatements().size());
+        }
         configuration.addMappedStatement(ms);
     }
 }
