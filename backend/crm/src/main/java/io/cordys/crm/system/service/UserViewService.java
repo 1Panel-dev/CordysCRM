@@ -1,14 +1,18 @@
 package io.cordys.crm.system.service;
 
 import io.cordys.common.dto.condition.FilterCondition;
+import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.NodeSortUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.system.domain.UserView;
 import io.cordys.crm.system.domain.UserViewCondition;
 import io.cordys.crm.system.dto.request.UserViewAddRequest;
+import io.cordys.crm.system.dto.request.UserViewUpdateRequest;
 import io.cordys.crm.system.mapper.ExtUserViewMapper;
 import io.cordys.mybatis.BaseMapper;
+import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -87,6 +91,7 @@ public class UserViewService {
                 }
             }
             userViewCondition.setName(condition.getName());
+            userViewCondition.setType(condition.getType());
             userViewCondition.setMultipleValue(condition.getMultipleValue());
             userViewCondition.setOperator(condition.getOperator());
             userViewCondition.setSysUserViewId(viewId);
@@ -100,4 +105,42 @@ public class UserViewService {
         userViewConditionMapper.batchInsert(insertConditions);
     }
 
+
+    /**
+     * 编辑用户视图
+     *
+     * @param request
+     * @param userId
+     * @param orgId
+     * @return
+     */
+    public UserView update(UserViewUpdateRequest request, String userId, String orgId) {
+        checkView(userId, request.getId(), orgId);
+
+        UserView userView = new UserView();
+        userView.setId(request.getId());
+        userView.setName(request.getName());
+        userView.setSearchMode(request.getSearchMode());
+        userView.setUpdateTime(System.currentTimeMillis());
+        userViewMapper.update(userView);
+
+        // 先删除
+        deleteConditionsByViewId(request.getId());
+        // 再新增
+        addUserViewConditions(request.getConditions(), request.getId(), userId);
+
+        return userView;
+    }
+
+    private void deleteConditionsByViewId(String id) {
+        LambdaQueryWrapper<UserViewCondition> viewWrapper = new LambdaQueryWrapper<>();
+        viewWrapper.eq(UserViewCondition::getSysUserViewId, id);
+        userViewConditionMapper.deleteByLambda(viewWrapper);
+    }
+
+    private void checkView(String userId, String id, String orgId) {
+        if (extUserViewMapper.countUserView(userId, id, orgId) <= 0) {
+            throw new GenericException(Translator.get("view_blank"));
+        }
+    }
 }

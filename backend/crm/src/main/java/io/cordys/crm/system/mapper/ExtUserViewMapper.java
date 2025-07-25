@@ -4,4 +4,6 @@ import org.apache.ibatis.annotations.Param;
 
 public interface ExtUserViewMapper {
     Long getNextPos(@Param("orgId") String orgId, @Param("userId") String userId, @Param("resourceType") String resourceType);
+
+    int countUserView(@Param("userId")String userId, @Param("id")String id, @Param("orgId")String orgId);
 }

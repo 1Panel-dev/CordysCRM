@@ -2,13 +2,16 @@ package io.cordys.crm.opportunity.controller;
 
 import io.cordys.common.dto.condition.FilterCondition;
 import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.system.domain.UserView;
 import io.cordys.crm.system.dto.request.UserViewAddRequest;
+import io.cordys.crm.system.dto.request.UserViewUpdateRequest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +29,8 @@ public class OpportunityUserViewControllerTest extends BaseTest {
         return BASE_PATH;
     }
 
+    private static String viewId;
+
     @Test
     @Order(1)
     void testAdd() throws Exception {
@@ -35,7 +40,10 @@ public class OpportunityUserViewControllerTest extends BaseTest {
         request.setSearchMode("AND");
         request.setResourceType("OPPORTUNITY");
         request.setConditions(buildConditions());
-        this.requestPost(DEFAULT_ADD, request);
+        MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_ADD, request);
+        UserView resultData = getResultData(mvcResult, UserView.class);
+        this.viewId = resultData.getId();
+
     }
 
     private List<FilterCondition> buildConditions() {
@@ -60,5 +68,19 @@ public class OpportunityUserViewControllerTest extends BaseTest {
         conditions.add(condition1);
         conditions.add(condition2);
         return conditions;
+    }
+
+
+    @Test
+    @Order(3)
+    void testUpdate() throws Exception {
+        UserViewUpdateRequest request = new UserViewUpdateRequest();
+        request.setId(this.viewId);
+        request.setName("更新試圖22");
+        request.setConditions(buildConditions());
+        this.requestPost(DEFAULT_UPDATE, request);
+
+        request.setId("123123123");
+        this.requestPost(DEFAULT_UPDATE, request);
     }
 }

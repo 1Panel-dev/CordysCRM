@@ -11,4 +11,11 @@
         and resource_type = #{resourceType}
     </select>
 
+
+    <select id="countUserView" resultType="java.lang.Integer">
+        select count(id) from sys_user_view
+        where organization_id = #{orgId}
+        and user_id = #{userId}
+        and id = #{id}
+    </select>
 </mapper>

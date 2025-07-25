@@ -5,6 +5,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.UserView;
 import io.cordys.crm.system.dto.request.UserViewAddRequest;
+import io.cordys.crm.system.dto.request.UserViewUpdateRequest;
 import io.cordys.crm.system.service.UserViewService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,5 +32,13 @@ public class OpportunityUserViewController {
     @Operation(summary = "添加商机视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
         return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+
+    @PostMapping("/update")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @Operation(summary = "编辑商机视图")
+    public UserView update(@Validated @RequestBody UserViewUpdateRequest request) {
+        return userViewService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 }
