@@ -61,11 +61,11 @@ public class CustomerUserViewController {
     }
 
 
-    @GetMapping("/list/{isOption}")
+    @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "客户视图列表")
-    public List<UserViewListResponse> queryList(@PathVariable boolean isOption) {
-        return userViewService.list(UserViewResourceType.OPPORTUNITY.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), isOption);
+    public List<UserViewListResponse> queryList() {
+        return userViewService.list(UserViewResourceType.CUSTOMER.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

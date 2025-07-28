@@ -61,11 +61,11 @@ public class OpportunityUserViewController {
     }
 
 
-    @GetMapping("/list/{isOption}")
+    @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机视图列表")
-    public List<UserViewListResponse> queryList(@PathVariable boolean isOption) {
-        return userViewService.list(UserViewResourceType.OPPORTUNITY.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), isOption);
+    public List<UserViewListResponse> queryList() {
+        return userViewService.list(UserViewResourceType.OPPORTUNITY.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 

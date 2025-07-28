@@ -26,7 +26,7 @@ public class CustomerUserViewControllerTest extends BaseTest {
     private static final String BASE_PATH = "/customer/view/";
 
     protected static final String DETAIL = "detail/{0}";
-    protected static final String LIST = "list/{0}";
+    protected static final String LIST = "list";
     protected static final String FIXED = "fixed/{0}";
     protected static final String POS = "edit/pos";
     protected static final String ENABLE = "enable/{0}";
@@ -99,7 +99,7 @@ public class CustomerUserViewControllerTest extends BaseTest {
     @Test
     @Order(4)
     void testList() throws Exception {
-        this.requestGet(LIST, true);
+        this.requestGet(LIST);
     }
 
     @Test

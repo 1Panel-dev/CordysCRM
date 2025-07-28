@@ -241,8 +241,8 @@ public class UserViewService {
      * @param orgId
      * @return
      */
-    public List<UserViewListResponse> list(String resourceType, String userId, String orgId, boolean isOption) {
-        return extUserViewMapper.selectViewList(resourceType, userId, orgId, isOption);
+    public List<UserViewListResponse> list(String resourceType, String userId, String orgId) {
+        return extUserViewMapper.selectViewList(resourceType, userId, orgId);
     }
 
 
