@@ -69,11 +69,6 @@
       :other-save-params="otherFollowRecordSaveParams"
       @saved="loadList"
     />
-    <ToCluePoolResultModel
-      v-model:show="showToCluePoolResultModel"
-      :fail-count="failCount"
-      :success-count="successCount"
-    />
   </div>
   <CrmTableExportModal
     v-model:show="showExportModal"
@@ -92,9 +87,10 @@
   />
   <CrmMoveModal
     v-model:show="showMoveModal"
-    :form-key="FormDesignKeyEnum.CLUE"
-    :source-id="checkedRowKeys"
+    :reason-key="ReasonTypeEnum.CLUE_POOL_RS"
+    :source-id="moveIds"
     :name="activeRowName"
+    @refresh="() => handleRefresh()"
   />
 </template>
 
@@ -104,6 +100,7 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   // import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
@@ -126,9 +123,8 @@
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
-  import ToCluePoolResultModel from './components/toCluePoolResultModel.vue';
 
-  import { batchDeleteClue, batchToCluePool, batchTransferClue, deleteClue, getFieldDeptTree } from '@/api/modules';
+  import { batchDeleteClue, batchTransferClue, deleteClue, getFieldDeptTree } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -211,47 +207,13 @@
 
   const showExportModal = ref<boolean>(false);
   const activeRowName = ref('');
-  // 批量移入线索池
-  const showToCluePoolResultModel = ref(false);
-  const successCount = ref<number>(0);
-  const failCount = ref<number>(0);
-
-  // 移入线索池 TODO
-  const isEnableReason = ref(false);
+  // 移入线索池
   const showMoveModal = ref(false);
+  const moveIds = ref<(string | number) | (string | number)[]>('');
   function handleMoveToLeadPool(row?: ClueListItem) {
     activeRowName.value = row?.name ?? '';
-    if (isEnableReason.value) {
-      showMoveModal.value = true;
-    } else {
-      const title = row
-        ? t('clue.batchMoveIntoCluePoolTitle', { name: characterLimit(activeRowName.value) })
-        : t('clue.batchMoveIntoCluePoolTitleTip', { number: checkedRowKeys.value.length });
-      const ids = row ? [row.id] : (checkedRowKeys.value as string[]);
-      openModal({
-        type: 'default',
-        title,
-        content: t('clue.moveToLeadPoolTip'),
-        positiveText: t('common.confirmMoveIn'),
-        negativeText: t('common.cancel'),
-        onPositiveClick: async () => {
-          try {
-            const { success, fail } = await batchToCluePool(ids);
-            successCount.value = success;
-            failCount.value = fail;
-            showToCluePoolResultModel.value = true;
-            handleRefresh();
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error(error);
-          }
-        },
-      });
-    }
-  }
-
-  function handleBatchMoveIntoCluePool() {
-    handleMoveToLeadPool();
+    moveIds.value = row?.id ? row.id : checkedRowKeys.value;
+    showMoveModal.value = true;
   }
 
   // 批量删除
@@ -285,7 +247,7 @@
         showTransferModal.value = true;
         break;
       case 'moveIntoCluePool':
-        handleBatchMoveIntoCluePool();
+        handleMoveToLeadPool();
         break;
       case 'batchDelete':
         handleBatchDelete();
@@ -475,7 +437,7 @@
                   {
                     label: t('clue.moveIntoCluePool'),
                     key: 'moveIntoCluePool',
-                    permission: ['CLUE_MANAGEMENT:UPDATE'],
+                    permission: ['CLUE_MANAGEMENT:RECYCLE'],
                   },
                   {
                     label: 'more',

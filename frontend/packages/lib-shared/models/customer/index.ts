@@ -330,3 +330,13 @@ export interface UpdateFollowPlanStatusParams {
   id: string;
   status: StatusTagKey;
 }
+
+export interface MoveToPublicPoolParams {
+  id: string | number;
+  reasonId?: string | null;
+}
+
+export interface BatchMoveToPublicPoolParams {
+  ids: (string | number)[];
+  reasonId?: string | null;
+}

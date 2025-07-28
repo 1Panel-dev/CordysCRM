@@ -13,6 +13,7 @@ export const BatchDeleteClueUrl = '/clue/batch/delete'; // 批量删除线索
 export const ExportClueAllUrl = '/clue/export'; // 导出全部线索
 export const ExportClueSelectedUrl = '/clue/export-select'; // 导出选中线索
 export const ReTransitionCustomerUrl = '/clue/re-transition/customer'; // 合并线索转为客户
+export const MoveToPoolLeadUrl = '/clue/to-pool'; // 移入线索池
 
 // 跟进记录
 export const UpdateClueFollowRecordUrl = '/clue/follow/record/update'; // 更新跟进记录

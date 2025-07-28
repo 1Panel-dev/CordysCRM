@@ -75,9 +75,10 @@
   />
   <CrmMoveModal
     v-model:show="showMoveModal"
-    :form-key="FormDesignKeyEnum.CLUE"
+    :reason-key="ReasonTypeEnum.CLUE_POOL_RS"
     :source-id="sourceId"
     :name="sourceName"
+    @refresh="() => closeAndRefresh()"
   />
 </template>
 
@@ -86,6 +87,7 @@
 
   // import { ClueStatusEnum } from '@lib/shared/enums/clueEnum';
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   // import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
@@ -104,7 +106,7 @@
   import convertToCustomerDrawer from './convertToCustomerDrawer.vue';
 
   // import CrmWorkflowCard from '@/components/business/crm-workflow-card/index.vue';
-  import { batchToCluePool, batchTransferClue, deleteClue, getClueHeaderList } from '@/api/modules';
+  import { batchTransferClue, deleteClue, getClueHeaderList } from '@/api/modules';
   // import { clueBaseSteps } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useModal from '@/hooks/useModal';
@@ -186,37 +188,10 @@
     });
   }
 
-  // 移入线索池 TODO
-  const isEnableReason = ref(false);
+  // 移入线索池
   const showMoveModal = ref(false);
   function handleMoveToLeadPool() {
-    if (isEnableReason.value) {
-      showMoveModal.value = true;
-    } else {
-      openModal({
-        type: 'default',
-        title: t('clue.batchMoveIntoCluePoolTitle', { name: characterLimit(sourceName.value) }),
-        content: t('clue.moveToLeadPoolTip'),
-        positiveText: t('common.confirmMoveIn'),
-        negativeText: t('common.cancel'),
-        onPositiveClick: async () => {
-          try {
-            try {
-              // TODO 等待联调
-              await batchToCluePool([sourceId.value]);
-              Message.success(t('common.moveInSuccess'));
-              closeAndRefresh();
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.error(error);
-            }
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error(error);
-          }
-        },
-      });
-    }
+    showMoveModal.value = true;
   }
 
   const formDrawerVisible = ref(false);
@@ -314,7 +289,7 @@
         text: false,
         ghost: true,
         class: 'n-btn-outline-primary',
-        permission: ['CLUE_MANAGEMENT:UPDATE'],
+        permission: ['CLUE_MANAGEMENT:RECYCLE'],
       },
       {
         label: t('common.transfer'),

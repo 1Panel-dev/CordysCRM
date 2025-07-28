@@ -72,6 +72,14 @@
           :readonly="collaborationType === 'READ_ONLY'"
         />
       </div>
+      <CrmMoveModal
+        v-model:show="showMoveModal"
+        :reason-key="ReasonTypeEnum.CUSTOMER_POOL_RS"
+        :source-id="props.sourceId"
+        :name="sourceName"
+        type="warning"
+        @refresh="() => handleSaved()"
+      />
     </template>
   </CrmOverviewDrawer>
 </template>
@@ -80,7 +88,7 @@
   import { useMessage } from 'naive-ui';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { CollaborationType } from '@lib/shared/models/customer';
 
@@ -90,6 +98,7 @@
   import ContactTable from '@/components/business/crm-form-create-table/contactTable.vue';
   import CrmFormDescription from '@/components/business/crm-form-description/index.vue';
   import CrmHeaderTable from '@/components/business/crm-header-table/index.vue';
+  import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
   import CrmOverviewDrawer from '@/components/business/crm-overview-drawer/index.vue';
   import type { TabContentItem } from '@/components/business/crm-tab-setting/type';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
@@ -147,6 +156,14 @@
           iconType: 'primary',
         },
         popSlotContent: 'transferPopContent',
+      },
+      {
+        label: t('customer.moveToOpenSea'),
+        key: 'moveToOpenSea',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
       },
       {
         label: t('common.delete'),
@@ -261,11 +278,19 @@
     });
   }
 
+  // 移入公海
+  const showMoveModal = ref(false);
+  function handleMoveToPublicPool() {
+    showMoveModal.value = true;
+  }
+
   function handleButtonSelect(key: string) {
     if (key === 'delete') {
       handleDelete();
     } else if (key === 'pop-transfer') {
       transfer();
+    } else if (key === 'moveToOpenSea') {
+      handleMoveToPublicPool();
     }
   }
 

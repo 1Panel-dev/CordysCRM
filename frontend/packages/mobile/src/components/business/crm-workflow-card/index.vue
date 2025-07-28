@@ -77,16 +77,16 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { closeToast, showLoadingToast, showSuccessToast } from 'vant';
+  import { closeToast, PickerOption, showLoadingToast, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
 
-  import { updateClueStatus, updateOptStage } from '@/api/modules';
-  import { failureReasonOptions } from '@/config/opportunity';
+  import { getReasonConfig, updateClueStatus, updateOptStage } from '@/api/modules';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   import { CommonRouteEnum } from '@/enums/routeEnum';
@@ -126,8 +126,9 @@
     [FormDesignKeyEnum.BUSINESS]: updateOptStage,
     [FormDesignKeyEnum.CLUE]: updateClueStatus,
   };
+  const reasonList = ref<PickerOption[]>([]);
 
-  const lastFailureReason = computed(() => failureReasonOptions.find((e) => e.value === props.failureReason)?.text);
+  const lastFailureReason = computed(() => reasonList.value.find((e) => e.value === props.failureReason)?.text);
 
   const endStage = computed<Options[]>(() => {
     if (currentStage.value === StageResultEnum.SUCCESS) {
@@ -247,6 +248,20 @@
     }
     await handleSave(stage);
   }
+
+  async function initReason() {
+    try {
+      const { dictList } = await getReasonConfig(ReasonTypeEnum.OPPORTUNITY_FAIL_RS);
+      reasonList.value = dictList.map((e) => ({ text: e.name, value: e.id }));
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
+  }
+
+  onBeforeMount(() => {
+    initReason();
+  });
 </script>
 
 <style scoped lang="less">

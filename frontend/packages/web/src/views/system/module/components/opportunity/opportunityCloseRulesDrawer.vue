@@ -248,9 +248,6 @@
       title: t('common.creator'),
       key: 'createUser',
       width: 200,
-      ellipsis: {
-        tooltip: true,
-      },
       render: (row: OpportunityItem) => {
         return h(CrmNameTooltip, { text: row.createUserName });
       },
@@ -269,9 +266,6 @@
       title: t('common.updateUserName'),
       key: 'updateUser',
       width: 200,
-      ellipsis: {
-        tooltip: true,
-      },
       render: (row: any) => {
         return h(CrmNameTooltip, { text: row.updateUserName });
       },

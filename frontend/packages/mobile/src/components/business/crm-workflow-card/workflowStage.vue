@@ -25,7 +25,7 @@
           <van-date-picker v-model="currentDate" @confirm="onSelectDateConfirm" @cancel="showEndTimePicker = false" />
         </van-popup> -->
         <van-field
-          v-if="form.stage === StageResultEnum.FAIL"
+          v-if="form.stage === StageResultEnum.FAIL && enableReason"
           v-model="form.failureReason"
           is-link
           name="picker"
@@ -37,7 +37,7 @@
         <van-popup v-model:show="showReasonPicker" destroy-on-close position="bottom">
           <van-picker
             v-model="currentReason"
-            :columns="failureReasonOptions"
+            :columns="reasonList"
             @cancel="() => (showReasonPicker = false)"
             @confirm="onSelectReasonConfirm"
           />
@@ -72,18 +72,17 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
-  import { FormInstance, showSuccessToast } from 'vant';
-  import dayjs from 'dayjs';
+  import { FormInstance, PickerOption, showSuccessToast } from 'vant';
 
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { UpdateStageParams } from '@lib/shared/models/opportunity';
 
   import CrmPageWrapper from '@/components/pure/crm-page-wrapper/index.vue';
 
-  import { updateClueStatus, updateOptStage } from '@/api/modules';
-  import { failureReasonOptions } from '@/config/opportunity';
+  import { getReasonConfig, updateClueStatus, updateOptStage } from '@/api/modules';
 
   import type { WorkStageTypeKey } from './index.vue';
 
@@ -95,6 +94,9 @@
     [FormDesignKeyEnum.BUSINESS]: updateOptStage,
     [FormDesignKeyEnum.CLUE]: updateClueStatus,
   };
+
+  const enableReason = ref(false);
+  const reasonList = ref<PickerOption[]>([]);
 
   const isHasBackPermission = computed(() => route.query.isHasBack?.toString() === 'Y');
   const form = ref<{
@@ -159,6 +161,21 @@
       loading.value = false;
     }
   }
+
+  async function initReason() {
+    try {
+      const { dictList, enable } = await getReasonConfig(ReasonTypeEnum.OPPORTUNITY_FAIL_RS);
+      enableReason.value = enable;
+      reasonList.value = dictList.map((e) => ({ text: e.name, value: e.id }));
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
+  }
+
+  onBeforeMount(() => {
+    initReason();
+  });
 </script>
 
 <style scoped></style>

@@ -55,6 +55,7 @@ import {
   GetOpenSeaCustomerUrl,
   GetOpenSeaOptionsUrl,
   IsCustomerOpenSeaNoPickUrl,
+  MoveToCustomerUrl,
   PickOpenSeaCustomerUrl,
   SaveCustomerRelationUrl,
   SwitchCustomerOpenSeaUrl,
@@ -78,6 +79,7 @@ import type {
   AddCustomerRelationItemParams,
   AssignOpenSeaCustomerParams,
   BatchAssignOpenSeaCustomerParams,
+  BatchMoveToPublicPoolParams,
   BatchOperationOpenSeaCustomerParams,
   CollaborationItem,
   CustomerContractListItem,
@@ -94,6 +96,7 @@ import type {
   CustomerTabHidden,
   CustomerTableParams,
   FollowDetailItem,
+  MoveToPublicPoolParams,
   OpenSeaCustomerTableParams,
   PickOpenSeaCustomerParams,
   RelationItem,
@@ -157,8 +160,13 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 批量移入公海
-  function batchMoveCustomer(data: (string | number)[]) {
+  function batchMoveCustomer(data: BatchMoveToPublicPoolParams) {
     return CDR.post({ url: BatchMoveCustomerUrl, data });
+  }
+
+  // 批量移入公海
+  function moveCustomerToPool(data: MoveToPublicPoolParams) {
+    return CDR.post({ url: MoveToCustomerUrl, data });
   }
 
   // 添加客户跟进记录
@@ -513,5 +521,6 @@ export default function useProductApi(CDR: CordysAxios) {
     updateCustomerFollowPlanStatus,
     exportCustomerAll,
     exportCustomerSelected,
+    moveCustomerToPool,
   };
 }

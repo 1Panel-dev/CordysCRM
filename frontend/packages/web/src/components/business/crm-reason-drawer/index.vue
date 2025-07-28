@@ -14,7 +14,7 @@
         <n-tooltip trigger="hover" :delay="300" :disabled="hasConfig">
           <template #trigger>
             <n-switch
-              v-model:value="enableReason"
+              :value="enableReason"
               :disabled="!hasConfig"
               size="small"
               :rubber-band="false"
@@ -48,7 +48,6 @@
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { characterLimit } from '@lib/shared/method';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
@@ -102,11 +101,13 @@
     },
   ]);
 
-  function getConfirmPropsFun(element: Record<string, any>) {
+  const popConfirmLoading = ref(false);
+  function getConfirmPropsFun(_: Record<string, any>) {
     return {
-      title: t('crmReasonDrawer.deleteReasonTitleTip', { name: characterLimit(element.name) }),
+      title: t('crmReasonDrawer.deleteReasonTitleTip', { title: props.title }),
       content: t('crmReasonDrawer.deleteReasonContentTip'),
       positiveText: t('common.remove'),
+      loading: popConfirmLoading.value,
     };
   }
 
@@ -140,10 +141,11 @@
       }
     }
   }
-  // TODO xinxinwu 没调
+
   async function handleDelete(_i: number, id: string, done: () => void) {
     if (enableReason.value && form.value.list.length === 1) return;
     try {
+      popConfirmLoading.value = true;
       await deleteReasonItem(id);
       done();
       initReason();
@@ -151,6 +153,8 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    } finally {
+      popConfirmLoading.value = false;
     }
   }
 

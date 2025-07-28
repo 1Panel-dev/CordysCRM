@@ -7,6 +7,7 @@ export const DeleteCustomerUrl = '/customer/delete'; // 删除客户
 export const BatchDeleteCustomerUrl = '/customer/batch/delete'; // 批量删除客户
 export const BatchTransferCustomerUrl = '/customer/batch/transfer'; // 批量转移客户
 export const BatchMoveCustomerUrl = '/customer/batch/to-pool'; // 批量移入公海
+export const MoveToCustomerUrl = '/customer/to-pool'; // 移入公海
 export const UpdateCustomerFollowRecordUrl = '/customer/follow/record/update'; // 更新跟进记录
 export const GetCustomerFollowRecordListUrl = '/customer/follow/record/page'; // 获取跟进记录列表
 export const AddCustomerFollowRecordUrl = '/customer/follow/record/add'; // 添加跟进记录

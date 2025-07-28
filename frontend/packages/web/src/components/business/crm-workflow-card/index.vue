@@ -75,7 +75,7 @@
             </n-date-picker>
           </n-form-item> -->
           <n-form-item
-            v-if="form.stage === StageResultEnum.FAIL"
+            v-if="form.stage === StageResultEnum.FAIL && enableReason"
             require-mark-placement="left"
             label-placement="left"
             path="failureReason"
@@ -84,7 +84,7 @@
           >
             <n-select
               v-model:value="form.failureReason"
-              :options="failureReasonOptions"
+              :options="reasonList"
               :placeholder="t('common.pleaseSelect')"
             />
           </n-form-item>
@@ -110,14 +110,16 @@
     useMessage,
   } from 'naive-ui';
 
+  import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { StageResultEnum } from '@lib/shared/enums/opportunityEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type { UpdateStageParams } from '@lib/shared/models/opportunity';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
+  import type { Option } from '@/components/business/crm-select-user-drawer/type';
   import WorkflowStep from './workflowStep.vue';
 
-  import { failureReasonOptions } from '@/config/opportunity';
+  import { getReasonConfig } from '@/api/modules';
   import { hasAllPermission } from '@/utils/permission';
 
   const { t } = useI18n();
@@ -148,6 +150,7 @@
     required: true,
   });
 
+  const reasonList = ref<Option[]>([]);
   const updateStatusModal = ref<boolean>(false);
 
   const rules: FormRules = {
@@ -193,8 +196,7 @@
     return [];
   });
 
-  const getFailureReason = computed(() => failureReasonOptions.find((e) => e.value === props.failureReason)?.label);
-
+  const getFailureReason = computed(() => reasonList.value.find((e) => e.value === props.failureReason)?.label);
   const workflowList = computed<SelectOption[]>(() => {
     // 失败返回基础阶段截止当前 + 失败阶段
     if (currentStage.value === StageResultEnum.FAIL) {
@@ -255,14 +257,39 @@
   }
 
   // 确认更新
+  const enableReason = ref(false);
   async function handleConfirm() {
-    formRef.value?.validate(async (errors) => {
-      if (!errors) {
-        await handleSave(form.value.stage);
-        handleCancel();
-      }
-    });
+    if (enableReason.value) {
+      formRef.value?.validate(async (errors) => {
+        if (!errors) {
+          await handleSave(form.value.stage);
+          handleCancel();
+        }
+      });
+    } else {
+      handleSave(form.value.stage);
+    }
   }
+
+  async function initReason() {
+    try {
+      const { dictList, enable } = await getReasonConfig(ReasonTypeEnum.OPPORTUNITY_FAIL_RS);
+      enableReason.value = enable;
+      reasonList.value = dictList.map((e) => ({ label: e.name, value: e.id }));
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
+  }
+
+  watch(
+    () => updateStatusModal.value,
+    (val) => {
+      if (val) {
+        initReason();
+      }
+    }
+  );
 </script>
 
 <style lang="less" scoped></style>

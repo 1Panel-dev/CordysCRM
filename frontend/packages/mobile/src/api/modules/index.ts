@@ -215,6 +215,7 @@ export const {
   uploadTempFile,
   previewPicture,
   downloadPicture,
+  getReasonConfig,
 } = moduleApi;
 
 export const {

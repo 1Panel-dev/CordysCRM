@@ -69,13 +69,6 @@
     :other-save-params="otherFollowRecordSaveParams"
     @saved="searchData"
   />
-  <ToCluePoolResultModel
-    v-model:show="showToCluePoolResultModel"
-    :fail-count="failCount"
-    :success-count="successCount"
-    :title="t('customer.moveToOpenSea')"
-    :failed-content="t('customer.moveToOpenSeaFailedContent')"
-  />
   <CrmTableExportModal
     v-model:show="showExportModal"
     :params="exportParams"
@@ -86,9 +79,11 @@
   />
   <CrmMoveModal
     v-model:show="showMoveModal"
-    :form-key="FormDesignKeyEnum.CUSTOMER"
-    :source-id="checkedRowKeys"
+    :reason-key="ReasonTypeEnum.CUSTOMER_POOL_RS"
+    :source-id="moveIds"
     :name="initialSourceName"
+    type="warning"
+    @refresh="() => (tableRefreshId += 1)"
   />
 </template>
 
@@ -97,7 +92,7 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-  import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
+  import { ModuleConfigEnum, ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { ExportTableColumnItem } from '@lib/shared/models/common';
@@ -119,11 +114,9 @@
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import customerOverviewDrawer from './components/customerOverviewDrawer.vue';
-  import ToCluePoolResultModel from '@/views/clueManagement/clue/components/toCluePoolResultModel.vue';
 
   import {
     batchDeleteCustomer,
-    batchMoveCustomer,
     batchTransferCustomer,
     deleteCustomer,
     getFieldDeptTree,
@@ -227,42 +220,13 @@
     });
   }
 
-  const isEnableReason = ref(false);
   const showMoveModal = ref(false);
-  const showToCluePoolResultModel = ref(false);
-  const successCount = ref<number>(0);
-  const failCount = ref<number>(0);
-  // TODO xinxinwu
+  const moveIds = ref<(string | number) | (string | number)[]>('');
+
   function handleMoveToOpenSea(row?: any) {
     initialSourceName.value = row?.name ?? '';
-    if (isEnableReason.value) {
-      showMoveModal.value = true;
-    } else {
-      const title = row
-        ? t('customer.moveCustomerToOpenSeaTitleTip', { name: characterLimit(initialSourceName.value) })
-        : t('customer.batchMoveTitleTip', { number: checkedRowKeys.value.length });
-      const ids = row ? [row.id] : (checkedRowKeys.value as string[]);
-      openModal({
-        type: 'warning',
-        title,
-        content: t('customer.batchMoveContentTip'),
-        positiveText: t('common.confirmMoveIn'),
-        negativeText: t('common.cancel'),
-        onPositiveClick: async () => {
-          try {
-            const { success, fail } = await batchMoveCustomer(ids);
-            successCount.value = success;
-            failCount.value = fail;
-            showToCluePoolResultModel.value = true;
-            checkedRowKeys.value = [];
-            tableRefreshId.value += 1;
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error(error);
-          }
-        },
-      });
-    }
+    moveIds.value = row?.id ? row.id : checkedRowKeys.value;
+    showMoveModal.value = true;
   }
 
   // 批量转移
@@ -403,7 +367,7 @@
             {
               label: t('customer.moveToOpenSea'),
               key: 'moveToOpenSea',
-              permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
+              permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
             },
             {
               label: t('common.delete'),

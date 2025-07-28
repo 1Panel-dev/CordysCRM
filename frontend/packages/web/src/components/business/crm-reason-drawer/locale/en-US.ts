@@ -3,7 +3,7 @@ export default {
   'crmReasonDrawer.customer': 'Account move-in reason',
   'crmReasonDrawer.opportunity': 'Lost reason',
   'crmReasonDrawer.setting': 'Setup',
-  'crmReasonDrawer.deleteReasonTitleTip': 'Confirm removal of {name} reason?',
+  'crmReasonDrawer.deleteReasonTitleTip': 'Confirm removal of {title}? ',
   'crmReasonDrawer.deleteReasonContentTip':
     'Warning: Existing records using this reason may show inconsistencies after deletion!',
 };

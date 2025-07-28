@@ -120,6 +120,7 @@ export const {
   updateClueFollowPlanStatus,
   exportClueAll,
   exportClueSelected,
+  moveToLeadPool,
 } = clueApi;
 
 export const {
@@ -186,6 +187,7 @@ export const {
   getCustomerOpportunityPage,
   exportCustomerAll,
   exportCustomerSelected,
+  moveCustomerToPool,
 } = customerApi;
 
 export const {

@@ -64,6 +64,7 @@
     <slot name="view"></slot>
     <n-data-table
       ref="tableRef"
+      :key="attrs.showSetting ? `table-${attrs.tableKey}-${layOut}` : `table-default-layout`"
       v-bind="{ scrollX: scrollXWidth, ...$attrs }"
       v-model:checked-row-keys="checkedRowKeys"
       :columns="currentColumns as TableColumns"

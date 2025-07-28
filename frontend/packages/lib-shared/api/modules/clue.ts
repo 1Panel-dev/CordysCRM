@@ -32,6 +32,7 @@ import {
   GetClueUrl,
   GetPoolClueUrl,
   GetPoolOptionsUrl,
+  MoveToPoolLeadUrl,
   PickClueUrl,
   ReTransitionCustomerUrl,
   UpdateClueFollowPlanStatusUrl,
@@ -55,12 +56,14 @@ import type {
 } from '@lib/shared/models/clue';
 import type { CommonList, TableExportParams, TableExportSelectedParams } from '@lib/shared/models/common';
 import type {
+  BatchMoveToPublicPoolParams,
   CustomerContractTableParams,
   CustomerFollowPlanTableParams,
   CustomerFollowRecordTableParams,
   CustomerTabHidden,
   CustomerTableParams,
   FollowDetailItem,
+  MoveToPublicPoolParams,
   SaveCustomerFollowPlanParams,
   SaveCustomerFollowRecordParams,
   TransferParams,
@@ -107,8 +110,13 @@ export default function useProductApi(CDR: CordysAxios) {
   }
 
   // 批量移入线索池
-  function batchToCluePool(data: string[]) {
+  function batchToCluePool(data: BatchMoveToPublicPoolParams) {
     return CDR.post({ url: BatchToPoolClueUrl, data });
+  }
+
+  // 移入线索池
+  function moveToLeadPool(data: MoveToPublicPoolParams) {
+    return CDR.post({ url: MoveToPoolLeadUrl, data });
   }
 
   // 批量删除线索
@@ -306,5 +314,6 @@ export default function useProductApi(CDR: CordysAxios) {
     exportClueSelected,
     getClueTransitionCustomerList,
     reTransitionCustomer,
+    moveToLeadPool,
   };
 }
