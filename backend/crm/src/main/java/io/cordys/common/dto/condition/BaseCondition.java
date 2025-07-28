@@ -14,6 +14,9 @@ import java.util.List;
 @Data
 public class BaseCondition {
 
+    @Schema(description = "视图ID")
+    private String viewId;
+
     @Schema(description = "关键字，用于搜索匹配")
     private String keyword;
 

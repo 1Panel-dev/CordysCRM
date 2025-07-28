@@ -58,7 +58,7 @@ public class OpportunityController {
     @Operation(summary = "商机列表")
     public PagerWithOption<List<OpportunityListResponse>> list(@Validated @RequestBody OpportunityPageRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
@@ -136,7 +136,7 @@ public class OpportunityController {
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT)
     public String opportunityExportAll(@Validated @RequestBody OpportunityExportRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         return opportunityExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
     }
 

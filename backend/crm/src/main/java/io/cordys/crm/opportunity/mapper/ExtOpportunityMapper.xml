@@ -50,7 +50,7 @@
             <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                 #{deptId}
             </foreach>
-            <if test="dataPermission.searchType == 'ALL'">
+            <if test="dataPermission.viewId == 'ALL'">
                 or sys_organization_user.user_id = #{userId}
             </if>
             )
@@ -69,13 +69,9 @@
             )
         </if>
 
-        <if test="request.searchType != null and request.searchType != '' and request.searchType == 'DEAL'">
+        <if test="request.viewId != null and request.viewId != '' and request.viewId == 'SUCCESS_OPPORTUNITY'">
             and o.stage = 'SUCCESS'
         </if>
-
-        <!--<if test="request.searchType != null and request.searchType != '' and request.searchType != 'DEAL'">
-            and o.stage != 'SUCCESS'
-        </if>-->
 
         <if test="request.customerId != null and request.customerId != ''">
             and o.customer_id = #{request.customerId}
@@ -422,7 +418,7 @@
     <update id="batchTransfer">
         update opportunity
         set owner = #{request.owner}, stage = 'CREATE', last_stage = Null, update_user = #{userId}, update_time = #{updateTime}, status = 1
-        where stage != 'SUCCESS' and id in
+        where id in
         <foreach collection="request.ids" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
@@ -528,7 +524,6 @@
         </foreach>
         order by o.create_time desc
     </select>
-
     <select id="selectOpportunityCount" resultType="java.lang.Long">
         select
         <if test="amount">
@@ -547,7 +542,7 @@
                 <foreach collection="request.dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                     #{deptId}
                 </foreach>
-                <if test="request.dataPermission.searchType == 'ALL'">
+                <if test="request.dataPermission.viewId == 'ALL'">
                     or sou.user_id = #{request.userId}
                 </if>
             )

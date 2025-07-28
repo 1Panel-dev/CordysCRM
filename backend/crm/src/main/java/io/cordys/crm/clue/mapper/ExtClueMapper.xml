@@ -36,7 +36,7 @@
                 <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                     #{deptId}
                 </foreach>
-                <if test="dataPermission.searchType == 'ALL'">
+                <if test="dataPermission.viewId == 'ALL'">
                     or sou.user_id = #{userId}
                 </if>
             )
@@ -59,15 +59,15 @@
             and c.name like concat('%', #{request.keyword},'%')
         </if>
 
-        <if test="request.searchType == 'CUSTOMER_TRANSITION'">
+        <if test="request.viewId == 'CUSTOMER_TRANSITION'">
             and c.transition_type = 'CUSTOMER'
         </if>
 
-        <if test="request.searchType != 'CUSTOMER_TRANSITION'">
+        <if test="request.viewId != 'CUSTOMER_TRANSITION'">
             and (c.transition_type != 'CUSTOMER' or c.transition_type is null)
         </if>
 
-        <if test="request.searchType == 'OPPORTUNITY_TRANSITION'">
+        <if test="request.viewId == 'OPPORTUNITY_TRANSITION'">
             and c.transition_type = 'OPPORTUNITY'
         </if>
 
@@ -360,7 +360,7 @@
                 <foreach collection="request.dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                     #{deptId}
                 </foreach>
-                <if test="request.dataPermission.searchType == 'ALL'">
+                <if test="request.dataPermission.viewId == 'ALL'">
                     or sou.user_id = #{request.userId}
                 </if>
             )

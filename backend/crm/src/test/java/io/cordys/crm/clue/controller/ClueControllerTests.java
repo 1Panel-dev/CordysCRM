@@ -1,9 +1,6 @@
 package io.cordys.crm.clue.controller;
 
-import io.cordys.common.constants.BusinessSearchType;
-import io.cordys.common.constants.FormKey;
-import io.cordys.common.constants.InternalUser;
-import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.constants.*;
 import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.common.dto.ExportSelectRequest;
 import io.cordys.common.dto.ResourceTabEnableDTO;
@@ -218,7 +215,7 @@ class ClueControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
 
-        request.setSearchType(BusinessSearchType.ALL.name());
+        request.setViewId(InternalUserView.ALL.name());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<ClueListResponse>> pageResult = getPageResult(mvcResult, ClueListResponse.class);
         List<ClueListResponse> clueList = pageResult.getList();
@@ -243,10 +240,10 @@ class ClueControllerTests extends BaseTest {
             }
         });
 
-        request.setSearchType(BusinessSearchType.SELF.name());
+        request.setViewId(InternalUserView.SELF.name());
         this.requestPostWithOk(DEFAULT_PAGE, request);
 
-        request.setSearchType(BusinessSearchType.DEPARTMENT.name());
+        request.setViewId(InternalUserView.DEPARTMENT.name());
         this.requestPostWithOk(DEFAULT_PAGE, request);
 
 
@@ -342,7 +339,7 @@ class ClueControllerTests extends BaseTest {
         CluePageRequest request = new CluePageRequest();
         request.setCurrent(1);
         request.setPageSize(10);
-        request.setSearchType(BusinessSearchType.ALL.name());
+        request.setViewId(InternalUserView.ALL.name());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<ClueListResponse>> pageResult = getPageResult(mvcResult, ClueListResponse.class);
         List<ClueListResponse> clueList = pageResult.getList();

@@ -12,10 +12,6 @@ import lombok.Data;
  */
 @Data
 public class CluePageRequest extends BasePageRequest {
-
-    @Schema(description = "搜索类型(ALL/SELF/DEPARTMENT/VISIBLE/CUSTOMER_TRANSITION/OPPORTUNITY_TRANSITION)")
-    private String searchType ;
-
     @Schema(description = "线索池ID{线索池-线索列表时传参}")
     private String poolId;
 }

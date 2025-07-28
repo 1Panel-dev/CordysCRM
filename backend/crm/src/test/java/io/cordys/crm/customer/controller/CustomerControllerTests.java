@@ -1,6 +1,6 @@
 package io.cordys.crm.customer.controller;
 
-import io.cordys.common.constants.BusinessSearchType;
+import io.cordys.common.constants.InternalUserView;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.PermissionConstants;
@@ -216,7 +216,7 @@ class CustomerControllerTests extends BaseTest {
         request.setCurrent(1);
         request.setPageSize(10);
 
-        request.setSearchType(BusinessSearchType.ALL.name());
+        request.setViewId(InternalUserView.ALL.name());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
         List<CustomerListResponse> customerList = pageResult.getList();
@@ -236,13 +236,13 @@ class CustomerControllerTests extends BaseTest {
             Assertions.assertEquals(customer.getName(), responseCustomer.getName());
         });
 
-        request.setSearchType(BusinessSearchType.SELF.name());
+        request.setViewId(InternalUserView.SELF.name());
         this.requestPostWithOk(DEFAULT_PAGE, request);
 
-        request.setSearchType(BusinessSearchType.DEPARTMENT.name());
+        request.setViewId(InternalUserView.DEPARTMENT.name());
         this.requestPostWithOk(DEFAULT_PAGE, request);
 
-        request.setSearchType(BusinessSearchType.VISIBLE.name());
+        request.setViewId(InternalUserView.VISIBLE.name());
         this.requestPostWithOk(DEFAULT_PAGE, request);
 
         // 校验权限
@@ -284,7 +284,7 @@ class CustomerControllerTests extends BaseTest {
         requestP.setCurrent(1);
         requestP.setPageSize(10);
 
-        requestP.setSearchType(BusinessSearchType.ALL.name());
+        requestP.setViewId(InternalUserView.ALL.name());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, requestP);
         Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
         List<CustomerListResponse> customerList = pageResult.getList();
@@ -400,7 +400,7 @@ class CustomerControllerTests extends BaseTest {
         CustomerPageRequest request = new CustomerPageRequest();
         request.setCurrent(1);
         request.setPageSize(10);
-        request.setSearchType(BusinessSearchType.ALL.name());
+        request.setViewId(InternalUserView.ALL.name());
         MvcResult mvcResult = this.requestPostWithOkAndReturn(DEFAULT_PAGE, request);
         Pager<List<CustomerListResponse>> pageResult = getPageResult(mvcResult, CustomerListResponse.class);
         List<CustomerListResponse> customerList = pageResult.getList();

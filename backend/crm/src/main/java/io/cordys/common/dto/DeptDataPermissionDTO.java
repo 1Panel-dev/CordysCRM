@@ -1,6 +1,5 @@
 package io.cordys.common.dto;
 
-import io.cordys.common.constants.BusinessSearchType;
 import lombok.Data;
 
 import java.util.HashSet;
@@ -15,9 +14,9 @@ public class DeptDataPermissionDTO {
 
     /**
      * 搜索类型(ALL/SELF/DEPARTMENT/VISIBLE)
-     * {@link BusinessSearchType}
+     * {@link io.cordys.common.constants.InternalUserView}
      */
-    private String searchType;
+    private String viewId;
     /**
      * 是否可查看全部数据
      */

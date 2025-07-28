@@ -149,7 +149,7 @@
             <foreach collection="request.dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                 #{deptId}
             </foreach>
-            <if test="request.dataPermission.searchType == 'ALL'">
+            <if test="request.dataPermission.viewId == 'ALL'">
                 or sou.user_id = #{request.userId}
             </if>
             )

@@ -1,7 +1,7 @@
 package io.cordys.common.service;
 
-import io.cordys.common.constants.BusinessSearchType;
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.constants.InternalUserView;
 import io.cordys.common.constants.RoleDataScope;
 import io.cordys.common.dto.*;
 import io.cordys.common.exception.GenericException;
@@ -38,21 +38,21 @@ public class DataScopeService {
     @Resource
     private PermissionCache permissionCache;
 
-    public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String searchType, String permission) {
+    public DeptDataPermissionDTO getDeptDataPermission(String userId, String orgId, String viewId, String permission) {
         DeptDataPermissionDTO deptDataPermission = new DeptDataPermissionDTO();
-        deptDataPermission.setSearchType(searchType);
-        if (BusinessSearchType.isSelf(searchType)) {
+        deptDataPermission.setViewId(viewId);
+        if (InternalUserView.isSelf(viewId)) {
             // 只查看自己的数据
             deptDataPermission.setSelf(true);
             return deptDataPermission;
-        } else if (BusinessSearchType.isVisible(searchType)) {
+        } else if (InternalUserView.isVisible(viewId)) {
             // 查看设置为可见的数据
             deptDataPermission.setVisible(true);
             return deptDataPermission;
         } else {
             deptDataPermission = getDeptDataPermission(userId, orgId, permission);
-            deptDataPermission.setSearchType(searchType);
-            if (deptDataPermission.getAll() && BusinessSearchType.isDepartment(searchType)) {
+            deptDataPermission.setViewId(viewId);
+            if (deptDataPermission.getAll() && InternalUserView.isDepartment(viewId)) {
                 // 数据权限是全部,但是查询条件是部门,则按照部门查询
                 return getDeptDataPermissionForAllPermission(userId, orgId);
             }

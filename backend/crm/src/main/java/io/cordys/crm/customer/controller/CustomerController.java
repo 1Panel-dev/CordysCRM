@@ -70,7 +70,7 @@ public class CustomerController {
     @Operation(summary = "客户列表")
     public PagerWithOption<List<CustomerListResponse>> list(@Validated @RequestBody CustomerPageRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return customerService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
@@ -149,9 +149,9 @@ public class CustomerController {
     @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ})
     @Operation(summary = "客户详情-商机列表")
     public PagerWithOption<List<OpportunityListResponse>> list(@Validated @RequestBody CustomerOpportunityPageRequest request) {
-        request.setSearchType("ALL");
+        request.setViewId("ALL");
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         return opportunityService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
@@ -160,7 +160,7 @@ public class CustomerController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT)
     public String opportunityExportAll(@Validated @RequestBody CustomerExportRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return customerExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
     }
 

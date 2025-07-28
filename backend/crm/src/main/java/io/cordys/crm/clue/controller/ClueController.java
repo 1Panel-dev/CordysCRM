@@ -65,7 +65,7 @@ public class ClueController {
     @Operation(summary = "线索列表")
     public PagerWithOption<List<ClueListResponse>> list(@Validated @RequestBody CluePageRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.CLUE_MANAGEMENT_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
         return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission);
     }
 
@@ -151,7 +151,7 @@ public class ClueController {
     @Operation(summary = "导出全部")
     public String exportAll(@Validated @RequestBody ClueExportRequest request) {
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
-                OrganizationContext.getOrganizationId(), request.getSearchType(), PermissionConstants.CLUE_MANAGEMENT_READ);
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
         return clueExportService.exportAll(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
     }
 

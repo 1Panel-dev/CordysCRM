@@ -40,7 +40,7 @@
                 <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                     #{deptId}
                 </foreach>
-                <if test="dataPermission.searchType == 'ALL'">
+                <if test="dataPermission.viewId == 'ALL'">
                     or sou.user_id = #{userId}
                 </if>
             )
@@ -117,7 +117,7 @@
                 <foreach collection="dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                     #{deptId}
                 </foreach>
-                <if test="dataPermission.searchType == 'ALL'">
+                <if test="dataPermission.viewId == 'ALL'">
                     or sou.user_id = #{userId}
                 </if>
                 or cc.id is not null
@@ -400,7 +400,7 @@
                 <foreach collection="request.dataPermission.deptIds" item="deptId" open="(" close=")" separator=",">
                     #{deptId}
                 </foreach>
-                <if test="request.dataPermission.searchType == 'ALL'">
+                <if test="request.dataPermission.viewId == 'ALL'">
                     or sou.user_id = #{request.userId}
                 </if>
             )

@@ -19,8 +19,6 @@ import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -187,7 +185,7 @@ public class OpportunityControllerTests extends BaseTest {
         request.setExpectedEndTime(System.currentTimeMillis());
         this.requestPostWithOk(DEFAULT_ADD, request);
         OpportunityPageRequest pageRequest = new OpportunityPageRequest();
-        pageRequest.setSearchType("ALL");
+        pageRequest.setViewId("ALL");
         pageRequest.setCurrent(1);
         pageRequest.setPageSize(10);
         this.requestPostWithOk(DEFAULT_PAGE, pageRequest);
