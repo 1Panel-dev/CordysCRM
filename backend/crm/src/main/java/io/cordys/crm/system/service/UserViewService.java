@@ -194,17 +194,22 @@ public class UserViewService {
     public UserViewResponse getViewDetail(String id, String userId, String orgId) {
         checkView(userId, id, orgId);
         UserView userView = userViewMapper.selectByPrimaryKey(id);
-        List<UserViewCondition> viewConditions = extUserViewConditionMapper.getViewConditions(id);
+        List<FilterCondition> conditions = getFilterConditions(id);
+        UserViewResponse response = new UserViewResponse();
+        BeanUtils.copyBean(response, userView);
+        response.setConditions(conditions);
+        return response;
+    }
+
+    public List<FilterCondition> getFilterConditions(String viewId) {
+        List<UserViewCondition> viewConditions = extUserViewConditionMapper.getViewConditions(viewId);
         List<FilterCondition> conditions = viewConditions.stream().map(condition -> {
             FilterCondition filterCondition = BeanUtils.copyBean(new FilterCondition(), condition);
             Object value = getConditionValueByType(condition.getValueType(), condition.getValue());
             filterCondition.setValue(value);
             return filterCondition;
         }).toList();
-        UserViewResponse response = new UserViewResponse();
-        BeanUtils.copyBean(response, userView);
-        response.setConditions(conditions);
-        return response;
+        return conditions;
     }
 
 

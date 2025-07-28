@@ -7,8 +7,10 @@ import lombok.Data;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 表示组合搜索条件，用于支持复杂的搜索逻辑。
@@ -27,11 +29,11 @@ public class CombineSearch {
 
     public List<FilterCondition> getConditions() {
         if (CollectionUtils.isEmpty(conditions)) {
-            return List.of();
+            return new ArrayList<>();
         }
         return conditions.stream()
                 .filter(FilterCondition::valid)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**

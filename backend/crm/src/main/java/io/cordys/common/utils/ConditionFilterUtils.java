@@ -1,65 +1,48 @@
-package io.cordys.common.interceptor;
+package io.cordys.common.utils;
 
 
 import io.cordys.common.constants.InternalUserView;
 import io.cordys.common.dto.condition.BaseCondition;
 import io.cordys.common.dto.condition.CombineSearch;
 import io.cordys.common.dto.condition.FilterCondition;
+import io.cordys.common.util.CommonBeanFactory;
+import io.cordys.crm.system.service.UserViewService;
 import io.cordys.security.SessionUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 /**
  * @Author: jianxing
- * @CreateTime: 2024-08-28  17:31
+ * @CreateTime: 2025-07-28  17:31
  * 拦截高级搜索等查询
  * 处理高级搜索等通用查询条件
  * 1. 处理视图查询条件
  * 2. 预先过滤不合法的查询条件
- * 3. 拆分系统字段和自定义字段
- * 4. 处理成员选项中的 CURRENT_USER
+ * 3. 处理成员选项中的 CURRENT_USER
  */
 @Aspect
 @Component
-public class ConditionFilterAspect {
-    @Pointcut("@annotation(io.cordys.common.interceptor.ConditionFilter)")
-    public void pointcut() {
-    }
+public class ConditionFilterUtils {
 
-    @Before("pointcut()")
-    public void before(JoinPoint joinPoint) {
-        Object[] args = joinPoint.getArgs();
-        for (Object arg : args) {
-            if (arg instanceof BaseCondition baseCondition) {
-                parseBaseCondition(baseCondition);
-            } else {
-                try {
-                    // 批量操作
-                    Method getCondition = arg.getClass().getMethod("getCondition");
-                    BaseCondition baseCondition = (BaseCondition) getCondition.invoke(arg);
-                    parseBaseCondition(baseCondition);
-                } catch (Exception e) {
-                    // do nothing
-                }
-            }
-        }
-    }
-
-    private void parseBaseCondition(BaseCondition baseCondition) {
+    public static void parseCondition(BaseCondition baseCondition) {
         // 处理视图查询条件
         String viewId = baseCondition.getViewId();
 
         if (StringUtils.isNotBlank(viewId) && !InternalUserView.isInternalUserView(viewId)) {
             // 查询视图
-            // todo
+            UserViewService userViewService = CommonBeanFactory.getBean(UserViewService.class);
+            List<FilterCondition> conditions = userViewService.getFilterConditions(viewId);
+            if (baseCondition.getCombineSearch() == null) {
+                baseCondition.setCombineSearch(new CombineSearch());
+            }
+            List<FilterCondition> newConditions = baseCondition.getCombineSearch()
+                    .getConditions();
+            newConditions.addAll(conditions);
+            baseCondition.getCombineSearch().setConditions(newConditions);
         }
 
         CombineSearch combineSearch = baseCondition.getCombineSearch();
@@ -84,7 +67,7 @@ public class ConditionFilterAspect {
      * 替换当前用户的用户ID
      * @param validConditions
      */
-    private void replaceCurrentUser(List<FilterCondition> validConditions) {
+    private static void replaceCurrentUser(List<FilterCondition> validConditions) {
         for (FilterCondition validCondition : validConditions) {
             Object value = validCondition.getValue();
             if (value instanceof List arrayValues) {
@@ -99,7 +82,7 @@ public class ConditionFilterAspect {
         }
     }
 
-    public List<FilterCondition> getValidConditions(List<FilterCondition> conditions) {
+    public static List<FilterCondition> getValidConditions(List<FilterCondition> conditions) {
         if (CollectionUtils.isEmpty(conditions)) {
             return List.of();
         }
