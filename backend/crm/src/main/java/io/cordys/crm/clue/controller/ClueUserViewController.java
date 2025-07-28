@@ -1,4 +1,4 @@
-package io.cordys.crm.opportunity.controller;
+package io.cordys.crm.clue.controller;
 
 
 import io.cordys.common.constants.PermissionConstants;
@@ -21,72 +21,72 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "商机视图")
+@Tag(name = "线索视图")
 @RestController
-@RequestMapping("/opportunity/view")
-public class OpportunityUserViewController {
+@RequestMapping("/clue/view")
+public class ClueUserViewController {
 
     @Resource
     private UserViewService userViewService;
 
 
     @PostMapping("/add")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
-    @Operation(summary = "添加商机视图")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
+    @Operation(summary = "添加线索视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
         return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.OPPORTUNITY.name());
     }
 
 
     @PostMapping("/update")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
-    @Operation(summary = "编辑商机视图")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
+    @Operation(summary = "编辑线索视图")
     public UserView update(@Validated @RequestBody UserViewUpdateRequest request) {
         return userViewService.update(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
     @GetMapping("/delete/{id}")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
-    @Operation(summary = "删除商机视图")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
+    @Operation(summary = "删除线索视图")
     public void delete(@PathVariable String id) {
         userViewService.delete(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/detail/{id}")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
-    @Operation(summary = "商机视图详情")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
+    @Operation(summary = "线索视图详情")
     public UserViewResponse viewDetail(@PathVariable String id) {
         return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
     @GetMapping("/list/{isOption}")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
-    @Operation(summary = "商机视图列表")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
+    @Operation(summary = "线索视图列表")
     public List<UserViewListResponse> queryList(@PathVariable boolean isOption) {
         return userViewService.list(UserViewResourceType.OPPORTUNITY.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), isOption);
     }
 
 
     @GetMapping("/fixed/{id}")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
-    @Operation(summary = "商机视图固定/取消固定")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
+    @Operation(summary = "线索视图固定/取消固定")
     public void fixed(@PathVariable String id) {
         userViewService.fixed(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/edit/pos")
-    @Operation(summary = "商机视图-拖拽排序")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    @Operation(summary = "线索视图-拖拽排序")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     public void editPos(@Validated @RequestBody PosRequest request) {
         userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
 
     @GetMapping("/enable/{id}")
-    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
-    @Operation(summary = "商机视图-启用/禁用")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
+    @Operation(summary = "线索视图-启用/禁用")
     public void enable(@PathVariable String id) {
         userViewService.enable(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }

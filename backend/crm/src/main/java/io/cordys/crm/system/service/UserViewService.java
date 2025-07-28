@@ -272,4 +272,26 @@ public class UserViewService {
                 userViewMapper::update);
     }
 
+
+    /**
+     * 启用视图
+     *
+     * @param id
+     * @param userId
+     * @param orgId
+     */
+    public void enable(String id, String userId, String orgId) {
+        checkView(userId, id, orgId);
+        UserView userView = userViewMapper.selectByPrimaryKey(id);
+        changeEnable(id, !userView.getEnable());
+
+    }
+
+    private void changeEnable(String id, boolean enable) {
+        UserView userView = new UserView();
+        userView.setId(id);
+        userView.setEnable(enable);
+        userViewMapper.update(userView);
+    }
+
 }

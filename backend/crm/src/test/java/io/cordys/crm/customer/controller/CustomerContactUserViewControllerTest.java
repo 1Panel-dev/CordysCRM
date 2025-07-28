@@ -1,4 +1,4 @@
-package io.cordys.crm.opportunity.controller;
+package io.cordys.crm.customer.controller;
 
 import io.cordys.common.dto.condition.FilterCondition;
 import io.cordys.common.dto.request.PosRequest;
@@ -21,9 +21,9 @@ import java.util.List;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class OpportunityUserViewControllerTest extends BaseTest {
+public class CustomerContactUserViewControllerTest extends BaseTest {
 
-    private static final String BASE_PATH = "/opportunity/view/";
+    private static final String BASE_PATH = "/customer/contact/view/";
 
     protected static final String DETAIL = "detail/{0}";
     protected static final String LIST = "list/{0}";
