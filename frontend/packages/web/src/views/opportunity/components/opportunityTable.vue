@@ -15,7 +15,10 @@
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">
         <n-button
-          v-if="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD']) && activeTab !== OpportunitySearchTypeEnum.DEAL"
+          v-if="
+            hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD']) &&
+            activeTab !== OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
+          "
           type="primary"
           @click="handleCreate"
         >
@@ -50,6 +53,15 @@
         :filter-config-list="customFieldsFilterConfig"
         @adv-search="handleAdvSearch"
         @keyword-search="searchByKeyword"
+      />
+    </template>
+    <template #view>
+      <CrmViewSelect
+        v-model:active-tab="activeTab"
+        :type="FormDesignKeyEnum.BUSINESS"
+        :internal-list="tabList"
+        :custom-fields-config-list="filterConfigList"
+        :filter-config-list="customFieldsFilterConfig"
       />
     </template>
   </CrmTable>
@@ -87,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-  import { DataTableRowKey, NButton, useMessage } from 'naive-ui';
+  import { DataTableRowKey, NButton, TabPaneProps, useMessage } from 'naive-ui';
 
   import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
@@ -112,6 +124,7 @@
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
+  import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import OptOverviewDrawer from './optOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
@@ -119,11 +132,11 @@
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm, failureReasonOptions, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { hasAllPermission, hasAnyPermission } from '@/utils/permission';
 
   const props = defineProps<{
-    activeTab?: OpportunitySearchTypeEnum;
     isCustomerTab?: boolean;
     sourceId?: string; // 客户详情下时传入客户 ID
     fullscreenTargetRef?: HTMLElement | null;
@@ -141,6 +154,26 @@
   const keyword = ref('');
   const tableRefreshId = ref(0);
 
+  const allTabList: TabPaneProps[] = [
+    {
+      name: OpportunitySearchTypeEnum.ALL,
+      tab: t('opportunity.allOpportunities'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.SELF,
+      tab: t('opportunity.myOpportunities'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.DEPARTMENT,
+      tab: t('opportunity.departmentOpportunities'),
+    },
+    {
+      name: OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS,
+      tab: t('opportunity.convertedOpportunities'),
+    },
+  ];
+  const { tabList, activeTab } = useHiddenTab(allTabList, FormDesignKeyEnum.BUSINESS);
+
   const actionConfig = computed<BatchActionConfig>(() => {
     return {
       baseAction: [
@@ -149,7 +182,7 @@
           key: 'exportChecked',
           permission: ['OPPORTUNITY_MANAGEMENT:EXPORT'],
         },
-        ...(props.activeTab !== OpportunitySearchTypeEnum.DEAL
+        ...(activeTab.value !== OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
           ? [
               {
                 label: t('common.batchTransfer'),
@@ -565,7 +598,7 @@
   function searchData() {
     setLoadListParams({
       keyword: keyword.value,
-      searchType: props.activeTab,
+      searchType: activeTab.value,
       customerId: props.sourceId,
     });
     loadList();
@@ -580,7 +613,7 @@
   }
 
   watch(
-    () => props.activeTab,
+    () => activeTab.value,
     (val) => {
       if (val) {
         checkedRowKeys.value = [];

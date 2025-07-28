@@ -78,6 +78,13 @@ export const {
   updateOptFollowPlanStatus,
   exportOpportunityAll,
   exportOpportunitySelected,
+  addBusinessView,
+  deleteBusinessView,
+  fixedBusinessView,
+  getBusinessViewDetail,
+  getBusinessViewList,
+  updateBusinessView,
+  enableBusinessView,
 } = opportunityApi;
 
 export const {

@@ -1,8 +1,7 @@
 <template>
   <div ref="customerCardRef" class="h-full">
     <CrmCard no-content-padding hide-footer>
-      <CrmTab v-model:active-tab="activeTab" no-content :tab-list="tabList" type="line" />
-      <div class="h-[calc(100%-48px)] p-[16px] !pb-0">
+      <div class="h-full p-[16px] !pb-0">
         <CrmTable
           ref="crmTableRef"
           v-model:checked-row-keys="checkedRowKeys"
@@ -20,7 +19,7 @@
           <template #actionLeft>
             <div class="flex items-center gap-[12px]">
               <n-button
-                v-if="activeTab !== CustomerSearchTypeEnum.VISIBLE"
+                v-if="activeTab !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION"
                 v-permission="['CUSTOMER_MANAGEMENT:ADD']"
                 type="primary"
                 @click="handleNewClick"
@@ -28,7 +27,10 @@
                 {{ t('customer.new') }}
               </n-button>
               <n-button
-                v-if="hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT']) && activeTab !== CustomerSearchTypeEnum.VISIBLE"
+                v-if="
+                  hasAnyPermission(['CUSTOMER_MANAGEMENT:EXPORT']) &&
+                  activeTab !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION
+                "
                 type="primary"
                 ghost
                 class="n-btn-outline-primary"
@@ -47,6 +49,15 @@
               :filter-config-list="customFieldsFilterConfig"
               @adv-search="handleAdvSearch"
               @keyword-search="searchData"
+            />
+          </template>
+          <template #view>
+            <CrmViewSelect
+              v-model:active-tab="activeTab"
+              :type="FormDesignKeyEnum.CUSTOMER"
+              :internal-list="tabList"
+              :custom-fields-config-list="filterConfigList"
+              :filter-config-list="customFieldsFilterConfig"
             />
           </template>
         </CrmTable>
@@ -103,7 +114,6 @@
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import { CrmPopConfirmIconType } from '@/components/pure/crm-pop-confirm/index.vue';
-  import CrmTab from '@/components/pure/crm-tab/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
@@ -113,6 +123,7 @@
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
   import TransferModal from '@/components/business/crm-transfer-modal/index.vue';
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
+  import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
   import customerOverviewDrawer from './components/customerOverviewDrawer.vue';
 
   import {
@@ -146,7 +157,7 @@
       tab: t('customer.deptCustomer'),
     },
     {
-      name: CustomerSearchTypeEnum.VISIBLE,
+      name: CustomerSearchTypeEnum.CUSTOMER_COLLABORATION,
       tab: t('customer.cooperationCustomer'),
     },
   ];
@@ -344,7 +355,7 @@
         key: 'followUp',
         permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
       },
-      ...(activeTab.value !== CustomerSearchTypeEnum.VISIBLE
+      ...(activeTab.value !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION
         ? [
             {
               label: t('common.edit'),
@@ -436,7 +447,7 @@
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const tableColumns = computed(() => {
-    if (activeTab.value === CustomerSearchTypeEnum.VISIBLE) {
+    if (activeTab.value === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
       return propsRes.value.columns
         .filter((item: any) => item.type !== 'selection')
         .map((e) => {

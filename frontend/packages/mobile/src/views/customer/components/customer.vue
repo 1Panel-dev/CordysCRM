@@ -95,7 +95,7 @@
       tab: t('customer.deptCustomer'),
     },
     {
-      name: CustomerSearchTypeEnum.VISIBLE,
+      name: CustomerSearchTypeEnum.CUSTOMER_COLLABORATION,
       tab: t('customer.cooperationCustomer'),
     },
   ];
@@ -191,7 +191,7 @@
   ];
 
   function getListItemActions(collaborationType: CollaborationType) {
-    if (activeFilter.value === CustomerSearchTypeEnum.VISIBLE) {
+    if (activeFilter.value === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
       return collaborationType === 'COLLABORATION' ? actions.filter((item) => item.key === 'writeRecord') : [];
     }
     return actions;

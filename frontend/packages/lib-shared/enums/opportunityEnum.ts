@@ -30,7 +30,7 @@ export enum OpportunitySearchTypeEnum {
   ALL = 'ALL',
   SELF = 'SELF',
   DEPARTMENT = 'DEPARTMENT',
-  DEAL = 'DEAL',
+  OPPORTUNITY_SUCCESS = 'OPPORTUNITY_SUCCESS',
 }
 
 export enum FailureReasonTypeEnum {

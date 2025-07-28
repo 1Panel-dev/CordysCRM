@@ -22,7 +22,10 @@
                 {{ t('clueManagement.newClue') }}
               </n-button>
               <n-button
-                v-if="hasAnyPermission(['CLUE_MANAGEMENT:EXPORT']) && activeTab !== CustomerSearchTypeEnum.VISIBLE"
+                v-if="
+                  hasAnyPermission(['CLUE_MANAGEMENT:EXPORT']) &&
+                  activeTab !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION
+                "
                 type="primary"
                 ghost
                 class="n-btn-outline-primary"

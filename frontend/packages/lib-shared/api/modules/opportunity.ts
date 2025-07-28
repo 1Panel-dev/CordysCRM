@@ -1,12 +1,18 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
+  AddBusinessViewUrl,
   AddOptFollowPlanUrl,
   AddOptFollowRecordUrl,
   CancelOptFollowPlanUrl,
+  DeleteBusinessViewUrl,
   DeleteOptFollowPlanUrl,
   DeleteOptFollowRecordUrl,
+  EnableBusinessViewUrl,
   ExportOpportunityAllUrl,
   ExportOpportunitySelectedUrl,
+  FixedBusinessViewUrl,
+  GetBusinessViewDetailUrl,
+  GetBusinessViewListUrl,
   GetOpportunityContactListUrl,
   GetOptDetailUrl,
   GetOptFollowPlanUrl,
@@ -22,6 +28,7 @@ import {
   OptPageUrl,
   OptUpdateStageUrl,
   OptUpdateUrl,
+  UpdateBusinessViewUrl,
   UpdateOptFollowPlanStatusUrl,
   UpdateOptFollowPlanUrl,
   UpdateOptFollowRecordUrl,
@@ -52,6 +59,7 @@ import type {
   UpdateOpportunityParams,
 } from '@lib/shared/models/opportunity';
 import type { FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 商机列表
@@ -179,6 +187,35 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: ExportOpportunitySelectedUrl, data });
   }
 
+  // 视图
+  function addBusinessView(data: ViewParams) {
+    return CDR.post({ url: AddBusinessViewUrl, data });
+  }
+
+  function updateBusinessView(data: ViewParams) {
+    return CDR.post({ url: UpdateBusinessViewUrl, data });
+  }
+
+  function getBusinessViewList() {
+    return CDR.get<ViewItem[]>({ url: GetBusinessViewListUrl });
+  }
+
+  function getBusinessViewDetail(id: string) {
+    return CDR.get({ url: `${GetBusinessViewDetailUrl}/${id}` });
+  }
+
+  function fixedBusinessView(id: string) {
+    return CDR.get({ url: `${FixedBusinessViewUrl}/${id}` });
+  }
+
+  function enableBusinessView(id: string) {
+    return CDR.get({ url: `${EnableBusinessViewUrl}/${id}` });
+  }
+
+  function deleteBusinessView(id: string) {
+    return CDR.get({ url: `${DeleteBusinessViewUrl}/${id}` });
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -205,5 +242,12 @@ export default function useProductApi(CDR: CordysAxios) {
     updateOptFollowPlanStatus,
     exportOpportunityAll,
     exportOpportunitySelected,
+    addBusinessView,
+    deleteBusinessView,
+    fixedBusinessView,
+    getBusinessViewDetail,
+    getBusinessViewList,
+    updateBusinessView,
+    enableBusinessView,
   };
 }

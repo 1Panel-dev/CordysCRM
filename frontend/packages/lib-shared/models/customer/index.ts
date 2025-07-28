@@ -17,7 +17,7 @@ export interface UpdateCustomerParams extends SaveCustomerParams {
 }
 
 export interface CustomerTableParams extends TableQueryParams {
-  searchType: CustomerSearchTypeEnum; // 搜索类型(ALL/SELF/DEPARTMENT/VISIBLE)
+  searchType: CustomerSearchTypeEnum; // 搜索类型(ALL/SELF/DEPARTMENT/CUSTOMER_COLLABORATION)
 }
 
 export interface CustomerListItem {

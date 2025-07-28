@@ -17,12 +17,13 @@
       <div ref="scrollWrapperRef" class="scroll-container flex flex-1 gap-[8px] overflow-x-auto">
         <CrmTag
           v-for="tag in tags"
-          :key="tag.value"
-          :type="modelValue === tag.value ? 'primary' : 'default'"
+          :key="tag.id"
+          :type="activeTab === tag.id ? 'primary' : 'default'"
           theme="light"
           custom-class="cursor-pointer"
+          @click="handleChangeActive(tag.id)"
         >
-          {{ tag.label }}
+          {{ tag.name }}
         </CrmTag>
       </div>
 
@@ -40,9 +41,11 @@
       </n-button>
     </div>
     <n-select
-      v-model:value="modelValue"
+      v-model:value="activeTab"
       :options="options"
       filterable
+      label-field="name"
+      value-field="id"
       :show-checkmark="false"
       :render-option="renderOption"
       class="view-select w-[200px]"
@@ -67,22 +70,29 @@
   </div>
   <ManageViewsDrawer
     v-model:visible="manageViewsDrawerVisible"
+    :type="props.type"
     :config-list="props.filterConfigList"
     :custom-list="props.customFieldsConfigList"
+    @change-active="handleChangeActive"
+    @handle-delete-or-disable="handleDeleteOrDisable"
   />
   <AddOrEditViewsDrawer
     v-model:visible="addOrEditViewsDrawerVisible"
+    :type="props.type"
     :row="detail"
     :config-list="props.filterConfigList"
     :custom-list="props.customFieldsConfigList"
+    @refresh="handleChangeActive"
   />
 </template>
 
 <script setup lang="ts">
-  import { NButton, NIcon, NSelect } from 'naive-ui';
+  import { NButton, NIcon, NSelect, TabPaneProps } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
 
+  import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { ViewItem } from '@lib/shared/models/view';
 
   import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
@@ -90,22 +100,50 @@
   import AddOrEditViewsDrawer from './components/addOrEditViewsDrawer.vue';
   import ManageViewsDrawer from './components/manageViewsDrawer.vue';
 
+  import { TabType } from '@/hooks/useHiddenTab';
   import useHorizontalScrollArrows from '@/hooks/useHorizontalScrollArrows';
-
-  import type { SelectOption } from 'naive-ui';
+  import useViewStore from '@/store/modules/view';
 
   const { t } = useI18n();
+  const viewStore = useViewStore();
 
   const props = defineProps<{
-    internalViews: any[]; // TODO lmy
-    customViews: any[]; // TODO lmy
+    type: TabType;
+    internalList: TabPaneProps[];
     filterConfigList: FilterFormItem[]; // 系统字段
     customFieldsConfigList?: FilterFormItem[]; // 自定义字段
   }>();
 
-  const modelValue = defineModel<string>('value', { default: '' });
+  const activeTab = defineModel<string>('activeTab', { default: '' });
+  async function handleChangeActive(id?: string) {
+    await viewStore.loadCustomViews(props.type);
+    if (id) {
+      activeTab.value = id;
+    }
+  }
+  async function handleDeleteOrDisable(id: string) {
+    await viewStore.loadCustomViews(props.type);
+    if (activeTab.value === id) {
+      // 取第一个系统视图
+      const list = [...viewStore.internalViews].filter((item) => item.enable);
+      activeTab.value = list[0].id;
+    }
+  }
 
-  const tags = computed(() => [...props.internalViews, ...props.customViews].filter((item) => item.fixed));
+  watch(
+    () => props.internalList,
+    async (val: TabPaneProps[]) => {
+      viewStore.loadInternalViews(props.type, val);
+    },
+    { immediate: true }
+  );
+  onMounted(async () => {
+    viewStore.loadCustomViews(props.type);
+  });
+
+  const tags = computed(() =>
+    [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable && item.fixed)
+  );
 
   const scrollWrapperRef = ref<HTMLDivElement | null>(null);
   const { showArrows, scrollLeft, scrollRight, updateScrollStatus, canScrollLeft, canScrollRight } =
@@ -118,20 +156,22 @@
   const options = computed(() => [
     {
       type: 'group',
-      label: t('crmViewSelect.systemView'),
-      key: 'internalViews',
-      children: [...props.internalViews],
+      name: t('crmViewSelect.systemView'),
+      key: 'internal',
+      children: [...viewStore.internalViews].filter((item) => item.enable),
     },
     {
       type: 'group',
-      label: t('crmViewSelect.myView'),
-      key: 'my',
-      children: [...props.customViews],
+      name: t('crmViewSelect.myView'),
+      key: 'custom',
+      children: [...viewStore.customViews].filter((item) => item.enable),
     },
   ]);
 
   const addOrEditViewsDrawerVisible = ref(false);
+  const detail = ref();
   function handleAdd() {
+    detail.value = undefined;
     addOrEditViewsDrawerVisible.value = true;
   }
 
@@ -140,23 +180,14 @@
     manageViewsDrawerVisible.value = true;
   }
 
-  function toggleFixed(option: SelectOption) {
-    // TODO lmy
-    console.log('🤔️ =>', option);
-  }
-
-  const detail = ref();
-  function handleCopy(option: SelectOption) {
-    // TODO lmy
-    detail.value = {
-      name: `${option.name}copy`,
-      condition: option.condition,
-    };
+  async function handleCopy(option: ViewItem) {
+    const res = await viewStore.getViewDetail(props.type, option);
+    detail.value = { ...res, name: `${res.name}copy` };
     addOrEditViewsDrawerVisible.value = true;
   }
 
   // TODO 第一个icon是拖拽，同一个SelectGroup里可以拖拽，不能拖拽到另一个SelectGroup
-  function renderOption({ node, option }: { node: VNode; option: SelectOption }) {
+  function renderOption({ node, option }: { node: VNode; option: ViewItem }) {
     if (option.type === 'group') return node;
     node.children = [
       h('div', { class: 'flex items-center justify-between w-full' }, [
@@ -172,24 +203,28 @@
             size: 12,
             onClick: (e: MouseEvent) => {
               e.stopPropagation(); // 阻止事件冒泡，防止影响 select 行为
-              toggleFixed(option);
+              viewStore.toggleFixed(props.type, option);
             },
           }),
           h('span', {
             class: 'one-line-text',
-            innerText: option.label,
+            innerText: option.name,
           }),
         ]),
         // 右侧内容：复制图标
-        h(CrmIcon, {
-          type: 'iconicon_file_copy',
-          class: 'text-[var(--text-n4)]',
-          size: 12,
-          onClick: (e: MouseEvent) => {
-            e.stopPropagation(); // 阻止事件冒泡，防止影响 select 行为
-            handleCopy(option);
-          },
-        }),
+        ...(option.id === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION
+          ? []
+          : [
+              h(CrmIcon, {
+                type: 'iconicon_file_copy',
+                class: 'text-[var(--text-n4)]',
+                size: 12,
+                onClick: (e: MouseEvent) => {
+                  e.stopPropagation(); // 阻止事件冒泡，防止影响 select 行为
+                  handleCopy(option);
+                },
+              }),
+            ]),
       ]),
     ];
 

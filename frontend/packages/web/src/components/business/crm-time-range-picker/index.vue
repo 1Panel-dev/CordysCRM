@@ -4,6 +4,7 @@
       <n-select
         v-model:value="dynamicValue[0]"
         class="flex-1"
+        :disabled="props.disabled"
         :options="timeOptions"
         :placeholder="t('common.pleaseSelect')"
       />
@@ -11,6 +12,7 @@
         v-if="dynamicValue[0] === 'CUSTOM'"
         v-model:value="dynamicValue[1]"
         max="10000"
+        :disabled="props.disabled"
         :precision="0"
         class="flex-1"
         :min="1"
@@ -19,6 +21,7 @@
         v-if="dynamicValue[0] === 'CUSTOM'"
         v-model:value="dynamicValue[2]"
         class="flex-1"
+        :disabled="props.disabled"
         :options="unitOptions"
         :placeholder="t('common.pleaseSelect')"
       />
@@ -29,6 +32,7 @@
     v-else
     v-model:value="fixedValue"
     class="w-full"
+    :disabled="props.disabled"
     type="datetimerange"
     clearable
     :default-time="[undefined, '23:59:59']"
@@ -49,6 +53,7 @@
 
   const props = defineProps<{
     timeRangeType?: OperatorEnum;
+    disabled?: boolean;
   }>();
 
   const { t } = useI18n();

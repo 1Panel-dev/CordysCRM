@@ -99,7 +99,7 @@
       tab: t('opportunity.deptOpportunities'),
     },
     {
-      name: OpportunitySearchTypeEnum.DEAL,
+      name: OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS,
       tab: t('opportunity.convertedOpportunities'),
     },
   ];

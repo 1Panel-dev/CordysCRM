@@ -23,3 +23,12 @@ export const GetOpportunityContactListUrl = 'opportunity/contact/list'; // 商�
 export const UpdateOptFollowPlanStatusUrl = '/opportunity/follow/plan/status/update'; // 更新商机跟进计划状态
 export const ExportOpportunityAllUrl = '/opportunity/export-all'; // 商机导出
 export const ExportOpportunitySelectedUrl = '/opportunity/export-select'; // 商机导出选中
+
+// 视图
+export const GetBusinessViewDetailUrl = '/opportunity/view/detail';
+export const GetBusinessViewListUrl = '/opportunity/view/list';
+export const AddBusinessViewUrl = '/opportunity/view/add';
+export const UpdateBusinessViewUrl = '/opportunity/view/update';
+export const DeleteBusinessViewUrl = '/opportunity/view/delete';
+export const FixedBusinessViewUrl = '/opportunity/view/fixed';
+export const EnableBusinessViewUrl = '/opportunity/view/enable';

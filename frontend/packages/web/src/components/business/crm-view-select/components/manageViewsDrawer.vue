@@ -23,18 +23,22 @@
 
   <AddOrEditViewsDrawer
     v-model:visible="addOrEditViewsDrawerVisible"
+    :type="props.type"
     :readonly="readonly"
     :row="detail"
     :config-list="props.configList"
     :custom-list="props.customList"
-    @refresh="tableRefreshId += 1"
+    @refresh="(val?: string) => emit('changeActive', val)"
   />
 </template>
 
 <script setup lang="ts">
-  import { NButton, NSwitch } from 'naive-ui';
+  import { NButton, NSwitch, useMessage } from 'naive-ui';
 
+  import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
+  import type { ViewItem } from '@lib/shared/models/view';
 
   import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
@@ -45,11 +49,19 @@
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import AddOrEditViewsDrawer from './addOrEditViewsDrawer.vue';
 
-  import { getOpportunityRuleList } from '@/api/modules';
+  import { TabType } from '@/hooks/useHiddenTab';
+  import useModal from '@/hooks/useModal';
+  import useViewStore from '@/store/modules/view';
+
+  import { viewApiMap } from '../config';
 
   const { t } = useI18n();
+  const Message = useMessage();
+  const { openModal } = useModal();
+  const viewStore = useViewStore();
 
   const props = defineProps<{
+    type: TabType;
     configList: FilterFormItem[]; // 系统字段
     customList?: FilterFormItem[]; // 自定义字段
   }>();
@@ -58,8 +70,12 @@
     required: true,
   });
 
+  const emit = defineEmits<{
+    (e: 'changeActive', id?: string): void;
+    (e: 'handleDeleteOrDisable', id: string): void;
+  }>();
+
   const loading = ref<boolean>(false);
-  const tableRefreshId = ref(0);
 
   const addOrEditViewsDrawerVisible = ref(false);
   const readonly = ref(false);
@@ -71,28 +87,45 @@
     addOrEditViewsDrawerVisible.value = true;
   }
 
-  function handleActionSelect(row: any, actionKey: string) {
+  function handleDelete(row: ViewItem) {
+    openModal({
+      type: 'error',
+      title: t('crmViewSelect.deleteConfirmTitle', { name: characterLimit(row.name) }),
+      positiveText: t('common.confirmDelete'),
+      negativeText: t('common.cancel'),
+      onPositiveClick: async () => {
+        try {
+          await viewApiMap.delete[props.type](row.id);
+          Message.success(t('common.deleteSuccess'));
+          emit('handleDeleteOrDisable', row.id);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+        }
+      },
+    });
+  }
+
+  async function handleActionSelect(row: ViewItem, actionKey: string) {
+    const res = await viewStore.getViewDetail(props.type, row);
     switch (actionKey) {
       case 'readOnly':
         readonly.value = true;
-        detail.value = row;
+        detail.value = { id: row.id, ...res };
         addOrEditViewsDrawerVisible.value = true;
         break;
       case 'edit':
         readonly.value = false;
-        detail.value = row;
+        detail.value = { id: row.id, ...res };
         addOrEditViewsDrawerVisible.value = true;
         break;
       case 'copy':
         readonly.value = false;
-        // TODO lmy
-        detail.value = {
-          name: `${row.name}copy`,
-          condition: row.condition,
-        };
+        detail.value = { ...res, name: `${res.name}copy` };
         addOrEditViewsDrawerVisible.value = true;
         break;
       case 'delete':
+        handleDelete(row);
         break;
       default:
         break;
@@ -120,6 +153,7 @@
             size: 16,
             onClick: (e: MouseEvent) => {
               e.stopPropagation(); // 阻止事件冒泡，防止影响 select 行为
+              viewStore.toggleFixed(props.type, row);
             },
           }),
           h('span', {
@@ -132,13 +166,24 @@
       title: t('crmViewSelect.viewType'),
       key: 'type',
       width: 100,
+      render: (row) => {
+        return row.type === 'internal' ? t('crmViewSelect.systemView') : t('crmViewSelect.personalView');
+      },
     },
     {
       title: t('common.status'),
       key: 'enable',
       width: 100,
       render: (row) => {
-        return h(NSwitch, { value: row.enable, disabled: row.id === 'all' });
+        return h(NSwitch, {
+          value: row.enable,
+          disabled: row.id === CustomerSearchTypeEnum.ALL,
+          onClick: () => {
+            if (row.id === CustomerSearchTypeEnum.ALL) return;
+            viewStore.toggleEnabled(props.type, row);
+            emit('handleDeleteOrDisable', row.id);
+          },
+        });
       },
     },
     {
@@ -146,7 +191,7 @@
       width: 150,
       fixed: 'right',
       render: (row) => {
-        if (row.id === '2') {
+        if (row.id === CustomerSearchTypeEnum.CUSTOMER_COLLABORATION) {
           return '-';
         }
         return h(CrmOperationButton, {
@@ -155,7 +200,7 @@
               label: t('crmViewSelect.readOnly'),
               key: 'readOnly',
             },
-            ...(row.type === 'internalViews'
+            ...(row.type !== 'internal'
               ? [
                   {
                     label: t('common.edit'),
@@ -167,7 +212,7 @@
               label: t('common.copy'),
               key: 'copy',
             },
-            ...(row.type === 'internalViews'
+            ...(row.type !== 'internal'
               ? [
                   {
                     label: t('common.delete'),
@@ -181,29 +226,18 @@
       },
     },
   ];
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getOpportunityRuleList, {
+
+  const { propsRes, propsEvent } = useTable(undefined, {
     showSetting: false,
     columns,
     hiddenAllScreen: true,
   });
 
   watch(
-    () => tableRefreshId.value,
+    [() => viewStore.internalViews, () => viewStore.customViews],
     () => {
-      // TODO lmy
-      setLoadListParams({});
-      loadList();
-    }
-  );
-
-  watch(
-    () => visible.value,
-    (val) => {
-      if (val) {
-        // TODO lmy
-        setLoadListParams({});
-        loadList();
-      }
-    }
+      propsRes.value.data = [...viewStore.internalViews, ...viewStore.customViews];
+    },
+    { deep: true }
   );
 </script>

@@ -26,6 +26,7 @@
             <n-select
               v-model:value="item.dataIndex"
               value-field="dataIndex"
+              :disabled="props.readonly"
               filterable
               :placeholder="t('common.pleaseSelect')"
               :options="currentOptions(item.dataIndex as string)"
@@ -35,7 +36,7 @@
           <n-form-item :path="`list[${listIndex}].operator`" class="block w-[105px]">
             <n-select
               v-model:value="item.operator"
-              :disabled="!item.dataIndex"
+              :disabled="!item.dataIndex || props.readonly"
               :options="getOperatorOptions(item.type, item.dataIndex as string)"
               @update:value="operatorChange(item, listIndex)"
             />
@@ -52,6 +53,7 @@
               "
               v-model:value="item.value"
               :time-range-type="item.operator"
+              :disabled="isValueDisabled(item)"
               @update:value="valueChange"
             />
             <n-date-picker
@@ -230,6 +232,7 @@
         </div>
       </n-form>
       <n-button
+        v-if="!props.readonly"
         type="primary"
         :disabled="formModel.list?.length === [...props.configList, ...(props.customList ?? [])].length"
         text
@@ -276,6 +279,7 @@
     configList: FilterFormItem[];
     customList?: FilterFormItem[];
     keepOneLine?: boolean; // 至少保留一行
+    readonly?: boolean;
   }>();
 
   const formModel = defineModel<FilterForm>('formModel', {
@@ -302,11 +306,12 @@
   }
 
   function changeAllOr() {
+    if (props.readonly) return;
     formModel.value.searchMode = formModel.value.searchMode === 'AND' ? 'OR' : 'AND';
   }
 
   function isValueDisabled(item: FilterFormItem) {
-    return !item.dataIndex || ['EMPTY', 'NOT_EMPTY'].includes(item.operator as string);
+    return props.readonly || !item.dataIndex || ['EMPTY', 'NOT_EMPTY'].includes(item.operator as string);
   }
 
   // 第一列下拉数据
