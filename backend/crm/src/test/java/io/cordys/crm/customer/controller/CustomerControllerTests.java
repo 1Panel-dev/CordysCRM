@@ -242,7 +242,7 @@ class CustomerControllerTests extends BaseTest {
         request.setViewId(InternalUserView.DEPARTMENT.name());
         this.requestPostWithOk(DEFAULT_PAGE, request);
 
-        request.setViewId(InternalUserView.VISIBLE.name());
+        request.setViewId(InternalUserView.CUSTOMER_COLLABORATION.name());
         this.requestPostWithOk(DEFAULT_PAGE, request);
 
         // 校验权限
