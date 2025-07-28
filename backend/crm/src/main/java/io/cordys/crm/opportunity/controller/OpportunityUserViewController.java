@@ -2,6 +2,7 @@ package io.cordys.crm.opportunity.controller;
 
 
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.request.PosRequest;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.constants.UserViewResourceType;
 import io.cordys.crm.system.domain.UserView;
@@ -60,11 +61,11 @@ public class OpportunityUserViewController {
     }
 
 
-    @GetMapping("/list")
+    @GetMapping("/list/{isOption}")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
     @Operation(summary = "商机视图列表")
-    public List<UserViewListResponse> queryList() {
-        return userViewService.list(UserViewResourceType.OPPORTUNITY.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public List<UserViewListResponse> queryList(@PathVariable boolean isOption) {
+        return userViewService.list(UserViewResourceType.OPPORTUNITY.name(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), isOption);
     }
 
 
@@ -74,4 +75,13 @@ public class OpportunityUserViewController {
     public void fixed(@PathVariable String id) {
         userViewService.fixed(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
+
+    @PostMapping("/edit/pos")
+    @Operation(summary = "商机视图-拖拽排序")
+    @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_READ)
+    public void editPos(@Validated @RequestBody PosRequest request) {
+        userViewService.editPos(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+
 }

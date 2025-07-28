@@ -16,4 +16,7 @@
         where sys_user_view_id = #{viewId}
     </select>
 
+    <delete id="delete">
+        DELETE FROM sys_user_view_condition WHERE sys_user_view_id = #{viewId}
+    </delete>
 </mapper>

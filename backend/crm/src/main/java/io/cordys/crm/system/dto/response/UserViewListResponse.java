@@ -14,4 +14,7 @@ public class UserViewListResponse {
 
     @Schema(description = "是否固定")
     private Boolean fixed;
+
+    @Schema(description = "状态")
+    private Boolean enable;
 }

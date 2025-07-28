@@ -9,4 +9,6 @@ public interface ExtUserViewConditionMapper {
 
 
     List<UserViewCondition> getViewConditions(@Param("viewId") String viewId);
+
+    void delete(@Param("viewId") String viewId);
 }

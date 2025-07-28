@@ -1,13 +1,11 @@
 package io.cordys.crm.system.service;
 
 import io.cordys.common.dto.condition.FilterCondition;
+import io.cordys.common.dto.request.PosRequest;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.uid.utils.EnumUtils;
-import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.JSON;
-import io.cordys.common.util.NodeSortUtils;
-import io.cordys.common.util.Translator;
+import io.cordys.common.util.*;
 import io.cordys.crm.system.constants.UserViewConditionValueType;
 import io.cordys.crm.system.domain.UserView;
 import io.cordys.crm.system.domain.UserViewCondition;
@@ -18,7 +16,6 @@ import io.cordys.crm.system.dto.response.UserViewResponse;
 import io.cordys.crm.system.mapper.ExtUserViewConditionMapper;
 import io.cordys.crm.system.mapper.ExtUserViewMapper;
 import io.cordys.mybatis.BaseMapper;
-import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,6 +55,7 @@ public class UserViewService {
         userView.setUserId(userId);
         userView.setResourceType(resourceType);
         userView.setFixed(false);
+        userView.setEnable(true);
         userView.setOrganizationId(orgId);
         userView.setPos(nextPos);
         userView.setSearchMode(request.getSearchMode());
@@ -161,9 +159,7 @@ public class UserViewService {
     }
 
     private void deleteConditionsByViewId(String viewId) {
-        LambdaQueryWrapper<UserViewCondition> viewWrapper = new LambdaQueryWrapper<>();
-        viewWrapper.eq(UserViewCondition::getSysUserViewId, viewId);
-        userViewConditionMapper.deleteByLambda(viewWrapper);
+        extUserViewConditionMapper.delete(viewId);
     }
 
     private void checkView(String userId, String id, String orgId) {
@@ -240,8 +236,8 @@ public class UserViewService {
      * @param orgId
      * @return
      */
-    public List<UserViewListResponse> list(String resourceType, String userId, String orgId) {
-        return extUserViewMapper.selectViewList(resourceType, userId, orgId);
+    public List<UserViewListResponse> list(String resourceType, String userId, String orgId, boolean isOption) {
+        return extUserViewMapper.selectViewList(resourceType, userId, orgId, isOption);
     }
 
 
@@ -260,4 +256,15 @@ public class UserViewService {
         updateView.setFixed(!userView.getFixed());
         userViewMapper.update(updateView);
     }
+
+    public void editPos(PosRequest request, String userId, String orgId) {
+        ServiceUtils.updatePosField(request,
+                UserView.class,
+                userId,
+                userViewMapper::selectByPrimaryKey,
+                extUserViewMapper::getPrePos,
+                extUserViewMapper::getLastPos,
+                userViewMapper::update);
+    }
+
 }

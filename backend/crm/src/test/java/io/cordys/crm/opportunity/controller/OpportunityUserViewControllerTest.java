@@ -1,6 +1,7 @@
 package io.cordys.crm.opportunity.controller;
 
 import io.cordys.common.dto.condition.FilterCondition;
+import io.cordys.common.dto.request.PosRequest;
 import io.cordys.crm.base.BaseTest;
 import io.cordys.crm.system.domain.UserView;
 import io.cordys.crm.system.dto.request.UserViewAddRequest;
@@ -25,8 +26,9 @@ public class OpportunityUserViewControllerTest extends BaseTest {
     private static final String BASE_PATH = "/opportunity/view/";
 
     protected static final String DETAIL = "detail/{0}";
-    protected static final String LIST = "list";
+    protected static final String LIST = "list/{0}";
     protected static final String FIXED = "fixed/{0}";
+    protected static final String POS = "edit/pos";
 
     @Override
     protected String getBasePath() {
@@ -96,7 +98,7 @@ public class OpportunityUserViewControllerTest extends BaseTest {
     @Test
     @Order(4)
     void testList() throws Exception {
-        this.requestGet(LIST);
+        this.requestGet(LIST, true);
     }
 
     @Test
@@ -104,6 +106,21 @@ public class OpportunityUserViewControllerTest extends BaseTest {
     void testFixed() throws Exception {
         this.requestGet(FIXED, this.viewId);
     }
+
+    @Test
+    @Order(5)
+    void testSortPos() throws Exception {
+        String moveId = this.viewId;
+        testAdd();
+        String targetId = this.viewId;
+        PosRequest request = new PosRequest();
+        request.setOrgId(DEFAULT_ORGANIZATION_ID);
+        request.setMoveId(moveId);
+        request.setTargetId(targetId);
+        request.setMoveMode("after");
+        this.requestGet(POS, request);
+    }
+
 
     @Test
     @Order(10)

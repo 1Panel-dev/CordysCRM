@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author guoyuqi
  */
 @Service
@@ -166,7 +165,7 @@ public class ProductService {
         productFieldService.saveModuleField(product, orgId, userId, moduleFields, true);
     }
 
-    private void batchUpdateModuleField(List<String>  productIds, List<BaseModuleFieldValue> moduleFields) {
+    private void batchUpdateModuleField(List<String> productIds, List<BaseModuleFieldValue> moduleFields) {
         if (moduleFields == null) {
             // 如果为 null，则不更新
             return;
@@ -198,15 +197,15 @@ public class ProductService {
         product.setUpdateTime(System.currentTimeMillis());
         product.setUpdateUser(userId);
         product.setOrganizationId(orgId);
-        extProductMapper.updateProduct(request.getIds(),product);
-       // batchUpdateModuleField(request.getIds(),request.getModuleFields());
+        extProductMapper.updateProduct(request.getIds(), product);
+        // batchUpdateModuleField(request.getIds(),request.getModuleFields());
         List<LogDTO> logDTOList = getLogDTOList(request, userId, products);
         logService.batchAdd(logDTOList);
     }
 
     @NotNull
     private static List<LogDTO> getLogDTOList(ProductBatchEditRequest request, String userId, List<Product> products) {
-        List<LogDTO>logDTOList = new ArrayList<>();
+        List<LogDTO> logDTOList = new ArrayList<>();
         //目前只记录批量上下架
         for (Product oldProduct : products) {
             LogDTO logDTO = new LogDTO(oldProduct.getOrganizationId(), oldProduct.getId(), userId, LogType.UPDATE, LogModule.PRODUCT_MANAGEMENT, oldProduct.getName());
@@ -224,7 +223,7 @@ public class ProductService {
     /**
      * 批量删除产品
      *
-     * @param ids 产品id集合
+     * @param ids    产品id集合
      * @param userId 操作人id
      */
     public void batchDelete(List<String> ids, String userId) {
@@ -257,6 +256,7 @@ public class ProductService {
 
         ServiceUtils.updatePosField(request,
                 Product.class,
+                null,
                 productBaseMapper::selectByPrimaryKey,
                 extProductMapper::getPrePos,
                 extProductMapper::getLastPos,

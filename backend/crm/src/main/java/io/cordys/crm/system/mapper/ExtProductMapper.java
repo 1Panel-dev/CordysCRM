@@ -9,7 +9,6 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- *
  * @author jianxing
  * @date 2025-02-08 17:42:41
  */
@@ -27,7 +26,7 @@ public interface ExtProductMapper {
 
     Long getPos(@Param("orgId") String orgId);
 
-    Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos);
+    Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId);
 
-    Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos);
+    Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId);
 }

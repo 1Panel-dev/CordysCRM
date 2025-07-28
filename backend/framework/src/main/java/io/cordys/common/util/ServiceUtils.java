@@ -3,9 +3,9 @@ package io.cordys.common.util;
 import io.cordys.common.constants.MoveTypeEnum;
 import io.cordys.common.dto.request.PosRequest;
 import io.cordys.common.exception.GenericException;
+import org.apache.commons.lang3.function.TriFunction;
 
 import java.lang.reflect.Method;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -27,10 +27,10 @@ public class ServiceUtils {
         resourceName.remove();
     }
 
-    public static <T> void updatePosField(PosRequest request, Class<T> clazz,
+    public static <T> void updatePosField(PosRequest request, Class<T> clazz, String userId,
                                           Function<String, T> selectByPrimaryKeyFunc,
-                                          BiFunction<String, Long, Long> getPrePosFunc,
-                                          BiFunction<String, Long, Long> getLastPosFunc,
+                                          TriFunction<String, Long, String, Long> getPrePosFunc,
+                                          TriFunction<String, Long, String, Long> getLastPosFunc,
                                           Consumer<T> updateByPrimaryKeySelectiveFuc) {
         Long pos;
         Long lastOrPrePos;
@@ -53,12 +53,12 @@ public class ServiceUtils {
                 // 追加到参考对象的之后
                 pos = targetPos - POS_STEP;
                 // ，因为是降序排，则查找比目标 order 小的一个order
-                lastOrPrePos = getPrePosFunc.apply(request.getOrgId(), targetPos);
+                lastOrPrePos = getPrePosFunc.apply(request.getOrgId(), targetPos, userId);
             } else {
                 // 追加到前面
                 pos = targetPos + POS_STEP;
                 // 因为是降序排，则查找比目标 order 更大的一个order
-                lastOrPrePos = getLastPosFunc.apply(request.getOrgId(), targetPos);
+                lastOrPrePos = getLastPosFunc.apply(request.getOrgId(), targetPos, userId);
             }
             if (lastOrPrePos != null) {
                 // 如果不是第一个或最后一个则取中间值

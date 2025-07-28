@@ -22,6 +22,7 @@ CREATE TABLE sys_user_view
     `resource_type`   VARCHAR(50)  NOT NULL COMMENT '资源类型(客户/线索/商机)',
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织id',
     `pos`             BIGINT       NOT NULL COMMENT '排序',
+    `enable`          bit(1)       NOT NULL DEFAULT 1 COMMENT '状态',
     `search_mode`     VARCHAR(10)  NOT NULL DEFAULT 'AND' COMMENT '匹配模式(AND/OR)',
     `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT       NOT NULL COMMENT '更新时间',

@@ -21,8 +21,27 @@
 
 
     <select id="selectViewList" resultType="io.cordys.crm.system.dto.response.UserViewListResponse">
-        select id, name, fixed from sys_user_view
+        select id, name, fixed, enable from sys_user_view
         where organization_id = #{orgId}
         and user_id = #{userId}
+        <if test ='enable'>
+            and enable = #{enable}
+        </if>
+    </select>
+
+
+    <select id="getPrePos" resultType="java.lang.Long">
+        select `pos` from sys_user_view where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &lt; #{basePos}
+        </if>
+        order by `pos` desc limit 1;
+    </select>
+    <select id="getLastPos" resultType="java.lang.Long">
+        select `pos` from sys_user_view where organization_id = #{orgId}
+        <if test="basePos != null">
+            and `pos` &gt; #{basePos}
+        </if>
+        order by `pos` desc limit 1;
     </select>
 </mapper>
