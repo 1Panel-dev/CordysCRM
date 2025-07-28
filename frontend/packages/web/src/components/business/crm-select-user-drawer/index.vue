@@ -177,7 +177,6 @@
         return {
           label: item.name,
           value: item.id,
-          disabled: !item.enabled,
           ...item,
           children: item.children?.length ? item.children : undefined,
         };
