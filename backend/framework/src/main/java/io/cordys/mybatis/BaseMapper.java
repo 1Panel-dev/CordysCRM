@@ -9,7 +9,7 @@ import org.apache.ibatis.jdbc.AbstractSQL;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 
@@ -157,16 +157,6 @@ public interface BaseMapper<E> {
     Long countByExample(E criteria);
 
     /**
-     * 自定义SQL查询。
-     *
-     * @param sqlBuild SQL构建函数
-     * @param criteria 查询条件
-     * @return 查询到的实体列表
-     */
-    @SelectProvider(type = SelectBySqlProvider.class, method = "invoke")
-    List<E> query(@Param("sqlBuild") Function<SQL, SQL> sqlBuild, @Param("entity") Object criteria);
-
-    /**
      * 根据主键数组查询记录。
      *
      * @param ids 主键值数组
@@ -183,6 +173,9 @@ public interface BaseMapper<E> {
      * @return 查询到的实体列表
      */
     default List<E> selectByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return List.of();
+        }
         return selectByIds(ids.toArray(new String[0]));
     }
 
@@ -209,173 +202,183 @@ public interface BaseMapper<E> {
 
     class InsertSqlProvider extends AbstractSqlProviderSupport implements WriteType {
         @Override
-        public SQL sql(Object criteria) {
-            return new SQL()
+        public String sql(Object criteria) {
+            SQL sql = new SQL()
                     .INSERT_INTO(table.getTableName())
                     .INTO_COLUMNS(table.getColumns())
                     .INTO_VALUES(Stream.of(table.getFields()).map(this::bindParameter).toArray(String[]::new));
+
+            return String.format("<script>%s</script>", sql.toString());
         }
     }
 
     @SuppressWarnings("all")
     class BatchInsertSqlProvider extends AbstractSqlProviderSupport implements WriteType {
         @Override
-        public SQL sql(Object criteria) {
-            return new SQL()
+        public String sql(Object criteria) {
+            SQL sql = new SQL()
                     .INSERT_INTO(table.getTableName())
                     .INTO_COLUMNS(table.getColumns())
                     .INTO_VALUES(Stream.of(table.getFields()).map(this::bindParameter).toArray(String[]::new));
+
+            return String.format("<script>%s</script>", sql.toString());
         }
     }
 
     @SuppressWarnings("all")
     class UpdateSqlProvider extends AbstractSqlProviderSupport implements WriteType {
         @Override
-        public SQL sql(Object criteria) {
-            return new SQL()
-                    .UPDATE(table.getTableName())
-                    .SET(Stream.of(table.getFields())
-                            .filter(field -> !table.getPrimaryKeyColumn().equals(columnName(field)))
-                            .map(field -> columnName(field) + " = " + bindParameter(field)).toArray(String[]::new))
-                    .WHERE(table.getPrimaryKeyColumn() + " = #{id}");
+        public String sql(Object criteria) {
+            return updateSQL();
         }
     }
 
     @SuppressWarnings("all")
     class UpdateSelectiveSqlProvider extends AbstractSqlProviderSupport implements WriteType {
         @Override
-        public SQL sql(Object entity) {
-            return new SQL()
-                    .UPDATE(table.getTableName())
-                    .SET(ignoreNullAndCombined(entity, field -> columnName(field) + " = " + bindParameter(field), true))
-                    .WHERE(table.getPrimaryKeyColumn() + " = #{id}");
+        public String sql(Object entity) {
+            return updateSQL();
         }
     }
 
     class DeleteSqlProvider extends AbstractSqlProviderSupport implements WriteType {
         @Override
-        public SQL sql(Object criteria) {
-            return new SQL()
+        public String sql(Object criteria) {
+            SQL sql = new SQL()
                     .DELETE_FROM(table.getTableName())
                     .WHERE(table.getPrimaryKeyColumn() + " = #{id}");
+
+            return String.format("<script>%s</script>", sql.toString());
         }
     }
 
     class DeleteByCriteriaSqlProvider extends AbstractSqlProviderSupport implements WriteType {
         @Override
-        public SQL sql(Object criteria) {
-            return new SQL()
-                    .DELETE_FROM(table.getTableName())
-                    .WHERE(ignoreNullAndCombined(criteria, field -> columnName(field) + " = " + bindParameter(field)));
+        public String sql(Object criteria) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("<script>");
+            sql.append("DELETE ");
+            tableWhere(sql);
+            sql.append("</script>");
+            return sql.toString();
         }
     }
 
+    // TODO 待优化
     class DeleteByLambdaSqlProvider extends AbstractSqlProviderSupport implements WriteType {
         @Override
-        public SQL sql(Object criteria) {
+        public String sql(Object criteria) {
             LambdaQueryWrapper<?> wrapper = (LambdaQueryWrapper<?>) criteria;
 
-            SQL sql = new SQL().DELETE_FROM(table.getTableName());
+            BaseMapper.SQL sql = new SQL().DELETE_FROM(table.getTableName());
 
             // 将 LambdaQueryWrapper 的条件解析为 WHERE 子句
-            String whereClause = wrapper.getWhereClause();
-            if (StringUtils.isNotBlank(whereClause)) {
-                sql.WHERE(whereClause);
-            }
+            Optional.ofNullable(wrapper.getWhereClause())
+                    .filter(StringUtils::isNotBlank)
+                    .ifPresent(sql::WHERE);
 
-            return sql;
+            return String.format("<script>%s</script>", sql);
         }
     }
 
     @SuppressWarnings("all")
     class DeleteByIdsSqlProvider extends AbstractSqlProviderSupport implements WriteType {
         @Override
-        public SQL sql(Object entities) {
-            List<String> array = (List<String>) entities;
-            if (CollectionUtils.isEmpty(array)) {
-                throw new IllegalArgumentException("ids can not be empty");
+        public String sql(Object entities) {
+            List<String> ids = (List<String>) entities;
+            if (CollectionUtils.isEmpty(ids)) {
+                throw new IllegalArgumentException("ids cannot be empty");
             }
-            String idStr = " <foreach item='item' collection='array' open='(' separator=',' close=')'>#{item}</foreach> ";
-            String where = ("id IN " + idStr);
 
-            return new SQL()
-                    .DELETE_FROM(table.getTableName())
-                    .WHERE(where);
+            StringBuilder sql = new StringBuilder();
+            sql.append("<script>");
+            sql.append("DELETE FROM ").append(table.getTableName());
+            sql.append("""
+                        WHERE id IN
+                         <foreach collection="array" item="item" open="(" separator="," close=")">
+                          #{item}
+                        </foreach>
+                    """);
+            sql.append("</script>");
+
+            return sql.toString();
         }
     }
 
     class SelectByIdSqlProvider extends AbstractSqlProviderSupport {
         @Override
-        public SQL sql(Object criteria) {
-            return new SQL()
+        public String sql(Object criteria) {
+            SQL sql = new SQL()
                     .SELECT(table.getSelectColumns())
                     .FROM(table.getTableName())
                     .WHERE(table.getPrimaryKeyColumn() + " = #{id}");
+
+            return String.format("<script>%s</script>", sql.toString());
         }
     }
 
     class SelectAllSqlProvider extends AbstractSqlProviderSupport {
         @Override
-        public SQL sql(Object criteria) {
+        public String sql(Object criteria) {
             String orderBy = (String) criteria;
-            SQL sql = new SQL()
+            BaseMapper.SQL sql = new SQL()
                     .SELECT(table.getSelectColumns())
                     .FROM(table.getTableName());
             if (StringUtils.isBlank(orderBy)) {
                 orderBy = table.getPrimaryKeyColumn() + " DESC";
             }
-            return sql.ORDER_BY(orderBy);
+            sql.ORDER_BY(orderBy);
+
+            return String.format("<script>%s</script>", sql);
         }
     }
 
-    @SuppressWarnings("all")
     class SelectInSqlProvider extends AbstractSqlProviderSupport {
         @Override
-        public SQL sql(Object entities) {
-            Map<String, Object> param = (Map) entities;
+        public String sql(Object entities) {
+            var param = (Map<?, ?>) entities;
             String inField = (String) param.get("column");
             Serializable[] ids = (Serializable[]) param.get("array");
-            String idStr = " <foreach item='item' collection='array' open='(' separator=',' close=')'>#{item}</foreach> ";
-            String where = (ids != null && ids.length > 0) ? (inField + " IN " + idStr) : " 1=1 ";
 
-            return new SQL()
-                    .SELECT(table.getSelectColumns())
-                    .FROM(table.getTableName())
-                    .WHERE(where);
+            if (ids == null || ids.length == 0) {
+                throw new IllegalArgumentException("array parameter cannot be empty");
+            }
+
+            return """
+                    <script>
+                        SELECT %s
+                        FROM %s
+                        WHERE %s IN
+                        <foreach collection="array" item="item" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </script>
+                    """.formatted(String.join(", ", table.getSelectColumns()), table.getTableName(), inField);
         }
     }
 
     class SelectByCriteriaSqlProvider extends AbstractSqlProviderSupport {
         @Override
-        public SQL sql(Object criteria) {
-            return new SQL()
-                    .SELECT(table.getSelectColumns())
-                    .FROM(table.getTableName())
-                    .WHERE(ignoreNullAndCombined(criteria, field -> columnName(field) + " = " + bindParameter(field)))
-                    .ORDER_BY(table.getPrimaryKeyColumn() + " DESC");
+        public String sql(Object criteria) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("<script>");
+            sql.append("SELECT ").append(String.join(", ", table.getSelectColumns()));
+            tableWhere(sql);
+            // 添加排序
+            sql.append(" ORDER BY ").append(table.getPrimaryKeyColumn()).append(" DESC");
+
+            sql.append("</script>");
+            return sql.toString();
         }
     }
 
-    class SelectBySqlProvider extends AbstractSqlProviderSupport {
-        @SuppressWarnings("all")
-        @Override
-        public SQL sql(Object entities) {
-            Map<String, Object> param = (Map) entities;
-            Function<SQL, SQL> sqlBuild = (Function) param.get("sqlBuild");
-            Object criteria = param.get("entity");
-
-            return sqlBuild.apply(
-                    new SQL().FROM(table.getTableName())
-            );
-        }
-    }
-
+    // TODO 待优化
     class SelectByLambdaSqlProvider extends AbstractSqlProviderSupport {
         @Override
-        public SQL sql(Object criteria) {
+        public String sql(Object criteria) {
             LambdaQueryWrapper<?> wrapper = (LambdaQueryWrapper<?>) criteria;
 
-            SQL sql = new SQL()
+            BaseMapper.SQL sql = new SQL()
                     .SELECT(table.getSelectColumns())
                     .FROM(table.getTableName());
 
@@ -390,18 +393,20 @@ public interface BaseMapper<E> {
             if (StringUtils.isNotBlank(orderByClause)) {
                 sql.ORDER_BY(orderByClause);
             }
-
-            return sql;
+            return String.format("<script>%s</script>", sql.toString());
         }
     }
 
     class CountByCriteriaSqlProvider extends AbstractSqlProviderSupport {
         @Override
-        public SQL sql(Object criteria) {
-            return new SQL()
-                    .SELECT("COUNT(*)")
-                    .FROM(table.getTableName())
-                    .WHERE(ignoreNullAndCombined(criteria, field -> columnName(field) + " = " + bindParameter(field)));
+        public String sql(Object criteria) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("<script>");
+            sql.append("SELECT COUNT(*)");
+            tableWhere(sql);
+            sql.append("</script>");
+
+            return sql.toString();
         }
     }
 

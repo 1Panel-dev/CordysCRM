@@ -25,7 +25,48 @@ public abstract class AbstractSqlProviderSupport {
      * @param criteria 查询条件
      * @return SQL 实例
      */
-    abstract BaseMapper.SQL sql(Object criteria);
+    abstract String sql(Object criteria);
+
+    /**
+     * 动态生成更新 SQL 的方法。
+     * * @return 更新 SQL 脚本
+     */
+    public String updateSQL() {
+        StringBuilder sql = new StringBuilder();
+        sql.append("<script>");
+        sql.append("UPDATE ").append(table.getTableName());
+
+        // 使用trim标签明确指定要移除末尾的逗号
+        sql.append("<trim prefix=\"SET\" suffixOverrides=\",\">");
+
+        // 为每个非主键字段添加条件判断
+        for (Field field : table.getFields()) {
+            String column = field.getName();
+            if (!table.getPrimaryKeyColumn().equals(column)) {
+                sql.append("<if test=\"").append(column).append(" != null\">");
+                sql.append(columnName(field)).append(" = ").append(bindParameter(field)).append(", ");
+                sql.append("</if>");
+            }
+        }
+
+        sql.append("</trim>");
+        sql.append(" WHERE ").append(table.getPrimaryKeyColumn()).append(" = #{id}");
+        sql.append("</script>");
+
+        return sql.toString();
+    }
+
+    public void tableWhere(StringBuilder sql) {
+        sql.append(" FROM ").append(table.getTableName());
+        sql.append("<where>");
+        for (Field field : table.getFields()) {
+            String column = field.getName();
+            sql.append("<if test=\"").append(column).append(" != null\">");
+            sql.append(" AND ").append(columnName(field)).append(" = ").append(bindParameter(field));
+            sql.append("</if>");
+        }
+        sql.append("</where>");
+    }
 
     /**
      * 当前表的元信息。
@@ -52,18 +93,17 @@ public abstract class AbstractSqlProviderSupport {
      */
     String buildSql(Object criteria, EntityTable table) {
         this.table = table;
-        BaseMapper.SQL sql = sql(criteria);
-        beforeInterceptor(criteria, sql);
-        return String.format("<script>%s</script>", sql.toString());
+        String sql = sql(criteria);
+        beforeInterceptor(criteria);
+        return sql;
     }
 
     /**
      * SQL 执行前的拦截器，用于处理特定操作。
      *
      * @param obj 查询条件对象
-     * @param sql 构建的 SQL 实例
      */
-    void beforeInterceptor(Object obj, BaseMapper.SQL sql) {
+    void beforeInterceptor(Object obj) {
         if (obj instanceof BaseMapper.Interceptor && this instanceof BaseMapper.WriteType) {
             ((BaseMapper.Interceptor) obj).prePersist();
         }

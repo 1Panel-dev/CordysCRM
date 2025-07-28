@@ -9,10 +9,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -148,17 +146,6 @@ public class BaseMapperTest {
         Long result = baseMapper.countByExample(user);
         assertEquals(1L, result);
         verify(baseMapper, times(1)).countByExample(user);
-    }
-
-    @Test
-    @Order(13)
-    public void testQuery() {
-        Function<BaseMapper.SQL, BaseMapper.SQL> sqlBuild = sql -> sql;
-        when(baseMapper.query(sqlBuild, user)).thenReturn(Collections.singletonList(user));
-        List<User> result = baseMapper.query(sqlBuild, user);
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(baseMapper, times(1)).query(sqlBuild, user);
     }
 
     @Test
