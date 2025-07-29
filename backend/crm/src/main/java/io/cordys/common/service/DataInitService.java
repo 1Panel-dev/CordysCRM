@@ -14,7 +14,6 @@ import org.redisson.Redisson;
 import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,7 +23,6 @@ import java.util.List;
  * @date 2025-01-03 12:01:54
  */
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class DataInitService {
     @Resource
     private ModuleService moduleService;
