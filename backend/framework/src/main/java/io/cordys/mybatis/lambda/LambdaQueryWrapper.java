@@ -1,6 +1,7 @@
 package io.cordys.mybatis.lambda;
 
 import lombok.Getter;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -25,6 +26,10 @@ public class LambdaQueryWrapper<T> {
     private final List<String> orderByClauses = new LinkedList<>();
 
     private void addCondition(XFunction<T, ?> column, Object value, String operator) {
+        if (ObjectUtils.isEmpty(value)) {
+            return; // 如果值为 null，则不添加条件
+        }
+
         String columnName = columnToString(column);
         String paramName = generateParamName(columnName, operator);
         addCondition("%s %s #{%s}".formatted(columnName, operator, paramName));
@@ -75,6 +80,9 @@ public class LambdaQueryWrapper<T> {
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> like(XFunction<T, ?> column, Object value) {
+        if (ObjectUtils.isEmpty(value)) {
+            return this;
+        }
         addCondition(column, "%" + value + "%", "LIKE");
         return this;
     }
