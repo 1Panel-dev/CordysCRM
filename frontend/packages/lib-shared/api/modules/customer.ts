@@ -1,5 +1,6 @@
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
+  AddContactViewUrl,
   AddCustomerCollaborationUrl,
   AddCustomerContactUrl,
   AddCustomerFollowPlanUrl,
@@ -7,6 +8,7 @@ import {
   AddCustomerOpenSeaUrl,
   AddCustomerRelationItemUrl,
   AddCustomerUrl,
+  AddCustomerViewUrl,
   AssignOpenSeaCustomerUrl,
   BatchAssignOpenSeaCustomerUrl,
   BatchDeleteCustomerCollaborationUrl,
@@ -18,6 +20,7 @@ import {
   CancelCustomerFollowPlanUrl,
   CheckOpportunityContactUrl,
   ContactListUnderCustomerUrl,
+  DeleteContactViewUrl,
   DeleteCustomerCollaborationUrl,
   DeleteCustomerContactUrl,
   DeleteCustomerFollowPlanUrl,
@@ -25,11 +28,18 @@ import {
   DeleteCustomerOpenSeaUrl,
   DeleteCustomerRelationItemUrl,
   DeleteCustomerUrl,
+  DeleteCustomerViewUrl,
   DeleteOpenSeaCustomerUrl,
   DisableCustomerContactUrl,
+  EnableContactViewUrl,
   EnableCustomerContactUrl,
+  EnableCustomerViewUrl,
   ExportCustomerAllUrl,
   ExportCustomerSelectedUrl,
+  FixedContactViewUrl,
+  FixedCustomerViewUrl,
+  GetContactViewDetailUrl,
+  GetContactViewListUrl,
   GetCustomerCollaborationListUrl,
   GetCustomerContactFormConfigUrl,
   GetCustomerContactListUrl,
@@ -51,6 +61,8 @@ import {
   GetCustomerRelationListUrl,
   GetCustomerTabUrl,
   GetCustomerUrl,
+  GetCustomerViewDetailUrl,
+  GetCustomerViewListUrl,
   GetOpenSeaCustomerListUrl,
   GetOpenSeaCustomerUrl,
   GetOpenSeaOptionsUrl,
@@ -59,6 +71,7 @@ import {
   PickOpenSeaCustomerUrl,
   SaveCustomerRelationUrl,
   SwitchCustomerOpenSeaUrl,
+  UpdateContactViewUrl,
   UpdateCustomerCollaborationUrl,
   UpdateCustomerContactUrl,
   UpdateCustomerFollowPlanStatusUrl,
@@ -67,6 +80,7 @@ import {
   UpdateCustomerOpenSeaUrl,
   UpdateCustomerRelationItemUrl,
   UpdateCustomerUrl,
+  UpdateCustomerViewUrl,
 } from '@lib/shared/api/requrls/customer';
 import type {
   CommonList,
@@ -117,6 +131,7 @@ import type {
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
 import type { FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
+import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 添加客户
@@ -454,6 +469,63 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: ExportCustomerSelectedUrl, data });
   }
 
+  // 视图
+  function addCustomerView(data: ViewParams) {
+    return CDR.post({ url: AddCustomerViewUrl, data });
+  }
+
+  function updateCustomerView(data: ViewParams) {
+    return CDR.post({ url: UpdateCustomerViewUrl, data });
+  }
+
+  function getCustomerViewList() {
+    return CDR.get<ViewItem[]>({ url: GetCustomerViewListUrl });
+  }
+
+  function getCustomerViewDetail(id: string) {
+    return CDR.get({ url: `${GetCustomerViewDetailUrl}/${id}` });
+  }
+
+  function fixedCustomerView(id: string) {
+    return CDR.get({ url: `${FixedCustomerViewUrl}/${id}` });
+  }
+
+  function enableCustomerView(id: string) {
+    return CDR.get({ url: `${EnableCustomerViewUrl}/${id}` });
+  }
+
+  function deleteCustomerView(id: string) {
+    return CDR.get({ url: `${DeleteCustomerViewUrl}/${id}` });
+  }
+
+  function addContactView(data: ViewParams) {
+    return CDR.post({ url: AddContactViewUrl, data });
+  }
+
+  function updateContactView(data: ViewParams) {
+    return CDR.post({ url: UpdateContactViewUrl, data });
+  }
+
+  function getContactViewList() {
+    return CDR.get<ViewItem[]>({ url: GetContactViewListUrl });
+  }
+
+  function getContactViewDetail(id: string) {
+    return CDR.get({ url: `${GetContactViewDetailUrl}/${id}` });
+  }
+
+  function fixedContactView(id: string) {
+    return CDR.get({ url: `${FixedContactViewUrl}/${id}` });
+  }
+
+  function enableContactView(id: string) {
+    return CDR.get({ url: `${EnableContactViewUrl}/${id}` });
+  }
+
+  function deleteContactView(id: string) {
+    return CDR.get({ url: `${DeleteContactViewUrl}/${id}` });
+  }
+
   return {
     addCustomer,
     updateCustomer,
@@ -522,5 +594,19 @@ export default function useProductApi(CDR: CordysAxios) {
     exportCustomerAll,
     exportCustomerSelected,
     moveCustomerToPool,
+    addCustomerView,
+    deleteCustomerView,
+    fixedCustomerView,
+    getCustomerViewDetail,
+    getCustomerViewList,
+    updateCustomerView,
+    enableCustomerView,
+    addContactView,
+    deleteContactView,
+    fixedContactView,
+    getContactViewDetail,
+    getContactViewList,
+    updateContactView,
+    enableContactView,
   };
 }

@@ -128,6 +128,13 @@ export const {
   exportClueAll,
   exportClueSelected,
   moveToLeadPool,
+  addClueView,
+  deleteClueView,
+  fixedClueView,
+  getClueViewDetail,
+  getClueViewList,
+  updateClueView,
+  enableClueView,
 } = clueApi;
 
 export const {
@@ -195,6 +202,20 @@ export const {
   exportCustomerAll,
   exportCustomerSelected,
   moveCustomerToPool,
+  addCustomerView,
+  deleteCustomerView,
+  fixedCustomerView,
+  getCustomerViewDetail,
+  getCustomerViewList,
+  updateCustomerView,
+  enableCustomerView,
+  addContactView,
+  deleteContactView,
+  fixedContactView,
+  getContactViewDetail,
+  getContactViewList,
+  updateContactView,
+  enableContactView,
 } = customerApi;
 
 export const {

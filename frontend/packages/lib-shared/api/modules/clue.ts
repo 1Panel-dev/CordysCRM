@@ -3,6 +3,7 @@ import {
   AddClueFollowPlanUrl,
   AddClueFollowRecordUrl,
   AddClueUrl,
+  AddClueViewUrl,
   AssignClueUrl,
   BatchAssignClueUrl,
   BatchDeleteCluePoolUrl,
@@ -16,8 +17,11 @@ import {
   DeleteClueFollowRecordUrl,
   DeleteCluePoolUrl,
   DeleteClueUrl,
+  DeleteClueViewUrl,
+  EnableClueViewUrl,
   ExportClueAllUrl,
   ExportClueSelectedUrl,
+  FixedClueViewUrl,
   GetClueFollowPlanListUrl,
   GetClueFollowPlanUrl,
   GetClueFollowRecordListUrl,
@@ -30,6 +34,8 @@ import {
   GetClueTabUrl,
   GetClueTransitionCustomerListUrl,
   GetClueUrl,
+  GetClueViewDetailUrl,
+  GetClueViewListUrl,
   GetPoolClueUrl,
   GetPoolOptionsUrl,
   MoveToPoolLeadUrl,
@@ -40,6 +46,7 @@ import {
   UpdateClueFollowRecordUrl,
   UpdateClueStatusUrl,
   UpdateClueUrl,
+  UpdateClueViewUrl,
 } from '@lib/shared/api/requrls/clue';
 import type {
   AssignClueParams,
@@ -72,6 +79,7 @@ import type {
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
 import type { CluePoolItem, FormDesignConfigDetailParams } from '@lib/shared/models/system/module';
+import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
 export default function useProductApi(CDR: CordysAxios) {
   // 添加线索
@@ -274,6 +282,34 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post({ url: ExportClueSelectedUrl, data });
   }
 
+  // 视图
+  function addClueView(data: ViewParams) {
+    return CDR.post({ url: AddClueViewUrl, data });
+  }
+
+  function updateClueView(data: ViewParams) {
+    return CDR.post({ url: UpdateClueViewUrl, data });
+  }
+
+  function getClueViewList() {
+    return CDR.get<ViewItem[]>({ url: GetClueViewListUrl });
+  }
+
+  function getClueViewDetail(id: string) {
+    return CDR.get({ url: `${GetClueViewDetailUrl}/${id}` });
+  }
+
+  function fixedClueView(id: string) {
+    return CDR.get({ url: `${FixedClueViewUrl}/${id}` });
+  }
+
+  function enableClueView(id: string) {
+    return CDR.get({ url: `${EnableClueViewUrl}/${id}` });
+  }
+
+  function deleteClueView(id: string) {
+    return CDR.get({ url: `${DeleteClueViewUrl}/${id}` });
+  }
   return {
     addClue,
     updateClue,
@@ -315,5 +351,12 @@ export default function useProductApi(CDR: CordysAxios) {
     getClueTransitionCustomerList,
     reTransitionCustomer,
     moveToLeadPool,
+    addClueView,
+    deleteClueView,
+    fixedClueView,
+    getClueViewDetail,
+    getClueViewList,
+    updateClueView,
+    enableClueView,
   };
 }

@@ -49,3 +49,12 @@ export const ClueTransitionCustomerUrl = '/clue/transition/customer'; // 转为�
 export const GetCluePoolFollowRecordListUrl = '/clue/follow/record/pool/page'; // 获取跟进记录列表
 
 export const GetClueTabUrl = '/clue/tab'; // 线索tab显隐
+
+// 视图
+export const GetClueViewDetailUrl = '/clue/view/detail';
+export const GetClueViewListUrl = '/clue/view/list';
+export const AddClueViewUrl = '/clue/view/add';
+export const UpdateClueViewUrl = '/clue/view/update';
+export const DeleteClueViewUrl = '/clue/view/delete';
+export const FixedClueViewUrl = '/clue/view/fixed';
+export const EnableClueViewUrl = '/clue/view/enable';

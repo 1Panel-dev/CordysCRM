@@ -65,3 +65,20 @@ export const UpdateCustomerFollowPlanStatusUrl = '/customer/follow/plan/status/u
 export const GetCustomerOpportunityListUrl = '/customer/opportunity/page'; // 客户商机列表
 export const ExportCustomerAllUrl = '/customer/export-all'; // 导出所有客户
 export const ExportCustomerSelectedUrl = '/customer/export-select'; // 导出选中客户
+
+// 视图
+export const GetCustomerViewDetailUrl = '/customer/view/detail';
+export const GetCustomerViewListUrl = '/customer/view/list';
+export const AddCustomerViewUrl = '/customer/view/add';
+export const UpdateCustomerViewUrl = '/customer/view/update';
+export const DeleteCustomerViewUrl = '/customer/view/delete';
+export const FixedCustomerViewUrl = '/customer/view/fixed';
+export const EnableCustomerViewUrl = '/customer/view/enable';
+
+export const GetContactViewDetailUrl = '/customer/contact/view/detail';
+export const GetContactViewListUrl = '/customer/contact/view/list';
+export const AddContactViewUrl = '/customer/contact/view/add';
+export const UpdateContactViewUrl = '/customer/contact/view/update';
+export const DeleteContactViewUrl = '/customer/contact/view/delete';
+export const FixedContactViewUrl = '/customer/contact/view/fixed';
+export const EnableContactViewUrl = '/customer/contact/view/enable';

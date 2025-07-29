@@ -1,18 +1,39 @@
 import { OperatorEnum } from '@lib/shared/enums/commonEnum';
 import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
 import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
-import { OpportunitySearchTypeEnum } from '@lib/shared/enums/opportunityEnum';
+import { OpportunitySearchTypeEnum, StageResultEnum } from '@lib/shared/enums/opportunityEnum';
 
 import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
 
 import {
   addBusinessView,
+  addClueView,
+  addContactView,
+  addCustomerView,
   deleteBusinessView,
+  deleteClueView,
+  deleteContactView,
+  deleteCustomerView,
   enableBusinessView,
+  enableClueView,
+  enableContactView,
+  enableCustomerView,
   fixedBusinessView,
+  fixedClueView,
+  fixedContactView,
+  fixedCustomerView,
   getBusinessViewDetail,
   getBusinessViewList,
+  getClueViewDetail,
+  getClueViewList,
+  getContactViewDetail,
+  getContactViewList,
+  getCustomerViewDetail,
+  getCustomerViewList,
   updateBusinessView,
+  updateClueView,
+  updateContactView,
+  updateCustomerView,
 } from '@/api/modules';
 import { TabType } from '@/hooks/useHiddenTab';
 import useUserStore from '@/store/modules/user';
@@ -24,57 +45,56 @@ type ViewAction = 'list' | 'add' | 'update' | 'delete' | 'detail' | 'fixed' | 'e
 // TODO lmy 联调
 export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => Promise<any>>> = {
   list: {
-    [FormDesignKeyEnum.CLUE]: getBusinessViewList,
-    [FormDesignKeyEnum.CUSTOMER]: getBusinessViewList,
-    [FormDesignKeyEnum.CONTACT]: getBusinessViewList,
+    [FormDesignKeyEnum.CLUE]: getClueViewList,
+    [FormDesignKeyEnum.CUSTOMER]: getCustomerViewList,
+    [FormDesignKeyEnum.CONTACT]: getContactViewList,
     [FormDesignKeyEnum.BUSINESS]: getBusinessViewList,
   },
   add: {
-    [FormDesignKeyEnum.CLUE]: addBusinessView,
-    [FormDesignKeyEnum.CUSTOMER]: addBusinessView,
-    [FormDesignKeyEnum.CONTACT]: addBusinessView,
+    [FormDesignKeyEnum.CLUE]: addClueView,
+    [FormDesignKeyEnum.CUSTOMER]: addCustomerView,
+    [FormDesignKeyEnum.CONTACT]: addContactView,
     [FormDesignKeyEnum.BUSINESS]: addBusinessView,
   },
   update: {
-    [FormDesignKeyEnum.CLUE]: updateBusinessView,
-    [FormDesignKeyEnum.CUSTOMER]: updateBusinessView,
-    [FormDesignKeyEnum.CONTACT]: updateBusinessView,
+    [FormDesignKeyEnum.CLUE]: updateClueView,
+    [FormDesignKeyEnum.CUSTOMER]: updateCustomerView,
+    [FormDesignKeyEnum.CONTACT]: updateContactView,
     [FormDesignKeyEnum.BUSINESS]: updateBusinessView,
   },
   delete: {
-    [FormDesignKeyEnum.CLUE]: deleteBusinessView,
-    [FormDesignKeyEnum.CUSTOMER]: deleteBusinessView,
-    [FormDesignKeyEnum.CONTACT]: deleteBusinessView,
+    [FormDesignKeyEnum.CLUE]: deleteClueView,
+    [FormDesignKeyEnum.CUSTOMER]: deleteCustomerView,
+    [FormDesignKeyEnum.CONTACT]: deleteContactView,
     [FormDesignKeyEnum.BUSINESS]: deleteBusinessView,
   },
   detail: {
-    [FormDesignKeyEnum.CLUE]: getBusinessViewDetail,
-    [FormDesignKeyEnum.CUSTOMER]: getBusinessViewDetail,
-    [FormDesignKeyEnum.CONTACT]: getBusinessViewDetail,
+    [FormDesignKeyEnum.CLUE]: getClueViewDetail,
+    [FormDesignKeyEnum.CUSTOMER]: getCustomerViewDetail,
+    [FormDesignKeyEnum.CONTACT]: getContactViewDetail,
     [FormDesignKeyEnum.BUSINESS]: getBusinessViewDetail,
   },
   fixed: {
-    [FormDesignKeyEnum.CLUE]: fixedBusinessView,
-    [FormDesignKeyEnum.CUSTOMER]: fixedBusinessView,
-    [FormDesignKeyEnum.CONTACT]: fixedBusinessView,
+    [FormDesignKeyEnum.CLUE]: fixedClueView,
+    [FormDesignKeyEnum.CUSTOMER]: fixedCustomerView,
+    [FormDesignKeyEnum.CONTACT]: fixedContactView,
     [FormDesignKeyEnum.BUSINESS]: fixedBusinessView,
   },
   enable: {
-    [FormDesignKeyEnum.CLUE]: enableBusinessView,
-    [FormDesignKeyEnum.CUSTOMER]: enableBusinessView,
-    [FormDesignKeyEnum.CONTACT]: enableBusinessView,
+    [FormDesignKeyEnum.CLUE]: enableClueView,
+    [FormDesignKeyEnum.CUSTOMER]: enableCustomerView,
+    [FormDesignKeyEnum.CONTACT]: enableContactView,
     [FormDesignKeyEnum.BUSINESS]: enableBusinessView,
   },
 };
 
-// TODO lmy
 export const internalConditionsMap: Record<string, FilterFormItem[]> = {
   [CustomerSearchTypeEnum.ALL]: [
     {
       dataIndex: 'createTime',
       type: FieldTypeEnum.TIME_RANGE_PICKER,
       operator: OperatorEnum.GT,
-      value: '0',
+      value: 0,
     },
   ],
   [CustomerSearchTypeEnum.DEPARTMENT]: [
@@ -93,7 +113,14 @@ export const internalConditionsMap: Record<string, FilterFormItem[]> = {
       value: [userStore.userInfo.name],
     },
   ],
-  [OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS]: [],
+  [OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS]: [
+    {
+      dataIndex: 'stage',
+      type: FieldTypeEnum.SELECT_MULTIPLE,
+      operator: OperatorEnum.IN,
+      value: [StageResultEnum.SUCCESS],
+    },
+  ],
 };
 
 export default {};
