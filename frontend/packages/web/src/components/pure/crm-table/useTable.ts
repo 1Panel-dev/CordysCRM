@@ -179,11 +179,12 @@ export default function useTable<T>(
       // 解决分页数据不足一页时不能触发滚动的问题
       nextTick(() => {
         if (
-          propsRes.value.crmPagination?.itemCount &&
-          propsRes.value.crmPagination?.page &&
-          propsRes.value.crmPagination?.pageSize &&
-          propsRes.value.crmPagination.itemCount <=
-            propsRes.value.crmPagination.page * propsRes.value.crmPagination.pageSize
+          (data.list || data).length === 0 ||
+          (propsRes.value.crmPagination?.itemCount &&
+            propsRes.value.crmPagination?.page &&
+            propsRes.value.crmPagination?.pageSize &&
+            propsRes.value.crmPagination.itemCount <=
+              propsRes.value.crmPagination.page * propsRes.value.crmPagination.pageSize)
         ) {
           return;
         }
