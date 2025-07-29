@@ -281,7 +281,7 @@
 
     <update id="updateContactById">
         update customer_contact
-        set owner = #{newOwner}
+        set owner = #{owner}
         where id = #{id}
     </update>
 </mapper>
