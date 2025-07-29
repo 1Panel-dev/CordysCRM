@@ -151,19 +151,16 @@ public class LambdaQueryWrapper<T> {
         }
 
         String columnName = columnToString(column);
-        StringBuilder conditionSql = new StringBuilder(columnName).append(" IN (");
+        String paramKey = "array_" + columnName;
+        String inClause = String.format("""
+                %s IN
+                <foreach collection="%s" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                """, columnName, paramKey);
 
-        for (int i = 0; i < valueList.size(); i++) {
-            String paramKey = String.format("%s_in_%d", columnName, i);
-            if (i > 0) {
-                conditionSql.append(", ");
-            }
-            conditionSql.append("#{").append(paramKey).append("}");
-            params.put(paramKey, formatValue(valueList.get(i)));
-        }
-
-        conditionSql.append(")");
-        addCondition(conditionSql.toString());
+        addCondition(inClause);
+        params.put(paramKey, valueList);
         return this;
     }
 
