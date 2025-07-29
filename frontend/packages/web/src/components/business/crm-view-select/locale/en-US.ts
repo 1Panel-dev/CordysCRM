@@ -3,7 +3,7 @@ export default {
   'crmViewSelect.add': 'Add view',
   'crmViewSelect.manageViews': 'Manage views',
   'crmViewSelect.systemView': 'System view',
-  'crmViewSelect.personalView': 'Personal view',
+  'crmViewSelect.personalView': 'Personal',
   'crmViewSelect.myView': 'My view',
   'crmViewSelect.newView': 'New view',
   'crmViewSelect.viewName': 'View name',

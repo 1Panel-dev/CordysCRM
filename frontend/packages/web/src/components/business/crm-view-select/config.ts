@@ -42,7 +42,6 @@ const userStore = useUserStore();
 
 type ViewAction = 'list' | 'add' | 'update' | 'delete' | 'detail' | 'fixed' | 'enable';
 
-// TODO lmy 联调
 export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => Promise<any>>> = {
   list: {
     [FormDesignKeyEnum.CLUE]: getClueViewList,

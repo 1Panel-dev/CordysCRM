@@ -143,7 +143,7 @@
       if (form.value?.id) {
         await viewApiMap.update[props.type](params);
         Message.success(t('common.updateSuccess'));
-        activeId = undefined;
+        activeId = form.value?.id;
       } else {
         const res = await viewApiMap.add[props.type](params);
         Message.success(t('common.addSuccess'));

@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NSwitch, useMessage } from 'naive-ui';
+  import { NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -152,17 +152,27 @@
           }),
           h(CrmIcon, {
             type: row.fixed ? 'iconicon_pin_filled' : 'iconicon_pin',
-            class: `cursor-pointer ${row.fixed ? 'text-[var(--primary-8)]' : 'text-[var(--text-n1)]'}`,
+            class: `${row.id !== CustomerSearchTypeEnum.ALL ? 'cursor-pointer' : 'cursor-not-allowed'} ${
+              row.fixed ? 'text-[var(--primary-8)]' : 'text-[var(--text-n1)]'
+            }`,
             size: 16,
             onClick: (e: MouseEvent) => {
               e.stopPropagation(); // 阻止事件冒泡，防止影响 select 行为
+              if (row.id === CustomerSearchTypeEnum.ALL) {
+                Message.warning(t('crmViewSelect.cannotCancelFixation'));
+                return;
+              }
               viewStore.toggleFixed(props.type, row);
             },
           }),
-          h('span', {
-            class: 'one-line-text',
-            innerText: row.name,
-          }),
+          h(
+            NTooltip,
+            { delay: 300 },
+            {
+              default: () => h('div', {}, { default: () => row.name }),
+              trigger: () => h('div', { class: 'one-line-text' }, { default: () => row.name }),
+            }
+          ),
         ]),
     },
     {
@@ -170,7 +180,7 @@
       key: 'type',
       width: 100,
       render: (row) => {
-        return row.type === 'internal' ? t('crmViewSelect.systemView') : t('crmViewSelect.personalView');
+        return row.type === 'internal' ? t('system.message.system') : t('crmViewSelect.personalView');
       },
     },
     {

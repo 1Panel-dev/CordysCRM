@@ -17,11 +17,11 @@ export default function useHorizontalScrollArrows(containerRef: Ref<HTMLElement 
   };
 
   const scrollLeft = () => {
-    containerRef.value?.scrollBy({ left: -300, behavior: 'smooth' });
+    containerRef.value?.scrollBy({ left: -400, behavior: 'smooth' });
   };
 
   const scrollRight = () => {
-    containerRef.value?.scrollBy({ left: 300, behavior: 'smooth' });
+    containerRef.value?.scrollBy({ left: 400, behavior: 'smooth' });
   };
 
   onMounted(() => {

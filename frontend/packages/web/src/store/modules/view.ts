@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
-import { TabPaneProps, useMessage } from 'naive-ui';
+import { TabPaneProps } from 'naive-ui';
 
-import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
-import { useI18n } from '@lib/shared/hooks/useI18n';
 import type { ViewItem } from '@lib/shared/models/view';
 
 import { ConditionsItem } from '@/components/pure/crm-advance-filter/type';
@@ -83,12 +81,6 @@ const useViewStore = defineStore('view', {
 
     // 固定/取消固定
     async toggleFixed(type: TabType, option: ViewItem) {
-      const Message = useMessage();
-      const { t } = useI18n();
-      if (option.id === CustomerSearchTypeEnum.ALL) {
-        Message.warning(t('crmViewSelect.cannotCancelFixation'));
-        return;
-      }
       if (option.type === 'internal') {
         const index = this.internalViews.findIndex((i: ViewItem) => i.id === option.id);
         if (index !== -1) this.internalViews[index].fixed = !this.internalViews[index].fixed;

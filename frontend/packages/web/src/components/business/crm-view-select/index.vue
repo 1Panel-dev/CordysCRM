@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-  import { NButton, NIcon, NSelect, TabPaneProps } from 'naive-ui';
+  import { NButton, NIcon, NSelect, TabPaneProps, useMessage } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
@@ -106,6 +106,7 @@
 
   const { t } = useI18n();
   const viewStore = useViewStore();
+  const Message = useMessage();
 
   const props = defineProps<{
     type: TabType;
@@ -134,8 +135,7 @@
     () => props.internalList,
     async (val: TabPaneProps[]) => {
       viewStore.loadInternalViews(props.type, val);
-    },
-    { immediate: true }
+    }
   );
   onMounted(async () => {
     viewStore.loadCustomViews(props.type);
@@ -199,10 +199,16 @@
           }),
           h(CrmIcon, {
             type: option.fixed ? 'iconicon_pin_filled' : 'iconicon_pin',
-            class: `cursor-pointer ${option.fixed ? 'text-[var(--primary-8)]' : 'text-[var(--text-n1)]'}`,
+            class: `${option.id !== CustomerSearchTypeEnum.ALL ? 'cursor-pointer' : 'cursor-not-allowed'} ${
+              option.fixed ? 'text-[var(--primary-8)]' : 'text-[var(--text-n1)]'
+            }`,
             size: 12,
             onClick: (e: MouseEvent) => {
               e.stopPropagation(); // 阻止事件冒泡，防止影响 select 行为
+              if (option.id === CustomerSearchTypeEnum.ALL) {
+                Message.warning(t('crmViewSelect.cannotCancelFixation'));
+                return;
+              }
               viewStore.toggleFixed(props.type, option);
             },
           }),
