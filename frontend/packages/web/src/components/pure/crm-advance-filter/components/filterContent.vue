@@ -353,6 +353,29 @@
     return mergedList.find((item) => item.dataIndex === dataIndex);
   };
 
+  onMounted(() => {
+    // 初始化视图回显
+    formModel.value.list.forEach((item, index) => {
+      watch(
+        () => item.dataIndex,
+        (val) => {
+          if (val) {
+            const listItem = getListItemByDataIndex(val);
+            if (!listItem) return;
+            const currentListItem: FilterFormItem = {
+              ...listItem,
+              operator: item.operator,
+              value: item.value,
+              ...(listItem.showScope ? { scope: listItem.scope } : undefined),
+            };
+            formModel.value.list[index] = currentListItem;
+          }
+        },
+        { immediate: true }
+      );
+    });
+  });
+
   // 改变第一列值
   const dataIndexChange = (dataIndex: string, index: number) => {
     const listItem = getListItemByDataIndex(dataIndex);
@@ -433,11 +456,11 @@
     if (item.type === FieldTypeEnum.TIME_RANGE_PICKER) {
       return [
         {
-          validator: (rule: any, value: string) => {
-            if (!value) return new Error(t('common.value.notNull'));
+          validator: (rule: any, value: string | number) => {
+            if (!value && value !== 0) return new Error(t('common.value.notNull'));
             if (item.operator === OperatorEnum.DYNAMICS) {
               // 动态模式需要校验数字部分
-              const [time, num, unit] = value.split(',');
+              const [time, num, unit] = (value as string).split(',');
               if (time === 'CUSTOM') {
                 return !!Number(num) || new Error(t('common.value.notNull'));
               }

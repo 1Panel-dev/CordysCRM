@@ -427,39 +427,37 @@
     });
   }
 
-  watch(
-    () => props.row,
-    (val?: CluePoolItem) => {
-      if (val) {
-        form.value = {
-          id: val.id,
-          name: val.name,
-          enable: val.enable,
-          auto: val.auto,
-          pickRule: val.pickRule ?? cloneDeep(initForm).pickRule,
-          recycleRule: val.recycleRule ?? cloneDeep(initForm).recycleRule,
-          userIds: val.members,
-          adminIds: val.owners,
-          hiddenFieldIds: val.fieldConfigs?.filter((item) => !item.enable).map((item) => item.fieldId) || [],
+  watch([() => props.row, () => visible.value], () => {
+    if (props.row && visible.value) {
+      const val = props.row;
+      form.value = {
+        id: val.id,
+        name: val.name,
+        enable: val.enable,
+        auto: val.auto,
+        pickRule: val.pickRule ?? cloneDeep(initForm).pickRule,
+        recycleRule: val.recycleRule ?? cloneDeep(initForm).recycleRule,
+        userIds: val.members,
+        adminIds: val.owners,
+        hiddenFieldIds: val.fieldConfigs?.filter((item) => !item.enable).map((item) => item.fieldId) || [],
+      };
+      if (val.auto) {
+        recycleFormItemModel.value = {
+          list: val.recycleRule.conditions?.map((item) => ({
+            dataIndex: item.column,
+            operator: item.operator,
+            showScope: !!item.scope?.length,
+            value: item.value,
+            scope: item.scope,
+            type: FieldTypeEnum.TIME_RANGE_PICKER,
+          })) as FilterFormItem[],
+          searchMode: val.recycleRule.operator as AccordBelowType,
         };
-        if (val.auto) {
-          recycleFormItemModel.value = {
-            list: val.recycleRule.conditions?.map((item) => ({
-              dataIndex: item.column,
-              operator: item.operator,
-              showScope: !!item.scope?.length,
-              value: item.value,
-              scope: item.scope,
-              type: FieldTypeEnum.TIME_RANGE_PICKER,
-            })) as FilterFormItem[],
-            searchMode: val.recycleRule.operator as AccordBelowType,
-          };
-        } else {
-          recycleFormItemModel.value = cloneDeep(defaultFormModel);
-        }
+      } else {
+        recycleFormItemModel.value = cloneDeep(defaultFormModel);
       }
     }
-  );
+  });
 
   watch(
     () => visible.value,

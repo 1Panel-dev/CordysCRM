@@ -67,13 +67,15 @@
   });
 
   const showAddOrEditDrawer = ref<boolean>(false);
+  const currentRow = ref<CluePoolItem>();
+
   // 增加
   function handleAdd() {
+    currentRow.value = undefined;
     showAddOrEditDrawer.value = true;
   }
 
   // 编辑
-  const currentRow = ref<CluePoolItem>();
   async function handleEdit(row: CluePoolItem) {
     currentRow.value = row;
     showAddOrEditDrawer.value = true;

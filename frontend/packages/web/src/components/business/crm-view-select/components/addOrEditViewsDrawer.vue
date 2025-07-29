@@ -143,7 +143,7 @@
       if (form.value?.id) {
         await viewApiMap.update[props.type](params);
         Message.success(t('common.updateSuccess'));
-        activeId = form.value?.id;
+        activeId = undefined;
       } else {
         const res = await viewApiMap.add[props.type](params);
         Message.success(t('common.addSuccess'));
@@ -153,9 +153,9 @@
         form.value = cloneDeep(initForm);
         formModel.value = cloneDeep(defaultFormModel);
       } else {
-        emit('refresh', activeId);
         cancelHandler();
       }
+      emit('refresh', activeId);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
@@ -188,7 +188,7 @@
         form.value = { ...val };
         formModel.value = {
           searchMode: val.searchMode,
-          list: val.list,
+          list: cloneDeep(val.list),
         };
       }
     }

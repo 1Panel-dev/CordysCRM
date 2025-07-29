@@ -107,7 +107,10 @@
   }
 
   async function handleActionSelect(row: ViewItem, actionKey: string) {
-    const res = await viewStore.getViewDetail(props.type, row);
+    let res;
+    if (actionKey !== 'delete') {
+      res = await viewStore.getViewDetail(props.type, row);
+    }
     switch (actionKey) {
       case 'readOnly':
         readonly.value = true;
@@ -121,7 +124,7 @@
         break;
       case 'copy':
         readonly.value = false;
-        detail.value = { ...res, name: `${res.name}copy` };
+        detail.value = { ...res, name: `${res?.name}copy` };
         addOrEditViewsDrawerVisible.value = true;
         break;
       case 'delete':
@@ -237,6 +240,9 @@
     [() => viewStore.internalViews, () => viewStore.customViews],
     () => {
       propsRes.value.data = [...viewStore.internalViews, ...viewStore.customViews];
+      if (propsRes.value.crmPagination) {
+        propsRes.value.crmPagination.itemCount = propsRes.value.data.length;
+      }
     },
     { deep: true }
   );
