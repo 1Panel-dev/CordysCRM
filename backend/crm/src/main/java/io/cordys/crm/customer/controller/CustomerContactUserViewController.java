@@ -34,7 +34,7 @@ public class CustomerContactUserViewController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_CONTACT_READ)
     @Operation(summary = "添加联系人视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
-        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.OPPORTUNITY.name());
+        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CUSTOMER_CONTACT.name());
     }
 
 

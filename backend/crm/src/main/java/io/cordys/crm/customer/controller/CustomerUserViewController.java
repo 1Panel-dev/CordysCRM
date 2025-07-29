@@ -34,7 +34,7 @@ public class CustomerUserViewController {
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_READ)
     @Operation(summary = "添加客户视图")
     public UserView add(@Validated @RequestBody UserViewAddRequest request) {
-        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.OPPORTUNITY.name());
+        return userViewService.add(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), UserViewResourceType.CUSTOMER.name());
     }
 
 
