@@ -103,6 +103,8 @@ public class CustomerService {
     private UserExtendService userExtendService;
     @Resource
     private ExtCustomerPoolMapper extCustomerPoolMapper;
+    @Resource
+    private CustomerContactService customerContactService;
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -309,6 +311,10 @@ public class CustomerService {
 
         if (StringUtils.isNotBlank(request.getOwner())) {
             if (!StringUtils.equals(request.getOwner(), originCustomer.getOwner())) {
+                //客户负责人变更，联系人同步更新
+                customerContactService.updateContactOwner(request.getId(), request.getOwner(), originCustomer.getOwner(), orgId);
+
+
                 // 如果责任人有修改，则添加责任人历史
                 customerOwnerHistoryService.add(originCustomer, userId);
                 sendTransferNotice(List.of(originCustomer), request.getOwner(), userId, orgId);
@@ -474,6 +480,10 @@ public class CustomerService {
                 // 未找到默认公海，不移入
                 continue;
             }
+            //更新责任人
+            customerContactService.updateContactOwner(customer.getId(),"-",customer.getOwner(),orgId);
+
+
             // 日志
             LogDTO logDTO = new LogDTO(orgId, customer.getId(), currentUser, LogType.MOVE_TO_CUSTOMER_POOL, LogModule.CUSTOMER_INDEX, customer.getName());
             String detail = Translator.getWithArgs("customer.to.pool", customer.getName(),
@@ -505,9 +515,10 @@ public class CustomerService {
 
     /**
      * 移入公海
-     * @param request 请求参数
+     *
+     * @param request     请求参数
      * @param currentUser 当前用户
-     * @param orgId 组织ID
+     * @param orgId       组织ID
      */
     public void toPool(PoolReasonRequest request, String currentUser, String orgId) {
         BatchPoolReasonRequest batchRequest = new BatchPoolReasonRequest();

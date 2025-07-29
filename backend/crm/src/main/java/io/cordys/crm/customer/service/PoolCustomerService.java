@@ -74,6 +74,8 @@ public class PoolCustomerService {
 	private CustomerPoolService customerPoolService;
 	@Resource
 	private ModuleFormCacheService moduleFormCacheService;
+	@Resource
+	private CustomerContactService customerContactService;
 
 	public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
 
@@ -383,6 +385,9 @@ public class PoolCustomerService {
 		customer.setCollectionTime(System.currentTimeMillis());
 		customer.setUpdateTime(System.currentTimeMillis());
 		customerMapper.updateById(customer);
+
+		//更新联系人
+		customerContactService.updateContactOwner(customerId, ownerId, "-", currentOrgId);
 
 		// 日志
 		LogDTO logDTO = new LogDTO(currentOrgId, customer.getId(), operateUserId, logType, LogModule.CUSTOMER_POOL, customer.getName());

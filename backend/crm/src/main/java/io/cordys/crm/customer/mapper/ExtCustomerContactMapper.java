@@ -40,4 +40,8 @@ public interface ExtCustomerContactMapper {
     long getUniqueContactCount(@Param("request") ContactUniqueRequest uniqueRequest, @Param("customerId") String customerId, @Param("orgId") String orgId);
 
     Long getNewContactCount(@Param("request") HomeStatisticSearchWrapperRequest request);
+
+    void updateContactOwner(@Param("customerId") String customerId, @Param("newOwner") String newOwner, @Param("oldOwner") String oldOwner, @Param("orgId") String orgId);
+
+    void updateContactById(@Param("id") String id, @Param("owner") String owner);
 }

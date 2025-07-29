@@ -405,10 +405,11 @@ public class CustomerContactService {
 
     /**
      * 检查联系人和电话是否唯一
-     * @param contact 联系人姓名
-     * @param phone 联系人电话
+     *
+     * @param contact    联系人姓名
+     * @param phone      联系人电话
      * @param customerId 客户ID
-     * @param orgId 组织ID
+     * @param orgId      组织ID
      * @return 是否唯一
      */
     public boolean checkCustomerContactUnique(String contact, String phone, String customerId, String orgId) {
@@ -429,16 +430,29 @@ public class CustomerContactService {
             String internalKey = baseField.getInternalKey();
             boolean hasUnique = baseField.getRules().stream().anyMatch(rule -> RuleValidatorConstants.UNIQUE.equals(rule.getKey()));
             if (StringUtils.equalsIgnoreCase(internalKey, BusinessModuleField.CUSTOMER_CONTACT_NAME.getKey())) {
-				nameUnique = hasUnique;
-			}
+                nameUnique = hasUnique;
+            }
             if (StringUtils.equalsIgnoreCase(internalKey, BusinessModuleField.CUSTOMER_CONTACT_PHONE.getKey())) {
-				phoneUnique = hasUnique;
-			}
+                phoneUnique = hasUnique;
+            }
         }
         if (!nameUnique && !phoneUnique) {
             return true;
         }
         ContactUniqueRequest request = ContactUniqueRequest.builder().name(contact).phone(phone).nameUnique(nameUnique).phoneUnique(phoneUnique).build();
         return extCustomerContactMapper.getUniqueContactCount(request, customerId, orgId) == 0;
+    }
+
+
+    /**
+     * 更新责任人
+     *
+     * @param customerId
+     * @param newOwner
+     * @param oldOwner
+     * @param orgId
+     */
+    public void updateContactOwner(String customerId, String newOwner, String oldOwner, String orgId) {
+        extCustomerContactMapper.updateContactOwner(customerId, newOwner, oldOwner, orgId);
     }
 }

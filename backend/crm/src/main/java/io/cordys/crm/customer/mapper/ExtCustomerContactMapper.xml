@@ -270,4 +270,18 @@
             and c.owner = #{request.userId}
         </if>
     </select>
+
+    <update id="updateContactOwner">
+        update customer_contact
+        set owner = #{newOwner}
+        where owner = #{oldOwner}
+        and customer_id = #{customerId}
+        and organization_id = #{orgId}
+    </update>
+
+    <update id="updateContactById">
+        update customer_contact
+        set owner = #{newOwner}
+        where id = #{id}
+    </update>
 </mapper>

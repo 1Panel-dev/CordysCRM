@@ -25,6 +25,7 @@ import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
+import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.Opportunity;
@@ -90,6 +91,8 @@ public class OpportunityService {
     private CustomerContactService customerContactService;
     @Resource
     private ProductService productService;
+    @Resource
+    private ExtCustomerContactMapper extCustomerContactMapper;
 
     public static final String SUCCESS = "SUCCESS";
 
@@ -331,15 +334,17 @@ public class OpportunityService {
         extOpportunityMapper.batchTransfer(request, userId, System.currentTimeMillis());
         // 记录日志
         List<LogDTO> logs = new ArrayList<>();
-        opportunityList.forEach(customer -> {
+        opportunityList.forEach(opportunity -> {
             Customer originCustomer = new Customer();
-            originCustomer.setOwner(customer.getOwner());
+            originCustomer.setOwner(opportunity.getOwner());
             Customer modifieCustomer = new Customer();
             modifieCustomer.setOwner(request.getOwner());
-            LogDTO logDTO = new LogDTO(orgId, customer.getId(), userId, LogType.UPDATE, LogModule.OPPORTUNITY, customer.getName());
+            LogDTO logDTO = new LogDTO(orgId, opportunity.getId(), userId, LogType.UPDATE, LogModule.OPPORTUNITY, opportunity.getName());
             logDTO.setOriginalValue(originCustomer);
             logDTO.setModifiedValue(modifieCustomer);
             logs.add(logDTO);
+
+            extCustomerContactMapper.updateContactById(opportunity.getContactId(),request.getOwner());
         });
 
         logService.batchAdd(logs);
