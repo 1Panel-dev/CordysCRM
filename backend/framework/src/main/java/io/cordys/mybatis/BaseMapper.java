@@ -264,13 +264,12 @@ public interface BaseMapper<E> {
         }
     }
 
-    // TODO 待优化
     class DeleteByLambdaSqlProvider extends AbstractSqlProviderSupport implements WriteType {
         @Override
         public String sql(Object criteria) {
             LambdaQueryWrapper<?> wrapper = (LambdaQueryWrapper<?>) criteria;
 
-            BaseMapper.SQL sql = new SQL().DELETE_FROM(table.getTableName());
+            SQL sql = new SQL().DELETE_FROM(table.getTableName());
 
             // 将 LambdaQueryWrapper 的条件解析为 WHERE 子句
             Optional.ofNullable(wrapper.getWhereClause())
@@ -321,7 +320,7 @@ public interface BaseMapper<E> {
         @Override
         public String sql(Object criteria) {
             String orderBy = (String) criteria;
-            BaseMapper.SQL sql = new SQL()
+            SQL sql = new SQL()
                     .SELECT(table.getSelectColumns())
                     .FROM(table.getTableName());
             if (StringUtils.isBlank(orderBy)) {
@@ -372,13 +371,12 @@ public interface BaseMapper<E> {
         }
     }
 
-    // TODO 待优化
     class SelectByLambdaSqlProvider extends AbstractSqlProviderSupport {
         @Override
         public String sql(Object criteria) {
             LambdaQueryWrapper<?> wrapper = (LambdaQueryWrapper<?>) criteria;
 
-            BaseMapper.SQL sql = new SQL()
+            SQL sql = new SQL()
                     .SELECT(table.getSelectColumns())
                     .FROM(table.getTableName());
 

@@ -39,9 +39,6 @@ public class DataAccessLayer implements ApplicationContextAware {
     // 添加 MappedStatement 缓存计数监控
     private final AtomicInteger mappedStatementCount = new AtomicInteger(0);
 
-    // SQL 危险关键词集合
-    private static final Set<String> DANGEROUS_SQL_KEYWORDS = Set.of("drop", "truncate");
-
     private DataAccessLayer() {
         // 私有构造函数
     }
@@ -98,12 +95,6 @@ public class DataAccessLayer implements ApplicationContextAware {
         return instance.new Executor<>(entityTable);
     }
 
-    /**
-     * 执行原生 SQL 查询
-     */
-    public static <T> List<T> sql(String sql, Object param, Class<T> resultType) {
-        return with(resultType).sqlQuery(sql, param, resultType);
-    }
 
     /**
      * 数据访问执行器
@@ -135,7 +126,7 @@ public class DataAccessLayer implements ApplicationContextAware {
         public List<E> selectListByLambda(LambdaQueryWrapper<E> wrapper) {
             var sql = new SelectByLambdaSqlProvider().buildSql(wrapper, this.table);
             var msId = execute(sql, "BaseMapper.selectListByLambda:" + CodingUtils.hashStr(sql), table.getEntityClass(), resultType, SqlCommandType.SELECT);
-            return sqlSession.selectList(msId, wrapper);
+            return sqlSession.selectList(msId, wrapper.getParams());
         }
 
         @Override
@@ -202,7 +193,7 @@ public class DataAccessLayer implements ApplicationContextAware {
         public void deleteByLambda(LambdaQueryWrapper<E> wrapper) {
             var sql = new DeleteByLambdaSqlProvider().buildSql(wrapper, this.table);
             var msId = execute(sql, "BaseMapper.deleteByLambda:" + CodingUtils.hashStr(sql), table.getEntityClass(), int.class, SqlCommandType.DELETE);
-            sqlSession.delete(msId, wrapper);
+            sqlSession.delete(msId, wrapper.getParams());
         }
 
         @Override
@@ -219,35 +210,6 @@ public class DataAccessLayer implements ApplicationContextAware {
             var sql = new DeleteSqlProvider().buildSql(criteria, this.table);
             var msId = execute(sql, "BaseMapper.deleteByPrimaryKey", table.getEntityClass(), int.class, SqlCommandType.DELETE);
             return sqlSession.delete(msId, criteria);
-        }
-
-        /**
-         * 检查SQL是否包含危险操作
-         */
-        private void checkDangerousSql(String sql) {
-            if (sql == null) {
-                return;
-            }
-
-            var lowerSql = sql.toLowerCase();
-            boolean hasDangerousKeyword = DANGEROUS_SQL_KEYWORDS.stream()
-                    .anyMatch(lowerSql::contains);
-
-            if (hasDangerousKeyword) {
-                throw new IllegalArgumentException("不允许执行危险SQL操作");
-            }
-        }
-
-        public List<E> sqlQuery(String sql, Object param, Class<?> resultType) {
-            checkDangerousSql(sql);
-            var paramType = param != null ? param.getClass() : Map.class;
-            return sqlQuery(sql, param, paramType, resultType);
-        }
-
-        public List<E> sqlQuery(String sql, Object param, Class<?> paramType, Class<?> resultType) {
-            checkDangerousSql(sql);
-            var msId = execute(sql, "BaseMapper.sqlQuery", paramType, resultType, SqlCommandType.SELECT);
-            return sqlSession.selectList(msId, param);
         }
 
         @Override

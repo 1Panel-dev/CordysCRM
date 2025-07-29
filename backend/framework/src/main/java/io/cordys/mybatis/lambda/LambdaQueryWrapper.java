@@ -1,7 +1,13 @@
 package io.cordys.mybatis.lambda;
 
+import io.cordys.common.uid.IDGenerator;
+import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * LambdaQueryWrapper 用于构建 SQL 查询条件，支持链式调用。
@@ -13,8 +19,19 @@ public class LambdaQueryWrapper<T> {
     // 存储查询条件
     private final List<String> conditions = new ArrayList<>();
 
+    @Getter
+    private final Map<String, Object> params = new HashMap<>();
+
     // 存储排序条件
     private final List<String> orderByClauses = new ArrayList<>();
+
+    private void addCondition(XFunction<T, ?> column, Object value, String op) {
+        String columnName = columnToString(column);
+        addCondition(columnName + " " + op + " #{" + columnName + "}");
+        // 将参数添加到 params 中，便于后续使用
+        params.put(columnName, formatValue(value));
+
+    }
 
     /**
      * 添加等值条件（=）。
@@ -24,7 +41,7 @@ public class LambdaQueryWrapper<T> {
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> eq(XFunction<T, ?> column, Object value) {
-        addCondition(columnToString(column) + " = " + formatValue(value));
+        addCondition(column, value, "=");
         return this;
     }
 
@@ -33,10 +50,9 @@ public class LambdaQueryWrapper<T> {
      *
      * @param column 列名的 Lambda 表达式
      * @param value  值
-     * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> nq(XFunction<T, ?> column, Object value) {
-        addCondition(columnToString(column) + " != " + formatValue(value));
+        addCondition(column, value, "!=");
         return this;
     }
 
@@ -48,7 +64,7 @@ public class LambdaQueryWrapper<T> {
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> like(XFunction<T, ?> column, Object value) {
-        addCondition(columnToString(column) + " LIKE " + formatValue("%" + value + "%"));
+        addCondition(column, "%" + value + "%", "LIKE");
         return this;
     }
 
@@ -60,7 +76,7 @@ public class LambdaQueryWrapper<T> {
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> gt(XFunction<T, ?> column, Object value) {
-        addCondition(columnToString(column) + " > " + formatValue(value));
+        addCondition(column, value, ">");
         return this;
     }
 
@@ -72,7 +88,7 @@ public class LambdaQueryWrapper<T> {
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> gtT(XFunction<T, ?> column, Object value) {
-        addCondition(columnToString(column) + " <![CDATA[ > ]]> " + formatValue(value));
+        addCondition(column, value, " <![CDATA[ > ]]> ");
         return this;
     }
 
@@ -84,7 +100,7 @@ public class LambdaQueryWrapper<T> {
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> lt(XFunction<T, ?> column, Object value) {
-        addCondition(columnToString(column) + " < " + formatValue(value));
+        addCondition(column, value, "<");
         return this;
     }
 
@@ -96,7 +112,7 @@ public class LambdaQueryWrapper<T> {
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> ltT(XFunction<T, ?> column, Object value) {
-        addCondition(columnToString(column) + " <![CDATA[ < ]]> " + formatValue(value));
+        addCondition(column, value, " <![CDATA[ < ]]> ");
         return this;
     }
 
@@ -104,36 +120,85 @@ public class LambdaQueryWrapper<T> {
      * 添加范围条件（BETWEEN）。
      *
      * @param column 列名的 Lambda 表达式
-     * @param value1 起始值
-     * @param value2 结束值
+     * @param start  起始值
+     * @param end    结束值
      * @return 当前 LambdaQueryWrapper 实例
      */
-    public LambdaQueryWrapper<T> between(XFunction<T, ?> column, Object value1, Object value2) {
-        addCondition(columnToString(column) + " BETWEEN " + formatValue(value1) + " AND " + formatValue(value2));
+    public LambdaQueryWrapper<T> between(XFunction<T, ?> column, Object start, Object end) {
+        String columnName = columnToString(column);
+        String paramStartKey = IDGenerator.nextStr();
+        String paramEndKey = IDGenerator.nextStr();
+
+        String condition = String.format("%s BETWEEN #{%s} AND #{%s}", columnName, paramStartKey, paramEndKey);
+        addCondition(condition);
+
+        params.put(paramStartKey, formatValue(start));
+        params.put(paramEndKey, formatValue(end));
+
         return this;
     }
 
     /**
      * 添加 IN 条件。
      *
-     * @param column 列名的 Lambda 表达式
-     * @param values 值的集合
+     * @param column    列名的 Lambda 表达式
+     * @param valueList 值的集合
      * @return 当前 LambdaQueryWrapper 实例
      */
-    public LambdaQueryWrapper<T> in(XFunction<T, ?> column, List<?> values) {
-        String inValues = String.join(", ", values.stream().map(this::formatValue).toArray(String[]::new));
-        addCondition(columnToString(column) + " IN (" + inValues + ")");
+    public LambdaQueryWrapper<T> in(XFunction<T, ?> column, List<?> valueList) {
+        if (valueList == null || valueList.isEmpty()) {
+            return this;
+        }
+
+        String columnName = columnToString(column);
+        StringBuilder conditionSql = new StringBuilder(columnName).append(" IN (");
+
+        for (int i = 0; i < valueList.size(); i++) {
+            String paramKey = String.format("%s_in_%d", columnName, i);
+            if (i > 0) {
+                conditionSql.append(", ");
+            }
+            conditionSql.append("#{").append(paramKey).append("}");
+            params.put(paramKey, formatValue(valueList.get(i)));
+        }
+
+        conditionSql.append(")");
+        addCondition(conditionSql.toString());
         return this;
+    }
+
+    /**
+     * 返回 true 表示存在 SQL 注入风险
+     *
+     * @param script
+     */
+    public static void checkSqlInjection(String script) {
+        if (StringUtils.isEmpty(script)) {
+            return;
+        }
+        // 检测危险SQL模式
+        java.util.regex.Pattern dangerousPattern = java.util.regex.Pattern.compile(
+                "(;|--|#|'|\"|/\\*|\\*/|\\b(select|insert|update|delete|drop|alter|truncate|exec|union|xp_)\\b)",
+                java.util.regex.Pattern.CASE_INSENSITIVE);
+
+        // 返回true表示存在注入风险
+        if (dangerousPattern.matcher(script).find()) {
+            throw new IllegalArgumentException("SQL injection risk detected in script: " + script);
+        }
     }
 
     /**
      * 添加升序排序。
      *
      * @param column 列名的 Lambda 表达式
-     * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> orderByAsc(XFunction<T, ?> column) {
-        orderByClauses.add(columnToString(column) + " ASC");
+        String columnName = columnToString(column);
+        checkSqlInjection(columnName);
+        String paramKey = String.format("order_%s", columnName);
+
+        orderByClauses.add(String.format("#{%s} ASC", paramKey));
+        params.put(paramKey, columnName);
         return this;
     }
 
@@ -141,10 +206,14 @@ public class LambdaQueryWrapper<T> {
      * 添加降序排序。
      *
      * @param column 列名的 Lambda 表达式
-     * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> orderByDesc(XFunction<T, ?> column) {
-        orderByClauses.add(columnToString(column) + " DESC");
+        String columnName = columnToString(column);
+        checkSqlInjection(columnName);
+        String paramKey = String.format("order_%s", columnName);
+
+        orderByClauses.add(String.format("#{%s} DESC", paramKey));
+        params.put(paramKey, columnName);
         return this;
     }
 
@@ -205,13 +274,7 @@ public class LambdaQueryWrapper<T> {
      * @param value 要格式化的值
      * @return 格式化后的值
      */
-    private String formatValue(Object value) {
-        if (value == null) {
-            return "NULL";
-        }
-        if (value instanceof String) {
-            return "'" + value + "'";
-        }
-        return String.valueOf(value);
+    private Object formatValue(Object value) {
+        return value;
     }
 }
