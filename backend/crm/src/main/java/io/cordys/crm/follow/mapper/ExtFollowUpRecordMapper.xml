@@ -41,7 +41,7 @@
         <if test="request.keyword != null and request.keyword != ''">
             AND content like concat('%', #{request.keyword},'%')
         </if>
-        ORDER BY follow_time, create_time DESC
+        ORDER BY follow_time DESC, create_time DESC
     </select>
 
 
