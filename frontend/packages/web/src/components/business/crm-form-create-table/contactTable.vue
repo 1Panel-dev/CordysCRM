@@ -3,17 +3,14 @@
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"
+      :not-show-table-filter="isAdvancedSearchMode"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
     >
       <template #tableTop>
-        <div
-          :class="`flex items-center ${
-            !props.readonly && hasAnyPermission(['CUSTOMER_MANAGEMENT_CONTACT:ADD']) ? 'justify-between' : 'justify-end'
-          }`"
-        >
+        <div class="flex w-full items-center justify-between">
           <n-button
             v-if="!props.readonly"
             v-permission="['CUSTOMER_MANAGEMENT_CONTACT:ADD']"
@@ -23,10 +20,21 @@
             {{ t('overviewDrawer.addContract') }}
           </n-button>
           <CrmSearchInput
+            v-if="props.sourceId"
             v-model:value="keyword"
             class="!w-[240px]"
             :placeholder="t('common.searchByNamePhone')"
             @search="searchData"
+          />
+          <CrmAdvanceFilter
+            v-else
+            ref="tableAdvanceFilterRef"
+            v-model:keyword="keyword"
+            :custom-fields-config-list="baseFilterConfigList"
+            :filter-config-list="customFieldsFilterConfig"
+            :search-placeholder="t('common.searchByNamePhone')"
+            @adv-search="handleAdvSearch"
+            @keyword-search="searchData"
           />
         </div>
       </template>
@@ -91,6 +99,8 @@
   import { characterLimit } from '@lib/shared/method';
   import type { CustomerContractListItem } from '@lib/shared/models/customer';
 
+  import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
+  import { FilterResult } from '@/components/pure/crm-advance-filter/type';
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -106,6 +116,7 @@
     disableCustomerContact,
     enableCustomerContact,
   } from '@/api/modules';
+  import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
@@ -278,7 +289,7 @@
     }
   }
 
-  const { useTableRes } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: props.formKey,
     showPagination: !props.sourceId,
     readonly: props.readonly,
@@ -311,7 +322,7 @@
       },
     },
   });
-  const { propsRes, propsEvent, loadList, setLoadListParams } = useTableRes;
+  const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const backupData = ref<CustomerContractListItem[]>([]);
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
@@ -332,6 +343,15 @@
       await loadList();
       backupData.value = cloneDeep(propsRes.value.data);
     }
+    crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
+  const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
+  function handleAdvSearch(filter: FilterResult) {
+    keyword.value = '';
+    setAdvanceFilter(filter);
+    loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
 

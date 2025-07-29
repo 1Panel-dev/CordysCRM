@@ -1,12 +1,12 @@
 <template>
-  <CrmSearchInput
-    v-if="!props.notShowInputSearch && !isAdvancedSearchMode"
-    v-model:value="keyword"
-    class="!w-[240px]"
-    :placeholder="props.searchPlaceholder"
-    @search="emit('keywordSearch', $event)"
-  />
   <div class="flex flex-row items-center gap-[8px]">
+    <CrmSearchInput
+      v-if="!props.notShowInputSearch && !isAdvancedSearchMode"
+      v-model:value="keyword"
+      class="!w-[240px]"
+      :placeholder="props.searchPlaceholder"
+      @search="emit('keywordSearch', $event)"
+    />
     <n-button
       :type="isAdvancedSearchMode ? 'primary' : 'default'"
       :ghost="isAdvancedSearchMode"

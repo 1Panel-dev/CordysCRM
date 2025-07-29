@@ -156,16 +156,12 @@ export default function useTable<T>(
         code.value = res.data.code;
       }
       const data = props?.isReturnNativeResponse ? res.data.data : res;
-      if (!propsRes.value.showPagination && Array.isArray(data)) {
-        if (isPageChange) {
-          data.forEach((item: CrmTableDataItem<T>) => {
-            propsRes.value.data.push(processRecordItem(item));
-          }) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
-        } else {
-          propsRes.value.data = data.map((item: CrmTableDataItem<T>) =>
-            processRecordItem(item)
-          ) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
-        }
+
+      if (!propsRes.value.showPagination && Array.isArray(data.list)) {
+        propsRes.value.data = data.list.map((item: CrmTableDataItem<T>) =>
+          processRecordItem(item)
+        ) as unknown as UnwrapRef<CrmTableDataItem<T>[]>;
+        setPagination(1, data.list.length);
       } else {
         const tmpArr = data as CommonList<CrmTableDataItem<T>>;
         if (isPageChange) {
