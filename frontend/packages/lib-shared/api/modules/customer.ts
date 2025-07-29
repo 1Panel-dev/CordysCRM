@@ -130,7 +130,8 @@ import type {
   UpdateCustomerRelationItemParams,
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
-import type { FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
+
+import type { CluePoolItem, FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
 export default function useProductApi(CDR: CordysAxios) {
@@ -361,7 +362,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 获取公海选项
   function getOpenSeaOptions() {
-    return CDR.get<CustomerOptionsItem[]>({ url: GetOpenSeaOptionsUrl });
+    return CDR.get<CluePoolItem[]>({ url: GetOpenSeaOptionsUrl });
   }
 
   // 获取公海客户详情

@@ -104,11 +104,13 @@ export interface CluePoolParams {
   auto: boolean; // 自动回收
   pickRule: CluePoolPickRuleParams; // 领取规则
   recycleRule: CluePoolRecycleRuleParams; // 回收规则
+  hiddenFieldIds: string[]; // 隐藏的表格字段
 }
 
 export interface CluePoolForm extends Omit<CluePoolParams, 'scopeIds' | 'ownerIds'> {
   adminIds: SelectedUsersItem[];
   userIds: SelectedUsersItem[]; // 成员ID
+  hiddenFieldIds: string[]; // 隐藏的表格字段
 }
 
 // 线索池列表项
@@ -129,6 +131,12 @@ export interface CluePoolItem {
   owners: SelectedUsersItem[];
   pickRule: CluePoolPickRuleParams; // 领取规则
   recycleRule: CluePoolRecycleRuleParams; // 回收规则
+  fieldConfigs: {
+    editable: boolean;
+    enable: boolean;
+    fieldId: string;
+    fieldName: string;
+  }[]; // 隐藏的表格字段
 }
 
 // 库容参数

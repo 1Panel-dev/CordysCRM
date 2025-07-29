@@ -51,6 +51,7 @@ export type CrmDataTableColumn<T = any> = (
     showTooltip?: (rowData: T) => boolean;
   };
   filedType?: FieldTypeEnum; // 字段类型
+  fieldId?: string; // 字段ID
 };
 
 export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {

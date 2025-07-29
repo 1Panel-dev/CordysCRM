@@ -6,6 +6,7 @@
       v-bind="propsRes"
       :not-show-table-filter="isAdvancedSearchMode"
       :action-config="actionConfig"
+      :columns="filterColumns"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -417,6 +418,13 @@
     permission: ['CLUE_MANAGEMENT_POOL:PICK', 'CLUE_MANAGEMENT_POOL:ASSIGN', 'CLUE_MANAGEMENT_POOL:DELETE'],
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
+  const hiddenColumns = computed<string[]>(() => {
+    const cluePoolSetting = cluePoolOptions.value.find((item) => item.id === poolId.value);
+    return cluePoolSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
+  });
+  const filterColumns = computed(() => {
+    return propsRes.value.columns.filter((item) => !hiddenColumns.value.includes(item.fieldId as string));
+  });
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function handleAdvSearch(filter: FilterResult) {

@@ -30,6 +30,7 @@ export default {
   'module.customer.customerRecycleRule': '客户回收规则',
   'module.cluePool': '线索池',
   'module.clue.cluePool': '线索池设置',
+  'module.clue.columnsSetting': '表格字段设置',
   'module.clue.addCluePool': '添加线索池',
   'module.clue.updateCluePool': '更新线索池',
   'module.clue.capacitySet': '线索库容设置',

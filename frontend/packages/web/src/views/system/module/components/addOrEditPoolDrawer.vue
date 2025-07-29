@@ -172,6 +172,18 @@
         keep-one-line
         :config-list="filterConfigList"
       />
+      <div class="crm-module-form-title mt-[24px]">
+        {{ t('module.clue.columnsSetting') }}
+      </div>
+      <n-checkbox-group v-model:value="showFieldIds" class="grid grid-cols-5 gap-[12px]">
+        <n-checkbox
+          v-for="field in showInTableColumns"
+          :key="field.id"
+          :value="field.id"
+          :label="field.name"
+          :disabled="field.businessKey === 'name'"
+        />
+      </n-checkbox-group>
     </n-form>
   </CrmDrawer>
 </template>
@@ -182,6 +194,8 @@
     FormInst,
     FormRules,
     NAlert,
+    NCheckbox,
+    NCheckboxGroup,
     NForm,
     NFormItem,
     NInput,
@@ -194,7 +208,7 @@
   import { cloneDeep } from 'lodash-es';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
-  import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import type {
@@ -212,6 +226,7 @@
   import CrmUserTagSelector from '@/components/business/crm-user-tag-selector/index.vue';
 
   import { addCluePool, addCustomerPool, updateCluePool, updateCustomerPool } from '@/api/modules';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -230,6 +245,18 @@
     (e: 'refresh'): void;
   }>();
 
+  const tabName = ref('baseInfo');
+  const formKey = computed(() => {
+    return props.type === ModuleConfigEnum.CLUE_MANAGEMENT
+      ? FormDesignKeyEnum.CLUE_POOL
+      : FormDesignKeyEnum.CUSTOMER_OPEN_SEA;
+  });
+  const { fieldList, initFormConfig } = useFormCreateApi({
+    formKey,
+  });
+  const showInTableColumns = computed(() => {
+    return fieldList.value.filter((item) => ![FieldTypeEnum.DIVIDER].includes(item.type));
+  });
   const rules: FormRules = {
     name: [
       {
@@ -273,8 +300,9 @@
       operator: 'all',
       conditions: [],
     },
+    hiddenFieldIds: [],
   };
-
+  const showFieldIds = ref<string[]>([]);
   const form = ref<CluePoolForm>(cloneDeep(initForm));
 
   const defaultFormModel: FilterForm = {
@@ -342,6 +370,9 @@
           operator: recycleFormItemModel.value.searchMode as string,
           conditions: [],
         },
+        hiddenFieldIds: showInTableColumns.value
+          .filter((item) => !showFieldIds.value.includes(item.id))
+          .map((item) => item.id),
       };
       if (auto) {
         const conditions: ModuleConditionsItem[] = [];
@@ -409,6 +440,7 @@
           recycleRule: val.recycleRule ?? cloneDeep(initForm).recycleRule,
           userIds: val.members,
           adminIds: val.owners,
+          hiddenFieldIds: val.fieldConfigs?.filter((item) => !item.enable).map((item) => item.fieldId) || [],
         };
         if (val.auto) {
           recycleFormItemModel.value = {
@@ -425,6 +457,19 @@
         } else {
           recycleFormItemModel.value = cloneDeep(defaultFormModel);
         }
+      }
+    }
+  );
+
+  watch(
+    () => visible.value,
+    async (val) => {
+      if (val) {
+        tabName.value = 'baseInfo';
+        await initFormConfig();
+        showFieldIds.value = showInTableColumns.value
+          .filter((item) => !form.value.hiddenFieldIds.includes(item.id))
+          .map((item) => item.id);
       }
     }
   );

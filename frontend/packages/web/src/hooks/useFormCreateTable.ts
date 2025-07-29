@@ -519,6 +519,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               title: field.name,
               width: 200,
               key: field.businessKey || field.id,
+              fieldId: field.id,
               filedType: FieldTypeEnum.PICTURE,
               render: (row: any) =>
                 h(
@@ -567,6 +568,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               title: field.name,
               width: 150,
               key: field.businessKey || field.id,
+              fieldId: field.id,
               ellipsis: {
                 tooltip: true,
               },
@@ -587,6 +589,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               title: field.name,
               width: 200,
               key: field.businessKey,
+              fieldId: field.id,
               sortOrder: false,
               sorter,
               fixed: 'left',
@@ -601,6 +604,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               title: field.name,
               width: 200,
               key: field.businessKey,
+              fieldId: field.id,
               sortOrder: false,
               sorter,
               filedType: field.type,
@@ -613,6 +617,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               title: field.name,
               width: 200,
               key: field.businessKey,
+              fieldId: field.id,
               sortOrder: false,
               sorter,
               ellipsis: {
@@ -635,6 +640,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               title: field.name,
               width: 150,
               key: field.businessKey || field.id,
+              fieldId: field.id,
               isTag: true,
               filedType: field.type,
             };
@@ -644,6 +650,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               title: field.name,
               width: 180,
               key: field.businessKey || field.id,
+              fieldId: field.id,
               render: (row: any) => formatTimeValue(row[field.businessKey || field.id], field.dateType),
               sortOrder: false,
               sorter,
@@ -655,6 +662,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               title: field.name,
               width: 150,
               key: field.businessKey || field.id,
+              fieldId: field.id,
               render: (row: any) => formatNumberValue(row[field.businessKey || field.id], field),
               sortOrder: false,
               sorter,
@@ -666,6 +674,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               title: field.name,
               width: 150,
               key: field.businessKey || field.id,
+              fieldId: field.id,
               ellipsis: {
                 tooltip: true,
               },
@@ -678,6 +687,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
             title: field.name,
             width: 150,
             key: field.businessKey || field.id,
+            fieldId: field.id,
             ellipsis: {
               tooltip: true,
             },

@@ -6,6 +6,7 @@
       v-bind="propsRes"
       :not-show-table-filter="isAdvancedSearchMode"
       :action-config="actionConfig"
+      :columns="filterColumns"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -18,6 +19,8 @@
           :options="openSeaOptions"
           :render-option="renderOption"
           :show-checkmark="false"
+          value-field="id"
+          label-field="name"
           class="w-[240px]"
           @update-value="(e) => searchData(undefined, e)"
         />
@@ -65,6 +68,7 @@
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import { TableQueryParams } from '@lib/shared/models/common';
+  import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -100,7 +104,7 @@
   const Message = useMessage();
 
   const openSea = ref<string | number>('');
-  const openSeaOptions = ref<SelectOption[]>([]);
+  const openSeaOptions = ref<CluePoolItem[]>([]);
   const keyword = ref('');
   const drawerVisible = ref(false);
   const openSeaRow = ref<any>({});
@@ -125,7 +129,7 @@
     }
     return h(NTooltip, null, {
       trigger: () => node,
-      default: () => option.label,
+      default: () => option.name,
     });
   }
 
@@ -353,6 +357,10 @@
     }
   }
 
+  const hiddenColumns = computed<string[]>(() => {
+    const openSeaSetting = openSeaOptions.value.find((item) => item.id === openSea.value);
+    return openSeaSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
+  });
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
     operationColumn: {
@@ -398,6 +406,9 @@
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   batchTableQueryParams.value = tableQueryParams;
+  const filterColumns = computed(() => {
+    return propsRes.value.columns.filter((item) => !hiddenColumns.value.includes(item.key as string));
+  });
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
 
   function handleAdvSearch(filter: FilterResult) {
@@ -425,12 +436,8 @@
 
   async function initOpenSeaOptions() {
     const res = await getOpenSeaOptions();
-    openSeaOptions.value = res.map((item) => ({
-      label: item.name,
-      value: item.id,
-      ...item,
-    }));
-    openSea.value = openSeaOptions.value[0]?.value || '';
+    openSeaOptions.value = res;
+    openSea.value = openSeaOptions.value[0]?.id || '';
   }
 
   async function init() {

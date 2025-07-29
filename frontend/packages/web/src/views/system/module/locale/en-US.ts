@@ -34,6 +34,7 @@ export default {
   'module.customer.customerRecycleRule': 'Customer recycle rules',
   'module.cluePool': 'Clue Pool',
   'module.clue.cluePool': 'Clue pool settings',
+  'module.clue.columnsSetting': 'Table field settings',
   'module.clue.addCluePool': 'Add clue pool',
   'module.clue.updateCluePool': 'Update clue pool',
   'module.clue.capacitySet': 'Clue capacity settings',
