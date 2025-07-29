@@ -91,11 +91,10 @@
                     </foreach>
                 </when>
                 <when test="${condition}.operator == 'NOT_CONTAINS'">
-                    !(
-                        <foreach collection="${condition}.value.split(' ')" item="item" separator="and">
-                            ${column} like CONCAT('%', #{item},'%')
-                        </foreach>
-                    )
+                    <foreach collection="${condition}.value.split(' ')" item="item" separator="and">
+                        ${column} not like CONCAT('%', #{item},'%')
+                        or ${column} is null
+                    </foreach>
                 </when>
                 <when test="${condition}.operator == 'IN'">
                     <choose>
@@ -176,9 +175,8 @@
                     ${column} = #{condition.value}
                 </when>
                 <when test="${condition}.operator == 'NOT_EQUALS'">
-                    !(
-                        ${column} = #{condition.value}
-                    )
+                    ${column} != #{condition.value}
+                    or ${column} is null
                 </when>
             </choose>
         </trim>
