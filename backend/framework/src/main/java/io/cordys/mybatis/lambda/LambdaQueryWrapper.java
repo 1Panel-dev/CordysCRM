@@ -1,11 +1,10 @@
 package io.cordys.mybatis.lambda;
 
-import io.cordys.common.uid.IDGenerator;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,20 +16,32 @@ import java.util.Map;
  */
 public class LambdaQueryWrapper<T> {
     // 存储查询条件
-    private final List<String> conditions = new ArrayList<>();
+    private final List<String> conditions = new LinkedList<>();
 
     @Getter
     private final Map<String, Object> params = new HashMap<>();
 
     // 存储排序条件
-    private final List<String> orderByClauses = new ArrayList<>();
+    private final List<String> orderByClauses = new LinkedList<>();
 
-    private void addCondition(XFunction<T, ?> column, Object value, String op) {
+    private void addCondition(XFunction<T, ?> column, Object value, String operator) {
         String columnName = columnToString(column);
-        addCondition(columnName + " " + op + " #{" + columnName + "}");
-        // 将参数添加到 params 中，便于后续使用
-        params.put(columnName, formatValue(value));
+        String paramName = generateParamName(columnName, operator);
+        addCondition("%s %s #{%s}".formatted(columnName, operator, paramName));
+        params.put(paramName, value);
+    }
 
+    private String generateParamName(String column, String operator) {
+        return switch (operator) {
+            case "=" -> "%s_eq".formatted(column);
+            case "!=" -> "%s_nq".formatted(column);
+            case "LIKE" -> "%s_like".formatted(column);
+            case ">" -> "%s_gt".formatted(column);
+            case "<" -> "%s_lt".formatted(column);
+            case "<![CDATA[ > ]]>" -> "%s_gt_t".formatted(column);
+            case "<![CDATA[ < ]]>" -> "%s_lt_t".formatted(column);
+            default -> column;
+        };
     }
 
     /**
@@ -88,7 +99,7 @@ public class LambdaQueryWrapper<T> {
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> gtT(XFunction<T, ?> column, Object value) {
-        addCondition(column, value, " <![CDATA[ > ]]> ");
+        addCondition(column, value, "<![CDATA[ > ]]>");
         return this;
     }
 
@@ -112,7 +123,7 @@ public class LambdaQueryWrapper<T> {
      * @return 当前 LambdaQueryWrapper 实例
      */
     public LambdaQueryWrapper<T> ltT(XFunction<T, ?> column, Object value) {
-        addCondition(column, value, " <![CDATA[ < ]]> ");
+        addCondition(column, value, "<![CDATA[ < ]]>");
         return this;
     }
 
@@ -126,14 +137,14 @@ public class LambdaQueryWrapper<T> {
      */
     public LambdaQueryWrapper<T> between(XFunction<T, ?> column, Object start, Object end) {
         String columnName = columnToString(column);
-        String paramStartKey = IDGenerator.nextStr();
-        String paramEndKey = IDGenerator.nextStr();
+        String paramStartKey = "start_" + columnName;
+        String paramEndKey = "end_" + columnName;
 
         String condition = String.format("%s BETWEEN #{%s} AND #{%s}", columnName, paramStartKey, paramEndKey);
         addCondition(condition);
 
-        params.put(paramStartKey, formatValue(start));
-        params.put(paramEndKey, formatValue(end));
+        params.put(paramStartKey, start);
+        params.put(paramEndKey, end);
 
         return this;
     }
@@ -233,18 +244,6 @@ public class LambdaQueryWrapper<T> {
     }
 
     /**
-     * 获取最终的 SQL 查询字符串，包括 WHERE 和 ORDER BY 子句。
-     *
-     * @return 完整的 SQL 查询字符串
-     */
-    public String getSql() {
-        String where = getWhereClause();
-        String orderBy = getOrderByClause();
-        return (where.isEmpty() ? "" : "WHERE " + where) +
-                (orderBy.isEmpty() ? "" : " " + orderBy);
-    }
-
-    /**
      * 内部方法：添加条件到查询条件列表。
      *
      * @param condition 条件字符串
@@ -263,15 +262,5 @@ public class LambdaQueryWrapper<T> {
      */
     private String columnToString(XFunction<T, ?> column) {
         return LambdaUtils.extract(column);
-    }
-
-    /**
-     * 内部方法：格式化值，以便在 SQL 查询中正确使用。
-     *
-     * @param value 要格式化的值
-     * @return 格式化后的值
-     */
-    private Object formatValue(Object value) {
-        return value;
     }
 }
