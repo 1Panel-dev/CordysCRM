@@ -204,7 +204,7 @@
             <bind name="sortName" value="${sort}.name"/>
             <choose>
                 <when test="${sort}.name == 'department_id'">
-                    join sys_organization_user sou on c.owner = sou.user_id
+                    left join sys_organization_user sou on c.owner = sou.user_id
                 </when>
                 <when test="${sort}.name not in
                     {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time'}">
