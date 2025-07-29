@@ -6,4 +6,5 @@ export default {
   'crmReasonDrawer.deleteReasonTitleTip': 'Confirm removal of {title}? ',
   'crmReasonDrawer.deleteReasonContentTip':
     'Warning: Existing records using this reason may show inconsistencies after deletion!',
+  'crmReasonDrawer.addReason': 'Add reason',
 };

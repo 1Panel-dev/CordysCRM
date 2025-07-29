@@ -26,17 +26,22 @@
       </div>
     </template>
     <n-scrollbar content-class="p-[24px]">
-      <CrmBatchForm
-        ref="batchFormRef"
-        :models="formItemModel"
-        :default-list="form.list"
-        :add-text="t('module.businessManage.addRules')"
-        validate-when-add
-        :disabled-add="form.list.length >= 50"
-        :pop-confirm-props="getConfirmPropsFun"
-        @delete-row="handleDelete"
-        @save-row="handleSave"
-      />
+      <div class="bg-[var(--text-n9)] p-[16px]">
+        <div class="text-[var(--text-n1)]">{{ props.title }}</div>
+        <CrmBatchForm
+          ref="batchFormRef"
+          class="p-0"
+          :models="formItemModel"
+          :default-list="form.list"
+          :add-text="t('crmReasonDrawer.addReason')"
+          validate-when-add
+          draggable
+          :disabled-add="form.list.length >= 50"
+          :pop-confirm-props="getConfirmPropsFun"
+          @delete-row="handleDelete"
+          @save-row="handleSave"
+        />
+      </div>
     </n-scrollbar>
   </CrmDrawer>
 </template>
@@ -86,7 +91,6 @@
     {
       path: 'name',
       type: FieldTypeEnum.INPUT,
-      label: props.title,
       formItemClass: 'w-full flex-initial',
       inputProps: {
         maxlength: 255,

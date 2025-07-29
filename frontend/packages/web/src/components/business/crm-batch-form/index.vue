@@ -14,19 +14,35 @@
     <div class="flex-1 overflow-hidden">
       <n-form ref="formRef" :model="form">
         <n-scrollbar :style="{ 'max-height': props.maxHeight }">
-          <div
-            v-for="(element, index) in form.list"
-            :key="`${element.path}${index}`"
-            :class="`${!element.editing ? 'read-only-row' : ''} flex gap-[8px]`"
+          <VueDraggable
+            v-model="form.list"
+            ghost-class="ghost"
+            drag-class="drag-item-class"
+            :disabled="!props.draggable"
+            :force-fallback="true"
+            :animation="150"
+            handle=".handle"
           >
-            <n-form-item
-              v-for="model of props.models"
-              :key="`${model.path}${index}`"
-              :ref="(el) => handleFormItemRef(el, model.path, index)"
-              :label="index === 0 && model.label ? model.label : ''"
-              :path="`list[${index}].${model.path}`"
-              :rule="
-                model.rule?.map((e) => {
+            <div
+              v-for="(element, index) in form.list"
+              :key="`${element.path}${index}`"
+              :class="`${!element.editing ? 'read-only-row' : ''} flex gap-[8px]`"
+            >
+              <CrmIcon
+                v-if="props.draggable"
+                type="iconicon_move"
+                :size="12"
+                class="handle cursor-move text-[var(--text-n4)]"
+                :style="{ 'margin-top': index === 0 && props.models.some((item) => item.label) ? '40px' : '14px' }"
+              />
+              <n-form-item
+                v-for="model of props.models"
+                :key="`${model.path}${index}`"
+                :ref="(el) => handleFormItemRef(el, model.path, index)"
+                :label="index === 0 && model.label ? model.label : ''"
+                :path="`list[${index}].${model.path}`"
+                :rule="
+                model.rule?.map((e) => { 
                   if (e.notRepeat) {
                     return {
                     validator: (rule: FormItemRule, value: string) => fieldNotRepeat(value, index, model.path, e.message as string),
@@ -41,120 +57,121 @@
                   return e;
                 })
               "
-              class="block flex-1 overflow-hidden"
-              :class="model.formItemClass"
-            >
-              <template v-if="index === 0 && model.label && model.labelTooltip" #label>
-                <span class="inline-flex items-center gap-[8px]">
-                  {{ model.label }}
-                  <n-tooltip trigger="hover" placement="right">
-                    <template #trigger>
-                      <CrmIcon
-                        type="iconicon_help_circle"
-                        :size="16"
-                        class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
-                      />
-                    </template>
-                    {{ model.labelTooltip }}
-                  </n-tooltip>
-                </span>
-              </template>
-
-              <n-input
-                v-if="model.type === FieldTypeEnum.INPUT"
-                v-model:value="element[model.path]"
-                allow-clear
-                :maxlength="255"
-                :placeholder="t('common.pleaseInput')"
-                :disabled="!element.editing"
-                v-bind="model.inputProps"
-              />
-              <CrmInputNumber
-                v-if="model.type === FieldTypeEnum.INPUT_NUMBER"
-                v-model:value="element[model.path]"
-                class="w-full"
-                clearable
-                :disabled="!element.editing"
-                :placeholder="model.numberProps?.placeholder ?? t('common.pleaseInput')"
-                v-bind="{
-                  min: model.numberProps?.min,
-                }"
-              />
-              <n-tooltip
-                v-if="[FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(model.type)"
-                :disabled="!model.selectProps?.disabledFunction?.(element)"
-                trigger="hover"
-                placement="bottom"
+                class="block flex-1 overflow-hidden py-[4px]"
+                :class="model.formItemClass"
               >
-                <template #trigger>
-                  <n-select
-                    v-model:value="element[model.path]"
-                    clearable
-                    :placeholder="!element.editing ? '-' : t('common.pleaseSelect')"
-                    :disabled="!element.editing || model.selectProps?.disabledFunction?.(element)"
-                    :show-arrow="element.editing"
-                    v-bind="model.selectProps"
-                    :options="getSelectOptions(element, model)"
-                    :multiple="model.type === FieldTypeEnum.SELECT_MULTIPLE"
-                  />
+                <template v-if="index === 0 && model.label && model.labelTooltip" #label>
+                  <span class="inline-flex items-center gap-[8px]">
+                    {{ model.label }}
+                    <n-tooltip trigger="hover" placement="right">
+                      <template #trigger>
+                        <CrmIcon
+                          type="iconicon_help_circle"
+                          :size="16"
+                          class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                        />
+                      </template>
+                      {{ model.labelTooltip }}
+                    </n-tooltip>
+                  </span>
                 </template>
-                {{ model.selectProps?.disabledTooltipFunction?.(element) }}
-              </n-tooltip>
-              <CrmUserTagSelector
-                v-if="model.type === FieldTypeEnum.USER_TAG_SELECTOR"
-                v-model:selected-list="element[model.path]"
-                :user-error-tag-ids="userErrorTagIds"
-                :disabled="!element.editing"
-                v-bind="model.userTagSelectorProps"
-                @delete-tag="handleUserTagSelectValidate"
-              />
-            </n-form-item>
-            <div
-              class="flex gap-[8px]"
-              :style="{ 'margin-top': index === 0 && props.models.some((item) => item.label) ? '26px' : '' }"
-            >
-              <template v-if="element.editing">
-                <n-button type="success" ghost class="px-[7px]" @click="handleSaveRow(element, index)">
-                  <template #icon>
-                    <CrmIcon type="iconicon_check" :size="16" />
-                  </template>
-                </n-button>
-                <n-button ghost type="error" class="px-[7px]" @click="handleCancelEdit(index)">
-                  <template #icon>
-                    <CrmIcon type="iconicon_close" :size="16" />
-                  </template>
-                </n-button>
-              </template>
-              <template v-else>
-                <n-button ghost class="px-[7px]" @click="handleEditRow(index)">
-                  <template #icon>
-                    <CrmIcon type="iconicon_edit" :size="16" />
-                  </template>
-                </n-button>
-                <CrmPopConfirm
-                  v-if="props.popConfirmProps"
-                  v-model:show="popShow[element.id]"
-                  :disabled="!props.popConfirmProps"
-                  placement="bottom-end"
-                  class="w-[260px]"
-                  v-bind="getPopConfirmProps(element) as CrmPopConfirmProps"
-                  @confirm="handlePopDeleteListItem(index, element.id)"
-                  @cancel="popShow[element.id] = false"
+
+                <n-input
+                  v-if="model.type === FieldTypeEnum.INPUT"
+                  v-model:value="element[model.path]"
+                  allow-clear
+                  :maxlength="255"
+                  :placeholder="t('common.pleaseInput')"
+                  :disabled="!element.editing"
+                  v-bind="model.inputProps"
+                />
+                <CrmInputNumber
+                  v-if="model.type === FieldTypeEnum.INPUT_NUMBER"
+                  v-model:value="element[model.path]"
+                  class="w-full"
+                  clearable
+                  :disabled="!element.editing"
+                  :placeholder="model.numberProps?.placeholder ?? t('common.pleaseInput')"
+                  v-bind="{
+                    min: model.numberProps?.min,
+                  }"
+                />
+                <n-tooltip
+                  v-if="[FieldTypeEnum.SELECT, FieldTypeEnum.SELECT_MULTIPLE].includes(model.type)"
+                  :disabled="!model.selectProps?.disabledFunction?.(element)"
+                  trigger="hover"
+                  placement="bottom"
                 >
-                  <n-button ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
+                  <template #trigger>
+                    <n-select
+                      v-model:value="element[model.path]"
+                      clearable
+                      :placeholder="!element.editing ? '-' : t('common.pleaseSelect')"
+                      :disabled="!element.editing || model.selectProps?.disabledFunction?.(element)"
+                      :show-arrow="element.editing"
+                      v-bind="model.selectProps"
+                      :options="getSelectOptions(element, model)"
+                      :multiple="model.type === FieldTypeEnum.SELECT_MULTIPLE"
+                    />
+                  </template>
+                  {{ model.selectProps?.disabledTooltipFunction?.(element) }}
+                </n-tooltip>
+                <CrmUserTagSelector
+                  v-if="model.type === FieldTypeEnum.USER_TAG_SELECTOR"
+                  v-model:selected-list="element[model.path]"
+                  :user-error-tag-ids="userErrorTagIds"
+                  :disabled="!element.editing"
+                  v-bind="model.userTagSelectorProps"
+                  @delete-tag="handleUserTagSelectValidate"
+                />
+              </n-form-item>
+              <div
+                class="flex gap-[8px]"
+                :style="{ 'margin-top': index === 0 && props.models.some((item) => item.label) ? '30px' : '4px' }"
+              >
+                <template v-if="element.editing">
+                  <n-button type="success" ghost class="px-[7px]" @click="handleSaveRow(element, index)">
+                    <template #icon>
+                      <CrmIcon type="iconicon_check" :size="16" />
+                    </template>
+                  </n-button>
+                  <n-button ghost type="error" class="px-[7px]" @click="handleCancelEdit(index)">
+                    <template #icon>
+                      <CrmIcon type="iconicon_close" :size="16" />
+                    </template>
+                  </n-button>
+                </template>
+                <template v-else>
+                  <n-button ghost class="px-[7px]" @click="handleEditRow(index)">
+                    <template #icon>
+                      <CrmIcon type="iconicon_edit" :size="16" />
+                    </template>
+                  </n-button>
+                  <CrmPopConfirm
+                    v-if="props.popConfirmProps"
+                    v-model:show="popShow[element.id]"
+                    :disabled="!props.popConfirmProps"
+                    placement="bottom-end"
+                    class="w-[260px]"
+                    v-bind="getPopConfirmProps(element) as CrmPopConfirmProps"
+                    @confirm="handlePopDeleteListItem(index, element.id)"
+                    @cancel="popShow[element.id] = false"
+                  >
+                    <n-button ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
+                      <template #icon>
+                        <CrmIcon type="iconicon_delete" :size="16" />
+                      </template>
+                    </n-button>
+                  </CrmPopConfirm>
+                  <n-button v-else ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
                     <template #icon>
                       <CrmIcon type="iconicon_delete" :size="16" />
                     </template>
                   </n-button>
-                </CrmPopConfirm>
-                <n-button v-else ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
-                  <template #icon>
-                    <CrmIcon type="iconicon_delete" :size="16" />
-                  </template>
-                </n-button>
-              </template>
+                </template>
+              </div>
             </div>
-          </div>
+          </VueDraggable>
         </n-scrollbar>
       </n-form>
       <n-button
@@ -188,6 +205,7 @@
   } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
   import { cloneDeep } from 'lodash-es';
+  import { VueDraggable } from 'vue-draggable-plus';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -212,12 +230,14 @@
       disabledAdd?: boolean; // 是否禁用添加按钮
       validateWhenAdd?: boolean; // 增加一行的时候是否进行校验
       showAllOr?: boolean;
+      draggable?: boolean;
       popConfirmProps?: (ele: Record<string, any>) => CrmPopConfirmProps | CrmPopConfirmProps;
     }>(),
     {
       maxHeight: '100%',
       disabledAdd: false,
       showAllOr: false,
+      draggable: false,
     }
   );
 
@@ -492,7 +512,7 @@
     }
   }
   :deep(.n-form-item-feedback-wrapper) {
-    min-height: 8px;
+    min-height: 0;
   }
   .read-only-row {
     :deep(.n-form-item) {
@@ -511,5 +531,15 @@
         }
       }
     }
+  }
+  .ghost {
+    border: 1px dashed var(--primary-4);
+    background-color: var(--primary-7);
+    @apply rounded;
+  }
+  .drag-item-class {
+    background: var(--text-n10);
+    opacity: 1 !important;
+    @apply rounded;
   }
 </style>
