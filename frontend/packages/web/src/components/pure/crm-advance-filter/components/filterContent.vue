@@ -356,23 +356,17 @@
   onMounted(() => {
     // 初始化视图回显
     formModel.value.list.forEach((item, index) => {
-      watch(
-        () => item.dataIndex,
-        (val) => {
-          if (val) {
-            const listItem = getListItemByDataIndex(val);
-            if (!listItem) return;
-            const currentListItem: FilterFormItem = {
-              ...listItem,
-              operator: item.operator,
-              value: item.value,
-              ...(listItem.showScope ? { scope: listItem.scope } : undefined),
-            };
-            formModel.value.list[index] = currentListItem;
-          }
-        },
-        { immediate: true }
-      );
+      if (item.dataIndex) {
+        const listItem = getListItemByDataIndex(item.dataIndex);
+        if (!listItem) return;
+        const currentListItem: FilterFormItem = {
+          ...listItem,
+          ...item,
+          type: listItem.type,
+          ...(listItem.showScope ? { scope: listItem.scope } : undefined),
+        };
+        formModel.value.list[index] = currentListItem;
+      }
     });
   });
 
