@@ -49,7 +49,7 @@
   import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { sleep } from '@lib/shared/method';
-  import { CustomerOptionsItem } from '@lib/shared/models/customer';
+  import { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmList from '@/components/pure/crm-list/index.vue';
   import CrmListCommonItem from '@/components/pure/crm-list-common-item/index.vue';
@@ -64,7 +64,7 @@
   const crmListRef = ref<InstanceType<typeof CrmList>>();
   const keyword = ref('');
   const activeOpenSea = ref<string | number>('');
-  const openSeaList = ref<CustomerOptionsItem[]>([]);
+  const openSeaList = ref<CluePoolItem[]>([]);
   const listParams = computed(() => {
     return {
       poolId: activeOpenSea.value,
