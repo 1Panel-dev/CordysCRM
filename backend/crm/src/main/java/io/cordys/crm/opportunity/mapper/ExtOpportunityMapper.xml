@@ -69,7 +69,7 @@
             )
         </if>
 
-        <if test="request.viewId != null and request.viewId != '' and request.viewId == 'SUCCESS_OPPORTUNITY'">
+        <if test="request.viewId != null and request.viewId != '' and request.viewId == 'OPPORTUNITY_SUCCESS'">
             and o.stage = 'SUCCESS'
         </if>
 
