@@ -16,10 +16,7 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
-import io.cordys.crm.clue.domain.Clue;
-import io.cordys.crm.clue.domain.CluePool;
-import io.cordys.crm.clue.domain.CluePoolPickRule;
-import io.cordys.crm.clue.domain.CluePoolRecycleRule;
+import io.cordys.crm.clue.domain.*;
 import io.cordys.crm.clue.dto.CluePoolDTO;
 import io.cordys.crm.clue.dto.CluePoolFieldConfigDTO;
 import io.cordys.crm.clue.dto.CluePoolPickRuleDTO;
@@ -28,13 +25,11 @@ import io.cordys.crm.clue.dto.request.CluePoolAddRequest;
 import io.cordys.crm.clue.dto.request.CluePoolUpdateRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtCluePoolMapper;
-import io.cordys.crm.clue.domain.CluePoolHiddenField;
 import io.cordys.crm.system.constants.RecycleConditionColumnKey;
 import io.cordys.crm.system.constants.RecycleConditionScopeKey;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.dto.field.base.BaseField;
-import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
@@ -107,15 +102,11 @@ public class CluePoolService {
         Map<String, CluePoolRecycleRule> recycleRuleMap = recycleRules.stream()
                 .collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, recycleRule -> recycleRule));
 
-        LambdaQueryWrapper<CluePoolHiddenField> hiddenFieldWrapper = new LambdaQueryWrapper<>();
-        hiddenFieldWrapper.in(CluePoolHiddenField::getPoolId, poolIds);
-        Map<String, List<CluePoolHiddenField>> hiddenFieldMap = cluePoolHiddenFieldMapper.selectListByLambda(hiddenFieldWrapper)
+        Map<String, List<CluePoolHiddenField>> hiddenFieldMap = getCluePoolHiddenFieldsByPoolIds(poolIds)
                 .stream()
                 .collect(Collectors.groupingBy(CluePoolHiddenField::getPoolId));
 
-        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), organizationId);
-        List<BaseField> fields = businessFormConfig.getFields();
-
+        List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), organizationId).getFields();
 
         pools.forEach(pool -> {
             pool.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
@@ -142,18 +133,28 @@ public class CluePoolService {
                 hiddenFieldIds = Set.of();
             }
 
-            List<CluePoolFieldConfigDTO> hiddenFields = fields.stream().map(field -> {
-                CluePoolFieldConfigDTO hiddenFieldDTO = new CluePoolFieldConfigDTO();
-                hiddenFieldDTO.setFieldId(field.getId());
-                hiddenFieldDTO.setFieldName(field.getName());
-                hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
-                hiddenFieldDTO.setEditable(!StringUtils.equals(field.getInternalKey(), BusinessModuleField.CLUE_NAME.getKey()));
-                return hiddenFieldDTO;
-            }).toList();
-            pool.setFieldConfigs(hiddenFields);
+            pool.setFieldConfigs(getCluePoolFieldConfigs(fields, hiddenFieldIds));
         });
 
         return pools;
+    }
+
+    public List<CluePoolFieldConfigDTO> getCluePoolFieldConfigs(List<BaseField> fields, Set<String> hiddenFieldIds) {
+        List<CluePoolFieldConfigDTO> hiddenFields = fields.stream().map(field -> {
+            CluePoolFieldConfigDTO hiddenFieldDTO = new CluePoolFieldConfigDTO();
+            hiddenFieldDTO.setFieldId(field.getId());
+            hiddenFieldDTO.setFieldName(field.getName());
+            hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
+            hiddenFieldDTO.setEditable(!StringUtils.equals(field.getInternalKey(), BusinessModuleField.CLUE_NAME.getKey()));
+            return hiddenFieldDTO;
+        }).toList();
+        return hiddenFields;
+    }
+
+    public List<CluePoolHiddenField> getCluePoolHiddenFieldsByPoolIds(List<String> poolIds) {
+        LambdaQueryWrapper<CluePoolHiddenField> hiddenFieldWrapper = new LambdaQueryWrapper<>();
+        hiddenFieldWrapper.in(CluePoolHiddenField::getPoolId, poolIds);
+        return cluePoolHiddenFieldMapper.selectListByLambda(hiddenFieldWrapper);
     }
 
     /**
@@ -203,7 +204,7 @@ public class CluePoolService {
 
         cluePoolRecycleRuleMapper.insert(recycleRule);
 
-        batchInsertCustomerPoolHiddenFields(pool.getId(), request.getHiddenFieldIds());
+        batchInsertCluePoolHiddenFields(pool.getId(), request.getHiddenFieldIds());
 
         // 添加日志上下文
         OperationLogContext.setContext(LogContextInfo.builder()
@@ -254,8 +255,8 @@ public class CluePoolService {
         extCluePoolMapper.updateRecycleRule(recycleRule);
 
         if (request.getHiddenFieldIds() != null) {
-            deleteCustomerPoolHiddenFieldByPoolId(pool.getId());
-            batchInsertCustomerPoolHiddenFields(pool.getId(), request.getHiddenFieldIds());
+            deleteCluePoolHiddenFieldByPoolId(pool.getId());
+            batchInsertCluePoolHiddenFields(pool.getId(), request.getHiddenFieldIds());
         }
 
         OperationLogContext.setContext(
@@ -269,7 +270,7 @@ public class CluePoolService {
     }
 
 
-    private void batchInsertCustomerPoolHiddenFields(String poolId, Set<String> fieldIds) {
+    private void batchInsertCluePoolHiddenFields(String poolId, Set<String> fieldIds) {
         if (CollectionUtils.isEmpty(fieldIds)) {
             return;
         }
@@ -283,7 +284,7 @@ public class CluePoolService {
         cluePoolHiddenFieldMapper.batchInsert(cluePoolHiddenFields);
     }
 
-    private void deleteCustomerPoolHiddenFieldByPoolId(String poolId) {
+    private void deleteCluePoolHiddenFieldByPoolId(String poolId) {
         CluePoolHiddenField cluePoolHiddenField = new CluePoolHiddenField();
         cluePoolHiddenField.setPoolId(poolId);
         cluePoolHiddenFieldMapper.delete(cluePoolHiddenField);
@@ -317,7 +318,7 @@ public class CluePoolService {
         CluePoolRecycleRule recycleRule = new CluePoolRecycleRule();
         recycleRule.setPoolId(id);
         cluePoolRecycleRuleMapper.delete(recycleRule);
-        deleteCustomerPoolHiddenFieldByPoolId(id);
+        deleteCluePoolHiddenFieldByPoolId(id);
 
         // 设置操作对象
         OperationLogContext.setResourceName(Translator.get("module.clue.pool.setting"));

@@ -29,7 +29,6 @@ import io.cordys.crm.system.constants.RecycleConditionScopeKey;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
 import io.cordys.crm.system.dto.field.base.BaseField;
-import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
@@ -101,14 +100,11 @@ public class CustomerPoolService {
 		Map<String, CustomerPoolRecycleRule> recycleRuleMap = recycleRules.stream()
 				.collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, recycleRule -> recycleRule));
 
-		LambdaQueryWrapper<CustomerPoolHiddenField> hiddenFieldWrapper = new LambdaQueryWrapper<>();
-		hiddenFieldWrapper.in(CustomerPoolHiddenField::getPoolId, poolIds);
-		Map<String, List<CustomerPoolHiddenField>> hiddenFieldMap = customerPoolHiddenFieldMapper.selectListByLambda(hiddenFieldWrapper)
+		Map<String, List<CustomerPoolHiddenField>> hiddenFieldMap = getCustomerPoolHiddenFieldByPoolIds(poolIds)
 				.stream()
 				.collect(Collectors.groupingBy(CustomerPoolHiddenField::getPoolId));
 
-		ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), organizationId);
-		List<BaseField> fields = businessFormConfig.getFields();
+		List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), organizationId).getFields();
 
 		pools.forEach(pool -> {
 			pool.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
@@ -135,18 +131,28 @@ public class CustomerPoolService {
 				hiddenFieldIds = Set.of();
 			}
 
-			List<CustomerPoolFieldConfigDTO> hiddenFields = fields.stream().map(field -> {
-				CustomerPoolFieldConfigDTO hiddenFieldDTO = new CustomerPoolFieldConfigDTO();
-				hiddenFieldDTO.setFieldId(field.getId());
-				hiddenFieldDTO.setFieldName(field.getName());
-				hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
-				hiddenFieldDTO.setEditable(!StringUtils.equals(field.getInternalKey(), BusinessModuleField.CUSTOMER_NAME.getKey()));
-				return hiddenFieldDTO;
-			}).toList();
-			pool.setFieldConfigs(hiddenFields);
+			pool.setFieldConfigs(getFieldConfigs(fields, hiddenFieldIds));
 		});
 
 		return pools;
+	}
+
+	public List<CustomerPoolFieldConfigDTO> getFieldConfigs(List<BaseField> fields, Set<String> hiddenFieldIds) {
+		List<CustomerPoolFieldConfigDTO> hiddenFields = fields.stream().map(field -> {
+			CustomerPoolFieldConfigDTO hiddenFieldDTO = new CustomerPoolFieldConfigDTO();
+			hiddenFieldDTO.setFieldId(field.getId());
+			hiddenFieldDTO.setFieldName(field.getName());
+			hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
+			hiddenFieldDTO.setEditable(!StringUtils.equals(field.getInternalKey(), BusinessModuleField.CUSTOMER_NAME.getKey()));
+			return hiddenFieldDTO;
+		}).toList();
+		return hiddenFields;
+	}
+
+	public List<CustomerPoolHiddenField> getCustomerPoolHiddenFieldByPoolIds(List<String> poolIds) {
+		LambdaQueryWrapper<CustomerPoolHiddenField> hiddenFieldWrapper = new LambdaQueryWrapper<>();
+		hiddenFieldWrapper.in(CustomerPoolHiddenField::getPoolId, poolIds);
+		return customerPoolHiddenFieldMapper.selectListByLambda(hiddenFieldWrapper);
 	}
 
 	/**

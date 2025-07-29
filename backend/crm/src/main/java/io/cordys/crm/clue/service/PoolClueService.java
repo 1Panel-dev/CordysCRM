@@ -5,6 +5,7 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogDTO;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.BeanUtils;
@@ -22,10 +23,12 @@ import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
+import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
 import io.cordys.crm.system.dto.request.PoolBatchPickRequest;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.LogService;
+import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -38,10 +41,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -70,6 +70,10 @@ public class PoolClueService {
 	private LogService logService;
 	@Resource
 	private CommonNoticeSendService commonNoticeSendService;
+	@Resource
+	private ModuleFormCacheService moduleFormCacheService;
+	@Resource
+	private CluePoolService cluePoolService;
 
 	public static final long DAY_MILLIS = 24 * 60 * 60 * 1000;
 
@@ -111,6 +115,13 @@ public class PoolClueService {
 		List<CluePoolRecycleRule> recycleRules = recycleRuleMapper.selectListByLambda(recycleRuleWrapper);
 		Map<String, CluePoolRecycleRule> recycleRuleMap = recycleRules.stream()
 				.collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, recycleRule -> recycleRule));
+
+		Map<String, List<CluePoolHiddenField>> hiddenFieldMap = cluePoolService.getCluePoolHiddenFieldsByPoolIds(poolIds)
+				.stream()
+				.collect(Collectors.groupingBy(CluePoolHiddenField::getPoolId));
+
+		List<BaseField> fields = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), currentOrgId).getFields();
+
 		pools.forEach(pool -> {
 			List<String> scopeIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getScopeId(), String.class), currentOrgId);
 			List<String> ownerIds = userExtendService.getScopeOwnerIds(JSON.parseArray(pool.getOwnerId(), String.class), currentOrgId);
@@ -132,6 +143,17 @@ public class PoolClueService {
 				poolDTO.setPickRule(pickRule);
 				poolDTO.setRecycleRule(recycleRule);
 				poolDTO.setEditable(ownerIds.contains(currentUser));
+
+				Set<String> hiddenFieldIds;
+				if (hiddenFieldMap.get(pool.getId()) != null) {
+					hiddenFieldIds = hiddenFieldMap.get(pool.getId()).stream()
+							.map(CluePoolHiddenField::getFieldId)
+							.collect(Collectors.toSet());
+				} else {
+					hiddenFieldIds = Set.of();
+				}
+
+				poolDTO.setFieldConfigs(cluePoolService.getCluePoolFieldConfigs(fields, hiddenFieldIds));
 				options.add(poolDTO);
 			}
 		});
