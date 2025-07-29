@@ -69,8 +69,22 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
 
 // TODO lmy
 export const internalConditionsMap: Record<string, FilterFormItem[]> = {
-  [CustomerSearchTypeEnum.ALL]: [],
-  [CustomerSearchTypeEnum.DEPARTMENT]: [],
+  [CustomerSearchTypeEnum.ALL]: [
+    {
+      dataIndex: 'createTime',
+      type: FieldTypeEnum.TIME_RANGE_PICKER,
+      operator: OperatorEnum.GT,
+      value: '0',
+    },
+  ],
+  [CustomerSearchTypeEnum.DEPARTMENT]: [
+    {
+      dataIndex: 'departmentId',
+      type: FieldTypeEnum.TREE_SELECT,
+      operator: OperatorEnum.IN,
+      value: [userStore.userInfo.departmentId],
+    },
+  ],
   [CustomerSearchTypeEnum.SELF]: [
     {
       dataIndex: 'createUser',
@@ -79,7 +93,6 @@ export const internalConditionsMap: Record<string, FilterFormItem[]> = {
       value: [userStore.userInfo.name],
     },
   ],
-  [CustomerSearchTypeEnum.CUSTOMER_COLLABORATION]: [],
   [OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS]: [],
 };
 

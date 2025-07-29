@@ -57,6 +57,7 @@
     </template>
     <template #view>
       <CrmViewSelect
+        v-if="!props.isCustomerTab"
         v-model:active-tab="activeTab"
         :type="FormDesignKeyEnum.BUSINESS"
         :internal-list="tabList"
@@ -172,7 +173,10 @@
       tab: t('opportunity.convertedOpportunities'),
     },
   ];
-  const { tabList, activeTab } = useHiddenTab(allTabList, FormDesignKeyEnum.BUSINESS);
+  const { tabList, activeTab } = useHiddenTab(
+    allTabList,
+    !props.isCustomerTab ? FormDesignKeyEnum.BUSINESS : undefined
+  );
 
   const actionConfig = computed<BatchActionConfig>(() => {
     return {
@@ -599,7 +603,7 @@
   function searchData() {
     setLoadListParams({
       keyword: keyword.value,
-      searchType: activeTab.value,
+      viewId: activeTab.value,
       customerId: props.sourceId,
     });
     loadList();

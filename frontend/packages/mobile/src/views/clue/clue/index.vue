@@ -40,7 +40,7 @@
       ref="crmListRef"
       :keyword="keyword"
       :list-params="{
-        searchType: activeFilter,
+        viewId: activeFilter,
       }"
       class="p-[16px]"
       :item-gap="16"

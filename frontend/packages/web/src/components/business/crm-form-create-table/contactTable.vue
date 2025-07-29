@@ -38,6 +38,16 @@
           />
         </div>
       </template>
+      <template #view>
+        <CrmViewSelect
+          v-if="props.formKey === FormDesignKeyEnum.CONTACT"
+          v-model:active-tab="activeTab"
+          :type="FormDesignKeyEnum.CONTACT"
+          :internal-list="tabList as TabPaneProps[]"
+          :custom-fields-config-list="baseFilterConfigList"
+          :filter-config-list="customFieldsFilterConfig"
+        />
+      </template>
     </CrmTable>
     <CrmFormCreateDrawer
       v-model:visible="formCreateDrawerVisible"
@@ -90,7 +100,7 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, NSwitch, useMessage } from 'naive-ui';
+  import { FormInst, FormRules, NButton, NForm, NFormItem, NInput, NSwitch, TabPaneProps, useMessage } from 'naive-ui';
   import { cloneDeep } from 'lodash-es';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
@@ -110,6 +120,7 @@
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
+  import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
 
   import {
     checkOpportunity,
@@ -120,6 +131,7 @@
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
+  import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
   import { hasAnyPermission } from '@/utils/permission';
 
@@ -131,7 +143,6 @@
     initialSourceName?: string;
     readonly?: boolean;
     formKey: FormDesignKeyEnum.CONTACT | FormDesignKeyEnum.CUSTOMER_CONTACT | FormDesignKeyEnum.BUSINESS_CONTACT;
-    searchType?: CustomerSearchTypeEnum;
     specialHeight?: number;
   }>();
 
@@ -146,6 +157,25 @@
   const activeContactName = ref('');
   const needInitDetail = ref(false);
   const tableRefreshId = ref(0);
+
+  const allTabList: TabPaneProps[] = [
+    {
+      name: CustomerSearchTypeEnum.ALL,
+      tab: t('customer.contacts.all'),
+    },
+    {
+      name: CustomerSearchTypeEnum.SELF,
+      tab: t('customer.contacts.mine'),
+    },
+    {
+      name: CustomerSearchTypeEnum.DEPARTMENT,
+      tab: t('customer.contacts.department'),
+    },
+  ];
+  const { tabList, activeTab } = useHiddenTab(
+    allTabList,
+    props.formKey === FormDesignKeyEnum.CONTACT ? FormDesignKeyEnum.CONTACT : undefined
+  );
 
   const operationGroupList: ActionsItem[] = [
     {
@@ -358,7 +388,7 @@
         backupData.value = cloneDeep(propsRes.value.data);
       }
     } else {
-      setLoadListParams({ keyword: val ?? keyword.value, searchType: props.searchType });
+      setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
       await loadList();
       backupData.value = cloneDeep(propsRes.value.data);
     }
@@ -408,7 +438,7 @@
   });
 
   watch(
-    () => props.searchType,
+    () => activeTab.value,
     (val) => {
       if (val) {
         searchData();

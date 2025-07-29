@@ -564,7 +564,7 @@
   const isAdvancedSearchMode = computed(() => tableAdvanceFilterRef.value?.isAdvancedSearchMode);
 
   function searchData(val?: string) {
-    setLoadListParams({ keyword: val, searchType: activeTab.value });
+    setLoadListParams({ keyword: val, viewId: activeTab.value });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }

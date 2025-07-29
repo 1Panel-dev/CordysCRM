@@ -107,7 +107,7 @@
 
   const listParams = computed(() => {
     return {
-      searchType: activeFilter.value,
+      viewId: activeFilter.value,
       keyword: keyword.value,
     };
   });

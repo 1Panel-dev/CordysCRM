@@ -178,7 +178,7 @@
   const keyword = ref('');
   const listParams = computed(() => {
     return {
-      searchType: activeFilter.value,
+      viewId: activeFilter.value,
       keyword: keyword.value.trim(),
       id: props.sourceId,
     };

@@ -10,7 +10,7 @@ export type TabType =
   | FormDesignKeyEnum.BUSINESS
   | FormDesignKeyEnum.CLUE
   | FormDesignKeyEnum.CONTACT;
-export default function useHiddenTab(tabData: TabPaneProps[], type: TabType) {
+export default function useHiddenTab(tabData: TabPaneProps[], type?: TabType) {
   const activeTab = ref();
 
   const tabApiMap: Record<TabType, () => Promise<CustomerTabHidden>> = {
@@ -24,6 +24,7 @@ export default function useHiddenTab(tabData: TabPaneProps[], type: TabType) {
 
   async function initTab() {
     try {
+      if (!type) return;
       const result = await tabApiMap[type]();
       const { all, dept } = result;
       tabList.value = tabData.filter((e) => {
