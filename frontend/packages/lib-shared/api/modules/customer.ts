@@ -130,7 +130,6 @@ import type {
   UpdateCustomerRelationItemParams,
   UpdateFollowPlanStatusParams,
 } from '@lib/shared/models/customer';
-
 import type { CluePoolItem, FormDesignConfigDetailParams, OpportunityItem } from '@lib/shared/models/system/module';
 import type { ViewItem, ViewParams } from '@lib/shared/models/view';
 
