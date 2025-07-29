@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class CluePoolAddRequest {
@@ -39,4 +40,7 @@ public class CluePoolAddRequest {
 
 	@Schema(description = "回收规则")
 	private CluePoolRecycleRuleDTO recycleRule;
+
+	@Schema(description = "隐藏字段ID集合")
+	private Set<@NotBlank String> hiddenFieldIds;
 }

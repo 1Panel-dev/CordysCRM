@@ -22,6 +22,8 @@ public class CustomerPoolDTO extends CustomerPool {
 	private CustomerPoolPickRuleDTO pickRule;
 	@Schema(description = "回收规则")
 	private CustomerPoolRecycleRuleDTO recycleRule;
+	@Schema(description = "字段配置")
+	private List<CustomerPoolFieldConfigDTO> fieldConfigs;
 
 	@Schema(description = "是否可编辑")
 	private Boolean editable;

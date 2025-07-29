@@ -103,6 +103,25 @@ CREATE TABLE sys_dict_config
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_general_ci;
 
+
+CREATE TABLE customer_pool_hidden_field(
+    `pool_id` VARCHAR(32) NOT NULL   COMMENT '公海池ID' ,
+    `field_id` VARCHAR(32) NOT NULL   COMMENT '字段ID' ,
+    PRIMARY KEY (pool_id,field_id)
+)  COMMENT = '公海池隐藏字段'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+CREATE TABLE clue_pool_hidden_field(
+   `pool_id` VARCHAR(32) NOT NULL   COMMENT '线索池ID' ,
+   `field_id` VARCHAR(32) NOT NULL   COMMENT '字段ID' ,
+   PRIMARY KEY (pool_id,field_id)
+)  COMMENT = '线索池隐藏字段'
+ENGINE = InnoDB
+DEFAULT CHARSET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
 -- set innodb lock wait timeout to default
 SET SESSION innodb_lock_wait_timeout = DEFAULT;
 

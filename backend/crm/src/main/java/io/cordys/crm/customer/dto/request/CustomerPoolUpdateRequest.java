@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class CustomerPoolUpdateRequest {
@@ -44,4 +45,7 @@ public class CustomerPoolUpdateRequest {
 
 	@Schema(description = "回收规则")
 	private CustomerPoolRecycleRuleDTO recycleRule;
+
+	@Schema(description = "隐藏字段ID集合")
+	private Set<@NotBlank String> hiddenFieldIds;
 }

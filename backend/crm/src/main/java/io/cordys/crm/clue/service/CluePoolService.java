@@ -5,6 +5,8 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.condition.CombineSearch;
@@ -14,22 +16,26 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
-import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.clue.domain.CluePoolPickRule;
 import io.cordys.crm.clue.domain.CluePoolRecycleRule;
 import io.cordys.crm.clue.dto.CluePoolDTO;
+import io.cordys.crm.clue.dto.CluePoolFieldConfigDTO;
 import io.cordys.crm.clue.dto.CluePoolPickRuleDTO;
 import io.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import io.cordys.crm.clue.dto.request.CluePoolAddRequest;
 import io.cordys.crm.clue.dto.request.CluePoolUpdateRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtCluePoolMapper;
+import io.cordys.crm.clue.domain.CluePoolHiddenField;
 import io.cordys.crm.system.constants.RecycleConditionColumnKey;
 import io.cordys.crm.system.constants.RecycleConditionScopeKey;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
+import io.cordys.crm.system.dto.field.base.BaseField;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -54,6 +60,8 @@ public class CluePoolService {
     @Resource
     private BaseMapper<CluePool> cluePoolMapper;
     @Resource
+    private BaseMapper<CluePoolHiddenField> cluePoolHiddenFieldMapper;
+    @Resource
     private BaseMapper<CluePoolPickRule> cluePoolPickRuleMapper;
     @Resource
     private BaseMapper<CluePoolRecycleRule> cluePoolRecycleRuleMapper;
@@ -61,6 +69,8 @@ public class CluePoolService {
     private ExtCluePoolMapper extCluePoolMapper;
     @Resource
     private UserExtendService userExtendService;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
 
     /**
      * 分页获取线索池
@@ -68,8 +78,8 @@ public class CluePoolService {
      * @param request 分页参数
      * @return 线索池列表
      */
-    public List<CluePoolDTO> page(BasePageRequest request) {
-        List<CluePoolDTO> pools = extCluePoolMapper.list(request, OrganizationContext.getOrganizationId());
+    public List<CluePoolDTO> page(BasePageRequest request, String organizationId) {
+        List<CluePoolDTO> pools = extCluePoolMapper.list(request, organizationId);
         if (CollectionUtils.isEmpty(pools)) {
             return new ArrayList<>();
         }
@@ -97,6 +107,16 @@ public class CluePoolService {
         Map<String, CluePoolRecycleRule> recycleRuleMap = recycleRules.stream()
                 .collect(Collectors.toMap(CluePoolRecycleRule::getPoolId, recycleRule -> recycleRule));
 
+        LambdaQueryWrapper<CluePoolHiddenField> hiddenFieldWrapper = new LambdaQueryWrapper<>();
+        hiddenFieldWrapper.in(CluePoolHiddenField::getPoolId, poolIds);
+        Map<String, List<CluePoolHiddenField>> hiddenFieldMap = cluePoolHiddenFieldMapper.selectListByLambda(hiddenFieldWrapper)
+                .stream()
+                .collect(Collectors.groupingBy(CluePoolHiddenField::getPoolId));
+
+        ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CLUE.getKey(), organizationId);
+        List<BaseField> fields = businessFormConfig.getFields();
+
+
         pools.forEach(pool -> {
             pool.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
             pool.setOwners(userExtendService.getScope(JSON.parseArray(pool.getOwnerId(), String.class)));
@@ -112,6 +132,25 @@ public class CluePoolService {
 
             pool.setPickRule(pickRule);
             pool.setRecycleRule(recycleRule);
+
+            Set<String> hiddenFieldIds;
+            if (hiddenFieldMap.get(pool.getId()) != null) {
+                hiddenFieldIds = hiddenFieldMap.get(pool.getId()).stream()
+                        .map(CluePoolHiddenField::getFieldId)
+                        .collect(Collectors.toSet());
+            } else {
+                hiddenFieldIds = Set.of();
+            }
+
+            List<CluePoolFieldConfigDTO> hiddenFields = fields.stream().map(field -> {
+                CluePoolFieldConfigDTO hiddenFieldDTO = new CluePoolFieldConfigDTO();
+                hiddenFieldDTO.setFieldId(field.getId());
+                hiddenFieldDTO.setFieldName(field.getName());
+                hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
+                hiddenFieldDTO.setEditable(!StringUtils.equals(field.getInternalKey(), BusinessModuleField.CLUE_NAME.getKey()));
+                return hiddenFieldDTO;
+            }).toList();
+            pool.setFieldConfigs(hiddenFields);
         });
 
         return pools;
@@ -164,6 +203,8 @@ public class CluePoolService {
 
         cluePoolRecycleRuleMapper.insert(recycleRule);
 
+        batchInsertCustomerPoolHiddenFields(pool.getId(), request.getHiddenFieldIds());
+
         // 添加日志上下文
         OperationLogContext.setContext(LogContextInfo.builder()
                 .modifiedValue(pool)
@@ -212,6 +253,11 @@ public class CluePoolService {
 
         extCluePoolMapper.updateRecycleRule(recycleRule);
 
+        if (request.getHiddenFieldIds() != null) {
+            deleteCustomerPoolHiddenFieldByPoolId(pool.getId());
+            batchInsertCustomerPoolHiddenFields(pool.getId(), request.getHiddenFieldIds());
+        }
+
         OperationLogContext.setContext(
                 LogContextInfo.builder()
                         .resourceId(pool.getId())
@@ -220,6 +266,27 @@ public class CluePoolService {
                         .modifiedValue(cluePoolMapper.selectByPrimaryKey(request.getId()))
                         .build()
         );
+    }
+
+
+    private void batchInsertCustomerPoolHiddenFields(String poolId, Set<String> fieldIds) {
+        if (CollectionUtils.isEmpty(fieldIds)) {
+            return;
+        }
+        List<CluePoolHiddenField> cluePoolHiddenFields = fieldIds.stream()
+                .map(fieldId -> {
+                    CluePoolHiddenField cluePoolHiddenField = new CluePoolHiddenField();
+                    cluePoolHiddenField.setFieldId(fieldId);
+                    cluePoolHiddenField.setPoolId(poolId);
+                    return cluePoolHiddenField;
+                }).toList();
+        cluePoolHiddenFieldMapper.batchInsert(cluePoolHiddenFields);
+    }
+
+    private void deleteCustomerPoolHiddenFieldByPoolId(String poolId) {
+        CluePoolHiddenField cluePoolHiddenField = new CluePoolHiddenField();
+        cluePoolHiddenField.setPoolId(poolId);
+        cluePoolHiddenFieldMapper.delete(cluePoolHiddenField);
     }
 
     /**
@@ -250,6 +317,8 @@ public class CluePoolService {
         CluePoolRecycleRule recycleRule = new CluePoolRecycleRule();
         recycleRule.setPoolId(id);
         cluePoolRecycleRuleMapper.delete(recycleRule);
+        deleteCustomerPoolHiddenFieldByPoolId(id);
+
         // 设置操作对象
         OperationLogContext.setResourceName(Translator.get("module.clue.pool.setting"));
     }

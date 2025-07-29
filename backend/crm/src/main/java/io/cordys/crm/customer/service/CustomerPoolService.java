@@ -5,6 +5,8 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.condition.CombineSearch;
 import io.cordys.common.exception.GenericException;
@@ -13,12 +15,9 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
-import io.cordys.crm.clue.domain.CluePool;
-import io.cordys.crm.customer.domain.Customer;
-import io.cordys.crm.customer.domain.CustomerPool;
-import io.cordys.crm.customer.domain.CustomerPoolPickRule;
-import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
+import io.cordys.crm.customer.domain.*;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
+import io.cordys.crm.customer.dto.CustomerPoolFieldConfigDTO;
 import io.cordys.crm.customer.dto.CustomerPoolPickRuleDTO;
 import io.cordys.crm.customer.dto.CustomerPoolRecycleRuleDTO;
 import io.cordys.crm.customer.dto.request.CustomerPoolAddRequest;
@@ -29,6 +28,9 @@ import io.cordys.crm.system.constants.RecycleConditionColumnKey;
 import io.cordys.crm.system.constants.RecycleConditionScopeKey;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
+import io.cordys.crm.system.dto.field.base.BaseField;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.UserExtendService;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
@@ -53,6 +55,8 @@ public class CustomerPoolService {
 	@Resource
 	private BaseMapper<CustomerPool> customerPoolMapper;
 	@Resource
+	private BaseMapper<CustomerPoolHiddenField> customerPoolHiddenFieldMapper;
+	@Resource
 	private BaseMapper<CustomerPoolPickRule> customerPoolPickRuleMapper;
 	@Resource
 	private BaseMapper<CustomerPoolRecycleRule> customerPoolRecycleRuleMapper;
@@ -60,6 +64,8 @@ public class CustomerPoolService {
 	private ExtCustomerPoolMapper extCustomerPoolMapper;
 	@Resource
 	private UserExtendService userExtendService;
+	@Resource
+	private ModuleFormCacheService moduleFormCacheService;
 
 	/**
 	 * 分页获取公海池
@@ -95,6 +101,15 @@ public class CustomerPoolService {
 		Map<String, CustomerPoolRecycleRule> recycleRuleMap = recycleRules.stream()
 				.collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, recycleRule -> recycleRule));
 
+		LambdaQueryWrapper<CustomerPoolHiddenField> hiddenFieldWrapper = new LambdaQueryWrapper<>();
+		hiddenFieldWrapper.in(CustomerPoolHiddenField::getPoolId, poolIds);
+		Map<String, List<CustomerPoolHiddenField>> hiddenFieldMap = customerPoolHiddenFieldMapper.selectListByLambda(hiddenFieldWrapper)
+				.stream()
+				.collect(Collectors.groupingBy(CustomerPoolHiddenField::getPoolId));
+
+		ModuleFormConfigDTO businessFormConfig = moduleFormCacheService.getBusinessFormConfig(FormKey.CUSTOMER.getKey(), organizationId);
+		List<BaseField> fields = businessFormConfig.getFields();
+
 		pools.forEach(pool -> {
 			pool.setMembers(userExtendService.getScope(JSON.parseArray(pool.getScopeId(), String.class)));
 			pool.setOwners(userExtendService.getScope(JSON.parseArray(pool.getOwnerId(), String.class)));
@@ -110,6 +125,25 @@ public class CustomerPoolService {
 
 			pool.setPickRule(pickRule);
 			pool.setRecycleRule(recycleRule);
+
+			Set<String> hiddenFieldIds;
+			if (hiddenFieldMap.get(pool.getId()) != null) {
+				hiddenFieldIds = hiddenFieldMap.get(pool.getId()).stream()
+						.map(CustomerPoolHiddenField::getFieldId)
+						.collect(Collectors.toSet());
+			} else {
+				hiddenFieldIds = Set.of();
+			}
+
+			List<CustomerPoolFieldConfigDTO> hiddenFields = fields.stream().map(field -> {
+				CustomerPoolFieldConfigDTO hiddenFieldDTO = new CustomerPoolFieldConfigDTO();
+				hiddenFieldDTO.setFieldId(field.getId());
+				hiddenFieldDTO.setFieldName(field.getName());
+				hiddenFieldDTO.setEnable(!hiddenFieldIds.contains(field.getId()));
+				hiddenFieldDTO.setEditable(!StringUtils.equals(field.getInternalKey(), BusinessModuleField.CUSTOMER_NAME.getKey()));
+				return hiddenFieldDTO;
+			}).toList();
+			pool.setFieldConfigs(hiddenFields);
 		});
 
 		return pools;
@@ -157,6 +191,8 @@ public class CustomerPoolService {
 		recycleRule.setUpdateTime(System.currentTimeMillis());
 		customerPoolRecycleRuleMapper.insert(recycleRule);
 
+		batchInsertCustomerPoolHiddenFields(pool.getId(), request.getHiddenFieldIds());
+
 		// 添加日志上下文
 		OperationLogContext.setContext(LogContextInfo.builder()
 				.modifiedValue(pool)
@@ -199,6 +235,11 @@ public class CustomerPoolService {
 		recycleRule.setUpdateTime(System.currentTimeMillis());
 		extCustomerPoolMapper.updateRecycleRule(recycleRule);
 
+		if (request.getHiddenFieldIds() != null) {
+			deleteCustomerPoolHiddenFieldByPoolId(pool.getId());
+			batchInsertCustomerPoolHiddenFields(pool.getId(), request.getHiddenFieldIds());
+		}
+
 		OperationLogContext.setContext(
 				LogContextInfo.builder()
 						.resourceName(Translator.get("module.customer.pool.setting"))
@@ -206,6 +247,26 @@ public class CustomerPoolService {
 						.modifiedValue(customerPoolMapper.selectByPrimaryKey(request.getId()))
 						.build()
 		);
+	}
+
+	private void batchInsertCustomerPoolHiddenFields(String poolId, Set<String> fieldIds) {
+		if (CollectionUtils.isEmpty(fieldIds)) {
+			return;
+		}
+		List<CustomerPoolHiddenField> customerPoolHiddenFields = fieldIds.stream()
+				.map(fieldId -> {
+					CustomerPoolHiddenField customerPoolHiddenField = new CustomerPoolHiddenField();
+					customerPoolHiddenField.setFieldId(fieldId);
+					customerPoolHiddenField.setPoolId(poolId);
+					return customerPoolHiddenField;
+				}).toList();
+		customerPoolHiddenFieldMapper.batchInsert(customerPoolHiddenFields);
+	}
+
+	private void deleteCustomerPoolHiddenFieldByPoolId(String poolId) {
+		CustomerPoolHiddenField customerPoolHiddenField = new CustomerPoolHiddenField();
+		customerPoolHiddenField.setPoolId(poolId);
+		customerPoolHiddenFieldMapper.delete(customerPoolHiddenField);
 	}
 
 	/**
@@ -234,6 +295,7 @@ public class CustomerPoolService {
 		CustomerPoolRecycleRule recycleRule = new CustomerPoolRecycleRule();
 		recycleRule.setPoolId(id);
 		customerPoolRecycleRuleMapper.delete(recycleRule);
+		deleteCustomerPoolHiddenFieldByPoolId(id);
 
 		// 设置操作对象
 		OperationLogContext.setResourceName(Translator.get("module.customer.pool.setting"));

@@ -1,5 +1,6 @@
 package io.cordys.crm.clue.controller;
 
+import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.SortRequest;
 import io.cordys.common.pager.Pager;
@@ -23,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -58,6 +60,7 @@ public class CluePoolControllerTests extends BaseTest {
 		condition.setValue("cc");
 		CluePoolRecycleRuleDTO recycleRule = CluePoolRecycleRuleDTO.builder().conditions(List.of(condition)).build();
 		request.setRecycleRule(recycleRule);
+		request.setHiddenFieldIds(Set.of(BusinessModuleField.CLUE_NAME.getKey()));
 		this.requestPostWithOk("/clue-pool/add", request);
 	}
 
@@ -86,6 +89,7 @@ public class CluePoolControllerTests extends BaseTest {
 		request.setPickRule(pickRule);
 		CluePoolRecycleRuleDTO recycleRule = CluePoolRecycleRuleDTO.builder().build();
 		request.setRecycleRule(recycleRule);
+		request.setHiddenFieldIds(Set.of(BusinessModuleField.CUSTOMER_OWNER.getKey()));
 		this.requestPostWithOk("/clue-pool/update", request);
 	}
 

@@ -1,5 +1,6 @@
 package io.cordys.crm.customer.controller;
 
+import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.SortRequest;
 import io.cordys.common.pager.Pager;
@@ -26,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -66,6 +68,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 		CustomerPoolRecycleRuleDTO recycleRule = CustomerPoolRecycleRuleDTO.builder()
 				.conditions(List.of(condition)).build();
 		request.setRecycleRule(recycleRule);
+		request.setHiddenFieldIds(Set.of(BusinessModuleField.CUSTOMER_NAME.getKey()));
 		this.requestPostWithOk("/customer-pool/add", request);
 	}
 
@@ -95,6 +98,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 		CustomerPoolRecycleRuleDTO recycleRule = CustomerPoolRecycleRuleDTO.builder()
 				.build();
 		request.setRecycleRule(recycleRule);
+		request.setHiddenFieldIds(Set.of(BusinessModuleField.CUSTOMER_OWNER.getKey()));
 		this.requestPostWithOk("/customer-pool/update", request);
 	}
 

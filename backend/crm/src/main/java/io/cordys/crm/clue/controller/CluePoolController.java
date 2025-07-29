@@ -34,7 +34,7 @@ public class CluePoolController {
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
 	public Pager<List<CluePoolDTO>> page(@Validated @RequestBody BasePageRequest request) {
 		Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
-		return PageUtils.setPageInfo(page, cluePoolService.page(request));
+		return PageUtils.setPageInfo(page, cluePoolService.page(request, OrganizationContext.getOrganizationId()));
 	}
 
 	@PostMapping("/add")
