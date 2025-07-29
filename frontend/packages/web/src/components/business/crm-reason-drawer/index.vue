@@ -30,7 +30,7 @@
         <div class="text-[var(--text-n1)]">{{ props.title }}</div>
         <CrmBatchForm
           ref="batchFormRef"
-          class="p-0"
+          class="!p-0"
           :models="formItemModel"
           :default-list="form.list"
           :add-text="t('crmReasonDrawer.addReason')"

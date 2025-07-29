@@ -100,6 +100,7 @@
     () => props.refreshKey,
     async () => {
       await initFormDescription();
+      await initFormDetail();
       emit('init', collaborationType.value, sourceName.value, detail.value);
     }
   );

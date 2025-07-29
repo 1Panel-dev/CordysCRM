@@ -247,7 +247,7 @@
                 rubberBand: false,
                 size: 'small',
                 disabled: !hasAnyPermission(['MODULE_SETTING:UPDATE']) || !isConfigAvailableReason.value,
-                class: 'ml-[8px] mt-[2px] text-[var(--primary-8)]',
+                class: 'ml-[8px] text-[var(--primary-8)]',
                 onClick: (e: MouseEvent) => {
                   e.stopPropagation();
                   if (isConfigAvailableReason.value) {
