@@ -30,7 +30,7 @@
             v-else
             ref="tableAdvanceFilterRef"
             v-model:keyword="keyword"
-            :custom-fields-config-list="baseFilterConfigList"
+            :custom-fields-config-list="filterConfigList"
             :filter-config-list="customFieldsFilterConfig"
             :search-placeholder="t('common.searchByNamePhone')"
             @adv-search="handleAdvSearch"
@@ -94,10 +94,11 @@
   import { cloneDeep } from 'lodash-es';
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
   import type { CustomerContractListItem } from '@lib/shared/models/customer';
+  import { DeptUserTreeNode } from '@lib/shared/models/system/role';
 
   import CrmAdvanceFilter from '@/components/pure/crm-advance-filter/index.vue';
   import { FilterResult } from '@/components/pure/crm-advance-filter/type';
@@ -115,6 +116,7 @@
     deleteCustomerContact,
     disableCustomerContact,
     enableCustomerContact,
+    getFieldDeptTree,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
@@ -325,6 +327,23 @@
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const backupData = ref<CustomerContractListItem[]>([]);
 
+  const department = ref<DeptUserTreeNode[]>([]);
+  const filterConfigList = computed(() => [
+    {
+      title: t('opportunity.department'),
+      dataIndex: 'departmentId',
+      type: FieldTypeEnum.TREE_SELECT,
+      treeSelectProps: {
+        labelField: 'name',
+        keyField: 'id',
+        multiple: true,
+        clearFilterAfterSelect: false,
+        options: department.value,
+        checkable: true,
+      },
+    },
+    ...baseFilterConfigList,
+  ]);
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   async function searchData(val?: string) {
     if (props.sourceId) {
@@ -344,6 +363,15 @@
       backupData.value = cloneDeep(propsRes.value.data);
     }
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  async function initDepartList() {
+    try {
+      department.value = await getFieldDeptTree();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   const tableAdvanceFilterRef = ref<InstanceType<typeof CrmAdvanceFilter>>();
@@ -374,6 +402,7 @@
   );
 
   onMounted(() => {
+    initDepartList();
     if (!props.sourceId) return;
     searchData();
   });
