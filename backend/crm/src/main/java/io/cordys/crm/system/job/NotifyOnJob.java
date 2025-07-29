@@ -40,11 +40,9 @@ public class NotifyOnJob {
      * 将到期发布的公告转成通知
      */
     public void addNotification() {
-        LogUtils.info("公告通知");
         LocalDateTime dateTime = LocalDateTime.now();
         long timestamp = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         this.doAddNotification(timestamp);
-        LogUtils.info("公告通知完成");
     }
 
     private void doAddNotification(long timestamp) {
@@ -53,6 +51,7 @@ public class NotifyOnJob {
         if (CollectionUtils.isEmpty(announcementDTOS)) {
             return;
         }
+        LogUtils.info("公告通知数量: {}", announcementDTOS.size());
         //将公告根据接收人生成相关的通知
         List<String> ids = new ArrayList<>();
         for (AnnouncementDTO announcementDTO : announcementDTOS) {
