@@ -45,4 +45,5 @@ export default {
   'customer.contacts.all': 'All contacts',
   'customer.contacts.mine': 'My contacts',
   'customer.contacts.department': 'Department contacts',
+  'customer.recycleReason': 'Reason for recycling',
 };

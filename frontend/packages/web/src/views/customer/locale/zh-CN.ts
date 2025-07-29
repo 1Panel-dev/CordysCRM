@@ -41,4 +41,5 @@ export default {
   'customer.contacts.all': '全部联系人',
   'customer.contacts.mine': '我的联系人',
   'customer.contacts.department': '部门联系人',
+  'customer.recycleReason': '回收原因',
 };

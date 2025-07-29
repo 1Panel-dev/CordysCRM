@@ -376,14 +376,9 @@
               permission: ['CUSTOMER_MANAGEMENT:UPDATE'],
             },
             {
-              label: t('customer.moveToOpenSea'),
-              key: 'moveToOpenSea',
-              permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
-            },
-            {
-              label: t('common.delete'),
-              key: 'delete',
-              permission: ['CUSTOMER_MANAGEMENT:DELETE'],
+              label: 'more',
+              key: 'more',
+              slotName: 'more',
             },
           ]
         : []),
@@ -394,14 +389,14 @@
   const showOverviewDrawer = ref(false);
   const customerCardRef = ref<HTMLElement | null>(null);
 
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER,
     disabledSelection: (row: any) => {
       return row.collaborationType === 'READ_ONLY';
     },
     operationColumn: {
       key: 'operation',
-      width: 260,
+      width: 200,
       fixed: 'right',
       render: (row: any) =>
         ['convertedToCustomer', 'convertedToOpportunity'].includes(activeTab.value) ||
@@ -411,6 +406,23 @@
               CrmOperationButton,
               {
                 groupList: operationGroupList.value,
+                moreList: [
+                  ...(activeTab.value !== CustomerSearchTypeEnum.CUSTOMER_COLLABORATION
+                    ? [
+                        {
+                          label: t('customer.moveToOpenSea'),
+                          key: 'moveToOpenSea',
+                          permission: ['CUSTOMER_MANAGEMENT:RECYCLE'],
+                        },
+                        {
+                          label: t('common.delete'),
+                          key: 'delete',
+                          danger: true,
+                          permission: ['CUSTOMER_MANAGEMENT:DELETE'],
+                        },
+                      ]
+                    : []),
+                ],
                 onSelect: (key: string) => handleActionSelect(row, key),
                 onCancel: () => {
                   transferForm.value.owner = null;
@@ -441,6 +453,10 @@
           },
           { trigger: () => row.name, default: () => row.name }
         );
+      },
+      // TODO 缺少字段
+      recycleReason: (row: any) => {
+        return reasonOptions.value.find((e) => e.value === row.recycleReason)?.label ?? '-';
       },
     },
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],
@@ -524,6 +540,14 @@
       title: t('customer.lastFollowUpDate'),
       dataIndex: 'followTime',
       type: FieldTypeEnum.TIME_RANGE_PICKER,
+    },
+    {
+      title: t('customer.recycleReason'),
+      dataIndex: 'recycleReason',
+      type: FieldTypeEnum.SELECT,
+      selectProps: {
+        options: reasonOptions.value,
+      },
     },
     ...baseFilterConfigList,
   ]);

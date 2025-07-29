@@ -17,8 +17,9 @@ import {
 } from '@/components/business/crm-form-create/config';
 import type { FormCreateField } from '@/components/business/crm-form-create/types';
 
-import { failureReasonOptions, lastOpportunitySteps } from '@/config/opportunity';
+import { lastOpportunitySteps } from '@/config/opportunity';
 import useFormCreateAdvanceFilter from '@/hooks/useFormCreateAdvanceFilter';
+import useReasonConfig from '@/hooks/useReasonConfig';
 
 type FormKey =
   | FormDesignKeyEnum.CUSTOMER
@@ -48,6 +49,7 @@ export interface FormCreateTableProps {
 export default async function useFormCreateTable(props: FormCreateTableProps) {
   const { t } = useI18n();
   const { getFilterListConfig, customFieldsFilterConfig } = useFormCreateAdvanceFilter();
+  const { reasonOptions, initReasonConfig } = useReasonConfig(props.formKey);
   const loading = ref(false);
   const showPagination = props.showPagination ?? true;
   let columns: CrmDataTableColumn[] = [];
@@ -72,6 +74,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
   const businessFieldIds = ref<string[]>([]);
   // 数据源字段集合
   const dataSourceFieldIds = ref<string[]>([]);
+
+  // 静态列和高级筛选增加原因配置筛选
+  await initReasonConfig();
   const opportunityInternalColumns: CrmDataTableColumn[] = [
     {
       title: t('org.department'),
@@ -166,7 +171,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       ellipsis: {
         tooltip: true,
       },
-      filterOptions: failureReasonOptions,
+      filterOptions: reasonOptions.value,
       filter: true,
       render: props.specialRender?.failureReason,
     },
@@ -198,6 +203,17 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       ellipsis: {
         tooltip: true,
       },
+    },
+    {
+      title: t('customer.recycleReason'),
+      width: 120,
+      key: 'recycleReason',
+      ellipsis: {
+        tooltip: true,
+      },
+      filterOptions: reasonOptions.value,
+      filter: true,
+      render: props.specialRender?.recycleReason,
     },
     {
       title: t('customer.remainingVesting'),
@@ -367,6 +383,17 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         ellipsis: {
           tooltip: true,
         },
+      },
+      {
+        title: t('customer.recycleReason'),
+        width: 120,
+        key: 'recycleReason',
+        ellipsis: {
+          tooltip: true,
+        },
+        filterOptions: reasonOptions.value,
+        filter: true,
+        render: props.specialRender?.recycleReason,
       },
       {
         title: t('customer.remainingVesting'),
@@ -804,5 +831,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
     loading,
     useTableRes,
     customFieldsFilterConfig,
+    reasonOptions,
   };
 }

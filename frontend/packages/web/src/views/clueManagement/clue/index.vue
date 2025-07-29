@@ -402,11 +402,11 @@
   const isInitOverviewDrawer = ref(false);
   const showOverviewDrawer = ref(false);
 
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE,
     operationColumn: {
       key: 'operation',
-      width: 280,
+      width: 200,
       fixed: 'right',
       render: (row: ClueListItem) =>
         row.transitionType && ['CUSTOMER', 'OPPORTUNITY'].includes(row.transitionType)
@@ -438,17 +438,17 @@
                     popSlotContent: 'transferPopContent',
                   },
                   {
-                    label: t('clue.moveIntoCluePool'),
-                    key: 'moveIntoCluePool',
-                    permission: ['CLUE_MANAGEMENT:RECYCLE'],
-                  },
-                  {
                     label: 'more',
                     key: 'more',
                     slotName: 'more',
                   },
                 ],
                 moreList: [
+                  {
+                    label: t('clue.moveIntoCluePool'),
+                    key: 'moveIntoCluePool',
+                    permission: ['CLUE_MANAGEMENT:RECYCLE'],
+                  },
                   {
                     label: t('clue.convertToCustomer'),
                     key: 'convertToCustomer',
@@ -495,6 +495,10 @@
           },
           { default: () => row.name, trigger: () => row.name }
         );
+      },
+      // TODO 缺少字段
+      recycleReason: (row: any) => {
+        return reasonOptions.value.find((e) => e.value === row.recycleReason)?.label ?? '-';
       },
     },
     permission: ['CLUE_MANAGEMENT:RECYCLE', 'CLUE_MANAGEMENT:DELETE', 'CLUE_MANAGEMENT:UPDATE'],
@@ -549,6 +553,14 @@
       title: t('customer.lastFollowUpDate'),
       dataIndex: 'followTime',
       type: FieldTypeEnum.TIME_RANGE_PICKER,
+    },
+    {
+      title: t('customer.recycleReason'),
+      dataIndex: 'recycleReason',
+      type: FieldTypeEnum.SELECT,
+      selectProps: {
+        options: reasonOptions.value,
+      },
     },
     ...baseFilterConfigList,
   ]);

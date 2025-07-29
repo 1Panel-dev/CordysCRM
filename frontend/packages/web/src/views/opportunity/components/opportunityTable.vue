@@ -130,7 +130,7 @@
 
   import { batchDeleteOpt, deleteOpt, getFieldDeptTree, transferOpt } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
-  import { defaultTransferForm, failureReasonOptions, lastOpportunitySteps } from '@/config/opportunity';
+  import { defaultTransferForm, lastOpportunitySteps } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
   import useHiddenTab from '@/hooks/useHiddenTab';
   import useModal from '@/hooks/useModal';
@@ -432,7 +432,7 @@
   const showOpenSeaOverviewDrawer = ref<boolean>(false);
   const openSea = ref<string | number>('');
 
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: props.isCustomerTab ? FormDesignKeyEnum.CUSTOMER_OPPORTUNITY : FormDesignKeyEnum.BUSINESS,
     excludeFieldIds: ['customerId'],
     operationColumn: {
@@ -505,8 +505,9 @@
       status: (row: OpportunityItem) => {
         return row.status ? t('common.open') : t('common.close');
       },
+      // TODO 缺少字段
       failureReason: (row: OpportunityItem) => {
-        return failureReasonOptions.find((e) => e.value === row.failureReason)?.label ?? '-';
+        return reasonOptions.value.find((e) => e.value === row.failureReason)?.label ?? '-';
       },
       stage: (row: OpportunityItem) => {
         const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
@@ -568,9 +569,9 @@
       {
         title: t('opportunity.failureReason'),
         dataIndex: 'failureReason',
-        type: FieldTypeEnum.SELECT_MULTIPLE,
+        type: FieldTypeEnum.SELECT,
         selectProps: {
-          options: failureReasonOptions,
+          options: reasonOptions.value,
         },
       },
       {
