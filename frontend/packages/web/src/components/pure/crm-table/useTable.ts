@@ -176,6 +176,29 @@ export default function useTable<T>(
         // 设置分页
         setPagination(tmpArr.current, tmpArr.total);
       }
+      // 解决分页数据不足一页时不能触发滚动的问题
+      nextTick(() => {
+        if (
+          propsRes.value.crmPagination?.itemCount &&
+          propsRes.value.crmPagination?.page &&
+          propsRes.value.crmPagination?.pageSize &&
+          propsRes.value.crmPagination.itemCount <=
+            propsRes.value.crmPagination.page * propsRes.value.crmPagination.pageSize
+        ) {
+          return;
+        }
+        const tableScrollElement = document.querySelector('.v-vl');
+        const listElement = document.querySelector('.v-vl-items');
+        if (
+          tableScrollElement &&
+          listElement &&
+          tableScrollElement.clientHeight >= listElement.clientHeight &&
+          propsRes.value.crmPagination?.page
+        ) {
+          setPagination(propsRes.value.crmPagination.page + 1);
+          loadList(true);
+        }
+      });
     } catch (error: any) {
       propsRes.value.data = [];
       // eslint-disable-next-line no-console
