@@ -128,8 +128,8 @@ public class CustomerController {
     @PostMapping("/to-pool")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE)
     @Operation(summary = "移入公海")
-    public void toPool(@Validated @RequestBody PoolReasonRequest request) {
-        customerService.toPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectResponse toPool(@Validated @RequestBody PoolReasonRequest request) {
+        return customerService.toPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @PostMapping("/option")

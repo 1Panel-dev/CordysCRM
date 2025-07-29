@@ -141,11 +141,13 @@
         failCount.value = fail;
         showToPoolResultModel.value = true;
       } else {
-        await moveApiMap[props.reasonKey]({
+        const { success, fail } = await moveApiMap[props.reasonKey]({
           id: props.sourceId,
           reasonId: form.value.reason,
         });
-        Message.success(t('common.moveInSuccess'));
+        successCount.value = success;
+        failCount.value = fail;
+        showToPoolResultModel.value = true;
       }
       showModal.value = false;
       emit('refresh');
