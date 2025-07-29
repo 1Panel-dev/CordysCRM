@@ -255,7 +255,9 @@
     formKey,
   });
   const showInTableColumns = computed(() => {
-    return fieldList.value.filter((item) => ![FieldTypeEnum.DIVIDER].includes(item.type));
+    return fieldList.value.filter(
+      (item) => ![FieldTypeEnum.DIVIDER, FieldTypeEnum.TEXTAREA].includes(item.type) && item.businessKey !== 'owner'
+    );
   });
   const rules: FormRules = {
     name: [
