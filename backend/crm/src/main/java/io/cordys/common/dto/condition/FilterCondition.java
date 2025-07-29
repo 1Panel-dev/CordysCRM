@@ -80,8 +80,6 @@ public class FilterCondition {
 
     public Object getValue() {
         if (StringUtils.equalsIgnoreCase(operator, CombineConditionOperator.DYNAMICS.name()) ){
-            // 如果操作符是动态时间，则返回一个特殊的值, 操作为区间
-            this.operator = CombineConditionOperator.BETWEEN.name();
            // value 转为string 类型
             String strValue = (String) value;
             String[] split = strValue.split(",");

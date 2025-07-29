@@ -91,7 +91,8 @@
     <sql id="fieldConditionJoin">
         <if test="${conditions} != null and ${conditions}.size() > 0">
             <foreach collection="${conditions}" item="condition" index="i">
-                <if test="condition.name != 'name' and condition.name != 'owner' and condition.name != 'enable' and condition.name != 'customerId'">
+                <if test="condition.name not in
+                {'name', 'owner', 'createTime', 'updateTime', 'enable', 'customerId', 'createUser', 'updateUser', 'departmentId', 'phone'}">
                     <if test="condition.multipleValue">
                         inner join customer_contact_field_blob ${tablePrefix}_${i}
                         on cc.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
@@ -100,6 +101,10 @@
                         inner join customer_contact_field ${tablePrefix}_${i}
                         on cc.id = ${tablePrefix}_${i}.resource_id and ${tablePrefix}_${i}.field_id = #{condition.name}
                     </if>
+                </if>
+                <if test="condition.name == 'departmentId'">
+                    left join sys_organization_user souc
+                    on souc.user_id = cc.owner
                 </if>
             </foreach>
         </if>
@@ -178,6 +183,42 @@
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="cc.enable"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.create_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateTime'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.update_time"/>
+                </include>
+            </when>
+            <when test="condition.name == 'createUser'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.create_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'updateUser'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.update_user"/>
+                </include>
+            </when>
+            <when test="condition.name == 'departmentId'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="souc.department_id"/>
+                </include>
+            </when>
+            <when test="condition.name == 'phone'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="cc.phone"/>
                 </include>
             </when>
             <otherwise>
