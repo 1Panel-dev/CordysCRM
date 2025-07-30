@@ -14,6 +14,7 @@ import io.cordys.crm.system.domain.Dict;
 import io.cordys.crm.system.domain.DictConfig;
 import io.cordys.crm.system.dto.DictConfigDTO;
 import io.cordys.crm.system.dto.request.DictAddRequest;
+import io.cordys.crm.system.dto.request.DictSortRequest;
 import io.cordys.crm.system.dto.request.DictSwitchRequest;
 import io.cordys.crm.system.dto.request.DictUpdateRequest;
 import io.cordys.crm.system.mapper.ExtDictMapper;
@@ -41,7 +42,7 @@ public class DictService {
 	public List<Dict> getDictListByType(String module, String orgId) {
 		LambdaQueryWrapper<Dict> dictLambdaQueryWrapper = new LambdaQueryWrapper<>();
 		dictLambdaQueryWrapper.eq(Dict::getModule, module).eq(Dict::getOrganizationId, orgId);
-		dictLambdaQueryWrapper.orderByAsc(Dict::getCreateTime);
+		dictLambdaQueryWrapper.orderByAsc(Dict::getPos);
 		return dictMapper.selectListByLambda(dictLambdaQueryWrapper);
 	}
 
@@ -58,6 +59,8 @@ public class DictService {
 		dict.setModule(request.getModule());
 		dict.setOrganizationId(orgId);
 		dict.setType("TEXT");
+		Long nextPos = extDictMapper.getNextPos(request.getModule(), orgId);
+		dict.setPos(nextPos);
 		dict.setCreateUser(currentUser);
 		dict.setCreateTime(System.currentTimeMillis());
 		dict.setUpdateUser(currentUser);
@@ -135,6 +138,26 @@ public class DictService {
 		return request.getEnable();
 	}
 
+	public void sort(DictSortRequest request, String currentUser) {
+		Dict oldDict = dictMapper.selectByPrimaryKey(request.getDragDictId());
+		if (oldDict == null) {
+			throw new GenericException(Translator.get("dict.not_exist"));
+		}
+		if (request.getStart() < request.getEnd()) {
+			// start < end, 区间模块上移, pos - 1
+			extDictMapper.moveUpDict(request.getStart(), request.getEnd());
+		} else {
+			// start > end, 区间模块下移, pos + 1
+			extDictMapper.moveDownDict(request.getEnd(), request.getStart());
+		}
+		Dict dragDict = new Dict();
+		dragDict.setId(request.getDragDictId());
+		dragDict.setPos(request.getEnd());
+		dragDict.setUpdateUser(currentUser);
+		dragDict.setUpdateTime(System.currentTimeMillis());
+		dictMapper.updateById(dragDict);
+	}
+
 	/**
 	 * 获取模块字典配置
 	 * @param module 模块
@@ -147,7 +170,7 @@ public class DictService {
 			Dict sysDt = new Dict();
 			sysDt.setId("system");
 			sysDt.setName(Translator.get("system.auto.recycle"));
-			dictList.addFirst(sysDt);
+			dictList.addLast(sysDt);
 		}
 		LambdaQueryWrapper<DictConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
 		configLambdaQueryWrapper.eq(DictConfig::getModule, module).eq(DictConfig::getOrganizationId, orgId);

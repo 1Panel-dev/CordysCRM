@@ -4,4 +4,16 @@
     <update id="updateModuleConfig" parameterType="io.cordys.crm.system.domain.DictConfig">
         update sys_dict_config set enabled = #{config.enabled} where module = #{config.module} and organization_id = #{config.organizationId}
     </update>
+
+    <update id="moveUpDict" parameterType="java.lang.Long">
+        update sys_dict set pos = pos - 1 where pos &gt; #{start} and pos &lt;= #{end}
+    </update>
+
+    <update id="moveDownDict" parameterType="java.lang.Long">
+        update sys_dict set pos = pos + 1 where pos &gt;= #{start} and pos &lt; #{end}
+    </update>
+
+    <select id="getNextPos" resultType="java.lang.Long">
+        select max(pos) + 1 from sys_dict where module = #{module} and organization_id = #{organizationId}
+    </select>
 </mapper>

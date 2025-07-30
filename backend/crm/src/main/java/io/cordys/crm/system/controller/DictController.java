@@ -4,9 +4,7 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.domain.Dict;
 import io.cordys.crm.system.dto.DictConfigDTO;
-import io.cordys.crm.system.dto.request.DictAddRequest;
-import io.cordys.crm.system.dto.request.DictSwitchRequest;
-import io.cordys.crm.system.dto.request.DictUpdateRequest;
+import io.cordys.crm.system.dto.request.*;
 import io.cordys.crm.system.service.DictService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -61,6 +60,13 @@ public class DictController {
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
 	public Boolean switchDict(@RequestBody DictSwitchRequest request) {
 		return dictService.switchDict(request, OrganizationContext.getOrganizationId());
+	}
+
+	@PostMapping("/sort")
+	@Operation(summary = "字典排序")
+	@RequiresPermissions(PermissionConstants.MODULE_SETTING_UPDATE)
+	public void sortModule(@Validated @RequestBody DictSortRequest request) {
+		dictService.sort(request, SessionUtils.getUserId());
 	}
 
 	@GetMapping("/config/{module}")

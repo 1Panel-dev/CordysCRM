@@ -20,6 +20,9 @@ public class Dict extends BaseModel {
 	@Schema(description = "字典值类型")
 	private String type;
 
+	@Schema(description = "自定义排序")
+	private Long pos;
+
 	@Schema(description = "组织ID")
 	private String organizationId;
 }

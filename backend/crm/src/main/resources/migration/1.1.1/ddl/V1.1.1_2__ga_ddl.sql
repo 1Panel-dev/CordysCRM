@@ -69,6 +69,7 @@ CREATE TABLE sys_dict
     `name`            VARCHAR(255) NOT NULL COMMENT '字典值',
     `module`          VARCHAR(20)  NOT NULL COMMENT '字典模块',
     `type`            VARCHAR(10)  NOT NULL DEFAULT 'TEXT' COMMENT '字典值类型',
+    `pos`             BIGINT       NOT NULL COMMENT '自定义排序' ,
     `organization_id` VARCHAR(32)  NOT NULL COMMENT '组织ID',
     `create_time`     BIGINT       NOT NULL COMMENT '创建时间',
     `update_time`     BIGINT       NOT NULL COMMENT '更新时间',
