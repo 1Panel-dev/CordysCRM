@@ -3,7 +3,6 @@ package io.cordys.common.resolver.field;
 
 import io.cordys.common.util.JSON;
 import io.cordys.crm.system.dto.field.CheckBoxField;
-import io.cordys.crm.system.dto.field.RadioField;
 import io.cordys.crm.system.dto.field.base.OptionProp;
 import org.apache.commons.lang3.StringUtils;
 

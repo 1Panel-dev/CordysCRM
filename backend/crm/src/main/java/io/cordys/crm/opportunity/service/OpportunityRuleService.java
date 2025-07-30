@@ -13,7 +13,6 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
-import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.dto.OpportunityRuleDTO;

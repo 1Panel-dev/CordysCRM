@@ -4,7 +4,6 @@ import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptUserTreeNode;
 import io.cordys.common.dto.RoleUserTreeNode;
 import io.cordys.context.OrganizationContext;
-import io.cordys.crm.system.domain.Module;
 import io.cordys.crm.system.dto.ModuleDTO;
 import io.cordys.crm.system.dto.request.ModuleRequest;
 import io.cordys.crm.system.dto.request.ModuleSortRequest;

@@ -2,7 +2,6 @@ package io.cordys.crm.system.dto.field;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.cordys.common.constants.EnumValue;
-import io.cordys.common.dto.condition.CombineSearch;
 import io.cordys.crm.system.constants.FieldSourceType;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.swagger.v3.oas.annotations.media.Schema;

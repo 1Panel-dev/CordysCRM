@@ -6,7 +6,6 @@ import io.cordys.common.dto.ResourceTabEnableDTO;
 import io.cordys.common.pager.Pager;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.crm.base.BaseTest;
-import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.CustomerContact;
 import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactDisableRequest;

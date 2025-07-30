@@ -9,7 +9,6 @@ import io.cordys.crm.system.dto.request.MessageTaskBatchRequest;
 import io.cordys.crm.system.dto.request.MessageTaskRequest;
 import io.cordys.crm.system.mapper.ExtMessageTaskMapper;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
-import io.cordys.crm.system.notice.NoticeSendService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

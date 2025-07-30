@@ -24,7 +24,6 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
-import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerCollaboration;

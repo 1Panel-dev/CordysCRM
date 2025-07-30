@@ -2,8 +2,8 @@ package io.cordys.crm.system.domain;
 
 import io.cordys.common.domain.BaseModel;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
 import jakarta.persistence.Table;
+import lombok.Data;
 
 /**
  * 客户字典表;

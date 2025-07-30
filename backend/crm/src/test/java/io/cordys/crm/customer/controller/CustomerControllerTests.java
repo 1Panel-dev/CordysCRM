@@ -1,8 +1,8 @@
 package io.cordys.crm.customer.controller;
 
-import io.cordys.common.constants.InternalUserView;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
+import io.cordys.common.constants.InternalUserView;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.*;

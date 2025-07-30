@@ -1,6 +1,5 @@
 package io.cordys.crm.system.mapper;
 
-import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.system.dto.response.UserViewListResponse;
 import org.apache.ibatis.annotations.Param;
 

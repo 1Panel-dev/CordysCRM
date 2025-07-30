@@ -2,7 +2,6 @@ package io.cordys.crm.clue.utils;
 
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.dto.OptionDTO;
-import io.cordys.common.util.JSON;
 import io.cordys.common.util.TimeUtils;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import org.apache.commons.collections.CollectionUtils;

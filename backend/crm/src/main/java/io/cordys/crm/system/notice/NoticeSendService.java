@@ -5,8 +5,6 @@ import io.cordys.common.util.LogUtils;
 import io.cordys.crm.system.dto.MessageDetailDTO;
 import io.cordys.crm.system.notice.common.NoticeModel;
 import io.cordys.crm.system.notice.message.MessageDetailDTOService;
-import io.cordys.crm.system.notice.sender.AbstractNoticeSender;
-import io.cordys.crm.system.notice.sender.NoticeSender;
 import io.cordys.crm.system.notice.sender.insite.InSiteNoticeSender;
 import io.cordys.crm.system.notice.sender.mail.MailNoticeSender;
 import io.cordys.crm.system.notice.sender.wecom.WeComNoticeSender;
@@ -17,10 +15,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor

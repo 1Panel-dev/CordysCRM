@@ -15,7 +15,6 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
-import io.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import io.cordys.crm.customer.domain.*;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
 import io.cordys.crm.customer.dto.CustomerPoolFieldConfigDTO;

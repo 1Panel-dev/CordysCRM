@@ -15,7 +15,6 @@ import io.cordys.common.util.LogUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.clue.service.PoolClueService;
-import io.cordys.crm.customer.domain.CustomerCapacity;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.customer.service.PoolCustomerService;

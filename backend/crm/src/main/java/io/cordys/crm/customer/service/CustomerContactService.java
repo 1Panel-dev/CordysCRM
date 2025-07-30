@@ -33,7 +33,6 @@ import io.cordys.crm.system.domain.ModuleField;
 import io.cordys.crm.system.domain.ModuleFieldBlob;
 import io.cordys.crm.system.domain.ModuleForm;
 import io.cordys.crm.system.dto.field.base.BaseField;
-import io.cordys.crm.system.dto.field.base.RuleProp;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.crm.system.service.ModuleFormService;
