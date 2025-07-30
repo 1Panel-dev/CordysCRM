@@ -31,6 +31,7 @@ export default function useTable<T>(
     columns: [],
     tableRowKey: 'id', // 表格行的key
     showPagination: true, // 是否显示分页
+    containerClass: '',
     ...props,
     crmPagination: {
       page: 1,
@@ -188,16 +189,18 @@ export default function useTable<T>(
         ) {
           return;
         }
-        const tableScrollElement = document.querySelector('.v-vl');
-        const listElement = document.querySelector('.v-vl-items');
-        if (
-          tableScrollElement &&
-          listElement &&
-          tableScrollElement.clientHeight >= listElement.clientHeight &&
-          propsRes.value.crmPagination?.page
-        ) {
-          setPagination(propsRes.value.crmPagination.page + 1);
-          loadList(true);
+        if (propsRes.value.containerClass) {
+          const tableScrollElement = document.querySelector(propsRes.value.containerClass)?.querySelector('.v-vl');
+          const listElement = document.querySelector(propsRes.value.containerClass)?.querySelector('.v-vl-items');
+          if (
+            tableScrollElement &&
+            listElement &&
+            tableScrollElement.clientHeight >= listElement.clientHeight &&
+            propsRes.value.crmPagination?.page
+          ) {
+            setPagination(propsRes.value.crmPagination.page + 1);
+            loadList(true);
+          }
         }
       });
     } catch (error: any) {

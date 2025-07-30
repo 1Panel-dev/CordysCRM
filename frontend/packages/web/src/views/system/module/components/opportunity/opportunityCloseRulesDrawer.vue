@@ -12,6 +12,7 @@
         <CrmTable
           ref="crmTableRef"
           v-bind="propsRes"
+          class="crm-opportunity-close-rules-table"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
@@ -295,6 +296,7 @@
     tableKey: TableKeyEnum.MODULE_OPPORTUNITY_RULE_TABLE,
     showSetting: true,
     columns,
+    containerClass: '.crm-opportunity-close-rules-table',
   });
 
   function handleCancel() {

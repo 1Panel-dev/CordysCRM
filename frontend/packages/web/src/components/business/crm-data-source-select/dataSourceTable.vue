@@ -1,28 +1,30 @@
 <template>
-  <CrmTable
-    ref="crmTableRef"
-    v-model:checked-row-keys="selectedKeys"
-    v-bind="propsRes"
-    class="!min-h-[60vh]"
-    @page-change="propsEvent.pageChange"
-    @page-size-change="propsEvent.pageSizeChange"
-    @sorter-change="propsEvent.sorterChange"
-    @filter-change="propsEvent.filterChange"
-    @row-key-change="handleRowKeyChange"
-  >
-    <template #tableTop>
-      <CrmSearchInput
-        v-model:value="keyword"
-        class="!w-[240px]"
-        :placeholder="
-          props.sourceType === FieldDataSourceTypeEnum.CONTACT
-            ? t('common.searchByNamePhone')
-            : t('common.searchByName')
-        "
-        @search="searchData"
-      />
-    </template>
-  </CrmTable>
+  <div class="crm-data-source-table">
+    <CrmTable
+      ref="crmTableRef"
+      v-model:checked-row-keys="selectedKeys"
+      v-bind="propsRes"
+      class="!min-h-[60vh]"
+      @page-change="propsEvent.pageChange"
+      @page-size-change="propsEvent.pageSizeChange"
+      @sorter-change="propsEvent.sorterChange"
+      @filter-change="propsEvent.filterChange"
+      @row-key-change="handleRowKeyChange"
+    >
+      <template #tableTop>
+        <CrmSearchInput
+          v-model:value="keyword"
+          class="!w-[240px]"
+          :placeholder="
+            props.sourceType === FieldDataSourceTypeEnum.CONTACT
+              ? t('common.searchByNamePhone')
+              : t('common.searchByName')
+          "
+          @search="searchData"
+        />
+      </template>
+    </CrmTable>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -119,6 +121,7 @@
     [FieldDataSourceTypeEnum.USER_OPTIONS]: getUserOptions,
   };
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const { propsRes, propsEvent, loadList, setAdvanceFilter, setLoadListParams } = useTable(
     sourceApi[props.sourceType],
     {
@@ -127,12 +130,12 @@
       crmPagination: {
         showSizePicker: false,
       },
+      containerClass: '.crm-data-source-table',
     }
   );
 
   const keyword = ref('');
 
-  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function searchData(_keyword?: string) {
     if (props.filterParams) {
       setAdvanceFilter(props.filterParams);

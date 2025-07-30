@@ -11,6 +11,7 @@
       <div class="h-full bg-[var(--text-n10)] p-[16px] pb-0">
         <CrmTable
           v-bind="propsRes"
+          class="crm-clue-pool-table"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
@@ -314,6 +315,7 @@
     tableKey: TableKeyEnum.MODULE_CLUE_POOL,
     showSetting: true,
     columns,
+    containerClass: '.crm-clue-pool-table',
   });
 
   watch(

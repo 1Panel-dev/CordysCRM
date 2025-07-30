@@ -44,6 +44,7 @@ export interface FormCreateTableProps {
   permission?: string[];
   readonly?: boolean;
   radio?: boolean; // 是否单选
+  containerClass: string; // 容器元素类名
 }
 
 export default async function useFormCreateTable(props: FormCreateTableProps) {
@@ -758,6 +759,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       columns,
       permission: props.permission,
       // virtualScrollX: props.formKey !== FormDesignKeyEnum.PRODUCT, // TODO:横向滚动有问题
+      containerClass: props.containerClass,
     },
     (item, originalData) => {
       const businessFieldAttr: Record<string, any> = {};

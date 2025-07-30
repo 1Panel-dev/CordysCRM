@@ -67,6 +67,7 @@ export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
   'permission'?: string[];
   'hiddenTotal'?: boolean;
   'hiddenAllScreen'?: boolean;
+  'containerClass': string; // 容器类名
 };
 
 // 表格存储

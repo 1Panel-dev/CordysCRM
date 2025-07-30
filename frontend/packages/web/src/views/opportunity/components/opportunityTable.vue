@@ -3,6 +3,7 @@
     ref="crmTableRef"
     v-model:checked-row-keys="checkedRowKeys"
     v-bind="propsRes"
+    class="crm-opportunity-table"
     :not-show-table-filter="isAdvancedSearchMode"
     :action-config="actionConfig"
     :fullscreen-target-ref="props.fullscreenTargetRef"
@@ -457,6 +458,7 @@
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: props.isCustomerTab ? FormDesignKeyEnum.CUSTOMER_OPPORTUNITY : FormDesignKeyEnum.BUSINESS,
     excludeFieldIds: ['customerId'],
+    containerClass: '.crm-opportunity-table',
     operationColumn: props.readonly
       ? undefined
       : {

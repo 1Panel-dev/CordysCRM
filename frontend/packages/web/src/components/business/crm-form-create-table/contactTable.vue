@@ -3,6 +3,7 @@
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"
+      class="crm-contact-table"
       :not-show-table-filter="isAdvancedSearchMode"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -325,6 +326,7 @@
     formKey: props.formKey,
     showPagination: !props.sourceId,
     readonly: props.readonly,
+    containerClass: '.crm-contact-table',
     operationColumn: props.readonly
       ? undefined
       : {

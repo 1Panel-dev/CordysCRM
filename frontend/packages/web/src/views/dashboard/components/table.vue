@@ -3,7 +3,7 @@
     <CrmTable
       ref="crmTableRef"
       v-bind="currentTable.propsRes.value"
-      class="flex-1"
+      class="crm-dashboard-table flex-1"
       @page-change="currentTable.propsEvent.value.pageChange"
       @page-size-change="currentTable.propsEvent.value.pageSizeChange"
       @sorter-change="currentTable.propsEvent.value.sorterChange"
@@ -243,6 +243,7 @@
     showSetting: false,
     columns,
     permission: [],
+    containerClass: '.crm-dashboard-table',
   });
 
   const dashboardCollectTable = useTable(
@@ -251,6 +252,7 @@
       showSetting: false,
       columns,
       permission: [],
+      containerClass: '.crm-dashboard-table',
     },
     (item) => {
       return {

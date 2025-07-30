@@ -14,6 +14,7 @@
         ref="crmTableRef"
         v-model:checked-row-keys="checkedRowKeys"
         v-bind="propsRes"
+        class="crm-clue-convert-table"
         :not-show-table-filter="isAdvancedSearchMode"
         @page-change="propsEvent.pageChange"
         @page-size-change="propsEvent.pageSizeChange"
@@ -85,6 +86,7 @@
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER,
+    containerClass: '.crm-clue-convert-table',
     disabledSelection: (row: any) => {
       return row.collaborationType === 'READ_ONLY';
     },

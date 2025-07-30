@@ -8,6 +8,7 @@
   >
     <CrmTable
       v-bind="propsRes"
+      class="crm-manage-views-table"
       @page-change="propsEvent.pageChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
@@ -244,6 +245,7 @@
     showSetting: false,
     columns,
     hiddenAllScreen: true,
+    containerClass: '.crm-manage-views-table',
   });
 
   watch(

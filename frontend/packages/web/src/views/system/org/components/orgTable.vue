@@ -4,6 +4,7 @@
       ref="crmTableRef"
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
+      class="crm-organization-table"
       :action-config="actionConfig"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -763,6 +764,7 @@
       showSetting: true,
       columns,
       permission: ['SYS_ORGANIZATION:UPDATE', 'SYS_ORGANIZATION_USER:RESET_PASSWORD'],
+      containerClass: '.crm-organization-table',
     },
     (row: MemberItem) => {
       return {

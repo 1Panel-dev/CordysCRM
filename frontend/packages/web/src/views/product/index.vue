@@ -4,6 +4,7 @@
       ref="crmTableRef"
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
+      class="crm-product-table"
       :action-config="actionConfig"
       :draggable="hasAnyPermission(['PRODUCT_MANAGEMENT:UPDATE'])"
       @page-change="propsEvent.pageChange"
@@ -222,6 +223,7 @@
 
   const { useTableRes } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.PRODUCT,
+    containerClass: '.crm-product-table',
     operationColumn: {
       key: 'operation',
       width: 100,

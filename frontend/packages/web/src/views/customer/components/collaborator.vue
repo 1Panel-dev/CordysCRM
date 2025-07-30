@@ -4,6 +4,7 @@
       ref="crmTableRef"
       v-bind="propsRes"
       v-model:checked-row-keys="checkedRowKeys"
+      class="crm-collaborator-table"
       :action-config="props.readonly ? undefined : actionConfig"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
@@ -309,6 +310,7 @@
     showSetting: true,
     showPagination: false,
     columns,
+    containerClass: '.crm-collaborator-table',
   });
 
   const disabledIds = computed(() => propsRes.value.data.map((e) => e.userId));

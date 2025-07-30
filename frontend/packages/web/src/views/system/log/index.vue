@@ -73,6 +73,7 @@
       <CrmTable
         ref="crmTableRef"
         v-bind="propsRes"
+        class="crm-operation-log-table"
         @page-change="propsEvent.pageChange"
         @page-size-change="propsEvent.pageSizeChange"
         @sorter-change="propsEvent.sorterChange"
@@ -276,6 +277,7 @@
     showSetting: false,
     columns,
     tableKey: TableKeyEnum.LOG,
+    containerClass: '.crm-operation-log-table',
   });
 
   const loginLogRef = ref<InstanceType<typeof LoginLog>>();

@@ -38,7 +38,7 @@
         </div>
         <div
           v-show="repeatTable.code !== 101003"
-          class="mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]"
+          class="crm-repeat-table mt-[8px] rounded-[var(--border-radius-small)] bg-[var(--text-n9)] p-[16px]"
         >
           <CrmTable
             ref="crmTableRef"
@@ -57,6 +57,7 @@
         :api="GetRepeatClueList"
         :columns="clueColumns"
         :title="t('workbench.duplicateCheck.relatedClues')"
+        class="crm-clue-related-table"
         is-return-native-response
       />
     </n-scrollbar>
@@ -72,6 +73,7 @@
           ? t('workbench.duplicateCheck.relatedOpportunity')
           : t('workbench.duplicateCheck.relatedClue')
       "
+      class="crm-detail-related-table"
     />
   </CrmDrawer>
 </template>
@@ -98,7 +100,7 @@
     GetRepeatOpportunityDetailList,
   } from '@/api/modules';
   // import { clueBaseSteps } from '@/config/clue';
-  import { lastOpportunitySteps, opportunityResultSteps } from '@/config/opportunity';
+  import { lastOpportunitySteps } from '@/config/opportunity';
   import { hasAnyPermission } from '@/utils/permission';
 
   const visible = defineModel<boolean>('visible', {
@@ -361,6 +363,8 @@
     },
   ];
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
+  const clueTableRef = ref<InstanceType<typeof RelatedTable>>();
   const repeatAccountTable = useTable(GetRepeatCustomerList, {
     showSetting: false,
     columns,
@@ -369,6 +373,7 @@
       size: 'small',
     },
     hiddenTotal: true,
+    containerClass: '.crm-repeat-table',
   });
 
   const repeatContactTable = useTable(getRepeatContactList, {
@@ -379,6 +384,7 @@
       size: 'small',
     },
     hiddenTotal: true,
+    containerClass: '.crm-detail-related-table',
   });
 
   const repeatTable = ref<Record<string, any>>(repeatAccountTable);
@@ -392,8 +398,6 @@
     { immediate: true }
   );
 
-  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
-  const clueTableRef = ref<InstanceType<typeof RelatedTable>>();
   async function searchData(val: string) {
     repeatTable.value.setLoadListParams({ name: val.replace(/[\s\uFEFF\xA0]+/g, '') });
     repeatTable.value.loadList().finally(() => {

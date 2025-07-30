@@ -6,6 +6,7 @@
           ref="crmTableRef"
           v-model:checked-row-keys="checkedRowKeys"
           v-bind="propsRes"
+          class="crm-clue-table"
           :not-show-table-filter="isAdvancedSearchMode"
           :action-config="actionConfig"
           :fullscreen-target-ref="leadCardRef"
@@ -422,6 +423,7 @@
 
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE,
+    containerClass: '.crm-clue-table',
     operationColumn: {
       key: 'operation',
       width: 200,

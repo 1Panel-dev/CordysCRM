@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="props.class">
     <div class="flex items-center font-semibold">
       {{ props.title }}
       <div class="text-[var(--text-n4)]"> （{{ propsRes.crmPagination?.itemCount || 0 }}） </div>
@@ -34,10 +34,12 @@
     columns: CrmDataTableColumn[];
     title: string;
     isReturnNativeResponse?: boolean;
+    class: string;
   }>();
 
   const { t } = useI18n();
 
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   const { propsRes, propsEvent, loadList, setLoadListParams, code } = useTable(props.api, {
     showSetting: false,
     columns: props.columns,
@@ -46,9 +48,9 @@
     },
     isReturnNativeResponse: props.isReturnNativeResponse,
     hiddenTotal: true,
+    containerClass: props.class,
   });
 
-  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   async function searchData(val: string, id?: string) {
     setLoadListParams({ name: val, ...(id ? { id } : {}) });
     await loadList();

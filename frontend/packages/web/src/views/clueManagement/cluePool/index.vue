@@ -4,6 +4,7 @@
       ref="crmTableRef"
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
+      class="crm-clue-pool-table"
       :not-show-table-filter="isAdvancedSearchMode"
       :action-config="actionConfig"
       :columns="filterColumns"
@@ -347,6 +348,7 @@
   const activeClue = ref<CluePoolListItem>();
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE_POOL,
+    containerClass: '.crm-clue-pool-table',
     operationColumn: {
       key: 'operation',
       width: 200,

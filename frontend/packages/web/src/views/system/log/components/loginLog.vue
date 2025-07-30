@@ -3,6 +3,7 @@
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"
+      class="crm-login-log-table"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -60,6 +61,7 @@
     showSetting: false,
     columns,
     tableKey: TableKeyEnum.LOGIN_LOG,
+    containerClass: '.crm-login-log-table',
   });
 
   async function searchData(params: OperationLogParams) {

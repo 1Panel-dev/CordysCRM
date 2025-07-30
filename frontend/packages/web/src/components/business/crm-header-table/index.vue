@@ -1,5 +1,5 @@
 <template>
-  <CrmCard hide-footer no-content-bottom-padding>
+  <CrmCard class="crm-header-table" hide-footer no-content-bottom-padding>
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"
@@ -94,6 +94,7 @@
       showSetting: true,
       showPagination: false,
       columns,
+      containerClass: '.crm-header-table',
     },
     (row: HeaderHistoryItem) => {
       return {

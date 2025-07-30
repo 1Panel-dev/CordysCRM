@@ -2,7 +2,7 @@
   <div
     ref="tableFullRef"
     class="relative flex h-full flex-col overflow-hidden"
-    :class="isFullScreen && !props.fullscreenTargetRef ? 'bg-[var(--text-n10)] p-[16px] !pb-0' : ''"
+    :class="[isFullScreen && !props.fullscreenTargetRef ? 'bg-[var(--text-n10)] p-[16px] !pb-0' : '', props.class]"
   >
     <BatchAction
       v-if="props.actionConfig"
@@ -153,6 +153,7 @@
     draggable?: boolean; // 允许拖拽
     virtualScrollX?: boolean; // 是否开启横向虚拟滚动
     fullscreenTargetRef?: HTMLElement | null;
+    class?: string; // 自定义样式类
   }>();
   const emit = defineEmits<{
     (e: 'pageChange', value: number): void;

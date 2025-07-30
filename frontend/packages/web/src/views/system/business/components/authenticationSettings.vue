@@ -4,6 +4,7 @@
     <CrmTable
       ref="crmTableRef"
       v-bind="propsRes"
+      class="crm-authentication-settings-table"
       @page-change="propsEvent.pageChange"
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
@@ -372,6 +373,7 @@
     tableKey: TableKeyEnum.AUTH,
     showSetting: true,
     columns,
+    containerClass: '.crm-authentication-settings-table',
   });
 
   const crmTableRef = ref<InstanceType<typeof CrmTable>>();

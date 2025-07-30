@@ -6,6 +6,7 @@
           ref="crmTableRef"
           v-model:checked-row-keys="checkedRowKeys"
           v-bind="propsRes"
+          class="crm-customer-table"
           :columns="tableColumns"
           :not-show-table-filter="isAdvancedSearchMode"
           :action-config="actionConfig"
@@ -388,6 +389,7 @@
   // 概览
   const showOverviewDrawer = ref(false);
   const customerCardRef = ref<HTMLElement | null>(null);
+  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
 
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER,
@@ -456,6 +458,7 @@
       },
     },
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],
+    containerClass: '.crm-customer-table',
   });
   const { propsRes, propsEvent, tableQueryParams, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;
   const tableColumns = computed(() => {
@@ -540,7 +543,6 @@
     ...baseFilterConfigList,
   ]);
 
-  const crmTableRef = ref<InstanceType<typeof CrmTable>>();
   function handleAdvSearch(filter: FilterResult) {
     keyword.value = '';
     setAdvanceFilter(filter);

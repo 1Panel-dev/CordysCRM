@@ -4,6 +4,7 @@
       ref="crmTableRef"
       v-model:checked-row-keys="checkedRowKeys"
       v-bind="propsRes"
+      class="crm-open-sea-table"
       :not-show-table-filter="isAdvancedSearchMode"
       :action-config="actionConfig"
       :columns="filterColumns"
@@ -363,6 +364,7 @@
   });
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
+    containerClass: '.crm-open-sea-table',
     operationColumn: {
       key: 'operation',
       width: 150,

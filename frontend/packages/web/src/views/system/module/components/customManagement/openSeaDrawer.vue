@@ -11,6 +11,7 @@
       <div class="h-full bg-[var(--text-n10)] p-[16px] pb-0">
         <CrmTable
           v-bind="propsRes"
+          class="crm-open-sea-table"
           @page-change="propsEvent.pageChange"
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
@@ -45,7 +46,6 @@
   import type { CluePoolItem } from '@lib/shared/models/system/module';
 
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
-  import CrmSearchInput from '@/components/pure/crm-search-input/index.vue';
   import CrmTable from '@/components/pure/crm-table/index.vue';
   import { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import useTable from '@/components/pure/crm-table/useTable';
@@ -65,7 +65,6 @@
   const visible = defineModel<boolean>('visible', {
     required: true,
   });
-  const keyword = ref<string>('');
   const showAddOrEditDrawer = ref<boolean>(false);
   const currentRow = ref<CluePoolItem>();
 
@@ -313,6 +312,7 @@
     tableKey: TableKeyEnum.MODULE_CLUE_POOL,
     showSetting: true,
     columns,
+    containerClass: '.crm-open-sea-table',
   });
 
   watch(

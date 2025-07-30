@@ -8,6 +8,7 @@
         ref="crmTableRef"
         v-model:checked-row-keys="checkedRowKeys"
         v-bind="propsRes"
+        class="crm-role-member-table"
         :action-config="actionConfig"
         @page-change="propsEvent.pageChange"
         @page-size-change="propsEvent.pageSizeChange"
@@ -189,6 +190,7 @@
       showSetting: true,
       columns,
       permission: ['SYSTEM_ROLE:REMOVE_USER'],
+      containerClass: '.crm-role-member-table',
     },
     (item) => {
       return {
