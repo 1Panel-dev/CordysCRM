@@ -6,11 +6,11 @@
     </update>
 
     <update id="moveUpDict" parameterType="java.lang.Long">
-        update sys_dict set pos = pos - 1 where pos &gt; #{start} and pos &lt;= #{end}
+        update sys_dict set pos = pos - 1 where pos &gt; #{start} and pos &lt;= #{end} and module = #{module} and organization_id = #{organizationId}
     </update>
 
     <update id="moveDownDict" parameterType="java.lang.Long">
-        update sys_dict set pos = pos + 1 where pos &gt;= #{start} and pos &lt; #{end}
+        update sys_dict set pos = pos + 1 where pos &gt;= #{start} and pos &lt; #{end} and module = #{module} and organization_id = #{organizationId}
     </update>
 
     <select id="getNextPos" resultType="java.lang.Long">

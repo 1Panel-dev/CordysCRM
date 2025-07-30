@@ -15,15 +15,19 @@ public interface ExtDictMapper {
 	 * 字典区间上移
 	 * @param start 开始
 	 * @param end 结束
+	 * @param module 模块
+	 * @param orgId 组织ID
 	 */
-	void moveUpDict(@Param("start") Long start, @Param("end") Long end);
+	void moveUpDict(@Param("start") Long start, @Param("end") Long end, @Param("module") String module, @Param("orgId") String orgId);
 
 	/**
 	 * 字典区间下移
 	 * @param start 开始
 	 * @param end 结束
+	 * @param module 模块
+	 * @param orgId 组织ID
 	 */
-	void moveDownDict(@Param("start") Long start, @Param("end") Long end);
+	void moveDownDict(@Param("start") Long start, @Param("end") Long end, @Param("module") String module, @Param("orgId") String orgId);
 
 	/**
 	 * 获取字典模块下一个位置

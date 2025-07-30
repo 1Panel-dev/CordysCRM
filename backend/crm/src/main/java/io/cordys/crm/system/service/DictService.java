@@ -145,10 +145,10 @@ public class DictService {
 		}
 		if (request.getStart() < request.getEnd()) {
 			// start < end, 区间模块上移, pos - 1
-			extDictMapper.moveUpDict(request.getStart(), request.getEnd());
+			extDictMapper.moveUpDict(request.getStart(), request.getEnd(), oldDict.getModule(), oldDict.getOrganizationId());
 		} else {
 			// start > end, 区间模块下移, pos + 1
-			extDictMapper.moveDownDict(request.getEnd(), request.getStart());
+			extDictMapper.moveDownDict(request.getEnd(), request.getStart(), oldDict.getModule(), oldDict.getOrganizationId());
 		}
 		Dict dragDict = new Dict();
 		dragDict.setId(request.getDragDictId());
