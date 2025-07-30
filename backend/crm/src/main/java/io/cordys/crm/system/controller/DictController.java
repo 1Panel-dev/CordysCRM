@@ -59,8 +59,8 @@ public class DictController {
 	@PostMapping("/switch")
 	@Operation(summary = "字典开启关闭")
 	@RequiresPermissions(value = {PermissionConstants.MODULE_SETTING_UPDATE})
-	public void switchDict(@RequestBody DictSwitchRequest request) {
-		dictService.switchDict(request, OrganizationContext.getOrganizationId());
+	public Boolean switchDict(@RequestBody DictSwitchRequest request) {
+		return dictService.switchDict(request, OrganizationContext.getOrganizationId());
 	}
 
 	@GetMapping("/config/{module}")
