@@ -24,6 +24,7 @@
         select id, name, fixed, enable from sys_user_view
         where organization_id = #{orgId}
         and user_id = #{userId}
+        and resource_type = #{resourceType}
     </select>
 
 
