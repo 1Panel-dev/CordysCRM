@@ -91,5 +91,5 @@ export default {
   'module.moveLeadPoolReasonConfig': 'Move into cue pool cause setting',
   'module.movePublicPoolReasonConfig': 'Move into the open sea cause setting',
   'module.failReasonConfig': 'Fail reason configuration',
-  'module.configReasonTooltip': 'The configuration can be enabled',
+  'module.configReasonTooltip': 'It can be enabled after configuration',
 };

@@ -92,6 +92,7 @@
         message: t('common.notNull', {
           value: t('crmViewSelect.viewName'),
         }),
+        trigger: ['blur'],
       },
     ],
   };
