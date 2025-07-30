@@ -118,7 +118,7 @@
                         c.`update_time` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
-                        sd.`id` ${sortType}, c.id ASC
+                        souc.`id` ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'create_user'">
                         c.`create_user` ${sortType}, c.id ASC
@@ -179,8 +179,7 @@
             left join sys_module_field module_table on sort_table.field_id = module_table.id
         </if>
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name == 'department_id'">
-            inner join sys_organization_user souc on souc.user_id = c.owner
-            inner join sys_department sd on souc.department_id = sd.id
+            left join sys_organization_user souc on souc.user_id = c.owner
         </if>
     </sql>
 

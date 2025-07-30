@@ -149,7 +149,7 @@
                         o.`failure_reason` ${sortType},  o.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
-                        sd.`id` ${sortType},  o.id ASC
+                        souc.`id` ${sortType},  o.id ASC
                     </when>
 
                     <otherwise>
@@ -217,8 +217,7 @@
             left join sys_module_field module_table on sort_table.field_id = module_table.id
         </if>
         <if test="${sort} != null and ${sort}.valid() and ${sort}.name == 'department_id'">
-            inner join sys_organization_user souc on souc.user_id = o.owner
-            inner join sys_department sd on souc.department_id = sd.id
+            left join sys_organization_user souc on souc.user_id = o.owner
         </if>
     </sql>
 
