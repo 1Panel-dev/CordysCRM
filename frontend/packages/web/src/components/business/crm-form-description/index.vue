@@ -11,6 +11,17 @@
           </n-space>
         </n-image-group>
       </template>
+      <template #[FieldDataSourceTypeEnum.CUSTOMER]="{ item }">
+        <div class="flex w-full items-center justify-between">
+          <div class="text-[var(--text-n2)]">{{ item.label }}</div>
+          <CrmTableButton @click="openCustomerDetail(formDetail[item.fieldInfo.id])">
+            <template #trigger>
+              {{ item.value }}
+            </template>
+            {{ item.value }}
+          </CrmTableButton>
+        </div>
+      </template>
       <template #[FieldTypeEnum.DATE_TIME]="{ item }">
         <div class="flex w-full items-center justify-between">
           <div class="text-[var(--text-n2)]">{{ item.label }}</div>
@@ -34,10 +45,11 @@
   import { NImage, NImageGroup, NSpace, NSpin } from 'naive-ui';
 
   import { PreviewPictureUrl } from '@lib/shared/api/requrls/system/module';
-  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { CollaborationType } from '@lib/shared/models/customer';
 
   import CrmDescription from '@/components/pure/crm-description/index.vue';
+  import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDivider from '@/components/business/crm-form-create/components/basic/divider.vue';
   import dateTime from '../crm-form-create/components/basic/dateTime.vue';
 
@@ -52,6 +64,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
+    (e: 'openCustomerDetail', customerId: string): void;
   }>();
 
   const needInitDetail = computed(() => props.formKey === FormDesignKeyEnum.BUSINESS); // TODO:商机需要编辑日期
@@ -96,20 +109,22 @@
     });
   }
 
+  function openCustomerDetail(customerId: string | string[]) {
+    emit('openCustomerDetail', Array.isArray(customerId) ? customerId[0] : customerId);
+  }
+
   watch(
     () => props.refreshKey,
     async () => {
-      await initFormDescription();
-      await initFormDetail();
+      await initFormDetail(true);
       emit('init', collaborationType.value, sourceName.value, detail.value);
     }
   );
 
   onBeforeMount(async () => {
     await initFormConfig();
-    await initFormDescription();
+    await initFormDetail(true);
     emit('init', collaborationType.value, sourceName.value, detail.value);
-    await initFormDetail();
     isInit.value = true;
   });
 

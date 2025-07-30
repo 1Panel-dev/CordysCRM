@@ -38,7 +38,7 @@
           :refresh-key="refreshKey"
           :source-id="props.sourceId"
           :initial-source-name="sourceName"
-          :readonly="collaborationType === 'READ_ONLY'"
+          :readonly="collaborationType === 'READ_ONLY' || props.readonly"
           :form-key="FormDesignKeyEnum.CUSTOMER_CONTACT"
         />
         <FollowDetail
@@ -50,8 +50,12 @@
           :source-id="props.sourceId"
           :refresh-key="refreshKey"
           :initial-source-name="sourceName"
-          :show-add="collaborationType !== 'READ_ONLY' && hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
-          :show-action="collaborationType !== 'READ_ONLY' && hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE'])"
+          :show-add="
+            collaborationType !== 'READ_ONLY' && hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !props.readonly
+          "
+          :show-action="
+            collaborationType !== 'READ_ONLY' && hasAnyPermission(['CUSTOMER_MANAGEMENT:UPDATE']) && !props.readonly
+          "
         />
         <CrmHeaderTable
           v-else-if="activeTab === 'headRecord'"
@@ -61,15 +65,19 @@
         <customerRelation
           v-else-if="activeTab === 'relation'"
           :source-id="props.sourceId"
-          :readonly="collaborationType === 'READ_ONLY'"
+          :readonly="collaborationType === 'READ_ONLY' || props.readonly"
         />
         <CrmCard v-else-if="activeTab === 'opportunityInfo'" no-content-bottom-padding hide-footer>
-          <opportunityTable :source-id="props.sourceId" is-customer-tab />
+          <opportunityTable
+            :source-id="props.sourceId"
+            is-customer-tab
+            :readonly="collaborationType === 'READ_ONLY' || props.readonly"
+          />
         </CrmCard>
         <collaborator
           v-else-if="activeTab === 'collaborator'"
           :source-id="props.sourceId"
-          :readonly="collaborationType === 'READ_ONLY'"
+          :readonly="collaborationType === 'READ_ONLY' || props.readonly"
         />
       </div>
       <CrmMoveModal
@@ -112,6 +120,7 @@
 
   const props = defineProps<{
     sourceId: string;
+    readonly?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'saved'): void;
@@ -130,7 +139,7 @@
   const sourceName = ref('');
   const descriptionRef = ref<InstanceType<typeof CrmFormDescription>>();
   const buttonList = computed<ActionsItem[]>(() => {
-    if (collaborationType.value) {
+    if (collaborationType.value || props.readonly) {
       return [];
     }
     return [

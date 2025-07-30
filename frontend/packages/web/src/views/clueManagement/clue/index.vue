@@ -69,6 +69,7 @@
       :detail="activeClue"
       @refresh="handleRefresh"
       @convert-to-customer="() => handleConvertToCustomer(activeClue)"
+      @open-customer-drawer="handleOpenCustomerDetail"
     />
     <CrmFormCreateDrawer
       v-if="isInitFormCreateDrawer"
@@ -102,6 +103,12 @@
     :source-id="moveIds"
     :name="activeRowName"
     @refresh="() => handleRefresh()"
+  />
+  <customerOverviewDrawer
+    v-if="isInitCustomerDrawer"
+    v-model:show="showCustomerDrawer"
+    :source-id="customerId"
+    readonly
   />
 </template>
 
@@ -145,6 +152,9 @@
 
   const convertToCustomerDrawer = defineAsyncComponent(() => import('./components/convertToCustomerDrawer.vue'));
   const ClueOverviewDrawer = defineAsyncComponent(() => import('./components/clueOverviewDrawer.vue'));
+  const customerOverviewDrawer = defineAsyncComponent(
+    () => import('@/views/customer/components/customerOverviewDrawer.vue')
+  );
 
   const Message = useMessage();
   const { openModal } = useModal();
@@ -585,6 +595,16 @@
     setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
+  }
+
+  const showCustomerDrawer = ref(false);
+  const customerId = ref('');
+  const isInitCustomerDrawer = ref(false);
+
+  function handleOpenCustomerDetail(_customerId: string) {
+    customerId.value = _customerId;
+    isInitCustomerDrawer.value = true;
+    showCustomerDrawer.value = true;
   }
 
   async function initDepartList() {

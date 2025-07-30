@@ -21,6 +21,7 @@
           :refresh-key="refreshKey"
           class="p-[16px_24px]"
           @init="handleDescriptionInit"
+          @open-customer-detail="emit('openCustomerDrawer', $event)"
         />
       </div>
     </template>
@@ -105,6 +106,7 @@
 
   const emit = defineEmits<{
     (e: 'refresh'): void;
+    (e: 'openCustomerDrawer', customerId: string): void;
   }>();
 
   const showOptOverviewDrawer = defineModel<boolean>('show', {

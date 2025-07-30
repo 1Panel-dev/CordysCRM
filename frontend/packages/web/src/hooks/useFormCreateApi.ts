@@ -1,7 +1,7 @@
 import { useMessage } from 'naive-ui';
 import { cloneDeep } from 'lodash-es';
 
-import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { formatNumberValue, formatTimeValue, getCityPath, safeFractionConvert } from '@lib/shared/method';
 import type { CollaborationType, ModuleField } from '@lib/shared/models/customer';
@@ -15,7 +15,7 @@ import {
   rules,
   updateFormApi,
 } from '@/components/business/crm-form-create/config';
-import type { FormCreateField, FormCreateFieldRule } from '@/components/business/crm-form-create/types';
+import type { FormCreateField, FormCreateFieldRule, FormDetail } from '@/components/business/crm-form-create/types';
 
 import useUserStore from '@/store/modules/user';
 
@@ -125,11 +125,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     });
   }
 
-  async function initFormDescription() {
+  async function initFormDescription(formData?: FormDetail) {
     try {
-      const asyncApi = getFormDetailApiMap[props.formKey.value];
-      if (!asyncApi || !props.sourceId?.value) return;
-      const form = await asyncApi(props.sourceId?.value);
+      let form = cloneDeep(formData || ({} as FormDetail));
+      if (!formData) {
+        const asyncApi = getFormDetailApiMap[props.formKey.value];
+        if (!asyncApi || !props.sourceId?.value) return;
+        form = await asyncApi(props.sourceId?.value);
+      }
       descriptions.value = [];
       detail.value = form;
       collaborationType.value = form.collaborationType;
@@ -162,6 +165,18 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               label: item.name,
               value: name || form[item.businessKey],
               slotName: FieldTypeEnum.DATE_TIME,
+              fieldInfo: item,
+            });
+          } else if (
+            item.type === FieldTypeEnum.DATA_SOURCE &&
+            item.dataSourceType === FieldDataSourceTypeEnum.CUSTOMER &&
+            [FormDesignKeyEnum.CLUE, FormDesignKeyEnum.BUSINESS].includes(props.formKey.value)
+          ) {
+            // 客户字段
+            descriptions.value.push({
+              label: item.name,
+              value: name || form[item.businessKey],
+              slotName: FieldDataSourceTypeEnum.CUSTOMER,
               fieldInfo: item,
             });
           } else if (item.type === FieldTypeEnum.DATE_TIME) {
@@ -248,11 +263,14 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     return value;
   }
 
-  async function initFormDetail() {
+  async function initFormDetail(needInitFormDescription = false) {
     try {
       const asyncApi = getFormDetailApiMap[props.formKey.value];
       if (!asyncApi || !props.sourceId?.value) return;
       const res = await asyncApi(props.sourceId?.value);
+      if (needInitFormDescription) {
+        await initFormDescription(res);
+      }
       collaborationType.value = res.collaborationType;
       sourceName.value = res.name;
       fieldList.value.forEach((item) => {

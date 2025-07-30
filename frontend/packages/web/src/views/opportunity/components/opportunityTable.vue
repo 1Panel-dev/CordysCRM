@@ -17,7 +17,8 @@
         <n-button
           v-if="
             hasAnyPermission(['OPPORTUNITY_MANAGEMENT:ADD']) &&
-            activeTab !== OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS
+            activeTab !== OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS &&
+            !props.readonly
           "
           type="primary"
           @click="handleCreate"
@@ -73,7 +74,12 @@
     :save-api="transferOpt"
     @load-list="handleRefresh"
   />
-  <OptOverviewDrawer v-model:show="showOverviewDrawer" :detail="activeOpportunity" @refresh="handleRefresh" />
+  <OptOverviewDrawer
+    v-model:show="showOverviewDrawer"
+    :detail="activeOpportunity"
+    @refresh="handleRefresh"
+    @open-customer-drawer="emit('openCustomerDrawer', $event, true)"
+  />
   <CrmFormCreateDrawer
     v-model:visible="formCreateDrawerVisible"
     :form-key="realFormKey"
@@ -141,9 +147,10 @@
     isCustomerTab?: boolean;
     sourceId?: string; // 客户详情下时传入客户 ID
     fullscreenTargetRef?: HTMLElement | null;
+    readonly?: boolean;
   }>();
   const emit = defineEmits<{
-    (e: 'openCustomerDrawer', activeSourceId: string): void;
+    (e: 'openCustomerDrawer', activeSourceId: string, readonly: boolean): void;
   }>();
 
   const Message = useMessage();
@@ -179,6 +186,17 @@
   );
 
   const actionConfig = computed<BatchActionConfig>(() => {
+    if (props.readonly) {
+      return {
+        baseAction: [
+          {
+            label: t('common.exportChecked'),
+            key: 'exportChecked',
+            permission: ['OPPORTUNITY_MANAGEMENT:EXPORT'],
+          },
+        ],
+      };
+    }
     return {
       baseAction: [
         {
@@ -439,47 +457,51 @@
   const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: props.isCustomerTab ? FormDesignKeyEnum.CUSTOMER_OPPORTUNITY : FormDesignKeyEnum.BUSINESS,
     excludeFieldIds: ['customerId'],
-    operationColumn: {
-      key: 'operation',
-      width: 200,
-      fixed: 'right',
-      render: (row: OpportunityItem) =>
-        row.stage === StageResultEnum.SUCCESS && !hasBackStagePermission.value
-          ? '-'
-          : h(
-              CrmOperationButton,
-              {
-                groupList: getOperationGroupList(row),
-                onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
-                onCancel: () => {
-                  transferForm.value = { ...defaultTransferForm };
-                },
-              },
-              {
-                transferPopContent: () => {
-                  return h(TransferForm, {
-                    class: 'w-[320px] mt-[16px]',
-                    form: transferForm.value,
-                    ref: transferFormRef,
-                  });
-                },
-              }
-            ),
-    },
+    operationColumn: props.readonly
+      ? undefined
+      : {
+          key: 'operation',
+          width: 200,
+          fixed: 'right',
+          render: (row: OpportunityItem) =>
+            row.stage === StageResultEnum.SUCCESS && !hasBackStagePermission.value
+              ? '-'
+              : h(
+                  CrmOperationButton,
+                  {
+                    groupList: getOperationGroupList(row),
+                    onSelect: (key: string, done?: () => void) => handleActionSelect(row, key, done),
+                    onCancel: () => {
+                      transferForm.value = { ...defaultTransferForm };
+                    },
+                  },
+                  {
+                    transferPopContent: () => {
+                      return h(TransferForm, {
+                        class: 'w-[320px] mt-[16px]',
+                        form: transferForm.value,
+                        ref: transferFormRef,
+                      });
+                    },
+                  }
+                ),
+        },
     specialRender: {
       name: (row: OpportunityItem) => {
-        return h(
-          CrmTableButton,
-          {
-            onClick: () => {
-              activeSourceId.value = row.id;
-              activeOpportunity.value = row;
-              realFormKey.value = FormDesignKeyEnum.BUSINESS;
-              showOverviewDrawer.value = true;
-            },
-          },
-          { default: () => row.name, trigger: () => row.name }
-        );
+        return props.readonly
+          ? row.name
+          : h(
+              CrmTableButton,
+              {
+                onClick: () => {
+                  activeSourceId.value = row.id;
+                  activeOpportunity.value = row;
+                  realFormKey.value = FormDesignKeyEnum.BUSINESS;
+                  showOverviewDrawer.value = true;
+                },
+              },
+              { default: () => row.name, trigger: () => row.name }
+            );
       },
       customerId: (row: OpportunityItem) => {
         return props.isCustomerTab
@@ -499,7 +521,7 @@
                     openSea.value = row.poolId ?? '';
                     showOpenSeaOverviewDrawer.value = true;
                   } else {
-                    emit('openCustomerDrawer', activeSourceId.value);
+                    emit('openCustomerDrawer', activeSourceId.value, false);
                   }
                 },
               },

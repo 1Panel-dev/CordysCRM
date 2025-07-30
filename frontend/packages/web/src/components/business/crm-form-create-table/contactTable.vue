@@ -325,16 +325,18 @@
     formKey: props.formKey,
     showPagination: !props.sourceId,
     readonly: props.readonly,
-    operationColumn: {
-      key: 'operation',
-      width: 100,
-      fixed: 'right',
-      render: (row: CustomerContractListItem) =>
-        h(CrmOperationButton, {
-          groupList: props.readonly ? [] : operationGroupList,
-          onSelect: (key: string) => handleActionSelect(row, key),
-        }),
-    },
+    operationColumn: props.readonly
+      ? undefined
+      : {
+          key: 'operation',
+          width: 100,
+          fixed: 'right',
+          render: (row: CustomerContractListItem) =>
+            h(CrmOperationButton, {
+              groupList: operationGroupList,
+              onSelect: (key: string) => handleActionSelect(row, key),
+            }),
+        },
     specialRender: {
       status: (row: CustomerContractListItem) => {
         return h(NSwitch, {

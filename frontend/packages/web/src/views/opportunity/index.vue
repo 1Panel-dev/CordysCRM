@@ -9,7 +9,11 @@
       </div>
     </CrmCard>
   </div>
-  <customerOverviewDrawer v-model:show="showCustomerOverviewDrawer" :source-id="activeSourceId" />
+  <customerOverviewDrawer
+    v-model:show="showCustomerOverviewDrawer"
+    :source-id="activeSourceId"
+    :readonly="isCustomerReadonly"
+  />
 </template>
 
 <script setup lang="ts">
@@ -21,9 +25,11 @@
 
   const showCustomerOverviewDrawer = ref(false);
   const activeSourceId = ref<string>('');
-  function handleOpenCustomerDrawer(sourceId: string) {
+  const isCustomerReadonly = ref(false);
+  function handleOpenCustomerDrawer(sourceId: string, readonly: boolean) {
     activeSourceId.value = sourceId;
     showCustomerOverviewDrawer.value = true;
+    isCustomerReadonly.value = readonly;
   }
 </script>
 
