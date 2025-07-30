@@ -321,7 +321,6 @@ public class OpportunityService {
     /**
      * 商机转移
      *
-     * @param request
      */
     public void transfer(OpportunityTransferRequest request, String userId, String orgId) {
         LambdaQueryWrapper<Opportunity> wrapper = new LambdaQueryWrapper<>();
@@ -331,6 +330,8 @@ public class OpportunityService {
         if (CollectionUtils.isEmpty(opportunityList)) {
             return;
         }
+        List<String> ids = opportunityList.stream().map(Opportunity::getId).toList();
+        request.setIds(ids);
         extOpportunityMapper.batchTransfer(request, userId, System.currentTimeMillis());
         // 记录日志
         List<LogDTO> logs = new ArrayList<>();
