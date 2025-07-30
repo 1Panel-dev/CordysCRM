@@ -7,10 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,37 +97,45 @@ public class RuleConditionDTO {
 					LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
 					long timestamp = getTimestamp(startOfWeek.atStartOfDay());
 					timestamps.add(timestamp);
-					timestamps.add(System.currentTimeMillis());
+					LocalDateTime now = LocalDateTime.now();
+					long timestampEnd = getTimestamp(now);
+					timestamps.add(timestampEnd);
 				}
 				case "LAST_WEEK" -> {
 					LocalDate startOfLastWeek = LocalDate.now().minusWeeks(1).with(java.time.DayOfWeek.MONDAY);
 					long timestamp = getTimestamp(startOfLastWeek.atStartOfDay());
 					timestamps.add(timestamp);
-					long timestampEnd = getTimestamp(startOfLastWeek.atTime(23, 59, 59, 999_000_000));
+					LocalDate startOfLastWeekEnd = LocalDate.now().minusWeeks(1).with(DayOfWeek.SUNDAY);
+					long timestampEnd = getTimestamp(startOfLastWeekEnd.plusDays(7).atTime(23, 59, 59, 999_000_000));
 					timestamps.add(timestampEnd);
 				}
 				case "MONTH" -> {
 					LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
 					long timestamp = getTimestamp(startOfMonth.atStartOfDay());
 					timestamps.add(timestamp);
-					timestamps.add(System.currentTimeMillis());
+					LocalDateTime now = LocalDateTime.now();
+					long timestampEnd = getTimestamp(now);
+					timestamps.add(timestampEnd);
 				}
 				case "LAST_MONTH" -> {
 					LocalDate startOfLastMonth = LocalDate.now().minusMonths(1).withDayOfMonth(1);
 					long timestamp = getTimestamp(startOfLastMonth.atStartOfDay());
 					timestamps.add(timestamp);
-					long timestampEnd = getTimestamp(startOfLastMonth.atTime(23, 59, 59, 999_000_000));
+					LocalDate startOfLastMonthEnd = LocalDate.now().minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
+					long timestampEnd = getTimestamp(startOfLastMonthEnd.atTime(23, 59, 59, 999_000_000));
 					timestamps.add(timestampEnd);
 				}
 				case "LAST_SEVEN" -> {
 					LocalDate startOfLastSevenDays = LocalDate.now().minusDays(7);
 					long timestamp = getTimestamp(startOfLastSevenDays.atStartOfDay());
 					timestamps.add(timestamp);
-					timestamps.add(System.currentTimeMillis());
+					LocalDateTime now = LocalDateTime.now();
+					long timestampEnd = getTimestamp(now);
+					timestamps.add(timestampEnd);
 				}
 				case "SEVEN" -> {
 					LocalDate startOfNextSevenDays = LocalDate.now().plusDays(7);
-					long timestamp = getTimestamp(startOfNextSevenDays.atStartOfDay());
+					long timestamp = getTimestamp(LocalDate.now().atStartOfDay());
 					timestamps.add(timestamp);
 					long timestampEnd = getTimestamp(startOfNextSevenDays.atTime(23, 59, 59, 999_000_000));
 					timestamps.add(timestampEnd);
@@ -138,11 +144,13 @@ public class RuleConditionDTO {
 					LocalDate startOfLastThirtyDays = LocalDate.now().minusDays(30);
 					long timestamp = getTimestamp(startOfLastThirtyDays.atStartOfDay());
 					timestamps.add(timestamp);
-					timestamps.add(System.currentTimeMillis());
+					LocalDateTime now = LocalDateTime.now();
+					long timestampEnd = getTimestamp(now);
+					timestamps.add(timestampEnd);
 				}
 				case "THIRTY" -> {
 					LocalDate startOfNextThirtyDays = LocalDate.now().plusDays(30);
-					long timestamp = getTimestamp(startOfNextThirtyDays.atStartOfDay());
+					long timestamp = getTimestamp(LocalDate.now().atStartOfDay());
 					timestamps.add(timestamp);
 					long timestampEnd = getTimestamp(startOfNextThirtyDays.atTime(23, 59, 59, 999_000_000));
 					timestamps.add(timestampEnd);

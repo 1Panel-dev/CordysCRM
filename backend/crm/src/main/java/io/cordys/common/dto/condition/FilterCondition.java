@@ -164,7 +164,7 @@ public class FilterCondition {
                     case "SEVEN" -> {
                         List<Long> sevens = new ArrayList<>();
                         LocalDate startOfNextSevenDays = LocalDate.now().plusDays(7);
-                        long timestamp = getTimestamp(startOfNextSevenDays.atStartOfDay());
+                        long timestamp = getTimestamp(LocalDate.now().atStartOfDay());
                         sevens.add(timestamp);
                         long timestampEnd = getTimestamp(startOfNextSevenDays.atTime(23, 59, 59, 999_000_000));
                         sevens.add(timestampEnd);
@@ -183,7 +183,7 @@ public class FilterCondition {
                     case "THIRTY" -> {
                         List<Long> thirty = new ArrayList<>();
                         LocalDate startOfNextThirtyDays = LocalDate.now().plusDays(30);
-                        long timestamp = getTimestamp(startOfNextThirtyDays.atStartOfDay());
+                        long timestamp = getTimestamp(LocalDate.now().atStartOfDay());
                         thirty.add(timestamp);
                         long timestampEnd = getTimestamp(startOfNextThirtyDays.atTime(23, 59, 59, 999_000_000));
                         thirty.add(timestampEnd);
