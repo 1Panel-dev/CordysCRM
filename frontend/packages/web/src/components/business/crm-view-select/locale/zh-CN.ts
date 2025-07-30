@@ -11,4 +11,5 @@ export default {
   'crmViewSelect.readOnly': '查看',
   'crmViewSelect.cannotCancelFixation': '系统默认视图，不能取消固定',
   'crmViewSelect.deleteConfirmTitle': '确认删除视图 {name} 吗？',
+  'crmViewSelect.dragTip': '不能跨视图属性排序!',
 };

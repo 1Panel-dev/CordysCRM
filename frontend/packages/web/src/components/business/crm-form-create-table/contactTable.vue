@@ -45,7 +45,7 @@
           v-model:active-tab="activeTab"
           :type="FormDesignKeyEnum.CONTACT"
           :internal-list="tabList as TabPaneProps[]"
-          :custom-fields-config-list="baseFilterConfigList"
+          :custom-fields-config-list="filterConfigList"
           :filter-config-list="customFieldsFilterConfig"
         />
       </template>

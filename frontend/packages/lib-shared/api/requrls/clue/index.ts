@@ -58,3 +58,4 @@ export const UpdateClueViewUrl = '/clue/view/update';
 export const DeleteClueViewUrl = '/clue/view/delete';
 export const FixedClueViewUrl = '/clue/view/fixed';
 export const EnableClueViewUrl = '/clue/view/enable';
+export const DragClueViewUrl = '/clue/view/edit/pos';

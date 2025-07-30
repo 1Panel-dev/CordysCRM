@@ -31,6 +31,8 @@ import {
   DeleteCustomerViewUrl,
   DeleteOpenSeaCustomerUrl,
   DisableCustomerContactUrl,
+  DragContactViewUrl,
+  DragCustomerViewUrl,
   EnableContactViewUrl,
   EnableCustomerContactUrl,
   EnableCustomerViewUrl,
@@ -84,6 +86,7 @@ import {
 } from '@lib/shared/api/requrls/customer';
 import type {
   CommonList,
+  TableDraggedParams,
   TableExportParams,
   TableExportSelectedParams,
   TableQueryParams,
@@ -498,6 +501,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${DeleteCustomerViewUrl}/${id}` });
   }
 
+  function dragCustomerView(data: TableDraggedParams) {
+    return CDR.post({ url: DragCustomerViewUrl, data });
+  }
+
   function addContactView(data: ViewParams) {
     return CDR.post({ url: AddContactViewUrl, data });
   }
@@ -524,6 +531,10 @@ export default function useProductApi(CDR: CordysAxios) {
 
   function deleteContactView(id: string) {
     return CDR.get({ url: `${DeleteContactViewUrl}/${id}` });
+  }
+
+  function dragContactView(data: TableDraggedParams) {
+    return CDR.post({ url: DragContactViewUrl, data });
   }
 
   return {
@@ -608,5 +619,7 @@ export default function useProductApi(CDR: CordysAxios) {
     getContactViewList,
     updateContactView,
     enableContactView,
+    dragCustomerView,
+    dragContactView,
   };
 }

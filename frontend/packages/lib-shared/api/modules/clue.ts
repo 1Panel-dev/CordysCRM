@@ -18,6 +18,7 @@ import {
   DeleteCluePoolUrl,
   DeleteClueUrl,
   DeleteClueViewUrl,
+  DragClueViewUrl,
   EnableClueViewUrl,
   ExportClueAllUrl,
   ExportClueSelectedUrl,
@@ -61,7 +62,12 @@ import type {
   SaveClueParams,
   UpdateClueParams,
 } from '@lib/shared/models/clue';
-import type { CommonList, TableExportParams, TableExportSelectedParams } from '@lib/shared/models/common';
+import type {
+  CommonList,
+  TableDraggedParams,
+  TableExportParams,
+  TableExportSelectedParams,
+} from '@lib/shared/models/common';
 import type {
   BatchMoveToPublicPoolParams,
   CustomerContractTableParams,
@@ -310,6 +316,10 @@ export default function useProductApi(CDR: CordysAxios) {
   function deleteClueView(id: string) {
     return CDR.get({ url: `${DeleteClueViewUrl}/${id}` });
   }
+
+  function dragClueView(data: TableDraggedParams) {
+    return CDR.post({ url: DragClueViewUrl, data });
+  }
   return {
     addClue,
     updateClue,
@@ -358,5 +368,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getClueViewList,
     updateClueView,
     enableClueView,
+    dragClueView,
   };
 }

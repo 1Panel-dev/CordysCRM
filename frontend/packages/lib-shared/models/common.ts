@@ -65,4 +65,6 @@ export interface TableDraggedParams {
   moveMode: 'BEFORE' | 'AFTER';
   orgId: string;
   targetId: string;
+  oldIndex: number;
+  newIndex: number;
 }

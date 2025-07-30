@@ -151,6 +151,7 @@
     actionConfig?: BatchActionConfig; // 批量操作
     notShowTableFilter?: boolean; // 不显示表头筛选
     draggable?: boolean; // 允许拖拽
+    dragMoveValidator?: (fromRow: any, toRow: any) => boolean; // 拖拽限制
     virtualScrollX?: boolean; // 是否开启横向虚拟滚动
     fullscreenTargetRef?: HTMLElement | null;
     class?: string; // 自定义样式类
@@ -548,6 +549,16 @@
           setData(dataTransfer: any) {
             dataTransfer.setData('Text', '');
           },
+          onMove: (evt) => {
+            if (!props.dragMoveValidator) return true;
+            const draggedEl = evt.dragged as HTMLElement;
+            const relatedEl = evt.related as HTMLElement;
+            const children = Array.from(evt.from.children); // 所有 row（tr）
+            const data = attrs.data as any[];
+            const fromRow = data[children.indexOf(draggedEl)];
+            const toRow = data[children.indexOf(relatedEl)];
+            return props.dragMoveValidator(fromRow, toRow);
+          },
           onEnd: (e: any) => {
             const { oldIndex, newIndex } = e;
             const data = attrs.data as any[];
@@ -577,6 +588,8 @@
               moveId,
               moveMode,
               orgId: appStore.orgId,
+              oldIndex,
+              newIndex,
             });
           },
         });

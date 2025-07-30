@@ -74,6 +74,7 @@ export const UpdateCustomerViewUrl = '/customer/view/update';
 export const DeleteCustomerViewUrl = '/customer/view/delete';
 export const FixedCustomerViewUrl = '/customer/view/fixed';
 export const EnableCustomerViewUrl = '/customer/view/enable';
+export const DragCustomerViewUrl = '/customer/view/edit/pos';
 
 export const GetContactViewDetailUrl = '/customer/contact/view/detail';
 export const GetContactViewListUrl = '/customer/contact/view/list';
@@ -82,3 +83,4 @@ export const UpdateContactViewUrl = '/customer/contact/view/update';
 export const DeleteContactViewUrl = '/customer/contact/view/delete';
 export const FixedContactViewUrl = '/customer/contact/view/fixed';
 export const EnableContactViewUrl = '/customer/contact/view/enable';
+export const DragContactViewUrl = '/customer/contact/view/edit/pos';

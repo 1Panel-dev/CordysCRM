@@ -85,6 +85,7 @@ export const {
   getBusinessViewList,
   updateBusinessView,
   enableBusinessView,
+  dragBusinessView,
 } = opportunityApi;
 
 export const {
@@ -135,6 +136,7 @@ export const {
   getClueViewList,
   updateClueView,
   enableClueView,
+  dragClueView,
 } = clueApi;
 
 export const {
@@ -215,6 +217,8 @@ export const {
   getContactViewDetail,
   getContactViewList,
   updateContactView,
+  dragCustomerView,
+  dragContactView,
   enableContactView,
 } = customerApi;
 

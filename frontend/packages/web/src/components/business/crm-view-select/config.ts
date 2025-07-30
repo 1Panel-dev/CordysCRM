@@ -14,6 +14,10 @@ import {
   deleteClueView,
   deleteContactView,
   deleteCustomerView,
+  dragBusinessView,
+  dragClueView,
+  dragContactView,
+  dragCustomerView,
   enableBusinessView,
   enableClueView,
   enableContactView,
@@ -40,7 +44,7 @@ import useUserStore from '@/store/modules/user';
 
 const userStore = useUserStore();
 
-type ViewAction = 'list' | 'add' | 'update' | 'delete' | 'detail' | 'fixed' | 'enable';
+type ViewAction = 'list' | 'add' | 'update' | 'delete' | 'detail' | 'fixed' | 'enable' | 'drag';
 
 export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => Promise<any>>> = {
   list: {
@@ -84,6 +88,12 @@ export const viewApiMap: Record<ViewAction, Record<TabType, (...args: any[]) => 
     [FormDesignKeyEnum.CUSTOMER]: enableCustomerView,
     [FormDesignKeyEnum.CONTACT]: enableContactView,
     [FormDesignKeyEnum.BUSINESS]: enableBusinessView,
+  },
+  drag: {
+    [FormDesignKeyEnum.CLUE]: dragClueView,
+    [FormDesignKeyEnum.CUSTOMER]: dragCustomerView,
+    [FormDesignKeyEnum.CONTACT]: dragContactView,
+    [FormDesignKeyEnum.BUSINESS]: dragBusinessView,
   },
 };
 

@@ -9,10 +9,13 @@
     <CrmTable
       v-bind="propsRes"
       class="crm-manage-views-table"
+      draggable
+      :drag-move-validator="dragMoveValidator"
       @page-change="propsEvent.pageChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
       @page-size-change="propsEvent.pageSizeChange"
+      @drag="dragHandler"
     >
       <template #tableTop>
         <n-button type="primary" @click="handleAdd">
@@ -39,6 +42,7 @@
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
+  import type { TableDraggedParams } from '@lib/shared/models/common';
   import type { ViewItem } from '@lib/shared/models/view';
 
   import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
@@ -147,11 +151,6 @@
       render: (row) =>
         h('div', { class: 'flex items-center gap-[8px] overflow-hidden flex-1' }, [
           h(CrmIcon, {
-            type: 'iconicon_move',
-            class: 'cursor-pointer text-[var(--text-n4)]',
-            size: 12,
-          }),
-          h(CrmIcon, {
             type: row.fixed ? 'iconicon_pin_filled' : 'iconicon_pin',
             class: `${row.id !== CustomerSearchTypeEnum.ALL ? 'cursor-pointer' : 'cursor-not-allowed'} ${
               row.fixed ? 'text-[var(--primary-8)]' : 'text-[var(--text-n1)]'
@@ -191,10 +190,11 @@
       render: (row) => {
         return h(NSwitch, {
           value: row.enable,
+          rubberBand: false,
           disabled: row.id === CustomerSearchTypeEnum.ALL,
-          onClick: () => {
+          onClick: async () => {
             if (row.id === CustomerSearchTypeEnum.ALL) return;
-            viewStore.toggleEnabled(props.type, row);
+            await viewStore.toggleEnabled(props.type, row);
             emit('handleDeleteOrDisable', row.id);
           },
         });
@@ -258,4 +258,32 @@
     },
     { deep: true }
   );
+
+  // 拖拽限制
+  let warningInstance: ReturnType<typeof Message.warning> | null = null;
+  function dragMoveValidator(fromRow: ViewItem, toRow: ViewItem) {
+    if (fromRow?.type !== toRow?.type) {
+      if (!warningInstance) {
+        warningInstance = Message.warning(t('crmViewSelect.dragTip'), {
+          duration: 0,
+        });
+      }
+      return false;
+    }
+    if (warningInstance) {
+      warningInstance.destroy();
+      warningInstance = null;
+    }
+
+    return true;
+  }
+
+  // 拖拽结束
+  async function dragHandler(params: TableDraggedParams) {
+    if (warningInstance) {
+      warningInstance.destroy();
+      warningInstance = null;
+    }
+    viewStore.toggleDrag(props.type, params);
+  }
 </script>

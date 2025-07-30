@@ -32,3 +32,4 @@ export const UpdateBusinessViewUrl = '/opportunity/view/update';
 export const DeleteBusinessViewUrl = '/opportunity/view/delete';
 export const FixedBusinessViewUrl = '/opportunity/view/fixed';
 export const EnableBusinessViewUrl = '/opportunity/view/enable';
+export const DragBusinessViewUrl = '/opportunity/view/edit/pos';

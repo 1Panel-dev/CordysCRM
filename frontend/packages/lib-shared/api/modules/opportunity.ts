@@ -7,6 +7,7 @@ import {
   DeleteBusinessViewUrl,
   DeleteOptFollowPlanUrl,
   DeleteOptFollowRecordUrl,
+  DragBusinessViewUrl,
   EnableBusinessViewUrl,
   ExportOpportunityAllUrl,
   ExportOpportunitySelectedUrl,
@@ -35,6 +36,7 @@ import {
 } from '@lib/shared/api/requrls/opportunity';
 import type {
   CommonList,
+  TableDraggedParams,
   TableExportParams,
   TableExportSelectedParams,
   TableQueryParams,
@@ -216,6 +218,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.get({ url: `${DeleteBusinessViewUrl}/${id}` });
   }
 
+  function dragBusinessView(data: TableDraggedParams) {
+    return CDR.post({ url: DragBusinessViewUrl, data });
+  }
+
   return {
     getOpportunityList,
     addOpportunity,
@@ -249,5 +255,6 @@ export default function useProductApi(CDR: CordysAxios) {
     getBusinessViewList,
     updateBusinessView,
     enableBusinessView,
+    dragBusinessView,
   };
 }

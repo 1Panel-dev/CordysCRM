@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { TabPaneProps } from 'naive-ui';
 
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
+import type { TableDraggedParams } from '@lib/shared/models/common';
 import type { ViewItem } from '@lib/shared/models/view';
 
 import { ConditionsItem } from '@/components/pure/crm-advance-filter/type';
@@ -43,21 +44,46 @@ const useViewStore = defineStore('view', {
     },
 
     async loadInternalViews(type: TabType, internalList: TabPaneProps[]) {
-      // TODO lmy 拖拽后的存储顺序和internalList顺序
       const stored = await this.getInternalViews(this.getInternalKey(type));
-      this.internalViews = internalList.map((i) => {
-        const storedItem = stored.find((item) => item.id === i.name);
-        return {
-          id: i.name as string,
-          name: i.tab as string,
-          enable: storedItem?.enable ?? true,
-          fixed: storedItem?.fixed ?? true,
-          type: 'internal',
-          searchMode: 'AND',
-          list: internalConditionsMap[i.name as string],
-        };
-      });
-      this.setInternalViews(this.getInternalKey(type), this.internalViews);
+
+      const listMap = internalList.reduce<Record<string, TabPaneProps>>((map, item) => {
+        map[item.name as string] = item;
+        return map;
+      }, {});
+
+      const storedIds = new Set(stored.map((i) => i.id));
+
+      const merged = [
+        // 优先使用 stored 的顺序和设置
+        ...stored
+          .filter((item) => listMap[item.id])
+          .map((item) => {
+            const def = listMap[item.id];
+            return {
+              ...item,
+              name: def.tab as string,
+              list: internalConditionsMap[def.name as string],
+              type: 'internal',
+              searchMode: item.searchMode ?? 'AND',
+            };
+          }),
+
+        // 添加 stored 中没有的新项
+        ...internalList
+          .filter((item) => !storedIds.has(item.name as string))
+          .map((item) => ({
+            id: item.name as string,
+            name: item.tab as string,
+            enable: true,
+            fixed: true,
+            type: 'internal',
+            searchMode: 'AND',
+            list: internalConditionsMap[item.name as string],
+          })),
+      ];
+
+      this.internalViews = merged;
+      await this.setInternalViews(this.getInternalKey(type), this.internalViews);
     },
 
     async loadCustomViews(type: TabType) {
@@ -101,6 +127,24 @@ const useViewStore = defineStore('view', {
         list: res.list,
         searchMode: res.searchMode,
       };
+    },
+
+    // 拖拽
+    async toggleDrag(type: TabType, params: TableDraggedParams) {
+      const isInternal = this.internalViews.some((item) => item.id === params.moveId);
+      if (isInternal) {
+        const movedItem = this.internalViews.splice(params.oldIndex, 1)[0];
+        this.internalViews.splice(params.newIndex, 0, movedItem);
+        await this.setInternalViews(this.getInternalKey(type), this.internalViews);
+      } else {
+        try {
+          await viewApiMap.drag[type](params);
+          this.loadCustomViews(type);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log(error);
+        }
+      }
     },
 
     // 固定/取消固定
