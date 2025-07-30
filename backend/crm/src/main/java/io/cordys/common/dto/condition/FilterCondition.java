@@ -75,14 +75,14 @@ public class FilterCondition {
     }
 
 
-    public Object getValue() {
-        if (StringUtils.equalsIgnoreCase(operator, CombineConditionOperator.DYNAMICS.name()) ){
-           // value 转为string 类型
+    public Object getCombineValue() {
+        if (StringUtils.equalsIgnoreCase(operator, CombineConditionOperator.DYNAMICS.name())) {
+            // value 转为string 类型
             String strValue = (String) value;
             String[] split = strValue.split(",");
             if (split.length == 1) {
                 String dateValue = split[0];
-                switch(dateValue) {
+                switch (dateValue) {
                     case "TODAY" -> {
                         List<Long> todayList = new ArrayList<>();
                         // 获取今天的日期
@@ -191,33 +191,32 @@ public class FilterCondition {
                     }
                 }
 
-            }
-            else{
+            } else {
                 String dateValue = split[1];
                 String dateUnit = split[2];
                 int dateNumber = Integer.parseInt(dateValue);
-                switch (dateUnit){
-                    case "BEFORE_DAY"->{
+                switch (dateUnit) {
+                    case "BEFORE_DAY" -> {
                         LocalDateTime startOfLastDays = LocalDateTime.now().minusDays(dateNumber);
                         return getTimestamp(startOfLastDays);
                     }
-                    case "AFTER_DAY"->{
+                    case "AFTER_DAY" -> {
                         LocalDateTime startOfNextDays = LocalDateTime.now().plusDays(dateNumber);
                         return getTimestamp(startOfNextDays);
                     }
-                    case "BEFORE_WEEK"->{
-                        LocalDateTime startOfLastWeeks = LocalDateTime.now().minusDays(dateNumber* 7L);
+                    case "BEFORE_WEEK" -> {
+                        LocalDateTime startOfLastWeeks = LocalDateTime.now().minusDays(dateNumber * 7L);
                         return getTimestamp(startOfLastWeeks);
                     }
-                    case "AFTER_WEEK"->{
-                        LocalDateTime startOfNextWeeks = LocalDateTime.now().plusDays(dateNumber*7L);
+                    case "AFTER_WEEK" -> {
+                        LocalDateTime startOfNextWeeks = LocalDateTime.now().plusDays(dateNumber * 7L);
                         return getTimestamp(startOfNextWeeks);
                     }
-                    case "BEFORE_MONTH"->{
+                    case "BEFORE_MONTH" -> {
                         LocalDateTime startOfLastMonths = LocalDateTime.now().minusMonths(dateNumber);
                         return getTimestamp(startOfLastMonths);
                     }
-                    case "AFTER_MONTH"->{
+                    case "AFTER_MONTH" -> {
                         LocalDateTime startOfNextMonths = LocalDateTime.now().plusMonths(dateNumber);
                         return getTimestamp(startOfNextMonths);
                     }
@@ -227,19 +226,19 @@ public class FilterCondition {
         return value;
     }
 
-    public String getOperator(){
-        if (StringUtils.equalsIgnoreCase(operator, CombineConditionOperator.DYNAMICS.name()) ){
+    public String getCombineOperator() {
+        if (StringUtils.equalsIgnoreCase(operator, CombineConditionOperator.DYNAMICS.name())) {
             String strValue = (String) value;
             String[] split = strValue.split(",");
             if (split.length == 1) {
                 return CombineConditionOperator.BETWEEN.name();
-            }else {
+            } else {
                 String dateUnit = split[2];
                 switch (dateUnit) {
                     case "BEFORE_DAY", "BEFORE_WEEK", "BEFORE_MONTH" -> {
                         return CombineConditionOperator.LT.name();
                     }
-                    case "AFTER_DAY", "AFTER_WEEK",  "AFTER_MONTH"-> {
+                    case "AFTER_DAY", "AFTER_WEEK", "AFTER_MONTH" -> {
                         return CombineConditionOperator.GT.name();
                     }
                 }

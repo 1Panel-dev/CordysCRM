@@ -58,8 +58,8 @@ public class CombineSearch {
                 continue;
             }
 
-            Object value = condition.getValue();
-            boolean isBetween = StringUtils.equals(condition.getOperator(), FilterCondition.CombineConditionOperator.BETWEEN.name());
+            Object value = condition.getCombineValue();
+            boolean isBetween = StringUtils.equals(condition.getCombineOperator(), FilterCondition.CombineConditionOperator.BETWEEN.name());
 
             if (value instanceof List<?> valueList) {
                 if (CollectionUtils.isEmpty(valueList)) {

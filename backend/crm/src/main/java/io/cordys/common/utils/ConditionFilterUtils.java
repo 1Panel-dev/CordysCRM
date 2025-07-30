@@ -52,8 +52,12 @@ public class ConditionFilterUtils {
 
         List<FilterCondition> validConditions = getValidConditions(combineSearch.getConditions());
         validConditions.forEach(item -> {
-            if (item.getValue() != null && item.getValue() instanceof String strValue
-                    && StringUtils.equalsAny(item.getOperator(), FilterCondition.CombineConditionOperator.CONTAINS.name(),
+            Object combineValue = item.getCombineValue();
+            String combineOperator = item.getCombineOperator();
+            item.setValue(combineValue);
+            item.setOperator(combineOperator);
+            if (item.getValue() != null && item.getCombineValue() instanceof String strValue
+                    && StringUtils.equalsAny(item.getCombineOperator(), FilterCondition.CombineConditionOperator.CONTAINS.name(),
                     FilterCondition.CombineConditionOperator.NOT_CONTAINS.name())) {
                 // 转义 mysql 的特殊字符
                 item.setValue(BaseCondition.transferKeyword(strValue));
@@ -69,7 +73,7 @@ public class ConditionFilterUtils {
      */
     private static void replaceCurrentUser(List<FilterCondition> validConditions) {
         for (FilterCondition validCondition : validConditions) {
-            Object value = validCondition.getValue();
+            Object value = validCondition.getCombineValue();
             if (value instanceof List arrayValues) {
                 for (int i = 0; i < arrayValues.size(); i++) {
                     Object arrayValue = arrayValues.get(i);
