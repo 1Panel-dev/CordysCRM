@@ -63,3 +63,4 @@ export const UpdateReasonUrl = '/dict/update'; // 更新原因
 export const DeleteReasonUrl = '/dict/delete'; // 删除原因
 export const GetReasonConfigUrl = '/dict/config'; // 获取原因配置
 export const UpdateReasonEnableUrl = '/dict/switch'; // 更新原因开关
+export const SortReasonUrl = '/dict/sort'; // 原因排序

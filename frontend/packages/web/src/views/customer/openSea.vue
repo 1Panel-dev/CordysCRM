@@ -446,7 +446,7 @@
     {
       title: t('customer.recycleReason'),
       dataIndex: 'reasonId',
-      type: FieldTypeEnum.SELECT,
+      type: FieldTypeEnum.SELECT_MULTIPLE,
       selectProps: {
         options: reasonOptions.value,
       },

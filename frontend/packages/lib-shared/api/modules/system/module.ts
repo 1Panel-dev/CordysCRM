@@ -38,6 +38,7 @@ import {
   QuickUpdateCluePoolUrl,
   QuickUpdateCustomerPoolUrl,
   SaveFormDesignConfigUrl,
+  SortReasonUrl,
   SwitchCluePoolStatusUrl,
   SwitchCustomerPoolStatusUrl,
   switchOpportunityStatusUrl,
@@ -71,6 +72,7 @@ import type {
   ReasonItem,
   ReasonParams,
   SaveFormDesignConfigParams,
+  SortReasonParams,
   UpdateReasonEnableParams,
 } from '@lib/shared/models/system/module';
 import type { DeptUserTreeNode } from '@lib/shared/models/system/role';
@@ -277,6 +279,10 @@ export default function useProductApi(CDR: CordysAxios) {
     return CDR.post<ReasonConfig>({ url: UpdateReasonEnableUrl, data });
   }
 
+  function sortReason(data: SortReasonParams) {
+    return CDR.post({ url: SortReasonUrl, data });
+  }
+
   return {
     getModuleNavConfigList,
     moduleNavListSort,
@@ -322,5 +328,6 @@ export default function useProductApi(CDR: CordysAxios) {
     deleteReasonItem,
     getReasonConfig,
     updateReasonEnable,
+    sortReason,
   };
 }

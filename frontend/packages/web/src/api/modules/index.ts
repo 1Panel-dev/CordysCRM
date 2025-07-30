@@ -317,6 +317,7 @@ export const {
   deleteReasonItem,
   getReasonConfig,
   updateReasonEnable,
+  sortReason,
 } = moduleApi;
 
 export const {

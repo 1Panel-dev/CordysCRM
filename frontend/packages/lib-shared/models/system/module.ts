@@ -215,3 +215,9 @@ export interface ReasonConfig {
   enable: boolean;
   dictList: ReasonItem[];
 }
+
+export interface SortReasonParams {
+  dragDictId: string; // 拖拽元素id
+  start: number; // 排序前
+  end: number; // 排序后
+}

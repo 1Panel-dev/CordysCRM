@@ -22,6 +22,7 @@
             :force-fallback="true"
             :animation="150"
             handle=".handle"
+            @end="(e) => emit('drag', e)"
           >
             <div
               v-for="(element, index) in form.list"
@@ -211,7 +212,7 @@
   } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
   import { cloneDeep } from 'lodash-es';
-  import { VueDraggable } from 'vue-draggable-plus';
+  import { SortableEvent, VueDraggable } from 'vue-draggable-plus';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -250,6 +251,7 @@
   const emit = defineEmits<{
     (e: 'deleteRow', index: number, id: string, done: () => void): void;
     (e: 'saveRow', element: Record<string, any>, done: () => void): void;
+    (e: 'drag', event: any): void;
   }>();
 
   const formRef = ref<FormInst | null>(null);

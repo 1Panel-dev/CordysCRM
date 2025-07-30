@@ -40,6 +40,7 @@
           :pop-confirm-props="getConfirmPropsFun"
           @delete-row="handleDelete"
           @save-row="handleSave"
+          @drag="dragEnd"
         />
       </div>
     </n-scrollbar>
@@ -57,7 +58,14 @@
   import CrmDrawer from '@/components/pure/crm-drawer/index.vue';
   import CrmBatchForm from '@/components/business/crm-batch-form/index.vue';
 
-  import { addReason, deleteReasonItem, getReasonList, updateReason, updateReasonEnable } from '@/api/modules';
+  import {
+    addReason,
+    deleteReasonItem,
+    getReasonList,
+    sortReason,
+    updateReason,
+    updateReasonEnable,
+  } from '@/api/modules';
 
   const { t } = useI18n();
   const Message = useMessage();
@@ -180,6 +188,23 @@
         await initReason();
       }
       emit('loadConfig');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
+  async function dragEnd(event: any) {
+    if (form.value.list.length === 1) return;
+    try {
+      const { newIndex, oldIndex, data } = event;
+      await sortReason({
+        start: oldIndex + 1,
+        end: newIndex + 1,
+        dragDictId: data.id,
+      });
+      Message.success(t('common.operationSuccess'));
+      initReason();
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
