@@ -204,8 +204,9 @@
   function getLabel(type: ReasonTypeEnum) {
     switch (type) {
       case ReasonTypeEnum.CUSTOMER_POOL_RS:
+        return t('module.movePublicPoolReasonConfig');
       case ReasonTypeEnum.CLUE_POOL_RS:
-        return t('module.moveReasonConfig');
+        return t('module.moveLeadPoolReasonConfig');
       case ReasonTypeEnum.OPPORTUNITY_FAIL_RS:
         return t('module.failReasonConfig');
       default:
@@ -276,7 +277,7 @@
       label: t('module.customer.capacitySet'),
     },
     {
-      label: t('module.moveReasonConfig'),
+      label: t('module.movePublicPoolReasonConfig'),
       key: 'move',
       render: renderAccountReasonConfig.value,
     },
@@ -284,7 +285,7 @@
 
   const leadMoreOptions = computed<ActionsItem[]>(() => [
     {
-      label: t('module.moveReasonConfig'),
+      label: t('module.moveLeadPoolReasonConfig'),
       key: 'move',
       render: renderLeadReasonConfig.value,
     },

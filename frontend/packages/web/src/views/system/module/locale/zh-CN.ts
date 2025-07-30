@@ -85,7 +85,8 @@ export default {
   'module.goConfig': '去配置',
   'module.DataEaseTip': '系统暂未配置 DataEase',
   'module.DataEaseTipContent': '配置 DataEase 后方可使用该功能',
-  'module.moveReasonConfig': '移入原因设置',
-  'module.failReasonConfig': '失败原因设置',
+  'module.moveLeadPoolReasonConfig': '移入线索池原因设置',
+  'module.movePublicPoolReasonConfig': '移入公海原因设置',
+  'module.failReasonConfig': '商机失败原因设置',
   'module.configReasonTooltip': '配置可开启',
 };

@@ -88,7 +88,8 @@ export default {
   'module.goConfig': 'Go to configuration',
   'module.DataEaseTip': 'The system is not configured for DataEase',
   'module.DataEaseTipContent': 'Configure DataEase before using this feature',
-  'module.moveReasonConfig': 'Move reason configuration',
+  'module.moveLeadPoolReasonConfig': 'Move into cue pool cause setting',
+  'module.movePublicPoolReasonConfig': 'Move into the open sea cause setting',
   'module.failReasonConfig': 'Fail reason configuration',
   'module.configReasonTooltip': 'The configuration can be enabled',
 };
