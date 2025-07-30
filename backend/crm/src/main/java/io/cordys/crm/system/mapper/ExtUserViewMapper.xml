@@ -25,6 +25,7 @@
         where organization_id = #{orgId}
         and user_id = #{userId}
         and resource_type = #{resourceType}
+        order by pos desc
     </select>
 
 
