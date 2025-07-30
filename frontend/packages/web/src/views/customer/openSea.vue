@@ -29,7 +29,7 @@
         <CrmAdvanceFilter
           ref="tableAdvanceFilterRef"
           v-model:keyword="keyword"
-          :custom-fields-config-list="baseFilterConfigList"
+          :custom-fields-config-list="filterConfigList"
           :filter-config-list="customFieldsFilterConfig"
           @adv-search="handleAdvSearch"
           @keyword-search="searchData"
@@ -63,7 +63,7 @@
   import { VNodeChild } from 'vue';
   import { DataTableRowKey, NSelect, NTooltip, useMessage } from 'naive-ui';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
@@ -361,7 +361,7 @@
     const openSeaSetting = openSeaOptions.value.find((item) => item.id === openSea.value);
     return openSeaSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
   });
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CUSTOMER_OPEN_SEA,
     operationColumn: {
       key: 'operation',
@@ -439,6 +439,18 @@
     openSeaOptions.value = res;
     openSea.value = openSeaOptions.value[0]?.id || '';
   }
+
+  const filterConfigList = computed(() => [
+    {
+      title: t('customer.recycleReason'),
+      dataIndex: 'reasonId',
+      type: FieldTypeEnum.SELECT,
+      selectProps: {
+        options: reasonOptions.value,
+      },
+    },
+    ...baseFilterConfigList,
+  ]);
 
   async function init() {
     await initOpenSeaOptions();

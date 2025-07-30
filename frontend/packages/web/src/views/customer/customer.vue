@@ -454,7 +454,6 @@
           { trigger: () => row.name, default: () => row.name }
         );
       },
-      recycleReason: (row: any) => row.reasonName ?? '-',
     },
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],
   });
@@ -537,14 +536,6 @@
       title: t('customer.lastFollowUpDate'),
       dataIndex: 'followTime',
       type: FieldTypeEnum.TIME_RANGE_PICKER,
-    },
-    {
-      title: t('customer.recycleReason'),
-      dataIndex: 'recycleReason',
-      type: FieldTypeEnum.SELECT,
-      selectProps: {
-        options: reasonOptions.value,
-      },
     },
     ...baseFilterConfigList,
   ]);

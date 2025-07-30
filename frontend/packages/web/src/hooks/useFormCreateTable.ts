@@ -419,7 +419,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         sorter: true,
         filterOptions: reasonOptions.value,
         filter: true,
-        render: props.specialRender?.recycleReason,
+        render: (row: any) => row.reasonName || '-',
       },
     ],
     [FormDesignKeyEnum.CLUE_POOL]: [
@@ -434,7 +434,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         sorter: true,
         filterOptions: reasonOptions.value,
         filter: true,
-        render: props.specialRender?.recycleReason,
+        render: (row: any) => row.reasonName || '-',
       },
     ],
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: opportunityInternalColumns,

@@ -38,7 +38,7 @@
           <CrmAdvanceFilter
             ref="tableAdvanceFilterRef"
             v-model:keyword="keyword"
-            :custom-fields-config-list="baseFilterConfigList"
+            :custom-fields-config-list="filterConfigList"
             :filter-config-list="customFieldsFilterConfig"
             @adv-search="handleAdvSearch"
             @keyword-search="searchData"
@@ -73,7 +73,7 @@
   import { VNodeChild } from 'vue';
   import { DataTableRowKey, NSelect, NTooltip, useMessage } from 'naive-ui';
 
-  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
+  import { FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import { characterLimit } from '@lib/shared/method';
@@ -345,7 +345,7 @@
   }
 
   const activeClue = ref<CluePoolListItem>();
-  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE_POOL,
     operationColumn: {
       key: 'operation',
@@ -442,6 +442,18 @@
     loadList();
     crmTableRef.value?.scrollTo({ top: 0 });
   }
+
+  const filterConfigList = computed(() => [
+    {
+      title: t('customer.recycleReason'),
+      dataIndex: 'reasonId',
+      type: FieldTypeEnum.SELECT,
+      selectProps: {
+        options: reasonOptions.value,
+      },
+    },
+    ...baseFilterConfigList,
+  ]);
 
   watch(
     () => tableRefreshId.value,

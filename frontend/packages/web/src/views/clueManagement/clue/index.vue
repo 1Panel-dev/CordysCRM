@@ -420,7 +420,7 @@
   const isInitOverviewDrawer = ref(false);
   const showOverviewDrawer = ref(false);
 
-  const { useTableRes, customFieldsFilterConfig, reasonOptions } = await useFormCreateTable({
+  const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE,
     operationColumn: {
       key: 'operation',
@@ -514,7 +514,6 @@
           { default: () => row.name, trigger: () => row.name }
         );
       },
-      recycleReason: (row: ClueListItem) => row?.reasonName ?? '-',
     },
     permission: ['CLUE_MANAGEMENT:RECYCLE', 'CLUE_MANAGEMENT:DELETE', 'CLUE_MANAGEMENT:UPDATE'],
   });
@@ -568,14 +567,6 @@
       title: t('customer.lastFollowUpDate'),
       dataIndex: 'followTime',
       type: FieldTypeEnum.TIME_RANGE_PICKER,
-    },
-    {
-      title: t('customer.recycleReason'),
-      dataIndex: 'recycleReason',
-      type: FieldTypeEnum.SELECT,
-      selectProps: {
-        options: reasonOptions.value,
-      },
     },
     ...baseFilterConfigList,
   ]);
