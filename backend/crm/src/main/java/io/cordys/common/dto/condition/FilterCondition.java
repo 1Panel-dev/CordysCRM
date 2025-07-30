@@ -7,10 +7,8 @@ import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +41,6 @@ public class FilterCondition {
 
     @Schema(description = "类型")
     private String type;
-    private List<Long> yesterdays;
 
     /**
      * 校验条件是否合法，检查字段名称、操作符和值的有效性。
@@ -119,7 +116,9 @@ public class FilterCondition {
                         LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
                         long timestamp = getTimestamp(startOfWeek.atStartOfDay());
                         weeks.add(timestamp);
-                        weeks.add(System.currentTimeMillis());
+                        LocalDateTime now = LocalDateTime.now();
+                        long timestampEnd = getTimestamp(now);
+                        weeks.add(timestampEnd);
                         return weeks;
                     }
                     case "LAST_WEEK" -> {
@@ -127,7 +126,8 @@ public class FilterCondition {
                         LocalDate startOfLastWeek = LocalDate.now().minusWeeks(1).with(java.time.DayOfWeek.MONDAY);
                         long timestamp = getTimestamp(startOfLastWeek.atStartOfDay());
                         lastWeeks.add(timestamp);
-                        long timestampEnd = getTimestamp(startOfLastWeek.atTime(23, 59, 59, 999_000_000));
+                        LocalDate startOfLastWeekEnd = LocalDate.now().minusWeeks(1).with(DayOfWeek.SUNDAY);
+                        long timestampEnd = getTimestamp(startOfLastWeekEnd.plusDays(7).atTime(23, 59, 59, 999_000_000));
                         lastWeeks.add(timestampEnd);
                         return lastWeeks;
                     }
@@ -136,7 +136,9 @@ public class FilterCondition {
                         LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
                         long timestamp = getTimestamp(startOfMonth.atStartOfDay());
                         months.add(timestamp);
-                        months.add(System.currentTimeMillis());
+                        LocalDateTime now = LocalDateTime.now();
+                        long timestampEnd = getTimestamp(now);
+                        months.add(timestampEnd);
                         return months;
                     }
                     case "LAST_MONTH" -> {
@@ -144,7 +146,8 @@ public class FilterCondition {
                         LocalDate startOfLastMonth = LocalDate.now().minusMonths(1).withDayOfMonth(1);
                         long timestamp = getTimestamp(startOfLastMonth.atStartOfDay());
                         lastMonths.add(timestamp);
-                        long timestampEnd = getTimestamp(startOfLastMonth.atTime(23, 59, 59, 999_000_000));
+                        LocalDate startOfLastMonthEnd = LocalDate.now().minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
+                        long timestampEnd = getTimestamp(startOfLastMonthEnd.atTime(23, 59, 59, 999_000_000));
                         lastMonths.add(timestampEnd);
                         return lastMonths;
                     }
@@ -153,7 +156,9 @@ public class FilterCondition {
                         LocalDate startOfLastSevenDays = LocalDate.now().minusDays(7);
                         long timestamp = getTimestamp(startOfLastSevenDays.atStartOfDay());
                         lastSevens.add(timestamp);
-                        lastSevens.add(System.currentTimeMillis());
+                        LocalDateTime now = LocalDateTime.now();
+                        long timestampEnd = getTimestamp(now);
+                        lastSevens.add(timestampEnd);
                         return lastSevens;
                     }
                     case "SEVEN" -> {
@@ -170,7 +175,9 @@ public class FilterCondition {
                         LocalDate startOfLastThirtyDays = LocalDate.now().minusDays(30);
                         long timestamp = getTimestamp(startOfLastThirtyDays.atStartOfDay());
                         lastThirty.add(timestamp);
-                        lastThirty.add(System.currentTimeMillis());
+                        LocalDateTime now = LocalDateTime.now();
+                        long timestampEnd = getTimestamp(now);
+                        lastThirty.add(timestampEnd);
                         return lastThirty;
                     }
                     case "THIRTY" -> {
@@ -184,70 +191,64 @@ public class FilterCondition {
                     }
                 }
 
-            } else{
+            }
+            else{
                 String dateValue = split[1];
                 String dateUnit = split[2];
                 int dateNumber = Integer.parseInt(dateValue);
                 switch (dateUnit){
                     case "BEFORE_DAY"->{
-                        List<Long> days = new ArrayList<>();
-                        LocalDate startOfLastDays = LocalDate.now().minusDays(dateNumber);
-                        long timestamp = getTimestamp(startOfLastDays.atStartOfDay());
-                        days.add(timestamp);
-                        long timestampEnd = getTimestamp(startOfLastDays.atTime(23, 59, 59, 999_000_000));
-                        days.add(timestampEnd);
-                        return days;
+                        LocalDateTime startOfLastDays = LocalDateTime.now().minusDays(dateNumber);
+                        return getTimestamp(startOfLastDays);
                     }
                     case "AFTER_DAY"->{
-                        List<Long> days = new ArrayList<>();
-                        LocalDate startOfNextDays = LocalDate.now().plusDays(dateNumber);
-                        long timestamp = getTimestamp(startOfNextDays.atStartOfDay());
-                        days.add(timestamp);
-                        long timestampEnd = getTimestamp(startOfNextDays.atTime(23, 59, 59, 999_000_000));
-                        days.add(timestampEnd);
-                        return days;
+                        LocalDateTime startOfNextDays = LocalDateTime.now().plusDays(dateNumber);
+                        return getTimestamp(startOfNextDays);
                     }
                     case "BEFORE_WEEK"->{
-                        List<Long> weeks = new ArrayList<>();
-                        LocalDate startOfLastWeeks = LocalDate.now().minusWeeks(dateNumber).with(java.time.DayOfWeek.MONDAY);
-                        long timestamp = getTimestamp(startOfLastWeeks.atStartOfDay());
-                        weeks.add(timestamp);
-                        long timestampEnd = getTimestamp(startOfLastWeeks.atTime(23, 59, 59, 999_000_000));
-                        weeks.add(timestampEnd);
-                        return weeks;
+                        LocalDateTime startOfLastWeeks = LocalDateTime.now().minusWeeks(dateNumber).with(java.time.DayOfWeek.MONDAY);
+                        return getTimestamp(startOfLastWeeks);
                     }
                     case "AFTER_WEEK"->{
-                        List<Long> weeks = new ArrayList<>();
-                        LocalDate startOfNextWeeks = LocalDate.now().plusWeeks(dateNumber).with(java.time.DayOfWeek.MONDAY);
-                        long timestamp = getTimestamp(startOfNextWeeks.atStartOfDay());
-                        weeks.add(timestamp);
-                        long timestampEnd = getTimestamp(startOfNextWeeks.atTime(23, 59, 59, 999_000_000));
-                        weeks.add(timestampEnd);
-                        return weeks;
+                        LocalDateTime startOfNextWeeks = LocalDateTime.now().plusWeeks(dateNumber).with(java.time.DayOfWeek.MONDAY);
+                        return getTimestamp(startOfNextWeeks);
                     }
                     case "BEFORE_MONTH"->{
-                        List<Long> months = new ArrayList<>();
-                        LocalDate startOfLastMonths = LocalDate.now().minusMonths(dateNumber).withDayOfMonth(1);
-                        long timestamp = getTimestamp(startOfLastMonths.atStartOfDay());
-                        months.add(timestamp);
-                        long timestampEnd = getTimestamp(startOfLastMonths.atTime(23, 59, 59, 999_000_000));
-                        months.add(timestampEnd);
-                        return months;
+                        LocalDateTime startOfLastMonths = LocalDateTime.now().minusMonths(dateNumber).withDayOfMonth(1);
+                        return getTimestamp(startOfLastMonths);
                     }
                     case "AFTER_MONTH"->{
-                        List<Long> months = new ArrayList<>();
-                        LocalDate startOfNextMonths = LocalDate.now().plusMonths(dateNumber).withDayOfMonth(1);
-                        long timestamp = getTimestamp(startOfNextMonths.atStartOfDay());
-                        months.add(timestamp);
-                        long timestampEnd = getTimestamp(startOfNextMonths.atTime(23, 59, 59, 999_000_000));
-                        months.add(timestampEnd);
-                        return months;
+                        LocalDateTime startOfNextMonths = LocalDateTime.now().plusMonths(dateNumber).withDayOfMonth(1);
+                        return getTimestamp(startOfNextMonths);
                     }
                 }
             }
         }
         return value;
     }
+
+    public String getOperator(){
+        if (StringUtils.equalsIgnoreCase(operator, CombineConditionOperator.DYNAMICS.name()) ){
+            String strValue = (String) value;
+            String[] split = strValue.split(",");
+            if (split.length == 1) {
+                return CombineConditionOperator.BETWEEN.name();
+            }else {
+                String dateUnit = split[2];
+                switch (dateUnit) {
+                    case "BEFORE_DAY", "BEFORE_WEEK", "BEFORE_MONTH" -> {
+                        return CombineConditionOperator.LT.name();
+                    }
+                    case "AFTER_DAY", "AFTER_WEEK",  "AFTER_MONTH"-> {
+                        return CombineConditionOperator.GT.name();
+                    }
+                }
+            }
+
+        }
+        return operator;
+    }
+
 
     private long getTimestamp(LocalDateTime today) {
         // 使用系统默认时区
@@ -330,42 +331,4 @@ public class FilterCondition {
         NOT_EMPTY
     }
 
-    public enum CombineConditionDateValue{
-        /**
-         * 今天
-         */
-        TODAY,
-        /** 昨天: */
-        YESTERDAY,
-        /** 明天：*/
-        TOMORROW,
-        /** 本周： */
-        WEEK,
-        /** 上周： */
-        LAST_WEEK,
-        /** 本月： */
-        MONTH,
-        /** 上月： */
-        LAST_MONTH,
-        /** 过去7天内： */
-        LAST_SEVEN,
-        /** 未来7天内： */
-        SEVEN,
-        /** 过去30天内： */
-        LAST_THIRTY,
-        /** 未来30天内： */
-        THIRTY,
-        /** 天前 */
-        BEFORE_DAY,
-        /** 天后 */
-        AFTER_DAY,
-        /** 周前 */
-        BEFORE_WEEK,
-        /** 周后 */
-        AFTER_WEEK,
-        /** 月前 */
-        BEFORE_MONTH,
-        /** 月后 */
-        AFTER_MONTH,
-    }
 }
