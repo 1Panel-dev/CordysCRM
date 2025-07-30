@@ -114,12 +114,12 @@
   ]);
 
   const popConfirmLoading = ref(false);
-  function getConfirmPropsFun(_: Record<string, any>) {
+  function getConfirmPropsFun(_: Record<string, any>, i: number) {
     return {
       title: t('crmReasonDrawer.deleteReasonTitleTip', { title: props.title }),
       content: t('crmReasonDrawer.deleteReasonContentTip'),
       positiveText: t('common.remove'),
-      disabled: form.value.list.length === 1 && enableReason.value,
+      disabled: form.value.list.length === 1 && enableReason.value && i === 0,
       loading: popConfirmLoading.value,
     };
   }

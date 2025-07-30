@@ -154,12 +154,12 @@
                     :disabled="!props.popConfirmProps || !element.id"
                     placement="bottom-end"
                     class="w-[260px]"
-                    v-bind="getPopConfirmProps(element) as CrmPopConfirmProps"
+                    v-bind="getPopConfirmProps(element,index) as CrmPopConfirmProps"
                     @confirm="handlePopDeleteListItem(index, element.id)"
                     @cancel="popShow[element.id] = false"
                   >
                     <n-button
-                      v-if="getPopConfirmProps(element)?.disabled ? element.editing : true"
+                      v-if="!getPopConfirmProps(element, index)?.disabled"
                       ghost
                       class="px-[7px]"
                       @click.stop="handleDeleteListItem(index, element.id)"
@@ -212,7 +212,7 @@
   } from 'naive-ui';
   import { Add } from '@vicons/ionicons5';
   import { cloneDeep } from 'lodash-es';
-  import { SortableEvent, VueDraggable } from 'vue-draggable-plus';
+  import { VueDraggable } from 'vue-draggable-plus';
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -238,7 +238,7 @@
       validateWhenAdd?: boolean; // 增加一行的时候是否进行校验
       showAllOr?: boolean;
       draggable?: boolean;
-      popConfirmProps?: (ele: Record<string, any>) => CrmPopConfirmProps | CrmPopConfirmProps;
+      popConfirmProps?: (ele: Record<string, any>, i: number) => CrmPopConfirmProps | CrmPopConfirmProps;
     }>(),
     {
       maxHeight: '100%',
@@ -369,9 +369,9 @@
     return unref(form.value);
   }
 
-  function getPopConfirmProps(element: Record<string, any>) {
+  function getPopConfirmProps(element: Record<string, any>, i: number) {
     return props.popConfirmProps && typeof props.popConfirmProps === 'function'
-      ? props.popConfirmProps(element)
+      ? props.popConfirmProps(element, i)
       : props.popConfirmProps;
   }
 
