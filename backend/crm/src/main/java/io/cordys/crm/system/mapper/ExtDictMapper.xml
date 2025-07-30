@@ -5,15 +5,19 @@
         update sys_dict_config set enabled = #{config.enabled} where module = #{config.module} and organization_id = #{config.organizationId}
     </update>
 
-    <update id="moveUpDict" parameterType="java.lang.Long">
+    <update id="moveUpDict">
         update sys_dict set pos = pos - 1 where pos &gt; #{start} and pos &lt;= #{end} and module = #{module} and organization_id = #{orgId}
     </update>
 
-    <update id="moveDownDict" parameterType="java.lang.Long">
+    <update id="moveDownDict">
         update sys_dict set pos = pos + 1 where pos &gt;= #{start} and pos &lt; #{end} and module = #{module} and organization_id = #{orgId}
     </update>
 
     <select id="getNextPos" resultType="java.lang.Long">
         select max(pos) + 1 from sys_dict where module = #{module} and organization_id = #{orgId}
     </select>
+
+    <update id="updateDictPos">
+        update sys_dict set pos = #{pos} where id = #{id}
+    </update>
 </mapper>

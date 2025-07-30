@@ -36,4 +36,11 @@ public interface ExtDictMapper {
 	 * @return 下一个位置
 	 */
 	Long getNextPos(@Param("module") String module, @Param("orgId") String orgId);
+
+	/**
+	 * 更新字典位置
+	 * @param id 字典ID
+	 * @param pos 位置
+	 */
+	void updateDictPos(@Param("id") String id, @Param("pos") Long pos);
 }

@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -42,8 +43,9 @@ public class DictService {
 	public List<Dict> getDictListByType(String module, String orgId) {
 		LambdaQueryWrapper<Dict> dictLambdaQueryWrapper = new LambdaQueryWrapper<>();
 		dictLambdaQueryWrapper.eq(Dict::getModule, module).eq(Dict::getOrganizationId, orgId);
-		dictLambdaQueryWrapper.orderByAsc(Dict::getPos);
-		return dictMapper.selectListByLambda(dictLambdaQueryWrapper);
+		List<Dict> dictList = dictMapper.selectListByLambda(dictLambdaQueryWrapper);
+		dictList.sort(Comparator.comparingLong(Dict::getPos));
+		return dictList;
 	}
 
 	/**
@@ -150,12 +152,7 @@ public class DictService {
 			// start > end, 区间模块下移, pos + 1
 			extDictMapper.moveDownDict(request.getEnd(), request.getStart(), oldDict.getModule(), oldDict.getOrganizationId());
 		}
-		Dict dragDict = new Dict();
-		dragDict.setId(request.getDragDictId());
-		dragDict.setPos(request.getEnd());
-		dragDict.setUpdateUser(currentUser);
-		dragDict.setUpdateTime(System.currentTimeMillis());
-		dictMapper.updateById(dragDict);
+		extDictMapper.updateDictPos(request.getDragDictId(), request.getEnd());
 	}
 
 	/**
