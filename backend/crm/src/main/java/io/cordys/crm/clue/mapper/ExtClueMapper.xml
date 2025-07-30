@@ -14,7 +14,7 @@
     <select id="list" resultType="io.cordys.crm.clue.dto.response.ClueListResponse">
         select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user,
                c.update_user, c.collection_time, c.contact, c.phone, c.stage, c.pool_id,
-               c.follower, c.follow_time, c.last_stage, c.transition_type, c.products, if(c.in_shared_pool, c.reason_id, null)
+               c.follower, c.follow_time, c.last_stage, c.transition_type, c.products, c.reason_id
         from `clue` c
 
         <include refid="fieldConditionJoin">
@@ -314,7 +314,7 @@
     </select>
 
     <update id="moveToPool" parameterType="io.cordys.crm.clue.domain.Clue">
-        update `clue` set pool_id = #{clue.poolId}, owner = #{clue.owner}, collection_time = #{clue.collectionTime},
+        update `clue` set pool_id = #{clue.poolId}, owner = #{clue.owner}, collection_time = #{clue.collectionTime}, reason_id = #{clue.reasonId},
                           in_shared_pool = #{clue.inSharedPool}, update_user = #{clue.updateUser}, update_time = #{clue.updateTime}
         where id = #{clue.id}
     </update>
