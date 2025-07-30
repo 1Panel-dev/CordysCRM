@@ -282,14 +282,11 @@
     }
   }
 
-  watch(
-    () => updateStatusModal.value,
-    (val) => {
-      if (val) {
-        initReason();
-      }
+  onBeforeMount(() => {
+    if (props.showConfirmStatus) {
+      initReason();
     }
-  );
+  });
 </script>
 
 <style lang="less" scoped></style>

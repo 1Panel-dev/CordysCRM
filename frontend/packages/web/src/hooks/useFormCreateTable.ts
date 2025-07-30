@@ -176,7 +176,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       sorter: true,
       filterOptions: reasonOptions.value,
       filter: true,
-      render: props.specialRender?.failureReason,
     },
   ];
   const customerInternalColumns: CrmDataTableColumn[] = [

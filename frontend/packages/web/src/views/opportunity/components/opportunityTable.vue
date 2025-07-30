@@ -533,10 +533,6 @@
       status: (row: OpportunityItem) => {
         return row.status ? t('common.open') : t('common.close');
       },
-      // TODO 缺少字段
-      failureReason: (row: OpportunityItem) => {
-        return reasonOptions.value.find((e) => e.value === row.failureReason)?.label ?? '-';
-      },
       stage: (row: OpportunityItem) => {
         const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
         return step ? step.label : '-';
@@ -597,7 +593,7 @@
       {
         title: t('opportunity.failureReason'),
         dataIndex: 'failureReason',
-        type: FieldTypeEnum.SELECT,
+        type: FieldTypeEnum.SELECT_MULTIPLE,
         selectProps: {
           options: reasonOptions.value,
         },
