@@ -41,6 +41,7 @@ export type CombineItem = Pick<FilterFormItem, 'value' | 'operator'>;
 export interface ConditionsItem extends CombineItem {
   name?: string;
   multipleValue: boolean;
+  type?: FieldTypeEnum;
 }
 
 export interface FilterResult {

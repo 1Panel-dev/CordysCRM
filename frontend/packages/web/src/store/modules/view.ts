@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { TabPaneProps } from 'naive-ui';
 
+import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import type { ViewItem } from '@lib/shared/models/view';
 
 import { ConditionsItem } from '@/components/pure/crm-advance-filter/type';
@@ -8,6 +9,16 @@ import { internalConditionsMap, viewApiMap } from '@/components/business/crm-vie
 
 import { TabType } from '@/hooks/useHiddenTab';
 import useLocalForage from '@/hooks/useLocalForage';
+
+const typeToKeyMap: Partial<Record<FieldTypeEnum, 'selectedRows' | 'selectedUserList'>> = {
+  [FieldTypeEnum.DATA_SOURCE]: 'selectedRows',
+  [FieldTypeEnum.DATA_SOURCE_MULTIPLE]: 'selectedRows',
+  [FieldTypeEnum.DEPARTMENT]: 'selectedUserList',
+  [FieldTypeEnum.DEPARTMENT_MULTIPLE]: 'selectedUserList',
+  [FieldTypeEnum.MEMBER]: 'selectedUserList',
+  [FieldTypeEnum.MEMBER_MULTIPLE]: 'selectedUserList',
+};
+
 // 视图
 const useViewStore = defineStore('view', {
   persist: true,
@@ -32,7 +43,7 @@ const useViewStore = defineStore('view', {
     },
 
     async loadInternalViews(type: TabType, internalList: TabPaneProps[]) {
-      // TODO 拖拽后的存储顺序和internalList顺序
+      // TODO lmy 拖拽后的存储顺序和internalList顺序
       const stored = await this.getInternalViews(this.getInternalKey(type));
       this.internalViews = internalList.map((i) => {
         const storedItem = stored.find((item) => item.id === i.name);
@@ -60,16 +71,29 @@ const useViewStore = defineStore('view', {
 
     // 获取详情
     async getViewDetail(type: TabType, option: ViewItem) {
-      let res;
+      let res: ViewItem;
       if (option.type === 'internal') {
         res = option;
       } else {
         try {
           res = await viewApiMap.detail[type](option.id);
-          res.list = res.conditions.map((item: ConditionsItem) => ({ ...item, dataIndex: item.name }));
+          res.list = res.conditions.map((item: ConditionsItem) => {
+            const options =
+              res.optionMap?.[item.name as string]?.filter((i: { id: string; name: string }) =>
+                item.value?.includes(i.id)
+              ) ?? [];
+            const keyText = typeToKeyMap[item.type as FieldTypeEnum];
+
+            return {
+              ...item,
+              dataIndex: item.name,
+              ...(keyText ? { [keyText]: options } : {}),
+            };
+          });
         } catch (error) {
           // eslint-disable-next-line no-console
           console.log(error);
+          return {};
         }
       }
       return {
