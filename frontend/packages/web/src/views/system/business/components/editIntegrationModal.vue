@@ -98,7 +98,7 @@
           class="n-btn-outline-primary mx-[12px]"
           @click="continueLink"
         >
-          {{ t('org.testConnection') }}
+          {{ t('system.business.mailSettings.testLink') }}
         </n-button>
         <n-button :loading="loading" type="primary" @click="confirmHandler">
           {{ t('common.confirm') }}
@@ -147,6 +147,7 @@
     redirectUrl: '',
     deAccount: '',
     deBoardEnable: false, // DE看板是否开启
+    verify:undefined
   });
 
   watch(
@@ -217,6 +218,7 @@
           linkLoading.value = true;
           const result = await testConfigSynchronization(form.value);
           const isSuccess = result.data.data;
+          form.value.verify = result.data.data;
           if (isSuccess) {
             Message.success(t('org.testConnectionSuccess'));
           } else {

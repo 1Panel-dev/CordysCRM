@@ -19,8 +19,11 @@
                 <CrmTag v-if="!item.hasConfig" theme="light" size="small">
                   {{ t('system.business.notConfigured') }}
                 </CrmTag>
-                <CrmTag v-else-if="item.hasConfig && !item.response.verify" theme="light" type="error" size="small">
+                <CrmTag v-else-if="item.hasConfig && item.response.verify === false" theme="light" type="error" size="small">
                   {{ t('common.fail') }}
+                </CrmTag>
+                <CrmTag v-else-if="item.hasConfig && item.response.verify === null" theme="light" type="warning" size="small">
+                  {{ t('common.unVerify') }}
                 </CrmTag>
                 <CrmTag v-else theme="light" type="success" size="small">
                   {{ t('common.success') }}
@@ -247,8 +250,14 @@
   async function testLink(item: IntegrationItem) {
     try {
       testConfigSynchronization(item.response)
-        .then(() => {
-          Message.success(t('org.testConnectionSuccess'));
+        .then((res) => {
+          const isSuccess = res.data.data;
+          if (isSuccess) {
+            Message.success(t('org.testConnectionSuccess'));
+          } else {
+            Message.error(t('org.testConnectionError'));
+          }
+          initSyncList();
         })
         .catch(() => {
           item.response.verify = false;

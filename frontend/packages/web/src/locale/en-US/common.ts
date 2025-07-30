@@ -134,6 +134,7 @@ export default {
   'common.json': 'Object',
   'common.integer': 'Integer',
   'common.file': 'File',
+  'common.unVerify': 'Not verified',
   'common.desc': 'Description',
   'common.root': 'Default Module',
   'common.revoke': 'Revoke',
