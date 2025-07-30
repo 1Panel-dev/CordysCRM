@@ -185,7 +185,7 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
         customer.setInSharedPool(true);
         customer.setOwner(null);
         customer.setCollectionTime(null);
-        customer.setReasonId("system.auto.recycle");
+        customer.setReasonId("system");
         customer.setUpdateUser(InternalUser.ADMIN.getValue());
         customer.setUpdateTime(System.currentTimeMillis());
 

@@ -9,6 +9,7 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.domain.Dict;
 import io.cordys.crm.system.domain.DictConfig;
 import io.cordys.crm.system.dto.DictConfigDTO;
@@ -20,6 +21,7 @@ import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -141,6 +143,12 @@ public class DictService {
 	 */
 	public DictConfigDTO getDictConf(String module, String orgId) {
 		List<Dict> dictList = getDictListByType(module, orgId);
+		if (StringUtils.equalsAny(module, DictModule.CLUE_POOL_RS.name(), DictModule.CUSTOMER_POOL_RS.name())) {
+			Dict sysDt = new Dict();
+			sysDt.setId("system");
+			sysDt.setName(Translator.get("system.auto.recycle"));
+			dictList.addFirst(sysDt);
+		}
 		LambdaQueryWrapper<DictConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
 		configLambdaQueryWrapper.eq(DictConfig::getModule, module).eq(DictConfig::getOrganizationId, orgId);
 		List<DictConfig> configs = dictConfigMapper.selectListByLambda(configLambdaQueryWrapper);

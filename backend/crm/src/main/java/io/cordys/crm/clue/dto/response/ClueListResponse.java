@@ -94,6 +94,12 @@ public class ClueListResponse {
     @Schema(description = "转移类型")
     private String transitionType;
 
+    @Schema(description = "失败原因ID")
+    private String reasonId;
+
+    @Schema(description = "失败原因ID")
+    private String reasonName;
+
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
 }

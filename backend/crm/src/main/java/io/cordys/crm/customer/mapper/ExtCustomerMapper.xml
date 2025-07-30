@@ -15,7 +15,7 @@
 
     <select id="list" resultType="io.cordys.crm.customer.dto.response.CustomerListResponse">
         select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
-               c.follower, c.follow_time
+               c.follower, c.follow_time, c.reason_id
                 <if test="dataPermission != null and dataPermission.visible">
                     ,cc.collaboration_type
                 </if>
@@ -155,7 +155,7 @@
                 order by
                 <choose>
                     <when test="${sort}.name in
-                        {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time'}">
+                        {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time', 'reason_id'}">
                         c.${sortName} ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
@@ -207,7 +207,7 @@
                     left join sys_organization_user sou on c.owner = sou.user_id
                 </when>
                 <when test="${sort}.name not in
-                    {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time'}">
+                    {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time', 'reason_id'}">
                     left join customer_field sort_table
                     on c.id = sort_table.resource_id and sort_table.field_id = #{sortName}
                     left join sys_module_field module_table on sort_table.field_id = module_table.id
@@ -301,6 +301,12 @@
                 <include refid="io.cordys.common.mapper.CommonMapper.condition">
                     <property name="condition" value="condition"/>
                     <property name="column" value="souc.department_id"/>
+                </include>
+            </when>
+            <when test="condition.name == 'reasonId'">
+                <include refid="io.cordys.common.mapper.CommonMapper.condition">
+                    <property name="condition" value="condition"/>
+                    <property name="column" value="c.reason_id"/>
                 </include>
             </when>
             <otherwise>

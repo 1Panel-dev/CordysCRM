@@ -22,7 +22,6 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
-import io.cordys.common.util.Translator;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.dto.response.CustomerContactListAllResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
@@ -34,15 +33,14 @@ import io.cordys.crm.opportunity.dto.request.*;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
 import io.cordys.crm.opportunity.mapper.ExtOpportunityMapper;
+import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.NotificationConstants;
-import io.cordys.crm.system.domain.Product;
+import io.cordys.crm.system.domain.Dict;
+import io.cordys.crm.system.dto.DictConfigDTO;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
-import io.cordys.crm.system.service.LogService;
-import io.cordys.crm.system.service.ModuleFormCacheService;
-import io.cordys.crm.system.service.ModuleFormService;
-import io.cordys.crm.system.service.ProductService;
+import io.cordys.crm.system.service.*;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -73,8 +71,6 @@ public class OpportunityService {
     private LogService logService;
     @Resource
     private BaseMapper<Opportunity> opportunityMapper;
-    @Resource
-    private BaseMapper<Product> productMapper;
     @Autowired
     private OpportunityRuleService opportunityRuleService;
     @Resource
@@ -93,6 +89,8 @@ public class OpportunityService {
     private ProductService productService;
     @Resource
     private ExtCustomerContactMapper extCustomerContactMapper;
+    @Resource
+    private DictService dictService;
 
     public static final String SUCCESS = "SUCCESS";
 
@@ -173,6 +171,11 @@ public class OpportunityService {
         Map<String, OpportunityRule> ownersDefaultRuleMap = opportunityRuleService.getOwnersDefaultRuleMap(ownerIds, orgId);
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
 
+        // 失败原因
+        DictConfigDTO dictConf = dictService.getDictConf(DictModule.OPPORTUNITY_FAIL_RS.name(), orgId);
+        List<Dict> dictList = dictConf.getDictList();
+        Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+
         list.forEach(opportunityListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> opportunityFields = opportunityFiledMap.get(opportunityListResponse.getId());
@@ -192,6 +195,7 @@ public class OpportunityService {
                 opportunityListResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
 
+            opportunityListResponse.setFailureReason(dictMap.get(opportunityListResponse.getFailureReason()));
         });
         return baseService.setCreateAndUpdateUserName(list);
     }

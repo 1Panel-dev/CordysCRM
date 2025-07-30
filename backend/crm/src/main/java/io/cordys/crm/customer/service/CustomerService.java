@@ -24,6 +24,7 @@ import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.customer.constants.CustomerResultCode;
 import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerCollaboration;
@@ -37,16 +38,16 @@ import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
+import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.NotificationConstants;
+import io.cordys.crm.system.domain.Dict;
+import io.cordys.crm.system.dto.DictConfigDTO;
 import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import io.cordys.crm.system.dto.request.PoolReasonRequest;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
-import io.cordys.crm.system.service.LogService;
-import io.cordys.crm.system.service.ModuleFormCacheService;
-import io.cordys.crm.system.service.ModuleFormService;
-import io.cordys.crm.system.service.UserExtendService;
+import io.cordys.crm.system.service.*;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -105,6 +106,8 @@ public class CustomerService {
     private ExtCustomerPoolMapper extCustomerPoolMapper;
     @Resource
     private CustomerContactService customerContactService;
+    @Resource
+    private DictService dictService;
 
     public PagerWithOption<List<CustomerListResponse>> list(CustomerPageRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission) {
         Page<Object> page = PageHelper.startPage(request.getCurrent(), request.getPageSize());
@@ -196,6 +199,11 @@ public class CustomerService {
             recycleRuleMap = recycleRules.stream().collect(Collectors.toMap(CustomerPoolRecycleRule::getPoolId, rule -> rule));
         }
 
+        // 公海原因
+        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CUSTOMER_POOL_RS.name(), orgId);
+        List<Dict> dictList = dictConf.getDictList();
+        Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+
         list.forEach(customerListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> customerFields = caseCustomFiledMap.get(customerListResponse.getId());
@@ -218,6 +226,7 @@ public class CustomerService {
             customerListResponse.setCreateUserName(userNameMap.get(customerListResponse.getCreateUser()));
             customerListResponse.setUpdateUserName(userNameMap.get(customerListResponse.getUpdateUser()));
             customerListResponse.setOwnerName(userNameMap.get(customerListResponse.getOwner()));
+            customerListResponse.setReasonName(dictMap.get(customerListResponse.getReasonId()));
         });
 
         return list;

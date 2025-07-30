@@ -76,6 +76,12 @@ public class CustomerListResponse {
     @Schema(description = "默认回收公海名称")
     private String recyclePoolName;
 
+    @Schema(description = "失败原因ID")
+    private String reasonId;
+
+    @Schema(description = "失败原因ID")
+    private String reasonName;
+
     @Schema(description = "自定义字段集合")
     private List<BaseModuleFieldValue> moduleFields;
 

@@ -42,7 +42,10 @@ import io.cordys.crm.customer.service.CustomerCollaborationService;
 import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.customer.service.PoolCustomerService;
+import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.NotificationConstants;
+import io.cordys.crm.system.domain.Dict;
+import io.cordys.crm.system.dto.DictConfigDTO;
 import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import io.cordys.crm.system.dto.request.PoolReasonRequest;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
@@ -50,10 +53,7 @@ import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
-import io.cordys.crm.system.service.LogService;
-import io.cordys.crm.system.service.ModuleFormCacheService;
-import io.cordys.crm.system.service.ModuleFormService;
-import io.cordys.crm.system.service.ProductService;
+import io.cordys.crm.system.service.*;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
@@ -84,6 +84,8 @@ public class ClueService {
     private ExtClueMapper extClueMapper;
     @Resource
     private BaseService baseService;
+    @Resource
+    private DictService dictService;
     @Resource
     private CustomerService customerService;
     @Resource
@@ -200,6 +202,12 @@ public class ClueService {
         }
 
         Map<String, UserDeptDTO> userDeptMap = baseService.getUserDeptMapByUserIds(ownerIds, orgId);
+
+        // 线索池原因
+        DictConfigDTO dictConf = dictService.getDictConf(DictModule.CLUE_POOL_RS.name(), orgId);
+        List<Dict> dictList = dictConf.getDictList();
+        Map<String, String> dictMap = dictList.stream().collect(Collectors.toMap(Dict::getId, Dict::getName));
+
         list.forEach(clueListResponse -> {
             // 获取自定义字段
             List<BaseModuleFieldValue> clueFields = caseCustomFiledMap.get(clueListResponse.getId());
@@ -222,6 +230,7 @@ public class ClueService {
             clueListResponse.setCreateUserName(userNameMap.get(clueListResponse.getCreateUser()));
             clueListResponse.setUpdateUserName(userNameMap.get(clueListResponse.getUpdateUser()));
             clueListResponse.setOwnerName(userNameMap.get(clueListResponse.getOwner()));
+            clueListResponse.setReasonName(dictMap.get(clueListResponse.getReasonId()));
         });
 
         return list;
