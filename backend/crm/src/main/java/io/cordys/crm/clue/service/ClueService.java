@@ -544,11 +544,11 @@ public class ClueService {
      * @param currentUser 当前用户
      * @param orgId 组织ID
      */
-    public void toPool(PoolReasonRequest request, String currentUser, String orgId) {
+    public BatchAffectResponse toPool(PoolReasonRequest request, String currentUser, String orgId) {
         BatchPoolReasonRequest batchRequest = new BatchPoolReasonRequest();
         batchRequest.setReasonId(request.getReasonId());
         batchRequest.setIds(List.of(request.getId()));
-        batchToPool(batchRequest, currentUser, orgId);
+        return batchToPool(batchRequest, currentUser, orgId);
     }
 
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String organizationId) {

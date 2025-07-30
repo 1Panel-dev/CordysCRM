@@ -136,8 +136,8 @@ public class ClueController {
     @PostMapping("/to-pool")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_RECYCLE)
     @Operation(summary = "移入公海")
-    public void toPool(@Validated @RequestBody PoolReasonRequest request) {
-        clueService.toPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    public BatchAffectResponse toPool(@Validated @RequestBody PoolReasonRequest request) {
+        return clueService.toPool(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
     }
 
     @GetMapping("/tab")
