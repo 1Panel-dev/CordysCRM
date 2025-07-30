@@ -3,16 +3,16 @@
 SET SESSION innodb_lock_wait_timeout = 7200;
 
 -- init dict config
-INSERT INTO sys_dict values (UUID_SHORT(), '客户选择竞品', 'OPPORTUNITY_FAIL_RS', 'TEXT', '100001',
-UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin', 1);
-INSERT INTO sys_dict values (UUID_SHORT(), '立项失败', 'OPPORTUNITY_FAIL_RS','TEXT','100001',
-UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin', 2);
-INSERT INTO sys_dict values (UUID_SHORT(), '决策链复杂', 'OPPORTUNITY_FAIL_RS','TEXT','100001',
-UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin', 3);
-INSERT INTO sys_dict values (UUID_SHORT(), '预算限制', 'OPPORTUNITY_FAIL_RS', 'TEXT','100001',
-UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin', 4);
-INSERT INTO sys_dict values (UUID_SHORT(), '需求变化', 'OPPORTUNITY_FAIL_RS', 'TEXT', '100001',
-UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin', 5);
+INSERT INTO sys_dict values (UUID_SHORT(), '客户选择竞品', 'OPPORTUNITY_FAIL_RS', 'TEXT', 1, '100001',
+UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin');
+INSERT INTO sys_dict values (UUID_SHORT(), '立项失败', 'OPPORTUNITY_FAIL_RS','TEXT', 2, '100001',
+UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin');
+INSERT INTO sys_dict values (UUID_SHORT(), '决策链复杂', 'OPPORTUNITY_FAIL_RS','TEXT', 3,'100001',
+UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin');
+INSERT INTO sys_dict values (UUID_SHORT(), '预算限制', 'OPPORTUNITY_FAIL_RS', 'TEXT', 4,'100001',
+UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin');
+INSERT INTO sys_dict values (UUID_SHORT(), '需求变化', 'OPPORTUNITY_FAIL_RS', 'TEXT', 5, '100001',
+UNIX_TIMESTAMP() * 1000, UNIX_TIMESTAMP() * 1000, 'admin', 'admin');
 
 -- opportunity fail reason => sys_dict.fail.id
 UPDATE opportunity set failure_reason = (
