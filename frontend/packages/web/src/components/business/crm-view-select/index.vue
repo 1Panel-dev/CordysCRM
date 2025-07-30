@@ -49,9 +49,8 @@
       :show-checkmark="false"
       :render-option="renderOption"
       class="view-select w-[200px]"
-      :menu-props="{
-        class: 'crm-view-select-menu',
-      }"
+      :menu-props="{ class: 'crm-view-select-menu' }"
+      @update:show="setDraggerSort"
     >
       <template #header>
         <n-button type="primary" text @click="handleAdd">
@@ -92,6 +91,7 @@
 
   import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import type { TableDraggedParams } from '@lib/shared/models/common';
   import { ViewItem } from '@lib/shared/models/view';
 
   import { FilterFormItem } from '@/components/pure/crm-advance-filter/type';
@@ -103,6 +103,7 @@
   import { TabType } from '@/hooks/useHiddenTab';
   import useHorizontalScrollArrows from '@/hooks/useHorizontalScrollArrows';
   import useViewStore from '@/store/modules/view';
+  import { initCommonSortable } from '@/utils/initSortable';
 
   const { t } = useI18n();
   const viewStore = useViewStore();
@@ -186,7 +187,6 @@
     addOrEditViewsDrawerVisible.value = true;
   }
 
-  // TODO 第一个icon是拖拽，同一个SelectGroup里可以拖拽，不能拖拽到另一个SelectGroup
   function renderOption({ node, option }: { node: VNode; option: ViewItem }) {
     if (option.type === 'group') return node;
     node.children = [
@@ -194,8 +194,14 @@
         h('div', { class: 'flex items-center gap-[8px] overflow-hidden flex-1' }, [
           h(CrmIcon, {
             type: 'iconicon_move',
-            class: 'text-[var(--text-n4)]',
+            class: 'text-[var(--text-n4)] cursor-move drag-icon',
             size: 12,
+            onMousedown: (e: MouseEvent) => {
+              e.stopPropagation();
+            },
+            onClick: (e: MouseEvent) => {
+              e.stopPropagation();
+            },
           }),
           h(CrmIcon, {
             type: option.fixed ? 'iconicon_pin_filled' : 'iconicon_pin',
@@ -235,6 +241,65 @@
     ];
 
     return node;
+  }
+
+  // 拖拽限制
+  let warningInstance: ReturnType<typeof Message.warning> | null = null;
+  function dragMoveValidator(fromRow: ViewItem, toRow: ViewItem) {
+    if (fromRow?.type !== toRow?.type) {
+      if (!warningInstance) {
+        warningInstance = Message.warning(t('crmViewSelect.dragTip'), {
+          duration: 0,
+        });
+      }
+      return false;
+    }
+    if (warningInstance) {
+      warningInstance.destroy();
+      warningInstance = null;
+    }
+
+    return true;
+  }
+
+  // 拖拽结束
+  async function dragHandler(params: TableDraggedParams) {
+    if (warningInstance) {
+      warningInstance.destroy();
+      warningInstance = null;
+    }
+    viewStore.toggleDrag(props.type, params);
+  }
+
+  async function setDraggerSort(show: boolean) {
+    if (!show) return;
+    setTimeout(() => {
+      const menuContainer = document.querySelector('.crm-view-select-menu');
+      if (!menuContainer) return;
+      const observer = new MutationObserver((mutations, obs) => {
+        const el = menuContainer.querySelector('.v-vl-visible-items');
+        if (el) {
+          obs.disconnect();
+          const data = [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable);
+          initCommonSortable({
+            containerEl: el as HTMLElement,
+            handle: '.drag-icon',
+            draggable: '.n-base-select-option',
+            filter: '.n-base-select-group-header',
+            data,
+            dragMoveValidator,
+            onDragEnd: (params) => {
+              dragHandler(params);
+            },
+          });
+        }
+      });
+
+      observer.observe(menuContainer, {
+        childList: true,
+        subtree: true,
+      });
+    }, 50);
   }
 </script>
 

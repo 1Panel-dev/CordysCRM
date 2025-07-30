@@ -116,10 +116,11 @@ export const internalConditionsMap: Record<string, FilterFormItem[]> = {
   ],
   [CustomerSearchTypeEnum.SELF]: [
     {
-      dataIndex: 'createUser',
-      type: FieldTypeEnum.USER_SELECT,
+      dataIndex: 'owner',
+      type: FieldTypeEnum.MEMBER,
       operator: OperatorEnum.IN,
-      value: [userStore.userInfo.name],
+      value: [userStore.userInfo.id],
+      selectedUserList: [{ id: userStore.userInfo.id, name: userStore.userInfo.name }],
     },
   ],
   [OpportunitySearchTypeEnum.OPPORTUNITY_SUCCESS]: [
