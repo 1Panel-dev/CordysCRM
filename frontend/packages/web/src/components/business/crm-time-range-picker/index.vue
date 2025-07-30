@@ -145,39 +145,31 @@
   function calculateDynamicDateRange(value: number, unitValue: string) {
     const DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
     const now = dayjs();
-    let startDate: dayjs.Dayjs;
-    let endDate: dayjs.Dayjs;
+    let date: dayjs.Dayjs;
 
     switch (unitValue) {
       case 'BEFORE_DAY':
-        startDate = now.subtract(value, 'day');
-        endDate = now;
+        date = now.subtract(value, 'day');
         break;
       case 'AFTER_DAY':
-        startDate = now;
-        endDate = now.add(value, 'day');
+        date = now.add(value, 'day');
         break;
       case 'BEFORE_WEEK':
-        startDate = now.subtract(value, 'week');
-        endDate = now;
+        date = now.subtract(value, 'week');
         break;
       case 'AFTER_WEEK':
-        startDate = now;
-        endDate = now.add(value, 'week');
+        date = now.add(value, 'week');
         break;
       case 'BEFORE_MONTH':
-        startDate = now.subtract(value, 'month');
-        endDate = now;
+        date = now.subtract(value, 'month');
         break;
       case 'AFTER_MONTH':
-        startDate = now;
-        endDate = now.add(value, 'month');
+        date = now.add(value, 'month');
         break;
       default:
         return '';
     }
-
-    return `${startDate.format(DATE_FORMAT)} ~ ${endDate.format(DATE_FORMAT)}`;
+    return date.format(DATE_FORMAT);
   }
 
   const formattedDateRange = computed(() => {

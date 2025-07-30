@@ -48,7 +48,7 @@
           >
             <CrmTimeRangePicker
               v-if="
-                item.type === FieldTypeEnum.TIME_RANGE_PICKER &&
+                [FieldTypeEnum.TIME_RANGE_PICKER,FieldTypeEnum.DATE_TIME].includes(item.type)  &&
                 [OperatorEnum.DYNAMICS, OperatorEnum.FIXED].includes(item.operator as OperatorEnum)
               "
               v-model:value="item.value"
@@ -57,7 +57,7 @@
               @update:value="valueChange"
             />
             <n-date-picker
-              v-else-if="item.type === FieldTypeEnum.DATE_TIME || (item.type === FieldTypeEnum.TIME_RANGE_PICKER &&
+              v-else-if=" ([FieldTypeEnum.TIME_RANGE_PICKER,FieldTypeEnum.DATE_TIME].includes(item.type) &&
                 ![OperatorEnum.DYNAMICS, OperatorEnum.FIXED].includes(item.operator as OperatorEnum))"
               v-model:value="item.value"
               :type="item.operator === OperatorEnum.BETWEEN ? 'datetimerange' : 'datetime'"
@@ -301,7 +301,8 @@
       listItem.cascaderProps?.multiple ||
       (listItem.type === FieldTypeEnum.INPUT_MULTIPLE &&
         ![OperatorEnum.COUNT_LT, OperatorEnum.COUNT_GT].includes(listItem.operator as OperatorEnum)) ||
-      (listItem.type === FieldTypeEnum.DATE_TIME && listItem.operator === OperatorEnum.BETWEEN)
+      ([FieldTypeEnum.TIME_RANGE_PICKER, FieldTypeEnum.DATE_TIME].includes(listItem.type) &&
+        listItem.operator === OperatorEnum.BETWEEN)
     );
   }
 
@@ -447,7 +448,7 @@
       return undefined;
     }
     if (item.rule) return item.rule;
-    if (item.type === FieldTypeEnum.TIME_RANGE_PICKER) {
+    if ([FieldTypeEnum.TIME_RANGE_PICKER, FieldTypeEnum.DATE_TIME].includes(item.type)) {
       return [
         {
           validator: (rule: any, value: string | number) => {
