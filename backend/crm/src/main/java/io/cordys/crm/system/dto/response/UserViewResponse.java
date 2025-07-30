@@ -1,10 +1,12 @@
 package io.cordys.crm.system.dto.response;
 
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.condition.FilterCondition;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class UserViewResponse {
@@ -32,4 +34,7 @@ public class UserViewResponse {
 
     @Schema(description = "筛选条件")
     private List<FilterCondition> conditions;
+
+    @Schema(description = "用于回显的optionMap")
+    private Map<String, List<OptionDTO>> optionMap;
 }

@@ -1,6 +1,7 @@
 package io.cordys.crm.clue.controller;
 
 
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.request.PosRequest;
 import io.cordys.context.OrganizationContext;
@@ -57,7 +58,7 @@ public class ClueUserViewController {
     @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_READ)
     @Operation(summary = "线索视图详情")
     public UserViewResponse viewDetail(@PathVariable String id) {
-        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+        return userViewService.getViewDetail(id, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), FormKey.CLUE.getKey());
     }
 
 

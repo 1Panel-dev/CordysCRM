@@ -1,16 +1,22 @@
 package io.cordys.crm.system.service;
 
+import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.condition.FilterCondition;
 import io.cordys.common.dto.request.PosRequest;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.uid.utils.EnumUtils;
 import io.cordys.common.util.*;
+import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.constants.UserViewConditionValueType;
 import io.cordys.crm.system.domain.UserView;
 import io.cordys.crm.system.domain.UserViewCondition;
+import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.request.UserViewAddRequest;
 import io.cordys.crm.system.dto.request.UserViewUpdateRequest;
+import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.dto.response.UserViewListResponse;
 import io.cordys.crm.system.dto.response.UserViewResponse;
 import io.cordys.crm.system.mapper.ExtUserViewConditionMapper;
@@ -22,7 +28,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service("userViewService")
 @Transactional(rollbackFor = Exception.class)
@@ -36,6 +46,10 @@ public class UserViewService {
     private BaseMapper<UserViewCondition> userViewConditionMapper;
     @Resource
     private ExtUserViewConditionMapper extUserViewConditionMapper;
+    @Resource
+    private ModuleFormCacheService moduleFormCacheService;
+    @Resource
+    private ModuleFormService moduleFormService;
 
     /**
      * 添加用户视图
@@ -191,14 +205,60 @@ public class UserViewService {
      * @param orgId
      * @return
      */
-    public UserViewResponse getViewDetail(String id, String userId, String orgId) {
+    public UserViewResponse getViewDetail(String id, String userId, String orgId, String formKey) {
         checkView(userId, id, orgId);
         UserView userView = userViewMapper.selectByPrimaryKey(id);
         List<FilterCondition> conditions = getFilterConditions(id);
         UserViewResponse response = new UserViewResponse();
         BeanUtils.copyBean(response, userView);
         response.setConditions(conditions);
+        response.setOptionMap(buildOptionMap(orgId, formKey, conditions));
         return response;
+    }
+
+    public Map<String, List<OptionDTO>> buildOptionMap(String orgId, String formKey, List<FilterCondition> conditions) {
+        Set<String> businessKeys = Arrays.stream(BusinessModuleField.values())
+                .map(BusinessModuleField::getBusinessKey)
+                .collect(Collectors.toSet());
+
+        ModuleFormConfigDTO customerFormConfig = moduleFormCacheService.getBusinessFormConfig(formKey, orgId);
+        // 获取业务字段对应的ID
+        Map<String, String> businessKeyFieldIdMap = customerFormConfig.getFields().stream()
+                .filter(baseField -> businessKeys.contains(baseField.getBusinessKey()))
+                .collect(Collectors.toMap(BaseField::getBusinessKey, BaseField::getId));
+
+        Map<String, String> fieldIdBusinessKeyMap = customerFormConfig.getFields().stream()
+                .filter(baseField -> businessKeys.contains(baseField.getBusinessKey()))
+                .collect(Collectors.toMap(BaseField::getId, BaseField::getBusinessKey));
+
+        // 获取数据源类型的字段值
+        List<BaseModuleFieldValue> moduleFieldValues = conditions.stream()
+                .filter(condition -> StringUtils.equalsAny(condition.getType(),
+                        FieldType.DATA_SOURCE.name(),
+                        FieldType.DATA_SOURCE_MULTIPLE.name(),
+                        FieldType.MEMBER.name(),
+                        FieldType.MEMBER_MULTIPLE.name(),
+                        FieldType.DEPARTMENT.name(),
+                        FieldType.DEPARTMENT_MULTIPLE.name())
+                )
+                .map(condition -> {
+                    BaseModuleFieldValue moduleFieldValue = new BaseModuleFieldValue();
+                    String businessFieldId = businessKeyFieldIdMap.get(condition.getName());
+                    moduleFieldValue.setFieldId(businessFieldId != null ? businessFieldId : condition.getName());
+                    moduleFieldValue.setFieldValue(condition.getValue());
+                    return moduleFieldValue;
+                }).collect(Collectors.toList());
+
+        // 获取选项值对应的 option
+        Map<String, List<OptionDTO>> optionMap = moduleFormService.getOptionMap(customerFormConfig, moduleFieldValues);
+        fieldIdBusinessKeyMap.forEach((fieldId, businessKey) -> {
+            if (optionMap.containsKey(fieldId)) {
+                List<OptionDTO> options = optionMap.get(fieldId);
+                optionMap.put(businessKey, options);
+                optionMap.remove(fieldId);
+            }
+        });
+      return optionMap;
     }
 
     public List<FilterCondition> getFilterConditions(String viewId) {
