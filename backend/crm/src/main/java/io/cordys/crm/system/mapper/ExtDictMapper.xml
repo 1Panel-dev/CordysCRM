@@ -6,14 +6,14 @@
     </update>
 
     <update id="moveUpDict" parameterType="java.lang.Long">
-        update sys_dict set pos = pos - 1 where pos &gt; #{start} and pos &lt;= #{end} and module = #{module} and organization_id = #{organizationId}
+        update sys_dict set pos = pos - 1 where pos &gt; #{start} and pos &lt;= #{end} and module = #{module} and organization_id = #{orgId}
     </update>
 
     <update id="moveDownDict" parameterType="java.lang.Long">
-        update sys_dict set pos = pos + 1 where pos &gt;= #{start} and pos &lt; #{end} and module = #{module} and organization_id = #{organizationId}
+        update sys_dict set pos = pos + 1 where pos &gt;= #{start} and pos &lt; #{end} and module = #{module} and organization_id = #{orgId}
     </update>
 
     <select id="getNextPos" resultType="java.lang.Long">
-        select max(pos) + 1 from sys_dict where module = #{module} and organization_id = #{organizationId}
+        select max(pos) + 1 from sys_dict where module = #{module} and organization_id = #{orgId}
     </select>
 </mapper>

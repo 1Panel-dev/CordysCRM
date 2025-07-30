@@ -9,7 +9,7 @@ public interface ExtDictMapper {
 	 * 更新字典模块配置
 	 * @param config 配置
 	 */
-	void updateModuleConfig(@Param("config")DictConfig config);
+	void updateModuleConfig(@Param("config") DictConfig config);
 
 	/**
 	 * 字典区间上移
