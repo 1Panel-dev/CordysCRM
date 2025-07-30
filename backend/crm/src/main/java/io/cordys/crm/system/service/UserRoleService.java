@@ -104,6 +104,9 @@ public class UserRoleService {
     }
 
     private Map<String, String> getDeptNameMap(List<RoleUserListResponse> users) {
+        if (CollectionUtils.isEmpty(users)) {
+            return Map.of();
+        }
         return departmentMapper.selectByIds(users.stream().map(RoleUserListResponse::getDepartmentId).distinct().toArray(String[]::new))
                 .stream()
                 .collect(Collectors.toMap(Department::getId, Department::getName));
