@@ -62,7 +62,7 @@ public class DictService {
 		dict.setOrganizationId(orgId);
 		dict.setType("TEXT");
 		Long nextPos = extDictMapper.getNextPos(request.getModule(), orgId);
-		dict.setPos(nextPos);
+		dict.setPos(nextPos == null ? 1L : nextPos);
 		dict.setCreateUser(currentUser);
 		dict.setCreateTime(System.currentTimeMillis());
 		dict.setUpdateUser(currentUser);
