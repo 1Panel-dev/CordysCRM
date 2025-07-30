@@ -10,6 +10,7 @@
     :positive-text="props.positiveText"
     :placement="props.placement"
     :trigger="props.trigger"
+    :disabled="props.disabled"
     @positive-click="handlePositiveClick"
     @negative-click="handleNegativeClick"
   >
@@ -109,6 +110,7 @@
       | 'left-end';
     permission?: string[]; // 权限
     trigger?: 'hover' | 'click' | 'focus'; // 触发方式
+    disabled?: boolean;
   };
 
   const props = withDefaults(defineProps<CrmPopConfirmProps>(), {

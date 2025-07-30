@@ -31,10 +31,11 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { DataTableRowKey, FormInst, NForm, NFormItem, NSelect, useMessage } from 'naive-ui';
+  import { DataTableRowKey, FormInst, NForm, NFormItem, NSelect } from 'naive-ui';
 
   import { ReasonTypeEnum } from '@lib/shared/enums/moduleEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { characterLimit } from '@lib/shared/method';
   import { BatchMoveToPublicPoolParams, MoveToPublicPoolParams } from '@lib/shared/models/customer';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
@@ -50,7 +51,6 @@
   } from '@/api/modules';
 
   const { t } = useI18n();
-  const Message = useMessage();
 
   export type ReasonKey = ReasonTypeEnum.CLUE_POOL_RS | ReasonTypeEnum.CUSTOMER_POOL_RS;
 
@@ -94,11 +94,11 @@
       case ReasonTypeEnum.CLUE_POOL_RS:
         return isArraySourceIds
           ? t('clue.batchMoveIntoCluePoolTitleTip', { number: props.sourceId.length })
-          : t('clue.batchMoveIntoCluePoolTitle', { name: props.name });
+          : t('clue.moveIntoCluePoolTitle', { name: characterLimit(props.name) });
       case ReasonTypeEnum.CUSTOMER_POOL_RS:
         return isArraySourceIds
-          ? t('customer.moveCustomerToOpenSeaTitleTip', { number: props.sourceId.length })
-          : t('customer.batchMoveTitleTip', { name: props.name });
+          ? t('customer.batchMoveTitleTip', { number: props.sourceId.length })
+          : t('customer.moveCustomerToOpenSeaTitleTip', { name: characterLimit(props.name) });
       default:
         break;
     }

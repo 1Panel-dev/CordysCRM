@@ -571,24 +571,33 @@
 
   async function getGlobalReasonConfig() {
     try {
-      const [accountReasonConfig, leadReasonConfig, opportunityReasonConfig] = await Promise.all([
-        getReasonConfig(ReasonTypeEnum.CUSTOMER_POOL_RS),
-        getReasonConfig(ReasonTypeEnum.CLUE_POOL_RS),
-        getReasonConfig(ReasonTypeEnum.OPPORTUNITY_FAIL_RS),
-      ]);
-      // 客户
-      enableAccountMoveReason.value = accountReasonConfig.enable;
-      isHasConfigAccountReason.value = accountReasonConfig.dictList.length > 0;
-      // 线索
-      enableLeadMoveReason.value = leadReasonConfig.enable;
-      isHasConfigLeadReason.value = leadReasonConfig.dictList.length > 0;
-      // 商机
-      enableOptMoveReason.value = opportunityReasonConfig.enable;
-      isHasConfigOptReason.value = opportunityReasonConfig.dictList.length > 0;
+      const reasonTypes = [
+        {
+          type: ReasonTypeEnum.CUSTOMER_POOL_RS,
+          enableRef: enableAccountMoveReason,
+          hasConfigRef: isHasConfigAccountReason,
+        },
+        { type: ReasonTypeEnum.CLUE_POOL_RS, enableRef: enableLeadMoveReason, hasConfigRef: isHasConfigLeadReason },
+        {
+          type: ReasonTypeEnum.OPPORTUNITY_FAIL_RS,
+          enableRef: enableOptMoveReason,
+          hasConfigRef: isHasConfigOptReason,
+        },
+      ];
+
+      const configs = await Promise.all(reasonTypes.map((item) => getReasonConfig(item.type)));
+
+      configs.forEach((config, index) => {
+        const { enable, dictList } = config;
+        const { enableRef, hasConfigRef } = reasonTypes[index];
+        enableRef.value = enable;
+        hasConfigRef.value = dictList.some((e: any) => e.id !== 'system');
+      });
+
       initRenderReasonSwitch();
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
     }
   }
 

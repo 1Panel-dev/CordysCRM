@@ -111,6 +111,7 @@
       title: t('crmReasonDrawer.deleteReasonTitleTip', { title: props.title }),
       content: t('crmReasonDrawer.deleteReasonContentTip'),
       positiveText: t('common.remove'),
+      disabled: form.value.list.length === 1 && enableReason.value,
       loading: popConfirmLoading.value,
     };
   }
@@ -139,6 +140,7 @@
         });
         Message.success(enableReason.value ? t('common.closeSuccess') : t('common.enableSuccess'));
         initReason();
+        emit('loadConfig');
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);

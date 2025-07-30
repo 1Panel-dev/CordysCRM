@@ -7,9 +7,9 @@ import { FilterOption } from 'naive-ui/es/data-table/src/interface';
 
 function getReasonKey(formKey: FormDesignKeyEnum) {
   switch (formKey) {
-    case FormDesignKeyEnum.CUSTOMER:
+    case FormDesignKeyEnum.CUSTOMER_OPEN_SEA:
       return ReasonTypeEnum.CUSTOMER_POOL_RS;
-    case FormDesignKeyEnum.CLUE:
+    case FormDesignKeyEnum.CLUE_POOL:
       return ReasonTypeEnum.CLUE_POOL_RS;
     case FormDesignKeyEnum.BUSINESS:
       return ReasonTypeEnum.OPPORTUNITY_FAIL_RS;
@@ -18,7 +18,6 @@ function getReasonKey(formKey: FormDesignKeyEnum) {
   }
 }
 
-// TODO 权限还没有限制，需要和后台确认 xxw
 export default function useReasonConfig(formKey: FormDesignKeyEnum) {
   const reasonOptions = ref<FilterOption[]>([]);
   const reasonKey = ref();

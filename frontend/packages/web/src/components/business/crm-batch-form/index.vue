@@ -18,7 +18,7 @@
             v-model="form.list"
             ghost-class="ghost"
             drag-class="drag-item-class"
-            :disabled="!props.draggable"
+            :disabled="disabledDraggable"
             :force-fallback="true"
             :animation="150"
             handle=".handle"
@@ -32,7 +32,7 @@
                 v-if="props.draggable"
                 type="iconicon_move"
                 :size="12"
-                class="handle cursor-move text-[var(--text-n4)]"
+                :class="`handle text-[var(--text-n4)] ${disabledDraggable ? 'cursor-not-allowed' : 'cursor-move'}`"
                 :style="{ 'margin-top': index === 0 && props.models.some((item) => item.label) ? '40px' : '14px' }"
               />
               <n-form-item
@@ -149,19 +149,25 @@
                   </n-button>
                   <CrmPopConfirm
                     v-if="props.popConfirmProps"
-                    v-model:show="popShow[element.id]"
-                    :disabled="!props.popConfirmProps"
+                    :show="popShow[element.id]"
+                    :disabled="!props.popConfirmProps || !element.id"
                     placement="bottom-end"
                     class="w-[260px]"
                     v-bind="getPopConfirmProps(element) as CrmPopConfirmProps"
                     @confirm="handlePopDeleteListItem(index, element.id)"
                     @cancel="popShow[element.id] = false"
                   >
-                    <n-button ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
+                    <n-button
+                      v-if="getPopConfirmProps(element)?.disabled ? element.editing : true"
+                      ghost
+                      class="px-[7px]"
+                      @click.stop="handleDeleteListItem(index, element.id)"
+                    >
                       <template #icon>
                         <CrmIcon type="iconicon_delete" :size="16" />
                       </template>
                     </n-button>
+                    <span v-else></span>
                   </CrmPopConfirm>
                   <n-button v-else ghost class="px-[7px]" @click="handleDeleteListItem(index, element.id)">
                     <template #icon>
@@ -400,8 +406,8 @@
 
   // 删除一行
   async function handleDeleteListItem(i: number, id?: string) {
-    if (props.popConfirmProps && id) {
-      popShow.value[id as string] = true;
+    if (id && props.popConfirmProps) {
+      popShow.value[id] = true;
     } else {
       handleDelete(i, id);
     }
@@ -461,6 +467,10 @@
       delete rowBackups.value[index];
     });
   }
+
+  const disabledDraggable = computed(() =>
+    props.validateWhenAdd ? !props.draggable || form.value.list.some((e: any) => e.editing) : !props.draggable
+  );
 
   // 增加一行
   function handleAddListItem() {

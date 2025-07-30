@@ -454,10 +454,7 @@
           { trigger: () => row.name, default: () => row.name }
         );
       },
-      // TODO 缺少字段
-      recycleReason: (row: any) => {
-        return reasonOptions.value.find((e) => e.value === row.recycleReason)?.label ?? '-';
-      },
+      recycleReason: (row: any) => row.reasonName ?? '-',
     },
     permission: ['CUSTOMER_MANAGEMENT:RECYCLE', 'CUSTOMER_MANAGEMENT:UPDATE', 'CUSTOMER_MANAGEMENT:DELETE'],
   });

@@ -15,7 +15,7 @@
           <div class="crm-follow-time-line"></div>
         </div>
         <div class="mb-[24px] flex w-full flex-col gap-[16px]">
-          <div class="crm-follow-record-title">
+          <div class="crm-follow-record-title h-[32px]">
             <div class="flex items-center gap-[16px]">
               <StatusTagSelect
                 v-if="item.status"

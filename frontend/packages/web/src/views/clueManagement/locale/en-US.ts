@@ -30,5 +30,5 @@ export default {
   'clue.relationCustomer': 'Related customer',
   'clue.convertToCustomerSuccess': 'Converted to customer successfully',
   'clue.moveToLeadPoolTip': 'Warning: Leads will become unassigned after transfer!',
-  'clue.batchMoveIntoCluePoolTitle': 'Confirm move-in {name} to lead pool?',
+  'clue.moveIntoCluePoolTitle': 'Confirm move-in {name} to lead pool?',
 };

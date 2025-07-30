@@ -41,6 +41,7 @@ export interface ClueListItem extends ClueDetail {
   latestFollowUpTime: number;
   collectionTime: number;
   reservedDays: number;
+  reasonName?: string;
 }
 
 export interface CluePoolTableParams extends TableQueryParams {

@@ -504,10 +504,7 @@
           { default: () => row.name, trigger: () => row.name }
         );
       },
-      // TODO 缺少字段
-      recycleReason: (row: any) => {
-        return reasonOptions.value.find((e) => e.value === row.recycleReason)?.label ?? '-';
-      },
+      recycleReason: (row: ClueListItem) => row?.reasonName ?? '-',
     },
     permission: ['CLUE_MANAGEMENT:RECYCLE', 'CLUE_MANAGEMENT:DELETE', 'CLUE_MANAGEMENT:UPDATE'],
   });

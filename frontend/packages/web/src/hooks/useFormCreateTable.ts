@@ -171,6 +171,8 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       ellipsis: {
         tooltip: true,
       },
+      sortOrder: false,
+      sorter: true,
       filterOptions: reasonOptions.value,
       filter: true,
       render: props.specialRender?.failureReason,
@@ -203,17 +205,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       ellipsis: {
         tooltip: true,
       },
-    },
-    {
-      title: t('customer.recycleReason'),
-      width: 120,
-      key: 'recycleReason',
-      ellipsis: {
-        tooltip: true,
-      },
-      filterOptions: reasonOptions.value,
-      filter: true,
-      render: props.specialRender?.recycleReason,
     },
     {
       title: t('customer.remainingVesting'),
@@ -385,17 +376,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
         },
       },
       {
-        title: t('customer.recycleReason'),
-        width: 120,
-        key: 'recycleReason',
-        ellipsis: {
-          tooltip: true,
-        },
-        filterOptions: reasonOptions.value,
-        filter: true,
-        render: props.specialRender?.recycleReason,
-      },
-      {
         title: t('customer.remainingVesting'),
         width: 120,
         key: 'reservedDays',
@@ -427,8 +407,36 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
     ],
     [FormDesignKeyEnum.PRODUCT]: [],
-    [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: [],
-    [FormDesignKeyEnum.CLUE_POOL]: [],
+    [FormDesignKeyEnum.CUSTOMER_OPEN_SEA]: [
+      {
+        title: t('customer.recycleReason'),
+        width: 120,
+        key: 'reasonId',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        filterOptions: reasonOptions.value,
+        filter: true,
+        render: props.specialRender?.recycleReason,
+      },
+    ],
+    [FormDesignKeyEnum.CLUE_POOL]: [
+      {
+        title: t('customer.recycleReason'),
+        width: 120,
+        key: 'reasonId',
+        ellipsis: {
+          tooltip: true,
+        },
+        sortOrder: false,
+        sorter: true,
+        filterOptions: reasonOptions.value,
+        filter: true,
+        render: props.specialRender?.recycleReason,
+      },
+    ],
     [FormDesignKeyEnum.CUSTOMER_OPPORTUNITY]: opportunityInternalColumns,
     [FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER]: customerInternalColumns,
   };

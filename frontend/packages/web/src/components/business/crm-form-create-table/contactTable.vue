@@ -352,6 +352,7 @@
       name: (row: CustomerContractListItem) => {
         return h(CrmNameTooltip, { text: row.name });
       },
+      owner: (row: CustomerContractListItem) => row.ownerName ?? '-',
     },
   });
   const { propsRes, propsEvent, loadList, setLoadListParams, setAdvanceFilter } = useTableRes;

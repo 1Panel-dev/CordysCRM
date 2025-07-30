@@ -148,6 +148,7 @@ export interface CustomerContractListItem {
   updateTime: number;
   customerId: string;
   owner: string;
+  ownerName: string;
   name: string;
   enable: boolean; // 是否启用
   disableReason: string; // 停用原因
