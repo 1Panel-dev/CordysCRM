@@ -206,19 +206,19 @@ public class FilterCondition {
                         return getTimestamp(startOfNextDays);
                     }
                     case "BEFORE_WEEK"->{
-                        LocalDateTime startOfLastWeeks = LocalDateTime.now().minusWeeks(dateNumber).with(java.time.DayOfWeek.MONDAY);
+                        LocalDateTime startOfLastWeeks = LocalDateTime.now().minusDays(dateNumber* 7L);
                         return getTimestamp(startOfLastWeeks);
                     }
                     case "AFTER_WEEK"->{
-                        LocalDateTime startOfNextWeeks = LocalDateTime.now().plusWeeks(dateNumber).with(java.time.DayOfWeek.MONDAY);
+                        LocalDateTime startOfNextWeeks = LocalDateTime.now().plusDays(dateNumber*7L);
                         return getTimestamp(startOfNextWeeks);
                     }
                     case "BEFORE_MONTH"->{
-                        LocalDateTime startOfLastMonths = LocalDateTime.now().minusMonths(dateNumber).withDayOfMonth(1);
+                        LocalDateTime startOfLastMonths = LocalDateTime.now().minusMonths(dateNumber);
                         return getTimestamp(startOfLastMonths);
                     }
                     case "AFTER_MONTH"->{
-                        LocalDateTime startOfNextMonths = LocalDateTime.now().plusMonths(dateNumber).withDayOfMonth(1);
+                        LocalDateTime startOfNextMonths = LocalDateTime.now().plusMonths(dateNumber);
                         return getTimestamp(startOfNextMonths);
                     }
                 }
