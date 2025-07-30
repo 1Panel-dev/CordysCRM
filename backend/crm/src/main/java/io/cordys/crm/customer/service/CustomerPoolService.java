@@ -145,6 +145,12 @@ public class CustomerPoolService {
 				if (StringUtils.isNotBlank(condition.getValue()) && split.length == 2 ) {
 					String dateValue = split[0];
 					String dateUnit = split[1];
+					dateUnit = switch (dateUnit) {
+						case "day" -> "BEFORE_DAY";
+						case "month" -> "BEFORE_MONTH";
+						case "week" -> "BEFORE_WEEK";
+						default -> dateUnit;
+					};
 					condition.setValue("CUSTOM,"+ dateValue + "," + dateUnit);
 				}
 			}
