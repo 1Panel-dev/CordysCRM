@@ -94,6 +94,7 @@ public class CustomerPoolControllerTests extends BaseTest {
 		request.setScopeIds(List.of("cc"));
 		CustomerPoolPickRuleDTO pickRule = CustomerPoolPickRuleDTO.builder()
 				.limitOnNumber(true).limitPreOwner(true).pickNumber(1).pickIntervalDays(1).build();
+		pickRule.setLimitNew(false);
 		request.setPickRule(pickRule);
 		CustomerPoolRecycleRuleDTO recycleRule = CustomerPoolRecycleRuleDTO.builder()
 				.build();

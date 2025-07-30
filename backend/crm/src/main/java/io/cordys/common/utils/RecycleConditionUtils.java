@@ -18,6 +18,7 @@ import java.util.List;
 public class RecycleConditionUtils {
 
 	private static final int FIX_TIME_LEN = 2;
+	private static final int DYNAMIC_TIME_LEN = 1;
 
 	/**
 	 * 计算回收天数
@@ -34,6 +35,11 @@ public class RecycleConditionUtils {
 		if (StringUtils.equals(condition.getOperator(), RecycleConditionOperator.FIXED.name())) {
 			return null;
 		}
+
+		//动态非自定义时间也按照区间处理
+		if (StringUtils.isNotBlank(condition.getValue()) && StringUtils.split(condition.getValue(), ",").length == DYNAMIC_TIME_LEN) {
+			return null;
+		}
 		LocalDateTime dynamicTime = condition.getDynamicTime();
 		if (dynamicTime == null) {
 			return null;
@@ -44,6 +50,7 @@ public class RecycleConditionUtils {
 			betweenDays++;
 		}
 		return (int) betweenDays;
+
 	}
 
 	/**
@@ -64,12 +71,22 @@ public class RecycleConditionUtils {
 				match = matchTime >= Long.parseLong(split[0]) && matchTime <= Long.parseLong(split[1]);
 			}
 		} else {
-			// 动态时间
-			LocalDateTime dynamicTime = condition.getDynamicTime();
-			if (dynamicTime != null) {
-				LocalDateTime pickedTime = Instant.ofEpochMilli(matchTime).atZone(ZoneId.systemDefault()).toLocalDateTime();
-				match = pickedTime.isBefore(dynamicTime);
+			//动态非自定义时间也按照区间处理
+			String[] split = StringUtils.split(condition.getValue(), ",");
+			// 动态自定义时间
+			if (split.length == DYNAMIC_TIME_LEN) {
+				List<Long> dynamicTimeList = condition.getDynamicTimeList();
+				match = matchTime >= dynamicTimeList.get(0) && matchTime <= dynamicTimeList.get(1);
+			} else {
+				LocalDateTime dynamicTime = condition.getDynamicTime();
+				if (dynamicTime != null) {
+					LocalDateTime pickedTime = Instant.ofEpochMilli(matchTime).atZone(ZoneId.systemDefault()).toLocalDateTime();
+					match = pickedTime.isBefore(dynamicTime);
+				}
 			}
+
+
+
 		}
 		return match;
 	}

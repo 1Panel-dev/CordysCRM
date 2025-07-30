@@ -86,6 +86,7 @@ public class CluePoolControllerTests extends BaseTest {
 		request.setScopeIds(List.of("cc"));
 		CluePoolPickRuleDTO pickRule = CluePoolPickRuleDTO.builder()
 				.pickNumber(1).limitOnNumber(true).pickIntervalDays(1).limitPreOwner(true).build();
+		pickRule.setLimitNew(false);
 		request.setPickRule(pickRule);
 		CluePoolRecycleRuleDTO recycleRule = CluePoolRecycleRuleDTO.builder().build();
 		request.setRecycleRule(recycleRule);

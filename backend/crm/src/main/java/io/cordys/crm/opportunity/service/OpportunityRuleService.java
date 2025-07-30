@@ -64,12 +64,30 @@ public class OpportunityRuleService {
 		List<User> createOrUpdateUsers = userMapper.selectByIds(userIds.toArray(new String[0]));
 		Map<String, String> userMap = createOrUpdateUsers.stream().collect(Collectors.toMap(User::getId, User::getName));
 		rules.forEach(rule -> {
+			delOldTime(rule);
 			rule.setMembers(userExtendService.getScope(JSON.parseArray(rule.getScopeId(), String.class)));
 			rule.setOwners(userExtendService.getScope(JSON.parseArray(rule.getOwnerId(), String.class)));
 			rule.setCreateUserName(userMap.get(rule.getCreateUser()));
 			rule.setUpdateUserName(userMap.get(rule.getUpdateUser()));
 		});
 		return rules;
+	}
+
+	private void delOldTime(OpportunityRuleDTO rule) {
+		List<RuleConditionDTO> ruleConditionDTOS = JSON.parseArray(rule.getCondition(), RuleConditionDTO.class);
+		if (CollectionUtils.isNotEmpty(ruleConditionDTOS)) {
+			for (RuleConditionDTO condition : ruleConditionDTOS) {
+				if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.CREATE_TIME)
+						&& StringUtils.equals(condition.getOperator(), RecycleConditionOperator.DYNAMICS.name())) {
+					String[] split = condition.getValue().split(",");
+					if (StringUtils.isNotBlank(condition.getValue()) && split.length == 2 ) {
+						String dateValue = split[0];
+						String dateUnit = split[1];
+						condition.setValue("CUSTOM,"+ dateValue + "," + dateUnit);
+					}
+				}
+			}
+		}
 	}
 
 	/**

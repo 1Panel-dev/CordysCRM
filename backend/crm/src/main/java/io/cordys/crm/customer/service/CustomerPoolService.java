@@ -15,6 +15,7 @@ import io.cordys.common.util.BeanUtils;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
 import io.cordys.common.utils.RecycleConditionUtils;
+import io.cordys.crm.clue.dto.CluePoolRecycleRuleDTO;
 import io.cordys.crm.customer.domain.*;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
 import io.cordys.crm.customer.dto.CustomerPoolFieldConfigDTO;
@@ -25,6 +26,7 @@ import io.cordys.crm.customer.dto.request.CustomerPoolUpdateRequest;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
 import io.cordys.crm.customer.mapper.ExtCustomerPoolMapper;
 import io.cordys.crm.system.constants.RecycleConditionColumnKey;
+import io.cordys.crm.system.constants.RecycleConditionOperator;
 import io.cordys.crm.system.constants.RecycleConditionScopeKey;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
@@ -118,7 +120,7 @@ public class CustomerPoolService {
 			CustomerPoolRecycleRule customerPoolRecycleRule = recycleRuleMap.get(pool.getId());
 			BeanUtils.copyBean(recycleRule, customerPoolRecycleRule);
 			recycleRule.setConditions(JSON.parseArray(customerPoolRecycleRule.getCondition(), RuleConditionDTO.class));
-
+			delOldTime(recycleRule);
 			pool.setPickRule(pickRule);
 			pool.setRecycleRule(recycleRule);
 
@@ -136,6 +138,20 @@ public class CustomerPoolService {
 
 		return pools;
 	}
+
+	private void delOldTime(CustomerPoolRecycleRuleDTO recycleRule) {
+		recycleRule.getConditions().forEach(condition -> {
+			if (StringUtils.equals(condition.getOperator(), RecycleConditionOperator.DYNAMICS.name())) {
+				String[] split = condition.getValue().split(",");
+				if (StringUtils.isNotBlank(condition.getValue()) && split.length == 2 ) {
+					String dateValue = split[0];
+					String dateUnit = split[1];
+					condition.setValue("CUSTOM,"+ dateValue + "," + dateUnit);
+				}
+			}
+		});
+	}
+
 
 	public List<CustomerPoolFieldConfigDTO> getFieldConfigs(List<BaseField> fields, Set<String> hiddenFieldIds) {
 		List<CustomerPoolFieldConfigDTO> hiddenFields = fields.stream().map(field -> {

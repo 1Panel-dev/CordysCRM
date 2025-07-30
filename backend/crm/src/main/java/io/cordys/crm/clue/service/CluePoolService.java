@@ -26,6 +26,7 @@ import io.cordys.crm.clue.dto.request.CluePoolUpdateRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtCluePoolMapper;
 import io.cordys.crm.system.constants.RecycleConditionColumnKey;
+import io.cordys.crm.system.constants.RecycleConditionOperator;
 import io.cordys.crm.system.constants.RecycleConditionScopeKey;
 import io.cordys.crm.system.domain.User;
 import io.cordys.crm.system.dto.RuleConditionDTO;
@@ -120,7 +121,7 @@ public class CluePoolService {
             CluePoolRecycleRule cluePoolRecycleRule = recycleRuleMap.get(pool.getId());
             BeanUtils.copyBean(recycleRule, cluePoolRecycleRule);
             recycleRule.setConditions(JSON.parseArray(cluePoolRecycleRule.getCondition(), RuleConditionDTO.class));
-
+            delOldTime(recycleRule);
             pool.setPickRule(pickRule);
             pool.setRecycleRule(recycleRule);
 
@@ -137,6 +138,20 @@ public class CluePoolService {
         });
 
         return pools;
+    }
+
+    private void delOldTime(CluePoolRecycleRuleDTO recycleRule) {
+        recycleRule.getConditions().forEach(condition -> {
+            if (StringUtils.equals(condition.getColumn(), RecycleConditionColumnKey.STORAGE_TIME)
+                    && StringUtils.equals(condition.getOperator(), RecycleConditionOperator.DYNAMICS.name())) {
+                String[] split = condition.getValue().split(",");
+                if (StringUtils.isNotBlank(condition.getValue()) && split.length == 2 ) {
+                    String dateValue = split[0];
+                    String dateUnit = split[1];
+                    condition.setValue("CUSTOM,"+ dateValue + "," + dateUnit);
+                }
+            }
+        });
     }
 
     public List<CluePoolFieldConfigDTO> getCluePoolFieldConfigs(List<BaseField> fields, Set<String> hiddenFieldIds) {
