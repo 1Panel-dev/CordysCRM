@@ -127,7 +127,7 @@ public class FilterCondition {
                         long timestamp = getTimestamp(startOfLastWeek.atStartOfDay());
                         lastWeeks.add(timestamp);
                         LocalDate startOfLastWeekEnd = LocalDate.now().minusWeeks(1).with(DayOfWeek.SUNDAY);
-                        long timestampEnd = getTimestamp(startOfLastWeekEnd.plusDays(7).atTime(23, 59, 59, 999_000_000));
+                        long timestampEnd = getTimestamp(startOfLastWeekEnd.atTime(23, 59, 59, 999_000_000));
                         lastWeeks.add(timestampEnd);
                         return lastWeeks;
                     }
