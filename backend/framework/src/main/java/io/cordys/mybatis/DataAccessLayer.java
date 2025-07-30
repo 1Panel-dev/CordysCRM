@@ -35,6 +35,7 @@ public class DataAccessLayer implements ApplicationContextAware {
 
     // 使用 ConcurrentHashMap 替代同步 LinkedHashMap，提高并发性能
     private final Map<Class<?>, EntityTable> cachedTableInfo = new ConcurrentHashMap<>(128);
+    private final Map<String, Object> msIdLocks = new ConcurrentHashMap<>();
 
     // 添加 MappedStatement 缓存计数监控
     private final AtomicInteger mappedStatementCount = new AtomicInteger(0);
@@ -254,16 +255,23 @@ public class DataAccessLayer implements ApplicationContextAware {
         var msId = generateCacheKey(methodName, parameterType, sqlCommandType);
 
         if (!configuration.hasStatement(msId, false)) {
-            var sqlSource = configuration
-                    .getDefaultScriptingLanguageInstance()
-                    .createSqlSource(configuration, sql, parameterType);
+            Object lock = msIdLocks.computeIfAbsent(msId, k -> new Object());
+            synchronized (lock) {
+                if (!configuration.hasStatement(msId, false)) {
+                    // 创建和注册 MappedStatement
+                    var sqlSource = configuration
+                            .getDefaultScriptingLanguageInstance()
+                            .createSqlSource(configuration, sql, parameterType);
 
-            newMappedStatement(msId, sqlSource, resultType, sqlCommandType);
+                    newMappedStatement(msId, sqlSource, resultType, sqlCommandType);
 
-            var count = mappedStatementCount.incrementAndGet();
-            if (count % 500 == 0) {
-                LogUtils.info("当前缓存的 MappedStatement 总量：{}", count);
+                    var count = mappedStatementCount.incrementAndGet();
+                    if (count % 500 == 0) {
+                        LogUtils.info("当前缓存的 MappedStatement 总量：{}", count);
+                    }
+                }
             }
+            msIdLocks.remove(msId);
         }
 
         return msId;
