@@ -160,6 +160,7 @@ public class CustomerController {
     @Operation(summary = "客户导出全部")
     @RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_EXPORT)
     public String opportunityExportAll(@Validated @RequestBody CustomerExportRequest request) {
+        ConditionFilterUtils.parseCondition(request);
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
         return customerExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());

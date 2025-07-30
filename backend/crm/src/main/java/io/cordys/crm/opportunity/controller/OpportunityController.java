@@ -137,6 +137,7 @@ public class OpportunityController {
     @Operation(summary = "商机导出全部")
     @RequiresPermissions(PermissionConstants.OPPORTUNITY_MANAGEMENT_EXPORT)
     public String opportunityExportAll(@Validated @RequestBody OpportunityExportRequest request) {
+        ConditionFilterUtils.parseCondition(request);
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
         return opportunityExportService.export(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
