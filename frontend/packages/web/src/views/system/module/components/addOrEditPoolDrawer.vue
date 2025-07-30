@@ -10,181 +10,183 @@
     @continue="confirmHandler(true)"
     @cancel="cancelHandler"
   >
-    <n-alert v-if="form.id" class="mb-[16px]" type="warning">
-      {{ t('module.clue.updateConfirmContent') }}
-    </n-alert>
-    <n-form
-      ref="formRef"
-      :model="form"
-      :rules="rules"
-      label-placement="left"
-      :label-width="110"
-      require-mark-placement="left"
-    >
-      <div class="crm-module-form-title">{{ t('common.baseInfo') }}</div>
-      <div class="w-full">
-        <n-form-item
-          path="name"
-          :label="
-            props.type === ModuleConfigEnum.CLUE_MANAGEMENT ? t('module.clue.name') : t('module.customer.openSeaName')
-          "
-        >
-          <n-input v-model:value="form.name" :maxlength="255" type="text" :placeholder="t('common.pleaseInput')" />
-        </n-form-item>
-      </div>
-      <div class="flex">
-        <div class="flex-1">
-          <n-form-item path="adminIds" :label="t('opportunity.admin')">
-            <CrmUserTagSelector v-model:selected-list="form.adminIds" />
+    <n-scrollbar>
+      <n-alert v-if="form.id" class="mb-[16px]" type="warning">
+        {{ t('module.clue.updateConfirmContent') }}
+      </n-alert>
+      <n-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        label-placement="left"
+        :label-width="110"
+        require-mark-placement="left"
+      >
+        <div class="crm-module-form-title">{{ t('common.baseInfo') }}</div>
+        <div class="w-full">
+          <n-form-item
+            path="name"
+            :label="
+              props.type === ModuleConfigEnum.CLUE_MANAGEMENT ? t('module.clue.name') : t('module.customer.openSeaName')
+            "
+          >
+            <n-input v-model:value="form.name" :maxlength="255" type="text" :placeholder="t('common.pleaseInput')" />
           </n-form-item>
         </div>
-        <div class="flex-1">
-          <n-form-item path="userIds" :label="t('role.member')">
-            <CrmUserTagSelector v-model:selected-list="form.userIds" />
-          </n-form-item>
-        </div>
-      </div>
-      <div class="crm-module-form-title">
-        {{
-          props.type === ModuleConfigEnum.CLUE_MANAGEMENT
-            ? t('module.clue.clueCollectionRules')
-            : t('module.customer.customerCollectionRules')
-        }}
-      </div>
-      <n-form-item path="pickRule.limitOnNumber" :label="t('module.clue.dailyCollection')">
-        <n-radio-group v-model:value="form.pickRule.limitOnNumber" name="radiogroup">
-          <n-space>
-            <n-radio :value="false">
-              {{ t('module.clue.noLimit') }}
-            </n-radio>
-            <n-radio :value="true">
-              {{ t('module.clue.limit') }}
-            </n-radio>
-          </n-space>
-        </n-radio-group>
-      </n-form-item>
-      <n-form-item
-        v-if="form.pickRule.limitOnNumber"
-        path="pickRule.pickNumber"
-        :label="t('module.clue.limitQuantity')"
-      >
-        <CrmInputNumber
-          v-model:value="form.pickRule.pickNumber"
-          class="crm-reminder-advance-input"
-          :placeholder="t('common.pleaseInput')"
-          min="1"
-          max="10000"
-          :precision="0"
-        />
-      </n-form-item>
-      <n-form-item path="pickRule.limitPreOwner" :label="t('module.clue.ownerCollection')">
-        <n-radio-group v-model:value="form.pickRule.limitPreOwner" name="radiogroup">
-          <n-space>
-            <n-radio :value="false">
-              {{ t('module.clue.noLimit') }}
-            </n-radio>
-            <n-radio :value="true">
-              {{ t('module.clue.limit') }}
-            </n-radio>
-          </n-space>
-        </n-radio-group>
-      </n-form-item>
-      <n-form-item
-        v-if="form.pickRule.limitPreOwner"
-        path="pickRule.pickIntervalDays"
-        :label="t('module.clue.formerOwner')"
-      >
-        <CrmInputNumber
-          v-model:value="form.pickRule.pickIntervalDays"
-          class="crm-reminder-advance-input"
-          :placeholder="t('common.pleaseInput')"
-          min="1"
-          max="10000"
-          :precision="0"
-        />
-        <div class="flex flex-nowrap"> {{ t('module.clue.receiveDay') }}</div>
-      </n-form-item>
-      <n-form-item path="pickRule.limitNew">
-        <template #label>
-          <div class="flex items-center gap-[8px]">
-            {{ t('module.clue.newDataPick') }}
-            <n-tooltip trigger="hover" placement="right">
-              <template #trigger>
-                <CrmIcon
-                  type="iconicon_help_circle"
-                  :size="16"
-                  class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
-                />
-              </template>
-              {{
-                props.type === ModuleConfigEnum.CLUE_MANAGEMENT
-                  ? t('module.clue.newPoolDataTip')
-                  : t('module.clue.newOpenSeaDataTip')
-              }}
-            </n-tooltip>
+        <div class="flex">
+          <div class="flex-1">
+            <n-form-item path="adminIds" :label="t('opportunity.admin')">
+              <CrmUserTagSelector v-model:selected-list="form.adminIds" />
+            </n-form-item>
           </div>
-        </template>
-        <n-radio-group v-model:value="form.pickRule.limitNew" name="radiogroup">
-          <n-space>
-            <n-radio :value="false">
-              {{ t('module.clue.noLimit') }}
-            </n-radio>
-            <n-radio :value="true">
-              {{ t('module.clue.limit') }}
-            </n-radio>
-          </n-space>
-        </n-radio-group>
-      </n-form-item>
-      <n-form-item v-if="form.pickRule.limitNew" path="pickRule.newPickInterval" :label="t('module.clue.newData')">
-        <CrmInputNumber
-          v-model:value="form.pickRule.newPickInterval"
-          class="crm-reminder-advance-input"
-          :placeholder="t('common.pleaseInput')"
-          min="1"
-          max="10000"
-          :precision="0"
+          <div class="flex-1">
+            <n-form-item path="userIds" :label="t('role.member')">
+              <CrmUserTagSelector v-model:selected-list="form.userIds" />
+            </n-form-item>
+          </div>
+        </div>
+        <div class="crm-module-form-title">
+          {{
+            props.type === ModuleConfigEnum.CLUE_MANAGEMENT
+              ? t('module.clue.clueCollectionRules')
+              : t('module.customer.customerCollectionRules')
+          }}
+        </div>
+        <n-form-item path="pickRule.limitOnNumber" :label="t('module.clue.dailyCollection')">
+          <n-radio-group v-model:value="form.pickRule.limitOnNumber" name="radiogroup">
+            <n-space>
+              <n-radio :value="false">
+                {{ t('module.clue.noLimit') }}
+              </n-radio>
+              <n-radio :value="true">
+                {{ t('module.clue.limit') }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item
+          v-if="form.pickRule.limitOnNumber"
+          path="pickRule.pickNumber"
+          :label="t('module.clue.limitQuantity')"
+        >
+          <CrmInputNumber
+            v-model:value="form.pickRule.pickNumber"
+            class="crm-reminder-advance-input"
+            :placeholder="t('common.pleaseInput')"
+            min="1"
+            max="10000"
+            :precision="0"
+          />
+        </n-form-item>
+        <n-form-item path="pickRule.limitPreOwner" :label="t('module.clue.ownerCollection')">
+          <n-radio-group v-model:value="form.pickRule.limitPreOwner" name="radiogroup">
+            <n-space>
+              <n-radio :value="false">
+                {{ t('module.clue.noLimit') }}
+              </n-radio>
+              <n-radio :value="true">
+                {{ t('module.clue.limit') }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item
+          v-if="form.pickRule.limitPreOwner"
+          path="pickRule.pickIntervalDays"
+          :label="t('module.clue.formerOwner')"
+        >
+          <CrmInputNumber
+            v-model:value="form.pickRule.pickIntervalDays"
+            class="crm-reminder-advance-input"
+            :placeholder="t('common.pleaseInput')"
+            min="1"
+            max="10000"
+            :precision="0"
+          />
+          <div class="flex flex-nowrap"> {{ t('module.clue.receiveDay') }}</div>
+        </n-form-item>
+        <n-form-item path="pickRule.limitNew">
+          <template #label>
+            <div class="flex items-center gap-[8px]">
+              {{ t('module.clue.newDataPick') }}
+              <n-tooltip trigger="hover" placement="right">
+                <template #trigger>
+                  <CrmIcon
+                    type="iconicon_help_circle"
+                    :size="16"
+                    class="cursor-pointer text-[var(--text-n4)] hover:text-[var(--primary-1)]"
+                  />
+                </template>
+                {{
+                  props.type === ModuleConfigEnum.CLUE_MANAGEMENT
+                    ? t('module.clue.newPoolDataTip')
+                    : t('module.clue.newOpenSeaDataTip')
+                }}
+              </n-tooltip>
+            </div>
+          </template>
+          <n-radio-group v-model:value="form.pickRule.limitNew" name="radiogroup">
+            <n-space>
+              <n-radio :value="false">
+                {{ t('module.clue.noLimit') }}
+              </n-radio>
+              <n-radio :value="true">
+                {{ t('module.clue.limit') }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <n-form-item v-if="form.pickRule.limitNew" path="pickRule.newPickInterval" :label="t('module.clue.newData')">
+          <CrmInputNumber
+            v-model:value="form.pickRule.newPickInterval"
+            class="crm-reminder-advance-input"
+            :placeholder="t('common.pleaseInput')"
+            min="1"
+            max="10000"
+            :precision="0"
+          />
+          <div class="flex flex-nowrap"> {{ t('module.clue.receiveDay') }}</div>
+        </n-form-item>
+        <div class="crm-module-form-title">
+          {{
+            props.type === ModuleConfigEnum.CLUE_MANAGEMENT
+              ? t('module.clue.clueRecycleRule')
+              : t('module.customer.customerRecycleRule')
+          }}
+        </div>
+        <n-form-item path="auto" :label="t('module.clue.autoRecycle')">
+          <n-radio-group v-model:value="form.auto" name="radiogroup">
+            <n-space>
+              <n-radio :value="true">
+                {{ t('common.yes') }}
+              </n-radio>
+              <n-radio :value="false">
+                {{ t('common.no') }}
+              </n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        <FilterContent
+          v-if="form.auto"
+          ref="filterContentRef"
+          v-model:form-model="recycleFormItemModel as FilterForm"
+          keep-one-line
+          :config-list="filterConfigList"
         />
-        <div class="flex flex-nowrap"> {{ t('module.clue.receiveDay') }}</div>
-      </n-form-item>
-      <div class="crm-module-form-title">
-        {{
-          props.type === ModuleConfigEnum.CLUE_MANAGEMENT
-            ? t('module.clue.clueRecycleRule')
-            : t('module.customer.customerRecycleRule')
-        }}
-      </div>
-      <n-form-item path="auto" :label="t('module.clue.autoRecycle')">
-        <n-radio-group v-model:value="form.auto" name="radiogroup">
-          <n-space>
-            <n-radio :value="true">
-              {{ t('common.yes') }}
-            </n-radio>
-            <n-radio :value="false">
-              {{ t('common.no') }}
-            </n-radio>
-          </n-space>
-        </n-radio-group>
-      </n-form-item>
-      <FilterContent
-        v-if="form.auto"
-        ref="filterContentRef"
-        v-model:form-model="recycleFormItemModel as FilterForm"
-        keep-one-line
-        :config-list="filterConfigList"
-      />
-      <div class="crm-module-form-title mt-[24px]">
-        {{ t('module.clue.columnsSetting') }}
-      </div>
-      <n-checkbox-group v-model:value="showFieldIds" class="grid grid-cols-5 gap-[12px]">
-        <n-checkbox
-          v-for="field in showInTableColumns"
-          :key="field.id"
-          :value="field.id"
-          :label="field.name"
-          :disabled="field.businessKey === 'name'"
-        />
-      </n-checkbox-group>
-    </n-form>
+        <div class="crm-module-form-title mt-[24px]">
+          {{ t('module.clue.columnsSetting') }}
+        </div>
+        <n-checkbox-group v-model:value="showFieldIds" class="grid grid-cols-5 gap-[12px]">
+          <n-checkbox
+            v-for="field in showInTableColumns"
+            :key="field.id"
+            :value="field.id"
+            :label="field.name"
+            :disabled="field.businessKey === 'name'"
+          />
+        </n-checkbox-group>
+      </n-form>
+    </n-scrollbar>
   </CrmDrawer>
 </template>
 
@@ -201,6 +203,7 @@
     NInput,
     NRadio,
     NRadioGroup,
+    NScrollbar,
     NSpace,
     NTooltip,
     useMessage,
