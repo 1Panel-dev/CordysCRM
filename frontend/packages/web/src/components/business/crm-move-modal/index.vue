@@ -176,7 +176,7 @@
     try {
       const { dictList, enable } = await getReasonConfig(props.reasonKey);
       enableReason.value = enable;
-      reasonList.value = dictList.map((e) => ({ label: e.name, value: e.id }));
+      reasonList.value = dictList.filter((e) => e.id !== 'system').map((e) => ({ label: e.name, value: e.id }));
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);
