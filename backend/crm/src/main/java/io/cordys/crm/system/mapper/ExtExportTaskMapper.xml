@@ -17,4 +17,25 @@
           AND `status` = #{status}
     </select>
 
+
+    <select id="selectExportTaskList" resultType="io.cordys.crm.system.domain.ExportTask">
+        SELECT
+            *
+        FROM
+            export_task
+        WHERE
+            create_user = #{userId}
+          and create_time <![CDATA[>]]> #{oneDayBefore}
+        <if test="request.keyword != null and request.keyword != ''">
+            and file_name like concat('%', #{request.keyword},'%')
+        </if>
+        <if test="request.exportType != null and request.exportType != ''">
+            and resource_type = #{request.exportType}
+        </if>
+        <if test="request.exportStatus != null and request.exportStatus != ''">
+            and status = #{request.exportStatus}
+        </if>
+        ORDER BY
+            create_time DESC
+    </select>
 </mapper>

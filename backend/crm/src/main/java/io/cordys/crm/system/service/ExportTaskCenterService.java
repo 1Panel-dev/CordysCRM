@@ -8,6 +8,7 @@ import io.cordys.common.util.Translator;
 import io.cordys.crm.system.constants.ExportConstants;
 import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.dto.request.ExportTaskCenterQueryRequest;
+import io.cordys.crm.system.mapper.ExtExportTaskMapper;
 import io.cordys.file.engine.DefaultRepositoryDir;
 import io.cordys.file.engine.FileRequest;
 import io.cordys.file.engine.StorageType;
@@ -35,6 +36,8 @@ public class ExportTaskCenterService {
     private MessagePublisher messagePublisher;
     @Resource
     private FileCommonService fileCommonService;
+    @Resource
+    private ExtExportTaskMapper extExportTaskMapper;
 
     /**
      * 查询导出任务列表
@@ -44,18 +47,7 @@ public class ExportTaskCenterService {
      */
     public List<ExportTask> list(ExportTaskCenterQueryRequest request, String userId) {
         LocalDateTime oneDayBefore = LocalDateTime.now().minusDays(1);
-        LambdaQueryWrapper<ExportTask> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.like(ExportTask::getFileName, request.getKeyword())
-                .eq(ExportTask::getCreateUser, userId)
-                .gtT(ExportTask::getCreateTime, oneDayBefore.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-                .orderByDesc(ExportTask::getCreateTime);
-        if (StringUtils.isNotEmpty(request.getExportType())) {
-            queryWrapper.eq(ExportTask::getResourceType, request.getExportType());
-        }
-        if (StringUtils.isNotEmpty(request.getExportStatus())) {
-            queryWrapper.eq(ExportTask::getStatus, request.getExportStatus());
-        }
-        return exportTaskMapper.selectListByLambda(queryWrapper);
+        return extExportTaskMapper.selectExportTaskList(request, oneDayBefore.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(), userId);
     }
 
     /**
