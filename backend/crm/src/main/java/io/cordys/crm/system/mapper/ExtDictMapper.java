@@ -41,6 +41,7 @@ public interface ExtDictMapper {
 	 * 更新字典位置
 	 * @param id 字典ID
 	 * @param pos 位置
+	 * @param currentUser 当前用户
 	 */
-	void updateDictPos(@Param("id") String id, @Param("pos") Long pos);
+	void updateDictPos(@Param("id") String id, @Param("pos") Long pos, @Param("currentUser") String currentUser);
 }

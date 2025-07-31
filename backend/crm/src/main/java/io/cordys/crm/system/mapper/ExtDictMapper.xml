@@ -18,6 +18,6 @@
     </select>
 
     <update id="updateDictPos">
-        update sys_dict set pos = #{pos} where id = #{id}
+        update sys_dict set pos = #{pos}, update_user = #{currentUser}, update_time = unix_timestamp() * 1000 where id = #{id}
     </update>
 </mapper>

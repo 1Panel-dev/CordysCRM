@@ -139,9 +139,9 @@ public class ModuleService {
 
         //添加日志上下文
         Map<String, List<String>> originalVal = new HashMap<>(1);
-        originalVal.put(Translator.get("module.main.nav"), beforeKeys);
-        Map<String, Boolean> modifiedVal = new HashMap<>(1);
-        originalVal.put(Translator.get("module.main.nav"), afterKeys);
+        originalVal.put("sort", beforeKeys);
+        Map<String, List<String>> modifiedVal = new HashMap<>(1);
+        modifiedVal.put("sort", afterKeys);
         OperationLogContext.setContext(LogContextInfo.builder()
                 .originalValue(originalVal)
                 .resourceName(Translator.get("module.main.nav"))
