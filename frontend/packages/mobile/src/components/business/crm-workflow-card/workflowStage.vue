@@ -140,7 +140,9 @@
   const loading = ref(false);
   async function handleSave() {
     try {
-      await formRef.value?.validate();
+      if (enableReason.value) {
+        await formRef.value?.validate();
+      }
       loading.value = true;
       const stageType = route.query.type as WorkStageTypeKey;
       await updateStageApi[stageType]({

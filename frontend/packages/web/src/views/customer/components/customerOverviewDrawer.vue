@@ -86,7 +86,7 @@
         :source-id="props.sourceId"
         :name="sourceName"
         type="warning"
-        @refresh="() => handleSaved()"
+        @refresh="refresh"
       />
     </template>
   </CrmOverviewDrawer>
@@ -306,6 +306,11 @@
   function handleSaved() {
     refreshKey.value += 1;
     emit('saved');
+  }
+
+  function refresh() {
+    emit('saved');
+    show.value = false;
   }
 
   function handleDescriptionInit(_collaborationType?: CollaborationType, _sourceName?: string) {

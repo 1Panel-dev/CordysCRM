@@ -592,7 +592,7 @@
         const { enable, dictList } = config;
         const { enableRef, hasConfigRef } = reasonTypes[index];
         enableRef.value = enable;
-        hasConfigRef.value = dictList.some((e: any) => e.id !== 'system');
+        hasConfigRef.value = dictList.filter((e) => e.id !== 'system').length > 0;
       });
 
       initRenderReasonSwitch();

@@ -235,6 +235,7 @@
           failureReason:
             props.showConfirmStatus && stage === StageResultEnum.FAIL ? form.value.failureReason : undefined,
         });
+        handleCancel();
         Message.success(t('common.updateSuccess'));
         emit('loadDetail');
       }
@@ -262,8 +263,7 @@
     if (enableReason.value) {
       formRef.value?.validate(async (errors) => {
         if (!errors) {
-          await handleSave(form.value.stage);
-          handleCancel();
+          handleSave(form.value.stage);
         }
       });
     } else {

@@ -26,7 +26,7 @@
           >
             <div
               v-for="(element, index) in form.list"
-              :key="`${element.path}${index}`"
+              :key="element.id ?? element._key"
               :class="`${!element.editing ? 'read-only-row' : ''} flex gap-[8px]`"
             >
               <CrmIcon
@@ -216,6 +216,7 @@
 
   import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
+  import { getGenerateId } from '@lib/shared/method';
   import { scrollIntoView } from '@lib/shared/method/dom';
   import { SelectedUsersItem } from '@lib/shared/models/system/module';
 
@@ -463,11 +464,13 @@
   // 保存编辑
   async function handleSaveRow(element: Record<string, any>, index: number) {
     const isValid = await validateRowFields(index);
-    if (!isValid) return;
-    emit('saveRow', element, () => {
-      form.value.list[index].editing = false;
-      delete rowBackups.value[index];
-    });
+    formValidate(() => {
+      if (!isValid) return;
+      emit('saveRow', element, () => {
+        form.value.list[index].editing = false;
+        delete rowBackups.value[index];
+      });
+    }, false);
   }
 
   const disabledDraggable = computed(() =>
@@ -476,12 +479,17 @@
 
   // 增加一行
   function handleAddListItem() {
+    const item = {
+      ...formItem,
+      editing: true,
+      _key: getGenerateId(),
+    };
     if (props.validateWhenAdd) {
       formValidate(() => {
-        form.value.list.push({ ...formItem, editing: true });
+        form.value.list.push(item);
       }, false);
     } else {
-      form.value.list.push({ ...formItem, editing: true });
+      form.value.list.push(item);
     }
   }
 
