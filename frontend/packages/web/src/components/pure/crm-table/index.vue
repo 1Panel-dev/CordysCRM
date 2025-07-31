@@ -560,61 +560,68 @@
   });
 
   const sortable = ref();
+  function initSortable(el: HTMLElement) {
+    sortable.value = Sortable.create(el, {
+      ghostClass: 'sortable-ghost',
+      handle: '.crm-table-data-draggable-handle',
+      setData(dataTransfer: any) {
+        dataTransfer.setData('Text', '');
+      },
+      onMove: (evt) => {
+        if (!props.dragMoveValidator) return true;
+        const draggedEl = evt.dragged as HTMLElement;
+        const relatedEl = evt.related as HTMLElement;
+        const children = Array.from(evt.from.children); // 所有 row（tr）
+        const data = attrs.data as any[];
+        const fromRow = data[children.indexOf(draggedEl)];
+        const toRow = data[children.indexOf(relatedEl)];
+        return props.dragMoveValidator(fromRow, toRow);
+      },
+      onEnd: (e: any) => {
+        const { oldIndex, newIndex } = e;
+        const data = attrs.data as any[];
+        const rowKey = props.tableRowKey || 'id';
+
+        const moveId = data[oldIndex][rowKey];
+
+        let targetId;
+        let moveMode: 'AFTER' | 'BEFORE';
+
+        if (newIndex >= data.length) {
+          targetId = data[data.length - 1][rowKey];
+          moveMode = 'AFTER';
+        } else if (newIndex === 0) {
+          targetId = data[0][rowKey];
+          moveMode = 'BEFORE';
+        } else if (oldIndex < newIndex) {
+          targetId = data[newIndex][rowKey];
+          moveMode = 'AFTER';
+        } else {
+          targetId = data[newIndex][rowKey];
+          moveMode = 'BEFORE';
+        }
+
+        emit('drag', {
+          targetId,
+          moveId,
+          moveMode,
+          orgId: appStore.orgId,
+          oldIndex,
+          newIndex,
+        });
+      },
+    });
+  }
   async function setDraggerSort() {
+    const el = tableRef.value?.$el?.querySelector('.n-data-table tbody');
+    if (props.notVirtualScroll && el) {
+      initSortable(el);
+      return;
+    }
     const observer = new MutationObserver((mutations, obs) => {
-      const el = tableRef.value?.$el?.querySelector('.n-data-table tbody');
       if (el) {
         obs.disconnect();
-        sortable.value = Sortable.create(el, {
-          ghostClass: 'sortable-ghost',
-          handle: '.crm-table-data-draggable-handle',
-          setData(dataTransfer: any) {
-            dataTransfer.setData('Text', '');
-          },
-          onMove: (evt) => {
-            if (!props.dragMoveValidator) return true;
-            const draggedEl = evt.dragged as HTMLElement;
-            const relatedEl = evt.related as HTMLElement;
-            const children = Array.from(evt.from.children); // 所有 row（tr）
-            const data = attrs.data as any[];
-            const fromRow = data[children.indexOf(draggedEl)];
-            const toRow = data[children.indexOf(relatedEl)];
-            return props.dragMoveValidator(fromRow, toRow);
-          },
-          onEnd: (e: any) => {
-            const { oldIndex, newIndex } = e;
-            const data = attrs.data as any[];
-            const rowKey = props.tableRowKey || 'id';
-
-            const moveId = data[oldIndex][rowKey];
-
-            let targetId;
-            let moveMode: 'AFTER' | 'BEFORE';
-
-            if (newIndex >= data.length) {
-              targetId = data[data.length - 1][rowKey];
-              moveMode = 'AFTER';
-            } else if (newIndex === 0) {
-              targetId = data[0][rowKey];
-              moveMode = 'BEFORE';
-            } else if (oldIndex < newIndex) {
-              targetId = data[newIndex][rowKey];
-              moveMode = 'AFTER';
-            } else {
-              targetId = data[newIndex][rowKey];
-              moveMode = 'BEFORE';
-            }
-
-            emit('drag', {
-              targetId,
-              moveId,
-              moveMode,
-              orgId: appStore.orgId,
-              oldIndex,
-              newIndex,
-            });
-          },
-        });
+        initSortable(el);
       }
     });
 

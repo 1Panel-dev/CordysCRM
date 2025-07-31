@@ -104,12 +104,15 @@
 
   import { TabType } from '@/hooks/useHiddenTab';
   import useHorizontalScrollArrows from '@/hooks/useHorizontalScrollArrows';
+  import useAppStore from '@/store/modules/app';
   import useViewStore from '@/store/modules/view';
-  import { initCommonSortable } from '@/utils/initSortable';
+
+  import Sortable from 'sortablejs';
 
   const { t } = useI18n();
   const viewStore = useViewStore();
   const Message = useMessage();
+  const appStore = useAppStore();
 
   const props = defineProps<{
     type: TabType;
@@ -280,17 +283,60 @@
     viewStore.toggleDrag(props.type, params);
   }
 
+  const sortData = computed(() => [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable));
+  const sortable = ref();
+
   function initSelectSortable(el: HTMLElement) {
-    const data = [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable);
-    initCommonSortable({
-      containerEl: el,
+    sortable.value = Sortable.create(el, {
+      ghostClass: 'sortable-ghost',
       handle: '.drag-icon',
       draggable: '.n-base-select-option',
       filter: '.n-base-select-group-header',
-      data,
-      dragMoveValidator,
-      onDragEnd: (params) => {
-        dragHandler(params);
+      setData(dataTransfer) {
+        dataTransfer.setData('Text', '');
+      },
+      onMove(evt) {
+        if (!dragMoveValidator) return true;
+        const draggedEl = evt.dragged as HTMLElement;
+        const relatedEl = evt.related as HTMLElement;
+        const allDraggable = Array.from(el.querySelectorAll('.n-base-select-option'));
+        const fromRow = sortData.value[allDraggable.indexOf(draggedEl)];
+        const toRow = sortData.value[allDraggable.indexOf(relatedEl)];
+        return dragMoveValidator(fromRow, toRow);
+      },
+      onEnd(evt) {
+        const { oldDraggableIndex, newDraggableIndex } = evt;
+        if (oldDraggableIndex == null || newDraggableIndex == null || oldDraggableIndex === newDraggableIndex) return;
+
+        const data = sortData.value as any[];
+        const rowKey = 'id';
+
+        const moveId = data[oldDraggableIndex][rowKey];
+        let targetId;
+        let moveMode: 'AFTER' | 'BEFORE';
+
+        if (newDraggableIndex >= data.length) {
+          targetId = data[data.length - 1][rowKey];
+          moveMode = 'AFTER';
+        } else if (newDraggableIndex === 0) {
+          targetId = data[0][rowKey];
+          moveMode = 'BEFORE';
+        } else if (oldDraggableIndex < newDraggableIndex) {
+          targetId = data[newDraggableIndex][rowKey];
+          moveMode = 'AFTER';
+        } else {
+          targetId = data[newDraggableIndex][rowKey];
+          moveMode = 'BEFORE';
+        }
+
+        dragHandler?.({
+          moveId,
+          targetId,
+          moveMode,
+          oldIndex: oldDraggableIndex,
+          newIndex: newDraggableIndex,
+          orgId: appStore.orgId,
+        });
       },
     });
   }
