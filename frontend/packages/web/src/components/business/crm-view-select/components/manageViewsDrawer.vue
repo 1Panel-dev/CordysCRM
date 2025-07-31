@@ -10,6 +10,7 @@
       v-bind="propsRes"
       class="crm-manage-views-table"
       draggable
+      not-virtual-scroll
       :drag-move-validator="dragMoveValidator"
       @page-change="propsEvent.pageChange"
       @sorter-change="propsEvent.sorterChange"

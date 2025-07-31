@@ -46,6 +46,8 @@
       filterable
       label-field="name"
       value-field="id"
+      :reset-menu-on-options-change="false"
+      :virtual-scroll="false"
       :show-checkmark="false"
       :render-option="renderOption"
       class="view-select w-[200px]"
@@ -271,34 +273,30 @@
     viewStore.toggleDrag(props.type, params);
   }
 
+  function initSelectSortable(el: HTMLElement) {
+    const data = [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable);
+    initCommonSortable({
+      containerEl: el,
+      handle: '.drag-icon',
+      draggable: '.n-base-select-option',
+      filter: '.n-base-select-group-header',
+      data,
+      dragMoveValidator,
+      onDragEnd: (params) => {
+        dragHandler(params);
+      },
+    });
+  }
+
   async function setDraggerSort(show: boolean) {
     if (!show) return;
+    await nextTick();
     setTimeout(() => {
-      const menuContainer = document.querySelector('.crm-view-select-menu');
-      if (!menuContainer) return;
-      const observer = new MutationObserver((mutations, obs) => {
-        const el = menuContainer.querySelector('.v-vl-visible-items');
-        if (el) {
-          obs.disconnect();
-          const data = [...viewStore.internalViews, ...viewStore.customViews].filter((item) => item.enable);
-          initCommonSortable({
-            containerEl: el as HTMLElement,
-            handle: '.drag-icon',
-            draggable: '.n-base-select-option',
-            filter: '.n-base-select-group-header',
-            data,
-            dragMoveValidator,
-            onDragEnd: (params) => {
-              dragHandler(params);
-            },
-          });
-        }
-      });
-
-      observer.observe(menuContainer, {
-        childList: true,
-        subtree: true,
-      });
+      const el = document?.querySelector('.crm-view-select-menu .n-base-select-menu-option-wrapper');
+      if (el) {
+        // DOM已经存在，直接初始化
+        initSelectSortable(el as HTMLElement);
+      }
     }, 50);
   }
 </script>

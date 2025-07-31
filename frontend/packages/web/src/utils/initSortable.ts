@@ -40,14 +40,9 @@ export function initCommonSortable(options: DragOptions) {
       if (!dragMoveValidator) return true;
       const draggedEl = evt.dragged as HTMLElement;
       const relatedEl = evt.related as HTMLElement;
-      const children = Array.from(evt.from.children).filter((el) => {
-        if (!filter) return true;
-        if (filter.startsWith('.')) return !el.classList.contains(filter.slice(1));
-        if (filter.startsWith('#')) return el.id !== filter.slice(1);
-        return true;
-      });
-      const fromRow = data[children.indexOf(draggedEl)];
-      const toRow = data[children.indexOf(relatedEl)];
+      const allDraggable = Array.from(draggable ? containerEl.querySelectorAll(draggable) : evt.from.children);
+      const fromRow = data[allDraggable.indexOf(draggedEl)];
+      const toRow = data[allDraggable.indexOf(relatedEl)];
       return dragMoveValidator(fromRow, toRow);
     },
     onEnd(evt) {

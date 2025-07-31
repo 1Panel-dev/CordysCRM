@@ -73,7 +73,7 @@
       :class="`${props.notShowTableFilter ? 'not-show-filter' : ''} ${
         attrs.showSetting ? crmTableLayoutClass : ''
       } flex-1`"
-      virtual-scroll
+      :virtual-scroll="!props.notVirtualScroll"
       :virtual-scroll-x="props.virtualScrollX"
       :min-row-height="tableLineHeight"
       :header-height="tableLineHeight"
@@ -152,6 +152,7 @@
     notShowTableFilter?: boolean; // 不显示表头筛选
     draggable?: boolean; // 允许拖拽
     dragMoveValidator?: (fromRow: any, toRow: any) => boolean; // 拖拽限制
+    notVirtualScroll?: boolean; // 不开启竖向虚拟滚动
     virtualScrollX?: boolean; // 是否开启横向虚拟滚动
     fullscreenTargetRef?: HTMLElement | null;
     class?: string; // 自定义样式类
