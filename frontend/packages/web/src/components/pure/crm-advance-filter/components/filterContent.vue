@@ -188,10 +188,9 @@
               v-model:value="item.value"
               value-field="id"
               label-field="name"
-              mode="remote"
               :disabled="isValueDisabled(item)"
               multiple
-              :fetch-api="getUserOptions"
+              :options="userOptionsList"
               max-tag-count="responsive"
               @update:value="valueChange"
             />
@@ -272,6 +271,7 @@
 
   import { operatorOptionsMap, scopeOptions } from '../index';
   import type { FilterForm, FilterFormItem } from '../type';
+  import { SelectMixedOption } from 'naive-ui/es/select/src/interface';
 
   const { t } = useI18n();
 
@@ -354,6 +354,16 @@
     return mergedList.find((item) => item.dataIndex === dataIndex);
   };
 
+  const userOptionsList = ref<SelectMixedOption[]>([]);
+  async function getUserOption() {
+    try {
+      userOptionsList.value = await getUserOptions();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
+  }
+
   onMounted(() => {
     // 初始化视图回显
     formModel.value.list.forEach((item, index) => {
@@ -369,6 +379,7 @@
         formModel.value.list[index] = currentListItem;
       }
     });
+    getUserOption();
   });
 
   // 改变第一列值
