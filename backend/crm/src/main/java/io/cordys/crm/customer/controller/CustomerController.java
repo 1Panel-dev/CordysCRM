@@ -150,6 +150,7 @@ public class CustomerController {
     @RequiresPermissions({PermissionConstants.CUSTOMER_MANAGEMENT_READ, PermissionConstants.OPPORTUNITY_MANAGEMENT_READ})
     @Operation(summary = "客户详情-商机列表")
     public PagerWithOption<List<OpportunityListResponse>> list(@Validated @RequestBody CustomerOpportunityPageRequest request) {
+        ConditionFilterUtils.parseCondition(request);
         request.setViewId("ALL");
         DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
                 OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.OPPORTUNITY_MANAGEMENT_READ);
