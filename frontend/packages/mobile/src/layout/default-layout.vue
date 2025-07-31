@@ -18,23 +18,24 @@
       class="page-bottom-tabbar !py-[8px]"
       @change="handleTabbarChange"
     >
-      <van-tabbar-item
-        v-for="menu of menuList"
-        :key="menu.name"
-        :name="menu.name"
-        class="rounded-full"
-        :class="active === menu.name ? '!bg-[var(--primary-7)]' : ''"
-      >
-        <template #icon>
-          <CrmIcon
-            :name="menu.icon"
-            width="18px"
-            height="16px"
-            :color="active === menu.name ? 'var(--van-tabbar-item-active-color)' : ''"
-          />
-        </template>
-        <div class="text-[10px]">{{ t(menu.text) }}</div>
-      </van-tabbar-item>
+      <template v-for="menu of menuList" :key="menu.name">
+        <van-tabbar-item
+          v-permission="menu.permission"
+          :name="menu.name"
+          class="rounded-full"
+          :class="active === menu.name ? '!bg-[var(--primary-7)]' : ''"
+        >
+          <template #icon>
+            <CrmIcon
+              :name="menu.icon"
+              width="18px"
+              height="16px"
+              :color="active === menu.name ? 'var(--van-tabbar-item-active-color)' : ''"
+            />
+          </template>
+          <div class="text-[10px]">{{ t(menu.text) }}</div>
+        </van-tabbar-item>
+      </template>
     </van-tabbar>
   </div>
 </template>
@@ -92,21 +93,25 @@
       name: AppRouteEnum.WORKBENCH,
       icon: 'iconicon_home',
       text: t('menu.workbench'),
+      permission: [],
     },
     {
       name: AppRouteEnum.CUSTOMER,
       icon: 'iconicon_customer',
       text: t('menu.customer'),
+      permission: ['CUSTOMER_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT_POOL:READ', 'CUSTOMER_MANAGEMENT_CONTACT:READ'],
     },
     {
       name: AppRouteEnum.CLUE,
       icon: 'iconicon_clue',
       text: t('menu.clue'),
+      permission: ['CLUE_MANAGEMENT:READ', 'CLUE_MANAGEMENT_POOL:READ'],
     },
     {
       name: AppRouteEnum.OPPORTUNITY,
       icon: 'iconicon_business_opportunity',
       text: t('menu.opportunity'),
+      permission: ['OPPORTUNITY_MANAGEMENT:READ'],
     },
     {
       name: AppRouteEnum.MINE,

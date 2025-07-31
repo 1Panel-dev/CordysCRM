@@ -20,6 +20,8 @@
   import Clue from './clue/index.vue';
   import Pool from './pool/index.vue';
 
+  import { hasAnyPermission } from '@/utils/permission';
+
   import { ClueRouteEnum } from '@/enums/routeEnum';
 
   defineOptions({
@@ -27,16 +29,20 @@
   });
   const { t } = useI18n();
   const activeName = ref('clue');
-  const tabList = [
-    {
-      name: 'clue',
-      title: t('menu.clue'),
-    },
-    {
-      name: 'cluePool',
-      title: t('menu.cluePool'),
-    },
-  ];
+  const tabList = computed(() =>
+    [
+      {
+        name: 'clue',
+        title: t('menu.clue'),
+        permission: ['CLUE_MANAGEMENT:READ'],
+      },
+      {
+        name: 'cluePool',
+        title: t('menu.cluePool'),
+        permission: ['CLUE_MANAGEMENT_POOL:READ'],
+      },
+    ].filter((item) => hasAnyPermission(item.permission))
+  );
 </script>
 
 <style lang="less" scoped>
