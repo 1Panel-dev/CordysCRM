@@ -49,7 +49,7 @@ public class ServiceUtils {
 
             Long targetPos = (Long) getPos.invoke(target);
 
-            if (request.getMoveMode().equals(MoveTypeEnum.BEFORE.name())) {
+            if (request.getMoveMode().equals(MoveTypeEnum.AFTER.name())) {
                 // 追加到参考对象的之后
                 pos = targetPos - POS_STEP;
                 // ，因为是降序排，则查找比目标 order 小的一个order
