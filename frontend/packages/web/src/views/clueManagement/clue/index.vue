@@ -571,6 +571,11 @@
       dataIndex: 'followTime',
       type: FieldTypeEnum.TIME_RANGE_PICKER,
     },
+    {
+      title: t('customer.collectionTime'),
+      dataIndex: 'collectionTime',
+      type: FieldTypeEnum.TIME_RANGE_PICKER,
+    },
     ...baseFilterConfigList,
   ]);
 
