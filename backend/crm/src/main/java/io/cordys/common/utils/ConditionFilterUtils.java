@@ -35,6 +35,7 @@ public class ConditionFilterUtils {
         if (StringUtils.isNotBlank(viewId) && !InternalUserView.isInternalUserView(viewId)) {
             // 查询视图
             UserViewService userViewService = CommonBeanFactory.getBean(UserViewService.class);
+            String searchMode = userViewService.getSearchMode(viewId);
             List<FilterCondition> conditions = userViewService.getFilterConditions(viewId);
             if (baseCondition.getCombineSearch() == null) {
                 baseCondition.setCombineSearch(new CombineSearch());
@@ -43,6 +44,7 @@ public class ConditionFilterUtils {
                     .getConditions();
             newConditions.addAll(conditions);
             baseCondition.getCombineSearch().setConditions(newConditions);
+            baseCondition.getCombineSearch().setSearchMode(searchMode);
         }
 
         CombineSearch combineSearch = baseCondition.getCombineSearch();

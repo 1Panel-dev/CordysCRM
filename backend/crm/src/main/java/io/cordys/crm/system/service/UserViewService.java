@@ -3,12 +3,14 @@ package io.cordys.crm.system.service;
 import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.dto.OptionDTO;
+import io.cordys.common.dto.condition.CombineSearch;
 import io.cordys.common.dto.condition.FilterCondition;
 import io.cordys.common.dto.request.PosRequest;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.uid.utils.EnumUtils;
 import io.cordys.common.util.*;
+import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.constants.UserViewConditionValueType;
 import io.cordys.crm.system.domain.UserView;
@@ -28,10 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("userViewService")
@@ -354,4 +353,8 @@ public class UserViewService {
         userViewMapper.update(userView);
     }
 
+    public String getSearchMode(String viewId) {
+        UserView userView = userViewMapper.selectByPrimaryKey(viewId);
+        return Optional.ofNullable(userView).map(UserView::getSearchMode).orElse(CombineSearch.SearchMode.AND.name());
+    }
 }
