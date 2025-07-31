@@ -6,6 +6,7 @@ export enum TableKeyEnum {
   SYSTEM_ANNOUNCEMENT_TABLE = 'systemAnnouncementTable',
   MODULE_OPPORTUNITY_RULE_TABLE = 'moduleOpportunityRuleTable',
   MODULE_CLUE_POOL = 'moduleCluePool',
+  MODULE_OPEN_SEA = 'moduleOpenSea',
   OPPORTUNITY_HEAD_LIST = 'opportunityHeadList',
   CUSTOMER = 'customer',
   CUSTOMER_CONTRACT = 'customerContract',

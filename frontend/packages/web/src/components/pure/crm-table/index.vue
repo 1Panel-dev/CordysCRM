@@ -64,7 +64,6 @@
     <slot name="view"></slot>
     <n-data-table
       ref="tableRef"
-      :key="attrs.showSetting ? `table-${attrs.tableKey}-${layOut}` : `table-default-layout`"
       v-bind="{ scrollX: scrollXWidth, ...$attrs }"
       v-model:checked-row-keys="checkedRowKeys"
       :columns="currentColumns as TableColumns"
@@ -77,6 +76,7 @@
       :virtual-scroll-x="props.virtualScrollX"
       :min-row-height="tableLineHeight"
       :header-height="tableLineHeight"
+      :row-props="rowProps"
       @update:sorter="handleSorterChange"
       @update:filters="handleFiltersChange"
       @update:checked-row-keys="handleCheck"
@@ -450,7 +450,7 @@
   }
 
   const crmTableLayoutClass = ref('');
-  const layOut = ref<string>();
+  const layOut = ref<string>('');
   async function initLayoutType() {
     if (attrs.showSetting) {
       const layout = await tableStore.getTableLineHeight(attrs.tableKey as TableKeyEnum);
@@ -458,6 +458,21 @@
       crmTableLayoutClass.value = layout === 'compact' ? 'crm-data-table-compact' : 'crm-data-table-loose';
     }
   }
+
+  const tableLineHeight = computed(() => {
+    if (attrs.showSetting) {
+      return layOut.value === 'compact' ? 36 : 46;
+    }
+    return 46;
+  });
+
+  const rowProps = (_rowData: object, _rowIndex: number) => {
+    return {
+      style: {
+        height: layOut.value === 'compact' ? '36px' : '46px',
+      },
+    };
+  };
 
   function changeColumnsSetting() {
     initColumn(true);
@@ -644,13 +659,6 @@
       return prev + Math.max(width, minWidth);
     }, 0)
   );
-
-  const tableLineHeight = computed(() => {
-    if (attrs.showSetting) {
-      return layOut.value === 'compact' ? 36 : 46;
-    }
-    return 46;
-  });
 
   defineExpose({
     scrollTo,

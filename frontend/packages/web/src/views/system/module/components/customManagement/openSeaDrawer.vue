@@ -309,7 +309,7 @@
   ];
 
   const { propsRes, propsEvent, loadList, setLoadListParams } = useTable(getCustomerPoolPage, {
-    tableKey: TableKeyEnum.MODULE_CLUE_POOL,
+    tableKey: TableKeyEnum.MODULE_OPEN_SEA,
     showSetting: true,
     columns,
     containerClass: '.crm-open-sea-table',
