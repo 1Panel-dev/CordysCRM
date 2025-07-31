@@ -116,8 +116,8 @@ public class FilterCondition {
                         LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
                         long timestamp = getTimestamp(startOfWeek.atStartOfDay());
                         weeks.add(timestamp);
-                        LocalDateTime now = LocalDateTime.now();
-                        long timestampEnd = getTimestamp(now);
+                        LocalDate now = LocalDate.now().with(DayOfWeek.SUNDAY);;
+                        long timestampEnd = getTimestamp(now.atTime(23, 59, 59, 999_000_000));
                         weeks.add(timestampEnd);
                         return weeks;
                     }
@@ -136,8 +136,8 @@ public class FilterCondition {
                         LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
                         long timestamp = getTimestamp(startOfMonth.atStartOfDay());
                         months.add(timestamp);
-                        LocalDateTime now = LocalDateTime.now();
-                        long timestampEnd = getTimestamp(now);
+                        LocalDate now = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth());
+                        long timestampEnd = getTimestamp(now.atTime(23, 59, 59, 999_000_000));
                         months.add(timestampEnd);
                         return months;
                     }
@@ -156,14 +156,13 @@ public class FilterCondition {
                         LocalDate startOfLastSevenDays = LocalDate.now().minusDays(7);
                         long timestamp = getTimestamp(startOfLastSevenDays.atStartOfDay());
                         lastSevens.add(timestamp);
-                        LocalDateTime now = LocalDateTime.now();
-                        long timestampEnd = getTimestamp(now);
+                        long timestampEnd = getTimestamp(LocalDate.now().atStartOfDay());
                         lastSevens.add(timestampEnd);
                         return lastSevens;
                     }
                     case "SEVEN" -> {
                         List<Long> sevens = new ArrayList<>();
-                        LocalDate startOfNextSevenDays = LocalDate.now().plusDays(7);
+                        LocalDate startOfNextSevenDays = LocalDate.now().plusDays(6);
                         long timestamp = getTimestamp(LocalDate.now().atStartOfDay());
                         sevens.add(timestamp);
                         long timestampEnd = getTimestamp(startOfNextSevenDays.atTime(23, 59, 59, 999_000_000));
@@ -175,14 +174,13 @@ public class FilterCondition {
                         LocalDate startOfLastThirtyDays = LocalDate.now().minusDays(30);
                         long timestamp = getTimestamp(startOfLastThirtyDays.atStartOfDay());
                         lastThirty.add(timestamp);
-                        LocalDateTime now = LocalDateTime.now();
-                        long timestampEnd = getTimestamp(now);
+                        long timestampEnd = getTimestamp(LocalDate.now().atStartOfDay());
                         lastThirty.add(timestampEnd);
                         return lastThirty;
                     }
                     case "THIRTY" -> {
                         List<Long> thirty = new ArrayList<>();
-                        LocalDate startOfNextThirtyDays = LocalDate.now().plusDays(30);
+                        LocalDate startOfNextThirtyDays = LocalDate.now().plusDays(29);
                         long timestamp = getTimestamp(LocalDate.now().atStartOfDay());
                         thirty.add(timestamp);
                         long timestampEnd = getTimestamp(startOfNextThirtyDays.atTime(23, 59, 59, 999_000_000));
