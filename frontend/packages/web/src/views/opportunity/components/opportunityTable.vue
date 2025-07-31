@@ -625,12 +625,39 @@
         },
       },
       {
+        title: t('customer.lastFollowUps'),
+        dataIndex: 'follower',
+        type: FieldTypeEnum.USER_SELECT,
+      },
+      {
         title: t('customer.lastFollowUpDate'),
         dataIndex: 'followTime',
         type: FieldTypeEnum.TIME_RANGE_PICKER,
       },
+      {
+        title: t('common.status'),
+        dataIndex: 'status',
+        type: FieldTypeEnum.SELECT_MULTIPLE,
+        selectProps: {
+          options: [
+            {
+              label: t('common.open'),
+              value: true,
+            },
+            {
+              label: t('common.close'),
+              value: false,
+            },
+          ],
+        },
+      },
+      {
+        title: t('opportunity.actualEndTime'),
+        dataIndex: 'actualEndTime',
+        type: FieldTypeEnum.TIME_RANGE_PICKER,
+      },
       ...baseFilterConfigList,
-    ];
+    ] as FilterFormItem[];
   });
 
   function searchData() {
