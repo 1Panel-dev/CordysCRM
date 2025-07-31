@@ -47,6 +47,7 @@
           :internal-list="tabList as TabPaneProps[]"
           :custom-fields-config-list="filterConfigList"
           :filter-config-list="customFieldsFilterConfig"
+          @refresh-table-data="searchData"
         />
       </template>
     </CrmTable>

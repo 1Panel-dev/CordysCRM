@@ -33,7 +33,7 @@
     :row="detail"
     :config-list="props.configList"
     :custom-list="props.customList"
-    @refresh="(val?: string) => emit('changeActive', val)"
+    @refresh="(val: string, refreshTable: boolean) => emit('changeActive', val, refreshTable)"
   />
 </template>
 
@@ -77,7 +77,7 @@
   });
 
   const emit = defineEmits<{
-    (e: 'changeActive', id?: string): void;
+    (e: 'changeActive', id: string, refreshTable: boolean): void;
     (e: 'handleDeleteOrDisable', id: string): void;
   }>();
 

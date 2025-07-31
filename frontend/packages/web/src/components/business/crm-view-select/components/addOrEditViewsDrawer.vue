@@ -75,7 +75,7 @@
   });
 
   const emit = defineEmits<{
-    (e: 'refresh', activeId?: string): void;
+    (e: 'refresh', activeId: string, refreshTable: boolean): void;
   }>();
 
   const title = computed(() => {
@@ -141,7 +141,8 @@
         ...getParams(),
       };
       let activeId;
-      if (form.value?.id) {
+      const isEdit = !!form.value?.id;
+      if (isEdit) {
         await viewApiMap.update[props.type](params);
         Message.success(t('common.updateSuccess'));
         activeId = form.value?.id;
@@ -156,7 +157,7 @@
       } else {
         cancelHandler();
       }
-      emit('refresh', activeId);
+      emit('refresh', activeId, isEdit);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);

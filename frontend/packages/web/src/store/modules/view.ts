@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { TabPaneProps } from 'naive-ui';
 
+import { CustomerSearchTypeEnum } from '@lib/shared/enums/customerEnum';
 import { FieldTypeEnum } from '@lib/shared/enums/formDesignEnum';
 import type { TableDraggedParams } from '@lib/shared/models/common';
 import type { ViewItem } from '@lib/shared/models/view';
@@ -10,6 +11,7 @@ import { internalConditionsMap, viewApiMap } from '@/components/business/crm-vie
 
 import { TabType } from '@/hooks/useHiddenTab';
 import useLocalForage from '@/hooks/useLocalForage';
+import useUserStore from '@/store/modules/user';
 
 const typeToKeyMap: Partial<Record<FieldTypeEnum, 'selectedRows' | 'selectedUserList'>> = {
   [FieldTypeEnum.DATA_SOURCE]: 'selectedRows',
@@ -44,6 +46,8 @@ const useViewStore = defineStore('view', {
     },
 
     async loadInternalViews(type: TabType, internalList: TabPaneProps[]) {
+      const userStore = useUserStore();
+
       const stored = await this.getInternalViews(this.getInternalKey(type));
 
       const listMap = internalList.reduce<Record<string, TabPaneProps>>((map, item) => {
@@ -81,8 +85,12 @@ const useViewStore = defineStore('view', {
             list: internalConditionsMap[item.name as string],
           })),
       ];
-
-      this.internalViews = merged;
+      // admin 不显示部门视图
+      if (userStore.userInfo.id === 'admin') {
+        this.internalViews = merged.filter((item) => item.id !== CustomerSearchTypeEnum.DEPARTMENT);
+      } else {
+        this.internalViews = merged;
+      }
       await this.setInternalViews(this.getInternalKey(type), this.internalViews);
     },
 

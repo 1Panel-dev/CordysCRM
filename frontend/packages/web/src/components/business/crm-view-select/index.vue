@@ -118,11 +118,18 @@
     customFieldsConfigList?: FilterFormItem[]; // 自定义字段
   }>();
 
+  const emit = defineEmits<{
+    (e: 'refreshTableData'): void;
+  }>();
+
   const activeTab = defineModel<string>('activeTab', { default: '' });
-  async function handleChangeActive(id?: string) {
+  async function handleChangeActive(id: string, refreshTable?: boolean) {
     await viewStore.loadCustomViews(props.type);
     if (id) {
       activeTab.value = id;
+    }
+    if (refreshTable) {
+      emit('refreshTableData');
     }
   }
   async function handleDeleteOrDisable(id: string) {

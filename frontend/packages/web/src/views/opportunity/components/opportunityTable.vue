@@ -65,6 +65,7 @@
         :internal-list="tabList"
         :custom-fields-config-list="filterConfigList"
         :filter-config-list="customFieldsFilterConfig"
+        @refresh-table-data="searchData"
       />
     </template>
   </CrmTable>
