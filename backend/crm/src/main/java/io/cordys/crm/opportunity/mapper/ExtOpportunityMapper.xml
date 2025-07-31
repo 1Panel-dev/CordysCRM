@@ -430,6 +430,7 @@
             o.customer_id,
             c.NAME AS customerName,
             c.in_shared_pool AS inCustomerPool,
+            c.pool_id,
             o.amount,
             o.possible,
             o.products,

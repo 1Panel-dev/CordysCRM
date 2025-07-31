@@ -84,6 +84,9 @@ public class OpportunityDetailResponse {
     @Schema(description = "关联的客户是否在公海")
     private Boolean inCustomerPool;
 
+    @Schema(description = "客户公海id")
+    private String poolId;
+
     @Schema(description = "自定义字段")
     private List<BaseModuleFieldValue> moduleFields;
 
