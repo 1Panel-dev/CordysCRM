@@ -185,7 +185,7 @@
                 and condition.name != 'createTime'
                 and condition.name != 'updateTime'
                 and condition.name != 'createUser'
-                and condition.name != 'followerName'
+                and condition.name != 'follower'
                 and condition.name != 'expectedEndTime'
                 and condition.name != 'actualEndTime'
                 and condition.name != 'failureReason'
