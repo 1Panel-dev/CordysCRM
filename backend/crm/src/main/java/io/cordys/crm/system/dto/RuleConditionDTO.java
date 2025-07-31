@@ -97,8 +97,8 @@ public class RuleConditionDTO {
 					LocalDate startOfWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
 					long timestamp = getTimestamp(startOfWeek.atStartOfDay());
 					timestamps.add(timestamp);
-					LocalDateTime now = LocalDateTime.now();
-					long timestampEnd = getTimestamp(now);
+					LocalDate now = LocalDate.now().with(DayOfWeek.SUNDAY);;
+					long timestampEnd = getTimestamp(now.atTime(23, 59, 59, 999_000_000));
 					timestamps.add(timestampEnd);
 				}
 				case "LAST_WEEK" -> {
@@ -113,8 +113,8 @@ public class RuleConditionDTO {
 					LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
 					long timestamp = getTimestamp(startOfMonth.atStartOfDay());
 					timestamps.add(timestamp);
-					LocalDateTime now = LocalDateTime.now();
-					long timestampEnd = getTimestamp(now);
+					LocalDate now = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth());
+					long timestampEnd = getTimestamp(now.atTime(23, 59, 59, 999_000_000));
 					timestamps.add(timestampEnd);
 				}
 				case "LAST_MONTH" -> {
@@ -129,12 +129,11 @@ public class RuleConditionDTO {
 					LocalDate startOfLastSevenDays = LocalDate.now().minusDays(7);
 					long timestamp = getTimestamp(startOfLastSevenDays.atStartOfDay());
 					timestamps.add(timestamp);
-					LocalDateTime now = LocalDateTime.now();
-					long timestampEnd = getTimestamp(now);
+					long timestampEnd = getTimestamp(LocalDate.now().atStartOfDay());
 					timestamps.add(timestampEnd);
 				}
 				case "SEVEN" -> {
-					LocalDate startOfNextSevenDays = LocalDate.now().plusDays(7);
+					LocalDate startOfNextSevenDays = LocalDate.now().plusDays(6);
 					long timestamp = getTimestamp(LocalDate.now().atStartOfDay());
 					timestamps.add(timestamp);
 					long timestampEnd = getTimestamp(startOfNextSevenDays.atTime(23, 59, 59, 999_000_000));
@@ -144,12 +143,11 @@ public class RuleConditionDTO {
 					LocalDate startOfLastThirtyDays = LocalDate.now().minusDays(30);
 					long timestamp = getTimestamp(startOfLastThirtyDays.atStartOfDay());
 					timestamps.add(timestamp);
-					LocalDateTime now = LocalDateTime.now();
-					long timestampEnd = getTimestamp(now);
+					long timestampEnd = getTimestamp(LocalDate.now().atStartOfDay());
 					timestamps.add(timestampEnd);
 				}
 				case "THIRTY" -> {
-					LocalDate startOfNextThirtyDays = LocalDate.now().plusDays(30);
+					LocalDate startOfNextThirtyDays = LocalDate.now().plusDays(29);
 					long timestamp = getTimestamp(LocalDate.now().atStartOfDay());
 					timestamps.add(timestamp);
 					long timestampEnd = getTimestamp(startOfNextThirtyDays.atTime(23, 59, 59, 999_000_000));
