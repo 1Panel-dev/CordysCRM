@@ -106,7 +106,7 @@
 
   const emit = defineEmits<{
     (e: 'refresh'): void;
-    (e: 'openCustomerDrawer', customerId: string): void;
+    (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
 
   const showOptOverviewDrawer = defineModel<boolean>('show', {

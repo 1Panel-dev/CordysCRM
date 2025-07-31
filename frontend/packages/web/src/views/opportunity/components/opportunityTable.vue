@@ -152,7 +152,11 @@
     readonly?: boolean;
   }>();
   const emit = defineEmits<{
-    (e: 'openCustomerDrawer', activeSourceId: string, readonly: boolean): void;
+    (
+      e: 'openCustomerDrawer',
+      params: { customerId: string; inCustomerPool: boolean; poolId: string },
+      readonly: boolean
+    ): void;
   }>();
 
   const Message = useMessage();
@@ -524,7 +528,15 @@
                     openSea.value = row.poolId ?? '';
                     showOpenSeaOverviewDrawer.value = true;
                   } else {
-                    emit('openCustomerDrawer', activeSourceId.value, false);
+                    emit(
+                      'openCustomerDrawer',
+                      {
+                        customerId: row.customerId,
+                        inCustomerPool: row.inCustomerPool,
+                        poolId: row.poolId || '',
+                      },
+                      false
+                    );
                   }
                 },
               },

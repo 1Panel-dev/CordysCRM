@@ -17,7 +17,7 @@ export interface OpportunityItem {
   stage: string;
   lastStage: string;
   inCustomerPool: boolean;
-  poolId?: string | number;
+  poolId?: string;
   failureReason: string;
   moduleFields: ModuleField[]; // 自定义字段
 }

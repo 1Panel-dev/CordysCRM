@@ -74,6 +74,7 @@
   const props = defineProps<{
     sourceId: string;
     poolId: string | number;
+    readonly?: boolean;
   }>();
   const emit = defineEmits<{
     (e: 'change'): void;
@@ -89,47 +90,52 @@
 
   const claimLoading = ref(false);
   const distributeLoading = ref(false);
-  const buttonList: ActionsItem[] = [
-    {
-      label: t('common.claim'),
-      key: 'claim',
-      text: false,
-      ghost: true,
-      class: 'n-btn-outline-primary',
-      permission: ['CUSTOMER_MANAGEMENT_POOL:PICK'],
-      popConfirmProps: {
-        loading: claimLoading.value,
-        title: t('customer.claimTip'),
-        content: t('customer.claimTipContent'),
-        positiveText: t('common.claim'),
-        iconType: 'primary',
+  const buttonList = computed<ActionsItem[]>(() => {
+    if (props.readonly) {
+      return [];
+    }
+    return [
+      {
+        label: t('common.claim'),
+        key: 'claim',
+        text: false,
+        ghost: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CUSTOMER_MANAGEMENT_POOL:PICK'],
+        popConfirmProps: {
+          loading: claimLoading.value,
+          title: t('customer.claimTip'),
+          content: t('customer.claimTipContent'),
+          positiveText: t('common.claim'),
+          iconType: 'primary',
+        },
       },
-    },
-    {
-      label: t('common.distribute'),
-      key: 'distribute',
-      text: false,
-      ghost: true,
-      permission: ['CUSTOMER_MANAGEMENT_POOL:ASSIGN'],
-      class: 'n-btn-outline-primary',
-      popConfirmProps: {
-        loading: distributeLoading.value,
-        title: t('common.distribute'),
-        positiveText: t('common.confirm'),
-        iconType: 'primary',
+      {
+        label: t('common.distribute'),
+        key: 'distribute',
+        text: false,
+        ghost: true,
+        permission: ['CUSTOMER_MANAGEMENT_POOL:ASSIGN'],
+        class: 'n-btn-outline-primary',
+        popConfirmProps: {
+          loading: distributeLoading.value,
+          title: t('common.distribute'),
+          positiveText: t('common.confirm'),
+          iconType: 'primary',
+        },
+        popSlotContent: 'distributePopContent',
       },
-      popSlotContent: 'distributePopContent',
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-      text: false,
-      ghost: true,
-      danger: true,
-      class: 'n-btn-outline-primary',
-      permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
-    },
-  ];
+      {
+        label: t('common.delete'),
+        key: 'delete',
+        text: false,
+        ghost: true,
+        danger: true,
+        class: 'n-btn-outline-primary',
+        permission: ['CUSTOMER_MANAGEMENT_POOL:DELETE'],
+      },
+    ];
+  });
 
   const activeTab = ref('followRecord');
   const cachedList = ref([]);

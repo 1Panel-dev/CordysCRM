@@ -124,7 +124,7 @@
   const emit = defineEmits<{
     (e: 'refresh'): void;
     (e: 'convertToCustomer'): void;
-    (e: 'openCustomerDrawer', customerId: string): void;
+    (e: 'openCustomerDrawer', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
 
   const { openModal } = useModal();

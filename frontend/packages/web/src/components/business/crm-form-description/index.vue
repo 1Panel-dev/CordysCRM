@@ -64,7 +64,7 @@
   }>();
   const emit = defineEmits<{
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
-    (e: 'openCustomerDetail', customerId: string): void;
+    (e: 'openCustomerDetail', params: { customerId: string; inCustomerPool: boolean; poolId: string }): void;
   }>();
 
   const needInitDetail = computed(() => props.formKey === FormDesignKeyEnum.BUSINESS); // TODO:商机需要编辑日期
@@ -110,7 +110,11 @@
   }
 
   function openCustomerDetail(customerId: string | string[]) {
-    emit('openCustomerDetail', Array.isArray(customerId) ? customerId[0] : customerId);
+    emit('openCustomerDetail', {
+      customerId: Array.isArray(customerId) ? customerId[0] : customerId,
+      inCustomerPool: detail.value.inCustomerPool,
+      poolId: detail.value.poolId,
+    });
   }
 
   watch(

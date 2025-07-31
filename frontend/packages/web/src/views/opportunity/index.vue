@@ -14,21 +14,38 @@
     :source-id="activeSourceId"
     :readonly="isCustomerReadonly"
   />
+  <openSeaOverviewDrawer
+    v-model:show="showCustomerOpenseaOverviewDrawer"
+    :source-id="activeSourceId"
+    :readonly="isCustomerReadonly"
+    :pool-id="poolId"
+  />
 </template>
 
 <script setup lang="ts">
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmOpportunityTable from './components/opportunityTable.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
+  import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
 
   const opportunityCardRef = ref<HTMLElement | null>(null);
 
   const showCustomerOverviewDrawer = ref(false);
+  const showCustomerOpenseaOverviewDrawer = ref(false);
+  const poolId = ref<string>('');
   const activeSourceId = ref<string>('');
   const isCustomerReadonly = ref(false);
-  function handleOpenCustomerDrawer(sourceId: string, readonly: boolean) {
-    activeSourceId.value = sourceId;
-    showCustomerOverviewDrawer.value = true;
+  function handleOpenCustomerDrawer(
+    params: { customerId: string; inCustomerPool: boolean; poolId: string },
+    readonly = false
+  ) {
+    activeSourceId.value = params.customerId;
+    if (params.inCustomerPool) {
+      showCustomerOpenseaOverviewDrawer.value = true;
+      poolId.value = params.poolId;
+    } else {
+      showCustomerOverviewDrawer.value = true;
+    }
     isCustomerReadonly.value = readonly;
   }
 </script>

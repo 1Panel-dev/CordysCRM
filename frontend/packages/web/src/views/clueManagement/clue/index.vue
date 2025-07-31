@@ -595,8 +595,8 @@
   const customerId = ref('');
   const isInitCustomerDrawer = ref(false);
 
-  function handleOpenCustomerDetail(_customerId: string) {
-    customerId.value = _customerId;
+  function handleOpenCustomerDetail(params: { customerId: string; inCustomerPool: boolean; poolId: string }) {
+    customerId.value = params.customerId;
     isInitCustomerDrawer.value = true;
     showCustomerDrawer.value = true;
   }
