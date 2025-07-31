@@ -79,7 +79,7 @@
   <MoveLeadReasonDrawer
     v-model:visible="showLeadReasonDrawer"
     v-model:enable="enableLeadMoveReason"
-    v-model:config="isHasConfigAccountReason"
+    v-model:config="isHasConfigLeadReason"
     @load-config="() => getGlobalReasonConfig()"
   />
   <OpportunityReasonDrawer

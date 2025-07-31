@@ -88,5 +88,5 @@ export default {
   'module.moveLeadPoolReasonConfig': '移入线索池原因设置',
   'module.movePublicPoolReasonConfig': '移入公海原因设置',
   'module.failReasonConfig': '商机失败原因设置',
-  'module.configReasonTooltip': '配置后开启',
+  'module.configReasonTooltip': '配置后可开启',
 };

@@ -126,6 +126,7 @@
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
   import BatchAction from './components/batchAction.vue';
   import ColumnSetting from './components/columnSetting.vue';
+  import FilterMenu from './components/filterMenu.vue';
 
   import useFullScreen from '@/hooks/useFullScreen';
   import useTableStore from '@/hooks/useTableStore';
@@ -140,7 +141,7 @@
     DataTableSortState,
     PaginationProps,
   } from 'naive-ui';
-  import type { InternalRowData, TableColumns } from 'naive-ui/es/data-table/src/interface';
+  import type { FilterOption, InternalRowData, TableColumns } from 'naive-ui/es/data-table/src/interface';
   import Sortable from 'sortablejs';
 
   const appStore = useAppStore();
@@ -171,7 +172,7 @@
   const tableStore = useTableStore();
 
   const tableFullRef = ref<HTMLElement | null>(null);
-
+  const tableRef = ref();
   // 实际使用的全屏目标
   const actualTargetRef = computed<HTMLElement | null>(() => {
     return props.fullscreenTargetRef ?? tableFullRef.value;
@@ -179,8 +180,30 @@
 
   const { toggleFullScreen, isFullScreen } = useFullScreen(actualTargetRef, !!attrs.hiddenAllScreen);
 
+  function scrollTo(options: { top?: number; left?: number }) {
+    tableRef.value?.scrollTo(options);
+  }
+
+  function handleFiltersChange(filters: DataTableFilterState, initiatorColumn: DataTableBaseColumn) {
+    if (!attrs.showPagination) return;
+    const filterList = Object.entries(filters)
+      .filter(([, value]) => (value as string[])?.length > 0)
+      .map(([key, value]) => ({
+        name: key,
+        value,
+        multipleValue:
+          initiatorColumn.key === key ? !!(initiatorColumn as CrmDataTableColumn).filterMultipleValue : undefined,
+        operator: OperatorEnum.IN,
+        type: (initiatorColumn as CrmDataTableColumn).filedType,
+      }));
+    scrollTo({
+      top: 0,
+    });
+    emit('filterChange', filterList);
+  }
   const checkedRowKeys = defineModel<DataTableRowKey[]>('checkedRowKeys', { default: [] });
 
+  const checkFilterMap = ref<Record<string, (string | number)[]>>({});
   const currentColumns = ref<CrmDataTableColumn[]>([]);
 
   // 处理排序和过滤图标
@@ -213,6 +236,26 @@
               type: 'iconicon_filter',
               size: 16,
               color: options.active ? 'var( --primary-8)' : 'var(--text-n2)',
+            });
+          },
+          renderFilterMenu: (actions: { hide: () => void }) => {
+            return h(FilterMenu, {
+              'filterOptions': column.filterOptions as unknown as FilterOption[],
+              'columnKey': column.key as string,
+              'filters': checkFilterMap.value, // 初始值
+              'onUpdate:filters': (val) => {
+                checkFilterMap.value = val;
+              },
+              'onReset': (filters: DataTableFilterState) => {
+                tableRef.value?.filter(filters);
+                handleFiltersChange(filters, column as DataTableBaseColumn);
+                actions.hide();
+              },
+              'onFilter': (filters: DataTableFilterState) => {
+                tableRef.value?.filter(filters);
+                handleFiltersChange(filters, column as DataTableBaseColumn);
+                actions.hide();
+              },
             });
           },
         }
@@ -430,11 +473,11 @@
     { immediate: true }
   );
 
-  const tableRef = ref();
   watch(
     () => props.notShowTableFilter,
     (val: boolean) => {
       if (val) {
+        checkFilterMap.value = {};
         tableRef.value?.filter(null);
       }
     }
@@ -442,10 +485,6 @@
 
   function getRowKey(rowData: Record<string, any>) {
     return props.tableRowKey ? rowData[props.tableRowKey] : rowData.id;
-  }
-
-  function scrollTo(options: { top?: number; left?: number }) {
-    tableRef.value?.scrollTo(options);
   }
 
   function handleSorterChange(sorter: DataTableSortState) {
@@ -472,24 +511,6 @@
       top: 0,
     });
     emit('sorterChange', !sorter.order ? {} : { name: sorter.columnKey as string, type: sortOrder });
-  }
-
-  function handleFiltersChange(filters: DataTableFilterState, initiatorColumn: DataTableBaseColumn) {
-    if (!attrs.showPagination) return;
-    const filterList = Object.entries(filters)
-      .filter(([, value]) => (value as string[])?.length > 0)
-      .map(([key, value]) => ({
-        name: key,
-        value,
-        multipleValue:
-          initiatorColumn.key === key ? !!(initiatorColumn as CrmDataTableColumn).filterMultipleValue : undefined,
-        operator: OperatorEnum.IN,
-        type: (initiatorColumn as CrmDataTableColumn).filedType,
-      }));
-    scrollTo({
-      top: 0,
-    });
-    emit('filterChange', filterList);
   }
 
   function handleClear() {
