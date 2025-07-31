@@ -6,6 +6,7 @@ import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.customer.domain.CustomerPool;
 import io.cordys.crm.customer.domain.CustomerPoolRecycleRule;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
+import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.customer.service.CustomerOwnerHistoryService;
 import io.cordys.crm.customer.service.CustomerPoolService;
 import io.cordys.crm.system.constants.NotificationConstants;
@@ -52,6 +53,8 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
 
     @Resource
     private CommonNoticeSendService commonNoticeSendService;
+    @Resource
+    private CustomerContactService customerContactService;
 
 
     @Override
@@ -166,6 +169,9 @@ public class CustomerPoolRecycleListener implements ApplicationListener<ExecuteE
      * @param pool     目标客户池
      */
     private void processCustomerRecycle(Customer customer, CustomerPool pool) {
+        //更新责任人
+        customerContactService.updateContactOwner(customer.getId(), "-", customer.getOwner(), customer.getOrganizationId());
+
         // 消息通知
         commonNoticeSendService.sendNotice(
                 NotificationConstants.Module.CUSTOMER,
