@@ -221,11 +221,15 @@ public class CustomerService {
                 customerListResponse.setDepartmentName(userDeptDTO.getDeptName());
             }
 
-            customerListResponse.setFollowerName(userNameMap.get(customerListResponse.getFollower()));
-            customerListResponse.setCreateUserName(userNameMap.get(customerListResponse.getCreateUser()));
-            customerListResponse.setUpdateUserName(userNameMap.get(customerListResponse.getUpdateUser()));
+            String followerName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getFollower()));
+            customerListResponse.setFollowerName(followerName);
+            String createUserName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getCreateUser()));
+            customerListResponse.setCreateUserName(createUserName);
+            String updateUserName = baseService.getAndCheckOptionName(userNameMap.get(customerListResponse.getUpdateUser()));
+            customerListResponse.setUpdateUserName(updateUserName);
             customerListResponse.setOwnerName(userNameMap.get(customerListResponse.getOwner()));
-            customerListResponse.setReasonName(dictMap.get(customerListResponse.getReasonId()));
+            String reasonName = baseService.getAndCheckOptionName(dictMap.get(customerListResponse.getReasonId()));
+            customerListResponse.setReasonName(reasonName);
         });
 
         return list;

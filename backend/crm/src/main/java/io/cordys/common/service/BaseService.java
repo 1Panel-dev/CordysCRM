@@ -7,6 +7,7 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.UserDeptDTO;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.util.JSON;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerContactMapper;
 import io.cordys.crm.customer.mapper.ExtCustomerMapper;
@@ -88,8 +89,10 @@ public class BaseService {
 
             Map<String, String> userNameMap = getUserNameMap(userIds);
             for (T item : list) {
-                setCreateUserName.invoke(item, userNameMap.get(getCreateUser.invoke(item)));
-                setUpdateUserName.invoke(item, userNameMap.get(getUpdateUser.invoke(item)));
+                String createUserName = getAndCheckOptionName(userNameMap.get(getCreateUser.invoke(item)));
+                String updateUserName = getAndCheckOptionName(userNameMap.get(getUpdateUser.invoke(item)));
+                setCreateUserName.invoke(item, createUserName);
+                setUpdateUserName.invoke(item, updateUserName);
             }
         } catch (Exception e) {
             throw new GenericException(e);
@@ -138,9 +141,13 @@ public class BaseService {
 
             Map<String, String> userNameMap = getUserNameMap(userIds);
             for (T item : list) {
-                setCreateUserName.invoke(item, userNameMap.get(getCreateUser.invoke(item)));
-                setUpdateUserName.invoke(item, userNameMap.get(getUpdateUser.invoke(item)));
-                setOwnerName.invoke(item, userNameMap.get(getOwner.invoke(item)));
+                String createUserName = getAndCheckOptionName(userNameMap.get(getCreateUser.invoke(item)));
+                String updateUserName = getAndCheckOptionName(userNameMap.get(getUpdateUser.invoke(item)));
+                String ownerName = getAndCheckOptionName(userNameMap.get(getOwner.invoke(item)));
+
+                setCreateUserName.invoke(item, createUserName);
+                setUpdateUserName.invoke(item, updateUserName);
+                setOwnerName.invoke(item, ownerName);
             }
         } catch (Exception e) {
             throw new GenericException(e);
@@ -342,5 +349,9 @@ public class BaseService {
         return extCustomerContactMapper.selectContactPhoneOptionByIds(contactIds)
                 .stream()
                 .collect(Collectors.toMap(OptionDTO::getId, OptionDTO::getName));
+    }
+
+    public String getAndCheckOptionName(String option) {
+        return option == null ? Translator.get("common.option.not_exist") : option;
     }
 }
