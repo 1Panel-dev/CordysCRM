@@ -1,6 +1,7 @@
 package io.cordys.common.util;
 
 import io.cordys.common.constants.MoveTypeEnum;
+import io.cordys.common.constants.QuadFunction;
 import io.cordys.common.dto.request.PosRequest;
 import io.cordys.common.exception.GenericException;
 import org.apache.commons.lang3.function.TriFunction;
@@ -27,10 +28,10 @@ public class ServiceUtils {
         resourceName.remove();
     }
 
-    public static <T> void updatePosField(PosRequest request, Class<T> clazz, String userId,
+    public static <T> void updatePosField(PosRequest request, Class<T> clazz, String userId, String resourceType,
                                           Function<String, T> selectByPrimaryKeyFunc,
-                                          TriFunction<String, Long, String, Long> getPrePosFunc,
-                                          TriFunction<String, Long, String, Long> getLastPosFunc,
+                                          QuadFunction<String, Long, String, String, Long> getPrePosFunc,
+                                          QuadFunction<String, Long, String, String, Long> getLastPosFunc,
                                           Consumer<T> updateByPrimaryKeySelectiveFuc) {
         Long pos;
         Long lastOrPrePos;
@@ -53,12 +54,12 @@ public class ServiceUtils {
                 // 追加到参考对象的之后
                 pos = targetPos - POS_STEP;
                 // ，因为是降序排，则查找比目标 order 小的一个order
-                lastOrPrePos = getPrePosFunc.apply(request.getOrgId(), targetPos, userId);
+                lastOrPrePos = getPrePosFunc.apply(request.getOrgId(), targetPos, userId, resourceType);
             } else {
                 // 追加到前面
                 pos = targetPos + POS_STEP;
                 // 因为是降序排，则查找比目标 order 更大的一个order
-                lastOrPrePos = getLastPosFunc.apply(request.getOrgId(), targetPos, userId);
+                lastOrPrePos = getLastPosFunc.apply(request.getOrgId(), targetPos, userId, resourceType);
             }
             if (lastOrPrePos != null) {
                 // 如果不是第一个或最后一个则取中间值

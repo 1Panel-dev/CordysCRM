@@ -12,7 +12,7 @@ public interface ExtUserViewMapper {
 
     List<UserViewListResponse> selectViewList(@Param("resourceType") String resourceType, @Param("userId") String userId, @Param("orgId") String orgId);
 
-    Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId);
+    Long getPrePos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
 
-    Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId);
+    Long getLastPos(@Param("orgId") String orgId, @Param("basePos") Long basePos, @Param("userId") String userId, @Param("resourceType") String resourceType);
 }

@@ -34,13 +34,25 @@
         <if test="basePos != null">
             and `pos` &lt; #{basePos}
         </if>
-        order by `pos` desc limit 1;
+        <if test="userId != null">
+            and user_id = #{userId}
+        </if>
+        <if test="resourceType != null">
+            and resource_type = #{resourceType}
+        </if>
+        order by `pos` asc limit 1;
     </select>
     <select id="getLastPos" resultType="java.lang.Long">
         select `pos` from sys_user_view where organization_id = #{orgId}
         <if test="basePos != null">
             and `pos` &gt; #{basePos}
         </if>
-        order by `pos` desc limit 1;
+        <if test="userId != null">
+            and user_id = #{userId}
+        </if>
+        <if test="resourceType != null">
+            and resource_type = #{resourceType}
+        </if>
+        order by `pos` asc limit 1;
     </select>
 </mapper>

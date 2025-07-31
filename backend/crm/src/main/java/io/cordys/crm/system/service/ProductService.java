@@ -257,6 +257,7 @@ public class ProductService {
         ServiceUtils.updatePosField(request,
                 Product.class,
                 null,
+                null,
                 productBaseMapper::selectByPrimaryKey,
                 extProductMapper::getPrePos,
                 extProductMapper::getLastPos,

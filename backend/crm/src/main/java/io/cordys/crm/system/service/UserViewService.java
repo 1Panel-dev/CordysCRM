@@ -257,7 +257,7 @@ public class UserViewService {
                 optionMap.remove(fieldId);
             }
         });
-      return optionMap;
+        return optionMap;
     }
 
     public List<FilterCondition> getFilterConditions(String viewId) {
@@ -321,10 +321,11 @@ public class UserViewService {
         userViewMapper.update(updateView);
     }
 
-    public void editPos(PosRequest request, String userId, String orgId) {
+    public void editPos(PosRequest request, String userId, String orgId, String resourceType) {
         ServiceUtils.updatePosField(request,
                 UserView.class,
                 userId,
+                resourceType,
                 userViewMapper::selectByPrimaryKey,
                 extUserViewMapper::getPrePos,
                 extUserViewMapper::getLastPos,
