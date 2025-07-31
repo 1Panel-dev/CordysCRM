@@ -2,6 +2,7 @@ package io.cordys.crm.clue.controller;
 
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PagerWithOption;
+import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.dto.CluePoolDTO;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
@@ -45,6 +46,7 @@ public class PoolClueController {
 	@Operation(summary = "线索列表")
 	@RequiresPermissions(value = {PermissionConstants.CLUE_MANAGEMENT_POOL_READ})
 	public PagerWithOption<List<ClueListResponse>> list(@Validated @RequestBody CluePageRequest request) {
+		ConditionFilterUtils.parseCondition(request);
 		return clueService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
 	}
 

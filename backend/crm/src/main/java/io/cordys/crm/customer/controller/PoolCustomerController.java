@@ -2,6 +2,7 @@ package io.cordys.crm.customer.controller;
 
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.pager.PagerWithOption;
+import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
@@ -45,6 +46,7 @@ public class PoolCustomerController {
 	@Operation(summary = "客户列表")
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_READ})
 	public PagerWithOption<List<CustomerListResponse>> list(@Validated @RequestBody CustomerPageRequest request) {
+		ConditionFilterUtils.parseCondition(request);
 		return customerService.list(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), null);
 	}
 
