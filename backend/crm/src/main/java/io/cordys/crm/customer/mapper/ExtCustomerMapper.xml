@@ -159,7 +159,7 @@
                         c.${sortName} ${sortType}, c.id ASC
                     </when>
                     <when test="${sort}.name == 'department_id'">
-                        sou.${sortName} ${sortType}, c.id ASC
+                        sou_sort.${sortName} ${sortType}, c.id ASC
                     </when>
                     <otherwise>
                         CASE
@@ -204,7 +204,7 @@
             <bind name="sortName" value="${sort}.name"/>
             <choose>
                 <when test="${sort}.name == 'department_id'">
-                    left join sys_organization_user sou on c.owner = sou.user_id
+                    left join sys_organization_user sou_sort on c.owner = sou_sort.user_id
                 </when>
                 <when test="${sort}.name not in
                     {'name', 'owner', 'create_time', 'update_time', 'follower', 'follow_time', 'create_user', 'update_user', 'collection_time', 'reason_id'}">
