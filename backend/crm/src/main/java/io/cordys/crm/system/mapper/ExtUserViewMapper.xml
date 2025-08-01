@@ -40,7 +40,7 @@
         <if test="resourceType != null">
             and resource_type = #{resourceType}
         </if>
-        order by `pos` asc limit 1;
+        order by `pos` desc limit 1;
     </select>
     <select id="getLastPos" resultType="java.lang.Long">
         select `pos` from sys_user_view where organization_id = #{orgId}
