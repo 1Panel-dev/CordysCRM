@@ -49,6 +49,7 @@
     v-model:show="showOverviewDrawer"
     :source-id="activeCustomerId"
     :pool-id="openSea"
+    :hidden-columns="hiddenColumns"
     @change="searchData"
   />
   <TransferModal

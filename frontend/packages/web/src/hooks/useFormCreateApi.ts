@@ -183,16 +183,19 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             descriptions.value.push({
               label: item.name,
               value: formatTimeValue(name || form[item.businessKey], item.dateType),
+              fieldInfo: item,
             });
           } else if (item.type === FieldTypeEnum.INPUT_NUMBER) {
             descriptions.value.push({
               label: item.name,
               value: formatNumberValue(name || form[item.businessKey], item),
+              fieldInfo: item,
             });
           } else {
             descriptions.value.push({
               label: item.name,
               value: name || form[item.businessKey],
+              fieldInfo: item,
             });
           }
           if (item.businessKey === 'name') {
@@ -214,6 +217,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               label: item.name,
               value: field?.fieldValue || [],
               valueSlotName: 'image',
+              fieldInfo: item,
             });
           } else {
             let value = field?.fieldValue || '';
@@ -241,6 +245,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             descriptions.value.push({
               label: item.name,
               value,
+              fieldInfo: item,
             });
           }
         }

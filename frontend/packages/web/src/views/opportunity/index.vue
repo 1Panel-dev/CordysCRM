@@ -4,6 +4,7 @@
       <div class="h-full p-[16px] !pb-0">
         <CrmOpportunityTable
           :fullscreen-target-ref="opportunityCardRef"
+          :opensea-hidden-columns="hiddenColumns"
           @open-customer-drawer="handleOpenCustomerDrawer"
         />
       </div>
@@ -19,14 +20,19 @@
     :source-id="activeSourceId"
     :readonly="isCustomerReadonly"
     :pool-id="poolId"
+    :hidden-columns="hiddenColumns"
   />
 </template>
 
 <script setup lang="ts">
+  import { CluePoolItem } from '@lib/shared/models/system/module';
+
   import CrmCard from '@/components/pure/crm-card/index.vue';
   import CrmOpportunityTable from './components/opportunityTable.vue';
   import customerOverviewDrawer from '@/views/customer/components/customerOverviewDrawer.vue';
   import openSeaOverviewDrawer from '@/views/customer/components/openSeaOverviewDrawer.vue';
+
+  import { getOpenSeaOptions } from '@/api/modules';
 
   const opportunityCardRef = ref<HTMLElement | null>(null);
 
@@ -48,6 +54,22 @@
     }
     isCustomerReadonly.value = readonly;
   }
+
+  const openSeaOptions = ref<CluePoolItem[]>([]);
+
+  async function initOpenSeaOptions() {
+    const res = await getOpenSeaOptions();
+    openSeaOptions.value = res;
+  }
+
+  const hiddenColumns = computed<string[]>(() => {
+    const openSeaSetting = openSeaOptions.value.find((item) => item.id === poolId.value);
+    return openSeaSetting?.fieldConfigs.filter((item) => !item.enable).map((item) => item.fieldId) || [];
+  });
+
+  onBeforeMount(() => {
+    initOpenSeaOptions();
+  });
 </script>
 
 <style scoped></style>

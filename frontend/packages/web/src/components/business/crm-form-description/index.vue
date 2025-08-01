@@ -1,6 +1,6 @@
 <template>
   <n-spin :show="loading" class="h-full">
-    <CrmDescription :descriptions="descriptions" value-align="end" :class="props.class">
+    <CrmDescription :descriptions="realDescriptions" value-align="end" :class="props.class">
       <template #divider="{ item }">
         <CrmFormCreateDivider :field-config="item.fieldInfo" class="!m-0 w-full" />
       </template>
@@ -61,6 +61,7 @@
     formKey: FormDesignKeyEnum;
     refreshKey?: number;
     class?: string;
+    hiddenFields?: string[];
   }>();
   const emit = defineEmits<{
     (e: 'init', collaborationType?: CollaborationType, sourceName?: string, detail?: Record<string, any>): void;
@@ -86,6 +87,11 @@
     needInitDetail,
   });
 
+  const realDescriptions = computed(() => {
+    return descriptions.value.filter((item) => {
+      return !props.hiddenFields?.includes(item.fieldInfo.id);
+    });
+  });
   const isInit = ref(false);
 
   function handleFormChange() {

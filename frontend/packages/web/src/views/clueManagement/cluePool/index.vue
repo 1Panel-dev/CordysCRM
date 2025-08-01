@@ -59,6 +59,7 @@
     v-model:show="showOverviewDrawer"
     :pool-id="poolId"
     :detail="activeClue"
+    :hidden-columns="hiddenColumns"
     @refresh="handleRefresh"
   />
   <addOrEditPoolDrawer

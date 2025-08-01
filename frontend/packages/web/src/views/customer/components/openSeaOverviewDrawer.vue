@@ -19,6 +19,7 @@
         <CrmFormDescription
           :form-key="FormDesignKeyEnum.CUSTOMER_OPEN_SEA"
           :source-id="props.sourceId"
+          :hidden-fields="hiddenColumns"
           class="p-[16px_24px]"
           @init="handleDescriptionInit"
         />
@@ -75,6 +76,7 @@
     sourceId: string;
     poolId: string | number;
     readonly?: boolean;
+    hiddenColumns: string[];
   }>();
   const emit = defineEmits<{
     (e: 'change'): void;

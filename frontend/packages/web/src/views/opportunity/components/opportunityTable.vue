@@ -103,6 +103,7 @@
     v-model:show="showOpenSeaOverviewDrawer"
     :pool-id="openSea"
     :source-id="activeSourceId"
+    :hidden-columns="props.openseaHiddenColumns || []"
     @change="searchData"
   />
 </template>
@@ -150,6 +151,7 @@
     sourceId?: string; // 客户详情下时传入客户 ID
     fullscreenTargetRef?: HTMLElement | null;
     readonly?: boolean;
+    openseaHiddenColumns?: string[];
   }>();
   const emit = defineEmits<{
     (

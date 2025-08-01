@@ -14,7 +14,12 @@
   >
     <template #left>
       <div class="h-full overflow-hidden">
-        <CrmFormDescription :form-key="FormDesignKeyEnum.CLUE_POOL" :source-id="sourceId" class="p-[16px_24px]" />
+        <CrmFormDescription
+          :form-key="FormDesignKeyEnum.CLUE_POOL"
+          :source-id="sourceId"
+          class="p-[16px_24px]"
+          :hidden-fields="hiddenColumns"
+        />
       </div>
     </template>
     <template #distributePopContent>
@@ -62,6 +67,7 @@
   const props = defineProps<{
     detail?: CluePoolListItem;
     poolId: string;
+    hiddenColumns: string[];
   }>();
 
   const show = defineModel<boolean>('show', {
