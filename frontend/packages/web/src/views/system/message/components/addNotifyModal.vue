@@ -68,15 +68,13 @@
               {{ t('system.message.preview') }}
             </n-button>
             <template #content>
-              <div class="notify-content p-[16px]">
-                {{ form.content }}
+              <div class="notify-content min-w-[150px] p-[16px]">
+                <div v-html="(form.content || '').replace(/\n/g, '<br />')"></div>
                 <n-tooltip trigger="hover" :delay="300" :disabled="!(form.renameUrl || form.url)?.length">
                   <template #trigger>
-                    <n-button class="inline-block" text type="primary" @click="goUrl">
-                      <div class="one-line-text max-w-[300px]">
-                        {{ form.renameUrl || form.url }}
-                      </div>
-                    </n-button>
+                    <div class="max-w-[300px] cursor-pointer text-[var(--primary-8)]" @click="goUrl">
+                      {{ form.renameUrl || form.url }}
+                    </div>
                   </template>
                   {{ form.renameUrl ?? form.url }}
                 </n-tooltip>

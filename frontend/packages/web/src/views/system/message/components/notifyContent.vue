@@ -12,14 +12,12 @@
       </div>
     </div>
     <div class="notify-content py-[16px]">
-      {{ parsedContent?.content }}
+      <div v-html="(parsedContent?.content || '').replace(/\n/g, '<br />')"></div>
       <n-tooltip trigger="hover" :delay="300" :disabled="!(parsedContent.renameUrl || parsedContent.url)?.length">
         <template #trigger>
-          <n-button class="inline-block" text type="primary" @click="goUrl">
-            <div class="one-line-text max-w-[300px]">
-              {{ parsedContent?.renameUrl || parsedContent?.url }}
-            </div>
-          </n-button>
+          <div class="max-w-[300px] cursor-pointer text-[var(--primary-8)]" @click="goUrl">
+            {{ parsedContent?.renameUrl || parsedContent?.url }}
+          </div>
         </template>
         {{ parsedContent?.renameUrl || parsedContent?.url }}
       </n-tooltip>
