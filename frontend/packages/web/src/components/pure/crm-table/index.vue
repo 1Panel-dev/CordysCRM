@@ -628,12 +628,8 @@
     });
   }
   async function setDraggerSort() {
-    const el = tableRef.value?.$el?.querySelector('.n-data-table tbody');
-    if (props.notVirtualScroll && el) {
-      initSortable(el);
-      return;
-    }
     const observer = new MutationObserver((mutations, obs) => {
+      const el = tableRef.value?.$el?.querySelector('.n-data-table tbody');
       if (el) {
         obs.disconnect();
         initSortable(el);
