@@ -628,18 +628,25 @@
     });
   }
   async function setDraggerSort() {
-    const observer = new MutationObserver((mutations, obs) => {
+    if (props.notVirtualScroll) {
       const el = tableRef.value?.$el?.querySelector('.n-data-table tbody');
       if (el) {
-        obs.disconnect();
         initSortable(el);
       }
-    });
+    } else {
+      const observer = new MutationObserver((mutations, obs) => {
+        const el = tableRef.value?.$el?.querySelector('.n-data-table tbody');
+        if (el) {
+          obs.disconnect();
+          initSortable(el);
+        }
+      });
 
-    observer.observe(tableRef.value.$el, {
-      childList: true,
-      subtree: true,
-    });
+      observer.observe(tableRef.value.$el, {
+        childList: true,
+        subtree: true,
+      });
+    }
   }
 
   onMounted(() => {
