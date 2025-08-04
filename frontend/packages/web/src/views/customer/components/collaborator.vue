@@ -11,6 +11,7 @@
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
       @batch-action="handleBatchAction"
+      @refresh="initData"
     >
       <template #actionLeft>
         <n-button

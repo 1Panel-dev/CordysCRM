@@ -46,6 +46,7 @@
     crmPagination: {
       size: 'small',
     },
+    hiddenRefresh: true,
     isReturnNativeResponse: props.isReturnNativeResponse,
     hiddenTotal: true,
     containerClass: props.class,

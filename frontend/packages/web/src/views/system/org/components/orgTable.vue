@@ -11,6 +11,7 @@
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
       @batch-action="handleBatchAction"
+      @refresh="initOrgList"
     >
       <template #actionLeft>
         <div class="flex">

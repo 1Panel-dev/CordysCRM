@@ -66,6 +66,7 @@ export type CrmTableProps<T> = Omit<DataTableProps, 'columns'> & {
   'isReturnNativeResponse'?: boolean;
   'permission'?: string[];
   'hiddenTotal'?: boolean;
+  'hiddenRefresh'?: boolean;
   'hiddenAllScreen'?: boolean;
   'containerClass': string; // 容器类名
 };

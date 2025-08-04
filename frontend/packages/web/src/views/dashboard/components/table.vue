@@ -8,6 +8,7 @@
       @page-size-change="currentTable.propsEvent.value.pageSizeChange"
       @sorter-change="currentTable.propsEvent.value.sorterChange"
       @filter-change="currentTable.propsEvent.value.filterChange"
+      @refresh="searchData"
     >
       <template #tableTop>
         <div class="flex items-center justify-between">

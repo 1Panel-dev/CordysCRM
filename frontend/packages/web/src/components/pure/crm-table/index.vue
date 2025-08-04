@@ -36,6 +36,14 @@
               :size="16"
             />
           </n-button>
+          <n-button
+            v-if="!attrs.hiddenRefresh"
+            type="default"
+            class="outline--secondary px-[8px]"
+            @click="emit('refresh')"
+          >
+            <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
+          </n-button>
         </div>
       </template>
     </BatchAction>
@@ -59,6 +67,9 @@
           :type="isFullScreen ? 'iconicon_off_screen' : 'iconicon_full_screen_one'"
           :size="16"
         />
+      </n-button>
+      <n-button v-if="!attrs.hiddenRefresh" type="default" class="outline--secondary px-[8px]" @click="emit('refresh')">
+        <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
       </n-button>
     </div>
     <slot name="view"></slot>
@@ -166,6 +177,7 @@
     (e: 'sorterChange', value: SortParams): void;
     (e: 'rowKeyChange', keys: DataTableRowKey[], rows: InternalRowData[]): void;
     (e: 'drag', params: TableDraggedParams): void;
+    (e: 'refresh'): void;
   }>();
   const attrs = useAttrs();
   const { t } = useI18n();

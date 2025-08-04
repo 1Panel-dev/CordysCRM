@@ -7,6 +7,7 @@
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
+      @refresh="initData"
     >
       <template #tableTop>
         <div class="flex items-center justify-between">

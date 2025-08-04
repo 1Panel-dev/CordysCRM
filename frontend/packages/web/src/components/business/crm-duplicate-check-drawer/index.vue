@@ -373,6 +373,7 @@
       size: 'small',
     },
     hiddenTotal: true,
+    hiddenRefresh: true,
     containerClass: '.crm-repeat-table',
   });
 
@@ -384,6 +385,7 @@
       size: 'small',
     },
     hiddenTotal: true,
+    hiddenRefresh: true,
     containerClass: '.crm-detail-related-table',
   });
 

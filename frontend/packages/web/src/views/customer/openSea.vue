@@ -13,6 +13,7 @@
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
       @batch-action="handleBatchAction"
+      @refresh="searchData"
     >
       <template #actionLeft>
         <n-select

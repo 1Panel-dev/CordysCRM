@@ -13,6 +13,7 @@
       @filter-change="propsEvent.filterChange"
       @batch-action="handleBatchAction"
       @drag="dragHandler"
+      @refresh="searchData"
     >
       <template #actionLeft>
         <div class="flex items-center">

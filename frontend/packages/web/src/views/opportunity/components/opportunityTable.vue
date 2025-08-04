@@ -12,6 +12,7 @@
     @sorter-change="propsEvent.sorterChange"
     @filter-change="propsEvent.filterChange"
     @batch-action="handleBatchAction"
+    @refresh="searchData"
   >
     <template #actionLeft>
       <div class="flex items-center gap-[12px]">

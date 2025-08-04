@@ -8,6 +8,7 @@
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
+      @refresh="loadList"
     />
   </CrmCard>
 </template>

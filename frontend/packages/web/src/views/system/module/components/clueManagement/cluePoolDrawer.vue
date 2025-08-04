@@ -16,6 +16,7 @@
           @page-size-change="propsEvent.pageSizeChange"
           @sorter-change="propsEvent.sorterChange"
           @filter-change="propsEvent.filterChange"
+          @refresh="loadList"
         >
           <template #tableTop>
             <n-button class="mb-[16px]" type="primary" @click="handleAdd">

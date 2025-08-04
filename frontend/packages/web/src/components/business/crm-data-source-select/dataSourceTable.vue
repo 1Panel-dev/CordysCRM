@@ -10,6 +10,7 @@
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
       @row-key-change="handleRowKeyChange"
+      @refresh="searchData"
     >
       <template #tableTop>
         <CrmSearchInput

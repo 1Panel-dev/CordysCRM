@@ -15,6 +15,7 @@
         @sorter-change="propsEvent.sorterChange"
         @filter-change="propsEvent.filterChange"
         @batch-action="handleBatchAction"
+        @refresh="searchData"
       >
         <template #actionLeft>
           <n-button v-permission="['SYSTEM_ROLE:ADD_USER']" type="primary" @click="handleCreate">

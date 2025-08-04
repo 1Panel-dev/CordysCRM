@@ -246,6 +246,7 @@
     showSetting: false,
     columns,
     hiddenAllScreen: true,
+    hiddenRefresh: true,
     containerClass: '.crm-manage-views-table',
   });
 
