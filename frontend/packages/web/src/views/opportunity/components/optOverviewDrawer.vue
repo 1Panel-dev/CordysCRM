@@ -52,7 +52,7 @@
         :follow-api-key="FormDesignKeyEnum.BUSINESS"
         :source-id="sourceId"
         :initial-source-name="initialSourceName"
-        :show-add="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE']) && currentStatus !== StageResultEnum.SUCCESS"
+        :show-add="hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
         :show-action="showAction && hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
       />
 
@@ -60,7 +60,7 @@
         v-if="activeTab === 'contact'"
         :form-key="FormDesignKeyEnum.BUSINESS_CONTACT"
         :refresh-key="refreshKey"
-        readonly
+        :readonly="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
         :source-id="sourceId"
       />
     </template>
@@ -122,9 +122,7 @@
   const refreshKey = ref(0);
   const lastFailureReason = ref('');
   const currentStatus = ref<string>(OpportunityStatusEnum.CREATE);
-  const showAction = computed(
-    () => currentStatus.value !== StageResultEnum.FAIL && currentStatus.value !== StageResultEnum.SUCCESS
-  );
+  const showAction = computed(() => currentStatus.value !== StageResultEnum.FAIL);
 
   const transferLoading = ref(false);
 
