@@ -74,15 +74,23 @@ class AppListener implements ApplicationRunner {
     }
 
     /**
-     * 清理 form_cache 相关 key
+     * 清理表单相关缓存
+     * <p>
+     * 清理表单缓存和表结构缓存，确保应用使用最新的表单配置和结构
+     * </p>
      */
     public void clearFormCache() {
-        try {
-            Cache cache = cacheManager.getCache("form_cache");
-            if (cache != null) {
-                cache.clear();
+        final String[] cacheNames = {"form_cache", "table_schema_cache"};
+
+        for (String cacheName : cacheNames) {
+            try {
+                Cache cache = cacheManager.getCache(cacheName);
+                if (cache != null) {
+                    cache.clear();
+                    LogUtils.info("成功清理缓存：{}", cacheName);
+                }
+            } catch (Exception ignored) {
             }
-        } catch (Exception ignored) {
         }
     }
 
