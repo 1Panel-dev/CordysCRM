@@ -1,6 +1,7 @@
 package io.cordys.crm.system.dto.form;
 
 import io.cordys.crm.system.dto.form.base.BtnContentProp;
+import io.cordys.crm.system.dto.form.base.LinkProp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -22,4 +23,6 @@ public class FormProp {
 	private String optBtnPos;
 	@Schema(description = "操作按钮内容")
 	private List<BtnContentProp> optBtnContent;
+	@Schema(description = "联动配置")
+	private LinkProp linkProp;
 }
