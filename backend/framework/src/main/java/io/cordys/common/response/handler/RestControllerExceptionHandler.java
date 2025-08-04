@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -126,6 +127,12 @@ public class RestControllerExceptionHandler {
         return ResponseEntity.internalServerError()
                 .body(ResultHolder.error(CrmHttpResultCode.FAILED.getCode(),
                         e.getMessage(), getStackTraceAsString(e)));
+    }
+
+    @ExceptionHandler({NoResourceFoundException.class})
+    public ResponseEntity<ResultHolder> handleNoResourceFoundException(NoResourceFoundException e) {
+        LogUtils.error("No static resource");
+        return null;
     }
 
     /**
