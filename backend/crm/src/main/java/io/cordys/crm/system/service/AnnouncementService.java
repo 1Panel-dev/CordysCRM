@@ -237,8 +237,8 @@ public class AnnouncementService {
      * @param userIds      接收人集合
      */
     public void convertNotification(String userId, Announcement announcement, List<String> userIds) {
-        List<Notification> notifications = new ArrayList<>();
         SubListUtils.dealForSubList(userIds, 50, (subUserIds) -> {
+            List<Notification> notifications = new ArrayList<>();
             for (String subUserId : subUserIds) {
                 Notification notification = new Notification();
                 String id = IDGenerator.nextStr();

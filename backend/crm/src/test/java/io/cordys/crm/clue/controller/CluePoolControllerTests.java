@@ -107,7 +107,6 @@ public class CluePoolControllerTests extends BaseTest {
 	void delete() throws Exception {
 		MvcResult mvcResult = this.requestGet("/clue-pool/delete/default-pool").andExpect(status().is5xxServerError()).andReturn();
 		assert mvcResult.getResponse().getContentAsString().contains(Translator.get("clue_pool_not_exist"));
-		this.requestGet("/clue-pool/check-pick/" + testCluePool.getId());
 		this.requestGetWithOk("/clue-pool/delete/" + testCluePool.getId());
 	}
 

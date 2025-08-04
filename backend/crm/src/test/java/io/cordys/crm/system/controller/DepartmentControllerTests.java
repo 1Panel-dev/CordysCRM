@@ -27,8 +27,8 @@ public class DepartmentControllerTests extends BaseTest {
     public static final String ADD_DEPARTMENT = "/department/add";
     public static final String RENAME_DEPARTMENT = "/department/rename";
     public static final String DEPARTMENT_SET_COMMANDER = "/department/set-commander";
-    public static final String DEPARTMENT_DELETE_CHECK = "/department/delete/check/";
-    public static final String DEPARTMENT_DELETE = "/department/delete/";
+    public static final String DEPARTMENT_DELETE_CHECK = "/department/delete/check";
+    public static final String DEPARTMENT_DELETE = "/department/delete";
     public static final String DEPARTMENT_SORT = "/department/sort";
 
 
