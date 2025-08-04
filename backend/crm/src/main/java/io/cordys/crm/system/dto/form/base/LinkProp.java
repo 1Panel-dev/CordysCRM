@@ -19,6 +19,7 @@ public class LinkProp implements Serializable {
 	@Schema(description = "联动字段集合")
 	private List<LinkField> linkFields;
 
+	@Data
 	static class LinkField {
 
 		@NotEmpty

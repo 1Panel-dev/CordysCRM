@@ -5,10 +5,12 @@ import io.cordys.aspectj.constants.LogModule;
 import io.cordys.aspectj.constants.LogType;
 import io.cordys.aspectj.context.OperationLogContext;
 import io.cordys.aspectj.dto.LogContextInfo;
+import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.InternalUser;
 import io.cordys.common.constants.ModuleKey;
 import io.cordys.common.dto.BaseTreeNode;
 import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.RoleUserTreeNode;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
@@ -79,6 +81,14 @@ public class ModuleService {
                 })
                 .sorted(Comparator.comparing(ModuleDTO::getPos))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 获取表单集合
+     * @return 表单集合
+     */
+    public List<OptionDTO> getFormList() {
+        return Arrays.stream(FormKey.values()).map(formKey -> new OptionDTO(formKey.getKey(), Translator.get(formKey.getKey()))).toList();
     }
 
     /**

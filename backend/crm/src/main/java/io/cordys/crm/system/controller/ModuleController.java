@@ -2,6 +2,7 @@ package io.cordys.crm.system.controller;
 
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.dto.DeptUserTreeNode;
+import io.cordys.common.dto.OptionDTO;
 import io.cordys.common.dto.RoleUserTreeNode;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.system.dto.ModuleDTO;
@@ -30,6 +31,12 @@ public class ModuleController {
 	@Operation(summary = "获取模块设置列表")
 	public List<ModuleDTO> getModuleList(@Validated @RequestBody ModuleRequest request) {
 		return moduleService.getModuleList(request);
+	}
+
+	@GetMapping("/form/list")
+	@Operation(summary = "获取表单列表")
+	public List<OptionDTO> getFormList() {
+		return moduleService.getFormList();
 	}
 
 	@GetMapping("/switch/{id}")
