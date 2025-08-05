@@ -1,6 +1,6 @@
 <template>
   <n-button type="primary" ghost class="n-btn-outline-primary" @click="handleImport">
-    {{ props.buttonText }}
+    {{ `${t('common.import')}${props.title}` }}
   </n-button>
 
   <ImportModal
@@ -8,6 +8,7 @@
     :title="props.title"
     :description-tip="props.descriptionTip"
     :confirm-loading="validateLoading"
+    :download-template-api="props.downloadTemplateApi"
     @validate="validateTemplate"
   />
 
@@ -22,6 +23,7 @@
     v-model:show="validateResultModal"
     :validate-info="validateInfo"
     :import-loading="importLoading"
+    :title="props.title"
     @save="importHandler"
     @close="importModal = false"
   />
@@ -51,6 +53,7 @@
     descriptionTip?: string; // 描述提示
     validateApi: (file: File) => Promise<{ data: ValidateInfo }>; // 导入校验Api
     importSaveApi: (file: File) => Promise<any>; // 导入保存Api
+    downloadTemplateApi?: () => Promise<any>; // 下载模板Api
   }>();
 
   const emit = defineEmits<{

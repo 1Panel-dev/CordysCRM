@@ -22,6 +22,14 @@
               <n-button v-permission="['CLUE_MANAGEMENT:ADD']" type="primary" @click="handleAdd">
                 {{ t('clueManagement.newClue') }}
               </n-button>
+              <CrmImportButton
+                v-if="hasAnyPermission(['CLUE_MANAGEMENT:IMPORT'])"
+                :validate-api="preCheckImportLead"
+                :import-save-api="importLead"
+                :download-template-api="downloadLeadTemplate"
+                :title="t('module.clueManagement')"
+                @import-success="() => searchData()"
+              />
               <n-button
                 v-if="
                   hasAnyPermission(['CLUE_MANAGEMENT:EXPORT']) &&
@@ -139,6 +147,7 @@
   import { BatchActionConfig } from '@/components/pure/crm-table/type';
   import CrmTableButton from '@/components/pure/crm-table-button/index.vue';
   import CrmFormCreateDrawer from '@/components/business/crm-form-create-drawer/index.vue';
+  import CrmImportButton from '@/components/business/crm-import-button/index.vue';
   import CrmMoveModal from '@/components/business/crm-move-modal/index.vue';
   import CrmOperationButton from '@/components/business/crm-operation-button/index.vue';
   import CrmTableExportModal from '@/components/business/crm-table-export-modal/index.vue';
@@ -146,7 +155,15 @@
   import TransferForm from '@/components/business/crm-transfer-modal/transferForm.vue';
   import CrmViewSelect from '@/components/business/crm-view-select/index.vue';
 
-  import { batchDeleteClue, batchTransferClue, deleteClue, getFieldDeptTree } from '@/api/modules';
+  import {
+    batchDeleteClue,
+    batchTransferClue,
+    deleteClue,
+    downloadLeadTemplate,
+    getFieldDeptTree,
+    importLead,
+    preCheckImportLead,
+  } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
   import useFormCreateTable from '@/hooks/useFormCreateTable';

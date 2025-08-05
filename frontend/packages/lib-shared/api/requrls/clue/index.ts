@@ -59,3 +59,8 @@ export const DeleteClueViewUrl = '/clue/view/delete';
 export const FixedClueViewUrl = '/clue/view/fixed';
 export const EnableClueViewUrl = '/clue/view/enable';
 export const DragClueViewUrl = '/clue/view/edit/pos';
+
+// 导入
+export const PreCheckImportUrl = '/clue/import/pre-check';
+export const DownloadTemplateUrl = '/clue/template/download';
+export const ImportLeadUrl = '/clue/import';

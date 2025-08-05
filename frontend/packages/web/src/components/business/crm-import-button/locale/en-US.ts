@@ -12,7 +12,7 @@ export default {
   'crmImportButton.partialVerificationFailed': 'Partial validation failed;',
   'crmImportButton.someUsersImportFailed': 'Some data import failed',
   'crmImportButton.afterFailingToModify': 'Modify failed data in Excel and re-import',
-  'crmImportButton.backList': 'Back to list',
+  'crmImportButton.backList': 'Back to {title} list',
   'crmImportButton.backToUploadPage': 'Back to upload page',
   'crmImportButton.ignoreErrorContinueImporting': 'Ignore errors and continue importing',
   'crmImportButton.successImportActionTip': 'Click Import to enter into system',

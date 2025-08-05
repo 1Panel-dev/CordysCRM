@@ -1,3 +1,5 @@
+import { ValidateInfo } from '@cordys/web/src/components/business/crm-import-button/components/validateResult.vue';
+
 import type { CordysAxios } from '@lib/shared/api/http/Axios';
 import {
   AddClueFollowPlanUrl,
@@ -18,6 +20,7 @@ import {
   DeleteCluePoolUrl,
   DeleteClueUrl,
   DeleteClueViewUrl,
+  DownloadTemplateUrl,
   DragClueViewUrl,
   EnableClueViewUrl,
   ExportClueAllUrl,
@@ -39,8 +42,10 @@ import {
   GetClueViewListUrl,
   GetPoolClueUrl,
   GetPoolOptionsUrl,
+  ImportLeadUrl,
   MoveToPoolLeadUrl,
   PickClueUrl,
+  PreCheckImportUrl,
   ReTransitionCustomerUrl,
   UpdateClueFollowPlanStatusUrl,
   UpdateClueFollowPlanUrl,
@@ -320,6 +325,25 @@ export default function useProductApi(CDR: CordysAxios) {
   function dragClueView(data: TableDraggedParams) {
     return CDR.post({ url: DragClueViewUrl, data });
   }
+
+  function preCheckImportLead(file: File) {
+    return CDR.uploadFile<{ data: ValidateInfo }>({ url: PreCheckImportUrl }, { fileList: [file] }, 'file');
+  }
+
+  function downloadLeadTemplate() {
+    return CDR.get(
+      {
+        url: DownloadTemplateUrl,
+        responseType: 'blob',
+      },
+      { isTransformResponse: false, isReturnNativeResponse: true }
+    );
+  }
+
+  function importLead(file: File) {
+    return CDR.uploadFile({ url: ImportLeadUrl }, { fileList: [file] }, 'file');
+  }
+
   return {
     addClue,
     updateClue,
@@ -369,5 +393,8 @@ export default function useProductApi(CDR: CordysAxios) {
     updateClueView,
     enableClueView,
     dragClueView,
+    preCheckImportLead,
+    downloadLeadTemplate,
+    importLead,
   };
 }

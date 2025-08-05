@@ -137,6 +137,9 @@ export const {
   updateClueView,
   enableClueView,
   dragClueView,
+  preCheckImportLead,
+  downloadLeadTemplate,
+  importLead,
 } = clueApi;
 
 export const {

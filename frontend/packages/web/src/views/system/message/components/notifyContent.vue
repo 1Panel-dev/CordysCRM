@@ -42,7 +42,7 @@
         />
       </div>
       <n-button
-        v-if="hasAnyPermission(['SYSTEM_NOTICE:UPDATE']) && notifyItem?.status === SystemMessageStatusEnum.UNREAD"
+        v-if="notifyItem?.status === SystemMessageStatusEnum.UNREAD"
         class="!bg-[var(--primary-8)]"
         type="primary"
         @click="setMessageRead"

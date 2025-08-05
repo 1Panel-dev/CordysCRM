@@ -2,7 +2,7 @@
   <CrmModal
     v-model:show="showModal"
     size="medium"
-    :title="props?.title || t('crmImportButton.formExcelImport')"
+    :title="`${t('common.import')}${props.title}` || t('crmImportButton.formExcelImport')"
     :ok-loading="props.confirmLoading"
     :positive-text="t('crmImportButton.validateTemplate')"
     :ok-button-props="{ disabled: fileList.length < 1 }"
@@ -42,6 +42,7 @@
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
   import useLocale from '@lib/shared/locale/useLocale';
+  import { downloadByteFile } from '@lib/shared/method';
 
   import CrmModal from '@/components/pure/crm-modal/index.vue';
   import CrmUpload from '@/components/pure/crm-upload/index.vue';
@@ -56,6 +57,7 @@
     confirmLoading: boolean;
     title?: string; // 标题
     descriptionTip?: string; // 描述提示内容
+    downloadTemplateApi?: () => Promise<any>; // 下载模板Api
   }>();
 
   const emit = defineEmits<{
@@ -76,14 +78,29 @@
     emit('close');
   }
 
+  function extractFileNameFromHeader(dispositionHeader?: string): string | null {
+    if (!dispositionHeader) return null;
+
+    const match = dispositionHeader.match(/filename="?(.+?)"?$/);
+    return match?.[1] ? decodeURIComponent(match[1]) : null;
+  }
+
   /**
    * 下载excel模板
    */
-  function downLoadTemplate() {
-    if (currentLocale.value === 'zh-CN') {
-      window.open('/templates/user_import_cn.xlsx', '_blank');
-    } else {
-      window.open('/templates/user_import_en.xlsx', '_blank');
+  async function downLoadTemplate() {
+    try {
+      if (props.downloadTemplateApi) {
+        const res = await props.downloadTemplateApi();
+        const fileName = extractFileNameFromHeader(res.headers['content-disposition']) ?? 'template.xlsx';
+        downloadByteFile(res.data, fileName);
+      } else {
+        const lang = currentLocale.value === 'zh-CN' ? 'cn' : 'en';
+        window.open(`/templates/user_import_${lang}.xlsx`, '_blank');
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
     }
   }
   /**

@@ -23,7 +23,7 @@
       <div v-if="moreAction.length" ref="moreButtonRef" :class="`${moreActionClass}`">
         <CrmMoreAction :options="moreAction" :size="props.size" @select="handleMoreSelect" />
       </div>
-      <div ref="selectCountRef" class="flex flex-nowrap items-center gap-[4px]">
+      <div ref="selectCountRef" class="flex flex-nowrap items-center gap-[4px]" :class="selectCountClass">
         <div class="whitespace-nowrap">{{ t('crmPagination.checked') }}</div>
         <div class="whitespace-nowrap text-[var(--primary-8)]">{{ props.selectRowCount }}</div>
         <div>{{ t('crmPagination.item') }}</div>
@@ -52,7 +52,6 @@
   import { NButton } from 'naive-ui';
 
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { getNodeWidth } from '@lib/shared/method/dom';
 
   import CrmMoreAction from '@/components/pure/crm-more-action/index.vue';
   import { ActionsItem } from '@/components/pure/crm-more-action/type';
@@ -76,6 +75,8 @@
 
   const baseAction = ref<ActionsItem[]>([]);
   const moreAction = ref<ActionsItem[]>([]);
+  const originalBaseAction = ref<ActionsItem[]>([]);
+  const originalMoreAction = ref<ActionsItem[]>([]);
 
   // 存储所有的action
   const allAction = ref<ActionsItem[]>([]);
@@ -84,15 +85,13 @@
   const moreActionLength = ref<number>(0);
   const actionContainerRef = ref<HTMLElement>();
 
-  // 控制是否重新计算
-  const computedStatus = ref(true);
-
   const handleMoreActionLength = () => {
     moreActionLength.value = moreAction.value.length;
   };
 
   const moreActionClass = 'crm-batch-action-more-button';
   const clearBtnClass = 'crm-batch-clear-button';
+  const selectCountClass = 'crm-select-count';
 
   const batchActionWrapperRef = ref();
   const moreButtonRef = ref();
@@ -115,55 +114,43 @@
   const filterActionList = (list: ActionsItem[] = []) =>
     list.filter((e) => hasAllPermission(e.permission) && hasAnyPermission(e?.anyPermission));
 
+  function estimateButtonWidth(action: ActionsItem): number {
+    const baseWidth = 60;
+    const charWidth = 8;
+    return baseWidth + (action.label?.length ?? 0) * charWidth;
+  }
+
   const computedLastVisibleIndex = () => {
-    if (!actionContainerRef.value) {
-      return;
-    }
-    if (!computedStatus.value) {
-      computedStatus.value = true;
-      return;
-    }
+    if (!actionContainerRef.value) return;
+
+    const gapDis = 12;
 
     const { wrapperWidth, moreButtonWidth, clearButtonWidth, leftContentWidth, rightContentWidth, selectCountWidth } =
       calculateWidths();
 
-    const childNodeList = [].slice.call(actionContainerRef.value.children) as HTMLElement[];
-    // 初始总宽度为 左边容器 + 右边容器 + 选中数量容器的宽度
-    let totalWidth = leftContentWidth + rightContentWidth + selectCountWidth;
-    let menuItemIndex = 0;
-    // gap间距
-    const gapDis = 12;
+    // 固定内容宽度（slot、清除按钮、已选择数量、more按钮预留）
+    const fixedWidth =
+      leftContentWidth + rightContentWidth + clearButtonWidth + selectCountWidth + moreButtonWidth + gapDis * 5;
 
-    for (let i = 0; i < childNodeList.length; i++) {
-      const node = childNodeList[i];
-      const classNames = node.className.split(' ');
+    const availableWidth = wrapperWidth - fixedWidth;
 
-      const isMoreButton = classNames.includes(moreActionClass);
-      const isClearBtn = classNames.includes(clearBtnClass);
-      // 更多按钮
-      if (isMoreButton) {
-        totalWidth += moreButtonWidth + gapDis;
-        // 清空按钮
-      } else if (isClearBtn) {
-        totalWidth += clearButtonWidth + gapDis;
-        // 基础操作按钮
+    let totalWidth = 0;
+    let lastVisibleIndex = -1;
+
+    for (let i = 0; i < originalBaseAction.value.length; i++) {
+      const currentAction = originalBaseAction.value[i] as ActionsItem;
+      const buttonWidth = estimateButtonWidth(currentAction) + gapDis;
+      if (totalWidth + buttonWidth <= availableWidth - 24) {
+        totalWidth += buttonWidth;
+        lastVisibleIndex = i;
       } else {
-        totalWidth += getNodeWidth(node) + gapDis;
+        break;
       }
-
-      if (totalWidth > wrapperWidth) {
-        const value = isClearBtn ? menuItemIndex - 1 : menuItemIndex - 2;
-        baseAction.value = allAction.value.slice(0, value);
-        moreAction.value = allAction.value.slice(value);
-        handleMoreActionLength();
-        computedStatus.value = false;
-        return;
-      }
-      menuItemIndex++;
     }
 
-    moreAction.value = filterActionList(props.actionConfig?.moreAction || []);
-    baseAction.value = filterActionList(props.actionConfig?.baseAction || []);
+    baseAction.value = originalBaseAction.value.slice(0, lastVisibleIndex + 1);
+    moreAction.value = [...originalBaseAction.value.slice(lastVisibleIndex + 1), ...originalMoreAction.value];
+
     handleMoreActionLength();
   };
 
@@ -185,9 +172,25 @@
         allAction.value = [...newBaseAction, ...newMoreAction];
         baseAction.value = [...newBaseAction];
         moreAction.value = [...newMoreAction];
+        originalBaseAction.value = [...newBaseAction];
+        originalMoreAction.value = [...newMoreAction];
+        nextTick(() => {
+          computedLastVisibleIndex();
+        });
       }
     },
     { immediate: true }
+  );
+
+  watch(
+    () => props.selectRowCount,
+    (val) => {
+      if (val) {
+        nextTick(() => {
+          computedLastVisibleIndex();
+        });
+      }
+    }
   );
 
   onMounted(() => {

@@ -30,8 +30,7 @@
         <!-- <CrmImportButton
           :validate-api="importUserPreCheck"
           :import-save-api="importUsers"
-          :title="t('clue.importClues')"
-          :button-text="t('clue.importClues')"
+         :title="t('module.clueManagement')"
           @import-success="() => searchData()"
         /> -->
       </template>

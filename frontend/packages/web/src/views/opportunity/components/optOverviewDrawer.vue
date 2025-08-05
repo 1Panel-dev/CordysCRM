@@ -60,7 +60,7 @@
         v-if="activeTab === 'contact'"
         :form-key="FormDesignKeyEnum.BUSINESS_CONTACT"
         :refresh-key="refreshKey"
-        :readonly="!hasAnyPermission(['OPPORTUNITY_MANAGEMENT:UPDATE'])"
+        readonly
         :source-id="sourceId"
       />
     </template>

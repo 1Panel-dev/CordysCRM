@@ -76,7 +76,12 @@
     />
     <!-- 导入开始 -->
     <!-- 导入弹窗 -->
-    <ImportModal v-model:show="importModal" :confirm-loading="validateLoading" @validate="validateTemplate" />
+    <ImportModal
+      v-model:show="importModal"
+      :title="t('role.member')"
+      :confirm-loading="validateLoading"
+      @validate="validateTemplate"
+    />
 
     <!-- 校验弹窗 -->
     <ValidateModal
@@ -91,6 +96,7 @@
       v-model:show="validateResultModal"
       :validate-info="validateInfo"
       :import-loading="importLoading"
+      :title="t('role.member')"
       @save="importUser"
       @close="importModal = false"
     />

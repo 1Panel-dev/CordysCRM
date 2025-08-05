@@ -11,7 +11,7 @@ export default {
   'crmImportButton.partialVerificationFailed': '部分校验失败；',
   'crmImportButton.someUsersImportFailed': '部分数据导入失败',
   'crmImportButton.afterFailingToModify': '失败数据在 Excel 中修改后重新导入',
-  'crmImportButton.backList': '返回列表',
+  'crmImportButton.backList': '返回{title}列表',
   'crmImportButton.backToUploadPage': '返回上传页',
   'crmImportButton.ignoreErrorContinueImporting': '忽略错误继续导入',
   'crmImportButton.successImportActionTip': '点击 导入 可录入系统',

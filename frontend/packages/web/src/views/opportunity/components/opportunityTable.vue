@@ -41,8 +41,7 @@
         <!-- <CrmImportButton
             :validate-api="importUserPreCheck"
             :import-save-api="importUsers"
-            :title="t('opportunity.importOpportunity')"
-            :button-text="t('opportunity.importOpportunity')"
+            :title="t('module.businessManagement')"
             @import-success="() => searchData()"
           /> -->
       </div>
