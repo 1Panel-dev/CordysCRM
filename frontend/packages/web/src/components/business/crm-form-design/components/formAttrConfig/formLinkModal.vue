@@ -279,8 +279,14 @@
           current: '',
           link: '',
         });
-        linkFieldsScrollbar.value?.scrollTo({
-          top: 99999,
+        nextTick(() => {
+          linkFieldsScrollbar.value?.scrollTo({
+            top: 99999,
+            behavior: 'smooth',
+          });
+        });
+      } else {
+        document.querySelector('.n-form-item-blank--error')?.scrollIntoView({
           behavior: 'smooth',
         });
       }
