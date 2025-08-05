@@ -118,4 +118,11 @@ export default {
   'crmFormDesign.autoCount': '自动计数',
   'crmFormDesign.custom': '自定义',
   'crmFormDesign.currentTime': '填写当时',
+  'crmFormDesign.formLink': '表单联动',
+  'crmFormDesign.formLinkSetting': '表单联动设置',
+  'crmFormDesign.linkForm': '联动表单',
+  'crmFormDesign.fill': '填充',
+  'crmFormDesign.fillValue': '的值',
+  'crmFormDesign.currentForm': '当前表单',
+  'crmFormDesign.addLink': '添加联动',
 };

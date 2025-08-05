@@ -82,7 +82,7 @@ export interface FormCreateField {
   // 选择器属性
   multiple?: boolean;
   options?: FormCreateFieldOption[];
-  initialOptions?: any; // 用于回显(成员、部门、数据源选择)
+  initialOptions?: any[]; // 用于回显(成员、部门、数据源选择)
   // dataSource属性
   dataSourceType?: FieldDataSourceTypeEnum;
   combineSearch?: DataSourceFilterCombine; // 数据源过滤条件

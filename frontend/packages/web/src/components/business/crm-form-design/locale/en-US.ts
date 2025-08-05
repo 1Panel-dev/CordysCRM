@@ -120,4 +120,11 @@ export default {
   'crmFormDesign.autoCount': 'Auto Count',
   'crmFormDesign.custom': 'Custom',
   'crmFormDesign.currentTime': 'Current Time',
+  'crmFormDesign.formLink': 'Form linkage',
+  'crmFormDesign.formLinkSetting': 'Form Linkage Settings',
+  'crmFormDesign.linkForm': 'Linked Form',
+  'crmFormDesign.fill': 'Fill',
+  'crmFormDesign.fillValue': 'Value of',
+  'crmFormDesign.currentForm': 'Current Form',
+  'crmFormDesign.addLink': 'Add Linkage',
 };

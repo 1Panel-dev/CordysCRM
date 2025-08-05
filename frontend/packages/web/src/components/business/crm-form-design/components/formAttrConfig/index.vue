@@ -7,7 +7,7 @@
     </n-tab-pane>
     <n-tab-pane name="form" :tab="t('crmFormDesign.formConfig')">
       <n-scrollbar>
-        <formAttr v-model:field-list="list" :form-config="formConfig" />
+        <formAttr v-model:field-list="list" :form-config="formConfig" :form-key="props.formKey" />
       </n-scrollbar>
     </n-tab-pane>
   </n-tabs>

@@ -28,6 +28,7 @@
       :initial-source-name="props.initialSourceName"
       :other-save-params="props.otherSaveParams"
       :is-edit="needInitDetail"
+      :link-form-info="props.linkFormInfo"
       class="!pt-[16px]"
       @cancel="handleBack"
       @saved="handleSaved"
@@ -55,6 +56,7 @@
     needInitDetail?: boolean; // 是否需要初始化详情
     initialSourceName?: string; // 初始化详情时的名称
     otherSaveParams?: Record<string, any>;
+    linkFormInfo?: Record<string, any>; // 关联表单信息
   }>();
   const emit = defineEmits<{
     (e: 'saved'): void;

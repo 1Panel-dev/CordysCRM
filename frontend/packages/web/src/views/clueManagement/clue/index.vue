@@ -82,6 +82,7 @@
       :need-init-detail="needInitDetail"
       :initial-source-name="activeRowName"
       :other-save-params="otherFollowRecordSaveParams"
+      :link-form-info="linkFormInfo"
       @saved="loadList"
     />
   </div>
@@ -344,16 +345,19 @@
     });
   }
 
+  const linkFormInfo = ref<Record<string, any> | undefined>({});
   // 新增
   function handleAdd() {
     isInitFormCreateDrawer.value = true;
     formKey.value = FormDesignKeyEnum.CLUE;
     activeClueId.value = '';
+    linkFormInfo.value = undefined;
     formCreateDrawerVisible.value = true;
   }
 
-  function handleNewCustomer() {
+  function handleNewCustomer(formInfo: Record<string, any>) {
     isInitFormCreateDrawer.value = true;
+    linkFormInfo.value = formInfo;
     formKey.value = FormDesignKeyEnum.CUSTOMER;
     activeClueId.value = '';
     formCreateDrawerVisible.value = true;
@@ -386,6 +390,7 @@
         otherFollowRecordSaveParams.value.id = row.id;
         needInitDetail.value = true;
         formKey.value = FormDesignKeyEnum.CLUE;
+        linkFormInfo.value = undefined;
         formCreateDrawerVisible.value = true;
         break;
       case 'followUp':
@@ -394,6 +399,7 @@
         otherFollowRecordSaveParams.value.clueId = row.id;
         activeRowName.value = row.name;
         needInitDetail.value = false;
+        linkFormInfo.value = undefined;
         formCreateDrawerVisible.value = true;
         break;
       case 'pop-transfer':

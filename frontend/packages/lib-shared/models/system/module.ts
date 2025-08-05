@@ -165,12 +165,20 @@ export interface FormActionButton {
   text: string;
   enable: boolean;
 }
+export interface FormConfigLinkProp {
+  formKey: FormDesignKeyEnum;
+  linkFields: {
+    current: string;
+    link: string;
+  }[];
+}
 export interface FormConfig {
   layout: number;
   labelPos: 'left' | 'top';
   inputWidth: 'custom' | 'full';
   optBtnContent: FormActionButton[];
   optBtnPos: FormFooterDirection;
+  linkProp?: FormConfigLinkProp;
 }
 
 export interface SaveFormDesignConfigParams {

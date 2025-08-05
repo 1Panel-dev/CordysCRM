@@ -16,6 +16,12 @@ import {
   updateFormApi,
 } from '@/components/business/crm-form-create/config';
 import type { FormCreateField, FormCreateFieldRule, FormDetail } from '@/components/business/crm-form-create/types';
+import {
+  dataSourceTypes,
+  linkAllAcceptTypes,
+  multipleTypes,
+  singleTypes,
+} from '@/components/business/crm-form-design/linkFormConfig';
 
 import useUserStore from '@/store/modules/user';
 
@@ -25,6 +31,7 @@ export interface FormCreateApiProps {
   needInitDetail?: Ref<boolean>;
   initialSourceName?: Ref<string | undefined>; // 特殊字段初始化需要的资源名称
   otherSaveParams?: Ref<Record<string, any> | undefined>;
+  linkFormInfo?: Ref<Record<string, any> | undefined>; // 关联表单信息
 }
 
 export default function useFormCreateApi(props: FormCreateApiProps) {
@@ -63,6 +70,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   const formDetail = ref<Record<string, any>>({});
   // 详情
   const detail = ref<Record<string, any>>({});
+  const linkFormFieldMap = ref<Record<string, any>>({}); // 关联表单字段信息映射
 
   function initFormShowControl() {
     // 读取整个显隐控制映射
@@ -268,7 +276,107 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     return value;
   }
 
-  async function initFormDetail(needInitFormDescription = false) {
+  function makeLinkFormFields(field: FormCreateField) {
+    switch (true) {
+      case dataSourceTypes.includes(field.type):
+        // 数据源字段填充
+        linkFormFieldMap.value[field.id] = {
+          ...field,
+          value: field.initialOptions?.filter((e) => formDetail.value[field.id].includes(e.id)),
+        };
+        break;
+      case multipleTypes.includes(field.type):
+        // 多选字段填充
+        if (field.type === FieldTypeEnum.INPUT_MULTIPLE) {
+          linkFormFieldMap.value[field.id] = {
+            ...field,
+            value: formDetail.value[field.id],
+          };
+        } else {
+          linkFormFieldMap.value[field.id] = {
+            ...field,
+            value: formDetail.value[field.id].map((id: string) => field.options?.find((e) => e.value === id)?.label),
+          };
+        }
+        break;
+      case singleTypes.includes(field.type):
+        // 单选字段填充
+        linkFormFieldMap.value[field.id] = {
+          ...field,
+          value: field.options?.find((e) => e.value === formDetail.value[field.id])?.label,
+        };
+        break;
+      default:
+        linkFormFieldMap.value[field.id] = {
+          ...field,
+          value: formDetail.value[field.id],
+        };
+        break;
+    }
+  }
+
+  function fillLinkFormFieldValue(field: FormCreateField) {
+    const linkFieldId = formConfig.value.linkProp?.linkFields?.find((e) => e.current === field.id)?.link;
+    if (linkFieldId) {
+      const linkField = props.linkFormInfo?.value?.[linkFieldId];
+      if (linkField) {
+        switch (true) {
+          case dataSourceTypes.includes(field.type):
+            // 数据源填充，且替换initialOptions
+            field.initialOptions = linkField.initialOptions || [];
+            formDetail.value[field.id] = linkField.value.map((e: Record<string, any>) => e.id);
+            break;
+          case multipleTypes.includes(field.type):
+            // 多选填充
+            if (field.type === FieldTypeEnum.INPUT_MULTIPLE) {
+              // 标签直接填充
+              formDetail.value[field.id] = linkField.value;
+            } else {
+              // 其他多选类型需匹配名称相等的选项值
+              formDetail.value[field.id] =
+                field.options?.filter((e) => linkField.value.includes(e.label)).map((e) => e.value) || [];
+            }
+            break;
+          case singleTypes.includes(field.type):
+            // 单选填充需要匹配名称相同的选项值
+            formDetail.value[field.id] = field.options?.find((e) => e.label === linkField.value)?.value || '';
+            break;
+          case linkAllAcceptTypes.includes(field.type):
+            // 文本输入类型可填充任何字段类型值
+            if (dataSourceTypes.includes(linkField.type)) {
+              // 联动的字段是数据源则填充选项名
+              formDetail.value[field.id] = linkField.value.map((e: Record<string, any>) => e.name);
+            } else if (linkField.type === FieldTypeEnum.INPUT_MULTIPLE) {
+              // 联动的字段是输入多选则直接拼接字符串
+              formDetail.value[field.id] = linkField.value.join(',');
+            } else if (multipleTypes.includes(linkField.type)) {
+              // 联动的字段是多选则拼接选项名
+              formDetail.value[field.id] = field.options?.filter((e) => linkField.value.includes(e.label)).join(',');
+            } else if (singleTypes.includes(linkField.type)) {
+              // 联动的字段是单选则直接填充选项名
+              formDetail.value[field.id] = field.options?.find((e) => e.label === linkField.value)?.label || '';
+            } else if (linkField.type === FieldTypeEnum.LOCATION) {
+              // 联动的字段是省市区则填充城市路径
+              const address = linkField.value.split('-');
+              formDetail.value[field.id] = `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}`;
+            } else {
+              formDetail.value[field.id] = linkField.value;
+            }
+            break;
+          default:
+            formDetail.value[field.id] = linkField.value;
+            break;
+        }
+      }
+    }
+  }
+
+  /**
+   * 初始化表单详情
+   * @param needInitFormDescription 是否需要初始化表单描述列表
+   * @param needMakeLinkFormFields 是否需要初始化表单联动字段信息映射
+   */
+  async function initFormDetail(needInitFormDescription = false, needMakeLinkFormFields = false) {
     try {
       const asyncApi = getFormDetailApiMap[props.formKey.value];
       if (!asyncApi || !props.sourceId?.value) return;
@@ -330,6 +438,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         if (item.type === FieldTypeEnum.DATE_TIME) {
           // 处理时间类型的字段
           formDetail.value[item.id] = formDetail.value[item.id] ? Number(formDetail.value[item.id]) : null;
+        }
+        if (needMakeLinkFormFields) {
+          makeLinkFormFields(item);
         }
       });
       nextTick(() => {
@@ -638,6 +749,10 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           },
         ].filter((option, index, self) => self.findIndex((o) => o.id === option.id) === index);
       }
+      if (props.linkFormInfo?.value) {
+        // 如果有关联表单信息，则填充关联表单字段值
+        fillLinkFormFieldValue(item);
+      }
     });
     nextTick(() => {
       initFormShowControl();
@@ -722,6 +837,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     collaborationType,
     sourceName,
     fieldShowControlMap,
+    linkFormFieldMap,
     initFormDescription,
     initFormConfig,
     initFormDetail,
@@ -729,6 +845,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
     initForm,
     resetForm,
     initFormShowControl,
+    makeLinkFormFields,
     detail,
   };
 }

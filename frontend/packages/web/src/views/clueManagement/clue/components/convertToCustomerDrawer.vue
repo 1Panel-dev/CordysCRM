@@ -61,13 +61,14 @@
 
   import { getFieldDeptTree, reTransitionCustomer } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
+  import useFormCreateApi from '@/hooks/useFormCreateApi';
   import useFormCreateTable from '@/hooks/useFormCreateTable';
 
   const props = defineProps<{
     clueId: string;
   }>();
   const emit = defineEmits<{
-    (e: 'new'): void;
+    (e: 'new', linkForm: Record<string, any>): void;
     (e: 'finish'): void;
   }>();
 
@@ -85,6 +86,11 @@
   const keyword = ref('');
   const checkedRowKeys = ref<DataTableRowKey[]>([]);
 
+  const formKey = ref(FormDesignKeyEnum.CLUE);
+  const { linkFormFieldMap, initFormConfig, initFormDetail } = useFormCreateApi({
+    formKey,
+    sourceId: computed(() => props.clueId),
+  });
   const { useTableRes, customFieldsFilterConfig } = await useFormCreateTable({
     formKey: FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER,
     containerClass: '.crm-clue-convert-table',
@@ -177,15 +183,17 @@
   function handleNew() {
     show.value = false;
     handleCancel();
-    emit('new');
+    emit('new', linkFormFieldMap.value);
   }
 
   watch(
     () => show.value,
-    (newVal) => {
+    async (newVal) => {
       if (newVal) {
         initDepartList();
         searchData();
+        await initFormConfig();
+        initFormDetail(false, true);
       }
     },
     { immediate: true }

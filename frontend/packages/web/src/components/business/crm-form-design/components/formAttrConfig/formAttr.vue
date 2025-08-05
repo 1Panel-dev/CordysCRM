@@ -113,17 +113,39 @@
         </n-radio-button>
       </n-radio-group>
     </div>
+    <!-- 表单联动 -->
+    <div v-if="props.formKey === FormDesignKeyEnum.CUSTOMER" class="crm-form-design-config-item">
+      <div class="crm-form-design-config-item-title">
+        {{ t('crmFormDesign.formLink') }}
+      </div>
+      <n-button @click="showLinkConfig">
+        {{ t('common.setting') }}
+      </n-button>
+    </div>
+    <!-- 表单联动 End -->
   </div>
+  <formLinkModal
+    v-model:visible="linkConfigVisible"
+    :form-fields="list"
+    :link-prop="formConfig.linkProp"
+    @save="handleLinkConfigSave"
+  />
 </template>
 
 <script setup lang="ts">
-  import { NInput, NRadioButton, NRadioGroup, NSwitch, NTooltip } from 'naive-ui';
+  import { NButton, NInput, NRadioButton, NRadioGroup, NSwitch, NTooltip } from 'naive-ui';
 
+  import { FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
   import { useI18n } from '@lib/shared/hooks/useI18n';
-  import { FormConfig } from '@lib/shared/models/system/module';
+  import { FormConfig, FormConfigLinkProp } from '@lib/shared/models/system/module';
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import { FormCreateField } from '@/components/business/crm-form-create/types';
+  import formLinkModal from './formLinkModal.vue';
+
+  const props = defineProps<{
+    formKey: string;
+  }>();
 
   const { t } = useI18n();
 
@@ -139,6 +161,16 @@
     list.value.forEach((item) => {
       item.fieldWidth = 1 / layout;
     });
+  }
+
+  const linkConfigVisible = ref(false);
+
+  function showLinkConfig() {
+    linkConfigVisible.value = true;
+  }
+
+  function handleLinkConfigSave(value: FormConfigLinkProp) {
+    formConfig.value.linkProp = value;
   }
 </script>
 

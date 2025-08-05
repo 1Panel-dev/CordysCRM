@@ -91,7 +91,7 @@
     () => props.fieldConfig.initialOptions,
     (val) => {
       if ([FieldTypeEnum.MEMBER_MULTIPLE, FieldTypeEnum.DEPARTMENT_MULTIPLE].includes(props.fieldConfig.type)) {
-        selectedUsers.value = val;
+        selectedUsers.value = val as SelectedUsersItem[];
       } else if (Array.isArray(val) && val.length) {
         selectedUsers.value = [val[0]];
       } else {

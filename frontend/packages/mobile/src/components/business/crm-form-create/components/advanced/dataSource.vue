@@ -51,7 +51,7 @@
   watch(
     () => props.fieldConfig.initialOptions,
     (val) => {
-      selectedRows.value = val;
+      selectedRows.value = val as Record<string, any>[];
     },
     {
       immediate: true,
