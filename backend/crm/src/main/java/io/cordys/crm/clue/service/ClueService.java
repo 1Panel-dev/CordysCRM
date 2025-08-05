@@ -1,6 +1,6 @@
 package io.cordys.crm.clue.service;
 
-import cn.idev.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
+import cn.idev.excel.FastExcelFactory;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.aspectj.annotation.OperationLog;
@@ -22,15 +22,15 @@ import io.cordys.common.permission.PermissionUtils;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.BeanUtils;
-import io.cordys.common.util.JSON;
-import io.cordys.common.util.Translator;
+import io.cordys.common.util.*;
 import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.clue.domain.Clue;
+import io.cordys.crm.clue.domain.ClueField;
 import io.cordys.crm.clue.domain.CluePool;
 import io.cordys.crm.clue.domain.CluePoolRecycleRule;
 import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
+import io.cordys.crm.clue.dto.response.ClueImportResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.mapper.ExtClueMapper;
 import io.cordys.crm.customer.domain.Customer;
@@ -52,11 +52,10 @@ import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import io.cordys.crm.system.dto.request.PoolReasonRequest;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
-import io.cordys.crm.system.excel.domain.UserExcelData;
 import io.cordys.crm.system.excel.domain.UserExcelDataFactory;
 import io.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import io.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
-import io.cordys.crm.system.excel.handler.UserTemplateWriteHandler;
+import io.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
@@ -72,6 +71,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -133,6 +133,8 @@ public class ClueService {
     private CustomerContactService customerContactService;
 	@Autowired
 	private ExtUserMapper extUserMapper;
+    @Resource
+    private BaseMapper<ClueField> clueFieldMapper;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -663,5 +665,35 @@ public class ClueService {
                         Translator.get("clue.import_tpl.name"), Translator.get("sheet.data"), Translator.get("sheet.comment"), new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
     }
 
+    /**
+     * 导入检查
+     * @param file 导入文件
+     * @param currentOrg 当前组织
+     * @return 导入检查信息
+     */
+    public ClueImportResponse importPreCheck(MultipartFile file, String currentOrg) {
+        if (file == null) {
+            throw new GenericException(Translator.get("file_cannot_be_null"));
+        }
+        return checkImportExcel(file, currentOrg);
+    }
 
+    /**
+     * 检查导入的文件
+     * @param file 文件
+     * @param currentOrg 当前组织
+     * @return 检查信息
+     */
+    private ClueImportResponse checkImportExcel(MultipartFile file, String currentOrg) {
+        try {
+            List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.CLUE.getKey(), currentOrg);
+            CustomFieldCheckEventListener<ClueField> eventListener = new CustomFieldCheckEventListener<>(fields, "clue", currentOrg, clueFieldMapper);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).sheet().doRead();
+            return ClueImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            LogUtils.error("clue import pre-check error: ", e.getMessage());
+            throw new GenericException(Translator.get("check_import_excel_error"));
+        }
+    }
 }

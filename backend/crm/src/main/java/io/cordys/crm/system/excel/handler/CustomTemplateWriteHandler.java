@@ -70,7 +70,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 			Cell cell1 = row1.createCell(0);
 			cell1.setCellValue("""
                 说明：
-                1、表头字体红色表示 "必填", 加粗表示 "唯一", 蓝色表示支持 "多值"。
+                1、表头字体红色表示 "必填", 加粗表示 "唯一", 下划线表示支持 "多值"。
                 2、多值采用以下格式: [标签1, 标签2], 其余格式请参考表头注释。
                 3、导入时会过滤格式错误或非法字符。
                 """);
@@ -111,7 +111,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 			font.setBold(true);
 		}
 		if (isHead && multiples.contains(cell.getStringCellValue())) {
-			font.setColor(IndexedColors.BLUE.getIndex());
+			font.setUnderline(Font.U_SINGLE);
 		}
 		font.setFontHeightInPoints((short) 12);
 		headStyle.setWriteFont(font);

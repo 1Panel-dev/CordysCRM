@@ -12,6 +12,7 @@ import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
+import io.cordys.crm.clue.dto.response.ClueImportResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
 import io.cordys.crm.clue.service.ClueExportService;
 import io.cordys.crm.clue.service.ClueService;
@@ -23,6 +24,7 @@ import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import io.cordys.crm.system.dto.request.PoolReasonRequest;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.dto.response.UserImportResponse;
 import io.cordys.crm.system.service.ModuleFormCacheService;
 import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +37,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -185,5 +188,12 @@ public class ClueController {
     @Operation(summary = "下载导入模板")
     public void downloadImportTpl(HttpServletResponse response) {
         clueService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
+    }
+
+    @PostMapping("/import/pre-check")
+    @Operation(summary = "导入检查")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_IMPORT)
+    public ClueImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
+        return clueService.importPreCheck(file, OrganizationContext.getOrganizationId());
     }
 }
