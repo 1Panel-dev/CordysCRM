@@ -34,7 +34,6 @@ public class MessagePublisher {
         try {
             ChannelTopic topic = new ChannelTopic(topicName);
             redisTemplate.convertAndSend(topic.getTopic(), message);
-            LogUtils.info("消息已发布到主题 {}: {}", topicName, message);
         } catch (Exception e) {
             LogUtils.error("发布消息到主题失败", e);
         }

@@ -41,9 +41,6 @@ public class MessageSubscriber implements MessageListener {
         try {
             String channel = new String(pattern);
             String messageBody = new String(message.getBody());
-
-            LogUtils.info("接收到来自频道 {} 的消息: {}", channel, messageBody);
-
             // 处理消息
             processMessage(messageBody, channel);
         } catch (Exception e) {

@@ -30,7 +30,7 @@ import java.util.Set;
 public class InSiteNoticeSender extends AbstractNoticeSender {
 
     @Resource
-    private BaseMapper<Notification>notificationBaseMapper;
+    private BaseMapper<Notification> notificationBaseMapper;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
@@ -48,7 +48,6 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
         if (CollectionUtils.isEmpty(receivers)) {
             return;
         }
-        LogUtils.info("发送站内通知: {}", receivers);
         receivers.forEach(receiver -> {
             String id = IDGenerator.nextStr();
             Map<String, Object> paramMap = noticeModel.getParamMap();
@@ -97,7 +96,6 @@ public class InSiteNoticeSender extends AbstractNoticeSender {
             noticeRedisMessage.setMessage(receiver.getUserId());
             noticeRedisMessage.setNoticeType(NotificationConstants.Type.SYSTEM_NOTICE.toString());
             messagePublisher.publish(TopicConstants.SSE_TOPIC, JSON.toJSONString(noticeRedisMessage));
-            //sseService.broadcastPeriodically(receiver.getUserId(), NotificationConstants.Type.SYSTEM_NOTICE.toString());
         });
 
     }
