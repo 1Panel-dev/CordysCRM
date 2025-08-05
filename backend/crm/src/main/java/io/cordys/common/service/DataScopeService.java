@@ -143,7 +143,7 @@ public class DataScopeService {
         return deptDataPermission;
     }
 
-    private boolean hasDataScopePermission(Map<String, List<RolePermissionDTO>> dataScopeRoleMap, String dataScope, String permission) {
+    public boolean hasDataScopePermission(Map<String, List<RolePermissionDTO>> dataScopeRoleMap, String dataScope, String permission) {
         List<RolePermissionDTO> roleDataScopes = dataScopeRoleMap.get(dataScope);
         if (roleDataScopes == null) {
             return false;
@@ -165,7 +165,7 @@ public class DataScopeService {
         return getDeptDataPermissionForDept(userId, orgId, getDataScopeRoleMap(userId, orgId), permission);
     }
 
-    private Map<String, List<RolePermissionDTO>> getDataScopeRoleMap(String userId, String orgId) {
+    public Map<String, List<RolePermissionDTO>> getDataScopeRoleMap(String userId, String orgId) {
         return permissionCache.getRolePermissions(userId, orgId)
                 .stream()
                 .collect(Collectors.groupingBy(RolePermissionDTO::getDataScope, Collectors.toList()));

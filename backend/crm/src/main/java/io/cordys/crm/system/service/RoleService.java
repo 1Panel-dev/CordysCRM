@@ -134,13 +134,18 @@ public class RoleService {
         if (CollectionUtils.isEmpty(roleIds)) {
             return List.of();
         }
-        LambdaQueryWrapper<RoleScopeDept> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(RoleScopeDept::getRoleId, roleIds);
-        return roleScopeDeptMapper.selectListByLambda(wrapper)
+        List<RoleScopeDept> roleScopeDeptList = getRoleScopeDeptByRoleIds(roleIds);
+        return roleScopeDeptList
                 .stream()
                 .map(RoleScopeDept::getDepartmentId)
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    public List<RoleScopeDept> getRoleScopeDeptByRoleIds(List<String> roleIds) {
+        LambdaQueryWrapper<RoleScopeDept> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(RoleScopeDept::getRoleId, roleIds);
+        return roleScopeDeptMapper.selectListByLambda(wrapper);
     }
 
     @OperationLog(module = LogModule.SYSTEM_ROLE, type = LogType.ADD, resourceName = "{#request.name}")
