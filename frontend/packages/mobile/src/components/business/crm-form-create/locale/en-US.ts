@@ -9,4 +9,9 @@ export default {
   'formCreate.pickDate': 'Pick Date',
   'formCreate.pickTime': 'Pick Time',
   'formCreate.next': 'Next',
+  'formCreate.phone.area.china': 'China',
+  'formCreate.phone.area.hongKong': 'Hong Kong, China',
+  'formCreate.phone.area.macau': 'Macau, China',
+  'formCreate.phone.area.taiwan': 'Taiwan, China',
+  'formCreate.phone.lengthValidator': 'Please enter the {count} digit phone number',
 };

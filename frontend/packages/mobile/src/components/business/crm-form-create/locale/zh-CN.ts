@@ -9,4 +9,9 @@ export default {
   'formCreate.pickDate': '选择日期',
   'formCreate.pickTime': '选择时间',
   'formCreate.next': '下一步',
+  'formCreate.phone.area.china': '中国',
+  'formCreate.phone.area.hongKong': '中国香港',
+  'formCreate.phone.area.macau': '中国澳门',
+  'formCreate.phone.area.taiwan': '中国台湾',
+  'formCreate.phone.lengthValidator': '请输入 {count} 位手机号',
 };
