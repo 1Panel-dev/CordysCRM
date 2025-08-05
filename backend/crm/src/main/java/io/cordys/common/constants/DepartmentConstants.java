@@ -24,5 +24,9 @@ public enum DepartmentConstants {
     /**
      * DE
      */
-    DE
+    DE,
+    /**
+     * SQLBOT
+     */
+    SQLBOT
 }
