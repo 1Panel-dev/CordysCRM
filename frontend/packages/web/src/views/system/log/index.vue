@@ -78,7 +78,6 @@
         @page-size-change="propsEvent.pageSizeChange"
         @sorter-change="propsEvent.sorterChange"
         @filter-change="propsEvent.filterChange"
-        @refresh="searchData"
       />
     </CrmCard>
     <LoginLog v-if="activeTab === 'login'" ref="loginLogRef" />
@@ -278,6 +277,7 @@
     showSetting: false,
     columns,
     tableKey: TableKeyEnum.LOG,
+    hiddenRefresh: true,
     containerClass: '.crm-operation-log-table',
   });
 

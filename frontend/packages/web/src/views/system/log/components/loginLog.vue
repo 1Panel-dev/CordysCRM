@@ -8,7 +8,6 @@
       @page-size-change="propsEvent.pageSizeChange"
       @sorter-change="propsEvent.sorterChange"
       @filter-change="propsEvent.filterChange"
-      @refresh="loadList"
     />
   </CrmCard>
 </template>
@@ -62,6 +61,7 @@
     showSetting: false,
     columns,
     tableKey: TableKeyEnum.LOGIN_LOG,
+    hiddenRefresh: true,
     containerClass: '.crm-login-log-table',
   });
 

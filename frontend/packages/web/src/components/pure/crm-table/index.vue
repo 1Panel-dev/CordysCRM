@@ -42,7 +42,9 @@
             class="outline--secondary px-[8px]"
             @click="emit('refresh')"
           >
-            <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
+            <CrmSvg class="text-[var(--text-n1)]" width="16px" height="16px" name="icon_reset_outlined" />
+            <!-- iconfont 有了后再替换 -->
+            <!-- <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" /> -->
           </n-button>
         </div>
       </template>
@@ -69,7 +71,9 @@
         />
       </n-button>
       <n-button v-if="!attrs.hiddenRefresh" type="default" class="outline--secondary px-[8px]" @click="emit('refresh')">
-        <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" />
+        <CrmSvg class="text-[var(--text-n1)]" width="16px" height="16px" name="icon_reset_outlined" />
+        <!-- iconfont 有了后再替换 -->
+        <!-- <CrmIcon class="text-[var(--text-n1)]" type="iconicon_refresh" :size="16" /> -->
       </n-button>
     </div>
     <slot name="view"></slot>
@@ -133,6 +137,7 @@
 
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
+  import CrmSvg from '@/components/pure/crm-svg/index.vue';
   import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
   import BatchAction from './components/batchAction.vue';
