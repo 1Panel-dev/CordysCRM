@@ -196,4 +196,11 @@ public class ClueController {
     public ClueImportResponse preCheck(@RequestPart(value = "file") MultipartFile file) {
         return clueService.importPreCheck(file, OrganizationContext.getOrganizationId());
     }
+
+    @PostMapping("/import")
+    @Operation(summary = "导入")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_IMPORT)
+    public ClueImportResponse realImport(@RequestPart(value = "file") MultipartFile file) {
+        return clueService.realImport(file, OrganizationContext.getOrganizationId(), SessionUtils.getUserId());
+    }
 }

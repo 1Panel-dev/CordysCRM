@@ -13,6 +13,7 @@ import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.constants.FormKey;
 import io.cordys.common.constants.PermissionConstants;
 import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.domain.BaseResourceField;
 import io.cordys.common.dto.*;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.pager.PageUtils;
@@ -52,10 +53,12 @@ import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import io.cordys.crm.system.dto.request.PoolReasonRequest;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.excel.CustomImportAfterDoConsumer;
 import io.cordys.crm.system.excel.domain.UserExcelDataFactory;
 import io.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import io.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import io.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
+import io.cordys.crm.system.excel.listener.CustomFieldImportEventListener;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
@@ -679,6 +682,28 @@ public class ClueService {
     }
 
     /**
+     * 线索导入
+     * @param file 导入文件
+     * @param currentOrg 当前组织
+     * @param currentUser 当前用户
+     * @return 导入返回信息
+     */
+    public ClueImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
+        try {
+            List<BaseField> fields = moduleFormService.getAllFields(FormKey.CLUE.getKey(), currentOrg);
+            CustomImportAfterDoConsumer<Clue, BaseResourceField> func = this::saveImportData;
+            CustomFieldImportEventListener<Clue, ClueField> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, currentOrg, currentUser,
+                    clueFieldMapper, func);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).sheet().doRead();
+            return ClueImportResponse.builder().errorMessages(eventListener.getErrList())
+                    .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
+        } catch (Exception e) {
+            LogUtils.error("clue import error: ", e.getMessage());
+            throw new GenericException(Translator.get("check_import_excel_error"));
+        }
+    }
+
+    /**
      * 检查导入的文件
      * @param file 文件
      * @param currentOrg 当前组织
@@ -695,5 +720,15 @@ public class ClueService {
             LogUtils.error("clue import pre-check error: ", e.getMessage());
             throw new GenericException(Translator.get("check_import_excel_error"));
         }
+    }
+
+    public void saveImportData(List<Clue> clues, List<BaseResourceField> fieldList, List<BaseResourceField> fieldBlodList) {
+        clues.forEach(clue -> {
+            clue.setCreateTime(System.currentTimeMillis());
+            clue.setUpdateTime(System.currentTimeMillis());
+            clue.setCollectionTime(clue.getCreateTime());
+            clue.setStage(ClueStatus.NEW.name());
+            clue.setInSharedPool(false);
+        });
     }
 }

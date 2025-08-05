@@ -135,7 +135,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 			case "INPUT_NUMBER" -> getNumberComment(field);
 			case "DATE_TIME" -> getDateTimeComment(field);
 			case "LOCATION" -> getLocationComment(field);
-			case "PHONE" -> getPhoneComment(field);
+			case "PHONE" -> getPhoneComment();
 			default -> getOptionComment(field);
 		};
 	}
@@ -180,8 +180,8 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 		return sb.toString();
 	}
 
-	private String getPhoneComment(BaseField field) {
-		return Translator.get("phone.tips") + "\n" + Translator.get("format.preview") + ": +86 12345678901";
+	private String getPhoneComment() {
+		return Translator.get("phone.tips") + "\n" + Translator.get("format.preview") + ": (+86)12345678901";
 	}
 
 	private String getOptionComment(BaseField field) {
