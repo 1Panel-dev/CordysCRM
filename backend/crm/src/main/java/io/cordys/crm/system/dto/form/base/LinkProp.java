@@ -2,6 +2,7 @@ package io.cordys.crm.system.dto.form.base;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 /**
  * 联动配置
  */
+@Data
 public class LinkProp implements Serializable {
 
 	@NotEmpty
