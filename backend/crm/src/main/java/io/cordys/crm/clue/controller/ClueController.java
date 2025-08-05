@@ -28,6 +28,7 @@ import io.cordys.security.SessionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -177,5 +178,12 @@ public class ClueController {
     @Operation(summary = "合并已有客户")
     public void reTransitionOldCustomer(@Validated @RequestBody ReTransitionCustomerRequest request) {
         clueService.transitionOldCustomer(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+    }
+
+    @GetMapping("/template/download")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_IMPORT)
+    @Operation(summary = "下载导入模板")
+    public void downloadImportTpl(HttpServletResponse response) {
+        clueService.downloadImportTpl(response, OrganizationContext.getOrganizationId());
     }
 }

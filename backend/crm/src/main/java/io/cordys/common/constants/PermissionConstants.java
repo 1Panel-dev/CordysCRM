@@ -104,6 +104,7 @@ public class PermissionConstants {
     public static final String CLUE_MANAGEMENT_RECYCLE = "CLUE_MANAGEMENT:RECYCLE";
     public static final String CLUE_MANAGEMENT_DELETE = "CLUE_MANAGEMENT:DELETE";
     public static final String CLUE_MANAGEMENT_EXPORT = "CLUE_MANAGEMENT:EXPORT";
+    public static final String CLUE_MANAGEMENT_IMPORT = "CLUE_MANAGEMENT:IMPORT";
     /*------ end: CLUE_MANAGEMENT ------*/
 
 

@@ -227,6 +227,9 @@
           },
           {
             "id": "CLUE_MANAGEMENT:EXPORT"
+          },
+          {
+            "id": "CLUE_MANAGEMENT:IMPORT"
           }
         ]
       },

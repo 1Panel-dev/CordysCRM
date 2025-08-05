@@ -486,4 +486,18 @@ public class ModuleFormService {
 				.flatMap(List::stream)
 				.collect(Collectors.toList());
 	}
+
+	/**
+	 * 获取
+	 * @param formKey 表单Key
+	 * @param currentOrg 当前组织
+	 * @return 自定义导入表头集合
+	 */
+	public List<BaseField> getCustomImportHeads(String formKey, String currentOrg) {
+		List<BaseField> allFields = getAllFields(formKey, currentOrg);
+		if (CollectionUtils.isEmpty(allFields)) {
+			return null;
+		}
+		return allFields.stream().filter(BaseField::canImport).toList();
+	}
 }

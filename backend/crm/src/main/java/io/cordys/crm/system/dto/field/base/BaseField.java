@@ -107,7 +107,7 @@ public abstract class BaseField {
 	@JsonIgnore
 	public boolean needRepeatCheck() {
 		return StringUtils.equalsAny(type, FieldType.INPUT.name(), FieldType.PHONE.name())
-				&& rules.stream().filter(rule -> StringUtils.equals(rule.getKey(), "unique")).findAny().isPresent();
+				&& rules.stream().anyMatch(rule -> StringUtils.equals(rule.getKey(), "unique"));
 	}
 
 	@JsonIgnore
@@ -119,5 +119,28 @@ public abstract class BaseField {
 	public boolean hasOptions() {
 		return StringUtils.equalsAny(type, FieldType.RADIO.name(), FieldType.CHECKBOX.name(), FieldType.SELECT.name(),
 				FieldType.DATA_SOURCE.name(), FieldType.MEMBER.name(), FieldType.DEPARTMENT.name());
+	}
+
+	@JsonIgnore
+	public boolean canImport() {
+		return !StringUtils.equalsAny(type, FieldType.SERIAL_NUMBER.name())
+				&& !StringUtils.equalsAny(type, FieldType.PICTURE.name()) && !StringUtils.equalsAny(type, FieldType.DIVIDER.name());
+	}
+
+	@JsonIgnore
+	public boolean needRequireCheck() {
+		return rules.stream().anyMatch(rule -> StringUtils.equals(rule.getKey(), "required"));
+	}
+
+	@JsonIgnore
+	public boolean multiple() {
+		return StringUtils.equalsAny(type, FieldType.CHECKBOX.name(), FieldType.SELECT_MULTIPLE.name(),
+				FieldType.INPUT_MULTIPLE.name(), FieldType.MEMBER_MULTIPLE.name(), FieldType.DEPARTMENT_MULTIPLE.name(), FieldType.DATA_SOURCE_MULTIPLE.name());
+	}
+
+	@JsonIgnore
+	public boolean needComment() {
+		return StringUtils.equalsAny(type, FieldType.RADIO.name(), FieldType.CHECKBOX.name(), FieldType.SELECT.name(), FieldType.SELECT_MULTIPLE.name(),
+				FieldType.LOCATION.name(), FieldType.PHONE.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name());
 	}
 }

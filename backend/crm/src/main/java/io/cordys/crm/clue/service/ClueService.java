@@ -1,5 +1,6 @@
 package io.cordys.crm.clue.service;
 
+import cn.idev.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.cordys.aspectj.annotation.OperationLog;
@@ -46,17 +47,25 @@ import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Dict;
 import io.cordys.crm.system.dto.DictConfigDTO;
+import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.dto.request.BatchPoolReasonRequest;
 import io.cordys.crm.system.dto.request.PoolReasonRequest;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
+import io.cordys.crm.system.excel.domain.UserExcelData;
+import io.cordys.crm.system.excel.domain.UserExcelDataFactory;
+import io.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
+import io.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
+import io.cordys.crm.system.excel.handler.UserTemplateWriteHandler;
 import io.cordys.crm.system.mapper.ExtProductMapper;
 import io.cordys.crm.system.mapper.ExtUserMapper;
 import io.cordys.crm.system.notice.CommonNoticeSendService;
 import io.cordys.crm.system.service.*;
+import io.cordys.excel.utils.EasyExcelExporter;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -640,4 +649,19 @@ public class ClueService {
                     paramMap, currentUser, orgId, List.of(customer.getOwner()), true);
         }
     }
+
+    /**
+     * 下载导入的模板
+     * @param response 响应
+     */
+    public void downloadImportTpl(HttpServletResponse response, String currentOrg) {
+        // 线索表单字段
+        List<BaseField> fields = moduleFormService.getCustomImportHeads(FormKey.CLUE.getKey(), currentOrg);
+
+        new EasyExcelExporter(Objects.class)
+                .exportMultiSheetTplWithSharedHandler(response, fields.stream().map(field -> Collections.singletonList(field.getName())).toList(),
+                        Translator.get("clue.import_tpl.name"), Translator.get("sheet.data"), Translator.get("sheet.comment"), new CustomTemplateWriteHandler(fields), new CustomHeadColWidthStyleStrategy());
+    }
+
+
 }

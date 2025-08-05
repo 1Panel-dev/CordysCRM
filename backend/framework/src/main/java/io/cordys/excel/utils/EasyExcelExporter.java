@@ -1,7 +1,9 @@
 package io.cordys.excel.utils;
 
 import cn.idev.excel.EasyExcel;
+import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.write.handler.WriteHandler;
+import cn.idev.excel.write.metadata.WriteSheet;
 import cn.idev.excel.write.metadata.style.WriteCellStyle;
 import cn.idev.excel.write.style.HorizontalCellStyleStrategy;
 import io.cordys.common.exception.GenericException;
@@ -92,6 +94,27 @@ public class EasyExcelExporter {
                     .registerWriteHandler(writeHandler2)
                     .sheet(sheetName)
                     .doWrite(data);
+        } catch (IOException e) {
+            LogUtils.error(e);
+            throw new GenericException(e.getMessage());
+        }
+    }
+
+    public void exportMultiSheetTplWithSharedHandler(HttpServletResponse response, List<List<String>> headList, String fileName,
+                                                     String mainSheetName, String tipSheetName, WriteHandler sharedHandler, WriteHandler styleHandler) {
+        buildExportResponse(response, fileName);
+        try (ExcelWriter writer = EasyExcel.write(response.getOutputStream()).build()){
+            WriteSheet mainSheet = EasyExcel.writerSheet(0, mainSheetName)
+                    .head(headList)
+                    .registerWriteHandler(sharedHandler)
+                    .registerWriteHandler(styleHandler)
+                    .build();
+            writer.write(new ArrayList<>(), mainSheet);
+
+            WriteSheet tipSheet = EasyExcel.writerSheet(1, tipSheetName)
+                    .registerWriteHandler(sharedHandler)
+                    .build();
+            writer.write(new ArrayList<>(), tipSheet);
         } catch (IOException e) {
             LogUtils.error(e);
             throw new GenericException(e.getMessage());
