@@ -24,9 +24,9 @@ public class MessageSubscriber implements MessageListener {
     static Map<String, TopicConsumer> consumerMap = new HashMap<>();
 
 
-    public MessageSubscriber(List<TopicConsumer> consumers){
+    public MessageSubscriber(List<TopicConsumer> consumers) {
         consumers.forEach(consumer -> {
-            consumerMap.put(consumer.getChannel(),consumer);
+            consumerMap.put(consumer.getChannel(), consumer);
         });
     }
 
@@ -56,10 +56,11 @@ public class MessageSubscriber implements MessageListener {
      */
     private void processMessage(String message, String channel) {
         // 根据频道区分不同的业务逻辑处理
-        LogUtils.info("开始处理消息，频道: {}", channel);
-
-        // 在这里实现具体的业务逻辑
         TopicConsumer consumer = consumerMap.get(channel);
+        if (consumer == null) {
+            LogUtils.error("未找到对应的消费者处理频道: {}", channel);
+            return;
+        }
         consumer.consume(message);
     }
 
