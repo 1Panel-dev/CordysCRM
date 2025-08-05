@@ -301,8 +301,7 @@
       listItem.cascaderProps?.multiple ||
       (listItem.type === FieldTypeEnum.INPUT_MULTIPLE &&
         ![OperatorEnum.COUNT_LT, OperatorEnum.COUNT_GT].includes(listItem.operator as OperatorEnum)) ||
-      ([FieldTypeEnum.TIME_RANGE_PICKER, FieldTypeEnum.DATE_TIME].includes(listItem.type) &&
-        listItem.operator === OperatorEnum.BETWEEN)
+      (listItem.type === FieldTypeEnum.DATE_TIME && listItem.operator === OperatorEnum.BETWEEN)
     );
   }
 
