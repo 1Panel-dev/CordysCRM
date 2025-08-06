@@ -46,6 +46,9 @@
               <n-select
                 v-model:value="line.current"
                 :options="getCurrentFieldOptions(line.current)"
+                :fallback-option="
+                  line.link !== null && line.link !== undefined && line.link !== '' ? fallbackOption : false
+                "
                 @update-value="line.link = ''"
               />
             </n-form-item>
@@ -57,7 +60,13 @@
               class="flex-1"
               :rule="[{ required: true, message: t('common.required'), trigger: 'change' }]"
             >
-              <n-select v-model:value="line.link" :options="getLinkFieldOptions(line.current)" />
+              <n-select
+                v-model:value="line.link"
+                :options="getLinkFieldOptions(line.current)"
+                :fallback-option="
+                  line.link !== null && line.link !== undefined && line.link !== '' ? fallbackOption : false
+                "
+              />
             </n-form-item>
             <div class="ml-[12px] w-[30px] text-[var(--text-n1)]">{{ t('crmFormDesign.fillValue') }}</div>
             <n-button
@@ -72,7 +81,13 @@
             </n-button>
           </div>
         </n-scrollbar>
-        <n-button type="primary" text class="w-[fit-content]" @click="handleAddListItem">
+        <n-button
+          type="primary"
+          text
+          class="w-[fit-content]"
+          :disabled="currentFieldOptions.length === formModel.linkFields.length"
+          @click="handleAddListItem"
+        >
           <template #icon>
             <n-icon><Add /></n-icon>
           </template>
@@ -178,7 +193,9 @@
   );
 
   const currentFieldOptions = computed(() => {
-    return props.formFields.filter((e) => !hiddenTypes.includes(e.type)).map((f) => ({ label: f.name, value: f.id }));
+    return props.formFields
+      .filter((e) => !hiddenTypes.includes(e.type) && e.type !== FieldTypeEnum.SERIAL_NUMBER)
+      .map((f) => ({ label: f.name, value: f.id }));
   });
 
   function getCurrentFieldOptions(currentFieldId: string) {
@@ -258,14 +275,23 @@
     return [];
   }
 
-  function handleFormKeyChange() {
-    formRef.value?.restoreValidation();
-    formModel.value.linkFields = [
-      {
-        current: '',
-        link: '',
-      },
-    ];
+  function fallbackOption(val: string | number) {
+    return {
+      label: t('crmFormDesign.fieldNotExist'),
+      value: val,
+    };
+  }
+
+  function handleFormKeyChange(val: FormDesignKeyEnum) {
+    if (val !== formModel.value.formKey) {
+      formRef.value?.restoreValidation();
+      formModel.value.linkFields = [
+        {
+          current: '',
+          link: '',
+        },
+      ];
+    }
   }
 
   function handleCancel() {

@@ -127,4 +127,5 @@ export default {
   'crmFormDesign.fillValue': 'Value of',
   'crmFormDesign.currentForm': 'Current Form',
   'crmFormDesign.addLink': 'Add Linkage',
+  'crmFormDesign.fieldNotExist': 'Field does not exist',
 };

@@ -125,4 +125,5 @@ export default {
   'crmFormDesign.fillValue': '的值',
   'crmFormDesign.currentForm': '当前表单',
   'crmFormDesign.addLink': '添加联动',
+  'crmFormDesign.fieldNotExist': '字段不存在',
 };

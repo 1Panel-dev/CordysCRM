@@ -291,6 +291,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   }
 
   function makeLinkFormFields(field: FormCreateField) {
+    if (!formDetail.value[field.id]) return;
     switch (true) {
       case dataSourceTypes.includes(field.type):
         // 数据源字段填充
@@ -373,6 +374,8 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               // 联动的字段是省市区则填充城市路径
               const address = linkField.value.split('-');
               formDetail.value[field.id] = `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}`;
+            } else if (linkField.type === FieldTypeEnum.TEXTAREA && field.type === FieldTypeEnum.INPUT) {
+              formDetail.value[field.id] = linkField.value.slice(0, 255);
             } else {
               formDetail.value[field.id] = linkField.value;
             }
