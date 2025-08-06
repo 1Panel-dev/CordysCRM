@@ -107,14 +107,22 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 		// 设置样式
 		WriteCellStyle headStyle = new WriteCellStyle();
 		WriteFont font = new WriteFont();
-		if (isHead && requires.contains(cell.getStringCellValue())) {
-			font.setColor(IndexedColors.RED.getIndex());
-		}
-		if (isHead && uniques.contains(cell.getStringCellValue())) {
-			font.setBold(true);
-		}
-		if (isHead && multiples.contains(cell.getStringCellValue())) {
-			font.setUnderline(Font.U_SINGLE);
+		if (isHead) {
+			if (requires.contains(cell.getStringCellValue())) {
+				font.setColor(IndexedColors.RED.getIndex());
+			}
+			if (uniques.contains(cell.getStringCellValue())) {
+				font.setBold(true);
+			}
+			if (multiples.contains(cell.getStringCellValue())) {
+				font.setUnderline(Font.U_SINGLE);
+			}
+		} else {
+			if (cell.getColumnIndex() == 15) {
+				DataFormatData format = new DataFormatData();
+				format.setIndex((short) 49);
+				headStyle.setDataFormatData(format);
+			}
 		}
 		font.setFontHeightInPoints((short) 12);
 		headStyle.setWriteFont(font);
@@ -161,11 +169,11 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 		StringBuilder sb = new StringBuilder();
 		DateTimeField dateTimeField = (DateTimeField) field;
 		if (StringUtils.equals(dateTimeField.getDateType(), "datetime")) {
-			sb.append(Translator.get("format.preview")).append(": 2025-08-04 18:47:59");
+			sb.append(Translator.get("format.preview")).append(": 2025/8/6 20:23:59");
 		} else if (StringUtils.equals(dateTimeField.getDateType(), "date")) {
-			sb.append(Translator.get("format.preview")).append(": 2025-08-04");
+			sb.append(Translator.get("format.preview")).append(": 2025/8/6");
 		} else {
-			sb.append(Translator.get("format.preview")).append(": 2025-08");
+			sb.append(Translator.get("format.preview")).append(": 2025/8");
 		}
 		return sb.toString();
 	}

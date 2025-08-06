@@ -7,6 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 
 /**
  * @author jianxing
@@ -44,15 +46,8 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
 
     @Override
     public Object text2Value(DateTimeField field, String text) {
-        DateTimeFormatter formatter;
-         if (StringUtils.equalsIgnoreCase(field.getDateType(), "datetime")) {
-            formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-        } else if (StringUtils.equalsIgnoreCase(field.getDateType(), "date")) {
-            formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-        } else {
-            formatter = DateTimeFormatter.ofPattern("yyyy/MM");
-        }
-        LocalDateTime parse = LocalDateTime.parse(text, formatter);
-        return String.valueOf(parse.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/M/d H:m:s");
+        LocalDateTime parse = LocalDateTime.parse(text.contains(" ") ? text : text + " 00:00:00", formatter);
+        return parse.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 }
