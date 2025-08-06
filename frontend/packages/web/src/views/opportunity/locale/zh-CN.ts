@@ -44,4 +44,5 @@ export default {
   'opportunity.budgetLimit': '预算限制',
   'opportunity.requirementChange': '需求变化',
   'opportunity.mine': '我的',
+  'opportunity.noOpenSeaPermission': '无权查看公海客户',
 };

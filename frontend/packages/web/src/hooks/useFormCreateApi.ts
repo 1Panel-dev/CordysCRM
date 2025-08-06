@@ -1,5 +1,6 @@
 import { useMessage } from 'naive-ui';
 import { cloneDeep } from 'lodash-es';
+import dayjs from 'dayjs';
 
 import { FieldDataSourceTypeEnum, FieldTypeEnum, FormDesignKeyEnum } from '@lib/shared/enums/formDesignEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
@@ -18,7 +19,9 @@ import {
 import type { FormCreateField, FormCreateFieldRule, FormDetail } from '@/components/business/crm-form-create/types';
 import {
   dataSourceTypes,
+  departmentTypes,
   linkAllAcceptTypes,
+  memberTypes,
   multipleTypes,
   singleTypes,
 } from '@/components/business/crm-form-design/linkFormConfig';
@@ -345,7 +348,9 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             // 多选填充
             if (field.type === FieldTypeEnum.INPUT_MULTIPLE) {
               // 标签直接填充
-              formDetail.value[field.id] = linkField.value.splice(0, 10);
+              formDetail.value[field.id] = Array.isArray(linkField.value)
+                ? linkField.value.splice(0, 10)
+                : [linkField.value];
             } else {
               // 其他多选类型需匹配名称相等的选项值
               formDetail.value[field.id] =
@@ -361,21 +366,26 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             if (dataSourceTypes.includes(linkField.type)) {
               // 联动的字段是数据源则填充选项名
               formDetail.value[field.id] = linkField.value.map((e: Record<string, any>) => e.name);
-            } else if (linkField.type === FieldTypeEnum.INPUT_MULTIPLE) {
-              // 联动的字段是输入多选则直接拼接字符串
-              formDetail.value[field.id] = linkField.value.join(',');
             } else if (multipleTypes.includes(linkField.type)) {
               // 联动的字段是多选则拼接选项名
-              formDetail.value[field.id] = field.options?.filter((e) => linkField.value.includes(e.label)).join(',');
-            } else if (singleTypes.includes(linkField.type)) {
-              // 联动的字段是单选则直接填充选项名
-              formDetail.value[field.id] = field.options?.find((e) => e.label === linkField.value)?.label || '';
+              formDetail.value[field.id] = linkField.value.join(',');
+            } else if (linkField.type === FieldTypeEnum.DATE_TIME) {
+              // 联动的字段是日期时间则转换
+              if (linkField.dateType === 'month') {
+                formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM');
+              } else if (linkField.dateType === 'date') {
+                formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM-DD');
+              } else {
+                formDetail.value[field.id] = dayjs(linkField.value).format('YYYY-MM-DD HH:mm:ss');
+              }
             } else if (linkField.type === FieldTypeEnum.LOCATION) {
               // 联动的字段是省市区则填充城市路径
               const address = linkField.value.split('-');
               formDetail.value[field.id] = `${getCityPath(address[0])}${address[1] ? `-${address[1]}` : ''}`;
             } else if (linkField.type === FieldTypeEnum.TEXTAREA && field.type === FieldTypeEnum.INPUT) {
               formDetail.value[field.id] = linkField.value.slice(0, 255);
+            } else if ([...memberTypes, ...departmentTypes].includes(linkField.type)) {
+              formDetail.value[field.id] = linkField.initialOptions.map((e: any) => e.name).join(',');
             } else {
               formDetail.value[field.id] = linkField.value;
             }

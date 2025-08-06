@@ -44,4 +44,5 @@ export default {
   'opportunity.budgetLimit': 'Budget limit',
   'opportunity.requirementChange': 'Requirement change',
   'opportunity.mine': 'Mine',
+  'opportunity.noOpenSeaPermission': 'No permission to view public sea customers',
 };
