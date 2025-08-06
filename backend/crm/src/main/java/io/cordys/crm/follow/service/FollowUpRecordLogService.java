@@ -25,6 +25,11 @@ public class FollowUpRecordLogService extends BaseModuleLogService {
                 continue;
             }
 
+            if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_CLUE.getBusinessKey())) {
+                setClueName(differ);
+                continue;
+            }
+
             if (StringUtils.equals(differ.getColumn(), BusinessModuleField.FOLLOW_RECORD_CONTENT.getBusinessKey())) {
                 differ.setColumnName(Translator.get("log.follow_record_content"));
                 continue;

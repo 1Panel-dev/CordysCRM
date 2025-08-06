@@ -7,6 +7,7 @@ import io.cordys.common.service.BaseService;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.JSON;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.clue.service.ClueService;
 import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.opportunity.service.OpportunityService;
@@ -252,6 +253,24 @@ public abstract class BaseModuleLogService {
         }
         if (differ.getNewValue() != null) {
             String userName = opportunityService.getOpportunityName(differ.getNewValue().toString());
+            differ.setNewValueName(userName);
+        }
+    }
+
+
+    /**
+     * 线索名称
+     * @param differ
+     */
+    protected void setClueName(JsonDifferenceDTO differ) {
+        ClueService clueService = CommonBeanFactory.getBean(ClueService.class);
+        assert clueService != null;
+        if (differ.getOldValue() != null) {
+            String customerName = clueService.getClueName(differ.getOldValue().toString());
+            differ.setOldValueName(customerName);
+        }
+        if (differ.getNewValue() != null) {
+            String userName = clueService.getClueName(differ.getNewValue().toString());
             differ.setNewValueName(userName);
         }
     }
