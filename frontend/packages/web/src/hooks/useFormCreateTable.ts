@@ -729,7 +729,7 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       columns.unshift({
         fixed: 'left',
         title: t('crmTable.order'),
-        width: 56,
+        width: 40,
         key: SpecialColumnEnum.ORDER,
         resizable: false,
         columnSelectorDisabled: true,

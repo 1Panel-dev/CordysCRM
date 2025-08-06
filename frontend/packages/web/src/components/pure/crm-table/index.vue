@@ -483,7 +483,7 @@
     return 46;
   });
 
-  const rowProps = (_rowData: object, _rowIndex: number) => {
+  const rowProps = () => {
     return {
       style: {
         height: layOut.value === 'compact' ? '36px' : '46px',

@@ -365,6 +365,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             break;
           default:
             formDetail.value[field.id] = linkField.value;
+            field.initialOptions = linkField.initialOptions || [];
             break;
         }
       }
