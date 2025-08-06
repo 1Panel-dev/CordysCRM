@@ -1,15 +1,20 @@
 package io.cordys.crm.customer.controller;
 
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.ExportSelectRequest;
 import io.cordys.common.pager.PagerWithOption;
+import io.cordys.common.service.DataScopeService;
 import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.customer.dto.CustomerPoolDTO;
+import io.cordys.crm.customer.dto.request.CustomerExportRequest;
 import io.cordys.crm.customer.dto.request.CustomerPageRequest;
 import io.cordys.crm.customer.dto.request.PoolCustomerAssignRequest;
 import io.cordys.crm.customer.dto.request.PoolCustomerPickRequest;
 import io.cordys.crm.customer.dto.response.CustomerGetResponse;
 import io.cordys.crm.customer.dto.response.CustomerListResponse;
+import io.cordys.crm.customer.service.CustomerPoolExportService;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.customer.service.PoolCustomerService;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
@@ -20,6 +25,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +40,10 @@ public class PoolCustomerController {
 	private PoolCustomerService poolCustomerService;
 	@Resource
 	private CustomerService customerService;
+	@Resource
+	private DataScopeService dataScopeService;
+	@Resource
+	private CustomerPoolExportService customerPoolExportService;
 
 	@GetMapping("/options")
 	@Operation(summary = "获取当前用户公海选项")
@@ -97,5 +107,23 @@ public class PoolCustomerController {
 	@RequiresPermissions(value = {PermissionConstants.CUSTOMER_MANAGEMENT_POOL_DELETE})
 	public void batchDelete(@Validated @RequestBody PoolBatchRequest request) {
 		poolCustomerService.batchDelete(request.getBatchIds(), SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
+	}
+
+
+	@PostMapping("/export-all")
+	@Operation(summary = "客户导出全部")
+	@RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT)
+	public String opportunityExportAll(@Validated @RequestBody CustomerExportRequest request) {
+		ConditionFilterUtils.parseCondition(request);
+		DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+				OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CUSTOMER_MANAGEMENT_READ);
+		return customerPoolExportService.exportCrossPage(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
+	}
+
+	@PostMapping("/export-select")
+	@Operation(summary = "导出选中客户")
+	@RequiresPermissions(PermissionConstants.CUSTOMER_MANAGEMENT_POOL_EXPORT)
+	public String opportunityExportSelect(@Validated @RequestBody ExportSelectRequest request) {
+		return customerPoolExportService.exportCrossSelect(SessionUtils.getUserId(), request, OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
 	}
 }
