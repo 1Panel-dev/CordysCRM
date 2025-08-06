@@ -787,7 +787,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
   async function saveForm(
     form: Record<string, any>,
     isContinue: boolean,
-    callback?: (_isContinue: boolean) => void,
+    callback?: (_isContinue: boolean, res: any) => void,
     noReset = false
   ) {
     try {
@@ -808,11 +808,12 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
           });
         }
       });
+      let res;
       if (props.sourceId?.value && props.needInitDetail?.value) {
-        await updateFormApi[props.formKey.value](params);
+        res = await updateFormApi[props.formKey.value](params);
         Message.success(t('common.updateSuccess'));
       } else {
-        await createFormApi[props.formKey.value](params);
+        res = await createFormApi[props.formKey.value](params);
         if (props.formKey.value === FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER) {
           Message.success(t('clue.transferredToCustomer'));
         } else {
@@ -820,7 +821,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
         }
       }
       if (callback) {
-        callback(isContinue);
+        callback(isContinue, res);
       }
       if (!noReset) {
         resetForm();

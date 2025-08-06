@@ -59,7 +59,7 @@
     linkFormInfo?: Record<string, any>; // 关联表单信息
   }>();
   const emit = defineEmits<{
-    (e: 'saved'): void;
+    (e: 'saved', res: any): void;
   }>();
 
   const { t } = useI18n();
@@ -95,9 +95,9 @@
     }
   }
 
-  function handleSaved(isContinue: boolean) {
+  function handleSaved(isContinue: boolean, res: any) {
     visible.value = isContinue;
-    emit('saved');
+    emit('saved', res);
   }
 </script>
 

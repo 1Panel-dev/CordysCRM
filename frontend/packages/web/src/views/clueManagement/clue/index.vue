@@ -91,7 +91,7 @@
       :initial-source-name="activeRowName"
       :other-save-params="otherFollowRecordSaveParams"
       :link-form-info="linkFormInfo"
-      @saved="loadList"
+      @saved="handleFormSaved"
     />
   </div>
   <CrmTableExportModal
@@ -163,6 +163,7 @@
     getFieldDeptTree,
     importLead,
     preCheckImportLead,
+    reTransitionCustomer,
   } from '@/api/modules';
   import { baseFilterConfigList } from '@/config/clue';
   import { defaultTransferForm } from '@/config/opportunity';
@@ -424,11 +425,6 @@
         break;
       case 'convertToCustomer':
         activeClueId.value = '';
-        // formKey.value = FormDesignKeyEnum.CLUE_TRANSITION_CUSTOMER;
-        // activeRowName.value = row.name;
-        // otherFollowRecordSaveParams.value.clueId = row.id;
-        // needInitDetail.value = false;
-        // showConvertToCustomerDrawer.value = true;
         handleConvertToCustomer(row);
         break;
       case 'moveIntoCluePool':
@@ -569,6 +565,16 @@
       ids: checkedRowKeys.value,
     };
   });
+
+  async function handleFormSaved(res: any) {
+    if (linkFormInfo.value) {
+      await reTransitionCustomer({
+        clueId: otherFollowRecordSaveParams.value.clueId,
+        customerId: res.id,
+      });
+    }
+    loadList();
+  }
 
   const department = ref<DeptUserTreeNode[]>([]);
   const filterConfigList = computed<FilterFormItem[]>(() => [

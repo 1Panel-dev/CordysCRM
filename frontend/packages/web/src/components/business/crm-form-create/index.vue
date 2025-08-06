@@ -72,7 +72,7 @@
   const emit = defineEmits<{
     (e: 'cancel'): void;
     (e: 'init', title: string): void;
-    (e: 'saved', isContinue: boolean): void;
+    (e: 'saved', isContinue: boolean, res: any): void;
   }>();
 
   const { t } = useI18n();
@@ -190,8 +190,8 @@
             result[item.id] = result[item.id]?.[0];
           }
         });
-        saveForm(result, isContinue, () => {
-          emit('saved', isContinue);
+        saveForm(result, isContinue, (_isContinue, res) => {
+          emit('saved', isContinue, res);
         });
       } else {
         // 滚动到报错的位置
