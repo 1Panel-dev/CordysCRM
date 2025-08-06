@@ -345,7 +345,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             // 多选填充
             if (field.type === FieldTypeEnum.INPUT_MULTIPLE) {
               // 标签直接填充
-              formDetail.value[field.id] = linkField.value;
+              formDetail.value[field.id] = linkField.value.splice(0, 10);
             } else {
               // 其他多选类型需匹配名称相等的选项值
               formDetail.value[field.id] =
