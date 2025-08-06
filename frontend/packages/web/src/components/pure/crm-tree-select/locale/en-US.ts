@@ -1,7 +1,7 @@
 export default {
   'crmTreeSelect.selectCurrent': 'Select current',
   'crmTreeSelect.cancelCurrent': 'Cancel current',
-  'crmTreeSelect.containNewChildModule': 'Include new child modules',
+  'crmTreeSelect.containNewChildModule': 'Contains new children',
   'crmTreeSelect.containNewChildModuleTip':
     'Automatically include subsequently added child modules of the selected module',
 };

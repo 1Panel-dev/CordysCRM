@@ -265,7 +265,7 @@
   .error-popover {
     &.n-popover {
       padding: 0 !important;
-      max-width: 440px;
+      min-width: 440px;
     }
   }
 </style>
