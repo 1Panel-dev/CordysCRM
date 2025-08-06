@@ -10,7 +10,6 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.uid.utils.EnumUtils;
 import io.cordys.common.util.*;
-import io.cordys.crm.customer.domain.Customer;
 import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.constants.UserViewConditionValueType;
 import io.cordys.crm.system.domain.UserView;
@@ -322,7 +321,7 @@ public class UserViewService {
     }
 
     public void editPos(PosRequest request, String userId, String orgId, String resourceType) {
-        ServiceUtils.updatePosField(request,
+        ServiceUtils.updatePosFieldByDesc(request,
                 UserView.class,
                 userId,
                 resourceType,

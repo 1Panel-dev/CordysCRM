@@ -254,7 +254,7 @@ public class ProductService {
 
     public void editPos(PosRequest request) {
 
-        ServiceUtils.updatePosField(request,
+        ServiceUtils.updatePosFieldByAsc(request,
                 Product.class,
                 null,
                 null,
