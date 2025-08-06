@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -74,6 +75,10 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	 * 序列化生成器
 	 */
 	private final SerialNumGenerator serialNumGenerator;
+	/**
+	 * 值缓存, 用来校验Excel字段值是否唯一
+	 */
+	private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
 
 	public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator,
 										  BaseMapper<F> fieldMapper, CustomImportAfterDoConsumer<T, BaseResourceField> consumer) {
@@ -241,6 +246,13 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 		if (StringUtils.isEmpty(val)) {
 			return true;
 		}
+		// Excel 唯一性校验
+		excelValueCache.putIfAbsent(field.getId(), ConcurrentHashMap.newKeySet());
+		Set<String> valueSet = excelValueCache.get(field.getId());
+		if (!valueSet.add(val)) {
+			return false;
+		}
+		// 数据库唯一性校验
 		Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
 				collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
 		if (businessModuleFieldMap.containsKey(field.getInternalKey())) {

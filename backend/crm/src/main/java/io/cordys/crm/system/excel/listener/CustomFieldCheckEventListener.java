@@ -16,6 +16,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,10 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 	private final Map<String, BaseField> uniques = new HashMap<>();
 	private final CommonMapper commonMapper;
 	private final BaseMapper<T> fieldMapper;
+	/**
+	 * 值缓存, 用来校验Excel字段值是否唯一
+	 */
+	private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
 
 	public CustomFieldCheckEventListener(List<BaseField> fields, String source, String currentOrg, BaseMapper<T> fieldMapper) {
 		fields.forEach(field -> {
@@ -119,6 +124,13 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 		if (StringUtils.isEmpty(val)) {
 			return true;
 		}
+		// Excel 唯一性校验
+		excelValueCache.putIfAbsent(field.getId(), ConcurrentHashMap.newKeySet());
+		Set<String> valueSet = excelValueCache.get(field.getId());
+		if (!valueSet.add(val)) {
+			return false;
+		}
+		// 数据库唯一性校验
 		Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
 				collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
 		if (businessModuleFieldMap.containsKey(field.getInternalKey())) {
