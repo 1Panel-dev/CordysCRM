@@ -589,6 +589,7 @@
         clearFilterAfterSelect: false,
         options: department.value,
         checkable: true,
+        showContainChildModule: true,
       },
     },
     {

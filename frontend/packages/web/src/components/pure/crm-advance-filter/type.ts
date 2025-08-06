@@ -15,6 +15,10 @@ export interface ScopeProps {
 
 export type AccordBelowType = 'AND' | 'OR';
 
+export type CrmTreeSelectProps = {
+  showContainChildModule?: boolean;
+} & TreeSelectProps;
+
 export interface FilterFormItem {
   dataIndex?: string | null; // 第一列下拉的value
   title?: string; // 第一列下拉显示的label
@@ -29,7 +33,7 @@ export interface FilterFormItem {
   inputProps?: Partial<InputProps>;
   numberProps?: Partial<InputNumberProps>;
   selectProps?: Partial<SelectProps>;
-  treeSelectProps?: Partial<TreeSelectProps>;
+  treeSelectProps?: Partial<CrmTreeSelectProps>;
   userTagSelectorProps?: Partial<UserTagSelectorProps>;
   cascaderProps?: Partial<CascaderProps>;
   scopeProps?: Partial<ScopeProps>;

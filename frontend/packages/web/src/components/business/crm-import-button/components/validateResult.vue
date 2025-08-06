@@ -37,7 +37,7 @@
                     ({{ validateResultInfo.failCount }})
                   </span>
                 </div>
-                <n-scrollbar style="max-height: 280px">
+                <n-scrollbar style="max-height: 30vh">
                   <div
                     v-for="(item, index) of validateResultInfo.errorMessages"
                     :key="`${item.rowNum}-${index}`"
@@ -265,7 +265,7 @@
   .error-popover {
     &.n-popover {
       padding: 0 !important;
-      min-width: 440px;
+      max-width: 440px;
     }
   }
 </style>

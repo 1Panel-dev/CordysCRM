@@ -182,7 +182,15 @@
               v-bind="item.treeSelectProps"
               @update:value="valueChange"
             />
-
+            <!-- TODO 参数没有加 先不上 -->
+            <!-- <CrmTreeSelect
+              v-else-if="item.type === FieldTypeEnum.TREE_SELECT"
+              v-model:value="item.value"
+              :disabled="isValueDisabled(item)"
+              :placeholder="t('common.pleaseSelect')"
+              v-bind="item.treeSelectProps"
+              @update:value="valueChange"
+            /> -->
             <CrmUserSelect
               v-else-if="item.type === FieldTypeEnum.USER_SELECT"
               v-model:value="item.value"
@@ -261,6 +269,7 @@
   import CrmInputNumber from '@/components/pure/crm-input-number/index.vue';
   import CrmTag from '@/components/pure/crm-tag/index.vue';
   import CrmTagInput from '@/components/pure/crm-tag-input/index.vue';
+  // import CrmTreeSelect from '@/components/pure/crm-tree-select/index.vue';
   import CrmCitySelect from '@/components/business/crm-city-select/index.vue';
   import CrmDataSource from '@/components/business/crm-data-source-select/index.vue';
   import CrmTimeRangePicker from '@/components/business/crm-time-range-picker/index.vue';
