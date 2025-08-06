@@ -22,6 +22,8 @@ export interface ConfigSynchronization {
   appSecret?: string; // 应用密钥
   syncEnable?: boolean; // 同步组织架构是否开启
   qrcodeEnable?: boolean; // 扫码登录是否开启
+  sqlBotChatEnable?: boolean; // 智能问数是否开启
+  sqlBotBoardEnable?: boolean; // 智能问数仪表板是否开启
   verify?: boolean; // 是否验证通过
   redirectUrl?: string; // DE URL
   deAccount?: string; // DE 账号

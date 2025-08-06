@@ -4,6 +4,7 @@ export enum CompanyTypeEnum {
   LARK = 'LARK', // 飞书
   INTERNAL = 'INTERNAL', // 国际飞书
   DATA_EASE = 'DE', // DE
+  SQLBot = 'SQLBOT', // SQLBot
 }
 
 // 操作符号

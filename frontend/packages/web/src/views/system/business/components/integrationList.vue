@@ -9,7 +9,12 @@
       >
         <div class="flex">
           <div class="mr-[8px] flex h-[40px] w-[40px] items-center justify-center rounded-[2px] bg-[var(--text-n9)]">
-            <CrmSvgIcon v-if="item.type === CompanyTypeEnum.DATA_EASE" name="dataease" width="24px" height="24px" />
+            <CrmSvgIcon
+              v-if="[CompanyTypeEnum.DATA_EASE, CompanyTypeEnum.SQLBot].includes(item.type as CompanyTypeEnum)"
+              :name="item.logo"
+              width="24px"
+              height="24px"
+            />
             <CrmIcon v-else :type="item.logo" :size="24"></CrmIcon>
           </div>
           <div class="flex-1">
@@ -19,10 +24,20 @@
                 <CrmTag v-if="!item.hasConfig" theme="light" size="small">
                   {{ t('system.business.notConfigured') }}
                 </CrmTag>
-                <CrmTag v-else-if="item.hasConfig && item.response.verify === false" theme="light" type="error" size="small">
+                <CrmTag
+                  v-else-if="item.hasConfig && item.response.verify === false"
+                  theme="light"
+                  type="error"
+                  size="small"
+                >
                   {{ t('common.fail') }}
                 </CrmTag>
-                <CrmTag v-else-if="item.hasConfig && item.response.verify === null" theme="light" type="warning" size="small">
+                <CrmTag
+                  v-else-if="item.hasConfig && item.response.verify === null"
+                  theme="light"
+                  type="warning"
+                  size="small"
+                >
                   {{ t('common.unVerify') }}
                 </CrmTag>
                 <CrmTag v-else theme="light" type="success" size="small">
@@ -68,6 +83,38 @@
             {{ t('system.business.notConfiguredTip') }}
           </n-tooltip>
           <div class="text-[12px]">{{ t('common.dashboard') }}</div>
+        </div>
+        <div v-else-if="item.type === CompanyTypeEnum.SQLBot" class="flex justify-between">
+          <div class="flex items-center gap-[8px]">
+            <n-tooltip :disabled="item.response.verify">
+              <template #trigger>
+                <n-switch
+                  size="small"
+                  :rubber-band="false"
+                  :value="item.response.sqlBotBoardEnable"
+                  :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
+                  @update:value="handleChangeEnable(item, 'sqlBotBoardEnable')"
+                />
+              </template>
+              {{ t('system.business.notConfiguredTip') }}
+            </n-tooltip>
+            <div class="text-[12px]">{{ t('common.dashboard') }}</div>
+          </div>
+          <div class="flex items-center gap-[8px]">
+            <n-tooltip :disabled="item.response.verify">
+              <template #trigger>
+                <n-switch
+                  size="small"
+                  :rubber-band="false"
+                  :value="item.response.sqlBotChatEnable"
+                  :disabled="!item.hasConfig || !item.response.verify || !hasAnyPermission(['SYSTEM_SETTING:UPDATE'])"
+                  @update:value="handleChangeEnable(item, 'sqlBotChatEnable')"
+                />
+              </template>
+              {{ t('system.business.notConfiguredTip') }}
+            </n-tooltip>
+            <div class="text-[12px]">{{ t('system.business.SQLBot.switch') }}</div>
+          </div>
         </div>
         <div v-else class="flex justify-between">
           <div class="flex items-center gap-[8px]">
@@ -174,7 +221,13 @@
       type: CompanyTypeEnum.DATA_EASE,
       title: 'DataEase',
       description: t('system.business.DE.description'),
-      logo: 'iconlogo_lark',
+      logo: 'dataease',
+    },
+    {
+      type: CompanyTypeEnum.SQLBot,
+      title: 'SQLBot',
+      description: t('system.business.SQLBot.description'),
+      logo: 'SQLBot',
     },
   ];
 
@@ -187,7 +240,9 @@
       const res = await getConfigSynchronization();
       const configMap = new Map(res.map((item) => [item.type, item]));
       integrationList.value = allIntegrations
-        .filter((item) => [CompanyTypeEnum.WECOM, CompanyTypeEnum.DATA_EASE].includes(item.type))
+        .filter((item) =>
+          [CompanyTypeEnum.WECOM, CompanyTypeEnum.DATA_EASE, CompanyTypeEnum.SQLBot].includes(item.type)
+        )
         .map((item) => {
           const config = configMap.get(item.type);
           return {
@@ -197,6 +252,8 @@
               qrcodeEnable: config?.qrcodeEnable ?? false,
               syncEnable: config?.syncEnable ?? false,
               weComEnable: config?.weComEnable ?? false,
+              sqlBotBoardEnable: config?.sqlBotBoardEnable ?? false,
+              sqlBotChatEnable: config?.sqlBotChatEnable ?? false,
               type: item.type,
               ...config,
             },
@@ -222,7 +279,7 @@
 
   async function handleChangeEnable(
     item: IntegrationItem,
-    key: 'syncEnable' | 'qrcodeEnable' | 'deBoardEnable' | 'weComEnable'
+    key: 'syncEnable' | 'qrcodeEnable' | 'deBoardEnable' | 'weComEnable' | 'sqlBotBoardEnable' | 'sqlBotChatEnable'
   ) {
     try {
       loading.value = true;

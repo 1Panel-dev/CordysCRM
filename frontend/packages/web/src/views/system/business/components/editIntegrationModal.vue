@@ -62,6 +62,7 @@
 
       <!-- 应用密钥 -->
       <n-form-item
+        v-if="form.type !== CompanyTypeEnum.SQLBot"
         path="appSecret"
         :label="form.type === CompanyTypeEnum.DATA_EASE ? 'APP Secret' : t('system.business.appSecret')"
       >
@@ -76,6 +77,20 @@
               : t('common.pleaseInput')
           "
         />
+      </n-form-item>
+      <n-form-item v-else path="appSecret" :label="t('system.business.SQLBot.embeddedScript')">
+        <n-input
+          v-model:value="form.appSecret"
+          type="textarea"
+          :placeholder="`${t('common.pleaseInput')}${t('system.business.SQLBot.embeddedScript')}`"
+        />
+        <div class="text-[var(--primary-8)]">
+          {{
+            t('system.business.SQLBot.example', {
+              url: '&lt;script async deferid="XXXXXX" src="XXXXXX"&gt;&lt;/script&gt;',
+            })
+          }}
+        </div>
       </n-form-item>
       <!-- DE账号 -->
       <n-form-item
@@ -147,7 +162,7 @@
     redirectUrl: '',
     deAccount: '',
     deBoardEnable: false, // DE看板是否开启
-    verify:undefined
+    verify: undefined,
   });
 
   watch(
@@ -157,6 +172,12 @@
     },
     { deep: true }
   );
+
+  const getAppSecretText = computed(() => {
+    if (props.integration?.type === CompanyTypeEnum.DATA_EASE) return 'APP Secret';
+    if (props.integration?.type === CompanyTypeEnum.SQLBot) return t('system.business.SQLBot.embeddedScript');
+    return t('system.business.appSecret');
+  });
 
   const rules = computed<FormRules>(() => ({
     corpId: [{ required: true, message: t('common.notNull', { value: `${t('system.business.corpId')} ` }) }],
@@ -173,7 +194,7 @@
       {
         required: true,
         message: t('common.notNull', {
-          value: props.integration?.type === CompanyTypeEnum.DATA_EASE ? 'APP Secret' : t('system.business.appSecret'),
+          value: getAppSecretText.value,
         }),
       },
     ],
