@@ -303,6 +303,9 @@
     .n-form-item-feedback-wrapper {
       display: none;
     }
+    .n-form-item-blank--error + .n-form-item-feedback-wrapper {
+      display: inline-block;
+    }
     .n-scrollbar-rail--vertical {
       @apply !right-0;
     }
