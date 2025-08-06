@@ -232,6 +232,7 @@ export const {
   getExportCenterList,
   cancelCenterExport,
   getRepeatContactList,
+  getConfigSynchronization,
 } = businessApi;
 
 export const { isLogin, getWeComOauthCallback, getWeComCallback } = loginApi;

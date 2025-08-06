@@ -138,6 +138,7 @@
       appStore.initMessage();
     }
     appStore.connectSystemMessageSSE(userStore.showSystemNotify);
+    appStore.showSQLBot();
   });
 </script>
 

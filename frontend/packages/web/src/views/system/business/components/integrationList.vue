@@ -167,7 +167,7 @@
     v-model:show="showEditIntegrationModal"
     :title="currentTitle"
     :integration="currentIntegration as ConfigSynchronization"
-    @init-sync="initSyncList"
+    @init-sync="editDone"
   />
 </template>
 
@@ -176,6 +176,7 @@
   import { NButton, NSwitch, NTooltip, useMessage } from 'naive-ui';
 
   import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
+  import { loadScript, removeScript } from '@lib/shared/method/scriptLoader';
   import type { ConfigSynchronization, IntegrationItem } from '@lib/shared/models/system/business';
 
   import CrmCard from '@/components/pure/crm-card/index.vue';
@@ -284,9 +285,14 @@
     try {
       loading.value = true;
       updateConfigSynchronization({ ...item.response, [key]: !item.response[key] })
-        .then(() => {
+        .then(async () => {
           Message.success(item.response[key] ? t('common.disableSuccess') : t('common.enableSuccess'));
-          initSyncList();
+          await initSyncList();
+          if (item.response[key]) {
+            removeScript(CompanyTypeEnum.SQLBot);
+          } else {
+            await loadScript(item.response.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
+          }
         })
         .catch(() => {
           item.response.verify = false;
@@ -326,6 +332,15 @@
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+    }
+  }
+
+  async function editDone() {
+    await initSyncList();
+    const sqlItem = integrationList.value.find((item) => item.type === CompanyTypeEnum.SQLBot);
+    removeScript(CompanyTypeEnum.SQLBot);
+    if (sqlItem && sqlItem.response.sqlBotChatEnable) {
+      await loadScript(sqlItem.response.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
     }
   }
 

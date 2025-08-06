@@ -2,13 +2,16 @@ import { defineStore } from 'pinia';
 import { cloneDeep } from 'lodash-es';
 
 import { SubscribeMessageUrl } from '@lib/shared/api/requrls/system/message';
+import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
 import { ModuleConfigEnum } from '@lib/shared/enums/moduleEnum';
 import { useI18n } from '@lib/shared/hooks/useI18n';
 import { getSSE } from '@lib/shared/method';
 import { setLocalStorage } from '@lib/shared/method/local-storage';
+import { loadScript } from '@lib/shared/method/scriptLoader';
 
 import {
   closeMessageSubscribe,
+  getConfigSynchronization,
   getHomeMessageList,
   getKey,
   getModuleNavConfigList,
@@ -285,6 +288,17 @@ const useAppStore = defineStore('app', {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
+      }
+    },
+    // 显示 SQLBot
+    async showSQLBot() {
+      const licenseStore = useLicenseStore();
+      if (!licenseStore.hasLicense()) return;
+      const res = await getConfigSynchronization();
+      const sqlItem = res.find((item) => item.type === CompanyTypeEnum.SQLBot);
+
+      if (sqlItem && sqlItem.sqlBotChatEnable) {
+        await loadScript(sqlItem.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
       }
     },
   },

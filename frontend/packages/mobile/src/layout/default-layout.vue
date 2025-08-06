@@ -137,6 +137,10 @@
       }
     });
   }, true);
+
+  onBeforeMount(() => {
+    appStore.showSQLBot();
+  });
 </script>
 
 <style lang="less">

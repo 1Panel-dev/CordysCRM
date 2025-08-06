@@ -7,6 +7,7 @@
 <script lang="ts" setup>
   import { useRouter } from 'vue-router';
 
+  import useLicenseStore from '@/store/modules/setting/license';
   import useUserStore from '@/store/modules/user';
 
   import { AppRouteEnum } from '@/enums/routeEnum';
@@ -16,6 +17,7 @@
   const router = useRouter();
   const userStore = useUserStore();
   const { oAuthLogin } = useLogin();
+  const licenseStore = useLicenseStore();
 
   onBeforeMount(async () => {
     const loginStatus = await userStore.checkIsLogin();
@@ -30,6 +32,7 @@
     } else {
       await oAuthLogin();
     }
+    licenseStore.getValidateLicense();
   });
 </script>
 

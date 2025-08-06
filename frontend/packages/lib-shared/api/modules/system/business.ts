@@ -78,7 +78,7 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 获取同步组织设置
   function getConfigSynchronization() {
-    return CDR.get<ConfigSynchronization[]>({ url: GetConfigSynchronizationUrl });
+    return CDR.get<ConfigSynchronization[]>({ url: GetConfigSynchronizationUrl }, { ignoreCancelToken: true });
   }
 
   // 更新同步组织设置
