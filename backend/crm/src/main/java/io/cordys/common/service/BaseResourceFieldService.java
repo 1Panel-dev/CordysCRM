@@ -86,11 +86,11 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
     }
 
     /**
-     * @param resource 资源
-     * @param orgId 组织ID
-     * @param userId 用户ID
+     * @param resource          资源
+     * @param orgId             组织ID
+     * @param userId            用户ID
      * @param moduleFieldValues 自定义字段值
-     * @param update 是否更新
+     * @param update            是否更新
      */
     public <K> void saveModuleField(K resource, String orgId, String userId, List<BaseModuleFieldValue> moduleFieldValues, boolean update) {
         List<BaseField> allFields = CommonBeanFactory.getBean(ModuleFormService.class)
@@ -181,6 +181,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
     /**
      * 校验业务字段，字段值是否重复
+     *
      * @param orgId
      * @param resource
      * @param update
@@ -200,7 +201,7 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
                 Object fieldValue = getResourceFieldValue(resource, fieldName);
 
-                if (fieldValue != null) {
+                if (!isNullOrEmpty(fieldValue)) {
                     boolean repeat;
                     if (update) {
                         repeat = commonMapper.checkUpdateExist(tableName, fieldName, fieldValue.toString(), orgId, resource);
@@ -214,6 +215,10 @@ public abstract class BaseResourceFieldService<T extends BaseResourceField, V ex
 
             }
         });
+    }
+
+    public static boolean isNullOrEmpty(Object obj) {
+        return obj == null || (obj instanceof String && ((String) obj).isEmpty());
     }
 
     private <K> Object getResourceFieldValue(K resource, String fieldName) {
