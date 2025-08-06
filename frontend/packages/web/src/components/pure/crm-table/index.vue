@@ -466,6 +466,10 @@
     ] as CrmDataTableColumn[];
   }
 
+  function getRowKey(rowData: Record<string, any>) {
+    return props.tableRowKey ? rowData[props.tableRowKey] : rowData.id;
+  }
+
   const crmTableLayoutClass = ref('');
   const layOut = ref<string>('');
   async function initLayoutType() {
@@ -483,11 +487,12 @@
     return 46;
   });
 
-  const rowProps = () => {
+  const rowProps = (_rowData: object, _rowIndex: number) => {
     return {
-      style: {
+      'style': {
         height: layOut.value === 'compact' ? '36px' : '46px',
       },
+      'data-id': getRowKey(_rowData),
     };
   };
 
@@ -514,10 +519,6 @@
       }
     }
   );
-
-  function getRowKey(rowData: Record<string, any>) {
-    return props.tableRowKey ? rowData[props.tableRowKey] : rowData.id;
-  }
 
   function handleSorterChange(sorter: DataTableSortState) {
     currentColumns.value.forEach((column) => {
@@ -610,37 +611,40 @@
         return props.dragMoveValidator(fromRow, toRow);
       },
       onEnd: (e: any) => {
-        const { oldIndex, newIndex } = e;
-        const data = attrs.data as any[];
-        const rowKey = props.tableRowKey || 'id';
+        const { oldIndex, newIndex, item, to } = e;
+        const draggedEl = item as HTMLElement;
+        const draggedId = draggedEl.dataset.id;
 
-        const moveId = data[oldIndex][rowKey];
+        if (!draggedId) return;
 
-        let targetId;
-        let moveMode: 'AFTER' | 'BEFORE';
+        const newOrderEls = Array.from(to.children) as HTMLElement[];
+        const newIds = newOrderEls.map((childrenEl) => childrenEl.dataset.id);
 
-        if (newIndex >= data.length) {
-          targetId = data[data.length - 1][rowKey];
-          moveMode = 'AFTER';
-        } else if (newIndex === 0) {
-          targetId = data[0][rowKey];
+        let targetId: string | undefined;
+        let moveMode: 'AFTER' | 'BEFORE' = 'BEFORE';
+
+        // 优先取后一项作为目标
+        const nextId = newIds[newIndex + 1];
+        const prevId = newIds[newIndex - 1];
+
+        if (nextId) {
+          targetId = nextId;
           moveMode = 'BEFORE';
-        } else if (oldIndex < newIndex) {
-          targetId = data[newIndex][rowKey];
+        } else if (prevId) {
+          targetId = prevId;
           moveMode = 'AFTER';
-        } else {
-          targetId = data[newIndex][rowKey];
-          moveMode = 'BEFORE';
         }
 
-        emit('drag', {
-          targetId,
-          moveId,
-          moveMode,
-          orgId: appStore.orgId,
-          oldIndex,
-          newIndex,
-        });
+        if (targetId) {
+          emit('drag', {
+            targetId,
+            moveId: draggedId,
+            moveMode,
+            orgId: appStore.orgId,
+            oldIndex,
+            newIndex,
+          });
+        }
       },
     });
   }
