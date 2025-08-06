@@ -128,7 +128,7 @@
 
 <script lang="ts" setup>
   import { NButton, NCheckbox, NDataTable, NTooltip } from 'naive-ui';
-  import { cloneDeep } from 'lodash-es';
+  import { cloneDeep, debounce } from 'lodash-es';
 
   import { OperatorEnum } from '@lib/shared/enums/commonEnum';
   import { SpecialColumnEnum, TableKeyEnum } from '@lib/shared/enums/tableEnum';
@@ -138,13 +138,14 @@
   import CrmIcon from '@/components/pure/crm-icon-font/index.vue';
   import type { ActionsItem } from '@/components/pure/crm-more-action/type';
   import CrmSvg from '@/components/pure/crm-svg/index.vue';
-  import type { CrmDataTableColumn } from '@/components/pure/crm-table/type';
+  import type { CrmDataTableColumn, TableStorageConfigItem } from '@/components/pure/crm-table/type';
   import CrmTagGroup from '@/components/pure/crm-tag-group/index.vue';
   import BatchAction from './components/batchAction.vue';
   import ColumnSetting from './components/columnSetting.vue';
   import FilterMenu from './components/filterMenu.vue';
 
   import useFullScreen from '@/hooks/useFullScreen';
+  import useLocalForage from '@/hooks/useLocalForage';
   import useTableStore from '@/hooks/useTableStore';
   import { useAppStore } from '@/store';
   import { hasAnyPermission } from '@/utils/permission';
@@ -187,6 +188,7 @@
   const attrs = useAttrs();
   const { t } = useI18n();
   const tableStore = useTableStore();
+  const { getItem, setItem } = useLocalForage();
 
   const tableFullRef = ref<HTMLElement | null>(null);
   const tableRef = ref();
@@ -501,10 +503,39 @@
     initLayoutType();
   }
 
+  /**
+   * 监听列宽变化，更新缓存的列配置，以记住列宽
+   * 这里使用 ResizeObserver 来监听 col 元素的宽度变化
+   */
+  function listenColWidthChange() {
+    // 监听表格 col 元素的宽度变化
+    const colElements = document.querySelectorAll('table col');
+    const handleResize = debounce(async () => {
+      const tableColumnsMap = await getItem<TableStorageConfigItem>(attrs.tableKey as TableKeyEnum);
+      if (attrs.tableKey && tableColumnsMap) {
+        // 遍历缓存列配置，更新列宽
+        colElements.forEach((e, i) => {
+          tableColumnsMap.column[i].width =
+            (e.computedStyleMap()?.get('width') as any)?.value || tableColumnsMap.column[i].width;
+        });
+        setItem(attrs.tableKey as TableKeyEnum, tableColumnsMap);
+      }
+    }, 300);
+    const observer = new ResizeObserver((entries) => {
+      entries.forEach(() => {
+        handleResize();
+      });
+    });
+
+    // 批量注册
+    colElements.forEach((col) => observer.observe(col));
+  }
+
   watch(
     () => props.columns,
-    () => {
-      initColumn();
+    async () => {
+      await initColumn();
+      listenColWidthChange();
       initLayoutType();
     },
     { immediate: true }
