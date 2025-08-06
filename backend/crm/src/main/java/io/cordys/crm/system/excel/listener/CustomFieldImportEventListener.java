@@ -98,6 +98,12 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 
 	@Override
 	public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
+		if (headMap == null) {
+			throw new GenericException(Translator.get("user_import_table_header_missing"));
+		}
+		if (checkIllegalHead(headMap)) {
+			throw new GenericException(Translator.get("illegal_header"));
+		}
 		this.headMap = headMap;
 		this.businessFieldMap = Arrays.stream(BusinessModuleField.values()).
 				collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
@@ -107,12 +113,9 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 
 	@Override
 	public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
-		if (headMap == null) {
-			throw new GenericException(Translator.get("user_import_table_header_missing"));
-		}
 		Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
 		if (rowIndex >= 1) {
-			// transfer row data to model
+			// build entity by row-data
 			boolean skip = checkAndSkip(rowIndex, data);
 			if (!skip) {
 				buildEntityFromRow(rowIndex, data);
@@ -138,6 +141,9 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			setInternal(entity, rowKey);
 			headMap.forEach((k, v) -> {
 				BaseField field = fieldMap.get(v);
+				if (field == null) {
+					return;
+				}
 				Object val = convertValue(rowData.get(k), field);
 				if (val == null) {
 					return;
@@ -287,5 +293,21 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 		if (setter != null) {
 			setter.invoke(instance, value);
 		}
+	}
+
+	/**
+	 * 表头是否非法
+	 * @param headMap 表头集合
+	 * @return 是否非法
+	 */
+	private boolean checkIllegalHead(Map<Integer, String> headMap) {
+		boolean illegal = false;
+		for (String head : headMap.values()) {
+			if (!fieldMap.containsKey(head)) {
+				illegal = true;
+				break;
+			}
+		}
+		return illegal;
 	}
 }

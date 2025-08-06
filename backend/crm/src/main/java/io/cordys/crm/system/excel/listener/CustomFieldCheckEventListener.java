@@ -26,6 +26,7 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 	@Getter
 	protected List<ExcelErrData<?>> errList = new ArrayList<>();
 	private Map<Integer, String> headMap;
+	private final Map<String, BaseField> fieldMap;
 	/**
 	 * 源数据表
 	 */
@@ -51,6 +52,7 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 				uniques.put(field.getName(), field);
 			}
 		});
+		this.fieldMap = fields.stream().collect(Collectors.toMap(BaseField::getName, v -> v));
 		this.sourceTable = source;
 		this.currentOrg = currentOrg;
 		this.commonMapper = CommonBeanFactory.getBean(CommonMapper.class);
@@ -59,14 +61,17 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 
 	@Override
 	public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
+		if (headMap == null) {
+			throw new GenericException(Translator.get("user_import_table_header_missing"));
+		}
+		if (checkIllegalHead(headMap)) {
+			throw new GenericException(Translator.get("illegal_header"));
+		}
 		this.headMap = headMap;
 	}
 
 	@Override
 	public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
-		if (headMap == null) {
-			throw new GenericException(Translator.get("user_import_table_header_missing"));
-		}
 		Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
 		if (rowIndex >= 1) {
 			// validate row data
@@ -126,5 +131,16 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 			wrapper.eq(BaseResourceField::getFieldValue, val);
 			return fieldMapper.selectListByLambda(wrapper).isEmpty();
 		}
+	}
+
+	private boolean checkIllegalHead(Map<Integer, String> headMap) {
+		boolean illegal = false;
+		for (String head : headMap.values()) {
+			if (!fieldMap.containsKey(head)) {
+				illegal = true;
+				break;
+			}
+		}
+		return illegal;
 	}
 }

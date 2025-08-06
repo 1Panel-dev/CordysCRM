@@ -23,7 +23,10 @@ import io.cordys.common.permission.PermissionUtils;
 import io.cordys.common.service.BaseService;
 import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
-import io.cordys.common.util.*;
+import io.cordys.common.util.BeanUtils;
+import io.cordys.common.util.JSON;
+import io.cordys.common.util.LogUtils;
+import io.cordys.common.util.Translator;
 import io.cordys.crm.clue.constants.ClueStatus;
 import io.cordys.crm.clue.domain.*;
 import io.cordys.crm.clue.dto.request.*;
@@ -41,7 +44,6 @@ import io.cordys.crm.customer.service.CustomerCollaborationService;
 import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.customer.service.PoolCustomerService;
-import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Dict;
@@ -52,7 +54,6 @@ import io.cordys.crm.system.dto.request.PoolReasonRequest;
 import io.cordys.crm.system.dto.response.BatchAffectResponse;
 import io.cordys.crm.system.dto.response.ModuleFormConfigDTO;
 import io.cordys.crm.system.excel.CustomImportAfterDoConsumer;
-import io.cordys.crm.system.excel.domain.UserExcelDataFactory;
 import io.cordys.crm.system.excel.handler.CustomHeadColWidthStyleStrategy;
 import io.cordys.crm.system.excel.handler.CustomTemplateWriteHandler;
 import io.cordys.crm.system.excel.listener.CustomFieldCheckEventListener;
@@ -715,7 +716,7 @@ public class ClueService {
                     .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
             LogUtils.error("clue import error: ", e.getMessage());
-            throw new GenericException(Translator.get("check_import_excel_error"));
+            throw new GenericException(e.getMessage());
         }
     }
 
@@ -734,7 +735,7 @@ public class ClueService {
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
             LogUtils.error("clue import pre-check error: ", e.getMessage());
-            throw new GenericException(Translator.get("check_import_excel_error"));
+            throw new GenericException(e.getMessage());
         }
     }
 }
