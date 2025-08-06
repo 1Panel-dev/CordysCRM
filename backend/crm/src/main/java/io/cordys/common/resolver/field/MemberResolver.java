@@ -52,4 +52,16 @@ public class MemberResolver extends AbstractModuleFieldResolver<MemberField> {
 
         return StringUtils.EMPTY;
     }
+
+    @Override
+    public Object text2Value(MemberField field, String text) {
+        if (StringUtils.isBlank(text)) {
+            return StringUtils.EMPTY;
+        }
+        List<String> ids = extUserMapper.selectUserIdsByNames(List.of(text));
+        if (CollectionUtils.isNotEmpty(ids)) {
+            return ids.getFirst();
+        }
+        return text;
+    }
 }

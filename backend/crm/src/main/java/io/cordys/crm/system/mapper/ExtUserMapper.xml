@@ -202,6 +202,16 @@
         </foreach>
     </select>
 
+    <select id="selectUserIdsByNames" resultType="java.lang.String">
+        SELECT id
+        FROM sys_user
+        WHERE name IN
+        <foreach collection="names" item="name" index="index"
+                 open="(" close=")" separator=",">
+            #{name}
+        </foreach>
+    </select>
+
     <select id="getOrgUserResourceIds" resultType="java.lang.String">
         SELECT distinct sou.resource_user_id
         FROM sys_organization_user sou

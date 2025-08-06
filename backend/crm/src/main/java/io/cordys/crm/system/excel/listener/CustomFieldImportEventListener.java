@@ -6,26 +6,21 @@ import io.cordys.common.constants.BusinessModuleField;
 import io.cordys.common.domain.BaseResourceField;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.mapper.CommonMapper;
+import io.cordys.common.resolver.field.AbstractModuleFieldResolver;
+import io.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import io.cordys.common.uid.IDGenerator;
+import io.cordys.common.uid.SerialNumGenerator;
 import io.cordys.common.util.*;
-import io.cordys.common.utils.RegionUtils;
-import io.cordys.crm.system.dto.field.DateTimeField;
-import io.cordys.crm.system.dto.field.InputNumberField;
+import io.cordys.crm.system.dto.field.SerialNumberField;
 import io.cordys.crm.system.dto.field.base.BaseField;
-import io.cordys.crm.system.dto.field.base.HasOption;
-import io.cordys.crm.system.dto.field.base.OptionProp;
 import io.cordys.crm.system.excel.CustomImportAfterDoConsumer;
 import io.cordys.excel.domain.ExcelErrData;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import lombok.Getter;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -36,16 +31,19 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	 * 主表数据
 	 */
 	@Getter
-	private List<T> dataList;
+	private List<T> dataList = new ArrayList<>();
 	/**
-	 * 自定义字段数据
+	 * 自定义字段集合&Blob字段集合
 	 */
-	private List<BaseResourceField> fields;
-	private List<BaseResourceField> blobFields;
+	private List<BaseResourceField> fields = new ArrayList<>();
+	private List<BaseResourceField> blobFields = new ArrayList<>();
 	/**
-	 * 源数据表
+	 * 业务实体
 	 */
 	private final Class<T> entityClass;
+	/**
+	 * setter cache
+	 */
 	private final Map<String, Method> setterCache = new HashMap<>();
 	@Getter
 	protected List<ExcelErrData<?>> errList = new ArrayList<>();
@@ -55,7 +53,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	private final CommonMapper commonMapper;
 	private final BaseMapper<F> fieldMapper;
 	private final Map<String, BaseField> fieldMap;
-	private final Map<String, BusinessModuleField> businessFieldMap;
+	private Map<String, BusinessModuleField> businessFieldMap;
 	/**
 	 * 必填
 	 */
@@ -64,8 +62,18 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	 * 唯一
 	 */
 	private final List<String> uniques = new ArrayList<>();
+	/**
+	 * 后置处理函数
+	 */
 	private final CustomImportAfterDoConsumer<T, BaseResourceField> consumer;
-	public static final String ARRAY_PREFIX = "[";
+	/**
+	 * 序列化字段
+	 */
+	private BaseField serialField;
+	/**
+	 * 序列化生成器
+	 */
+	private final SerialNumGenerator serialNumGenerator;
 
 	public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator,
 										  BaseMapper<F> fieldMapper, CustomImportAfterDoConsumer<T, BaseResourceField> consumer) {
@@ -77,13 +85,12 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 				uniques.add(field.getName());
 			}
 		});
+		this.fieldMap = fields.stream().collect(Collectors.toMap(BaseField::getName, v -> v));
 		this.entityClass = clazz;
 		this.currentOrg = currentOrg;
 		this.operator = operator;
 		this.commonMapper = CommonBeanFactory.getBean(CommonMapper.class);
-		this.fieldMap = fields.stream().collect(Collectors.toMap(BaseField::getName, v -> v));
-		this.businessFieldMap = Arrays.stream(BusinessModuleField.values()).
-				collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
+		this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
 		this.fieldMapper = fieldMapper;
 		this.consumer = consumer;
 		cacheSetterMethods();
@@ -92,6 +99,10 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	@Override
 	public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
 		this.headMap = headMap;
+		this.businessFieldMap = Arrays.stream(BusinessModuleField.values()).
+				collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
+		Optional<BaseField> anySerial = this.fieldMap.values().stream().filter(BaseField::isSerialNumber).findAny();
+		anySerial.ifPresent(field -> serialField = field);
 	}
 
 	@Override
@@ -109,6 +120,17 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 		}
 	}
 
+	@Override
+	public void doAfterAllAnalysed(AnalysisContext analysisContext) {
+		// 执行入库
+		consumer.accept(this.dataList, this.fields, this.blobFields);
+	}
+
+	/**
+	 * 构建行列数据 => 实体
+	 * @param rowIndex 行序号
+	 * @param rowData 行数据
+	 */
 	private void buildEntityFromRow(Integer rowIndex, Map<Integer, String> rowData) {
 		String rowKey = IDGenerator.nextStr();
 		try {
@@ -116,14 +138,8 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			setInternal(entity, rowKey);
 			headMap.forEach((k, v) -> {
 				BaseField field = fieldMap.get(v);
-				String val;
-				try {
-					val = convertValue(rowData.get(k), field);
-				} catch (Exception e) {
-					LogUtils.error("transfer error: " + e.getMessage());
-					return;
-				}
-				if (StringUtils.isEmpty(val)) {
+				Object val = convertValue(rowData.get(k), field);
+				if (val == null) {
 					return;
 				}
 				if (businessFieldMap.containsKey(field.getInternalKey())) {
@@ -139,12 +155,25 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 					resourceField.setFieldId(field.getId());
 					resourceField.setFieldValue(val);
 					if (field.isBlob()) {
+						if (val instanceof List<?> valList) {
+							resourceField.setFieldValue(JSON.toJSONString(valList));
+						}
 						blobFields.add(resourceField);
 					} else {
 						fields.add(resourceField);
 					}
 				}
 			});
+			if (serialField != null) {
+				BaseResourceField serialResource = new BaseResourceField();
+				serialResource.setId(IDGenerator.nextStr());
+				serialResource.setResourceId(rowKey);
+				serialResource.setFieldId(serialField.getId());
+				String serialNo = serialNumGenerator.generateByRules(((SerialNumberField) serialField).getSerialNumberRules(),
+						currentOrg, entityClass.getSimpleName().toLowerCase());
+				serialResource.setFieldValue(serialNo);
+				fields.add(serialResource);
+			}
 			dataList.add(entity);
 		} catch (Exception e) {
 			LogUtils.error("clue import error: " + e.getMessage());
@@ -152,21 +181,24 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 		}
 	}
 
-	private String convertValue(String val, BaseField field) throws Exception{
-		if (field.skipImportTransfer() || StringUtils.isEmpty(val)) {
-			return val;
+	/**
+	 * 自定义字段文本转换
+	 * @param text 文本
+	 * @param field 字段
+	 * @return 值
+	 */
+	private Object convertValue(String text, BaseField field) {
+		if (StringUtils.isEmpty(text)) {
+			return text;
 		}
-		return switch (field.getType()) {
-			case "INPUT_NUMBER" -> setNumberVal(val, (InputNumberField) field);
-			case "DATE_TIME" -> setDateVal(val, (DateTimeField) field);
-			case "LOCATION" -> RegionUtils.nameToCode(val);
-			default -> setOption(val, field);
-		};
-	}
-
-	@Override
-	public void doAfterAllAnalysed(AnalysisContext analysisContext) {
-		consumer.accept(this.dataList, this.fields, this.blobFields);
+		try {
+			AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
+			Object valObj = customFieldResolver.text2Value(field, text.toString());
+			return valObj;
+		} catch (Exception e) {
+			LogUtils.error(String.format("parse field %s error, %s cannot be transfer, error: %s", field.getName(), text, e.getMessage()));
+		}
+		return null;
 	}
 
 	/**
@@ -217,6 +249,9 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 		}
 	}
 
+	/**
+	 * 缓存entity setter
+	 */
 	private void cacheSetterMethods() {
 		for (Method method : entityClass.getMethods()) {
 			if (method.getName().startsWith("set") && method.getParameterCount() == 1) {
@@ -227,62 +262,30 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 		}
 	}
 
-	public void setInternal(T instance, String rowKey) throws Exception {
+	/**
+	 * 设置entity内部字段
+	 * @param instance 实例对象
+	 * @param rowKey 唯一Key
+	 * @throws Exception 异常
+	 */
+	private void setInternal(T instance, String rowKey) throws Exception {
 		setterCache.get("id").invoke(instance, rowKey);
 		setterCache.get("createUser").invoke(instance, operator);
 		setterCache.get("updateUser").invoke(instance, operator);
 		setterCache.get("organizationId").invoke(instance, currentOrg);
 	}
 
-	public void setPropertyValue(T instance, String fieldName, Object value) throws Exception {
+	/**
+	 * 设置属性值
+	 * @param instance 实例对象
+	 * @param fieldName 字段名
+	 * @param value 值
+	 * @throws Exception 异常
+	 */
+	private void setPropertyValue(T instance, String fieldName, Object value) throws Exception {
 		Method setter = setterCache.get(fieldName);
 		if (setter != null) {
 			setter.invoke(instance, value);
 		}
-	}
-
-	private String setNumberVal(String val, InputNumberField field) {
-		if (StringUtils.equals(field.getNumberFormat(), "percent")) {
-			return val.replace("%", StringUtils.EMPTY);
-		}
-		return val;
-	}
-
-	private String setDateVal(String val, DateTimeField field) {
-		DateTimeFormatter formatter;
-		if (StringUtils.equals(field.getDateType(), "datetime")) {
-			formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		} else if (StringUtils.equals(field.getDateType(), "date")) {
-			formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		} else {
-			formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-		}
-		LocalDateTime parse = LocalDateTime.parse(val, formatter);
-		return String.valueOf(parse.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-	}
-
-	private String setOption(String val, BaseField field) {
-		List<String> rawList = new ArrayList<>();
-		if (val.startsWith(ARRAY_PREFIX)) {
-			rawList = JSON.parseArray(val, String.class);
-		}
-		if (field instanceof HasOption optionField) {
-			List<OptionProp> options = optionField.getOptions();
-			Map<String, String> optionMap = options.stream().collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue));
-			if (CollectionUtils.isNotEmpty(rawList)) {
-				List<String> valList = new ArrayList<>();
-				rawList.forEach(raw -> {
-					if (optionMap.containsKey(raw)) {
-						valList.add(optionMap.get(raw));
-					}
-				});
-				return JSON.toJSONString(valList);
-			} else {
-				return optionMap.get(val);
-			}
-		} else {
-			// TODO
-		}
-		return null;
 	}
 }

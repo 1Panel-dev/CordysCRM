@@ -454,4 +454,10 @@ public class CustomerContactService {
     public void updateContactOwner(String customerId, String newOwner, String oldOwner, String orgId) {
         extCustomerContactMapper.updateContactOwner(customerId, newOwner, oldOwner, orgId);
     }
+
+    public List<CustomerContact> getContactListByNames(List<String> names) {
+        LambdaQueryWrapper<CustomerContact> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(CustomerContact::getName, names);
+        return customerContactMapper.selectListByLambda(lambdaQueryWrapper);
+    }
 }

@@ -1,6 +1,7 @@
 package io.cordys.crm.system.excel.handler;
 
 import cn.idev.excel.metadata.Head;
+import cn.idev.excel.metadata.data.DataFormatData;
 import cn.idev.excel.metadata.data.WriteCellData;
 import cn.idev.excel.util.BooleanUtils;
 import cn.idev.excel.write.handler.CellWriteHandler;
@@ -13,6 +14,7 @@ import cn.idev.excel.write.metadata.holder.WriteWorkbookHolder;
 import cn.idev.excel.write.metadata.style.WriteCellStyle;
 import cn.idev.excel.write.metadata.style.WriteFont;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.dto.field.DateTimeField;
 import io.cordys.crm.system.dto.field.InputNumberField;
 import io.cordys.crm.system.dto.field.LocationField;
@@ -42,6 +44,7 @@ public class CustomTemplateWriteHandler implements RowWriteHandler, SheetWriteHa
 	private final List<String> requires = new ArrayList<>();
 	private final List<String> uniques = new ArrayList<>();
 	private final List<String> multiples = new ArrayList<>();
+	private final List<String> dateHeads = new ArrayList<>();
 	private final int totalColumns;
 
 	public CustomTemplateWriteHandler(List<BaseField> fields) {

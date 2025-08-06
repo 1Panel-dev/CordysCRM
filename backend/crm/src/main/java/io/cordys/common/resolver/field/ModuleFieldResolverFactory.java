@@ -1,6 +1,5 @@
 package io.cordys.common.resolver.field;
 
-import io.cordys.common.resolver.LocationResolver;
 import io.cordys.crm.system.constants.FieldType;
 
 import java.util.HashMap;

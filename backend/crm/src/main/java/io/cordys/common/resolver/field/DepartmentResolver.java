@@ -47,4 +47,16 @@ public class DepartmentResolver extends AbstractModuleFieldResolver<DepartmentFi
 
 		return StringUtils.EMPTY;
 	}
+
+	@Override
+	public Object text2Value(DepartmentField field, String text) {
+		if(StringUtils.isBlank(text)) {
+			return StringUtils.EMPTY;
+		}
+		List<String> ids = extDepartmentMapper.getIdsByNames(List.of(text));
+		if (CollectionUtils.isNotEmpty(ids)) {
+			return ids.getFirst();
+		}
+		return text;
+	}
 }

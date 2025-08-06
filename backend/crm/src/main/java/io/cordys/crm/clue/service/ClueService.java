@@ -25,10 +25,7 @@ import io.cordys.common.service.DataScopeService;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.util.*;
 import io.cordys.crm.clue.constants.ClueStatus;
-import io.cordys.crm.clue.domain.Clue;
-import io.cordys.crm.clue.domain.ClueField;
-import io.cordys.crm.clue.domain.CluePool;
-import io.cordys.crm.clue.domain.CluePoolRecycleRule;
+import io.cordys.crm.clue.domain.*;
 import io.cordys.crm.clue.dto.request.*;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueImportResponse;
@@ -44,6 +41,7 @@ import io.cordys.crm.customer.service.CustomerCollaborationService;
 import io.cordys.crm.customer.service.CustomerContactService;
 import io.cordys.crm.customer.service.CustomerService;
 import io.cordys.crm.customer.service.PoolCustomerService;
+import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.system.constants.DictModule;
 import io.cordys.crm.system.constants.NotificationConstants;
 import io.cordys.crm.system.domain.Dict;
@@ -138,6 +136,8 @@ public class ClueService {
 	private ExtUserMapper extUserMapper;
     @Resource
     private BaseMapper<ClueField> clueFieldMapper;
+    @Resource
+    private BaseMapper<ClueFieldBlob> clueFieldBlobMapper;
 
     public PagerWithOption<List<ClueListResponse>> list(CluePageRequest request, String userId, String orgId,
                                                         DeptDataPermissionDTO deptDataPermission) {
@@ -585,6 +585,11 @@ public class ClueService {
         return Optional.ofNullable(clue).map(Clue::getName).orElse(null);
     }
 
+    public List<Clue> getClueListByNames(List<String> names) {
+        LambdaQueryWrapper<Clue> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(Clue::getName, names);
+        return clueMapper.selectListByLambda(lambdaQueryWrapper);
+    }
 
     public String getClueNameByIds(List<String> ids) {
         List<Clue> clueList = clueMapper.selectByIds(ids);
@@ -691,9 +696,20 @@ public class ClueService {
     public ClueImportResponse realImport(MultipartFile file, String currentOrg, String currentUser) {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CLUE.getKey(), currentOrg);
-            CustomImportAfterDoConsumer<Clue, BaseResourceField> func = this::saveImportData;
+            CustomImportAfterDoConsumer<Clue, BaseResourceField> afterDo = (clues, clueFields, clueFieldBlobs) -> {
+                clues.forEach(clue -> {
+                    clue.setCreateTime(System.currentTimeMillis());
+                    clue.setUpdateTime(System.currentTimeMillis());
+                    clue.setCollectionTime(clue.getCreateTime());
+                    clue.setStage(ClueStatus.NEW.name());
+                    clue.setInSharedPool(false);
+                });
+                clueMapper.batchInsert(clues);
+                clueFieldMapper.batchInsert(clueFields.stream().map(field -> BeanUtils.copyBean(new ClueField(), field)).toList());
+                clueFieldBlobMapper.batchInsert(clueFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ClueFieldBlob(), field)).toList());
+            };
             CustomFieldImportEventListener<Clue, ClueField> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, currentOrg, currentUser,
-                    clueFieldMapper, func);
+                    clueFieldMapper, afterDo);
             FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).sheet().doRead();
             return ClueImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
@@ -720,15 +736,5 @@ public class ClueService {
             LogUtils.error("clue import pre-check error: ", e.getMessage());
             throw new GenericException(Translator.get("check_import_excel_error"));
         }
-    }
-
-    public void saveImportData(List<Clue> clues, List<BaseResourceField> fieldList, List<BaseResourceField> fieldBlodList) {
-        clues.forEach(clue -> {
-            clue.setCreateTime(System.currentTimeMillis());
-            clue.setUpdateTime(System.currentTimeMillis());
-            clue.setCollectionTime(clue.getCreateTime());
-            clue.setStage(ClueStatus.NEW.name());
-            clue.setInSharedPool(false);
-        });
     }
 }

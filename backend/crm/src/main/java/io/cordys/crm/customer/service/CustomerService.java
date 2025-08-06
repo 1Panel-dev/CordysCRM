@@ -548,6 +548,12 @@ public class CustomerService {
         return Optional.ofNullable(customer).map(Customer::getName).orElse(null);
     }
 
+    public List<Customer> getCustomerListByNames(List<String> names) {
+        LambdaQueryWrapper<Customer> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(Customer::getName, names);
+        return customerMapper.selectListByLambda(lambdaQueryWrapper);
+    }
+
     public ResourceTabEnableDTO getTabEnableConfig(String userId, String orgId) {
         List<RolePermissionDTO> rolePermissions = permissionCache.getRolePermissions(userId, orgId);
         return PermissionUtils.getTabEnableConfig(userId, PermissionConstants.CUSTOMER_MANAGEMENT_READ, rolePermissions);

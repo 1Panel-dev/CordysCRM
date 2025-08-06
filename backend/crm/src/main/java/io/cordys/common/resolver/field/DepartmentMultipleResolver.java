@@ -48,4 +48,17 @@ public class DepartmentMultipleResolver extends AbstractModuleFieldResolver<Depa
 
         return StringUtils.EMPTY;
     }
+
+    @Override
+    public Object text2Value(DepartmentMultipleField field, String text) {
+        if (StringUtils.isBlank(text) || StringUtils.equals(text, "[]")) {
+            return StringUtils.EMPTY;
+        }
+        List<String> names = parseFakeJsonArray(text);
+        List<String> ids = extDepartmentMapper.getIdsByNames(names);
+        if (CollectionUtils.isNotEmpty(ids)) {
+            return ids;
+        }
+        return names;
+    }
 }

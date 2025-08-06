@@ -4,6 +4,7 @@ package io.cordys.common.resolver.field;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.system.dto.field.SelectMultipleField;
 import io.cordys.crm.system.dto.field.base.OptionProp;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -60,6 +61,32 @@ public class SelectMultipleResolver extends AbstractModuleFieldResolver<SelectMu
                     .collect(Collectors.toList());
 
             return String.join(",", result);
+        } catch (Exception e) {
+            return StringUtils.EMPTY;
+        }
+    }
+
+    @Override
+    public Object text2Value(SelectMultipleField field, String text) {
+        if (StringUtils.isBlank(text) || StringUtils.equals(text, "[]")) {
+            return StringUtils.EMPTY;
+        }
+
+        try {
+            List<String> texts = parseFakeJsonArray(text);
+            if (CollectionUtils.isEmpty(texts)) {
+                return StringUtils.EMPTY;
+            }
+
+            Map<String, String> optionMap = field.getOptions().stream()
+                    .collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue));
+
+            List<String> values = texts.stream()
+                    .filter(item -> item != null && optionMap.containsKey(item))
+                    .map(optionMap::get)
+                    .collect(Collectors.toList());
+
+            return CollectionUtils.isEmpty(values) ? texts : values;
         } catch (Exception e) {
             return StringUtils.EMPTY;
         }

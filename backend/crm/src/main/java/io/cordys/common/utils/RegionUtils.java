@@ -1,7 +1,7 @@
 package io.cordys.common.utils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.cordys.common.resolver.LocationResolver;
+import io.cordys.common.resolver.field.LocationResolver;
 import io.cordys.common.util.JSON;
 import io.cordys.crm.system.dto.regioncode.RegionCode;
 import org.apache.commons.collections4.CollectionUtils;
@@ -66,13 +66,13 @@ public class RegionUtils {
 				if (province.getChildren() != null) {
 					for (RegionCode city : province.getChildren()) {
 						if (city.getName().equals(queue.peek())) {
-							code = province.getCode();
+							code = city.getCode();
 							queue.poll();
 						}
 
 						for (RegionCode area : city.getChildren()) {
-							if (area.getCode().equals(queue.peek())) {
-								code = province.getCode();
+							if (area.getName().equals(queue.peek())) {
+								code = area.getCode();
 								queue.poll();
 							}
 						}

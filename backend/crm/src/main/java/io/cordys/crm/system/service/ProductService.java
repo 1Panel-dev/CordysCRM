@@ -263,4 +263,10 @@ public class ProductService {
                 extProductMapper::getLastPos,
                 productBaseMapper::update);
     }
+
+    public List<Product> getProductListByNames(List<String> names) {
+        LambdaQueryWrapper<Product> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(Product::getName, names);
+        return productBaseMapper.selectListByLambda(lambdaQueryWrapper);
+    }
 }

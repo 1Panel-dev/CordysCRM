@@ -54,4 +54,17 @@ public class MemberMultipleResolver extends AbstractModuleFieldResolver<MemberMu
 
         return StringUtils.EMPTY;
     }
+
+    @Override
+    public Object text2Value(MemberMultipleField field, String text) {
+        if (StringUtils.isBlank(text) || StringUtils.equals(text, "[]")) {
+            return StringUtils.EMPTY;
+        }
+        List<String> names = parseFakeJsonArray(text);
+        List<String> ids = extUserMapper.selectUserIdsByNames(names);
+        if(CollectionUtils.isNotEmpty(ids)) {
+            return ids;
+        }
+        return names;
+    }
 }

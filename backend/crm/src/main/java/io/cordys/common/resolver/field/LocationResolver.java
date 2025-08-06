@@ -1,8 +1,8 @@
-package io.cordys.common.resolver;
+package io.cordys.common.resolver.field;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import io.cordys.common.util.JSON;
+import io.cordys.common.utils.RegionUtils;
 import io.cordys.crm.system.dto.field.LocationField;
 import io.cordys.crm.system.dto.regioncode.RegionCode;
 import org.apache.commons.lang3.StringUtils;
@@ -93,5 +93,10 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
         }
 
         return regionName + detail;
+    }
+
+    @Override
+    public Object text2Value(LocationField field, String text) {
+        return RegionUtils.nameToCode(text);
     }
 }

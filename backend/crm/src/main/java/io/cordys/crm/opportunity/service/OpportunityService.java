@@ -507,6 +507,11 @@ public class OpportunityService {
         return Optional.ofNullable(opportunity).map(Opportunity::getName).orElse(null);
     }
 
+    public List<Opportunity> getOpportunityListByNames(List<String> names) {
+        LambdaQueryWrapper<Opportunity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.in(Opportunity::getName, names);
+        return opportunityMapper.selectListByLambda(lambdaQueryWrapper);
+    }
 
     public String getOpportunityNameByIds(List<String> ids) {
         List<Opportunity> opportunityList = opportunityMapper.selectByIds(ids);

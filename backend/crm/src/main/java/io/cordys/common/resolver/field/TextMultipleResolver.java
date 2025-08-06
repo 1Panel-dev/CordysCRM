@@ -1,8 +1,12 @@
 package io.cordys.common.resolver.field;
 
 
+import io.cordys.common.util.JSON;
 import io.cordys.crm.system.dto.field.InputMultipleField;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
 
 public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMultipleField> {
 
@@ -30,5 +34,14 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
         }
         // replace [ and ]
         return value.substring(1, value.length() - 1);
+    }
+
+    @Override
+    public Object text2Value(InputMultipleField field, String text) {
+        if (StringUtils.isBlank(text) || StringUtils.equals(text, "[]")) {
+            return StringUtils.EMPTY;
+        }
+        List<String> textList = parseFakeJsonArray(text);
+        return CollectionUtils.isEmpty(textList) ? StringUtils.EMPTY : textList;
     }
 }

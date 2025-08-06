@@ -10,6 +10,7 @@ import io.cordys.crm.system.dto.field.base.RuleProp;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,6 +48,17 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
     public Object trans2Value(T selectField, String value) {
         return value;
     }
+
+    /**
+     * 字段文本 => 值
+     * @param field 字段
+     * @param text 文本
+     * @return 字段值
+     */
+    public Object text2Value(T field, String text) {
+        return text;
+    }
+
 
     /**
      * 将对应的参数值转换成字符串
@@ -118,5 +130,12 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
             return false;
         }
         return rules.stream().anyMatch(rule -> StringUtils.equals(rule.getKey(), validatorKey));
+    }
+
+    protected List<String> parseFakeJsonArray(String content) {
+        return Arrays.stream(content.replaceAll("^\\[|]$", "").split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
     }
 }

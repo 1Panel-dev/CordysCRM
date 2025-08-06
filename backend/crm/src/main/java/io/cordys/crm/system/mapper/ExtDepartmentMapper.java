@@ -22,6 +22,8 @@ public interface ExtDepartmentMapper {
 
     List<String> getNameByIds(@Param("ids") List<String> ids);
 
+    List<String> getIdsByNames(@Param("names") List<String> names);
+
     void deleteByOrgId(@Param("orgId") String orgId);
 
     List<Department> selectAllDepartment(@Param("orgId") String orgId);

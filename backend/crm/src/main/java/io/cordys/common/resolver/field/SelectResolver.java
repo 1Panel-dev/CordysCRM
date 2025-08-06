@@ -41,4 +41,13 @@ public class SelectResolver extends AbstractModuleFieldResolver<SelectField> {
                 .map(OptionProp::getLabel)
                 .orElse(StringUtils.EMPTY);
     }
+
+    @Override
+    public Object text2Value(SelectField field, String text) {
+        return field.getOptions().stream()
+                .filter(option -> StringUtils.equalsIgnoreCase(option.getLabel(), text))
+                .findFirst()
+                .map(OptionProp::getValue)
+                .orElse(text);
+    }
 }

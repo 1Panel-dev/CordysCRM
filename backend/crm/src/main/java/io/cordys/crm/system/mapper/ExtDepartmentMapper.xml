@@ -186,6 +186,16 @@
             #{id}
         </foreach>
     </select>
+
+    <select id="getIdsByNames" resultType="java.lang.String">
+        select id
+        from sys_department
+        where name in
+        <foreach collection="names" item="name" open="(" close=")" separator=",">
+            #{name}
+        </foreach>
+    </select>
+
     <select id="selectByOrgId" resultType="io.cordys.crm.system.domain.DepartmentCommander">
         select user_id, department_id
         from sys_department_commander sdc

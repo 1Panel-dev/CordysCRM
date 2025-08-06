@@ -41,4 +41,13 @@ public class RadioResolver extends AbstractModuleFieldResolver<RadioField> {
                 .findFirst()
                 .orElse(StringUtils.EMPTY);
     }
+
+    @Override
+    public Object text2Value(RadioField field, String text) {
+        return field.getOptions().stream()
+                .filter(option -> StringUtils.equalsIgnoreCase(option.getLabel(), text))
+                .map(OptionProp::getValue)
+                .findFirst()
+                .orElse(text);
+    }
 }
