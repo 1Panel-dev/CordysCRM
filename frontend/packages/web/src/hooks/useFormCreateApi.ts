@@ -199,6 +199,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               value: formatNumberValue(name || form[item.businessKey], item),
               fieldInfo: item,
             });
+          } else if (item.type === FieldTypeEnum.TEXTAREA) {
+            descriptions.value.push({
+              label: item.name,
+              value: name || form[item.businessKey],
+              slotName: FieldTypeEnum.TEXTAREA,
+              fieldInfo: item,
+            });
           } else {
             descriptions.value.push({
               label: item.name,
@@ -225,6 +232,13 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
               label: item.name,
               value: field?.fieldValue || [],
               valueSlotName: 'image',
+              fieldInfo: item,
+            });
+          } else if (item.type === FieldTypeEnum.TEXTAREA) {
+            descriptions.value.push({
+              label: item.name,
+              value: field?.fieldValue || '',
+              slotName: FieldTypeEnum.TEXTAREA,
               fieldInfo: item,
             });
           } else {

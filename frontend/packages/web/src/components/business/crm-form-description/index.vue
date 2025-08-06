@@ -11,6 +11,12 @@
           </n-space>
         </n-image-group>
       </template>
+      <template #[FieldTypeEnum.TEXTAREA]="{ item }">
+        <div class="flex w-full items-center justify-between">
+          <div class="text-[var(--text-n2)]">{{ item.label }}</div>
+          <div v-html="item.value?.toString().replace(/\n/g, '<br />')"></div>
+        </div>
+      </template>
       <template #[FieldDataSourceTypeEnum.CUSTOMER]="{ item }">
         <div class="flex w-full items-center justify-between">
           <div class="text-[var(--text-n2)]">{{ item.label }}</div>

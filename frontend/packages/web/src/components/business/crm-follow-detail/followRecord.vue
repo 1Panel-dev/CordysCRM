@@ -51,7 +51,7 @@
               </template>
             </CrmDetailCard>
           </div>
-          <div class="crm-follow-record-content">{{ item.content }}</div>
+          <div class="crm-follow-record-content" v-html="item.content.replace(/\n/g, '<br />')"></div>
         </div>
       </div>
     </template>

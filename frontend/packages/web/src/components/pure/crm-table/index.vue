@@ -515,8 +515,10 @@
       if (attrs.tableKey && tableColumnsMap) {
         // 遍历缓存列配置，更新列宽
         colElements.forEach((e, i) => {
-          tableColumnsMap.column[i].width =
-            (e.computedStyleMap()?.get('width') as any)?.value || tableColumnsMap.column[i].width;
+          if (tableColumnsMap.column[i]) {
+            tableColumnsMap.column[i].width =
+              (e.computedStyleMap()?.get('width') as any)?.value || tableColumnsMap.column[i].width;
+          }
         });
         setItem(attrs.tableKey as TableKeyEnum, tableColumnsMap);
       }
