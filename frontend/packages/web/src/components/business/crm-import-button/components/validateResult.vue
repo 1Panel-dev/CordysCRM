@@ -105,23 +105,25 @@
         <span class="text-[var(--text-n4)]">（{{ validateResultInfo.failCount }}）</span>
       </div>
     </template>
-    <CrmList
-      v-model:data="validateResultInfo.errorMessages"
-      :bordered="false"
-      :item-border="false"
-      virtual-scroll-height="calc(100vh - 82px)"
-      key-field="num"
-      no-hover
-      item-class="my-[16px]"
-      :item-height="26"
-    >
-      <template #title="{ item }">
-        <div :key="item.num" class="flex px-4">
-          <div class="circle"></div>
-          <div class="text-[var(--color-text-2)]">{{ item.errMsg }} </div>
-        </div>
-      </template>
-    </CrmList>
+    <n-scrollbar>
+      <CrmList
+        v-model:data="validateResultInfo.errorMessages"
+        :bordered="false"
+        :item-border="false"
+        virtual-scroll-height="calc(100vh - 82px)"
+        key-field="num"
+        no-hover
+        item-class="my-[16px]"
+        :item-height="32"
+      >
+        <template #title="{ item }">
+          <div :key="item.num" class="flex px-4">
+            <div class="circle"></div>
+            <div class="text-[var(--color-text-2)]">{{ item.errMsg }} </div>
+          </div>
+        </template>
+      </CrmList>
+    </n-scrollbar>
   </CrmDrawer>
 </template>
 
@@ -257,7 +259,7 @@
     height: 6px;
     border-radius: 50%;
     background: var(--text-n7);
-    @apply mr-2 mt-2;
+    @apply mr-2 mt-2 flex-shrink-0;
   }
 </style>
 
