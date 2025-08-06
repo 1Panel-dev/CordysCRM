@@ -133,7 +133,7 @@ public abstract class AbstractModuleFieldResolver<T extends BaseField> {
     }
 
     protected List<String> parseFakeJsonArray(String content) {
-        return Arrays.stream(content.replaceAll("^\\[|]$", "").split(","))
+        return Arrays.stream(content.replaceAll("^\\[|]$", "").replaceAll("['\"]", "").split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList();
