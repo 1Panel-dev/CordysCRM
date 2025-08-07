@@ -636,7 +636,7 @@ public class ClueService {
         clue.setTransitionType("CUSTOMER");
         clueMapper.update(clue);
         // 线索联系人=>客户联系人
-        if (StringUtils.isNotEmpty(clue.getContact()) || StringUtils.isNotEmpty(clue.getPhone())) {
+        if (StringUtils.isNotEmpty(clue.getContact())) {
             boolean unique = customerContactService.checkCustomerContactUnique(clue.getContact(), clue.getPhone(), request.getCustomerId(), orgId);
             if (unique) {
                 CustomerContactAddRequest contactAddRequest = new CustomerContactAddRequest();
