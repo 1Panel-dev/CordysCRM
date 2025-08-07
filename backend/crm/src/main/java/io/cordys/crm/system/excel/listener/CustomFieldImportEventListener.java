@@ -185,7 +185,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 				if (businessFieldMap.containsKey(field.getInternalKey())) {
 					BusinessModuleField businessModuleField = businessFieldMap.get(field.getInternalKey());
 					String fieldName = businessModuleField.getBusinessKey();
-					List<String> valList = commonMapper.getValList(CaseFormatUtils.camelToUnderscore(entityClass.getSimpleName()), fieldName, currentOrg);
+					List<String> valList = commonMapper.getCheckValList(CaseFormatUtils.camelToUnderscore(entityClass.getSimpleName()), fieldName, currentOrg);
 					uniqueCheckSet.put(field.getName(), new HashSet<>(valList.stream().distinct().toList()));
 				} else {
 					LambdaQueryWrapper<F> wrapper = new LambdaQueryWrapper<>();
@@ -307,7 +307,8 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			if (uniques.containsKey(v) && !checkFieldValUnique(rowData.get(k), fieldMap.get(v))) {
 				errText.append(v).append(Translator.get("cell.not.unique")).append(";");
 			}
-			if (fieldLenLimit.containsKey(v) && rowData.get(k).length() > fieldLenLimit.get(v)) {
+			if (fieldLenLimit.containsKey(v) && StringUtils.isNotEmpty(rowData.get(k)) &&
+					rowData.get(k).length() > fieldLenLimit.get(v)) {
 				errText.append(v).append(Translator.getWithArgs("over.length", fieldLenLimit.get(v))).append(";");
 			}
 		});

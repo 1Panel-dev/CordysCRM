@@ -4,11 +4,12 @@ import io.cordys.common.util.TimeUtils;
 import io.cordys.crm.system.dto.field.DateTimeField;
 import org.apache.commons.lang3.StringUtils;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 
 /**
  * @author jianxing
@@ -47,9 +48,30 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
     @Override
     public Object text2Value(DateTimeField field, String text) {
         DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-                .appendPattern("[yyyy/M/d H:m:s][yyyy-M-d H:m:s]")
+                .appendOptional(DateTimeFormatter.ofPattern("yyyy-M-d H:m:s"))
+                .appendOptional(DateTimeFormatter.ofPattern("yyyy/M/d H:m:s"))
+                .appendOptional(DateTimeFormatter.ofPattern("yyyy-M-d"))
+                .appendOptional(DateTimeFormatter.ofPattern("yyyy/M/d"))
+                .appendOptional(DateTimeFormatter.ofPattern("yyyy-M"))
+                .appendOptional(DateTimeFormatter.ofPattern("yyyy/M"))
                 .toFormatter();
-        LocalDateTime parse = LocalDateTime.parse(text.contains(" ") ? text : text + " 00:00:00", formatter);
-        return parse.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        TemporalAccessor parsed = formatter.parseBest(text,
+                LocalDateTime::from,
+                LocalDate::from,
+                YearMonth::from);
+
+        Instant instant;
+        if (parsed instanceof LocalDateTime) {
+            instant = ((LocalDateTime) parsed).atZone(ZoneId.systemDefault()).toInstant();
+        } else if (parsed instanceof LocalDate) {
+            instant = ((LocalDate) parsed).atStartOfDay(ZoneId.systemDefault()).toInstant();
+        } else if (parsed instanceof YearMonth) {
+            instant = ((YearMonth) parsed).atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+        } else {
+            throw new DateTimeParseException("无法解析日期时间: " + text, text, 0);
+        }
+
+        return instant.toEpochMilli();
     }
 }

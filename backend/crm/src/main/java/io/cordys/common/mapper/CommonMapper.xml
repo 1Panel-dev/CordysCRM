@@ -289,9 +289,12 @@
         and id != #{resource.id} limit 1
     </select>
 
-    <select id="getValList" resultType="java.lang.String">
+    <select id="getCheckValList" resultType="java.lang.String">
         select `${fieldName}`
-        from `${tableName}`
+        from `${tableName}` t
         where organization_id = #{orgId}
+        <if test="tableName == 'clue'">
+            and (t.transition_type != 'CUSTOMER' or t.transition_type is null) and t.in_shared_pool = false
+        </if>
     </select>
 </mapper>

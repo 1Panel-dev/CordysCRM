@@ -23,7 +23,7 @@ public interface CommonMapper {
      * @param orgId 组织ID
      * @return 值集合
      */
-    List<String> getValList(@Param("tableName") String tableName,
+    List<String> getCheckValList(@Param("tableName") String tableName,
                             @Param("fieldName") String fieldName, @Param("orgId") String orgId);
 }
 
