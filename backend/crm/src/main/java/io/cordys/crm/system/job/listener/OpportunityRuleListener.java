@@ -95,6 +95,7 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
                 boolean closed = opportunityRuleService.checkClosed(opportunity, rule);
                 if (closed) {
                     opportunity.setStage(StageType.FAIL.name());
+                    opportunity.setStatus(false);
                     opportunity.setFailureReason("system");
                     opportunityMapper.updateById(opportunity);
                 }

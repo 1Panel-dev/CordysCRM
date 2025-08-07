@@ -170,7 +170,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			consumer.accept(this.dataList, this.fields, this.blobFields);
 		} catch (Exception e) {
 			// 入库异常,不影响后续批次
-			LogUtils.error("批量插入异常: " + e.getMessage());
+			LogUtils.error("批量插入异常: {}" + e.getMessage());
 		} finally {
 			// 批次插入成功统计
 			successCount += this.dataList.size();
@@ -233,7 +233,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			}
 			dataList.add(entity);
 		} catch (Exception e) {
-			LogUtils.error("clue import error: " + e.getMessage());
+			LogUtils.error("clue import error: {}" + e.getMessage());
 			throw new GenericException(Translator.getWithArgs("import.error", rowIndex + 1).concat(" " + e.getMessage()));
 		}
 	}
