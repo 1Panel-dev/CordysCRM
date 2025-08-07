@@ -45,4 +45,12 @@ public enum ClueStatus {
         }
         return null;
     }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getName() {
+        return name;
+    }
 }
