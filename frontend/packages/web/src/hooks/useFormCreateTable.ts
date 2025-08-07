@@ -659,6 +659,9 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
               width: 180,
               key: field.businessKey || field.id,
               fieldId: field.id,
+              ellipsis: {
+                tooltip: true,
+              },
               render: (row: any) => formatTimeValue(row[field.businessKey || field.id], field.dateType),
               sortOrder: false,
               sorter,
