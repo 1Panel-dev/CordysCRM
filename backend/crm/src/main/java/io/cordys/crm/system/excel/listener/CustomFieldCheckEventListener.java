@@ -3,6 +3,7 @@ package io.cordys.crm.system.excel.listener;
 import cn.idev.excel.context.AnalysisContext;
 import cn.idev.excel.event.AnalysisEventListener;
 import io.cordys.common.constants.BusinessModuleField;
+import io.cordys.common.domain.BaseModuleFieldValue;
 import io.cordys.common.domain.BaseResourceField;
 import io.cordys.common.exception.GenericException;
 import io.cordys.common.mapper.CommonMapper;
@@ -39,15 +40,17 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 	 */
 	private final List<String> requires = new ArrayList<>();
 	/**
-	 * 唯一
+	 * 数据库唯一属性缓存
 	 */
 	private final Map<String, BaseField> uniques = new HashMap<>();
+	private final Map<String, Set<String>> uniqueCheckSet = new ConcurrentHashMap<>();
 	private final CommonMapper commonMapper;
 	private final BaseMapper<T> fieldMapper;
 	/**
 	 * 值缓存, 用来校验Excel字段值是否唯一
 	 */
 	private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
+	private Map<String, BusinessModuleField> businessFieldMap;
 
 	public CustomFieldCheckEventListener(List<BaseField> fields, String source, String currentOrg, BaseMapper<T> fieldMapper) {
 		fields.forEach(field -> {
@@ -74,6 +77,9 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 			throw new GenericException(Translator.get("illegal_header"));
 		}
 		this.headMap = headMap;
+		this.businessFieldMap = Arrays.stream(BusinessModuleField.values()).
+				collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
+		cacheUniqueSet();
 	}
 
 	@Override
@@ -88,6 +94,27 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 	@Override
 	public void doAfterAllAnalysed(AnalysisContext analysisContext) {
 
+	}
+
+	/**
+	 * 缓存一些比对值
+	 */
+	private void cacheUniqueSet() {
+		if (!uniques.isEmpty()) {
+			uniques.values().forEach(field -> {
+				if (businessFieldMap.containsKey(field.getInternalKey())) {
+					BusinessModuleField businessModuleField = businessFieldMap.get(field.getInternalKey());
+					String fieldName = businessModuleField.getBusinessKey();
+					List<String> valList = commonMapper.getValList(sourceTable, fieldName, currentOrg);
+					uniqueCheckSet.put(field.getName(), new HashSet<>(valList.stream().distinct().toList()));
+				} else {
+					LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
+					wrapper.eq(BaseResourceField::getFieldId, field.getId());
+					List<T> sourceList = fieldMapper.selectListByLambda(wrapper);
+					uniqueCheckSet.put(field.getName(), new HashSet<>(sourceList.stream().map(BaseModuleFieldValue::getFieldValue).map(String::valueOf).distinct().toList()));
+				}
+			});
+		}
 	}
 
 	/**
@@ -132,20 +159,15 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 			return false;
 		}
 		// 数据库唯一性校验
-		Map<String, BusinessModuleField> businessModuleFieldMap = Arrays.stream(BusinessModuleField.values()).
-				collect(Collectors.toMap(BusinessModuleField::getKey, Function.identity()));
-		if (businessModuleFieldMap.containsKey(field.getInternalKey())) {
-			BusinessModuleField businessModuleField = businessModuleFieldMap.get(field.getInternalKey());
-			String fieldName = businessModuleField.getBusinessKey();
-			return !commonMapper.checkAddExist(sourceTable, fieldName, val, currentOrg);
-		} else {
-			LambdaQueryWrapper<T> wrapper = new LambdaQueryWrapper<>();
-			wrapper.eq(BaseResourceField::getFieldId, field.getId());
-			wrapper.eq(BaseResourceField::getFieldValue, val);
-			return fieldMapper.selectListByLambda(wrapper).isEmpty();
-		}
+		Set<String> uniqueCheck = uniqueCheckSet.get(field.getName());
+		return !uniqueCheck.contains(val);
 	}
 
+	/**
+	 * 表头是否非法
+	 * @param headMap 表头集合
+	 * @return 是否非法
+	 */
 	private boolean checkIllegalHead(Map<Integer, String> headMap) {
 		boolean illegal = false;
 		Collection<String> values = headMap.values();

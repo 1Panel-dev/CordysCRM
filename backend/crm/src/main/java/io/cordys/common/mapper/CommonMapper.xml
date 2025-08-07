@@ -288,4 +288,10 @@
         and organization_id = #{orgId}
         and id != #{resource.id} limit 1
     </select>
+
+    <select id="getValList" resultType="java.lang.String">
+        select `${fieldName}`
+        from `${tableName}`
+        where organization_id = #{orgId}
+    </select>
 </mapper>
