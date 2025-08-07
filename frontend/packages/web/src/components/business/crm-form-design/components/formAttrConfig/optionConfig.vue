@@ -38,7 +38,7 @@
           :disabled="props.disabled"
           @click="() => handleRadioOptionClick(item.value)"
         />
-        <n-input v-model:value="item.label" :maxlength="255" :disabled="props.disabled" clearable></n-input>
+        <n-input v-model:value="item.label" :maxlength="50" :disabled="props.disabled" clearable></n-input>
         <n-tooltip :delay="300" :show-arrow="false" class="crm-form-design--composition-item-tools-tip">
           <template #trigger>
             <n-button
@@ -226,7 +226,7 @@
         .map((e) => e.trim())
         .filter((e) => e)
         .map((e) => ({
-          label: e,
+          label: e.slice(0, 50),
           value: fieldConfig.value.options?.find((item) => item.label === e)?.value || getGenerateId(),
         }));
       fieldConfig.value.options = newOptions;
