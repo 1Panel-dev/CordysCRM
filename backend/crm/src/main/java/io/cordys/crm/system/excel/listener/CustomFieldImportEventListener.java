@@ -75,6 +75,10 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	 */
 	private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
 	/**
+	 * 限制数据长度的字段
+	 */
+	private final Map<String, Integer> fieldLenLimit = new HashMap<>();
+	/**
 	 * 数据库Mapper(校验数据库值唯一)
 	 */
 	private final CommonMapper commonMapper;
@@ -106,6 +110,14 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			}
 			if (field.needRepeatCheck()) {
 				uniques.put(field.getName(), field);
+			}
+			if (StringUtils.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(),
+					FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name(), FieldType.RADIO.name(),
+					FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name())) {
+				fieldLenLimit.put(field.getName(), 255);
+			}
+			if (StringUtils.equals(field.getType(), FieldType.TEXTAREA.name())) {
+				fieldLenLimit.put(field.getName(), 1000);
 			}
 		});
 		this.fieldMap = fields.stream().collect(Collectors.toMap(BaseField::getName, v -> v));
@@ -144,14 +156,12 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	@Override
 	public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
 		Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
-		if (rowIndex >= 1) {
-			// build entity by row-data
-			boolean skip = checkAndSkip(rowIndex, data);
-			if (!skip) {
-				buildEntityFromRow(rowIndex, data);
-				if (dataList.size() >= batchSize || fields.size() >= batchSize || blobFields.size() > batchSize) {
-					batchProcessData();
-				}
+		// build entity by row-data
+		boolean skip = checkAndSkip(rowIndex, data);
+		if (!skip) {
+			buildEntityFromRow(rowIndex, data);
+			if (dataList.size() >= batchSize || fields.size() >= batchSize || blobFields.size() > batchSize) {
+				batchProcessData();
 			}
 		}
 	}
@@ -217,7 +227,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			setInternal(entity, rowKey);
 			headMap.forEach((k, v) -> {
 				BaseField field = fieldMap.get(v);
-				if (field == null) {
+				if (field == null || field.isSerialNumber()) {
 					return;
 				}
 				Object val = convertValue(rowData.get(k), field);
@@ -295,6 +305,9 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			}
 			if (uniques.containsKey(v) && !checkFieldValUnique(rowData.get(k), fieldMap.get(v))) {
 				errText.append(v).append(Translator.get("cell.not.unique")).append(";");
+			}
+			if (fieldLenLimit.containsKey(v) && rowData.get(k).length() > fieldLenLimit.get(v)) {
+				errText.append(v).append(Translator.getWithArgs("over.length", fieldLenLimit.get(v))).append(";");
 			}
 		});
 		if (StringUtils.isNotEmpty(errText)) {

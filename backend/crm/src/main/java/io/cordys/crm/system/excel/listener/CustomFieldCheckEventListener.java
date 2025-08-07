@@ -51,6 +51,10 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 	 */
 	private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
 	private Map<String, BusinessModuleField> businessFieldMap;
+	/**
+	 * 限制数据长度的字段
+	 */
+	private final Map<String, Integer> fieldLenLimit = new HashMap<>();
 
 	public CustomFieldCheckEventListener(List<BaseField> fields, String source, String currentOrg, BaseMapper<T> fieldMapper) {
 		fields.forEach(field -> {
@@ -59,6 +63,14 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 			}
 			if (field.needRepeatCheck()) {
 				uniques.put(field.getName(), field);
+			}
+			if (StringUtils.equalsAny(field.getType(), FieldType.INPUT.name(), FieldType.INPUT_NUMBER.name(), FieldType.DATE_TIME.name(),
+					FieldType.MEMBER.name(), FieldType.DEPARTMENT.name(), FieldType.DATA_SOURCE.name(), FieldType.RADIO.name(),
+					FieldType.SELECT.name(), FieldType.PHONE.name(), FieldType.LOCATION.name())) {
+				fieldLenLimit.put(field.getName(), 255);
+			}
+			if (StringUtils.equals(field.getType(), FieldType.TEXTAREA.name())) {
+				fieldLenLimit.put(field.getName(), 1000);
 			}
 		});
 		this.fieldMap = fields.stream().collect(Collectors.toMap(BaseField::getName, v -> v));
@@ -85,10 +97,8 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 	@Override
 	public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
 		Integer rowIndex = analysisContext.readRowHolder().getRowIndex();
-		if (rowIndex >= 1) {
-			// validate row data
-			validateRowData(rowIndex, data);
-		}
+		// validate row data
+		validateRowData(rowIndex, data);
 	}
 
 	@Override
@@ -130,6 +140,9 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 			}
 			if (uniques.containsKey(v) && !checkFieldValUnique(rowData.get(k), uniques.get(v))) {
 				errText.append(v).append(Translator.get("cell.not.unique")).append(";");
+			}
+			if (fieldLenLimit.containsKey(v) && rowData.get(k).length() > fieldLenLimit.get(v)) {
+				errText.append(v).append(Translator.getWithArgs("over.length", fieldLenLimit.get(v))).append(";");
 			}
 		});
 		if (StringUtils.isNotEmpty(errText)) {
