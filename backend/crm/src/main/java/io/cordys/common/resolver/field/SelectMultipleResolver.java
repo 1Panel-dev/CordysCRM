@@ -79,8 +79,7 @@ public class SelectMultipleResolver extends AbstractModuleFieldResolver<SelectMu
             }
 
             Map<String, String> optionMap = field.getOptions().stream()
-                    .collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue));
-
+                    .collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue, (v1, v2) -> v1));
             List<String> values = texts.stream()
                     .filter(item -> item != null && optionMap.containsKey(item))
                     .map(optionMap::get)

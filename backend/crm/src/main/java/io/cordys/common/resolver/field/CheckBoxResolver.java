@@ -68,7 +68,7 @@ public class CheckBoxResolver extends AbstractModuleFieldResolver<CheckBoxField>
                 return StringUtils.EMPTY;
             }
             Map<String, String> optionMap = field.getOptions().stream()
-                    .collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue));
+                    .collect(Collectors.toMap(OptionProp::getLabel, OptionProp::getValue, (v1, v2) -> v1));
             List<String> values = texts.stream()
                     .filter(item -> item != null && optionMap.containsKey(item))
                     .map(optionMap::get)
