@@ -349,7 +349,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             if (field.type === FieldTypeEnum.INPUT_MULTIPLE) {
               // 标签直接填充
               formDetail.value[field.id] = Array.isArray(linkField.value)
-                ? linkField.value.splice(0, 10)
+                ? linkField.value.slice(0, 10)
                 : [linkField.value];
             } else {
               // 其他多选类型需匹配名称相等的选项值
@@ -365,7 +365,7 @@ export default function useFormCreateApi(props: FormCreateApiProps) {
             // 文本输入类型可填充任何字段类型值
             if (dataSourceTypes.includes(linkField.type)) {
               // 联动的字段是数据源则填充选项名
-              formDetail.value[field.id] = linkField.value.map((e: Record<string, any>) => e.name);
+              formDetail.value[field.id] = linkField.value.map((e: Record<string, any>) => e.name).join(',');
             } else if (multipleTypes.includes(linkField.type)) {
               // 联动的字段是多选则拼接选项名
               formDetail.value[field.id] = linkField.value.join(',');
