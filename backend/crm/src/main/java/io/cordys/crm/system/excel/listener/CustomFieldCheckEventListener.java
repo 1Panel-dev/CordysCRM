@@ -8,6 +8,7 @@ import io.cordys.common.exception.GenericException;
 import io.cordys.common.mapper.CommonMapper;
 import io.cordys.common.util.CommonBeanFactory;
 import io.cordys.common.util.Translator;
+import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.excel.domain.ExcelErrData;
 import io.cordys.mybatis.BaseMapper;
@@ -147,8 +148,12 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 
 	private boolean checkIllegalHead(Map<Integer, String> headMap) {
 		boolean illegal = false;
-		for (String head : headMap.values()) {
-			if (!fieldMap.containsKey(head)) {
+		Collection<String> values = headMap.values();
+		for (BaseField field : fieldMap.values()) {
+			if (!field.canImport() || StringUtils.equals(field.getType(), FieldType.TEXTAREA.name())) {
+				continue;
+			}
+			if (!values.contains(field.getName())) {
 				illegal = true;
 				break;
 			}

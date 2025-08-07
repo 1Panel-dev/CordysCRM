@@ -11,6 +11,7 @@ import io.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import io.cordys.common.uid.IDGenerator;
 import io.cordys.common.uid.SerialNumGenerator;
 import io.cordys.common.util.*;
+import io.cordys.crm.system.constants.FieldType;
 import io.cordys.crm.system.dto.field.SerialNumberField;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.excel.CustomImportAfterDoConsumer;
@@ -358,8 +359,12 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	 */
 	private boolean checkIllegalHead(Map<Integer, String> headMap) {
 		boolean illegal = false;
-		for (String head : headMap.values()) {
-			if (!fieldMap.containsKey(head)) {
+		Collection<String> values = headMap.values();
+		for (BaseField field : fieldMap.values()) {
+			if (!field.canImport() || StringUtils.equals(field.getType(), FieldType.TEXTAREA.name())) {
+				continue;
+			}
+			if (!values.contains(field.getName())) {
 				illegal = true;
 				break;
 			}

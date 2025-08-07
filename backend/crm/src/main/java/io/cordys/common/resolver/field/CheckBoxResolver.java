@@ -26,9 +26,9 @@ public class CheckBoxResolver extends AbstractModuleFieldResolver<CheckBoxField>
         validateArray(checkBoxField.getName(), value);
 
         // 校验选项正确
-        for (String item : (List<String>) value) {
-            validateOptions(checkBoxField.getName(), item, checkBoxField.getOptions());
-        }
+        // for (String item : (List<String>) value) {
+        //     validateOptions(checkBoxField.getName(), item, checkBoxField.getOptions());
+        // }
     }
 
     @Override

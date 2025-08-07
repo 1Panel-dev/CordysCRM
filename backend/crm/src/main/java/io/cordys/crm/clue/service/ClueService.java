@@ -734,7 +734,7 @@ public class ClueService {
             return ClueImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getSuccess()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {
-            LogUtils.error("clue import pre-check error: ", e.getMessage());
+            LogUtils.error("clue import pre-check error: {}", e.getMessage());
             throw new GenericException(e.getMessage());
         }
     }

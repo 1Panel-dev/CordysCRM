@@ -77,13 +77,13 @@ public class LocationResolver extends AbstractModuleFieldResolver<LocationField>
             if (province.getChildren() != null) {
                 for (RegionCode city : province.getChildren()) {
                     if (city.getCode().equals(code)) {
-                        regionName = province.getName() + "/" + city.getName();
+                        regionName = province.getName() + "-" + city.getName();
                         break;
                     }
 
                     for (RegionCode area : city.getChildren()) {
                         if (area.getCode().equals(code)) {
-                            regionName = province.getName() + "/" + city.getName() + "/" + area.getName();
+                            regionName = province.getName() + "-" + city.getName() + "-" + area.getName();
                             break;
                         }
                     }

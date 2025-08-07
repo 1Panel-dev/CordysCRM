@@ -32,8 +32,7 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
         if (StringUtils.isEmpty(value)) {
             return StringUtils.EMPTY;
         }
-        // replace [ and ]
-        return value.substring(1, value.length() - 1);
+        return String.join(",", JSON.parseArray(value));
     }
 
     @Override
