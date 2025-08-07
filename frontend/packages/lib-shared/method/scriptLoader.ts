@@ -6,10 +6,10 @@ interface ScriptOptions {
 
 const scriptElementsMap = new Map<string, string>();
 
-function extractScriptId(input: string): string | null {
-  const regex = /id\s*=\s*(["']?)([a-zA-Z0-9-]+\d+)\1/;
+function extractSQLBotId(input: string) {
+  const regex = /sqlbot-[^\s"']+/;
   const match = input.match(regex);
-  return match ? match[2] : null;
+  return match ? match[0] : null;
 }
 
 export function loadScript(scriptContent: string, options: ScriptOptions): Promise<void> {
@@ -19,7 +19,7 @@ export function loadScript(scriptContent: string, options: ScriptOptions): Promi
 
     // 处理IIFE格式
     if (content.startsWith('(function')) {
-      const scriptId = extractScriptId(content);
+      const scriptId = extractSQLBotId(content);
       if (scriptId) {
         scriptElementsMap.set(options.identifier, scriptId);
       }
@@ -60,13 +60,20 @@ export function loadScript(scriptContent: string, options: ScriptOptions): Promi
 export function removeScript(identifier: string): void {
   const scriptId = scriptElementsMap.get(identifier);
   if (scriptId && identifier === CompanyTypeEnum.SQLBot) {
-    // 删除script
-    const scriptElement = document.getElementById(scriptId);
-    if (scriptElement) scriptElement.remove();
-    // 删除页面上渲染的div
-    const replacedId = scriptId.replace('float-script', 'root');
-    const replacedElement = document.getElementById(replacedId);
-    if (replacedElement?.parentNode) (replacedElement.parentNode as Element).remove();
+    // 清理全局单例标记
+    const propName = `${scriptId}-state`;
+    delete (window as any)[propName];
+    if ((window as any).sqlbot_assistant_handler) {
+      delete (window as any).sqlbot_assistant_handler;
+    }
+    // 删除页面上渲染的
+    const floatingElements = document.querySelectorAll('[id^="sqlbot-"]');
+    floatingElements.forEach((el) => {
+      if (el.parentNode && !el.parentNode.isEqualNode(document.body) && !el.parentNode.isEqualNode(document.head)) {
+        (el.parentNode as Element).remove();
+      }
+      el.remove();
+    });
     scriptElementsMap.delete(identifier);
   }
 }
