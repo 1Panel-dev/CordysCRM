@@ -496,16 +496,12 @@
                     permission: ['CLUE_MANAGEMENT:READ', 'CUSTOMER_MANAGEMENT:ADD'],
                     allPermission: true,
                   },
-                  ...([CustomerSearchTypeEnum.DEPARTMENT, CustomerSearchTypeEnum.SELF].includes(activeTab.value)
-                    ? []
-                    : [
-                        {
-                          label: t('common.delete'),
-                          key: 'delete',
-                          danger: true,
-                          permission: ['CLUE_MANAGEMENT:DELETE'],
-                        },
-                      ]),
+                  {
+                    label: t('common.delete'),
+                    key: 'delete',
+                    danger: true,
+                    permission: ['CLUE_MANAGEMENT:DELETE'],
+                  },
                 ],
                 onSelect: (key: string) => handleActionSelect(row, key),
                 onCancel: () => {
