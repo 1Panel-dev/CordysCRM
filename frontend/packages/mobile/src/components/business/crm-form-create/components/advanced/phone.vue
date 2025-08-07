@@ -9,7 +9,7 @@
         <van-field
           v-model="phoneNumber"
           class="phone-number !p-0"
-          type="tel"
+          type="digit"
           :disabled="props.fieldConfig.editable === false"
           :maxlength="maxLength"
           :path="props.fieldConfig.id"
