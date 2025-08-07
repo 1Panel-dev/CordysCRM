@@ -85,8 +85,9 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 		if (headMap == null) {
 			throw new GenericException(Translator.get("user_import_table_header_missing"));
 		}
-		if (checkIllegalHead(headMap)) {
-			throw new GenericException(Translator.get("illegal_header"));
+		String errHead = checkIllegalHead(headMap);
+		if (StringUtils.isNotEmpty(errHead)) {
+			throw new GenericException(Translator.getWithArgs("illegal_header", errHead));
 		}
 		this.headMap = headMap;
 		this.businessFieldMap = Arrays.stream(BusinessModuleField.values()).
@@ -181,18 +182,16 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 	 * @param headMap 表头集合
 	 * @return 是否非法
 	 */
-	private boolean checkIllegalHead(Map<Integer, String> headMap) {
-		boolean illegal = false;
+	private String checkIllegalHead(Map<Integer, String> headMap) {
 		Collection<String> values = headMap.values();
 		for (BaseField field : fieldMap.values()) {
 			if (!field.canImport() || StringUtils.equals(field.getType(), FieldType.TEXTAREA.name())) {
 				continue;
 			}
 			if (!values.contains(field.getName())) {
-				illegal = true;
-				break;
+				return field.getName();
 			}
 		}
-		return illegal;
+		return null;
 	}
 }
