@@ -710,8 +710,8 @@ public class ClueService {
                 clueFieldBlobMapper.batchInsert(clueFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ClueFieldBlob(), field)).toList());
             };
             CustomFieldImportEventListener<Clue, ClueField> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, currentOrg, currentUser,
-                    clueFieldMapper, afterDo);
-            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).sheet().doRead();
+                    clueFieldMapper, afterDo, 2000);
+            FastExcelFactory.read(file.getInputStream(), eventListener).headRowNumber(1).ignoreEmptyRow(true).sheet().doRead();
             return ClueImportResponse.builder().errorMessages(eventListener.getErrList())
                     .successCount(eventListener.getDataList().size()).failCount(eventListener.getErrList().size()).build();
         } catch (Exception e) {

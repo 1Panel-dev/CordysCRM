@@ -18,6 +18,7 @@ import io.cordys.excel.domain.ExcelErrData;
 import io.cordys.mybatis.BaseMapper;
 import io.cordys.mybatis.lambda.LambdaQueryWrapper;
 import lombok.Getter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
@@ -32,12 +33,16 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	 * 主表数据
 	 */
 	@Getter
-	private List<T> dataList = new ArrayList<>();
+	private final List<T> dataList;
 	/**
 	 * 自定义字段集合&Blob字段集合
 	 */
-	private List<BaseResourceField> fields = new ArrayList<>();
-	private List<BaseResourceField> blobFields = new ArrayList<>();
+	private final List<BaseResourceField> fields;
+	private final List<BaseResourceField> blobFields;
+	/**
+	 * 批次限制
+	 */
+	private final int batchSize;
 	/**
 	 * 业务实体
 	 */
@@ -46,42 +51,52 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	 * setter cache
 	 */
 	private final Map<String, Method> setterCache = new HashMap<>();
-	@Getter
-	protected List<ExcelErrData<?>> errList = new ArrayList<>();
+	/**
+	 * 系统参数 {当前组织, 操作人}
+	 */
 	private final String currentOrg;
 	private final String operator;
+	/**
+	 * 初始化集合参数 {表头, 字段, 内置业务字段}
+	 */
 	private Map<Integer, String> headMap;
-	private final CommonMapper commonMapper;
-	private final BaseMapper<F> fieldMapper;
 	private final Map<String, BaseField> fieldMap;
 	private Map<String, BusinessModuleField> businessFieldMap;
 	/**
-	 * 必填
+	 * 校验属性 {必填, 唯一}
 	 */
 	private final List<String> requires = new ArrayList<>();
-	/**
-	 * 唯一
-	 */
 	private final List<String> uniques = new ArrayList<>();
+	/**
+	 * 值缓存(校验Excel字段值唯一)
+	 */
+	private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
+	/**
+	 * 数据库Mapper(校验数据库值唯一)
+	 */
+	private final CommonMapper commonMapper;
+	private final BaseMapper<F> fieldMapper;
+	/**
+	 * 校验错误信息
+	 */
+	@Getter
+	protected List<ExcelErrData<?>> errList = new ArrayList<>();
 	/**
 	 * 后置处理函数
 	 */
 	private final CustomImportAfterDoConsumer<T, BaseResourceField> consumer;
 	/**
-	 * 序列化字段
+	 * 序列化字段及生成器
 	 */
 	private BaseField serialField;
-	/**
-	 * 序列化生成器
-	 */
 	private final SerialNumGenerator serialNumGenerator;
 	/**
-	 * 值缓存, 用来校验Excel字段值是否唯一
+	 * 成功条数
 	 */
-	private final Map<String, Set<String>> excelValueCache = new ConcurrentHashMap<>();
+	private int successCount;
 
 	public CustomFieldImportEventListener(List<BaseField> fields, Class<T> clazz, String currentOrg, String operator,
-										  BaseMapper<F> fieldMapper, CustomImportAfterDoConsumer<T, BaseResourceField> consumer) {
+										  BaseMapper<F> fieldMapper, CustomImportAfterDoConsumer<T, BaseResourceField> consumer, int batchSize) {
 		fields.forEach(field -> {
 			if (field.needRequireCheck()) {
 				requires.add(field.getName());
@@ -98,6 +113,12 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 		this.serialNumGenerator = CommonBeanFactory.getBean(SerialNumGenerator.class);
 		this.fieldMapper = fieldMapper;
 		this.consumer = consumer;
+		this.batchSize = batchSize > 0 ? batchSize : 2000;
+		// 初始化大小,扩容有开销
+		this.dataList = new ArrayList<>(batchSize);
+		this.fields = new ArrayList<>(batchSize);
+		this.blobFields = new ArrayList<>(batchSize);
+		// 缓存方法, 频繁反射有开销
 		cacheSetterMethods();
 	}
 
@@ -124,14 +145,38 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			boolean skip = checkAndSkip(rowIndex, data);
 			if (!skip) {
 				buildEntityFromRow(rowIndex, data);
+				if (dataList.size() >= batchSize || fields.size() >= batchSize || blobFields.size() > batchSize) {
+					batchProcessData();
+				}
 			}
 		}
 	}
 
 	@Override
 	public void doAfterAllAnalysed(AnalysisContext analysisContext) {
-		// 执行入库
-		consumer.accept(this.dataList, this.fields, this.blobFields);
+		if (CollectionUtils.isNotEmpty(this.dataList) || CollectionUtils.isNotEmpty(this.fields) || CollectionUtils.isNotEmpty(this.blobFields)) {
+			batchProcessData();
+		}
+		LogUtils.info("线索导入完成, 总行数: {}", successCount);
+	}
+
+	/**
+	 * 批量入库操作
+	 */
+	private void batchProcessData() {
+		try {
+			// 执行入库
+			consumer.accept(this.dataList, this.fields, this.blobFields);
+		} catch (Exception e) {
+			// 入库异常,不影响后续批次
+			LogUtils.error("批量插入异常: " + e.getMessage());
+		} finally {
+			// 批次插入成功统计
+			successCount += this.dataList.size();
+			this.dataList.clear();
+			this.fields.clear();
+			this.blobFields.clear();
+		}
 	}
 
 	/**
@@ -204,8 +249,7 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 		}
 		try {
 			AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(field.getType());
-			Object valObj = customFieldResolver.text2Value(field, text.toString());
-			return valObj;
+			return customFieldResolver.text2Value(field, text);
 		} catch (Exception e) {
 			LogUtils.error(String.format("parse field %s error, %s cannot be transfer, error: %s", field.getName(), text, e.getMessage()));
 		}
