@@ -320,4 +320,7 @@
   :deep(.n-tab-pane) {
     @apply h-full overflow-hidden;
   }
+  :deep(.n-tree-node-content) {
+    max-width: 100% !important;
+  }
 </style>

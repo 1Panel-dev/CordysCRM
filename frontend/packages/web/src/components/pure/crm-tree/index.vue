@@ -121,7 +121,7 @@
       searchDebounce: 300,
       selectable: true,
       draggable: false,
-      titleTooltipPosition: 'top',
+      titleTooltipPosition: 'top-start',
       fieldNames: () => ({
         keyField: 'key',
         labelField: 'label',
