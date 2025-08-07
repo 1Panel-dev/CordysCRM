@@ -6,6 +6,81 @@ interface ScriptOptions {
 
 const scriptElementsMap = new Map<string, string>();
 
+// 设置拖拽功能
+function setupDrag(button: HTMLElement | null) {
+  if (!button) return;
+  let isDragging = false;
+  let startX: number;
+  let startY: number;
+  let startLeft: number;
+  let startTop: number;
+
+  // 移动
+  const move = (e: MouseEvent) => {
+    button.style.cursor = 'grabbing';
+
+    // 移动超过5px才认为是拖动
+    if (!isDragging && (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5)) {
+      isDragging = true;
+    }
+
+    if (isDragging) {
+      // 计算新位置
+      const newLeft = startLeft + e.clientX - startX;
+      const newTop = startTop + e.clientY - startY;
+
+      // 边界检查(可选) - 确保元素不会移出视口
+      const maxX = window.innerWidth - button.offsetWidth;
+      const maxY = window.innerHeight - button.offsetHeight;
+
+      // 设置新位置(限制在边界内)
+      button.style.left = `${Math.max(0, Math.min(newLeft, maxX))}px`;
+      button.style.top = `${Math.max(0, Math.min(newTop, maxY))}px`;
+
+      button.style.right = 'auto';
+      button.style.bottom = 'auto';
+    }
+  };
+
+  // 停止拖动
+  const stopDrag = () => {
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('mouseup', stopDrag);
+    button.style.cursor = 'pointer';
+
+    // 如果是拖拽操作(不是点击)，则阻止接下来的点击事件
+    if (isDragging) {
+      const clickHandler = (e: Event) => {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        button.removeEventListener('click', clickHandler);
+      };
+
+      button.addEventListener('click', clickHandler, true);
+
+      // 300ms后移除点击拦截
+      setTimeout(() => {
+        button.removeEventListener('click', clickHandler, true);
+      }, 300);
+    }
+  };
+
+  // 鼠标按下时记录初始位置
+  button.addEventListener('mousedown', (e: MouseEvent) => {
+    isDragging = false;
+    startX = e.clientX;
+    startY = e.clientY;
+
+    const style = window.getComputedStyle(button);
+    startLeft = parseInt(style.left, 10);
+    startTop = parseInt(style.top, 10);
+
+    // 添加移动和松开事件
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', stopDrag);
+  });
+}
+
 function extractSQLBotId(input: string) {
   const regex = /sqlbot-[^\s"']+/;
   const match = input.match(regex);
@@ -47,6 +122,12 @@ export function loadScript(scriptContent: string, options: ScriptOptions): Promi
         }
         script.setAttribute(attr.name, attr.value);
       }
+      script.onload = () => {
+        setTimeout(() => {
+          const button = document.querySelector('.sqlbot-assistant-chat-button');
+          setupDrag(button as HTMLElement);
+        }, 300); // 等待DOM渲染
+      };
 
       document.body.appendChild(script);
       resolve();
