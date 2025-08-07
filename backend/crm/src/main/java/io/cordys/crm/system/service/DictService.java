@@ -200,12 +200,14 @@ public class DictService {
 	 */
 	public DictConfigDTO getDictConf(String module, String orgId) {
 		List<Dict> dictList = getDictListByType(module, orgId);
+		Dict sysDt = new Dict();
+		sysDt.setId("system");
 		if (StringUtils.equalsAny(module, DictModule.CLUE_POOL_RS.name(), DictModule.CUSTOMER_POOL_RS.name())) {
-			Dict sysDt = new Dict();
-			sysDt.setId("system");
 			sysDt.setName(Translator.get("system.auto.recycle"));
-			dictList.addLast(sysDt);
+		} else {
+			sysDt.setName(Translator.get("system.auto.closed"));
 		}
+		dictList.addLast(sysDt);
 		LambdaQueryWrapper<DictConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
 		configLambdaQueryWrapper.eq(DictConfig::getModule, module).eq(DictConfig::getOrganizationId, orgId);
 		List<DictConfig> configs = dictConfigMapper.selectListByLambda(configLambdaQueryWrapper);

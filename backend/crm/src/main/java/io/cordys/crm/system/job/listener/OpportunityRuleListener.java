@@ -1,6 +1,7 @@
 package io.cordys.crm.system.job.listener;
 
 import io.cordys.common.util.LogUtils;
+import io.cordys.crm.opportunity.constants.StageType;
 import io.cordys.crm.opportunity.domain.Opportunity;
 import io.cordys.crm.opportunity.domain.OpportunityRule;
 import io.cordys.crm.opportunity.service.OpportunityRuleService;
@@ -93,7 +94,8 @@ public class OpportunityRuleListener implements ApplicationListener<ExecuteEvent
             if (ownerIds.contains(opportunity.getOwner())) {
                 boolean closed = opportunityRuleService.checkClosed(opportunity, rule);
                 if (closed) {
-                    opportunity.setStatus(false);
+                    opportunity.setStage(StageType.FAIL.name());
+                    opportunity.setFailureReason("system");
                     opportunityMapper.updateById(opportunity);
                 }
             }
