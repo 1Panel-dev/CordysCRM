@@ -11,6 +11,7 @@ import io.cordys.common.dto.ExportHeadDTO;
 import io.cordys.common.resolver.field.AbstractModuleFieldResolver;
 import io.cordys.common.resolver.field.ModuleFieldResolverFactory;
 import io.cordys.common.util.CommonBeanFactory;
+import io.cordys.common.util.JSON;
 import io.cordys.crm.system.domain.ExportTask;
 import io.cordys.crm.system.dto.field.base.BaseField;
 import io.cordys.crm.system.service.LogService;
@@ -152,7 +153,7 @@ public abstract class BaseExportService {
             // 获取字段解析器
             AbstractModuleFieldResolver customFieldResolver = ModuleFieldResolverFactory.getResolver(fieldConfig.getType());
             // 将数据库中的字符串值,转换为对应的对象值
-            Object objectValue = customFieldResolver.trans2Value(fieldConfig, value.toString());
+            Object objectValue = customFieldResolver.trans2Value(fieldConfig, value instanceof List ? JSON.toJSONString(value) : value.toString());
             dataList.add(objectValue);
         });
     }

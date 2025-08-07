@@ -83,6 +83,7 @@ public class RegionUtils {
 		if (code.length() != 6) {
 			return StringUtils.EMPTY;
 		}
-		return queue.isEmpty() ? code : code.concat("-" + queue.poll());
+		code = code + "-";
+		return queue.isEmpty() ? code : code.concat(queue.poll());
 	}
 }
