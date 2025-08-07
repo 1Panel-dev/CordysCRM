@@ -41,6 +41,7 @@ public class ModuleFieldResolverFactory {
         resolverMap.put(FieldType.DEPARTMENT_MULTIPLE.name(), new DepartmentMultipleResolver());
 
         resolverMap.put(FieldType.LOCATION.name(), new LocationResolver());
+        resolverMap.put(FieldType.PHONE.name(), new PhoneResolver());
     }
 
     public static AbstractModuleFieldResolver getResolver(String type) {

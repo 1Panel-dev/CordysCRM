@@ -46,7 +46,9 @@ public class DateTimeResolver extends AbstractModuleFieldResolver<DateTimeField>
 
     @Override
     public Object text2Value(DateTimeField field, String text) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/M/d H:m:s");
+        DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                .appendPattern("[yyyy/M/d H:m:s][yyyy-M-d H:m:s]")
+                .toFormatter();
         LocalDateTime parse = LocalDateTime.parse(text.contains(" ") ? text : text + " 00:00:00", formatter);
         return parse.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
