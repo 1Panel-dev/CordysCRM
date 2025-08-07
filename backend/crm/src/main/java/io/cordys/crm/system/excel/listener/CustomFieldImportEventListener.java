@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CustomFieldImportEventListener <T, F extends BaseResourceField> extends AnalysisEventListener<Map<Integer, String>> {
@@ -84,6 +85,12 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 	private final CommonMapper commonMapper;
 	private final BaseMapper<F> fieldMapper;
 	/**
+	 * 正则校验
+	 */
+	private final Map<String, Pattern> regexMap = new HashMap<>();
+	public static final String PHONE_REGEX = "^\\(\\+(86)\\)\\s?1[3-9]\\d{9}$|^\\(\\+(852|853)\\)\\s?\\d{8}$|^\\(\\+(886)\\)\\s?\\d{9,10}$";
+	private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
+	/**
 	 * 校验错误信息
 	 */
 	@Getter
@@ -118,6 +125,9 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			}
 			if (StringUtils.equals(field.getType(), FieldType.TEXTAREA.name())) {
 				fieldLenLimit.put(field.getName(), 1000);
+			}
+			if (StringUtils.equals(field.getType(), FieldType.PHONE.name())) {
+				regexMap.put(field.getName(), PHONE_PATTERN);
 			}
 		});
 		this.fieldMap = fields.stream().collect(Collectors.toMap(BaseField::getName, v -> v));
@@ -310,6 +320,12 @@ public class CustomFieldImportEventListener <T, F extends BaseResourceField> ext
 			if (fieldLenLimit.containsKey(v) && StringUtils.isNotEmpty(rowData.get(k)) &&
 					rowData.get(k).length() > fieldLenLimit.get(v)) {
 				errText.append(v).append(Translator.getWithArgs("over.length", fieldLenLimit.get(v))).append(";");
+			}
+			if (regexMap.containsKey(v) && StringUtils.isNotEmpty(rowData.get(k))) {
+				Pattern pattern = regexMap.get(v);
+				if (!pattern.matcher(rowData.get(k)).matches()) {
+					errText.append(v).append(Translator.get("phone.wrong.format")).append(";");
+				}
 			}
 		});
 		if (StringUtils.isNotEmpty(errText)) {
