@@ -392,12 +392,12 @@
         });
       } else {
         setLoadListParams({ id: props.sourceId });
-        await loadList();
+        await loadList(true);
         backupData.value = cloneDeep(propsRes.value.data);
       }
     } else {
       setLoadListParams({ keyword: val ?? keyword.value, viewId: activeTab.value });
-      await loadList();
+      await loadList(true);
       backupData.value = cloneDeep(propsRes.value.data);
     }
     crmTableRef.value?.scrollTo({ top: 0 });
