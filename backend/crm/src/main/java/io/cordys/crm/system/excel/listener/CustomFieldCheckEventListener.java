@@ -60,7 +60,7 @@ public class CustomFieldCheckEventListener<T extends BaseResourceField> extends 
 	 * 正则校验
 	 */
 	private final Map<String, Pattern> regexMap = new HashMap<>();
-	public static final String PHONE_REGEX = "^\\(\\+(86)\\)\\s?1[3-9]\\d{9}$|^\\(\\+(852|853)\\)\\s?\\d{8}$|^\\(\\+(886)\\)\\s?\\d{9,10}$";
+	public static final String PHONE_REGEX = "^[(（]\\+(86)[)）]\\s?1[3-9]\\d{9}$|^[(（]\\+(852|853)[)）]\\s?\\d{8}$|^[(（]\\+(886)[)）]\\s?\\d{9,10}$";
 	private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
 
 	public CustomFieldCheckEventListener(List<BaseField> fields, String source, String currentOrg, BaseMapper<T> fieldMapper) {

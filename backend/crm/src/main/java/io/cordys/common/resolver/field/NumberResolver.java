@@ -2,6 +2,7 @@ package io.cordys.common.resolver.field;
 
 import io.cordys.crm.system.dto.field.InputNumberField;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.FormulaParseException;
 
 import java.math.BigDecimal;
 
@@ -31,6 +32,11 @@ public class NumberResolver extends AbstractModuleFieldResolver<InputNumberField
     public Object text2Value(InputNumberField field, String text) {
         if (StringUtils.equals(field.getNumberFormat(), PERCENT_FORMAT)) {
             return text.replace(PERCENT_SUFFIX, StringUtils.EMPTY);
+        }
+        try {
+            new BigDecimal(text);
+        } catch (NumberFormatException e) {
+            throw new FormulaParseException("无法解析数值类型: " + text);
         }
         return text;
     }
