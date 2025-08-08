@@ -248,9 +248,15 @@
     refresh();
   }
 
-  onMounted(async () => {
-    await initDepartList();
-    refresh();
+  watch(
+    () => params.value.searchType,
+    () => {
+      refresh();
+    }
+  );
+
+  onMounted(() => {
+    initDepartList();
   });
 </script>
 
