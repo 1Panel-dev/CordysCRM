@@ -11,11 +11,11 @@ import { loadScript } from '@lib/shared/method/scriptLoader';
 
 import {
   closeMessageSubscribe,
-  getConfigSynchronization,
   getHomeMessageList,
   getKey,
   getModuleNavConfigList,
   getSystemVersion,
+  getThirdConfigByType,
   getUnReadAnnouncement,
 } from '@/api/modules';
 import useUserStore from '@/store/modules/user';
@@ -294,12 +294,8 @@ const useAppStore = defineStore('app', {
     async showSQLBot() {
       const licenseStore = useLicenseStore();
       if (!licenseStore.hasLicense()) return;
-      const res = await getConfigSynchronization();
-      const sqlItem = res.find((item) => item.type === CompanyTypeEnum.SQLBot);
-
-      if (sqlItem && sqlItem.sqlBotChatEnable) {
-        await loadScript(sqlItem.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
-      }
+      const res = await getThirdConfigByType(CompanyTypeEnum.SQLBot);
+      await loadScript(res.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
     },
   },
   persist: {

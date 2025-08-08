@@ -5,12 +5,7 @@ import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
 import { getSSE } from '@lib/shared/method/index';
 import { loadScript } from '@lib/shared/method/scriptLoader';
 
-import {
-  closeMessageSubscribe,
-  getConfigSynchronization,
-  getHomeMessageList,
-  getUnReadAnnouncement,
-} from '@/api/modules';
+import { closeMessageSubscribe, getHomeMessageList, getThirdConfigByType, getUnReadAnnouncement } from '@/api/modules';
 import useLicenseStore from '@/store/modules/setting/license';
 import useUserStore from '@/store/modules/user';
 import { hasAnyPermission } from '@/utils/permission';
@@ -138,12 +133,8 @@ const useAppStore = defineStore('app', {
     async showSQLBot() {
       const licenseStore = useLicenseStore();
       if (!licenseStore.hasLicense()) return;
-      const res = await getConfigSynchronization();
-      const sqlItem = res.find((item) => item.type === CompanyTypeEnum.SQLBot);
-
-      if (sqlItem && sqlItem.sqlBotChatEnable) {
-        await loadScript(sqlItem.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
-      }
+      const res = await getThirdConfigByType(CompanyTypeEnum.SQLBot);
+      await loadScript(res.appSecret as string, { identifier: CompanyTypeEnum.SQLBot });
     },
   },
   persist: {

@@ -30,6 +30,7 @@ import {
   UpdatePersonalUrl,
   UpdateUserPasswordUrl,
 } from '@lib/shared/api/requrls/system/business';
+import { CompanyTypeEnum } from '@lib/shared/enums/commonEnum';
 import type { CommonList } from '@lib/shared/models/common';
 import { CustomerFollowPlanTableParams, FollowDetailItem } from '@lib/shared/models/customer';
 import type {
@@ -88,7 +89,10 @@ export default function useProductApi(CDR: CordysAxios) {
 
   // 根据类型获取开启的三方扫码设置
   function getThirdConfigByType(type: string) {
-    return CDR.get<ConfigSynchronization>({ url: `${GetThirdConfigByTypeUrl}/${type}` });
+    return CDR.get<ConfigSynchronization>(
+      { url: `${GetThirdConfigByTypeUrl}/${type}` },
+      { noErrorTip: type === CompanyTypeEnum.SQLBot }
+    );
   }
 
   // 获取三方应用扫码类型集合
