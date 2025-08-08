@@ -9,7 +9,8 @@ import io.cordys.crm.opportunity.dto.request.OpportunityPageRequest;
 import io.cordys.crm.opportunity.dto.request.OpportunityTransferRequest;
 import io.cordys.crm.opportunity.dto.response.OpportunityDetailResponse;
 import io.cordys.crm.opportunity.dto.response.OpportunityListResponse;
-import io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse;
+import io.cordys.crm.search.response.GlobalOpportunityResponse;
+import io.cordys.crm.search.response.OpportunityRepeatResponse;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -38,4 +39,6 @@ public interface ExtOpportunityMapper {
     List<OpportunityListResponse> getListByIds(@Param("ids") List<String> ids);
 
     Long selectOpportunityCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("amount")  boolean amount);
+
+    List<GlobalOpportunityResponse> globalSearchList(@Param("request") OpportunityPageRequest request, @Param("orgId") String orgId);
 }

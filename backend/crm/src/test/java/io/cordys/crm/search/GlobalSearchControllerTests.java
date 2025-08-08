@@ -1,0 +1,144 @@
+package io.cordys.crm.search;
+
+import io.cordys.common.constants.FormKey;
+import io.cordys.common.constants.InternalUser;
+import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.domain.BaseModuleFieldValue;
+import io.cordys.common.pager.Pager;
+import io.cordys.common.util.BeanUtils;
+import io.cordys.crm.base.BaseTest;
+import io.cordys.crm.customer.domain.Customer;
+import io.cordys.crm.customer.domain.CustomerContact;
+import io.cordys.crm.customer.domain.CustomerField;
+import io.cordys.crm.customer.dto.request.CustomerAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerContactAddRequest;
+import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
+import io.cordys.crm.customer.dto.request.CustomerPageRequest;
+import io.cordys.crm.search.response.GlobalCustomerContactResponse;
+import io.cordys.crm.search.response.GlobalCustomerResponse;
+import io.cordys.crm.system.domain.ModuleField;
+import io.cordys.crm.system.domain.ModuleForm;
+import io.cordys.mybatis.BaseMapper;
+import jakarta.annotation.Resource;
+import org.junit.jupiter.api.*;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+public class GlobalSearchControllerTests extends BaseTest {
+
+
+    @Resource
+    private BaseMapper<Customer> customerMapper;
+    @Resource
+    private BaseMapper<CustomerField> customerFieldMapper;
+    @Resource
+    private BaseMapper<ModuleField> moduleFieldMapper;
+    @Resource
+    private BaseMapper<ModuleForm> moduleFormMapper;
+    @Resource
+    private BaseMapper<CustomerContact> customerContactMapper;
+
+    void addCustomer() throws Exception {
+        ModuleForm moduleForm = getModuleForm();
+
+        ModuleField example = new ModuleField();
+        example.setFormId(moduleForm.getId());
+        ModuleField moduleField = moduleFieldMapper.select(example)
+                .stream()
+                .filter(field -> StringUtils.equals(field.getInternalKey(), "customerLevel"))
+                .findFirst().orElse(null);
+
+        // 请求成功
+        CustomerAddRequest request = new CustomerAddRequest();
+        request.setName("aa1");
+        request.setOwner("bb1");
+        request.setModuleFields(List.of(new BaseModuleFieldValue(moduleField.getId(), "1")));
+
+        MvcResult mvcResult = this.requestPostWithOkAndReturn("/customer/add", request);
+        Customer resultData = getResultData(mvcResult, Customer.class);
+        Customer customer = customerMapper.selectByPrimaryKey(resultData.getId());
+        Assertions.assertEquals(request.getName(), customer.getName());
+        Assertions.assertEquals(request.getOwner(), customer.getOwner());
+
+        // 校验字段
+        List<BaseModuleFieldValue> fieldValues = getCustomerFields(customer.getId())
+                .stream().map(customerField -> {
+                    BaseModuleFieldValue baseModuleFieldValue = BeanUtils.copyBean(new BaseModuleFieldValue(), customerField);
+                    baseModuleFieldValue.setFieldValue(customerField.getFieldValue().toString());
+                    return baseModuleFieldValue;
+                })
+                .toList();
+        Assertions.assertEquals(request.getModuleFields(), fieldValues);
+
+        // 创建另一个客户
+        request.setName("another1");
+        request.setOwner(InternalUser.ADMIN.getValue());
+        this.requestPostWithOkAndReturn("/customer/add", request);
+
+    }
+    private List<CustomerField> getCustomerFields(String customerId) {
+        CustomerField example = new CustomerField();
+        example.setResourceId(customerId);
+        return customerFieldMapper.select(example);
+    }
+    private ModuleForm getModuleForm() {
+        ModuleForm example = new ModuleForm();
+        example.setOrganizationId(DEFAULT_ORGANIZATION_ID);
+        example.setFormKey(FormKey.CUSTOMER.getKey());
+        return moduleFormMapper.selectOne(example);
+    }
+
+    void addCustomerContact() throws Exception {
+        // 请求成功
+        CustomerContactAddRequest request = new CustomerContactAddRequest();
+        request.setName("test");
+        request.setCustomerId("customerId");
+        request.setOwner(InternalUser.ADMIN.getValue());
+        request.setPhone("15451222354");
+        this.requestPostWithOkAndReturn("/customer/contact/add", request);
+    }
+
+
+    @Test
+    @Order(0)
+    void testCustomer() throws Exception {
+        CustomerPageRequest request = new CustomerPageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+
+        this.requestPostWithOkAndReturn("/global/search/customer", request);
+
+        addCustomer();
+
+        MvcResult mvcResult = this.requestPostWithOkAndReturn("/global/search/customer", request);
+        Pager<List<GlobalCustomerResponse>> pageResult = getPageResult(mvcResult, GlobalCustomerResponse.class);
+        List<GlobalCustomerResponse> customerList = pageResult.getList();
+        Assertions.assertFalse(customerList.isEmpty());
+    }
+
+    @Test
+    @Order(1)
+    void testCustomerContact() throws Exception {
+        CustomerContactPageRequest request = new CustomerContactPageRequest();
+        request.setCurrent(1);
+        request.setPageSize(10);
+
+        this.requestPostWithOkAndReturn("/global/search/contact", request);
+        addCustomerContact();
+        MvcResult mvcResult = this.requestPostWithOkAndReturn("/global/search/contact", request);
+        Pager<List<GlobalCustomerContactResponse>> pageResult = getPageResult(mvcResult, GlobalCustomerContactResponse.class);
+        List<GlobalCustomerContactResponse> customerList = pageResult.getList();
+        Assertions.assertFalse(customerList.isEmpty());
+
+    }
+
+
+
+}

@@ -333,7 +333,7 @@
         group by name
     </select>
 
-    <select id="getSimilarClueList" resultType="io.cordys.crm.clue.dto.response.ClueRepeatListResponse">
+    <select id="getSimilarClueList" resultType="io.cordys.crm.search.response.GlobalClueResponse">
         select c.id, c.name, c.owner, c.stage, c.contact, c.phone, c.products, su.name as ownerName from clue c
         left join sys_user su on c.owner = su.id
         where c.organization_id = #{orgId} and ( c.name like concat('%', #{customerName}, '%') or c.phone = #{customerName} )
@@ -341,7 +341,7 @@
         order by c.create_time desc 
     </select>
 
-    <select id="getRepeatClueList" resultType="io.cordys.crm.clue.dto.response.ClueRepeatListResponse">
+    <select id="getRepeatClueList" resultType="io.cordys.crm.search.response.GlobalClueResponse">
         select c.id, c.name, c.owner, c.stage, c.contact, c.phone, c.products, su.name as ownerName from clue c
         left join sys_user su on c.owner = su.id
         where c.organization_id = #{orgId} and (c.name = #{customerName} or c.phone = #{customerName})
@@ -399,4 +399,42 @@
         </if>
     </select>
 
+
+    <select id="cluePoolList" resultType="io.cordys.crm.search.response.GlobalCluePoolResponse">
+        select c.id, c.`name`, c.owner, c.create_time, c.update_time, c.create_user,
+        c.update_user, c.collection_time, c.contact, c.phone, c.stage, c.pool_id,
+        c.follower, c.follow_time, c.last_stage, c.transition_type, c.products, c.reason_id
+        from `clue` c
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        where c.organization_id = #{orgId}
+        and c.in_shared_pool is true
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and c.name like concat('%', #{request.keyword},'%')
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
+    </select>
 </mapper>

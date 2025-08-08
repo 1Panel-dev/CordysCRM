@@ -1,4 +1,4 @@
-package io.cordys.crm.opportunity.dto.response;
+package io.cordys.crm.search.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

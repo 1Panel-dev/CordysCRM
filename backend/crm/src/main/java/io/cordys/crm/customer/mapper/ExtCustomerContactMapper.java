@@ -5,7 +5,7 @@ import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.customer.dto.request.ContactUniqueRequest;
 import io.cordys.crm.customer.dto.request.CustomerContactPageRequest;
 import io.cordys.crm.customer.dto.response.CustomerContactListResponse;
-import io.cordys.crm.customer.dto.response.CustomerContactRepeatResponse;
+import io.cordys.crm.search.response.GlobalCustomerContactResponse;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import org.apache.ibatis.annotations.Param;
 
@@ -28,7 +28,7 @@ public interface ExtCustomerContactMapper {
 
     List<OptionDTO> selectContactPhoneOptionByIds(@Param("contactIds") List<String> contactIds);
 
-    List<CustomerContactRepeatResponse> getSimilarContactList(@Param("name")String name, @Param("orgId")String organizationId);
+    List<GlobalCustomerContactResponse> getSimilarContactList(@Param("request") CustomerContactPageRequest request, @Param("userId") String userId, @Param("orgId")String organizationId);
 
     /**
      * 获取联系人数量(唯一性校验)

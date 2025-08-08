@@ -451,7 +451,7 @@
                 INNER JOIN customer c ON o.customer_id = c.id
         where o.id = #{id}
     </select>
-    <select id="getRepeatList" resultType="io.cordys.crm.opportunity.dto.response.OpportunityRepeatResponse">
+    <select id="getRepeatList" resultType="io.cordys.crm.search.response.OpportunityRepeatResponse">
         SELECT
             o.id,
             o.NAME,
@@ -557,5 +557,68 @@
         <if test="request.dataPermission != null and request.dataPermission.self">
             and c.owner = #{request.userId}
         </if>
+    </select>
+
+
+
+    <select id="globalSearchList" resultType="io.cordys.crm.search.response.GlobalOpportunityResponse">
+        SELECT
+        o.id,
+        o.NAME,
+        c.id AS customerId,
+        c.NAME AS customerName,
+        c.in_shared_pool AS inCustomerPool,
+        c.pool_id,
+        o.create_time,
+        o.update_time,
+        o.create_user,
+        o.update_user,
+        o.owner,
+        o.follower,
+        o.follow_time,
+        o.amount,
+        o.possible,
+        o.products,
+        o.last_stage,
+        o.stage,
+        o.status,
+        o.contact_id,
+        o.expected_end_time,
+        o.actual_end_time,
+        o.failure_reason
+        FROM
+        opportunity o
+        INNER JOIN customer c ON o.customer_id = c.id
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+        where o.organization_id = #{orgId}
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and (
+            o.name like concat('%', #{request.keyword},'%')
+            or c.name like concat('%', #{request.keyword},'%')
+            )
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
     </select>
 </mapper>

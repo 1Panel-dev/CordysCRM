@@ -1,12 +1,14 @@
 package io.cordys.crm.clue.mapper;
 
+import io.cordys.common.dto.BasePageRequest;
 import io.cordys.common.dto.DeptDataPermissionDTO;
 import io.cordys.common.dto.OptionDTO;
 import io.cordys.crm.clue.domain.Clue;
 import io.cordys.crm.clue.dto.request.ClueBatchTransferRequest;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
-import io.cordys.crm.clue.dto.response.ClueRepeatListResponse;
+import io.cordys.crm.search.response.GlobalCluePoolResponse;
+import io.cordys.crm.search.response.GlobalClueResponse;
 import io.cordys.crm.home.dto.request.HomeStatisticSearchWrapperRequest;
 import org.apache.ibatis.annotations.Param;
 
@@ -46,14 +48,14 @@ public interface ExtClueMapper {
      * @param customerName 客户名称
      * @return 相似线索列表
      */
-    List<ClueRepeatListResponse> getSimilarClueList(@Param("customerName") String customerName,@Param("orgId") String orgId);
+    List<GlobalClueResponse> getSimilarClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
 
     /**
      * 获取重复线索列表
      * @param customerName 客户名称
      * @return 重复线索列表
      */
-    List<ClueRepeatListResponse> getRepeatClueList(@Param("customerName") String customerName,@Param("orgId") String orgId);
+    List<GlobalClueResponse> getRepeatClueList(@Param("customerName") String customerName, @Param("orgId") String orgId);
 
     /**
      * 查询用户负责的线索条数
@@ -65,4 +67,6 @@ public interface ExtClueMapper {
     List<ClueListResponse> getListByIds(@Param("ids") List<String> ids);
 
     Long selectClueCount(@Param("request") HomeStatisticSearchWrapperRequest request, @Param("unfollowed")  boolean unfollowed);
+
+    List<GlobalCluePoolResponse> cluePoolList(@Param("request") BasePageRequest request, @Param("orgId") String orgId);
 }

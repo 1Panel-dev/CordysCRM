@@ -327,10 +327,42 @@
         </foreach>
     </select>
 
-    <select id="checkRepeatCustomerByName" resultType="io.cordys.crm.customer.dto.response.CustomerRepeatResponse">
-        select c.id, c.name, c.owner, u.name as ownerName, c.create_time
-        from customer c left join sys_user u on c.owner = u.id
-        where c.name like concat('%', #{name},'%') and organization_id = #{orgId}
+    <select id="checkRepeatCustomer" resultType="io.cordys.crm.search.response.GlobalCustomerResponse">
+        select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
+        c.follower, c.follow_time, c.reason_id
+        from customer c
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        where c.organization_id = #{orgId}
+
+        and c.in_shared_pool is false
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and c.name like concat('%', #{request.keyword},'%')
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
     </select>
 
 
@@ -427,5 +459,43 @@
         <if test="request.dataPermission != null and request.dataPermission.self">
             and c.owner = #{request.userId}
         </if>
+    </select>
+
+
+    <select id="customerPoolList" resultType="io.cordys.crm.search.response.GlobalCustomerPoolResponse">
+        select c.id, c.`name`, if(c.in_shared_pool, null, c.owner) as owner, c.create_time, c.update_time, c.create_user, c.update_user, c.collection_time, c.pool_id,
+        c.follower, c.follow_time, c.reason_id
+        from customer c
+
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.filters"/>
+            <property name="tablePrefix" value="filter"/>
+        </include>
+        <include refid="fieldConditionJoin">
+            <property name="conditions" value="request.combineSearch.conditions"/>
+            <property name="tablePrefix" value="combine"/>
+        </include>
+        <include refid="fieldSortJoin">
+            <property name="sort" value="request.sort"/>
+        </include>
+
+        where c.organization_id = #{orgId}
+        and c.in_shared_pool is true
+
+        <if test="request.keyword != null and request.keyword != ''">
+            and c.name like concat('%', #{request.keyword},'%')
+        </if>
+
+        <include refid="filters">
+            <property name="filters" value="request.filters"/>
+        </include>
+
+        <include refid="combine">
+            <property name="combineSearch" value="request.combineSearch"/>
+        </include>
+
+        <include refid="sort">
+            <property name="sort" value="request.sort"/>
+        </include>
     </select>
 </mapper>
