@@ -133,28 +133,6 @@ export default async function useFormCreateTable(props: FormCreateTableProps) {
       },
     },
     {
-      title: t('common.status'),
-      width: 120,
-      key: 'status',
-      ellipsis: {
-        tooltip: true,
-      },
-      filterOptions: [
-        {
-          label: t('common.open'),
-          value: true,
-        },
-        {
-          label: t('common.close'),
-          value: false,
-        },
-      ],
-      filter: true,
-      sortOrder: false,
-      sorter: true,
-      render: props.specialRender?.status,
-    },
-    {
       title: t('opportunity.actualEndTime'),
       width: 160,
       key: 'actualEndTime',

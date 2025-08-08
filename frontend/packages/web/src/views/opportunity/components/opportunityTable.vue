@@ -545,9 +545,6 @@
               { default: () => row.customerName, trigger: () => row.customerName }
             );
       },
-      status: (row: OpportunityItem) => {
-        return row.status ? t('common.open') : t('common.close');
-      },
       stage: (row: OpportunityItem) => {
         const step = lastOpportunitySteps.find((e: any) => e.value === row.stage);
         return step ? step.label : '-';
