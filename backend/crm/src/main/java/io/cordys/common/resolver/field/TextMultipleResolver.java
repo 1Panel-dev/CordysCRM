@@ -7,6 +7,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMultipleField> {
 
@@ -41,6 +43,20 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
             return StringUtils.EMPTY;
         }
         List<String> textList = parseFakeJsonArray(text);
-        return CollectionUtils.isEmpty(textList) ? StringUtils.EMPTY : textList;
+        return CollectionUtils.isEmpty(textList) ? StringUtils.EMPTY : getCorrectFormatInput(textList);
+    }
+
+    /**
+     * 要求标签最多10个, 且每个标签长度不超过64个字符
+     * @param textList 标签列表
+     * @return 符合要求的标签集合
+     */
+    private Set<String> getCorrectFormatInput(List<String> textList) {
+        return textList.stream()
+                .map(String::trim)
+                .filter(StringUtils::isNotBlank)
+                .filter(text -> text.length() <= 64)
+                .limit(10)
+                .collect(Collectors.toSet());
     }
 }
