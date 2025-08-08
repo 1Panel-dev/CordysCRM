@@ -509,12 +509,12 @@
    */
   function listenColWidthChange() {
     // 监听表格 col 元素的宽度变化
-    const colElements = document.querySelectorAll('table col');
+    const colElements = tableFullRef.value?.querySelectorAll('table col');
     const handleResize = debounce(async () => {
       const tableColumnsMap = await getItem<TableStorageConfigItem>(attrs.tableKey as TableKeyEnum);
       if (attrs.tableKey && tableColumnsMap) {
         // 遍历缓存列配置，更新列宽
-        colElements.forEach((e, i) => {
+        colElements?.forEach((e, i) => {
           if (tableColumnsMap.column[i]) {
             tableColumnsMap.column[i].width =
               (e.computedStyleMap()?.get('width') as any)?.value || tableColumnsMap.column[i].width;
@@ -530,7 +530,7 @@
     });
 
     // 批量注册
-    colElements.forEach((col) => observer.observe(col));
+    colElements?.forEach((col) => observer.observe(col));
   }
 
   watch(
