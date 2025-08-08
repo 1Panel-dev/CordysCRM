@@ -6,6 +6,7 @@ import io.cordys.crm.system.dto.field.InputMultipleField;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,7 +44,8 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
             return StringUtils.EMPTY;
         }
         List<String> textList = parseFakeJsonArray(text);
-        return CollectionUtils.isEmpty(textList) ? StringUtils.EMPTY : getCorrectFormatInput(textList);
+        Set<String> correctTags = getCorrectFormatInput(textList);
+        return CollectionUtils.isEmpty(correctTags) ? StringUtils.EMPTY : new ArrayList<>(correctTags);
     }
 
     /**
@@ -56,6 +58,7 @@ public class TextMultipleResolver extends AbstractModuleFieldResolver<InputMulti
                 .map(String::trim)
                 .filter(StringUtils::isNotBlank)
                 .filter(text -> text.length() <= 64)
+                .distinct()
                 .limit(10)
                 .collect(Collectors.toSet());
     }

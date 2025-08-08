@@ -698,16 +698,20 @@ public class ClueService {
         try {
             List<BaseField> fields = moduleFormService.getAllFields(FormKey.CLUE.getKey(), currentOrg);
             CustomImportAfterDoConsumer<Clue, BaseResourceField> afterDo = (clues, clueFields, clueFieldBlobs) -> {
+                List<LogDTO> logs = new ArrayList<>();
                 clues.forEach(clue -> {
                     clue.setCreateTime(System.currentTimeMillis());
                     clue.setUpdateTime(System.currentTimeMillis());
                     clue.setCollectionTime(clue.getCreateTime());
                     clue.setStage(ClueStatus.NEW.name());
                     clue.setInSharedPool(false);
+                    logs.add(new LogDTO(currentOrg, clue.getId(), currentUser, LogType.ADD, LogModule.CLUE_INDEX, clue.getName()));
                 });
                 clueMapper.batchInsert(clues);
                 clueFieldMapper.batchInsert(clueFields.stream().map(field -> BeanUtils.copyBean(new ClueField(), field)).toList());
                 clueFieldBlobMapper.batchInsert(clueFieldBlobs.stream().map(field -> BeanUtils.copyBean(new ClueFieldBlob(), field)).toList());
+                // record logs
+                logService.batchAdd(logs);
             };
             CustomFieldImportEventListener<Clue, ClueField> eventListener = new CustomFieldImportEventListener<>(fields, Clue.class, currentOrg, currentUser,
                     clueFieldMapper, afterDo, 2000);
