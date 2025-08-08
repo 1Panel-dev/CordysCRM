@@ -2,9 +2,7 @@ package io.cordys.crm.system.dto.form.base;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
@@ -22,7 +20,7 @@ public class LinkProp implements Serializable {
 	private List<LinkField> linkFields;
 
 	@Data
-	public static class LinkField {
+	static class LinkField {
 
 		@NotEmpty
 		@Schema(description = "当前字段ID", requiredMode = Schema.RequiredMode.REQUIRED)
