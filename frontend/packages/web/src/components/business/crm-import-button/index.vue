@@ -72,17 +72,20 @@
     validateModal.value = false;
   }
 
-  const validateResultModal = ref<boolean>(false);
-  function checkFinished() {
-    validateLoading.value = false;
-    validateResultModal.value = true;
-  }
-
   const validateInfo = ref<ValidateInfo>({
     failCount: 0,
     successCount: 0,
     errorMessages: [],
   });
+
+  const validateResultModal = ref<boolean>(false);
+  function checkFinished() {
+    validateLoading.value = false;
+    const { failCount, successCount } = validateInfo.value;
+    if (successCount > 0 || failCount > 0) {
+      validateResultModal.value = true;
+    }
+  }
 
   // 导入
   const fileList = ref<CrmFileItem[]>([]);
