@@ -26,6 +26,7 @@ public class ModuleLogServiceFactory {
         logServiceMap.put(LogModule.FOLLOW_UP_RECORD, CommonBeanFactory.getBean(FollowUpRecordLogService.class));
         logServiceMap.put(LogModule.FOLLOW_UP_PLAN, CommonBeanFactory.getBean(FollowUpPlanLogService.class));
         logServiceMap.put(LogModule.SYSTEM_ROLE, CommonBeanFactory.getBean(RoleLogService.class));
+        logServiceMap.put(LogModule.SYSTEM_MODULE, CommonBeanFactory.getBean(SystemModuleLogService.class));
 
     }
 

@@ -142,7 +142,15 @@ public class ModuleFormService {
 		if (businessDeleted) {
 			throw new GenericException(Translator.get("module.form.business_field.deleted"));
 		}
+		ModuleFormConfigDTO oldConfig = new ModuleFormConfigDTO();
+		oldConfig.setFields(getAllFields(saveParam.getFormKey(), currentOrgId));
 		ModuleForm form = forms.getFirst();
+		// 旧表单配置
+		ModuleFormBlob moduleFormBlob = moduleFormBlobMapper.selectByPrimaryKey(form.getId());
+		if (moduleFormBlob != null && StringUtils.isNotEmpty(moduleFormBlob.getProp())) {
+			oldConfig.setFormProp(JSON.parseObject(moduleFormBlob.getProp(), FormProp.class));
+		}
+
 		form.setUpdateUser(currentUserId);
 		form.setUpdateTime(System.currentTimeMillis());
 		moduleFormMapper.updateById(form);
@@ -151,15 +159,19 @@ public class ModuleFormService {
 		formBlob.setProp(JSON.toJSONString(saveParam.getFormProp()));
 		moduleFormBlobMapper.updateById(formBlob);
 
-		// 处理字段
+		// 记录日志上下文
+		ModuleFormConfigDTO newConfig = new ModuleFormConfigDTO();
+		newConfig.setFields(saveParam.getFields());
+		newConfig.setFormProp(saveParam.getFormProp());
 		OperationLogContext.setContext(
 				LogContextInfo.builder()
 						.resourceName(Translator.get(saveParam.getFormKey()) + Translator.get("module.form.setting"))
-						.originalValue(getAllFields(saveParam.getFormKey(), currentOrgId))
-						.modifiedValue(saveParam.getFields())
+						.originalValue(oldConfig)
+						.modifiedValue(newConfig)
 						.build()
 		);
 
+		// 处理字段
 		LambdaQueryWrapper<ModuleField> fieldWrapper = new LambdaQueryWrapper<>();
 		fieldWrapper.eq(ModuleField::getFormId, form.getId());
 		List<ModuleField> fields = moduleFieldMapper.selectListByLambda(fieldWrapper);
