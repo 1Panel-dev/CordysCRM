@@ -24,8 +24,8 @@
         <pagehelper.version>6.1.0</pagehelper.version>
         <quartz-starter.version>1.0.8</quartz-starter.version>
         <redisson-starter.version>3.49.0</redisson-starter.version>
-        <mybatis-starter.version>3.0.4</mybatis-starter.version>
-        <springdoc-openapi-ui.version>2.8.8</springdoc-openapi-ui.version>
+        <mybatis-starter.version>3.0.5</mybatis-starter.version>
+        <springdoc-openapi-ui.version>2.8.9</springdoc-openapi-ui.version>
         <flatten.version>1.6.0</flatten.version>
         <embedded.version>3.1.13</embedded.version>
         <mail.version>2.0.3</mail.version>
@@ -40,13 +40,13 @@
         <sonar.organization>cordys-dev</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <commons-collections4.version>4.5.0</commons-collections4.version>
-        <commons-text.version>1.13.1</commons-text.version>
-        <commons-io.version>2.19.0</commons-io.version>
+        <commons-text.version>1.14.0</commons-text.version>
+        <commons-io.version>2.20.0</commons-io.version>
         <testcontainers.version>1.21.0</testcontainers.version>
-        <kotlin.version>2.0.21</kotlin.version>
+        <kotlin.version>2.2.0</kotlin.version>
         <persistence-api.version>3.2.0</persistence-api.version>
         <guava.version>33.4.8-jre</guava.version>
-        <commons-compress.version>1.27.1</commons-compress.version>
+        <commons-compress.version>1.28.0</commons-compress.version>
         <jwt.version>3.12.1</jwt.version>
 
     </properties>
