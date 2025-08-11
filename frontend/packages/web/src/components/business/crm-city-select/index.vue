@@ -18,8 +18,7 @@
 <script setup lang="ts">
   import { CascaderOption, NCascader } from 'naive-ui';
 
-  import { GAT_PC } from './config';
-  import { provinceAndCityData, regionData } from 'element-china-area-data';
+  import { CHINA_PC, CHINA_PCD, COUNTRIES_TREE } from './config';
 
   export type DataItem<T = Record<string, any>> = CascaderOption & T;
 
@@ -50,9 +49,9 @@
 
   const workingCityOptions = computed<DataItem[]>(() => {
     if (props.range === 'PC') {
-      return [...(provinceAndCityData as DataItem[]), ...GAT_PC];
+      return [CHINA_PC, ...COUNTRIES_TREE] as DataItem[];
     }
-    return [...(regionData as DataItem[]), ...GAT_PC];
+    return [CHINA_PCD, ...COUNTRIES_TREE] as DataItem[];
   });
 
   function handleChange(

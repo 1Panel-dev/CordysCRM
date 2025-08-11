@@ -3,13 +3,12 @@ import dayjs from 'dayjs';
 import JSEncrypt from 'jsencrypt';
 
 import { isObject } from './is';
-import { GAT_PC } from '@cordys/web/src/components/business/crm-city-select/config';
+import { CHINA_PCD, COUNTRIES_TREE } from '@cordys/web/src/components/business/crm-city-select/config';
 import type {
   FormCreateField,
   FormCreateFieldDateType,
 } from '@cordys/web/src/components/business/crm-form-create/types';
 import { getLocalStorage } from '@lib/shared/method/local-storage';
-import { regionData } from 'element-china-area-data';
 
 /**
  * 递归深度合并
@@ -442,7 +441,7 @@ export function findNodePathByKey<T>(
  */
 export function getCityPath(cityId: string | null): string {
   if (!cityId) return '';
-  const nodePathObject = findNodePathByKey([...regionData, ...GAT_PC], cityId, undefined, 'value');
+  const nodePathObject = findNodePathByKey([CHINA_PCD, ...COUNTRIES_TREE], cityId, undefined, 'value');
   const nodePathName = (nodePathObject?.treePath || []).map((item: any) => item.label);
   return nodePathName.length === 1 ? nodePathName[0] : nodePathName.join('/');
 }
