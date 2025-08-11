@@ -1,15 +1,21 @@
 package io.cordys.crm.clue.controller;
 
 import io.cordys.common.constants.PermissionConstants;
+import io.cordys.common.dto.DeptDataPermissionDTO;
+import io.cordys.common.dto.ExportSelectRequest;
 import io.cordys.common.pager.PagerWithOption;
+import io.cordys.common.service.DataScopeService;
 import io.cordys.common.utils.ConditionFilterUtils;
 import io.cordys.context.OrganizationContext;
 import io.cordys.crm.clue.dto.CluePoolDTO;
+import io.cordys.crm.clue.dto.request.ClueExportRequest;
 import io.cordys.crm.clue.dto.request.CluePageRequest;
 import io.cordys.crm.clue.dto.request.PoolClueAssignRequest;
 import io.cordys.crm.clue.dto.request.PoolCluePickRequest;
 import io.cordys.crm.clue.dto.response.ClueGetResponse;
 import io.cordys.crm.clue.dto.response.ClueListResponse;
+import io.cordys.crm.clue.service.ClueExportService;
+import io.cordys.crm.clue.service.CluePoolExportService;
 import io.cordys.crm.clue.service.ClueService;
 import io.cordys.crm.clue.service.PoolClueService;
 import io.cordys.crm.system.dto.request.PoolBatchAssignRequest;
@@ -20,6 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotEmpty;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +41,10 @@ public class PoolClueController {
 	private PoolClueService poolClueService;
 	@Resource
 	private ClueService clueService;
+    @Resource
+    private DataScopeService dataScopeService;
+    @Resource
+    private CluePoolExportService cluePoolExportService;
 
 	@GetMapping("/options")
 	@Operation(summary = "获取当前用户线索池选项")
@@ -98,4 +109,21 @@ public class PoolClueController {
 	public void batchDelete(@RequestBody @NotEmpty List<String> ids) {
 		poolClueService.batchDelete(ids, SessionUtils.getUserId(), OrganizationContext.getOrganizationId());
 	}
+
+    @PostMapping("/export-all")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_EXPORT)
+    @Operation(summary = "导出全部")
+    public String exportAll(@Validated @RequestBody ClueExportRequest request) {
+        ConditionFilterUtils.parseCondition(request);
+        DeptDataPermissionDTO deptDataPermission = dataScopeService.getDeptDataPermission(SessionUtils.getUserId(),
+                OrganizationContext.getOrganizationId(), request.getViewId(), PermissionConstants.CLUE_MANAGEMENT_READ);
+        return cluePoolExportService.exportCrossPage(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), deptDataPermission, LocaleContextHolder.getLocale());
+    }
+
+    @PostMapping("/export-select")
+    @RequiresPermissions(PermissionConstants.CLUE_MANAGEMENT_POOL_EXPORT)
+    @Operation(summary = "导出选中")
+    public String exportSelect(@Validated @RequestBody ExportSelectRequest request) {
+        return cluePoolExportService.exportSelect(request, SessionUtils.getUserId(), OrganizationContext.getOrganizationId(), LocaleContextHolder.getLocale());
+    }
 }

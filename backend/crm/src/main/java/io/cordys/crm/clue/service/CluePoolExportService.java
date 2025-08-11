@@ -38,12 +38,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-/**
- * @author song-cc-rock
- */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class ClueExportService extends BaseExportService {
+public class CluePoolExportService extends ClueExportService {
 
     @Resource
     private ClueService clueService;
@@ -54,12 +51,12 @@ public class ClueExportService extends BaseExportService {
     @Resource
     private ExportTaskService exportTaskService;
 
-    public String exportAll(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO dataPermission, Locale locale) {
+    public String exportCrossPage(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO dataPermission, Locale locale) {
         //用户导出数量 限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
         String fileId = IDGenerator.nextStr();
-        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE.toString(), request.getFileName());
+        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE_POOL.toString(), request.getFileName());
         Thread.startVirtualThread(() -> {
             try {
                 LocaleContextHolder.setLocale(locale);
@@ -97,12 +94,13 @@ public class ClueExportService extends BaseExportService {
         return exportTask.getId();
     }
 
+    @Override
     public String exportSelect(ExportSelectRequest request, String userId, String orgId, Locale locale) {
         // 用户导出数量限制
         exportTaskService.checkUserTaskLimit(userId, ExportConstants.ExportStatus.PREPARED.toString());
 
         String fileId = IDGenerator.nextStr();
-        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE.toString(), request.getFileName());
+        ExportTask exportTask = exportTaskService.saveTask(orgId, fileId, userId, ExportConstants.ExportType.CLUE_POOL.toString(), request.getFileName());
         Thread.startVirtualThread(() -> {
             try {
                 LocaleContextHolder.setLocale(locale);
@@ -146,56 +144,5 @@ public class ClueExportService extends BaseExportService {
             }
         });
         return exportTask.getId();
-    }
-
-    public List<List<Object>> getExportData(ClueExportRequest request, String userId, String orgId, DeptDataPermissionDTO deptDataPermission, String taskId) throws InterruptedException {
-        PageHelper.startPage(request.getCurrent(), request.getPageSize());
-        List<ClueListResponse> exportList = extClueMapper.list(request, orgId, userId, deptDataPermission);
-        List<ClueListResponse> dataList = clueService.buildListData(exportList, orgId);
-        Map<String, List<OptionDTO>> optionMap = clueService.buildOptionMap(orgId, exportList, dataList);
-        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CLUE.getKey(), orgId);
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
-        for (ClueListResponse response : dataList) {
-            if (ExportThreadRegistry.isInterrupted(taskId)) {
-                throw new InterruptedException("线程已被中断，主动退出");
-            }
-            List<Object> value = buildData(request.getHeadList(), response, optionMap, fieldConfigMap);
-            data.add(value);
-        }
-
-        return data;
-    }
-
-    private List<Object> buildData(List<ExportHeadDTO> headList, ClueListResponse data, Map<String, List<OptionDTO>> optionMap, Map<String, BaseField> fieldConfigMap) {
-        List<Object> dataList = new ArrayList<>();
-        //固定字段map
-        LinkedHashMap<String, Object> systemFiledMap = ClueFieldUtils.getSystemFieldMap(data, optionMap);
-        //自定义字段map
-        AtomicReference<Map<String, Object>> moduleFieldMap = new AtomicReference<>(new LinkedHashMap<>());
-        Optional.ofNullable(data.getModuleFields()).ifPresent(moduleFields -> moduleFieldMap.set(moduleFields.stream().collect(Collectors.toMap(BaseModuleFieldValue::getFieldId, BaseModuleFieldValue::getFieldValue))));
-        //处理数据转换
-        transModuleFieldValue(headList, systemFiledMap, moduleFieldMap.get(), dataList, fieldConfigMap);
-        return dataList;
-    }
-
-    public List<List<Object>> getExportDataBySelect(List<ExportHeadDTO> headList, List<String> ids, String orgId, String taskId) throws InterruptedException {
-        //获取数据
-        List<ClueListResponse> allList = extClueMapper.getListByIds(ids);
-        List<ClueListResponse> dataList = clueService.buildListData(allList, orgId);
-        Map<String, List<OptionDTO>> optionMap = clueService.buildOptionMap(orgId, allList, dataList);
-
-        Map<String, BaseField> fieldConfigMap = getFieldConfigMap(FormKey.CLUE.getKey(), orgId);
-        //构建导出数据
-        List<List<Object>> data = new ArrayList<>();
-        for (ClueListResponse response : dataList) {
-            if (ExportThreadRegistry.isInterrupted(taskId)) {
-                throw new InterruptedException("线程已被中断，主动退出");
-            }
-            List<Object> value = buildData(headList, response, optionMap, fieldConfigMap);
-            data.add(value);
-        }
-
-        return data;
     }
 }
