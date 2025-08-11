@@ -98,6 +98,14 @@ public class OpenApiConfig {
     }
 
     /**
+     * 配置全局搜索 API 文档
+     */
+    @Bean
+    public GroupedOpenApi searchApi() {
+        return createApi("search", PRE_PACKAGES + "search");
+    }
+
+    /**
      * 配置 XPack API 文档。
      */
     @Bean
